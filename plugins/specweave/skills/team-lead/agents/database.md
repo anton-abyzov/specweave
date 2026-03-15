@@ -27,19 +27,23 @@ WORKFLOW:
   5. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   6. Design database schema changes
   7. Create plan files (plan.md, tasks.md) for your increment
-  8. Send plan to team-lead and WAIT for approval:
+  8. Send structured plan notification to team-lead (do NOT wait for approval):
      SendMessage({ type: "message", recipient: "team-lead",
-       content: "PLAN_READY: [increment path]. [summary of schema changes, migrations, seed data].",
-       summary: "Database plan ready for review" })
-  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+       content: "PLAN_READY: Created [increment path]\nTasks: [count]\nACs covered: [AC-IDs]\nKey decisions: [schema changes summary]\nFiles: [migration files, schema changes]\nArchitecture: [approach]",
+       summary: "Database plan ready — proceeding to implementation" })
+  9. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
   10. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
   11. Write seed data if needed
   12. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  13. Run all tests for owned code (migration, seed): npm test
-  14. Do NOT signal completion until all tests pass
-  15. Signal CONTRACT_READY with schema details via SendMessage to team-lead
-  16. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
-  17. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  13. After EACH task completion, send heartbeat:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
+       summary: "Database agent: task {N} of {total} done" })
+  14. Run all tests for owned code (migration, seed): npm test
+  15. Do NOT signal completion until all tests pass
+  16. Signal CONTRACT_READY with schema details via SendMessage to team-lead
+  17. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  18. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

@@ -314,11 +314,17 @@ Analyze domains
 
 ## 3b. Plan Review Workflow
 
-The team lead acts as **architectural reviewer** for all sub-agent plans. Do NOT auto-accept plans.
+The team lead reviews agent plans **asynchronously**. Agents do NOT wait for approval — they proceed to implementation immediately after creating plans and sending a notification.
 
-### Why Review
+### Why Async Review
 
-Without review, agents may duplicate work across domains, misinterpret scope, make conflicting architectural decisions, or produce plans misaligned with the spec.
+The previous blocking PLAN_READY/PLAN_APPROVED handshake caused sessions to freeze:
+- When 3-5 Phase 2 agents spawned simultaneously, they ALL blocked waiting for approval
+- Team-lead had to review each plan sequentially while all agents sat idle
+- If team-lead was processing another message (or in extended thinking), agents waited indefinitely
+- In tmux/iTerm2, this appeared as a completely frozen session
+
+Async review eliminates the bottleneck: agents proceed immediately, and the team-lead only intervenes when something is wrong.
 
 ### Permission Mode: bypassPermissions (CRITICAL)
 
@@ -330,56 +336,56 @@ Without review, agents may duplicate work across domains, misinterpret scope, ma
 
 **NEVER use `mode: "plan"` for agent spawns** — it causes agents to block on the trust-folder prompt.
 
-### Protocol (SendMessage-Based)
-
-Since agents use `bypassPermissions` (not `plan` mode), plan review uses an explicit SendMessage protocol:
+### Protocol (Async Notify + Correct)
 
 **Agent side** (built into every agent prompt template):
 1. Read the increment spec and explore the codebase
 2. Create plan files (spec.md, plan.md, tasks.md) in the increment directory
-3. Send plan summary to team-lead:
+3. Send a structured plan notification to team-lead:
 ```
 SendMessage({
   type: "message",
   recipient: "team-lead",
-  content: "PLAN_READY: Created spec.md, plan.md, tasks.md at .specweave/increments/[ID]/. Summary: [key decisions, file list, task count]. Ready for review.",
-  summary: "Plan ready for review"
+  content: "PLAN_READY: Created .specweave/increments/[ID]/\nTasks: [count]\nACs covered: [list AC-IDs]\nKey decisions: [1-2 sentence summary]\nFiles to create/modify: [file list]\nArchitecture: [pattern/approach chosen]",
+  summary: "Plan ready — proceeding to implementation"
 });
 ```
-4. **WAIT for PLAN_APPROVED message** before starting implementation. Do NOT proceed without approval.
+4. **Proceed to implementation IMMEDIATELY.** Do NOT wait for any response.
+5. If team-lead sends `PLAN_CORRECTION`, pause current work, revise the plan, and continue.
 
 **Team-lead side**:
-1. Receive `PLAN_READY` message from agent
-2. Read the agent's plan files (spec.md, plan.md, tasks.md)
-3. Evaluate:
-   - Does it align with the feature spec and ACs?
-   - Is the architecture consistent with existing codebase patterns?
-   - Does the agent stay within its file ownership boundaries?
-   - Are there conflicts with other agents' plans?
-   - Is scope correct — not too broad, not too narrow?
-4. Approve or reject:
+1. Receive `PLAN_READY` notification from agent
+2. Review using the **structured summary in the message** (do NOT read full plan files unless a concern is detected)
+3. Quick-evaluate:
+   - Do the covered ACs match what this agent should handle?
+   - Are the files within this agent's ownership boundaries?
+   - Do any key decisions conflict with other agents' plans?
+   - Is the task count reasonable (<15)?
+4. If plan looks good: **do nothing** — agent is already implementing
+5. If plan has issues: send correction:
 
 ```
-// Approve
+// Correct a plan issue (agent is already implementing)
 SendMessage({
   type: "message",
   recipient: "database-agent",
-  content: "PLAN_APPROVED: Go ahead with implementation.",
-  summary: "Plan approved"
-});
-
-// Reject with feedback
-SendMessage({
-  type: "message",
-  recipient: "database-agent",
-  content: "PLAN_REJECTED: Revise: 1) Add index on user_id for sessions. 2) Missing migration for AC-US1-03.",
-  summary: "Plan needs revision"
+  content: "PLAN_CORRECTION: 1) Add index on user_id for sessions. 2) You're missing AC-US1-03 — add a task for it. Pause current work and revise before continuing.",
+  summary: "Plan needs correction"
 });
 ```
+6. If agent ignores `PLAN_CORRECTION` (continues without revising after 2 turns):
+```
+SendMessage({ type: "shutdown_request", recipient: "database-agent" });
+// Report to user: "Agent ignored correction, shutting down. Manual intervention needed."
+```
 
-### Non-Blocking Review
+### Review Priorities
 
-Plan review MUST NOT block other agents. Review plans as they arrive — agents waiting for approval are idle, but other agents continue working normally.
+Not all plans need deep review. Prioritize:
+- **Phase 1 (upstream) plans** — errors here cascade to all downstream agents
+- **Plans with >10 tasks** — higher risk of scope creep
+- **Plans touching shared files** — ownership conflicts
+- **Single-agent teams** — skip review entirely (no coordination needed)
 
 ### Multi-Increment Consideration
 
@@ -482,8 +488,11 @@ Agents communicate contract readiness, blocking issues, and completion status us
 | Prefix | Purpose | Sender | Receiver |
 |--------|---------|--------|----------|
 | `CONTRACT_READY:` | Upstream contract is published | Upstream agent | team-lead (broadcasts to downstream) |
+| `PLAN_READY:` | Plan created, agent proceeding to implementation | Any agent | team-lead (async review) |
+| `STATUS:` | Heartbeat — task progress update | Any agent | team-lead (stuck detection) |
 | `BLOCKING_ISSUE:` | Agent is stuck, needs help | Any agent | team-lead |
 | `COMPLETION:` | Agent finished all tasks | Any agent | team-lead |
+| `PLAN_CORRECTION:` | Plan needs revision (async) | team-lead | Specific agent |
 
 ### Message Examples
 
@@ -494,6 +503,22 @@ SendMessage({
   recipient: "team-lead",
   content: "CONTRACT_READY: TypeScript interfaces written to src/types/checkout.ts. Exports: CheckoutItem, CartSummary, PaymentIntent.",
   summary: "Shared types contract ready"
+});
+
+// Agent notifies plan is ready (does NOT wait for response)
+SendMessage({
+  type: "message",
+  recipient: "team-lead",
+  content: "PLAN_READY: Created .specweave/increments/0202-checkout-backend/\nTasks: 8\nACs covered: AC-US1-01, AC-US1-02, AC-US2-01\nKey decisions: REST API with Express, JWT auth middleware\nFiles: src/api/checkout.ts, src/services/payment.ts, src/middleware/auth.ts\nArchitecture: Controller-Service-Repository pattern",
+  summary: "Backend plan ready — proceeding to implementation"
+});
+
+// Agent heartbeat after each task completion
+SendMessage({
+  type: "message",
+  recipient: "team-lead",
+  content: "STATUS: T-003/8 complete. Next: T-004 (implement payment service). Tests: 12/12 passing.",
+  summary: "Backend agent: task 3 of 8 done"
 });
 
 // Agent reports a blocking issue
@@ -510,6 +535,14 @@ SendMessage({
   recipient: "team-lead",
   content: "COMPLETION: All 8 tasks done. Tests passing (24/24). Ready for team-lead closure.",
   summary: "Frontend agent completed all tasks"
+});
+
+// Team-lead sends async plan correction (agent is already implementing)
+SendMessage({
+  type: "message",
+  recipient: "database-agent",
+  content: "PLAN_CORRECTION: 1) Add index on user_id for sessions table. 2) Missing AC-US1-03 — add a migration task. Pause and revise.",
+  summary: "Plan correction for database agent"
 });
 ```
 
@@ -528,7 +561,7 @@ TeamCreate({
 
 ### Step 2: Spawn Upstream Agents (Phase 1)
 
-All agents are spawned with `mode: "bypassPermissions"` to prevent blocking on trust-folder prompts. Plan review is enforced via the SendMessage PLAN_READY/PLAN_APPROVED protocol (see Section 3b).
+All agents are spawned with `mode: "bypassPermissions"` to prevent blocking on trust-folder prompts. Agents notify team-lead of their plans via PLAN_READY but proceed to implementation immediately (see Section 3b for async review protocol).
 
 For each agent: **Read the agent definition file** (see Section 4 reference table), replace placeholders (`[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`, `{ORG}`, `{repo-name}`), and use the full content as the Task() prompt.
 
@@ -598,15 +631,39 @@ Agent Workflow:
 
 **Why agents don't run /sw:done**: The /sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Centralizing closure on the team-lead (which has a cleaner context) avoids this.
 
-### Orchestrator Quality Gate (Centralized Closure)
+### Active Phase Rules (CRITICAL — While Agents Are Implementing)
 
-After all agents complete, the team-lead runs closure **centrally** for each increment.
+**During the active phase (between spawning agents and receiving ALL COMPLETION signals), the team-lead MUST NOT run any closure operations.**
+
+```
+ALLOWED during active phase:
+  ✓ Process SendMessage from agents (PLAN_READY, STATUS, CONTRACT_READY, BLOCKING_ISSUE, COMPLETION)
+  ✓ Async plan review (read PLAN_READY summaries, send PLAN_CORRECTION if needed)
+  ✓ Track heartbeat STATUS per agent for stuck detection
+  ✓ Respond to BLOCKING_ISSUE messages
+  ✓ Send STATUS_CHECK to silent agents
+  ✓ Shutdown stuck agents
+
+FORBIDDEN during active phase:
+  ✗ Run /sw:grill on any increment
+  ✗ Run /sw:done on any increment
+  ✗ Invoke any closure-related skills (judge-llm, sync-docs, qa)
+  ✗ Read full plan/spec files (use PLAN_READY summaries instead)
+```
+
+**Why**: Closure loads 4+ skill definitions into context. Running it while agents are active causes the orchestrator to enter extended thinking (30+ min) and stop responding to agent messages — freezing the entire session.
+
+### Orchestrator Quality Gate — Closure Phase (After ALL Agents Complete)
+
+**Closure begins ONLY after ALL agents have signaled COMPLETION (or been declared stuck).**
+
+The team-lead runs closure **centrally** for each increment, sequentially in dependency order.
 
 **CRITICAL: Increments MUST be closed sequentially, not skipped on failure.**
 
 ```
-Orchestrator Final Check:
-  1. All agents signaled COMPLETION
+Closure Phase (triggered when all COMPLETION signals received):
+  1. Verify: all agents signaled COMPLETION (or declared stuck)
   2. No unresolved BLOCKING_ISSUE messages
   3. Run full test suite (all domains combined)
   4. For EACH increment in dependency order (shared → database → backend → frontend → testing → security):
@@ -655,34 +712,56 @@ Orchestrator Final Check:
 
 ---
 
-## 8b. Agent Timeout and Stuck Detection
+## 8b. Agent Timeout and Stuck Detection (Heartbeat-Based)
 
-Agents can get stuck in extended thinking if their context overflows. The team-lead MUST monitor for stuck agents.
+Agents send `STATUS: T-{N}/{total}` heartbeat messages after each task completion. The team-lead uses these to detect stuck agents proactively.
+
+### Heartbeat Tracking
+
+The team-lead maintains a mental log of the last STATUS received from each agent:
+
+```
+Agent Heartbeat Log (example):
+  backend-agent:  STATUS T-003/8  (last seen: 2 turns ago)
+  frontend-agent: STATUS T-005/12 (last seen: this turn)
+  database-agent: COMPLETION       (done)
+  testing-agent:  STATUS T-001/6  (last seen: 4 turns ago) ← STUCK?
+```
 
 ### Stuck Detection Rules
 
-**Note**: Claude Code has no built-in timers. These are best-effort heuristics applied when the team-lead regains control (e.g., after processing other agent messages).
+**Note**: Claude Code has no built-in timers. Heartbeats are tracked relative to team-lead turns (each time the orchestrator processes messages).
 
 | Condition | Action |
 |-----------|--------|
-| Agent has not messaged since team-lead's last turn | Send `STATUS_CHECK` message to agent |
-| Agent does not respond to STATUS_CHECK on next team-lead turn | Declare agent stuck |
-| Agent stuck | Log warning, proceed with other agents, handle stuck agent's increment manually in team-merge |
+| Agent sent STATUS within last 2 team-lead turns | Healthy — no action needed |
+| No STATUS from agent for 2 consecutive turns | Send `STATUS_CHECK` message to agent |
+| No STATUS for 3 consecutive turns (or no response to STATUS_CHECK) | Declare agent stuck |
+| Agent sends STATUS but task number hasn't changed for 3+ heartbeats | Stuck in loop — declare stuck |
 | All agents stuck | STOP team, report to user |
+
+### Stuck-in-Loop Detection
+
+An agent may appear to send heartbeats but actually be looping on the same task (e.g., test fails → fix → test fails → fix → ...). To detect this:
+
+- Track the task number in each STATUS message
+- If the same task number appears in 3+ consecutive STATUS messages from the same agent, the agent is stuck in a loop
+- Action: send a message to the agent with guidance, or declare stuck if the loop continues
 
 ### Stuck Agent Recovery
 
 When an agent is declared stuck:
-1. Do NOT wait for it — proceed with closure of other agents' increments
-2. Note the stuck agent's increment ID and last known task progress
-3. During /sw:team-merge, the stuck agent's increment is left open for manual completion
-4. Send shutdown_request to the stuck agent to free resources
+1. Do NOT wait for it — proceed with other agents
+2. Note the stuck agent's increment ID and last known task progress (from last STATUS)
+3. Send shutdown_request to the stuck agent to free resources
+4. During closure phase, the stuck agent's increment is left open for manual completion
 
 ### Preventing Stuck Agents
 
 - Enforce the 15-task cap (Section 3b)
 - Agents use `--simple` flag in auto-mode (reduces context per iteration)
 - Agents do NOT run /sw:done (team-lead handles closure centrally)
+- Heartbeat STATUS messages let team-lead detect problems early instead of after long silences
 - If an agent's task count exceeds 15 despite the cap, the team-lead should split it before spawning
 
 ---
@@ -697,18 +776,29 @@ When an agent is declared stuck:
   │     └── Missing? → Auto-invoke /sw:increment, wait for completion
   ├── Step 0b: ACTIVATE MASTER INCREMENT (MANDATORY)
   │     └── Edit metadata.json: set status to "active" BEFORE spawning agents
-  ├── Step 1: Analyze feature (from master spec) -> identify domains -> decide increment split
+  ├── Step 1: Analyze feature (from master spec) → identify domains → decide increment split
   ├── Step 2: Create team via TeamCreate
   ├── Step 3: Create per-domain increments (derived from master spec)
+  │
+  │ ── ACTIVE PHASE (agents implementing, team-lead monitoring) ──
+  │
   ├── Step 4: Contract-first spawning (all agents with mode: "bypassPermissions")
   │     ├── Phase 1: Spawn shared + database
-  │     │     └── Receive PLAN_READY, review & approve via SendMessage (Section 3b)
-  │     │     └── Wait for CONTRACT_READY after approval
+  │     │     └── Agents send PLAN_READY notification → proceed immediately
+  │     │     └── Team-lead reviews async, sends PLAN_CORRECTION only if needed
+  │     │     └── Wait for CONTRACT_READY
   │     └── Phase 2: Spawn backend + frontend + testing
-  │           └── Receive PLAN_READY, review & approve via SendMessage
-  ├── Step 5: Monitor progress via SendMessage (timeout: 20min idle → STATUS_CHECK)
-  ├── Step 6: Agents signal COMPLETION (tests pass, no /sw:grill or /sw:done on agents)
-  ├── Step 7: Team-lead runs centralized closure per increment:
+  │           └── Agents send PLAN_READY notification → proceed immediately
+  ├── Step 5: Monitor progress via STATUS heartbeats
+  │     ├── Track per-agent: last STATUS task number and turn count
+  │     ├── No STATUS for 2 turns → send STATUS_CHECK
+  │     ├── No STATUS for 3 turns or same task 3+ times → declare stuck
+  │     └── DO NOT run grill/done/closure during this phase
+  ├── Step 6: Collect all COMPLETION signals (or declare remaining agents stuck)
+  │
+  │ ── CLOSURE PHASE (all agents done, team-lead runs quality gates) ──
+  │
+  ├── Step 7: Team-lead runs centralized closure per increment (dependency order):
   │     ├── Pre-closure: verify/fix metadata.json status → must be "active"
   │     ├── /sw:grill → fix findings → retry if needed (max 2)
   │     └── /sw:done --auto → fix gate failures → retry if needed (max 2)
@@ -761,6 +851,10 @@ To execute, run without --dry-run.
 |-------|-------|-----|
 | **TeamCreate blocked by guard** | No increment with spec.md exists | Run `/sw:increment "feature"` first, then retry `/sw:team-lead`. The guard requires a substantive spec.md (>200 bytes, not a template) |
 | **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"`. Trust prompts require interactive input agents cannot provide |
+| **Session freezes after first agent completes** | Closure ran during active phase (pre-v0528 bug) | Ensure §8 active-phase rules are followed: NO grill/done until ALL agents signal COMPLETION |
+| **Agent proceeds with wrong plan** | Async model means agents don't wait for approval | Send `PLAN_CORRECTION` immediately; agent should pause and revise. If ignored, send `shutdown_request` |
+| **No heartbeat STATUS from agent** | Agent didn't implement heartbeat or is stuck | Check if agent template includes heartbeat step. If yes, agent is stuck — send STATUS_CHECK, then declare stuck after 3 turns |
+| **Agent stuck in loop (same task repeated)** | Test fail → fix → test fail cycle | Heartbeat shows same task number 3+ times. Send guidance message or declare stuck |
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
 | **Agent stuck in extended thinking** | Too many tasks (>15) causing context overflow | Enforce 15-task cap per agent; split large domains into 2 agents; agents use `--simple` mode |

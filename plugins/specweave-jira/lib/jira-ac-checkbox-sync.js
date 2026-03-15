@@ -239,7 +239,7 @@ class JiraACCheckboxSync {
         const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
         if (match) {
           const fm = yaml.parse(match[1]);
-          const externalTools = fm.external_tools || fm.external;
+          const externalTools = { ...fm.external || {}, ...fm.external_tools || {} };
           usFiles.push({
             id: fm.id,
             title: fm.title,
