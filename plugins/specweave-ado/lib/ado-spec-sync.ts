@@ -117,6 +117,45 @@ export class AdoSpecSync {
   }
 
   /**
+   * Resolve a work item state name for the given type.
+   * Basic process (Issue type) uses: "To Do", "Doing", "Done"
+   * Agile/Scrum process uses: "New", "Active", "Closed" / "Resolved" / "Done"
+   *
+   * Maps canonical states: 'New' → todo, 'Active' → in-progress, 'Closed' → done
+   */
+  private stateCache = new Map<string, Set<string>>();
+  private async resolveWorkItemState(workItemType: string, canonicalState: 'New' | 'Active' | 'Closed'): Promise<string> {
+    if (!this.stateCache.has(workItemType)) {
+      try {
+        const resp = await this.client.get(
+          `/wit/workitemtypes/${encodeURIComponent(workItemType)}/states?api-version=7.0`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        const states = new Set<string>(resp.data.value.map((s: { name: string }) => s.name));
+        this.stateCache.set(workItemType, states);
+      } catch {
+        // Fallback: assume Agile states
+        this.stateCache.set(workItemType, new Set(['New', 'Active', 'Resolved', 'Closed']));
+      }
+    }
+    const validStates = this.stateCache.get(workItemType)!;
+
+    // Preferred state names per canonical state, in priority order
+    const candidates: Record<string, string[]> = {
+      'New':    ['To Do', 'New', 'Open'],
+      'Active': ['Doing', 'Active', 'In Progress', 'In-Progress'],
+      'Closed': ['Done', 'Closed', 'Resolved', 'Completed'],
+    };
+
+    for (const candidate of candidates[canonicalState]) {
+      if (validStates.has(candidate)) return candidate;
+    }
+    // Last resort: return first available state for 'New', last for 'Closed'
+    const arr = [...validStates];
+    return canonicalState === 'Closed' ? (arr[arr.length - 1] ?? canonicalState) : (arr[0] ?? canonicalState);
+  }
+
+  /**
    * Sync spec to ADO Feature (CREATE or UPDATE)
    */
   async syncSpecToAdo(specId: string): Promise<SpecSyncResult> {
@@ -391,11 +430,14 @@ export class AdoSpecSync {
       const existingStory = await this.findStoryByTitle(us.id);
 
       if (existingStory) {
+        const resolvedStoryType = await this.resolveWorkItemType('User Story');
+        const canonicalState = us.status === 'done' ? 'Closed' : us.status === 'in-progress' ? 'Active' : 'New';
+        const resolvedState = await this.resolveWorkItemState(resolvedStoryType, canonicalState);
         // UPDATE existing story (also re-apply parent to fix orphaned stories)
         await this.updateStory(existingStory.id, {
           title: storyTitle,
           description: storyDescription,
-          state: us.status === 'done' ? 'Closed' : us.status === 'in-progress' ? 'Active' : 'New',
+          state: resolvedState,
           parentId: featureId
         });
 
@@ -420,10 +462,12 @@ export class AdoSpecSync {
     const allDone = spec.metadata.userStories.every(us => us.status === 'done');
     if (allDone && spec.metadata.userStories.length > 0 && created.length === 0) {
       try {
+        const epicType = await this.resolveWorkItemType('Feature');
+        const epicClosedState = await this.resolveWorkItemState(epicType, 'Closed');
         await this.client.patch(`/wit/workitems/${featureId}?api-version=7.0`, [
-          { op: 'replace', path: '/fields/System.State', value: 'Closed' }
+          { op: 'replace', path: '/fields/System.State', value: epicClosedState }
         ], { headers: { 'Content-Type': 'application/json-patch+json' } });
-        console.log(`   ✅ All stories done — closed parent Epic #${featureId}`);
+        console.log(`   ✅ All stories done — closed parent Epic #${featureId} (state: ${epicClosedState})`);
       } catch {
         // Non-blocking — state transition may not be valid for all ADO project configs
       }
