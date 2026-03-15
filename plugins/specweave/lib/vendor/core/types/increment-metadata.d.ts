@@ -419,6 +419,8 @@ export interface IncrementMetadataV2 extends IncrementMetadata {
      * ```
      */
     prRefs?: PrRef[];
+    /** When true, skip living docs sync for this increment (per-increment override) */
+    skipLivingDocsSync?: boolean;
 }
 /**
  * Pull request reference for a single repository (v1.0.437+)
