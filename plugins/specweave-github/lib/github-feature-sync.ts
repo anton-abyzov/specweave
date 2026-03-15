@@ -18,8 +18,8 @@ import { GitHubClientV2 } from './github-client-v2.js';
 import { UserStoryIssueBuilder } from './user-story-issue-builder.js';
 import { CompletionCalculator } from './completion-calculator.js';
 import { DuplicateDetector } from './duplicate-detector.js';
-import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
-import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+import { execFileNoThrow } from '../../specweave/lib/vendor/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../specweave/lib/vendor/utils/auth-helpers.js';
 
 interface FeatureFrontmatter {
   id: string;
@@ -1374,7 +1374,16 @@ export class GitHubFeatureSync {
 
     const frontmatter = yaml.parse(match[1]);
 
-    // Update external.github
+    // Update external_tools.github (consistent with JIRA/ADO write-back)
+    if (!frontmatter.external_tools) {
+      frontmatter.external_tools = {};
+    }
+    if (!frontmatter.external_tools.github) {
+      frontmatter.external_tools.github = {};
+    }
+    frontmatter.external_tools.github.issue = issueNumber;
+    frontmatter.external_tools.github.url = `https://github.com/${this.client.getOwner()}/${this.client.getRepo()}/issues/${issueNumber}`;
+    // Also keep legacy external.github for backwards compatibility
     if (!frontmatter.external) {
       frontmatter.external = {};
     }
@@ -1382,7 +1391,7 @@ export class GitHubFeatureSync {
       frontmatter.external.github = {};
     }
     frontmatter.external.github.issue = issueNumber;
-    frontmatter.external.github.url = `https://github.com/${this.client.getOwner()}/${this.client.getRepo()}/issues/${issueNumber}`;
+    frontmatter.external.github.url = frontmatter.external_tools.github.url;
 
     // Rebuild content
     const newFrontmatter = yaml.stringify(frontmatter);

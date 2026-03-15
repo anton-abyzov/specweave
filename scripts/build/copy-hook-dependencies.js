@@ -75,9 +75,10 @@ const PLUGIN_DEPENDENCIES = {
     'dist/src/sync/provider-router.js',
     'dist/src/sync/status-mapper.js',
     'dist/src/sync/config.js',
-    // github-client-v2 transitive dep (used by github-ac-checkbox-sync.js)
+    // github-client-v2 + github-feature-sync transitive deps
     'dist/src/utils/execFileNoThrow.js',
     'dist/src/utils/clean-env.js',
+    'dist/src/utils/auth-helpers.js',
   ]
 };
 
@@ -107,9 +108,15 @@ async function copyPluginDependencies(pluginName, dependencies) {
   const pluginDir = path.join(projectRoot, 'plugins', pluginName);
   const vendorDir = path.join(pluginDir, 'lib', 'vendor');
 
-  // Clean vendor directory
+  // Also copy to dist/plugins/ so imports work from compiled living-docs-sync
+  const distVendorDir = path.join(projectRoot, 'dist', 'plugins', pluginName, 'lib', 'vendor');
+
+  // Clean vendor directories
   if (await fs.pathExists(vendorDir)) {
     await fs.remove(vendorDir);
+  }
+  if (await fs.pathExists(distVendorDir)) {
+    await fs.remove(distVendorDir);
   }
 
   let copiedCount = 0;
@@ -125,8 +132,10 @@ async function copyPluginDependencies(pluginName, dependencies) {
     // Convert dist/src/core/foo.js → lib/vendor/core/foo.js
     const relativePath = dep.replace('dist/src/', '');
     const destPath = path.join(vendorDir, relativePath);
+    const distDestPath = path.join(distVendorDir, relativePath);
 
     await copyFile(srcPath, destPath);
+    await copyFile(srcPath, distDestPath);
     console.log(`   ✅ Copied: ${relativePath}`);
     copiedCount++;
   }

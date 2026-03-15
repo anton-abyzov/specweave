@@ -292,7 +292,7 @@ ${acLines}
             external_source: fm.external_source,
             external_id: fm.external_id, external_url: fm.external_url,
             imported_at: fm.imported_at, origin: fm.origin,
-            external_tools: fm.external_tools || fm.external,
+            external_tools: { ...(fm.external || {}), ...(fm.external_tools || {}) },
           });
         }
       }

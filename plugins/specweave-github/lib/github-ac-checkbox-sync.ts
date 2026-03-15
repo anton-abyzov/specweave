@@ -367,8 +367,8 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
           const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
           if (match) {
             const fm = yaml.parse(match[1]);
-            // Support both external_tools (legacy) and external (living docs) formats
-            const externalTools = fm.external_tools || fm.external;
+            // Merge both external_tools and external (GitHub writes external, JIRA/ADO write external_tools)
+            const externalTools = { ...(fm.external || {}), ...(fm.external_tools || {}) };
             usFiles.push({
               id: fm.id,
               title: fm.title,
