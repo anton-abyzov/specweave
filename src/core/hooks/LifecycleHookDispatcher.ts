@@ -14,6 +14,7 @@
 
 import { ConfigManager } from '../config/config-manager.js';
 import type { HookConfiguration } from '../config/types.js';
+import type { IncrementMetadataV2 } from '../types/increment-metadata.js';
 
 /**
  * Options for dispatch methods (internal use)
@@ -205,8 +206,8 @@ export class LifecycleHookDispatcher {
           const { MetadataManager } = await import(
             '../increment/metadata-manager.js'
           );
-          const metadata = MetadataManager.read(incrementId);
-          if ((metadata as unknown as Record<string, unknown>).skipLivingDocsSync === true) {
+          const metadata = MetadataManager.read(incrementId) as IncrementMetadataV2;
+          if (metadata.skipLivingDocsSync === true) {
             perIncrementSkip = true;
           }
         } catch {

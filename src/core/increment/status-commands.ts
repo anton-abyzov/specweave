@@ -310,11 +310,15 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     }
 
     // Living docs sync is handled by LifecycleHookDispatcher.onIncrementDone()
-    // after status is set to COMPLETED. No pre-completion sync needed.
-
-    // Update status to completed (final transition)
-    // This triggers StatusChangeSyncTrigger → external tool sync!
-    MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
+    // after status is set to COMPLETED. Suppress StatusChangeSyncTrigger so
+    // sync runs exactly once (via onIncrementDone, not twice).
+    const { StatusChangeSyncTrigger } = await import('./status-change-sync-trigger.js');
+    StatusChangeSyncTrigger.suppressForCompletion = true;
+    try {
+      MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
+    } finally {
+      StatusChangeSyncTrigger.suppressForCompletion = false;
+    }
 
     // Dispatch post-increment-done hooks (awaited, error-isolated)
     let hookSyncErrors: string[] = [];
@@ -380,7 +384,10 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     return true;
 
   } catch (error) {
-    log(chalk.red(`\n❌ Failed to complete increment: ${error instanceof Error ? error.message : String(error)}\n`));
+    const msg = error instanceof Error ? error.message : String(error);
+    log(chalk.red(`\n❌ Failed to complete increment: ${msg}\n`));
+    // Always write to stderr so auto/silent mode failures are visible
+    process.stderr.write(`[completeIncrement] Unexpected failure for ${incrementId}: ${msg}\n`);
     return false;
   }
 }
