@@ -24,7 +24,7 @@ You are a GitHub repository cloning expert. Help users clone repositories from G
 
 **Extract `--org` from natural language**: When the user mentions an organization without a specific repo:
 - "clone all repos from mycompany" → `--org "mycompany"`
-- "get the olympusnova repos" → `--org "olympusnova"`
+- "get the acme-corp repos" → `--org "acme-corp"`
 
 **Detect `--dry-run`**: "preview", "what would happen", "show me what would be cloned" → add `--dry-run`
 
@@ -450,17 +450,17 @@ if (jobId) {
 ## Examples
 
 ### Example 1: Fresh Clone
-**User**: `/sw-github:clone --org olympusnova`
+**User**: `/sw-github:clone --org acme-corp`
 
 **Output**:
 ```
 📦 GitHub Repository Cloning
 
    ✓ GitHub token found
-   Organization: olympusnova
+   Organization: acme-corp
 
    Fetching repositories...
-   ✓ Found 512 repositories in olympusnova
+   ✓ Found 512 repositories in acme-corp
 
    📦 Need to clone: 512 repos
 
@@ -502,10 +502,10 @@ Clone 512 repositories to current directory? (Y/n)
 📦 GitHub Repository Cloning
 
    ✓ GitHub token found
-   Organization: olympusnova (from config)
+   Organization: acme-corp (from config)
 
    Fetching repositories...
-   ✓ Found 512 repositories in olympusnova
+   ✓ Found 512 repositories in acme-corp
 
    📂 Already cloned: 87 repos (will be skipped)
       ✓ api-gateway
