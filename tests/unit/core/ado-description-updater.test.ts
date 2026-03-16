@@ -65,6 +65,48 @@ describe('AdoDescriptionUpdater', () => {
     });
   });
 
+  describe('backward compatibility — legacy regex format', () => {
+    it('replaces AC section even when legacy unicode entities are present', () => {
+      // Legacy format used &#9744; (☐) and &#9745; (☑) unicode entities
+      const legacyHtml = `<h2>User Story</h2>
+<p>Some description</p>
+<!-- AC_SECTION_START -->
+<h3>Acceptance Criteria</h3>
+<ul><li>&#9745; AC-US1-01: First</li><li>&#9744; AC-US1-02: Second</li></ul>
+<!-- AC_SECTION_END -->
+<h2>Priority</h2>
+<p>P1</p>`;
+
+      const newAcHtml = `<h3>Acceptance Criteria</h3>
+<ul><li>☑ AC-US1-01: First</li><li>☑ AC-US1-02: Second</li></ul>`;
+
+      const result = updater.updateAcSection(legacyHtml, newAcHtml);
+
+      // Non-AC content preserved byte-for-byte
+      expect(result).toContain('<h2>User Story</h2>');
+      expect(result).toContain('Some description');
+      expect(result).toContain('<h2>Priority</h2>');
+      expect(result).toContain('<p>P1</p>');
+      // Old unicode entities replaced
+      expect(result).not.toContain('&#9745;');
+      expect(result).not.toContain('&#9744;');
+      // New content present
+      expect(result).toContain('☑ AC-US1-01');
+      expect(result).toContain('☑ AC-US1-02');
+    });
+
+    it('preserves non-AC content byte-for-byte with legacy format', () => {
+      const before = '<div class="custom">Special &amp; content &lt;here&gt;</div>\n';
+      const after = '\n<footer>End &amp; footer</footer>';
+      const legacyHtml = `${before}<!-- AC_SECTION_START -->\n<ul><li>&#9744; old</li></ul>\n<!-- AC_SECTION_END -->${after}`;
+
+      const result = updater.updateAcSection(legacyHtml, '<ul><li>☑ new</li></ul>');
+
+      expect(result.startsWith(before)).toBe(true);
+      expect(result.endsWith(after)).toBe(true);
+    });
+  });
+
   describe('formatACCheckboxes', () => {
     it('formats AC statuses as HTML checkbox list', () => {
       const acStatus = new Map<string, boolean>([
