@@ -7,11 +7,12 @@
  */
 
 import * as fs from '../../utils/fs-native.js';
+import * as nativeFs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { input, confirm } from '@inquirer/prompts';
+import { input, confirm, select } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
@@ -40,6 +41,7 @@ import {
   createConfigFile,
   showNextSteps,
   installGitHooks,
+  ensureSkillCreator,
 } from '../helpers/init/index.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
@@ -270,13 +272,46 @@ export async function initCommand(
           message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
           default: true
         });
-        toolName = confirmTool ? detectedTool : 'generic';
-        if (!confirmTool) {
-          console.log(chalk.gray('   → Using AGENTS.md (universal format for non-Claude tools)'));
+        if (confirmTool) {
+          toolName = detectedTool;
+        } else {
+          toolName = await select({
+            message: 'Select your AI coding tool:',
+            choices: [
+              { name: 'Cursor', value: 'cursor' },
+              { name: 'Windsurf', value: 'windsurf' },
+              { name: 'Cline', value: 'cline' },
+              { name: 'OpenCode', value: 'opencode' },
+              { name: 'Zed', value: 'zed' },
+              { name: 'Continue', value: 'continue' },
+              { name: 'Gemini CLI', value: 'gemini' },
+              { name: 'GitHub Copilot', value: 'copilot' },
+              { name: 'JetBrains AI', value: 'jetbrains' },
+              { name: 'Amazon Q', value: 'amazonq' },
+              { name: 'Aider', value: 'aider' },
+              { name: 'Tabnine', value: 'tabnine' },
+              { name: 'Kimi CLI', value: 'kimi' },
+              { name: 'Trae (ByteDance)', value: 'trae' },
+              { name: 'Codex', value: 'codex' },
+              { name: 'Other / Generic (AGENTS.md for any tool)', value: 'generic' },
+            ],
+          });
+          console.log(chalk.gray(`   → Using ${toolName} adapter`));
         }
       }
 
       spinner.start('Using ' + toolName + '...');
+    }
+
+    // Multi-repo question for greenfield projects
+    let isMultiRepo = false;
+    if (!continueExisting && !isCI) {
+      spinner.stop();
+      isMultiRepo = await confirm({
+        message: 'Will this project use multiple repositories? (microservices, umbrella)',
+        default: false
+      });
+      spinner.start('Configuring project...');
     }
 
     // Provider auto-detection from .git/config (silent, no prompts)
@@ -379,6 +414,12 @@ export async function initCommand(
           };
         }
 
+        // Multi-repo structure from greenfield question
+        if (isMultiRepo) {
+          config.repository = { ...config.repository, structure: 'multiple' };
+          config.project = { ...config.project, structureDeferred: false };
+        }
+
         fs.writeJsonSync(configPath, config, { spaces: 2 });
       } catch (err) {
         console.log(chalk.yellow('   ⚠ Could not update config defaults (non-critical)'));
@@ -441,6 +482,15 @@ export async function initCommand(
         });
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;
+      }
+
+      // Auto-install Anthropic's skill-creator (non-blocking)
+      if (!continueExisting) {
+        try {
+          await ensureSkillCreator(targetDir);
+        } catch {
+          // Non-blocking — init continues regardless
+        }
       }
 
       // Enable agent teams env var
@@ -573,4 +623,112 @@ async function installNonClaudeAdapter(
   } catch {
     spinner.warn('Could not install core plugin');
   }
+
+  // Copy marketplace plugin skills from local Claude cache (skill-creator, frontend-design, etc.)
+  if (adapter.supportsPlugins()) {
+    try {
+      spinner.start('Checking for marketplace skills...');
+      const marketplaceSkillsCopied = await copyMarketplaceSkills(targetDir, toolName);
+      if (marketplaceSkillsCopied > 0) {
+        spinner.succeed(`${marketplaceSkillsCopied} marketplace skill(s) copied`);
+      } else {
+        spinner.info('No marketplace skills found in local cache');
+      }
+    } catch {
+      // Non-critical — marketplace skills are optional
+    }
+  }
+}
+
+/**
+ * Copy marketplace plugin skills from ~/.claude/plugins/cache/ to the project's skills directory.
+ * This enables non-Claude tools to access skills like skill-creator, frontend-design, etc.
+ */
+async function copyMarketplaceSkills(targetDir: string, toolName: string): Promise<number> {
+  const homedir = os.homedir();
+  const marketplaceCacheDir = path.join(homedir, '.claude', 'plugins', 'cache', 'claude-plugins-official');
+
+  if (!fs.existsSync(marketplaceCacheDir)) {
+    return 0;
+  }
+
+  // Determine target skills directory based on tool
+  // MUST match each adapter's compilePlugin() target directory
+  const skillsDirMap: Record<string, string> = {
+    opencode: '.opencode/skills',
+    cursor: '.cursor/rules',
+    cline: '.cline/rules',
+    windsurf: '.windsurf/rules',
+    zed: '.rules',
+    continue: '.continue/rules',
+    copilot: '.github/instructions',
+    gemini: '.gemini',
+    jetbrains: '.aiassistant/rules',
+    amazonq: '.amazonq/rules',
+    aider: '.aider',
+    tabnine: '.tabnine/guidelines',
+    kimi: '.kimi/skills',
+    trae: '.trae/rules',
+    codex: '.codex/rules',
+    generic: '.agents/skills',
+  };
+
+  const skillsDir = path.join(targetDir, skillsDirMap[toolName] || '.agents/skills');
+  await fs.ensureDir(skillsDir);
+
+  let copied = 0;
+  let pluginDirs: string[];
+  try {
+    pluginDirs = fs.readdirSync(marketplaceCacheDir).filter(
+      (name: string) => !name.startsWith('.')
+    );
+  } catch {
+    return 0;
+  }
+
+  for (const pluginName of pluginDirs) {
+    // Security: skip directory names with path traversal or separators
+    if (pluginName.includes('..') || pluginName.includes(path.sep) || pluginName.includes('/')) continue;
+
+    try {
+      const pluginDir = path.join(marketplaceCacheDir, pluginName);
+      // Verify it's a real directory (not a symlink to somewhere else)
+      if (!fs.statSync(pluginDir).isDirectory()) continue;
+      // Ensure resolved path stays within the cache directory (symlink safety)
+      const resolvedPluginDir = nativeFs.realpathSync(pluginDir);
+      if (!resolvedPluginDir.startsWith(marketplaceCacheDir)) continue;
+
+      const versions = fs.readdirSync(pluginDir).filter((v: string) => {
+        if (v.startsWith('.') || v.includes('..') || v.includes(path.sep)) return false;
+        const vPath = path.join(pluginDir, v);
+        return fs.statSync(vPath).isDirectory();
+      });
+      if (versions.length === 0) continue;
+
+      // Sort versions to pick deterministically (last alphabetically)
+      versions.sort();
+      const latestVersion = versions[versions.length - 1];
+      const versionDir = path.join(pluginDir, latestVersion);
+
+      const skillsPath = path.join(versionDir, 'skills');
+      if (!fs.existsSync(skillsPath)) continue;
+
+      const skillNames = fs.readdirSync(skillsPath).filter((s: string) => {
+        if (s.includes('..') || s.includes(path.sep) || s.includes('/')) return false;
+        return fs.existsSync(path.join(skillsPath, s, 'SKILL.md'));
+      });
+
+      for (const skillName of skillNames) {
+        const skillMdPath = path.join(skillsPath, skillName, 'SKILL.md');
+        const targetFile = path.join(skillsDir, `marketplace-${pluginName}-${skillName}.md`);
+        fs.copySync(skillMdPath, targetFile, { overwrite: true });
+        copied++;
+      }
+    } catch {
+      // Skip individual plugin failures — continue with others
+      continue;
+    }
+  }
+
+  return copied;
 }

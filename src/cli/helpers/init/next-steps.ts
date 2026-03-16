@@ -10,6 +10,35 @@ import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import type { NextStepsContext } from './types.js';
 
+/**
+ * Map adapter names to user-friendly display names for skills-aware messaging.
+ */
+const SKILL_ADAPTER_DISPLAY_NAMES: Record<string, string> = {
+  opencode: 'OpenCode',
+  cursor: 'Cursor',
+  cline: 'Cline',
+  windsurf: 'Windsurf',
+  zed: 'Zed',
+  continue: 'Continue',
+  copilot: 'GitHub Copilot',
+  gemini: 'Gemini CLI',
+  jetbrains: 'JetBrains AI',
+  amazonq: 'Amazon Q',
+  aider: 'Aider',
+  tabnine: 'Tabnine',
+  kimi: 'Kimi CLI',
+  trae: 'Trae',
+  codex: 'Codex',
+};
+
+function isSkillBasedAdapter(adapterName: string): boolean {
+  return Object.prototype.hasOwnProperty.call(SKILL_ADAPTER_DISPLAY_NAMES, adapterName);
+}
+
+function getAdapterDisplayName(adapterName: string): string {
+  return SKILL_ADAPTER_DISPLAY_NAMES[adapterName] || adapterName;
+}
+
 function getNextStepsStrings(language: SupportedLanguage) {
   const strings: Record<SupportedLanguage, {
     pluginsReady: string;
@@ -149,6 +178,30 @@ export function showNextSteps(
     } else {
       console.log(`   ${stepNumber}. ${chalk.green('✔')} ${chalk.white(strings.pluginsReady)}`);
     }
+    console.log('');
+    stepNumber++;
+  } else if (isSkillBasedAdapter(adapterName)) {
+    // Skills-aware messaging for non-Claude tools that support skills
+    const displayName = getAdapterDisplayName(adapterName);
+    console.log(`   ${chalk.green('✔')} ${chalk.white(`Skills installed for ${displayName}!`)}`);
+    console.log('');
+    console.log(`   ${chalk.white('Your AI tool can now discover SpecWeave workflows automatically.')}`);
+    console.log('');
+    console.log(`   ${chalk.cyan('Quick start:')}`);
+    console.log(`     1. Open your project in ${chalk.white(displayName)}`);
+    console.log(`     2. Ask: ${chalk.gray('"Create an increment for [your feature]"')}`);
+    console.log(`     3. The AI will use specweave CLI commands`);
+    console.log('');
+    console.log(`   ${chalk.cyan('Available CLI commands:')}`);
+    console.log(`     ${chalk.white('specweave create-increment')}  ${chalk.gray('Create a new feature increment')}`);
+    console.log(`     ${chalk.white('specweave status')}            ${chalk.gray('Check current progress')}`);
+    console.log(`     ${chalk.white('specweave validate')}          ${chalk.gray('Run quality checks')}`);
+    console.log(`     ${chalk.white('specweave complete')}          ${chalk.gray('Close an increment')}`);
+    console.log('');
+    stepNumber++;
+  } else if (adapterName === 'generic') {
+    // Generic adapter: mention skills in .agents/skills/ plus existing AGENTS.md messaging
+    console.log(`   ${chalk.green('✔')} ${chalk.white('Skills installed in .agents/skills/')}`);
     console.log('');
     stepNumber++;
   }

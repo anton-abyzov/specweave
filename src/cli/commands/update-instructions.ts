@@ -16,6 +16,7 @@ import {
 } from '../helpers/init/instruction-file-merger.js';
 import { findSourceDir } from '../helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
+import { ensureSkillCreator } from '../helpers/init/skill-creator-installer.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -106,6 +107,15 @@ export async function updateInstructionsCommand(
 
   if (options.dryRun) {
     console.log(chalk.yellow('\n  ⚠ Dry run - no files were modified'));
+  }
+
+  // Auto-install Anthropic's skill-creator if missing (non-blocking)
+  if (!options.dryRun) {
+    try {
+      await ensureSkillCreator(projectPath);
+    } catch {
+      // Non-blocking — update-instructions continues regardless
+    }
   }
 
   console.log('');

@@ -9,6 +9,16 @@
 
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 import { generateIssueBody } from './github-issue-body-generator.js';
+import { SyncError } from '../../../src/core/errors/sync-error.js';
+
+/**
+ * Extract HTTP status code from gh CLI stderr output.
+ * gh CLI typically outputs "HTTP 401: Bad credentials" or similar.
+ */
+function parseHttpStatus(stderr: string): number {
+  const match = stderr.match(/HTTP\s+(\d{3})/);
+  return match ? parseInt(match[1], 10) : 0;
+}
 
 export interface UserStoryForSync {
   id: string;
@@ -109,7 +119,8 @@ async function searchIssueByPrefix(
   ], { env });
 
   if (!res.success) {
-    throw new Error(`Search failed: ${res.stderr}`);
+    const status = parseHttpStatus(res.stderr);
+    throw new SyncError('github', status, res.stderr, `Search failed: ${res.stderr}`);
   }
 
   const issues = JSON.parse(res.stdout);
@@ -137,7 +148,8 @@ async function createIssue(
   const res = await execFileNoThrow('gh', args, { env });
 
   if (!res.success) {
-    throw new Error(`Create failed: ${res.stderr}`);
+    const status = parseHttpStatus(res.stderr);
+    throw new SyncError('github', status, res.stderr, `Create failed: ${res.stderr}`);
   }
 
   return JSON.parse(res.stdout);
@@ -161,7 +173,8 @@ async function updateIssue(
   const res = await execFileNoThrow('gh', args, { env });
 
   if (!res.success) {
-    throw new Error(`Update failed: ${res.stderr}`);
+    const status = parseHttpStatus(res.stderr);
+    throw new SyncError('github', status, res.stderr, `Update failed: ${res.stderr}`);
   }
 
   return JSON.parse(res.stdout);

@@ -177,6 +177,18 @@ export function formatMilestoneTitle(fsId: string, title: string): string {
 }
 
 /**
+ * Append a platform suffix to an existing ID string.
+ *
+ * @example
+ * formatSuffixedId('FS-001', 'github') → 'FS-001G'
+ * formatSuffixedId('FS-001', undefined) → 'FS-001'
+ */
+export function formatSuffixedId(id: string, platform: Platform | undefined): string {
+  if (!platform) return id;
+  return `${id}${SUFFIX_MAP[platform]}`;
+}
+
+/**
  * Parse an issue title in the new "US-XXX: Title" format.
  */
 export function parseIssueTitle(title: string): { usId: string; title: string } | null {

@@ -161,6 +161,21 @@ adapters:
     market_share: 10%
     priority: P1
 
+  - name: opencode
+    description: "OpenCode adapter - Skills installed in .opencode/skills/"
+    automation_level: semi
+    status: active
+    directory: opencode
+    features:
+      - .opencode/skills/*.md skill files auto-loaded by OpenCode
+      - MCP support for extensibility
+      - CLI-based AI coding tool
+    requirements:
+      - OpenCode CLI installed
+      - Node.js >= 18.0.0
+    market_share: 5%
+    priority: P2
+
   - name: zed
     description: "Zed adapter - Skills installed in .rules/"
     automation_level: semi
@@ -231,6 +246,35 @@ adapters:
     market_share: 5%
     priority: P2
 
+  - name: kimi
+    description: "Kimi CLI adapter - Skills installed in .kimi/skills/"
+    automation_level: semi
+    status: active
+    directory: kimi
+    features:
+      - .kimi/skills/*.md skill files
+      - Moonshot AI coding assistant
+    requirements:
+      - Kimi CLI installed
+      - Node.js >= 18.0.0
+    market_share: 5%
+    priority: P2
+
+  - name: trae
+    description: "Trae adapter - Skills installed in .trae/rules/"
+    automation_level: semi
+    status: active
+    directory: trae
+    features:
+      - .trae/rules/*.md skill files
+      - ByteDance AI coding assistant
+      - MCP support
+    requirements:
+      - Trae installed
+      - Node.js >= 18.0.0
+    market_share: 5%
+    priority: P2
+
 # Future adapters (P2/P3)
 future_adapters: []
 
@@ -245,11 +289,14 @@ capabilities:
     windsurf: via_rules_folder
     continue: via_rules_folder
     cline: via_rules_folder
+    opencode: via_rules_folder
     zed: via_rules_folder
     amazonq: via_rules_folder
     jetbrains: via_rules_folder
     aider: via_rules_folder
     tabnine: via_rules_folder
+    kimi: via_rules_folder
+    trae: via_rules_folder
     generic: via_rules_folder
 
   agents:
@@ -261,11 +308,14 @@ capabilities:
     windsurf: via_agents_md
     continue: via_agents_md
     cline: via_agents_md
+    opencode: via_agents_md
     zed: via_agents_md
     amazonq: via_agents_md
     jetbrains: via_agents_md
     aider: via_agents_md
     tabnine: via_agents_md
+    kimi: via_agents_md
+    trae: via_agents_md
     generic: via_agents_md
 
   hooks:
@@ -277,11 +327,14 @@ capabilities:
     windsurf: none
     continue: none
     cline: none
+    opencode: none
     zed: none
     amazonq: none
     jetbrains: none
     aider: none
     tabnine: none
+    kimi: none
+    trae: none
     generic: none
 
   instruction_file:
@@ -293,11 +346,14 @@ capabilities:
     windsurf: .windsurf/rules/
     continue: .continue/rules/
     cline: .cline/rules/
+    opencode: .opencode/skills/
     zed: .rules/
     amazonq: .amazonq/rules/
     jetbrains: .aiassistant/rules/
     aider: .aider/
     tabnine: .tabnine/guidelines/
+    kimi: .kimi/skills/
+    trae: .trae/rules/
     generic: AGENTS.md
 
   context_manifests:
@@ -309,11 +365,14 @@ capabilities:
     windsurf: manual_reference
     continue: manual_reference
     cline: manual_reference
+    opencode: manual_reference
     zed: manual_reference
     amazonq: manual_reference
     jetbrains: manual_reference
     aider: manual_reference
     tabnine: manual_reference
+    kimi: manual_reference
+    trae: manual_reference
     generic: manual_copy_paste
 
 # Target market coverage

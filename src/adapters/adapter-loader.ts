@@ -22,6 +22,9 @@ import { AmazonQAdapter } from './amazonq/adapter.js';
 import { JetBrainsAdapter } from './jetbrains/adapter.js';
 import { AiderAdapter } from './aider/adapter.js';
 import { TabnineAdapter } from './tabnine/adapter.js';
+import { KimiAdapter } from './kimi/adapter.js';
+import { TraeAdapter } from './trae/adapter.js';
+import { OpenCodeAdapter } from './opencode/adapter.js';
 import { getDirname } from '../utils/esm-helpers.js';
 import { detectClaudeCli } from '../utils/claude-cli-detector.js';
 
@@ -73,6 +76,9 @@ export class AdapterLoader {
     this.adapters.set('jetbrains', new JetBrainsAdapter());
     this.adapters.set('aider', new AiderAdapter());
     this.adapters.set('tabnine', new TabnineAdapter());
+    this.adapters.set('kimi', new KimiAdapter());
+    this.adapters.set('trae', new TraeAdapter());
+    this.adapters.set('opencode', new OpenCodeAdapter());
   }
 
   /**
@@ -141,7 +147,7 @@ export class AdapterLoader {
     }
 
     // Claude not available - check other tools (passive indicators)
-    const detectionOrder = ['cursor', 'windsurf', 'continue', 'cline', 'zed', 'gemini', 'codex', 'copilot', 'amazonq', 'jetbrains', 'aider', 'tabnine'];
+    const detectionOrder = ['cursor', 'windsurf', 'continue', 'cline', 'opencode', 'zed', 'gemini', 'codex', 'copilot', 'amazonq', 'jetbrains', 'aider', 'tabnine', 'kimi', 'trae'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);
@@ -263,7 +269,7 @@ export class AdapterLoader {
 
       const adapter = this.adapters.get(explicitChoice);
       if (!adapter) {
-        throw new Error(`Invalid adapter: ${explicitChoice}. Valid values: claude, cursor, copilot, windsurf, continue, cline, zed, gemini, codex, amazonq, jetbrains, aider, tabnine, generic`);
+        throw new Error(`Invalid adapter: ${explicitChoice}. Valid values: claude, cursor, copilot, windsurf, continue, cline, opencode, zed, gemini, codex, amazonq, jetbrains, aider, tabnine, kimi, trae, generic`);
       }
       return adapter;
     }

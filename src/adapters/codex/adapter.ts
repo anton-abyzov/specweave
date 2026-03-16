@@ -70,6 +70,7 @@ export class CodexAdapter extends AdapterBase {
     // Ensure .codex directory exists
     const codexDir = path.join(options.projectPath, '.codex');
     await fs.ensureDir(codexDir);
+    await fs.ensureDir(path.join(codexDir, 'rules'));
 
     // Generate AGENTS.md
     const agentsMdPath = path.join(options.projectPath, 'AGENTS.md');

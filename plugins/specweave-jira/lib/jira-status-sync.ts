@@ -14,6 +14,10 @@
 import axios, { AxiosInstance } from 'axios';
 import { detectDeploymentType, getApiBaseUrl } from './jira-deployment-detector.js';
 import { toCommentBody, type AdfDocument, type AdfNode } from './content-format-adapter.js';
+import { CircuitBreakerRegistry } from '../../../src/core/sync/circuit-breaker-registry.js';
+import { SyncRetryQueue } from '../../../src/core/sync/sync-retry-queue.js';
+import { SyncError } from '../../../src/core/errors/sync-error.js';
+import { LockManager } from '../../../src/utils/lock-manager.js';
 
 /**
  * External status representation (JIRA-specific)
@@ -34,6 +38,16 @@ interface JiraTransition {
   };
 }
 
+export interface JiraStatusSyncOptions {
+  circuitBreakerRegistry?: CircuitBreakerRegistry;
+  retryQueue?: SyncRetryQueue;
+  incrementId?: string;
+  featureId?: string;
+  projectPath?: string;
+  projectName?: string;
+  lockDir?: string;
+}
+
 /**
  * JIRA Status Sync
  *
@@ -43,15 +57,32 @@ export class JiraStatusSync {
   private client: AxiosInstance;
   private domain: string;
   private projectKey: string;
+  private circuitBreakerRegistry?: CircuitBreakerRegistry;
+  private retryQueue?: SyncRetryQueue;
+  private lockManager?: LockManager;
+  private incrementId: string;
+  private featureId: string;
+  private projectPath: string;
+  private projectName: string;
 
   constructor(
     domain: string,
     email: string,
     apiToken: string,
-    projectKey: string
+    projectKey: string,
+    options?: JiraStatusSyncOptions,
   ) {
     this.domain = domain;
     this.projectKey = projectKey;
+    this.circuitBreakerRegistry = options?.circuitBreakerRegistry;
+    this.retryQueue = options?.retryQueue;
+    this.incrementId = options?.incrementId ?? '';
+    this.featureId = options?.featureId ?? '';
+    this.projectPath = options?.projectPath ?? '';
+    this.projectName = options?.projectName ?? '';
+    if (options?.lockDir) {
+      this.lockManager = new LockManager(options.lockDir);
+    }
 
     // Create JIRA API client — baseURL set dynamically via init()
     this.client = axios.create({
@@ -65,6 +96,70 @@ export class JiraStatusSync {
         'Content-Type': 'application/json'
       }
     });
+  }
+
+  /**
+   * Execute fn under file lock (if lockManager configured).
+   */
+  private async withLock<T>(fn: () => Promise<T>): Promise<T> {
+    if (!this.lockManager) return fn();
+    const acquired = await this.lockManager.acquire();
+    if (!acquired) {
+      throw new SyncError('jira', 0, '', 'Failed to acquire JIRA sync lock');
+    }
+    try {
+      return await fn();
+    } finally {
+      await this.lockManager.release();
+    }
+  }
+
+  /**
+   * Check circuit breaker before making API calls.
+   * Throws if breaker is open.
+   */
+  private checkCircuitBreaker(): void {
+    if (!this.circuitBreakerRegistry) return;
+    const breaker = this.circuitBreakerRegistry.get('jira');
+    if (!breaker.canSync()) {
+      throw new SyncError('jira', 0, '', 'Circuit breaker open for jira');
+    }
+  }
+
+  /**
+   * Record success on circuit breaker.
+   */
+  private recordSuccess(): void {
+    if (!this.circuitBreakerRegistry) return;
+    this.circuitBreakerRegistry.get('jira').recordSuccess();
+  }
+
+  /**
+   * Handle API error: record failure on circuit breaker, enqueue retry, throw SyncError.
+   */
+  private async handleApiError(error: unknown, operation: string): Promise<never> {
+    const httpStatus = (error as any)?.response?.status ?? 0;
+    const responseBody = JSON.stringify((error as any)?.response?.data ?? '');
+    const detail = (error as Error)?.message ?? String(error);
+
+    // Record failure on circuit breaker
+    if (this.circuitBreakerRegistry) {
+      this.circuitBreakerRegistry.get('jira').recordFailure();
+    }
+
+    // Enqueue for retry on server errors (5xx)
+    if (this.retryQueue && httpStatus >= 500) {
+      await this.retryQueue.enqueue({
+        incrementId: this.incrementId,
+        provider: 'jira',
+        featureId: this.featureId,
+        projectPath: this.projectPath,
+        projectName: this.projectName,
+        error: `${httpStatus} ${operation}: ${detail}`,
+      });
+    }
+
+    throw new SyncError('jira', httpStatus, responseBody, detail);
   }
 
   /**
@@ -85,11 +180,18 @@ export class JiraStatusSync {
    * @returns Current issue status
    */
   async getStatus(issueKey: string): Promise<ExternalStatus> {
-    const response = await this.client.get(`/issue/${issueKey}`);
-
-    return {
-      state: response.data.fields.status.name
-    };
+    return this.withLock(async () => {
+      this.checkCircuitBreaker();
+      try {
+        const response = await this.client.get(`/issue/${issueKey}`);
+        this.recordSuccess();
+        return {
+          state: response.data.fields.status.name
+        };
+      } catch (error) {
+        return this.handleApiError(error, 'getStatus');
+      }
+    });
   }
 
   /**
@@ -106,33 +208,41 @@ export class JiraStatusSync {
    * @returns true if transition succeeded, false if not available
    */
   async updateStatus(issueKey: string, status: ExternalStatus): Promise<boolean> {
-    // 1. Get available transitions for this issue
-    const transitionsResponse = await this.client.get(`/issue/${issueKey}/transitions`);
-    const transitions: JiraTransition[] = transitionsResponse.data.transitions;
+    return this.withLock(async () => {
+      this.checkCircuitBreaker();
+      try {
+        // 1. Get available transitions for this issue
+        const transitionsResponse = await this.client.get(`/issue/${issueKey}/transitions`);
+        const transitions: JiraTransition[] = transitionsResponse.data.transitions;
 
-    // 2. Find transition that leads to desired status (case-insensitive)
-    const targetTransition = transitions.find(
-      (t) => t.to.name.toLowerCase() === status.state.toLowerCase()
-    );
+        // 2. Find transition that leads to desired status (case-insensitive)
+        const targetTransition = transitions.find(
+          (t) => t.to.name.toLowerCase() === status.state.toLowerCase()
+        );
 
-    if (!targetTransition) {
-      // Log warning instead of throwing - workflow may not support this transition
-      console.warn(
-        `⚠️  Cannot transition ${issueKey} to "${status.state}". ` +
-        `Available transitions: ${transitions.map(t => t.to.name).join(', ')}. ` +
-        `This may be expected if your JIRA workflow doesn't support this status.`
-      );
-      return false;
-    }
+        if (!targetTransition) {
+          // Log warning instead of throwing - workflow may not support this transition
+          console.warn(
+            `⚠️  Cannot transition ${issueKey} to "${status.state}". ` +
+            `Available transitions: ${transitions.map(t => t.to.name).join(', ')}. ` +
+            `This may be expected if your JIRA workflow doesn't support this status.`
+          );
+          return false;
+        }
 
-    // 3. Execute transition
-    await this.client.post(`/issue/${issueKey}/transitions`, {
-      transition: {
-        id: targetTransition.id
+        // 3. Execute transition
+        await this.client.post(`/issue/${issueKey}/transitions`, {
+          transition: {
+            id: targetTransition.id
+          }
+        });
+
+        this.recordSuccess();
+        return true;
+      } catch (error) {
+        return this.handleApiError(error, 'updateStatus');
       }
     });
-
-    return true;
   }
 
   /**
@@ -147,17 +257,25 @@ export class JiraStatusSync {
     oldStatus: string,
     newStatus: string
   ): Promise<void> {
-    const rawBody = `*Status Update*\n\n` +
-      `SpecWeave status changed:\n` +
-      `* *From*: ${oldStatus}\n` +
-      `* *To*: ${newStatus}\n` +
-      `* *When*: ${new Date().toISOString()}\n\n` +
-      `_Synced from SpecWeave_`;
+    return this.withLock(async () => {
+      this.checkCircuitBreaker();
+      try {
+        const rawBody = `*Status Update*\n\n` +
+          `SpecWeave status changed:\n` +
+          `* *From*: ${oldStatus}\n` +
+          `* *To*: ${newStatus}\n` +
+          `* *When*: ${new Date().toISOString()}\n\n` +
+          `_Synced from SpecWeave_`;
 
-    const body = toCommentBody(rawBody, this.domain);
+        const body = toCommentBody(rawBody, this.domain);
 
-    await this.client.post(`/issue/${issueKey}/comment`, {
-      body
+        await this.client.post(`/issue/${issueKey}/comment`, {
+          body
+        });
+        this.recordSuccess();
+      } catch (error) {
+        return this.handleApiError(error, 'postStatusComment');
+      }
     });
   }
 
@@ -177,6 +295,8 @@ export class JiraStatusSync {
     issueKey: string,
     acStates: Array<{ id: string; description: string; completed: boolean }>,
   ): Promise<boolean> {
+    return this.withLock(async () => {
+    this.checkCircuitBreaker();
     const total = acStates.length;
     const completed = acStates.filter(ac => ac.completed).length;
     const percentage = Math.round((completed / total) * 100);
@@ -232,7 +352,9 @@ export class JiraStatusSync {
     };
 
     await this.client.post(`/issue/${issueKey}/comment`, { body });
+    this.recordSuccess();
     return true;
+    });
   }
 }
 

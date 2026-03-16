@@ -290,7 +290,7 @@ Claude: *automatically uses React Hook Form + Zod*
 
 **[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://verified-skill.com/docs/skills/extensible/skill-generation)**
 
-**Auto-generate project skills:** SpecWeave detects recurring patterns across increment closures and can generate project-local skills on demand via `/sw:skill-gen`. [Learn more](https://verified-skill.com/docs/skills/extensible/skill-generation).
+**AI-Powered Skill Generation:** SpecWeave automatically detects recurring patterns across your project's living docs using LLM analysis -- not hardcoded keyword matching. When patterns mature, it suggests generating project-specific Claude Code skills complete with evals and benchmarks. Use `--seed` mode to bootstrap instantly on existing projects. [Learn more](https://verified-skill.com/docs/skills/extensible/skill-generation).
 
 ---
 
