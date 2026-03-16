@@ -222,3 +222,7 @@ These excuses signal you're about to break TDD discipline. Recognize them and re
 - Tests should be independent and isolated
 
 TDD implementation for: $ARGUMENTS
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#tdd-cycle)

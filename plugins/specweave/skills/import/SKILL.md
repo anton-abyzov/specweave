@@ -184,3 +184,7 @@ JIRA_EMAIL=user@example.com
 JIRA_API_TOKEN=...
 ADO_PAT=...
 ```
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#import)

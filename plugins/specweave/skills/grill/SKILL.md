@@ -423,3 +423,7 @@ The grill is uncomfortable. That's the point. Better to sweat here than in front
 
 ---
 
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#grill)

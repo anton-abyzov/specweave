@@ -68,3 +68,7 @@ After generation:
 4. Ensure comprehensive coverage"
 
 Test requirements: $ARGUMENTS
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#tdd-red)

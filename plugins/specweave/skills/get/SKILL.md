@@ -110,3 +110,7 @@ If the user says "restore repos", "clone all child repos", or "set up on new mac
 1. Read `.specweave/config.json` → `umbrella.childRepos`
 2. For each child repo that has a `githubUrl` or derivable URL and whose directory is missing, run `specweave get <owner/repo> --no-init`
 3. Report which repos were cloned and which were already present
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#get)

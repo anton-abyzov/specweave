@@ -325,6 +325,34 @@ export class LifecycleHookDispatcher {
         result.syncErrors.push(`Retry queue drain failed: ${msg}`);
         LifecycleHookDispatcher.logError('onIncrementDone:retryDrain', error);
       }
+
+      // STEP 4: Signal collection + suggestion (non-blocking, error-isolated)
+      // Detects recurring patterns from living docs and optionally suggests skill generation.
+      // Respects skillGen.detection config — "off" skips entirely.
+      try {
+        const configPath = `${projectRoot}/.specweave/config.json`;
+        let detection = 'on-close';
+        try {
+          const { readFile: rf } = await import('fs/promises');
+          const cfg = JSON.parse(await rf(configPath, 'utf-8'));
+          detection = cfg?.skillGen?.detection ?? 'on-close';
+        } catch {
+          // Config missing — use default
+        }
+
+        if (detection !== 'off') {
+          const { SignalCollector } = await import('../skill-gen/signal-collector.js');
+          const { SuggestionEngine } = await import('../skill-gen/suggestion-engine.js');
+
+          const collector = new SignalCollector(projectRoot);
+          await collector.collect(incrementId);
+
+          const engine = new SuggestionEngine(projectRoot);
+          await engine.evaluate();
+        }
+      } catch (error) {
+        LifecycleHookDispatcher.logError('onIncrementDone:skillSignals', error);
+      }
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       result.syncErrors.push(`Hook dispatch failed: ${msg}`);

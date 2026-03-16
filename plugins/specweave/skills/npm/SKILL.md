@@ -935,3 +935,7 @@ Skip this step entirely — there's only one repo and it was already pushed.
 | Local publish | `--only` | `rc.1`->`rc.2` (smart) | No | No | No | Yes |
 | Local bump | `--only --local` | `rc.1`->`rc.2` (smart) | No | No | No | No |
 | **PROMOTE** | `--stable` | `rc.X`->`X.Y.Z+1` | Yes | Yes | Yes | Yes |
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#npm)
