@@ -57,6 +57,20 @@ SpecWeave uses a two-tier model strategy:
 
 ---
 
+## Recommended: `/model opusplan`
+
+Claude Code provides a hybrid model alias that works perfectly with SpecWeave's plan-mode-first workflow:
+
+```bash
+/model opusplan
+```
+
+This sets Opus 4.6 for plan mode (specs, architecture, analysis) and Sonnet 4.6 for execution (implementation, tests). Since SpecWeave mandates plan mode for all non-trivial work, you automatically get Opus reasoning where it matters most and Sonnet speed+savings during implementation.
+
+See the [Cost Optimization Guide](./cost-optimization.md#4-use-model-opusplan-for-optimal-cost-quality-balance) for detailed savings estimates.
+
+---
+
 **See full content at**: https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/public/guides/model-selection.md
 
 *Due to length, truncating here. File contains complete guide with agent classifications, phase detection algorithm, decision examples, troubleshooting, and FAQ.*

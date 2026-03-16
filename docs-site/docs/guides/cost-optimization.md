@@ -295,7 +295,34 @@ Task tool: agent=diagrams, model=haiku
 # Look at "Most Expensive" agent
 ```
 
-### 4. Use Haiku for Iteration
+### 4. Use `/model opusplan` for Optimal Cost-Quality Balance
+
+Claude Code supports a hybrid model alias that pairs perfectly with SpecWeave's plan-mode-first workflow:
+
+```bash
+/model opusplan
+```
+
+**What it does**: Automatically uses **Opus 4.6** in plan mode and **Sonnet 4.6** for execution.
+
+**Why it's ideal for SpecWeave**:
+- SpecWeave **mandates plan mode** for all non-trivial work (`/sw:increment`, `/sw:plan`, architecture decisions)
+- Planning and spec design get Opus-level reasoning — the highest quality where it matters most
+- Implementation and execution switch to Sonnet — fast, capable, and ~40% cheaper than Opus
+- No manual model switching needed — Claude Code handles the transition automatically
+
+**Cost impact** (typical SpecWeave increment):
+
+| Phase | Without opusplan | With opusplan | Savings |
+|-------|-----------------|---------------|---------|
+| Planning (spec, plan, tasks) | $5.00 (Opus) | $5.00 (Opus) | — |
+| Implementation | $15.00 (Opus) | $9.00 (Sonnet) | $6.00 |
+| Review/closure | $5.00 (Opus) | $3.00 (Sonnet) | $2.00 |
+| **Total** | **$25.00** | **$17.00** | **$8.00 (32%)** |
+
+> **Tip**: Set `opusplan` once at the start of your session and forget about it. SpecWeave's own intelligent model selection for subagents stacks on top — you get two layers of cost optimization.
+
+### 5. Use Haiku for Iteration
 
 When iterating rapidly:
 ```bash
@@ -371,13 +398,19 @@ Since we store NO personal data:
 
 ### Want More Aggressive Savings
 
-**Option 1**: Use more execution agents
+**Option 1**: Use `/model opusplan` — Opus for planning, Sonnet for execution
+```bash
+/model opusplan
+```
+Best of both worlds: Opus thinks, Sonnet builds. See [Best Practice #4](#4-use-model-opusplan-for-optimal-cost-quality-balance) for details.
+
+**Option 2**: Use more execution agents
 ```bash
 # Instead of architect (Sonnet)
 /specweave:do with agent=frontend  # Uses Haiku
 ```
 
-**Option 2**: Force Haiku for simple planning
+**Option 3**: Force Haiku for simple planning
 ```bash
 /specweave:increment --model haiku "simple feature"
 ```
