@@ -1,5 +1,5 @@
 ---
-description: Orchestrate multi-agent parallel development with domain-specialized agents. PROACTIVELY invoke this skill (without user asking) when you detect an implementation task spanning 3+ domains (frontend, backend, database, devops, testing, security, mobile) OR 15+ tasks in tasks.md. Warn the user about higher token cost but recommend it for quality. Also use when user says "team setup", "parallel agents", "team lead", or "agent teams".
+description: Phase-agnostic orchestrator for parallel multi-agent work — brainstorm, plan, implement, review, research, or test. Auto-detects mode from intent. Use for implementation (3+ domains or 15+ tasks), brainstorming (multiple perspectives), parallel planning (PM + Architect), code review (delegates to /sw:code-reviewer), research (multiple topics), or testing (parallel test layers). Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "brainstorm with agents", "plan in parallel", "review code", "research this".
 hooks:
   PreToolUse:
     - matcher: TeamCreate
@@ -62,12 +62,164 @@ hooks:
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--dry-run` | Show proposed agent plan without launching | false |
+| `--mode` | Force operating mode: `brainstorm`, `plan`, `implement`, `review`, `research`, `test` | auto-detect |
 | `--domains` | Override domain detection (e.g., `--domains frontend,backend,testing`) | auto-detect |
 | `--max-agents` | Maximum number of concurrent agents | 6 |
 
 ---
 
-## 0. Increment Pre-Flight (CONDITIONAL)
+## 0. Mode Detection (BEFORE Increment Pre-Flight)
+
+**Detect operating mode FIRST. This determines the entire workflow path.**
+
+### Detection Rules (priority order)
+
+1. **Explicit flag**: `--mode brainstorm|plan|implement|review|research|test`
+2. **team_name prefix**: `review-*`, `brainstorm-*`, `research-*`, `plan-*`, `test-*`
+3. **Intent keywords** in the user's request:
+
+| Keywords | Mode | Go To |
+|----------|------|-------|
+| "brainstorm", "ideate", "explore ideas", "what if", "pros and cons" | BRAINSTORM | Section 0a |
+| "plan", "spec", "design", "architect", "define requirements" | PLANNING | Section 0b |
+| "implement", "build", "code", "develop" *(or default)* | IMPLEMENTATION | Section 1 |
+| "review", "audit", "check code", "review PR", "code quality" | REVIEW | Section 0c |
+| "research", "investigate", "analyze", "explore codebase" | RESEARCH | Section 0d |
+| "test", "write tests", "test strategy", "test coverage" | TESTING | Section 0e |
+
+4. **Default**: IMPLEMENTATION mode if no keywords match.
+
+### Mode Configuration
+
+| Mode | Increment? | Agent Templates | Coordination | Output |
+|------|-----------|-----------------|--------------|--------|
+| BRAINSTORM | No | brainstorm-advocate, brainstorm-critic, brainstorm-pragmatist | Parallel → synthesize | Decision matrix |
+| PLANNING | Creates one | pm, architect (+ optional security reviewer) | PM first → Architect parallel | spec.md, plan.md, tasks.md |
+| IMPLEMENTATION | Required | backend, frontend, database, testing, security | Contract-first phases | Working code |
+| REVIEW | Optional | Delegates to /sw:code-reviewer | Parallel | Review report |
+| RESEARCH | No | researcher (1-3 instances) | Parallel → merge | Research report |
+| TESTING | Required | testing (split by layer) | Parallel | Test suites |
+
+---
+
+### 0a. BRAINSTORM Mode
+
+**team_name**: `brainstorm-{topic-slug}`
+
+Skip increment pre-flight entirely. Brainstorm doesn't need a spec — it explores possibilities.
+
+1. Create team: `TeamCreate({ team_name: "brainstorm-{slug}", description: "Brainstorm: {topic}" })`
+2. Read agent templates from `agents/brainstorm-advocate.md`, `agents/brainstorm-critic.md`, `agents/brainstorm-pragmatist.md`
+3. Replace `[BRAINSTORM_QUESTION]` with the user's question/topic
+4. Spawn all 3 agents in parallel via `Task()` with `mode: "bypassPermissions"`
+5. Collect `PERSPECTIVE_COMPLETE:` messages from all agents
+6. Synthesize perspectives into a decision matrix:
+   - Compare approaches across dimensions (effort, risk, value, alignment)
+   - Highlight points of agreement and disagreement
+   - Provide a ranked recommendation
+7. Offer handoff: "Ready to proceed? Run `/sw:increment` to formalize the chosen approach."
+8. Cleanup: shutdown agents, TeamDelete
+9. **STOP** — do not proceed to implementation sections
+
+---
+
+### 0b. PLANNING Mode
+
+**team_name**: `plan-{feature-slug}`
+
+Planning mode runs PM and Architect agents in parallel for richer, faster spec creation.
+
+1. **Check for existing increment**:
+   - If increment exists: read it as context, agents will update/enhance its spec and plan
+   - If no increment: create one (folder + metadata.json only, agents will write spec/plan)
+
+2. **Phase 1 — PM Agent** (upstream):
+   - Read `agents/pm.md`, replace `[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`, `[FEATURE_DESCRIPTION]`
+   - Spawn via `Task()` with `mode: "bypassPermissions"`
+   - PM writes spec.md with user stories and ACs
+   - Wait for PM's `PLAN_READY:` or `COMPLETION:` message
+
+3. **Phase 2 — Architect + Security** (parallel, after PM):
+   - Read `agents/architect.md`, replace placeholders, spawn Architect agent
+   - Optionally read `agents/reviewer-security.md` from team-lead agents, replace `[REVIEW_TARGET]` with the spec, spawn Security reviewer
+   - Both run in parallel: Architect writes plan.md, Security reviewer flags design-level vulnerabilities
+   - Wait for both `COMPLETION:` messages
+
+4. **Post-planning**:
+   - Run `specweave sync-living-docs {increment-id}` to sync external tools
+   - Present the spec + plan summary to the user
+   - Recommend execution strategy: `/sw:do`, `/sw:auto`, or `/sw:team-lead` (implementation mode)
+
+5. Cleanup: shutdown agents, TeamDelete
+6. **STOP** — do not proceed to implementation sections
+
+---
+
+### 0c. REVIEW Mode
+
+**Delegates entirely to `/sw:code-reviewer`.**
+
+Team-lead does NOT spawn its own reviewer agents for review mode. The code-reviewer skill handles its own orchestration with 6 specialized reviewers.
+
+```typescript
+Skill({ skill: "sw:code-reviewer", args: "<user's review target or flags>" })
+```
+
+Pass through any arguments the user provided (--pr N, --changes, --cross-repo, path).
+
+**STOP** after the skill completes — do not proceed to implementation sections.
+
+---
+
+### 0d. RESEARCH Mode
+
+**team_name**: `research-{topic-slug}`
+
+Skip increment pre-flight. Research is exploratory — no spec needed.
+
+1. Create team: `TeamCreate({ team_name: "research-{slug}", description: "Research: {topic}" })`
+2. **Determine research agents**:
+   - Single topic: spawn 1 researcher from `agents/researcher.md`
+   - Multi-faceted topic: spawn 2-3 researchers with different scopes
+     (e.g., "research auth" → one agent on OAuth providers, one on session management, one on security best practices)
+3. Replace `[RESEARCH_TOPIC]` and `[RESEARCH_SCOPE]` in each agent prompt
+4. Spawn all researchers in parallel via `Task()` with `mode: "bypassPermissions"`
+5. Collect `RESEARCH_COMPLETE:` messages
+6. Merge findings into a unified research report:
+   - Cross-reference findings between agents
+   - Resolve contradictions
+   - Produce ranked recommendations
+7. Offer handoff: `/sw:increment` (to act on findings) or `/sw:brainstorm` (to explore approaches)
+8. Cleanup: shutdown agents, TeamDelete
+9. **STOP** — do not proceed to implementation sections
+
+---
+
+### 0e. TESTING Mode
+
+**team_name**: `test-{increment-id}`
+
+Testing mode requires an increment (it needs to know WHAT to test).
+
+1. **Verify increment exists** (same as implementation mode — see below)
+2. Create team: `TeamCreate({ team_name: "test-{id}", description: "Testing: {increment}" })`
+3. Spawn testing agents split by layer:
+   - **Unit test agent**: read `agents/testing.md`, override scope to unit tests only
+   - **E2E test agent**: read `agents/testing.md`, override scope to E2E tests only
+   - Split scope via the agent prompt, not via separate templates
+4. Spawn both in parallel via `Task()` with `mode: "bypassPermissions"`
+5. Collect `COMPLETION:` messages
+6. Run test suites to verify: `npx vitest run` + `npx playwright test`
+7. Report results: pass/fail counts, coverage, uncovered ACs
+8. Cleanup: shutdown agents, TeamDelete
+9. **STOP** — do not proceed to implementation sections
+
+---
+
+## 0.5. Increment Pre-Flight (IMPLEMENTATION and TESTING modes only)
+
+**This section applies only to IMPLEMENTATION mode (default) and TESTING mode.**
+All other modes handle their own increment logic (or skip it entirely) in Section 0a-0e above.
 
 The team-lead works best with an increment (spec.md, plan.md, tasks.md) but can also run **without one** in free-form mode.
 
@@ -75,10 +227,9 @@ The team-lead works best with an increment (spec.md, plan.md, tasks.md) but can 
 
 **Free-form mode** (no increment needed) applies when:
 - `SPECWEAVE_NO_INCREMENT=1` is set (via `specweave team --no-increment`)
-- The team_name uses a non-implementation prefix (`review-*`, `brainstorm-*`, `analysis-*`)
 - The user explicitly opted out of increment creation
 
-In free-form mode: **skip the rest of Section 0** and proceed directly to Step 1. Agents will work from the natural language description instead of a spec. Note: without a spec, `/sw:done` closure is not available — the team-lead simply coordinates agent completion.
+In free-form mode: **skip the rest of Section 0.5** and proceed directly to Step 1. Agents will work from the natural language description instead of a spec. Note: without a spec, `/sw:done` closure is not available — the team-lead simply coordinates agent completion.
 
 ### Standard mode: Verify increment exists
 
