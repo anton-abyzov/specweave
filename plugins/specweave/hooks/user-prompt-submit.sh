@@ -963,6 +963,132 @@ if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; 
 fi
 
 # ==============================================================================
+# VSKILL MARKETPLACE PLUGIN RECOMMENDATION (v1.0.542)
+# ==============================================================================
+VSKILL_SUGGEST_MSG=""
+
+detect_vskill_recommendations() {
+  # Testing: Keyword matching logic is tested via TypeScript mirror (llm-plugin-detector.vskill.test.ts).
+  # Bash-specific behavior (grep -qwi word boundary, case/esac, TMPDIR markers) is validated manually.
+  local prompt
+  prompt=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  local suggestions=""
+  local match_count=0
+  local max_suggestions=3
+
+  # Note: On macOS, TMPDIR is per-session (/var/folders/...) so markers auto-reset.
+  # On Linux, TMPDIR often defaults to /tmp (shared), so markers may persist across sessions.
+  # This is an accepted trade-off — worst case, suggestions appear only once per reboot on Linux.
+
+  # --- mobile ---
+  # shortKeywords (word-boundary): ios, apk
+  # keywords (substring): testflight, app store, play store, react native, react-native, expo, mobile app, flutter, xcode, cocoapods, fastlane, app-store-connect, app deployment
+  if [[ $match_count -lt $max_suggestions ]]; then
+    local mobile_match="false"
+    if echo "$prompt" | grep -qwi 'ios'; then mobile_match="true"; fi
+    if [[ "$mobile_match" == "false" ]] && echo "$prompt" | grep -qwi 'apk'; then mobile_match="true"; fi
+    if [[ "$mobile_match" == "false" ]]; then
+      case "$prompt" in
+        *testflight*|*"app store"*|*"play store"*|*"react native"*|*react-native*|*expo*|*"mobile app"*|*flutter*|*xcode*|*cocoapods*|*fastlane*|*app-store-connect*|*"app deployment"*) mobile_match="true" ;;
+      esac
+    fi
+    if [[ "$mobile_match" == "true" ]]; then
+      if ! check_plugin_in_vskill_lock "mobile"; then
+        if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-mobile" ]]; then
+          touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-mobile" 2>/dev/null
+          suggestions="${suggestions}- **mobile** (App Store, TestFlight, mobile CI/CD): \`vskill install anton-abyzov/vskill --plugin mobile\`\n"
+          match_count=$((match_count + 1))
+        fi
+      fi
+    fi
+  fi
+
+  # --- google-workspace ---
+  # shortKeywords: (none)
+  # keywords (substring): google sheets, google docs, google drive, google slides, google calendar, google workspace, gmail api, sheets api
+  if [[ $match_count -lt $max_suggestions ]]; then
+    local gws_match="false"
+    case "$prompt" in
+      *"google sheets"*|*"google docs"*|*"google drive"*|*"google slides"*|*"google calendar"*|*"google workspace"*|*"gmail api"*|*"sheets api"*) gws_match="true" ;;
+    esac
+    if [[ "$gws_match" == "true" ]]; then
+      if ! check_plugin_in_vskill_lock "google-workspace"; then
+        if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-google-workspace" ]]; then
+          touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-google-workspace" 2>/dev/null
+          suggestions="${suggestions}- **google-workspace** (Gmail, Drive, Sheets, Docs, Calendar): \`vskill install anton-abyzov/vskill --plugin google-workspace\`\n"
+          match_count=$((match_count + 1))
+        fi
+      fi
+    fi
+  fi
+
+  # --- marketing ---
+  # shortKeywords: (none)
+  # keywords (substring): linkedin, instagram, social media, twitter, facebook, tiktok, content marketing, social post, blog post, newsletter, slack messaging
+  if [[ $match_count -lt $max_suggestions ]]; then
+    local mktg_match="false"
+    case "$prompt" in
+      *linkedin*|*instagram*|*"social media"*|*twitter*|*facebook*|*tiktok*|*"content marketing"*|*"social post"*|*"blog post"*|*newsletter*|*"slack messaging"*) mktg_match="true" ;;
+    esac
+    if [[ "$mktg_match" == "true" ]]; then
+      if ! check_plugin_in_vskill_lock "marketing"; then
+        if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-marketing" ]]; then
+          touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-marketing" 2>/dev/null
+          suggestions="${suggestions}- **marketing** (slack-messaging, social-media-posting): \`vskill install anton-abyzov/vskill --plugin marketing\`\n"
+          match_count=$((match_count + 1))
+        fi
+      fi
+    fi
+  fi
+
+  # --- productivity ---
+  # shortKeywords: (none)
+  # keywords (substring): notion, todoist, trello, asana, monday.com, obsidian, time tracking, project management, task management
+  if [[ $match_count -lt $max_suggestions ]]; then
+    local prod_match="false"
+    case "$prompt" in
+      *notion*|*todoist*|*trello*|*asana*|*monday.com*|*obsidian*|*"time tracking"*|*"project management"*|*"task management"*) prod_match="true" ;;
+    esac
+    if [[ "$prod_match" == "true" ]]; then
+      if ! check_plugin_in_vskill_lock "productivity"; then
+        if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-productivity" ]]; then
+          touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-productivity" 2>/dev/null
+          suggestions="${suggestions}- **productivity** (Notion, Todoist, Trello, Asana, Obsidian): \`vskill install anton-abyzov/vskill --plugin productivity\`\n"
+          match_count=$((match_count + 1))
+        fi
+      fi
+    fi
+  fi
+
+  # --- skills ---
+  # shortKeywords: (none)
+  # keywords (substring): find plugin, search plugin, discover skill, browse marketplace, vskill search, plugin search
+  if [[ $match_count -lt $max_suggestions ]]; then
+    local skills_match="false"
+    case "$prompt" in
+      *"find plugin"*|*"search plugin"*|*"discover skill"*|*"browse marketplace"*|*"vskill search"*|*"plugin search"*) skills_match="true" ;;
+    esac
+    if [[ "$skills_match" == "true" ]]; then
+      if ! check_plugin_in_vskill_lock "skills"; then
+        if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-skills" ]]; then
+          touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-skills" 2>/dev/null
+          suggestions="${suggestions}- **skills** (skill discovery and installation): \`vskill install anton-abyzov/vskill --plugin skills\`\n"
+          match_count=$((match_count + 1))
+        fi
+      fi
+    fi
+  fi
+
+  if [[ -n "$suggestions" ]]; then
+    printf '**Suggested vskill plugins** (not yet installed):\n%b' "$suggestions"
+  fi
+}
+
+if [[ -n "$PROMPT" ]]; then
+  VSKILL_SUGGEST_MSG=$(detect_vskill_recommendations "$PROMPT")
+fi
+
+# ==============================================================================
 # EXPLICIT LSP REQUEST DETECTION (v1.0.181)
 # ==============================================================================
 # Detects when users explicitly ask to "use LSP" for tasks like "find references"
@@ -1178,13 +1304,18 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
             if [[ -n "$DETECTED_PLUGINS" ]]; then
               CACHE_BASE="${HOME}/.claude/plugins/cache/specweave"
               SKILLS_BASE="${SW_PROJECT_ROOT:-.}/.claude/skills"
-              SESSION_MARKER_DIR="${TMPDIR:-/tmp}/specweave-ondemand-$$"
+              # Use PPID (parent process = Claude Code) for session-level uniqueness
+              SESSION_MARKER_DIR="${TMPDIR:-/tmp}/specweave-ondemand-${PPID:-$$}"
               mkdir -p "$SESSION_MARKER_DIR" 2>/dev/null
-              ONDEMAND_INSTALL_PID=""
+              ONDEMAND_PIDS=()
 
               while IFS= read -r PLUGIN_NAME; do
                 [[ -z "$PLUGIN_NAME" ]] && continue
                 [[ "$PLUGIN_NAME" == "sw" ]] && continue  # core always installed
+                # Sanitize: only allow alphanumeric, dash, underscore (prevent injection)
+                if [[ ! "$PLUGIN_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+                  continue
+                fi
 
                 # Idempotency: skip if already installed or already attempted this session
                 if [[ -d "$CACHE_BASE/$PLUGIN_NAME" ]] || \
@@ -1195,18 +1326,20 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                 # Install via CLI (handles both native and direct-copy modes)
                 specweave refresh-plugins --plugin "$PLUGIN_NAME" --quiet 2>/dev/null &
-                ONDEMAND_INSTALL_PID=$!
+                ONDEMAND_PIDS+=($!)
                 touch "$SESSION_MARKER_DIR/$PLUGIN_NAME" 2>/dev/null
 
                 AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Installed plugin: ${PLUGIN_NAME} (on-demand)."$'\n'
               done <<< "$DETECTED_PLUGINS"
 
-              # Wait for background install with 5s timeout
-              if [[ -n "$ONDEMAND_INSTALL_PID" ]]; then
-                ( sleep 5 && kill "$ONDEMAND_INSTALL_PID" 2>/dev/null ) &
-                TIMEOUT_PID=$!
-                wait "$ONDEMAND_INSTALL_PID" 2>/dev/null
-                kill "$TIMEOUT_PID" 2>/dev/null
+              # Wait for all background installs with 5s timeout
+              if [[ ${#ONDEMAND_PIDS[@]} -gt 0 ]]; then
+                for pid in "${ONDEMAND_PIDS[@]}"; do
+                  ( sleep 5 && kill "$pid" 2>/dev/null ) &
+                  local timeout_pid=$!
+                  wait "$pid" 2>/dev/null
+                  kill "$timeout_pid" 2>/dev/null 2>&1
+                done
               fi
             fi
 
@@ -1269,6 +1402,9 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 [[ -n "$LSP_WARNING_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${LSP_WARNING_MSG}"
                 # v1.0.180: Prepend explicit LSP request explanation
                 [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${LSP_EXPLICIT_REQUEST_MSG}"
+                # v1.0.542: Prepend vskill plugin suggestions
+                [[ -n "$VSKILL_SUGGEST_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${VSKILL_SUGGEST_MSG}
+"
                 [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${AUTOLOAD_PLUGINS_MSG}
 
 "
@@ -1483,6 +1619,9 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
               else
                 FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment\" })\`. Reason: Implementation keywords detected (LLM unavailable, keyword fallback)."
               fi
+              # v1.0.542: Prepend vskill suggestions to fallback message
+              [[ -n "$VSKILL_SUGGEST_MSG" ]] && FALLBACK_MSG="${VSKILL_SUGGEST_MSG}
+${FALLBACK_MSG}"
               echo "[$(date -Iseconds)] keyword-fallback | prompt_keywords_matched=true | mandatory=$INCREMENT_MANDATORY_CONFIG" >> "$LAZY_LOAD_LOG"
               output_approve_with_context "$FALLBACK_MSG"
               exit 0

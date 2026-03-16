@@ -19,6 +19,7 @@ const {
   mockExistsSync,
   mockReadFile,
   mockReaddir,
+  mockWriteFile,
   mockGetIssue,
   mockCloseIssue,
   mockReopenIssue,
@@ -48,6 +49,7 @@ const {
     mockExistsSync: vi.fn(),
     mockReadFile: vi.fn(),
     mockReaddir: vi.fn(),
+    mockWriteFile: vi.fn(),
     mockGetIssue: _mockGetIssue,
     mockCloseIssue: _mockCloseIssue,
     mockReopenIssue: _mockReopenIssue,
@@ -66,6 +68,7 @@ vi.mock('fs', () => ({
   promises: {
     readFile: mockReadFile,
     readdir: mockReaddir,
+    writeFile: mockWriteFile,
   },
 }));
 
@@ -1629,6 +1632,306 @@ describe('GitHubReconciler', () => {
         (args: any[]) => typeof args[0] === 'string' && args[0].endsWith('config.json')
       );
       expect(configReads).toHaveLength(1);
+    });
+  });
+
+  // =========================================================================
+  // Status-based search filtering (US-001)
+  // =========================================================================
+
+  describe('status-based search filtering', () => {
+    function setupSingleIncrement(status: string) {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          status,
+          feature_id: null, // will be derived by mockDeriveFeatureId
+          // No github references — would trigger search fallback
+        }));
+
+      mockReaddir.mockResolvedValue([dirent('0100-test-increment', true)]);
+    }
+
+    it('should NOT search for completed increments', async () => {
+      setupSingleIncrement('completed');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).not.toHaveBeenCalled();
+    });
+
+    it('should NOT search for abandoned increments', async () => {
+      setupSingleIncrement('abandoned');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).not.toHaveBeenCalled();
+    });
+
+    it('should NOT search for created increments', async () => {
+      setupSingleIncrement('created');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).not.toHaveBeenCalled();
+    });
+
+    it('should search for active increments without GitHub metadata', async () => {
+      setupSingleIncrement('active');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalled();
+    });
+
+    it('should search for planning increments without GitHub metadata', async () => {
+      setupSingleIncrement('planning');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalled();
+    });
+
+    it('should search for in-progress increments without GitHub metadata', async () => {
+      setupSingleIncrement('in-progress');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalled();
+    });
+
+    it('should search for backlog increments without GitHub metadata', async () => {
+      setupSingleIncrement('backlog');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalled();
+    });
+
+    it('should search for ready_for_review increments without GitHub metadata', async () => {
+      setupSingleIncrement('ready_for_review');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalled();
+    });
+
+    it('should search for paused increments without GitHub metadata', async () => {
+      setupSingleIncrement('paused');
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalled();
+    });
+
+    it('should NOT search when metadata has no status field (defaults to unknown)', async () => {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          feature_id: null,
+          // No status field at all
+        }));
+      mockReaddir.mockResolvedValue([dirent('0100-no-status', true)]);
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // Negative search cache (US-002)
+  // =========================================================================
+
+  describe('negative search cache', () => {
+    it('should write negative cache when search returns empty and no main issue', async () => {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+          // No github references at all
+        }));
+      mockReaddir.mockResolvedValue([dirent('0300-empty-search', true)]);
+      mockSearchIssuesByFeature.mockResolvedValue([]);
+      mockWriteFile.mockResolvedValue(undefined);
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+
+      expect(mockWriteFile).toHaveBeenCalledTimes(1);
+      const [writePath, writeContent] = mockWriteFile.mock.calls[0];
+      expect(writePath).toContain('0300-empty-search');
+      expect(writePath).toContain('metadata.json');
+      const written = JSON.parse(writeContent);
+      expect(written.github.noIssuesFound).toBe(true);
+      expect(written.github.searched).toBe(true);
+      expect(written.github.searchedAt).toBeDefined();
+    });
+
+    it('should NOT write negative cache when search returns results', async () => {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+        }));
+      mockReaddir.mockResolvedValue([dirent('0301-has-results', true)]);
+      mockSearchIssuesByFeature.mockResolvedValue([
+        { number: 42, title: '[FS-301][US-001] Test Issue', state: 'open' },
+      ]);
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+
+      // Should NOT write negative cache since results were found
+      const negativeCacheWrites = mockWriteFile.mock.calls.filter(
+        (args: any[]) => {
+          if (!args[1]) return false;
+          try { return JSON.parse(args[1]).github?.noIssuesFound; } catch { return false; }
+        }
+      );
+      expect(negativeCacheWrites).toHaveLength(0);
+    });
+
+    it('should NOT write negative cache when main issue exists in metadata', async () => {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+          github: { issue: 123, url: 'https://github.com/test/repo/issues/123' },
+        }));
+      mockReaddir.mockResolvedValue([dirent('0302-has-main-issue', true)]);
+      mockSearchIssuesByFeature.mockResolvedValue([]);
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+
+      const negativeCacheWrites = mockWriteFile.mock.calls.filter(
+        (args: any[]) => {
+          if (!args[1]) return false;
+          try { return JSON.parse(args[1]).github?.noIssuesFound; } catch { return false; }
+        }
+      );
+      expect(negativeCacheWrites).toHaveLength(0);
+    });
+
+    it('should not throw when negative cache write fails (disk error)', async () => {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+        }));
+      mockReaddir.mockResolvedValue([dirent('0303-disk-fail', true)]);
+      mockSearchIssuesByFeature.mockResolvedValue([]);
+      mockWriteFile.mockRejectedValue(new Error('EACCES: permission denied'));
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      const result = await reconciler.reconcile({ force: true });
+
+      // Should complete without throwing — write failure is non-fatal
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should NOT search when metadata has noIssuesFound: true', async () => {
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+          github: { noIssuesFound: true, searched: true, searchedAt: '2026-03-15T00:00:00Z' },
+        }));
+      mockReaddir.mockResolvedValue([dirent('0200-cached-negative', true)]);
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // Per-scan search budget cap (US-004)
+  // =========================================================================
+
+  describe('per-scan search budget', () => {
+    function setupNIncrements(n: number) {
+      const dirents = Array.from({ length: n }, (_, i) =>
+        dirent(`${String(i + 400).padStart(4, '0')}-budget-test-${i}`, true)
+      );
+      mockReaddir.mockResolvedValue(dirents);
+
+      // Config first, then metadata for each increment
+      mockReadFile.mockResolvedValueOnce(enabledConfig());
+      for (let i = 0; i < n; i++) {
+        mockReadFile.mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+          // No github references — triggers search
+        }));
+      }
+      mockSearchIssuesByFeature.mockResolvedValue([]);
+      mockWriteFile.mockResolvedValue(undefined);
+    }
+
+    it('should allow up to 20 searches per scan', async () => {
+      setupNIncrements(20);
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalledTimes(20);
+    });
+
+    it('should skip search for 21st increment when budget is exhausted', async () => {
+      setupNIncrements(21);
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalledTimes(20);
+    });
+
+    it('should still include metadata-backed increments when budget is exhausted', async () => {
+      // 21 increments: 20 active with no data + 1 active with existing github.issue
+      const dirents = [
+        ...Array.from({ length: 20 }, (_, i) =>
+          dirent(`${String(i + 500).padStart(4, '0')}-no-data-${i}`, true)
+        ),
+        dirent('0520-has-data', true),
+      ];
+      mockReaddir.mockResolvedValue(dirents);
+
+      mockReadFile.mockResolvedValueOnce(enabledConfig());
+      for (let i = 0; i < 20; i++) {
+        mockReadFile.mockResolvedValueOnce(JSON.stringify({
+          status: 'active',
+          feature_id: null,
+        }));
+      }
+      // The 21st increment has existing github data
+      mockReadFile.mockResolvedValueOnce(JSON.stringify({
+        status: 'active',
+        feature_id: 'FS-520',
+        github: { issue: 42, url: 'https://github.com/test/repo/issues/42' },
+      }));
+
+      mockSearchIssuesByFeature.mockResolvedValue([]);
+      mockWriteFile.mockResolvedValue(undefined);
+      mockGetIssue.mockResolvedValue({ state: 'open' });
+
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      const result = await reconciler.reconcile({ force: true });
+
+      // Budget-capped at 20 searches, but metadata-backed increment still scanned
+      expect(mockSearchIssuesByFeature).toHaveBeenCalledTimes(20);
+      expect(result.scanned).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should reset budget counter on each scanIncrements call', async () => {
+      // First reconcile with 5 increments
+      setupNIncrements(5);
+      const reconciler = new GitHubReconciler({ projectRoot: PROJECT_ROOT, logger });
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalledTimes(5);
+
+      // Second reconcile: clear configCache to force fresh config read
+      (reconciler as any).configCache = null;
+      mockSearchIssuesByFeature.mockClear();
+      mockReadFile.mockReset();
+      mockReaddir.mockReset();
+      mockWriteFile.mockReset();
+      setupNIncrements(5);
+      await reconciler.reconcile({ force: true });
+      expect(mockSearchIssuesByFeature).toHaveBeenCalledTimes(5);
     });
   });
 });

@@ -20,6 +20,7 @@ export class GitHubClientV2 {
 
   // Session cache: avoids redundant API calls for the same issue within 30s
   private static issueCache = new Map<string, { data: any; fetchedAt: number }>();
+  private static searchCache = new Map<string, { data: GitHubIssue[]; fetchedAt: number }>();
   private static readonly CACHE_TTL_MS = 30_000;
 
   /**
@@ -688,6 +689,13 @@ export class GitHubClientV2 {
     featureId: string,
     userStoryId?: string
   ): Promise<GitHubIssue[]> {
+    // Check session cache first
+    const cacheKey = `${this.fullRepo}#search:${featureId}${userStoryId ? ':' + userStoryId : ''}`;
+    const cached = GitHubClientV2.searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < GitHubClientV2.CACHE_TTL_MS) {
+      return cached.data;
+    }
+
     // Build search pattern
     // e.g., "[FS-063]" or "[FS-063][US-001]"
     const pattern = userStoryId
@@ -714,7 +722,9 @@ export class GitHubClientV2 {
     }
 
     try {
-      return JSON.parse(result.stdout);
+      const issues: GitHubIssue[] = JSON.parse(result.stdout);
+      GitHubClientV2.searchCache.set(cacheKey, { data: issues, fetchedAt: Date.now() });
+      return issues;
     } catch {
       return [];
     }
