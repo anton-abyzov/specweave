@@ -478,26 +478,28 @@ describe('InstallationHealthChecker', () => {
   // Full check() method
   // =========================================================================
   describe('check() integration', () => {
-    it('TC-016: should return all 5 check categories', async () => {
+    it('TC-016: should return all 7 check categories', async () => {
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
 
       expect(result.category).toBe('Installation Health');
-      expect(result.checks.length).toBe(5);
+      expect(result.checks.length).toBe(7);
 
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).toContain('Legacy commands directories');
       expect(checkNames).toContain('Stale cache directories');
       expect(checkNames).toContain('Lockfile integrity');
       expect(checkNames).toContain('Plugin cache hook freshness');
+      expect(checkNames).toContain('Legacy lockfiles');
+      expect(checkNames).toContain('Orphaned child lockfiles');
       expect(checkNames).toContain('Update health');
     });
 
-    it('TC-016c: should return 4 checks when quick=true (skips update health)', async () => {
+    it('TC-016c: should return 6 checks when quick=true (skips update health)', async () => {
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
 
-      expect(result.checks.length).toBe(4);
+      expect(result.checks.length).toBe(6);
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).not.toContain('Update health');
     });
@@ -675,6 +677,104 @@ describe('InstallationHealthChecker', () => {
       expect(check).toBeDefined();
       expect(check!.status).toBe('warn');
       expect(check!.message).toContain('npm registry');
+    });
+  });
+
+  // =========================================================================
+  // Stale Lockfile Checks (T-012 through T-015)
+  // =========================================================================
+  describe('checkStaleLockfiles', () => {
+    it('T-012: detect mode warns with file paths when stale lockfiles exist', async () => {
+      // Create a nested skills-lock.json (legacy lockfile)
+      const nestedDir = path.join(projectRoot, 'sub');
+      fs.mkdirSync(nestedDir, { recursive: true });
+      const legacyLock = path.join(nestedDir, 'skills-lock.json');
+      fs.writeFileSync(legacyLock, '{}');
+      const oldTime = new Date(Date.now() - 60_000);
+      fs.utimesSync(legacyLock, oldTime, oldTime);
+
+      // Create umbrella config and orphaned child lock
+      const specweaveDir = path.join(projectRoot, '.specweave');
+      fs.mkdirSync(specweaveDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(specweaveDir, 'config.json'),
+        JSON.stringify({ umbrella: { enabled: true } })
+      );
+      const childDir = path.join(projectRoot, 'repositories', 'org', 'child');
+      fs.mkdirSync(childDir, { recursive: true });
+      const childLock = path.join(childDir, 'vskill.lock');
+      fs.writeFileSync(childLock, '{}');
+      fs.utimesSync(childLock, oldTime, oldTime);
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: false, quick: true });
+
+      const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
+      expect(legacyCheck).toBeDefined();
+      expect(legacyCheck!.status).toBe('warn');
+
+      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
+      expect(orphanCheck).toBeDefined();
+      expect(orphanCheck!.status).toBe('warn');
+    });
+
+    it('T-013: fix mode removes files and reports removed count', async () => {
+      // Create legacy lockfile
+      const legacyLock = path.join(projectRoot, 'skills-lock.json');
+      fs.writeFileSync(legacyLock, '{}');
+      const oldTime = new Date(Date.now() - 60_000);
+      fs.utimesSync(legacyLock, oldTime, oldTime);
+
+      // Create umbrella config and orphaned child lock
+      const specweaveDir = path.join(projectRoot, '.specweave');
+      fs.mkdirSync(specweaveDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(specweaveDir, 'config.json'),
+        JSON.stringify({ umbrella: { enabled: true } })
+      );
+      const childDir = path.join(projectRoot, 'repositories', 'org', 'child');
+      fs.mkdirSync(childDir, { recursive: true });
+      const childLock = path.join(childDir, 'vskill.lock');
+      fs.writeFileSync(childLock, '{}');
+      fs.utimesSync(childLock, oldTime, oldTime);
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true, quick: true });
+
+      const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
+      expect(legacyCheck).toBeDefined();
+      expect(legacyCheck!.status).toBe('pass');
+
+      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
+      expect(orphanCheck).toBeDefined();
+      expect(orphanCheck!.status).toBe('pass');
+
+      // Files should be deleted
+      expect(fs.existsSync(legacyLock)).toBe(false);
+      expect(fs.existsSync(childLock)).toBe(false);
+    });
+
+    it('T-014: pass status when no stale lockfiles exist', async () => {
+      // Clean project, no lockfiles at all
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: false, quick: true });
+
+      const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
+      expect(legacyCheck).toBeDefined();
+      expect(legacyCheck!.status).toBe('pass');
+
+      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
+      expect(orphanCheck).toBeDefined();
+      expect(orphanCheck!.status).toBe('pass');
+    });
+
+    it('T-015: check() returns entries named "Legacy lockfiles" and "Orphaned child lockfiles"', async () => {
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+
+      const checkNames = result.checks.map(c => c.name);
+      expect(checkNames).toContain('Legacy lockfiles');
+      expect(checkNames).toContain('Orphaned child lockfiles');
     });
   });
 });

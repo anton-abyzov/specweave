@@ -54,6 +54,7 @@ export class InstallationHealthChecker implements HealthChecker {
     checks.push(this.checkStaleCacheDirs(options.fix ?? false));
     checks.push(this.checkLockfileIntegrity(projectRoot, options.fix ?? false));
     checks.push(this.checkPluginCacheHookFreshness(options.fix ?? false));
+    checks.push(...await this.checkStaleLockfiles(projectRoot, options.fix ?? false));
     if (!options.quick) {
       checks.push(this.checkUpdateHealth(options.fix ?? false));
     }
@@ -495,6 +496,91 @@ export class InstallationHealthChecker implements HealthChecker {
     if (existsSync(marketplacePath)) return marketplacePath;
 
     return null;
+  }
+
+  /**
+   * Detect (and optionally remove) stale lockfiles:
+   *   - Legacy `skills-lock.json` files (dead format)
+   *   - Orphaned child-repo `vskill.lock` files in umbrella projects
+   *
+   * @since 1.0.541
+   */
+  private async checkStaleLockfiles(
+    projectRoot: string,
+    fix: boolean
+  ): Promise<CheckResult[]> {
+    const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import(
+      '../../../utils/cleanup-stale-plugins.js'
+    );
+
+    const threshold = fix ? 0 : 5000;
+
+    const legacyResult = cleanupLegacyLockfiles(projectRoot, {
+      mtimeThresholdMs: threshold,
+    });
+    const orphanResult = cleanupOrphanedChildLocks(projectRoot, {
+      mtimeThresholdMs: threshold,
+    });
+
+    const results: CheckResult[] = [];
+
+    // Legacy lockfiles check
+    const legacyTotal = legacyResult.removedCount + legacyResult.skippedCount;
+    if (legacyTotal === 0) {
+      results.push({
+        name: 'Legacy lockfiles',
+        status: 'pass',
+        message: 'no stale lockfiles',
+      });
+    } else if (fix) {
+      results.push({
+        name: 'Legacy lockfiles',
+        status: legacyResult.removedCount > 0 ? 'pass' : 'warn',
+        message: `${legacyResult.removedCount} legacy lockfile(s) removed`,
+        details: legacyResult.removedPaths.map(p => `Removed: ${p}`),
+      });
+    } else {
+      results.push({
+        name: 'Legacy lockfiles',
+        status: 'warn',
+        message: `${legacyTotal} legacy lockfile(s) found`,
+        details: [
+          ...legacyResult.removedPaths.map(p => `Stale: ${p}`),
+          ...legacyResult.skippedPaths.map(p => `Recent: ${p}`),
+        ],
+        fixSuggestion: 'Run: specweave doctor --fix',
+      });
+    }
+
+    // Orphaned child lockfiles check
+    const orphanTotal = orphanResult.removedCount + orphanResult.skippedCount;
+    if (orphanTotal === 0) {
+      results.push({
+        name: 'Orphaned child lockfiles',
+        status: 'pass',
+        message: 'no stale lockfiles',
+      });
+    } else if (fix) {
+      results.push({
+        name: 'Orphaned child lockfiles',
+        status: orphanResult.removedCount > 0 ? 'pass' : 'warn',
+        message: `${orphanResult.removedCount} orphaned lockfile(s) removed`,
+        details: orphanResult.removedPaths.map(p => `Removed: ${p}`),
+      });
+    } else {
+      results.push({
+        name: 'Orphaned child lockfiles',
+        status: 'warn',
+        message: `${orphanTotal} orphaned child lockfile(s) found`,
+        details: [
+          ...orphanResult.removedPaths.map(p => `Stale: ${p}`),
+          ...orphanResult.skippedPaths.map(p => `Recent: ${p}`),
+        ],
+        fixSuggestion: 'Run: specweave doctor --fix',
+      });
+    }
+
+    return results;
   }
 
   /**
