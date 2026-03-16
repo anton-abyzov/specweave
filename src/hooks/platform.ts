@@ -97,34 +97,8 @@ export function checkWslStatus(): WslStatus {
   }
 }
 
-/**
- * Find project root by looking for .specweave directory WITH config.json
- *
- * A valid SpecWeave project must have .specweave/config.json.
- * Stale .specweave/ folders (with only logs/state from runtime code)
- * are NOT valid project roots and must be skipped.
- *
- * @param startDir - Directory to start searching from
- * @returns Project root path or null if not found
- */
-export function findProjectRoot(startDir: string = process.cwd()): string | null {
-  let current = path.resolve(startDir);
-  const root = path.parse(current).root;
-
-  while (current !== root) {
-    const specweavePath = path.join(current, '.specweave');
-    if (
-      fs.existsSync(specweavePath) &&
-      fs.statSync(specweavePath).isDirectory() &&
-      fs.existsSync(path.join(specweavePath, 'config.json'))
-    ) {
-      return current;
-    }
-    current = path.dirname(current);
-  }
-
-  return null;
-}
+// Re-export findProjectRoot from canonical source to avoid duplication
+export { findProjectRoot } from '../utils/find-project-root.js';
 
 /**
  * Spawn a detached background process (cross-platform)
