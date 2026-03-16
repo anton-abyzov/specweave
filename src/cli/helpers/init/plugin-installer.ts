@@ -25,6 +25,8 @@ const __dirname = getDirname(import.meta.url);
 export interface PluginInstallOptions {
   dirname: string;
   forceRefresh?: boolean;
+  /** Project root directory (where .claude/ lives). Falls back to getProjectRoot() if not provided. */
+  projectRoot?: string;
 }
 
 /**
@@ -80,7 +82,8 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     }
 
     // Determine project root for .claude/skills/ target
-    const projectRoot = getProjectRoot();
+    // Prefer explicit projectRoot (from init's targetDir) over getProjectRoot() fallback
+    const projectRoot = options.projectRoot || getProjectRoot();
 
     // Ensure .claude/skills/ directory exists
     const skillsTargetDir = path.join(projectRoot, '.claude', 'skills');

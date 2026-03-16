@@ -31,6 +31,8 @@ export interface CleanupResult {
   success: boolean;
   removedCount: number;
   removedPlugins: string[];
+  /** Cache directories removed from disk during Phase 2 cleanup. */
+  removedCacheDirs: string[];
   error?: string;
 }
 
@@ -55,6 +57,7 @@ export async function cleanupStalePlugins(
     success: false,
     removedCount: 0,
     removedPlugins: [],
+    removedCacheDirs: [],
   };
 
   try {
@@ -71,69 +74,140 @@ export async function cleanupStalePlugins(
 
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
 
-    // 2. Load marketplace to get valid plugin list
+    // 2. Load specweave marketplace (Phase 1a — existing behavior)
     if (!fs.existsSync(marketplaceJsonPath)) {
       throw new Error(`Marketplace not found at ${marketplaceJsonPath}`);
     }
 
-    const marketplace = JSON.parse(fs.readFileSync(marketplaceJsonPath, 'utf-8'));
-    const validPlugins = new Set(
-      (marketplace.plugins || []).map((p: { name: string }) => p.name)
+    const specweaveManifest = JSON.parse(fs.readFileSync(marketplaceJsonPath, 'utf-8'));
+    const specweaveValidPlugins = new Set(
+      (specweaveManifest.plugins || []).map((p: { name: string }) => p.name)
     );
 
     if (verbose) {
-      console.log(chalk.blue(`Valid plugins in marketplace: ${Array.from(validPlugins).join(', ')}`));
+      console.log(chalk.blue(`Valid specweave plugins: ${Array.from(specweaveValidPlugins).join(', ')}`));
     }
 
-    // 3. Find stale plugin references
+    // 2b. Discover all marketplaces dynamically via cache directory scan (Phase 1b)
+    const cacheBase = path.join(os.homedir(), '.claude', 'plugins', 'cache');
+    const marketplacesBase = path.join(os.homedir(), '.claude', 'plugins', 'marketplaces');
+
+    // Build a map of marketplace → valid plugin names
+    const marketplacePluginMap = new Map<string, Set<string>>();
+    marketplacePluginMap.set('specweave', specweaveValidPlugins);
+
+    if (fs.existsSync(cacheBase)) {
+      try {
+        const cacheDirs = fs.readdirSync(cacheBase, { withFileTypes: true });
+        for (const dir of cacheDirs) {
+          if (!dir.isDirectory()) continue;
+          const mktName = dir.name;
+          if (mktName === 'specweave') continue; // Already handled
+
+          // Try to resolve marketplace.json for this marketplace
+          const mktManifestPath = path.join(marketplacesBase, mktName, '.claude-plugin', 'marketplace.json');
+          if (!fs.existsSync(mktManifestPath)) {
+            if (verbose) {
+              console.log(chalk.gray(`  Skipping marketplace '${mktName}' — no manifest found`));
+            }
+            continue;
+          }
+
+          try {
+            const mktManifest = JSON.parse(fs.readFileSync(mktManifestPath, 'utf-8'));
+            const validNames = new Set(
+              (mktManifest.plugins || []).map((p: { name: string }) => p.name)
+            );
+            marketplacePluginMap.set(mktName, validNames);
+            if (verbose) {
+              console.log(chalk.blue(`  Discovered marketplace '${mktName}' with ${validNames.size} plugins`));
+            }
+          } catch {
+            if (verbose) {
+              console.log(chalk.yellow(`  Skipping marketplace '${mktName}' — malformed manifest`));
+            }
+          }
+        }
+      } catch {
+        // Cache dir unreadable — proceed with specweave-only cleanup
+      }
+    }
+
+    // 3. Find stale plugin references across ALL discovered marketplaces
     const stalePlugins: string[] = [];
 
-    // Check enabled plugins (format: "pluginName@marketplace")
     if (settings.enabledPlugins) {
       for (const [pluginKey, enabled] of Object.entries(settings.enabledPlugins)) {
-        if (!enabled) continue; // Skip disabled plugins
+        if (!enabled) continue;
 
-        // Extract plugin name from "sw-tooling@specweave" format
         const pluginName = pluginKey.split('@')[0];
-        const marketplace = pluginKey.split('@')[1];
+        const mktName = pluginKey.split('@')[1];
 
-        // Check if plugin is from specweave marketplace and is stale
-        if (
-          marketplace === 'specweave' &&
-          (!validPlugins.has(pluginName) || REMOVED_PLUGINS.has(pluginName))
-        ) {
+        // Check against the marketplace's valid plugin set
+        const validSet = marketplacePluginMap.get(mktName);
+        if (!validSet) continue; // Unknown marketplace — don't touch
+
+        if (!validSet.has(pluginName) || (mktName === 'specweave' && REMOVED_PLUGINS.has(pluginName))) {
           stalePlugins.push(pluginKey);
         }
       }
     }
 
-    if (stalePlugins.length === 0) {
+    // 4. Remove stale settings entries
+    if (stalePlugins.length > 0) {
       if (verbose) {
-        console.log(chalk.green('✓ No stale plugins found'));
+        console.log(chalk.yellow(`\nFound ${stalePlugins.length} stale plugin(s):`));
+        stalePlugins.forEach(p => console.log(chalk.gray(`  - ${p}`)));
       }
-      result.success = true;
-      return result;
+
+      for (const pluginKey of stalePlugins) {
+        delete settings.enabledPlugins[pluginKey];
+        result.removedPlugins.push(pluginKey);
+      }
+      result.removedCount = stalePlugins.length;
+
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+
+      if (verbose) {
+        console.log(chalk.green(`\n✓ Removed ${result.removedCount} stale plugin reference(s)`));
+        console.log(chalk.gray(`  Settings saved: ${settingsPath}`));
+      }
+    } else if (verbose) {
+      console.log(chalk.green('✓ No stale plugins found in settings'));
     }
 
-    // 4. Remove stale plugins
-    if (verbose) {
-      console.log(chalk.yellow(`\nFound ${stalePlugins.length} stale plugin(s):`));
-      stalePlugins.forEach(p => console.log(chalk.gray(`  - ${p}`)));
-    }
+    // 5. Phase 2: Remove stale cache directories from disk
+    if (fs.existsSync(cacheBase)) {
+      for (const [mktName, validSet] of marketplacePluginMap) {
+        const mktCacheDir = path.join(cacheBase, mktName);
+        if (!fs.existsSync(mktCacheDir)) continue;
 
-    for (const pluginKey of stalePlugins) {
-      delete settings.enabledPlugins[pluginKey];
-      result.removedPlugins.push(pluginKey);
-    }
+        try {
+          const cachedEntries = fs.readdirSync(mktCacheDir, { withFileTypes: true });
+          for (const entry of cachedEntries) {
+            if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+            if (validSet.has(entry.name)) continue;
 
-    result.removedCount = stalePlugins.length;
-
-    // 5. Write back cleaned settings
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
-
-    if (verbose) {
-      console.log(chalk.green(`\n✓ Removed ${result.removedCount} stale plugin reference(s)`));
-      console.log(chalk.gray(`  Settings saved: ${settingsPath}`));
+            const staleDir = path.join(mktCacheDir, entry.name);
+            try {
+              // Atomic rename then remove to avoid partial reads
+              const tempName = staleDir + '.stale-' + Date.now();
+              fs.renameSync(staleDir, tempName);
+              fs.rmSync(tempName, { recursive: true, force: true });
+              result.removedCacheDirs.push(staleDir);
+              if (verbose) {
+                console.log(chalk.gray(`  Removed stale cache: ${staleDir}`));
+              }
+            } catch (dirErr) {
+              if (verbose) {
+                console.log(chalk.yellow(`  ⚠ Could not remove: ${staleDir} (${dirErr})`));
+              }
+            }
+          }
+        } catch {
+          // Marketplace cache dir unreadable — skip
+        }
+      }
     }
 
     result.success = true;

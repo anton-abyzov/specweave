@@ -1140,8 +1140,10 @@ program
 // Refresh plugins command - Copy first-party plugins to ~/.claude/commands/
 program
   .command('refresh-plugins')
-  .description('Copy SpecWeave plugins to ~/.claude/commands/ (lazy mode by default - core only)')
-  .option('--all', 'Install ALL plugins (not just core)')
+  .description('Refresh SpecWeave plugins (core only by default, use --all for everything)')
+  .option('--all', 'Install ALL plugins (not just core sw)')
+  .option('--plugin <name>', 'Install a specific plugin by name')
+  .option('-q, --quiet', 'Suppress output (for use by hooks)')
   .option('-f, --force', 'Force reinstall (skip hash check)')
   .option('-v, --verbose', 'Show skipped plugins')
   .action(async (options) => {
