@@ -265,11 +265,11 @@ const config: Config = {
       { name: 'twitter:site', content: '@aabyzov' },
       { name: 'twitter:creator', content: '@aabyzov' },
       { name: 'twitter:title', content: 'SpecWeave - Program Your AI in English' },
-      { name: 'twitter:description', content: 'Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code.' },
+      { name: 'twitter:description', content: 'Skills extend what AI coding agents can do. Describe what you want, AI asks the right questions, builds it while you sleep. 100+ reusable skills for Claude Code.' },
       { name: 'twitter:image', content: 'https://verified-skill.com/img/specweave-social-card-v2.jpg' },
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: 'SpecWeave - Program Your AI in English' },
-      { property: 'og:description', content: 'Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code.' },
+      { property: 'og:description', content: 'Skills extend what AI coding agents can do. Describe what you want, AI asks the right questions, builds it while you sleep. 100+ reusable skills for Claude Code.' },
       { property: 'og:image', content: 'https://verified-skill.com/img/specweave-social-card-v2.jpg' },
     ],
 

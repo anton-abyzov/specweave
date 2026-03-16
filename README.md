@@ -190,7 +190,7 @@ SpecWeave solves multi-agent chaos with **file-based coordination**:
 
 ### Three Pillars
 
-**Programmable AI** — Skills are programs in English. Customize any skill's behavior via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates.
+**Programmable AI** — Skills extend what AI coding agents can do — structured markdown instructions that define how an agent behaves. Customize any skill via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates.
 
 **Autonomous Teams** — Run agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts. Work on auth, payments, and notifications simultaneously.
 
