@@ -163,6 +163,91 @@ export type KnownPlugin = SpecWeavePlugin;
 export const ALL_VALID_PLUGINS = ALL_KNOWN_PLUGINS;
 export type ValidPlugin = KnownPlugin;
 
+// ============================================================
+// vskill Marketplace Plugin Registry (v1.0.542)
+// ============================================================
+
+export interface VskillPluginEntry {
+  keywords: string[];
+  shortKeywords: string[];
+  description: string;
+  installCommand: string;
+}
+
+export interface VskillMatch {
+  plugin: string;
+  matchedKeyword: string;
+  installCommand: string;
+}
+
+export const VSKILL_PLUGIN_REGISTRY: Record<string, VskillPluginEntry> = {
+  mobile: {
+    keywords: ['testflight', 'app store', 'play store', 'react native', 'react-native', 'expo', 'mobile app', 'flutter', 'xcode', 'cocoapods', 'fastlane', 'app-store-connect', 'app deployment'],
+    shortKeywords: ['ios', 'apk'],
+    description: 'App Store, TestFlight, mobile CI/CD',
+    installCommand: 'vskill install anton-abyzov/vskill --plugin mobile',
+  },
+  'google-workspace': {
+    keywords: ['google sheets', 'google docs', 'google drive', 'google slides', 'google calendar', 'google workspace', 'gmail api', 'sheets api'],
+    shortKeywords: [],
+    description: 'Gmail, Drive, Sheets, Docs, Calendar',
+    installCommand: 'vskill install anton-abyzov/vskill --plugin google-workspace',
+  },
+  marketing: {
+    keywords: ['linkedin', 'instagram', 'social media', 'twitter', 'facebook', 'tiktok', 'content marketing', 'social post', 'blog post', 'newsletter', 'slack messaging'],
+    shortKeywords: [],
+    description: 'Social media posting, Slack messaging',
+    installCommand: 'vskill install anton-abyzov/vskill --plugin marketing',
+  },
+  productivity: {
+    keywords: ['notion', 'todoist', 'trello', 'asana', 'monday.com', 'obsidian', 'time tracking', 'project management', 'task management'],
+    shortKeywords: [],
+    description: 'Notion, Todoist, Trello, Asana, Obsidian',
+    installCommand: 'vskill install anton-abyzov/vskill --plugin productivity',
+  },
+  skills: {
+    keywords: ['find plugin', 'search plugin', 'discover skill', 'browse marketplace', 'vskill search', 'plugin search'],
+    shortKeywords: [],
+    description: 'Skill discovery and installation',
+    installCommand: 'vskill install anton-abyzov/vskill --plugin skills',
+  },
+};
+
+const VSKILL_MAX_SUGGESTIONS = 3;
+
+export function detectVskillPlugins(prompt: string): VskillMatch[] {
+  const normalized = prompt.toLowerCase();
+  const matches: VskillMatch[] = [];
+
+  for (const [pluginName, entry] of Object.entries(VSKILL_PLUGIN_REGISTRY)) {
+    let matchedKeyword: string | null = null;
+
+    for (const kw of entry.shortKeywords) {
+      const re = new RegExp(`\\b${kw}\\b`, 'i');
+      if (re.test(normalized)) {
+        matchedKeyword = kw;
+        break;
+      }
+    }
+
+    if (!matchedKeyword) {
+      for (const kw of entry.keywords) {
+        if (normalized.includes(kw.toLowerCase())) {
+          matchedKeyword = kw;
+          break;
+        }
+      }
+    }
+
+    if (matchedKeyword) {
+      matches.push({ plugin: pluginName, matchedKeyword, installCommand: entry.installCommand });
+    }
+  }
+
+  matches.sort((a, b) => b.matchedKeyword.length - a.matchedKeyword.length);
+  return matches.slice(0, VSKILL_MAX_SUGGESTIONS);
+}
+
 /**
  * Check if a plugin is a SpecWeave plugin (installed from local specweave marketplace)
  */
@@ -498,7 +583,7 @@ sw-jira: JIRA, Atlassian (ONLY if explicit)
 sw-ado: Azure DevOps, work items (ONLY if explicit)
 sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
 
-DO NOT suggest: frontend, backend, testing, infra, k8s, mobile, skills, payments, ml, kafka, confluent, security, blockchain — these are NOT available as plugins.
+DO NOT include in plugins array: frontend, backend, testing, infra, k8s, payments, ml, kafka, confluent, security, blockchain — these are vskill marketplace plugins handled separately (not sw-* plugins). Mobile and skills are also vskill plugins — do not include them in the plugins array.
 
 ═══════════════════════════════════════════════════════════════
 INCREMENT RECOMMENDATION (v1.0.241 - DEFAULT: create increment)

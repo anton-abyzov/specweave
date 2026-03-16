@@ -175,9 +175,11 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     const pluginName = options.plugin.split('@')[0];
     pluginsToInstall = allPlugins.filter(p => p.name === pluginName);
     if (pluginsToInstall.length === 0) {
-      const available = allPlugins.map(p => p.name).join(', ');
-      console.error(chalk.red(`  Plugin '${pluginName}' not found in marketplace.json`));
-      console.error(chalk.gray(`  Available plugins: ${available}`));
+      if (!quiet) {
+        const available = allPlugins.map(p => p.name).join(', ');
+        console.error(chalk.red(`  Plugin '${pluginName}' not found in marketplace.json`));
+        console.error(chalk.gray(`  Available plugins: ${available}`));
+      }
       process.exitCode = 1;
       return;
     }

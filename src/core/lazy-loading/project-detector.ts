@@ -20,6 +20,8 @@ export interface ProjectTypeResult {
   types: string[];
   /** Recommended plugins to install */
   plugins: string[];
+  /** vskill marketplace plugins to suggest installing */
+  vskillPlugins?: string[];
   /** Detection latency in milliseconds */
   latencyMs?: number;
 }
@@ -32,6 +34,8 @@ interface DetectionRule {
   type: string;
   /** Plugins to suggest when this type is detected */
   plugins: string[];
+  /** vskill marketplace plugins to suggest */
+  vskillPlugins?: string[];
   /** Detection function */
   detect: (projectPath: string) => boolean;
 }
@@ -258,25 +262,29 @@ const DETECTION_RULES: DetectionRule[] = [
     },
   },
 
-  // Mobile
+  // Mobile — vskill plugin recommendation (v1.0.542)
   {
     type: 'react-native',
     plugins: [],
+    vskillPlugins: ['mobile'],
     detect: (p) => packageJsonHas(p, 'react-native') || fileExists(p, 'metro.config.js'),
   },
   {
     type: 'expo',
     plugins: [],
-    detect: (p) => packageJsonHas(p, 'expo') || fileExists(p, 'app.json'),
+    vskillPlugins: ['mobile'],
+    detect: (p) => packageJsonHas(p, 'expo'),
   },
   {
     type: 'ios',
     plugins: [],
+    vskillPlugins: ['mobile'],
     detect: (p) => dirExists(p, 'ios') || fileExists(p, 'Podfile'),
   },
   {
     type: 'android',
     plugins: [],
+    vskillPlugins: ['mobile'],
     detect: (p) =>
       dirExists(p, 'android') ||
       fileContains(p, 'build.gradle', 'com.android') ||
@@ -355,6 +363,7 @@ export function detectProjectType(projectPath: string = process.cwd()): ProjectT
   const startTime = performance.now();
   const detectedTypes: string[] = [];
   const detectedPlugins = new Set<string>();
+  const detectedVskillPlugins = new Set<string>();
 
   // Run all detection rules
   for (const rule of DETECTION_RULES) {
@@ -362,17 +371,26 @@ export function detectProjectType(projectPath: string = process.cwd()): ProjectT
       if (rule.detect(projectPath)) {
         detectedTypes.push(rule.type);
         rule.plugins.forEach((p) => detectedPlugins.add(p));
+        if (rule.vskillPlugins) {
+          rule.vskillPlugins.forEach((p) => detectedVskillPlugins.add(p));
+        }
       }
     } catch {
       // Ignore detection errors
     }
   }
 
-  return {
+  const result: ProjectTypeResult = {
     types: detectedTypes,
     plugins: Array.from(detectedPlugins),
     latencyMs: performance.now() - startTime,
   };
+
+  if (detectedVskillPlugins.size > 0) {
+    result.vskillPlugins = Array.from(detectedVskillPlugins);
+  }
+
+  return result;
 }
 
 /**
