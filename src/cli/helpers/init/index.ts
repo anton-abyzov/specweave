@@ -117,6 +117,12 @@ export {
   type RepoConnectResult,
 } from './repo-connect.js';
 
+// Skill-creator auto-installer (v1.0.548+)
+export {
+  ensureSkillCreator,
+  type EnsureSkillCreatorResult,
+} from './skill-creator-installer.js';
+
 // Smart .gitignore generator (v1.0.130+)
 export {
   generateSmartGitignore,

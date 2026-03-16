@@ -52,13 +52,18 @@ Wait for the user to select a pattern by name or number. The user responds in na
 
 ### Step 4: Check Skill-Creator Plugin
 
-Verify Anthropic's official skill-creator is available:
+Verify Anthropic's official skill-creator is available (local-first, then global fallback):
 
 ```bash
-SKILL_CREATOR_PATH=$(find ~/.claude/plugins/cache/claude-plugins-official/skill-creator -name "SKILL.md" -maxdepth 3 2>/dev/null | head -1)
+# Check local project copy first (auto-installed by specweave init)
+SKILL_CREATOR_PATH=".claude/skills/skill-creator/SKILL.md"
+if [ ! -f "$SKILL_CREATOR_PATH" ]; then
+  # Fall back to global plugin cache
+  SKILL_CREATOR_PATH=$(find ~/.claude/plugins/cache/claude-plugins-official/skill-creator -name "SKILL.md" -maxdepth 3 2>/dev/null | head -1)
+fi
 if [ -z "$SKILL_CREATOR_PATH" ]; then
   echo "ERROR: Anthropic's skill-creator plugin is not installed."
-  echo "Install it via: claude plugin install skill-creator"
+  echo "Install it via: claude install-skill https://github.com/anthropics/claude-code/tree/main/skill-creator"
   echo ""
   echo "The skill-creator is required to build tested, benchmarked skills."
   exit 1
@@ -66,6 +71,18 @@ fi
 ```
 
 ### Step 5: Delegate to Skill-Creator
+
+**Slug dedup guard** — before delegating, check if a skill with this slug already exists:
+
+```bash
+SKILL_SLUG="$SELECTED_PATTERN_SLUG"   # e.g. "error-handling"
+SKILL_DIR=".claude/skills/$SKILL_SLUG"
+if [ -d "$SKILL_DIR" ] && [ -f "$SKILL_DIR/SKILL.md" ]; then
+  echo "Skill '$SKILL_SLUG' already exists at $SKILL_DIR/SKILL.md -- skipping generation."
+  # Mark signal as generated in skill-signals.json and continue to next pattern
+  exit 0
+fi
+```
 
 Invoke the skill-creator with the selected pattern context:
 

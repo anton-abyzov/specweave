@@ -31,6 +31,10 @@ import { toDescription, AdfDocument } from './content-format-adapter.js';
 import { getEpicLinkFieldForProject } from './jira-field-discovery.js';
 import { searchAllIssues } from './jira-paginated-search.js';
 import axios, { AxiosInstance } from 'axios';
+import { CircuitBreakerRegistry } from '../../../src/core/sync/circuit-breaker-registry.js';
+import { SyncRetryQueue } from '../../../src/core/sync/sync-retry-queue.js';
+import { SyncError } from '../../../src/core/errors/sync-error.js';
+import { LockManager } from '../../../src/utils/lock-manager.js';
 
 /**
  * Build a JIRA story description from a UserStory.
@@ -88,16 +92,32 @@ export interface JiraConfig {
   projectKey: string; // e.g., SPEC
 }
 
+export interface JiraSpecSyncOptions {
+  circuitBreakerRegistry?: CircuitBreakerRegistry;
+  retryQueue?: SyncRetryQueue;
+  lockDir?: string;
+  incrementId?: string;
+  featureId?: string;
+}
+
 export class JiraSpecSync {
   private specManager: SpecMetadataManager;
   private client: AxiosInstance;
   private config: JiraConfig;
   private projectRoot: string;
+  private circuitBreakerRegistry?: CircuitBreakerRegistry;
+  private retryQueue?: SyncRetryQueue;
+  private incrementId: string;
+  private featureId: string;
 
-  constructor(config: JiraConfig, projectRoot: string = process.cwd(), projectId?: string) {
+  constructor(config: JiraConfig, projectRoot: string = process.cwd(), projectId?: string, options?: JiraSpecSyncOptions) {
     this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
+    this.circuitBreakerRegistry = options?.circuitBreakerRegistry;
+    this.retryQueue = options?.retryQueue;
+    this.incrementId = options?.incrementId ?? '';
+    this.featureId = options?.featureId ?? '';
 
     // Create Jira API client — baseURL set dynamically via init()
     this.client = axios.create({
@@ -111,6 +131,47 @@ export class JiraSpecSync {
         'Content-Type': 'application/json'
       }
     });
+  }
+
+  /**
+   * Check circuit breaker before making API calls.
+   */
+  private checkCircuitBreaker(): void {
+    if (!this.circuitBreakerRegistry) return;
+    const breaker = this.circuitBreakerRegistry.get('jira');
+    if (!breaker.canSync()) {
+      throw new SyncError('jira', 0, '', 'Circuit breaker open for jira');
+    }
+  }
+
+  /**
+   * Record success on circuit breaker.
+   */
+  private recordApiSuccess(): void {
+    if (!this.circuitBreakerRegistry) return;
+    this.circuitBreakerRegistry.get('jira').recordSuccess();
+  }
+
+  /**
+   * Record failure on circuit breaker and optionally enqueue retry.
+   */
+  private async recordApiFailure(error: unknown, operation: string): Promise<void> {
+    const httpStatus = (error as any)?.response?.status ?? 0;
+
+    if (this.circuitBreakerRegistry) {
+      this.circuitBreakerRegistry.get('jira').recordFailure();
+    }
+
+    if (this.retryQueue && httpStatus >= 500) {
+      await this.retryQueue.enqueue({
+        incrementId: this.incrementId,
+        provider: 'jira',
+        featureId: this.featureId,
+        projectPath: this.projectRoot,
+        projectName: this.config.projectKey,
+        error: `${httpStatus} ${operation}: ${(error as Error)?.message ?? String(error)}`,
+      });
+    }
   }
 
   /**
@@ -129,6 +190,8 @@ export class JiraSpecSync {
    */
   async syncSpecToJira(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing spec ${specId} to Jira Epic...`);
+
+    this.checkCircuitBreaker();
 
     try {
       // 1. Load spec
@@ -168,6 +231,7 @@ export class JiraSpecSync {
       // 3. Sync user stories as Jira Stories
       const changes = await this.syncUserStories(epic.key, spec);
 
+      this.recordApiSuccess();
       console.log('✅ Sync complete!');
 
       return {
@@ -180,6 +244,7 @@ export class JiraSpecSync {
       };
 
     } catch (error: any) {
+      await this.recordApiFailure(error, 'syncSpecToJira');
       const axiosData = error?.response?.data;
       const detail = axiosData ? JSON.stringify(axiosData) : '';
       console.error('❌ Error syncing to Jira:', error?.message || error, detail ? `\n   Response: ${detail}` : '');
@@ -197,6 +262,8 @@ export class JiraSpecSync {
    */
   async syncFromJira(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing FROM Jira to spec ${specId}...`);
+
+    this.checkCircuitBreaker();
 
     try {
       // 1. Load spec
@@ -258,6 +325,7 @@ export class JiraSpecSync {
       };
 
     } catch (error) {
+      await this.recordApiFailure(error, 'syncFromJira');
       console.error('❌ Error syncing FROM Jira:', error);
       return {
         success: false,

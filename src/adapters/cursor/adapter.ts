@@ -83,6 +83,7 @@ export class CursorAdapter extends AdapterBase {
     const cursorDir = path.join(options.projectPath, '.cursor');
     await fs.ensureDir(cursorDir);
     await fs.ensureDir(path.join(cursorDir, 'context'));
+    await fs.ensureDir(path.join(cursorDir, 'rules'));
 
     // Copy files
     await super.install(options);
