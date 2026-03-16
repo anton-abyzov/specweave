@@ -46,8 +46,11 @@ When you describe what you want, your AI routes internally to the right skill. Y
 | "Build me X" / "Let's add Y" | `/sw:increment` → spec + plan + tasks |
 | "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
 | "Ship it" / "We're done" | `/sw:done` → quality gates + close |
-| "Split this into teams" | `/sw:team-lead` → parallel agents |
-| "Review the code" | `/sw:grill` → critical code review |
+| "Split this into teams" | `/sw:team-lead` → parallel agents (implement mode) |
+| "Brainstorm approaches for X" | `/sw:team-lead` → parallel perspectives (brainstorm mode) |
+| "Plan X in parallel" | `/sw:team-lead` → PM + Architect agents (planning mode) |
+| "Review the code" | `/sw:code-reviewer` → 6 parallel reviewers |
+| "Grill the code" | `/sw:grill` → critical audit before close |
 
 You can also invoke these directly for fine-grained control — but you rarely need to.
 
