@@ -5,7 +5,7 @@ hooks:
   Stop:
     - hooks:
         - type: command
-          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/spec-validation-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"approve\"}")'
+          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/spec-validation-guard approve
 ---
 
 # Validate Increment

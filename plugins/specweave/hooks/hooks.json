@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/pre-tool-use.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/pre-tool-use"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/increment-existence-guard.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/guards/increment-existence-guard"
           }
         ]
       }
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/session-start.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"continue\\\":true}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/session-start continue"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" user-prompt-submit approve"
           }
         ]
       }
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"continue\\\":true}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" pre-compact continue"
           }
         ]
       }
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/post-tool-use.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"continue\\\":true}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/post-tool-use continue"
           }
         ]
       },
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/post-tool-use-analytics.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"continue\\\":true}\")'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/post-tool-use-analytics continue"
           }
         ]
       }
@@ -76,17 +76,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-reflect.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" stop-reflect approve",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-auto-v5.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" stop-auto-v5 approve",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-sync.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" stop-sync approve",
             "timeout": 15000
           }
         ]
