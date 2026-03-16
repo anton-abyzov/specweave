@@ -13,6 +13,7 @@
 import {
   chmodSync,
   copyFileSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -446,7 +447,9 @@ export function copyPluginSkillsToProject(
     return { success: true, sha, skipped: true };
   }
 
-  // 5. Copy each skill's SKILL.md to .claude/skills/{skillName}/
+  // 5. Recursively copy each skill directory to .claude/skills/{skillName}/
+  //    Copies ALL files (SKILL.md, agents/, phases/, templates/, evals/, etc.)
+  //    so that SKILL.md references to subdirectories resolve correctly.
   const targetSkillsBase = join(projectRoot, '.claude', 'skills');
   let copiedCount = 0;
 
@@ -455,10 +458,10 @@ export function copyPluginSkillsToProject(
     for (const skillName of skillDirs) {
       const skillSourceDir = join(skillsDir, skillName);
 
-      // Skip non-directories
+      // Skip non-directories and symlinks
       try {
-        const stat = statSync(skillSourceDir);
-        if (!stat.isDirectory()) continue;
+        const st = lstatSync(skillSourceDir);
+        if (!st.isDirectory()) continue;
       } catch {
         continue;
       }
@@ -466,50 +469,44 @@ export function copyPluginSkillsToProject(
       const skillMdPath = join(skillSourceDir, 'SKILL.md');
       if (!existsSync(skillMdPath)) continue;
 
-      // Create target directory and copy SKILL.md
+      // Recursively copy all files in this skill directory
       const targetDir = join(targetSkillsBase, skillName);
-      mkdirSync(targetDir, { recursive: true });
-      copyFileSync(skillMdPath, join(targetDir, 'SKILL.md'));
-      copiedCount++;
-
-      // Also copy any agents/*.md files if present
-      const agentsDir = join(skillSourceDir, 'agents');
-      if (existsSync(agentsDir)) {
-        const targetAgentsDir = join(targetDir, 'agents');
-        mkdirSync(targetAgentsDir, { recursive: true });
+      const allFiles = readdirSync(skillSourceDir, { recursive: true, encoding: 'utf-8' });
+      for (const file of allFiles) {
+        const srcPath = join(skillSourceDir, file);
         try {
-          const agentFiles = readdirSync(agentsDir, { encoding: 'utf-8' });
-          for (const agentFile of agentFiles) {
-            if (agentFile.endsWith('.md')) {
-              copyFileSync(join(agentsDir, agentFile), join(targetAgentsDir, agentFile));
-            }
-          }
+          const st = lstatSync(srcPath);
+          if (!st.isFile()) continue; // skip directories and symlinks
+          const destPath = join(targetDir, file);
+          mkdirSync(dirname(destPath), { recursive: true });
+          copyFileSync(srcPath, destPath);
         } catch {
-          // Non-fatal
+          // Non-fatal: skip unreadable files
         }
       }
+      copiedCount++;
     }
   } catch (err) {
     return { success: false, sha, error: `Failed to copy skills: ${err}` };
   }
 
-  // 6. Copy hooks to .claude/hooks/ if present
+  // 6. Recursively copy hooks to .claude/hooks/ if present
+  //    Includes subdirectories (lib/, v2/, universal/) that top-level hooks reference.
   const hooksDir = join(sourceDir, 'hooks');
   if (existsSync(hooksDir)) {
     const targetHooksDir = join(projectRoot, '.claude', 'hooks');
-    mkdirSync(targetHooksDir, { recursive: true });
     try {
-      const hookFiles = readdirSync(hooksDir, { encoding: 'utf-8' });
+      const hookFiles = readdirSync(hooksDir, { recursive: true, encoding: 'utf-8' });
       for (const hookFile of hookFiles) {
         const srcPath = join(hooksDir, hookFile);
-        const destPath = join(targetHooksDir, hookFile);
         try {
-          const stat = statSync(srcPath);
-          if (stat.isFile()) {
-            copyFileSync(srcPath, destPath);
-            if (hookFile.endsWith('.sh')) {
-              chmodSync(destPath, 0o755);
-            }
+          const st = lstatSync(srcPath);
+          if (!st.isFile()) continue; // skip directories and symlinks
+          const destPath = join(targetHooksDir, hookFile);
+          mkdirSync(dirname(destPath), { recursive: true });
+          copyFileSync(srcPath, destPath);
+          if (hookFile.endsWith('.sh')) {
+            chmodSync(destPath, 0o755);
           }
         } catch {
           // Non-fatal
