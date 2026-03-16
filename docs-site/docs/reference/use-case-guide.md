@@ -28,6 +28,10 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Work autonomously (hours) | `/sw:auto` | Command |
 | Work task-by-task manually | `/sw:do` | Command |
 | Work with multiple agents | `/sw:auto-parallel` | Command |
+| Orchestrate parallel teams | `/sw:team-lead "feature"` | Skill |
+| Brainstorm with agent perspectives | `/sw:team-lead "brainstorm X"` | Skill |
+| Plan with PM + Architect in parallel | `/sw:team-lead "plan X"` | Skill |
+| Research a topic with agents | `/sw:team-lead "research X"` | Skill |
 | Check auto mode progress | `/sw:auto-status` | Command |
 | Get React/Vue/Angular help | `/frontend:architect` | Skill |
 | Get Node.js API help | `/backend:nodejs` | Skill |
@@ -49,6 +53,8 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Get test strategy help | `/testing:qa` | Skill |
 | Write E2E tests | `/testing:e2e` | Skill |
 | Code review my changes | `/sw:code-reviewer` | Skill |
+| Review a specific PR | `/sw:code-reviewer --pr 42` | Skill |
+| Cross-repo code review | `/sw:code-reviewer --cross-repo` | Skill |
 
 ### Completing & Managing Work
 

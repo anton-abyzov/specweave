@@ -207,7 +207,8 @@ Ensure code quality and test coverage.
 | `sw:tdd-green` | core | Minimal implementation to pass |
 | `sw:tdd-refactor` | core | Improve code quality |
 | `sw:tdd-cycle` | core | Full TDD workflow |
-| `sw:code-reviewer` | core | Elite code review with AI techniques |
+| `sw:code-reviewer` | core | Elite multi-agent code review (6 parallel reviewers) |
+| `sw:team-lead` | core | Phase-agnostic orchestrator (brainstorm, plan, implement, review, research, test) |
 | `sw:increment-quality-judge-v2` | core | LLM-as-Judge quality assessment |
 | `sw:debug` | core | Systematic 4-phase debugging with escalation protocol |
 | `unit-testing` | testing | Unit test patterns and Vitest |
@@ -230,17 +231,52 @@ Ensure code quality and test coverage.
 
 ### code-reviewer
 
-**Purpose**: AI-assisted code review.
+**Purpose**: Elite multi-agent code review. Spawns up to 6 specialized reviewer agents in parallel, then aggregates findings into a unified report with deduplication and severity ranking.
 
 ```bash
-/sw:code-reviewer  # Review recent changes
+/sw:code-reviewer                    # Auto-detect scope (PR, changes, or project)
+/sw:code-reviewer --pr 42            # Review a specific PR
+/sw:code-reviewer --changes          # Review uncommitted changes
+/sw:code-reviewer --increment 0042   # Review changes from an increment
+/sw:code-reviewer --cross-repo       # Aggregate across umbrella repos
 ```
 
-**Checks:**
-- OWASP security vulnerabilities
-- Performance anti-patterns
-- Code quality metrics
-- Technical debt assessment
+**Specialized Reviewers (spawned in parallel):**
+- **Logic** — bugs, edge cases, error handling, race conditions
+- **Security** — OWASP Top 10, auth, secrets, injection
+- **Performance** — N+1 queries, memory leaks, blocking ops
+- **Silent Failures** — empty catches, swallowed errors, missing `.catch()`
+- **Type Design** — unsafe assertions, overly broad types, missing invariants
+- **Spec Compliance** — AC verification, scope creep detection (increment scope only)
+
+**Smart routing**: Not all 6 reviewers run every time. Reviewers are selected based on what files changed (e.g., TypeScript files trigger the type reviewer, database files trigger performance).
+
+**vs `/sw:grill`**: Grill is increment-scoped and runs during closure (mandatory gate). Code-reviewer is general-purpose — use it anytime on any scope.
+
+### team-lead
+
+**Purpose**: Phase-agnostic orchestrator for parallel multi-agent work. Auto-detects operating mode from your intent.
+
+```bash
+/sw:team-lead "Build checkout flow"              # Implementation mode (default)
+/sw:team-lead "Brainstorm auth approaches"       # Brainstorm mode
+/sw:team-lead "Plan the payment system"          # Planning mode
+/sw:team-lead "Review recent changes"            # Review mode (delegates to code-reviewer)
+/sw:team-lead "Research caching strategies"      # Research mode
+/sw:team-lead "Write tests for checkout"         # Testing mode
+/sw:team-lead --mode plan "user dashboard"       # Explicit mode override
+```
+
+**6 Operating Modes:**
+
+| Mode | What It Does | Increment? |
+|------|-------------|------------|
+| **Brainstorm** | Spawns advocate + critic + pragmatist agents, synthesizes decision matrix | No |
+| **Planning** | PM + Architect agents in parallel for richer specs | Creates one |
+| **Implementation** | Domain agents (frontend, backend, database) with contract-first spawning | Required |
+| **Review** | Delegates to `/sw:code-reviewer` for parallel multi-agent review | Optional |
+| **Research** | 1-3 researcher agents exploring different facets of a topic | No |
+| **Testing** | Testing agents split by layer (unit, integration, E2E) | Required |
 
 ---
 

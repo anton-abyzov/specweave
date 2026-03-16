@@ -33,12 +33,16 @@ The full agent team lifecycle maps directly to six SDK primitives:
 ```
 
 **Each phase in plain English:**
-1. **TeamCreate** — `/sw:team-lead "feature"` analyzes your feature, identifies domains (frontend, backend, shared)
-2. **TaskCreate (x3)** — Creates one increment per domain, each with its own spec, plan, and tasks
-3. **Spawn Agents** — Launches parallel agents via Task tool (background), each with domain expertise
-4. **Work in Parallel** — Agents run `/sw:auto` independently on their own increments, no file overlap
-5. **Shutdown** — Each agent runs `/sw:grill` quality gates before completing
-6. **TeamDelete** — `/sw:team-merge` merges work in dependency order, syncs to GitHub/JIRA, cleans up state
+1. **TeamCreate** — `/sw:team-lead "feature"` detects your intent and selects a mode (brainstorm, plan, implement, review, research, or test)
+2. **TaskCreate** — Creates tasks per domain (implementation) or per perspective (brainstorm) or per scope (review)
+3. **Spawn Agents** — Launches parallel agents via Task tool, each with domain or role expertise
+4. **Work in Parallel** — Agents work independently: implementing code, reviewing files, researching topics, or writing specs
+5. **Shutdown** — Agents signal completion; team-lead handles quality gates centrally
+6. **TeamDelete** — `/sw:team-merge` merges work, syncs to GitHub/JIRA, cleans up state
+
+:::tip Not Just Implementation
+Team-lead works for any phase of development. Say "brainstorm auth approaches" for parallel ideation, "plan the checkout flow" for PM + Architect in parallel, or "review my changes" for multi-agent code review.
+:::
 
 ---
 
@@ -241,6 +245,10 @@ SpecWeave assigns domain-specific expertise to each agent:
 │   database      backend:database-optimizer  Migrations, schemas, ORM    │
 │   devops        infra:devops                Docker, K8s, CI/CD, IaC     │
 │   qa            testing:qa                  Playwright, Vitest, E2E     │
+│   reviewer      sw:code-reviewer            Logic, security, types      │
+│   researcher    (built-in template)         Codebase + web research     │
+│   pm            sw:pm                       User stories, ACs, specs    │
+│   architect     sw:architect                System design, ADRs         │
 │   general       general-purpose             Versatile, any task         │
 │                                                                          │
 │   All agents use: Claude Opus 4.6 for maximum reasoning capability      │

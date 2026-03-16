@@ -199,6 +199,23 @@ You just experienced **spec-driven development**:
 Even for bug fixes, SpecWeave creates a spec and plan before implementation. If you discover mid-implementation that the approach needs to change, **update the plan first** — then adjust the code. The plan is always the source of truth. See [Philosophy: Plan as Source of Truth](/docs/overview/philosophy#1-plan-as-source-of-truth).
 :::
 
+### Code Review (Multi-Agent)
+
+```bash
+/sw:code-reviewer                    # Review uncommitted changes with 6 parallel reviewers
+/sw:code-reviewer --pr 42            # Review a specific pull request
+/sw:code-reviewer --cross-repo       # Review across all repos in umbrella
+```
+
+### Team Orchestration (Agent Teams)
+
+```bash
+/sw:team-lead "Build checkout flow"           # Implementation: parallel domain agents
+/sw:team-lead "Brainstorm auth approaches"    # Brainstorm: 3 perspective agents
+/sw:team-lead "Plan the payment system"       # Planning: PM + Architect in parallel
+/sw:team-lead "Research caching strategies"   # Research: parallel topic exploration
+```
+
 ### Parallel Development (Multiple Agents)
 
 Run multiple AI agents on the same repository — local Claude Code sessions, cloud instances, or [OpenClaw](https://openclaw.ai) agents. SpecWeave coordinates them through increment isolation:
@@ -251,10 +268,11 @@ Each agent has its own spec, plan, and task list. No overlap, no conflicts. Chec
 
 ### Explore Advanced Features
 
+- [Agent Teams & Swarms](./guides/agent-teams-and-swarms) - Parallel multi-agent development with `/sw:team-lead`
 - [Multi-Project Setup](./guides/multi-project-setup) - Coordinate multiple repositories
 - [External Tools](./academy/specweave-essentials/07-external-tools) - GitHub/JIRA/ADO sync
 - [Hooks](/docs/glossary/terms/hooks) - Customize behavior
-- [Skills vs Agents](/docs/glossary/terms/skills-vs-agents) - 100+ specialized skills
+- [Skills Reference](./reference/skills) - 100+ specialized skills including code review and team orchestration
 
 ### Real-World Examples
 
