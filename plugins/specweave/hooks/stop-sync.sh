@@ -178,6 +178,11 @@ get_best_event_type() {
 # Resolve github-sync-handler path (for user-story event routing)
 GITHUB_SYNC_HANDLER="$HANDLER_DIR/github-sync-handler.sh"
 
+# Resolve living-specs-handler path (for lifecycle event routing)
+# BUGFIX: living-specs-handler was never called after v1.0.148 migration from processor.js
+# This handler updates .specweave/docs/internal/specs/ on lifecycle changes
+LIVING_SPECS_HANDLER="$HANDLER_DIR/living-specs-handler.sh"
+
 for INC_ID in $INCREMENTS_TO_SYNC; do
     [ -z "$INC_ID" ] && continue
 
@@ -191,6 +196,17 @@ for INC_ID in $INCREMENTS_TO_SYNC; do
     else
         SYNC_FAILED=$((SYNC_FAILED + 1))
         log "Sync failed: $INC_ID"
+    fi
+
+    # Route lifecycle events to living-specs-handler
+    # Updates living docs (specs/) on increment create/done/archive/reopen
+    if [ -f "$LIVING_SPECS_HANDLER" ]; then
+        case "$EVENT_TYPE" in
+            increment.created|increment.done|increment.archived|increment.reopened)
+                log "Routing lifecycle event to living-specs-handler: $EVENT_TYPE $INC_ID"
+                run_with_timeout 30 bash "$LIVING_SPECS_HANDLER" "$EVENT_TYPE" "$INC_ID"
+                ;;
+        esac
     fi
 
     # Route user-story events to github-sync-handler (v1.0.262+)
