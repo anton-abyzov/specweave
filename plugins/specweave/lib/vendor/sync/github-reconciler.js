@@ -32,6 +32,10 @@ function hasAnyGitHubSyncData(metadata) {
         return true;
     return false;
 }
+// Statuses that warrant GitHub search — allowlist so unknown values default to "skip" (safe for rate limiting)
+const SEARCHABLE_STATUSES = new Set([
+    'active', 'planning', 'in-progress', 'backlog', 'ready_for_review', 'paused',
+]);
 export class GitHubReconciler {
     constructor(options) {
         this.client = null;
@@ -236,6 +240,9 @@ This typically happens when:
         // Only scan active increments directory — archived/abandoned issues are already closed
         // and don't need reconciliation. This reduces API calls from O(all_increments) to O(active).
         const dirsToScan = [incrementsDir];
+        let searchesMade = 0;
+        let skippedDueToBudget = 0;
+        const MAX_SEARCHES_PER_SCAN = 20;
         for (const dir of dirsToScan) {
             const entries = await fs.readdir(dir, { withFileTypes: true });
             const isArchiveDir = dir !== incrementsDir;
@@ -251,10 +258,29 @@ This typically happens when:
                 try {
                     const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
                     const state = this.extractGitHubState(entry.name, incrementPath, metadata);
-                    // For archived increments, skip the expensive GitHub API search fallback —
-                    // only use metadata-based issue references (they're already stored)
-                    if (!isArchiveDir && state.userStoryIssues.length === 0 && state.featureId && this.client) {
-                        await this.searchGitHubForIssues(state);
+                    // Skip expensive GitHub API search for non-active statuses, archived increments,
+                    // and increments with a negative cache marker (previously searched, no results found)
+                    const status = metadata.status || 'unknown';
+                    if (!isArchiveDir && state.userStoryIssues.length === 0 && state.featureId && this.client
+                        && SEARCHABLE_STATUSES.has(status)
+                        && !metadata.github?.noIssuesFound) {
+                        if (searchesMade >= MAX_SEARCHES_PER_SCAN) {
+                            skippedDueToBudget++;
+                        }
+                        else {
+                            await this.searchGitHubForIssues(state);
+                            searchesMade++;
+                            // Write negative cache if search found nothing and no main issue exists
+                            if (state.userStoryIssues.length === 0 && !state.mainIssue) {
+                                try {
+                                    const updated = { ...metadata, github: { ...metadata.github, searched: true, searchedAt: new Date().toISOString(), noIssuesFound: true } };
+                                    await fs.writeFile(metadataPath, JSON.stringify(updated, null, 2), 'utf-8');
+                                }
+                                catch {
+                                    // Non-fatal: negative cache write failure doesn't block reconciliation
+                                }
+                            }
+                        }
                     }
                     if (state.mainIssue || state.userStoryIssues.length > 0) {
                         results.push(state);
@@ -264,6 +290,9 @@ This typically happens when:
                     this.logger.log(`  ⚠️  Skipping ${entry.name}: Invalid metadata.json`);
                 }
             }
+        }
+        if (skippedDueToBudget > 0) {
+            this.logger.log(`  ⚠️  Skipped ${skippedDueToBudget} search(es) due to budget exhaustion (limit: ${MAX_SEARCHES_PER_SCAN})`);
         }
         return results;
     }
