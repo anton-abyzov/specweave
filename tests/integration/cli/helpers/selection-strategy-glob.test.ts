@@ -35,38 +35,38 @@ describe('selection-strategy glob integration', () => {
     'cloudops-tf-config-nuget-packages',
     'cloudops-tf-config-s3-bucket',
     'cloudops-tf-infrastructure-tooling-vpc',
-    'Colibri_DB',
-    'Colibri_Stored_Procs',
-    'colibri-containers',
-    'colibri-rubi-scripts',
-    'Colibri.Api',
-    'Colibri.Identity.Keycloak',
-    'Colibri.Identity.Widget',
-    'Colibri.Platform.API',
-    'Colibri.Platform.Web',
-    'Colibri.Shared.Models',
+    'Nexus_DB',
+    'Nexus_Stored_Procs',
+    'nexus-containers',
+    'nexus-rubi-scripts',
+    'Nexus.Api',
+    'Nexus.Identity.Keycloak',
+    'Nexus.Identity.Widget',
+    'Nexus.Platform.API',
+    'Nexus.Platform.Web',
+    'Nexus.Shared.Models',
   ];
 
-  describe('*colibri.identity* pattern', () => {
-    it('should match only repos containing "colibri.identity" (case-insensitive)', () => {
-      const matched = matchRepos(mckissockRepos, '*colibri.identity*');
+  describe('*nexus.identity* pattern', () => {
+    it('should match only repos containing "nexus.identity" (case-insensitive)', () => {
+      const matched = matchRepos(mckissockRepos, '*nexus.identity*');
       expect(matched).toEqual([
-        'Colibri.Identity.Keycloak',
-        'Colibri.Identity.Widget',
+        'Nexus.Identity.Keycloak',
+        'Nexus.Identity.Widget',
       ]);
     });
 
-    it('should NOT match repos with just "colibri" but no ".identity"', () => {
-      const matched = matchRepos(mckissockRepos, '*colibri.identity*');
-      expect(matched).not.toContainEqual('Colibri_DB');
-      expect(matched).not.toContainEqual('Colibri_Stored_Procs');
-      expect(matched).not.toContainEqual('colibri-containers');
-      expect(matched).not.toContainEqual('Colibri.Api');
-      expect(matched).not.toContainEqual('Colibri.Platform.API');
+    it('should NOT match repos with just "nexus" but no ".identity"', () => {
+      const matched = matchRepos(mckissockRepos, '*nexus.identity*');
+      expect(matched).not.toContainEqual('Nexus_DB');
+      expect(matched).not.toContainEqual('Nexus_Stored_Procs');
+      expect(matched).not.toContainEqual('nexus-containers');
+      expect(matched).not.toContainEqual('Nexus.Api');
+      expect(matched).not.toContainEqual('Nexus.Platform.API');
     });
 
     it('should NOT match cloudops repos', () => {
-      const matched = matchRepos(mckissockRepos, '*colibri.identity*');
+      const matched = matchRepos(mckissockRepos, '*nexus.identity*');
       const cloudopsMatches = matched.filter(n => n.startsWith('cloudops'));
       expect(cloudopsMatches).toHaveLength(0);
     });
@@ -74,15 +74,15 @@ describe('selection-strategy glob integration', () => {
 
   describe('case-insensitive matching', () => {
     it('should match regardless of case in pattern', () => {
-      expect(matchRepos(mckissockRepos, '*COLIBRI.IDENTITY*')).toEqual([
-        'Colibri.Identity.Keycloak',
-        'Colibri.Identity.Widget',
+      expect(matchRepos(mckissockRepos, '*NEXUS.IDENTITY*')).toEqual([
+        'Nexus.Identity.Keycloak',
+        'Nexus.Identity.Widget',
       ]);
     });
 
     it('should match mixed case repo names with lowercase pattern', () => {
-      expect(matchRepos(mckissockRepos, '*colibri.api*')).toEqual([
-        'Colibri.Api',
+      expect(matchRepos(mckissockRepos, '*nexus.api*')).toEqual([
+        'Nexus.Api',
       ]);
     });
   });
@@ -90,29 +90,29 @@ describe('selection-strategy glob integration', () => {
   describe('dot handling in patterns', () => {
     it('should treat dots as literal characters in minimatch', () => {
       // In minimatch, dots are literal (not regex wildcards)
-      expect(matchRepos(mckissockRepos, '*Colibri.*')).toEqual([
-        'Colibri.Api',
-        'Colibri.Identity.Keycloak',
-        'Colibri.Identity.Widget',
-        'Colibri.Platform.API',
-        'Colibri.Platform.Web',
-        'Colibri.Shared.Models',
+      expect(matchRepos(mckissockRepos, '*Nexus.*')).toEqual([
+        'Nexus.Api',
+        'Nexus.Identity.Keycloak',
+        'Nexus.Identity.Widget',
+        'Nexus.Platform.API',
+        'Nexus.Platform.Web',
+        'Nexus.Shared.Models',
       ]);
     });
 
     it('should NOT match underscore variants with dot pattern', () => {
-      const matched = matchRepos(mckissockRepos, '*Colibri.*');
-      expect(matched).not.toContainEqual('Colibri_DB');
-      expect(matched).not.toContainEqual('Colibri_Stored_Procs');
+      const matched = matchRepos(mckissockRepos, '*Nexus.*');
+      expect(matched).not.toContainEqual('Nexus_DB');
+      expect(matched).not.toContainEqual('Nexus_Stored_Procs');
     });
   });
 
   describe('shortcut patterns', () => {
-    it('should handle "contains: colibri.identity"', () => {
-      const matched = matchRepos(mckissockRepos, 'contains: colibri.identity');
+    it('should handle "contains: nexus.identity"', () => {
+      const matched = matchRepos(mckissockRepos, 'contains: nexus.identity');
       expect(matched).toEqual([
-        'Colibri.Identity.Keycloak',
-        'Colibri.Identity.Widget',
+        'Nexus.Identity.Keycloak',
+        'Nexus.Identity.Widget',
       ]);
     });
 
@@ -124,25 +124,25 @@ describe('selection-strategy glob integration', () => {
 
     it('should handle "ends: .Widget"', () => {
       const matched = matchRepos(mckissockRepos, 'ends: .Widget');
-      expect(matched).toEqual(['Colibri.Identity.Widget']);
+      expect(matched).toEqual(['Nexus.Identity.Widget']);
     });
   });
 
   describe('auto-expansion (plain text without globs)', () => {
     it('should auto-append * to plain text (prefix match)', () => {
-      // "Colibri" → "Colibri*" (matches Colibri.*, Colibri_*)
-      const matched = matchRepos(mckissockRepos, 'Colibri');
-      expect(matched).toContainEqual('Colibri_DB');
-      expect(matched).toContainEqual('Colibri.Api');
-      expect(matched).toContainEqual('Colibri.Identity.Keycloak');
+      // "Nexus" → "Nexus*" (matches Nexus.*, Nexus_*)
+      const matched = matchRepos(mckissockRepos, 'Nexus');
+      expect(matched).toContainEqual('Nexus_DB');
+      expect(matched).toContainEqual('Nexus.Api');
+      expect(matched).toContainEqual('Nexus.Identity.Keycloak');
     });
 
     it('should NOT auto-expand when glob chars are present', () => {
-      // "*colibri*" stays as-is, matches anything with "colibri"
-      const matched = matchRepos(mckissockRepos, '*colibri*');
-      expect(matched).toContainEqual('Colibri_DB');
-      expect(matched).toContainEqual('colibri-containers');
-      expect(matched).toContainEqual('Colibri.Identity.Keycloak');
+      // "*nexus*" stays as-is, matches anything with "nexus"
+      const matched = matchRepos(mckissockRepos, '*nexus*');
+      expect(matched).toContainEqual('Nexus_DB');
+      expect(matched).toContainEqual('nexus-containers');
+      expect(matched).toContainEqual('Nexus.Identity.Keycloak');
     });
   });
 });
