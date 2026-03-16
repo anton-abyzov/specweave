@@ -474,35 +474,10 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
-# This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
-# Args: $1=plugin name (e.g., "frontend"), $2=marketplace (e.g., "vskill")
-# Returns: 0 if installed, 1 if not installed
-check_plugin_installed_from_json() {
-  local plugin="$1"
-  local marketplace="$2"
-  local registry_path="${HOME}/.claude/plugins/installed_plugins.json"
-
-  # File must exist
-  [[ ! -f "$registry_path" ]] && return 1
-
-  # Must have jq for reliable JSON parsing
-  if ! command -v jq >/dev/null 2>&1; then
-    return 1  # Fallback to CLI check if jq not available
-  fi
-
-  # Check if plugin exists in registry
-  # Format: {"plugins": {"frontend@vskill": [...], ...}}
-  local full_name="${plugin}@${marketplace}"
-  local has_plugin
-  has_plugin=$(jq -r --arg key "$full_name" '.plugins[$key] // null' "$registry_path" 2>/dev/null)
-
-  if [[ "$has_plugin" != "null" ]] && [[ -n "$has_plugin" ]]; then
-    return 0  # Installed
-  else
-    return 1  # Not installed
-  fi
-}
+# ==============================================================================
+# check_plugin_installed_from_json REMOVED (v1.0.535)
+# Plugins are now pre-installed at init time. No runtime installation checks needed.
+# ==============================================================================
 
 # ==============================================================================
 # KEYWORD-BASED PLUGIN DETECTION REMOVED (v1.0.159)
@@ -1192,13 +1167,48 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
             fi
 
             # ==================================================================
-            # PLUGIN INSTALLATION/SUGGESTION — REMOVED (v1.0.535)
+            # ON-DEMAND PLUGIN INSTALL (v1.0.540 — restored)
             # ==================================================================
-            # On-demand plugin installation via `claude plugin install` has been
-            # removed. All plugins are now installed at init time by copying
-            # SKILL.md files directly into .claude/skills/ (project-local).
-            # Use `specweave refresh-plugins` to update plugin skills.
+            # When LLM detect-intent identifies plugins needed for this prompt,
+            # install any that aren't already present. Uses specweave CLI's
+            # --plugin flag for targeted install. Session markers prevent
+            # duplicate installs within the same Claude Code session.
             # ==================================================================
+            DETECTED_PLUGINS=$(echo "$JSON_OUTPUT" | jq -r '.plugins[]? // empty' 2>/dev/null)
+            if [[ -n "$DETECTED_PLUGINS" ]]; then
+              CACHE_BASE="${HOME}/.claude/plugins/cache/specweave"
+              SKILLS_BASE="${SW_PROJECT_ROOT:-.}/.claude/skills"
+              SESSION_MARKER_DIR="${TMPDIR:-/tmp}/specweave-ondemand-$$"
+              mkdir -p "$SESSION_MARKER_DIR" 2>/dev/null
+              ONDEMAND_INSTALL_PID=""
+
+              while IFS= read -r PLUGIN_NAME; do
+                [[ -z "$PLUGIN_NAME" ]] && continue
+                [[ "$PLUGIN_NAME" == "sw" ]] && continue  # core always installed
+
+                # Idempotency: skip if already installed or already attempted this session
+                if [[ -d "$CACHE_BASE/$PLUGIN_NAME" ]] || \
+                   [[ -d "$SKILLS_BASE/$PLUGIN_NAME" ]] || \
+                   [[ -f "$SESSION_MARKER_DIR/$PLUGIN_NAME" ]]; then
+                  continue
+                fi
+
+                # Install via CLI (handles both native and direct-copy modes)
+                specweave refresh-plugins --plugin "$PLUGIN_NAME" --quiet 2>/dev/null &
+                ONDEMAND_INSTALL_PID=$!
+                touch "$SESSION_MARKER_DIR/$PLUGIN_NAME" 2>/dev/null
+
+                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Installed plugin: ${PLUGIN_NAME} (on-demand)."$'\n'
+              done <<< "$DETECTED_PLUGINS"
+
+              # Wait for background install with 5s timeout
+              if [[ -n "$ONDEMAND_INSTALL_PID" ]]; then
+                ( sleep 5 && kill "$ONDEMAND_INSTALL_PID" 2>/dev/null ) &
+                TIMEOUT_PID=$!
+                wait "$ONDEMAND_INSTALL_PID" 2>/dev/null
+                kill "$TIMEOUT_PID" 2>/dev/null
+              fi
+            fi
 
             # ==================================================================
             # EXTRACT ROUTING INFO EARLY (v1.0.155 - needed for agent directives)
@@ -1399,9 +1409,6 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
               BRAIN_MSG=""
 
               # Compact router output — one line per decision
-              [[ -n "$PLUGINS_INSTALLED" ]] && BRAIN_MSG+="Plugins loaded: ${PLUGINS_INSTALLED}. "
-              [[ -n "$PLUGINS_ALREADY" ]] && BRAIN_MSG+="Plugins active: ${PLUGINS_ALREADY}. "
-
               if [[ "$INC_ACTION" == "new" || "$INC_ACTION" == "hotfix" ]]; then
                 BRAIN_MSG+="Increment: create \\\"${INC_NAME:-new-feature}\\\" (${INC_ACTION}). "
               elif [[ "$INC_ACTION" == "reopen" ]]; then
@@ -1444,11 +1451,11 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
         fi
 
         # ==================================================================
-        # KEYWORD FALLBACK: PLUGIN INSTALLATION — REMOVED (v1.0.535)
+        # KEYWORD FALLBACK: PLUGIN INSTALLATION (v1.0.540 — note)
         # ==================================================================
-        # Keyword-based plugin installation removed. All plugins are now
-        # installed at init time via `specweave init` (direct file copy
-        # to .claude/skills/). No on-demand marketplace lookups.
+        # On-demand plugin installation restored in v1.0.540 via the LLM
+        # detection path above. Keyword-based fallback is not needed here
+        # because the LLM detect-intent already identifies needed plugins.
         # ==================================================================
 
         # ==================================================================

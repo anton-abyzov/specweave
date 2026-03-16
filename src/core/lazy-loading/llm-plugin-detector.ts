@@ -1232,7 +1232,7 @@ export function formatHookOutput(result: {
   installations: PluginInstallResult[];
   suggestOnly?: boolean;
 }): string {
-  const { detection, installations, suggestOnly } = result;
+  const { detection } = result;
 
   // Always continue (don't block Claude Code)
   const output: { continue: boolean; systemMessage?: string } = {

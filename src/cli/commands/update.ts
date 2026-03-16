@@ -39,7 +39,7 @@ import { npmRegistryFlag } from '../../utils/npm-constants.js';
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
   noPlugins?: boolean;
-  /** Install all plugins (not just router) */
+  /** Install all plugins, not just core (sw). Without this, only sw is refreshed. */
   all?: boolean;
   /** Minimal mode: remove marketplace for clean /plugin output */
   minimal?: boolean;
