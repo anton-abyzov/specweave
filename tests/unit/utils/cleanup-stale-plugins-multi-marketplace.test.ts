@@ -259,4 +259,25 @@ describe('cleanupStalePlugins — multi-marketplace', () => {
     expect(fs.existsSync(targetDir)).toBe(true);
     expect(fs.readFileSync(path.join(targetDir, 'marker.txt'), 'utf-8')).toBe('exists');
   });
+
+  // TC-008: Settings-only discovery — marketplace has no cache AND no manifest
+  it('should remove stale plugins from marketplace with no cache and no manifest', async () => {
+    // No vskill cache dir, no vskill manifest — only a settings entry
+    fs.writeFileSync(settingsPath, JSON.stringify({
+      enabledPlugins: {
+        'sw@specweave': true,
+        'frontend@dead-marketplace': true,
+        'some-plugin@claude-plugins-official': true, // well-known, should be kept
+      },
+    }));
+
+    const result = await cleanupStalePlugins(specweaveMarketplacePath);
+
+    expect(result.success).toBe(true);
+    // dead-marketplace has no cache and no manifest → stale
+    expect(result.removedPlugins).toContain('frontend@dead-marketplace');
+    // specweave and claude-plugins-official should be untouched
+    expect(result.removedPlugins).not.toContain('sw@specweave');
+    expect(result.removedPlugins).not.toContain('some-plugin@claude-plugins-official');
+  });
 });
