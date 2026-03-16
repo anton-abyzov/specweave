@@ -144,8 +144,8 @@ describe('cleanupStalePlugins — multi-marketplace', () => {
     expect(updatedSettings.enabledPlugins['sw@specweave']).toBe(true);
   });
 
-  // TC-003 (AC-US3-03): Skip marketplace with missing manifest
-  it('should skip marketplace when marketplace.json does not exist', async () => {
+  // TC-003 (AC-US3-03): Remove stale plugins from marketplace with missing manifest
+  it('should remove stale plugins when marketplace.json does not exist', async () => {
     // Create vskill cache dir but NO marketplace.json
     fs.mkdirSync(path.join(cacheBase, 'vskill', 'frontend'), { recursive: true });
 
@@ -159,8 +159,10 @@ describe('cleanupStalePlugins — multi-marketplace', () => {
     const result = await cleanupStalePlugins(specweaveMarketplacePath);
 
     expect(result.success).toBe(true);
-    // vskill plugins should NOT be removed (marketplace not resolvable)
-    expect(result.removedPlugins).not.toContain('frontend@vskill');
+    // vskill plugins SHOULD be removed (no manifest = all plugins stale)
+    expect(result.removedPlugins).toContain('frontend@vskill');
+    // sw@specweave should NOT be removed (specweave marketplace has manifest)
+    expect(result.removedPlugins).not.toContain('sw@specweave');
   });
 
   // TC-004 (AC-US3-04): Stale cache directory removal
@@ -203,8 +205,8 @@ describe('cleanupStalePlugins — multi-marketplace', () => {
     expect(result.removedCacheDirs).toEqual([]);
   });
 
-  // TC-006: Malformed marketplace.json = skip
-  it('should skip marketplace with malformed JSON', async () => {
+  // TC-006: Malformed marketplace.json in cache = treat as stale; valid manifest in marketplaces/ = keep
+  it('should handle malformed JSON in cache scan but resolve via marketplaces/', async () => {
     fs.mkdirSync(path.join(cacheBase, 'vskill', 'frontend'), { recursive: true });
 
     const vskillManifestDir = path.join(marketplacesBase, 'vskill', '.claude-plugin');
@@ -218,8 +220,9 @@ describe('cleanupStalePlugins — multi-marketplace', () => {
     const result = await cleanupStalePlugins(specweaveMarketplacePath);
 
     expect(result.success).toBe(true);
-    // Should NOT have removed frontend@vskill since marketplace was unreadable
-    expect(result.removedPlugins).not.toContain('frontend@vskill');
+    // Malformed manifest in cache scan = empty set, but step 2c re-checks
+    // marketplaces/ path which also has malformed JSON = empty set = stale
+    expect(result.removedPlugins).toContain('frontend@vskill');
   });
 
   // TC-007: Symlink cache entry — removes symlink, not target

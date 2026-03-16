@@ -24,6 +24,7 @@ import {
   installPlugin,
   findSpecweaveRoot,
 } from '../../utils/plugin-copier.js';
+import { cleanupStalePlugins } from '../../utils/cleanup-stale-plugins.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { enablePluginsInSettings } from '../helpers/init/claude-plugin-enabler.js';
@@ -236,6 +237,16 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     if (!enabled) {
       log(chalk.yellow('  ⚠ Could not enable plugins in ~/.claude/settings.json'));
     }
+  }
+
+  // Step 4c: Clean up stale plugin references from settings
+  try {
+    const cleanupResult = await cleanupStalePlugins(marketplacePath, options.verbose);
+    if (cleanupResult.removedCount > 0) {
+      log(chalk.green(`  ✓ Cleaned ${cleanupResult.removedCount} stale plugin(s): ${cleanupResult.removedPlugins.join(', ')}`));
+    }
+  } catch {
+    // Non-blocking: cleanup errors don't abort plugin refresh
   }
 
   // Step 5: Summary

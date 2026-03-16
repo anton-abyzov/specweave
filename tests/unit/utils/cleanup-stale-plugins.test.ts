@@ -66,11 +66,11 @@ describe('cleanupStalePlugins', () => {
 
   it('should succeed when no stale plugins found', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
-    writeMarketplace(marketplacePath, [{ name: 'frontend' }, { name: 'backend' }]);
+    writeMarketplace(marketplacePath, [{ name: 'sw' }, { name: 'sw-github' }]);
     writeSettings({
       enabledPlugins: {
-        'frontend@vskill': true,
-        'backend@vskill': true,
+        'sw@specweave': true,
+        'sw-github@specweave': true,
       },
     });
 
@@ -82,10 +82,10 @@ describe('cleanupStalePlugins', () => {
 
   it('should remove plugin not in marketplace', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
-    writeMarketplace(marketplacePath, [{ name: 'frontend' }]);
+    writeMarketplace(marketplacePath, [{ name: 'sw' }]);
     writeSettings({
       enabledPlugins: {
-        'frontend@vskill': true,
+        'frontend-design@claude-plugins-official': true,
         'sw-removed-plugin@specweave': true,
       },
     });
@@ -96,23 +96,23 @@ describe('cleanupStalePlugins', () => {
 
     const result = await cleanupStalePlugins(marketplacePath);
 
-    // State after: stale plugin removed
+    // State after: stale specweave plugin removed, claude-plugins-official untouched
     expect(result.success).toBe(true);
     expect(result.removedCount).toBe(1);
     expect(result.removedPlugins).toContain('sw-removed-plugin@specweave');
 
     const after = readSettings() as { enabledPlugins: Record<string, boolean> };
-    expect(after.enabledPlugins['frontend@vskill']).toBe(true);
+    expect(after.enabledPlugins['frontend-design@claude-plugins-official']).toBe(true);
     expect(after.enabledPlugins['sw-removed-plugin@specweave']).toBeUndefined();
   });
 
   it('should remove known removed plugins even if in marketplace', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
     // sw-tooling is in REMOVED_PLUGINS set
-    writeMarketplace(marketplacePath, [{ name: 'frontend' }, { name: 'sw-tooling' }]);
+    writeMarketplace(marketplacePath, [{ name: 'sw' }, { name: 'sw-tooling' }]);
     writeSettings({
       enabledPlugins: {
-        'frontend@vskill': true,
+        'sw@specweave': true,
         'sw-tooling@specweave': true,
       },
     });
@@ -125,10 +125,10 @@ describe('cleanupStalePlugins', () => {
 
   it('should skip disabled plugins', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
-    writeMarketplace(marketplacePath, [{ name: 'frontend' }]);
+    writeMarketplace(marketplacePath, [{ name: 'sw' }]);
     writeSettings({
       enabledPlugins: {
-        'frontend@vskill': true,
+        'sw@specweave': true,
         'sw-removed@specweave': false, // disabled — should not be removed
       },
     });
@@ -138,13 +138,13 @@ describe('cleanupStalePlugins', () => {
     expect(result.removedCount).toBe(0);
   });
 
-  it('should only remove specweave marketplace plugins', async () => {
+  it('should only remove specweave marketplace plugins, keep well-known external', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
     writeMarketplace(marketplacePath, []);
     writeSettings({
       enabledPlugins: {
-        'some-plugin@other-marketplace': true, // different marketplace, should be kept
-        'sw-gone@specweave': true,             // specweave plugin, not in marketplace
+        'some-plugin@claude-plugins-official': true, // well-known external, should be kept
+        'sw-gone@specweave': true,                   // specweave plugin, not in marketplace
       },
     });
 
@@ -154,7 +154,7 @@ describe('cleanupStalePlugins', () => {
     expect(result.removedPlugins).toContain('sw-gone@specweave');
 
     const after = readSettings() as { enabledPlugins: Record<string, boolean> };
-    expect(after.enabledPlugins['some-plugin@other-marketplace']).toBe(true);
+    expect(after.enabledPlugins['some-plugin@claude-plugins-official']).toBe(true);
   });
 
   it('should fail when marketplace file does not exist', async () => {
@@ -177,17 +177,17 @@ describe('detectStalePlugins', () => {
 
   it('should detect stale plugins without removing them', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
-    writeMarketplace(marketplacePath, [{ name: 'frontend' }]);
+    writeMarketplace(marketplacePath, [{ name: 'sw' }]);
     writeSettings({
       enabledPlugins: {
-        'frontend@vskill': true,
+        'sw@specweave': true,
         'sw-stale@specweave': true,
       },
     });
 
     const stale = await detectStalePlugins(marketplacePath);
     expect(stale).toContain('sw-stale@specweave');
-    expect(stale).not.toContain('frontend@vskill');
+    expect(stale).not.toContain('sw@specweave');
 
     // Verify settings were NOT modified (detect-only)
     const settings = readSettings() as { enabledPlugins: Record<string, boolean> };
