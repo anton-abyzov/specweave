@@ -10,11 +10,14 @@
 # - review: PR reviews, code audits, architecture reviews — no increment needed
 # - brainstorm: Multi-perspective ideation sessions — no increment needed
 # - analysis: Codebase research, exploration, audits — no increment needed
+# - research: Codebase investigation and web research — no increment needed
+# - plan: Parallel planning with PM + Architect — creates its own increment
 #
 # MODE DETECTION (in priority order):
-# 1. team_name prefix: review-*, brainstorm-*, analysis-*, audit-*
+# 1. team_name prefix: review-*, brainstorm-*, analysis-*, audit-*, research-*, plan-*
 # 2. description keywords: "review", "brainstorm", "analyze", "audit", "explore",
-#    "ideate", "pr #", "pull request", "code review", "architecture review"
+#    "ideate", "research", "planning", "pr #", "pull request", "code review",
+#    "architecture review"
 # 3. Default: implementation mode (requires increment)
 #
 # DETECTION (implementation mode only):
@@ -59,7 +62,7 @@ DESCRIPTION_LC=$(echo "$DESCRIPTION" | tr '[:upper:]' '[:lower:]')
 # Check 1: team_name prefix
 NON_IMPL_MODE=false
 case "$TEAM_NAME_LC" in
-  review-*|brainstorm-*|analysis-*|audit-*|explore-*|ideate-*)
+  review-*|brainstorm-*|analysis-*|audit-*|explore-*|ideate-*|research-*|plan-*)
     NON_IMPL_MODE=true
     ;;
 esac
@@ -84,6 +87,7 @@ if [[ "$NON_IMPL_MODE" == "false" ]]; then
     "ideation"
     "exploration"
     "research"
+    "planning"
     "perspectives"
     "devil's advocate"
     "pros and cons"
@@ -217,6 +221,8 @@ ALTERNATIVE: For non-implementation work, use a mode-prefixed team name:
   - review-*     → PR reviews, code audits (no increment needed)
   - brainstorm-* → Ideation sessions (no increment needed)
   - analysis-*   → Research and exploration (no increment needed)
+  - research-*   → Codebase research and investigation (no increment needed)
+  - plan-*       → Parallel planning with PM + Architect (creates increment)
 
 Workflow: /sw:increment → /sw:team-lead → /sw:done"
 
