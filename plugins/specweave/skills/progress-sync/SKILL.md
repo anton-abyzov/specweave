@@ -445,3 +445,7 @@ Ask me:
 - "When should I use --dry-run?"
 
 
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#progress-sync)

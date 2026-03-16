@@ -919,3 +919,7 @@ User: /sw:team-lead "Add payment processing" --dry-run
 | `/sw:auto` | Autonomous execution (single-agent mode) |
 | `/sw:architect` | System architecture and ADRs |
 | `/sw:grill` | Quality validation gate |
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#team-lead)

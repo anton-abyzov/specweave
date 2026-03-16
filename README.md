@@ -288,7 +288,9 @@ Claude: *automatically uses React Hook Form + Zod*
 /sw:reflect-status   # See what Claude has learned
 ```
 
-**[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)**
+**[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://verified-skill.com/docs/skills/extensible/skill-generation)**
+
+**Auto-generate project skills:** SpecWeave detects recurring patterns across increment closures and can generate project-local skills on demand via `/sw:skill-gen`. [Learn more](https://verified-skill.com/docs/skills/extensible/skill-generation).
 
 ---
 
