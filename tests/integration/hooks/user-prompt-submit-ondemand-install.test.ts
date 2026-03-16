@@ -12,11 +12,14 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('User Prompt Submit Hook - On-Demand Plugin Install (v1.0.540)', () => {
   const hookPath = path.join(
-    process.cwd(),
-    'plugins/specweave/hooks/user-prompt-submit.sh'
+    __dirname,
+    '../../../plugins/specweave/hooks/user-prompt-submit.sh'
   );
 
   let hookContent: string;
@@ -34,7 +37,7 @@ describe('User Prompt Submit Hook - On-Demand Plugin Install (v1.0.540)', () => 
   // TC-002 (AC-US4-04): Session marker prevents duplicate installs
   it('should use session marker directory for idempotency', () => {
     expect(hookContent).toContain('SESSION_MARKER_DIR');
-    expect(hookContent).toContain('specweave-ondemand-$$');
+    expect(hookContent).toContain('specweave-ondemand-');
     expect(hookContent).toMatch(/touch.*SESSION_MARKER_DIR.*PLUGIN_NAME/);
     expect(hookContent).toMatch(/-f.*SESSION_MARKER_DIR.*PLUGIN_NAME/);
   });
@@ -74,7 +77,12 @@ describe('User Prompt Submit Hook - On-Demand Plugin Install (v1.0.540)', () => 
   // Verify timeout handling
   it('should have a bounded wait for background install', () => {
     expect(hookContent).toContain('sleep 5');
-    expect(hookContent).toContain('ONDEMAND_INSTALL_PID');
-    expect(hookContent).toContain('TIMEOUT_PID');
+    expect(hookContent).toContain('ONDEMAND_PIDS');
+    expect(hookContent).toContain('timeout_pid');
+  });
+
+  // Verify plugin name sanitization
+  it('should sanitize plugin names to prevent injection', () => {
+    expect(hookContent).toMatch(/PLUGIN_NAME.*=~.*\^.*a-zA-Z/);
   });
 });

@@ -29,6 +29,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
   detectPluginsViaLLM,
+  detectVskillPlugins,
   IncrementAction,
   SkillRouting,
   SkillInvocation,
@@ -92,6 +93,13 @@ export interface DetectIntentResult {
 
   /** LSP operation recommendation (v1.0.198+) */
   lsp?: LspRecommendation;
+
+  /** vskill marketplace plugin recommendations (v1.0.542) */
+  vskillRecommendations?: Array<{
+    plugin: string;
+    matchedKeyword: string;
+    installCommand: string;
+  }>;
 }
 
 /**
@@ -381,6 +389,36 @@ export async function detectIntentCommand(
       operation: llmResult.lsp.operation,
       language: llmResult.lsp.language,
       warmupRequired: llmResult.lsp.warmupRequired,
+    });
+  }
+
+  // vskill marketplace plugin recommendations (v1.0.542)
+  const vskillMatches = detectVskillPlugins(prompt);
+  // Filter out plugins already in vskill.lock
+  const projectRoot = findProjectRoot();
+  const lockPath = projectRoot ? path.join(projectRoot, 'vskill.lock') : 'vskill.lock';
+  let installedVskillPlugins: Set<string> = new Set();
+  try {
+    if (fs.existsSync(lockPath)) {
+      const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+      if (lock.skills) {
+        installedVskillPlugins = new Set(Object.keys(lock.skills));
+      }
+    }
+  } catch {
+    // Ignore lockfile parse errors
+  }
+  const filteredVskillMatches = vskillMatches.filter(m => !installedVskillPlugins.has(m.plugin));
+  if (filteredVskillMatches.length > 0) {
+    result.vskillRecommendations = filteredVskillMatches.map(m => ({
+      plugin: m.plugin,
+      matchedKeyword: m.matchedKeyword,
+      installCommand: m.installCommand,
+    }));
+
+    logInfo('detect-intent', 'vskill plugin recommendations', {
+      plugins: filteredVskillMatches.map(m => m.plugin),
+      matchedKeywords: filteredVskillMatches.map(m => m.matchedKeyword),
     });
   }
 
