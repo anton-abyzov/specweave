@@ -108,8 +108,11 @@ export async function cleanupStalePlugins(
           // Try to resolve marketplace.json for this marketplace
           const mktManifestPath = path.join(marketplacesBase, mktName, '.claude-plugin', 'marketplace.json');
           if (!fs.existsSync(mktManifestPath)) {
+            // No manifest = marketplace was removed or never registered.
+            // Register with empty set so all its plugins in settings are treated as stale.
+            marketplacePluginMap.set(mktName, new Set());
             if (verbose) {
-              console.log(chalk.gray(`  Skipping marketplace '${mktName}' — no manifest found`));
+              console.log(chalk.yellow(`  Marketplace '${mktName}' has cache but no manifest — treating all plugins as stale`));
             }
             continue;
           }
@@ -131,6 +134,38 @@ export async function cleanupStalePlugins(
         }
       } catch {
         // Cache dir unreadable — proceed with specweave-only cleanup
+      }
+    }
+
+    // 2c. Scan enabledPlugins for marketplaces not yet discovered via cache.
+    // If a marketplace appears in settings but has no cache and no manifest,
+    // register it with an empty set so its plugins are treated as stale.
+    if (settings.enabledPlugins) {
+      for (const pluginKey of Object.keys(settings.enabledPlugins)) {
+        const mktName = pluginKey.split('@')[1];
+        if (!mktName || marketplacePluginMap.has(mktName)) continue;
+
+        // Skip well-known external marketplaces managed by Claude Code itself
+        if (mktName === 'claude-plugins-official' || mktName === 'claude-code-lsps') continue;
+
+        const mktManifestPath = path.join(marketplacesBase, mktName, '.claude-plugin', 'marketplace.json');
+        if (fs.existsSync(mktManifestPath)) {
+          try {
+            const mktManifest = JSON.parse(fs.readFileSync(mktManifestPath, 'utf-8'));
+            const validNames = new Set<string>(
+              (mktManifest.plugins || []).map((p: { name: string }) => p.name)
+            );
+            marketplacePluginMap.set(mktName, validNames);
+          } catch {
+            marketplacePluginMap.set(mktName, new Set());
+          }
+        } else {
+          // Marketplace has no cache and no manifest — treat all its plugins as stale
+          marketplacePluginMap.set(mktName, new Set());
+          if (verbose) {
+            console.log(chalk.yellow(`  Marketplace '${mktName}' not registered — treating all plugins as stale`));
+          }
+        }
       }
     }
 
