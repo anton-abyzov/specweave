@@ -127,8 +127,10 @@ export async function cleanupStalePlugins(
               console.log(chalk.blue(`  Discovered marketplace '${mktName}' with ${validNames.size} plugins`));
             }
           } catch {
+            // Malformed manifest = can't validate plugins. Treat all as stale.
+            marketplacePluginMap.set(mktName, new Set());
             if (verbose) {
-              console.log(chalk.yellow(`  Skipping marketplace '${mktName}' — malformed manifest`));
+              console.log(chalk.yellow(`  Marketplace '${mktName}' has malformed manifest — treating all plugins as stale`));
             }
           }
         }
