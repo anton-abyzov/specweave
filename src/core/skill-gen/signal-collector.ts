@@ -1,73 +1,57 @@
 /**
- * Signal Collector — detects recurring patterns from living docs output.
+ * Signal Collector — detects recurring patterns from living docs using LLM analysis.
  *
  * Runs on every increment closure (wired into LifecycleHookDispatcher.onIncrementDone).
- * Reads markdown files from .specweave/docs/internal/, extracts pattern candidates,
- * and persists them to .specweave/state/skill-signals.json.
+ * Reads markdown files from .specweave/docs/internal/, sends them to the LLM for
+ * pattern extraction, and persists results to .specweave/state/skill-signals.json.
  *
  * Error-isolated: never throws, never blocks increment closure.
  *
  * @module core/skill-gen/signal-collector
  */
 
-import { readFile, writeFile, readdir, mkdir, copyFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { join, relative } from 'path';
-import type { SignalEntry, SignalStore } from './types.js';
-import { EMPTY_SIGNAL_STORE, SKILL_GEN_DEFAULTS } from './types.js';
-
-/**
- * Pattern detection categories with keyword indicators.
- * A category is detected when 3+ keywords appear in a single file.
- */
-const PATTERN_CATEGORIES: Record<string, { keywords: string[]; description: string }> = {
-  'error-handling': {
-    keywords: ['error-handling', 'error handling', 'try/catch', 'error boundar', 'catch block', 'error middleware'],
-    description: 'Consistent error handling patterns',
-  },
-  'naming-conventions': {
-    keywords: ['naming convention', 'file naming', 'variable naming', 'kebab-case', 'camelCase', 'PascalCase'],
-    description: 'Consistent naming convention patterns',
-  },
-  'architecture-patterns': {
-    keywords: ['architecture pattern', 'module organization', 'dependency injection', 'clean architecture', 'layered', 'hexagonal'],
-    description: 'Architectural organization patterns',
-  },
-  'testing-patterns': {
-    keywords: ['test pattern', 'mock pattern', 'test organization', 'test fixture', 'test factory', 'test helper'],
-    description: 'Testing convention patterns',
-  },
-  'api-patterns': {
-    keywords: ['api pattern', 'api boundary', 'endpoint pattern', 'route pattern', 'validation', 'zod', 'schema validation'],
-    description: 'API design and validation patterns',
-  },
-  'auth-patterns': {
-    keywords: ['auth pattern', 'authentication', 'authorization', 'jwt', 'session', 'oauth', 'auth middleware'],
-    description: 'Authentication and authorization patterns',
-  },
-  'data-model': {
-    keywords: ['data model', 'database', 'schema', 'migration', 'orm', 'prisma', 'typeorm', 'sequelize'],
-    description: 'Data model and database patterns',
-  },
-  'state-management': {
-    keywords: ['state management', 'redux', 'zustand', 'context', 'store', 'global state'],
-    description: 'State management patterns',
-  },
-  'integration-patterns': {
-    keywords: ['integration', 'external api', 'third-party', 'webhook', 'event-driven', 'message queue'],
-    description: 'External integration patterns',
-  },
-  'build-deploy': {
-    keywords: ['build pattern', 'deploy', 'ci/cd', 'pipeline', 'docker', 'containeriz'],
-    description: 'Build and deployment patterns',
-  },
-};
-
-const MIN_KEYWORD_HITS = 3;
+import type { SignalEntry, SignalStore, LLMPatternResponse } from './types.js';
+import { SKILL_GEN_DEFAULTS } from './types.js';
+import {
+  collectMarkdownFiles,
+  loadSignalStore,
+  saveSignalStore,
+  sanitizeString,
+  estimateTokenCount,
+  capEvidence,
+  TOKEN_BUDGET,
+} from './utils.js';
+import { loadLLMConfig, createProvider, hasLLMConfig } from '../llm/provider-factory.js';
+import type { LLMProvider } from '../llm/types.js';
 
 interface CollectorOptions {
   maxSignals?: number;
   minSignalCount?: number;
 }
+
+const LLM_PATTERN_SCHEMA = {
+  type: 'object' as const,
+  properties: {
+    patterns: {
+      type: 'array' as const,
+      items: {
+        type: 'object' as const,
+        properties: {
+          category: { type: 'string' as const, description: 'Kebab-case category slug' },
+          name: { type: 'string' as const, description: 'Short pattern name' },
+          description: { type: 'string' as const, description: 'What and why' },
+          evidence: { type: 'array' as const, items: { type: 'string' as const } },
+        },
+        required: ['category', 'name', 'description', 'evidence'] as string[],
+      },
+    },
+  },
+  required: ['patterns'] as string[],
+};
+
+const SYSTEM_PROMPT = `You are a software architecture analyst. Given project documentation, identify recurring implementation patterns. Return structured JSON only.`;
 
 export class SignalCollector {
   private projectRoot: string;
@@ -86,107 +70,190 @@ export class SignalCollector {
    */
   async collect(incrementId: string): Promise<void> {
     try {
-      const store = await this.loadStore();
+      if (!hasLLMConfig(this.projectRoot)) {
+        console.warn('[skill-gen] No LLM config found — skipping pattern detection');
+        return;
+      }
+
       const docsDir = join(this.projectRoot, '.specweave', 'docs', 'internal');
-      const patterns = await this.detectPatterns(docsDir);
+      const files = await collectMarkdownFiles(docsDir);
+      if (files.length === 0) return;
+
+      const config = loadLLMConfig(this.projectRoot);
+      if (!config) return;
+
+      const provider = await createProvider(config);
+      const patterns = await this.detectPatternsLLM(files, provider);
+
+      const store = await loadSignalStore(this.getSignalsPath());
 
       for (const detected of patterns) {
-        this.upsertSignal(store, detected, incrementId);
+        this.upsertSignal(store, detected, incrementId, files);
       }
 
       this.pruneIfNeeded(store);
-      await this.saveStore(store);
+      await saveSignalStore(this.getSignalsPath(), store);
     } catch (error) {
-      // Error-isolated: log and continue
       const msg = error instanceof Error ? error.message : String(error);
       console.warn(`[SignalCollector] Warning: ${msg}`);
     }
   }
 
   /**
-   * Load signal store from disk, recovering from corruption.
+   * Seed mode: scan all living docs and populate the signal store
+   * without associating patterns with any increment.
    */
-  private async loadStore(): Promise<SignalStore> {
-    const signalsPath = this.getSignalsPath();
+  async collectSeed(): Promise<void> {
     try {
-      const content = await readFile(signalsPath, 'utf-8');
-      return JSON.parse(content) as SignalStore;
-    } catch (error: any) {
-      if (error?.code === 'ENOENT') {
-        return { ...EMPTY_SIGNAL_STORE, signals: [] };
+      if (!hasLLMConfig(this.projectRoot)) {
+        console.warn('[skill-gen] No LLM config found — skipping seed');
+        return;
       }
-      // Corrupted file — backup and start fresh
-      try {
-        await copyFile(signalsPath, signalsPath + '.bak');
-      } catch {
-        // backup failed, continue anyway
+
+      const docsDir = join(this.projectRoot, '.specweave', 'docs', 'internal');
+      const files = await collectMarkdownFiles(docsDir);
+      if (files.length === 0) return;
+
+      const config = loadLLMConfig(this.projectRoot);
+      if (!config) return;
+
+      const provider = await createProvider(config);
+      const patterns = await this.detectPatternsLLM(files, provider);
+
+      const store = await loadSignalStore(this.getSignalsPath());
+      const now = new Date().toISOString();
+
+      for (const pattern of patterns) {
+        const existingKey = store.signals.find(
+          s => s.category === pattern.category && s.pattern === sanitizeString(pattern.name),
+        );
+        if (existingKey) continue; // Skip duplicates
+
+        const newSignal: SignalEntry = {
+          id: `sig-${sanitizeString(pattern.category)}-${sanitizeString(pattern.name)}`,
+          pattern: sanitizeString(pattern.name),
+          category: sanitizeString(pattern.category),
+          description: sanitizeString(pattern.description),
+          incrementIds: [],
+          firstSeen: now,
+          lastSeen: now,
+          confidence: 0,
+          evidence: capEvidence(pattern.evidence.map(e => sanitizeString(e))),
+          uniqueSourceFiles: files.map(f => relative(this.projectRoot, f)),
+          suggested: false,
+          declined: false,
+          generated: false,
+        };
+        store.signals.push(newSignal);
       }
-      return { ...EMPTY_SIGNAL_STORE, signals: [] };
+
+      await saveSignalStore(this.getSignalsPath(), store);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.warn(`[SignalCollector] Warning: ${msg}`);
     }
   }
 
   /**
-   * Save signal store to disk.
+   * Detect patterns via LLM analysis of markdown files.
+   * Handles batching when total tokens exceed TOKEN_BUDGET.
    */
-  private async saveStore(store: SignalStore): Promise<void> {
-    const signalsPath = this.getSignalsPath();
-    const dir = join(this.projectRoot, '.specweave', 'state');
-    await mkdir(dir, { recursive: true });
-    await writeFile(signalsPath, JSON.stringify(store, null, 2));
-  }
-
-  /**
-   * Detect patterns from living docs markdown files.
-   */
-  private async detectPatterns(docsDir: string): Promise<Array<{ category: string; evidence: string[] }>> {
-    const files = await this.collectMarkdownFiles(docsDir);
-    const detectedMap = new Map<string, string[]>();
-
+  private async detectPatternsLLM(
+    files: string[],
+    provider: LLMProvider,
+  ): Promise<LLMPatternResponse['patterns']> {
+    // Read files and estimate tokens
+    const docs: Array<{ path: string; content: string; tokens: number }> = [];
     for (const filePath of files) {
       try {
-        const content = (await readFile(filePath, 'utf-8')).toLowerCase();
+        const content = await readFile(filePath, 'utf-8');
         const relPath = relative(this.projectRoot, filePath);
-
-        for (const [category, { keywords }] of Object.entries(PATTERN_CATEGORIES)) {
-          const hits = keywords.filter((kw) => content.includes(kw.toLowerCase()));
-          if (hits.length >= MIN_KEYWORD_HITS) {
-            const existing = detectedMap.get(category) || [];
-            if (!existing.includes(relPath)) {
-              existing.push(relPath);
-            }
-            detectedMap.set(category, existing);
-          }
-        }
+        docs.push({ path: relPath, content, tokens: estimateTokenCount(content) });
       } catch {
         // Skip unreadable files
       }
     }
 
-    return Array.from(detectedMap.entries()).map(([category, evidence]) => ({
-      category,
-      evidence,
-    }));
+    if (docs.length === 0) return [];
+
+    const totalTokens = docs.reduce((sum, d) => sum + d.tokens, 0);
+
+    if (totalTokens <= TOKEN_BUDGET) {
+      // Single call
+      const prompt = this.buildPrompt(docs);
+      const result = await provider.analyzeStructured<LLMPatternResponse>(prompt, {
+        schema: LLM_PATTERN_SCHEMA,
+        temperature: 0.1,
+        maxTokens: 4096,
+        timeout: 30000,
+        systemPrompt: SYSTEM_PROMPT,
+      });
+      return result.data.patterns;
+    }
+
+    // Batched chunking
+    const chunks: Array<typeof docs> = [];
+    let currentChunk: typeof docs = [];
+    let currentTokens = 0;
+
+    for (const doc of docs) {
+      if (currentTokens + doc.tokens > TOKEN_BUDGET && currentChunk.length > 0) {
+        chunks.push(currentChunk);
+        currentChunk = [];
+        currentTokens = 0;
+      }
+      currentChunk.push(doc);
+      currentTokens += doc.tokens;
+    }
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+
+    // Call LLM per chunk and merge
+    const allPatterns: LLMPatternResponse['patterns'] = [];
+    for (const chunk of chunks) {
+      try {
+        const prompt = this.buildPrompt(chunk);
+        const result = await provider.analyzeStructured<LLMPatternResponse>(prompt, {
+          schema: LLM_PATTERN_SCHEMA,
+          temperature: 0.1,
+          maxTokens: 4096,
+          timeout: 30000,
+          systemPrompt: SYSTEM_PROMPT,
+        });
+        allPatterns.push(...result.data.patterns);
+      } catch {
+        // Skip failed chunks, continue with others
+      }
+    }
+
+    // Deduplicate by category + name
+    const seen = new Map<string, LLMPatternResponse['patterns'][0]>();
+    for (const p of allPatterns) {
+      const key = `${p.category}::${p.name}`;
+      if (!seen.has(key)) {
+        seen.set(key, p);
+      }
+    }
+    return Array.from(seen.values());
   }
 
   /**
-   * Recursively collect markdown files from a directory.
+   * Build the user prompt with <documents> block.
    */
-  private async collectMarkdownFiles(dir: string): Promise<string[]> {
-    const results: string[] = [];
-    try {
-      const entries = await readdir(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = join(dir, entry.name);
-        if (entry.isDirectory()) {
-          results.push(...(await this.collectMarkdownFiles(fullPath)));
-        } else if (entry.name.endsWith('.md')) {
-          results.push(fullPath);
-        }
-      }
-    } catch {
-      // Directory doesn't exist or is unreadable
-    }
-    return results;
+  private buildPrompt(docs: Array<{ path: string; content: string }>): string {
+    const docBlocks = docs
+      .map(d => `--- file: ${d.path} ---\n${d.content}`)
+      .join('\n');
+
+    return `Analyze these project documents and identify recurring patterns.
+For each pattern provide: category (kebab-case slug), name (short identifier),
+description (1-2 sentences explaining what the pattern is and why it matters),
+and evidence (list of relevant quotes or references from the docs, max 5 per pattern).
+
+<documents>
+${docBlocks}
+</documents>`;
   }
 
   /**
@@ -194,40 +261,58 @@ export class SignalCollector {
    */
   private upsertSignal(
     store: SignalStore,
-    detected: { category: string; evidence: string[] },
+    detected: LLMPatternResponse['patterns'][0],
     incrementId: string,
+    sourceFiles: string[],
   ): void {
-    const existing = store.signals.find((s) => s.category === detected.category);
+    const sanitizedName = sanitizeString(detected.name);
+    const sanitizedCategory = sanitizeString(detected.category);
+    const existing = store.signals.find(
+      s => s.category === sanitizedCategory && s.pattern === sanitizedName,
+    );
     const now = new Date().toISOString();
+    const relSourceFiles = sourceFiles.map(f => relative(this.projectRoot, f));
 
     if (existing) {
       if (!existing.incrementIds.includes(incrementId)) {
         existing.incrementIds.push(incrementId);
       }
       existing.lastSeen = now;
-      // Merge evidence (deduplicated)
+
+      // Update uniqueSourceFiles with Set semantics
+      const fileSet = new Set(existing.uniqueSourceFiles ?? []);
+      for (const f of relSourceFiles) {
+        fileSet.add(f);
+      }
+      existing.uniqueSourceFiles = Array.from(fileSet);
+
+      // Merge evidence (deduplicated) then cap
       for (const ev of detected.evidence) {
-        if (!existing.evidence.includes(ev)) {
-          existing.evidence.push(ev);
+        const sanitizedEv = sanitizeString(ev);
+        if (!existing.evidence.includes(sanitizedEv)) {
+          existing.evidence.push(sanitizedEv);
         }
       }
-      // Recalculate confidence based on increment count
+      existing.evidence = capEvidence(existing.evidence);
+
+      // Confidence = uniqueSourceFiles.length / minSignalCount capped at 1.0
       existing.confidence = Math.min(
         1.0,
-        existing.incrementIds.length / this.minSignalCount,
+        existing.uniqueSourceFiles.length / this.minSignalCount,
       );
     } else {
-      const meta = PATTERN_CATEGORIES[detected.category];
+      const uniqueFiles = Array.from(new Set(relSourceFiles));
       const newSignal: SignalEntry = {
-        id: `sig-${detected.category}`,
-        pattern: `${detected.category}-pattern`,
-        category: detected.category,
-        description: meta?.description ?? `Detected ${detected.category} pattern`,
+        id: `sig-${sanitizedCategory}-${sanitizedName}`,
+        pattern: sanitizedName,
+        category: sanitizedCategory,
+        description: sanitizeString(detected.description),
         incrementIds: [incrementId],
         firstSeen: now,
         lastSeen: now,
-        confidence: 1 / this.minSignalCount,
-        evidence: detected.evidence,
+        confidence: Math.min(1.0, uniqueFiles.length / this.minSignalCount),
+        evidence: capEvidence(detected.evidence.map(e => sanitizeString(e))),
+        uniqueSourceFiles: uniqueFiles,
         suggested: false,
         declined: false,
         generated: false,
