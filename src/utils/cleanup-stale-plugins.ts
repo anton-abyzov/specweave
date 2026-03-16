@@ -535,11 +535,12 @@ export function cleanupOrphanedChildLocks(
 
         if (!fsImpl.existsSync(lockPath)) continue;
 
-        // Symlink escape prevention
+        // Symlink escape prevention — use path.relative() for boundary-safe check
         try {
           const realLockPath = fsImpl.realpathSync(lockPath);
           const realProjectRoot = fsImpl.realpathSync(projectRoot);
-          if (!realLockPath.startsWith(realProjectRoot)) {
+          const relative = path.relative(realProjectRoot, realLockPath);
+          if (relative.startsWith('..') || path.isAbsolute(relative)) {
             result.errors.push({ path: lockPath, error: 'Symlink resolves outside project root' });
             continue;
           }
