@@ -9,6 +9,7 @@
 
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Single activation record
@@ -36,7 +37,7 @@ export interface ActivationState {
  * Get activation state file path
  */
 function getStatePath(projectRoot?: string): string {
-  const root = projectRoot || process.cwd();
+  const root = projectRoot || resolveEffectiveRoot();
   return path.join(root, '.specweave', 'state', 'skill-activations.json');
 }
 
