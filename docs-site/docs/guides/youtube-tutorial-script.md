@@ -164,7 +164,7 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 
 > "SpecWeave is built on three pillars:
 >
-> **Programmable AI** — Skills are programs in English. 100+ skills for PM, Architect, QA, Security, DevOps. All customizable without forking.
+> **Programmable AI** — Skills extend what AI coding agents can do — structured markdown instructions. 100+ skills for PM, Architect, QA, Security, DevOps. All customizable without forking.
 >
 > **Autonomous Teams** — Agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts.
 >
