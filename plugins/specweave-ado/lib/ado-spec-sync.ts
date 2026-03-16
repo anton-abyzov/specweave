@@ -22,7 +22,10 @@ import {
   SpecSyncConflict
 } from '../../../src/core/types/spec-metadata.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
-import axios, { AxiosInstance } from 'axios';
+import { SyncCircuitBreaker } from '../../../src/core/increment/sync-circuit-breaker.js';
+import { withRetry } from '../../../src/core/sync/retry-wrapper.js';
+import { SyncError } from '../../../src/core/errors/sync-error.js';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { promises as fsPromises, existsSync } from 'fs';
 import path from 'path';
 import yaml from 'yaml';
@@ -62,11 +65,13 @@ export class AdoSpecSync {
   private config: AdoConfig;
   private projectRoot: string;
   private availableTypes: Set<string> | null = null;
+  private breaker: SyncCircuitBreaker;
 
-  constructor(config: AdoConfig, projectRoot: string = process.cwd(), projectId?: string) {
+  constructor(config: AdoConfig, projectRoot: string = process.cwd(), projectId?: string, breaker?: SyncCircuitBreaker) {
     this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
+    this.breaker = breaker ?? new SyncCircuitBreaker();
 
     // Create ADO API client
     // NOTE: Do NOT set a default Content-Type here. Work item create/update
@@ -166,6 +171,15 @@ export class AdoSpecSync {
   async syncSpecToAdo(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing spec ${specId} to ADO Feature...`);
 
+    if (!this.breaker.canSync()) {
+      return {
+        success: false,
+        specId,
+        provider: 'ado',
+        error: 'Circuit breaker open — sync blocked',
+      };
+    }
+
     try {
       // 1. Load spec
       const spec = await this.specManager.loadSpec(specId);
@@ -231,6 +245,15 @@ export class AdoSpecSync {
    */
   async syncFromAdo(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing FROM ADO to spec ${specId}...`);
+
+    if (!this.breaker.canSync()) {
+      return {
+        success: false,
+        specId,
+        provider: 'ado',
+        error: 'Circuit breaker open — sync blocked',
+      };
+    }
 
     try {
       // 1. Load spec
@@ -859,5 +882,12 @@ ${acList}
     };
 
     return map[normalizedType] || defaultType;
+  }
+
+  /**
+   * Check whether the circuit is closed (sync allowed).
+   */
+  canSync(): boolean {
+    return this.breaker.canSync();
   }
 }

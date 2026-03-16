@@ -25,6 +25,7 @@ import {
 } from './utils.js';
 import { loadLLMConfig, createProvider, hasLLMConfig } from '../llm/provider-factory.js';
 import type { LLMProvider } from '../llm/types.js';
+import { RuleCollector } from './rule-collector.js';
 
 interface CollectorOptions {
   maxSignals?: number;
@@ -57,11 +58,13 @@ export class SignalCollector {
   private projectRoot: string;
   private maxSignals: number;
   private minSignalCount: number;
+  private ruleCollector: RuleCollector;
 
   constructor(projectRoot: string, options?: CollectorOptions) {
     this.projectRoot = projectRoot;
     this.maxSignals = options?.maxSignals ?? SKILL_GEN_DEFAULTS.maxSignals;
     this.minSignalCount = options?.minSignalCount ?? SKILL_GEN_DEFAULTS.minSignalCount;
+    this.ruleCollector = new RuleCollector(projectRoot);
   }
 
   /**
@@ -176,11 +179,14 @@ export class SignalCollector {
 
     if (docs.length === 0) return [];
 
+    // Collect existing rules for dedup context
+    const existingRules = await this.ruleCollector.collectExistingRules();
+
     const totalTokens = docs.reduce((sum, d) => sum + d.tokens, 0);
 
     if (totalTokens <= TOKEN_BUDGET) {
       // Single call
-      const prompt = this.buildPrompt(docs);
+      const prompt = this.buildPrompt(docs, existingRules || undefined);
       const result = await provider.analyzeStructured<LLMPatternResponse>(prompt, {
         schema: LLM_PATTERN_SCHEMA,
         temperature: 0.1,
@@ -213,7 +219,7 @@ export class SignalCollector {
     const allPatterns: LLMPatternResponse['patterns'] = [];
     for (const chunk of chunks) {
       try {
-        const prompt = this.buildPrompt(chunk);
+        const prompt = this.buildPrompt(chunk, existingRules || undefined);
         const result = await provider.analyzeStructured<LLMPatternResponse>(prompt, {
           schema: LLM_PATTERN_SCHEMA,
           temperature: 0.1,
@@ -239,21 +245,38 @@ export class SignalCollector {
   }
 
   /**
-   * Build the user prompt with <documents> block.
+   * Build the user prompt with <documents> block and optional <existing-rules> dedup context.
    */
-  private buildPrompt(docs: Array<{ path: string; content: string }>): string {
+  private buildPrompt(
+    docs: Array<{ path: string; content: string }>,
+    existingRules?: string,
+  ): string {
     const docBlocks = docs
       .map(d => `--- file: ${d.path} ---\n${d.content}`)
       .join('\n');
 
-    return `Analyze these project documents and identify recurring patterns.
+    let prompt = `Analyze these project documents and identify recurring patterns.
 For each pattern provide: category (kebab-case slug), name (short identifier),
 description (1-2 sentences explaining what the pattern is and why it matters),
 and evidence (list of relevant quotes or references from the docs, max 5 per pattern).
 
+Do NOT suggest patterns that are already covered by existing project rules
+(shown in the <existing-rules> section if present).
+
 <documents>
 ${docBlocks}
 </documents>`;
+
+    if (existingRules) {
+      prompt += `
+
+<existing-rules>
+The following project rules already exist. DO NOT suggest patterns that duplicate or overlap with these existing rules.
+${existingRules}
+</existing-rules>`;
+    }
+
+    return prompt;
   }
 
   /**

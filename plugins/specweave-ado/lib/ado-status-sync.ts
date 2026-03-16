@@ -11,7 +11,10 @@
  * @module ado-status-sync
  */
 
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import { SyncCircuitBreaker } from '../../../src/core/increment/sync-circuit-breaker.js';
+import { withRetry } from '../../../src/core/sync/retry-wrapper.js';
+import { SyncError } from '../../../src/core/errors/sync-error.js';
 
 /**
  * External status representation (ADO-specific)
@@ -25,19 +28,24 @@ export interface ExternalStatus {
  * Azure DevOps Status Sync
  *
  * Handles status synchronization with ADO work items.
+ * Integrates circuit breaker (opens after 3 consecutive failures)
+ * and retry with exponential backoff for transient errors.
  */
 export class AdoStatusSync {
   private client: AxiosInstance;
   private organization: string;
   private project: string;
+  private breaker: SyncCircuitBreaker;
 
   constructor(
     organization: string,
     project: string,
-    personalAccessToken: string
+    personalAccessToken: string,
+    breaker?: SyncCircuitBreaker
   ) {
     this.organization = organization;
     this.project = project;
+    this.breaker = breaker ?? new SyncCircuitBreaker();
 
     // Create ADO API client
     this.client = axios.create({
@@ -60,13 +68,13 @@ export class AdoStatusSync {
    * @returns Current work item state
    */
   async getStatus(workItemId: number): Promise<ExternalStatus> {
-    const response = await this.client.get(
-      `/wit/workitems/${workItemId}?api-version=7.0`
-    );
+    this.assertCircuitClosed();
 
-    return {
-      state: response.data.fields['System.State']
-    };
+    return this.withResilienceWrapper(() =>
+      this.client.get(`/wit/workitems/${workItemId}?api-version=7.0`).then(response => ({
+        state: response.data.fields['System.State'] as string,
+      }))
+    );
   }
 
   /**
@@ -79,6 +87,7 @@ export class AdoStatusSync {
    * @param status - Desired status with state and optional tags
    */
   async updateStatus(workItemId: number, status: ExternalStatus): Promise<void> {
+    this.assertCircuitClosed();
     // ADO uses JSON Patch format for updates
     const patch: Array<{ op: string; path: string; value: string }> = [
       {
@@ -109,10 +118,16 @@ export class AdoStatusSync {
       });
     }
 
-    await this.client.patch(
-      `/wit/workitems/${workItemId}?api-version=7.0`,
-      patch
+    await this.withResilienceWrapper(() =>
+      this.client.patch(`/wit/workitems/${workItemId}?api-version=7.0`, patch)
     );
+  }
+
+  /**
+   * Check whether the circuit is closed (sync allowed).
+   */
+  canSync(): boolean {
+    return this.breaker.canSync();
   }
 
   /**
@@ -148,6 +163,8 @@ export class AdoStatusSync {
     oldStatus: string,
     newStatus: string
   ): Promise<void> {
+    this.assertCircuitClosed();
+
     const text = `🔄 Status Update\n\n` +
       `SpecWeave status changed:\n` +
       `• From: ${oldStatus}\n` +
@@ -155,11 +172,42 @@ export class AdoStatusSync {
       `• When: ${new Date().toISOString()}\n\n` +
       `Synced from SpecWeave`;
 
-    await this.client.post(
-      `/wit/workitems/${workItemId}/comments?api-version=7.0-preview.3`,
-      {
-        text
-      }
+    await this.withResilienceWrapper(() =>
+      this.client.post(
+        `/wit/workitems/${workItemId}/comments?api-version=7.0-preview.3`,
+        { text }
+      )
     );
+  }
+
+  /**
+   * Assert the circuit is closed. Throws CircuitOpenError if open.
+   */
+  private assertCircuitClosed(): void {
+    if (!this.breaker.canSync()) {
+      throw new SyncError('ado', 503, '', 'Circuit breaker open — sync blocked');
+    }
+  }
+
+  /**
+   * Wrap an async operation with retry + circuit breaker recording.
+   */
+  private async withResilienceWrapper<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      const result = await withRetry(fn, { maxRetries: 3, baseMs: 500, maxMs: 5000 });
+      this.breaker.recordSuccess();
+      return result;
+    } catch (error: any) {
+      this.breaker.recordFailure();
+      if (error?.response?.status) {
+        const status = error.response.status;
+        const body = typeof error.response.data === 'string'
+          ? error.response.data
+          : JSON.stringify(error.response.data ?? '');
+        const detail = error.response.statusText || 'Unknown';
+        throw new SyncError('ado', status, body, detail);
+      }
+      throw error;
+    }
   }
 }

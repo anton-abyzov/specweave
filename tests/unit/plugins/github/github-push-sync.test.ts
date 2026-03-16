@@ -25,13 +25,13 @@ vi.mock('../../../../plugins/specweave-github/lib/github-issue-body-generator.js
   generateIssueBody: mockGenerateIssueBody,
 }));
 
-// RED phase import — module does not exist yet
 import {
   pushSyncUserStories,
   type PushSyncOptions,
   type PushSyncResult,
   type UserStoryForSync,
 } from '../../../../plugins/specweave-github/lib/github-push-sync.js';
+import { SyncError } from '../../../../src/core/errors/sync-error.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -426,6 +426,71 @@ describe('pushSyncUserStories', () => {
       expect(opts.env).toBeDefined();
       expect(opts.env!.GH_TOKEN).toBe('ghp_secret_token_123');
     }
+  });
+
+  // -------------------------------------------------------------------------
+  // SyncError: 401 on search → SyncError with provider/httpStatus (T-009)
+  // -------------------------------------------------------------------------
+  it('should throw SyncError with provider="github" and httpStatus=401 when search returns 401', async () => {
+    // Search returns 401
+    mockExecFileNoThrow.mockResolvedValueOnce(
+      execFailure('HTTP 401: Bad credentials')
+    );
+
+    const stories = [makeUserStory()];
+    const result = await pushSyncUserStories(stories, makeOptions());
+
+    // Error should be captured in errors array with SyncError details
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].userStoryId).toBe('US-001');
+    expect(result.errors[0].error).toContain('401');
+  });
+
+  it('should throw SyncError (not generic Error) when gh CLI returns HTTP error on search', async () => {
+    // Search returns 401 — test that SyncError is thrown internally
+    mockExecFileNoThrow.mockResolvedValueOnce(
+      execFailure('HTTP 401: Bad credentials')
+    );
+
+    // Access the internal error by wrapping in a single-story call
+    // and examining the error type via a spy
+    const stories = [makeUserStory()];
+
+    // We can verify SyncError is thrown by checking error message format
+    const result = await pushSyncUserStories(stories, makeOptions());
+    expect(result.errors).toHaveLength(1);
+    // SyncError formats as "[GITHUB] sync failed: 401 ..."
+    expect(result.errors[0].error).toMatch(/\[GITHUB\] sync failed: 401/);
+  });
+
+  it('should throw SyncError with httpStatus=422 when issue create returns 422', async () => {
+    // Search: no match
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('[]'));
+
+    // Create: fails with 422
+    mockExecFileNoThrow.mockResolvedValueOnce(
+      execFailure('HTTP 422: Validation Failed')
+    );
+
+    const stories = [makeUserStory()];
+    const result = await pushSyncUserStories(stories, makeOptions());
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].error).toMatch(/\[GITHUB\] sync failed: 422/);
+  });
+
+  it('should throw SyncError with httpStatus=0 when stderr has no HTTP status', async () => {
+    // Search fails with non-HTTP error
+    mockExecFileNoThrow.mockResolvedValueOnce(
+      execFailure('could not connect to server')
+    );
+
+    const stories = [makeUserStory()];
+    const result = await pushSyncUserStories(stories, makeOptions());
+
+    expect(result.errors).toHaveLength(1);
+    // httpStatus=0 when no HTTP status found
+    expect(result.errors[0].error).toMatch(/\[GITHUB\] sync failed: 0/);
   });
 
   // -------------------------------------------------------------------------

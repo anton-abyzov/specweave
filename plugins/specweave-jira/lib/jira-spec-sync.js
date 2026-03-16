@@ -9,6 +9,9 @@ import { toDescription } from "./content-format-adapter.js";
 import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
 import { searchAllIssues } from "./jira-paginated-search.js";
 import axios from "axios";
+import { CircuitBreakerRegistry } from "../../../src/core/sync/circuit-breaker-registry.js";
+import { SyncRetryQueue } from "../../../src/core/sync/sync-retry-queue.js";
+import { SyncError } from "../../../src/core/errors/sync-error.js";
 function buildStoryDescription(us) {
   const acList = us.acceptanceCriteria.map((ac) => `${ac.status === "done" ? "[x]" : "[ ]"} ${ac.id}: ${ac.description}`).join("\n");
   return `
@@ -28,10 +31,14 @@ ${acList}
 `.trim();
 }
 class JiraSpecSync {
-  constructor(config, projectRoot = process.cwd(), projectId) {
+  constructor(config, projectRoot = process.cwd(), projectId, options) {
     this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
+    this.circuitBreakerRegistry = options?.circuitBreakerRegistry;
+    this.retryQueue = options?.retryQueue;
+    this.incrementId = options?.incrementId ?? "";
+    this.featureId = options?.featureId ?? "";
     this.client = axios.create({
       baseURL: getApiBaseUrl(config.domain),
       auth: {
@@ -43,6 +50,33 @@ class JiraSpecSync {
         "Content-Type": "application/json"
       }
     });
+  }
+  checkCircuitBreaker() {
+    if (!this.circuitBreakerRegistry) return;
+    const breaker = this.circuitBreakerRegistry.get("jira");
+    if (!breaker.canSync()) {
+      throw new SyncError("jira", 0, "", "Circuit breaker open for jira");
+    }
+  }
+  recordApiSuccess() {
+    if (!this.circuitBreakerRegistry) return;
+    this.circuitBreakerRegistry.get("jira").recordSuccess();
+  }
+  async recordApiFailure(error, operation) {
+    const httpStatus = error?.response?.status ?? 0;
+    if (this.circuitBreakerRegistry) {
+      this.circuitBreakerRegistry.get("jira").recordFailure();
+    }
+    if (this.retryQueue && httpStatus >= 500) {
+      await this.retryQueue.enqueue({
+        incrementId: this.incrementId,
+        provider: "jira",
+        featureId: this.featureId,
+        projectPath: this.projectRoot,
+        projectName: this.config.projectKey,
+        error: `${httpStatus} ${operation}: ${error?.message ?? String(error)}`
+      });
+    }
   }
   /**
    * Initialize: detect deployment type and update client baseURL
@@ -60,6 +94,7 @@ class JiraSpecSync {
   async syncSpecToJira(specId) {
     console.log(`
 \u{1F504} Syncing spec ${specId} to Jira Epic...`);
+    this.checkCircuitBreaker();
     try {
       const spec = await this.specManager.loadSpec(specId);
       if (!spec) {
@@ -86,6 +121,7 @@ class JiraSpecSync {
         });
       }
       const changes = await this.syncUserStories(epic.key, spec);
+      this.recordApiSuccess();
       console.log("\u2705 Sync complete!");
       return {
         success: true,
@@ -96,6 +132,7 @@ class JiraSpecSync {
         changes
       };
     } catch (error) {
+      await this.recordApiFailure(error, "syncSpecToJira");
       const axiosData = error?.response?.data;
       const detail = axiosData ? JSON.stringify(axiosData) : "";
       console.error("\u274C Error syncing to Jira:", error?.message || error, detail ? `
@@ -114,6 +151,7 @@ class JiraSpecSync {
   async syncFromJira(specId) {
     console.log(`
 \u{1F504} Syncing FROM Jira to spec ${specId}...`);
+    this.checkCircuitBreaker();
     try {
       const spec = await this.specManager.loadSpec(specId);
       if (!spec) {
@@ -158,6 +196,7 @@ class JiraSpecSync {
         conflicts
       };
     } catch (error) {
+      await this.recordApiFailure(error, "syncFromJira");
       console.error("\u274C Error syncing FROM Jira:", error);
       return {
         success: false,
