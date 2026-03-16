@@ -12,6 +12,7 @@ import axios from "axios";
 import { CircuitBreakerRegistry } from "../../../src/core/sync/circuit-breaker-registry.js";
 import { SyncRetryQueue } from "../../../src/core/sync/sync-retry-queue.js";
 import { SyncError } from "../../../src/core/errors/sync-error.js";
+import { LockManager } from "../../../src/utils/lock-manager.js";
 function buildStoryDescription(us) {
   const acList = us.acceptanceCriteria.map((ac) => `${ac.status === "done" ? "[x]" : "[ ]"} ${ac.id}: ${ac.description}`).join("\n");
   return `
@@ -39,6 +40,9 @@ class JiraSpecSync {
     this.retryQueue = options?.retryQueue;
     this.incrementId = options?.incrementId ?? "";
     this.featureId = options?.featureId ?? "";
+    if (options?.lockDir) {
+      this.lockManager = new LockManager(options.lockDir);
+    }
     this.client = axios.create({
       baseURL: getApiBaseUrl(config.domain),
       auth: {
@@ -50,6 +54,18 @@ class JiraSpecSync {
         "Content-Type": "application/json"
       }
     });
+  }
+  async withLock(fn) {
+    if (!this.lockManager) return fn();
+    const acquired = await this.lockManager.acquire();
+    if (!acquired) {
+      throw new SyncError("jira", 0, "", "Failed to acquire JIRA sync lock");
+    }
+    try {
+      return await fn();
+    } finally {
+      await this.lockManager.release();
+    }
   }
   checkCircuitBreaker() {
     if (!this.circuitBreakerRegistry) return;
@@ -94,6 +110,7 @@ class JiraSpecSync {
   async syncSpecToJira(specId) {
     console.log(`
 \u{1F504} Syncing spec ${specId} to Jira Epic...`);
+    return this.withLock(async () => {
     this.checkCircuitBreaker();
     try {
       const spec = await this.specManager.loadSpec(specId);
@@ -144,6 +161,7 @@ class JiraSpecSync {
         error: error instanceof Error ? error.message : "Unknown error"
       };
     }
+    });
   }
   /**
    * Sync FROM Jira Epic to spec (bidirectional)
@@ -151,6 +169,7 @@ class JiraSpecSync {
   async syncFromJira(specId) {
     console.log(`
 \u{1F504} Syncing FROM Jira to spec ${specId}...`);
+    return this.withLock(async () => {
     this.checkCircuitBreaker();
     try {
       const spec = await this.specManager.loadSpec(specId);
@@ -205,6 +224,7 @@ class JiraSpecSync {
         error: error instanceof Error ? error.message : "Unknown error"
       };
     }
+    });
   }
   /**
    * Create new Jira Epic for spec

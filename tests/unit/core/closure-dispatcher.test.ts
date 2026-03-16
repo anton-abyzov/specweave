@@ -136,6 +136,38 @@ describe('closure-dispatcher', () => {
     expect(closeFns.github).toHaveBeenCalledWith(baseContext);
   });
 
+  // T-029: Config gating — close_github_issue: false → GitHub never called
+  it('close_github_issue false via config → GitHub closure never called', async () => {
+    const config: ClosureConfig = {
+      github: false,
+      jira: true,
+      ado: true,
+    };
+
+    const result = await dispatchClosure(baseContext, config, closeFns);
+
+    expect(closeFns.github).not.toHaveBeenCalled();
+    expect(closeFns.jira).toHaveBeenCalledOnce();
+    expect(closeFns.ado).toHaveBeenCalledOnce();
+    expect(result.incrementClosed).toBe(true);
+    expect(result.successes).toHaveLength(2);
+  });
+
+  // T-029: Both JIRA and ADO throw — both in failures, length 2, incrementClosed true
+  it('all 3 providers fail — incrementClosed still true, 3 failures', async () => {
+    (closeFns.github as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('GitHub down'));
+    (closeFns.jira as ReturnType<typeof vi.fn>).mockRejectedValue(new SyncError('jira', 401, 'Unauthorized', 'bad token'));
+    (closeFns.ado as ReturnType<typeof vi.fn>).mockRejectedValue(new SyncError('ado', 500, 'Internal', 'crash'));
+
+    const config: ClosureConfig = { github: true, jira: true, ado: true };
+    const result = await dispatchClosure(baseContext, config, closeFns);
+
+    expect(result.incrementClosed).toBe(true);
+    expect(result.successes).toHaveLength(0);
+    expect(result.failures).toHaveLength(3);
+    expect(result.failures.map((f) => f.provider).sort()).toEqual(['ado', 'github', 'jira']);
+  });
+
   it('missing provider function is skipped without error', async () => {
     const sparseCloseFns: Record<string, ProviderCloseFn> = {
       github: vi.fn().mockResolvedValue({ closed: [], provider: 'github' }),

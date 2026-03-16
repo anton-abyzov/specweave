@@ -117,38 +117,38 @@ export async function dispatchClosure(
 export function buildProductionCloseFns(): Record<string, ProviderCloseFn> {
   return {
     github: async (ctx: ClosureContext) => {
-      const { SyncCoordinator } = await import('../../sync/sync-coordinator.js');
+      const { SyncCoordinator } = await import('../sync/sync-coordinator.js');
       const coordinator = new SyncCoordinator({
         projectRoot: ctx.projectRoot,
         incrementId: ctx.incrementId,
       });
       const result = await coordinator.syncIncrementClosure();
       return {
-        closed: result?.closedIssues ?? [],
+        closed: (result?.closedIssues ?? []).map(String),
         provider: 'github',
       };
     },
     jira: async (ctx: ClosureContext) => {
-      const { SyncCoordinator } = await import('../../sync/sync-coordinator.js');
+      const { SyncCoordinator } = await import('../sync/sync-coordinator.js');
       const coordinator = new SyncCoordinator({
         projectRoot: ctx.projectRoot,
         incrementId: ctx.incrementId,
       });
       const result = await coordinator.syncIncrementClosure();
       return {
-        closed: result?.closedIssues ?? [],
+        closed: (result?.closedIssues ?? []).map(String),
         provider: 'jira',
       };
     },
     ado: async (ctx: ClosureContext) => {
-      const { SyncCoordinator } = await import('../../sync/sync-coordinator.js');
+      const { SyncCoordinator } = await import('../sync/sync-coordinator.js');
       const coordinator = new SyncCoordinator({
         projectRoot: ctx.projectRoot,
         incrementId: ctx.incrementId,
       });
       const result = await coordinator.syncIncrementClosure();
       return {
-        closed: result?.closedIssues ?? [],
+        closed: (result?.closedIssues ?? []).map(String),
         provider: 'ado',
       };
     },

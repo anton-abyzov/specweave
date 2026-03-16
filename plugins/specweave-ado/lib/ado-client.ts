@@ -207,6 +207,21 @@ export class AdoClient {
     await this.request('DELETE', url);
   }
 
+  /**
+   * Pull the current state of a work item for bidirectional sync.
+   *
+   * @param id - ADO work item ID
+   * @returns state and last-modified timestamp
+   */
+  async pullWorkItemState(id: number): Promise<{ state: string; modifiedAt: Date }> {
+    const url = `${this.baseUrl}/_apis/wit/workitems/${id}?$select=System.State,System.ChangedDate&api-version=7.1`;
+    const item = await this.request<WorkItem>('GET', url);
+    return {
+      state: item.fields['System.State'],
+      modifiedAt: new Date(item.fields['System.ChangedDate']),
+    };
+  }
+
   // ==========================================================================
   // Comment Operations
   // ==========================================================================
