@@ -118,28 +118,27 @@ Ready to build with SpecWeave using ANY AI tool!
   /**
    * Compile and install a plugin for Generic adapter
    *
-   * Appends plugin content to AGENTS.md for manual copy-paste workflows
-   *
-   * NEW: Injects system prompts for non-English languages
+   * 1. Writes individual skill files to .agents/skills/ via base class helper
+   * 2. Appends a concise skills INDEX to AGENTS.md (not full content)
    *
    * @param plugin Plugin to install
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
     const projectPath = process.cwd();
     const agentsMdPath = path.join(projectPath, 'AGENTS.md');
+    const skillsDir = '.agents/skills';
 
-    console.log(`\n📦 Adding plugin to AGENTS.md: ${plugin.manifest.name}`);
-
-    // Get language configuration for system prompt injection
-    const language = await this.getLanguageConfig();
-    if (language !== 'en') {
-      console.log(`   🌐 Language: ${language} (system prompts will be injected)`);
-    }
+    console.log(`\n📦 Installing plugin: ${plugin.manifest.name}`);
 
     if (!(await fs.pathExists(agentsMdPath))) {
       throw new Error('AGENTS.md not found. Run specweave init first.');
     }
 
+    // 1. Write individual skill files to .agents/skills/
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
+
+    // 2. Append concise index to AGENTS.md
     let agentsMd = await fs.readFile(agentsMdPath, 'utf-8');
 
     const pluginMarker = `<!-- Plugin: ${plugin.manifest.name} -->`;
@@ -153,55 +152,56 @@ Ready to build with SpecWeave using ANY AI tool!
     pluginSection += `${plugin.manifest.description}\n\n`;
 
     if (plugin.skills.length > 0) {
-      pluginSection += `## Skills\n\n`;
+      pluginSection += `## Available Skills\n\n`;
+      pluginSection += `| Skill | Description |\n`;
+      pluginSection += `|-------|-------------|\n`;
       for (const skill of plugin.skills) {
-        const skillContent = await fs.readFile(path.join(skill.path, 'SKILL.md'), 'utf-8');
-        const contentWithoutFrontmatter = skillContent.replace(/^---\n[\s\S]+?\n---\n/, '');
-        // Inject system prompt if needed
-        const modifiedContent = this.injectSystemPrompt(contentWithoutFrontmatter, language);
-        pluginSection += `### ${skill.name}\n\n${modifiedContent}\n\n`;
+        const desc = skill.description || skill.name;
+        pluginSection += `| ${skill.name} | ${desc} |\n`;
       }
+      pluginSection += `\n`;
     }
 
-    if (plugin.agents.length > 0) {
-      pluginSection += `## Agents\n\n`;
-      for (const agent of plugin.agents) {
-        const agentContent = await fs.readFile(path.join(agent.path, 'AGENT.md'), 'utf-8');
-        // Inject system prompt if needed
-        const modifiedContent = this.injectSystemPrompt(agentContent, language);
-        pluginSection += `### ${agent.name}\n\n${modifiedContent}\n\n`;
-      }
-    }
+    pluginSection += `## CLI Commands\n\n`;
+    pluginSection += `All workflows are available via the \`specweave\` CLI:\n\n`;
+    pluginSection += `| Command | Description |\n`;
+    pluginSection += `|---------|-------------|\n`;
+    pluginSection += `| \`specweave create-increment\` | Create a new feature increment |\n`;
+    pluginSection += `| \`specweave status\` | Check current progress |\n`;
+    pluginSection += `| \`specweave validate\` | Run quality checks |\n`;
+    pluginSection += `| \`specweave complete\` | Close an increment |\n`;
+    pluginSection += `| \`specweave sync-living-docs\` | Sync documentation |\n`;
+    pluginSection += `\n`;
 
-    if (plugin.commands.length > 0) {
-      pluginSection += `## Workflows (Manual)\n\n`;
-      for (const command of plugin.commands) {
-        const commandContent = await fs.readFile(command.path, 'utf-8');
-        const contentWithoutFrontmatter = commandContent.replace(/^---\n[\s\S]+?\n---\n/, '');
-        // Inject system prompt if needed
-        const modifiedContent = this.injectSystemPrompt(contentWithoutFrontmatter, language);
-        pluginSection += `### ${command.name.replace('specweave.', '')}\n\n${modifiedContent}\n\n`;
-      }
-    }
+    pluginSection += `## Skill Files\n\n`;
+    pluginSection += `Individual skill instructions are installed at \`.agents/skills/\`.\n`;
+    pluginSection += `Reference these files when you need detailed workflow instructions.\n\n`;
 
     pluginSection += `<!-- End Plugin: ${plugin.manifest.name} -->\n`;
 
     agentsMd += pluginSection;
     await fs.writeFile(agentsMdPath, agentsMd, 'utf-8');
 
-    console.log(`   ✓ Added to AGENTS.md (copy-paste workflows)`);
-    console.log(`\n✅ Plugin ${plugin.manifest.name} available for manual use!`);
+    console.log(`   ✓ Skills index added to AGENTS.md`);
+    console.log(`\n✅ Plugin ${plugin.manifest.name} installed!`);
   }
 
   /**
    * Unload a plugin from Generic adapter
+   *
+   * Removes both the AGENTS.md index section and individual skill files.
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     const projectPath = process.cwd();
     const agentsMdPath = path.join(projectPath, 'AGENTS.md');
 
-    console.log(`\n🗑️  Removing plugin from AGENTS.md: ${pluginName}`);
+    console.log(`\n🗑️  Removing plugin: ${pluginName}`);
 
+    // 1. Remove skill files from .agents/skills/
+    await this.removeSkillFiles(pluginName, '.agents/skills');
+    console.log(`   ✓ Removed skill files from .agents/skills/`);
+
+    // 2. Remove index section from AGENTS.md
     if (!(await fs.pathExists(agentsMdPath))) {
       console.warn(`⚠️  AGENTS.md not found`);
       return;
@@ -227,30 +227,37 @@ Ready to build with SpecWeave using ANY AI tool!
     agentsMd = agentsMd.slice(0, startIndex) + agentsMd.slice(endIndex + endMarker.length);
     await fs.writeFile(agentsMdPath, agentsMd, 'utf-8');
 
-    console.log(`   ✓ Removed from AGENTS.md`);
+    console.log(`   ✓ Removed index from AGENTS.md`);
     console.log(`\n✅ Plugin ${pluginName} removed!`);
   }
 
   /**
    * Get list of installed plugins for Generic adapter
+   *
+   * Checks both AGENTS.md markers and .agents/skills/ directory.
    */
   async getInstalledPlugins(): Promise<string[]> {
+    const plugins = new Set<string>();
+
+    // 1. Check AGENTS.md markers
     const projectPath = process.cwd();
     const agentsMdPath = path.join(projectPath, 'AGENTS.md');
 
-    if (!(await fs.pathExists(agentsMdPath))) {
-      return [];
+    if (await fs.pathExists(agentsMdPath)) {
+      const agentsMd = await fs.readFile(agentsMdPath, 'utf-8');
+      const pluginMarkerRegex = /<!-- Plugin: (specweave-[a-z0-9-]+) -->/g;
+      const matches = agentsMd.matchAll(pluginMarkerRegex);
+      for (const match of matches) {
+        plugins.add(match[1]);
+      }
     }
 
-    const agentsMd = await fs.readFile(agentsMdPath, 'utf-8');
-    const pluginMarkerRegex = /<!-- Plugin: (specweave-[a-z0-9-]+) -->/g;
-    const matches = agentsMd.matchAll(pluginMarkerRegex);
-
-    const plugins: string[] = [];
-    for (const match of matches) {
-      plugins.push(match[1]);
+    // 2. Check .agents/skills/ directory
+    const dirPlugins = await this.listInstalledPluginsInDir('.agents/skills');
+    for (const p of dirPlugins) {
+      plugins.add(p);
     }
 
-    return plugins;
+    return Array.from(plugins);
   }
 }
