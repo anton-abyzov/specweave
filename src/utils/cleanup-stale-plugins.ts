@@ -10,6 +10,7 @@
  */
 
 import * as fs from './fs-native.js';
+import * as nodeFs from 'fs';
 import path from 'path';
 import os from 'os';
 import chalk from 'chalk';
@@ -372,6 +373,210 @@ export async function migrateUserLevelPlugins(
     }
     return result;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Stale lockfile cleanup (v1.0.541)
+// ---------------------------------------------------------------------------
+
+/** Options for stale lockfile cleanup functions. */
+export interface StaleFileCleanupOptions {
+  verbose?: boolean;
+  /** Override for testing: inject a custom fs module. */
+  customFs?: typeof import('fs');
+  /** Mtime threshold in ms — files modified more recently than this are skipped. Default: 5000. */
+  mtimeThresholdMs?: number;
+}
+
+/** Result of a stale lockfile cleanup operation. */
+export interface StaleFileResult {
+  success: boolean;
+  removedCount: number;
+  skippedCount: number;
+  removedPaths: string[];
+  skippedPaths: string[];
+  errors: Array<{ path: string; error: string }>;
+}
+
+/** Directories to skip during recursive walks. */
+const SKIP_DIRS = new Set(['node_modules', '.git', '.specweave']);
+
+function makeEmptyResult(): StaleFileResult {
+  return { success: true, removedCount: 0, skippedCount: 0, removedPaths: [], skippedPaths: [], errors: [] };
+}
+
+/**
+ * Recursively find all files matching `fileName` under `root`, skipping excluded dirs.
+ */
+function walkForFile(root: string, fileName: string, fsImpl: typeof import('fs')): string[] {
+  const results: string[] = [];
+
+  function walk(dir: string): void {
+    try {
+      const names = fsImpl.readdirSync(dir);
+      for (const name of names) {
+        if (SKIP_DIRS.has(name)) continue;
+        const fullPath = path.join(dir, name);
+        try {
+          const stat = fsImpl.statSync(fullPath);
+          if (stat.isDirectory()) {
+            walk(fullPath);
+          } else if (name === fileName) {
+            results.push(fullPath);
+          }
+        } catch {
+          // Can't stat — skip entry
+        }
+      }
+    } catch {
+      // Can't read dir — skip
+    }
+  }
+
+  walk(root);
+  return results;
+}
+
+/**
+ * Remove all `skills-lock.json` files from the project tree.
+ * This is a dead legacy format with no code references.
+ *
+ * @param projectRoot - Root of the project to scan
+ * @param options - Cleanup options (verbose, fs override, mtime threshold)
+ */
+export function cleanupLegacyLockfiles(
+  projectRoot: string,
+  options: StaleFileCleanupOptions = {}
+): StaleFileResult {
+  const result = makeEmptyResult();
+  const fsImpl = options.customFs || nodeFs;
+  const threshold = options.mtimeThresholdMs ?? 5000;
+
+  const files = walkForFile(projectRoot, 'skills-lock.json', fsImpl);
+
+  for (const filePath of files) {
+    try {
+      if (threshold > 0) {
+        const stat = fsImpl.statSync(filePath);
+        if (Date.now() - stat.mtimeMs < threshold) {
+          result.skippedCount++;
+          result.skippedPaths.push(filePath);
+          if (options.verbose) {
+            console.log(chalk.gray(`  Skipped (recent): ${filePath}`));
+          }
+          continue;
+        }
+      }
+      fsImpl.unlinkSync(filePath);
+      result.removedCount++;
+      result.removedPaths.push(filePath);
+      if (options.verbose) {
+        console.log(chalk.gray(`  Removed: ${filePath}`));
+      }
+    } catch (err) {
+      result.errors.push({ path: filePath, error: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Remove orphaned `vskill.lock` files in child repos of an umbrella project.
+ * Only the umbrella root `vskill.lock` is authoritative; child-repo copies are orphans.
+ *
+ * @param projectRoot - Root of the umbrella project
+ * @param options - Cleanup options
+ */
+export function cleanupOrphanedChildLocks(
+  projectRoot: string,
+  options: StaleFileCleanupOptions = {}
+): StaleFileResult {
+  const result = makeEmptyResult();
+  const fsImpl = options.customFs || nodeFs;
+  const threshold = options.mtimeThresholdMs ?? 5000;
+
+  // Check if this is an umbrella project
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fsImpl.existsSync(configPath)) return result;
+
+  let isUmbrella = false;
+  try {
+    const config = JSON.parse(fsImpl.readFileSync(configPath, 'utf-8'));
+    isUmbrella = config?.umbrella?.enabled === true || config?.repository?.umbrellaRepo === true;
+  } catch {
+    return result;
+  }
+
+  if (!isUmbrella) return result;
+
+  // Scan repositories/*/*/vskill.lock
+  const reposDir = path.join(projectRoot, 'repositories');
+  if (!fsImpl.existsSync(reposDir)) return result;
+
+  try {
+    const orgNames = fsImpl.readdirSync(reposDir);
+    for (const orgName of orgNames) {
+      const orgPath = path.join(reposDir, orgName);
+      try {
+        const orgStat = fsImpl.statSync(orgPath);
+        if (!orgStat.isDirectory()) continue;
+      } catch { continue; }
+
+      const repoNames = fsImpl.readdirSync(orgPath);
+      for (const repoName of repoNames) {
+        const repoPath = path.join(orgPath, repoName);
+        try {
+          const repoStat = fsImpl.lstatSync(repoPath);
+          if (!repoStat.isDirectory() && !repoStat.isSymbolicLink()) continue;
+        } catch { continue; }
+
+        const lockPath = path.join(repoPath, 'vskill.lock');
+
+        if (!fsImpl.existsSync(lockPath)) continue;
+
+        // Symlink escape prevention
+        try {
+          const realLockPath = fsImpl.realpathSync(lockPath);
+          const realProjectRoot = fsImpl.realpathSync(projectRoot);
+          if (!realLockPath.startsWith(realProjectRoot)) {
+            result.errors.push({ path: lockPath, error: 'Symlink resolves outside project root' });
+            continue;
+          }
+        } catch {
+          // realpathSync failed — skip this file
+          result.errors.push({ path: lockPath, error: 'Could not resolve real path' });
+          continue;
+        }
+
+        try {
+          if (threshold > 0) {
+            const stat = fsImpl.statSync(lockPath);
+            if (Date.now() - stat.mtimeMs < threshold) {
+              result.skippedCount++;
+              result.skippedPaths.push(lockPath);
+              if (options.verbose) {
+                console.log(chalk.yellow(`  Skipped (recent): ${lockPath}`));
+              }
+              continue;
+            }
+          }
+          fsImpl.unlinkSync(lockPath);
+          result.removedCount++;
+          result.removedPaths.push(lockPath);
+          if (options.verbose) {
+            console.log(chalk.gray(`  Removed orphaned lock: ${lockPath}`));
+          }
+        } catch (err) {
+          result.errors.push({ path: lockPath, error: err instanceof Error ? err.message : String(err) });
+        }
+      }
+    }
+  } catch {
+    // repositories dir unreadable — return what we have
+  }
+
+  return result;
 }
 
 /**

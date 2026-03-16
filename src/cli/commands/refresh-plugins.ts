@@ -121,6 +121,26 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     logger.debug('Claude CLI detection failed, falling back to direct copy');
   }
 
+  // Step 0.5: Clean stale lockfiles
+  try {
+    const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import('../../utils/cleanup-stale-plugins.js');
+    const projectRoot = getProjectRoot();
+
+    const legacyResult = cleanupLegacyLockfiles(projectRoot, { verbose: options.verbose });
+    const orphanResult = cleanupOrphanedChildLocks(projectRoot, { verbose: options.verbose });
+
+    if (options.verbose) {
+      if (legacyResult.removedCount > 0) {
+        legacyResult.removedPaths.forEach(p => console.log(`  Removed legacy lockfile: ${p}`));
+      }
+      if (orphanResult.removedCount > 0) {
+        orphanResult.removedPaths.forEach(p => console.log(`  Removed orphaned lockfile: ${p}`));
+      }
+    }
+  } catch {
+    // Non-blocking: cleanup errors don't abort plugin refresh
+  }
+
   log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));
   if (useNativeCli) {
     log(chalk.blue.bold(`  Mode: native Claude CLI (claude plugin install)\n`));
