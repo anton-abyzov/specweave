@@ -17,6 +17,7 @@ import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Active increment state stored in .specweave/state/active-increment.json
@@ -44,7 +45,7 @@ export interface ActiveIncrementState {
 export class ActiveIncrementManager {
   private stateFile: string;
 
-  constructor(private rootDir: string = process.cwd()) {
+  constructor(private rootDir: string = resolveEffectiveRoot()) {
     this.stateFile = path.join(rootDir, '.specweave/state/active-increment.json');
   }
 

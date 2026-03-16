@@ -12,6 +12,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import { detectSpecIdentifier, SpecContent } from './spec-identifier-detector.js';
 import { SpecIdentifier } from '../types/spec-identifier.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface DetectedSpec {
   /** Spec identifier */
@@ -91,7 +92,7 @@ async function detectSpecsByFeatureId(
   featureId: string,
   config: any = {}
 ): Promise<MultiSpecDetectionResult> {
-  const specsFolder = path.join(process.cwd(), '.specweave/docs/internal/specs');
+  const specsFolder = path.join(resolveEffectiveRoot(), '.specweave/docs/internal/specs');
   const emptyResult: MultiSpecDetectionResult = { specs: [], isMultiSpec: false, projects: [] };
 
   if (!fs.existsSync(specsFolder)) {
