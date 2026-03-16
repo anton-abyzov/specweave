@@ -107,6 +107,7 @@ export class JiraSpecSync {
   private projectRoot: string;
   private circuitBreakerRegistry?: CircuitBreakerRegistry;
   private retryQueue?: SyncRetryQueue;
+  private lockManager?: LockManager;
   private incrementId: string;
   private featureId: string;
 
@@ -118,6 +119,9 @@ export class JiraSpecSync {
     this.retryQueue = options?.retryQueue;
     this.incrementId = options?.incrementId ?? '';
     this.featureId = options?.featureId ?? '';
+    if (options?.lockDir) {
+      this.lockManager = new LockManager(options.lockDir);
+    }
 
     // Create Jira API client — baseURL set dynamically via init()
     this.client = axios.create({
@@ -131,6 +135,22 @@ export class JiraSpecSync {
         'Content-Type': 'application/json'
       }
     });
+  }
+
+  /**
+   * Execute fn under file lock (if lockManager configured).
+   */
+  private async withLock<T>(fn: () => Promise<T>): Promise<T> {
+    if (!this.lockManager) return fn();
+    const acquired = await this.lockManager.acquire();
+    if (!acquired) {
+      throw new SyncError('jira', 0, '', 'Failed to acquire JIRA sync lock');
+    }
+    try {
+      return await fn();
+    } finally {
+      await this.lockManager.release();
+    }
   }
 
   /**

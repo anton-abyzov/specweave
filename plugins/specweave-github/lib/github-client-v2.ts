@@ -256,7 +256,7 @@ export class GitHubClientV2 {
       // Derive proper FS-ID from the increment number
       const num = parseInt(incrementId.replace('E', ''), 10);
       const isExternal = incrementId.endsWith('E');
-      const properFsId = `FS-${String(num).padStart(3, '0')}${isExternal ? 'E' : ''}`;
+      const properFsId = `FS-${String(num).padStart(3, '0')}${isExternal ? 'E' : ''}`; // Legacy E suffix — error message only
       throw new Error(
         `❌ INVALID TITLE FORMAT: "${title}"\n\n` +
         `Plain increment IDs like [${incrementId}] are NOT allowed!\n\n` +
