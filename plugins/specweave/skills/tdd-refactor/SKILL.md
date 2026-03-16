@@ -37,3 +37,7 @@ Before committing:
 If tests fail: immediately revert last change, identify breaking refactoring, apply smaller incremental changes.
 
 Code to refactor: $ARGUMENTS
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#tdd-refactor)

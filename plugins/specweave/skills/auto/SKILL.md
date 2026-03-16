@@ -234,3 +234,7 @@ In auto mode, execute deployment commands directly using available credentials. 
 | `/sw:do` | Execute tasks (standalone) |
 | `/sw:progress` | Show progress |
 | `/sw:team-lead` | Multi-agent orchestration |
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#auto)

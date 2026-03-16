@@ -458,3 +458,7 @@ Created increment 0003-user-authentication
 ---
 
 **This command is the main entry point for creating new work in SpecWeave.**
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#increment)
