@@ -2,10 +2,10 @@
  * ADO AC Checkbox Sync
  *
  * When ACs are marked complete in spec.md, updates the HTML description
- * of the linked ADO work item (☐ → ☑) and posts a progress comment.
+ * of the linked ADO work item using API-based section update (not regex).
  *
- * Mirrors jira-ac-checkbox-sync.ts pattern for ADO.
- * The ADO description is HTML — we use regex to flip ☐/☑ by AC ID.
+ * Uses AdoDescriptionUpdater for clean HTML section manipulation via
+ * sentinel comments (<!-- AC_SECTION_START/END -->).
  */
 
 import { promises as fs, existsSync } from 'fs';
@@ -15,6 +15,7 @@ import axios, { AxiosInstance } from 'axios';
 import { Logger, consoleLogger } from '../../specweave/lib/vendor/utils/logger.js';
 import { deriveFeatureId } from '../../specweave/lib/vendor/utils/feature-id-derivation.js';
 import { GitHubACCheckboxSync } from '../../specweave-github/lib/github-ac-checkbox-sync.js';
+import { AdoDescriptionUpdater } from '../../../src/core/ado-description-updater.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 import type { LivingDocsUSFile } from '../../../src/types/living-docs-us-file.js';
 
@@ -131,41 +132,35 @@ export class AdoACCheckboxSync {
   }
 
   /**
-   * Fetch current HTML description, regex-flip ☐/☑ for matching ACs, PATCH back.
-   * Posts a comment listing all AC statuses when any AC changed.
+   * Update a work item's AC section using API-based section manipulation.
+   *
+   * GET description → formatACCheckboxes → updateAcSection → PATCH with
+   * JSON Patch op:"replace". No regex used at any point.
    */
-  private async updateStoryCheckboxes(
+  async updateWorkItemACSection(
     client: AxiosInstance,
-    adoConfig: { organization: string; project: string; pat: string },
     storyId: number,
-    acStatus: Map<string, boolean>
+    acStatus: Map<string, boolean>,
   ): Promise<number> {
+    const updater = new AdoDescriptionUpdater();
+
     const resp = await client.get(
       `/wit/workitems/${storyId}?fields=System.Description&api-version=7.0`
     );
 
-    let description: string = resp.data?.fields?.['System.Description'] ?? '';
-    const original = description;
-    let updatedCount = 0;
+    const currentDescription: string = resp.data?.fields?.['System.Description'] ?? '';
+    const newAcHtml = updater.formatACCheckboxes(acStatus);
 
-    for (const [acId, completed] of acStatus) {
-      const escaped = acId.replace(/-/g, '\\-');
-      // Pattern: ☐ AC-US1-01: or ☑ AC-US1-01:
-      const beforeRegex = new RegExp(`(☐|☑)\\s+(${escaped}:)`, 'g');
-      const newCheckbox = completed ? '☑' : '☐';
-      const replaced = description.replace(beforeRegex, `${newCheckbox} $2`);
-      if (replaced !== description) {
-        updatedCount++;
-        description = replaced;
-      }
-    }
+    if (!newAcHtml) return 0;
 
-    if (description === original) return 0;
+    const updatedDescription = updater.updateAcSection(currentDescription, newAcHtml);
 
-    // PATCH description
+    if (updatedDescription === currentDescription) return 0;
+
+    // PATCH description via JSON Patch
     await client.patch(
       `/wit/workitems/${storyId}?api-version=7.0`,
-      [{ op: 'replace', path: '/fields/System.Description', value: description }],
+      [{ op: 'replace', path: '/fields/System.Description', value: updatedDescription }],
       { headers: { 'Content-Type': 'application/json-patch+json' } }
     );
 
@@ -178,19 +173,32 @@ export class AdoACCheckboxSync {
       .map(([id, done]) => `<li>${done ? '✅' : '⬜'} ${id}</li>`)
       .join('\n');
 
-    const commentHtml = `<h3>📊 AC Progress Update</h3>
+    const commentHtml = `<h3>AC Progress Update</h3>
 <p><strong>Acceptance Criteria</strong>: ${completedCount}/${totalCount} (${percentage}%)</p>
 <ul>
 ${acLines}
 </ul>
-<p>🤖 Auto-updated by SpecWeave AC Completion Gate</p>`;
+<p>Auto-updated by SpecWeave</p>`;
 
     await client.post(
       `/wit/workItems/${storyId}/comments?api-version=7.1-preview.3`,
       { text: commentHtml }
     );
 
-    return updatedCount;
+    return acStatus.size;
+  }
+
+  /**
+   * Legacy: Fetch current HTML description, regex-flip checkboxes, PATCH back.
+   * Kept for backward compatibility. New code should use updateWorkItemACSection.
+   */
+  private async updateStoryCheckboxes(
+    client: AxiosInstance,
+    adoConfig: { organization: string; project: string; pat: string },
+    storyId: number,
+    acStatus: Map<string, boolean>
+  ): Promise<number> {
+    return this.updateWorkItemACSection(client, storyId, acStatus);
   }
 
   private buildClient(adoConfig: { organization: string; project: string; pat: string }): AxiosInstance {
