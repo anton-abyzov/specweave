@@ -133,3 +133,7 @@ Report includes: executive summary, rule-based results by category, AI quality s
 - `increment-quality-judge` skill: AI assessment engine
 - `/sw:done`: validates before closing
 - `specweave qa <id>`: CLI equivalent
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#validate)

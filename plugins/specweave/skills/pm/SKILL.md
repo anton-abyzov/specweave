@@ -179,3 +179,7 @@ This skill auto-activates when you mention:
 - PRD, product specs, story mapping
 
 
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#pm)

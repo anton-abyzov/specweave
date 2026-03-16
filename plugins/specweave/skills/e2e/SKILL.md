@@ -418,3 +418,7 @@ Default: `['wcag2a', 'wcag2aa', 'wcag21aa']` (covers standard compliance).
 | "I'll add AC-IDs later" | You won't. Generate with `--generate` and they're there from the start. |
 | "Accessibility can wait" | WCAG violations caught at dev time cost 10x less to fix than post-release. Use `--a11y`. |
 | "The report is overkill for a small project" | Gate 2a reads the report. No report = no closure. The schema is fixed overhead, not per-test. |
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#e2e)

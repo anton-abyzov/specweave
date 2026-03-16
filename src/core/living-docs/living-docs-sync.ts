@@ -599,6 +599,15 @@ export class LivingDocsSync {
       this.logger.log(`✅ Synced ${incrementId} → ${featureId}`);
       this.logger.log(`   Created: ${result.filesCreated.length} files`);
 
+      // Drift detection for project-local skills (error-isolated)
+      try {
+        const { DriftDetector } = await import('../skill-gen/drift-detector.js');
+        const detector = new DriftDetector(this.projectRoot);
+        await detector.check();
+      } catch (driftError) {
+        this.logger.log(`[DriftDetector] Warning: ${driftError instanceof Error ? driftError.message : driftError}`);
+      }
+
       return result;
 
     } catch (error) {

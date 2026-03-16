@@ -197,3 +197,7 @@ If scope creep detected, offer options:
 - C) Split into 2 increments (recommended)
 
 Transfer tasks creates new increment with dependencies on current one.
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#done)

@@ -65,3 +65,7 @@ If sync fails:
 - Display the error message
 - Suggest: "Check that spec.md has valid frontmatter and user stories are properly formatted"
 - Suggest: "Run `/sw:progress-sync` for full external tool sync"
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#sync-docs)

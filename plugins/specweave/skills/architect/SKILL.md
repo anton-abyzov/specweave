@@ -113,3 +113,7 @@ After architecture is ready, delegate to domain skills:
 - Backend: `backend:*` (dotnet, nodejs, python, go, java-spring, rust)
 
 Output: `plan.md` with architecture decisions and component breakdown.
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#architect)

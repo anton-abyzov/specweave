@@ -200,3 +200,7 @@ Shutting down agents... done
 TeamDelete: team cleaned up.
 All increments merged and synced.
 ```
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#team-merge)

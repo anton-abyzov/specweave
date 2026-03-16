@@ -286,3 +286,7 @@ AskUserQuestion({
 
 **Part of**: Increment 0039 (Ultra-Smart Next Command)
 **Status**: Phase 1 - Foundation (US-007)
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#plan)

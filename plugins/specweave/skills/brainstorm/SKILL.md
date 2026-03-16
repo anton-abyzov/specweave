@@ -557,3 +557,7 @@ Before completing a brainstorm session, verify:
 - [ ] Brainstorm document saved to `.specweave/docs/brainstorms/`
 - [ ] State file updated to `phase: "complete"`
 - [ ] Handoff offered (user may decline)
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#brainstorm)

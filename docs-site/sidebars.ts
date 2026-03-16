@@ -605,6 +605,11 @@ const sidebars: SidebarsConfig = {
           id: 'skills/extensible/skill-development-guidelines',
           label: 'Development Guidelines',
         },
+        {
+          type: 'doc',
+          id: 'skills/extensible/skill-generation',
+          label: 'Skill Generation',
+        },
       ],
     },
     {

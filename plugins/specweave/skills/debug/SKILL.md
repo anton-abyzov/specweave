@@ -213,3 +213,7 @@ Escalation: 3 strikes → STOP → present findings → question architecture
 ---
 
 Debug target: $ARGUMENTS
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#debug)

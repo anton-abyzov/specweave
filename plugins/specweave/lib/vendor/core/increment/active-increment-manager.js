@@ -16,13 +16,14 @@ import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 /**
  * Active Increment Manager
  *
  * Central authority for managing which increment is currently active.
  */
 export class ActiveIncrementManager {
-    constructor(rootDir = process.cwd()) {
+    constructor(rootDir = resolveEffectiveRoot()) {
         this.rootDir = rootDir;
         this.stateFile = path.join(rootDir, '.specweave/state/active-increment.json');
     }

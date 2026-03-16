@@ -185,3 +185,7 @@ Progress logged to `.specweave/logs/judge-llm.log`. Default timeout 60s aborts i
 - `/sw:grill` - Confidence-scored pre-ship quality gate (in-session)
 - `/sw:validate` - Rule-based increment validation
 - `/sw:done` - Increment closure (runs both grill and judge-llm)
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#judge-llm)

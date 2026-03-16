@@ -249,3 +249,7 @@ If found: execute directly. If missing: ask user for credential.
 ---
 
 Run `/sw:validate` after execution to ensure quality before closing with `/sw:done`.
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#do)

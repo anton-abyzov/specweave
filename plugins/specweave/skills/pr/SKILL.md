@@ -250,3 +250,7 @@ Status: 2/2 PRs created successfully
 | PR already exists for branch | Skip creation, report existing PR URL |
 | No changes to push | Skip PR creation, inform user |
 | Merge conflicts with target | Create PR anyway (conflicts visible in PR UI) |
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#pr)

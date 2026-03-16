@@ -474,3 +474,7 @@ Custom presets follow the same execution rules: agents with no `dependsOn` run i
 | Ownership conflict | Ensure no two agents in the same preset share directory ownership |
 | TDD gate rejects Green | Agent 1 (Red) tests must genuinely fail — check for accidentally passing tests |
 | Agents out of sync | Run `/sw:progress` to see per-agent task status and identify blockers |
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#team-build)

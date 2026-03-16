@@ -62,3 +62,7 @@ Output:
 If tests still fail: review test requirements carefully, check for misunderstood assertions, add minimal code to address specific failures.
 
 Tests to make pass: $ARGUMENTS
+
+## Resources
+
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#tdd-green)

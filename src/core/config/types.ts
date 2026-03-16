@@ -858,6 +858,25 @@ export interface GrillConfig {
   required?: boolean;
 }
 
+/**
+ * Skill generation configuration (v1.0.XXX+)
+ *
+ * Controls automatic detection of recurring patterns from living docs
+ * and on-demand generation of project-local skills.
+ */
+export interface SkillGenConfig {
+  /** Pattern detection trigger: "on-close" runs on increment completion, "off" disables. Default: "on-close" */
+  detection?: 'on-close' | 'off';
+  /** Whether to print suggestions when patterns qualify. Default: true */
+  suggest?: boolean;
+  /** Minimum number of increments a pattern must appear in before qualifying. Default: 3 */
+  minSignalCount?: number;
+  /** Pattern IDs permanently excluded from suggestions (still visible in /sw:skill-gen). Default: [] */
+  declinedSuggestions?: string[];
+  /** Maximum number of signals to retain (prunes lowest-confidence when exceeded). Default: 100 */
+  maxSignals?: number;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // End consolidated interfaces
 // ═══════════════════════════════════════════════════════════════════
@@ -993,6 +1012,9 @@ export interface SpecWeaveConfig {
 
   /** Grill quality gate configuration (v1.0.337+) */
   grill?: GrillConfig;
+
+  /** Skill generation configuration — pattern detection + on-demand skill creation (v1.0.XXX+) */
+  skillGen?: SkillGenConfig;
 
   /** Allow additional properties for forward compatibility */
   [key: string]: any;
