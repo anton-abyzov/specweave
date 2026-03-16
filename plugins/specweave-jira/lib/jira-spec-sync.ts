@@ -211,6 +211,7 @@ export class JiraSpecSync {
   async syncSpecToJira(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing spec ${specId} to Jira Epic...`);
 
+    return this.withLock(async () => {
     this.checkCircuitBreaker();
 
     try {
@@ -275,6 +276,7 @@ export class JiraSpecSync {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
+    });
   }
 
   /**
@@ -283,6 +285,7 @@ export class JiraSpecSync {
   async syncFromJira(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing FROM Jira to spec ${specId}...`);
 
+    return this.withLock(async () => {
     this.checkCircuitBreaker();
 
     try {
@@ -354,6 +357,7 @@ export class JiraSpecSync {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
+    });
   }
 
   /**
