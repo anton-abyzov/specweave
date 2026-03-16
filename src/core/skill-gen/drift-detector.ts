@@ -1,8 +1,8 @@
 /**
  * Drift Detector — compares project-local skills against current living docs.
  *
- * Runs during living docs sync. Warns when skills reference modules or APIs
- * that no longer appear in the analysis output.
+ * Runs during living docs sync. Returns structured DriftResult[] when skills
+ * reference modules or APIs that no longer appear in the analysis output.
  *
  * Error-isolated: never throws, never blocks sync.
  *
@@ -11,12 +11,27 @@
 
 import { readFile, readdir, stat } from 'fs/promises';
 import { join } from 'path';
+import type { DriftResult } from './types.js';
+import { collectMarkdownFiles } from './utils.js';
 
 /**
  * Extracts capitalized multi-word identifiers that look like module/class names.
  * Matches PascalCase identifiers (e.g., AuthModule, OldModule, CoreService).
  */
 const MODULE_NAME_PATTERN = /\b([A-Z][a-z]+(?:[A-Z][a-z]+)+)\b/g;
+
+/**
+ * Common PascalCase words that are not project-specific module references.
+ * These are excluded from drift detection to reduce false positives.
+ */
+const PASCAL_CASE_EXCLUSIONS = new Set([
+  'TypeScript', 'JavaScript', 'SpecWeave', 'ReactComponent', 'NextJs',
+  'NodeModule', 'ErrorBoundary', 'PascalCase', 'CamelCase', 'GraphQL',
+  'TypeORM', 'PostgreSQL', 'MongoDB', 'CloudFlare', 'GitHub', 'GitLab',
+  'BitBucket', 'WebSocket', 'OAuth', 'OpenAPI', 'AsyncIterator', 'EventEmitter',
+  'ReadStream', 'WriteStream', 'AbortController', 'RegExp', 'ArrayBuffer',
+  'SharedWorker', 'ServiceWorker', 'IndexedDB', 'LocalStorage', 'SessionStorage',
+]);
 
 export class DriftDetector {
   private projectRoot: string;
@@ -27,27 +42,28 @@ export class DriftDetector {
 
   /**
    * Check project-local skills for stale references.
-   * Never throws.
+   * Returns structured DriftResult[] — never throws.
    */
-  async check(): Promise<void> {
+  async check(): Promise<DriftResult[]> {
     try {
       const skillsDir = join(this.projectRoot, '.claude', 'skills');
 
       // Check if skills directory exists
       try {
         const st = await stat(skillsDir);
-        if (!st.isDirectory()) return;
+        if (!st.isDirectory()) return [];
       } catch {
-        return; // No skills directory
+        return []; // No skills directory
       }
 
       const skillFiles = await this.getSkillFiles(skillsDir);
-      if (skillFiles.length === 0) return;
+      if (skillFiles.length === 0) return [];
 
       const docsContent = await this.loadDocsContent();
-      if (!docsContent) return;
+      if (!docsContent) return [];
 
       const docsLower = docsContent.toLowerCase();
+      const results: DriftResult[] = [];
 
       for (const skillFile of skillFiles) {
         const content = await readFile(join(skillsDir, skillFile), 'utf-8');
@@ -55,16 +71,18 @@ export class DriftDetector {
         const staleRefs = moduleRefs.filter(
           (ref) => !docsLower.includes(ref.toLowerCase()),
         );
+        const validRefs = moduleRefs.filter(
+          (ref) => docsLower.includes(ref.toLowerCase()),
+        );
 
-        if (staleRefs.length > 0) {
-          console.warn(
-            `[DriftDetector] Possible stale references in ${skillFile}: ${staleRefs.join(', ')}. These modules no longer appear in living docs.`,
-          );
+        if (staleRefs.length > 0 || validRefs.length > 0) {
+          results.push({ skillFile, staleRefs, validRefs });
         }
       }
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.warn(`[DriftDetector] Warning: ${msg}`);
+
+      return results;
+    } catch {
+      return [];
     }
   }
 
@@ -80,7 +98,7 @@ export class DriftDetector {
   private async loadDocsContent(): Promise<string | null> {
     const docsDir = join(this.projectRoot, '.specweave', 'docs', 'internal');
     try {
-      const files = await this.collectMarkdownFiles(docsDir);
+      const files = await collectMarkdownFiles(docsDir);
       if (files.length === 0) return null;
 
       const contents: string[] = [];
@@ -97,33 +115,18 @@ export class DriftDetector {
     }
   }
 
-  private async collectMarkdownFiles(dir: string): Promise<string[]> {
-    const results: string[] = [];
-    try {
-      const entries = await readdir(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = join(dir, entry.name);
-        if (entry.isDirectory()) {
-          results.push(...(await this.collectMarkdownFiles(fullPath)));
-        } else if (entry.name.endsWith('.md')) {
-          results.push(fullPath);
-        }
-      }
-    } catch {
-      // Skip
-    }
-    return results;
-  }
-
   private extractModuleReferences(content: string): string[] {
     const matches = new Set<string>();
     let match: RegExpExecArray | null;
     // Reset regex state
     MODULE_NAME_PATTERN.lastIndex = 0;
     while ((match = MODULE_NAME_PATTERN.exec(content)) !== null) {
-      // Skip common false positives
       const name = match[1];
-      if (!['README', 'SKILL', 'CHANGELOG', 'LICENSE', 'TODO'].includes(name.toUpperCase())) {
+      // Skip common false positives and excluded PascalCase words
+      if (
+        !['README', 'SKILL', 'CHANGELOG', 'LICENSE', 'TODO'].includes(name.toUpperCase()) &&
+        !PASCAL_CASE_EXCLUSIONS.has(name)
+      ) {
         matches.add(name);
       }
     }

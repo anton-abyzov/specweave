@@ -7,23 +7,6 @@
  */
 
 /**
- * Signal categories for pattern classification.
- * Uses semantic slugs for deduplication — not exact library names.
- */
-export type SignalCategory =
-  | 'error-handling'
-  | 'naming-conventions'
-  | 'architecture-patterns'
-  | 'testing-patterns'
-  | 'integration-patterns'
-  | 'data-model'
-  | 'api-patterns'
-  | 'auth-patterns'
-  | 'state-management'
-  | 'build-deploy'
-  | string; // Allow custom categories
-
-/**
  * A single detected pattern signal
  */
 export interface SignalEntry {
@@ -31,8 +14,8 @@ export interface SignalEntry {
   id: string;
   /** Short human-readable pattern name (e.g., "error-boundary-pattern") */
   pattern: string;
-  /** Category slug for deduplication */
-  category: SignalCategory;
+  /** Category slug for deduplication — dynamic string discovered by LLM */
+  category: string;
   /** Human-readable description of the detected pattern */
   description: string;
   /** Increment IDs where this pattern was observed */
@@ -51,6 +34,29 @@ export interface SignalEntry {
   declined: boolean;
   /** Whether a skill has been generated from this signal */
   generated: boolean;
+  /** Distinct source file paths where this pattern was detected */
+  uniqueSourceFiles?: string[];
+}
+
+/**
+ * Structured result from DriftDetector.check()
+ */
+export interface DriftResult {
+  skillFile: string;
+  staleRefs: string[];
+  validRefs: string[];
+}
+
+/**
+ * Structured response schema for LLM-based pattern extraction
+ */
+export interface LLMPatternResponse {
+  patterns: Array<{
+    category: string;
+    name: string;
+    description: string;
+    evidence: string[];
+  }>;
 }
 
 /**

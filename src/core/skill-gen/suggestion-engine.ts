@@ -7,11 +7,12 @@
  * @module core/skill-gen/suggestion-engine
  */
 
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { SignalStore } from './types.js';
 import { SKILL_GEN_DEFAULTS } from './types.js';
 import type { SkillGenConfig } from '../config/types.js';
+import { loadSignalStore, saveSignalStore } from './utils.js';
 
 export class SuggestionEngine {
   private projectRoot: string;
@@ -31,7 +32,8 @@ export class SuggestionEngine {
         return;
       }
 
-      const store = await this.loadStore();
+      const signalsPath = join(this.projectRoot, '.specweave', 'state', 'skill-signals.json');
+      const store = await loadSignalStore(signalsPath);
       if (!store) {
         return;
       }
@@ -39,14 +41,16 @@ export class SuggestionEngine {
       const minCount = config.minSignalCount ?? SKILL_GEN_DEFAULTS.minSignalCount;
       const declined = new Set(config.declinedSuggestions ?? SKILL_GEN_DEFAULTS.declinedSuggestions);
 
-      // Filter qualifying signals
-      const qualifying = store.signals.filter(
-        (s) =>
-          s.incrementIds.length >= minCount &&
+      // Filter qualifying signals using file-based confidence
+      const qualifying = store.signals.filter((s) => {
+        const qualifyingCount = s.uniqueSourceFiles?.length ?? s.incrementIds.length;
+        return (
+          qualifyingCount >= minCount &&
           !s.declined &&
           !s.generated &&
-          !declined.has(s.id),
-      );
+          !declined.has(s.id)
+        );
+      });
 
       if (qualifying.length === 0) {
         return;
@@ -57,13 +61,14 @@ export class SuggestionEngine {
       const top = qualifying[0];
 
       // Print suggestion
+      const sourceCount = top.uniqueSourceFiles?.length ?? top.incrementIds.length;
       console.log(
-        `\u{1F4A1} Skill suggestion: Detected "${top.pattern}" pattern across ${top.incrementIds.length} increments. Run /sw:skill-gen to generate project skills.`,
+        `\u{1F4A1} Skill suggestion: Detected "${top.pattern}" pattern across ${sourceCount} sources. Run /sw:skill-gen to generate project skills.`,
       );
 
       // Mark as suggested and save
       top.suggested = true;
-      await this.saveStore(store);
+      await saveSignalStore(signalsPath, store);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       console.warn(`[SuggestionEngine] Warning: ${msg}`);
@@ -92,19 +97,5 @@ export class SuggestionEngine {
         maxSignals: SKILL_GEN_DEFAULTS.maxSignals,
       };
     }
-  }
-
-  private async loadStore(): Promise<SignalStore | null> {
-    try {
-      const signalsPath = join(this.projectRoot, '.specweave', 'state', 'skill-signals.json');
-      return JSON.parse(await readFile(signalsPath, 'utf-8')) as SignalStore;
-    } catch {
-      return null;
-    }
-  }
-
-  private async saveStore(store: SignalStore): Promise<void> {
-    const signalsPath = join(this.projectRoot, '.specweave', 'state', 'skill-signals.json');
-    await writeFile(signalsPath, JSON.stringify(store, null, 2));
   }
 }
