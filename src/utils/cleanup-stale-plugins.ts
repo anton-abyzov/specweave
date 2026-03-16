@@ -80,7 +80,7 @@ export async function cleanupStalePlugins(
     }
 
     const specweaveManifest = JSON.parse(fs.readFileSync(marketplaceJsonPath, 'utf-8'));
-    const specweaveValidPlugins = new Set(
+    const specweaveValidPlugins = new Set<string>(
       (specweaveManifest.plugins || []).map((p: { name: string }) => p.name)
     );
 
@@ -115,7 +115,7 @@ export async function cleanupStalePlugins(
 
           try {
             const mktManifest = JSON.parse(fs.readFileSync(mktManifestPath, 'utf-8'));
-            const validNames = new Set(
+            const validNames = new Set<string>(
               (mktManifest.plugins || []).map((p: { name: string }) => p.name)
             );
             marketplacePluginMap.set(mktName, validNames);
