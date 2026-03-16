@@ -32,11 +32,25 @@ const {
   mockEnablePluginsInSettings: vi.fn(),
 }));
 
+const {
+  mockCleanupLegacyLockfiles,
+  mockCleanupOrphanedChildLocks,
+} = vi.hoisted(() => ({
+  mockCleanupLegacyLockfiles: vi.fn(),
+  mockCleanupOrphanedChildLocks: vi.fn(),
+}));
+
 // Mock plugin-copier
 vi.mock('../../../../src/utils/plugin-copier.js', () => ({
   copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
   installPlugin: mockInstallPlugin,
   findSpecweaveRoot: mockFindSpecweaveRoot,
+}));
+
+// Mock stale lockfile cleanup
+vi.mock('../../../../src/utils/cleanup-stale-plugins.js', () => ({
+  cleanupLegacyLockfiles: mockCleanupLegacyLockfiles,
+  cleanupOrphanedChildLocks: mockCleanupOrphanedChildLocks,
 }));
 
 vi.mock('../../../../src/utils/find-project-root.js', () => ({
@@ -169,6 +183,16 @@ describe('refresh-plugins', () => {
 
     mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123def456' });
     mockInstallPlugin.mockReturnValue({ success: true, sha: 'abc123def456' });
+
+    // Default: cleanup returns no-op results
+    mockCleanupLegacyLockfiles.mockReturnValue({
+      success: true, removedCount: 0, skippedCount: 0,
+      removedPaths: [], skippedPaths: [], errors: [],
+    });
+    mockCleanupOrphanedChildLocks.mockReturnValue({
+      success: true, removedCount: 0, skippedCount: 0,
+      removedPaths: [], skippedPaths: [], errors: [],
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -415,6 +439,73 @@ describe('refresh-plugins', () => {
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
       // All plugins recovered via copy, so enablement should still happen
       expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Stale lockfile cleanup (T-016 through T-019)
+  // -------------------------------------------------------------------------
+
+  describe('stale lockfile cleanup', () => {
+    it('T-016: cleanup called before plugin install', async () => {
+      const callOrder: string[] = [];
+      mockCleanupLegacyLockfiles.mockImplementation(() => {
+        callOrder.push('cleanupLegacy');
+        return {
+          success: true, removedCount: 0, skippedCount: 0,
+          removedPaths: [], skippedPaths: [], errors: [],
+        };
+      });
+      mockCopyPluginSkillsToProject.mockImplementation(() => {
+        callOrder.push('installPlugin');
+        return { success: true, sha: 'abc123' };
+      });
+
+      await refreshPluginsCommand({});
+
+      expect(callOrder.indexOf('cleanupLegacy')).toBeLessThan(
+        callOrder.indexOf('installPlugin')
+      );
+    });
+
+    it('T-017: orphan cleanup called in umbrella mode', async () => {
+      await refreshPluginsCommand({});
+
+      expect(mockCleanupOrphanedChildLocks).toHaveBeenCalledTimes(1);
+      expect(mockCleanupOrphanedChildLocks).toHaveBeenCalledWith(
+        '/mock/project',
+        expect.objectContaining({})
+      );
+    });
+
+    it('T-018: verbose mode logs removed paths', async () => {
+      mockCleanupLegacyLockfiles.mockReturnValue({
+        success: true, removedCount: 1, skippedCount: 0,
+        removedPaths: ['/mock/project/skills-lock.json'],
+        skippedPaths: [], errors: [],
+      });
+
+      const consoleSpy = vi.spyOn(console, 'log');
+
+      await refreshPluginsCommand({ verbose: true });
+
+      const loggedRemoved = consoleSpy.mock.calls.some(
+        (args) => String(args[0]).includes('skills-lock.json')
+      );
+      expect(loggedRemoved).toBe(true);
+      consoleSpy.mockRestore();
+    });
+
+    it('T-019: cleanup errors are non-blocking', async () => {
+      mockCleanupLegacyLockfiles.mockImplementation(() => {
+        throw new Error('Unexpected cleanup crash');
+      });
+
+      // Should not throw — plugin installation still proceeds
+      await refreshPluginsCommand({ quiet: true });
+
+      // Plugin installation should still have been called
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
     });
   });
 });
