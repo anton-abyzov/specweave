@@ -8,6 +8,7 @@
  */
 
 import https from 'https';
+import { AdoRateLimiter } from './ado-rate-limiter.js';
 
 // ============================================================================
 // Types
@@ -20,6 +21,8 @@ export interface AdoConfig {
   workItemType?: 'Epic' | 'Feature' | 'User Story';
   areaPath?: string;
   iterationPath?: string;
+  /** Optional rate limiter instance (shared across client instances) */
+  rateLimiter?: AdoRateLimiter;
 }
 
 export interface WorkItem {
@@ -70,11 +73,13 @@ export class AdoClient {
   private config: AdoConfig;
   private baseUrl: string;
   private authHeader: string;
+  private rateLimiter?: AdoRateLimiter;
 
   constructor(config: AdoConfig) {
     this.config = config;
     this.baseUrl = `https://dev.azure.com/${config.organization}/${config.project}`;
-    
+    this.rateLimiter = config.rateLimiter;
+
     // Basic Auth: base64(":PAT")
     this.authHeader = 'Basic ' + Buffer.from(`:${config.personalAccessToken}`).toString('base64');
   }
@@ -290,6 +295,11 @@ export class AdoClient {
     body?: any,
     additionalHeaders?: Record<string, string>
   ): Promise<T> {
+    // Check rate limiter before making request
+    if (this.rateLimiter && !this.rateLimiter.consume()) {
+      throw new Error('ADO rate limit exceeded — try again later');
+    }
+
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
 
@@ -323,6 +333,14 @@ export class AdoClient {
               reject(new Error(`Failed to parse JSON response: ${error}`));
             }
           } else {
+            // Handle 429 Too Many Requests — apply Retry-After
+            if (res.statusCode === 429 && this.rateLimiter) {
+              const retryAfter = parseInt(res.headers['retry-after'] as string, 10);
+              if (retryAfter > 0) {
+                this.rateLimiter.applyRetryAfter(retryAfter);
+              }
+            }
+
             let errorMessage = `ADO API error: ${res.statusCode} ${res.statusMessage}`;
             try {
               const errorData = JSON.parse(data);
@@ -332,7 +350,9 @@ export class AdoClient {
             } catch {
               // Ignore JSON parse errors for error responses
             }
-            reject(new Error(errorMessage));
+            const err: any = new Error(errorMessage);
+            err.status = res.statusCode;
+            reject(err);
           }
         });
       });
