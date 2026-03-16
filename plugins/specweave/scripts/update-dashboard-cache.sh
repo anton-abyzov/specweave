@@ -110,10 +110,10 @@ if [[ -z "$INCREMENT_DIR" ]] || [[ ! -d "$INCREMENT_DIR" ]]; then
        --arg old_priority "$old_priority" '
       del(.increments[$id]) |
       del(.mtimes[$id]) |
-      .summary.total -= 1 |
-      .summary[$old_status_key] -= 1 |
-      .summary.byType[$old_type] -= 1 |
-      .summary.byPriority[$old_priority] -= 1 |
+      .summary.total = ((.summary.total // 0) - 1) |
+      .summary[$old_status_key] = ((.summary[$old_status_key] // 0) - 1) |
+      .summary.byType[$old_type] = ((.summary.byType[$old_type] // 0) - 1) |
+      .summary.byPriority[$old_priority] = ((.summary.byPriority[$old_priority] // 0) - 1) |
       .updatedAt = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
     ' "$CACHE_FILE" > "$TEMP_FILE"
     mv "$TEMP_FILE" "$CACHE_FILE"
@@ -270,10 +270,10 @@ if [[ "$is_new" == "true" ]]; then
      --arg priority "$priority" '
     .increments[$id] = $inc |
     .mtimes[$id] = $mtime |
-    .summary.total += 1 |
-    .summary[$status_key] += 1 |
-    .summary.byType[$type] += 1 |
-    .summary.byPriority[$priority] += 1 |
+    .summary.total = ((.summary.total // 0) + 1) |
+    .summary[$status_key] = ((.summary[$status_key] // 0) + 1) |
+    .summary.byType[$type] = ((.summary.byType[$type] // 0) + 1) |
+    .summary.byPriority[$priority] = ((.summary.byPriority[$priority] // 0) + 1) |
     .updatedAt = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
   ' "$CACHE_FILE" > "$TEMP_FILE"
 else
@@ -293,16 +293,16 @@ else
     .increments[$id] = $inc |
     .mtimes[$id] = $mtime |
     (if $old_status_key != $new_status_key then
-      .summary[$old_status_key] -= 1 |
-      .summary[$new_status_key] += 1
+      .summary[$old_status_key] = ((.summary[$old_status_key] // 0) - 1) |
+      .summary[$new_status_key] = ((.summary[$new_status_key] // 0) + 1)
     else . end) |
     (if $old_type != $new_type then
-      .summary.byType[$old_type] -= 1 |
-      .summary.byType[$new_type] += 1
+      .summary.byType[$old_type] = ((.summary.byType[$old_type] // 0) - 1) |
+      .summary.byType[$new_type] = ((.summary.byType[$new_type] // 0) + 1)
     else . end) |
     (if $old_priority != $new_priority then
-      .summary.byPriority[$old_priority] -= 1 |
-      .summary.byPriority[$new_priority] += 1
+      .summary.byPriority[$old_priority] = ((.summary.byPriority[$old_priority] // 0) - 1) |
+      .summary.byPriority[$new_priority] = ((.summary.byPriority[$new_priority] // 0) + 1)
     else . end) |
     .updatedAt = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
   ' "$CACHE_FILE" > "$TEMP_FILE"
