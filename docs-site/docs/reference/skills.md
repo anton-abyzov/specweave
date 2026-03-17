@@ -821,15 +821,11 @@ Skills are loaded from plugins. The core `sw` plugin is always installed. Domain
 
 ```bash
 # Install domain plugins (from vskill marketplace)
-vskill install --repo anton-abyzov/vskill --plugin frontend
-vskill install --repo anton-abyzov/vskill --plugin backend
-vskill install --repo anton-abyzov/vskill --plugin infra
-vskill install --repo anton-abyzov/vskill --plugin testing
-vskill install --repo anton-abyzov/vskill --plugin kafka
-vskill install --repo anton-abyzov/vskill --plugin ml
 vskill install --repo anton-abyzov/vskill --plugin mobile
-vskill install --repo anton-abyzov/vskill --plugin payments
-vskill install --repo anton-abyzov/vskill --plugin k8s
+vskill install --repo anton-abyzov/vskill --plugin marketing
+vskill install --repo anton-abyzov/vskill --plugin google-workspace
+vskill install --repo anton-abyzov/vskill --plugin productivity
+vskill install --repo anton-abyzov/vskill --plugin skills
 vskill install --repo anton-abyzov/vskill --plugin cost
 vskill install --repo anton-abyzov/vskill --plugin docs
 

@@ -307,7 +307,7 @@ Each plugin entry specifies where to fetch it from:
 **vskill** (works across 49 AI agents — Claude Code, Cursor, Copilot, etc.):
 ```bash
 # Install a plugin from any marketplace repo
-npx vskill install --repo owner/repo --plugin frontend
+npx vskill install --repo owner/repo --plugin mobile
 
 # Install a standalone skill
 npx vskill install owner/skill-repo
@@ -351,7 +351,7 @@ SpecWeave's `marketplace.json` registers **22 plugins** with **126 skills** tota
 | Plugin | Skills | Domain |
 |--------|--------|--------|
 | `sw` (core) | 37 | Workflow, PM, TDD, team orchestration |
-| `frontend` | 7 | React, Next.js, Vue, design systems |
+| `mobile` | 1 | App Store Connect automation |
 | `backend` | 8 | Node.js, Python, .NET, Go, Java, GraphQL, Rust |
 | `testing` | 5 | QA, E2E, unit, mutation, performance |
 | `infra` | 10 | Terraform, AWS, GCP, monitoring |
@@ -429,9 +429,9 @@ This loads "skill memories" — corrections you've made that persist across sess
 
 You don't install 22 plugins manually. SpecWeave plugins load based on what you're working on:
 
-- Say "React frontend" → `frontend` activates
-- Say "deploy to Kubernetes" → `k8s` activates
-- Say "write tests" → `testing` activates
+- Say "mobile app" → `mobile` activates
+- Say "post on social media" → `marketing` activates
+- Say "Google Drive" → `google-workspace` activates
 
 ---
 

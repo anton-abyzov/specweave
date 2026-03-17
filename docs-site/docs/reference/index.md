@@ -12,7 +12,7 @@ Complete reference for all SpecWeave skills, commands, and capabilities.
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| **Skills** | Domain expertise and best practices | `/sw:architect`, `/frontend:nextjs` |
+| **Skills** | Domain expertise and best practices | `/sw:architect`, `/mobile:appstore` |
 | **Commands** | Execute specific actions | `/sw:auto`, `/sw:done`, `/sw:validate` |
 
 :::tip Both Are Slash Commands Now
@@ -94,7 +94,7 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 | Plugin | Skills Count | Domain |
 |--------|--------------|--------|
 | `sw` (core) | 60+ | Planning, execution, quality, utilities |
-| `frontend` | 6 | React, Vue, Next.js, design systems |
+| `mobile` | 1 | App Store Connect automation |
 | `backend` | 4 | Node.js, Python, .NET, databases |
 | `infra` | 2 | DevOps, observability |
 | `k8s` | 4 | K8s manifests, Helm, GitOps |
@@ -116,8 +116,8 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 ```bash
 # Plugins auto-install based on detected tech stack
 # Or install manually:
-vskill install --repo anton-abyzov/vskill --plugin frontend
-vskill install --repo anton-abyzov/vskill --plugin backend
+vskill install --repo anton-abyzov/vskill --plugin mobile
+vskill install --repo anton-abyzov/vskill --plugin marketing
 vskill add specweave --plugin sw-github
 ```
 
