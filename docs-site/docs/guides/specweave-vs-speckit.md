@@ -123,7 +123,7 @@ specweave init . --brownfield
 /sw:import-external --source jira --days 90
 
 # Import documentation
-/sw:import-docs ./legacy-wiki
+/sw:import
 ```
 
 ### 5. Quality Gates

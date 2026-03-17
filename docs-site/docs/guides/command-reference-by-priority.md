@@ -89,10 +89,7 @@ Specialized commands for advanced workflows.
 
 ### Multi-Project Management
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/sw:init-multiproject` | Initialize multi-project mode | `/sw:init-multiproject` |
-| `/sw:switch-project` | Switch active project | `/sw:switch-project backend` |
+Multi-project mode is enabled during `specweave init` (when connecting JIRA/ADO with multiple projects), via `specweave migrate-to-umbrella --reorganize-specs`, or by manually editing config.json. Project routing is per-increment via the `**Project**:` field in spec.md user stories.
 
 ### Archiving & Cleanup
 
@@ -107,7 +104,7 @@ Specialized commands for advanced workflows.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw:import-docs` | Import brownfield docs | `/sw:import-docs ./notion-export` |
+| `/sw:import` | Import issues from GitHub/JIRA/ADO | `/sw:import` |
 | `/sw:translate` | Translate content | `/sw:translate ru` |
 
 ### Cost Tracking

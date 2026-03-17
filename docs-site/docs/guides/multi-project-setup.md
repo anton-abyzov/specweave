@@ -1,9 +1,5 @@
 # Multi-Project Setup Guide
 
-**Version**: 0.16.11 (Flattened Structure)
-**Last Updated**: 2025-11-11
-**Previous Version**: [0.8.0-0.16.10 (Nested Structure)](#historical-nested-structure)
-
 Complete guide to setting up and using SpecWeave's multi-project mode for enterprise teams managing multiple repos, microservices, or projects.
 
 ---
@@ -13,6 +9,7 @@ Complete guide to setting up and using SpecWeave's multi-project mode for enterp
 - [Overview](#overview)
 - [When to Use Multi-Project](#when-to-use-multi-project)
 - [Getting Started](#getting-started)
+- [How Project Routing Works](#how-project-routing-works)
 - [Project Structure](#project-structure)
 - [Workflows](#workflows)
 - [Integration with External Sync](#integration-with-external-sync)
@@ -72,71 +69,112 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 └── platform-infra/
 ```
 
-**Behavior**: Switch between projects using `/sw:switch-project`.
+**Behavior**: Each increment targets a project via the `**Project**:` field in spec.md user stories.
 
 ---
 
 ## Getting Started
 
-### Step 1: Initialize Multi-Project Mode
+Multi-project mode can be enabled in three ways:
+
+### Option 1: During `specweave init` with an Issue Tracker
+
+When you run `specweave init` and connect JIRA or Azure DevOps with multiple projects, multi-project mode is enabled automatically:
 
 ```bash
-/sw:init-multiproject
+specweave init my-project
 ```
 
-**Interactive prompts**:
+During the interactive setup, when you configure JIRA/ADO with multiple projects, SpecWeave:
+1. Sets `multiProject.enabled: true` in config.json
+2. Creates project folders under `.specweave/docs/internal/specs/`
+3. Maps each external project to a SpecWeave project
 
-```
-🚀 Initialize Multi-Project Mode
+### Option 2: Migrate an Existing Project
 
-✅ Migration complete! Using projects/default/ structure
-
-Enable multi-project mode? (supports multiple teams/repos) (y/N): y
-✅ Multi-project mode enabled!
-
-Create additional projects? (besides "default") (y/N): y
-
-📝 Create New Project
-
-Project ID (kebab-case): web-app
-Project name: Web Application
-Description: Customer-facing web application
-Tech stack (comma-separated): React, TypeScript, Node.js, PostgreSQL
-Team name: Frontend Team
-Tech lead email (optional): lead@example.com
-Product manager email (optional): pm@example.com
-
-✅ Created project: Web Application (web-app)
-
-Create another project? (y/N): y
-
-Project ID (kebab-case): mobile-app
-...
-```
-
-### Step 2: Switch to a Project
+If you already have a single-project setup and want to reorganize by project:
 
 ```bash
-/sw:switch-project web-app
+specweave migrate-to-umbrella --reorganize-specs
 ```
 
-**Output**:
-```
-✅ Switched to project: Web Application (web-app)
+This scans existing increments for `**Project**:` fields, builds a feature-to-project map, and moves spec folders into per-project directories. It also sets `multiProject.enabled = true` in config.
 
-ℹ️  Future increments will use:
-   - .specweave/docs/internal/specs/web-app/
-   - .specweave/docs/internal/modules/web-app/
-   - .specweave/docs/internal/team/web-app/
+### Option 3: Manual Configuration
+
+Edit `.specweave/config.json` directly:
+
+```json
+{
+  "multiProject": {
+    "enabled": true,
+    "projects": {
+      "web-app": {
+        "name": "Web Application",
+        "description": "Customer-facing web app",
+        "techStack": ["React", "TypeScript"],
+        "team": "Frontend Team"
+      },
+      "mobile-app": {
+        "name": "Mobile Application",
+        "techStack": ["React Native"],
+        "team": "Mobile Team"
+      }
+    }
+  }
+}
 ```
 
-### Step 3: Create Increments (As Usual)
+Then create the project folders:
 
 ```bash
-/sw:increment "Add user authentication"
+mkdir -p .specweave/docs/internal/specs/web-app
+mkdir -p .specweave/docs/internal/specs/mobile-app
 ```
 
-**Result**: Spec created in `specs/web-app/spec-001-user-auth.md`
+---
+
+## How Project Routing Works
+
+SpecWeave does **not** use a global "active project" switch. Instead, project routing is **per-increment** — each increment's spec.md determines which project it belongs to.
+
+### The `**Project**:` Field
+
+When you create an increment with `/sw:increment`, the PM skill adds a `**Project**:` field to each user story in spec.md:
+
+```markdown
+### US-FE-001: Login Page UI
+**Project**: web-app
+**As a** user **I want** a login form **so that** I can authenticate
+
+### US-BE-001: Authentication API
+**Project**: backend-api
+**As a** user **I want** a /login endpoint **so that** the app can verify credentials
+```
+
+### Resolution Priority
+
+SpecWeave resolves the target project using this priority chain:
+
+1. **Per-US `**Project**:` fields** in spec.md (highest priority)
+2. **`config.project.name`** in single-project mode
+3. **Keyword matching** against registered projects
+4. **Fallback to "default"**
+
+### What This Means in Practice
+
+You don't need to "switch projects" before creating increments. Simply describe what you want to build, and the PM skill will route user stories to the correct project based on context:
+
+```bash
+# No switching needed — just create the increment
+/sw:increment "Add dark mode to the web app"
+# → PM adds **Project**: web-app to the user stories
+
+/sw:increment "Add biometric auth to the mobile app"
+# → PM adds **Project**: mobile-app to the user stories
+```
+
+Living docs sync then places each spec in the correct project folder automatically.
 
 ---
 
@@ -153,12 +191,9 @@ Project ID (kebab-case): mobile-app
 ├── operations/            # Cross-project (production ops)
 ├── governance/            # Cross-project (policies)
 │
-└── projects/              # 🆕 Multi-project support
-    │
-    ├── _README.md         # Multi-project guide
+└── specs/                 # Per-project living docs
     │
     ├── default/           # Default project (single-project mode)
-    │   ├── README.md      # Project overview
     │   ├── specs/         # Living docs specs
     │   │   ├── spec-001-user-auth.md
     │   │   └── spec-002-payments.md
@@ -170,10 +205,8 @@ Project ID (kebab-case): mobile-app
     │   │   ├── conventions.md
     │   │   └── workflows.md
     │   ├── architecture/  # Project-specific architecture
-    │   │   ├── README.md
     │   │   └── adr/       # Project-specific ADRs
     │   └── legacy/        # Brownfield imports
-    │       ├── README.md
     │       ├── notion/
     │       └── confluence/
     │
@@ -253,7 +286,7 @@ architecture/
 
 #### 5. `legacy/` - Brownfield Imports
 
-**Purpose**: Imported documentation from external sources
+**Purpose**: Imported documentation from external sources (via `/sw:import`)
 
 **Example**:
 ```
@@ -268,39 +301,31 @@ legacy/
 
 ## Increment spec.md Requirements
 
-When creating increments in multi-project mode, you must specify the target project in the spec.md YAML frontmatter. This ensures increments sync to the correct location in living docs.
+When creating increments in multi-project mode, you must specify the target project. This ensures increments sync to the correct location in living docs.
 
-### 1-Level Structure (Projects Only)
+### Per-User-Story Project Field
 
-**When**: `multiProject.enabled: true` in config.json
+The PM skill adds `**Project**:` to each user story during `/sw:increment`:
 
-**Required field**: `project:`
+```markdown
+## User Stories
 
-```yaml
----
-increment: 0001-dark-mode
-project: web-app           # REQUIRED
-title: "Add Dark Mode"
-status: planned
----
+### US-001: Dark Mode Toggle
+**Project**: web-app
+**As a** user **I want** a dark mode toggle **so that** I can reduce eye strain
 ```
-
-**Sync path**: `internal/specs/web-app/FS-001/`
 
 ### 2-Level Structure (Projects + Boards)
 
 **When**: ADO area paths, JIRA boards, or umbrella with teams
 
-**Required fields**: `project:` AND `board:`
+The spec.md includes both project and board context:
 
-```yaml
----
-increment: 0001-clinical-reports
-project: acme-corp                 # REQUIRED
-board: clinical-insights           # REQUIRED for 2-level
-title: "Add Clinical Reports"
-status: planned
----
+```markdown
+### US-001: Clinical Reports
+**Project**: acme-corp
+**Board**: clinical-insights
+**As a** clinician **I want** patient reports **so that** I can track outcomes
 ```
 
 **Sync path**: `internal/specs/acme-corp/clinical-insights/FS-001/`
@@ -310,31 +335,17 @@ status: planned
 The increment planner automatically detects your structure level and prompts for project/board selection:
 
 ```
-🔍 Detected 2-level structure (ADO area path mapping)
+Detected 2-level structure (ADO area path mapping)
    Available projects: acme-corp
 
-   📁 Project: acme-corp
+   Project: acme-corp
       Boards: clinical-insights, platform-engineering, digital-operations
 
 Which board should this increment sync to?
 > clinical-insights
 
-✅ Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
+Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
 ```
-
-### Migration: Adding project to existing increments
-
-If you have existing increments without `project:` field:
-
-```bash
-# Add to spec.md YAML frontmatter:
----
-increment: 0001-existing-feature
-project: my-project          # Add this line
----
-```
-
-See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md) for technical details.
 
 ---
 
@@ -346,14 +357,14 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 
 ```bash
 # Morning: Frontend team work
-/sw:switch-project web-app
-/sw:increment "Add dark mode"
-# Spec created in: specs/web-app/spec-004-dark-mode.md
+/sw:increment "Add dark mode to the web app"
+# PM adds **Project**: web-app to user stories
+# Spec synced to: specs/web-app/spec-004-dark-mode.md
 
 # Afternoon: Mobile team work
-/sw:switch-project mobile-app
-/sw:increment "Add biometric auth"
-# Spec created in: specs/mobile-app/spec-001-biometric-auth.md
+/sw:increment "Add biometric auth for mobile"
+# PM adds **Project**: mobile-app to user stories
+# Spec synced to: specs/mobile-app/spec-001-biometric-auth.md
 ```
 
 ### Workflow 2: Platform Engineering
@@ -361,22 +372,17 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 **Scenario**: Platform team managing infrastructure + multiple app teams
 
 ```bash
-# Projects:
-# - platform-infra (Terraform, K8s, runbooks)
-# - backend-api (Node.js API)
-# - frontend-app (React)
-
 # Infrastructure work
-/sw:switch-project platform-infra
 /sw:increment "Upgrade Kubernetes to 1.28"
+# → **Project**: platform-infra
 
 # Backend work
-/sw:switch-project backend-api
-/sw:increment "Add rate limiting middleware"
+/sw:increment "Add rate limiting middleware to the API"
+# → **Project**: backend-api
 
 # Frontend work
-/sw:switch-project frontend-app
 /sw:increment "Implement new design system"
+# → **Project**: frontend-app
 ```
 
 ### Workflow 3: Microservices
@@ -384,18 +390,11 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 **Scenario**: 5 microservices, each with its own project
 
 ```bash
-# Projects:
-# - user-service
-# - order-service
-# - payment-service
-# - notification-service
-# - analytics-service
+/sw:increment "Add OAuth2 support to user service"
+# → **Project**: user-service
 
-/sw:switch-project user-service
-/sw:increment "Add OAuth2 support"
-
-/sw:switch-project order-service
 /sw:increment "Implement order tracking"
+# → **Project**: order-service
 
 # Each service gets its own specs, modules, team docs
 ```
@@ -404,7 +403,7 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 
 ## Integration with External Sync
 
-Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
+Multi-project mode integrates with external sync (GitHub, JIRA, ADO).
 
 ### Configuration
 
@@ -414,46 +413,23 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 {
   "multiProject": {
     "enabled": true,
-    "activeProject": "web-app",
-    "projects": [
-      {
-        "id": "web-app",
+    "projects": {
+      "web-app": {
         "name": "Web Application",
         "description": "Customer-facing web app",
         "techStack": ["React", "TypeScript"],
         "team": "Frontend Team",
-        "syncProfiles": ["web-app-github", "web-app-jira"]
+        "externalTools": {
+          "github": { "repository": "acme-corp/web-app" },
+          "jira": { "project": "WEBAPP" }
+        }
       },
-      {
-        "id": "mobile-app",
+      "mobile-app": {
         "name": "Mobile Application",
         "techStack": ["React Native"],
         "team": "Mobile Team",
-        "syncProfiles": ["mobile-jira"]
-      }
-    ]
-  },
-  "sync": {
-    "profiles": {
-      "web-app-github": {
-        "provider": "github",
-        "config": {
-          "owner": "acme-corp",
-          "repo": "web-app"
-        }
-      },
-      "web-app-jira": {
-        "provider": "jira",
-        "config": {
-          "domain": "acme.atlassian.net",
-          "projectKey": "WEBAPP"
-        }
-      },
-      "mobile-jira": {
-        "provider": "jira",
-        "config": {
-          "domain": "acme.atlassian.net",
-          "projectKey": "MOBILE"
+        "externalTools": {
+          "jira": { "project": "MOBILE" }
         }
       }
     }
@@ -464,19 +440,16 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 ### Workflow with Sync
 
 ```bash
-# Switch to web-app
-/sw:switch-project web-app
-
-# Create increment (syncs to web-app-github and web-app-jira)
-/sw:increment "Add payment integration"
+# Create increment (syncs to the matching external tools)
+/sw:increment "Add payment integration to the web app"
 
 # Result:
-# - Spec: specs/web-app/spec-005-payment-integration.md
+# - Spec synced to: specs/web-app/spec-005-payment-integration.md
 # - GitHub issue created in acme-corp/web-app
 # - JIRA epic created in WEBAPP project
 ```
 
-> **Note**: If you used the `-shared` flag during `specweave init`, ensure your git remote also includes `-shared` in the repo name. Validate with: `bash scripts/validate-parent-repo-setup.sh`
+Use `/sw:sync-setup` to configure external tool connections interactively.
 
 ---
 
@@ -486,18 +459,18 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 
 **Group by team or repo**:
 ```
-projects/
-├── team-alpha/         ✅ Good (team-based)
+specs/
+├── team-alpha/         Good (team-based)
 ├── team-beta/
 └── team-gamma/
 
-projects/
-├── web-app/            ✅ Good (repo-based)
+specs/
+├── web-app/            Good (repo-based)
 ├── mobile-app/
 └── backend-api/
 
-projects/
-├── feature-auth/       ❌ Bad (feature-based, too granular)
+specs/
+├── feature-auth/       Bad (feature-based, too granular)
 ├── feature-payments/
 └── feature-reports/
 ```
@@ -508,12 +481,12 @@ Specs are numbered per project:
 
 ```
 specs/web-app/
-├── spec-001-user-auth.md       ← Web app feature 1
-└── spec-002-payments.md        ← Web app feature 2
+├── spec-001-user-auth.md       <- Web app feature 1
+└── spec-002-payments.md        <- Web app feature 2
 
 specs/mobile-app/
-├── spec-001-push-notifs.md     ← Mobile feature 1 (different from web!)
-└── spec-002-offline-mode.md   ← Mobile feature 2
+├── spec-001-push-notifs.md     <- Mobile feature 1 (different from web!)
+└── spec-002-offline-mode.md    <- Mobile feature 2
 ```
 
 **Key**: `spec-001` in `web-app` is DIFFERENT from `spec-001` in `mobile-app`.
@@ -526,15 +499,6 @@ specs/mobile-app/
 - Module has integration points (external APIs)
 - Module is reused across services
 
-**Example**:
-```
-modules/
-├── auth-module.md              ✅ Good (auth is complex)
-├── payment-module.md           ✅ Good (payments are critical)
-├── notification-module.md      ✅ Good (integrations)
-└── button-component.md         ❌ Overkill (too simple)
-```
-
 ### 4. Team Playbooks
 
 **Update regularly**:
@@ -544,7 +508,7 @@ modules/
 
 ### 5. Legacy Cleanup
 
-**After brownfield import**:
+**After brownfield import** (via `/sw:import`):
 - Review classification weekly
 - Move misclassified files immediately
 - Delete obsolete content monthly
@@ -554,38 +518,39 @@ modules/
 
 ## Troubleshooting
 
-### Problem: Can't switch projects
+### Problem: Specs landing in the wrong project
 
-**Error**: `Multi-project mode not enabled`
+**Issue**: Increment specs are syncing to `default/` instead of the target project
+
+**Solution**:
+1. Verify `multiProject.enabled: true` in `.specweave/config.json`
+2. Check that the `**Project**:` field exists in your spec.md user stories
+3. Verify the project name matches a key in `multiProject.projects`
+
+### Problem: Multi-project mode not enabled
+
+**Issue**: All specs go to `default/` regardless of `**Project**:` field
 
 **Solution**:
 ```bash
-/sw:init-multiproject
-# Select "Yes" to enable multi-project mode
+# Option A: Re-run init with issue tracker setup
+specweave init
+
+# Option B: Reorganize existing specs
+specweave migrate-to-umbrella --reorganize-specs
+
+# Option C: Edit config.json manually
+# Set multiProject.enabled: true and define your projects
 ```
 
-### Problem: Project not found
+### Problem: Project not recognized
 
-**Error**: `Project 'foo' not found`
-
-**Solution**:
-```bash
-# List all projects
-/sw:switch-project
-
-# Create missing project
-/sw:init-multiproject
-# Select "Yes" to create additional projects
-```
-
-### Problem: Specs in wrong project
-
-**Issue**: Created increment in wrong project
+**Issue**: `**Project**: my-project` in spec.md but no matching folder created
 
 **Solution**:
-1. Switch to correct project: `/sw:switch-project correct-project`
-2. Manually move spec file to correct project folder
-3. Update increment metadata if needed
+1. Add the project to `multiProject.projects` in config.json
+2. Create the folder: `mkdir -p .specweave/docs/internal/specs/my-project`
+3. Re-run living docs sync: `/sw:sync-docs`
 
 ### Problem: Sync profiles not working
 
@@ -593,34 +558,29 @@ modules/
 
 **Solution**:
 1. Check config: `cat .specweave/config.json`
-2. Verify `syncProfiles` array in project config
-3. Verify profiles exist in `sync.profiles`
+2. Verify `externalTools` mapping in the project config
+3. Use `/sw:sync-setup` to reconfigure connections
 4. Restart SpecWeave after config changes
 
 ---
 
 ## Migration from Single to Multi-Project
 
-
 ```bash
-/sw:init-multiproject
+# Scan existing specs and reorganize by project
+specweave migrate-to-umbrella --reorganize-specs
 
-# Prompts:
-# - Enable multi-project mode? → Yes
-# - Create additional projects? → Yes (optional)
+# This will:
+# 1. Scan all increments for **Project**: fields
+# 2. Move specs into per-project folders
+# 3. Set multiProject.enabled: true in config
 ```
 
 ---
 
 ## See Also
 
-- **Brownfield Import Guide** (coming soon) - Import existing docs from external sources
-- **Team Playbooks Guide** (coming soon) - Best practices for team documentation
-- `/sw:init-multiproject` - CLI command reference
-- `/sw:switch-project` - CLI command reference
-- `/sw:import-docs` - CLI command reference
-
----
-
-**Last Updated**: 2025-11-05
-**Version**: 0.8.0
+- `/sw:import` - Import existing docs from external sources
+- `/sw:sync-setup` - Configure external tool connections
+- `/sw:sync-docs` - Sync living docs for an increment
+- `specweave migrate-to-umbrella` - CLI command for multi-repo setup

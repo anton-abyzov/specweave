@@ -190,27 +190,23 @@ specweave init . --brownfield
 
 **When**: Separate specs per team
 
-```bash
-# Initialize multi-project
-/sw:init-multiproject
+Multi-project mode is enabled during `specweave init` (with JIRA/ADO), via `specweave migrate-to-umbrella --reorganize-specs`, or manually in config.json.
 
-# Creates:
-.specweave/
-├── projects/
-│   ├── frontend/
-│   │   └── specs/
-│   ├── backend/
-│   │   └── specs/
-│   └── mobile/
-│       └── specs/
-└── _shared/
-    └── specs/  # Cross-team features
+```
+# Structure:
+.specweave/docs/internal/specs/
+├── frontend/
+│   └── specs/
+├── backend/
+│   └── specs/
+└── mobile/
+    └── specs/
 ```
 
-**Switching projects**:
+**Per-increment project routing** (no switching needed):
 ```bash
-/sw:switch-project frontend
-/sw:increment "New UI component"
+/sw:increment "New UI component for the frontend"
+# PM adds **Project**: frontend to user stories automatically
 ```
 
 ---
