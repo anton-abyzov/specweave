@@ -68,21 +68,20 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
       expect(hookContent).toContain('claude plugin install');
     });
 
-    it('should use synchronous execution (not background)', () => {
+    it('should iterate over detected plugins', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // The plugin install should NOT be run in background
-      // (we removed & disown for sync execution)
-      // Check that we iterate over plugins synchronously
-      expect(hookContent).toContain('for plugin in $DETECTED_PLUGINS');
+      // Plugin installation uses while-read loop over DETECTED_PLUGINS
+      expect(hookContent).toContain('while IFS= read -r PLUGIN_NAME');
+      expect(hookContent).toContain('DETECTED_PLUGINS');
     });
 
-    it('should track installed vs already-loaded plugins', () => {
+    it('should track installed plugins via session markers', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should track what was installed
-      expect(hookContent).toContain('PLUGINS_INSTALLED');
-      expect(hookContent).toContain('PLUGINS_ALREADY');
+      // Uses session marker directory for dedup and AUTOLOAD_PLUGINS_MSG for tracking
+      expect(hookContent).toContain('SESSION_MARKER_DIR');
+      expect(hookContent).toContain('AUTOLOAD_PLUGINS_MSG');
     });
   });
 
@@ -138,23 +137,23 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
     it('should show installed message for newly installed plugins', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should show installed plugins message (compact format: "Plugins installed")
-      expect(hookContent).toContain('Plugins installed');
+      // Should show installed plugin message (on-demand format)
+      expect(hookContent).toContain('Installed plugin:');
     });
 
-    it('should show using message for already-loaded plugins', () => {
+    it('should show autoload plugins message', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should show using plugins message (compact format: "Using plugins")
-      expect(hookContent).toContain('Using plugins');
+      // Should accumulate autoload messages
+      expect(hookContent).toContain('AUTOLOAD_PLUGINS_MSG');
     });
 
     it('should include LLM reasoning in output', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should extract and show reasoning
-      expect(hookContent).toContain('.reasoning');
-      expect(hookContent).toContain('LLM_REASON');
+      // Should extract reasoning from increment and routing responses
+      expect(hookContent).toContain('.increment.reasoning');
+      expect(hookContent).toContain('INC_REASON');
     });
   });
 
@@ -274,8 +273,8 @@ describe('LLM Detection Response Handling', () => {
   it('should handle multiple plugins in response', () => {
     const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-    // Should iterate over plugins array
-    expect(hookContent).toContain('for plugin in');
+    // Should iterate over plugins array using while-read loop
+    expect(hookContent).toContain('while IFS= read -r PLUGIN_NAME');
   });
 
   it('should handle empty plugins array gracefully', () => {

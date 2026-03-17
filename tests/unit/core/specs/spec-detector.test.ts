@@ -27,6 +27,7 @@ const {
   mockStatSync,
   mockMatter,
   mockDetectSpecIdentifier,
+  mockResolveEffectiveRoot,
 } = vi.hoisted(() => ({
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
@@ -34,6 +35,7 @@ const {
   mockStatSync: vi.fn(),
   mockMatter: vi.fn(),
   mockDetectSpecIdentifier: vi.fn(),
+  mockResolveEffectiveRoot: vi.fn(() => process.cwd()),
 }));
 
 vi.mock('../../../../src/utils/fs-native.js', () => ({
@@ -49,6 +51,10 @@ vi.mock('gray-matter', () => ({
 
 vi.mock('../../../../src/core/specs/spec-identifier-detector.js', () => ({
   detectSpecIdentifier: mockDetectSpecIdentifier,
+}));
+
+vi.mock('../../../../src/utils/find-project-root.js', () => ({
+  resolveEffectiveRoot: mockResolveEffectiveRoot,
 }));
 
 // Import after mocks

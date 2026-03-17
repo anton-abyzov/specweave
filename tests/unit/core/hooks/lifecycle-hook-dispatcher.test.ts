@@ -158,7 +158,7 @@ describe('LifecycleHookDispatcher', () => {
 
       await LifecycleHookDispatcher.onTaskCompleted(projectRoot, incrementId, bypass);
 
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
+      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId, {});
     });
 
     it('TC-006: routes external_tracker_sync to LivingDocsSync (0348)', async () => {
@@ -174,7 +174,7 @@ describe('LifecycleHookDispatcher', () => {
       await LifecycleHookDispatcher.onTaskCompleted(projectRoot, incrementId, bypass);
 
       // External tracker sync now routes through LivingDocsSync → GitHubFeatureSync
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
+      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId, {});
       expect(mocks.mockSyncIncrementClosure).not.toHaveBeenCalled();
     });
 

@@ -139,8 +139,10 @@ describe('Team Command', () => {
     it('should print description as suggested prompt for the user', async () => {
       await handleTeamCommand('Build auth system', {});
 
-      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
-      expect(logCalls).toContain('Build auth system');
+      // Description is passed as a positional arg to claude CLI, not printed to console
+      // Verify it's passed as the last arg to spawn
+      const [, args] = mockSpawn.mock.calls[0];
+      expect(args).toContain('Build auth system');
     });
 
     it('should not include prompt arg when no description', async () => {

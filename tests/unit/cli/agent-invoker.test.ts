@@ -325,10 +325,10 @@ Payment processing
       );
 
       expect(prompt).toContain('0039-test-increment');
-      expect(prompt).toContain('Test-Aware Planner Invocation');
-      expect(prompt).toContain('(3 total)'); // AC count
-      expect(prompt).toContain('(2 phases)');
-      expect(prompt).toContain('(2 components)');
+      expect(prompt).toContain('Planner Agent Invocation for 0039-test-increment');
+      expect(prompt).toContain('3 total'); // AC count
+      expect(prompt).toContain('2 phases');
+      expect(prompt).toContain('2 components');
       expect(prompt).toContain('AC-US1-01');
       expect(prompt).toContain('95%'); // Coverage target
     });

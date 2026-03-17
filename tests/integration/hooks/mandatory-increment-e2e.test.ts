@@ -377,8 +377,10 @@ exit 1
 
   describe('Increment Detection Scenarios', () => {
     it('should detect multi-file feature requests', async () => {
+      // Use empty plugins array to avoid background install commands
+      // polluting stdout and breaking JSON parsing
       await createMockSpecweaveCli({
-        plugins: ['frontend', 'backend'],
+        plugins: [],
         increment: {
           action: 'new',
           confidence: 0.95,

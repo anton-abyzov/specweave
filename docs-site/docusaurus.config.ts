@@ -237,6 +237,11 @@ const config: Config = {
             from: '/docs/skills/verified-skills',
             to: '/docs/skills/verified/verified-skills',
           },
+          // Skills page rename (programs → structured expertise)
+          {
+            from: '/docs/overview/skills-as-programs',
+            to: '/docs/overview/skills-as-structured-expertise',
+          },
           // Intro page redirect
           {
             from: '/docs/intro',
