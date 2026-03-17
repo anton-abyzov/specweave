@@ -347,10 +347,10 @@ export interface SkillInfo {
   /** Skill name (e.g., "architect", "nextjs") */
   name: string;
 
-  /** Plugin that provides this skill (e.g., "frontend", "backend", "sw-github") */
+  /** Plugin that provides this skill (e.g., "backend", "sw-github") */
   plugin: string;
 
-  /** Full qualified name for invocation (e.g., "frontend:architect", "backend:dotnet") */
+  /** Full qualified name for invocation (e.g., "backend:dotnet", "testing:playwright") */
   fullName: string;
 
   /** Priority level */
@@ -569,7 +569,7 @@ DETECTION RULES:
 1. EXPLICIT mention of integrations - "GitHub sync" → sw-github, "JIRA" → sw-jira
 2. Questions/discussions → ZERO plugins
 3. ONLY suggest @specweave plugins (sw-*)
-4. Domain plugins (frontend, backend, testing, etc.) are NOT available — do NOT suggest them
+4. Domain plugins (backend, testing, etc.) are NOT available — do NOT suggest them
 
 OUTPUT FORMAT (JSON only):
 {"plugins":["sw-github"],"confidence":0.9,"reasoning":"one-line"}
@@ -583,7 +583,7 @@ sw-jira: JIRA, Atlassian (ONLY if explicit)
 sw-ado: Azure DevOps, work items (ONLY if explicit)
 sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
 
-DO NOT include in plugins array: frontend, backend, testing, infra, k8s, payments, ml, kafka, confluent, security, blockchain — these are vskill marketplace plugins handled separately (not sw-* plugins). Mobile and skills are also vskill plugins — do not include them in the plugins array.
+DO NOT include in plugins array: backend, testing, infra, k8s, payments, ml, kafka, confluent, security, blockchain — these are vskill marketplace plugins handled separately (not sw-* plugins). Mobile and skills are also vskill plugins — do not include them in the plugins array.
 
 ═══════════════════════════════════════════════════════════════
 INCREMENT RECOMMENDATION (v1.0.241 - DEFAULT: create increment)

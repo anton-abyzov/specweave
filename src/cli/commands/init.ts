@@ -486,11 +486,8 @@ export async function initCommand(
 
       // Auto-install Anthropic's skill-creator (non-blocking)
       if (!continueExisting) {
-        try {
-          await ensureSkillCreator(targetDir);
-        } catch {
-          // Non-blocking — init continues regardless
-        }
+        // Fire-and-forget — non-blocking, never throws
+        ensureSkillCreator(targetDir).catch(() => {});
       }
 
       // Enable agent teams env var

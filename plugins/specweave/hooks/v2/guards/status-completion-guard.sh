@@ -37,8 +37,17 @@ fi
 # Or: "status": "paused" -> "status": "completed"
 # Or: "status": "ready_for_review" -> "status": "completed"
 if echo "$NEW_STRING" | grep -qE '"status":\s*"completed"'; then
+  # Detect project root via walk-up
+  _DIR="$PWD"
+  _LIMIT=0
+  while [[ "$_DIR" != "/" ]] && [[ ! -d "$_DIR/.specweave" ]] && [[ $_LIMIT -lt 50 ]]; do
+    _DIR=$(dirname "$_DIR")
+    _LIMIT=$((_LIMIT + 1))
+  done
+  _ROOT="$_DIR"
+
   # Check if auto-mode is active with verified completion
-  AUTO_STATE_FILE=".specweave/state/auto/session.json"
+  AUTO_STATE_FILE="$_ROOT/.specweave/state/auto/session.json"
   if [[ -f "$AUTO_STATE_FILE" ]]; then
     AUTO_STATUS=$(jq -r '.status // "unknown"' "$AUTO_STATE_FILE" 2>/dev/null || echo "unknown")
     AUTO_VERIFIED=$(jq -r '.testsVerified // false' "$AUTO_STATE_FILE" 2>/dev/null || echo "false")
@@ -51,7 +60,7 @@ if echo "$NEW_STRING" | grep -qE '"status":\s*"completed"'; then
   fi
 
   # Check if called from /sw:done command (look for marker file)
-  DONE_MARKER=".specweave/state/.sw-done-in-progress"
+  DONE_MARKER="$_ROOT/.specweave/state/.sw-done-in-progress"
   if [[ -f "$DONE_MARKER" ]]; then
     echo '{"decision":"allow"}'
     exit 0

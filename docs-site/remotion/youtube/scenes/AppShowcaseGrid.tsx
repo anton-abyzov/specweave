@@ -13,16 +13,16 @@ import {COLORS} from '../constants';
 import {INTER} from '../../lib/fonts';
 
 const APPS = [
-  {name: 'Lulla', tagline: 'Baby sleep + ML cry detection', icon: '🍼', color: '#8b5cf6'},
+  {name: 'SkillUp Football', tagline: 'Coach monetization', icon: '🎯', color: '#06b6d4'},
   {name: 'WC26', tagline: 'World Cup 2026 companion', icon: '⚽', color: '#22c55e'},
+  {name: 'Lulla', tagline: 'Baby sleep + ML cry detection', icon: '🍼', color: '#8b5cf6'},
+  {name: 'EasyChamp', tagline: 'Enterprise sports platform', icon: '🏆', color: '#ef4444'},
   {name: 'BizZone', tagline: 'Student & business events', icon: '🏢', color: '#3b82f6'},
   {name: 'Sketchmate', tagline: 'AI drawing game', icon: '🎨', color: '#f59e0b'},
-  {name: 'EasyChamp', tagline: 'Enterprise sports platform', icon: '🏆', color: '#ef4444'},
-  {name: 'SkillUp Football', tagline: 'Coach monetization', icon: '🎯', color: '#06b6d4'},
-  {name: 'EduFeed', tagline: 'NotebookLM meets Zoom', icon: '📚', color: '#a855f7'},
-  {name: 'SpecWeave', tagline: 'Spec-first AI layer', icon: '🔮', color: '#6b58b8'},
+  {name: 'JobWeave', tagline: 'AI job search platform', icon: '💼', color: '#d97706'},
   {name: 'Verified Skill', tagline: 'Skill registry & Studio', icon: '✅', color: '#10b981'},
-  {name: 'vskill CLI', tagline: 'Skill management CLI', icon: '⚡', color: '#d97706'},
+  {name: 'SpecWeave', tagline: 'Spec-first AI layer', icon: '🔮', color: '#6b58b8'},
+  {name: 'EduFeed', tagline: 'NotebookLM meets Zoom', icon: '📚', color: '#a855f7'},
 ];
 
 export const APP_SHOWCASE_DURATION = 300;

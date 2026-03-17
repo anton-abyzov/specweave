@@ -9,7 +9,7 @@ draft: true
 
 **Duration**: ~65–75 minutes (full tutorial)
 **Format**: Face-cam cold open → screen-sharing demos → terminal → live Slack → social media proof
-**Key new elements**: 700%+ organic growth proof, vSkill Studio demo, Sketchmate, Slack control, OpenClaw + AppleScript social posting, remote control development, 10 projects
+**Key new elements**: 700%+ organic growth proof, vSkill Studio demo, [Sketchmate](https://sketchmate.net/), Slack control, OpenClaw + AppleScript social posting, remote control development, 10 projects
 **Positioning**: SpecWeave is a **spec-first layer** for AI coding agents — NOT a framework
 
 ---
@@ -38,15 +38,15 @@ draft: true
 >
 > I've been living that statement for the past five months. And I want to show you what it actually looks like, not as a demo — as a life.
 >
-> I never sat down and said 'I want to build 10 apps.' I never planned a content strategy or thought about growing a social media following. I just had ideas I wanted to ship. And I built a system that handled everything else — the specs, the code, the tests, the documentation, the GitHub sync, the social posts, the publishing.
+> I never sat down and said 'I want to build 10 production projects.' I never planned a content strategy or thought about growing a social media following. I just had ideas I wanted to ship. And I built a system that handled everything else — the specs, the code, the tests, the documentation, the GitHub sync, the social posts, the publishing.
 >
-> That system is SpecWeave. And today I'm going to show you every piece of it.
+> That system is [SpecWeave](https://github.com/anton-abyzov/specweave). And today I'm going to show you every piece of it.
 >
-> The apps. The open source project. The Slack channels where AI agents report progress to me. The AppleScript that posts to social media while I sleep. And verified-skill.com — the platform that makes skills safe to share and trust.
+> The apps. The open source project. The Slack channels where AI agents report progress to me. The AppleScript that posts to social media while I sleep. And [verified-skill.com](https://verifiedskill.com) — the platform that makes skills safe to share and trust.
 >
 > I'm one developer. I have a full-time job and a family. And in five months I shipped what a small team would call a full year's roadmap — across ten projects, simultaneously. Not because I worked harder. Because the system removed everything that used to stand between an idea and a shipped product."
 
-**[SCREEN: Fast 4-second montage — App Store pages, Slack threads with agent messages, terminal with /sw:auto running, verified-skill.com]**
+**[SCREEN: Fast 4-second montage — App Store pages, Slack threads with agent messages, terminal with /sw:auto running, [verified-skill.com](https://verifiedskill.com)]**
 
 > "Everything you're about to see is real. Let's go."
 
@@ -58,17 +58,17 @@ draft: true
 
 > "Before I explain anything, I want to give you the numbers.
 >
-> SpecWeave — the spec-first layer I built that makes everything you're about to see possible — has nearly 4,000 commits across four repositories in just five months. At peak velocity: 100 commits in a single day. Nearly 900,000 lines of TypeScript. 3,200 source files. 828 test files. 24 plugins, 136 skills, 64 hooks.
+> [SpecWeave](https://github.com/anton-abyzov/specweave) — the spec-first layer I built that makes everything you're about to see possible — has nearly 4,000 commits across four repositories in just five months. At peak velocity: 100 commits in a single day. Nearly 900,000 lines of TypeScript. 3,200 source files. 828 test files. 24 plugins, 136 skills, 64 hooks.
 >
 > 700 version releases — that's roughly four per day. Deployment frequency: 120 per month, Elite tier by any DORA standard. And every single release went through automated quality gates before shipping."
 
-**[SCREEN: Show App Store pages for Lulla, WC26, BizZone]**
+**[SCREEN: Show App Store pages for [Lulla](https://lulla-app.pages.dev/), [WC26](https://wc-26.net/), [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030)]**
 
-> "Three apps live in the App Store right now. A fourth — Sketchmate — going through review. An enterprise platform running for four years. Ten production projects total.
+> "Three apps live in the App Store right now. A fourth — [Sketchmate](https://sketchmate.net/) — going through review. An enterprise platform running for four years. Ten production projects total.
 >
 > Boris Cherny — the creator of Claude Code at Anthropic — shared that he didn't open his IDE once for an entire month. 259 pull requests, 497 commits, 40,000 lines of code. All AI.
 >
-> I've built the system that makes this repeatable. And it's open source, free, MIT licensed, at verified-skill.com."
+> I've built the system that makes this repeatable. And it's open source, free, MIT licensed, at [verified-skill.com](https://verifiedskill.com)."
 
 **[SCREEN: Brief Threads analytics — 169K views, 12.4K interactions]**
 
@@ -78,7 +78,7 @@ draft: true
 
 ## THE PORTFOLIO — 10 PROJECTS (4:00 – 14:00)
 
-**[SCREEN: Grid of all 10 apps — App Store pages, web screenshots, dashboards]**
+**[SCREEN: Grid of all 10 production projects — App Store pages, web screenshots, dashboards]**
 
 > "Ten production projects. I'll walk you through all of them, then spend more time on five."
 
@@ -86,23 +86,25 @@ draft: true
 
 **[3 seconds each — show best screenshot]**
 
-> "**BizZone** — my first App Store release. A platform for student and business events with AI-powered news generation. Users create events, the AI writes professional news articles automatically. Born from a university use case, now in production.
+> "**[BizZone](https://apps.apple.com/us/app/business-zone/id6756091030)** — my first App Store release. A platform for student and business events with AI-powered news generation. Users create events, the AI writes professional news articles automatically. Born from a university use case, now in production.
 >
-> **SkillUp Football** — skillup-football.com. Coaches monetize their training programs through Stripe. Instagram-like feed, lesson scheduling, challenges. My 10-year-old daughter helped test this one — and that matters, because she's exactly the user you should be designing for."
+> **[SkillUp Football](https://skillup-football.com/)** — skillup-football.com. Coaches monetize their training programs through Stripe. Instagram-like feed, lesson scheduling, challenges. My 10-year-old daughter helped test this one — and that matters, because she's exactly the user you should be designing for."
 
 **[SCREEN: B-roll — daughter at the computer, 2 seconds]**
 
-> "**EduFeed** — NotebookLM meets Zoom for education. Upload a YouTube video, get quizzes, flashcards, mind maps, audio discussions. Students join live video rooms and share AI materials in real time. My 14-year-old contributed to the student experience.
+> "**[EduFeed](https://edufeed-jet.vercel.app/)** — NotebookLM meets Zoom for education. Upload a YouTube video, get quizzes, flashcards, mind maps, audio discussions. Students join live video rooms and share AI materials in real time. My 14-year-old contributed to the student experience.
 >
-> **WC26 Football** — live in the App Store. Your World Cup 2026 companion. AI travel planner, live ticket purchasing, comprehensive team and venue stats. Mobile and web.
+> **[WC26 Football](https://wc-26.net/)** — live in the App Store. Your World Cup 2026 companion. AI travel planner, live ticket purchasing, comprehensive team and venue stats. Mobile and web.
 >
-> **SpecWeave itself** — built with SpecWeave. Every feature spec'd through increments. Skills developed and verified through vskill. Dogfooded from day one."
+> **[JobWeave](https://jobweave.ai)** — AI-powered job search platform. Smart matching, resume optimization, and application tracking.
+>
+> **[SpecWeave](https://github.com/anton-abyzov/specweave) itself** — built with SpecWeave. Every feature spec'd through increments. Skills developed and verified through vskill. Dogfooded from day one."
 
 ### The Deep Five
 
 **[SCREEN: Lulla app + Apple Watch demo]**
 
-> "**Lulla** — this one is personal."
+> "**[Lulla](https://lulla-app.pages.dev/)** — this one is personal."
 
 **[B-roll: baby in car seat, 2 seconds]**
 
@@ -110,9 +112,9 @@ draft: true
 >
 > This is SpecWeave doing what it does best: taking a complex, emotional problem and breaking it into traceable, testable increments. The ML training pipeline? An increment. The cry classification API? An increment. The Watch integration? An increment. Each one documented, each one reviewed, each one still running without issues."
 
-**[SCREEN: EasyChamp dashboard, ArgoCD pipeline, GCP infrastructure]**
+**[SCREEN: [EasyChamp](https://easychamp.com) dashboard, ArgoCD pipeline, GCP infrastructure]**
 
-> "**EasyChamp** — four years in production. Enterprise sports league management.
+> "**[EasyChamp](https://easychamp.com)** — four years in production. Enterprise sports league management.
 >
 > 20+ microservices on GCP with ArgoCD. ML video analytics with computer vision for automated referee decisions. Tournament systems, custom team websites, Stripe monetization, league management at scale.
 >
@@ -120,9 +122,9 @@ draft: true
 >
 > I'll show you the brownfield integration in detail later. This is the most important demo in this video for anyone working on an existing codebase."
 
-**[SCREEN: Sketchmate — App Store Connect page + gameplay screenshots]**
+**[SCREEN: [Sketchmate](https://sketchmate.net/) — App Store Connect page + gameplay screenshots]**
 
-> "**Sketchmate — AI Draw Game** — this one is pure fun with serious technology underneath.
+> "**[Sketchmate](https://sketchmate.net/) — AI Draw Game** — this one is pure fun with serious technology underneath.
 >
 > It's a party drawing game where an AI acts as the referee. Players draw something, and the AI judge evaluates who captured the concept better. Not voting, not human judging — the AI compares both drawings semantically and decides.
 >
@@ -140,9 +142,9 @@ draft: true
 >
 > But first — the vskill platform itself."
 
-**[SCREEN: verified-skill.com — registry page, Studio page]**
+**[SCREEN: [verified-skill.com](https://verifiedskill.com) — registry page, Studio page]**
 
-> "**The Verified Skill ecosystem** — this is the platform where all the pieces come together. verified-skill.com is the registry, the CLI, the verification engine, and the Studio. It's where you find skills, verify them, test them, and publish them. And it's 100% open source and free, forever.
+> "**The [Verified Skill](https://verifiedskill.com) ecosystem** — this is the platform where all the pieces come together. [verified-skill.com](https://verifiedskill.com) is the registry, the CLI, the verification engine, and the Studio. It's where you find skills, verify them, test them, and publish them. And it's 100% open source and free, forever.
 >
 > Five years ago I would have called this a framework. I don't do that anymore. More on that in a moment."
 
@@ -150,9 +152,9 @@ draft: true
 
 ## WHAT IS SPECWEAVE — CORRECT TERMINOLOGY (14:00 – 18:00)
 
-**[SCREEN: Navigate to verified-skill.com]**
+**[SCREEN: Navigate to [verified-skill.com](https://verifiedskill.com)]**
 
-> "Let me tell you what SpecWeave is and, importantly, what it isn't.
+> "Let me tell you what [SpecWeave](https://github.com/anton-abyzov/specweave) is and, importantly, what it isn't.
 >
 > It's not a framework. A framework constrains you — Angular, Spring, Rails — opinionated, heavy, locks you in.
 >
@@ -187,15 +189,15 @@ draft: true
 >
 > That's it. Three files, permanent, version-controlled. That's the spec-first approach."
 
-**[SCREEN: verified-skill.com — show the three core products]**
+**[SCREEN: [verified-skill.com](https://verifiedskill.com) — show the three core products]**
 
 > "The ecosystem has three parts, and I want to be clear about each one:
 >
-> **SpecWeave** — the spec-first workflow layer. This is what you install with `npx specweave init`. The skills, hooks, and agents that coordinate AI development.
+> **[SpecWeave](https://github.com/anton-abyzov/specweave)** — the spec-first workflow layer. This is what you install with `npx specweave init`. The skills, hooks, and agents that coordinate AI development.
 >
 > **vskill** — the CLI for managing skills. `npx vskill i skill-name` installs a verified skill. `npx vskill verify ./SKILL.md` shows you exactly what a skill does and any risk scores. `npx vskill studio` launches the Studio.
 >
-> **Verified Skill** — the platform. The registry at verified-skill.com where every skill has passed three-tier verification before you can install it. Automated scanning, LLM intent analysis, human expert review. And it's free. Not freemium. Free.
+> **[Verified Skill](https://verifiedskill.com)** — the platform. The registry at [verified-skill.com](https://verifiedskill.com) where every skill has passed three-tier verification before you can install it. Automated scanning, LLM intent analysis, human expert review. And it's free. Not freemium. Free.
 >
 > Now let me show you what's new."
 
@@ -247,11 +249,11 @@ npx vskill studio
 
 ## VERIFIED SKILL — THE ECOSYSTEM (22:00 – 26:00)
 
-**[SCREEN: Navigate to verified-skill.com — skills registry]**
+**[SCREEN: Navigate to [verified-skill.com](https://verifiedskill.com) — skills registry]**
 
 > "Now let me show you where skills come from — and why you should care where they come from.
 >
-> verified-skill.com is the registry where I publish SpecWeave's skills, and where anyone can publish skills that have passed real verification. Let me show you what that means."
+> [verified-skill.com](https://verifiedskill.com) is the registry where I publish SpecWeave's skills, and where anyone can publish skills that have passed real verification. Let me show you what that means."
 
 **[SCREEN: Show a skill's verification badge and score]**
 
@@ -261,7 +263,7 @@ npx vskill studio
 >
 > S-level: how well it's been VERIFIED. S0 is unscanned. S1 passed automated pattern checks — 29 regex patterns for destructive commands, data exfiltration, code execution. S2 passed LLM intent analysis AND scored 80+. S3 is all of that PLUS a cryptographic signature.
 >
-> When you install from verified-skill.com, you see E2/S3. You know exactly what you're getting."
+> When you install from [verified-skill.com](https://verifiedskill.com), you see E2/S3. You know exactly what you're getting."
 
 **[SCREEN: Show vskill verify in terminal]**
 
@@ -279,7 +281,7 @@ npx vskill verify ./SKILL.md
 >
 > This matters more than people realize. Skills run with YOUR shell permissions. No sandbox. If the skill can read a file, it reads that file. If it can make network requests, it does. You need to know what you're running."
 
-**[SCREEN: verified-skill.com — highlight MIT license, free forever]**
+**[SCREEN: [verified-skill.com](https://verifiedskill.com) — highlight MIT license, free forever]**
 
 > "And everything here is open source. MIT license. Free. No tiers. No limits. You can read the scoring algorithm, audit it, fork it. Trust should be provable, not assumed."
 
@@ -287,7 +289,7 @@ npx vskill verify ./SKILL.md
 
 ## THE CORE WORKFLOW — SPEC-FIRST IN PRACTICE (26:00 – 38:00)
 
-**[SCREEN: Navigate to docs/getting-started at verified-skill.com]**
+**[SCREEN: Navigate to docs/getting-started at [verified-skill.com](https://verifiedskill.com)]**
 
 > "Let me show you the actual workflow, live. I'm going to build a feature and you're going to watch every step."
 
@@ -489,9 +491,9 @@ end tell
 >
 > The real point is this: the social media work is not a separate project. It flows directly from the development work. When I ship something real, there's something real to post about. That's the only content strategy that works long-term."
 
-**[SCREEN: Show the verified-skill.com Life Automation guide]**
+**[SCREEN: Show the [verified-skill.com](https://verifiedskill.com) Life Automation guide]**
 
-> "We have a full Life Automation guide at verified-skill.com covering Obsidian automation, internet research, rapid prototyping, and publishing workflows. Link in the description."
+> "We have a full Life Automation guide at [verified-skill.com](https://verifiedskill.com) covering Obsidian automation, internet research, rapid prototyping, and publishing workflows. Link in the description."
 
 ---
 
@@ -550,9 +552,9 @@ end tell
 
 ## BROWNFIELD INTEGRATION — THE EASYCHAMP DEMO (62:00 – 66:00)
 
-**[SCREEN: EasyChamp architecture diagram — 20+ microservices]**
+**[SCREEN: [EasyChamp](https://easychamp.com) architecture diagram — 20+ microservices]**
 
-> "The hardest use case is an existing codebase. Four years of evolution, no structured documentation, architecture decisions in Slack. That's EasyChamp.
+> "The hardest use case is an existing codebase. Four years of evolution, no structured documentation, architecture decisions in Slack. That's [EasyChamp](https://easychamp.com).
 >
 > Here's how I introduced SpecWeave to it."
 
@@ -574,9 +576,9 @@ specweave analyze .
 
 ## SECTION: THE ACADEMY AND LEARNING PATH (66:00 – 68:00)
 
-**[SCREEN: Navigate to verified-skill.com/academy]**
+**[SCREEN: Navigate to [verified-skill.com/academy](https://verifiedskill.com/academy)]**
 
-> "If you're new to this, we have a complete learning path at verified-skill.com/academy.
+> "If you're new to this, we have a complete learning path at [verified-skill.com/academy](https://verifiedskill.com/academy).
 >
 > **SpecWeave Essentials** — 16 lessons from installation to advanced patterns. Starts with the three-file structure, walks through the full increment lifecycle, covers external integrations.
 >
@@ -599,19 +601,19 @@ specweave analyze .
 
 > "I want to close with something honest.
 >
-> I'm not a tech influencer. I'm a developer who had a problem — too many ideas, too little time — and built a system to solve it. SpecWeave started as a tool for myself. Now it has nearly 4,000 commits across four repos, 700 releases, 10 production apps running on it, and social media growth I couldn't have imagined six months ago.
+> I'm not a tech influencer. I'm a developer who had a problem — too many ideas, too little time — and built a system to solve it. [SpecWeave](https://github.com/anton-abyzov/specweave) started as a tool for myself. Now it has nearly 4,000 commits across four repos, 700 releases, 10 production projects running on it, and social media growth I couldn't have imagined six months ago.
 >
 > The growth on Threads and X didn't come from clever marketing. It came from consistently building in public, letting AI help me communicate what I'm working on, and creating real content from real work. 700% is a number, but the actual value is that I stayed consistent through months when building felt slow.
 >
-> The 10 apps didn't come from working harder. They came from having a system that removes the friction between 'I want to build this' and 'this is shipped and tested.'
+> The 10 production projects didn't come from working harder. They came from having a system that removes the friction between 'I want to build this' and 'this is shipped and tested.'
 >
-> Sketchmate took one weekend. Lulla took two weeks. EasyChamp now gets new features shipped in hours that used to take days.
+> [Sketchmate](https://sketchmate.net/) took one weekend. [Lulla](https://lulla-app.pages.dev/) took two weeks. [EasyChamp](https://easychamp.com) now gets new features shipped in hours that used to take days.
 >
 > And none of this required expertise in AI. It required a spec, a plan, and a system to execute it."
 
-**[SCREEN: verified-skill.com homepage]**
+**[SCREEN: [verified-skill.com](https://verifiedskill.com) homepage]**
 
-> "Everything I showed today is at verified-skill.com. Free. Open source. MIT license.
+> "Everything I showed today is at [verified-skill.com](https://verifiedskill.com). Free. Open source. MIT license.
 >
 > Here's what to do next:"
 
@@ -630,8 +632,8 @@ specweave analyze .
 **[SCREEN: Show all the links]**
 
 > "Links:
-> - **verified-skill.com** — documentation, skills registry, Studio
-> - **GitHub** — SpecWeave source code (link in description)
+> - **[verified-skill.com](https://verifiedskill.com)** — documentation, skills registry, Studio
+> - **[GitHub](https://github.com/anton-abyzov/specweave)** — SpecWeave source code (link in description)
 > - **Discord** — community, link below
 > - **Life Automation guide** — Obsidian, social media, research workflows
 >
@@ -639,7 +641,7 @@ specweave analyze .
 >
 > Now go build something."
 
-**[SCREEN: End card — verified-skill.com, Discord, GitHub, subscribe prompt]**
+**[SCREEN: End card — [verified-skill.com](https://verifiedskill.com), Discord, [GitHub](https://github.com/anton-abyzov/specweave), subscribe prompt]**
 
 ---
 
@@ -649,9 +651,9 @@ specweave analyze .
 
 **[Duration: ~6 min | Timestamp: 72:00 – 78:00]**
 
-**[SCREEN: Show Sketchmate gameplay — two players drawing, AI result screen]**
+**[SCREEN: Show [Sketchmate](https://sketchmate.net/) gameplay — two players drawing, AI result screen]**
 
-> "Let me go deeper on Sketchmate because the engineering is interesting.
+> "Let me go deeper on [Sketchmate](https://sketchmate.net/) because the engineering is interesting.
 >
 > The core challenge: you have two hand-drawn images and a target concept. How do you decide which drawing is closer? Human judges are inconsistent. Voting systems get gamed. Point scoring misses creativity.
 >
@@ -692,30 +694,30 @@ specweave analyze .
 **Duration estimate**: Main video 68–72 min. With appendix: ~78 min.
 
 **B-roll needed**:
-- App Store pages for Lulla, WC26, BizZone (live screenshots)
-- EasyChamp GCP/ArgoCD dashboard (with blurred PII)
-- Sketchmate gameplay clip (30 sec) + App Store Connect rejection screen (shows real process)
+- App Store pages for [Lulla](https://lulla-app.pages.dev/), [WC26](https://wc-26.net/), [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030) (live screenshots)
+- [EasyChamp](https://easychamp.com) GCP/ArgoCD dashboard (with blurred PII)
+- [Sketchmate](https://sketchmate.net/) gameplay clip (30 sec) + App Store Connect rejection screen (shows real process)
 - Slack development channels (with agent messages visible)
 - Threads analytics (showing hockey-stick, 700%+ growth)
 - Terminal recordings: specweave init, /sw:auto, npx vskill studio, npx vskill verify
 - Social media posting flow (OpenClaw → AppleScript → posted)
-- B-roll family moments: daughter testing SkillUp, youngest in car for Lulla
+- B-roll family moments: daughter testing [SkillUp](https://skillup-football.com/), youngest in car for [Lulla](https://lulla-app.pages.dev/)
 
 **Key terminology to get right (say it exactly this way)**:
 - "spec-first layer" NOT "AI framework"
 - "skills are structured markdown instructions" NOT "prompts" NOT "templates"
 - "Skill Fabric" for the overall concept
-- "Verified Skill" = the platform/ecosystem
+- "[Verified Skill](https://verifiedskill.com)" = the platform/ecosystem
 - "vskill" = the CLI
 - "vSkill Studio" = the local benchmark tool (`npx vskill studio`)
 - "spec.md, plan.md, tasks.md" = "the three files" — say it often
 
 **Docs references to show on screen**:
-- verified-skill.com/docs/getting-started — install + first increment
-- verified-skill.com/academy — learning path
-- verified-skill.com/studio — Studio page with QUICK_CMD
-- verified-skill.com/docs/guides/agent-security-best-practices — security guide
-- verified-skill.com/docs/guides/life-automation — social + Obsidian automation
+- [verified-skill.com/docs/getting-started](https://verifiedskill.com/docs/getting-started) — install + first increment
+- [verified-skill.com/academy](https://verifiedskill.com/academy) — learning path
+- [verified-skill.com/studio](https://verifiedskill.com/studio) — Studio page with QUICK_CMD
+- [verified-skill.com/docs/guides/agent-security-best-practices](https://verifiedskill.com/docs/guides/agent-security-best-practices) — security guide
+- [verified-skill.com/docs/guides/life-automation](https://verifiedskill.com/docs/guides/life-automation) — social + Obsidian automation
 
 **Stats to verify before filming** (check git log + analytics):
 - Total commits: ~3,913 across 4 repos (specweave: 2,594 | vskill-platform: 581 | vskill: 393 | umbrella: 345)
@@ -737,5 +739,5 @@ specweave analyze .
 - Layer diagram (SpecWeave architecture)
 - SSP badge renders (E2/S3)
 - Multi-agent coordination diagram
-- AI Judge pipeline for Sketchmate
+- AI Judge pipeline for [Sketchmate](https://sketchmate.net/)
 - Stats overlays (700% growth, commit counts, DORA metrics)

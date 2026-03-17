@@ -22,7 +22,7 @@ vi.mock('../../../src/utils/execFileNoThrow.js', () => ({
 const { ensureSkillCreator } = await import('../../../src/cli/helpers/init/skill-creator-installer.js');
 
 const VSKILL_ARGS = ['install', 'anthropics/skills/skill-creator', '--yes', '--agent', 'claude-code'];
-const NPX_ARGS = ['--registry', 'https://registry.npmjs.org', 'vskill', ...VSKILL_ARGS];
+const NPX_ARGS = ['--yes', '--registry', 'https://registry.npmjs.org', '--userconfig', '/dev/null', '--ignore-scripts', '--package', 'vskill@^0.5.0', 'vskill', ...VSKILL_ARGS];
 const CLAUDE_ARGS = ['install-skill', 'https://github.com/anthropics/skills/tree/main/skills/skill-creator'];
 
 const ok = { success: true, stdout: 'ok', stderr: '', exitCode: 0 };
@@ -59,7 +59,9 @@ describe('ensureSkillCreator', () => {
   // --- Tier 1: global vskill ---
 
   it('installs via global vskill when available', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
     mocks.isCommandAvailable.mockResolvedValue(true);
     mocks.execFileNoThrow.mockResolvedValue(ok);
 
@@ -75,7 +77,9 @@ describe('ensureSkillCreator', () => {
   // --- Tier 2: npx with explicit registry ---
 
   it('falls back to npx when vskill is not globally installed', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
     // vskill not available, npx available
     mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd !== 'vskill');
     mocks.execFileNoThrow.mockResolvedValue(ok);
@@ -89,7 +93,9 @@ describe('ensureSkillCreator', () => {
   });
 
   it('falls back to npx when global vskill install fails', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification after npx
     mocks.isCommandAvailable.mockResolvedValue(true);
     mocks.execFileNoThrow
       .mockResolvedValueOnce(fail('GitHub rate limit'))
@@ -104,7 +110,9 @@ describe('ensureSkillCreator', () => {
   });
 
   it('npx uses 60s timeout to allow vskill download', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
     mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd !== 'vskill');
     mocks.execFileNoThrow.mockResolvedValue(ok);
 
@@ -116,7 +124,9 @@ describe('ensureSkillCreator', () => {
   });
 
   it('npx passes --registry to bypass .npmrc redirects', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
     mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd !== 'vskill');
     mocks.execFileNoThrow.mockResolvedValue(ok);
 
@@ -127,10 +137,56 @@ describe('ensureSkillCreator', () => {
     expect(npxCall[1]).toContain('https://registry.npmjs.org');
   });
 
+  it('npx passes --yes as npx-level flag before package name', async () => {
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
+    mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd !== 'vskill');
+    mocks.execFileNoThrow.mockResolvedValue(ok);
+
+    await ensureSkillCreator(projectRoot);
+
+    const npxArgs = mocks.execFileNoThrow.mock.calls[0][1] as string[];
+    const yesIdx = npxArgs.indexOf('--yes');
+    const vskillIdx = npxArgs.indexOf('vskill');
+    expect(yesIdx).toBeGreaterThanOrEqual(0);
+    expect(yesIdx).toBeLessThan(vskillIdx);
+  });
+
+  it('npx passes --userconfig /dev/null to ignore .npmrc', async () => {
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
+    mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd !== 'vskill');
+    mocks.execFileNoThrow.mockResolvedValue(ok);
+
+    await ensureSkillCreator(projectRoot);
+
+    const npxArgs = mocks.execFileNoThrow.mock.calls[0][1] as string[];
+    expect(npxArgs).toContain('--userconfig');
+    expect(npxArgs).toContain('/dev/null');
+  });
+
+  it('npx pins vskill version range', async () => {
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
+    mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd !== 'vskill');
+    mocks.execFileNoThrow.mockResolvedValue(ok);
+
+    await ensureSkillCreator(projectRoot);
+
+    const npxArgs = mocks.execFileNoThrow.mock.calls[0][1] as string[];
+    expect(npxArgs).toContain('--package');
+    expect(npxArgs).toContain('vskill@^0.5.0');
+  });
+
   // --- Tier 3: claude install-skill ---
 
   it('falls back to claude CLI when both vskill and npx fail', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification after claude
     mocks.isCommandAvailable.mockResolvedValue(true);
     mocks.execFileNoThrow
       .mockResolvedValueOnce(fail('vskill error'))
@@ -147,7 +203,9 @@ describe('ensureSkillCreator', () => {
   });
 
   it('falls back to claude when vskill and npx are unavailable', async () => {
-    mocks.existsSync.mockReturnValue(false);
+    mocks.existsSync
+      .mockReturnValueOnce(false)   // initial check
+      .mockReturnValueOnce(true);   // post-install verification
     mocks.isCommandAvailable.mockImplementation(async (cmd: string) => cmd === 'claude');
     mocks.execFileNoThrow.mockResolvedValue(ok);
 
@@ -171,7 +229,7 @@ describe('ensureSkillCreator', () => {
     expect(result).toEqual({
       installed: false,
       skipped: false,
-      error: 'no CLI available (vskill, npx, or claude)',
+      error: 'no CLI available',
     });
     expect(mocks.execFileNoThrow).not.toHaveBeenCalled();
   });
@@ -190,7 +248,49 @@ describe('ensureSkillCreator', () => {
 
     expect(result.installed).toBe(false);
     expect(result.skipped).toBe(false);
-    expect(result.error).toBe('claude error');
+    expect(result.error).toBe('vskill: vskill error; npx: npx error; claude: claude error');
+  });
+
+  it('accumulates errors from all failed tiers', async () => {
+    mocks.existsSync.mockReturnValue(false);
+    mocks.isCommandAvailable.mockResolvedValue(true);
+    mocks.execFileNoThrow
+      .mockResolvedValueOnce(fail('rate limit'))
+      .mockResolvedValueOnce(fail('network timeout'))
+      .mockResolvedValueOnce(fail('auth required'));
+
+    const result = await ensureSkillCreator(projectRoot);
+
+    expect(result.installed).toBe(false);
+    expect(result.error).toContain('vskill: ');
+    expect(result.error).toContain('npx: ');
+    expect(result.error).toContain('claude: ');
+    expect(result.error).toBe('vskill: rate limit; npx: network timeout; claude: auth required');
+  });
+
+  // --- Post-install verification ---
+
+  it('returns failure when tool exits 0 but file not written', async () => {
+    // existsSync returns false for both initial check and all post-install verifications
+    mocks.existsSync.mockReturnValue(false);
+    // vskill available, npx available, claude available
+    mocks.isCommandAvailable.mockResolvedValue(true);
+    // all three tiers succeed (exit 0) but file never appears
+    mocks.execFileNoThrow
+      .mockResolvedValueOnce(ok)
+      .mockResolvedValueOnce(ok)
+      .mockResolvedValueOnce(ok);
+
+    const result = await ensureSkillCreator(projectRoot);
+
+    expect(result.installed).toBe(false);
+    expect(result.skipped).toBe(false);
+    // All three tiers should report "exited 0 but file not written"
+    expect(result.error).toContain('vskill: exited 0 but file not written');
+    expect(result.error).toContain('npx: exited 0 but file not written');
+    expect(result.error).toContain('claude: exited 0 but file not written');
+    // Should have called all three tiers
+    expect(mocks.execFileNoThrow).toHaveBeenCalledTimes(3);
   });
 
   // --- Error handling ---

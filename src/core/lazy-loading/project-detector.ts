@@ -98,32 +98,32 @@ const DETECTION_RULES: DetectionRule[] = [
   // Frontend frameworks
   {
     type: 'nextjs',
-    plugins: ['frontend', 'backend'],
+    plugins: ['backend'],
     detect: (p) => packageJsonHas(p, 'next') || fileExists(p, 'next.config.js') || fileExists(p, 'next.config.mjs') || fileExists(p, 'next.config.ts'),
   },
   {
     type: 'nuxt',
-    plugins: ['frontend', 'backend'],
+    plugins: ['backend'],
     detect: (p) => packageJsonHas(p, 'nuxt') || fileExists(p, 'nuxt.config.js') || fileExists(p, 'nuxt.config.ts'),
   },
   {
     type: 'react',
-    plugins: ['frontend'],
+    plugins: [],
     detect: (p) => packageJsonHas(p, 'react') || fileExists(p, 'src/App.tsx') || fileExists(p, 'src/App.jsx'),
   },
   {
     type: 'vue',
-    plugins: ['frontend'],
+    plugins: [],
     detect: (p) => packageJsonHas(p, 'vue') || fileExists(p, 'src/App.vue'),
   },
   {
     type: 'angular',
-    plugins: ['frontend'],
+    plugins: [],
     detect: (p) => packageJsonHas(p, '@angular/core') || fileExists(p, 'angular.json'),
   },
   {
     type: 'svelte',
-    plugins: ['frontend'],
+    plugins: [],
     detect: (p) => packageJsonHas(p, 'svelte') || fileExists(p, 'svelte.config.js'),
   },
 
@@ -356,7 +356,7 @@ const DETECTION_RULES: DetectionRule[] = [
  * @example
  * ```ts
  * const result = detectProjectType('/path/to/react-app');
- * // { types: ['react', 'github'], plugins: ['frontend', 'github'] }
+ * // { types: ['react', 'github'], plugins: ['github'] }
  * ```
  */
 export function detectProjectType(projectPath: string = process.cwd()): ProjectTypeResult {
