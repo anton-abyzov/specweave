@@ -10,7 +10,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class TraeAdapter extends AdapterBase {
   name = 'trae';
-  description = 'Trae adapter — skills installed in .trae/rules/';
+  description = 'Trae adapter — skills installed in .trae/skills/';
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
@@ -29,7 +29,7 @@ export class TraeAdapter extends AdapterBase {
 
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Trae Adapter\n');
-    await fs.ensureDir(path.join(options.projectPath, '.trae/rules'));
+    await fs.ensureDir(path.join(options.projectPath, '.trae/skills'));
     console.log('\n✨ Trae adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -39,22 +39,22 @@ export class TraeAdapter extends AdapterBase {
   }
 
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.trae/rules';
+    const skillsDir = '.trae/skills';
     console.log(`\n📦 Installing plugin skills for Trae: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Trae!`);
   }
 
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Trae: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.trae/rules');
-    console.log(`   ✓ Removed from .trae/rules/`);
+    await this.removeSkillFiles(pluginName, '.trae/skills');
+    console.log(`   ✓ Removed from .trae/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.trae/rules');
+    return await this.listInstalledPluginsInDir('.trae/skills');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
@@ -65,7 +65,7 @@ export class TraeAdapter extends AdapterBase {
     return `
 Trae Adapter
 
-Skills installed in .trae/rules/.
+Skills installed in .trae/skills/.
 Run: specweave refresh-plugins
     `;
   }

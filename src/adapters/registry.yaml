@@ -71,12 +71,12 @@ adapters:
     priority: P1
 
   - name: copilot
-    description: "GitHub Copilot adapter - Skills installed in .github/instructions/"
+    description: "GitHub Copilot adapter - Skills installed in .github/copilot/skills/"
     automation_level: basic
     status: active
     directory: copilot
     features:
-      - .github/instructions/*.instructions.md per-context skill files
+      - .github/copilot/skills/*.instructions.md per-context skill files
       - Works with GitHub Copilot VS Code extension and IDE integrations
       - Skills auto-read as workspace instructions
     requirements:
@@ -137,12 +137,12 @@ adapters:
     priority: P1
 
   - name: windsurf
-    description: "Windsurf adapter - Skills installed in .windsurf/rules/"
+    description: "Windsurf adapter - Skills installed in .windsurf/skills/"
     automation_level: semi
     status: active
     directory: windsurf
     features:
-      - .windsurf/rules/*.md skill files auto-loaded by Windsurf
+      - .windsurf/skills/*.md skill files auto-loaded by Windsurf
       - Semi-automation with AGENTS.md workflow instructions
     requirements:
       - Windsurf editor installed
@@ -151,12 +151,12 @@ adapters:
     priority: P1
 
   - name: continue
-    description: "Continue.dev adapter - Skills installed in .continue/rules/"
+    description: "Continue.dev adapter - Skills installed in .continue/skills/"
     automation_level: semi
     status: active
     directory: continue
     features:
-      - .continue/rules/*.md skill files auto-loaded by Continue extension
+      - .continue/skills/*.md skill files auto-loaded by Continue extension
       - Files loaded in lexicographic order
     requirements:
       - Continue.dev VS Code or JetBrains extension
@@ -165,12 +165,12 @@ adapters:
     priority: P1
 
   - name: cline
-    description: "Cline adapter - Skills installed in .cline/rules/"
+    description: "Cline adapter - Skills installed in .cline/skills/"
     automation_level: semi
     status: active
     directory: cline
     features:
-      - .cline/rules/*.md skill context files
+      - .cline/skills/*.md skill context files
       - Agentic task execution support
     requirements:
       - Cline VS Code extension
@@ -194,12 +194,12 @@ adapters:
     priority: P2
 
   - name: zed
-    description: "Zed adapter - Skills installed in .rules/"
+    description: "Zed adapter - Skills installed in .zed/skills/"
     automation_level: semi
     status: active
     directory: zed
     features:
-      - .rules/*.md project rule files auto-loaded by Zed AI
+      - .zed/skills/*.md project skill files auto-loaded by Zed AI
       - MCP support for extensibility
     requirements:
       - Zed editor installed
@@ -208,12 +208,12 @@ adapters:
     priority: P2
 
   - name: amazonq
-    description: "Amazon Q Developer adapter - Skills installed in .amazonq/rules/"
+    description: "Amazon Q Developer adapter - Skills installed in .amazonq/skills/"
     automation_level: semi
     status: active
     directory: amazonq
     features:
-      - .amazonq/rules/*.md files auto-loaded on startup
+      - .amazonq/skills/*.md files auto-loaded on startup
       - Enterprise-grade AI coding assistant
     requirements:
       - Amazon Q Developer extension or CLI
@@ -222,12 +222,12 @@ adapters:
     priority: P2
 
   - name: jetbrains
-    description: "JetBrains AI Assistant adapter - Skills installed in .aiassistant/rules/"
+    description: "JetBrains Junie adapter - Skills installed in .junie/skills/"
     automation_level: semi
     status: active
     directory: jetbrains
     features:
-      - .aiassistant/rules/*.md rule files loaded by JetBrains AI
+      - .junie/skills/*.md skill files loaded by JetBrains Junie
       - Works with IntelliJ IDEA, WebStorm, PyCharm, etc.
     requirements:
       - JetBrains IDE with AI Assistant plugin
@@ -236,12 +236,12 @@ adapters:
     priority: P2
 
   - name: aider
-    description: "Aider adapter - Skills installed in .aider/"
+    description: "Aider adapter - Skills installed in .aider/skills/"
     automation_level: semi
     status: active
     directory: aider
     features:
-      - .aider/*.md skill context files
+      - .aider/skills/*.md skill context files
       - CLI-first AI coding assistant
     requirements:
       - Aider CLI installed (pip install aider-chat)
@@ -250,12 +250,12 @@ adapters:
     priority: P2
 
   - name: tabnine
-    description: "Tabnine adapter - Skills installed in .tabnine/guidelines/"
+    description: "Tabnine adapter - Skills installed in .tabnine/skills/"
     automation_level: basic
     status: active
     directory: tabnine
     features:
-      - .tabnine/guidelines/*.md custom guideline files auto-loaded
+      - .tabnine/skills/*.md custom skill files auto-loaded
       - Enterprise AI code completion
     requirements:
       - Tabnine extension (VS Code, JetBrains, etc.)
@@ -278,12 +278,12 @@ adapters:
     priority: P2
 
   - name: trae
-    description: "Trae adapter - Skills installed in .trae/rules/"
+    description: "Trae adapter - Skills installed in .trae/skills/"
     automation_level: semi
     status: active
     directory: trae
     features:
-      - .trae/rules/*.md skill files
+      - .trae/skills/*.md skill files
       - ByteDance AI coding assistant
       - MCP support
     requirements:
@@ -360,20 +360,20 @@ capabilities:
   instruction_file:
     claude: .claude/skills + agents
     antigravity: .agent/skills/
-    codex: .codex/rules/
+    codex: .codex/skills/
     opencode: .opencode/skills/
-    copilot: .github/instructions/
-    cursor: .cursor/rules/
-    windsurf: .windsurf/rules/
-    cline: .cline/rules/
+    copilot: .github/copilot/skills/
+    cursor: .cursor/skills/
+    windsurf: .windsurf/skills/
+    cline: .cline/skills/
     gemini: .gemini/
-    amazonq: .amazonq/rules/
-    jetbrains: .aiassistant/rules/
-    continue: .continue/rules/
-    aider: .aider/
-    trae: .trae/rules/
-    zed: .rules/
-    tabnine: .tabnine/guidelines/
+    amazonq: .amazonq/skills/
+    jetbrains: .junie/skills/
+    continue: .continue/skills/
+    aider: .aider/skills/
+    trae: .trae/skills/
+    zed: .zed/skills/
+    tabnine: .tabnine/skills/
     kimi: .kimi/skills/
     generic: AGENTS.md
 

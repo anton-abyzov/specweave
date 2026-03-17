@@ -10,11 +10,11 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class JetBrainsAdapter extends AdapterBase {
   name = 'jetbrains';
-  description = 'JetBrains adapter — skills installed in .aiassistant/rules/';
+  description = 'JetBrains adapter — skills installed in .junie/skills/';
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
-    return await this.fileExists('.aiassistant') || await this.commandExists('idea');
+    return await this.fileExists('.junie') || await this.fileExists('.aiassistant') || await this.commandExists('idea');
   }
 
   getFiles(): AdapterFile[] {
@@ -23,7 +23,7 @@ export class JetBrainsAdapter extends AdapterBase {
 
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing JetBrains Adapter\n');
-    await fs.ensureDir(path.join(options.projectPath, '.aiassistant/rules'));
+    await fs.ensureDir(path.join(options.projectPath, '.junie/skills'));
     console.log('\n✨ JetBrains adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -33,22 +33,22 @@ export class JetBrainsAdapter extends AdapterBase {
   }
 
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.aiassistant/rules';
+    const skillsDir = '.junie/skills';
     console.log(`\n📦 Installing plugin skills for JetBrains: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for JetBrains!`);
   }
 
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from JetBrains: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.aiassistant/rules');
-    console.log(`   ✓ Removed from .aiassistant/rules/`);
+    await this.removeSkillFiles(pluginName, '.junie/skills');
+    console.log(`   ✓ Removed from .junie/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.aiassistant/rules');
+    return await this.listInstalledPluginsInDir('.junie/skills');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
@@ -59,7 +59,7 @@ export class JetBrainsAdapter extends AdapterBase {
     return `
 JetBrains Adapter
 
-Skills installed in .aiassistant/rules/.
+Skills installed in .junie/skills/.
 Run: specweave refresh-plugins
     `;
   }

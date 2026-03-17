@@ -10,7 +10,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class AmazonQAdapter extends AdapterBase {
   name = 'amazonq';
-  description = 'Amazon Q adapter — skills installed in .amazonq/rules/';
+  description = 'Amazon Q adapter — skills installed in .amazonq/skills/';
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
@@ -23,7 +23,7 @@ export class AmazonQAdapter extends AdapterBase {
 
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Amazon Q Adapter\n');
-    await fs.ensureDir(path.join(options.projectPath, '.amazonq/rules'));
+    await fs.ensureDir(path.join(options.projectPath, '.amazonq/skills'));
     console.log('\n✨ Amazon Q adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -33,22 +33,22 @@ export class AmazonQAdapter extends AdapterBase {
   }
 
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.amazonq/rules';
+    const skillsDir = '.amazonq/skills';
     console.log(`\n📦 Installing plugin skills for Amazon Q: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Amazon Q!`);
   }
 
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Amazon Q: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.amazonq/rules');
-    console.log(`   ✓ Removed from .amazonq/rules/`);
+    await this.removeSkillFiles(pluginName, '.amazonq/skills');
+    console.log(`   ✓ Removed from .amazonq/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.amazonq/rules');
+    return await this.listInstalledPluginsInDir('.amazonq/skills');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
@@ -59,7 +59,7 @@ export class AmazonQAdapter extends AdapterBase {
     return `
 Amazon Q Adapter
 
-Skills installed in .amazonq/rules/.
+Skills installed in .amazonq/skills/.
 Run: specweave refresh-plugins
     `;
   }
