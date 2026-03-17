@@ -160,9 +160,13 @@ get_safe_output_with_warnings() {
   escaped_recommendation=$(escape_json "$recommendation")
 
   # Build JSON with warnings array
+  # Detect correct response format based on hook lifecycle phase:
+  # - PreToolUse dispatchers/guards: {"decision":"allow"} or {"decision":"block"}
+  # - PostToolUse dispatchers: {"continue":true}
+  # - Stop/UserPromptSubmit: {"decision":"approve"}
   local base_script
   base_script=$(basename "$script" 2>/dev/null)
-  if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
+  if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]] || [[ "$base_script" == pre-tool-use* ]]; then
     cat <<EOF
 {"decision":"allow","warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
 EOF
@@ -182,7 +186,7 @@ get_safe_output() {
   local script="$1"
   local base_script
   base_script=$(basename "$script" 2>/dev/null)
-  if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
+  if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]] || [[ "$base_script" == pre-tool-use* ]]; then
     echo '{"decision":"allow","warnings":[]}'
   elif [[ "$base_script" == stop-* ]] || [[ "$base_script" == user-prompt-submit* ]]; then
     echo '{"decision":"approve","warnings":[]}'
