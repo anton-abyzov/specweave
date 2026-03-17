@@ -203,31 +203,15 @@ Ensure code quality and test coverage.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `sw:tdd-red` | core | Write failing tests first |
-| `sw:tdd-green` | core | Minimal implementation to pass |
-| `sw:tdd-refactor` | core | Improve code quality |
-| `sw:tdd-cycle` | core | Full TDD workflow |
-| `sw:code-reviewer` | core | Elite multi-agent code review (6 parallel reviewers) |
-| `sw:team-lead` | core | Phase-agnostic orchestrator (brainstorm, plan, implement, review, research, test) |
-| `sw:increment-quality-judge-v2` | core | LLM-as-Judge quality assessment |
-| `sw:debug` | core | Systematic 4-phase debugging with escalation protocol |
-| `unit-testing` | testing | Unit test patterns and Vitest |
-| `e2e-testing` | testing | Playwright E2E testing |
-| `qa-engineer` | testing | Manual QA processes |
-
-### qa-engineer (testing plugin)
-
-**Purpose**: QA expert for test strategy and automation frameworks.
-
-```bash
-/testing:qa  # Get QA guidance
-```
-
-**Covers:**
-- Test pyramid (unit > integration > E2E)
-- Coverage targets (80%+ for critical paths)
-- Playwright, Jest, Vitest patterns
-- BDD scenarios (Given/When/Then)
+| `sw:tdd-red` | sw | Write failing tests first |
+| `sw:tdd-green` | sw | Minimal implementation to pass |
+| `sw:tdd-refactor` | sw | Improve code quality |
+| `sw:tdd-cycle` | sw | Full TDD workflow |
+| `sw:code-reviewer` | sw | Elite multi-agent code review (6 parallel reviewers) |
+| `sw:team-lead` | sw | Phase-agnostic orchestrator (brainstorm, plan, implement, review, research, test) |
+| `sw:judge-llm` | sw | LLM-as-Judge quality assessment |
+| `sw:debug` | sw | Systematic 4-phase debugging with escalation protocol |
+| `sw:e2e` | sw | End-to-end testing skill |
 
 ### code-reviewer
 
@@ -282,16 +266,16 @@ Ensure code quality and test coverage.
 
 ## Frontend Skills
 
-Build modern web applications with best practices.
+Build modern web applications with best practices. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `frontend` | frontend | General frontend development |
-| `frontend-architect` | frontend | React/Vue/Angular architecture |
-| `frontend-design` | frontend | UI/UX implementation |
-| `design-system-architect` | frontend | Component library design |
-| `nextjs` | frontend | Next.js App Router patterns |
-| `code-explorer` | frontend | Codebase navigation |
+| `frontend` | community | General frontend development |
+| `frontend-architect` | community | React/Vue/Angular architecture |
+| `frontend-design` | community | UI/UX implementation |
+| `design-system-architect` | community | Component library design |
+| `nextjs` | community | Next.js App Router patterns |
+| `code-explorer` | community | Codebase navigation |
 
 ### frontend-architect
 
@@ -325,14 +309,14 @@ Build modern web applications with best practices.
 
 ## Backend Skills
 
-Build scalable APIs and services.
+Build scalable APIs and services. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `nodejs-backend` | backend | Node.js/Express/Fastify APIs |
-| `python-backend` | backend | Python/FastAPI/Django services |
-| `dotnet-backend` | backend | .NET Core APIs |
-| `database-optimizer` | backend | SQL and NoSQL optimization |
+| `nodejs-backend` | community | Node.js/Express/Fastify APIs |
+| `python-backend` | community | Python/FastAPI/Django services |
+| `dotnet-backend` | community | .NET Core APIs |
+| `database-optimizer` | community | SQL and NoSQL optimization |
 
 ### nodejs-backend
 
@@ -366,17 +350,17 @@ Build scalable APIs and services.
 
 ## Infrastructure & DevOps Skills
 
-Deploy and operate at scale.
+Deploy and operate at scale. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `devops` | infra | CI/CD pipelines and deployment |
-| `observability` | infra | Logging, metrics, tracing |
-| `infrastructure` | core | Terraform and cloud IaC |
-| `k8s-manifest-generator` | k8s | Kubernetes manifests |
-| `k8s-security-policies` | k8s | Pod security and RBAC |
-| `helm-chart-scaffolding` | k8s | Helm chart creation |
-| `gitops-workflow` | k8s | ArgoCD/Flux workflows |
+| `devops` | community | CI/CD pipelines and deployment |
+| `observability` | community | Logging, metrics, tracing |
+| `infrastructure` | community | Terraform and cloud IaC |
+| `k8s-manifest-generator` | community | Kubernetes manifests |
+| `k8s-security-policies` | community | Pod security and RBAC |
+| `helm-chart-scaffolding` | community | Helm chart creation |
+| `gitops-workflow` | community | ArgoCD/Flux workflows |
 
 ### devops
 
@@ -410,27 +394,28 @@ Deploy and operate at scale.
 
 ## External Sync Skills
 
-Integrate with GitHub, JIRA, and Azure DevOps.
+Integrate with GitHub, JIRA, and Azure DevOps. All sync skills are part of the unified `sw` plugin.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `github-sync` | sw-github | Bidirectional GitHub sync |
-| `github-multi-project` | sw-github | Multi-repo GitHub coordination |
-| `github-issue-tracker` | sw-github | Issue management |
-| `github-issue-standard` | sw-github | Issue formatting standards |
-| `jira-sync` | sw-jira | Bidirectional JIRA sync |
-| `jira-mapper` | sw-jira | Field mapping configuration |
-| `jira-resource-validator` | sw-jira | Validate JIRA resources |
-| `ado-sync` | sw-ado | Azure DevOps sync |
-| `ado-multi-project` | sw-ado | Multi-project ADO coordination |
-| `ado-mapper` | sw-ado | ADO field mapping |
+| `github-sync` | sw | Bidirectional GitHub sync |
+| `github-multi-project` | sw | Multi-repo GitHub coordination |
+| `github-issue-standard` | sw | Issue formatting standards |
+| `pr-review` | sw | Pull request review |
+| `jira-sync` | sw | Bidirectional JIRA sync |
+| `jira-mapper` | sw | Field mapping configuration |
+| `jira-resource-validator` | sw | Validate JIRA resources |
+| `ado-sync` | sw | Azure DevOps sync |
+| `ado-multi-project` | sw | Multi-project ADO coordination |
+| `ado-mapper` | sw | ADO field mapping |
+| `ado-resource-validator` | sw | Validate ADO resources |
 
 ### github-sync
 
 **Purpose**: Two-way sync between SpecWeave and GitHub Issues.
 
 ```bash
-/sw-github:sync 0007  # Sync increment 0007 to GitHub
+/sw:github-sync 0007  # Sync increment 0007 to GitHub
 ```
 
 **Maps:**
@@ -443,7 +428,7 @@ Integrate with GitHub, JIRA, and Azure DevOps.
 **Purpose**: Bidirectional JIRA integration.
 
 ```bash
-/sw-jira:sync 0007  # Sync to JIRA
+/sw:jira-sync 0007  # Sync to JIRA
 ```
 
 **Maps:**
@@ -455,16 +440,16 @@ Integrate with GitHub, JIRA, and Azure DevOps.
 
 ## Data & Streaming Skills
 
-Build event-driven architectures.
+Build event-driven architectures. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `kafka-architect` | kafka | Kafka architecture design |
-| `kafka-ops` | kafka | Kafka operations and monitoring |
-| `kafka-streams-topology` | kafka | Stream processing topologies |
-| `confluent-kafka-connect` | confluent | Kafka Connect configuration |
-| `confluent-schema-registry` | confluent | Avro/Protobuf schemas |
-| `confluent-ksqldb` | confluent | ksqlDB streaming queries |
+| `kafka-architect` | community | Kafka architecture design |
+| `kafka-ops` | community | Kafka operations and monitoring |
+| `kafka-streams-topology` | community | Stream processing topologies |
+| `confluent-kafka-connect` | community | Kafka Connect configuration |
+| `confluent-schema-registry` | community | Avro/Protobuf schemas |
+| `confluent-ksqldb` | community | ksqlDB streaming queries |
 
 ### kafka-architect
 
@@ -486,15 +471,15 @@ Build event-driven architectures.
 
 Build machine learning systems.
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `ml-specialist` | ml | ML model development |
-| `ml-engineer` | ml | ML pipeline engineering |
-| `mlops-engineer` | ml | MLOps and model deployment |
-| `data-scientist` | ml | Data analysis and experimentation |
-| `image` | sw-media | AI image generation (Google Imagen 4 / Pollinations.ai) |
-| `video` | sw-media | AI video generation (Google Veo 3.1 / Pollinations.ai) |
-| `remotion` | sw-media | Programmatic video from React with Remotion |
+| `ml-specialist` | community | ML model development |
+| `ml-engineer` | community | ML pipeline engineering |
+| `mlops-engineer` | community | MLOps and model deployment |
+| `data-scientist` | community | Data analysis and experimentation |
+| `image` | sw | AI image generation (Google Imagen 4 / Pollinations.ai) |
+| `video` | sw | AI video generation (Google Veo 3.1 / Pollinations.ai) |
+| `remotion` | sw | Programmatic video from React with Remotion |
 
 ### ml-specialist
 
@@ -510,12 +495,12 @@ Build machine learning systems.
 - Training pipelines
 - Model evaluation metrics
 
-### image (sw-media)
+### image
 
 **Purpose**: Generate images using AI. Google Imagen 4 (with `GEMINI_API_KEY`) or Pollinations.ai (free fallback).
 
 ```bash
-/sw-media:image "hero image for SaaS landing page"
+/sw:image "hero image for SaaS landing page"
 ```
 
 **Generates:**
@@ -523,20 +508,20 @@ Build machine learning systems.
 - Icons and logos
 - Product mockups
 
-### video (sw-media)
+### video
 
 **Purpose**: Generate videos using AI. Google Veo 3.1 (with `GEMINI_API_KEY`) or Pollinations.ai (free fallback).
 
 ```bash
-/sw-media:video "product demo showing the dashboard in action"
+/sw:video "product demo showing the dashboard in action"
 ```
 
-### remotion (sw-media)
+### remotion
 
 **Purpose**: Create programmatic videos with Remotion (React components rendered to MP4).
 
 ```bash
-/sw-media:remotion "animated product launch video with logo reveal"
+/sw:remotion "animated product launch video with logo reveal"
 ```
 - Illustrations
 
@@ -544,38 +529,38 @@ Build machine learning systems.
 
 ## Mobile Skills
 
-Build cross-platform mobile apps.
+Build cross-platform mobile apps. Install via: `npx vskill install --repo anton-abyzov/vskill --plugin mobile`
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `react-native-expert` | mobile | Mobile architecture and React Native development |
+| `appstore` | mobile (vskill) | App Store Connect automation and submission |
 
-### react-native-expert
+### appstore
 
-**Purpose**: React Native cross-platform development.
+**Purpose**: App Store Connect automation and submission management.
 
 ```bash
-/mobile:react-native  # React Native guidance
+/mobile:appstore  # App store guidance
 ```
 
 **Covers:**
-- Expo vs bare workflow
-- Navigation patterns
-- Native module integration
-- Performance optimization
+- App Store Connect submission workflow
+- Screenshot and metadata management
+- Build and version coordination
+- Release management
 
 ---
 
 ## Security & Compliance Skills
 
-Build secure, compliant systems.
+Build secure, compliant systems. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `security` | core | Security assessment and hardening |
-| `security-patterns` | core | Real-time security pattern detection |
-| `compliance-architecture` | core | SOC 2, HIPAA, GDPR compliance |
-| `pci-compliance` | payments | PCI-DSS for payments |
+| `security` | community | Security assessment and hardening |
+| `security-patterns` | community | Real-time security pattern detection |
+| `compliance-architecture` | community | SOC 2, HIPAA, GDPR compliance |
+| `pci-compliance` | community | PCI-DSS for payments |
 
 ### security
 
@@ -609,13 +594,13 @@ Build secure, compliant systems.
 
 ## Payments Skills
 
-Build payment systems.
+Build payment systems. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `payments` | payments | Payment integration patterns |
-| `billing-automation` | payments | Subscription and billing |
-| `pci-compliance` | payments | PCI-DSS compliance |
+| `payments` | community | Payment integration patterns |
+| `billing-automation` | community | Subscription and billing |
+| `pci-compliance` | community | PCI-DSS compliance |
 
 ### payments
 
@@ -635,15 +620,15 @@ Build payment systems.
 
 ## Documentation Skills
 
-Create and maintain documentation.
+Create and maintain documentation. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `docs-writer` | core | Technical documentation |
-| `living-docs` | core | Living documentation management |
-| `living-docs-navigator` | core | Navigate project docs |
-| `technical-writing` | docs | Technical writing best practices |
-| `docusaurus` | docs | Docusaurus site management |
+| `docs-writer` | community | Technical documentation |
+| `living-docs` | community | Living documentation management |
+| `living-docs-navigator` | community | Navigate project docs |
+| `technical-writing` | community | Technical writing best practices |
+| `docusaurus` | community | Docusaurus site management |
 
 ### docs-writer
 
@@ -677,13 +662,13 @@ Create and maintain documentation.
 
 ## Cost Optimization Skills
 
-Optimize cloud spending.
+Optimize cloud spending. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `cost-optimization` | cost | General cost reduction |
-| `aws-cost-expert` | cost | AWS cost analysis |
-| `cloud-pricing` | cost | Multi-cloud pricing comparison |
+| `cost-optimization` | community | General cost reduction |
+| `aws-cost-expert` | community | AWS cost analysis |
+| `cloud-pricing` | community | Multi-cloud pricing comparison |
 
 ### cost-optimization
 
@@ -703,20 +688,20 @@ Optimize cloud spending.
 
 ## Utility Skills
 
-General-purpose development utilities.
+General-purpose development utilities. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `code-simplifier` | core | Code clarity improvement |
-| `reflect` | core | Learning from corrections |
-| `translator` | core | Content translation |
-| `context-loader` | core | Context efficiency |
-| `detector` | core | SpecWeave workflow detection |
-| `lsp` | core | Code navigation (find refs, go to def) |
-| `brownfield-analyzer` | core | Existing project analysis |
-| `brownfield-onboarder` | core | Project migration |
-| `framework` | core | SpecWeave framework guide |
-| `service-connect` | core | External service connection |
+| `code-simplifier` | community | Code clarity improvement |
+| `reflect` | community | Learning from corrections |
+| `translator` | community | Content translation |
+| `context-loader` | community | Context efficiency |
+| `detector` | community | SpecWeave workflow detection |
+| `lsp` | community | Code navigation (find refs, go to def) |
+| `brownfield-analyzer` | community | Existing project analysis |
+| `brownfield-onboarder` | community | Project migration |
+| `framework` | community | SpecWeave framework guide |
+| `service-connect` | community | External service connection |
 
 ### code-simplifier
 
@@ -750,14 +735,14 @@ Manage releases and versions.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `release-expert` | sw-release | Release orchestration and version alignment |
+| `release-expert` | sw | Release orchestration and version alignment |
 
 ### release-expert
 
 **Purpose**: Full release orchestration, version alignment, and coordination.
 
 ```bash
-/sw-release:release-expert  # Release guidance
+/sw:release-expert  # Release guidance
 ```
 
 **Covers:**
@@ -774,14 +759,14 @@ Create technical diagrams.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `diagrams` | sw-diagrams | Architecture diagram design and generation |
+| `diagrams` | sw | Architecture diagram design and generation |
 
 ### diagrams
 
 **Purpose**: Create and generate Mermaid/C4 diagrams.
 
 ```bash
-/sw-diagrams:diagrams  # Create diagrams
+/sw:diagrams  # Create diagrams
 ```
 
 **Creates:**
@@ -794,18 +779,18 @@ Create technical diagrams.
 
 ## Workflow Automation Skills
 
-Automate with n8n.
+Automate with n8n. These are available as community skills via [verified-skill.com](https://verified-skill.com).
 
-| Skill | Plugin | Description |
+| Skill | Source | Description |
 |-------|--------|-------------|
-| `n8n-kafka-workflows` | sw-n8n | Kafka + n8n automation |
+| `n8n-kafka-workflows` | community | Kafka + n8n automation |
 
 ### n8n-kafka-workflows
 
 **Purpose**: Event-driven workflow automation.
 
 ```bash
-/sw-n8n:n8n-kafka-workflows  # n8n + Kafka workflows
+# Available as community skill — install from verified-skill.com
 ```
 
 **Creates:**
@@ -815,26 +800,29 @@ Automate with n8n.
 
 ---
 
-## Installing Domain Plugins
+## Installing Plugins
 
-Skills are loaded from plugins. The core `sw` plugin is always installed. Domain plugins install automatically based on your tech stack, or manually:
+The unified `sw` plugin ships with SpecWeave and installs automatically via `specweave init`. It includes all 44 core skills (GitHub, JIRA, ADO sync, release, diagrams, media, and more).
+
+Additional domain plugins are available from the vskill marketplace:
 
 ```bash
-# Install domain plugins (from vskill marketplace)
-vskill install --repo anton-abyzov/vskill --plugin mobile
-vskill install --repo anton-abyzov/vskill --plugin marketing
-vskill install --repo anton-abyzov/vskill --plugin google-workspace
-vskill install --repo anton-abyzov/vskill --plugin productivity
-vskill install --repo anton-abyzov/vskill --plugin skills
-vskill install --repo anton-abyzov/vskill --plugin cost
-vskill install --repo anton-abyzov/vskill --plugin docs
+# Install the SpecWeave core plugin (usually handled by specweave init)
+npx vskill install --repo anton-abyzov/specweave --plugin sw
 
-# Install integration plugins (from specweave marketplace)
-vskill add specweave --plugin sw-github
-vskill add specweave --plugin sw-jira
-vskill add specweave --plugin sw-ado
-vskill add specweave --plugin sw-diagrams
-vskill add specweave --plugin sw-release
+# Install domain plugins from the vskill marketplace
+npx vskill install --repo anton-abyzov/vskill --plugin mobile
+npx vskill install --repo anton-abyzov/vskill --plugin marketing
+npx vskill install --repo anton-abyzov/vskill --plugin google-workspace
+npx vskill install --repo anton-abyzov/vskill --plugin productivity
+npx vskill install --repo anton-abyzov/vskill --plugin skills
+```
+
+Browse 100,000+ community skills at [verified-skill.com](https://verified-skill.com):
+
+```bash
+npx vskill find "react"
+npx vskill install <skill-name>
 ```
 
 ---
