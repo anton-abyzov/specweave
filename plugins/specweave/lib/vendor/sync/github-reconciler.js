@@ -7,13 +7,13 @@
  * - Reopens issues for in-progress increments that are closed
  *
  * Triggered by:
- * - /specweave-github:reconcile command (manual)
+ * - /sw:github-reconcile command (manual)
  * - SessionStart hook (automatic, if configured)
  * - post-increment-status-change.sh (on resume/abandon)
  */
 import { promises as fs, existsSync } from 'fs';
 import path from 'path';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubClientV2 } from '../../plugins/specweave/lib/integrations/github/github-client-v2.js';
 import { consoleLogger } from '../utils/logger.js';
 import { resolvePermissions } from './config.js';
 import { isProviderEnabled } from './status-mapper.js';

@@ -413,7 +413,7 @@ Sync and manage documentation.
 |---------|---------|---------|
 | `/sw:sync-docs` | Sync living docs | `/sw:sync-docs` |
 | `/sw:sync-specs` | Sync specs only | `/sw:sync-specs` |
-| `/sw:import-docs` | Import external docs | `/sw:import-docs` |
+| `/sw:import` | Import external issues | `/sw:import` |
 | `/sw:docs` | Load project context | `/sw:docs auth` |
 
 ### /sw:sync-docs

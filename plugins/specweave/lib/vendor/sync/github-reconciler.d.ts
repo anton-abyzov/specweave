@@ -7,7 +7,7 @@
  * - Reopens issues for in-progress increments that are closed
  *
  * Triggered by:
- * - /specweave-github:reconcile command (manual)
+ * - /sw:github-reconcile command (manual)
  * - SessionStart hook (automatic, if configured)
  * - post-increment-status-change.sh (on resume/abandon)
  */

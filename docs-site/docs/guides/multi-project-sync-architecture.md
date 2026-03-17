@@ -364,22 +364,22 @@ graph TB
 ### Workflow
 
 ```bash
-# Morning: Work on Internal Tools
-/sw:switch-project internal-tools
-/sw:increment "Add SSO integration"
-# → Spec created in: .specweave/docs/internal/specs/internal-tools/
+# Morning: Internal Tools work
+/sw:increment "Add SSO integration to internal tools"
+# → PM adds **Project**: internal-tools to user stories
+# → Spec synced to: .specweave/docs/internal/specs/internal-tools/
 # → Auto-syncs to: platform/internal-tools
 
-# Afternoon: Switch to Customer Portal
-/sw:switch-project customer-portal
-/sw:increment "Build self-service dashboard"
-# → Spec created in: .specweave/docs/internal/specs/customer-portal/
+# Afternoon: Customer Portal work
+/sw:increment "Build self-service dashboard for customer portal"
+# → PM adds **Project**: customer-portal to user stories
+# → Spec synced to: .specweave/docs/internal/specs/customer-portal/
 # → Auto-syncs to: platform/customer-portal
 
 # Evening: Admin Dashboard work
-/sw:switch-project admin-dashboard
-/sw:increment "Add user management UI"
-# → Spec created in: .specweave/docs/internal/specs/admin-dashboard/
+/sw:increment "Add user management UI to admin dashboard"
+# → PM adds **Project**: admin-dashboard to user stories
+# → Spec synced to: .specweave/docs/internal/specs/admin-dashboard/
 # → Auto-syncs to: platform/admin-dashboard
 ```
 
@@ -834,19 +834,16 @@ graph TB
 
 ```bash
 # Morning: Client A work
-/sw:switch-project client-a
-/sw:increment "Add checkout flow to e-commerce"
-# → Auto-syncs to: client-a/ecommerce (GitHub) AND clienta.atlassian.net (Jira)
+/sw:increment "Add checkout flow to client-a e-commerce"
+# → PM adds **Project**: client-a → auto-syncs to: client-a/ecommerce (GitHub) AND clienta.atlassian.net (Jira)
 
 # Afternoon: Client B work
-/sw:switch-project client-b
-/sw:increment "Build admin dashboard analytics"
-# → Auto-syncs to: client-b/admin (GitHub only)
+/sw:increment "Build admin dashboard analytics for client-b"
+# → PM adds **Project**: client-b → auto-syncs to: client-b/admin (GitHub only)
 
 # Evening: Client C work
-/sw:switch-project client-c
-/sw:increment "Add offline mode to mobile app"
-# → Prompt: Sync to GitHub or ADO? (or both)
+/sw:increment "Add offline mode to client-c mobile app"
+# → PM adds **Project**: client-c → Prompt: Sync to GitHub or ADO? (or both)
 ```
 
 **Key Features**:
@@ -1296,7 +1293,7 @@ SpecWeave's **Profile-Based Multi-Project Sync Architecture** enables:
 - Layer 3: Metadata (per-increment tracking)
 
 **Key Commands**:
-- `/sw:switch-project <id>` - Switch active project
+- `**Project**: <id>` in spec.md - Per-increment project routing
 - `/sw-github:sync <increment>` - Sync to GitHub
 - `/sw-jira:sync <increment>` - Sync to Jira
 - `/sw-ado:sync <increment>` - Sync to Azure DevOps
