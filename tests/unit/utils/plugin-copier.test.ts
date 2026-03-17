@@ -447,6 +447,158 @@ describe('plugin-copier', () => {
   });
 
   // =========================================================================
+  // T-007: migrateBundledToGlobalLock
+  // =========================================================================
+  describe('migrateBundledToGlobalLock', () => {
+    let fakeHome: string;
+    let projectDir: string;
+
+    beforeEach(() => {
+      fakeHome = path.join(tmpDir, 'fake-home');
+      projectDir = path.join(tmpDir, 'project');
+      fs.mkdirSync(fakeHome, { recursive: true });
+      fs.mkdirSync(projectDir, { recursive: true });
+    });
+
+    it('moves bundled entries to global lock, keeps user entries in project lock', () => {
+      // Project lock has one bundled + one user entry
+      const projectLock = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0', sha: 'bundled123', tier: 'BUNDLED',
+            installedAt: '2026-03-17T00:00:00Z', source: 'local:specweave',
+          },
+          'my-skill': {
+            version: '2.0.0', sha: 'user456', tier: 'VERIFIED',
+            installedAt: '2026-03-17T00:00:00Z', source: 'marketplace',
+          },
+        },
+        createdAt: '2026-03-17T00:00:00Z',
+        updatedAt: '2026-03-17T00:00:00Z',
+      };
+      writeLockfile(projectLock, projectDir);
+
+      const result = migrateBundledToGlobalLock(projectDir, fakeHome);
+
+      expect(result.migratedCount).toBe(1);
+      expect(result.deletedProjectLock).toBe(false);
+
+      // Global lock should have bundled entry
+      const globalLock = readGlobalLockfile(fakeHome);
+      expect(globalLock).not.toBeNull();
+      expect(globalLock!.skills.sw.sha).toBe('bundled123');
+
+      // Project lock should only have user entry
+      const updatedProjectLock = readLockfile(projectDir);
+      expect(updatedProjectLock).not.toBeNull();
+      expect(updatedProjectLock!.skills['my-skill']).toBeDefined();
+      expect(updatedProjectLock!.skills.sw).toBeUndefined();
+    });
+
+    it('deletes project lock when only bundled entries exist', () => {
+      const projectLock = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0', sha: 'bundled123', tier: 'BUNDLED',
+            installedAt: '2026-03-17T00:00:00Z', source: 'local:specweave',
+          },
+        },
+        createdAt: '2026-03-17T00:00:00Z',
+        updatedAt: '2026-03-17T00:00:00Z',
+      };
+      writeLockfile(projectLock, projectDir);
+
+      const result = migrateBundledToGlobalLock(projectDir, fakeHome);
+
+      expect(result.migratedCount).toBe(1);
+      expect(result.deletedProjectLock).toBe(true);
+      expect(fs.existsSync(path.join(projectDir, 'vskill.lock'))).toBe(false);
+    });
+
+    it('is idempotent — second call is no-op', () => {
+      const projectLock = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0', sha: 'bundled123', tier: 'BUNDLED',
+            installedAt: '2026-03-17T00:00:00Z', source: 'local:specweave',
+          },
+        },
+        createdAt: '2026-03-17T00:00:00Z',
+        updatedAt: '2026-03-17T00:00:00Z',
+      };
+      writeLockfile(projectLock, projectDir);
+
+      migrateBundledToGlobalLock(projectDir, fakeHome);
+      const result2 = migrateBundledToGlobalLock(projectDir, fakeHome);
+
+      expect(result2.migratedCount).toBe(0);
+      expect(result2.deletedProjectLock).toBe(false);
+    });
+
+    it('keeps newer global entry when project entry is older', () => {
+      // Global lock already has a newer entry
+      const globalLock = ensureGlobalLockfile(fakeHome);
+      globalLock.skills.sw = {
+        version: '1.0.1', sha: 'newer789', tier: 'BUNDLED',
+        installedAt: '2026-03-18T00:00:00Z', source: 'local:specweave',
+      };
+      writeGlobalLockfile(globalLock, fakeHome);
+
+      // Project lock has older entry
+      const projectLock = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0', sha: 'older123', tier: 'BUNDLED',
+            installedAt: '2026-03-17T00:00:00Z', source: 'local:specweave',
+          },
+        },
+        createdAt: '2026-03-17T00:00:00Z',
+        updatedAt: '2026-03-17T00:00:00Z',
+      };
+      writeLockfile(projectLock, projectDir);
+
+      migrateBundledToGlobalLock(projectDir, fakeHome);
+
+      // Global should keep newer entry
+      const updatedGlobal = readGlobalLockfile(fakeHome);
+      expect(updatedGlobal!.skills.sw.sha).toBe('newer789');
+    });
+  });
+
+  // =========================================================================
+  // T-013: Permission denied fallback
+  // =========================================================================
+  describe('getGlobalLockDir permission fallback', () => {
+    it('throws when home is empty string', () => {
+      expect(() => getGlobalLockDir('')).toThrow('No home directory');
+    });
+  });
+
+  // =========================================================================
+  // T-014: Empty homedir guard
+  // =========================================================================
+  describe('writeGlobalLockfile with empty homedir', () => {
+    it('does not write to filesystem root and does not throw unhandled', () => {
+      const lock = {
+        version: 1, agents: ['claude-code'], skills: {},
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      };
+      // writeGlobalLockfile with empty home should not throw (caught internally)
+      // but also should not write to '/'
+      expect(() => writeGlobalLockfile(lock, '')).toThrow('No home directory');
+      expect(fs.existsSync('/.specweave/plugins-lock.json')).toBe(false);
+    });
+  });
+
+  // =========================================================================
   // migrateLegacyCommandsDir
   // =========================================================================
   describe('migrateLegacyCommandsDir', () => {

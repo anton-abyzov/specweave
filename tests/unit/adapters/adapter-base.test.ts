@@ -15,6 +15,10 @@ const {
   mockAccess,
   mockReadFile,
   mockReadJson,
+  mockWriteFile,
+  mockRemove,
+  mockReaddir,
+  mockStat,
   mockExecSync,
   mockGetDirname,
   mockGetSystemPromptForLanguage,
@@ -25,6 +29,10 @@ const {
   mockAccess: vi.fn(),
   mockReadFile: vi.fn(),
   mockReadJson: vi.fn(),
+  mockWriteFile: vi.fn(),
+  mockRemove: vi.fn(),
+  mockReaddir: vi.fn(),
+  mockStat: vi.fn(),
   mockExecSync: vi.fn(),
   mockGetDirname: vi.fn().mockReturnValue('/fake/adapters'),
   mockGetSystemPromptForLanguage: vi.fn(),
@@ -37,6 +45,10 @@ vi.mock('../../../src/utils/fs-native.js', () => ({
   access: mockAccess,
   readFile: mockReadFile,
   readJson: mockReadJson,
+  writeFile: mockWriteFile,
+  remove: mockRemove,
+  readdir: mockReaddir,
+  stat: mockStat,
 }));
 
 vi.mock('child_process', () => ({
@@ -99,6 +111,18 @@ class TestAdapter extends AdapterBase {
 
   testInjectSystemPrompt(content: string, language: 'en' | 'ru' | 'es'): string {
     return this.injectSystemPrompt(content, language as any);
+  }
+
+  async testWriteSkillFiles(plugin: Plugin, rulesDir: string, fileSuffix?: string) {
+    return this.writeSkillFiles(plugin, rulesDir, fileSuffix);
+  }
+
+  async testRemoveSkillFiles(pluginName: string, rulesDir: string, fileSuffix?: string) {
+    return this.removeSkillFiles(pluginName, rulesDir, fileSuffix);
+  }
+
+  async testListInstalledPluginsInDir(rulesDir: string) {
+    return this.listInstalledPluginsInDir(rulesDir);
   }
 }
 
@@ -552,6 +576,116 @@ describe('AdapterBase', () => {
       const result = adapter.testInjectSystemPrompt(content, 'ru');
 
       expect(result).toBe('---\nkey: val\n---\n\nLANG PROMPT\n');
+    });
+  });
+
+  // ─── writeSkillFiles() ────────────────────────────────────
+
+  describe('writeSkillFiles()', () => {
+    const fakePlugin: Plugin = {
+      manifest: { name: 'sw', version: '1.0.0' },
+      skills: [
+        { name: 'increment', path: '/plugins/sw/skills/increment' },
+        { name: 'architect', path: '/plugins/sw/skills/architect' },
+      ],
+    } as unknown as Plugin;
+
+    beforeEach(() => {
+      mockPathExists.mockResolvedValue(true);
+      mockReadFile.mockResolvedValue('# Skill content');
+      mockWriteFile.mockResolvedValue(undefined);
+      mockEnsureDir.mockResolvedValue(undefined);
+      mockReadJson.mockRejectedValue(new Error('no config'));
+    });
+
+    it('should write skills into plugin-named subdirectory', async () => {
+      await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
+
+      const paths: string[] = mockWriteFile.mock.calls.map((c: any[]) => c[0]);
+
+      // Should write to {rulesDir}/{pluginName}/{skillName}.md
+      expect(paths.some(p => p.includes('/sw/increment.md'))).toBe(true);
+      expect(paths.some(p => p.includes('/sw/architect.md'))).toBe(true);
+      // Must NOT use flat naming
+      expect(paths.some(p => p.includes('sw-increment.md'))).toBe(false);
+      expect(paths.some(p => p.includes('sw-architect.md'))).toBe(false);
+    });
+
+    it('should ensure plugin subdirectory exists', async () => {
+      await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
+
+      const ensureDirPaths: string[] = mockEnsureDir.mock.calls.map((c: any[]) => c[0]);
+      expect(ensureDirPaths.some(p => p.endsWith('/sw'))).toBe(true);
+    });
+
+    it('should respect custom fileSuffix in subdirectory structure', async () => {
+      const singleSkillPlugin = {
+        manifest: { name: 'myplugin', version: '1.0.0' },
+        skills: [{ name: 'skill-a', path: '/plugins/myplugin/skills/skill-a' }],
+      } as unknown as Plugin;
+
+      await adapter.testWriteSkillFiles(singleSkillPlugin, '.github/instructions', '.instructions.md');
+
+      const paths: string[] = mockWriteFile.mock.calls.map((c: any[]) => c[0]);
+      expect(paths.some(p => p.includes('/myplugin/skill-a.instructions.md'))).toBe(true);
+    });
+  });
+
+  // ─── removeSkillFiles() ──────────────────────────────────
+
+  describe('removeSkillFiles()', () => {
+    it('should remove the plugin subdirectory', async () => {
+      mockPathExists.mockResolvedValue(true);
+      mockRemove.mockResolvedValue(undefined);
+
+      await adapter.testRemoveSkillFiles('sw', '.agent/skills');
+
+      // Should remove the entire {rulesDir}/{pluginName}/ directory
+      const removePaths: string[] = mockRemove.mock.calls.map((c: any[]) => c[0]);
+      expect(removePaths.length).toBe(1);
+      expect(removePaths[0]).toContain('.agent/skills/sw');
+    });
+
+    it('should not fail when rulesDir does not exist', async () => {
+      mockPathExists.mockResolvedValue(false);
+
+      await expect(adapter.testRemoveSkillFiles('sw', '.nonexistent')).resolves.not.toThrow();
+    });
+  });
+
+  // ─── listInstalledPluginsInDir() ─────────────────────────
+
+  describe('listInstalledPluginsInDir()', () => {
+    it('should return subdirectory names as plugin names', async () => {
+      mockPathExists.mockResolvedValue(true);
+      mockReaddir.mockResolvedValue(['sw', 'frontend-design', 'skill-creator']);
+      mockStat.mockResolvedValue({ isDirectory: () => true });
+
+      const result = await adapter.testListInstalledPluginsInDir('.agent/skills');
+
+      expect(result).toContain('sw');
+      expect(result).toContain('frontend-design');
+      expect(result).toContain('skill-creator');
+    });
+
+    it('should exclude non-directory entries', async () => {
+      mockPathExists.mockResolvedValue(true);
+      mockReaddir.mockResolvedValue(['sw', 'README.md']);
+      mockStat
+        .mockResolvedValueOnce({ isDirectory: () => true })   // sw
+        .mockResolvedValueOnce({ isDirectory: () => false });  // README.md
+
+      const result = await adapter.testListInstalledPluginsInDir('.agent/skills');
+
+      expect(result).toEqual(['sw']);
+    });
+
+    it('should return empty array when rulesDir does not exist', async () => {
+      mockPathExists.mockResolvedValue(false);
+
+      const result = await adapter.testListInstalledPluginsInDir('.nonexistent');
+
+      expect(result).toEqual([]);
     });
   });
 
