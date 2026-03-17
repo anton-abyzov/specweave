@@ -187,7 +187,7 @@ C. Create new → /sw:increment "description"
 
 ---
 
-## Scenario 4: [WIP Limit](/docs/glossary/terms/wip-limits) Warning
+## Scenario 4: WIP Limit Warning
 
 **Situation**: Multiple increments in progress.
 
@@ -255,8 +255,8 @@ It will either:
 ## Glossary Terms Used
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
-- **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
-- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** — Success conditions validated by gates
+- **WIP Limits** — Work-in-progress constraints
+- **Acceptance Criteria** — Success conditions validated by gates
 
 ---
 

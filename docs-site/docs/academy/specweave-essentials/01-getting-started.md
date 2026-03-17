@@ -35,7 +35,7 @@ Thursday:
 
 ---
 
-## The Solution: Specs as [Source of Truth](/docs/glossary/terms/source-of-truth)
+## The Solution: Specs as Source of Truth
 
 SpecWeave solves this by making specifications permanent:
 
@@ -231,9 +231,9 @@ You now understand:
 ## Glossary Terms Used
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
-- **[Source of Truth](/docs/glossary/terms/source-of-truth)** — Single authoritative data source
+- **Source of Truth** — Single authoritative data source
 - **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
-- **[Specs](/docs/glossary/terms/specs)** — Specification files
+- **Specs** — Specification files
 
 ---
 

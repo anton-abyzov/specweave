@@ -16,7 +16,7 @@ Your entire project's intellectual property becomes **portable specs** that can 
 - **Transferred** between companies
 - **Reimplemented** in any tech stack
 - **Modernized** from legacy to cutting-edge
-- **Scaled** from [monolith](/docs/glossary/terms/monolith) to [microservices](/docs/glossary/terms/microservices)
+- **Scaled** from monolith to microservices
 :::
 
 ## Use Case 1: Cross-Company Knowledge Transfer
@@ -98,7 +98,7 @@ graph LR
 templates/
 ├── ecommerce-platform/      # 200 user stories, proven architecture
 ├── fintech-compliance/       # 150 user stories, regulatory included
-├── healthcare-ehr/           # 300 user stories, [HIPAA](/docs/glossary/terms/hipaa)-compliant
+├── healthcare-ehr/           # 300 user stories, HIPAA-compliant
 └── saas-multitenant/         # 180 user stories, full platform
 
 # Client implementation
@@ -199,7 +199,7 @@ specweave generate-migration-plan --target microservices
 ### Tools & Automation
 - **AI-Powered Extraction**: GPT-4 analyzes code → generates specs
 - **Multi-Language Support**: Extract from any language
-- **Compliance Templates**: [HIPAA](/docs/glossary/terms/hipaa), PCI, [SOC2](/docs/glossary/terms/soc2) built-in
+- **Compliance Templates**: HIPAA, PCI, SOC2 built-in
 - **CI/CD Integration**: Automated spec validation
 
 ## Success Stories
@@ -230,7 +230,7 @@ With SpecWeave, every project contributes to a growing library of portable, reus
 
 ## Next Steps
 
-- **[Quick Start](/docs/quick-start)** - Start your first portable project
+- **[Getting Started](/docs/getting-started)** - Start your first portable project
 - **[Brownfield Workflow](/docs/workflows/brownfield)** - Extract specs from existing code
 - **[Multi-Project Setup](/docs/guides/multi-project-setup)** - Learn project organization patterns
 - **[Contact Sales](https://verified-skill.com/enterprise)** - Discuss your migration project

@@ -6,7 +6,7 @@ description: "Video talk clearing up the confusion around Claude Code skills, pl
 
 # Skills, Plugins & Marketplaces — Clearing the Confusion
 
-There's a lot of confusion about how skills, plugins, and marketplaces work in Claude Code. This talk walks through the fundamentals with a practical example from SpecWeave and [verifiedskill.com](https://verifiedskill.com).
+There's a lot of confusion about how skills, plugins, and marketplaces work in Claude Code. This talk walks through the fundamentals with a practical example from SpecWeave and [verified-skill.com](https://verified-skill.com).
 
 ---
 
@@ -73,5 +73,5 @@ For the full written reference with code examples, diagrams, and SpecWeave inter
 
 - [Extensible Skills](/docs/skills/extensible/) — customizing skills for your project
 - [Verified Skills Standard](/docs/skills/verified/) — evaluating skill security and trust
-- [verifiedskill.com](https://verifiedskill.com) — the trusted skill registry
+- [verified-skill.com](https://verified-skill.com) — the trusted skill registry
 - [All 100+ SpecWeave Skills](/docs/reference/skills) — browse the complete catalog

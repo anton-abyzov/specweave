@@ -23,7 +23,7 @@ The **QA Engineer Agent** (`testing:qa`) is SpecWeave's AI-powered Quality Assur
 
 ## Test Generation
 
-The QA Lead Agent creates tests in [BDD](/docs/glossary/terms/bdd) format:
+The QA Lead Agent creates tests in BDD format:
 
 ```markdown
 ## Test Cases for AuthService
@@ -52,7 +52,7 @@ Default coverage targets by test type:
 |-----------|--------|---------|
 | **Unit Tests** | 90% | Business logic |
 | **Integration Tests** | 85% | Component interaction |
-| **[E2E](/docs/glossary/terms/e2e) Tests** | 100% critical paths | User flows |
+| **E2E Tests** | 100% critical paths | User flows |
 
 ## Commands
 
@@ -91,7 +91,7 @@ Recommendations:
 
 ## Test Pyramid Enforcement
 
-The QA Lead Agent enforces the [test pyramid](/docs/glossary/terms/test-pyramid):
+The QA Lead Agent enforces the test pyramid:
 
 ```
         /\
@@ -124,9 +124,9 @@ graph LR
 
 ## Related
 
-- [TDD](/docs/glossary/terms/tdd) - Test-driven development
-- [BDD](/docs/glossary/terms/bdd) - Behavior-driven development
-- [E2E](/docs/glossary/terms/e2e) - End-to-end testing
-- [Test Coverage](/docs/glossary/terms/test-coverage) - Coverage metrics
-- [Test Pyramid](/docs/glossary/terms/test-pyramid) - Testing strategy
+- TDD - Test-driven development
+- BDD - Behavior-driven development
+- E2E - End-to-end testing
+- Test Coverage - Coverage metrics
+- Test Pyramid - Testing strategy
 - [Quality Gate](/docs/glossary/terms/quality-gate) - Validation checkpoints

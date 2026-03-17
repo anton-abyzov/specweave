@@ -60,7 +60,7 @@ Total WIP: 3/5 (2 slots available)
 
 ---
 
-## Pattern 3: [Microservices](/docs/glossary/terms/microservices) Coordination
+## Pattern 3: Microservices Coordination
 
 **When**: Multiple repos need coordinated changes
 
@@ -385,11 +385,11 @@ npx vitest run 0001          # Test coverage check
 
 ## Glossary Terms Used
 
-- **[Microservices](/docs/glossary/terms/microservices)** — Independent service architecture
+- **Microservices** — Independent service architecture
 - **Feature Flags** — Toggle features on/off
 - **Branching Strategy** — Git workflow
 - **[Quality Gate](/docs/glossary/terms/quality-gate)** — Validation checkpoint
-- **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
+- **WIP Limits** — Work-in-progress constraints
 
 ---
 
@@ -414,9 +414,9 @@ You've completed the SpecWeave Academy core curriculum.
 
 ### Core Philosophy
 
-> **Specification is the [source of truth](/docs/glossary/terms/source-of-truth).**
+> **Specification is the source of truth.**
 > **AI is your implementation partner.**
-> **[Quality gates](/docs/glossary/terms/acceptance-criteria) protect your codebase.**
+> **Quality gates protect your codebase.**
 
 ### What's Next
 

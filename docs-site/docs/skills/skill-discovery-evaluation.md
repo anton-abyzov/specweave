@@ -14,7 +14,7 @@ According to Snyk's 2025 AI Agent Security Report, 36.82% of publicly listed ski
 This guide provides a systematic framework for discovering skills across every major source, evaluating their quality using a 6-dimension scoring rubric, detecting discrepancies between providers, and recognizing red flags before installation.
 
 :::tip Trusted Registry
-[verifiedskill.com](https://verifiedskill.com) provides a trusted source for discovering pre-verified skills with 3-tier certification. See the [Verified Skills Standard](/docs/skills/verified/verified-skills) for how skills earn trust badges.
+[verified-skill.com](https://verified-skill.com) provides a trusted source for discovering pre-verified skills with 3-tier certification. See the [Verified Skills Standard](/docs/skills/verified/verified-skills) for how skills earn trust badges.
 :::
 
 ---
@@ -143,7 +143,7 @@ Not all skill sources are equal. Each platform makes different trade-offs betwee
 
 ### 8. Verified Skills Registry
 
-**What it is:** SpecWeave's integrated skill registry at [verifiedskill.com](https://verifiedskill.com) with a 3-tier trust model and a 52-pattern security scanner.
+**What it is:** SpecWeave's integrated skill registry at [verified-skill.com](https://verified-skill.com) with a 3-tier trust model and a 52-pattern security scanner.
 
 | Attribute | Detail |
 |-----------|--------|

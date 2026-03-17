@@ -400,13 +400,13 @@ User Stories are **project-specific** (organized by `specs/backend/`, `specs/fro
 - [ ] T-004: Add route protection HOC (AC-US1-04)
 ```
 
-**Learn More**: [Project-Specific Tasks](/docs/glossary/terms/project-specific-tasks), [COPIED ACs and Tasks](/docs/glossary/terms/copied-acs-and-tasks)
+**Learn More**: [Project-Specific Tasks](/docs/glossary/terms/project-specific-tasks), COPIED ACs and Tasks
 
 ---
 
 ### Three-Layer Bidirectional Sync
 
-COPIED content stays synchronized through the [Three-Layer Architecture](/docs/glossary/terms/three-layer-architecture):
+COPIED content stays synchronized through the Three-Layer Architecture:
 
 ```
 Layer 1: GitHub Issue (checkable checkboxes)
@@ -845,12 +845,12 @@ GitHub issue closed → Hook updates living docs → Link removed
 
 ## Related Terms
 
-- [Specs](/docs/glossary/terms/specs) - Specifications (permanent knowledge base)
+- Specs - Specifications (permanent knowledge base)
 - [Increments](/docs/glossary/terms/increments) - Temporary implementation tracker
 - [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Content classification
-- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth principle
-- [User Stories](/docs/glossary/terms/user-stories) - User story format
+- Source of Truth - Single source of truth principle
+- User Stories - User story format
 - [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers
 
 ---

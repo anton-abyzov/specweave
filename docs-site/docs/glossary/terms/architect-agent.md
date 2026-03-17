@@ -15,7 +15,7 @@ The Architect Agent activates after the [PM Agent](/docs/glossary/terms/pm-agent
 **Key responsibilities:**
 - 🏗️ **System design** - Creates component architecture
 - 📐 **Technology selection** - Chooses appropriate tech stack
-- 📝 **[ADR](/docs/glossary/terms/adr) creation** - Documents architecture decisions
+- 📝 **ADR creation** - Documents architecture decisions
 - 📊 **C4 diagrams** - Generates visual architecture diagrams
 - 🧪 **Test strategy** - Defines coverage targets and approach
 
@@ -58,7 +58,7 @@ C4Container
 
 ## Architecture Decision Records
 
-The Architect Agent creates [ADRs](/docs/glossary/terms/adr) for significant decisions:
+The Architect Agent creates ADRs for significant decisions:
 
 ```markdown
 # ADR-001: JWT vs Session-Based Authentication
@@ -96,6 +96,6 @@ graph LR
 
 ## Related
 
-- [ADR](/docs/glossary/terms/adr) - Architecture Decision Records
+- ADR - Architecture Decision Records
 - [PM Agent](/docs/glossary/terms/pm-agent) - Creates input specs
 - [Increments](/docs/glossary/terms/increments) - Contains plan.md

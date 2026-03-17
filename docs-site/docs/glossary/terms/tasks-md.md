@@ -143,7 +143,7 @@ coverage_target: 88%
 
 ## Embedded Tests
 
-Tasks include **embedded test plans** using [BDD](/docs/glossary/terms/bdd) format:
+Tasks include **embedded test plans** using BDD format:
 
 ```markdown
 **Test Plan**:
@@ -197,6 +197,6 @@ Progress: 6/8 tasks (75%)
 - [Increments](/docs/glossary/terms/increments) - Contains tasks.md
 - [spec.md](/docs/glossary/terms/spec-md) - User stories and ACs
 - [plan.md](/docs/glossary/terms/plan-md) - Architecture
-- [BDD](/docs/glossary/terms/bdd) - Test format
-- [TDD](/docs/glossary/terms/tdd) - Test-first approach
+- BDD - Test format
+- TDD - Test-first approach
 - [AC-ID](/docs/glossary/terms/ac-id) - Traceability

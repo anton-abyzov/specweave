@@ -498,10 +498,10 @@ Now extract from: "${receiptText}"`;
 
 **3. Use System Prompts:**
 ```javascript
-const messages = [
+const messages = 
   {
     role: 'system',
-    content: 'You are a senior software architect. Provide detailed, production-ready code with error handling and [tests](/docs/glossary/terms/unit-testing).'
+    content: 'You are a senior software architect. Provide detailed, production-ready code with error handling and [tests.'
   },
   {
     role: 'user',
@@ -1301,7 +1301,7 @@ await openai.chat.completions.create({ /* small prompt */ });
 - Create AI increment: `/sw:increment "ai-code-review"`
 - Document model selection in ADRs
 - Track AI costs in increment reports
-- Use [BDD](/docs/glossary/terms/bdd) tests for AI behavior validation
+- Use BDD tests for AI behavior validation
 
 **Further Reading:**
 - [OpenAI Documentation](https://platform.openai.com/docs)

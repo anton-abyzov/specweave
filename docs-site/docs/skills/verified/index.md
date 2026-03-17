@@ -1,7 +1,7 @@
 ---
 title: "Verified Skills Standard"
 description: "The trust layer for AI agent skills — three-tier security certification addressing the 36.82% flaw rate in public skill registries"
-keywords: [verified-skills, v-skills, security, certification, trust, ToxicSkills, verifiedskill.com]
+keywords: [verified-skills, v-skills, security, certification, trust, ToxicSkills, verified-skill.com]
 ---
 
 # Verified Skills Standard
@@ -16,14 +16,14 @@ Snyk's ToxicSkills study (February 2026) found that **36.82% of 3,984 publicly a
 | **Verified** | Tier 1 + LLM intent analysis | ~$0.03/skill | 5-15s |
 | **Certified** | Tiers 1+2 + human security review + sandbox | $50-200/skill | 1-5 days |
 
-The registry at [verifiedskill.com](https://verifiedskill.com) provides a trusted source for browsing and submitting skills, with the `npx vskill` CLI for command-line access.
+The registry at [verified-skill.com](https://verified-skill.com) provides a trusted source for browsing and submitting skills, with the `npx vskill` CLI for command-line access.
 
 ---
 
 ## In This Section
 
 ### [The Standard (3-Tier Trust)](/docs/skills/verified/verified-skills)
-The full overview — three certification tiers, trust badges, mandatory SKILL.md sections, forbidden patterns, and the verifiedskill.com registry.
+The full overview — three certification tiers, trust badges, mandatory SKILL.md sections, forbidden patterns, and the verified-skill.com registry.
 
 ### [Skill Factory RFC (Full Spec)](/docs/skills/verified/secure-skill-factory-standard)
 The complete technical specification — all 41 forbidden patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility.
@@ -37,4 +37,4 @@ Platform comparison, ToxicSkills data, risk taxonomy, threat actors, and real-wo
 
 - **[Skills Overview](/docs/skills/)** — Both skill layers at a glance
 - **[Extensible Skills](/docs/skills/extensible/)** — How skills adapt to your project through customization
-- **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
+- **[verified-skill.com](https://verified-skill.com)** — The trusted skill registry
