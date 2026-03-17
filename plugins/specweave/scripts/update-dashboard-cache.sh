@@ -69,7 +69,8 @@ trap cleanup EXIT
 
 # If cache doesn't exist, do full rebuild
 if [[ ! -f "$CACHE_FILE" ]]; then
-  bash "$PROJECT_ROOT/plugins/specweave/scripts/rebuild-dashboard-cache.sh" --quiet
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  bash "$SCRIPT_DIR/rebuild-dashboard-cache.sh" --quiet
   exit 0
 fi
 
@@ -89,6 +90,27 @@ normalize_status_key() {
   case "$1" in
     planned) echo "planning" ;;  # Legacy typo - map to planning counter
     *) echo "$1" ;;
+  esac
+}
+
+# Normalize type to canonical counter keys (matches rebuild-dashboard-cache.sh)
+# Source of truth: rebuild-dashboard-cache.sh lines 232-240
+normalize_type_key() {
+  case "$1" in
+    feature|hotfix|bug|refactor|experiment|change-request) echo "$1" ;;
+    *) echo "feature" ;;
+  esac
+}
+
+# Normalize priority to canonical counter keys (matches rebuild-dashboard-cache.sh)
+# Source of truth: rebuild-dashboard-cache.sh lines 243-249
+normalize_priority_key() {
+  case "$1" in
+    P0|P1|P2|P3) echo "$1" ;;
+    high) echo "P0" ;;
+    medium) echo "P1" ;;
+    low) echo "P2" ;;
+    *) echo "P1" ;;
   esac
 }
 
@@ -136,8 +158,10 @@ status=$(jq -r '.status // "backlog"' "$metadata_file" 2>/dev/null)
 # The raw status is preserved in increment data, but counters use normalized key
 status_key=$(normalize_status_key "$status")
 
-type=$(jq -r '.type // "feature"' "$metadata_file" 2>/dev/null)
-priority=$(jq -r '.priority // "P1"' "$metadata_file" 2>/dev/null)
+raw_type=$(jq -r '.type // "feature"' "$metadata_file" 2>/dev/null)
+raw_priority=$(jq -r '.priority // "P1"' "$metadata_file" 2>/dev/null)
+type=$(normalize_type_key "$raw_type")
+priority=$(normalize_priority_key "$raw_priority")
 title=$(jq -r '.title // ""' "$metadata_file" 2>/dev/null)
 project=$(jq -r '.project // ""' "$metadata_file" 2>/dev/null)
 created_at=$(jq -r '.createdAt // ""' "$metadata_file" 2>/dev/null)

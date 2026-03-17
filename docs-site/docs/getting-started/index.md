@@ -31,15 +31,20 @@ SpecWeave has been used to ship **production applications in weeks, not months**
 
 ### Real-World Examples
 
-> **"5 production apps in ONE MONTH — not 10x faster, 100x faster."**
+> **"10 production projects — not 10x faster, 100x faster."**
 
 | App | Description | Tech Stack |
 |-----|-------------|------------|
-| **SkillUp** | Football coaching platform with Stripe monetization | React Native, Cloudflare Workers |
-| **EduFeed** | AI learning platform (NotebookLM-style) | Next.js, Supabase, LLM integration |
-| **WC26** | World Cup 2026 companion with AI travel planner | Mobile + Web, real-time data |
-| **Lulla** | Baby cry classifier with Apple Watch | Swift, Core ML, Cloudflare R2 |
-| **EasyChamp** | Sports league platform with 20+ microservices | GCP, ArgoCD GitOps, ML video analytics |
+| [**SkillUp**](https://skillup-football.com/) | Football coaching platform with Stripe monetization | React Native, Cloudflare Workers |
+| [**WC26**](https://wc-26.net/) | World Cup 2026 companion with AI travel planner | Mobile + Web, real-time data |
+| [**Lulla**](https://lulla-app.pages.dev/) | Baby cry classifier with Apple Watch | Swift, Core ML, Cloudflare R2 |
+| [**EasyChamp**](https://easychamp.com) | Sports league platform with 20+ microservices | GCP, ArgoCD GitOps, ML video analytics |
+| [**BizZone**](https://apps.apple.com/us/app/business-zone/id6756091030) | Student & business events with AI news generation | React Native, AI |
+| [**SketchMate**](https://sketchmate.net/) | AI drawing party game | Web, AI vision |
+| [**JobWeave**](https://jobweave.ai) | AI-powered job search platform | Web, AI |
+| [**VerifiedSkill**](https://verifiedskill.com) | Skill registry & marketplace for AI coding agents | Next.js, Cloudflare |
+| [**SpecWeave**](https://github.com/anton-abyzov/specweave) | Spec-driven development framework — built with itself | Node.js, TypeScript |
+| [**EduFeed**](https://edufeed-jet.vercel.app/) | AI learning platform (NotebookLM-style) | Next.js, Supabase, LLM integration |
 
 ---
 

@@ -22,6 +22,12 @@ done
 # Exit if no .specweave directory
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
+# Source resolve-package.sh for dynamic specweave path resolution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/resolve-package.sh" ]]; then
+  source "$SCRIPT_DIR/resolve-package.sh"
+fi
+
 # Paths
 SCHEDULED_JOBS_FILE="$PROJECT_ROOT/.specweave/state/scheduled-jobs.json"
 CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
@@ -95,9 +101,15 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 echo "[$TIMESTAMP] Session start - due jobs: $DUE_JOBS" >> "$LOG_FILE" 2>/dev/null || true
 
 # Execute due sync jobs using the TypeScript executor
-# Run in background to avoid blocking session start
+# Resolve executor path via resolve-package.sh (not hardcoded node_modules)
+EXECUTOR_PATH=$(find_specweave_script "dist/src/core/scheduler/session-sync-executor.js" 2>/dev/null)
+if [[ -z "$EXECUTOR_PATH" ]]; then
+  echo '{"error":"Executor not found — specweave package not resolved"}' >> "$LOG_FILE" 2>/dev/null || true
+  exit 0
+fi
+
 RESULT=$(node -e "
-  const { executeSessionSync } = require('$PROJECT_ROOT/node_modules/specweave/dist/core/scheduler/session-sync-executor.js');
+  const { executeSessionSync } = require('$EXECUTOR_PATH');
   executeSessionSync('$PROJECT_ROOT', { silent: false })
     .then(r => console.log(r))
     .catch(e => console.log(JSON.stringify({ error: e.message })));

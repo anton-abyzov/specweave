@@ -200,9 +200,9 @@ fi
 #
 # Plugin auto-loading now happens ONLY in user-prompt-submit.sh via LLM detection.
 # When user submits a prompt like "Build React dashboard", the LLM analyzes
-# the request and installs relevant plugins (frontend, backend, etc.)
+# the request and installs relevant plugins (backend, testing, etc.)
 #
-# To install plugins manually: vskill install --repo anton-abyzov/vskill --plugin frontend
+# To install plugins manually: vskill install --repo anton-abyzov/vskill --plugin backend
 
 # === LEGACY STATE CLEANUP (v1.0.148) ===
 # Clean up old processor state files on session start

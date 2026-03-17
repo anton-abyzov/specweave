@@ -133,12 +133,17 @@ SYNC_CLI=""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Derive package root: hooks/ → specweave-github/ → plugins/ → package root (3 levels up)
 _PKG_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)"
+# Source resolve-package.sh for dynamic specweave path resolution
+RESOLVE_LIB="$SCRIPT_DIR/../../specweave/hooks/lib/resolve-package.sh"
+if [[ -f "$RESOLVE_LIB" ]]; then
+  source "$RESOLVE_LIB"
+fi
 # 0. SPECWEAVE_PKG (set by hook infrastructure)
 [[ -n "${SPECWEAVE_PKG:-}" ]] && [[ -f "${SPECWEAVE_PKG}/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="${SPECWEAVE_PKG}/dist/src/cli/commands/sync-spec-content.js"
 # 1. Package root (derived from script location)
 [[ -z "$SYNC_CLI" ]] && [[ -f "${_PKG_ROOT}/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="${_PKG_ROOT}/dist/src/cli/commands/sync-spec-content.js"
-# 2. node_modules/specweave/
-[[ -z "$SYNC_CLI" ]] && [[ -f "$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/sync-spec-content.js"
+# 2. resolve-package.sh (dynamic resolution)
+[[ -z "$SYNC_CLI" ]] && SYNC_CLI=$(find_specweave_script "dist/src/cli/commands/sync-spec-content.js" 2>/dev/null)
 # 3. Legacy: PROJECT_ROOT/dist/
 [[ -z "$SYNC_CLI" ]] && [[ -f "$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js"
 
@@ -182,7 +187,7 @@ fi
 DETECT_CLI=""
 [[ -n "${SPECWEAVE_PKG:-}" ]] && [[ -f "${SPECWEAVE_PKG}/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="${SPECWEAVE_PKG}/dist/src/cli/commands/detect-specs.js"
 [[ -z "$DETECT_CLI" ]] && [[ -f "${_PKG_ROOT}/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="${_PKG_ROOT}/dist/src/cli/commands/detect-specs.js"
-[[ -z "$DETECT_CLI" ]] && [[ -f "$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/detect-specs.js"
+[[ -z "$DETECT_CLI" ]] && DETECT_CLI=$(find_specweave_script "dist/src/cli/commands/detect-specs.js" 2>/dev/null)
 [[ -z "$DETECT_CLI" ]] && [[ -f "$PROJECT_ROOT/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="$PROJECT_ROOT/dist/src/cli/commands/detect-specs.js"
 
 if [ -n "$DETECT_CLI" ] && [ -f "$DETECT_CLI" ]; then

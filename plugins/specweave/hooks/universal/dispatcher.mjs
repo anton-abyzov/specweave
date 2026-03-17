@@ -98,8 +98,6 @@ function withTimeout(promise, timeoutMs, cleanup) {
 function findHooksDir() {
   // Try multiple locations
   const candidates = [
-    // Production: node_modules/specweave/dist/src/hooks
-    join(__dirname, '..', '..', '..', '..', 'node_modules', 'specweave', 'dist', 'src', 'hooks'),
     // Development: project root dist/src/hooks
     join(__dirname, '..', '..', '..', '..', 'dist', 'src', 'hooks'),
     // Fallback: older path without src/ (backward compatibility)

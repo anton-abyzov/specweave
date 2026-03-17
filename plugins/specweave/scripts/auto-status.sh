@@ -129,9 +129,9 @@ else
 fi
 
 # Count increments
-QUEUE_LENGTH=$(echo "$SESSION" | jq '.incrementQueue | length')
-COMPLETED_COUNT=$(echo "$SESSION" | jq '.completedIncrements | length')
-FAILED_COUNT=$(echo "$SESSION" | jq '.failedIncrements | length')
+QUEUE_LENGTH=$(echo "$SESSION" | jq '.incrementQueue // [] | length')
+COMPLETED_COUNT=$(echo "$SESSION" | jq '.completedIncrements // [] | length')
+FAILED_COUNT=$(echo "$SESSION" | jq '.failedIncrements // [] | length')
 
 # Get current increment progress
 TASKS_COMPLETED=0
