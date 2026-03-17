@@ -8,12 +8,12 @@ SpecWeave provides clear, repeatable workflows for every phase of software devel
 
 ```mermaid
 graph TB
-    A[💡 Concept] --> B[🔍 Research]
-    B --> C[🎨 Design]
-    C --> D[📋 Plan]
-    D --> E[⚙️ Implement]
-    E --> F[✅ Validate]
-    F --> G[🚀 Deploy]
+    A[Concept] --> B[Research]
+    B --> C[Design]
+    C --> D[Plan]
+    D --> E[Implement]
+    E --> F[Validate]
+    F --> G[Deploy]
 
     style A fill:#e3f2fd
     style B fill:#f3e5f5
@@ -293,7 +293,7 @@ graph TB
 
 ```mermaid
 graph TB
-    A[🚨 Production Issue] --> B[Quick Analysis]
+    A[Production Issue] --> B[Quick Analysis]
     B --> C[Create Hotfix Increment]
     C --> D[Implement Fix]
     D --> E[Test Thoroughly]
