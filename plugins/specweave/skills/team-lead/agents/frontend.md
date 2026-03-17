@@ -9,8 +9,7 @@ MASTER SPEC (SOURCE OF TRUTH):
 SKILLS TO INVOKE:
   Skill({ skill: "sw:architect" })                 // architecture and component design
   Skill({ skill: "sw:service-connect" })          // for external service setup
-  // NOTE: Domain skills (frontend:architect, frontend:design) are optional vskill plugins.
-  // If not installed, implement frontend work directly using code tools.
+  // Implement frontend work directly using code tools.
 
 FILE OWNERSHIP (WRITE access):
   src/components/**
