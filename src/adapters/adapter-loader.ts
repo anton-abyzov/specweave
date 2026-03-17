@@ -9,6 +9,7 @@ import * as fs from '../utils/fs-native.js';
 import * as path from 'path';
 import * as YAML from 'yaml';
 import { IAdapter } from './adapter-interface.js';
+import { AntigravityAdapter } from './antigravity/adapter.js';
 import { CursorAdapter } from './cursor/adapter.js';
 import { GeminiAdapter } from './gemini/adapter.js';
 import { CodexAdapter } from './codex/adapter.js';
@@ -63,22 +64,23 @@ export class AdapterLoader {
    */
   private initializeAdapters(): void {
     // Note: No ClaudeAdapter - Claude is the baseline, not an adaptation!
-    this.adapters.set('cursor', new CursorAdapter());
-    this.adapters.set('gemini', new GeminiAdapter());
+    this.adapters.set('antigravity', new AntigravityAdapter());
     this.adapters.set('codex', new CodexAdapter());
-    this.adapters.set('generic', new GenericAdapter());
+    this.adapters.set('opencode', new OpenCodeAdapter());
     this.adapters.set('copilot', new CopilotAdapter());
+    this.adapters.set('cursor', new CursorAdapter());
     this.adapters.set('windsurf', new WindsurfAdapter());
-    this.adapters.set('continue', new ContinueAdapter());
     this.adapters.set('cline', new ClineAdapter());
-    this.adapters.set('zed', new ZedAdapter());
+    this.adapters.set('gemini', new GeminiAdapter());
     this.adapters.set('amazonq', new AmazonQAdapter());
     this.adapters.set('jetbrains', new JetBrainsAdapter());
+    this.adapters.set('continue', new ContinueAdapter());
     this.adapters.set('aider', new AiderAdapter());
+    this.adapters.set('trae', new TraeAdapter());
+    this.adapters.set('zed', new ZedAdapter());
     this.adapters.set('tabnine', new TabnineAdapter());
     this.adapters.set('kimi', new KimiAdapter());
-    this.adapters.set('trae', new TraeAdapter());
-    this.adapters.set('opencode', new OpenCodeAdapter());
+    this.adapters.set('generic', new GenericAdapter());
   }
 
   /**
@@ -147,7 +149,7 @@ export class AdapterLoader {
     }
 
     // Claude not available - check other tools (passive indicators)
-    const detectionOrder = ['cursor', 'windsurf', 'continue', 'cline', 'opencode', 'zed', 'gemini', 'codex', 'copilot', 'amazonq', 'jetbrains', 'aider', 'tabnine', 'kimi', 'trae'];
+    const detectionOrder = ['antigravity', 'codex', 'opencode', 'copilot', 'cursor', 'windsurf', 'cline', 'gemini', 'amazonq', 'jetbrains', 'continue', 'aider', 'trae', 'zed', 'tabnine', 'kimi'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);
@@ -269,7 +271,7 @@ export class AdapterLoader {
 
       const adapter = this.adapters.get(explicitChoice);
       if (!adapter) {
-        throw new Error(`Invalid adapter: ${explicitChoice}. Valid values: claude, cursor, copilot, windsurf, continue, cline, opencode, zed, gemini, codex, amazonq, jetbrains, aider, tabnine, kimi, trae, generic`);
+        throw new Error(`Invalid adapter: ${explicitChoice}. Valid values: claude, antigravity, codex, opencode, copilot, cursor, windsurf, cline, gemini, amazonq, jetbrains, continue, aider, trae, zed, tabnine, kimi, generic`);
       }
       return adapter;
     }

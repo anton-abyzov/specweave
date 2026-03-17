@@ -46,7 +46,7 @@ describe('AdapterLoader', () => {
       expect(detected).toBe('claude');
     });
 
-    it('should detect cursor only when Claude CLI is NOT available', async () => {
+    it('should detect cursor only when Claude CLI is NOT available and higher-priority adapters not detected', async () => {
       // Claude CLI NOT available - fall through to other adapters
       vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
         available: false,
@@ -56,8 +56,10 @@ describe('AdapterLoader', () => {
         platform: 'darwin',
       });
 
-      // Cursor detection returns true
-      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(true);
+      // Mock all adapters: false by default, cursor returns true
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(adapter.name === 'cursor');
+      }
 
       const detected = await adapterLoader.detectTool();
 

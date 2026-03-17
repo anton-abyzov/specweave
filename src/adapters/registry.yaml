@@ -37,6 +37,23 @@ adapters:
     priority: P0
     note: "Claude is the native experience - adapters exist to approximate these capabilities for other tools"
 
+  - name: antigravity
+    description: "Antigravity adapter - Semi-automation with AGENTS.md and agentic coding"
+    automation_level: semi
+    status: active
+    directory: antigravity
+    features:
+      - AGENTS.md universal instructions
+      - Google's Gemini-powered code agent
+      - Agentic coding with file operations
+      - MCP support for extensibility
+      - Google Cloud ecosystem integration
+    requirements:
+      - Antigravity CLI installed
+      - Node.js >= 18.0.0
+    market_share: 15%
+    priority: P1
+
   - name: cursor
     description: "Cursor adapter - Semi-automation with .cursorrules and @ shortcuts"
     automation_level: semi
@@ -282,97 +299,102 @@ future_adapters: []
 capabilities:
   skills:
     claude: full
-    cursor: via_rules_folder
-    copilot: via_rules_folder
-    gemini: via_rules_folder
+    antigravity: via_rules_folder
     codex: via_rules_folder
-    windsurf: via_rules_folder
-    continue: via_rules_folder
-    cline: via_rules_folder
     opencode: via_rules_folder
-    zed: via_rules_folder
+    copilot: via_rules_folder
+    cursor: via_rules_folder
+    windsurf: via_rules_folder
+    cline: via_rules_folder
+    gemini: via_rules_folder
     amazonq: via_rules_folder
     jetbrains: via_rules_folder
+    continue: via_rules_folder
     aider: via_rules_folder
+    trae: via_rules_folder
+    zed: via_rules_folder
     tabnine: via_rules_folder
     kimi: via_rules_folder
-    trae: via_rules_folder
     generic: via_rules_folder
 
   agents:
     claude: full
-    cursor: via_agents_md
-    copilot: via_agents_md
-    gemini: via_agents_md
+    antigravity: via_agents_md
     codex: via_agents_md
-    windsurf: via_agents_md
-    continue: via_agents_md
-    cline: via_agents_md
     opencode: via_agents_md
-    zed: via_agents_md
+    copilot: via_agents_md
+    cursor: via_agents_md
+    windsurf: via_agents_md
+    cline: via_agents_md
+    gemini: via_agents_md
     amazonq: via_agents_md
     jetbrains: via_agents_md
+    continue: via_agents_md
     aider: via_agents_md
+    trae: via_agents_md
+    zed: via_agents_md
     tabnine: via_agents_md
     kimi: via_agents_md
-    trae: via_agents_md
     generic: via_agents_md
 
   hooks:
     claude: full
-    cursor: none
-    copilot: none
-    gemini: none
+    antigravity: none
     codex: none
-    windsurf: none
-    continue: none
-    cline: none
     opencode: none
-    zed: none
+    copilot: none
+    cursor: none
+    windsurf: none
+    cline: none
+    gemini: none
     amazonq: none
     jetbrains: none
+    continue: none
     aider: none
+    trae: none
+    zed: none
     tabnine: none
     kimi: none
-    trae: none
     generic: none
 
   instruction_file:
     claude: .claude/skills + agents
-    cursor: .cursor/rules/
-    copilot: .github/instructions/
-    gemini: .gemini/
+    antigravity: .agent/skills/
     codex: .codex/rules/
-    windsurf: .windsurf/rules/
-    continue: .continue/rules/
-    cline: .cline/rules/
     opencode: .opencode/skills/
-    zed: .rules/
+    copilot: .github/instructions/
+    cursor: .cursor/rules/
+    windsurf: .windsurf/rules/
+    cline: .cline/rules/
+    gemini: .gemini/
     amazonq: .amazonq/rules/
     jetbrains: .aiassistant/rules/
+    continue: .continue/rules/
     aider: .aider/
+    trae: .trae/rules/
+    zed: .rules/
     tabnine: .tabnine/guidelines/
     kimi: .kimi/skills/
-    trae: .trae/rules/
     generic: AGENTS.md
 
   context_manifests:
     claude: auto_load
-    cursor: manual_reference
-    copilot: manual_reference
-    gemini: manual_reference
+    antigravity: manual_reference
     codex: manual_reference
-    windsurf: manual_reference
-    continue: manual_reference
-    cline: manual_reference
     opencode: manual_reference
-    zed: manual_reference
+    copilot: manual_reference
+    cursor: manual_reference
+    windsurf: manual_reference
+    cline: manual_reference
+    gemini: manual_reference
     amazonq: manual_reference
     jetbrains: manual_reference
+    continue: manual_reference
     aider: manual_reference
+    trae: manual_reference
+    zed: manual_reference
     tabnine: manual_reference
     kimi: manual_reference
-    trae: manual_reference
     generic: manual_copy_paste
 
 # Target market coverage
