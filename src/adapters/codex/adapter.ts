@@ -70,7 +70,7 @@ export class CodexAdapter extends AdapterBase {
     // Ensure .codex directory exists
     const codexDir = path.join(options.projectPath, '.codex');
     await fs.ensureDir(codexDir);
-    await fs.ensureDir(path.join(codexDir, 'rules'));
+    await fs.ensureDir(path.join(codexDir, 'skills'));
 
     // Generate AGENTS.md
     const agentsMdPath = path.join(options.projectPath, 'AGENTS.md');
@@ -123,31 +123,31 @@ export class CodexAdapter extends AdapterBase {
 
   /**
    * Compile and install a plugin for OpenAI Codex.
-   * Writes each SKILL.md as a separate file in `.codex/rules/`.
+   * Writes each SKILL.md as a separate file in `.codex/skills/`.
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.codex/rules';
+    const skillsDir = '.codex/skills';
     console.log(`\n📦 Installing plugin skills for Codex: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Codex!`);
   }
 
   /**
-   * Unload a plugin from Codex — removes skill files from `.codex/rules/`.
+   * Unload a plugin from Codex — removes skill files from `.codex/skills/`.
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Codex: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.codex/rules');
-    console.log(`   ✓ Removed from .codex/rules/`);
+    await this.removeSkillFiles(pluginName, '.codex/skills');
+    console.log(`   ✓ Removed from .codex/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   /**
-   * Get installed plugins for Codex by scanning `.codex/rules/`.
+   * Get installed plugins for Codex by scanning `.codex/skills/`.
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.codex/rules');
+    return await this.listInstalledPluginsInDir('.codex/skills');
   }
 
   /**
