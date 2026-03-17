@@ -158,7 +158,7 @@ Then in Claude Code:
 
 **Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
-**[Full Quickstart Guide](/docs/guides/getting-started/quickstart)**
+**[Full Quickstart Guide](/docs/getting-started)**
 
 ---
 

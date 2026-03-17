@@ -33,7 +33,7 @@ graph TB
 
 ## Phase-by-Phase Breakdown
 
-### 1. 💡 Concept → Research
+### 1. Concept → Research
 
 **Question**: "What should we build?"
 
@@ -62,7 +62,7 @@ graph LR
 
 ---
 
-### 2. 🔍 Research → Design
+### 2. Research → Design
 
 **Question**: "How will it work?"
 
@@ -92,7 +92,7 @@ graph LR
 
 ---
 
-### 3. 🎨 Design → Planning
+### 3. Design → Planning
 
 **Question**: "What tasks do we need?"
 
@@ -123,7 +123,7 @@ graph LR
 
 ---
 
-### 4. 📋 Planning → Implementation
+### 4. Planning → Implementation
 
 **Question**: "Let's build it!"
 
@@ -155,7 +155,7 @@ graph LR
 
 ---
 
-### 5. ⚙️ Implementation → Validation
+### 5. Implementation → Validation
 
 **Question**: "Does it work correctly?"
 
@@ -187,7 +187,7 @@ graph LR
 
 ---
 
-### 6. ✅ Validation → Deployment
+### 6. Validation → Deployment
 
 **Question**: "Ship it?"
 
@@ -393,7 +393,7 @@ Quality gates prevent issues:
 
 ## Common Workflow Mistakes
 
-### ❌ Mistake 1: Skipping Planning
+### Mistake 1: Skipping Planning
 
 ```
 Problem: Jump straight to coding without spec
@@ -485,7 +485,7 @@ Solution: Run /sw:validate before /sw:done
 
 Ready to dive deeper? Choose your path:
 
-- **New to SpecWeave?** → [Quickstart Guide](/docs/guides/getting-started/quickstart)
+- **New to SpecWeave?** → [Quickstart Guide](/docs/getting-started)
 - **Planning your first feature?** → [Planning Workflow](/docs/workflows/planning)
 - **Working with existing code?** → [Brownfield Workflow](/docs/workflows/brownfield)
 - **Need emergency fix?** → [Hotfix Workflow](/docs/workflows/hotfix)
