@@ -655,7 +655,7 @@ planning → in-progress → completed
 | `/sw:do` | planning → in-progress | Start work |
 | `/sw:pause 0001` | in-progress → paused | Temporary stop |
 | `/sw:resume 0001` | paused → in-progress | Continue |
-| `/sw:backlog 0001` | any → backlog | Defer |
+| `/sw:status 0001` | any → backlog | Defer |
 | `/sw:done 0001` | in-progress → completed | Finish |
 | `/sw:abandon 0001` | any → abandoned | Cancel |
 | `/sw:archive 0001` | completed → archived | Clean up |
@@ -1643,7 +1643,7 @@ It will guide you through the entire cycle.
 │  LIFECYCLE                                              │
 │  /sw:pause ID   → Pause work                     │
 │  /sw:resume ID  → Resume work                    │
-│  /sw:backlog ID → Move to backlog                │
+│  /sw:status ID → Move to backlog                │
 │  /sw:abandon ID → Cancel increment               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘

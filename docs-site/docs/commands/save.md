@@ -47,7 +47,7 @@ Mode: Umbrella (3 child repos)
 
 Checking git status...
 
-frontend:
+sw:
   Status: 4 files changed
   Remote: origin -> github.com/user/frontend
 
@@ -60,7 +60,7 @@ shared:
 
 Saving changes...
 
-frontend:
+sw:
   ✓ git add -A
   ✓ git commit -m "feat: Complete user registration flow"
   ✓ git push origin main
@@ -106,7 +106,7 @@ Summary:
 When a repository has no remote configured, you'll be prompted:
 
 ```
-frontend:
+sw:
   ⚠️ No remote configured.
 
 Options:
@@ -156,7 +156,7 @@ If `githubUrl` is configured in your umbrella config, remotes are set up automat
 ### Push Failure (Authentication)
 
 ```
-frontend:
+sw:
   ❌ Pushing failed!
 
   Error: Permission denied (publickey)

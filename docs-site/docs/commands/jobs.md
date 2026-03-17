@@ -2,14 +2,14 @@
 sidebar_position: 15
 ---
 
-# /specweave:jobs - Background Jobs Monitor
+# /sw:jobs - Background Jobs Monitor
 
 Monitor and manage long-running background operations.
 
 ## Usage
 
 ```bash
-/specweave:jobs [options]
+/sw:jobs [options]
 ```
 
 ## Options
@@ -55,7 +55,7 @@ Paused (1):
   [ghi11111] import-issues (GitHub)
      Progress: 1,234/10,000 (12%)
      Reason: Rate limited (resumes in 45s)
-     Resume: /specweave:jobs --resume ghi11111
+     Resume: /sw:jobs --resume ghi11111
 ```
 
 ### Failed Jobs
@@ -65,7 +65,7 @@ Failed (1):
   [jkl22222] import-issues
      Error: Authentication failed - token expired
      Failed at: item 5,000 of 10,000
-     Retry: Update token, then /specweave:jobs --resume jkl22222
+     Retry: Update token, then /sw:jobs --resume jkl22222
 ```
 
 ## Examples
@@ -73,7 +73,7 @@ Failed (1):
 ### Check All Active Jobs
 
 ```bash
-/specweave:jobs
+/sw:jobs
 ```
 
 Returns grouped view of all running, paused, and pending jobs.
@@ -81,7 +81,7 @@ Returns grouped view of all running, paused, and pending jobs.
 ### View Specific Job Details
 
 ```bash
-/specweave:jobs --id ae362dfe
+/sw:jobs --id ae362dfe
 ```
 
 Output:
@@ -112,7 +112,7 @@ Files:
 ### Follow Progress Live
 
 ```bash
-/specweave:jobs --follow ae362dfe
+/sw:jobs --follow ae362dfe
 ```
 
 Output (updates every second):
@@ -128,7 +128,7 @@ Following job ae362dfe (Ctrl+C to stop)
 ### View Worker Logs
 
 ```bash
-/specweave:jobs --logs ae362dfe
+/sw:jobs --logs ae362dfe
 ```
 
 Output:
@@ -149,7 +149,7 @@ Worker Logs for ae362dfe (last 50 lines):
 ### Kill Running Job
 
 ```bash
-/specweave:jobs --kill ae362dfe
+/sw:jobs --kill ae362dfe
 ```
 
 Output:
@@ -161,13 +161,13 @@ PID: 45678
 Progress: 154/245 (63%)
 
 Job killed. Status changed to 'paused'.
-Resume later: /specweave:jobs --resume ae362dfe
+Resume later: /sw:jobs --resume ae362dfe
 ```
 
 ### Resume Paused Job
 
 ```bash
-/specweave:jobs --resume ae362dfe
+/sw:jobs --resume ae362dfe
 ```
 
 Output:
@@ -181,13 +181,13 @@ Spawning background worker...
 New PID: 45679
 
 Job resumed in background.
-Check progress: /specweave:jobs --follow ae362dfe
+Check progress: /sw:jobs --follow ae362dfe
 ```
 
 ### Show All Jobs Including Completed
 
 ```bash
-/specweave:jobs --all
+/sw:jobs --all
 ```
 
 Includes the last 10 completed jobs in the output.
@@ -197,7 +197,7 @@ Includes the last 10 completed jobs in the output.
 | Type | Trigger | Duration |
 |------|---------|----------|
 | `clone-repos` | `specweave init` with repos | 5-30 min |
-| `import-issues` | `/specweave:import-external` | 10-60 min |
+| `import-issues` | `/sw:import-external` | 10-60 min |
 | `sync-external` | `/specweave-*:sync` | 1-10 min |
 
 ## Integration Points
@@ -210,7 +210,7 @@ Jobs are automatically created by:
 
 2. **Issue Import**
    - `specweave init` + import flow (>50 items)
-   - `/specweave:import-external`
+   - `/sw:import-external`
 
 3. **External Sync**
    - `/specweave-github:sync` for large syncs
@@ -225,7 +225,7 @@ When GitHub/JIRA/ADO rate limits are hit:
 2. Job auto-transitions to `paused` status
 3. Worker exits gracefully, saving checkpoint
 4. Notification shown: "Rate limited, wait N minutes"
-5. User resumes: `/specweave:jobs --resume <id>`
+5. User resumes: `/sw:jobs --resume <id>`
 
 **Typical rate limit windows**:
 - GitHub: 15-60 minutes
@@ -273,13 +273,13 @@ ps aux | grep <pid>
 Worker may have crashed:
 
 ```bash
-/specweave:jobs --id <id>
+/sw:jobs --id <id>
 ```
 
 If PID shows "dead", resume:
 
 ```bash
-/specweave:jobs --resume <id>
+/sw:jobs --resume <id>
 ```
 
 ### Can't resume - "config not found"
@@ -287,7 +287,7 @@ If PID shows "dead", resume:
 Config file may be corrupted. Start fresh:
 
 ```bash
-/specweave:import-external    # For imports
+/sw:import-external    # For imports
 /specweave-ado:clone-repos    # For cloning
 ```
 
@@ -315,7 +315,7 @@ npm run rebuild
 
 ## Tips
 
-1. **Check jobs after init** - Always run `/specweave:jobs` after `specweave init` with large imports
+1. **Check jobs after init** - Always run `/sw:jobs` after `specweave init` with large imports
 
 2. **Don't close Claude immediately** - Give workers 10-30s to fully detach
 
@@ -325,7 +325,7 @@ npm run rebuild
 
 ## Related Commands
 
-- `/specweave:import-external` - Import issues from external tools
+- `/sw:import-external` - Import issues from external tools
 - `/specweave-ado:clone-repos` - Clone Azure DevOps repositories
 - `/specweave-github:sync` - Sync with GitHub
 - `/specweave-jira:sync` - Sync with JIRA

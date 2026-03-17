@@ -58,7 +58,7 @@ graph TB
 
 **Example**:
 ```bash
-/specweave:increment "user authentication"
+/sw:increment "user authentication"
 # Creates increment in PLANNING status
 # PM generates spec.md
 # Architect generates plan.md
@@ -88,7 +88,7 @@ graph TB
 
 **Example**:
 ```bash
-/specweave:do
+/sw:do
 # Executes tasks in ACTIVE increment
 # Marks tasks complete
 # Status: active
@@ -123,7 +123,7 @@ Total WIP: 1 ✅
 
 **Example**:
 ```bash
-/specweave:backlog 0009 --reason="waiting for API design"
+/sw:status 0009 --reason="waiting for API design"
 # Moves increment to backlog
 # Doesn't count toward WIP
 # Can resume later
@@ -164,7 +164,7 @@ Total WIP: 1 ✅
 
 **Manual Pause**:
 ```bash
-/specweave:pause 0008 --reason="waiting for DevOps approval"
+/sw:pause 0008 --reason="waiting for DevOps approval"
 ```
 
 ---
@@ -184,12 +184,12 @@ Total WIP: 1 ✅
 - PM validation passed
 
 **Transitions**:
-- ✅ **ACTIVE → COMPLETED**: Via `/specweave:done`
+- ✅ **ACTIVE → COMPLETED**: Via `/sw:done`
 - ✅ **COMPLETED → ACTIVE**: Can reopen if issues found
 
 **Example**:
 ```bash
-/specweave:done 0008
+/sw:done 0008
 # Validates all gates
 # Marks increment complete
 # Syncs living docs
@@ -213,12 +213,12 @@ Total WIP: 1 ✅
 - Long-term deprioritization
 
 **Transitions**:
-- ✅ **Any → ABANDONED**: Via `/specweave:abandon`
+- ✅ **Any → ABANDONED**: Via `/sw:abandon`
 - ✅ **ABANDONED → ACTIVE**: Can un-abandon if needed (rare)
 
 **Example**:
 ```bash
-/specweave:abandon 0008 --reason="Pivot to enterprise, consumer features on hold"
+/sw:abandon 0008 --reason="Pivot to enterprise, consumer features on hold"
 # Marks increment abandoned
 # Documents reason
 # Status: abandoned
@@ -247,7 +247,7 @@ AUTO-TRANSITION ✨
      ↓
 All tasks complete
      ↓
-/specweave:done
+/sw:done
      ↓
 [COMPLETED] ← Shipped!
 ```
@@ -277,7 +277,7 @@ AUTO-TRANSITION ✨
      ↓
 Business priorities change
      ↓
-/specweave:backlog
+/sw:status
      ↓
 [BACKLOG] ← Not started yet
      ↓
@@ -382,7 +382,7 @@ Total WIP: 2/2 (hard cap reached) ⚠️
 ### View Status
 
 ```bash
-/specweave:status
+/sw:status
 # Shows all increments with statuses
 ```
 
@@ -390,19 +390,19 @@ Total WIP: 2/2 (hard cap reached) ⚠️
 
 ```bash
 # Pause (usually automatic)
-/specweave:pause 0008 --reason="waiting for approval"
+/sw:pause 0008 --reason="waiting for approval"
 
 # Resume (usually automatic)
-/specweave:resume 0008
+/sw:resume 0008
 
 # Move to backlog
-/specweave:backlog 0008 --reason="low priority"
+/sw:status 0008 --reason="low priority"
 
 # Abandon
-/specweave:abandon 0008 --reason="requirements changed"
+/sw:abandon 0008 --reason="requirements changed"
 
 # Complete
-/specweave:done 0008
+/sw:done 0008
 ```
 
 ---
@@ -441,15 +441,15 @@ Total WIP: 2/2 (hard cap reached) ⚠️
 
 ✅ **DO**: Finish current work first
 ```bash
-/specweave:do  # Complete current
-/specweave:done 0008  # Close increment
-/specweave:increment "new feature"  # Start next
+/sw:do  # Complete current
+/sw:done 0008  # Close increment
+/sw:increment "new feature"  # Start next
 ```
 
 ❌ **DON'T**: Start new while others active
 ```bash
 # 0008 active (80% complete)
-/specweave:increment "new feature"  # BAD! Complete 0008 first
+/sw:increment "new feature"  # BAD! Complete 0008 first
 ```
 
 ---

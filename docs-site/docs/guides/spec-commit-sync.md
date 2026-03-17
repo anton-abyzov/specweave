@@ -165,7 +165,7 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 ```bash
 # Work on tasks
-/specweave:do
+/sw:do
 
 # Complete tasks (TodoWrite updates)
 # Hook fires automatically after each completion

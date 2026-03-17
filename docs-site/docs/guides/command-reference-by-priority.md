@@ -25,20 +25,20 @@ These are the essential commands you'll use every day. Master these first!
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw:reopen` | **NEW!** Reopen completed work | `/sw:reopen 0031 --reason "GitHub sync failing"` |
+| `/sw:resume` | **NEW!** Reopen completed work | `/sw:resume 0031 --reason "GitHub sync failing"` |
 
 **Smart Detection**: Just say "GitHub sync not working" and the skill auto-suggests what to reopen!
 
 **Usage**:
 ```bash
 # Reopen entire increment
-/sw:reopen 0031 --reason "Production bug found"
+/sw:resume 0031 --reason "Production bug found"
 
 # Reopen specific task
-/sw:reopen 0031 --task T-003 --reason "API broken"
+/sw:resume 0031 --task T-003 --reason "API broken"
 
 # Reopen user story
-/sw:reopen 0031 --user-story US-001 --reason "AC not met"
+/sw:resume 0031 --user-story US-001 --reason "AC not met"
 ```
 
 ---
@@ -54,7 +54,7 @@ Commands you'll use regularly but not every day.
 | `/sw:pause` | Pause active increment | `/sw:pause 0031 --reason "Blocked by API"` |
 | `/sw:resume` | Resume paused increment | `/sw:resume 0031` |
 | `/sw:next` | Smart transition to next work | `/sw:next` |
-| `/sw:backlog` | Move increment to backlog | `/sw:backlog 0032 --reason "Deprioritized"` |
+| `/sw:status` | Move increment to backlog | `/sw:status 0032 --reason "Deprioritized"` |
 
 ### Quality & Validation
 
@@ -62,7 +62,7 @@ Commands you'll use regularly but not every day.
 |---------|-------------|---------|
 | `/sw:validate` | Validate increment structure | `/sw:validate 0031` |
 | `/sw:qa` | Quality assessment with risk scoring | `/sw:qa 0031` |
-| `/sw:check-tests` | Validate test coverage | `/sw:check-tests 0031` |
+| `npx vitest run` | Validate test coverage | `npx vitest run 0031` |
 
 ### Documentation Sync
 
@@ -70,7 +70,7 @@ Commands you'll use regularly but not every day.
 |---------|-------------|---------|
 | `/sw:sync-docs` | Sync to living docs | `/sw:sync-docs update` |
 | `/sw:sync-specs` | Sync specs only | `/sw:sync-specs 0031` |
-| `/sw:sync-tasks` | Sync task completion | `/sw:sync-tasks 0031` |
+| `/sw:progress-sync` | Sync task completion | `/sw:progress-sync 0031` |
 
 ---
 
@@ -115,7 +115,7 @@ Specialized commands for advanced workflows.
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/sw:costs` | Show AI cost dashboard | `/sw:costs 0031` |
-| `/sw:update-scope` | Log scope changes | `/sw:update-scope 0031` |
+| `/sw:increment (to update spec)` | Log scope changes | `/sw:increment (to update spec) 0031` |
 
 ---
 
@@ -217,7 +217,7 @@ If you're new to SpecWeave, start with these 5 commands:
 /sw:done 0031
 
 # 5. (NEW!) Reopen if issues found
-/sw:reopen 0031 --reason "Auth broken in prod"
+/sw:resume 0031 --reason "Auth broken in prod"
 ```
 
 ---
@@ -255,7 +255,7 @@ If you're new to SpecWeave, start with these 5 commands:
 /sw:resume 0032
 
 # OR reopen if issues found
-/sw:reopen 0032 --reason "Payment gateway timeout"
+/sw:resume 0032 --reason "Payment gateway timeout"
 ```
 
 ---
@@ -291,17 +291,17 @@ The `smart-reopen-detector` skill will:
 
 **Task-Level** (Surgical Fix):
 ```bash
-/sw:reopen 0031 --task T-003 --reason "GitHub API rate limit"
+/sw:resume 0031 --task T-003 --reason "GitHub API rate limit"
 ```
 
 **User Story-Level** (Feature Fix):
 ```bash
-/sw:reopen 0031 --user-story US-001 --reason "AC not met"
+/sw:resume 0031 --user-story US-001 --reason "AC not met"
 ```
 
 **Increment-Level** (Systemic Fix):
 ```bash
-/sw:reopen 0031 --reason "Multiple issues in production"
+/sw:resume 0031 --reason "Multiple issues in production"
 ```
 
 ### WIP Limits Respected
@@ -314,7 +314,7 @@ Reopening respects WIP limits:
 
 Options:
 1. Pause: /sw:pause 0030
-2. Force: /sw:reopen 0031 --force --reason "Production critical"
+2. Force: /sw:resume 0031 --force --reason "Production critical"
 ```
 
 ---
@@ -374,7 +374,7 @@ Options:
 # → Closes GitHub issue #123
 
 # 6. (If needed) Reopen
-/sw:reopen 0031 --reason "Bug found"
+/sw:resume 0031 --reason "Bug found"
 # → Reopens GitHub issue #123
 ```
 

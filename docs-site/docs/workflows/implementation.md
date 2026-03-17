@@ -1,4 +1,4 @@
-# Implementation Workflow: The /specweave:do Command
+# Implementation Workflow: The /sw:do Command
 
 The implementation phase is where specs and plans become **working code**—with SpecWeave handling the tedious parts automatically.
 
@@ -19,14 +19,14 @@ graph LR
 
 **Duration**: Hours to weeks (depending on increment size)
 
-**Command**: `/specweave:do`
+**Command**: `/sw:do`
 
 **Magic**: Auto-resumes from next incomplete task, updates docs automatically, validates continuously
 
-## The /specweave:do Command: Just Works!
+## The /sw:do Command: Just Works!
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 **What happens automatically:**
@@ -38,7 +38,7 @@ sequenceDiagram
     participant Hook as Post-Task Hook
     participant Docs as Living Docs
 
-    You->>CLI: /specweave:do
+    You->>CLI: /sw:do
     CLI->>CLI: Find next incomplete task
     CLI->>You: "Working on T-003: ChatService"
 
@@ -65,7 +65,7 @@ sequenceDiagram
 ### Step 1: Start Implementation
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 **CLI output:**
@@ -252,7 +252,7 @@ Continue? (Y/n)
 ### Step 5: Check Progress Anytime
 
 ```bash
-/specweave:progress
+/sw:progress
 ```
 
 **Output:**
@@ -303,7 +303,7 @@ If you discover a better approach, a missing requirement, or a flaw in the desig
 # 1. Stop current task
 # 2. Update plan.md with new auth approach
 # 3. Update tasks.md if task breakdown changes
-# 4. Resume /specweave:do with updated plan
+# 4. Resume /sw:do with updated plan
 ```
 
 **Why this matters**: Plans are cheap to change (a few lines of markdown). Code is expensive to change (refactoring, re-testing, debugging). Catching design problems in the plan prevents costly rework later. AI agents are also most token-efficient when working from a clear, accurate plan.
@@ -319,7 +319,7 @@ If you discover a better approach, a missing requirement, or a flaw in the desig
 **Goal**: Complete all tasks without stopping
 
 ```bash
-/specweave:do
+/sw:do
 # Implement T-001 ✅
 # Implement T-002 ✅
 # Implement T-003 ✅
@@ -337,18 +337,18 @@ If you discover a better approach, a missing requirement, or a flaw in the desig
 
 ```bash
 # Day 1 morning (2 hours)
-/specweave:do
+/sw:do
 # Complete T-001, T-002 ✅
 
 # Day 1 afternoon (meeting)
 # Work paused automatically
 
 # Day 2 morning (3 hours)
-/specweave:do  # Auto-resumes from T-003!
+/sw:do  # Auto-resumes from T-003!
 # Complete T-003, T-004, T-005 ✅
 
 # Day 3 (finish up)
-/specweave:do
+/sw:do
 # Complete T-006, T-007, T-008 ✅
 ```
 
@@ -360,15 +360,15 @@ If you discover a better approach, a missing requirement, or a flaw in the desig
 
 ```bash
 # Developer A
-/specweave:do --task T-001
+/sw:do --task T-001
 # Works on ChatService
 
 # Developer B
-/specweave:do --task T-003
+/sw:do --task T-003
 # Works on TypingIndicatorManager (independent)
 
 # Developer C
-/specweave:do --task T-005
+/sw:do --task T-005
 # Works on Frontend (independent)
 
 # Tasks sync when complete
@@ -434,14 +434,14 @@ While implementing ChatService, you discover:
 # - Or nice-to-have? (P2/P3)
 
 # 3a. If P1 (must-have) — update the plan first:
-/specweave:update-scope "Added rate limiting (required for security)"
+/sw:increment (to update spec) "Added rate limiting (required for security)"
 # Updates spec.md, plan.md, tasks.md
 # Regenerates with new tasks
 
 # 3b. If P2/P3 (nice-to-have):
 # Document in "Future Enhancements" section
 # Create new increment for next iteration
-/specweave:increment "0013-chat-admin-dashboard"
+/sw:increment "0013-chat-admin-dashboard"
 ```
 
 **Remember**: Never add unplanned work directly to code. Update the plan first, then implement from the updated plan.
@@ -459,7 +459,7 @@ Blocked: Redis server not available in dev environment
 **Solution:**
 ```bash
 # Option 1: Pause task, work on independent task
-/specweave:do --skip T-006
+/sw:do --skip T-006
 # Works on T-007 instead (independent)
 
 # Option 2: Use mock/stub temporarily
@@ -467,7 +467,7 @@ Blocked: Redis server not available in dev environment
 # Document TODO: Replace with real Redis
 
 # Option 3: Pause entire increment
-/specweave:pause 0012 --reason="Waiting for Redis setup"
+/sw:pause 0012 --reason="Waiting for Redis setup"
 # Resume later when unblocked
 ```
 
@@ -490,7 +490,7 @@ Actual: 8 hours (race conditions, debouncing issues)
 # T-003c: Race condition handling
 
 # 2. Document learnings in completion report
-/specweave:update-scope "T-003 complexity: race conditions in WebSocket events"
+/sw:increment (to update spec) "T-003 complexity: race conditions in WebSocket events"
 
 # 3. Adjust estimates for remaining tasks
 
@@ -513,7 +513,7 @@ Actual: 8 hours (race conditions, debouncing issues)
 
 1. **Don't skip tests** ("I'll add them later" = never)
 2. **Don't work on multiple tasks** simultaneously (focus!)
-3. **Don't bypass hooks** (use `/specweave:do`, not raw git)
+3. **Don't bypass hooks** (use `/sw:do`, not raw git)
 4. **Don't ignore failing tests** (fix before moving on)
 5. **Don't gold-plate** (stick to spec, no bonus features)
 
@@ -575,7 +575,7 @@ Increment: 0012-real-time-chat"
 Let's walk through implementing T-003 completely:
 
 ```bash
-$ /specweave:do
+$ /sw:do
 
 📋 Increment: 0012-real-time-chat
 🔄 Next: T-003 (TypingIndicatorManager)
@@ -616,11 +616,11 @@ Continue? (Y/n):
 
 ## Summary
 
-- **Command**: `/specweave:do` (just works!)
+- **Command**: `/sw:do` (just works!)
 - **Auto-resume**: Picks up where you left off
 - **Auto-docs**: Hooks update living docs
 - **Quality**: Tests + linting + coverage checks
-- **Progress**: `/specweave:progress` anytime
+- **Progress**: `/sw:progress` anytime
 - **Flexibility**: Pause/resume, skip tasks, work in parallel
 
 ## Next Steps
@@ -628,7 +628,7 @@ Continue? (Y/n):
 Implementation complete? Move to validation:
 
 ```bash
-/specweave:validate 0012
+/sw:validate 0012
 ```
 
 **Learn more:**

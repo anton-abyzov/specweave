@@ -8,16 +8,16 @@ This feature is **planned for v1.1**. The specification is complete and approved
 
 ## The Problem
 
-Currently, SpecWeave installs **all 24 plugins** (~251 skills) at startup, consuming ~60,000 tokens even when you're doing non-SpecWeave work. This creates several issues:
+Currently, SpecWeave installs **all 13 plugins** (~~48 skills) at startup, consuming ~60,000 tokens even when you're doing non-SpecWeave work. This creates several issues:
 
 | Problem | Impact |
 |---------|--------|
-| **Context bloat** | Only 108 of 251 skills (43%) are shown due to token limits |
+| **Context bloat** | Only 108 of ~48 skills (43%) are shown due to token limits |
 | **Wasted tokens** | ~60,000 tokens consumed even when SpecWeave isn't needed |
 | **Slower startup** | All plugins loaded regardless of user intent |
 | **Reduced quality** | Important skills get truncated from context |
 
-**Evidence**: `<!-- Showing 108 of 251 skills due to token limits -->` appears in system prompts.
+**Evidence**: `<!-- Showing 108 of ~48 skills due to token limits -->` appears in system prompts.
 
 ## The Solution
 
@@ -53,10 +53,10 @@ A **lazy loading architecture** that:
 │  │  - Keyword       │────▶│  ├── specweave/                       │ │
 │  │    detection     │     │  │   ├── increment/                   │ │
 │  │  - Install       │     │  │   ├── architect/                   │ │
-│  │    trigger       │     │  │   └── ... (50+ skills)             │ │
+│  │    trigger       │     │  │   └── ... (~48 skills)             │ │
 │  │  - State track   │     │  ├── specweave-github/                │ │
 │  └──────────────────┘     │  ├── specweave-jira/                  │ │
-│           │               │  └── ... (24 plugins)                  │ │
+│           │               │  └── ... (13 plugins)                  │ │
 │           │               └──────────────────────────────────────┘ │
 │           │                              │                          │
 │           ▼                              ▼                          │

@@ -116,7 +116,7 @@ This creates `metadata.json` with GitHub link:
 ### 3. Complete Increment
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 If status sync is enabled, you'll be prompted:
@@ -244,10 +244,10 @@ How to resolve?
 
 ### Sync After Increment Completion
 
-Status sync happens automatically when using `/specweave:done`:
+Status sync happens automatically when using `/sw:done`:
 
 ```bash
-/specweave:done 0001-user-authentication
+/sw:done 0001-user-authentication
 ```
 
 Output:

@@ -72,7 +72,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 └── platform-infra/
 ```
 
-**Behavior**: Switch between projects using `/specweave:switch-project`.
+**Behavior**: Switch between projects using `/sw:switch-project`.
 
 ---
 
@@ -81,7 +81,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 ### Step 1: Initialize Multi-Project Mode
 
 ```bash
-/specweave:init-multiproject
+/sw:init-multiproject
 ```
 
 **Interactive prompts**:
@@ -117,7 +117,7 @@ Project ID (kebab-case): mobile-app
 ### Step 2: Switch to a Project
 
 ```bash
-/specweave:switch-project web-app
+/sw:switch-project web-app
 ```
 
 **Output**:
@@ -133,7 +133,7 @@ Project ID (kebab-case): mobile-app
 ### Step 3: Create Increments (As Usual)
 
 ```bash
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 ```
 
 **Result**: Spec created in `specs/web-app/spec-001-user-auth.md`
@@ -346,13 +346,13 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 
 ```bash
 # Morning: Frontend team work
-/specweave:switch-project web-app
-/specweave:increment "Add dark mode"
+/sw:switch-project web-app
+/sw:increment "Add dark mode"
 # Spec created in: specs/web-app/spec-004-dark-mode.md
 
 # Afternoon: Mobile team work
-/specweave:switch-project mobile-app
-/specweave:increment "Add biometric auth"
+/sw:switch-project mobile-app
+/sw:increment "Add biometric auth"
 # Spec created in: specs/mobile-app/spec-001-biometric-auth.md
 ```
 
@@ -367,16 +367,16 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 # - frontend-app (React)
 
 # Infrastructure work
-/specweave:switch-project platform-infra
-/specweave:increment "Upgrade Kubernetes to 1.28"
+/sw:switch-project platform-infra
+/sw:increment "Upgrade Kubernetes to 1.28"
 
 # Backend work
-/specweave:switch-project backend-api
-/specweave:increment "Add rate limiting middleware"
+/sw:switch-project backend-api
+/sw:increment "Add rate limiting middleware"
 
 # Frontend work
-/specweave:switch-project frontend-app
-/specweave:increment "Implement new design system"
+/sw:switch-project frontend-app
+/sw:increment "Implement new design system"
 ```
 
 ### Workflow 3: Microservices
@@ -391,11 +391,11 @@ See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md
 # - notification-service
 # - analytics-service
 
-/specweave:switch-project user-service
-/specweave:increment "Add OAuth2 support"
+/sw:switch-project user-service
+/sw:increment "Add OAuth2 support"
 
-/specweave:switch-project order-service
-/specweave:increment "Implement order tracking"
+/sw:switch-project order-service
+/sw:increment "Implement order tracking"
 
 # Each service gets its own specs, modules, team docs
 ```
@@ -465,10 +465,10 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 
 ```bash
 # Switch to web-app
-/specweave:switch-project web-app
+/sw:switch-project web-app
 
 # Create increment (syncs to web-app-github and web-app-jira)
-/specweave:increment "Add payment integration"
+/sw:increment "Add payment integration"
 
 # Result:
 # - Spec: specs/web-app/spec-005-payment-integration.md
@@ -560,7 +560,7 @@ modules/
 
 **Solution**:
 ```bash
-/specweave:init-multiproject
+/sw:init-multiproject
 # Select "Yes" to enable multi-project mode
 ```
 
@@ -571,10 +571,10 @@ modules/
 **Solution**:
 ```bash
 # List all projects
-/specweave:switch-project
+/sw:switch-project
 
 # Create missing project
-/specweave:init-multiproject
+/sw:init-multiproject
 # Select "Yes" to create additional projects
 ```
 
@@ -583,7 +583,7 @@ modules/
 **Issue**: Created increment in wrong project
 
 **Solution**:
-1. Switch to correct project: `/specweave:switch-project correct-project`
+1. Switch to correct project: `/sw:switch-project correct-project`
 2. Manually move spec file to correct project folder
 3. Update increment metadata if needed
 
@@ -603,7 +603,7 @@ modules/
 
 
 ```bash
-/specweave:init-multiproject
+/sw:init-multiproject
 
 # Prompts:
 # - Enable multi-project mode? → Yes
@@ -616,9 +616,9 @@ modules/
 
 - **Brownfield Import Guide** (coming soon) - Import existing docs from external sources
 - **Team Playbooks Guide** (coming soon) - Best practices for team documentation
-- `/specweave:init-multiproject` - CLI command reference
-- `/specweave:switch-project` - CLI command reference
-- `/specweave:import-docs` - CLI command reference
+- `/sw:init-multiproject` - CLI command reference
+- `/sw:switch-project` - CLI command reference
+- `/sw:import-docs` - CLI command reference
 
 ---
 

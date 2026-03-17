@@ -76,7 +76,7 @@ SpecWeave has been used to build 5+ production applications:
 ### 1. SpecWeave (Built With Itself)
 - **186K+ lines** of TypeScript
 - **1,327 commits** over 52 days
-- **24 plugins**, **47 CLI commands**, **65 hooks**
+- **13 plugins**, **47 CLI commands**, **65 hooks**
 - Self-documenting: every feature has a spec
 
 ### 2. vskill CLI (Built With SpecWeave)

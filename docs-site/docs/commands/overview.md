@@ -184,10 +184,10 @@ Cancel running auto session.
 
 ---
 
-### `/sw:check-tests` - Test Coverage Check
+### `npx vitest run` - Test Coverage Check
 
 ```bash
-/sw:check-tests 0007
+npx vitest run 0007
 ```
 
 **What it checks**:
@@ -320,7 +320,7 @@ Monitor long-running operations that continue even after closing Claude.
 | `/sw:jobs` | Monitor background jobs | ⭐ **LONG OPS** |
 | `/sw:validate` | Quick validation | ⭐ **PRE-CHECK** |
 | `/sw:qa` | Quality assessment | ⭐ **QUALITY GATE** |
-| `/sw:check-tests` | Test coverage check | ⭐ **TEST VALIDATION** |
+| `npx vitest run` | Test coverage check | ⭐ **TEST VALIDATION** |
 | `/sw:done` | Close increment | ⭐ **FINISH** |
 | `/sw:sync-docs` | Synchronize living docs | ⭐ **KEEP CURRENT** |
 
@@ -371,7 +371,7 @@ Monitor long-running operations that continue even after closing Claude.
 # → Comprehensive quality gate check
 
 # 7. Check test coverage
-/sw:check-tests 0007
+npx vitest run 0007
 # → Validate all AC-IDs are tested
 
 # 8. Close increment
@@ -419,7 +419,7 @@ Monitor long-running operations that continue even after closing Claude.
 /sw-github:sync 0007
 
 # View sync status
-/sw-github:reconcile
+/sw-github:sync
 ```
 
 **Automatic sync**: When GitHub plugin enabled, `/sw:do` and `/sw:done` automatically sync to GitHub.
@@ -473,7 +473,7 @@ For increments with 10+ tasks, `/sw:auto` is more efficient:
 
 ```bash
 # Always validate tests before closing
-/sw:check-tests 0007
+npx vitest run 0007
 ```
 
 ### 5. Keep Living Docs Current

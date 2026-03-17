@@ -20,7 +20,7 @@ SpecWeave's **Background Jobs System** enables long-running operations to contin
 ┌─────────────────────────────────────────────────────────────┐
 │                     Claude Session                          │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
-│  │ /specweave: │───▶│ Job         │───▶│ Job         │     │
+│  │ /sw: │───▶│ Job         │───▶│ Job         │     │
 │  │ jobs        │    │ Manager     │    │ Launcher    │     │
 │  └─────────────┘    └─────────────┘    └──────┬──────┘     │
 └──────────────────────────────────────────────│─────────────┘
@@ -107,7 +107,7 @@ When external APIs hit rate limits:
 1. Worker detects rate limit response
 2. Job status changes to `paused`
 3. Worker exits gracefully with checkpoint saved
-4. User resumes later: `/specweave:jobs --resume <id>`
+4. User resumes later: `/sw:jobs --resume <id>`
 
 ## Job Types
 
@@ -138,7 +138,7 @@ Clones multiple repositories from GitHub, GitLab, or Azure DevOps.
 
 Imports work items from GitHub Issues, JIRA, or Azure DevOps.
 
-**Triggered by**: `specweave init` with import enabled, or `/specweave:import-external`
+**Triggered by**: `specweave init` with import enabled, or `/sw:import-external`
 
 **Features**:
 - Dynamic imports (reduces startup overhead)
@@ -222,7 +222,7 @@ stateDiagram-v2
 ### Check All Jobs
 
 ```bash
-/specweave:jobs
+/sw:jobs
 ```
 
 Shows all active jobs grouped by status.
@@ -230,7 +230,7 @@ Shows all active jobs grouped by status.
 ### Follow Progress Live
 
 ```bash
-/specweave:jobs --follow abc12345
+/sw:jobs --follow abc12345
 ```
 
 Polls every second for real-time progress updates.
@@ -238,7 +238,7 @@ Polls every second for real-time progress updates.
 ### View Worker Logs
 
 ```bash
-/specweave:jobs --logs abc12345
+/sw:jobs --logs abc12345
 ```
 
 Shows timestamped worker output (last 50 lines).
@@ -246,7 +246,7 @@ Shows timestamped worker output (last 50 lines).
 ### Get Job Details
 
 ```bash
-/specweave:jobs --id abc12345
+/sw:jobs --id abc12345
 ```
 
 Full details: config, progress, files, PID.
@@ -256,7 +256,7 @@ Full details: config, progress, files, PID.
 ### Kill Running Job
 
 ```bash
-/specweave:jobs --kill abc12345
+/sw:jobs --kill abc12345
 ```
 
 Sends SIGTERM, marks as `paused` for later resume.
@@ -264,7 +264,7 @@ Sends SIGTERM, marks as `paused` for later resume.
 ### Resume Paused Job
 
 ```bash
-/specweave:jobs --resume abc12345
+/sw:jobs --resume abc12345
 ```
 
 Spawns new worker that continues from last checkpoint.
@@ -320,13 +320,13 @@ Progress is saved before every item:
 The worker may have crashed. Check:
 
 ```bash
-/specweave:jobs --id <id>
+/sw:jobs --id <id>
 ```
 
 If PID shows as "dead" but status is "running", the worker crashed. Use:
 
 ```bash
-/specweave:jobs --resume <id>
+/sw:jobs --resume <id>
 ```
 
 ### Rate Limited?
@@ -334,7 +334,7 @@ If PID shows as "dead" but status is "running", the worker crashed. Use:
 Jobs auto-pause on rate limits. Wait for reset (usually 1-15 minutes), then:
 
 ```bash
-/specweave:jobs --resume <id>
+/sw:jobs --resume <id>
 ```
 
 ### Can't Resume?
@@ -342,7 +342,7 @@ Jobs auto-pause on rate limits. Wait for reset (usually 1-15 minutes), then:
 If config is corrupted or missing, start a fresh operation:
 
 ```bash
-/specweave:import-external    # For imports
+/sw:import-external    # For imports
 /specweave-ado:clone-repos    # For repo cloning
 ```
 
@@ -361,7 +361,7 @@ rm -rf .specweave/state/jobs/<old-job-id>
 After `specweave init` with large imports:
 
 ```bash
-/specweave:jobs
+/sw:jobs
 ```
 
 ### 2. Monitor Long Operations
@@ -369,7 +369,7 @@ After `specweave init` with large imports:
 For imports >1000 items:
 
 ```bash
-/specweave:jobs --follow <id>
+/sw:jobs --follow <id>
 ```
 
 ### 3. Don't Close Claude Immediately
@@ -425,7 +425,7 @@ const result = await launchImportJob({
 
 ## Related Documentation
 
-- [Commands: /specweave:jobs](/docs/commands/jobs) - Full command reference
+- [Commands: /sw:jobs](/docs/commands/jobs) - Full command reference
 - [ADO Repo Cloning](/docs/guides/ado-multi-project-migration) - Enterprise setup
 - [External Import](/docs/commands/import-external) - Issue import guide
 - [Living Docs Sync Strategy](/docs/guides/core-concepts/living-docs-sync-strategy) - When and how docs sync

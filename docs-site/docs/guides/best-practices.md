@@ -88,7 +88,7 @@ SpecWeave automatically spawns subagents for specialized tasks:
 
 ```markdown
 # When you run /sw:do, SpecWeave may spawn:
-- frontend:architect → For React/Vue/Next.js
+- sw:architect → For React/Vue/Next.js
 - backend:database-optimizer → For API/database work
 - testing:qa → For E2E tests
 ```
@@ -325,7 +325,7 @@ K8s work → k8s:kubernetes-architect (auto-activates)
 ### When Skills Auto-Activate
 
 Skills trigger on keywords in their descriptions:
-- "React dashboard" → `frontend:architect`
+- "React dashboard" → `sw:architect`
 - ".NET API" → `backend:dotnet`
 - "Stripe checkout" → `payments:payment-core`
 - "database optimization" → `backend:database-optimizer`

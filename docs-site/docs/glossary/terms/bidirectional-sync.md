@@ -239,7 +239,7 @@ vim .specweave/increments/0031/tasks.md
 # → Mark [x] T-001
 
 # Sync to living docs
-/specweave:sync-docs
+/sw:sync-docs
 
 # Sync to GitHub
 /specweave-github:sync 0031
@@ -339,7 +339,7 @@ Resolution:
 **Validation & Reopen**:
 ```bash
 # Task marked complete but code missing
-/specweave:validate 0031
+/sw:validate 0031
 
 # Validation finds: T-001 marked [x] but no code
 # → Reopen in increment: [ ] T-001
@@ -527,7 +527,7 @@ sequenceDiagram
     participant External as GitHub Issue
 
     Note over Dev,External: Phase 1: Increment Planning
-    Dev->>Local: /specweave:increment "user auth"
+    Dev->>Local: /sw:increment "user auth"
     Local->>Local: Generate spec.md, plan.md, tasks.md
     Local->>External: Create GitHub issue #30
     External->>Local: Return issue URL
@@ -541,7 +541,7 @@ sequenceDiagram
     Hook->>Local: Update tasks.md, metadata.json
 
     Note over Dev,External: Phase 3: Completion
-    Dev->>Local: /specweave:done 0008
+    Dev->>Local: /sw:done 0008
     Local->>External: Close GitHub issue #30
     External->>Local: Confirm closure
     Local->>Local: Archive increment
@@ -549,10 +549,10 @@ sequenceDiagram
 
 ### Step-by-Step Example
 
-**1. Create Increment** (`/specweave:increment`):
+**1. Create Increment** (`/sw:increment`):
 
 ```bash
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 
 # SpecWeave:
 # 1. Generate spec.md (user stories, AC)
@@ -613,10 +613,10 @@ sequenceDiagram
 #    status: done
 ```
 
-**4. Close Increment** (`/specweave:done`):
+**4. Close Increment** (`/sw:done`):
 
 ```bash
-/specweave:done 0008
+/sw:done 0008
 
 # SpecWeave:
 # 1. Validate all tasks complete
@@ -732,7 +732,7 @@ Bidirectional sync happens **automatically** via hooks:
 
 ### Post-Increment-Done Hook
 
-**When**: After `/specweave:done` completes
+**When**: After `/sw:done` completes
 
 **Location**: `plugins/specweave/hooks/post-increment-done.sh`
 
@@ -744,7 +744,7 @@ Bidirectional sync happens **automatically** via hooks:
 
 **Example**:
 ```bash
-/specweave:done 0008
+/sw:done 0008
 
 # Hook fires automatically:
 # ✅ Living docs final sync
@@ -1108,7 +1108,7 @@ The old "bidirectional sync" was a binary flag that controlled all sync operatio
 **1. canUpsertInternalItems** (UPSERT = CREATE + UPDATE)
 - **Controls**: Creating and updating SpecWeave-originated work items
 - **Flow**: Increment progress → Living specs → CREATE/UPDATE external tool
-- **Example**: Creating GitHub issue when running `/specweave:increment`, then updating it as tasks complete
+- **Example**: Creating GitHub issue when running `/sw:increment`, then updating it as tasks complete
 - **Default**: `false` (explicit opt-in required)
 
 **2. canUpdateExternalItems** (Full Content Updates)

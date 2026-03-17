@@ -203,7 +203,7 @@ graph TB
 
 ```bash
 # 1. Create frontend increment
-/specweave:increment "Add product search to web app"
+/sw:increment "Add product search to web app"
 # Increment 0001 created
 
 # 2. Sync to frontend repo
@@ -212,7 +212,7 @@ graph TB
 # ✓ Issue created: org/ecommerce-web#12
 
 # 3. Create backend increment
-/specweave:increment "Add payment processing API"
+/sw:increment "Add payment processing API"
 # Increment 0002 created
 
 # 4. Sync to backend repo
@@ -221,7 +221,7 @@ graph TB
 # ✓ Issue created: org/ecommerce-api#8
 
 # 5. Create mobile increment
-/specweave:increment "Add push notifications to mobile app"
+/sw:increment "Add push notifications to mobile app"
 # Increment 0003 created
 
 # 6. Sync to mobile repo
@@ -365,20 +365,20 @@ graph TB
 
 ```bash
 # Morning: Work on Internal Tools
-/specweave:switch-project internal-tools
-/specweave:increment "Add SSO integration"
+/sw:switch-project internal-tools
+/sw:increment "Add SSO integration"
 # → Spec created in: .specweave/docs/internal/specs/internal-tools/
 # → Auto-syncs to: platform/internal-tools
 
 # Afternoon: Switch to Customer Portal
-/specweave:switch-project customer-portal
-/specweave:increment "Build self-service dashboard"
+/sw:switch-project customer-portal
+/sw:increment "Build self-service dashboard"
 # → Spec created in: .specweave/docs/internal/specs/customer-portal/
 # → Auto-syncs to: platform/customer-portal
 
 # Evening: Admin Dashboard work
-/specweave:switch-project admin-dashboard
-/specweave:increment "Add user management UI"
+/sw:switch-project admin-dashboard
+/sw:increment "Add user management UI"
 # → Spec created in: .specweave/docs/internal/specs/admin-dashboard/
 # → Auto-syncs to: platform/admin-dashboard
 ```
@@ -501,19 +501,19 @@ AZURE_DEVOPS_PAT=xxxxxxxxxxxxxxxxxxx
 
 ```bash
 # Engineering work → GitHub
-/specweave:increment "Add OAuth2 authentication"
+/sw:increment "Add OAuth2 authentication"
 /specweave-github:sync 0001
 # ? Select profile: Engineering - GitHub (eng-github)
 # ✓ Issue created: acme-corp/platform#42
 
 # Product work → Jira
-/specweave:increment "Launch premium tier features"
+/sw:increment "Launch premium tier features"
 /specweave-jira:sync 0002
 # ? Select profile: Product - Jira (product-jira)
 # ✓ Epic created: PROD-15
 
 # Infrastructure work → Azure DevOps
-/specweave:increment "Upgrade Kubernetes to v1.28"
+/sw:increment "Upgrade Kubernetes to v1.28"
 /specweave-ado:sync 0003
 # ? Select profile: Operations - Azure DevOps (ops-ado)
 # ✓ Work item created: #87
@@ -639,7 +639,7 @@ flowchart TD
 
     EXTRACT["Extract keywords:<br/>['React Native', 'dark mode', 'toggle']"]
 
-    SCORE["Score each project:<br/>frontend: 0.2 (UI keyword)<br/>backend: 0.0<br/>mobile: 0.95 (React Native)<br/>infrastructure: 0.0"]
+    SCORE["Score each project:<br/>sw: 0.2 (UI keyword)<br/>backend: 0.0<br/>mobile: 0.95 (React Native)<br/>infrastructure: 0.0"]
 
     THRESHOLD{Confidence > 0.7?}
 
@@ -834,18 +834,18 @@ graph TB
 
 ```bash
 # Morning: Client A work
-/specweave:switch-project client-a
-/specweave:increment "Add checkout flow to e-commerce"
+/sw:switch-project client-a
+/sw:increment "Add checkout flow to e-commerce"
 # → Auto-syncs to: client-a/ecommerce (GitHub) AND clienta.atlassian.net (Jira)
 
 # Afternoon: Client B work
-/specweave:switch-project client-b
-/specweave:increment "Build admin dashboard analytics"
+/sw:switch-project client-b
+/sw:increment "Build admin dashboard analytics"
 # → Auto-syncs to: client-b/admin (GitHub only)
 
 # Evening: Client C work
-/specweave:switch-project client-c
-/specweave:increment "Add offline mode to mobile app"
+/sw:switch-project client-c
+/sw:increment "Add offline mode to mobile app"
 # → Prompt: Sync to GitHub or ADO? (or both)
 ```
 
@@ -1296,7 +1296,7 @@ SpecWeave's **Profile-Based Multi-Project Sync Architecture** enables:
 - Layer 3: Metadata (per-increment tracking)
 
 **Key Commands**:
-- `/specweave:switch-project <id>` - Switch active project
+- `/sw:switch-project <id>` - Switch active project
 - `/specweave-github:sync <increment>` - Sync to GitHub
 - `/specweave-jira:sync <increment>` - Sync to Jira
 - `/specweave-ado:sync <increment>` - Sync to Azure DevOps

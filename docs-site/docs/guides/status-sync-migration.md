@@ -108,13 +108,13 @@ Create a test increment to verify mappings work:
 
 ```bash
 # 1. Create test increment
-/specweave:increment "Test status sync"
+/sw:increment "Test status sync"
 
 # 2. Link to GitHub (creates issue)
 /specweave-github:create-issue 0999-test-status-sync
 
 # 3. Complete increment
-/specweave:done 0999
+/sw:done 0999
 
 # 4. Verify prompt appears
 # Output should show:
@@ -284,7 +284,7 @@ Conflicts detected and resolved based on strategy:
 
 1. **Create test increment**
    ```bash
-   /specweave:increment "Migration test"
+   /sw:increment "Migration test"
    ```
 
 2. **Link to external tool**
@@ -294,7 +294,7 @@ Conflicts detected and resolved based on strategy:
 
 3. **Complete increment**
    ```bash
-   /specweave:done 0998
+   /sw:done 0998
    ```
 
 4. **Verify sync**

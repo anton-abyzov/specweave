@@ -51,7 +51,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: QA Engineer
 - **Expertise**: Test strategy, test planning, quality gates
 - **Activates**: When planning test coverage, validating quality
-- **Commands**: `/sw:check-tests`, `/sw:qa`
+- **Commands**: `npx vitest run`, `/sw:qa`
 - **Output**: Test plans, quality assessment reports
 
 **5. TDD Cycle Agent** (`tdd-cycle`)
@@ -302,7 +302,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 
 **QA Lead Agent**:
 - Defines test strategy (unit/integration/E2E targets)
-- Validates test coverage via `/sw:check-tests`
+- Validates test coverage via `npx vitest run`
 - Runs quality gates via `/sw:qa`
 - Ensures AC-ID traceability (spec.md AC → tasks.md tests)
 
@@ -316,7 +316,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 
 ```bash
 # 1. QA Lead validates test coverage
-/sw:check-tests 0008
+npx vitest run 0008
 
 # Output:
 # ✅ AC-US1-01: Covered by T-001 (unit + integration)
@@ -601,7 +601,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 **Developer implements** tasks from tasks.md:
 1. Uses TDD workflow (`/sw:tdd-cycle`)
 2. TDD Orchestrator guides red-green-refactor cycle
-3. Runs tests via `/sw:check-tests`
+3. Runs tests via `npx vitest run`
 
 ---
 
@@ -713,7 +713,7 @@ Don't micro-manage agents. They collaborate automatically:
 Always validate before closing:
 
 ```bash
-/sw:check-tests 0008  # Check test coverage
+npx vitest run 0008  # Check test coverage
 /sw:qa 0008           # Run quality assessment
 /sw:done 0008         # PM validation + closure
 ```

@@ -115,7 +115,7 @@ graph LR
 - plan.md (architecture, approach)
 - tasks.md (checklist, embedded tests)
 
-**Command**: `/specweave:increment "feature name"`
+**Command**: `/sw:increment "feature name"`
 
 **[→ Full Planning Workflow](/docs/workflows/planning)**
 
@@ -147,7 +147,7 @@ graph LR
 - Updated documentation
 - Completed tasks
 
-**Command**: `/specweave:do`
+**Command**: `/sw:do`
 
 **[→ Full Implementation Workflow](/docs/workflows/implementation)**
 
@@ -179,7 +179,7 @@ graph LR
 - Completion summary
 - Deployment readiness
 
-**Command**: `/specweave:validate`
+**Command**: `/sw:validate`
 
 **[→ Full Validation Workflow](/docs/workflows/validation)**
 
@@ -219,11 +219,11 @@ graph LR
 
 | Phase | Command | What It Does |
 |-------|---------|--------------|
-| **Planning** | `/specweave:increment "feature"` | Creates spec, plan, tasks |
-| **Implementation** | `/specweave:do` | Executes tasks, auto-resumes |
-| **Progress Check** | `/specweave:progress` | Shows status, next task |
-| **Validation** | `/specweave:validate` | Quality checks |
-| **Completion** | `/specweave:done` | Closes increment |
+| **Planning** | `/sw:increment "feature"` | Creates spec, plan, tasks |
+| **Implementation** | `/sw:do` | Executes tasks, auto-resumes |
+| **Progress Check** | `/sw:progress` | Shows status, next task |
+| **Validation** | `/sw:validate` | Quality checks |
+| **Completion** | `/sw:done` | Closes increment |
 
 ## Workflow Patterns
 
@@ -428,7 +428,7 @@ Solution: Define test strategy in plan.md
 ```
 Problem: Mark tasks done without checking
 Result: Incomplete features, failing tests
-Solution: Run /specweave:validate before /specweave:done
+Solution: Run /sw:validate before /sw:done
 ```
 
 ## Real-World Workflow Example
@@ -445,7 +445,7 @@ Solution: Run /specweave:validate before /specweave:done
 
 ### Week 2: Planning
 ```bash
-/specweave:increment "0015-payment-processing"
+/sw:increment "0015-payment-processing"
 # PM agent creates:
 # ✅ spec.md (5 user stories, 15 AC-IDs)
 # ✅ plan.md (Stripe architecture, test strategy)
@@ -454,7 +454,7 @@ Solution: Run /specweave:validate before /specweave:done
 
 ### Week 3-4: Implementation
 ```bash
-/specweave:do
+/sw:do
 # Implement task by task:
 # T-001: Stripe client ✅
 # T-002: Payment endpoint ✅
@@ -462,13 +462,13 @@ Solution: Run /specweave:validate before /specweave:done
 # ...
 # T-018: E2E payment flow ✅
 
-/specweave:progress
+/sw:progress
 # Shows: 18/18 tasks (100%)
 ```
 
 ### Week 5: Validation & Deploy
 ```bash
-/specweave:validate 0015
+/sw:validate 0015
 # ✅ All AC-IDs validated
 # ✅ Test coverage: 92%
 # ✅ Quality checks passed

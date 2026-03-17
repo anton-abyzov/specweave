@@ -190,7 +190,7 @@ AZURE_DEVOPS_PAT=xxxxxxxxxxxx
 ### Interactive Creation
 
 ```bash
-/specweave:sync-profile create
+/sw:sync-profile create
 
 # Prompts:
 # 1. Provider? (github/jira/ado)
@@ -478,11 +478,11 @@ Syncs to client-org/mobile-app repo
 
 ```bash
 # 1. Create profile (once)
-/specweave:sync-profile create
+/sw:sync-profile create
 # → Profile: client-mobile created
 
 # 2. Create increment
-/specweave:increment "Add dark mode toggle"
+/sw:increment "Add dark mode toggle"
 # → Increment 0009-dark-mode created
 
 # 3. Link increment to profile (optional - can auto-detect)
@@ -505,7 +505,7 @@ Syncs to client-org/mobile-app repo
 # → Update checkbox: [x] T-001
 
 # 6. Close increment
-/specweave:done 0009
+/sw:done 0009
 # → Hook fires: post-increment-done
 # → Close GitHub issue #45
 # → Final living docs sync
@@ -518,7 +518,7 @@ Syncs to client-org/mobile-app repo
 ### List Profiles
 
 ```bash
-/specweave:sync-profile list
+/sw:sync-profile list
 
 # Output:
 📋 Sync Profiles (3 total)
@@ -541,7 +541,7 @@ Syncs to client-org/mobile-app repo
 ### Get Profile Details
 
 ```bash
-/specweave:sync-profile get specweave-dev
+/sw:sync-profile get specweave-dev
 
 # Output:
 📋 Profile: specweave-dev
@@ -566,7 +566,7 @@ Last Used: 2025-11-10 15:30:00
 ### Update Profile
 
 ```bash
-/specweave:sync-profile update specweave-dev
+/sw:sync-profile update specweave-dev
 
 # Prompts:
 # 1. Change display name? (SpecWeave Development)
@@ -580,7 +580,7 @@ Last Used: 2025-11-10 15:30:00
 ### Delete Profile
 
 ```bash
-/specweave:sync-profile delete internal-jira
+/sw:sync-profile delete internal-jira
 
 # Prompt:
 # ⚠️  This will delete profile "internal-jira"
@@ -775,8 +775,8 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 - Provider-specific limits (GitHub: 5K/hour, JIRA: 100/min, ADO: 200/5min)
 
 **Key Commands**:
-- `/specweave:sync-profile create` - Create new profile
-- `/specweave:sync-profile list` - List all profiles
+- `/sw:sync-profile create` - Create new profile
+- `/sw:sync-profile list` - List all profiles
 - `/specweave-github:sync 0008` - Sync increment to GitHub
 
 **Result**: Work with unlimited repositories while maintaining safety and performance.

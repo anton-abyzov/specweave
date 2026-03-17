@@ -240,7 +240,7 @@ SpecWeave assigns domain-specific expertise to each agent:
 │                                                                          │
 │   Domain        Skill Assigned              Expertise                    │
 │   ──────        ──────────────              ─────────                    │
-│   frontend      frontend:architect           React, Vue, Next.js, CSS    │
+│   frontend      sw:architect           React, Vue, Next.js, CSS    │
 │   backend       backend:database-optimizer  Node, Express, APIs, SQL    │
 │   database      backend:database-optimizer  Migrations, schemas, ORM    │
 │   devops        infra:devops                Docker, K8s, CI/CD, IaC     │
@@ -412,7 +412,7 @@ The coordination layer is file-based markdown. While Claude Code gets the deepes
 
 | Tool | Role in Swarm | Integration Depth |
 |------|---------------|-------------------|
-| **Claude Code** | Full orchestration, autonomous execution, quality gates | Deep (100+ skills) |
+| **Claude Code** | Full orchestration, autonomous execution, quality gates | Deep (~48 built-in skills) |
 | **OpenClaw** | Reads specs/tasks, executes within scope, local memory | Medium (file-based) |
 | **GitHub Copilot** | Follows specs as context, implements within scope | Light (reads markdown) |
 | **Codex** | Reads increment files, implements tasks | Light (reads markdown) |

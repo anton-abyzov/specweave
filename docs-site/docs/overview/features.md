@@ -32,13 +32,13 @@ Simply describe what you want - SpecWeave guides you through interactive prompts
 Professional planning with slash commands and multi-agent coordination:
 
 ```bash
-/specweave:increment "user authentication"
+/sw:increment "user authentication"
 # PM, Architect, QA agents create:
 # ✅ spec.md (requirements with AC-IDs)
 # ✅ plan.md (architecture + test strategy)
 # ✅ tasks.md with embedded tests
 
-/specweave:do
+/sw:do
 # Implement with hooks auto-updating docs
 ```
 
@@ -387,7 +387,7 @@ The **killer feature** for [brownfield](/docs/glossary/terms/brownfield): docume
 
 1. **Initial Documentation** - SpecWeave creates complete specs, HLDs, ADRs, diagrams
 
-2. **Code Changes** - You modify code using `/specweave:do`
+2. **Code Changes** - You modify code using `/sw:do`
 
 3. **Auto-Update** - Hooks automatically update:
    - Specifications reflect new requirements
@@ -402,7 +402,7 @@ The **killer feature** for [brownfield](/docs/glossary/terms/brownfield): docume
 
 - **Claude Hooks** - Post-task-completion hook runs after every task
 
-- **Living Docs Sync** - `/specweave:sync-docs update` propagates changes
+- **Living Docs Sync** - `/sw:sync-docs update` propagates changes
 
 - **Version Control** - All docs in [Git](/docs/glossary/terms/git), full history preserved
 
@@ -412,7 +412,7 @@ As your [brownfield](/docs/glossary/terms/brownfield) project grows, SpecWeave *
 
 **Scenario: Adding new payment module**
 ```bash
-/specweave:increment "payment processing module"
+/sw:increment "payment processing module"
 ```
 
 **SpecWeave automatically:**
@@ -496,8 +496,8 @@ npx specweave init .
 # ✅ Regression prevention in place
 
 # Day 4: Add OAuth safely
-/specweave:increment "Add OAuth 2.0 support"
-/specweave:do
+/sw:increment "Add OAuth 2.0 support"
+/sw:do
 # ✅ OAuth added with:
 #    - Updated specs and ADRs
 #    - Extended architecture diagrams
@@ -576,15 +576,15 @@ Logs and notifies when AI needs clarification.
 Framework-agnostic commands:
 
 **Core Commands:**
-- `/specweave:increment "feature"` - Plan new increment (PM-led)
-- `/specweave:do` - Execute tasks (smart resume)
-- `/specweave:progress` - Check status and completion
-- `/specweave:validate 0001` - Optional quality assessment
-- `/specweave:done 0001` - Manual close (rarely needed)
+- `/sw:increment "feature"` - Plan new increment (PM-led)
+- `/sw:do` - Execute tasks (smart resume)
+- `/sw:progress` - Check status and completion
+- `/sw:validate 0001` - Optional quality assessment
+- `/sw:done 0001` - Manual close (rarely needed)
 
 **Integration Commands:**
-- `/specweave:sync-github` - Sync to GitHub issues
-- `/specweave:sync-docs` - Review specs vs implementation
+- `/sw:sync-github` - Sync to GitHub issues
+- `/sw:sync-docs` - Review specs vs implementation
 
 All commands adapt to detected tech stack.
 

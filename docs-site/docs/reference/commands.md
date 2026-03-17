@@ -35,7 +35,7 @@ Start new work and create specifications.
 | Command | Purpose | Example |
 |---------|---------|---------|
 | `/sw:increment` | Create new increment | `/sw:increment "User auth with JWT"` |
-| `/sw:backlog` | View/manage backlog | `/sw:backlog` |
+| `/sw:status` | View/manage backlog | `/sw:status` |
 
 ### /sw:increment
 
@@ -322,7 +322,7 @@ Control increment lifecycle.
 | `/sw:pause` | Pause increment | `/sw:pause 0007` |
 | `/sw:resume` | Resume paused | `/sw:resume 0007` |
 | `/sw:abandon` | Abandon increment | `/sw:abandon 0007` |
-| `/sw:reopen` | Reopen completed | `/sw:reopen 0007` |
+| `/sw:resume` | Reopen completed | `/sw:resume 0007` |
 | `/sw:restore` | Restore abandoned | `/sw:restore 0007` |
 | `/sw:archive` | Manual archive | `/sw:archive 0007` |
 

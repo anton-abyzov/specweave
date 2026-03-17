@@ -405,7 +405,7 @@ graph TB
 - Tests embedded in `tasks.md`
 - BDD format: Given/When/Then
 - Coverage targets per task (80-90%)
-- `/sw:validate-coverage` checks completeness
+- `/sw:validate` checks completeness
 
 ### Phase 5: Deployment
 
@@ -1061,7 +1061,7 @@ POST   /refunds (admin only)
 **Phase 4: Testing**
 ```bash
 # Validate test coverage
-/sw:validate-coverage
+/sw:validate
 
 # Output:
 # ✅ T-001: 92% coverage (target: 90%)
@@ -1171,7 +1171,7 @@ Result: Clear traceability from requirement to test
 **Benefits**
 - Understand test purpose (AC-US1-01 explains why this test exists)
 - Safe refactoring (if requirement changes, update linked tests)
-- Coverage analysis (/sw:validate-coverage shows AC-ID coverage)
+- Coverage analysis (/sw:validate shows AC-ID coverage)
 
 ### 4. Living Documentation (Auto-Sync)
 

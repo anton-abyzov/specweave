@@ -2073,7 +2073,7 @@ coverage_target: 85%
 - ✅ Coverage targets met (80-90%)
 - ✅ [BDD](/docs/glossary/terms/bdd) format used (Given/When/Then)
 
-**`/sw:check-tests` command validates**:
+**`npx vitest run` command validates**:
 - ✅ Test files exist (unit, integration, E2E)
 - ✅ Tests reference AC-IDs
 - ✅ Coverage reports meet targets
@@ -2435,7 +2435,7 @@ All files                  |   87.45 |    82.33 |   91.67 |   87.12 |
 - **Test-Aware Planning**: Embeds tests in tasks.md
 - **BDD Format**: Given/When/Then for test plans
 - **AC-ID Traceability**: spec.md → tasks.md → tests
-- **Coverage Targets**: 80-90% per task, validated via `/sw:check-tests`
+- **Coverage Targets**: 80-90% per task, validated via `npx vitest run`
 - **Quality Gates**: `/sw:validate`, `/sw:done` enforce testing
 
 ### Testing Tools

@@ -57,7 +57,7 @@ SpecWeave enforces **Spec-Driven Development**:
 ### 1. One Command Creates Foundation
 
 ```bash
-/specweave:increment "Add dark mode toggle"
+/sw:increment "Add dark mode toggle"
 ```
 
 AI agents (PM, Architect, Planner) create:
@@ -72,7 +72,7 @@ AI agents (PM, Architect, Planner) create:
 ### 2. One Command Builds
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 Autonomous execution through all tasks with quality validation.
@@ -80,7 +80,7 @@ Autonomous execution through all tasks with quality validation.
 ### 3. One Command Closes
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 Three quality gates validate completion:
@@ -151,12 +151,12 @@ specweave init .
 
 Then in Claude Code:
 ```bash
-/specweave:increment "Add dark mode toggle"
-/specweave:do
-/specweave:done 0001
+/sw:increment "Add dark mode toggle"
+/sw:do
+/sw:done 0001
 ```
 
-**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 **[Full Quickstart Guide](/docs/guides/getting-started/quickstart)**
 

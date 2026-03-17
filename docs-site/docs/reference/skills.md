@@ -298,7 +298,7 @@ Build modern web applications with best practices.
 **Purpose**: Frontend architecture for React, Vue, or Angular.
 
 ```bash
-/frontend:architect  # Frontend architecture guidance
+/sw:architect  # Frontend architecture guidance
 ```
 
 **Covers:**
@@ -312,7 +312,7 @@ Build modern web applications with best practices.
 **Purpose**: Next.js 14+ App Router patterns.
 
 ```bash
-/frontend:nextjs  # Next.js guidance
+/sw:architect  # Next.js guidance
 ```
 
 **Covers:**

@@ -173,7 +173,7 @@ Pause an increment when:
 For increments you've planned but aren't ready to start:
 
 ```bash
-/sw:backlog 0044
+/sw:status 0044
 
 # Or during creation:
 /sw:increment "Analytics dashboard" --backlog
@@ -196,7 +196,7 @@ BACKLOG (3 items)
   Priority 3: 0046-performance-tuning   (When time permits)
 
 # Reorder backlog
-/sw:backlog reorder
+/sw:status reorder
 # Interactive: Drag and drop priority
 ```
 
@@ -517,7 +517,7 @@ Practice lifecycle management:
 /sw:resume 0001
 
 # 5. Move to backlog
-/sw:backlog 0001
+/sw:status 0001
 
 # 6. Abandon it (cleanup)
 /sw:abandon 0001 --reason "Test complete"

@@ -53,7 +53,7 @@ Controls automatic vs manual sync.
 
 **Default**: `true` (automatic sync enabled)
 
-- **`true`** (default): Sync happens automatically on `/specweave:done`
+- **`true`** (default): Sync happens automatically on `/sw:done`
 - **`false`**: Requires manual `/specweave-github:sync` command
 
 ### canUpdateStatus

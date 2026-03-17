@@ -84,7 +84,7 @@ graph LR
 
 - `/sw:increment "feature"` - Creates new increment
 - `/sw:done` - PM validates completion (quality gate)
-- `/sw:update-scope` - Reviews scope changes
+- `/sw:increment (to update spec)` - Reviews scope changes
 
 ## Related
 
