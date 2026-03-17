@@ -655,17 +655,17 @@ npx vitest run 0008
 
 ```mermaid
 graph TD
-    User[User Request] --> PM[PM Agent: Create spec.md]
-    PM --> Arch[Architect Agent: Create plan.md + ADRs]
-    Arch --> TL[Tech Lead Agent: Create tasks.md]
-    TL --> TAP[Test-Aware Planner: Embed test plans]
-    TAP --> Sec[Security Agent: Security review]
-    Sec --> Perf[Performance Agent: Performance review]
-    Perf --> Dev[Developer: Implementation]
-    Dev --> TDD[TDD Orchestrator: Test-first workflow]
-    TDD --> QA[QA Lead Agent: Validate quality]
-    QA --> Docs[Docs Writer Agent: Update docs]
-    Docs --> PMClose[PM Agent: Close increment]
+    User[User Request] --> PM["PM Agent: Create spec.md"]
+    PM --> Arch["Architect Agent: Create plan.md + ADRs"]
+    Arch --> TL["Tech Lead Agent: Create tasks.md"]
+    TL --> TAP["Test-Aware Planner: Embed test plans"]
+    TAP --> Sec["Security Agent: Security review"]
+    Sec --> Perf["Performance Agent: Performance review"]
+    Perf --> Dev["Developer: Implementation"]
+    Dev --> TDD["TDD Orchestrator: Test-first workflow"]
+    TDD --> QA["QA Lead Agent: Validate quality"]
+    QA --> Docs["Docs Writer Agent: Update docs"]
+    Docs --> PMClose["PM Agent: Close increment"]
 
     style PM fill:#99ccff
     style Arch fill:#cc99ff

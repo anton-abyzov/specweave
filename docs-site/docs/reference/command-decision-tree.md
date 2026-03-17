@@ -34,13 +34,13 @@ description: Know exactly which SpecWeave command to use in any situation
 ```mermaid
 flowchart TD
     A[What's my situation?] --> B{Have active increment?}
-    B -->|No| C[/sw:increment]
+    B -->|No| C["/sw:increment"]
     B -->|Yes| D{Is it complete?}
-    D -->|Yes| E[/sw:done]
+    D -->|Yes| E["/sw:done"]
     D -->|No| F{Am I blocked?}
-    F -->|Yes, temporarily| G[/sw:pause]
-    F -->|Yes, deprioritized| H[/sw:status]
-    F -->|No| I[/sw:do]
+    F -->|Yes, temporarily| G["/sw:pause"]
+    F -->|Yes, deprioritized| H["/sw:status"]
+    F -->|No| I["/sw:do"]
 ```
 
 ### "I finished my task"
@@ -48,12 +48,12 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[Task complete] --> B{All tasks done?}
-    B -->|No| C[Continue with /sw:do]
-    B -->|Yes| D[/sw:validate]
+    B -->|No| C["Continue with /sw:do"]
+    B -->|Yes| D["/sw:validate"]
     D --> E{Validation passed?}
-    E -->|Yes| F[/sw:grill]
+    E -->|Yes| F["/sw:grill"]
     F --> G{Grill passed?}
-    G -->|Yes| H[/sw:done]
+    G -->|Yes| H["/sw:done"]
     G -->|No| I[Fix issues, run grill again]
     E -->|No| J[Fix issues, then validate again]
 ```

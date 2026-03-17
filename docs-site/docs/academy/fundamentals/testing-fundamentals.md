@@ -1099,9 +1099,9 @@ Shows line-by-line coverage with colors:
 
 ```mermaid
 graph LR
-    A[0% → 80%<br/>Easy] --> B[80% → 90%<br/>Moderate]
-    B --> C[90% → 95%<br/>Hard]
-    C --> D[95% → 100%<br/>Very Hard]
+    A["0% to 80%<br/>Easy"] --> B["80% to 90%<br/>Moderate"]
+    B --> C["90% to 95%<br/>Hard"]
+    C --> D["95% to 100%<br/>Very Hard"]
 
     style A fill:#c8e6c9
     style B fill:#fff9c4

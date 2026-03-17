@@ -41,7 +41,7 @@ graph TB
     end
 
     Canon[".agents/skills/"] --> Universal
-    Canon -->|symlink/copy| NonUniversal
+    Canon -->|"symlink/copy"| NonUniversal
     NonUniversal --> B1D[".claude/skills/"]
     NonUniversal --> B2D[".cursor/skills/"]
     NonUniversal --> B3D[".windsurf/skills/"]

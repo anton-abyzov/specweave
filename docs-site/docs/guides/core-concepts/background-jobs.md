@@ -199,12 +199,12 @@ Living Docs Batch Sync starts
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: createJob()
-    pending --> running: startJob()
-    running --> completed: completeJob()
-    running --> failed: completeJob(error)
-    running --> paused: pauseJob() / rate limit
-    paused --> running: resumeJob()
+    [*] --> pending: createJob
+    pending --> running: startJob
+    running --> completed: completeJob
+    running --> failed: completeJob with error
+    running --> paused: pauseJob / rate limit
+    paused --> running: resumeJob
     failed --> [*]
     completed --> [*]
 ```

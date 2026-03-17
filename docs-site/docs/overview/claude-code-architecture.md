@@ -32,17 +32,17 @@ Claude Code is an extensible AI coding assistant with a **plugin-based architect
 flowchart TB
     subgraph Claude Code
         direction TB
-        PLUGIN[📦 Plugins<br/>Extension packages]
+        PLUGIN["📦 Plugins<br/>Extension packages"]
 
         subgraph "Plugin Contents"
-            SKILLS[⚡ Skills<br/>Auto-activate expertise]
-            AGENTS[🤖 Agents<br/>Specialized subprocesses]
-            COMMANDS[📝 Commands<br/>User-invoked actions]
-            subgraph HOOKS_BOX[🪝 Hooks]
-                GLOBAL[Global<br/>hooks.json]
-                SCOPED[Skill-Scoped<br/>frontmatter]
+            SKILLS["⚡ Skills<br/>Auto-activate expertise"]
+            AGENTS["🤖 Agents<br/>Specialized subprocesses"]
+            COMMANDS["📝 Commands<br/>User-invoked actions"]
+            subgraph HOOKS_BOX["🪝 Hooks"]
+                GLOBAL["Global<br/>hooks.json"]
+                SCOPED["Skill-Scoped<br/>frontmatter"]
             end
-            MCP[🔌 MCP Servers<br/>External tools]
+            MCP["🔌 MCP Servers<br/>External tools"]
         end
 
         PLUGIN --> SKILLS
@@ -52,7 +52,7 @@ flowchart TB
         PLUGIN --> MCP
     end
 
-    USER[👤 User] -->|"describes task"| SKILLS
+    USER["👤 User"] -->|"describes task"| SKILLS
     USER -->|"/command"| COMMANDS
     SKILLS -->|"spawns when needed"| AGENTS
     GLOBAL -->|"always fires"| AGENTS
