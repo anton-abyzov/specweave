@@ -55,7 +55,7 @@ Run any SpecWeave command:
 ```bash
 specweave status
 # or
-/specweave:progress
+/sw:progress
 ```
 
 **What happens**:
@@ -109,7 +109,7 @@ All `true` = same behavior as v0.23.x ✅
 }
 ```
 
-**Effect**: `/specweave:done` updates living docs locally, but requires manual sync:
+**Effect**: `/sw:done` updates living docs locally, but requires manual sync:
 ```bash
 /specweave-github:sync 0047
 ```
@@ -287,7 +287,7 @@ npm install -g specweave@0.23.2
 
 **A**: Create a test increment and try different permission combinations:
 ```bash
-/specweave:increment "test-permissions"
+/sw:increment "test-permissions"
 # Modify .specweave/config.json
 # Complete tasks and observe sync behavior
 ```

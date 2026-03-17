@@ -53,7 +53,7 @@ SpecWeave ships with specialized skills for every role:
 
 - **PM** (`/sw:pm`) — writes user stories with acceptance criteria
 - **Architect** (`/sw:architect`) — designs systems, writes ADRs
-- **Frontend** (`/frontend:frontend-core`) — React, Vue, Angular, Next.js
+- **Frontend** (`/sw:architect`) — React, Vue, Angular, Next.js
 - **Backend** (`/backend:nodejs`, `backend:python`, `backend:go`, etc.)
 - **QA** (`/testing:qa`) — test strategy and automation
 - **Security** (`/sw:security`) — OWASP, threat modeling, secure code review
