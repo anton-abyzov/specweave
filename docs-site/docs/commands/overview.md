@@ -321,18 +321,16 @@ Monitor long-running operations that continue even after closing Claude.
 
 ### Essential Workflow (Use These!)
 
-| Command | Purpose | Priority |
-|---------|---------|----------|
-| `/sw:increment` | Plan new increment | ⭐ **START HERE** |
-| `/sw:do` | Execute tasks | ⭐ **MAIN WORK** |
-| `/sw:auto` | Autonomous execution | ⭐ **HANDS-FREE** |
-| `/sw:progress` | Check status | ⭐ **VISIBILITY** |
-| `/sw:jobs` | Monitor background jobs | ⭐ **LONG OPS** |
-| `/sw:validate` | Quick validation | ⭐ **PRE-CHECK** |
-| `/sw:qa` | Quality assessment | ⭐ **QUALITY GATE** |
-| `npx vitest run` | Test coverage check | ⭐ **TEST VALIDATION** |
-| `/sw:done` | Close increment | ⭐ **FINISH** |
-| `/sw:sync-docs` | Synchronize living docs | ⭐ **KEEP CURRENT** |
+| Slash Command | Natural Language | Purpose |
+|--------------|-----------------|---------|
+| `/sw:increment "feature"` | "Let's build X" | Plan new increment |
+| `/sw:do` | "Start implementing" | Execute tasks |
+| `/sw:auto` | "Ship it while I sleep" | Autonomous execution |
+| `/sw:progress` | "What's the status?" | Check progress |
+| `/sw:jobs` | "Show background jobs" | Monitor long-running ops |
+| `/sw:validate` | "Check if it looks good" | Quick validation |
+| `/sw:done` | "We're done" | Close increment |
+| `/sw:sync-docs` | "Update the docs" | Synchronize living docs |
 
 ### Auto Mode Commands
 
@@ -422,30 +420,29 @@ npx vitest run 0007
 
 ## Integration with External Tools
 
-### GitHub Issues (via sw-github plugin)
+All sync skills are part of the unified `sw` plugin.
+
+### GitHub Issues
 
 ```bash
 # Sync increment to GitHub
-/sw-github:sync 0007
-
-# View sync status
-/sw-github:sync
+/sw:github-sync 0007
 ```
 
-**Automatic sync**: When GitHub plugin enabled, `/sw:do` and `/sw:done` automatically sync to GitHub.
+**Automatic sync**: When GitHub sync is configured, `/sw:do` and `/sw:done` automatically sync to GitHub.
 
-### JIRA Integration (via sw-jira plugin)
+### JIRA Integration
 
 ```bash
 # Sync to JIRA
-/sw-jira:sync 0007
+/sw:jira-sync 0007
 ```
 
-### Azure DevOps (via sw-ado plugin)
+### Azure DevOps
 
 ```bash
 # Sync to Azure DevOps
-/sw-ado:sync 0007
+/sw:ado-sync 0007
 ```
 
 ---
