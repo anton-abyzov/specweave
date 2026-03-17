@@ -100,6 +100,8 @@ const {
   mockCreateConfigFile,
   mockShowNextSteps,
   mockInstallGitHooks,
+  mockEnsureSkillCreator,
+  mockScanMisplacedRepos,
 } = vi.hoisted(() => ({
   mockFindSourceDir: vi.fn().mockReturnValue('/mock/templates'),
   mockFindPackageRoot: vi.fn().mockReturnValue('/mock/package-root'),
@@ -108,6 +110,7 @@ const {
   mockDetectSuspiciousPath: vi.fn().mockReturnValue(null),
   mockDetectProvider: vi.fn().mockReturnValue(null),
   mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
+  mockScanMisplacedRepos: vi.fn().mockReturnValue([]),
   mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ umbrella: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
@@ -118,6 +121,7 @@ const {
   mockCreateConfigFile: vi.fn(),
   mockShowNextSteps: vi.fn(),
   mockInstallGitHooks: vi.fn(),
+  mockEnsureSkillCreator: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { mockSetupLspEnvVar } = vi.hoisted(() => ({
@@ -241,7 +245,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
-  scanMisplacedRepos: vi.fn().mockReturnValue([]),
+  scanMisplacedRepos: mockScanMisplacedRepos,
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
@@ -252,7 +256,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   createConfigFile: mockCreateConfigFile,
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
-  ensureSkillCreator: vi.fn().mockResolvedValue(undefined),
+  ensureSkillCreator: mockEnsureSkillCreator,
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({
@@ -350,7 +354,10 @@ describe('init command', () => {
     mockDetectUmbrellaParent.mockReturnValue(null);
     mockDetectSuspiciousPath.mockReturnValue(null);
     mockDetectProvider.mockReturnValue(null);
+    mockScanUmbrellaRepos.mockReturnValue(null);
+    mockScanMisplacedRepos.mockReturnValue([]);
     mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
+    mockEnsureSkillCreator.mockResolvedValue(undefined);
     mockPromptLanguageSelection.mockResolvedValue({ language: 'en', keepEnglishOriginals: false });
     mockGetDefaultLanguageSelection.mockReturnValue({ language: 'en', keepEnglishOriginals: false });
     mockGetPluginScope.mockReturnValue('user');

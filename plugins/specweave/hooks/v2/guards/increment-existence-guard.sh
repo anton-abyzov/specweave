@@ -172,24 +172,33 @@ check_spec() {
 # Search for qualifying increments
 FOUND=false
 
+# Detect project root via walk-up
+_DIR="$PWD"
+_LIMIT=0
+while [[ "$_DIR" != "/" ]] && [[ ! -d "$_DIR/.specweave" ]] && [[ $_LIMIT -lt 50 ]]; do
+  _DIR=$(dirname "$_DIR")
+  _LIMIT=$((_LIMIT + 1))
+done
+_ROOT="$_DIR"
+
 # Single-repo increments
-if [[ -d ".specweave/increments" ]]; then
+if [[ -d "$_ROOT/.specweave/increments" ]]; then
   while IFS= read -r spec; do
     if check_spec "$spec"; then
       FOUND=true
       break
     fi
-  done < <(find .specweave/increments -maxdepth 2 -name "spec.md" 2>/dev/null)
+  done < <(find "$_ROOT/.specweave/increments" -maxdepth 2 -name "spec.md" 2>/dev/null)
 fi
 
 # Multi-repo increments
-if [[ "$FOUND" == "false" ]] && [[ -d "repositories" ]]; then
+if [[ "$FOUND" == "false" ]] && [[ -d "$_ROOT/repositories" ]]; then
   while IFS= read -r spec; do
     if check_spec "$spec"; then
       FOUND=true
       break
     fi
-  done < <(find repositories -path "*/.specweave/increments/*/spec.md" -maxdepth 6 2>/dev/null)
+  done < <(find "$_ROOT/repositories" -path "*/.specweave/increments/*/spec.md" -maxdepth 6 2>/dev/null)
 fi
 
 if [[ "$FOUND" == "true" ]]; then

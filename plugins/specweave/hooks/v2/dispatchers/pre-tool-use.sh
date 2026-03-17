@@ -19,8 +19,20 @@ INPUT=$(cat)
 # Skip if hooks disabled
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
-# Skip if not a SpecWeave project
-[[ ! -d ".specweave" ]] && echo '{"decision":"allow"}' && exit 0
+# Detect project root via walk-up (cwd may not be root)
+_DIR="$PWD"
+_LIMIT=0
+while [[ "$_DIR" != "/" ]] && [[ ! -d "$_DIR/.specweave" ]] && [[ $_LIMIT -lt 50 ]]; do
+  _DIR=$(dirname "$_DIR")
+  _LIMIT=$((_LIMIT + 1))
+done
+[[ ! -d "$_DIR/.specweave" ]] && echo '{"decision":"allow"}' && exit 0
+
+# Fast file_path check: skip non-increment files before jq (< 5ms)
+if ! echo "$INPUT" | grep -q '"file_path".*\.specweave/increments/'; then
+  echo '{"decision":"allow"}'
+  exit 0
+fi
 
 # Get plugin root for guard paths
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(dirname "$0")")")}"

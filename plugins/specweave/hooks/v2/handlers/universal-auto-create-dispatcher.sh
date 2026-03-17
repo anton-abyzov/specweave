@@ -103,6 +103,12 @@ if [[ -f "$SHARED_LIB" ]]; then
   source "$SHARED_LIB"
 fi
 
+# Source resolve-package.sh for dynamic specweave path resolution
+RESOLVE_LIB="$HANDLER_DIR/../../lib/resolve-package.sh"
+if [[ -f "$RESOLVE_LIB" ]]; then
+  source "$RESOLVE_LIB"
+fi
+
 GH_ENABLED="false"
 JIRA_ENABLED="false"
 ADO_ENABLED="false"
@@ -146,10 +152,10 @@ if [[ "$GH_ENABLED" == "true" ]]; then
     CANDIDATE="${PROJECT_ROOT}/plugins/specweave-github/hooks/github-auto-create-handler.sh"
     [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
   fi
-  # 3. Fallback: node_modules/specweave/ (direct npm install)
+  # 3. Fallback: resolve-package.sh (dynamic resolution)
   if [[ -z "$GITHUB_HANDLER" ]]; then
-    CANDIDATE="${PROJECT_ROOT}/node_modules/specweave/plugins/specweave-github/hooks/github-auto-create-handler.sh"
-    [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
+    CANDIDATE=$(find_specweave_script "plugins/specweave-github/hooks/github-auto-create-handler.sh" 2>/dev/null)
+    [[ -n "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
   fi
   if [[ -n "$GITHUB_HANDLER" ]]; then
     log "Delegating GitHub auto-create to handler at $GITHUB_HANDLER"
@@ -187,10 +193,10 @@ if [[ "$JIRA_ENABLED" == "true" || "$ADO_ENABLED" == "true" ]]; then
     CANDIDATE="$HANDLER_DIR/../../../lib/vendor/core/universal-auto-create.js"
     [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$(cd "$(dirname "$CANDIDATE")" && pwd)/$(basename "$CANDIDATE")"
   fi
-  # 3. node_modules/specweave/ (direct npm install)
+  # 3. resolve-package.sh (dynamic resolution)
   if [[ -z "$CREATE_MODULE" ]]; then
-    CANDIDATE="${PROJECT_ROOT}/node_modules/specweave/dist/src/core/universal-auto-create.js"
-    [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
+    CANDIDATE=$(find_specweave_script "dist/src/core/universal-auto-create.js" 2>/dev/null)
+    [[ -n "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
   fi
   # 4. Legacy: PROJECT_ROOT/dist/ (dev-only, running from source repo)
   if [[ -z "$CREATE_MODULE" ]]; then

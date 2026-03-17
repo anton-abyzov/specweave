@@ -97,6 +97,12 @@ if [[ -f "$SHARED_LIB" ]]; then
   source "$SHARED_LIB"
 fi
 
+# Source resolve-package.sh for dynamic specweave path resolution
+RESOLVE_LIB="$HANDLER_DIR/../../lib/resolve-package.sh"
+if [[ -f "$RESOLVE_LIB" ]]; then
+  source "$RESOLVE_LIB"
+fi
+
 GH_ENABLED="false"
 JIRA_ENABLED="false"
 ADO_ENABLED="false"
@@ -240,10 +246,10 @@ if [[ -z "$SYNC_MODULE" ]]; then
   CANDIDATE="${PKG_ROOT:-$PROJECT_ROOT}/dist/src/core/ac-progress-sync.js"
   [[ -f "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
 fi
-# 2. node_modules/specweave/ (direct npm install)
+# 2. resolve-package.sh (dynamic resolution)
 if [[ -z "$SYNC_MODULE" ]]; then
-  CANDIDATE="$PROJECT_ROOT/node_modules/specweave/dist/src/core/ac-progress-sync.js"
-  [[ -f "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
+  CANDIDATE=$(find_specweave_script "dist/src/core/ac-progress-sync.js" 2>/dev/null)
+  [[ -n "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
 fi
 # 3. Legacy: PROJECT_ROOT/dist/ (dev-only, running from source repo)
 if [[ -z "$SYNC_MODULE" ]]; then

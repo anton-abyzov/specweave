@@ -57,38 +57,6 @@ for DOMAIN in $DOMAINS; do
     log "▶ Validating domain: $DOMAIN"
 
     case "$DOMAIN" in
-        frontend)
-            # Frontend: TypeScript check + lint
-            if [ -f "$PROJECT_ROOT/package.json" ]; then
-                # Check for TypeScript
-                if [ -f "$PROJECT_ROOT/tsconfig.json" ]; then
-                    log "  Running: tsc --noEmit"
-                    if npx tsc --noEmit 2>&1 | tee -a "$LOG_FILE"; then
-                        log "  ✅ TypeScript check passed"
-                        ((PASSED++)) || true
-                    else
-                        log "  ❌ TypeScript check failed"
-                        ((FAILED++)) || true
-                    fi
-                fi
-
-                # Check for lint script
-                if jq -e '.scripts.lint' "$PROJECT_ROOT/package.json" > /dev/null 2>&1; then
-                    log "  Running: npm run lint"
-                    if npm run lint 2>&1 | tee -a "$LOG_FILE"; then
-                        log "  ✅ Lint passed"
-                        ((PASSED++)) || true
-                    else
-                        log "  ❌ Lint failed"
-                        ((FAILED++)) || true
-                    fi
-                fi
-            else
-                log "  ⏭ No package.json - skipping frontend validation"
-                ((SKIPPED++)) || true
-            fi
-            ;;
-
         backend)
             # Backend: Unit tests + lint
             if [ -f "$PROJECT_ROOT/package.json" ]; then

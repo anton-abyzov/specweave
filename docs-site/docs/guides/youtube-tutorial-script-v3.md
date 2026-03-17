@@ -99,7 +99,7 @@ draft: true
 - `/sw:auto` running tests
 - Slack channel with agent updates
 - verified-skill.com homepage
-- App Store page (Lulla or WC26)
+- App Store page ([Lulla](https://lulla-app.pages.dev/) or [WC26](https://wc-26.net/))
 
 > "Ten production apps. Three in the App Store. Nearly 4,000 commits. 700 releases. One developer, one system.
 >

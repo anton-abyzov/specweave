@@ -51,7 +51,7 @@ STATUS=$(echo "$SESSION" | jq -r '.status')
 ITERATION=$(echo "$SESSION" | jq -r '.iteration')
 CURRENT_INCREMENT=$(echo "$SESSION" | jq -r '.currentIncrement')
 START_TIME=$(echo "$SESSION" | jq -r '.startTime')
-COMPLETED=$(echo "$SESSION" | jq -r '.completedIncrements | length')
+COMPLETED=$(echo "$SESSION" | jq -r '.completedIncrements // [] | length')
 
 # Check if already not running
 if [ "$STATUS" != "running" ]; then

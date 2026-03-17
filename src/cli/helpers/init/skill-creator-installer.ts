@@ -24,6 +24,8 @@ const SKILL_CREATOR_ID = 'anthropics/skills/skill-creator';
 const SKILL_CREATOR_URL = `https://github.com/anthropics/skills/tree/main/skills/skill-creator`;
 /** Public npm registry — bypasses .npmrc redirects in corporate environments */
 const NPM_PUBLIC_REGISTRY = 'https://registry.npmjs.org';
+/** Pinned version range for npx --package */
+const VSKILL_VERSION_RANGE = '^0.5.0';
 
 const VSKILL_INSTALL_ARGS = ['install', SKILL_CREATOR_ID, '--yes', '--agent', 'claude-code'];
 
@@ -51,6 +53,8 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
       return { installed: false, skipped: true };
     }
 
+    const errors: string[] = [];
+
     // 2. Try global vskill install (preferred method)
     const vskillAvailable = await isCommandAvailable('vskill');
     if (vskillAvailable) {
@@ -60,18 +64,24 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
       });
 
       if (result.success) {
-        return { installed: true, skipped: false };
+        if (fs.existsSync(localPath)) {
+          return { installed: true, skipped: false };
+        }
+        console.warn('[skill-gen] vskill exited 0 but skill file not found -- trying next tier');
       }
 
-      const vskillErr = result.stderr?.trim() || result.error?.message || 'unknown error';
-      console.warn(`[skill-gen] vskill install failed: ${vskillErr} -- trying npx fallback`);
+      const vskillErr = result.success ? 'exited 0 but file not written' : (result.stderr?.trim() || result.error?.message || 'unknown error');
+      errors.push(`vskill: ${vskillErr}`);
+      if (!result.success) {
+        console.warn(`[skill-gen] vskill install failed: ${vskillErr} -- trying npx fallback`);
+      }
     }
 
     // 3. Try npx with explicit public registry (bypasses .npmrc redirects)
     const npxAvailable = await isCommandAvailable('npx');
     if (npxAvailable) {
       const result = await execFileNoThrow('npx', [
-        '--registry', NPM_PUBLIC_REGISTRY,
+        '--yes', '--registry', NPM_PUBLIC_REGISTRY, '--userconfig', '/dev/null', '--ignore-scripts', '--package', `vskill@${VSKILL_VERSION_RANGE}`,
         'vskill', ...VSKILL_INSTALL_ARGS,
       ], {
         cwd: projectRoot,
@@ -79,18 +89,24 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
       });
 
       if (result.success) {
-        return { installed: true, skipped: false };
+        if (fs.existsSync(localPath)) {
+          return { installed: true, skipped: false };
+        }
+        console.warn('[skill-gen] vskill exited 0 but skill file not found -- trying next tier');
       }
 
-      const npxErr = result.stderr?.trim() || result.error?.message || 'unknown error';
-      console.warn(`[skill-gen] npx vskill install failed: ${npxErr} -- trying claude CLI fallback`);
+      const npxErr = result.success ? 'exited 0 but file not written' : (result.stderr?.trim() || result.error?.message || 'unknown error');
+      errors.push(`npx: ${npxErr}`);
+      if (!result.success) {
+        console.warn(`[skill-gen] npx vskill install failed: ${npxErr} -- trying claude CLI fallback`);
+      }
     }
 
     // 4. Fall back to claude install-skill
     const claudeAvailable = await isCommandAvailable('claude');
     if (!claudeAvailable) {
       console.warn(`[skill-gen] no CLI available -- run 'npx --registry ${NPM_PUBLIC_REGISTRY} vskill install ${SKILL_CREATOR_ID}' manually`);
-      return { installed: false, skipped: false, error: 'no CLI available (vskill, npx, or claude)' };
+      return { installed: false, skipped: false, error: errors.join('; ') || 'no CLI available' };
     }
 
     const result = await execFileNoThrow('claude', ['install-skill', SKILL_CREATOR_URL], {
@@ -99,12 +115,18 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
     });
 
     if (result.success) {
-      return { installed: true, skipped: false };
+      if (fs.existsSync(localPath)) {
+        return { installed: true, skipped: false };
+      }
+      console.warn('[skill-gen] vskill exited 0 but skill file not found -- trying next tier');
     }
 
-    const errorMsg = result.stderr?.trim() || result.error?.message || 'unknown error';
-    console.warn(`[skill-gen] skill-creator install failed: ${errorMsg} -- run 'npx --registry ${NPM_PUBLIC_REGISTRY} vskill install ${SKILL_CREATOR_ID}' manually`);
-    return { installed: false, skipped: false, error: errorMsg };
+    const claudeErr = result.success ? 'exited 0 but file not written' : (result.stderr?.trim() || result.error?.message || 'unknown error');
+    errors.push(`claude: ${claudeErr}`);
+    if (!result.success) {
+      console.warn(`[skill-gen] claude install-skill failed: ${claudeErr} -- run 'npx --registry ${NPM_PUBLIC_REGISTRY} vskill install ${SKILL_CREATOR_ID}' manually`);
+    }
+    return { installed: false, skipped: false, error: errors.join('; ') || 'no CLI available' };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.warn(`[skill-gen] skill-creator install failed: ${msg} -- run 'npx --registry ${NPM_PUBLIC_REGISTRY} vskill install ${SKILL_CREATOR_ID}' manually`);

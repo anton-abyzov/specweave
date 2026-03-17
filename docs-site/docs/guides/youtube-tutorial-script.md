@@ -30,7 +30,7 @@ draft: true
 
 **[SCREEN: Rapid 3-second montage of all seven apps — fast cuts, energetic music]**
 
-> **BizZone** — student business events, AI news generation → **SkillUp** — football coaching monetization → **EduFeed** — AI learning platform → **WC26** — World Cup companion, mobile + web → **Lulla** — baby calming with ML cry detection → **EasyChamp** — enterprise sports leagues, 20+ microservices → **SpecWeave** — the tool itself, built with itself
+> **[BizZone](https://apps.apple.com/us/app/business-zone/id6756091030)** — student business events, AI news generation → **[SkillUp](https://skillup-football.com/)** — football coaching monetization → **[EduFeed](https://edufeed-jet.vercel.app/)** — AI learning platform → **[WC26](https://wc-26.net/)** — World Cup companion, mobile + web → **[Lulla](https://lulla-app.pages.dev/)** — baby calming with ML cry detection → **[EasyChamp](https://easychamp.com)** — enterprise sports leagues, 20+ microservices → **[SketchMate](https://sketchmate.net/)** — multiplayer drawing game → **[JobWeave](https://jobweave.ai)** — AI job matching platform → **[VerifiedSkill](https://verifiedskill.com)** — skill verification registry → **[SpecWeave](https://github.com/anton-abyzov/specweave)** — the tool itself, built with itself
 
 **[SCREEN: Cut to face-cam. Music fades.]**
 
@@ -66,25 +66,25 @@ draft: true
 
 **[3 seconds per app — show the most impressive screen of each]**
 
-> "**BizZone** — my first App Store release. A platform for student and business events with AI-powered news generation. Users create events, the AI generates professional news articles automatically.
+> "**[BizZone](https://apps.apple.com/us/app/business-zone/id6756091030)** — my first App Store release. A platform for student and business events with AI-powered news generation. Users create events, the AI generates professional news articles automatically.
 >
-> **SkillUp Football** — at skillup-football.com. Coaches monetize their training programs through Stripe. Instagram-like feed, lesson scheduling, challenges. My 10-year-old daughter helped test this one.
+> **[SkillUp Football](https://skillup-football.com/)** — at skillup-football.com. Coaches monetize their training programs through Stripe. Instagram-like feed, lesson scheduling, challenges. My 10-year-old daughter helped test this one.
 
 **[SCREEN: B-roll — daughter at the computer, 2 seconds]**
 
-> "**EduFeed** — NotebookLM meets Zoom for education. Upload a YouTube video, get quizzes, flashcards, mind maps, audio discussions. Students join video rooms and share AI-generated materials in real time. My 14-year-old contributed to the student experience.
+> "**[EduFeed](https://edufeed-jet.vercel.app/)** — NotebookLM meets Zoom for education. Upload a YouTube video, get quizzes, flashcards, mind maps, audio discussions. Students join video rooms and share AI-generated materials in real time. My 14-year-old contributed to the student experience.
 >
-> **WC26 Football** — live in the App Store. Your World Cup 2026 companion. AI travel planner, live ticket purchasing, comprehensive team stats, venue guides. Mobile and web.
+> **[WC26 Football](https://wc-26.net/)** — live in the App Store. Your World Cup 2026 companion. AI travel planner, live ticket purchasing, comprehensive team stats, venue guides. Mobile and web.
 >
-> **Lulla** — this one is personal."
+> **[Lulla](https://lulla-app.pages.dev/)** — this one is personal."
 
 **[SCREEN: B-roll — baby in car seat, 2 seconds. Then show the app.]**
 
 > "Built when my youngest wouldn't sleep in the car. Swift iOS app with Apple Watch. Uses an ML model to classify baby cries — tired, hungry, or in pain — and automatically adjusts the playlist. The model filters out car noise, sibling voices, everything.
 >
-> **EasyChamp** — four years in production. Enterprise sports league management. Over 20 microservices on GCP with ArgoCD. ML video analytics with computer vision. Tournament systems, custom websites, Stripe monetization. This is where I'll show brownfield integration later — introducing SpecWeave to a complex existing codebase.
+> **[EasyChamp](https://easychamp.com)** — four years in production. Enterprise sports league management. Over 20 microservices on GCP with ArgoCD. ML video analytics with computer vision. Tournament systems, custom websites, Stripe monetization. This is where I'll show brownfield integration later — introducing SpecWeave to a complex existing codebase.
 >
-> **And SpecWeave itself** — built with SpecWeave. Every feature spec'd through increments. Skills developed and verified through vskill. The entire ecosystem is dogfooded."
+> **And [SpecWeave](https://github.com/anton-abyzov/specweave) itself** — built with SpecWeave. Every feature spec'd through increments. Skills developed and verified through vskill. The entire ecosystem is dogfooded."
 
 **[SCREEN: Back to face-cam]**
 
@@ -96,7 +96,7 @@ draft: true
 
 > "Now here's something I want to plant in your mind before we go deeper.
 >
-> SpecWeave isn't just about building apps. The same spec-plan-tasks model that coordinated these five applications works for ANY structured work.
+> SpecWeave isn't just about building apps. The same spec-plan-tasks model that coordinated these ten production projects works for ANY structured work.
 >
 > I automate my Obsidian vault reviews — the AI goes through every document and if something's in the wrong place, it reorganizes it into the right structure. All tracked, all traceable.
 >
@@ -1287,7 +1287,7 @@ specweave init .
 > - **Change Failure Rate**: 0% across 235 releases (Elite tier)
 > - **MTTR**: N/A because nothing failed"
 
-> "5+ production applications built with SpecWeave — including SpecWeave itself, BizZone mobile app, Event Management SaaS, and more.
+> "10+ production projects built with SpecWeave — including SpecWeave itself, BizZone mobile app, Event Management SaaS, and more.
 >
 > This isn't a demo project. It's production-tested — on itself.
 >
@@ -2524,7 +2524,7 @@ As a user, I want to log in securely...
 
 **[Point to spec example]**
 
-> "This is from BizZone, a business card scanning app. One of the 5+ production apps built with SpecWeave."
+> "This is from BizZone, a business card scanning app. One of the 10+ production projects built with SpecWeave."
 
 **[TERMINAL: Show the increment]**
 
@@ -2970,13 +2970,13 @@ specweave init .
 
 > "Okay, we've covered the entire SpecWeave Skill Fabric. Now let me show you exactly what you can build with it.
 >
-> Earlier I mentioned five production apps shipped in the past month. Let me walk you through each one — not just showing the UI, but the architecture, the key decisions, and how SpecWeave organized the complexity.
+> Earlier I mentioned ten production projects shipped in the past month. Let me walk you through each one — not just showing the UI, but the architecture, the key decisions, and how SpecWeave organized the complexity.
 >
 > Feel free to skip ahead if you want to jump straight to installation. But if you want to see real applications built entirely with spec-driven development, stick around."
 
 ---
 
-### BizZone - Student Events Platform (64:00 - 65:00)
+### [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030) - Student Events Platform (64:00 - 65:00)
 
 **[SCREEN: Show BizZone in the App Store, then the app itself]**
 
@@ -2990,7 +2990,7 @@ specweave init .
 
 ---
 
-### SkillUp Football - Coaching Monetization (65:00 - 66:00)
+### [SkillUp Football](https://skillup-football.com/) - Coaching Monetization (65:00 - 66:00)
 
 **[SCREEN: Show skillup-football.com + mobile app side by side]**
 
@@ -3008,7 +3008,7 @@ specweave init .
 
 ---
 
-### EduFeed - AI Learning Platform (66:00 - 67:00)
+### [EduFeed](https://edufeed-jet.vercel.app/) - AI Learning Platform (66:00 - 67:00)
 
 **[SCREEN: Show EduFeed — content creation → AI output → video room]**
 
@@ -3018,7 +3018,7 @@ specweave init .
 
 ---
 
-### WC26 Football - World Cup Companion (67:00 - 68:00)
+### [WC26 Football](https://wc-26.net/) - World Cup Companion (67:00 - 68:00)
 
 **[SCREEN: Show WC26 in the App Store, then mobile + web side by side]**
 
@@ -3030,7 +3030,7 @@ specweave init .
 
 ---
 
-### Lulla - AI Baby Calming App (68:00 - 69:00)
+### [Lulla](https://lulla-app.pages.dev/) - AI Baby Calming App (68:00 - 69:00)
 
 **[SCREEN: B-roll — baby in car seat, 2 seconds. Then show the iOS app + Apple Watch.]**
 
@@ -3044,7 +3044,7 @@ specweave init .
 
 ---
 
-### EasyChamp - Enterprise Sports Platform (69:00 - 70:30)
+### [EasyChamp](https://easychamp.com) - Enterprise Sports Platform (69:00 - 70:30)
 
 **[SCREEN: Show EasyChamp — league dashboard + Kubernetes lens + ArgoCD]**
 
@@ -3253,7 +3253,7 @@ Legacy. Startup. Enterprise. — Drop it into a 10-year-old codebase, use it on 
 In this 71-minute comprehensive tutorial, I walk through the complete verified-skill.com
 documentation, showing you how to go from "vibe coding" to spec-driven development.
 Includes deep dive into Claude Code's architecture (plugins, skills, agents, marketplace)
-and a detailed showcase of 5 production apps built in ONE MONTH — 100x faster than before.
+and a detailed showcase of 10 production projects built in ONE MONTH — 100x faster than before.
 
 🎯 THE 3-COMMAND WORKFLOW:
 /sw:increment "Add OAuth" → Creates spec.md + plan.md + tasks.md
@@ -3283,11 +3283,14 @@ What you'll learn:
 
 BONUS SECTION (63:30-71:30): Real-World App Showcase
 See the actual apps built with SpecWeave:
-- SkillUp: Football coaching platform with Stripe monetization
-- EduFeed: NotebookLM-style AI learning with collaborative video rooms
-- WC26: World Cup 2026 AI travel assistant
-- Lulla: ML-powered baby calming app (Swift + Apple Watch)
-- EasyChamp: Enterprise sports platform (20+ microservices, K8s, ML pipelines)
+- [SkillUp](https://skillup-football.com/): Football coaching platform with Stripe monetization
+- [EduFeed](https://edufeed-jet.vercel.app/): NotebookLM-style AI learning with collaborative video rooms
+- [WC26](https://wc-26.net/): World Cup 2026 AI travel assistant
+- [Lulla](https://lulla-app.pages.dev/): ML-powered baby calming app (Swift + Apple Watch)
+- [EasyChamp](https://easychamp.com): Enterprise sports platform (20+ microservices, K8s, ML pipelines)
+- [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030): Student business events with AI news generation
+- [SketchMate](https://sketchmate.net/): Multiplayer drawing game
+- [JobWeave](https://jobweave.ai): AI-powered job matching platform
 
 Links:
 - Documentation: https://verified-skill.com
@@ -3304,7 +3307,7 @@ Dogfooding stats:
 - 100 deploys/month (Elite DORA tier)
 - 0% failure rate across 235 releases
 - Nearly 2,000 commits over 14 months
-- 5+ production applications built in 1 month
+- 10+ production projects built in 1 month
 
 This isn't a demo — it's production-tested on itself and real businesses.
 Powered by Claude Opus 4.6 — the most emotional technology moment in 18+ years of software engineering.
@@ -3317,7 +3320,7 @@ Powered by Claude Opus 4.6 — the most emotional technology moment in 18+ years
 | Topic | Section | Page Referenced |
 |-------|---------|-----------------|
 | Vibe Coding Problem | 0:00 | lessons/11-vibe-coding-problem |
-| Quick Preview (5 Apps + 100x Story) | 1:30 | Real production apps showcase |
+| Quick Preview (10 Projects + 100x Story) | 1:30 | Real production apps showcase |
 | What is SpecWeave | 2:30 | intro.md |
 | **Claude Code Foundation** | **4:30** | **Plugins, Skills, Agents, Marketplace, Hooks, CLI vs MCP** |
 | Philosophy & Principles | 8:00 | overview/philosophy |
@@ -3341,11 +3344,14 @@ Powered by Claude Opus 4.6 — the most emotional technology moment in 18+ years
 | DORA Metrics | 55:30 | overview/dogfooding |
 | Advanced Features | 58:30 | reference/hooks |
 | **Real-World Showcase** | **63:30** | **Live app demonstrations** |
-| SkillUp Platform | 64:00 | Football coaching + Stripe |
-| EduFeed Platform | 66:00 | AI learning + video rooms |
-| WC26 Platform | 67:30 | World Cup 2026 assistant |
-| Lulla App | 69:00 | iOS + ML baby calming |
-| EasyChamp Platform | 70:00 | Enterprise + 20 microservices |
+| [SkillUp](https://skillup-football.com/) Platform | 64:00 | Football coaching + Stripe |
+| [EduFeed](https://edufeed-jet.vercel.app/) Platform | 66:00 | AI learning + video rooms |
+| [WC26](https://wc-26.net/) Platform | 67:30 | World Cup 2026 assistant |
+| [Lulla](https://lulla-app.pages.dev/) App | 69:00 | iOS + ML baby calming |
+| [EasyChamp](https://easychamp.com) Platform | 70:00 | Enterprise + 20 microservices |
+| [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030) App | 64:00 | Student events + AI news |
+| [SketchMate](https://sketchmate.net/) | — | Multiplayer drawing game |
+| [JobWeave](https://jobweave.ai) | — | AI job matching platform |
 
 ### Brief Mentions (Not Deep Dives)
 

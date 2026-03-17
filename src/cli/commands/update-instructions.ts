@@ -111,11 +111,8 @@ export async function updateInstructionsCommand(
 
   // Auto-install Anthropic's skill-creator if missing (non-blocking)
   if (!options.dryRun) {
-    try {
-      await ensureSkillCreator(projectPath);
-    } catch {
-      // Non-blocking — update-instructions continues regardless
-    }
+    // Fire-and-forget — non-blocking, never throws
+    ensureSkillCreator(projectPath).catch(() => {});
   }
 
   console.log('');
