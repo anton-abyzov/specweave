@@ -119,7 +119,7 @@ Used brownfield quick-start approach:
 
 ```bash
 # Import critical documentation only
-/sw:import-docs --source=confluence --filter="payment*"
+/sw:import --source=confluence --filter="payment*"
 
 # Result: Created minimal living docs structure
 .specweave/

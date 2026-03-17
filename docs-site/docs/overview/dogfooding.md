@@ -18,36 +18,35 @@ SpecWeave was built using SpecWeave. Every feature, every bug fix, every archite
 
 | Metric | Value |
 |--------|-------|
-| **Lines of Code** | 186,719 |
-| **TypeScript Files** | 567 |
-| **Test Files** | 581 |
-| **Documentation Files** | 4,405 |
-| **CLI Commands** | 47 |
-| **Plugins** | 13 |
-| **Hook Scripts** | 65 |
-| **Public Exports** | 2,893 |
+| **Lines of Code** | 255,223 |
+| **TypeScript Files** | 839 |
+| **Test Files** | 882 |
+| **Documentation Pages** | 2,435 |
+| **CLI Commands** | 66 |
+| **Hook Scripts** | 8 |
+| **Public Exports** | 4,223 |
 
 ### Development Activity
 
 | Metric | Value |
 |--------|-------|
-| **Total Commits** | 1,327 |
-| **Development Period** | 52 days |
-| **Average Commits/Day** | 26 |
+| **Total Commits** | 2,669 |
+| **Development Period** | 143 days |
+| **Average Commits/Day** | ~19 |
 | **Peak Day** | 100 commits (Nov 4, 2025) |
-| **Unique Contributors** | 3 |
+| **Unique Contributors** | 2 humans + CI bots |
 
 ### Commit Distribution
 
 ```mermaid
 pie title Commit Types
-    "chore" : 333
-    "fix" : 260
-    "docs" : 164
-    "feat" : 133
-    "refactor" : 23
-    "test" : 8
-    "perf" : 1
+    "chore" : 858
+    "fix" : 706
+    "feat" : 395
+    "docs" : 247
+    "refactor" : 56
+    "test" : 27
+    "other" : 22
 ```
 
 ---
@@ -58,12 +57,12 @@ SpecWeave tracks its own DORA metrics in real-time:
 
 | Metric | Value | Tier |
 |--------|-------|------|
-| **Deployment Frequency** | 100/month | Elite |
+| **Deployment Frequency** | 70+/month | Elite |
 | **Lead Time** | 3.4 hours | High |
 | **Change Failure Rate** | 0% | Elite |
 | **MTTR** | 0 min | N/A (no failures) |
 
-> **65 releases with 0 failures.** That's what spec-driven development delivers.
+> **338 releases with 0 failures.** That's what spec-driven development delivers.
 
 [Live DORA Dashboard →](/docs/metrics)
 
@@ -71,12 +70,12 @@ SpecWeave tracks its own DORA metrics in real-time:
 
 ## Real Projects Built With SpecWeave
 
-SpecWeave has been used to build 5+ production applications:
+SpecWeave has been used to build production applications:
 
 ### 1. SpecWeave (Built With Itself)
-- **186K+ lines** of TypeScript
-- **1,327 commits** over 52 days
-- **13 plugins**, **47 CLI commands**, **65 hooks**
+- **255K+ lines** of TypeScript across **839 files**
+- **2,669 commits** over 143 days
+- **66 CLI commands**, **882 test files**, **550+ increments**
 - Self-documenting: every feature has a spec
 
 ### 2. vskill CLI (Built With SpecWeave)
@@ -117,10 +116,10 @@ SpecWeave has been used to build 5+ production applications:
 
 Building SpecWeave required:
 
-- **52 days** of focused development
+- **143 days** of focused development (Oct 2025 — Mar 2026)
 - **Every weekend** dedicated to the project
 - **Many sleepless nights** debugging edge cases
-- **26 commits per day** average intensity
+- **~19 commits per day** average intensity
 - **100 commits in a single day** at peak
 
 ### The Timeline
@@ -136,9 +135,13 @@ gantt
     GitHub Sync          :2025-11-18, 7d
     JIRA Integration     :2025-11-25, 7d
     Azure DevOps         :2025-12-02, 5d
-    section Polish
-    Living Docs          :2025-12-07, 5d
-    Documentation        :2025-12-12, 4d
+    section Scale
+    Living Docs          :2025-12-07, 14d
+    Marketplace & Plugins :2025-12-21, 21d
+    section Maturity
+    Dashboard & Analytics :2026-01-11, 21d
+    Team Mode & Agents   :2026-02-01, 28d
+    Documentation        :2026-03-01, 17d
 ```
 
 ---
@@ -176,23 +179,23 @@ The same goes for every product in the ecosystem: **vskill** (the skill marketpl
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| living-docs-sync.ts | 1,953 | Core synchronization engine |
-| item-converter.ts | 1,766 | External tool mapping |
-| sync-coordinator.ts | 1,701 | Multi-platform sync |
+| living-docs-sync.ts | 2,227 | Core synchronization engine |
+| repository-setup.ts | 1,921 | Repository initialization |
+| item-converter.ts | 1,735 | External tool mapping |
 | feature-archiver.ts | 1,501 | Archive management |
-| external-import.ts | 1,497 | External tool import |
+| dashboard-server.ts | 1,449 | Dashboard web server |
 
 ### Module Distribution
 
 ```mermaid
-pie title Code Distribution by Module
-    "core/" : 400
-    "cli/" : 100
-    "sync/" : 80
-    "integrations/" : 60
-    "living-docs/" : 80
-    "utils/" : 50
-    "other" : 100
+pie title Code Distribution by Module (lines of TypeScript)
+    "core/" : 135798
+    "cli/" : 48153
+    "utils/" : 22782
+    "sync/" : 12457
+    "importers/" : 6420
+    "init/" : 6015
+    "other" : 23598
 ```
 
 ---
@@ -203,9 +206,8 @@ pie title Code Distribution by Module
 
 1. **[GitHub Repository](https://github.com/anton-abyzov/specweave)** — Every commit visible
 2. **[DORA Metrics](/docs/metrics)** — Real-time dashboard
-3. **[Changelog](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md)** — 65+ releases documented
-4. **[ADR Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/docs/internal/architecture/adr)** — 150+ architectural decisions
-5. **[Increments Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — 150+ features built with SpecWeave
+3. **[Changelog](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md)** — 338 releases documented
+4. **[Increments Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — 550+ features built with SpecWeave
 
 ---
 
@@ -229,10 +231,10 @@ specweave init .
 
 | What We Claimed | What We Delivered |
 |-----------------|-------------------|
-| "AI decisions become permanent" | 4,405 documentation files |
-| "Autonomous implementation" | 1,327 commits, 26/day average |
-| "Elite DORA metrics" | 100 deploys/month, 0% failure rate |
-| "Works at scale" | 186,719 lines of code |
-| "Real production use" | 7+ production applications |
+| "AI decisions become permanent" | 2,435 documentation pages |
+| "Autonomous implementation" | 2,669 commits, ~19/day average |
+| "Elite DORA metrics" | 70+ deploys/month, 0% failure rate |
+| "Works at scale" | 255,223 lines of code |
+| "Real production use" | 550+ increments across multiple products |
 
 **SpecWeave isn't theoretical. It's proven in production — on itself, on vskill, and on the platform that serves the skill marketplace.**
