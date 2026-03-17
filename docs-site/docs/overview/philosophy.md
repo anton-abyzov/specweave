@@ -365,9 +365,9 @@ How do you know SpecWeave is working?
 
 ---
 
-**Ready to get started?**
+## Next Steps
 
-- [Quickstart Guide](/docs/guides/getting-started/quickstart) - Get up and running in 5 minutes
-- [Core Concepts](/docs/guides/core-concepts/specifications) - Understand the fundamentals
-
-**Previous**: [Key Features](/docs/overview/features) ←
+- [Getting Started](/docs/getting-started) — Install and run your first increment
+- [Core Concepts](/docs/guides/core-concepts/what-is-an-increment) — Understand increments, the unit of work
+- [Workflows](/docs/workflows/overview) — See these principles in action
+- [Dogfooding](/docs/overview/dogfooding) — Real stats from building SpecWeave with SpecWeave

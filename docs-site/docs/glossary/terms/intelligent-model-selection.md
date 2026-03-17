@@ -15,8 +15,8 @@ sidebar_label: Intelligent Model Selection
 ```mermaid
 flowchart TD
     A[Task Request] --> B{Task Complexity}
-    B -->|Simple/Mechanical| C[Haiku]
-    B -->|Standard/Complex| D[Opus 4.6]
+    B -->|"Simple/Mechanical"| C[Haiku]
+    B -->|"Standard/Complex"| D["Opus 4.6"]
 
     C --> E[Execute with Model]
     D --> E

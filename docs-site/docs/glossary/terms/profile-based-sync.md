@@ -31,15 +31,15 @@ graph LR
 
 ```mermaid
 graph TB
-    A[SpecWeave Local] --> B[Profile: specweave-dev]
-    A --> C[Profile: client-mobile]
-    A --> D[Profile: internal-jira]
-    A --> E[Profile: ado-backend]
+    A[SpecWeave Local] --> B["Profile: specweave-dev"]
+    A --> C["Profile: client-mobile"]
+    A --> D["Profile: internal-jira"]
+    A --> E["Profile: ado-backend"]
 
-    B --> F[GitHub: anton-abyzov/specweave]
-    C --> G[GitHub: client-org/mobile-app]
-    D --> H[JIRA: company.atlassian.net/PROJ]
-    E --> I[ADO: myorg/backend-services]
+    B --> F["GitHub: anton-abyzov/specweave"]
+    C --> G["GitHub: client-org/mobile-app"]
+    D --> H["JIRA: company.atlassian.net/PROJ"]
+    E --> I["ADO: myorg/backend-services"]
 
     style A fill:#339af0
     style B fill:#ffd43b
@@ -62,20 +62,20 @@ Profile-based sync uses a **three-layer architecture** for clean separation of c
 
 ```mermaid
 graph TB
-    A[Layer 1: Credentials] --> B[Layer 2: Sync Profiles]
-    B --> C[Layer 3: Per-Increment Metadata]
+    A["Layer 1: Credentials"] --> B["Layer 2: Sync Profiles"]
+    B --> C["Layer 3: Per-Increment Metadata"]
 
     A1[.env] --> A
     A2[GITHUB_TOKEN] --> A
     A3[JIRA_API_TOKEN] --> A
 
     B1[config.json] --> B
-    B2[Profile: specweave-dev] --> B
-    B3[Profile: client-mobile] --> B
+    B2["Profile: specweave-dev"] --> B
+    B3["Profile: client-mobile"] --> B
 
     C1[metadata.json] --> C
-    C2[issueNumber: 30] --> C
-    C3[profile: specweave-dev] --> C
+    C2["issueNumber: 30"] --> C
+    C3["profile: specweave-dev"] --> C
 
     style A fill:#ff6b6b
     style B fill:#ffd43b
@@ -279,11 +279,11 @@ AZURE_DEVOPS_PAT=xxxxxxxxxxxx
 ```mermaid
 graph LR
     A[Time Range] --> B{Select Range}
-    B --> C[1W: 1 week]
-    B --> D[1M: 1 month]
-    B --> E[3M: 3 months]
-    B --> F[6M: 6 months]
-    B --> G[ALL: All time]
+    B --> C["1W: 1 week"]
+    B --> D["1M: 1 month"]
+    B --> E["3M: 3 months"]
+    B --> F["6M: 6 months"]
+    B --> G["ALL: All time"]
 
     C --> H[~50 items]
     D --> I[~200 items]

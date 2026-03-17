@@ -16,11 +16,11 @@ sidebar_label: Strategic Init
 
 ```mermaid
 graph LR
-    A[Phase 1: Vision] --> B[Phase 2: Scaling]
-    B --> C[Phase 3: Compliance]
-    C --> D[Phase 4: Budget]
-    D --> E[Phase 5: Methodology]
-    E --> F[Phase 6: Repositories]
+    A["Phase 1: Vision"] --> B["Phase 2: Scaling"]
+    B --> C["Phase 3: Compliance"]
+    C --> D["Phase 4: Budget"]
+    D --> E["Phase 5: Methodology"]
+    E --> F["Phase 6: Repositories"]
     F --> G[Architecture Recommendation]
 ```
 
