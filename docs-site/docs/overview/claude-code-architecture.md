@@ -145,7 +145,7 @@ my-plugin/
 | **infra** | 5 | 5 | 1 | DevOps/SRE |
 | ... | | | | |
 
-**Total: 100+ skills, 68+ agents, 100+ commands**
+**Total: ~48 built-in skills, 22+ agents, 100+ commands**
 
 ---
 
@@ -610,7 +610,7 @@ SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 ## Learn More
 
 ### SpecWeave Resources
-- **[Plugin Ecosystem](/docs/overview/plugins-ecosystem)** — All 24 SpecWeave plugins
+- **[Plugin Ecosystem](/docs/overview/plugins-ecosystem)** — All 13 SpecWeave plugins
 - **[SpecWeave Essentials](/docs/academy/specweave-essentials/)** — 16-lesson hands-on curriculum
 - **[Getting Started](/docs/getting-started/)** — Quick start guide
 
@@ -643,5 +643,5 @@ SpecWeave works with any AI coding assistant. Each has different integration dep
   - *Global*: Cross-cutting (always fire)
   - *Skill-scoped*: Command-specific (~50% fewer invocations)
 
-SpecWeave bundles 23 plugins with 100+ skills, 68+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.6.
+SpecWeave bundles 23 plugins with ~48 built-in skills, 22+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.6.
 :::

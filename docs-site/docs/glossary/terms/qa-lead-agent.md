@@ -59,7 +59,7 @@ Default coverage targets by test type:
 ### Check Test Coverage
 
 ```bash
-/sw:check-tests 0001
+npx vitest run 0001
 ```
 
 **Output**:

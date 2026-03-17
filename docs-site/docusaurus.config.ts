@@ -214,7 +214,7 @@ const config: Config = {
           },
           {
             from: '/docs/guides/claude-skills-deep-dive',
-            to: '/docs/skills/extensible/claude-skills-deep-dive',
+            to: '/docs/skills/extensible/extensible-skills',
           },
           {
             from: '/docs/guides/self-improving-skills',
@@ -255,6 +255,103 @@ const config: Config = {
           {
             from: '/docs/guides/skill-contradiction-resolution',
             to: '/docs/skills/skill-contradiction-resolution',
+          },
+          // === Documentation Overhaul (0556) Redirects ===
+          // Deleted root files
+          {
+            from: ['/docs/intro', '/docs/quick-start', '/docs/features'],
+            to: '/docs/overview/introduction',
+          },
+          // learn/ → academy/ redirects
+          {
+            from: '/docs/learn/foundations/software-engineering-roles',
+            to: '/docs/academy/fundamentals/software-engineering-roles',
+          },
+          {
+            from: '/docs/learn/foundations/enterprise-app-development',
+            to: '/docs/academy/fundamentals/enterprise-app-development',
+          },
+          {
+            from: '/docs/learn/foundations/claude-code-basics',
+            to: '/docs/overview/claude-code-basics',
+          },
+          {
+            from: '/docs/learn/foundations/terminal-empowerment',
+            to: '/docs/academy',
+          },
+          {
+            from: '/docs/learn/frontend/frontend-fundamentals',
+            to: '/docs/academy/fundamentals/frontend-fundamentals',
+          },
+          {
+            from: '/docs/learn/backend/backend-fundamentals',
+            to: '/docs/academy/fundamentals/backend-fundamentals',
+          },
+          {
+            from: '/docs/learn/infrastructure/iac-fundamentals',
+            to: '/docs/academy/fundamentals/iac-fundamentals',
+          },
+          {
+            from: '/docs/learn/ml-ai/ml-fundamentals',
+            to: '/docs/academy/fundamentals/ml-fundamentals',
+          },
+          {
+            from: '/docs/learn/testing/testing-fundamentals',
+            to: '/docs/academy/fundamentals/testing-fundamentals',
+          },
+          {
+            from: '/docs/learn/testing/cli-integration-testing',
+            to: '/docs/academy/fundamentals/testing-fundamentals',
+          },
+          // Merged duplicates
+          {
+            from: '/docs/enterprise/compliance-standards',
+            to: '/docs/guides/compliance-standards',
+          },
+          {
+            from: '/docs/reference/compliance-standards',
+            to: '/docs/guides/compliance-standards',
+          },
+          {
+            from: '/docs/guides/cost-tracking',
+            to: '/docs/reference/cost-tracking',
+          },
+          {
+            from: '/docs/guides/cost-optimization',
+            to: '/docs/reference/cost-tracking',
+          },
+          {
+            from: '/docs/guides/core-concepts/living-docs-sync-strategy',
+            to: '/docs/guides/core-concepts/living-documentation',
+          },
+          {
+            from: '/docs/guides/intelligent-living-docs-sync',
+            to: '/docs/guides/core-concepts/living-documentation',
+          },
+          {
+            from: '/docs/commands/command-decision-tree',
+            to: '/docs/reference/command-decision-tree',
+          },
+          {
+            from: '/docs/guides/agent-teams-setup',
+            to: '/docs/guides/agent-teams-and-swarms',
+          },
+          {
+            from: '/docs/integrations/issue-trackers',
+            to: '/docs/guides/integrations/issue-trackers',
+          },
+          {
+            from: '/docs/skills/extensible/extensible-skills-guide',
+            to: '/docs/skills/extensible/extensible-skills',
+          },
+          // Deleted getting-started duplicates
+          {
+            from: '/docs/guides/getting-started/quickstart',
+            to: '/docs/getting-started',
+          },
+          {
+            from: '/docs/guides/getting-started/nvm-global-packages-fix',
+            to: '/docs/getting-started/installation',
           },
         ],
       },

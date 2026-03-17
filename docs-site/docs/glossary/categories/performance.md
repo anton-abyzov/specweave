@@ -427,7 +427,7 @@ async function getUsersWithPosts() {
 When creating performance increments:
 
 ```bash
-/specweave:increment "API Performance Optimization"
+/sw:increment "API Performance Optimization"
 ```
 
 The Architect agent:
@@ -456,7 +456,7 @@ Performance documentation in:
 ### 4. Performance Validation
 
 ```bash
-/specweave:validate 0050 --performance
+/sw:validate 0050 --performance
 
 # Checks:
 # ✅ Load tests pass (10K req/sec)

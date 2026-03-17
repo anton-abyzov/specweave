@@ -7,9 +7,21 @@
 @import './animations.css';
 
 /* ============================================
-   GLOBAL TRANSITIONS
+   SCOPED TRANSITIONS (interactive elements only)
    ============================================ */
-* {
+a,
+button,
+.navbar,
+.navbar__link,
+.menu__link,
+.menu__list-item,
+.table-of-contents__link,
+.pagination-nav__link,
+.badge,
+.tabs__item,
+input,
+textarea,
+select {
   transition-property: background-color, border-color, color;
   transition-duration: 0.2s;
   transition-timing-function: ease-in-out;

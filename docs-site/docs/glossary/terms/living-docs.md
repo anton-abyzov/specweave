@@ -757,7 +757,7 @@ If automatic sync is disabled, you can manually sync:
 
 ```bash
 # Sync all completed increments to living docs
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Or copy manually (emergency only):
 cp .specweave/increments/0001-core-framework/spec.md \
