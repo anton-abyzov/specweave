@@ -45,7 +45,7 @@ Your spec might include criteria like: "All notes tagged with #project belong un
 
 The key insight: even throwaway tools benefit from specs. You *will* want to iterate. When you do, the original spec tells you what the app was supposed to do, the plan explains the architecture, and the tasks show what was built. No "what was I thinking?" moments when you revisit it a month later.
 
-**Real example.** The WC26 World Cup companion app — complete with AI travel planner, team stats, fixtures, venue information, and Supabase auth — was built as a SpecWeave increment. From idea to deployed app in one session.
+**Real example.** The [WC26](https://wc-26.net/) World Cup companion app — complete with AI travel planner, team stats, fixtures, venue information, and Supabase auth — was built as a SpecWeave increment. From idea to deployed app in one session.
 
 ---
 
@@ -53,7 +53,7 @@ The key insight: even throwaway tools benefit from specs. You *will* want to ite
 
 **The problem.** You need deep research on a topic — competitor pricing for your side project, injury updates for your fantasy football league, reviews of a platform you're evaluating, trending problems in your niche. Manual research is tedious. AI chat gives you hallucinated summaries.
 
-**The SpecWeave approach.** Create an increment where the spec defines specific research questions as acceptance criteria: "Identify the top 5 competitors by pricing tier," "List all venue capacities for WC26 host cities," or "Summarize the last 3 months of user complaints about Platform X."
+**The SpecWeave approach.** Create an increment where the spec defines specific research questions as acceptance criteria: "Identify the top 5 competitors by pricing tier," "List all venue capacities for [WC26](https://wc-26.net/) host cities," or "Summarize the last 3 months of user complaints about Platform X."
 
 Tasks break down into: define sources, gather data, cross-reference, synthesize into a report. The AI executes each task methodically, and the living docs capture the research permanently. Next quarter, when you need to update the analysis, the original spec and sources are right there.
 
@@ -168,7 +168,7 @@ Your `.specweave/` directory now contains:
 - Living docs with the synthesized research
 - Full traceability from question to answer
 
-Three months later, when you want to update the hotel pricing, you don't start from scratch. `/sw:increment "Update WC26 hotel pricing for Q2 2026"` builds on the existing research. The original spec is right there as context.
+Three months later, when you want to update the [WC26](https://wc-26.net/) hotel pricing, you don't start from scratch. `/sw:increment "Update WC26 hotel pricing for Q2 2026"` builds on the existing research. The original spec is right there as context.
 
 ---
 

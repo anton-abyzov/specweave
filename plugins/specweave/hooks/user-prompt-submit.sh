@@ -150,8 +150,8 @@ find_specweave_config() {
 }
 
 # Check if this is a SpecWeave skill invocation
-# Matches: /sw:*, /sw-github:*, /frontend:*, /backend:*, /testing:*, etc.
-DOMAIN_PLUGIN_PATTERN="^[[:space:]]*/([Ff]rontend|[Bb]ackend|[Tt]esting|[Mm]obile|[Ii]nfra|[Kk]8s|[Mm]l|[Pp]ayments|[Kk]afka|[Cc]onfluent|[Cc]ost|[Dd]ocs|[Ss]ecurity|[Ss]kills|[Bb]lockchain):[a-zA-Z-]+"
+# Matches: /sw:*, /sw-github:*, /backend:*, /testing:*, etc.
+DOMAIN_PLUGIN_PATTERN="^[[:space:]]*/([Bb]ackend|[Tt]esting|[Mm]obile|[Ii]nfra|[Kk]8s|[Mm]l|[Pp]ayments|[Kk]afka|[Cc]onfluent|[Cc]ost|[Dd]ocs|[Ss]ecurity|[Ss]kills|[Bb]lockchain):[a-zA-Z-]+"
 if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]] || [[ "$PROMPT" =~ $DOMAIN_PLUGIN_PATTERN ]]; then
   # Check if guard is disabled via environment variable
   if [[ "${SPECWEAVE_DISABLE_GUARD:-0}" != "1" ]]; then
@@ -192,7 +192,7 @@ You invoked \`${SKILL_NAME}\`, but this project hasn't been initialized with Spe
    {
      \"enabledPlugins\": {
        \"sw@specweave\": false,
-       \"frontend@vskill\": false
+       \"backend@vskill\": false
      }
    }
    \`\`\`
@@ -447,7 +447,7 @@ output_approve_with_context() {
 
 # Helper: Check if plugin is in vskill.lock (fast-path skip) (v1.0.272)
 # vskill.lock is the SOURCE OF TRUTH for vskill-installed plugins.
-# Args: $1=plugin name (e.g., "frontend")
+# Args: $1=plugin name (e.g., "backend")
 # Returns: 0 if in lockfile, 1 if not
 check_plugin_in_vskill_lock() {
   local plugin="$1"
@@ -1346,7 +1346,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
             # ==================================================================
             # EXTRACT ROUTING INFO EARLY (v1.0.155 - needed for agent directives)
             # ==================================================================
-            ROUTING_SKILLS_COUNT=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills | length // 0' 2>/dev/null)
+            ROUTING_SKILLS_COUNT=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills // [] | length' 2>/dev/null)
 
             # ==================================================================
             # INCREMENT SUGGESTION (from LLM response)
@@ -1517,7 +1517,7 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
             # SKILL ROUTING (from LLM response) - v1.0.150+
             # ==================================================================
             # Extract skill routing for brain message
-            ROUTING_SKILLS_COUNT=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills | length // 0' 2>/dev/null)
+            ROUTING_SKILLS_COUNT=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills // [] | length' 2>/dev/null)
             ROUTING_MSG=""
 
             if [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
@@ -1558,7 +1558,7 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
                 PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
                 PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
                 BRAIN_MSG+="Primary skill: ${PRIMARY_SKILL}"
-                # v2.1.0: Use plugin:skill format for agent type (e.g., frontend:nextjs)
+                # v2.1.0: Use plugin:skill format for agent type (e.g., backend:dotnet)
                 [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]] && BRAIN_MSG+=" (agent: ${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME})"
                 BRAIN_MSG+=", invoke: ${PRIMARY_INVOKE:-after_increment}. "
                 [[ -n "$SECONDARY_SKILLS" ]] && BRAIN_MSG+="Also: ${SECONDARY_SKILLS}. "
@@ -2188,7 +2188,7 @@ if echo "$PROMPT" | grep -qE "^/sw:increment"; then
           fi
         elif [[ -n "$PROJECTS" ]]; then
           # 1-level structure: projects only
-          PROJECT_COUNT=$(echo "$CONTEXT_JSON" | jq '.projects | length' 2>/dev/null || echo "0")
+          PROJECT_COUNT=$(echo "$CONTEXT_JSON" | jq '.projects // [] | length' 2>/dev/null || echo "0")
 
           if [[ "$PROJECT_COUNT" -gt 1 ]]; then
             PROJECT_CONTEXT="\\n\\n📦 PROJECT CONTEXT (MULTI-PROJECT)\\n\\n"

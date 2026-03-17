@@ -19,9 +19,9 @@ export const COMPONENT_MAPPING: Record<string, { skills: string[], agents: strin
   // Framework detection
   'next.js': { skills: ['nextjs', 'nodejs-backend'], agents: [] },
   'nextjs': { skills: ['nextjs', 'nodejs-backend'], agents: [] },
-  'react': { skills: ['frontend'], agents: [] },
-  'vue': { skills: ['frontend'], agents: [] },
-  'angular': { skills: ['frontend'], agents: [] },
+  'react': { skills: [], agents: [] },
+  'vue': { skills: [], agents: [] },
+  'angular': { skills: [], agents: [] },
   'fastapi': { skills: ['python-backend'], agents: [] },
   'django': { skills: ['python-backend'], agents: [] },
   'flask': { skills: ['python-backend'], agents: [] },
@@ -64,9 +64,9 @@ export const COMPONENT_MAPPING: Record<string, { skills: string[], agents: strin
   'github': { skills: ['github-sync'], agents: [] },
 
   // Mobile detection
-  'react native':  { skills: ['frontend'], agents: [] },
-  'react-native':  { skills: ['frontend'], agents: [] },
-  'expo':          { skills: ['frontend'], agents: [] },
+  'react native':  { skills: [], agents: [] },
+  'react-native':  { skills: [], agents: [] },
+  'expo':          { skills: [], agents: [] },
   'ios':           { skills: [], agents: [] },
   'android':       { skills: [], agents: [] },
   'mobile':        { skills: [], agents: [] },

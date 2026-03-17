@@ -6,10 +6,17 @@
 # ║  This hook runs BEFORE plugin loading, catching issues early              ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 
-# Exit early if not in a SpecWeave project
-if [ ! -f ".specweave/config.json" ]; then
+# Detect project root via walk-up
+_DIR="$PWD"
+_LIMIT=0
+while [ "$_DIR" != "/" ] && [ ! -d "$_DIR/.specweave" ] && [ $_LIMIT -lt 50 ]; do
+  _DIR=$(dirname "$_DIR")
+  _LIMIT=$((_LIMIT + 1))
+done
+if [ ! -f "$_DIR/.specweave/config.json" ]; then
     exit 0
 fi
+PROJECT_ROOT="$_DIR"
 
 HEALTH_LOG="$HOME/.claude/plugins/.health-check.log"
 
@@ -31,8 +38,8 @@ log "=== Health check started ==="
 # The file is per-project but MUST only affect the session that created it.
 # ============================================================================
 
-AUTO_MODE_FILE=".specweave/state/auto-mode.json"
-STATE_DIR=".specweave/state"
+AUTO_MODE_FILE="$PROJECT_ROOT/.specweave/state/auto-mode.json"
+STATE_DIR="$PROJECT_ROOT/.specweave/state"
 
 # ALWAYS clear auto-mode.json on session start
 # This ensures auto mode is truly session-scoped:

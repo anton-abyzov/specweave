@@ -146,7 +146,6 @@ ${agentsTable}
       'sre': 'Troubleshooting',
       'docs-writer': 'Writing docs',
       'performance': 'Optimization needed',
-      'frontend': 'Frontend development',
       'nodejs-backend': 'Node.js backend',
       'python-backend': 'Python backend',
       'nextjs': 'Next.js development',
@@ -216,7 +215,7 @@ ${this.generateIntegrationSkillsTable(skills)}
    */
   private generateTechSkillsTable(skills: any[]): string {
     const techSkills = skills.filter(s =>
-      ['nodejs-backend', 'python-backend', 'nextjs', 'frontend', 'dotnet-backend',
+      ['nodejs-backend', 'python-backend', 'nextjs', 'dotnet-backend',
        'e2e-playwright'].includes(s.name)
     );
 
@@ -265,7 +264,6 @@ ${this.generateIntegrationSkillsTable(skills)}
       'nodejs-backend': 'Node.js backend',
       'python-backend': 'Python backend',
       'nextjs': 'Next.js',
-      'frontend': 'Frontend',
       'dotnet-backend': '.NET',
       'jira-sync': 'JIRA integration',
       'github-sync': 'GitHub integration',

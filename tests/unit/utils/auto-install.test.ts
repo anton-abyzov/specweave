@@ -63,7 +63,7 @@ describe('auto-install', () => {
   describe('COMPONENT_MAPPING', () => {
     it('should contain framework mappings', () => {
       expect(COMPONENT_MAPPING['react']).toBeDefined();
-      expect(COMPONENT_MAPPING['react'].skills).toContain('frontend');
+      expect(COMPONENT_MAPPING['react'].skills).toEqual([]);
 
       expect(COMPONENT_MAPPING['next.js']).toBeDefined();
       expect(COMPONENT_MAPPING['next.js'].skills).toContain('nextjs');
@@ -107,9 +107,9 @@ describe('auto-install', () => {
 
   describe('analyzeUserIntent', () => {
     it('should detect React framework keyword', () => {
-      const result = analyzeUserIntent('Build a React dashboard');
+      const result = analyzeUserIntent('Build a Django dashboard');
 
-      expect(result.skills).toContain('frontend');
+      expect(result.skills).toContain('python-backend');
     });
 
     it('should detect multiple keywords', () => {
@@ -122,9 +122,9 @@ describe('auto-install', () => {
     });
 
     it('should be case-insensitive', () => {
-      const result = analyzeUserIntent('Build a REACT application with DOCKER');
+      const result = analyzeUserIntent('Build a DJANGO application with DOCKER');
 
-      expect(result.skills).toContain('frontend');
+      expect(result.skills).toContain('python-backend');
       expect(result.agents).toContain('devops');
     });
 
@@ -143,9 +143,9 @@ describe('auto-install', () => {
     });
 
     it('should not add strategic agents for non-creation prompts', () => {
-      const result = analyzeUserIntent('Fix the React bug');
+      const result = analyzeUserIntent('Fix the Django bug');
 
-      expect(result.skills).toContain('frontend');
+      expect(result.skills).toContain('python-backend');
       expect(result.agents).not.toContain('pm');
       expect(result.agents).not.toContain('architect');
     });
@@ -223,7 +223,7 @@ describe('auto-install', () => {
       // findNpmPackagePath: first check for node_modules/specweave/src
       mockExistsSync
         .mockReturnValueOnce(true)   // node_modules/specweave/src exists
-        .mockReturnValueOnce(false)  // isComponentInstalled('skills', 'frontend') -> not installed
+        .mockReturnValueOnce(false)  // isComponentInstalled('skills', 'python-backend') -> not installed
         .mockReturnValueOnce(true)   // installComponent: sourcePath exists
         .mockReturnValueOnce(false)  // isComponentInstalled('agents', 'pm') -> not installed
         .mockReturnValueOnce(true)   // installComponent: sourcePath exists
@@ -235,9 +235,9 @@ describe('auto-install', () => {
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      const result = await autoInstallComponents('Create a React app', { verbose: false });
+      const result = await autoInstallComponents('Create a Django app', { verbose: false });
 
-      expect(result.installed.skills).toContain('frontend');
+      expect(result.installed.skills).toContain('python-backend');
       expect(result.installed.agents).toContain('pm');
       expect(result.installed.agents).toContain('architect');
 
@@ -248,13 +248,13 @@ describe('auto-install', () => {
       // findNpmPackagePath
       mockExistsSync
         .mockReturnValueOnce(true)   // node_modules/specweave/src exists
-        .mockReturnValueOnce(true)   // isComponentInstalled('skills', 'frontend') -> already installed
+        .mockReturnValueOnce(true)   // isComponentInstalled('skills', 'python-backend') -> already installed
         .mockReturnValueOnce(true)   // isComponentInstalled('agents', 'pm') -> already installed
         .mockReturnValueOnce(true);  // isComponentInstalled('agents', 'architect') -> already installed
 
-      const result = await autoInstallComponents('Create a React app', { verbose: false });
+      const result = await autoInstallComponents('Create a Django app', { verbose: false });
 
-      expect(result.skipped.skills).toContain('frontend');
+      expect(result.skipped.skills).toContain('python-backend');
       expect(result.skipped.agents).toContain('pm');
       expect(result.skipped.agents).toContain('architect');
       expect(result.installed.skills).toEqual([]);
@@ -266,7 +266,7 @@ describe('auto-install', () => {
       mockExistsSync.mockReturnValue(false);
 
       await expect(
-        autoInstallComponents('Create a React app', { verbose: false })
+        autoInstallComponents('Create a Django app', { verbose: false })
       ).rejects.toThrow('SpecWeave package not found');
     });
 
@@ -293,7 +293,7 @@ describe('auto-install', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       // Use a prompt that only triggers one skill and no agents (no create/build/implement)
-      await autoInstallComponents('Fix the React bug', { verbose: true });
+      await autoInstallComponents('Fix the Django bug', { verbose: true });
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
@@ -375,19 +375,19 @@ describe('auto-install', () => {
   // ========== COMPONENT_MAPPING - mobile keywords ==========
 
   describe('COMPONENT_MAPPING - mobile keywords', () => {
-    it('should map "react native" to frontend skill', () => {
+    it('should map "react native" to empty skills', () => {
       expect(COMPONENT_MAPPING['react native']).toBeDefined();
-      expect(COMPONENT_MAPPING['react native'].skills).toContain('frontend');
+      expect(COMPONENT_MAPPING['react native'].skills).toEqual([]);
     });
 
-    it('should map "react-native" to frontend skill', () => {
+    it('should map "react-native" to empty skills', () => {
       expect(COMPONENT_MAPPING['react-native']).toBeDefined();
-      expect(COMPONENT_MAPPING['react-native'].skills).toContain('frontend');
+      expect(COMPONENT_MAPPING['react-native'].skills).toEqual([]);
     });
 
-    it('should map "expo" to frontend skill', () => {
+    it('should map "expo" to empty skills', () => {
       expect(COMPONENT_MAPPING['expo']).toBeDefined();
-      expect(COMPONENT_MAPPING['expo'].skills).toContain('frontend');
+      expect(COMPONENT_MAPPING['expo'].skills).toEqual([]);
     });
 
     it('should map "ios" to empty arrays', () => {
@@ -420,10 +420,11 @@ describe('auto-install', () => {
       expect(COMPONENT_MAPPING['play store'].agents).toEqual([]);
     });
 
-    it('should install frontend skill exactly once for combined "react native ios" prompt', () => {
+    it('should not include frontend skill for combined "react native ios" prompt', () => {
       const result = analyzeUserIntent('Create a react native ios app');
-      const frontendCount = result.skills.filter(s => s === 'frontend').length;
-      expect(frontendCount).toBe(1);
+      expect(result.skills).toEqual([]);
+      // Strategic agents still added from 'create'
+      expect(result.agents).toContain('pm');
     });
 
     it('should have no phantom mobile plugin in any mobile COMPONENT_MAPPING entry', () => {
