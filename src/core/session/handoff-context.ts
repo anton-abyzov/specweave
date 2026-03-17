@@ -135,35 +135,9 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       category: 'workflow',
     },
   ],
-  'frontend': [
-    {
-      name: 'frontend:architect',
-      description: 'Frontend architecture expertise',
-      category: 'frontend',
-    },
-    {
-      name: 'frontend:design-system',
-      description: 'Design system and component library expertise',
-      category: 'frontend',
-    },
-    {
-      name: 'frontend:nextjs',
-      description: 'Next.js App Router and Server Components expertise',
-      category: 'frontend',
-    },
-  ],
-  'backend': [
-    {
-      name: 'backend:db-optimizer',
-      description: 'Database optimization and query tuning',
-      category: 'backend',
-    },
-    {
-      name: 'backend:dotnet',
-      description: '.NET/C# backend development',
-      category: 'backend',
-    },
-  ],
+  // Domain skills (frontend:*, backend:*) are optional vskill plugins.
+  // Only include them in handoff if the plugin is actually installed.
+  // The core sw:architect skill handles all domains by default.
   'sw-github': [
     {
       name: '/sw-github:sync',

@@ -19,4 +19,4 @@ The `sw:architect` skill is preloaded with full domain logic including design pa
 
 - **Register skill-chain marker** (STEP 0 in preloaded skill) before writing plan.md
 - **Check ADRs first** at `.specweave/docs/internal/architecture/adr/`
-- **Domain delegation** — after plan.md, recommend domain skills (frontend:architect, backend:*)
+- **Domain delegation** — after plan.md, recommend domain skills (sw:architect for all domains; optional vskill plugins if installed)

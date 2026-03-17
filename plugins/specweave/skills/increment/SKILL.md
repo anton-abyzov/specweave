@@ -317,33 +317,37 @@ before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
 ## Step 4: Delegation (MANDATORY - Custom Subagent Based)
 
-**After increment folder + metadata.json are created, you MUST spawn all 3 subagents sequentially.**
+**After increment folder + metadata.json are created, spawn subagents using a 2-phase overlap strategy.**
 
 Each subagent preloads its corresponding skill (with full domain logic, phases, templates). The subagent provides: isolated context, persistent memory, resumability, auto-compaction.
 
-### 4a. Spawn PM Subagent for spec.md (REQUIRED)
+### 4a + 4b. Spawn PM and Architect IN PARALLEL (REQUIRED)
 
-**Include umbrella context when `umbrella.enabled: true`:**
+PM and Architect run concurrently. Architect starts codebase exploration immediately while PM writes spec.md. Architect polls for spec.md and reads it once available, then produces plan.md.
+
+**Spawn both agents in a single message (parallel tool calls):**
+
 ```typescript
 // Umbrella mode — pass child repos so PM can assign **Project**: per user story
 Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/. UMBRELLA MODE: Child repos: [repo1, repo2, ...]. Design cross-cutting stories — assign **Project**: to each US based on which repo owns that work.", description: "PM writes spec.md" })
 
-// Single-project mode — standard invocation
+// Single-project mode — standard PM invocation
 Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/", description: "PM writes spec.md" })
+
+// Architect — spawned IN PARALLEL with PM (starts codebase exploration immediately, waits for spec.md before designing)
+Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name. Increment path: .specweave/increments/XXXX-name/. ADR directory: .specweave/docs/internal/architecture/adr/. PARALLEL MODE: You are spawned in parallel with PM. Start by exploring the codebase and existing ADRs. spec.md may not exist yet — poll for it. Once spec.md is available and has content, read it and design architecture that satisfies all ACs.", description: "Architect writes plan.md" })
 ```
 
-### 4b. Spawn Architect Subagent for plan.md (REQUIRED)
-```typescript
-Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md. ADR directory: .specweave/docs/internal/architecture/adr/", description: "Architect writes plan.md" })
-```
+**IMPORTANT**: Use parallel Agent() tool calls — call PM and Architect in the SAME message so they start concurrently.
 
-### 4c. Spawn Planner Subagent for tasks.md (REQUIRED)
+### 4c. Spawn Planner Subagent for tasks.md (REQUIRED — after PM + Architect complete)
 ```typescript
 Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md", description: "Planner writes tasks.md" })
 ```
 
-**Order matters**: PM first (spec.md) -> Architect second (plan.md) -> Planner last (tasks.md).
-Each agent reads the output of the previous one.
+**Dependency order**: PM + Architect run in parallel (Phase 1) -> Planner runs after both complete (Phase 2).
+Architect explores the codebase while PM writes spec.md, then reads spec.md to produce plan.md.
+Planner needs both spec.md AND plan.md, so it must wait for Phase 1 to finish.
 
 ## Step 5: Post-Creation Sync (MANDATORY)
 

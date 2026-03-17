@@ -94,7 +94,7 @@ hooks:
 | Mode | Increment? | Agent Templates | Coordination | Output |
 |------|-----------|-----------------|--------------|--------|
 | BRAINSTORM | No | brainstorm-advocate, brainstorm-critic, brainstorm-pragmatist | Parallel → synthesize | Decision matrix |
-| PLANNING | Creates one | pm, architect (+ optional security reviewer) | PM first → Architect parallel | spec.md, plan.md, tasks.md |
+| PLANNING | Creates one | pm, architect (+ optional security reviewer) | PM + Architect parallel (Architect explores while PM specs) | spec.md, plan.md, tasks.md |
 | IMPLEMENTATION | Required | backend, frontend, database, testing, security | Contract-first phases | Working code |
 | REVIEW | Optional | Delegates to /sw:code-reviewer | Parallel | Review report |
 | RESEARCH | No | researcher (1-3 instances) | Parallel → merge | Research report |
@@ -133,17 +133,19 @@ Planning mode runs PM and Architect agents in parallel for richer, faster spec c
    - If increment exists: read it as context, agents will update/enhance its spec and plan
    - If no increment: create one (folder + metadata.json only, agents will write spec/plan)
 
-2. **Phase 1 — PM Agent** (upstream):
+2. **Spawn PM + Architect in parallel** (TRUE parallelism):
    - Read `agents/pm.md`, replace `[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`, `[FEATURE_DESCRIPTION]`
-   - Spawn via `Task()` with `mode: "bypassPermissions"`
+   - Read `agents/architect.md`, replace `[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`
+   - **Spawn BOTH via `Task()` with `mode: "bypassPermissions"` in a single step**
    - PM writes spec.md with user stories and ACs
-   - Wait for PM's `PLAN_READY:` or `COMPLETION:` message
+   - Architect starts codebase exploration immediately (does NOT need spec.md for this)
+   - Architect polls for spec.md, reads it when PM finishes, then designs architecture
+   - Optionally read `agents/reviewer-security.md`, replace `[REVIEW_TARGET]` with the spec, spawn Security reviewer after PM signals `PLAN_READY:`
+   - Wait for all agents' `COMPLETION:` messages
 
-3. **Phase 2 — Architect + Security** (parallel, after PM):
-   - Read `agents/architect.md`, replace placeholders, spawn Architect agent
-   - Optionally read `agents/reviewer-security.md` from team-lead agents, replace `[REVIEW_TARGET]` with the spec, spawn Security reviewer
-   - Both run in parallel: Architect writes plan.md, Security reviewer flags design-level vulnerabilities
-   - Wait for both `COMPLETION:` messages
+   **Why this works**: Architect's workflow has two phases — exploration (no spec.md needed)
+   and design (needs spec.md). By spawning both agents simultaneously, the Architect's
+   exploration phase (~30s) overlaps with PM's spec writing, reducing total wall-clock time.
 
 4. **Post-planning**:
    - Run `specweave sync-living-docs {increment-id}` to sync external tools
@@ -306,7 +308,7 @@ Analyze the feature request and map affected domains to SpecWeave skills.
 
 | Domain | Primary Skill | Additional Skills | When to Use |
 |--------|--------------|-------------------|-------------|
-| **Frontend** | `frontend:architect` | `frontend:nextjs`, `frontend:design` | UI components, pages, client-side state |
+| **Frontend** | `sw:architect` | — | UI components, pages, client-side state |
 | **Backend** | `sw:architect` | `infra:devops` | API endpoints, services, business logic |
 | **Database** | `sw:architect` | | Schema design, migrations, seed data |
 | **Shared/Types** | `sw:architect` | `sw:code-simplifier` | TypeScript interfaces, shared constants, API contracts |
@@ -569,7 +571,7 @@ Agent definitions live as reusable `.md` files in the `agents/` subdirectory. Wh
 
 | Agent | File | Domain | Phase | Primary Skills |
 |-------|------|--------|-------|---------------|
-| Frontend | `agents/frontend.md` | UI, components, pages | 2 (downstream) | `frontend:architect`, `frontend:design` |
+| Frontend | `agents/frontend.md` | UI, components, pages | 2 (downstream) | `sw:architect` |
 | Backend | `agents/backend.md` | API, services, middleware | 2 (downstream) | `sw:architect`, `infra:devops` |
 | Database | `agents/database.md` | Schema, migrations, seeds | 1 (upstream) | `sw:architect` |
 | Testing | `agents/testing.md` | Unit, integration, E2E | 2 (downstream) | `sw:e2e`, `sw:tdd-red` |
@@ -994,7 +996,7 @@ Phase 1 (upstream):
 
 Phase 2 (downstream, parallel):
   3. backend      -> sw:architect, infra:devops              | Increment: 0202-checkout-backend
-  4. frontend     -> frontend:architect                     | Increment: 0203-checkout-frontend
+  4. frontend     -> sw:architect                           | Increment: 0203-checkout-frontend
 
 Max agents: 4 (2 sequential + 2 parallel)
 To execute, run without --dry-run.

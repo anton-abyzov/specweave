@@ -66,7 +66,7 @@ Build features end-to-end with a shared-types-first contract approach. Agent 1 e
 |---|------|----------|------|----------------|
 | 1 | Shared/Types | `sw:architect` | `src/types/`, `src/utils/`, `src/shared/` | Define TypeScript interfaces, shared validators, utility functions, and API contracts |
 | 2 | Backend | `sw:architect` + `infra:devops` | `src/api/`, `src/services/` | Implement API endpoints, service layer, database queries, and infrastructure config |
-| 3 | Frontend | `frontend:architect` | `src/components/`, `src/pages/` | Build UI components, pages, state management, and client-side logic |
+| 3 | Frontend | `sw:architect` | `src/components/`, `src/pages/` | Build UI components, pages, state management, and client-side logic |
 
 #### Execution Chain
 
@@ -269,7 +269,7 @@ Migrate data schemas safely with a schema-first approach. The schema agent defin
 |---|------|----------|------|----------------|
 | 1 | Schema | `sw:architect` | `src/types/`, `migrations/`, `prisma/`, `drizzle/` | Define new schema, write migration scripts, update type definitions, ensure backward compatibility |
 | 2 | Backend | `sw:architect` | `src/api/`, `src/services/` | Update API endpoints, service logic, queries, and serializers to work with new schema |
-| 3 | Frontend | `frontend:architect` | `src/components/`, `src/pages/` | Update UI components, forms, and state to reflect schema changes |
+| 3 | Frontend | `sw:architect` | `src/components/`, `src/pages/` | Update UI components, forms, and state to reflect schema changes |
 
 #### Execution Chain
 
