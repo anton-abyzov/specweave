@@ -191,9 +191,6 @@ const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
   'specweave-frontend': 'frontend',
   'specweave-backend': 'backend',
   'specweave-testing': 'testing',
-  'specweave-github': 'sw-github',
-  'specweave-jira': 'sw-jira',
-  'specweave-ado': 'sw-ado',
   'specweave-infrastructure': 'infra',
   'specweave-kubernetes': 'k8s',
   'specweave-ml': 'ml',
@@ -201,8 +198,6 @@ const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
   'specweave-confluent': 'confluent',
   'specweave-mobile': 'mobile',
   'specweave-payments': 'payments',
-  'specweave-release': 'sw-release',
-  'specweave-diagrams': 'sw-diagrams',
 };
 
 /** Domain plugins live in the vskill marketplace (no sw- prefix) */
@@ -771,9 +766,6 @@ describe('Plugin Auto-Load E2E Integration', () => {
         'specweave-frontend': 'frontend',
         'specweave-backend': 'backend',
         'specweave-testing': 'testing',
-        'specweave-github': 'sw-github',
-        'specweave-jira': 'sw-jira',
-        'specweave-ado': 'sw-ado',
         'specweave-infrastructure': 'infra',
         'specweave-kubernetes': 'k8s',
         'specweave-ml': 'ml',
@@ -781,8 +773,6 @@ describe('Plugin Auto-Load E2E Integration', () => {
         'specweave-confluent': 'confluent',
         'specweave-mobile': 'mobile',
         'specweave-payments': 'payments',
-        'specweave-release': 'sw-release',
-        'specweave-diagrams': 'sw-diagrams',
       };
       return mapping[folderName] || folderName;
     }

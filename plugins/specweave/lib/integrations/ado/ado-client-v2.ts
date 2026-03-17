@@ -1,0 +1,742 @@
+/**
+ * Azure DevOps REST API Client (Multi-Project Support)
+ *
+ * Profile-based ADO client for SpecWeave that supports:
+ * - Multiple ADO projects via sync profiles
+ * - Time range filtering with WIQL queries
+ * - Rate limiting protection
+ * - Secure HTTPS requests
+ */
+
+import https from 'https';
+import {
+  SyncProfile,
+  AdoConfig,
+  TimeRangePreset,
+} from '../../../../../src/core/types/sync-profile';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface WorkItem {
+  id: number;
+  rev: number;
+  fields: {
+    'System.Title': string;
+    'System.Description'?: string;
+    'System.State': string;
+    'System.CreatedDate': string;
+    'System.ChangedDate': string;
+    'System.AreaPath'?: string;
+    'System.IterationPath'?: string;
+    'System.Tags'?: string;
+    'System.WorkItemType': string;
+    [key: string]: any;
+  };
+  _links: {
+    html: { href: string };
+  };
+  url: string;
+}
+
+export interface WorkItemQueryResult {
+  queryType: string;
+  queryResultType: string;
+  asOf: string;
+  workItems: Array<{ id: number; url: string }>;
+}
+
+export interface CreateWorkItemRequest {
+  title: string;
+  description?: string;
+  areaPath?: string;
+  iterationPath?: string;
+  tags?: string[];
+  parentId?: number; // Link to epic/feature
+}
+
+export interface UpdateWorkItemRequest {
+  state?: string;
+  title?: string;
+  description?: string;
+  tags?: string[];
+}
+
+// ============================================================================
+// Azure DevOps Client V2
+// ============================================================================
+
+export class AdoClientV2 {
+  private organization: string;
+  private project?: string; // Optional for multi-project mode
+  private projects?: string[]; // Multiple projects for intelligent mapping
+  private workItemTypes?: AdoConfig['workItemTypes'];
+  private areaPaths?: string[];
+  private baseUrl: string;
+  private authHeader: string;
+
+  // Multi-project support
+  private customQuery?: string;
+  private isMultiProject: boolean;
+
+  /**
+   * Create ADO client from sync profile
+   */
+  constructor(profile: SyncProfile, personalAccessToken: string) {
+    if (profile.provider !== 'ado') {
+      throw new Error(`Expected ADO profile, got ${profile.provider}`);
+    }
+
+    const config = profile.config as AdoConfig;
+    this.organization = config.organization;
+    this.workItemTypes = config.workItemTypes;
+
+    // Detect mode: single-project vs multi-project
+    if (config.projects && config.projects.length > 0) {
+      // Multi-project mode (intelligent mapping)
+      this.isMultiProject = true;
+      this.projects = config.projects;
+      this.baseUrl = `https://dev.azure.com/${this.organization}`;
+    } else if (config.customQuery) {
+      // Custom WIQL query mode
+      this.isMultiProject = true;
+      this.customQuery = config.customQuery;
+      this.baseUrl = `https://dev.azure.com/${this.organization}`;
+    } else {
+      // Single-project mode (backward compatible)
+      this.isMultiProject = false;
+      this.project = config.project;
+      this.areaPaths = config.areaPaths;
+      this.baseUrl = `https://dev.azure.com/${this.organization}/${this.project}`;
+    }
+
+    // Basic Auth: base64(":PAT")
+    this.authHeader =
+      'Basic ' + Buffer.from(`:${personalAccessToken}`).toString('base64');
+  }
+
+  /**
+   * Create client from organization/project directly
+   */
+  static fromProject(
+    organization: string,
+    project: string,
+    personalAccessToken: string
+  ): AdoClientV2 {
+    const profile: SyncProfile = {
+      provider: 'ado',
+      displayName: `${organization}/${project}`,
+      config: { organization, project } as AdoConfig,
+      timeRange: { default: '1M', max: '6M' },
+    };
+    return new AdoClientV2(profile, personalAccessToken);
+  }
+
+  // ==========================================================================
+  // Authentication & Setup
+  // ==========================================================================
+
+  /**
+   * Resolve PAT for an organization.
+   * Priority: AZURE_DEVOPS_PAT_{ORG_UPPER} > AZURE_DEVOPS_PAT > fallback
+   */
+  static resolvePatForOrg(organization: string, fallbackPat?: string): string {
+    // Org-specific: AZURE_DEVOPS_PAT_CONTOSO (uppercased, hyphens → underscores)
+    const orgKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
+    const orgPat = process.env[orgKey];
+    if (orgPat) return orgPat;
+
+    // Generic PAT
+    const genericPat = process.env.AZURE_DEVOPS_PAT;
+    if (genericPat) return genericPat;
+
+    // Fallback (e.g., profile-stored PAT)
+    return fallbackPat || '';
+  }
+
+  /**
+   * Test connection and authentication
+   */
+  async testConnection(): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (this.isMultiProject) {
+        // Test org-level access
+        await this.request('GET', `https://dev.azure.com/${this.organization}/_apis/projects?api-version=7.1`);
+      } else {
+        // Test project-level access using absolute URL to avoid double project path
+        await this.request('GET', `https://dev.azure.com/${this.organization}/_apis/projects/${this.project}?api-version=7.1`);
+      }
+      return { success: true };
+    } catch (error: any) {
+      const statusMatch = error.message?.match(/HTTP (\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      let hint = '';
+      if (status === 401) hint = ' (check your Personal Access Token)';
+      else if (status === 404) hint = ' (check organization/project name)';
+      return { success: false, error: error.message + hint };
+    }
+  }
+
+  // ==========================================================================
+  // Work Items
+  // ==========================================================================
+
+  /**
+   * Create epic work item
+   */
+  async createEpic(request: CreateWorkItemRequest): Promise<WorkItem> {
+    const workItemType = this.workItemTypes?.epic || 'Epic';
+    const url = `/_apis/wit/workitems/$${workItemType}?api-version=7.1`;
+
+    // Build JSON Patch document
+    const operations: any[] = [
+      {
+        op: 'add',
+        path: '/fields/System.Title',
+        value: request.title,
+      },
+    ];
+
+    if (request.description) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Description',
+        value: `<pre>${request.description}</pre>`,
+      });
+    }
+
+    if (request.areaPath || (this.areaPaths && this.areaPaths.length > 0)) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.AreaPath',
+        value: request.areaPath || this.areaPaths![0],
+      });
+    }
+
+    if (request.iterationPath) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.IterationPath',
+        value: request.iterationPath,
+      });
+    }
+
+    if (request.tags && request.tags.length > 0) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Tags',
+        value: request.tags.join('; '),
+      });
+    }
+
+    return this.request('POST', url, operations, {
+      'Content-Type': 'application/json-patch+json',
+    });
+  }
+
+  /**
+   * Create child work item (feature/story) linked to epic
+   */
+  async createChildWorkItem(
+    request: CreateWorkItemRequest,
+    parentId: number,
+    childType: string = 'User Story'
+  ): Promise<WorkItem> {
+    const url = `/_apis/wit/workitems/$${childType}?api-version=7.1`;
+
+    const operations: any[] = [
+      {
+        op: 'add',
+        path: '/fields/System.Title',
+        value: request.title,
+      },
+      {
+        op: 'add',
+        path: '/relations/-',
+        value: {
+          rel: 'System.LinkTypes.Hierarchy-Reverse',
+          url: `${this.baseUrl}/_apis/wit/workItems/${parentId}`,
+        },
+      },
+    ];
+
+    if (request.description) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Description',
+        value: `<pre>${request.description}</pre>`,
+      });
+    }
+
+    if (request.tags && request.tags.length > 0) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Tags',
+        value: request.tags.join('; '),
+      });
+    }
+
+    return this.request('POST', url, operations, {
+      'Content-Type': 'application/json-patch+json',
+    });
+  }
+
+  /**
+   * Get work item by ID
+   */
+  async getWorkItem(id: number): Promise<WorkItem> {
+    return this.request('GET', `/_apis/wit/workitems/${id}?api-version=7.1`);
+  }
+
+  /**
+   * Update work item
+   */
+  async updateWorkItem(
+    id: number,
+    updates: UpdateWorkItemRequest
+  ): Promise<WorkItem> {
+    const url = `/_apis/wit/workitems/${id}?api-version=7.1`;
+
+    const operations: any[] = [];
+
+    if (updates.state) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.State',
+        value: updates.state,
+      });
+    }
+
+    if (updates.title) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Title',
+        value: updates.title,
+      });
+    }
+
+    if (updates.description) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Description',
+        value: `<pre>${updates.description}</pre>`,
+      });
+    }
+
+    if (updates.tags) {
+      operations.push({
+        op: 'add',
+        path: '/fields/System.Tags',
+        value: updates.tags.join('; '),
+      });
+    }
+
+    return this.request('PATCH', url, operations, {
+      'Content-Type': 'application/json-patch+json',
+    });
+  }
+
+  /**
+   * Add comment to work item
+   */
+  async addComment(workItemId: number, comment: string): Promise<void> {
+    const url = `/_apis/wit/workItems/${workItemId}/comments?api-version=7.1-preview.3`;
+
+    await this.request('POST', url, { text: comment });
+  }
+
+  // ==========================================================================
+  // Query & Time Range Filtering
+  // ==========================================================================
+
+  /**
+   * Execute WIQL query
+   */
+  async queryWorkItems(wiql: string): Promise<WorkItem[]> {
+    // For multi-project, use org-level API
+    const queryUrl = this.isMultiProject
+      ? `https://dev.azure.com/${this.organization}/_apis/wit/wiql?api-version=7.1`
+      : `/_apis/wit/wiql?api-version=7.1`;
+
+    const queryResult: WorkItemQueryResult = await this.request('POST', queryUrl, {
+      query: wiql,
+    });
+
+    if (queryResult.workItems.length === 0) {
+      return [];
+    }
+
+    // Get full work item details (batch request, paginated in chunks of 200)
+    const allIds = queryResult.workItems.map((wi) => wi.id);
+
+    // For multi-project, use org-level batch API
+    const batchUrl = this.isMultiProject
+      ? `https://dev.azure.com/${this.organization}/_apis/wit/workitemsbatch?api-version=7.1`
+      : `/_apis/wit/workitemsbatch?api-version=7.1`;
+
+    const batchFields = [
+      'System.Id',
+      'System.Title',
+      'System.Description',
+      'System.State',
+      'System.CreatedDate',
+      'System.ChangedDate',
+      'System.WorkItemType',
+      'System.Tags',
+      'System.AreaPath',
+      'System.IterationPath',
+      'System.TeamProject',
+    ];
+
+    const PAGE_SIZE = 200;
+    const allWorkItems: WorkItem[] = [];
+
+    for (let i = 0; i < allIds.length; i += PAGE_SIZE) {
+      const pageIds = allIds.slice(i, i + PAGE_SIZE);
+      const workItems = await this.request('POST', batchUrl, {
+        ids: pageIds,
+        fields: batchFields,
+      });
+      allWorkItems.push(...(workItems.value || []));
+    }
+
+    return allWorkItems;
+  }
+
+  /**
+   * List work items within time range
+   */
+  async listWorkItemsInTimeRange(
+    timeRange: TimeRangePreset,
+    customStart?: string,
+    customEnd?: string
+  ): Promise<WorkItem[]> {
+    const { since, until } = this.calculateTimeRange(
+      timeRange,
+      customStart,
+      customEnd
+    );
+
+    // Use custom query if provided
+    if (this.customQuery) {
+      return this.queryWorkItems(this.customQuery);
+    }
+
+    // Multi-project mode with intelligent mapping
+    if (this.isMultiProject && this.projects) {
+      return this.queryWorkItemsAcrossProjects(since, until);
+    }
+
+    // Single-project mode (backward compatible)
+    const wiql = `
+      SELECT [System.Id], [System.Title], [System.State], [System.CreatedDate]
+      FROM WorkItems
+      WHERE [System.TeamProject] = '${this.project}'
+      AND [System.CreatedDate] >= '${since}'
+      AND [System.CreatedDate] <= '${until}'
+      ORDER BY [System.CreatedDate] DESC
+    `;
+
+    return this.queryWorkItems(wiql);
+  }
+
+  /**
+   * Query work items across multiple projects (multi-project mode)
+   */
+  private async queryWorkItemsAcrossProjects(
+    since: string,
+    until: string
+  ): Promise<WorkItem[]> {
+    if (!this.projects || this.projects.length === 0) {
+      return [];
+    }
+
+    const allWorkItems: WorkItem[] = [];
+
+    for (const projectName of this.projects) {
+      const wiql = this.buildProjectWIQL(projectName, since, until);
+
+      try {
+        const workItems = await this.queryWorkItems(wiql);
+        allWorkItems.push(...workItems);
+      } catch (error: any) {
+        console.error(`Failed to query project ${projectName}:`, error.message);
+        // Continue with other projects
+      }
+    }
+
+    return allWorkItems;
+  }
+
+  /**
+   * Build WIQL query for a specific project
+   */
+  private buildProjectWIQL(
+    projectName: string,
+    since: string,
+    until: string
+  ): string {
+    const conditions: string[] = [];
+
+    // Project filter
+    conditions.push(`[System.TeamProject] = '${projectName}'`);
+
+    // Time range
+    conditions.push(`[System.CreatedDate] >= '${since}'`);
+    conditions.push(`[System.CreatedDate] <= '${until}'`);
+
+    // Area paths filter (if configured)
+    if (this.areaPaths && this.areaPaths.length > 0) {
+      const areaPathConditions = this.areaPaths
+        .map((ap: string) => {
+          // Avoid double-prepending project name if path already starts with it
+          const normalizedAp = ap.replace(/\//g, '\\');
+          if (normalizedAp === projectName || normalizedAp.startsWith(`${projectName}\\`)) {
+            return `[System.AreaPath] UNDER '${normalizedAp}'`;
+          }
+          return `[System.AreaPath] UNDER '${projectName}\\${normalizedAp}'`;
+        })
+        .join(' OR ');
+      conditions.push(`(${areaPathConditions})`);
+    }
+
+    // Work item types filter (if configured)
+    if (this.workItemTypes) {
+      const types = Object.values(this.workItemTypes).filter(Boolean);
+      if (types.length > 0) {
+        const typeConditions = types
+          .map((type: string) => `[System.WorkItemType] = '${type}'`)
+          .join(' OR ');
+        conditions.push(`(${typeConditions})`);
+      }
+    }
+
+    return `
+      SELECT [System.Id], [System.Title], [System.State], [System.CreatedDate], [System.WorkItemType]
+      FROM WorkItems
+      WHERE ${conditions.join('\n      AND ')}
+      ORDER BY [System.CreatedDate] DESC
+    `;
+  }
+
+  /**
+   * Calculate date range from preset
+   */
+  private calculateTimeRange(
+    timeRange: TimeRangePreset,
+    customStart?: string,
+    customEnd?: string
+  ): { since: string; until: string } {
+    if (timeRange === 'ALL') {
+      return {
+        since: '1970-01-01T00:00:00Z',
+        until: new Date().toISOString(),
+      };
+    }
+
+    if (customStart) {
+      return {
+        since: customStart,
+        until: customEnd || new Date().toISOString(),
+      };
+    }
+
+    const now = new Date();
+    const since = new Date(now);
+
+    switch (timeRange) {
+      case '1W':
+        since.setDate(now.getDate() - 7);
+        break;
+      case '2W':
+        since.setDate(now.getDate() - 14);
+        break;
+      case '1M':
+        since.setMonth(now.getMonth() - 1);
+        break;
+      case '3M':
+        since.setMonth(now.getMonth() - 3);
+        break;
+      case '6M':
+        since.setMonth(now.getMonth() - 6);
+        break;
+      case '1Y':
+        since.setFullYear(now.getFullYear() - 1);
+        break;
+    }
+
+    return {
+      since: since.toISOString(),
+      until: now.toISOString(),
+    };
+  }
+
+  // ==========================================================================
+  // Batch Operations
+  // ==========================================================================
+
+  /**
+   * Batch create work items with rate limit handling
+   */
+  async batchCreateWorkItems(
+    workItems: CreateWorkItemRequest[],
+    parentId?: number,
+    childType?: string,
+    options: { batchSize?: number; delayMs?: number } = {}
+  ): Promise<WorkItem[]> {
+    const { batchSize = 10, delayMs = 15000 } = options; // 10 items per minute (ADO: 200/5min limit)
+    const created: WorkItem[] = [];
+
+    for (let i = 0; i < workItems.length; i += batchSize) {
+      const batch = workItems.slice(i, i + batchSize);
+
+      console.log(
+        `Creating work items ${i + 1}-${Math.min(i + batchSize, workItems.length)} of ${workItems.length}...`
+      );
+
+      for (const item of batch) {
+        try {
+          const createdItem =
+            parentId && childType
+              ? await this.createChildWorkItem(item, parentId, childType)
+              : await this.createEpic(item);
+
+          created.push(createdItem);
+        } catch (error: any) {
+          console.error(
+            `Failed to create work item "${item.title}":`,
+            error.message
+          );
+        }
+      }
+
+      // Delay between batches
+      if (i + batchSize < workItems.length) {
+        console.log(`Waiting ${delayMs / 1000}s to avoid rate limits...`);
+        await this.sleep(delayMs);
+      }
+    }
+
+    return created;
+  }
+
+  // ==========================================================================
+  // HTTP Request Handler
+  // ==========================================================================
+
+  /**
+   * Make HTTPS request to ADO API
+   */
+  private async request<T = any>(
+    method: string,
+    path: string,
+    body?: any,
+    customHeaders?: Record<string, string>
+  ): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const url = `${this.baseUrl}${path}`;
+      const { hostname, pathname, search } = new URL(url);
+
+      const headers: Record<string, string> = {
+        Authorization: this.authHeader,
+        Accept: 'application/json',
+        ...customHeaders,
+      };
+
+      if (body && !customHeaders?.['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const options = {
+        hostname,
+        path: pathname + search,
+        method,
+        headers,
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          // Check for HTML response (indicates auth/config issue)
+          const looksLikeHtml = data.trim().startsWith('<!DOCTYPE') ||
+                                data.trim().startsWith('<html') ||
+                                data.trim().startsWith('<HTML');
+
+          // Check status code first
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            // Success response
+            if (looksLikeHtml) {
+              // 200 OK but returned HTML - this is a config issue
+              reject(new Error(
+                `Azure DevOps returned HTML instead of JSON (HTTP ${res.statusCode}).\n` +
+                `This usually indicates an authentication or configuration issue.\n\n` +
+                `Possible causes:\n` +
+                `• Invalid or expired Personal Access Token (PAT)\n` +
+                `• Incorrect organization name "${this.organization}"\n` +
+                `• Corporate firewall or proxy intercepting the request\n` +
+                `• SSO/authentication redirect (try accessing Azure DevOps in browser first)`
+              ));
+              return;
+            }
+
+            // Parse JSON response
+            try {
+              const parsed = data ? JSON.parse(data) : {};
+              resolve(parsed as T);
+            } catch {
+              reject(new Error(
+                `Azure DevOps returned invalid JSON.\n` +
+                `Response preview: ${data.substring(0, 200)}${data.length > 200 ? '...' : ''}`
+              ));
+            }
+          } else {
+            // Error response
+            if (looksLikeHtml) {
+              reject(new Error(
+                `Azure DevOps returned an error page (HTTP ${res.statusCode}).\n` +
+                `This usually indicates an authentication or configuration issue.\n\n` +
+                `Possible causes:\n` +
+                `• Invalid or expired Personal Access Token (PAT)\n` +
+                `• Incorrect organization name "${this.organization}"\n` +
+                `• Corporate firewall or proxy intercepting the request\n` +
+                `• SSO/authentication redirect`
+              ));
+              return;
+            }
+
+            // Try to parse error message
+            let errorMsg = `HTTP ${res.statusCode}`;
+            try {
+              const parsed = JSON.parse(data);
+              errorMsg = parsed.message || `HTTP ${res.statusCode}: ${data.substring(0, 200)}`;
+            } catch {
+              errorMsg = `HTTP ${res.statusCode}: ${data.substring(0, 200)}`;
+            }
+            reject(new Error(errorMsg));
+          }
+        });
+      });
+
+      req.on('error', (error) => {
+        reject(error);
+      });
+
+      // Send body if present
+      if (body) {
+        req.write(JSON.stringify(body));
+      }
+
+      req.end();
+    });
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+}

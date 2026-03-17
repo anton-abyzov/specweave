@@ -94,7 +94,7 @@ export async function triggerAdoRepoCloning(
 ): Promise<string | undefined> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
-    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /specweave-ado:clone-repos)\n'));
+    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /sw:ado-clone-repos)\n'));
     return undefined;
   }
 

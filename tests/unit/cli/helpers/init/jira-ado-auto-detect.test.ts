@@ -94,11 +94,11 @@ vi.mock('../../../../../src/integrations/jira/jira-client.js', () => ({
   },
 }));
 
-vi.mock('../../../../../plugins/specweave-jira/lib/jira-board-resolver.js', () => ({
+vi.mock('../../../../../plugins/specweave/lib/integrations/jira/jira-board-resolver.js', () => ({
   fetchBoardsForProject: mockFetchBoardsForProject,
 }));
 
-vi.mock('../../../../../plugins/specweave-ado/lib/ado-board-resolver.js', () => ({
+vi.mock('../../../../../plugins/specweave/lib/integrations/ado/ado-board-resolver.js', () => ({
   fetchAreaPathsForProject: mockFetchAreaPathsForProject,
 }));
 

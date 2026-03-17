@@ -24,14 +24,14 @@ export async function syncFeatureToGitHub(
 
   // Find the CLI script — check multiple locations
   const candidates = [
-    resolve(projectRoot, 'plugins/specweave-github/lib/github-feature-sync-cli.js'),
-    resolve(projectRoot, 'dist/plugins/specweave-github/lib/github-feature-sync-cli.js'),
-    resolve(projectRoot, 'node_modules/specweave/plugins/specweave-github/lib/github-feature-sync-cli.js'),
+    resolve(projectRoot, 'plugins/specweave/lib/integrations/github/github-feature-sync-cli.js'),
+    resolve(projectRoot, 'dist/plugins/specweave/lib/integrations/github/github-feature-sync-cli.js'),
+    resolve(projectRoot, 'node_modules/specweave/plugins/specweave/lib/integrations/github/github-feature-sync-cli.js'),
   ];
 
   const cliPath = candidates.find((p) => existsSync(p));
   if (!cliPath) {
-    throw new Error('GitHub feature sync CLI not found — specweave-github plugin may not be installed');
+    throw new Error('GitHub feature sync CLI not found — specweave plugin (github integration) may not be installed');
   }
 
   const result = await execFileNoThrow('node', [cliPath, featureId], {

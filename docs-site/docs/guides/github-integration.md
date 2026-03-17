@@ -150,8 +150,8 @@ gh api repos/OWNER/REPO --jq '.permissions.push'
 specweave init
 
 # The plugin auto-detects GitHub and enables automatically
-# OR enable manually:
-specweave plugin enable specweave-github
+# GitHub integration is bundled in the specweave plugin
+specweave plugin enable specweave
 ```
 
 ### Step 2: Create an Increment
@@ -836,15 +836,16 @@ GitHub issues are created with default labels:
 # .specweave/config.yaml
 plugins:
   settings:
-    specweave-github:
-      default_labels:
-        - "specweave"
-        - "increment"
-      priority_labels:
-        P0: "critical"
-        P1: "high"
-        P2: "medium"
-        P3: "low"
+    specweave:
+      github:
+        default_labels:
+          - "specweave"
+          - "increment"
+        priority_labels:
+          P0: "critical"
+          P1: "high"
+          P2: "medium"
+          P3: "low"
 ```
 
 ### Multi-Repo Projects
@@ -856,8 +857,9 @@ For monorepos with multiple GitHub repositories:
 # .specweave/config.yaml
 plugins:
   settings:
-    specweave-github:
-      repo: "org/frontend"  # Sync to this repo instead
+    specweave:
+      github:
+        repo: "org/frontend"  # Sync to this repo instead
 ```
 
 **Sync different increments to different repos**:
@@ -1193,8 +1195,8 @@ Update `tasks.md` manually to align, or re-sync.
 
 **A**: Yes! SpecWeave supports both:
 ```bash
-# Enable JIRA plugin
-specweave plugin enable specweave-jira
+# JIRA integration is bundled in the specweave plugin
+specweave plugin enable specweave
 
 # Sync to JIRA
 /sw:jira:sync-tasks 0005

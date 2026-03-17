@@ -207,7 +207,7 @@ export class ExternalChangePuller {
   ): Promise<ExternalChange[]> {
     try {
       // Dynamic import to avoid initialization errors when GitHub is not configured
-      const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
+      const { GitHubClientV2 } = await import('../../plugins/specweave/lib/integrations/github/github-client-v2.js');
 
       // Detect repo from git remote
       const detected = await GitHubClientV2.detectRepo(this.projectRoot);

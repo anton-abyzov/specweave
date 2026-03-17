@@ -35,7 +35,7 @@ Each event includes:
 | `timestamp` | When the event occurred (ISO 8601) |
 | `type` | `command`, `skill`, or `agent` |
 | `name` | The command/skill/agent name |
-| `plugin` | Source plugin (e.g., `specweave`, `specweave-github`) |
+| `plugin` | Source plugin (e.g., `specweave`) |
 | `increment` | Active increment context, if any |
 | `duration` | Execution time in milliseconds |
 | `success` | Whether the execution succeeded |

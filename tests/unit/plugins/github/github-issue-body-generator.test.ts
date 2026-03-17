@@ -16,8 +16,8 @@ import { describe, it, expect } from 'vitest';
 // RED phase: module does not exist yet
 import {
   generateIssueBody,
-} from '../../../../plugins/specweave-github/lib/github-issue-body-generator.js';
-import type { UserStoryInput } from '../../../../plugins/specweave-github/lib/github-issue-body-generator.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-issue-body-generator.js';
+import type { UserStoryInput } from '../../../../plugins/specweave/lib/integrations/github/github-issue-body-generator.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures

@@ -610,7 +610,7 @@ export class ExternalIssueAutoCreator {
     try {
       // Import GitHub client dynamically to avoid circular deps
       const { GitHubClientV2 } = await import(
-        '../../plugins/specweave-github/lib/github-client-v2.js'
+        '../../plugins/specweave/lib/integrations/github/github-client-v2.js'
       );
 
       // Detect repo from config

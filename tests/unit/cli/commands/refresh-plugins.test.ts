@@ -128,9 +128,7 @@ const MARKETPLACE_JSON = JSON.stringify({
   name: 'specweave',
   version: '1.0.0',
   plugins: [
-    { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework' },
-    { name: 'sw-github', source: './plugins/specweave-github', version: '1.0.30', description: 'GitHub sync' },
-    { name: 'sw-jira', source: './plugins/specweave-jira', version: '1.0.0', description: 'JIRA sync' },
+    { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework with GitHub, JIRA, ADO sync' },
   ],
 });
 
@@ -205,7 +203,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
       expect(mockInstallPlugin).not.toHaveBeenCalled();
     });
 
@@ -214,7 +212,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
       expect(mockInstallPlugin).not.toHaveBeenCalled();
     });
 
@@ -223,8 +221,6 @@ describe('refresh-plugins', () => {
 
       const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
       expect(calledPlugins).toContain('sw');
-      expect(calledPlugins).toContain('sw-github');
-      expect(calledPlugins).toContain('sw-jira');
     });
 
     it('should pass project root to copyPluginSkillsToProject', async () => {
@@ -241,7 +237,7 @@ describe('refresh-plugins', () => {
     it('should call enablePluginsInSettings even in fallback mode', async () => {
       await refreshPluginsCommand({ all: true });
 
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
     });
   });
 
@@ -257,24 +253,22 @@ describe('refresh-plugins', () => {
     it('should use installPlugin when Claude CLI is available', async () => {
       await refreshPluginsCommand({ all: true });
 
-      expect(mockInstallPlugin).toHaveBeenCalledTimes(3);
+      expect(mockInstallPlugin).toHaveBeenCalledTimes(1);
       // copyPluginSkillsToProject should not be called when all native installs succeed
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
 
     it('should fall back to copyPluginSkillsToProject when native install fails for a plugin', async () => {
       mockInstallPlugin
-        .mockReturnValueOnce({ success: true, sha: 'abc123' })
-        .mockReturnValueOnce({ success: false, sha: '', error: 'CLI crash' })
-        .mockReturnValueOnce({ success: true, sha: 'def456' });
+        .mockReturnValueOnce({ success: false, sha: '', error: 'CLI crash' });
       mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'fallback' });
 
       await refreshPluginsCommand({ all: true });
 
-      // Plugin 2 (sw-github) failed natively, should have been retried via copy
+      // sw failed natively, should have been retried via copy
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
-        'sw-github',
+        'sw',
         '/mock/specweave',
         '/mock/project',
         { force: undefined },
@@ -286,8 +280,6 @@ describe('refresh-plugins', () => {
 
       const calledPlugins = mockInstallPlugin.mock.calls.map((c: unknown[]) => c[0]);
       expect(calledPlugins).toContain('sw');
-      expect(calledPlugins).toContain('sw-github');
-      expect(calledPlugins).toContain('sw-jira');
     });
 
     it('should pass specweave root and force option to installPlugin', async () => {
@@ -304,20 +296,18 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({ all: true });
 
       expect(mockEnablePluginsInSettings).toHaveBeenCalledTimes(1);
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
     });
 
     it('should only enable successfully installed plugins (excludes double-failures)', async () => {
-      // Native fails for sw-github, AND fallback also fails
+      // Native fails for sw, AND fallback also fails
       mockInstallPlugin
-        .mockReturnValueOnce({ success: true, sha: 'abc123' })
-        .mockReturnValueOnce({ success: false, sha: '', error: 'install failed' })
-        .mockReturnValueOnce({ success: true, sha: 'def456' });
+        .mockReturnValueOnce({ success: false, sha: '', error: 'install failed' });
       mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'copy also failed' });
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-jira']);
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
     });
 
     it('should not call enablePluginsInSettings when all plugins fail (native + fallback)', async () => {
@@ -335,7 +325,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
     });
   });
 
@@ -349,7 +339,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
     });
 
     it('should pass force flag to copyPluginSkillsToProject', async () => {
@@ -368,7 +358,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -407,10 +397,10 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({ all: true });
 
       // Should gracefully fall back to copy mode, not crash
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
       expect(mockInstallPlugin).not.toHaveBeenCalled();
       // Even in fallback mode, enablement should happen
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
     });
 
     it('should warn user when enablePluginsInSettings fails', async () => {
@@ -435,10 +425,10 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({ all: true });
 
       // Each plugin: native fails → fallback copy succeeds
-      expect(mockInstallPlugin).toHaveBeenCalledTimes(3);
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockInstallPlugin).toHaveBeenCalledTimes(1);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
       // All plugins recovered via copy, so enablement should still happen
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
     });
   });
 

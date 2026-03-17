@@ -339,6 +339,91 @@ export function migrateBundledToGlobalLock(
 }
 
 // ---------------------------------------------------------------------------
+// Migration: remove satellite plugin entries from lockfiles
+// ---------------------------------------------------------------------------
+
+/** Satellite plugin names that were consolidated into the unified 'sw' plugin. */
+const SATELLITE_PLUGIN_NAMES = new Set([
+  'sw-github',
+  'sw-jira',
+  'sw-ado',
+  'sw-release',
+  'sw-diagrams',
+  'docs',
+  'sw-media',
+]);
+
+/**
+ * Remove satellite plugin entries from both global and project lockfiles.
+ *
+ * After consolidation, all satellite skills ship under the 'sw' plugin.
+ * This function cleans up stale lockfile entries that reference the old
+ * satellite plugin names.
+ *
+ * - Idempotent: safe to run multiple times
+ * - Failure non-blocking: returns {migratedCount: 0} on any error
+ *
+ * @param projectRoot - Project directory (optional — only global lock if omitted)
+ * @param homeOverride - Override home directory for testing
+ */
+export function migrateSatelliteToUnifiedLock(
+  projectRoot?: string,
+  homeOverride?: string,
+): { migratedCount: number } {
+  let migratedCount = 0;
+
+  try {
+    // 1. Clean global plugins-lock.json
+    const globalLock = readGlobalLockfile(homeOverride);
+    if (globalLock) {
+      let globalChanged = false;
+      for (const skillName of Object.keys(globalLock.skills)) {
+        const entry = globalLock.skills[skillName];
+        // Match entries whose source references a satellite plugin
+        if (entry.source && SATELLITE_PLUGIN_NAMES.has(entry.source.replace('local:', ''))) {
+          delete globalLock.skills[skillName];
+          migratedCount++;
+          globalChanged = true;
+        }
+      }
+      if (globalChanged) {
+        writeGlobalLockfile(globalLock, homeOverride);
+      }
+    }
+
+    // 2. Clean project vskill.lock (if provided)
+    if (projectRoot) {
+      const projectLock = readLockfile(projectRoot);
+      if (projectLock) {
+        let projectChanged = false;
+        for (const skillName of Object.keys(projectLock.skills)) {
+          const entry = projectLock.skills[skillName];
+          if (entry.source && SATELLITE_PLUGIN_NAMES.has(entry.source.replace('local:', ''))) {
+            delete projectLock.skills[skillName];
+            migratedCount++;
+            projectChanged = true;
+          }
+        }
+        if (projectChanged) {
+          const remaining = Object.keys(projectLock.skills).length;
+          if (remaining === 0) {
+            try {
+              rmSync(join(projectRoot, LOCKFILE_NAME), { force: true });
+            } catch { /* non-fatal */ }
+          } else {
+            writeLockfile(projectLock, projectRoot);
+          }
+        }
+      }
+    }
+  } catch {
+    // Failure is non-blocking — return what we have
+  }
+
+  return { migratedCount };
+}
+
+// ---------------------------------------------------------------------------
 // Root finder
 // ---------------------------------------------------------------------------
 

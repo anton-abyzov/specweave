@@ -10,11 +10,19 @@ import * as path from 'path';
 import * as os from 'os';
 
 const mockExecSync = vi.hoisted(() => vi.fn());
+const mockReadGlobalLockfile = vi.hoisted(() => vi.fn().mockReturnValue(null));
 vi.mock('child_process', async (importOriginal) => {
   const actual = await importOriginal<typeof import('child_process')>();
   return {
     ...actual,
     execSync: mockExecSync,
+  };
+});
+vi.mock('../../../../../src/utils/plugin-copier.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../../src/utils/plugin-copier.js')>();
+  return {
+    ...actual,
+    readGlobalLockfile: mockReadGlobalLockfile,
   };
 });
 import { InstallationHealthChecker } from '../../../../../src/core/doctor/checkers/installation-health-checker.js';

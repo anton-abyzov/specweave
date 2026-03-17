@@ -4,7 +4,7 @@
  * Tests the Projects V2 board resolver that finds or creates GitHub Projects V2
  * boards and adds issues to them via the GitHubGraphQLClient.
  *
- * Expected module: plugins/specweave-github/lib/github-board-resolver-v2.ts (does NOT exist yet)
+ * Expected module: plugins/specweave/lib/integrations/github/github-board-resolver-v2.ts (does NOT exist yet)
  *
  * @see T-012: Projects V2 Board Resolver
  */
@@ -25,11 +25,11 @@ const mockGraphqlClient = {
 
 import {
   GitHubBoardResolverV2,
-} from '../../../../plugins/specweave-github/lib/github-board-resolver-v2.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-board-resolver-v2.js';
 
 import type {
   GitHubGraphQLClient,
-} from '../../../../plugins/specweave-github/lib/github-graphql-client.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-graphql-client.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

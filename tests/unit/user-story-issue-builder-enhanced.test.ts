@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
  * 3. GitHub blob URL conversion
  */
 
-import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js';
+import { UserStoryIssueBuilder } from '../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js';
 import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';

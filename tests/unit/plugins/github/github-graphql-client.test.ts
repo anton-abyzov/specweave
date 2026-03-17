@@ -3,7 +3,7 @@
  *
  * RED phase: These tests import from a module that does not exist yet.
  * They will fail at import time until the implementation is created at:
- *   plugins/specweave-github/lib/github-graphql-client.ts
+ *   plugins/specweave/lib/integrations/github/github-graphql-client.ts
  *
  * The client wraps `gh api graphql` CLI calls for GitHub Projects V2.
  */
@@ -17,7 +17,7 @@ vi.mock('child_process', () => ({
 }));
 
 // Import the module that doesn't exist yet - RED phase
-import { GitHubGraphQLClient } from '../../../../plugins/specweave-github/lib/github-graphql-client.js';
+import { GitHubGraphQLClient } from '../../../../plugins/specweave/lib/integrations/github/github-graphql-client.js';
 
 /**
  * Helper: simulate execFile callback behavior.

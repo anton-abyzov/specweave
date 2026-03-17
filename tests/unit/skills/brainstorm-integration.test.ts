@@ -27,23 +27,18 @@ describe('Brainstorm Skill — Integration (US-003: AC-US3-04/05/06)', () => {
     });
   });
 
-  describe('AC-US3-05: Deprecation notice in specweave-docs PLUGIN.md', () => {
-    const docsMd = readFile('plugins/specweave-docs/PLUGIN.md');
+  describe('AC-US3-05: Brainstorm skill in unified PLUGIN.md', () => {
+    const pluginMd = readFile('plugins/specweave/PLUGIN.md');
 
-    it('spec-driven-brainstorming row contains DEPRECATED', () => {
-      const bsRow = docsMd
+    it('brainstorm skill is listed in unified plugin', () => {
+      const bsRow = pluginMd
         .split('\n')
-        .find((l) => l.includes('spec-driven-brainstorming'));
+        .find((l) => l.includes('brainstorm'));
       expect(bsRow).toBeTruthy();
-      expect(bsRow!).toMatch(/DEPRECATED/i);
     });
 
-    it('deprecation notice references sw:brainstorm', () => {
-      const bsRow = docsMd
-        .split('\n')
-        .find((l) => l.includes('spec-driven-brainstorming'));
-      expect(bsRow).toBeTruthy();
-      expect(bsRow!).toMatch(/sw:brainstorm/);
+    it('spec-driven-brainstorming is no longer listed (superseded)', () => {
+      expect(pluginMd).not.toContain('spec-driven-brainstorming');
     });
   });
 

@@ -226,7 +226,7 @@ export class CancelationHandler {
   /**
    * Show resume suggestion to user
    *
-   * @param resumeCommand - Command to resume operation (e.g., "/specweave-jira:import-projects --resume")
+   * @param resumeCommand - Command to resume operation (e.g., "/sw:jira-import-projects --resume")
    */
   suggestResume(resumeCommand: string): void {
     this.logger.log(chalk.cyan(`\nResume with: ${resumeCommand}`));

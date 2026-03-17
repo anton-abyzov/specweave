@@ -114,9 +114,10 @@ describe('Template Validation Tests', () => {
     });
 
     test('should mention domain skills for different tech stacks', () => {
-      expect(claudeContent).toContain('frontend:architect');
-      expect(claudeContent).toContain('backend:dotnet');
-      expect(claudeContent).toContain('payments:payment-core');
+      // After plugin consolidation, CLAUDE.md.template references sw:architect
+      // as the universal domain skill, with optional domain plugins via vskill install
+      expect(claudeContent).toContain('sw:architect');
+      expect(claudeContent).toMatch(/domain plugins.*vskill install|vskill install.*domain/i);
     });
 
     test('should explain auto-activation fallback', () => {

@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import { ensureDir, remove } from '../../../../src/utils/fs-native.js';
 import { fileURLToPath } from 'url';
 // NOTE: Import uses dynamic import to avoid module resolution errors when ADO plugin not installed
-// import { AdoClient, createAdoClient } from '../../../../plugins/specweave-ado/lib/ado-client';
+// import { AdoClient, createAdoClient } from '../../../../plugins/specweave/lib/integrations/ado/ado-client';
 
 /**
  * E2E Tests for Azure DevOps (ADO) Sync
@@ -352,7 +352,7 @@ describe.skip('ADO Sync - Multi-Project Support', () => {
     // To enable: Ensure test projects exist and remove it.skip()
     if (skipIfNoAdo) return;
 
-    const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
+    const { AdoClientV2 } = await import('../../plugins/specweave/lib/integrations/ado/ado-client-v2');
 
     // Create multi-project profile with containers
     const profile = {
@@ -405,7 +405,7 @@ describe.skip('ADO Sync - Multi-Project Support', () => {
     // To enable: Create required area paths and remove it.skip()
     if (skipIfNoAdo) return;
 
-    const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
+    const { AdoClientV2 } = await import('../../plugins/specweave/lib/integrations/ado/ado-client-v2');
 
     // Profile with area path filters
     const profile = {
@@ -448,7 +448,7 @@ describe.skip('ADO Sync - Multi-Project Support', () => {
     // To enable: Ensure test projects and work items exist, then remove it.skip()
     if (skipIfNoAdo) return;
 
-    const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
+    const { AdoClientV2 } = await import('../../plugins/specweave/lib/integrations/ado/ado-client-v2');
 
     // Profile with custom WIQL
     const profile = {

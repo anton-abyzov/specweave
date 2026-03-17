@@ -22,7 +22,7 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 }));
 
 const mockParseIssueBody = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-issue-body-parser.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-issue-body-parser.js', () => ({
   parseIssueBody: mockParseIssueBody,
 }));
 
@@ -30,7 +30,7 @@ import {
   pullSyncMultiRepo,
   type MultiRepoPullSyncOptions,
   type MultiRepoPullSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-pull-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-pull-sync.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
