@@ -1,13 +1,13 @@
 ---
 sidebar_position: 2
 title: Plugin Ecosystem
-description: SpecWeave's modular plugin architecture — 8 bundled plugins with 44 skills, plus community skills via verified-skill.com
+description: SpecWeave's modular plugin architecture — 8 bundled plugins with 44 skills, plus 100,000+ community skills via verified-skill.com
 keywords: [plugins, skills, agents, commands, github, jira, integration, vskill]
 ---
 
 # Plugin Ecosystem
 
-SpecWeave uses a **modular plugin architecture**. The core framework ships with **8 bundled plugins** providing 44 skills. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (99,680+ community skills).
+SpecWeave uses a **modular plugin architecture**. The core framework ships with **8 bundled plugins** providing 44 skills. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
 
 ![Plugin Architecture](/img/diagrams/plugin-architecture.svg)
 
@@ -129,7 +129,7 @@ npx vskill install --repo anton-abyzov/vskill --plugin <name>
 
 ---
 
-## Community Skills (99,680+)
+## Community Skills (100,000+)
 
 The [verified-skill.com](https://verified-skill.com) registry hosts community-contributed skills across all domains:
 
