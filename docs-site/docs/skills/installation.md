@@ -14,8 +14,8 @@ sidebar_position: 3
 # Search the registry
 npx vskill find "react"
 
-# Install from GitHub
-npx vskill install owner/repo
+# Install a skill from the registry
+npx vskill install auth-guard
 
 # Install a plugin (bundle of skills)
 npx vskill install --repo anton-abyzov/vskill --plugin mobile
@@ -71,16 +71,16 @@ Install skills directly from any GitHub repository:
 
 ```bash
 # Full repo (interactive selection if multiple skills found)
-npx vskill install owner/repo
+npx vskill install anton-abyzov/vskill
 
 # Specific skill within a repo
-npx vskill install owner/repo --skill my-skill
+npx vskill install anton-abyzov/vskill --skill scout
 
 # From a specific GitHub URL
-npx vskill install https://github.com/owner/repo
+npx vskill install https://github.com/anton-abyzov/vskill
 ```
 
-vskill clones the repo, scans all `SKILL.md` files it finds, and lets you choose which to install.
+Replace `anton-abyzov/vskill` with any GitHub `owner/repo` that contains `SKILL.md` files. vskill clones the repo, scans all skills it finds, and lets you choose which to install.
 
 ---
 
@@ -91,14 +91,22 @@ A **plugin** bundles multiple related skills into a single installable package. 
 ### Install a specific plugin
 
 ```bash
-npx vskill install --repo owner/repo --plugin mobile
+# From the vskill marketplace
+npx vskill install --repo anton-abyzov/vskill --plugin mobile
+
+# From the SpecWeave marketplace
+npx vskill install --repo anton-abyzov/specweave --plugin sw-github
 ```
 
 ### Install all plugins from a marketplace
 
 ```bash
-npx vskill install --repo owner/repo --all
+npx vskill install --repo anton-abyzov/vskill --all
 ```
+
+:::note
+The `--repo` flag requires a GitHub repository that contains a `.claude-plugin/marketplace.json` file. Using a repo without one (e.g., a generic `owner/repo` placeholder) will fail with "marketplace.json not found".
+:::
 
 ### Available SpecWeave plugins
 
@@ -161,7 +169,7 @@ This is useful when building your own skills and testing them before publishing.
 Every installation goes through a mandatory security pipeline:
 
 ```
-Source → Blocklist Check → Pattern Scan (38 rules) → Install → Lockfile Update
+Source → Blocklist Check → Pattern Scan (52 rules) → Install → Lockfile Update
            ↓ blocked           ↓ issues found
          REJECTED           WARN + require --force
 ```
@@ -172,7 +180,7 @@ vskill checks against a maintained blocklist of known malicious skills. Blocked 
 
 ### 2. Security scan (Tier 1)
 
-38 deterministic pattern checks run against the skill's `SKILL.md`:
+52 deterministic pattern checks run against the skill's `SKILL.md`:
 
 - Credential exfiltration attempts
 - Prompt injection patterns
@@ -344,13 +352,26 @@ vskill detects agents by checking for their CLI tools and configuration director
 2. Run `npx vskill init` to refresh agent detection
 3. Use `npx vskill list --agents` to see what's detected
 
+### "marketplace.json not found"
+
+The `--repo` flag requires a repository that publishes a `.claude-plugin/marketplace.json` file. Known marketplace repos:
+
+- `anton-abyzov/specweave` — SpecWeave core plugins (sw, sw-github, sw-jira, sw-ado, etc.)
+- `anton-abyzov/vskill` — Community plugins (mobile, marketing, google-workspace, etc.)
+
+If you're installing from a repo that doesn't have a marketplace, use the direct install syntax instead:
+
+```bash
+npx vskill install <owner>/<repo>
+```
+
 ### "Scan failed" or security warnings
 
 The security scan found potential issues. Review the findings carefully:
 
 - **Low severity**: Usually safe, but review the flagged patterns
 - **High severity**: Likely dangerous — avoid installing without thorough review
-- Use `--force` only if you've manually verified the skill is safe
+- Use `--force` only if you've manually verified the skill is safe and the scan produced a false positive
 
 ### GitHub rate limiting
 

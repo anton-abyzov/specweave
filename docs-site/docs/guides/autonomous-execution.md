@@ -43,6 +43,19 @@ Auto mode enables continuous autonomous execution using Claude Code's Stop Hook 
 
 ## Quick Start
 
+:::tip Two ways to go autonomous
+**Slash command:**
+```bash
+/sw:auto
+```
+
+**Natural language** — just say:
+```
+Ship it while I sleep
+```
+SpecWeave detects your intent and starts autonomous execution.
+:::
+
 ### Basic Usage
 
 ```bash
