@@ -146,6 +146,6 @@ specweave init .
 
 ## Related Terms
 
-- [Greenfield](/docs/glossary/terms/greenfield)
-- [Brownfield](/docs/glossary/terms/brownfield)
+- Greenfield
+- Brownfield
 - [Increments](/docs/glossary/terms/increments)

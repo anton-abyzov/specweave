@@ -110,7 +110,7 @@ how many times the user has clicked a button.
 | Include | Don't Include |
 |---------|---------------|
 | User stories | Code snippets |
-| [Acceptance criteria](/docs/glossary/terms/acceptance-criteria) | Class names |
+| Acceptance criteria | Class names |
 | Business value | Technical decisions |
 | Success metrics | File paths |
 | Constraints | Implementation details |
@@ -321,9 +321,9 @@ The implementation details go in tasks.md.
 
 ## Glossary Terms Used
 
-- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** — Testable success conditions
+- **Acceptance Criteria** — Testable success conditions
 - **[AC-ID](/docs/glossary/terms/ac-id)** — Acceptance criteria identifier (e.g., AC-US1-01)
-- **[User Stories](/docs/glossary/terms/user-stories)** — Requirements from user perspective
+- **User Stories** — Requirements from user perspective
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
 
 ---

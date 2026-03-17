@@ -759,10 +759,10 @@ title: "My User Story"
 ## Related Terms
 
 - [Living Docs](/docs/glossary/terms/living-docs) - Auto-synced documentation
-- [Content Classification](/docs/glossary/terms/content-classification) - 9-category system
+- Content Classification - 9-category system
 - [Project Detection](/docs/glossary/terms/project-detection) - Multi-project support
-- [Cross-Linking](/docs/glossary/terms/cross-linking) - Automatic document linking
-- [Docusaurus Frontmatter](/docs/glossary/terms/docusaurus-frontmatter) - YAML metadata
+- Cross-Linking - Automatic document linking
+- Docusaurus Frontmatter - YAML metadata
 
 ---
 

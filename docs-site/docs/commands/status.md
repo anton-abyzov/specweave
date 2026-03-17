@@ -600,8 +600,8 @@ $ specweave status
 
 - `pause` - Pause active work
 - `resume` - Resume paused work
-- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
-- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
+- `abandon` - Cancel work permanently
+- Status Management Guide - Complete workflow guide
 
 ## Summary
 

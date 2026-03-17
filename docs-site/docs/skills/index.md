@@ -50,7 +50,7 @@ The Verified Skills Standard introduces **three-tier certification**:
 | **Verified** | Tier 1 + LLM intent analysis | ~$0.03/skill | 5-15s |
 | **Certified** | Tiers 1+2 + human security review + sandbox | $50-200/skill | 1-5 days |
 
-The registry at [verifiedskill.com](https://verifiedskill.com) provides a trusted source for browsing and submitting skills, with the `vskill` CLI for command-line access (`npx vskill`, `bunx vskill`, `pnpx vskill`, or `yarn dlx vskill`).
+The registry at [verified-skill.com](https://verified-skill.com) provides a trusted source for browsing and submitting skills, with the `vskill` CLI for command-line access (`npx vskill`, `bunx vskill`, `pnpx vskill`, or `yarn dlx vskill`).
 
 [Read the full Verified Skills Standard](/docs/skills/verified/)
 
@@ -89,4 +89,4 @@ A skill can be both **verified** (passed security certification) and **extensibl
 - **[vskill CLI Reference](/docs/skills/vskill-cli)** — Complete command reference for the skill package manager
 - **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 49 AI coding agents
 - **[All 100+ Skills](/docs/reference/skills)** — Complete SpecWeave skill catalog
-- **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
+- **[verified-skill.com](https://verified-skill.com)** — The trusted skill registry

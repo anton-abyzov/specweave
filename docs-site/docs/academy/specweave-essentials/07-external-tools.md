@@ -484,7 +484,7 @@ During `specweave init`, you'll be asked:
 - **JIRA** — Atlassian project tracking
 - **Azure DevOps** — Microsoft DevOps platform
 - **Epic** — Large story spanning sprints
-- **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content flows one way, status flows other way
+- **Split-Source Sync** — Content flows one way, status flows other way
 
 ---
 

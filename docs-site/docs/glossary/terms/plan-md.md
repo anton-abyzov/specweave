@@ -132,6 +132,6 @@ graph LR
 ## Related
 
 - [Increments](/docs/glossary/terms/increments) - Contains plan.md
-- [ADR](/docs/glossary/terms/adr) - Architecture decisions
+- ADR - Architecture decisions
 - [Architect Agent](/docs/glossary/terms/architect-agent) - Creates plan.md
 - [spec.md](/docs/glossary/terms/spec-md) - Input requirements

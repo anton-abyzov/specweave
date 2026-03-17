@@ -44,7 +44,7 @@ vskill <command>
 
 ### `find`
 
-Search the [verifiedskill.com](https://verifiedskill.com) registry for skills.
+Search the [verified-skill.com](https://verified-skill.com) registry for skills.
 
 ```bash
 vskill find <query> [options]
@@ -310,7 +310,7 @@ vskill blocklist add malicious-skill
 
 ### `submit`
 
-Submit a skill for verification on verifiedskill.com.
+Submit a skill for verification on verified-skill.com.
 
 ```bash
 vskill submit <source> [options]
@@ -469,7 +469,7 @@ Located at the project root (or `~/.vskill.lock` for global installs). Tracks al
 | Variable | Description |
 |----------|-------------|
 | `GITHUB_TOKEN` | GitHub personal access token (avoids rate limiting) |
-| `VSKILL_REGISTRY_URL` | Custom registry URL (default: verifiedskill.com) |
+| `VSKILL_REGISTRY_URL` | Custom registry URL (default: verified-skill.com) |
 
 ---
 
@@ -478,4 +478,4 @@ Located at the project root (or `~/.vskill.lock` for global installs). Tracks al
 - **[Installing Skills](/docs/skills/installation)** — Step-by-step installation guide
 - **[Skill Studio](/docs/skills/skill-studio)** — Browser-based skill development IDE
 - **[Verified Skills Standard](/docs/skills/verified/)** — How the 3-tier trust system works
-- **[verifiedskill.com](https://verifiedskill.com)** — Browse and submit skills
+- **[verified-skill.com](https://verified-skill.com)** — Browse and submit skills

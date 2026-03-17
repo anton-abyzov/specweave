@@ -536,8 +536,8 @@ ls .specweave/increments/_archive/
 
 - `pause` - Temporarily pause work (reversible)
 - `resume` - Resume paused/abandoned work
-- [`status`](/docs/glossary/terms/status) - View all increment statuses
-- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
+- `status` - View all increment statuses
+- Status Management Guide - Complete workflow guide
 
 ## Summary
 

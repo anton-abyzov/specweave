@@ -2,6 +2,8 @@
 
 SpecWeave provides clear, repeatable workflows for every phase of software development—from initial concept to production deployment.
 
+![SpecWeave Workflow](/img/diagrams/workflow-overview.svg)
+
 ## The Big Picture
 
 ```mermaid
@@ -137,7 +139,7 @@ graph LR
 
 **Activities:**
 - Implement each task
-- Write tests ([TDD](/docs/glossary/terms/tdd) optional)
+- Write tests (TDD optional)
 - Update living docs
 - Review progress
 
@@ -227,7 +229,7 @@ graph LR
 
 ## Workflow Patterns
 
-### Pattern 1: [Greenfield](/docs/glossary/terms/greenfield) (New Project)
+### Pattern 1: Greenfield (New Project)
 
 ```mermaid
 graph TB
@@ -253,7 +255,7 @@ graph TB
 
 ---
 
-### Pattern 2: [Brownfield](/docs/glossary/terms/brownfield) (Existing Project)
+### Pattern 2: Brownfield (Existing Project)
 
 ```mermaid
 graph TB
@@ -309,8 +311,8 @@ graph TB
 
 | Workflow | Duration | Planning | Testing | Use When |
 |----------|----------|----------|---------|----------|
-| **[Greenfield](/docs/glossary/terms/greenfield)** | Weeks-Months | Comprehensive | Full [TDD](/docs/glossary/terms/tdd) | New project |
-| **[Brownfield](/docs/glossary/terms/brownfield)** | Days-Weeks | Document first | Regression focus | Existing code |
+| **Greenfield** | Weeks-Months | Comprehensive | Full TDD | New project |
+| **Brownfield** | Days-Weeks | Document first | Regression focus | Existing code |
 | **Hotfix** | Hours-Days | Minimal | Critical paths | Production bug |
 | **Experiment** | Days | Lightweight | Basic | POC/spike |
 

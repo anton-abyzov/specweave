@@ -20,7 +20,7 @@ Validates specifications before starting implementation:
 
 **Checks**:
 - ✅ Clarity - Requirements are clear and unambiguous
-- ✅ Testability - [Acceptance criteria](/docs/glossary/terms/acceptance-criteria) are testable
+- ✅ Testability - Acceptance criteria are testable
 - ✅ Completeness - All necessary sections present
 - ✅ Feasibility - Technical approach is sound
 
@@ -34,7 +34,7 @@ Validates work before closing an [increment](/docs/glossary/terms/increments):
 
 **Three validation gates**:
 1. **Tasks Complete** - All tasks in [tasks.md](/docs/glossary/terms/tasks-md) marked done
-2. **Tests Pass** - 60%+ [test coverage](/docs/glossary/terms/test-coverage)
+2. **Tests Pass** - 60%+ test coverage
 3. **Docs Updated** - [Living docs](/docs/glossary/terms/living-docs) synchronized
 
 ### 3. Quality Assessment Gate (`/sw:qa --gate`)
@@ -116,6 +116,6 @@ Quality gate thresholds in `.specweave/config.json`:
 ## Related
 
 - [Increments](/docs/glossary/terms/increments) - What gates validate
-- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - What gates check
-- [Test Coverage](/docs/glossary/terms/test-coverage) - Coverage requirements
-- [TDD](/docs/glossary/terms/tdd) - Test-first approach
+- Acceptance Criteria - What gates check
+- Test Coverage - Coverage requirements
+- TDD - Test-first approach

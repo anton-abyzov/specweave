@@ -401,9 +401,9 @@ $ specweave abandon 0007 --reason "Requirements changed"
 ## See Also
 
 - `resume` - Restart paused work
-- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
-- [`status`](/docs/glossary/terms/status) - Check current status
-- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
+- `abandon` - Cancel work permanently
+- `status` - Check current status
+- Status Management Guide - Complete workflow guide
 
 ## Summary
 

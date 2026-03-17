@@ -1,7 +1,7 @@
 ---
 title: "Verified Skills Standard"
 description: "Three-tier trust certification for AI agent skills: Scanned, Verified, Certified — addressing the 36.82% flaw rate in public skill registries"
-keywords: [verified-skills, v-skills, security, certification, trust, SKILL.md, ToxicSkills, verifiedskill.com]
+keywords: [verified-skills, v-skills, security, certification, trust, SKILL.md, ToxicSkills, verified-skill.com]
 ---
 
 # Verified Skills Standard
@@ -131,9 +131,9 @@ The complete list of 41 forbidden patterns across 9 categories is documented in 
 
 ---
 
-## verifiedskill.com
+## verified-skill.com
 
-[verifiedskill.com](https://verifiedskill.com) is the trusted registry for AI agent skills. It provides:
+[verified-skill.com](https://verified-skill.com) is the trusted registry for AI agent skills. It provides:
 
 - **Skill browsing** — Search and filter skills by category, verification tier, and compatible agents
 - **Submission pipeline** — Submit your skill's GitHub repository for automated security verification
@@ -172,7 +172,7 @@ npx vskill status <submission-id>
 Replace `npx` with `bunx`, `pnpx`, or `yarn dlx` in any of the above commands.
 
 :::note
-verifiedskill.com is currently in development (see [increment 0225](https://github.com/anton-abyzov/specweave)). The CLI and registry features described above represent the planned functionality.
+verified-skill.com is currently in development (see [increment 0225](https://github.com/anton-abyzov/specweave)). The CLI and registry features described above represent the planned functionality.
 :::
 
 ---
@@ -189,4 +189,4 @@ This page provides a concise overview of the Verified Skills Standard. For the c
 - **[Extensible Skills](/docs/skills/extensible/extensible-skills)** — How skills adapt to your project
 - **[Security Landscape](/docs/skills/verified/skills-ecosystem-security)** — Full ToxicSkills data and platform comparison
 - **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find and evaluate skills
-- **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
+- **[verified-skill.com](https://verified-skill.com)** — The trusted skill registry

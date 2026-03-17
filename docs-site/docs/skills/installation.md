@@ -39,7 +39,7 @@ npm install -g vskill
 
 ## Install from the Registry
 
-The [verifiedskill.com](https://verifiedskill.com) registry indexes thousands of skills with trust scores and security tiers.
+The [verified-skill.com](https://verified-skill.com) registry indexes thousands of skills with trust scores and security tiers.
 
 ### 1. Search for skills
 
@@ -185,7 +185,7 @@ If issues are found, installation pauses and shows the findings. Use `--force` t
 
 ### 3. Optional LLM verification (Tier 2)
 
-When you [submit a skill](/docs/skills/verified/) to verifiedskill.com, it undergoes additional LLM-based intent analysis. Skills that pass receive a higher trust tier badge.
+When you [submit a skill](/docs/skills/verified/) to verified-skill.com, it undergoes additional LLM-based intent analysis. Skills that pass receive a higher trust tier badge.
 
 ### 4. Lockfile tracking
 
@@ -384,4 +384,4 @@ npx vskill install auth-guard --copy
 - **[vskill CLI Reference](/docs/skills/vskill-cli)** — Complete command reference with all flags
 - **[Skills, Plugins & Marketplaces](/docs/skills/fundamentals)** — Understand how skills, plugins, and marketplaces relate
 - **[Verified Skills Standard](/docs/skills/verified/)** — How skill security certification works
-- **[verifiedskill.com](https://verifiedskill.com)** — Browse the trusted skill registry
+- **[verified-skill.com](https://verified-skill.com)** — Browse the trusted skill registry
