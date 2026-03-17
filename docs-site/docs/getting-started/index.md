@@ -71,11 +71,18 @@ Answer the prompts — SpecWeave auto-detects your tech stack and configures acc
 
 ### 3. Create Your First Feature
 
-In Claude Code (or your AI tool):
-
+:::tip Two ways to start
+**Slash command:**
 ```bash
 /sw:increment "Add user authentication with OAuth"
 ```
+
+**Natural language** — just describe what you want:
+```
+Build a user authentication system with OAuth and social login
+```
+SpecWeave auto-detects your intent and runs the right skill.
+:::
 
 SpecWeave creates three permanent files:
 - `spec.md` — WHAT (user stories, acceptance criteria)
@@ -88,7 +95,7 @@ SpecWeave creates three permanent files:
 ```bash
 /sw:auto
 ```
-Autonomous execution for hours. Real-time progress labels show iteration count, test status, stop criteria.
+Or just say: `Ship it while I sleep` — SpecWeave starts autonomous execution.
 
 **Option B: Step-by-Step Control**
 ```bash
@@ -97,7 +104,17 @@ Autonomous execution for hours. Real-time progress labels show iteration count, 
 /sw:done 0001   # Complete with validation
 ```
 
-### 5. Quality Gates
+### 5. Parallelize Complex Features
+
+For features spanning multiple domains, SpecWeave can split work across parallel agents:
+
+```bash
+/sw:team-lead "Build user auth with login, signup, and OAuth"
+```
+
+Or just describe a complex feature — SpecWeave auto-detects when parallel agents are needed and spawns a coordinated team. Built on [Claude Code's Agent Teams](https://code.claude.com/docs/en/agent-teams), made accessible via a single command. See the [Agent Teams guide](/docs/guides/agent-teams-and-swarms) for details.
+
+### 6. Quality Gates
 
 Before closing, SpecWeave validates:
 - All tasks complete
@@ -145,7 +162,7 @@ SpecWeave works everywhere:
 
 ## Explore the Skill Ecosystem
 
-SpecWeave ships with ~42 built-in skills across 8 bundled plugins, and you can install community skills from the [verified-skill.com](https://verified-skill.com) registry:
+SpecWeave ships with 44 built-in skills across 8 bundled plugins, and you can install community skills from the [verified-skill.com](https://verified-skill.com) registry:
 
 ```bash
 # Search for skills

@@ -10,6 +10,16 @@ SpecWeave provides slash commands for every stage of your development workflow. 
 All SpecWeave commands use the `/sw:*` namespace prefix. For example: `/sw:increment`, `/sw:do`, `/sw:auto`.
 :::
 
+:::tip Natural language works too
+You don't need to memorize commands. Just describe what you want:
+- `"Let's build user authentication"` → triggers `/sw:increment`
+- `"What's the status?"` → triggers `/sw:progress`
+- `"Ship while I sleep"` → triggers `/sw:auto`
+- `"We're done"` → triggers `/sw:done`
+
+SpecWeave auto-detects your intent and activates the right skill.
+:::
+
 ## The Core Workflow
 
 ```mermaid

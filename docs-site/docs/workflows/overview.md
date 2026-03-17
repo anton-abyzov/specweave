@@ -24,6 +24,10 @@ graph TB
     style G fill:#f1f8e9
 ```
 
+:::tip You don't need to memorize commands
+Every SpecWeave command can also be triggered with natural language. Just describe what you want — SpecWeave auto-detects your intent and activates the right skill.
+:::
+
 **Each phase has:**
 - Clear inputs and outputs
 - Step-by-step instructions
@@ -117,7 +121,7 @@ graph LR
 - plan.md (architecture, approach)
 - tasks.md (checklist, embedded tests)
 
-**Command**: `/sw:increment "feature name"`
+**Command**: `/sw:increment "feature name"` — or just say: `Let's build a payment system with Stripe`
 
 **[→ Full Planning Workflow](/docs/workflows/planning)**
 
@@ -149,7 +153,7 @@ graph LR
 - Updated documentation
 - Completed tasks
 
-**Command**: `/sw:do`
+**Command**: `/sw:do` — or just say: `Start implementing`
 
 **[→ Full Implementation Workflow](/docs/workflows/implementation)**
 
@@ -181,7 +185,7 @@ graph LR
 - Completion summary
 - Deployment readiness
 
-**Command**: `/sw:validate`
+**Command**: `/sw:validate` — or just say: `Check if everything looks good`
 
 **[→ Full Validation Workflow](/docs/workflows/validation)**
 

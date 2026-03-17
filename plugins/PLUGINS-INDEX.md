@@ -2,106 +2,46 @@
 
 **Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
 
-**Total Plugins**: 23 | **Last Updated**: 2026-01-26
+**Total Plugins**: 8 | **Total Skills**: 44 | **Last Updated**: 2026-03-17
 
 ---
 
 ## Progressive Loading Pattern
 
-1. **Scan this index** at session start (~5KB)
+1. **Scan this index** at session start (~3KB)
 2. **Match triggers** to user intent
 3. **Load plugin content** only when matched
 4. **Savings**: ~95% (index only vs all plugins)
 
 ---
 
-## Core Plugins (Essential)
+## Core Plugin
 
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave** | increment, feature, plan, spec, tasks, TDD, PM, architect, image, generate image, illustration, icon, logo, banner, mockup | Core framework. Planning, specs, TDD, living docs, image generation. |
+| Plugin | Triggers | Skills | Description |
+|--------|----------|--------|-------------|
+| **specweave** (sw) | increment, feature, plan, spec, tasks, TDD, PM, architect, brainstorm, debug, team, grill, validate | 28 | Core framework — planning, specs, TDD, living docs, multi-agent teams, code review |
 
 ## Integration Plugins
 
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-github** | GitHub, issues, gh, sync to GitHub, GitHub sync | Bidirectional GitHub Issues sync |
-| **specweave-jira** | JIRA, Jira, epics, stories, sync to JIRA | JIRA integration and sync |
-| **specweave-ado** | Azure DevOps, ADO, work items, Azure boards | Azure DevOps integration |
-
-## Infrastructure Plugins
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-infrastructure** | deploy, terraform, kubernetes, docker, CI/CD, devops, AWS, Azure, GCP | Infrastructure-as-Code, DevOps, SRE |
-| **specweave-kubernetes** | k8s, kubernetes, EKS, AKS, GKE, pods, helm, GitOps | Kubernetes architecture, GitOps |
-| **specweave-kafka** | Kafka, event streaming, MSK, Event Hubs, kcat, topics | Apache Kafka integration |
-| **specweave-kafka-streams** | Kafka Streams, KStream, KTable, stream processing | Kafka Streams topology |
-| **specweave-confluent** | Confluent, eCKU, Schema Registry, ksqlDB | Confluent Cloud architecture |
-
-## Frontend Plugins
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-frontend** | React, Vue, Angular, Next.js, frontend, UI, components | Frontend architecture, design systems |
-| **specweave-mobile** | React Native, mobile, iOS, Android | Mobile app development |
-
-## Backend Plugins
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-backend** | backend, API, REST, GraphQL, database, microservices | Backend architecture |
-| **specweave-payments** | Stripe, PayPal, payments, checkout, subscription, PCI | Payment integration |
-
-## ML/AI Plugins
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-ml** | ML, machine learning, model, training, MLOps | ML pipelines, model deployment |
-
-## Quality & Testing
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-testing** | test, E2E, Playwright, Vitest, Jest, QA, browser automation, visual regression, UI inspection, screenshot | Test automation, QA strategy, browser automation, visual regression testing |
+| Plugin | Triggers | Skills | Description |
+|--------|----------|--------|-------------|
+| **specweave-github** (sw-github) | GitHub, issues, gh, sync to GitHub, PR review | 4 | Bidirectional GitHub Issues sync, PR review |
+| **specweave-jira** (sw-jira) | JIRA, Jira, epics, stories, sync to JIRA | 3 | JIRA integration and sync |
+| **specweave-ado** (sw-ado) | Azure DevOps, ADO, work items, Azure boards | 4 | Azure DevOps integration |
 
 ## Documentation & Release
 
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-docs** | documentation, README, API docs, technical writing, docs site, Docusaurus, preview, build docs | Documentation generation and preview |
-| **specweave-release** | release, version, npm publish, changelog, RC | Release management |
-
-## API Documentation
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave:api-docs** | OpenAPI, Postman, API documentation, swagger, REST API, api-docs | Generate OpenAPI spec, Postman collection, and environment files |
+| Plugin | Triggers | Skills | Description |
+|--------|----------|--------|-------------|
+| **specweave-docs** (docs) | documentation, docs site, Docusaurus, preview, build docs | 0 (7 commands) | Documentation generation and preview |
+| **specweave-release** (sw-release) | release, version, npm publish, changelog, RC | 1 | Release management |
 
 ## Specialized Plugins
 
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-diagrams** | diagram, Mermaid, C4, architecture diagram | Mermaid diagram generation |
-| **specweave-n8n** | n8n, workflow, automation, no-code | n8n workflow templates |
-| **specweave-cost-optimizer** | cost, optimize, reduce cost, cloud cost | Cloud cost optimization |
-
-## Development Plugins
-
-| Plugin | Triggers | Description |
-|--------|----------|-------------|
-| **specweave-tooling** | tooling, skill create, agent create | SpecWeave tooling |
-
----
-
-## Deprecated Plugins
-
-| Plugin | Merged Into | Notes |
-|--------|-------------|-------|
-| ~~specweave-ui~~ | specweave-testing, specweave | Browser automation, UI inspection, visual regression now in testing. Image generation moved to core specweave. |
-| ~~specweave-release~~ | specweave (core) | `/sw:npm` now in core |
-| ~~specweave-diagrams~~ | specweave (core) | Mermaid, C4 diagrams now in core |
-| ~~specweave-docs~~ | specweave (core) | Documentation skills now in core |
+| Plugin | Triggers | Skills | Description |
+|--------|----------|--------|-------------|
+| **specweave-diagrams** (sw-diagrams) | diagram, Mermaid, C4, architecture diagram | 1 | Mermaid diagram generation (C4 Model) |
+| **specweave-media** (sw-media) | image, video, remotion, generate image, AI video | 3 | AI image (Imagen 4), AI video (Veo 3.1), programmatic video (Remotion) |
 
 ---
 
@@ -109,25 +49,23 @@
 
 | User Intent | Load Plugin |
 |-------------|-------------|
-| "Plan a feature" | `specweave` |
-| "Sync to GitHub" | `specweave-github` |
-| "Deploy to AWS" | `specweave-infrastructure` |
-| "Create React app" | `specweave-frontend` |
-| "Add Stripe payments" | `specweave-payments` |
-| "Set up Kafka" | `specweave-kafka` |
-| "Create K8s manifest" | `specweave-kubernetes` |
-| "ML pipeline" | `specweave-ml` |
-| "Write E2E tests" | `specweave-testing` |
-| "Create release" | `specweave-release` |
-| "Generate an image" | `specweave` |
-| "Create hero image" | `specweave` |
+| "Plan a feature" | `specweave` (sw) |
+| "Sync to GitHub" | `specweave-github` (sw-github) |
+| "Review PR" | `specweave-github` (sw-github) |
+| "Sync to JIRA" | `specweave-jira` (sw-jira) |
+| "Sync to Azure DevOps" | `specweave-ado` (sw-ado) |
+| "Create release" | `specweave-release` (sw-release) |
+| "Generate diagram" | `specweave-diagrams` (sw-diagrams) |
+| "Generate an image" | `specweave-media` (sw-media) |
+| "Create video" | `specweave-media` (sw-media) |
+| "Preview docs" | `specweave-docs` (docs) |
 
 ---
 
 ## Token Efficiency
 
-- **This index**: ~150 lines (~3KB)
+- **This index**: ~80 lines (~2KB)
 - **All plugins loaded**: ~24.6 MB markdown
-- **Savings**: ~99.98% by loading on-demand
+- **Savings**: ~99.99% by loading on-demand
 
 **Pattern**: Load index → Match triggers → Load only matched plugin content

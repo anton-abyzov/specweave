@@ -28,7 +28,7 @@ The standard defines three escalating levels of trust, each building on the prev
 
 ### Tier 1: Scanned
 
-**Automated pattern matching against 41 known-dangerous patterns across 9 categories.**
+**Automated pattern matching against 52 known-dangerous patterns across 9 categories.**
 
 | Category | What It Catches |
 |----------|----------------|
@@ -84,7 +84,7 @@ Skills display trust badges indicating their highest achieved certification tier
 
 | Badge | Meaning |
 |-------|---------|
-| **Scanned** | Passed 41-pattern automated scan |
+| **Scanned** | Passed 52-pattern automated scan |
 | **Verified** | Passed automated scan + LLM intent analysis |
 | **Certified** | Passed all tiers including human review |
 | **Vendor** | Published by a trusted organization (Anthropic, OpenAI, Google, Vercel, Microsoft, Supabase) |
@@ -127,7 +127,7 @@ Certain patterns constitute **automatic disqualification** from any certificatio
 - Data exfiltration (`curl --data`)
 - Destructive commands (`rm -rf`, `DROP TABLE`, `format`, `dd`)
 
-The complete list of 41 forbidden patterns across 9 categories is documented in the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard#22-forbidden-patterns).
+The complete list of 52 scan patterns across 9 categories is documented in the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard#22-forbidden-patterns).
 
 ---
 
@@ -179,7 +179,7 @@ verified-skill.com is currently in development (see [increment 0225](https://git
 
 ## The Full Specification
 
-This page provides a concise overview of the Verified Skills Standard. For the complete technical specification — including all 41 forbidden patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility considerations — see the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard).
+This page provides a concise overview of the Verified Skills Standard. For the complete technical specification — including all 52 scan patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility considerations — see the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard).
 
 ---
 

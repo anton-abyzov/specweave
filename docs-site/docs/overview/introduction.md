@@ -56,9 +56,18 @@ SpecWeave enforces **Spec-Driven Development**:
 
 ### 1. One Command Creates Foundation
 
+:::tip Two ways to activate
+**Slash command:**
 ```bash
 /sw:increment "Add dark mode toggle"
 ```
+
+**Natural language** — just describe what you want:
+```
+I need a dark mode toggle for the settings page
+```
+SpecWeave auto-detects your intent and activates the right skill.
+:::
 
 AI agents (PM, Architect, Planner) create:
 

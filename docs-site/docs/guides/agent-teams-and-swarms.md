@@ -1,48 +1,374 @@
 ---
 sidebar_position: 21
 title: Agent Teams & Swarms
-description: Coordinate parallel AI agents with SpecWeave — team orchestration, task delegation, and merge strategies
-keywords: [agent teams, agent swarms, parallel development, multi-agent, OpenClaw, Claude Code, orchestration]
+description: Coordinate parallel AI agents with SpecWeave — one command to split work across domains, execute in parallel, and merge results
+keywords: [agent teams, agent swarms, parallel development, multi-agent, team-lead, orchestration, Claude Code]
 ---
 
 # Agent Teams & Swarms
 
-SpecWeave turns multiple AI agents into a coordinated development team. Whether you're running Claude Code sessions, OpenClaw instances, GitHub Copilot, or Codex — SpecWeave's increment files are the coordination layer.
+One command. Multiple agents. Parallel execution across domains.
+
+SpecWeave's `/sw:team-lead` turns a single feature request into a coordinated multi-agent effort — splitting work by domain, running agents in parallel, and merging results when done. Built on [Claude Code's Agent Teams capability](https://code.claude.com/docs/en/agent-teams) and made accessible via a single command.
+
+```bash
+/sw:team-lead "Build user authentication with login, signup, and OAuth"
+```
+
+That's it. SpecWeave analyzes the feature, identifies domains (frontend, backend, database), spawns specialized agents, and coordinates their work.
 
 ---
 
-## Lifecycle at a Glance
+## Why Agent Teams?
 
-The full agent team lifecycle maps directly to six SDK primitives:
+Sequential development is a bottleneck. When a feature touches frontend, backend, and database — doing them one at a time means the last domain waits for everything else to finish.
 
 ```
-  TeamCreate      TaskCreate (x3)    Spawn Agents     Work in Parallel       Shutdown        TeamDelete
-      ●──────────────●──────────────────●──────────────────●──────────────────●──────────────────●
-      │              │                  │                  │                  │                  │
-  team_create    task_create       agent_spawn        agent_work        agent_shutdown      team_delete
-      │              │                  │            ┌─────┴─────┐           │                  │
-      │              │                  │            │  Agent 1  │           │                  │
-      │              │                  │            │  Agent 2  │           │                  │
-      │              │                  │            │  Agent 3  │           │                  │
-      │              │                  │            └───────────┘           │                  │
-      │              │                  │                                    │                  │
-      ▼              ▼                  ▼                 ▼                  ▼                  ▼
-   SpecWeave:     SpecWeave:        SpecWeave:       SpecWeave:         SpecWeave:         SpecWeave:
-   /sw:team-      /sw:increment     Task tool        /sw:auto           /sw:grill          /sw:team-
-   orchestrate    (one per domain)  (background)     (per agent)        (per increment)    merge
+Sequential:     ████████ db → ████████ backend → ████████ frontend    = 12 hours
+
+Parallel:       ████████ db (shared types)                             = 6 hours
+                         ████████ backend  ║  ████████ frontend
 ```
 
-**Each phase in plain English:**
-1. **TeamCreate** — `/sw:team-lead "feature"` detects your intent and selects a mode (brainstorm, plan, implement, review, research, or test)
-2. **TaskCreate** — Creates tasks per domain (implementation) or per perspective (brainstorm) or per scope (review)
-3. **Spawn Agents** — Launches parallel agents via Task tool, each with domain or role expertise
-4. **Work in Parallel** — Agents work independently: implementing code, reviewing files, researching topics, or writing specs
-5. **Shutdown** — Agents signal completion; team-lead handles quality gates centrally
-6. **TeamDelete** — `/sw:team-merge` merges work, syncs to GitHub/JIRA, cleans up state
+Agent teams cut delivery time by running independent work streams simultaneously. A feature that takes 12 hours sequentially finishes in 6 with parallel agents.
 
-:::tip Not Just Implementation
-Team-lead works for any phase of development. Say "brainstorm auth approaches" for parallel ideation, "plan the checkout flow" for PM + Architect in parallel, or "review my changes" for multi-agent code review.
-:::
+---
+
+## Quick Start
+
+```bash
+# 1. Launch a team — agents spawn automatically
+/sw:team-lead "Add user dashboard with real-time analytics"
+
+# 2. Monitor progress across all agents
+/sw:team-status
+
+# 3. Merge completed work in dependency order
+/sw:team-merge
+```
+
+Or just describe a complex feature — SpecWeave auto-detects when parallel agents are needed:
+
+```
+Build an e-commerce checkout with Stripe payments, order history, and email notifications
+```
+
+---
+
+## Operating Modes
+
+Team-lead isn't just for implementation. It adapts to your intent:
+
+| Mode | Trigger | What Happens |
+|------|---------|--------------|
+| **Brainstorm** | "brainstorm auth approaches" | Spawns agents with different perspectives, each explores independently |
+| **Plan** | "plan the checkout flow" | PM + Architect agents work in parallel on specs and design |
+| **Implement** | "build user auth" | Domain agents (frontend, backend, db) execute tasks in parallel |
+| **Review** | "review my changes" | Multiple reviewers check code, security, and performance |
+| **Research** | "research payment providers" | Agents investigate different options concurrently |
+| **Test** | "test the auth flow end-to-end" | Unit, integration, and E2E agents run simultaneously |
+
+The orchestrator selects the mode based on your phrasing. You can also be explicit:
+
+```bash
+/sw:team-lead "review the checkout module"    # → review mode
+/sw:team-lead "brainstorm onboarding UX"      # → brainstorm mode
+```
+
+---
+
+## How It Works
+
+### Step 1: Orchestrate
+
+Describe a feature. The orchestrator analyzes it, identifies domains, and creates one increment per domain:
+
+```bash
+/sw:team-lead "Add user authentication with login, signup, and OAuth"
+```
+
+The orchestrator:
+1. **Analyzes the feature** — what domains does it touch?
+2. **Creates increments** — one per domain, with focused specs and tasks
+3. **Declares file ownership** — prevents two agents editing the same file
+4. **Spawns agents** — each with domain-specific expertise
+
+### Step 2: Execute in Parallel
+
+Each agent runs autonomously on its increment:
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                    PARALLEL EXECUTION TIMELINE                     │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  t=0    ┌─────────────────────────────────────────────────────┐   │
+│         │  Agent 1 (Shared): 0042-auth-schema                  │   │
+│         │  Creating DB models, shared types, OAuth config      │   │
+│  t=1h   └──────────────────────────┬──────────────────────────┘   │
+│                                     │ DONE → triggers Phase 2     │
+│  t=1h   ┌──────────────────────────┴──────────────────────┐      │
+│         │  Agent 2 (Backend)  ║  Agent 3 (Frontend)        │      │
+│         │  0043-auth-api      ║  0044-auth-ui               │      │
+│         │  Express routes     ║  Login/signup forms          │      │
+│         │  JWT middleware     ║  OAuth buttons               │      │
+│         │  Session handling   ║  Protected routes            │      │
+│  t=4h   └──────────────────────────────────────────────────┘      │
+│                                                                    │
+│  t=0h ──── t=1h ──── t=2h ──── t=3h ──── t=4h                   │
+│  ████████ shared types + schema                                    │
+│           ████████████████████████ backend (parallel)              │
+│           ████████████████████████ frontend (parallel)             │
+│                                                                    │
+│  RESULT: 4 hours total (vs 7 hours sequential = 43% faster)      │
+│                                                                    │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+### Step 3: Monitor
+
+Check progress across all agents at any time:
+
+```bash
+/sw:team-status
+
+# ┌───────────────────────────────────────────────────────────┐
+# │  PARALLEL SESSION: user-auth                               │
+# │  Started: 2026-03-15 10:00                                │
+# ├───────────────┬──────────┬──────────┬────────────────────┤
+# │  Agent        │  Tasks   │ Progress │ Status             │
+# ├───────────────┼──────────┼──────────┼────────────────────┤
+# │  shared/db    │  4/4     │ 100%     │ ✅ completed       │
+# │  backend      │  5/8     │  63%     │ 🔄 running         │
+# │  frontend     │  3/6     │  50%     │ 🔄 running         │
+# └───────────────┴──────────┴──────────┴────────────────────┘
+```
+
+### Step 4: Merge
+
+When all agents complete, merge their work in dependency order:
+
+```bash
+/sw:team-merge
+```
+
+The merge skill:
+1. **Verifies all agents completed** — won't merge partial work
+2. **Determines merge order** — shared → backend → frontend (respects dependencies)
+3. **Handles conflicts** — lists conflicting files and owning agents
+4. **Triggers sync** — pushes each increment to GitHub/JIRA
+5. **Cleans up** — removes parallel session state
+
+---
+
+## Contract-First Spawning
+
+Agent teams follow a **contract-first** two-phase spawning protocol to prevent dependency conflicts:
+
+```
+Phase 1 (sequential):   shared-types → db-schema
+                                ↓
+Phase 2 (parallel):      backend  |  frontend  |  testing
+```
+
+1. **Phase 1 — Upstream agents** run first: shared types, database schemas, and any code that downstream agents depend on. These agents finish and their output is available before Phase 2 begins.
+2. **Phase 2 — Downstream agents** run in parallel: backend, frontend, and testing agents spawn concurrently once upstream contracts are in place.
+
+This ensures API types, DB models, and shared utilities are committed before consumers start building against them — no broken imports, no type mismatches.
+
+---
+
+## Agent Communication
+
+Agents communicate through structured messages during execution:
+
+| Message | Direction | Purpose |
+|---------|-----------|---------|
+| **PLAN_READY** | Agent → Lead | Agent has analyzed its increment and is ready to execute |
+| **STATUS** | Agent → Lead | Progress update (tasks completed, blockers found) |
+| **COMPLETION** | Agent → Lead | All tasks done, ready for quality gates |
+| **BLOCKED** | Agent → Lead | Dependency missing or conflict detected |
+| **SHUTDOWN** | Lead → Agents | Graceful shutdown signal |
+
+In **native mode** (Claude Agent SDK), agents use real-time `SendMessage` for peer-to-peer communication. In **subagent mode**, communication happens through shared `.specweave/state/parallel/` files.
+
+---
+
+## File Ownership — Preventing Conflicts
+
+The critical safety mechanism: each agent declares which files it owns.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    FILE OWNERSHIP MAP                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   Agent 1 (Shared/DB)            Agent 2 (Backend)                      │
+│   OWNS:                          OWNS:                                  │
+│   ├── src/types/*                ├── src/api/*                          │
+│   ├── src/utils/*                ├── src/middleware/*                    │
+│   ├── prisma/schema.prisma       ├── src/services/*                     │
+│   └── tests/shared/*            └── tests/api/*                        │
+│                                                                          │
+│   Agent 3 (Frontend)             RULE:                                  │
+│   OWNS:                          An agent can READ any file             │
+│   ├── src/components/*           but only WRITE to files it owns.       │
+│   ├── src/pages/*                This prevents merge conflicts          │
+│   ├── src/hooks/*                and uncoordinated changes.             │
+│   └── tests/frontend/*                                                  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Agent Types and Expertise
+
+SpecWeave assigns domain-specific expertise to each agent:
+
+| Domain | Skill Assigned | Expertise |
+|--------|---------------|-----------|
+| frontend | sw:architect | React, Vue, Next.js, CSS |
+| backend | backend:database-optimizer | Node, Express, APIs, SQL |
+| database | backend:database-optimizer | Migrations, schemas, ORM |
+| devops | infra:devops | Docker, K8s, CI/CD, IaC |
+| qa | testing:qa | Playwright, Vitest, E2E |
+| reviewer | sw:code-reviewer | Logic, security, types |
+| researcher | (built-in template) | Codebase + web research |
+| pm | sw:pm | User stories, ACs, specs |
+| architect | sw:architect | System design, ADRs |
+| general | general-purpose | Versatile, any task |
+
+All agents use Claude Opus 4.6 for maximum reasoning capability.
+
+---
+
+## Example Walkthrough: "Build User Authentication"
+
+Here's what happens when you run:
+
+```bash
+/sw:team-lead "Build user authentication with login, signup, and OAuth"
+```
+
+**1. Analysis** (10 seconds)
+
+The orchestrator identifies three domains: shared types/schema, backend API, frontend UI.
+
+**2. Increment Creation** (30 seconds)
+
+Three increments are created:
+- `0042-auth-schema` — Prisma models, TypeScript types, OAuth provider config
+- `0043-auth-api` — Express routes, JWT middleware, OAuth callbacks
+- `0044-auth-ui` — Login/signup forms, OAuth buttons, protected route wrapper
+
+**3. Phase 1 — Shared Agent** (runs first)
+
+Agent 1 creates the foundation:
+- `User` and `Session` Prisma models
+- Shared TypeScript types (`AuthUser`, `LoginRequest`, `OAuthProvider`)
+- OAuth configuration helpers
+- Database migration
+
+**4. Phase 2 — Backend + Frontend** (run in parallel)
+
+Agent 2 (Backend):
+- POST `/api/auth/login`, `/api/auth/signup`
+- GET `/api/auth/oauth/:provider/callback`
+- JWT token generation and validation middleware
+- Session management
+
+Agent 3 (Frontend):
+- `<LoginForm>`, `<SignupForm>` components
+- `<OAuthButton provider="google|github">` component
+- `useAuth()` hook with token management
+- `<ProtectedRoute>` wrapper
+
+**5. Quality Gates** (per agent)
+
+Each agent runs `/sw:grill` on its increment before signaling completion.
+
+**6. Merge**
+
+`/sw:team-merge` combines work: schema first, then backend, then frontend. All three increments close.
+
+---
+
+## Two Execution Modes
+
+### Mode 1: Subagent-Based (Default — Works Everywhere)
+
+Uses Claude Code's Task tool to spawn background agents. No extra setup needed:
+
+```bash
+# Orchestrator spawns agents via Task tool
+Task({
+  subagent_type: "general-purpose",
+  prompt: "Work on increment 0042-auth-schema...",
+  run_in_background: true
+})
+```
+
+**How it works:**
+- Orchestrator creates increments and spawns agents as background tasks
+- Each agent runs in its own context with domain-specific instructions
+- State tracked in `.specweave/state/parallel/session.json`
+- Heartbeat monitoring detects zombie agents (5-minute timeout)
+
+### Mode 2: Native Agent Teams (Claude Agent SDK)
+
+When enabled, SpecWeave uses Claude Code's native Agent Teams API for richer coordination:
+
+```bash
+# Enable native teams
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+```
+
+Or add to `.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+**Advantages over subagent mode:**
+- Native peer-to-peer messaging between agents via `SendMessage`
+- Structured task delegation with status tracking
+- Team lifecycle managed by the SDK (TeamCreate, TaskCreate, TeamDelete)
+- Better error handling and recovery
+
+SpecWeave automatically detects which mode is available and uses the best option.
+
+### Terminal Setup (Native Mode)
+
+Native Agent Teams spawn multiple Claude Code processes:
+
+| Strategy | Setup | Notes |
+|----------|-------|-------|
+| **tmux** (recommended) | `brew install tmux` / `apt install tmux` | Each agent gets its own pane |
+| **iTerm2** (macOS) | Built-in split panes | Native macOS experience |
+| **In-process** (default) | No setup | Agents run as background tasks |
+
+---
+
+## Team-Build Presets
+
+Use a preset for a pre-configured team shape:
+
+| Preset | Agents Spawned | Use Case |
+|--------|---------------|----------|
+| `full-stack` | shared, backend, frontend | Feature development across the stack |
+| `review` | reviewer, security-auditor | Code review and security analysis |
+| `testing` | unit-tester, integration-tester, e2e-tester | Comprehensive test coverage |
+| `tdd` | red-agent, green-agent, refactor-agent | Test-driven development cycle |
+| `migration` | analyzer, migrator, validator | Codebase migrations and upgrades |
+
+```bash
+/sw:team-lead "Add checkout flow" --preset full-stack
+```
 
 ---
 
@@ -70,32 +396,23 @@ Team-lead works for any phase of development. Say "brainstorm auth approaches" f
 │           ▼                  ▼                  ▼                        │
 │  ┌────────────────┐ ┌────────────────┐ ┌────────────────┐              │
 │  │  AGENT 1       │ │  AGENT 2       │ │  AGENT 3       │              │
-│  │  Frontend      │ │  Backend       │ │  Shared/DB     │              │
+│  │  Shared/DB     │ │  Backend       │ │  Frontend      │              │
 │  │  ────────────  │ │  ────────────  │ │  ────────────  │              │
-│  │  Skill:        │ │  Skill:        │ │  Skill:        │              │
-│  │  frontend-     │ │  database-     │ │  general-      │              │
-│  │  architect     │ │  optimizer     │ │  purpose       │              │
-│  │                │ │                │ │                │              │
 │  │  Increment:    │ │  Increment:    │ │  Increment:    │              │
-│  │  0042-ui       │ │  0043-api      │ │  0044-schema   │              │
-│  │                │ │                │ │                │              │
+│  │  0042-schema   │ │  0043-api      │ │  0044-ui       │              │
 │  │  Files:        │ │  Files:        │ │  Files:        │              │
-│  │  src/ui/*      │ │  src/api/*     │ │  src/shared/*  │              │
-│  │  tests/ui/*    │ │  tests/api/*   │ │  tests/shared/*│              │
+│  │  src/types/*   │ │  src/api/*     │ │  src/ui/*      │              │
 │  └────────┬───────┘ └────────┬───────┘ └────────┬───────┘              │
 │           │                  │                  │                        │
 │           └──────────────────┼──────────────────┘                       │
-│                              │                                           │
 │                              ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────┐       │
 │  │                .specweave/ (SHARED STATE)                      │       │
-│  │                                                                │       │
 │  │  state/parallel/session.json    ← Active session metadata     │       │
 │  │  state/parallel/agents/         ← Per-agent progress          │       │
-│  │  increments/0042-ui/tasks.md    ← Agent 1's task list         │       │
-│  │  increments/0043-api/tasks.md   ← Agent 2's task list         │       │
-│  │  increments/0044-schema/tasks.md← Agent 3's task list         │       │
-│  │                                                                │       │
+│  │  increments/0042-schema/        ← Agent 1's work              │       │
+│  │  increments/0043-api/           ← Agent 2's work              │       │
+│  │  increments/0044-ui/            ← Agent 3's work              │       │
 │  └──────────────────────────────────────────────────────────────┘       │
 │                                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -103,356 +420,19 @@ Team-lead works for any phase of development. Say "brainstorm auth approaches" f
 
 ---
 
-## The Three Primitives
-
-Agent coordination requires three capabilities: managing teams, managing tasks, and communication. Here's how SpecWeave implements each:
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    AGENT TEAM PRIMITIVES                                  │
-├────────────────────┬────────────────────┬───────────────────────────────┤
-│                    │                    │                                │
-│   TEAM MGMT        │   TASK MGMT        │   COMMS                       │
-│   ─────────        │   ─────────        │   ─────                       │
-│                    │                    │                                │
-│   /sw:team-        │   /sw:increment    │   .specweave/state/           │
-│   orchestrate      │   Create scoped    │   parallel/session.json       │
-│   Plan & launch    │   work units       │   Shared state file           │
-│   parallel agents  │                    │   for all agents              │
-│                    │   /sw:do /sw:auto  │                                │
-│   /sw:team-status  │   Execute tasks    │   tasks.md                    │
-│   Monitor all      │   within scope     │   Progress visible            │
-│   agent progress   │                    │   to all agents               │
-│                    │   /sw:progress     │                                │
-│   /sw:team-merge   │   Track completion │   /sw:grill                   │
-│   Merge completed  │   per increment    │   Quality feedback            │
-│   work in order    │                    │   shared across team          │
-│                    │                    │                                │
-├────────────────────┴────────────────────┴───────────────────────────────┤
-│                                                                          │
-│   HOW IT MAPS TO AGENT SDK PRIMITIVES:                                  │
-│                                                                          │
-│   TeamCreate  → /sw:team-lead (creates session + agents)         │
-│   Task        → Task tool with run_in_background: true                  │
-│   TeamDelete  → /sw:team-merge (cleanup after completion)               │
-│   TaskCreate  → /sw:increment (creates scoped work unit)                │
-│   TaskList    → /sw:team-status (lists all agent tasks)                 │
-│   TaskGet     → /sw:progress (gets specific increment progress)         │
-│   TaskUpdate  → Edit tasks.md (mark tasks complete)                     │
-│   SendMessage → Shared .specweave/state/ files (file-based comms)       │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## How It Works
-
-### Step 1: Orchestrate
-
-Describe a feature. The orchestrator analyzes it, identifies domains (frontend, backend, database, DevOps), and creates one increment per domain:
-
-```bash
-/sw:team-lead "Add user checkout with Stripe payments"
-```
-
-The orchestrator:
-1. **Analyzes the feature** — what domains does it touch?
-2. **Creates increments** — one per domain, with focused specs and tasks
-3. **Declares file ownership** — prevents two agents editing the same file
-4. **Spawns agents** — each with domain-specific expertise
-
-### Step 2: Execute in Parallel
-
-Each agent runs autonomously on its increment:
-
-```
-┌───────────────────────────────────────────────────────────────────┐
-│                    PARALLEL EXECUTION TIMELINE                     │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  t=0    ┌─────────────────────────────────────────────────────┐   │
-│         │  Agent 3 (Shared): 0044-schema                       │   │
-│         │  Creating DB models, shared types, migrations        │   │
-│  t=2h   └──────────────────────────┬──────────────────────────┘   │
-│                                     │ DONE → triggers parallel    │
-│  t=2h   ┌──────────────────────────┴──────────────────────┐      │
-│         │  Agent 1 (Frontend)  ║  Agent 2 (Backend)        │      │
-│         │  0042-ui             ║  0043-api                  │      │
-│         │  React components    ║  Express endpoints         │      │
-│         │  Stripe Elements     ║  Stripe webhook handlers   │      │
-│  t=6h   └──────────────────────────────────────────────────┘      │
-│                                                                    │
-│  t=0h ──── t=2h ──── t=4h ──── t=6h                              │
-│  ████████ shared                                                   │
-│           ████████████████ frontend (parallel)                     │
-│           ████████████████ backend  (parallel)                     │
-│                                                                    │
-│  RESULT: 6 hours total (vs 10 hours sequential = 40% faster)     │
-│                                                                    │
-└───────────────────────────────────────────────────────────────────┘
-```
-
-### Step 3: Monitor
-
-Check progress across all agents at any time:
-
-```bash
-/sw:team-status
-
-# ┌───────────────────────────────────────────────────────────┐
-# │  PARALLEL SESSION: checkout-feature                        │
-# │  Started: 2026-02-09 10:00                                │
-# ├───────────────┬──────────┬──────────┬────────────────────┤
-# │  Agent        │  Tasks   │ Progress │ Status             │
-# ├───────────────┼──────────┼──────────┼────────────────────┤
-# │  shared/db    │  5/5     │ 100%     │ ✅ completed       │
-# │  frontend     │  6/8     │  75%     │ 🔄 running         │
-# │  backend      │  4/7     │  57%     │ 🔄 running         │
-# └───────────────┴──────────┴──────────┴────────────────────┘
-```
-
-### Step 4: Merge
-
-When all agents complete, merge their work in dependency order:
-
-```bash
-/sw:team-merge
-```
-
-The merge skill:
-1. **Verifies all agents completed** — won't merge partial work
-2. **Determines merge order** — shared → backend → frontend (respects dependencies)
-3. **Handles conflicts** — lists conflicting files and owning agents, lets you choose resolution
-4. **Triggers sync** — pushes each increment to GitHub/JIRA
-5. **Cleans up** — removes parallel session state
-
----
-
-## Agent Types and Expertise
-
-SpecWeave assigns domain-specific expertise to each agent:
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    AGENT SPECIALIZATION                                   │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│   Domain        Skill Assigned              Expertise                    │
-│   ──────        ──────────────              ─────────                    │
-│   frontend      sw:architect           React, Vue, Next.js, CSS    │
-│   backend       backend:database-optimizer  Node, Express, APIs, SQL    │
-│   database      backend:database-optimizer  Migrations, schemas, ORM    │
-│   devops        infra:devops                Docker, K8s, CI/CD, IaC     │
-│   qa            testing:qa                  Playwright, Vitest, E2E     │
-│   reviewer      sw:code-reviewer            Logic, security, types      │
-│   researcher    (built-in template)         Codebase + web research     │
-│   pm            sw:pm                       User stories, ACs, specs    │
-│   architect     sw:architect                System design, ADRs         │
-│   general       general-purpose             Versatile, any task         │
-│                                                                          │
-│   All agents use: Claude Opus 4.6 for maximum reasoning capability      │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## File Ownership — Preventing Conflicts
-
-The critical safety mechanism: each agent declares which files it owns.
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    FILE OWNERSHIP MAP                                     │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│   Agent 1 (Frontend)           Agent 2 (Backend)                        │
-│   OWNS:                        OWNS:                                    │
-│   ├── src/components/*         ├── src/api/*                            │
-│   ├── src/pages/*              ├── src/middleware/*                      │
-│   ├── src/hooks/*              ├── src/services/*                       │
-│   ├── src/styles/*             ├── src/models/*                         │
-│   └── tests/frontend/*        └── tests/api/*                          │
-│                                                                          │
-│   Agent 3 (Shared)             SHARED (read-only for agents 1 & 2):    │
-│   OWNS:                        ├── src/types/*                          │
-│   ├── src/types/*              ├── src/utils/*                          │
-│   ├── src/utils/*              └── package.json                         │
-│   ├── prisma/schema.prisma                                              │
-│   └── tests/shared/*                                                    │
-│                                                                          │
-│   RULE: An agent can READ any file but only WRITE to files it owns.     │
-│   This prevents merge conflicts and uncoordinated changes.              │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Two Execution Modes
-
-SpecWeave supports two approaches to running agent teams, depending on your environment:
-
-### Mode 1: Subagent-Based (Current — Works Everywhere)
-
-Uses Claude Code's Task tool to spawn background agents. Works with any Claude Code version:
-
-```bash
-# Orchestrator spawns agents via Task tool
-Task({
-  subagent_type: "general-purpose",
-  prompt: "Work on increment 0042-ui. Follow tasks.md...",
-  run_in_background: true
-})
-```
-
-**How it works:**
-- Orchestrator creates increments and spawns agents as background tasks
-- Each agent runs in its own context with domain-specific instructions
-- State is tracked in `.specweave/state/parallel/session.json`
-- Heartbeat monitoring detects zombie agents (5-minute timeout)
-
-### Mode 2: Native Agent Teams (Experimental — Claude Agent SDK)
-
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, SpecWeave uses the native Agent Teams API:
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│               NATIVE AGENT TEAMS (EXPERIMENTAL)                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  The Claude Agent SDK provides first-class team primitives:             │
-│                                                                          │
-│  TEAM MGMT                TASK MGMT              COMMS                  │
-│  ─────────                ─────────              ─────                  │
-│  ┌──────────────┐        ┌──────────────┐       ┌──────────────┐       │
-│  │ TeamCreate   │        │ TaskCreate   │       │ SendMessage  │       │
-│  │ Create team  │        │ Create task  │       │ Agent-to-    │       │
-│  └──────────────┘        └──────────────┘       │ agent comms  │       │
-│  ┌──────────────┐        ┌──────────────┐       └──────────────┘       │
-│  │ Task         │        │ TaskList     │                               │
-│  │ Manage tasks │        │ List tasks   │                               │
-│  └──────────────┘        └──────────────┘                               │
-│  ┌──────────────┐        ┌──────────────┐                               │
-│  │ TeamDelete   │        │ TaskGet      │                               │
-│  │ Remove team  │        │ Get details  │                               │
-│  └──────────────┘        └──────────────┘                               │
-│                          ┌──────────────┐                               │
-│                          │ TaskUpdate   │                               │
-│                          │ Update task  │                               │
-│                          └──────────────┘                               │
-│                                                                          │
-│  ADVANTAGES over subagent mode:                                         │
-│  • Native peer-to-peer messaging between agents                         │
-│  • Structured task delegation with status tracking                      │
-│  • Team lifecycle managed by the SDK                                    │
-│  • Better error handling and recovery                                   │
-│                                                                          │
-│  ENABLE: export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1                  │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-SpecWeave automatically detects which mode is available and uses the best option.
-
-#### Enabling Native Agent Teams
-
-Add the feature flag to your `.claude/settings.json`:
-
-```json
-{
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
-}
-```
-
-Or export it in your shell before launching Claude Code:
-
-```bash
-export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-```
-
-#### Contract-First Spawning Protocol
-
-Native teams follow a **contract-first** two-phase spawning order to prevent dependency conflicts:
-
-1. **Phase 1 — Upstream agents** run first: shared types, database schemas, and any code that downstream agents depend on. These agents finish and their output is available before Phase 2 begins.
-2. **Phase 2 — Downstream agents** run in parallel: backend, frontend, and testing agents spawn concurrently once upstream contracts are in place.
-
-This ensures that API types, DB models, and shared utilities are committed before consumers start building against them.
-
-```
-Phase 1 (sequential):   shared-types → db-schema
-                                ↓
-Phase 2 (parallel):      backend  |  frontend  |  testing
-```
-
-#### Communication
-
-- **Native mode**: Agents communicate via `SendMessage` — real-time, peer-to-peer messaging managed by the Agent SDK. Supports direct messages, broadcasts, and shutdown coordination.
-- **Fallback**: If native messaging is unavailable, agents fall back to file-based communication through `.specweave/state/parallel/` files (same mechanism as subagent mode).
-
-#### Terminal Setup
-
-Native Agent Teams spawn multiple Claude Code processes. Choose a terminal strategy:
-
-| Strategy | Setup | Notes |
-|----------|-------|-------|
-| **tmux** (recommended) | `brew install tmux` / `apt install tmux` | Each agent gets its own pane; best visibility |
-| **iTerm2** (macOS) | Built-in split panes | Native macOS experience, no extra setup |
-| **In-process** (default) | No setup needed | Agents run as background tasks; less visibility but zero configuration |
-
----
-
 ## Works With Any AI Tool
 
-The coordination layer is file-based markdown. While Claude Code gets the deepest integration (skills, hooks, autonomous mode), any AI tool can participate:
+The coordination layer is file-based markdown. While Claude Code gets the deepest integration, any AI tool can participate:
 
 | Tool | Role in Swarm | Integration Depth |
 |------|---------------|-------------------|
 | **Claude Code** | Full orchestration, autonomous execution, quality gates | Deep (~48 built-in skills) |
-| **OpenClaw** | Reads specs/tasks, executes within scope, local memory | Medium (file-based) |
+| **OpenClaw** | Reads specs/tasks, executes within scope | Medium (file-based) |
 | **GitHub Copilot** | Follows specs as context, implements within scope | Light (reads markdown) |
 | **Codex** | Reads increment files, implements tasks | Light (reads markdown) |
 | **Cursor / Windsurf** | Any AI IDE reads the same spec/task files | Light (reads markdown) |
 
-The key insight: the `.specweave/increments/` directory is a **universal coordination protocol**. Spec files define what to build. Task files track progress. Any tool that reads markdown can participate.
-
-**Note on execution modes:** Native Agent Teams (Mode 2) requires Claude Code with the Agent SDK and is Claude Code-specific. Subagent mode (Mode 1) works with any AI tool since it relies only on file-based coordination through the shared `.specweave/` directory.
-
----
-
-## Quick Start
-
-```bash
-# 1. Orchestrate — split a feature across agents
-/sw:team-lead "Add user dashboard with real-time analytics"
-
-# 2. Monitor — check progress across all agents
-/sw:team-status
-
-# 3. Merge — combine completed work in dependency order
-/sw:team-merge
-```
-
-### Team-Build Presets
-
-Instead of manually configuring agent roles, use a preset to get a pre-configured team shape:
-
-| Preset | Agents Spawned | Use Case |
-|--------|---------------|----------|
-| `full-stack` | shared, backend, frontend | Feature development across the stack |
-| `review` | reviewer, security-auditor | Code review and security analysis |
-| `testing` | unit-tester, integration-tester, e2e-tester | Comprehensive test coverage |
-| `tdd` | red-agent, green-agent, refactor-agent | Test-driven development cycle |
-| `migration` | analyzer, migrator, validator | Codebase migrations and upgrades |
-
-```bash
-# Use a preset with team-lead
-/sw:team-lead "Add checkout flow" --preset full-stack
-```
+The `.specweave/increments/` directory is a **universal coordination protocol**. Any tool that reads markdown can participate.
 
 ---
 
@@ -469,7 +449,7 @@ Running multiple agents amplifies security risks. See [Agent Security Best Pract
 
 ## Further Reading
 
+- [Claude Code Agent Teams](https://code.claude.com/docs/en/agent-teams) — The inspiration behind SpecWeave's team-lead
 - [Agent Security Best Practices](./agent-security-best-practices) — Safe agent swarm operation
 - [Multi-Project Setup](./multi-project-setup) — Coordinate multiple repositories
-- [Auto Mode](../commands/auto) — Autonomous execution deep dive
-- [Skills vs Agents](/docs/glossary/terms/skills-vs-agents) — Understanding the difference
+- [Autonomous Execution](./autonomous-execution) — `/sw:auto` deep dive

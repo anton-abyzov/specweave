@@ -97,7 +97,7 @@ Run a tier-1 security scan on a local `SKILL.md` file without installing it.
 vskill scan <path>
 ```
 
-Runs 38 deterministic pattern checks for credential exfiltration, prompt injection, unauthorized network access, and other threat categories.
+Runs 52 deterministic pattern checks for credential exfiltration, prompt injection, unauthorized network access, and other threat categories.
 
 **Example:**
 
@@ -178,7 +178,7 @@ vskill install [source] [options]
 vskill install auth-guard
 
 # Install from GitHub repo
-vskill install owner/repo
+vskill install anton-abyzov/vskill
 
 # Install a specific plugin from a marketplace
 vskill install --repo anton-abyzov/vskill --plugin mobile

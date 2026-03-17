@@ -26,7 +26,7 @@ The registry at [verified-skill.com](https://verified-skill.com) provides a trus
 The full overview — three certification tiers, trust badges, mandatory SKILL.md sections, forbidden patterns, and the verified-skill.com registry.
 
 ### [Skill Factory RFC (Full Spec)](/docs/skills/verified/secure-skill-factory-standard)
-The complete technical specification — all 41 forbidden patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility.
+The complete technical specification — all 52 scan patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility.
 
 ### [Security Landscape](/docs/skills/verified/skills-ecosystem-security)
 Platform comparison, ToxicSkills data, risk taxonomy, threat actors, and real-world attack examples across the skills ecosystem.

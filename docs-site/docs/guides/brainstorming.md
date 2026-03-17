@@ -30,6 +30,19 @@ Without brainstorming, the path from "idea" to "spec" is a straight line — and
 
 ## Quick Start
 
+:::tip Two ways to brainstorm
+**Slash command:**
+```bash
+/sw:brainstorm "how should we handle real-time notifications"
+```
+
+**Natural language** — just say something like:
+```
+Just brainstorm first — what are our options for real-time notifications?
+```
+Keywords like "brainstorm", "ideate", or "what are our options" auto-trigger this skill.
+:::
+
 ```bash
 # Standard: 4-6 approaches with comparison matrix
 /sw:brainstorm "how should we handle real-time notifications"

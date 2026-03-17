@@ -23,6 +23,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'overview/features', label: 'Key Features'},
         {type: 'doc', id: 'overview/plugins-ecosystem', label: 'Plugin Ecosystem'},
         {type: 'doc', id: 'overview/philosophy', label: 'Philosophy'},
+        {type: 'doc', id: 'overview/dogfooding', label: 'Dogfooding'},
       ],
     },
     {
@@ -59,6 +60,9 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'workflows/deployment', label: 'Deployment'},
         {type: 'doc', id: 'workflows/brownfield', label: 'Brownfield Projects'},
         {type: 'doc', id: 'workflows/hotfix', label: 'Hotfix'},
+        {type: 'doc', id: 'workflows/greenfield', label: 'Greenfield'},
+        {type: 'doc', id: 'workflows/research', label: 'Research'},
+        {type: 'doc', id: 'workflows/design', label: 'Design'},
       ],
     },
     {
@@ -80,6 +84,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/agent-teams-and-swarms', label: 'Teams & Swarms'},
         {type: 'doc', id: 'guides/autonomous-execution', label: 'Autonomous Execution'},
         {type: 'doc', id: 'guides/multi-project-setup', label: 'Multi-Project Setup'},
+        {type: 'doc', id: 'guides/agent-security-best-practices', label: 'Agent Security'},
       ],
     },
     {
@@ -88,12 +93,22 @@ const sidebars: SidebarsConfig = {
       collapsed: true,
       items: [
         {type: 'doc', id: 'guides/best-practices', label: 'Best Practices'},
+        {type: 'doc', id: 'guides/backlog-management', label: 'Backlog Management'},
         {type: 'doc', id: 'guides/model-selection', label: 'Model Selection'},
         {type: 'doc', id: 'guides/compliance-standards', label: 'Compliance Standards'},
         {type: 'doc', id: 'guides/strategic-init', label: 'Strategic Init'},
         {type: 'doc', id: 'guides/bidirectional-linking', label: 'Bidirectional Linking'},
         {type: 'doc', id: 'guides/lsp-integration', label: 'LSP Integration'},
-        {type: 'doc', id: 'guides/troubleshooting/index', label: 'Troubleshooting'},
+        {
+          type: 'category',
+          label: 'Troubleshooting',
+          collapsed: true,
+          link: {type: 'doc', id: 'guides/troubleshooting/index'},
+          items: [
+            {type: 'doc', id: 'guides/troubleshooting/common-errors', label: 'Common Errors'},
+            {type: 'doc', id: 'guides/troubleshooting/emergency-recovery', label: 'Emergency Recovery'},
+          ],
+        },
       ],
     },
     {
@@ -115,6 +130,7 @@ const sidebars: SidebarsConfig = {
     {type: 'doc', id: 'skills/fundamentals', label: 'Skills, Plugins & Marketplaces'},
     {type: 'doc', id: 'skills/installation', label: 'Installing Skills'},
     {type: 'doc', id: 'skills/skill-studio', label: 'Skill Studio'},
+    {type: 'doc', id: 'skills/skill-discovery-evaluation', label: 'Skill Discovery'},
     {
       type: 'category',
       label: 'Extensible Skills',
@@ -222,6 +238,13 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'commands/overview', label: 'Command Overview'},
         {type: 'doc', id: 'reference/command-decision-tree', label: 'Decision Tree'},
         {type: 'doc', id: 'reference/commands', label: 'Commands Reference'},
+        {type: 'doc', id: 'commands/do', label: '/sw:do'},
+        {type: 'doc', id: 'commands/auto', label: '/sw:auto'},
+        {type: 'doc', id: 'commands/auto-status', label: '/sw:auto-status'},
+        {type: 'doc', id: 'commands/cancel-auto', label: '/sw:cancel-auto'},
+        {type: 'doc', id: 'commands/save', label: '/sw:save'},
+        {type: 'doc', id: 'commands/jobs', label: '/sw:jobs'},
+        {type: 'doc', id: 'commands/status-management', label: 'Status Management'},
       ],
     },
     {
