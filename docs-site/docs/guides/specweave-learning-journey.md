@@ -1283,14 +1283,8 @@ SpecWeave isn't just for new projects. Import existing documentation:
 ```bash
 specweave init .
 
-# Import from Notion
-/sw:import-docs ~/exports/notion --source=notion
-
-# Import from Confluence
-/sw:import-docs ~/exports/confluence --source=confluence
-
-# Import from GitHub Wiki
-/sw:import-docs ~/repo/wiki --source=github-wiki
+# Import issues from external tools
+/sw:import
 ```
 
 **Auto-Classification:**
