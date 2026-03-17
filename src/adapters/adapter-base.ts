@@ -184,7 +184,8 @@ export abstract class AdapterBase implements IAdapter {
 
   /**
    * Helper: Write plugin skill files to a tool-specific rules directory.
-   * Each skill is written as `<plugin>-<skill>.md` (or with custom suffix).
+   * Each skill is written as `<plugin>/<skill>.md` in a plugin-named subdirectory.
+   * The subdirectory name mirrors the colon-based namespace (e.g., `sw/` -> `sw:`).
    */
   protected async writeSkillFiles(
     plugin: Plugin,
@@ -193,7 +194,8 @@ export abstract class AdapterBase implements IAdapter {
   ): Promise<void> {
     const projectPath = process.cwd();
     const targetDir = path.join(projectPath, rulesDir);
-    await fs.ensureDir(targetDir);
+    const pluginDir = path.join(targetDir, plugin.manifest.name);
+    await fs.ensureDir(pluginDir);
 
     const language = await this.getLanguageConfig();
 
@@ -203,36 +205,30 @@ export abstract class AdapterBase implements IAdapter {
 
       const content = await fs.readFile(skillMdPath, 'utf-8');
       const modified = this.injectSystemPrompt(content, language);
-      const fileName = `${plugin.manifest.name}-${skill.name}${fileSuffix}`;
-      await fs.writeFile(path.join(targetDir, fileName), modified, 'utf-8');
+      await fs.writeFile(path.join(pluginDir, `${skill.name}${fileSuffix}`), modified, 'utf-8');
     }
   }
 
   /**
    * Helper: Remove all skill files for a plugin from a rules directory.
-   * Deletes files matching `<pluginName>-*.md` (or custom suffix).
+   * Removes the plugin's subdirectory (`<rulesDir>/<pluginName>/`).
    */
   protected async removeSkillFiles(
     pluginName: string,
     rulesDir: string,
-    fileSuffix = '.md',
+    _fileSuffix = '.md',
   ): Promise<void> {
     const projectPath = process.cwd();
-    const targetDir = path.join(projectPath, rulesDir);
+    const pluginDir = path.join(projectPath, rulesDir, pluginName);
 
-    if (!(await fs.pathExists(targetDir))) return;
+    if (!(await fs.pathExists(pluginDir))) return;
 
-    const files = await fs.readdir(targetDir);
-    for (const file of files) {
-      if (file.startsWith(`${pluginName}-`) && file.endsWith(fileSuffix)) {
-        await fs.remove(path.join(targetDir, file));
-      }
-    }
+    await fs.remove(pluginDir);
   }
 
   /**
    * Helper: List unique plugin names installed in a rules directory.
-   * Extracts plugin name from `<plugin>-<skill>.md` filename pattern.
+   * Each subdirectory of rulesDir represents one installed plugin.
    */
   protected async listInstalledPluginsInDir(rulesDir: string): Promise<string[]> {
     const projectPath = process.cwd();
@@ -240,18 +236,18 @@ export abstract class AdapterBase implements IAdapter {
 
     if (!(await fs.pathExists(targetDir))) return [];
 
-    const files = await fs.readdir(targetDir);
-    const pluginNames = new Set<string>();
+    const entries = await fs.readdir(targetDir);
+    const pluginNames: string[] = [];
 
-    for (const file of files) {
-      if (!file.endsWith('.md')) continue;
-      const dashIdx = file.indexOf('-');
-      if (dashIdx > 0) {
-        pluginNames.add(file.slice(0, dashIdx));
+    for (const entry of entries) {
+      const entryPath = path.join(targetDir, entry);
+      const stats = await fs.stat(entryPath);
+      if (stats.isDirectory()) {
+        pluginNames.push(entry);
       }
     }
 
-    return Array.from(pluginNames);
+    return pluginNames;
   }
 
   /**

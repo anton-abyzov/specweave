@@ -719,7 +719,9 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
 
       for (const skillName of skillNames) {
         const skillMdPath = path.join(skillsPath, skillName, 'SKILL.md');
-        const targetFile = path.join(skillsDir, `marketplace-${pluginName}-${skillName}.md`);
+        const pluginSubdir = path.join(skillsDir, pluginName);
+        fs.mkdirSync(pluginSubdir, { recursive: true });
+        const targetFile = path.join(pluginSubdir, `${skillName}.md`);
         fs.copySync(skillMdPath, targetFile, { overwrite: true });
         copied++;
       }
