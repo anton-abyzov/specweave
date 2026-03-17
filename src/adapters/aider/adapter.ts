@@ -10,7 +10,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class AiderAdapter extends AdapterBase {
   name = 'aider';
-  description = 'Aider adapter — skills installed in .aider/';
+  description = 'Aider adapter — skills installed in .aider/skills/';
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
@@ -23,7 +23,7 @@ export class AiderAdapter extends AdapterBase {
 
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Aider Adapter\n');
-    await fs.ensureDir(path.join(options.projectPath, '.aider'));
+    await fs.ensureDir(path.join(options.projectPath, '.aider/skills'));
     console.log('\n✨ Aider adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -33,22 +33,22 @@ export class AiderAdapter extends AdapterBase {
   }
 
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.aider';
+    const skillsDir = '.aider/skills';
     console.log(`\n📦 Installing plugin skills for Aider: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Aider!`);
   }
 
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Aider: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.aider');
-    console.log(`   ✓ Removed from .aider/`);
+    await this.removeSkillFiles(pluginName, '.aider/skills');
+    console.log(`   ✓ Removed from .aider/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.aider');
+    return await this.listInstalledPluginsInDir('.aider/skills');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
@@ -59,7 +59,7 @@ export class AiderAdapter extends AdapterBase {
     return `
 Aider Adapter
 
-Skills installed in .aider/.
+Skills installed in .aider/skills/.
 Run: specweave refresh-plugins
     `;
   }

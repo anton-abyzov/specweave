@@ -10,7 +10,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class ClineAdapter extends AdapterBase {
   name = 'cline';
-  description = 'Cline adapter — skills installed in .cline/rules/';
+  description = 'Cline adapter — skills installed in .cline/skills/';
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
@@ -23,7 +23,7 @@ export class ClineAdapter extends AdapterBase {
 
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Cline Adapter\n');
-    await fs.ensureDir(path.join(options.projectPath, '.cline/rules'));
+    await fs.ensureDir(path.join(options.projectPath, '.cline/skills'));
     console.log('\n✨ Cline adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -33,22 +33,22 @@ export class ClineAdapter extends AdapterBase {
   }
 
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.cline/rules';
+    const skillsDir = '.cline/skills';
     console.log(`\n📦 Installing plugin skills for Cline: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Cline!`);
   }
 
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Cline: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.cline/rules');
-    console.log(`   ✓ Removed from .cline/rules/`);
+    await this.removeSkillFiles(pluginName, '.cline/skills');
+    console.log(`   ✓ Removed from .cline/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.cline/rules');
+    return await this.listInstalledPluginsInDir('.cline/skills');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
@@ -59,7 +59,7 @@ export class ClineAdapter extends AdapterBase {
     return `
 Cline Adapter
 
-Skills installed in .cline/rules/.
+Skills installed in .cline/skills/.
 Run: specweave refresh-plugins
     `;
   }

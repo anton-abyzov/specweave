@@ -2,7 +2,7 @@
  * Windsurf Adapter
  *
  * Semi-automation adapter for Windsurf (by Codeium).
- * Uses rule files in .windsurf/rules/ for context-specific instructions.
+ * Uses skill files in .windsurf/skills/ for context-specific instructions.
  */
 
 import * as path from 'path';
@@ -13,7 +13,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class WindsurfAdapter extends AdapterBase {
   name = 'windsurf';
-  description = 'Windsurf adapter - Semi-automation with rules in .windsurf/rules/';
+  description = 'Windsurf adapter - Semi-automation with skills in .windsurf/skills/';
   automationLevel = 'semi' as const;
 
   /**
@@ -41,8 +41,8 @@ export class WindsurfAdapter extends AdapterBase {
    */
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Windsurf Adapter\n');
-    const rulesDir = path.join(options.projectPath, '.windsurf', 'rules');
-    await fs.ensureDir(rulesDir);
+    const skillsDir = path.join(options.projectPath, '.windsurf', 'skills');
+    await fs.ensureDir(skillsDir);
     console.log('\n✨ Windsurf adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -57,30 +57,29 @@ export class WindsurfAdapter extends AdapterBase {
   /**
    * Compile and install a plugin for Windsurf
    *
-   * Writes skill SKILL.md files as <plugin>-<skill>.md
-   * into .windsurf/rules/ for auto-loading by Windsurf.
+   * Writes skill SKILL.md files into .windsurf/skills/ for auto-loading by Windsurf.
    *
    * @param plugin Plugin to install
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.windsurf/rules';
+    const skillsDir = '.windsurf/skills';
     console.log(`\n📦 Installing plugin skills for Windsurf: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir, '.md');
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir, '.md');
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Windsurf!`);
   }
 
   /**
    * Unload a plugin from Windsurf
    *
-   * Removes <pluginName>-*.md files from .windsurf/rules/
+   * Removes plugin skill files from .windsurf/skills/
    *
    * @param pluginName Name of plugin to unload
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Windsurf: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.windsurf/rules', '.md');
-    console.log(`   ✓ Removed from .windsurf/rules/`);
+    await this.removeSkillFiles(pluginName, '.windsurf/skills', '.md');
+    console.log(`   ✓ Removed from .windsurf/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
@@ -88,7 +87,7 @@ export class WindsurfAdapter extends AdapterBase {
    * Get list of installed plugins for Windsurf
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.windsurf/rules');
+    return await this.listInstalledPluginsInDir('.windsurf/skills');
   }
 
   /**
@@ -105,7 +104,7 @@ export class WindsurfAdapter extends AdapterBase {
     return `
 Windsurf Adapter
 
-Skills are installed in .windsurf/rules/ — Windsurf loads *.md rule files automatically.
+Skills are installed in .windsurf/skills/ — Windsurf loads *.md skill files automatically.
 
 Quick Start:
   Run: specweave refresh-plugins

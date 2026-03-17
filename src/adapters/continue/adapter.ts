@@ -2,7 +2,7 @@
  * Continue.dev Adapter
  *
  * Semi-automation adapter for Continue.dev.
- * Uses rule files in .continue/rules/ for context-specific instructions.
+ * Uses skill files in .continue/skills/ for context-specific instructions.
  */
 
 import * as path from 'path';
@@ -13,7 +13,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class ContinueAdapter extends AdapterBase {
   name = 'continue';
-  description = 'Continue.dev adapter - Semi-automation with rules in .continue/rules/';
+  description = 'Continue.dev adapter - Semi-automation with skills in .continue/skills/';
   automationLevel = 'semi' as const;
 
   /**
@@ -38,8 +38,8 @@ export class ContinueAdapter extends AdapterBase {
    */
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Continue.dev Adapter\n');
-    const rulesDir = path.join(options.projectPath, '.continue', 'rules');
-    await fs.ensureDir(rulesDir);
+    const skillsDir = path.join(options.projectPath, '.continue', 'rules');
+    await fs.ensureDir(skillsDir);
     console.log('\n✨ Continue.dev adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -55,29 +55,29 @@ export class ContinueAdapter extends AdapterBase {
    * Compile and install a plugin for Continue.dev
    *
    * Writes skill SKILL.md files as <plugin>-<skill>.md
-   * into .continue/rules/ for auto-loading by Continue.
+   * into .continue/skills/ for auto-loading by Continue.
    *
    * @param plugin Plugin to install
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.continue/rules';
+    const skillsDir = '.continue/skills';
     console.log(`\n📦 Installing plugin skills for Continue.dev: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir, '.md');
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir, '.md');
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Continue.dev!`);
   }
 
   /**
    * Unload a plugin from Continue.dev
    *
-   * Removes <pluginName>-*.md files from .continue/rules/
+   * Removes <pluginName>-*.md files from .continue/skills/
    *
    * @param pluginName Name of plugin to unload
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Continue.dev: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.continue/rules', '.md');
-    console.log(`   ✓ Removed from .continue/rules/`);
+    await this.removeSkillFiles(pluginName, '.continue/skills', '.md');
+    console.log(`   ✓ Removed from .continue/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
@@ -85,7 +85,7 @@ export class ContinueAdapter extends AdapterBase {
    * Get list of installed plugins for Continue.dev
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.continue/rules');
+    return await this.listInstalledPluginsInDir('.continue/skills');
   }
 
   /**
@@ -102,7 +102,7 @@ export class ContinueAdapter extends AdapterBase {
     return `
 Continue.dev Adapter
 
-Skills are installed in .continue/rules/ — Continue.dev loads *.md rule files automatically.
+Skills are installed in .continue/skills/ — Continue.dev loads *.md skill files automatically.
 
 Quick Start:
   Run: specweave refresh-plugins
