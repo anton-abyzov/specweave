@@ -262,4 +262,4 @@ Items in backlog >30 days trigger review prompts:
 
 - Increment Glossary
 - [Status Management Commands](/docs/commands/overview)
-- [WIP Limits](/docs/overview/philosophy#wip-limits)
+- [Philosophy](/docs/overview/philosophy) — Plan as source of truth, one increment at a time
