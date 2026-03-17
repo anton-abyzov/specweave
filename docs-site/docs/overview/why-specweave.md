@@ -141,7 +141,7 @@ SpecWeave wraps every AI coding session in a **spec-driven workflow** that turns
 
 ### Skills Are Structured Expertise
 
-Unlike prompts that you copy-paste, SpecWeave skills are reusable, structured instructions — each one defines how AI thinks and acts for a specific domain. 100+ skills ship out of the box. Customize any skill without forking via `skill-memories/`. [Deep dive →](./skills-as-structured-expertise)
+Unlike prompts that you copy-paste, SpecWeave skills are reusable, structured instructions — each one defines how AI thinks and acts for a specific domain. ~48 built-in skills ship out of the box. Customize any skill without forking via `skill-memories/`. [Deep dive →](./skills-as-structured-expertise)
 
 ### You Don't Need Claude Code Expertise
 

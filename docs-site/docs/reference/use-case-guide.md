@@ -33,7 +33,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Plan with PM + Architect in parallel | `/sw:team-lead "plan X"` | Skill |
 | Research a topic with agents | `/sw:team-lead "research X"` | Skill |
 | Check auto mode progress | `/sw:auto-status` | Command |
-| Get React/Vue/Angular help | `/frontend:architect` | Skill |
+| Get React/Vue/Angular help | `/sw:architect` | Skill |
 | Get Node.js API help | `/backend:nodejs` | Skill |
 | Get .NET help | `/backend:dotnet` | Skill |
 | Get Python help | `/backend:python` | Skill |
@@ -66,7 +66,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Pause for later | `/sw:pause` | Command |
 | Resume paused work | `/sw:resume` | Command |
 | Abandon increment | `/sw:abandon` | Command |
-| Reopen completed work | `/sw:reopen` | Command |
+| Reopen completed work | `/sw:resume` | Command |
 
 ### Syncing with External Tools
 
@@ -129,9 +129,9 @@ Find the right SpecWeave skill or command for what you're trying to do.
 ### I'm a Frontend Developer
 
 ```bash
-/frontend:architect                # React/Vue patterns
-/frontend:nextjs                   # Next.js specifics
-/frontend:design-system-architect  # Component library
+/sw:architect                # React/Vue patterns
+/sw:architect                   # Next.js specifics
+/sw:architect  # Component library
 /sw:auto                           # Autonomous implementation
 ```
 
@@ -211,7 +211,7 @@ graph TD
 **Commands/Skills:**
 - `/sw:auto` - Autonomous execution
 - `/sw:do` - Manual execution
-- `/frontend:*` - Frontend skills
+- `/sw:*` - Frontend skills
 - `/backend:*` - Backend skills
 
 ### Phase 3: Quality
@@ -411,7 +411,7 @@ Skills activate automatically when you mention these keywords:
 |----------|-----------------|
 | "user story", "acceptance criteria", "requirements" | `sw:pm` |
 | "architecture", "ADR", "design decision" | `sw:architect` |
-| "React", "Vue", "Angular", "frontend" | `frontend:architect` |
+| "React", "Vue", "Angular", "frontend" | `sw:architect` |
 | "Node.js", "Express", "API endpoint" | `backend:nodejs` |
 | "database", "SQL", "query optimization" | `backend:database-optimizer` |
 | "Kubernetes", "K8s", "pods", "deployment" | `k8s:*` |

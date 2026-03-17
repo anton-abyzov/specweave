@@ -212,7 +212,7 @@ The registry at `~/.claude/plugins/installed_plugins.json` tracks installed plug
 
 ### New Skills Not Available After Install
 
-**Symptom**: Plugin installed but `/frontend:*` commands don't work.
+**Symptom**: Plugin installed but `/sw:*` commands don't work.
 
 **Cause**: Claude Code loads skills at session start, not dynamically.
 
@@ -283,7 +283,7 @@ export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
 | **Web dev** | sw + frontend + backend | ~12,000 |
 | **Full stack** | sw + frontend + backend + infra + testing | ~20,000 |
 | **Mobile** | sw + mobile + payments | ~10,000 |
-| **Everything** | All 24 plugins | ~56,000 (never fits!) |
+| **Everything** | All 13 plugins | ~56,000 (never fits!) |
 
 ### Disabling Unused Plugins
 
@@ -301,7 +301,7 @@ For "React + .NET + Stripe" type requests, auto-activation is unreliable. Use ex
 
 ```typescript
 // More reliable than auto-activation
-Skill({ skill: "frontend:architect" })
+Skill({ skill: "sw:architect" })
 Skill({ skill: "backend:dotnet" })
 Skill({ skill: "payments:payment-core" })
 ```

@@ -39,7 +39,7 @@ flowchart TD
     D -->|Yes| E[/sw:done]
     D -->|No| F{Am I blocked?}
     F -->|Yes, temporarily| G[/sw:pause]
-    F -->|Yes, deprioritized| H[/sw:backlog]
+    F -->|Yes, deprioritized| H[/sw:status]
     F -->|No| I[/sw:do]
 ```
 
@@ -85,7 +85,7 @@ flowchart TD
 | Scenario | Command | Notes |
 |----------|---------|-------|
 | Temporarily blocked | `/sw:pause 0001` | External dependency, will resume |
-| Deprioritized | `/sw:backlog 0001` | Not abandoned, just later |
+| Deprioritized | `/sw:status 0001` | Not abandoned, just later |
 | Feature canceled | `/sw:abandon 0001` | Won't continue this work |
 
 ### Completing Work
@@ -123,10 +123,10 @@ Complete  →  /sw:done
 
 ```
 Pause      →  /sw:pause    (temporary block)
-Backlog    →  /sw:backlog  (deprioritized)
+Backlog    →  /sw:status  (deprioritized)
 Resume     →  /sw:resume   (continue work)
 Abandon    →  /sw:abandon  (cancel)
-Reopen     →  /sw:reopen   (needs more work)
+Reopen     →  /sw:resume   (needs more work)
 ```
 
 ### Visibility
@@ -141,7 +141,7 @@ Status     →  /sw:status     (all increments)
 ```
 Sync All       →  /sw:sync-progress   (tasks → docs → external)
 Sync Docs      →  /sw:sync-docs       (living docs)
-Sync Tasks     →  /sw:sync-tasks      (external → tasks.md)
+Sync Tasks     →  /sw:progress-sync      (external → tasks.md)
 ```
 
 ### Quality
@@ -226,7 +226,7 @@ Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 ### Increment Needs More Work (Closed Too Early)
 
 ```bash
-/sw:reopen 0001
+/sw:resume 0001
 # Continue work
 /sw:do
 /sw:done 0001
@@ -320,9 +320,9 @@ Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:backlog` | Deprioritize |
+| `/sw:status` | Deprioritize |
 | `/sw:abandon` | Cancel work |
-| `/sw:reopen` | Needs more work |
+| `/sw:resume` | Needs more work |
 | `/sw:qa` | Quality assessment |
 
 ---

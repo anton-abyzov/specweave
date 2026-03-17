@@ -326,7 +326,7 @@ cat .specweave/increments/0001-feature/tasks.md
 /sw:qa 0001 --gate            # Before closing
 
 # Testing
-/sw:check-tests 0001          # Test coverage check
+npx vitest run 0001          # Test coverage check
 ```
 
 ### Completion Phase
@@ -347,7 +347,7 @@ cat .specweave/increments/0001-feature/tasks.md
 # Status transitions
 /sw:pause 0001                # Pause (blocked, deprioritized)
 /sw:resume 0001               # Resume paused work
-/sw:backlog 0001              # Move to backlog
+/sw:status 0001              # Move to backlog
 /sw:abandon 0001              # Cancel (obsolete, requirements changed)
 
 # Workspace cleanup

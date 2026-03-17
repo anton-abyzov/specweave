@@ -111,7 +111,7 @@ done
 ### Step 5: Test Sync
 
 ```bash
-/specweave:sync-specs
+/sw:sync-specs
 ```
 
 ---

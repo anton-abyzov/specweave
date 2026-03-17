@@ -20,7 +20,7 @@ SpecWeave sits on top of Claude Code and handles the complexity for you. Think o
 | **CLAUDE.md** | Project instructions, formatting rules | Auto-generated and maintained by SpecWeave |
 | **Plugins** | Installation, marketplace, version management | Auto-loaded based on your project's tech stack |
 | **Context management** | Token budgets, file references, compression | Specs persist in files — zero context loss |
-| **Custom commands** | Markdown files, frontmatter, directory structure | 100+ skills ready to use out of the box |
+| **Custom commands** | Markdown files, frontmatter, directory structure | ~48 built-in skills ready to use out of the box |
 | **MCP servers** | Transport protocols, server configuration | CLI tools used first; MCP when needed |
 
 ## The Experience

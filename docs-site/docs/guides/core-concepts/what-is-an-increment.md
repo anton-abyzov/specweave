@@ -128,13 +128,13 @@ SpecWeave supports different work types:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning: /specweave:increment "feature"
-    Planning --> Active: /specweave:do
+    [*] --> Planning: /sw:increment "feature"
+    Planning --> Active: /sw:do
     Active --> Active: Complete tasks
-    Active --> Paused: /specweave:pause
-    Paused --> Active: /specweave:resume
+    Active --> Paused: /sw:pause
+    Paused --> Active: /sw:resume
     Active --> Completed: All tasks done
-    Active --> Abandoned: /specweave:abandon
+    Active --> Abandoned: /sw:abandon
     Completed --> [*]
     Abandoned --> [*]
 ```
@@ -153,7 +153,7 @@ stateDiagram-v2
 1. **Keep increments focused** - One feature or fix per increment
 2. **Complete before starting new** - Finish 0001 before 0002
 3. **Use descriptive names** - `0001-user-authentication` not `0001`
-4. **Document scope changes** - Use `/specweave:update-scope`
+4. **Document scope changes** - Use `/sw:increment (to update spec)`
 5. **Close properly** - Validate tests, update docs, create completion report
 
 ### ❌ DON'T
@@ -249,7 +249,7 @@ Answer: Read living docs
 ## Next Steps
 
 - [Creating Your First Increment](/docs/workflows/planning)
-- [The /specweave:do Workflow](/docs/workflows/implementation)
+- [The /sw:do Workflow](/docs/workflows/implementation)
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---

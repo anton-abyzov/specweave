@@ -81,7 +81,7 @@ SpecWeave syncs **different data types in different directions**:
 ### When It Runs
 
 **Automatic** (via hooks):
-- After creating new increment with `/specweave:increment`
+- After creating new increment with `/sw:increment`
 - When spec.md is created in `.specweave/docs/internal/specs/`
 
 **Manual** (CLI):
@@ -321,7 +321,7 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 
 ```bash
 # 1. PM creates spec
-/specweave:increment "User authentication with OAuth"
+/sw:increment "User authentication with OAuth"
 
 # PM agent generates:
 # - .specweave/docs/internal/specs/spec-001-user-auth.md
@@ -333,7 +333,7 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 # → Adds link to spec-001-user-auth.md
 
 # 3. Developer starts work
-/specweave:do
+/sw:do
 
 # 4. As tasks complete, commits are posted to issue #456
 # → Comment: "US-001 implemented in commits abc123f, def456g"

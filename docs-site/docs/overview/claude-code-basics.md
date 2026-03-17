@@ -88,7 +88,7 @@ You can also invoke skills explicitly:
 /sw:security       # Activate security expertise
 ```
 
-**SpecWeave has 100+ skills** covering PM, architecture, security, testing, frontend, backend, DevOps, and more.
+**SpecWeave has ~48 built-in skills** covering PM, architecture, security, testing, frontend, backend, DevOps, and more.
 
 > For a deep dive into how skills, plugins, and marketplaces work, see the **[Fundamentals guide](/docs/skills/fundamentals)**.
 
@@ -105,7 +105,7 @@ Agents are **specialized subprocesses** that handle specific types of work. Thin
 | Frontend Agent | React/Vue/Angular architecture and patterns |
 | Backend Agent | API design, database optimization, .NET/Node.js patterns |
 
-**68+ agents** work together. They activate based on context - you don't need to manage them manually.
+**22+ agents** work together. They activate based on context - you don't need to manage them manually.
 
 ### Hooks
 
