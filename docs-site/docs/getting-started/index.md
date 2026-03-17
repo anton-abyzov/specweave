@@ -162,7 +162,7 @@ SpecWeave works everywhere:
 
 ## Explore the Skill Ecosystem
 
-SpecWeave ships with 44 built-in skills across 8 bundled plugins, and you can install community skills from the [verified-skill.com](https://verified-skill.com) registry:
+SpecWeave ships with 44 built-in skills across 8 bundled plugins, and you can install from 100,000+ community skills on the [verified-skill.com](https://verified-skill.com) registry:
 
 ```bash
 # Search for skills
