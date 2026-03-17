@@ -82,6 +82,7 @@ const sidebars: SidebarsConfig = {
       collapsed: true,
       items: [
         {type: 'doc', id: 'guides/agent-teams-and-swarms', label: 'Teams & Swarms'},
+        {type: 'link', label: 'Team-Lead Orchestration', href: '/docs/guides/agent-teams-and-swarms#team-lead-orchestration'},
         {type: 'doc', id: 'guides/autonomous-execution', label: 'Autonomous Execution'},
         {type: 'doc', id: 'guides/multi-project-setup', label: 'Multi-Project Setup'},
         {type: 'doc', id: 'guides/agent-security-best-practices', label: 'Agent Security'},
