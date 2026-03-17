@@ -20,9 +20,9 @@ description: "Complete guide to integrating SpecWeave with GitHub, JIRA, and Azu
 flowchart TB
     subgraph SPECWEAVE["SpecWeave (Source of Truth)"]
         direction TB
-        SPEC[spec.md<br/>User Stories + ACs]
-        TASKS[tasks.md<br/>Implementation Tasks]
-        LIVING[Living Docs<br/>specs/{project}/FS-XXX/]
+        SPEC["spec.md<br/>User Stories + ACs"]
+        TASKS["tasks.md<br/>Implementation Tasks"]
+        LIVING["Living Docs<br/>specs/project/FS-XXX/"]
     end
 
     subgraph SYNC["Sync Coordinator"]
@@ -34,9 +34,9 @@ flowchart TB
 
     subgraph EXTERNAL["External Tools"]
         direction TB
-        GH[GitHub<br/>Issues + Milestones]
-        JIRA[JIRA<br/>Epics + Stories]
-        ADO[Azure DevOps<br/>Work Items]
+        GH["GitHub<br/>Issues + Milestones"]
+        JIRA["JIRA<br/>Epics + Stories"]
+        ADO["Azure DevOps<br/>Work Items"]
     end
 
     SPECWEAVE --> SYNC

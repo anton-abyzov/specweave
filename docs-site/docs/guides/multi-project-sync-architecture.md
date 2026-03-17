@@ -951,7 +951,7 @@ sequenceDiagram
     participant CLI as SpecWeave CLI
     participant Config as config.json
     participant Meta as metadata.json
-    participant API as External API<br/>(GitHub/Jira/ADO)
+    participant API as External API
 
     User->>CLI: /sw-github:sync 0008
 

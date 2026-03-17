@@ -123,7 +123,7 @@ sequenceDiagram
 
     Dev->>Task: Complete T-001
     Task->>Hook: Trigger hook
-    Hook->>Living: 1. Sync increment → specs
+    Hook->>Living: 1. Sync increment to specs
     Living->>Living: 2. Validate AC-IDs
     Living->>Living: 3. Check test coverage
     Hook->>External: 4. Update external tracker
@@ -190,15 +190,15 @@ Intelligent mode automatically classifies and distributes content to correct fol
 ```mermaid
 graph TB
     A[Parse spec.md] --> B{Classify Content}
-    B --> C1[User Story → specs/]
-    B --> C2[NFR → specs/nfr/]
-    B --> C3[Architecture → architecture/]
-    B --> C4[ADR → architecture/adr/]
-    B --> C5[Operations → operations/]
-    B --> C6[Delivery → delivery/]
-    B --> C7[Strategy → strategy/]
-    B --> C8[Governance → governance/]
-    B --> C9[Overview → specs/]
+    B --> C1["User Story - specs/"]
+    B --> C2["NFR - specs/nfr/"]
+    B --> C3["Architecture - architecture/"]
+    B --> C4["ADR - architecture/adr/"]
+    B --> C5["Operations - operations/"]
+    B --> C6["Delivery - delivery/"]
+    B --> C7["Strategy - strategy/"]
+    B --> C8["Governance - governance/"]
+    B --> C9["Overview - specs/"]
 ```
 
 **Example: Before/After Intelligent Sync**

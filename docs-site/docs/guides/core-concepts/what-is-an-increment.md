@@ -141,13 +141,13 @@ SpecWeave auto-detects your intent and creates the increment.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning: /sw:increment "feature"
-    Planning --> Active: /sw:do
-    Active --> Active: Complete tasks
-    Active --> Paused: /sw:pause
-    Paused --> Active: /sw:resume
-    Active --> Completed: All tasks done
-    Active --> Abandoned: /sw:abandon
+    [*] --> Planning : /sw:increment
+    Planning --> Active : /sw:do
+    Active --> Active : Complete tasks
+    Active --> Paused : /sw:pause
+    Paused --> Active : /sw:resume
+    Active --> Completed : All tasks done
+    Active --> Abandoned : /sw:abandon
     Completed --> [*]
     Abandoned --> [*]
 ```

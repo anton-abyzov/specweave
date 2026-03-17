@@ -633,11 +633,11 @@ graph LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Closed: System Normal
-    Closed --> Open: Failure Threshold Reached<br/>(e.g., 5 errors in 30s)
-    Open --> HalfOpen: Timeout Expired<br/>(e.g., 60s)
-    HalfOpen --> Closed: Test Request Succeeds
-    HalfOpen --> Open: Test Request Fails
+    [*] --> Closed : System normal
+    Closed --> Open : Failure threshold reached
+    Open --> HalfOpen : Timeout expired
+    HalfOpen --> Closed : Test request succeeds
+    HalfOpen --> Open : Test request fails
 
     note right of Closed
         All requests pass through

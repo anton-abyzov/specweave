@@ -32,10 +32,10 @@ SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, 
 
 ```mermaid
 graph LR
-    A[User: '/sw:pm'] --> B[PM Skill loaded]
+    A["User: /sw:pm"] --> B[PM Skill loaded]
     B --> C[Instructions injected into context]
     C --> D[AI follows skill instructions]
-    D --> E[Output: spec.md]
+    D --> E["Output: spec.md"]
 ```
 
 ### Execution Modes
@@ -82,9 +82,9 @@ sw:brainstorm         # Multi-perspective ideation (standalone, context: fork)
 
 ```mermaid
 graph LR
-    A[Increment Skill] --> B["Agent(subagent_type: 'sw:sw-pm')"]
+    A[Increment Skill] --> B["Agent&#40;subagent_type: sw:sw-pm&#41;"]
     B --> C[PM Subagent spawned]
-    C --> D[Preloads sw:pm skill]
+    C --> D["Preloads sw:pm skill"]
     D --> E[Isolated context + persistent memory]
     E --> F[Writes spec.md]
     F --> G[Returns result to caller]

@@ -370,20 +370,20 @@ For most SpecWeave projects, we recommend this combination:
 ```mermaid
 flowchart LR
     subgraph Frontend["Frontend Layer"]
-        CF[Cloudflare Pages<br/>or Vercel]
+        CF["Cloudflare Pages<br/>or Vercel"]
     end
 
     subgraph Backend["Backend Layer"]
-        W[Cloudflare Workers<br/>Edge API]
+        W["Cloudflare Workers<br/>Edge API"]
     end
 
     subgraph Data["Data Layer"]
-        SB[Supabase<br/>PostgreSQL + Auth]
-        R2[Cloudflare R2<br/>Files]
+        SB["Supabase<br/>PostgreSQL + Auth"]
+        R2["Cloudflare R2<br/>Files"]
     end
 
     subgraph VCS["Version Control"]
-        GH[GitHub<br/>Source + CI/CD]
+        GH["GitHub<br/>Source + CI/CD"]
     end
 
     CF --> W
@@ -462,10 +462,10 @@ Cloudflare offers a complete serverless stack that runs at the edge — no cold 
 ```mermaid
 flowchart LR
     subgraph Edge["Edge (200+ locations)"]
-        W[Workers<br/>Compute]
-        D1[D1<br/>SQLite]
-        KV[KV<br/>Key-Value]
-        R2[R2<br/>Object Storage]
+        W["Workers<br/>Compute"]
+        D1["D1<br/>SQLite"]
+        KV["KV<br/>Key-Value"]
+        R2["R2<br/>Object Storage"]
     end
 
     Client([Client]) --> W
@@ -649,14 +649,14 @@ When you outgrow free tiers:
 ```mermaid
 graph LR
     subgraph Vercel
-        V1[Pro: $20/user/mo]
-        V2[Enterprise: Custom]
+        V1["Pro: $20/user/mo"]
+        V2["Enterprise: Custom"]
     end
 
     subgraph Cloudflare
-        C1[Pro: $20/mo flat]
-        C2[Business: $200/mo]
-        C3[Enterprise: Custom]
+        C1["Pro: $20/mo flat"]
+        C2["Business: $200/mo"]
+        C3["Enterprise: Custom"]
     end
 
     style V1 fill:#000,color:#fff

@@ -41,10 +41,10 @@ graph LR
     A[SpecWeave Local] -->|Content| B[GitHub Issues]
     B -->|Status| A
 
-    A[SpecWeave Local] -->|Content| C[JIRA Epics]
+    A -->|Content| C[JIRA Epics]
     C -->|Status| A
 
-    A[SpecWeave Local] -->|Content| D[Azure DevOps]
+    A -->|Content| D[Azure DevOps]
     D -->|Status| A
 
     style A fill:#339af0
@@ -117,8 +117,8 @@ graph TB
 
 ```mermaid
 graph TB
-    A[Layer 1: GitHub Issue] -->|Bidirectional Sync| B[Layer 2: Living Docs]
-    B -->|Bidirectional Sync| C[Layer 3: Increment]
+    A["Layer 1: GitHub Issue"] -->|Bidirectional Sync| B["Layer 2: Living Docs"]
+    B -->|Bidirectional Sync| C["Layer 3: Increment"]
 
     A --> D[Stakeholder UI]
     B --> E[Project-Specific Docs]

@@ -14,7 +14,7 @@ Cognitive lenses **force** exploration off the beaten path. The Black Hat finds 
 
 ```mermaid
 graph LR
-    A[💡 Idea] --> B{Brainstorm?}
+    A["💡 Idea"] --> B{Brainstorm?}
     B -->|Without| C[Jump to sw:increment]
     B -->|With| D[Explore 4-6 approaches]
     D --> E[Compare with matrix]
@@ -300,10 +300,10 @@ The default criteria (Complexity, Time, Risk, Extensibility, Alignment) work for
 
 ```mermaid
 graph LR
-    A[sw:brainstorm] -->|selected approach| B[sw:increment]
-    B --> C[sw:pm]
-    C --> D[sw:architect]
-    D --> E[sw:do / sw:auto]
+    A["sw:brainstorm"] -->|selected approach| B["sw:increment"]
+    B --> C["sw:pm"]
+    C --> D["sw:architect"]
+    D --> E["sw:do / sw:auto"]
 
     style A fill:#fff3e0
 ```

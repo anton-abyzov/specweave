@@ -47,11 +47,11 @@ This guide teaches you:
 
 ```mermaid
 graph LR
-    Input[User Input:<br/>'What is'] --> Tokenize[Tokenization]
-    Tokenize --> Tokens['What', 'is', '...']
-    Tokens --> Model[LLM Model<br/>GPT-5.3, Claude 4.6, etc.]
+    Input["User Input:<br/>What is"] --> Tokenize[Tokenization]
+    Tokenize --> Tokens["What, is, ..."]
+    Tokens --> Model["LLM Model<br/>GPT-5.3, Claude 4.6, etc."]
     Model --> Predict[Predict Next Token]
-    Predict --> Output['the', 'capital', 'of', 'France']
+    Predict --> Output["the, capital, of, France"]
 
     style Model fill:#ffd700
 ```
@@ -288,7 +288,7 @@ const response = await chatWithTools("What's the weather in London?");
 
 ```mermaid
 graph TB
-    Query[User Query:<br/>'How do I reset password?']
+    Query["User Query:<br/>How do I reset password?"]
 
     subgraph "Retrieval Phase"
         Embed[Convert query to embedding]
@@ -297,7 +297,7 @@ graph TB
     end
 
     subgraph "Generation Phase"
-        Prompt[Build prompt:<br/>Context + Query]
+        Prompt["Build prompt:<br/>Context + Query"]
         LLM[LLM generates answer]
         Response[Structured response]
     end
