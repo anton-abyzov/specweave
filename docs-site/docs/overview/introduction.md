@@ -119,7 +119,7 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 | **LSP Code Intelligence** | Semantic symbol resolution — 198x faster than grep, zero false positives across TypeScript, Python, Go, Rust, Java, C# | ⭐ Unique |
 | **External Sync** | Push specs to GitHub/JIRA/ADO, read status back—keep existing workflows | Strong |
 | **Quality Gates** | Three-gate validation (tasks + test coverage + docs) before closing | Strong |
-| **50+ Built-in Skills** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously (Claude Opus 4.6) | Good |
+| **~42 Built-in Skills** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously | Good |
 | **Universal Stack** | Works with ANY tech stack and ANY AI tool (Claude, Cursor, Copilot) | Expected |
 
 ## What You Get vs. Current State
