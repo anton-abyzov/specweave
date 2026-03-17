@@ -342,27 +342,27 @@ The official Anthropic marketplace (`claude-plugins-official`) comes pre-configu
 
 ## Real-World Example: SpecWeave
 
-SpecWeave is delivered as a set of Claude Code plugins through its own marketplace. Here's what that looks like at scale.
+SpecWeave is delivered as Claude Code plugins through two marketplaces. Here's what that looks like at scale.
 
-### The Marketplace
+### The Marketplaces
 
-SpecWeave's `marketplace.json` registers **22 plugins** with **126 skills** total:
+**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin** with **44 skills**:
 
 | Plugin | Skills | Domain |
 |--------|--------|--------|
-| `sw` (core) | 37 | Workflow, PM, TDD, team orchestration |
+| `sw` (unified) | 44 | Core lifecycle, PM, Architect, TDD, team orchestration, GitHub/JIRA/ADO sync, release management, diagrams, AI media |
+
+**vskill marketplace** (`anton-abyzov/vskill`) provides **5 additional domain plugins**:
+
+| Plugin | Skills | Domain |
+|--------|--------|--------|
 | `mobile` | 1 | App Store Connect automation |
-| `backend` | 8 | Node.js, Python, .NET, Go, Java, GraphQL, Rust |
-| `testing` | 5 | QA, E2E, unit, mutation, performance |
-| `infra` | 10 | Terraform, AWS, GCP, monitoring |
-| `mobile` | 10 | React Native, Flutter, SwiftUI, Compose |
-| `k8s` | 6 | Kubernetes, Helm, GitOps |
-| `sw-github` | 10 | GitHub sync |
-| `sw-jira` | 10 | JIRA sync |
-| `ml` | 10 | ML pipelines, RAG, fine-tuning |
-| `payments` | 6 | Stripe, billing, PCI compliance |
-| `docs` | 8 | Docusaurus, living docs |
-| ...and more | | |
+| `skills` | 1 | Skill discovery and evaluation (scout) |
+| `marketing` | 3 | Social media posting, Slack messaging, Chrome automation |
+| `productivity` | 1 | Expert network survey automation |
+| `google-workspace` | 3 | Google Workspace CLI (Gmail, Drive, Sheets, Docs, Calendar) |
+
+Beyond these bundled plugins, **100,000+ community skills** are available via the [verified-skill.com](https://verified-skill.com) registry.
 
 ### Simple vs Complex Skills
 
@@ -427,7 +427,7 @@ This loads "skill memories" — corrections you've made that persist across sess
 
 ### Plugins Load On-Demand
 
-You don't install 22 plugins manually. SpecWeave plugins load based on what you're working on:
+Domain plugins load based on what you're working on:
 
 - Say "mobile app" → `mobile` activates
 - Say "post on social media" → `marketing` activates
@@ -443,7 +443,7 @@ You don't install 22 plugins manually. SpecWeave plugins load based on what you'
 4. **Commands = old name for skills** — `.claude/commands/` still works, but skills are the current standard
 5. **Namespacing prevents conflicts** — plugin skills become `/plugin:skill`
 6. **Two invocation modes** — you call it with `/name`, or Claude auto-triggers based on the description
-7. **Real scale** — SpecWeave ships 126 skills across 22 plugins through a single marketplace
+7. **Real scale** — SpecWeave ships 44 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
 
 ---
 
