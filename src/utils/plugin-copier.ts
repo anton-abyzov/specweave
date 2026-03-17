@@ -284,6 +284,61 @@ export function ensureGlobalLockfile(homeOverride?: string): VskillLock {
 }
 
 // ---------------------------------------------------------------------------
+// Migration: move bundled entries from project vskill.lock to global lock
+// ---------------------------------------------------------------------------
+
+/**
+ * Migrate bundled plugin entries (source: 'local:specweave') from a project's
+ * vskill.lock to the global ~/.specweave/plugins-lock.json.
+ *
+ * - Only moves entries with source === 'local:specweave'
+ * - Preserves newer global entries (timestamp comparison)
+ * - Deletes project vskill.lock if it becomes empty after migration
+ * - Idempotent: safe to run multiple times
+ */
+export function migrateBundledToGlobalLock(
+  projectRoot: string,
+  homeOverride?: string,
+): { migratedCount: number; deletedProjectLock: boolean } {
+  const projectLock = readLockfile(projectRoot);
+  if (!projectLock) return { migratedCount: 0, deletedProjectLock: false };
+
+  const bundledEntries = Object.entries(projectLock.skills)
+    .filter(([, entry]) => entry.source === 'local:specweave');
+
+  if (bundledEntries.length === 0) return { migratedCount: 0, deletedProjectLock: false };
+
+  const globalLock = ensureGlobalLockfile(homeOverride);
+  let migratedCount = 0;
+
+  for (const [name, entry] of bundledEntries) {
+    const existing = globalLock.skills[name];
+    // Only overwrite if global entry doesn't exist or project entry is newer
+    if (!existing || entry.installedAt > existing.installedAt) {
+      globalLock.skills[name] = entry;
+    }
+    delete projectLock.skills[name];
+    migratedCount++;
+  }
+
+  writeGlobalLockfile(globalLock, homeOverride);
+
+  // Delete project lock if no entries remain
+  const remainingSkills = Object.keys(projectLock.skills).length;
+  let deletedProjectLock = false;
+  if (remainingSkills === 0) {
+    try {
+      rmSync(join(projectRoot, LOCKFILE_NAME), { force: true });
+      deletedProjectLock = true;
+    } catch { /* non-fatal */ }
+  } else {
+    writeLockfile(projectLock, projectRoot);
+  }
+
+  return { migratedCount, deletedProjectLock };
+}
+
+// ---------------------------------------------------------------------------
 // Root finder
 // ---------------------------------------------------------------------------
 

@@ -394,7 +394,7 @@ export async function detectIntentCommand(
 
   // vskill marketplace plugin recommendations (v1.0.542)
   const vskillMatches = detectVskillPlugins(prompt);
-  // Filter out plugins already in vskill.lock
+  // Filter out plugins already in vskill.lock or global plugins-lock.json
   const projectRoot = findProjectRoot();
   const lockPath = projectRoot ? path.join(projectRoot, 'vskill.lock') : 'vskill.lock';
   let installedVskillPlugins: Set<string> = new Set();
@@ -408,6 +408,16 @@ export async function detectIntentCommand(
   } catch {
     // Ignore lockfile parse errors
   }
+  // Also check global plugins-lock.json for bundled plugins
+  try {
+    const { readGlobalLockfile } = await import('../../utils/plugin-copier.js');
+    const globalLock = readGlobalLockfile();
+    if (globalLock?.skills) {
+      for (const name of Object.keys(globalLock.skills)) {
+        installedVskillPlugins.add(name);
+      }
+    }
+  } catch { /* non-fatal */ }
   const filteredVskillMatches = vskillMatches.filter(m => !installedVskillPlugins.has(m.plugin));
   if (filteredVskillMatches.length > 0) {
     result.vskillRecommendations = filteredVskillMatches.map(m => ({

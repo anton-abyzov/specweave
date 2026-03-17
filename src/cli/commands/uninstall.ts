@@ -198,6 +198,16 @@ export async function uninstallCommand(
     console.log(chalk.green('   Deleted vskill.lock'));
   }
 
+  // Step 5b: Delete global plugins-lock.json
+  try {
+    const { GLOBAL_LOCKFILE_NAME, getGlobalLockDir } = await import('../../utils/plugin-copier.js');
+    const globalLockPath = path.join(getGlobalLockDir(), GLOBAL_LOCKFILE_NAME);
+    if (fs.existsSync(globalLockPath)) {
+      fs.unlinkSync(globalLockPath);
+      console.log(chalk.green('   Deleted ~/.specweave/plugins-lock.json'));
+    }
+  } catch { /* non-fatal */ }
+
   // Summary
   console.log(chalk.green('\nSpecWeave has been uninstalled.'));
   console.log(chalk.dim('To reinstall: specweave init\n'));

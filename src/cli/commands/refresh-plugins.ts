@@ -23,6 +23,7 @@ import {
   copyPluginSkillsToProject,
   installPlugin,
   findSpecweaveRoot,
+  migrateBundledToGlobalLock,
 } from '../../utils/plugin-copier.js';
 import { cleanupStalePlugins } from '../../utils/cleanup-stale-plugins.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
@@ -140,6 +141,14 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     }
   } catch {
     // Non-blocking: cleanup errors don't abort plugin refresh
+  }
+
+  // Step 0.6: Migrate bundled entries from project vskill.lock to global plugins-lock.json
+  try {
+    const migProjectRoot = getProjectRoot();
+    migrateBundledToGlobalLock(migProjectRoot);
+  } catch {
+    // Non-blocking: migration errors don't abort plugin refresh
   }
 
   log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));

@@ -25,7 +25,7 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
-import { computePluginHash } from '../../../utils/plugin-copier.js';
+import { computePluginHash, readGlobalLockfile } from '../../../utils/plugin-copier.js';
 import { npmRegistryFlag } from '../../../utils/npm-constants.js';
 
 interface InstallationHealthOptions {
@@ -202,39 +202,45 @@ export class InstallationHealthChecker implements HealthChecker {
     projectRoot: string,
     fix: boolean
   ): CheckResult {
-    const lockPath = join(projectRoot, 'vskill.lock');
-    if (!existsSync(lockPath)) {
-      return {
-        name: 'Lockfile integrity',
-        status: 'skip',
-        message: 'no vskill.lock found',
-      };
-    }
+    // Merge skills from both project vskill.lock and global plugins-lock.json
+    const mergedSkills: Record<string, { sha: string; version: string; source: string }> = {};
 
-    let lockfile: {
-      skills: Record<
-        string,
-        { sha: string; version: string; source: string }
-      >;
-    };
+    // Read global lock first (bundled plugins)
     try {
-      lockfile = JSON.parse(readFileSync(lockPath, 'utf-8'));
-    } catch {
-      return {
-        name: 'Lockfile integrity',
-        status: 'warn',
-        message: 'could not parse vskill.lock',
-        fixSuggestion: 'Run: specweave refresh-plugins',
-      };
+      const globalLock = readGlobalLockfile();
+      if (globalLock?.skills) {
+        Object.assign(mergedSkills, globalLock.skills);
+      }
+    } catch { /* non-fatal */ }
+
+    // Read project lock (third-party skills, may override)
+    const lockPath = join(projectRoot, 'vskill.lock');
+    if (existsSync(lockPath)) {
+      try {
+        const projectLock = JSON.parse(readFileSync(lockPath, 'utf-8'));
+        if (projectLock.skills) {
+          Object.assign(mergedSkills, projectLock.skills);
+        }
+      } catch {
+        return {
+          name: 'Lockfile integrity',
+          status: 'warn',
+          message: 'could not parse vskill.lock',
+          fixSuggestion: 'Run: specweave refresh-plugins',
+        };
+      }
     }
 
-    if (!lockfile.skills || Object.keys(lockfile.skills).length === 0) {
+    if (Object.keys(mergedSkills).length === 0) {
       return {
         name: 'Lockfile integrity',
         status: 'skip',
-        message: 'lockfile has no skill entries',
+        message: 'no lockfile entries found',
       };
     }
+
+    // Use merged skills for integrity check — alias for downstream code
+    const lockfile = { skills: mergedSkills };
 
     const mismatches: string[] = [];
     const missing: string[] = [];
