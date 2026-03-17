@@ -10,7 +10,7 @@ import type { Plugin } from '../../core/types/plugin.js';
 
 export class ZedAdapter extends AdapterBase {
   name = 'zed';
-  description = 'Zed adapter — skills installed in .rules/';
+  description = 'Zed adapter — skills installed in .zed/skills/';
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
@@ -23,7 +23,7 @@ export class ZedAdapter extends AdapterBase {
 
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Zed Adapter\n');
-    await fs.ensureDir(path.join(options.projectPath, '.rules'));
+    await fs.ensureDir(path.join(options.projectPath, '.zed/skills'));
     console.log('\n✨ Zed adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
   }
@@ -33,22 +33,22 @@ export class ZedAdapter extends AdapterBase {
   }
 
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.rules';
+    const skillsDir = '.zed/skills';
     console.log(`\n📦 Installing plugin skills for Zed: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Zed!`);
   }
 
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Zed: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.rules');
-    console.log(`   ✓ Removed from .rules/`);
+    await this.removeSkillFiles(pluginName, '.zed/skills');
+    console.log(`   ✓ Removed from .zed/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.rules');
+    return await this.listInstalledPluginsInDir('.zed/skills');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
@@ -59,7 +59,7 @@ export class ZedAdapter extends AdapterBase {
     return `
 Zed Adapter
 
-Skills installed in .rules/.
+Skills installed in .zed/skills/.
 Run: specweave refresh-plugins
     `;
   }

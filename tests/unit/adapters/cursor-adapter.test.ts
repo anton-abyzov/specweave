@@ -283,7 +283,7 @@ describe('CursorAdapter', () => {
   });
 
   // ─── compilePlugin() ──────────────────────────────────────
-  // compilePlugin writes individual skill files to .cursor/rules/
+  // compilePlugin writes individual skill files to .cursor/skills/
   // via the base class writeSkillFiles() helper.
 
   describe('compilePlugin()', () => {
@@ -307,11 +307,11 @@ describe('CursorAdapter', () => {
       mockReadJson.mockRejectedValue(new Error('not found'));
     });
 
-    it('should ensure .cursor/rules directory exists', async () => {
+    it('should ensure .cursor/skills directory exists', async () => {
       await adapter.compilePlugin(makePlugin());
 
       expect(mockEnsureDir).toHaveBeenCalledWith(
-        expect.stringContaining('.cursor/rules')
+        expect.stringContaining('.cursor/skills')
       );
     });
 
@@ -321,7 +321,7 @@ describe('CursorAdapter', () => {
       expect(mockWriteFile).not.toHaveBeenCalled();
     });
 
-    it('should write skill file to .cursor/rules/', async () => {
+    it('should write skill file to .cursor/skills/', async () => {
       mockPathExists.mockImplementation(async (p: string) => {
         if (p.endsWith('SKILL.md')) return true;
         if (p.endsWith('config.json')) return false;
@@ -453,7 +453,7 @@ describe('CursorAdapter', () => {
   });
 
   // ─── unloadPlugin() ───────────────────────────────────────
-  // unloadPlugin removes skill files from .cursor/rules/
+  // unloadPlugin removes skill files from .cursor/skills/
   // via the base class removeSkillFiles() helper.
 
   describe('unloadPlugin()', () => {
@@ -467,7 +467,7 @@ describe('CursorAdapter', () => {
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Unloading plugin'));
     });
 
-    it('should remove the plugin subdirectory from .cursor/rules/', async () => {
+    it('should remove the plugin subdirectory from .cursor/skills/', async () => {
       mockPathExists.mockResolvedValue(true);
       mockRemove.mockResolvedValue(undefined);
 
@@ -476,7 +476,7 @@ describe('CursorAdapter', () => {
       // Should remove the specweave-test/ subdirectory
       expect(mockRemove).toHaveBeenCalledTimes(1);
       expect(mockRemove).toHaveBeenCalledWith(
-        expect.stringContaining('.cursor/rules/specweave-test')
+        expect.stringContaining('.cursor/skills/specweave-test')
       );
     });
 
@@ -497,13 +497,13 @@ describe('CursorAdapter', () => {
 
       await adapter.unloadPlugin('specweave-x');
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Removed from .cursor/rules/'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Removed from .cursor/skills/'));
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('specweave-x unloaded'));
     });
   });
 
   // ─── getInstalledPlugins() ─────────────────────────────────
-  // getInstalledPlugins scans .cursor/rules/ directory
+  // getInstalledPlugins scans .cursor/skills/ directory
   // via the base class listInstalledPluginsInDir() helper.
 
   describe('getInstalledPlugins()', () => {

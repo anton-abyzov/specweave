@@ -83,7 +83,7 @@ export class CursorAdapter extends AdapterBase {
     const cursorDir = path.join(options.projectPath, '.cursor');
     await fs.ensureDir(cursorDir);
     await fs.ensureDir(path.join(cursorDir, 'context'));
-    await fs.ensureDir(path.join(cursorDir, 'rules'));
+    await fs.ensureDir(path.join(cursorDir, 'skills'));
 
     // Copy files
     await super.install(options);
@@ -138,30 +138,30 @@ Docs: AGENTS.md, .cursor/README.md
 
   /**
    * Compile and install a plugin for Cursor.
-   * Writes each SKILL.md as a separate file in `.cursor/rules/`.
+   * Writes each SKILL.md as a separate file in `.cursor/skills/`.
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const rulesDir = '.cursor/rules';
+    const skillsDir = '.cursor/skills';
     console.log(`\n📦 Installing plugin skills for Cursor: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, rulesDir);
-    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    await this.writeSkillFiles(plugin, skillsDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Cursor!`);
   }
 
   /**
-   * Unload a plugin from Cursor — removes skill files from `.cursor/rules/`.
+   * Unload a plugin from Cursor — removes skill files from `.cursor/skills/`.
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Cursor: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.cursor/rules');
-    console.log(`   ✓ Removed from .cursor/rules/`);
+    await this.removeSkillFiles(pluginName, '.cursor/skills');
+    console.log(`   ✓ Removed from .cursor/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
   /**
-   * Get installed plugins for Cursor by scanning `.cursor/rules/`.
+   * Get installed plugins for Cursor by scanning `.cursor/skills/`.
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.cursor/rules');
+    return await this.listInstalledPluginsInDir('.cursor/skills');
   }
 }
