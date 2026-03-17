@@ -138,7 +138,7 @@
         "installCore": "运行：/plugin install specweave",
         "step3": "可选：根据需要安装其他插件：",
         "installGitHub": "/plugin install sw-github@specweave",
-        "installFrontend": "/plugin install frontend@vskill",
+        "installFrontend": "/plugin install frontend-design@claude-plugins-official",
         "step4": "开始构建：",
         "example": "\"/sw:increment 'user authentication'\"",
         "autoActivate": "技能和代理会根据上下文自动激活"
