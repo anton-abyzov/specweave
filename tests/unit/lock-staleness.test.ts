@@ -157,9 +157,9 @@ describe('LockManager - Staleness Detection', () => {
 
   describe('Automatic Stale Lock Removal', () => {
     it('should automatically remove stale lock on acquire', async () => {
-      // Create stale lock
+      // Create stale lock (use a very high PID that is guaranteed not running)
       fs.mkdirSync(lockDir);
-      fs.writeFileSync(path.join(lockDir, 'pid'), '99997');
+      fs.writeFileSync(path.join(lockDir, 'pid'), '4294967295');
 
       const sixMinutesAgo = new Date(Date.now() - 6 * 60 * 1000);
       fs.utimesSync(lockDir, sixMinutesAgo, sixMinutesAgo);

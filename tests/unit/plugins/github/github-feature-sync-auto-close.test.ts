@@ -44,7 +44,7 @@ const {
   mockExistsSync: vi.fn(),
 }));
 
-vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/vendor/utils/execFileNoThrow.js', () => ({
   execFileNoThrow: mockExecFileNoThrow,
 }));
 
@@ -84,7 +84,7 @@ vi.mock('../../../../plugins/specweave-github/lib/duplicate-detector.js', () => 
   return { DuplicateDetector: MockDuplicateDetector };
 });
 
-vi.mock('../../../../src/utils/auth-helpers.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/vendor/utils/auth-helpers.js', () => ({
   getGitHubAuthFromProject: mockGetGitHubAuthFromProject,
 }));
 

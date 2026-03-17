@@ -164,7 +164,7 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 
 > "SpecWeave is built on three pillars:
 >
-> **Programmable AI** — Skills extend what AI coding agents can do — structured markdown instructions. 100+ skills for PM, Architect, QA, Security, DevOps. All customizable without forking.
+> **Extensible AI** — Skills extend what AI coding agents can do — structured markdown instructions. 100+ skills for PM, Architect, QA, Security, DevOps. All customizable without forking.
 >
 > **Autonomous Teams** — Agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts.
 >
@@ -196,7 +196,7 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 >
 > A framework constrains you. Angular — heavy, opinionated, lots of rules. SpecWeave is the opposite. It's a lightweight layer of skills — structured markdown instructions — that build on Claude Code's native skill system and give it superpowers:
 >
-> - **Programmable skills** instead of one-off prompts
+> - **Extensible skills** instead of one-off prompts
 > - **Guided interviews** instead of guessing what the AI needs
 > - **GitHub/JIRA sync** instead of manual ticket updates
 > - **Quality gates** instead of 'we'll add tests later'
@@ -213,12 +213,12 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 │  ❌ NOT a walled garden — delete it tomorrow, specs remain   │
 │  ❌ NOT proprietary — just markdown files (spec.md, etc.)   │
 │                                                              │
-│  ✅ IS a Skill Fabric — programs in English that control AI │
+│  ✅ IS a Skill Fabric — structured instructions that guide AI│
 │  ✅ IS zero-config — no hooks, no CLAUDE.md, no plugins     │
 │  ✅ IS team-agnostic — Claude, GPT-4, Copilot, any AI works │
 │                                                              │
 │  THREE PILLARS:                                              │
-│  Programmable AI | Autonomous Teams | Enterprise Ready       │
+│  Extensible AI | Autonomous Teams | Enterprise Ready       │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1533,15 +1533,15 @@ git push  # Skill memories sync to team
 >
 > Every skill you use is a tool you can customize, extend, and improve.
 >
-> You're not using software. You're **programming it** to match your exact needs.
+> You're not using software. You're **shaping it** to match your exact needs.
 >
 > No vendor lock-in. No black boxes. Full transparency. Full control.
 >
-> **Skills are programs. And you control the programs.**"
+> **Skills are structured expertise. And you control the expertise.**"
 
 **[TRANSITION]**
 
-> "Skills as programmable tools. That's the SpecWeave philosophy. Now let's talk about where to deploy your work..."
+> "Skills as extensible building blocks. That's the SpecWeave philosophy. Now let's talk about where to deploy your work..."
 
 ---
 
@@ -2922,7 +2922,7 @@ specweave init .
 │    └────────────────────────────────────────────┘           │
 │                                                              │
 │    THREE PILLARS:                                           │
-│    Programmable AI | Autonomous Teams | Enterprise Ready    │
+│    Extensible AI | Autonomous Teams | Enterprise Ready    │
 │                                                              │
 │    100+ skills | Agent swarms | Zero config                 │
 │    Powered by Claude Opus 4.6 & Sonnet 4.6                 │
@@ -2936,7 +2936,7 @@ specweave init .
 
 > "Let me leave you with the three pillars.
 >
-> **Programmable AI** — skills are structured markdown instructions that build on Claude Code's native skill system. 100+ skills for PM, Architect, QA, Security, DevOps. Customize any skill without forking. Fix something once, it's remembered permanently.
+> **Extensible AI** — skills are structured markdown instructions that build on Claude Code's native skill system. 100+ skills for PM, Architect, QA, Security, DevOps. Customize any skill without forking. Fix something once, it's remembered permanently.
 >
 > **Autonomous Teams** — agent swarms across iTerm and tmux. Run Claude Code, OpenClaw, GitHub Copilot, Codex — any combination of AI tools — on the same codebase. Each agent owns an increment. File-based coordination prevents conflicts. Quality gates for everyone.
 >

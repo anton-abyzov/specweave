@@ -20,7 +20,7 @@ Most AI coding tools give you prompts. SpecWeave gives you **structured expertis
 | **Stateful** | Forgets everything | Learns from corrections permanently |
 | **Testable** | "Did it work?" | Quality gates verify output automatically |
 
-## The Power: You Program AI Behavior
+## The Power: You Shape AI Behavior
 
 Instead of writing this every session:
 

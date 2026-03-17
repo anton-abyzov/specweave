@@ -4,6 +4,10 @@
  * TC-018: Init uses inline copier instead of claude plugin install
  * TC-019: Plugin installation reports results to user
  *
+ * Updated for v1.0.535: plugin-installer now uses copyPluginSkillsToProject
+ * instead of copyPlugin. No lazyMode, no detectClaudeCli dependency.
+ * All plugins are installed at init time.
+ *
  * @module tests/unit/cli/helpers/init/plugin-installer-vskill
  */
 
@@ -11,14 +15,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // ---- hoisted mocks (ESM-safe) ----
 
-const mockCopyPlugin = vi.hoisted(() => vi.fn());
+const mockCopyPluginSkillsToProject = vi.hoisted(() => vi.fn());
 const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
-const mockDetectClaudeCli = vi.hoisted(() => vi.fn());
-const mockGetClaudeCliDiagnostic = vi.hoisted(() => vi.fn());
-const mockGetClaudeCliSuggestions = vi.hoisted(() => vi.fn());
 const mockFindSourceDir = vi.hoisted(() => vi.fn());
-const mockCleanupStalePlugins = vi.hoisted(() => vi.fn());
 const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
+const mockGetProjectRoot = vi.hoisted(() => vi.fn());
 
 const mockFs = vi.hoisted(() => ({
   existsSync: vi.fn(),
@@ -69,7 +70,7 @@ vi.mock('chalk', () => {
 });
 
 vi.mock('../../../../../src/utils/plugin-copier.js', () => ({
-  copyPlugin: mockCopyPlugin,
+  copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
   findSpecweaveRoot: mockFindSpecweaveRoot,
 }));
 
@@ -77,22 +78,16 @@ vi.mock('../../../../../src/utils/esm-helpers.js', () => ({
   getDirname: () => '/mock/src/cli/helpers/init',
 }));
 
-vi.mock('../../../../../src/utils/claude-cli-detector.js', () => ({
-  detectClaudeCli: mockDetectClaudeCli,
-  getClaudeCliDiagnostic: mockGetClaudeCliDiagnostic,
-  getClaudeCliSuggestions: mockGetClaudeCliSuggestions,
-}));
-
 vi.mock('../../../../../src/cli/helpers/init/path-utils.js', () => ({
   findSourceDir: mockFindSourceDir,
 }));
 
-vi.mock('../../../../../src/utils/cleanup-stale-plugins.js', () => ({
-  cleanupStalePlugins: mockCleanupStalePlugins,
-}));
-
 vi.mock('../../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
   enablePluginsInSettings: mockEnablePluginsInSettings,
+}));
+
+vi.mock('../../../../../src/utils/find-project-root.js', () => ({
+  getProjectRoot: mockGetProjectRoot,
 }));
 
 // ---- import under test (AFTER mocks) ----
@@ -108,26 +103,23 @@ function marketplaceJson(plugins: Array<{ name: string }> = [{ name: 'sw' }, { n
 /** Setup mocks for a successful inline copier flow */
 function setupHappyPath(overrides?: {
   plugins?: Array<{ name: string }>;
-  cleanupResult?: { removedCount: number; removedPlugins: string[] };
 }) {
   const plugins = overrides?.plugins ?? [{ name: 'sw' }, { name: 'sw-github' }];
-  const cleanup = overrides?.cleanupResult ?? { removedCount: 0, removedPlugins: [] };
 
-  mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
   mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
   mockFs.existsSync.mockReturnValue(true);
   mockFs.readFileSync.mockReturnValue(marketplaceJson(plugins));
-  mockCleanupStalePlugins.mockResolvedValue({ success: true, ...cleanup });
   mockEnablePluginsInSettings.mockReturnValue(true);
+  mockGetProjectRoot.mockReturnValue('/mock/project');
 
   // Inline copier: findSpecweaveRoot returns valid root
   mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
 
-  // Default copyPlugin: succeeds
-  mockCopyPlugin.mockReturnValue({
+  // Default copyPluginSkillsToProject: succeeds
+  mockCopyPluginSkillsToProject.mockReturnValue({
     success: true,
     sha: 'abc123def456',
-    targetDir: '/mock-home/.claude/commands/sw',
+    targetDir: '/mock/project/.claude/skills',
   });
 }
 
@@ -144,17 +136,17 @@ describe('plugin-installer inline copier integration', () => {
   // TC-018: Init uses inline copier instead of claude plugin install
   // ============================================================
   describe('TC-018: Init uses inline copier instead of claude plugin install', () => {
-    it('should invoke copyPlugin instead of vskill or claude plugin install', async () => {
+    it('should invoke copyPluginSkillsToProject instead of vskill or claude plugin install', async () => {
       setupHappyPath();
 
       const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
+      expect(result.successCount).toBe(2);
 
-      // CRITICAL: Verify copyPlugin was called
-      expect(mockCopyPlugin).toHaveBeenCalled();
-      expect(mockCopyPlugin.mock.calls[0][0]).toBe('sw');
+      // CRITICAL: Verify copyPluginSkillsToProject was called
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
+      expect(mockCopyPluginSkillsToProject.mock.calls[0][0]).toBe('sw');
     });
 
     it('should maintain the same public API return type', async () => {
@@ -172,41 +164,40 @@ describe('plugin-installer inline copier integration', () => {
       expect(Array.isArray(result.failedPlugins)).toBe(true);
     });
 
-    it('should install only core sw plugin in lazy mode', async () => {
-      setupHappyPath();
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: true });
-
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
-
-      // Only 'sw' should be installed
-      const calledPlugins = mockCopyPlugin.mock.calls.map((c: any[]) => c[0]);
-      expect(calledPlugins).toContain('sw');
-      expect(calledPlugins).not.toContain('sw-github');
-    });
-
-    it('should install all plugins in full mode', async () => {
+    it('should install all plugins from marketplace (no lazy mode)', async () => {
       setupHappyPath({ plugins: [{ name: 'sw' }, { name: 'sw-github' }] });
 
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
+      const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(2);
 
-      const calledPlugins = mockCopyPlugin.mock.calls.map((c: any[]) => c[0]);
+      const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: any[]) => c[0]);
       expect(calledPlugins).toContain('sw');
       expect(calledPlugins).toContain('sw-github');
     });
 
-    it('should handle copyPlugin failure gracefully', async () => {
+    it('should install all plugins listed in marketplace.json', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }, { name: 'sw-github' }] });
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(true);
+      expect(result.successCount).toBe(2);
+
+      const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: any[]) => c[0]);
+      expect(calledPlugins).toContain('sw');
+      expect(calledPlugins).toContain('sw-github');
+    });
+
+    it('should handle copyPluginSkillsToProject failure gracefully', async () => {
       setupHappyPath();
-      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(false);
-      expect(result.failCount).toBe(1);
+      expect(result.failCount).toBe(2);
       expect(result.failedPlugins).toContain('sw');
     });
   });
@@ -224,8 +215,8 @@ describe('plugin-installer inline copier integration', () => {
 
       const allLogMessages = logSpy.mock.calls.map(call => call.join(' ')).join('\n');
 
-      // Should report installation success
-      expect(allLogMessages).toMatch(/install/i);
+      // Should report plugin installation (mentions "Installed" or "Plugin")
+      expect(allLogMessages).toMatch(/plugin|installed/i);
     });
 
     it('should enable plugins in Claude settings after install', async () => {
@@ -233,18 +224,20 @@ describe('plugin-installer inline copier integration', () => {
 
       await installAllPlugins({ dirname: '/test' });
 
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw'], 'specweave');
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github']);
     });
 
-    it('should handle Claude CLI not available', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: false, error: 'command_not_found' });
-      mockGetClaudeCliDiagnostic.mockReturnValue('Claude CLI not found');
-      mockGetClaudeCliSuggestions.mockReturnValue(['Install Claude Code']);
+    it('should handle specweave root not found', async () => {
+      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(marketplaceJson());
+      mockFindSpecweaveRoot.mockReturnValue(null);
+      mockGetProjectRoot.mockReturnValue('/mock/project');
 
       const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(false);
-      expect(mockCopyPlugin).not.toHaveBeenCalled();
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
   });
 });

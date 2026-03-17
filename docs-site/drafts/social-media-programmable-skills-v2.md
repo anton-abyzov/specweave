@@ -178,7 +178,7 @@ The complete picture:
 5️⃣ **Quality Gates** (15 pre-commit validations)
 
 **Claude Code pioneered transparent AI.**
-**SpecWeave made it programmable, extendable, and enterprise-ready.**
+**SpecWeave made it extensible, customizable, and enterprise-ready.**
 
 ### Tweet 11 (Call to Action - Industry)
 @OpenAI — ChatGPT should adopt extendable skills
@@ -201,10 +201,10 @@ specweave init .
 ```
 
 **2026**: Claude Code transparent AI → SpecWeave extendability + LSP + living docs
-**2027**: Industry adopts programmable AI standards
+**2027**: Industry adopts extensible AI standards
 **2028**: Extendable, production-ready AI = norm
 
-**The future is programmable AI. SpecWeave proves it works.**
+**The future is extensible AI. SpecWeave proves it works.**
 
 Docs: https://verified-skill.com
 
@@ -727,7 +727,7 @@ This isn't a demo. SpecWeave is **PRODUCTION-READY**:
 ## The Hierarchy (Current State)
 
 **🥇 Claude Code** (Anthropic)
-- ✅ Pioneered Skills (transparent, programmable AI)
+- ✅ Pioneered Skills (transparent, extensible AI)
 - ✅ LSP plugins available (TypeScript, Python, C#, Go)
 - ✅ Markdown-based skill system
 - ✅ **Made AI transparent**
@@ -763,7 +763,7 @@ This isn't a demo. SpecWeave is **PRODUCTION-READY**:
 **Claude Code + SpecWeave = Complete Production Stack**
 
 **Claude Code provides**:
-- Transparent, programmable AI (Skills)
+- Transparent, extensible AI (Skills)
 - LSP plugins for code intelligence
 - Markdown-based extensibility
 - **The foundation**
@@ -780,7 +780,7 @@ This is the **future of AI tools**: transparent, customizable, production-proven
 
 @AnthropicAI — You pioneered transparent AI. SpecWeave proves it scales to production.
 
-**Together we can make programmable AI the industry standard.**
+**Together we can make extensible AI the industry standard.**
 
 ---
 
@@ -987,7 +987,7 @@ Structured human-language programming starts now.
 - **Real enterprise brownfield** proven
 
 ### The Message
-**Claude Code pioneered transparent, programmable AI.**
+**Claude Code pioneered transparent, extensible AI.**
 **SpecWeave made it extendable, production-ready, and enterprise-grade.**
 
 **This is HOW AI tools should work.**
