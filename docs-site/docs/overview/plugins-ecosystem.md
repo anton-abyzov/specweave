@@ -1,13 +1,13 @@
 ---
 sidebar_position: 2
 title: Plugin Ecosystem
-description: SpecWeave's modular plugin architecture — 8 bundled plugins with ~42 skills, plus community skills via verified-skill.com
+description: SpecWeave's modular plugin architecture — 8 bundled plugins with 44 skills, plus community skills via verified-skill.com
 keywords: [plugins, skills, agents, commands, github, jira, integration, vskill]
 ---
 
 # Plugin Ecosystem
 
-SpecWeave uses a **modular plugin architecture**. The core framework ships with **8 bundled plugins** providing ~42 skills. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (99,680+ community skills).
+SpecWeave uses a **modular plugin architecture**. The core framework ships with **8 bundled plugins** providing 44 skills. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (99,680+ community skills).
 
 ![Plugin Architecture](/img/diagrams/plugin-architecture.svg)
 
@@ -23,8 +23,8 @@ These plugins ship with every SpecWeave installation.
 
 The foundation of SpecWeave, always loaded in every project.
 
-- **~26 Skills**: increment, pm, architect, tdd-cycle, do, done, grill, validate, team-lead, brainstorm, debug, and more
-- **Key Agents**: PM, Architect, Tech Lead, QA Lead, Security Engineer, Code Reviewer
+- **28 Skills**: increment, pm, architect, plan, do, done, auto, validate, grill, judge-llm, debug, brainstorm, team-lead, team-build, team-merge, code-reviewer, tdd-cycle, tdd-red, tdd-green, tdd-refactor, e2e, get, import, pr, npm, progress-sync, sync-docs, skill-gen
+- **3 Agents**: PM, Architect, Test-Aware Planner (plus sub-agents within skills like code-reviewer and team-lead)
 - **Commands**: Full increment lifecycle (`/sw:increment`, `/sw:do`, `/sw:done`, `/sw:auto`, `/sw:validate`)
 
 ```bash
@@ -44,7 +44,7 @@ The foundation of SpecWeave, always loaded in every project.
 
 Bidirectional sync between SpecWeave increments and GitHub Issues.
 
-- **4 Skills**: sync, create-issue, sync-epic, status
+- **4 Skills**: github-sync, github-issue-standard, pr-review, github-multi-project
 - Auto-creates issues on increment planning
 - Task-level progress tracking via checkboxes
 - Universal Hierarchy: Epic to Milestone, Increment to Issue
@@ -59,7 +59,7 @@ Bidirectional sync between SpecWeave increments and GitHub Issues.
 
 Enterprise JIRA integration with Epic/Story sync.
 
-- **3 Skills**: sync, sync-epic, status
+- **3 Skills**: jira-sync, jira-mapper, jira-resource-validator
 - Bidirectional Epic and Story sync
 - Status mapping (Planning to To Do, Active to In Progress)
 
@@ -69,7 +69,7 @@ Enterprise JIRA integration with Epic/Story sync.
 
 Enterprise Azure DevOps sync with Work Items.
 
-- **4 Skills**: sync, create-workitem, sync-epic, status
+- **4 Skills**: ado-sync, ado-mapper, ado-multi-project, ado-resource-validator
 - Epic to Azure DevOps Epic mapping
 - Multi-project organization strategies
 
@@ -102,11 +102,12 @@ AI-powered image and video generation.
 
 ---
 
-### specweave-docs (sw-docs) — Documentation Tools
+### specweave-docs (docs) — Documentation Tools
 
 Documentation generation and Docusaurus preview.
 
-- Commands for viewing, building, and validating docs
+- **7 Commands**: view, generate, build, validate, health, init, organize
+- No standalone skills (documentation capabilities are in the core plugin)
 
 ---
 
@@ -120,11 +121,11 @@ npx vskill install --repo anton-abyzov/vskill --plugin <name>
 
 | Plugin | Skills | Description |
 |--------|--------|-------------|
-| **mobile** | 1 (appstore) | Mobile app store submission assistance |
+| **mobile** | 1 (appstore) | Mobile development — React Native, Expo, Flutter, SwiftUI, app store |
 | **skills** | 1 (scout) | Skill discovery and evaluation |
-| **marketing** | 2 (slack-messaging, social-media-posting) | Slack and social media automation |
-| **productivity** | 1 (survey-passing) | Survey and form assistance |
-| **google-workspace** | 2 (gws, greet-anton) | Google Workspace CLI integration |
+| **marketing** | 2 (slack-messaging, social-media-posting) | Cross-platform social media and Slack automation |
+| **productivity** | 1 (survey-passing) | Expert network survey automation |
+| **google-workspace** | 2 (gws, greet-anton) | Google Workspace CLI — Gmail, Drive, Sheets, Docs, Calendar |
 
 ---
 

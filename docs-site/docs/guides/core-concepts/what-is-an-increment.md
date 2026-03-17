@@ -126,6 +126,19 @@ SpecWeave supports different work types:
 
 ## Increment Lifecycle
 
+:::tip Two ways to create an increment
+**Slash command:**
+```bash
+/sw:increment "user authentication with JWT"
+```
+
+**Natural language** — just describe what you want:
+```
+Let's add user authentication with JWT and refresh tokens
+```
+SpecWeave auto-detects your intent and creates the increment.
+:::
+
 ```mermaid
 stateDiagram-v2
     [*] --> Planning: /sw:increment "feature"

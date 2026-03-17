@@ -306,11 +306,11 @@ Each plugin entry specifies where to fetch it from:
 
 **vskill** (works across 49 AI agents — Claude Code, Cursor, Copilot, etc.):
 ```bash
-# Install a plugin from any marketplace repo
-npx vskill install --repo owner/repo --plugin mobile
+# Install a plugin from a marketplace repo
+npx vskill install --repo anton-abyzov/vskill --plugin mobile
 
-# Install a standalone skill
-npx vskill install owner/skill-repo
+# Install a standalone skill from GitHub
+npx vskill install anton-abyzov/vskill
 ```
 
 :::tip
