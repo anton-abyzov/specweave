@@ -91,7 +91,7 @@ A **plugin** bundles multiple related skills into a single installable package. 
 ### Install a specific plugin
 
 ```bash
-npx vskill install --repo owner/repo --plugin frontend
+npx vskill install --repo owner/repo --plugin mobile
 ```
 
 ### Install all plugins from a marketplace
@@ -137,8 +137,8 @@ npx vskill install --repo anton-abyzov/vskill --plugin mobile
 Plugin skills are prefixed with the plugin name to prevent conflicts:
 
 ```
-/frontend:nextjs       — Next.js skill from the frontend plugin
-/frontend:react        — React skill from the same plugin
+/mobile:appstore       — App store skill from the mobile plugin
+/marketing:slack-messaging — Slack skill from the marketing plugin
 /sw:increment          — SpecWeave increment skill from the sw plugin
 ```
 
@@ -316,9 +316,9 @@ Global skills install to your home directory (e.g., `~/.claude/skills/`) and are
 
 If you use SpecWeave, plugins load automatically based on what you're working on:
 
-- Say "React frontend" → `frontend` plugin activates
-- Say "deploy to Kubernetes" → `k8s` plugin activates
-- Say "write tests" → `testing` plugin activates
+- Say "mobile app" → `mobile` plugin activates
+- Say "post on social media" → `marketing` plugin activates
+- Say "Google Drive" → `google-workspace` plugin activates
 
 You don't need to manually install SpecWeave plugins — `specweave init` handles setup. However, you can manually control loading:
 
