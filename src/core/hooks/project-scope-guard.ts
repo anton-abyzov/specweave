@@ -181,8 +181,7 @@ You invoked \`${skillInvocation}\`, but this project hasn't been initialized wit
    \`\`\`json
    {
      "enabledPlugins": {
-       "sw@specweave": false,
-       "frontend@vskill": false
+       "sw@specweave": false
      }
    }
    \`\`\`
