@@ -87,14 +87,14 @@ describe('project-detector mobile detection rules', () => {
       expect(result.plugins).not.toContain('mobile');
     });
 
-    it('should detect expo from app.json with plugins []', () => {
+    it('should not detect expo from app.json alone (requires package.json dependency)', () => {
+      // Expo detection now only checks packageJsonHas(p, 'expo'), not fileExists(p, 'app.json')
       mockExistsSync.mockImplementation((p: string) =>
         p.endsWith('app.json')
       );
 
       const result = detectProjectType('/fake/project');
-      expect(result.types).toContain('expo');
-      expect(result.plugins).not.toContain('mobile');
+      expect(result.types).not.toContain('expo');
     });
   });
 

@@ -19,8 +19,9 @@ import * as path from 'path';
 import * as os from 'os';
 
 // Hoist mock functions so they can be referenced inside vi.mock
-const { mockDetectPluginsViaLLM, mockLogInfo, mockLogError } = vi.hoisted(() => ({
+const { mockDetectPluginsViaLLM, mockDetectVskillPlugins, mockLogInfo, mockLogError } = vi.hoisted(() => ({
   mockDetectPluginsViaLLM: vi.fn(),
+  mockDetectVskillPlugins: vi.fn().mockReturnValue([]),
   mockLogInfo: vi.fn(),
   mockLogError: vi.fn(),
 }));
@@ -28,6 +29,7 @@ const { mockDetectPluginsViaLLM, mockLogInfo, mockLogError } = vi.hoisted(() => 
 // Mock the LLM detector module
 vi.mock('../../../../src/core/lazy-loading/llm-plugin-detector.js', () => ({
   detectPluginsViaLLM: mockDetectPluginsViaLLM,
+  detectVskillPlugins: mockDetectVskillPlugins,
 }));
 
 // Mock the failure logger
@@ -125,6 +127,7 @@ describe('detect-intent command', () => {
     // Re-mock after resetModules since it clears the module registry
     vi.doMock('../../../../src/core/lazy-loading/llm-plugin-detector.js', () => ({
       detectPluginsViaLLM: mockDetectPluginsViaLLM,
+      detectVskillPlugins: mockDetectVskillPlugins,
     }));
     vi.doMock('../../../../src/core/lazy-loading/failure-logger.js', () => ({
       logInfo: mockLogInfo,

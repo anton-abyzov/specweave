@@ -4,12 +4,12 @@
  * CRITICAL: These tests prevent regression of the marketplace deregistration bug
  * and verify the plugin-installer.ts source code follows expected patterns.
  *
- * Current Implementation (v1.0.278):
- * - Uses inline copier (plugin-copier.ts) for first-party plugin installation
- * - No vskill dependency, no external CLI shell-out
- * - copyPlugin() copies files directly to ~/.claude/commands/<name>/
- * - Hash-based skip for unchanged plugins
- * - Lockfile (vskill.lock) updated with tier: 'BUNDLED'
+ * Current Implementation (v1.0.535):
+ * - Uses copyPluginSkillsToProject (plugin-copier.ts) for plugin installation
+ * - Copies skills directly into .claude/skills/ (project-local)
+ * - No vskill dependency, no external CLI shell-out, no Claude CLI dependency
+ * - No lazy mode — all plugins installed at init time
+ * - Hash-based skip for unchanged plugins via lockfile
  *
  * @see src/cli/helpers/init/plugin-installer.ts
  */
@@ -44,13 +44,6 @@ vi.mock('chalk', () => ({
   },
 }));
 
-// Mock Claude CLI detector
-vi.mock('../../../src/utils/claude-cli-detector.js', () => ({
-  detectClaudeCli: vi.fn(() => ({ available: true, version: '2.0.0' })),
-  getClaudeCliDiagnostic: vi.fn(() => ''),
-  getClaudeCliSuggestions: vi.fn(() => []),
-}));
-
 describe('Plugin Installer - Marketplace Protection', () => {
   describe('CRITICAL: No marketplace deregistration', () => {
     it('should NOT contain marketplace remove logic in plugin-installer.ts', async () => {
@@ -69,8 +62,8 @@ describe('Plugin Installer - Marketplace Protection', () => {
     });
   });
 
-  describe('Inline Copier Implementation (v1.0.278)', () => {
-    it('should use inline copier (plugin-copier) for plugin installation', async () => {
+  describe('Inline Copier Implementation (v1.0.535)', () => {
+    it('should use copyPluginSkillsToProject (plugin-copier) for plugin installation', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -80,7 +73,7 @@ describe('Plugin Installer - Marketplace Protection', () => {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
         // Verify inline copier is used
-        expect(content).toContain('copyPlugin');
+        expect(content).toContain('copyPluginSkillsToProject');
         expect(content).toContain('findSpecweaveRoot');
         expect(content).toContain('plugin-copier');
       }
@@ -129,7 +122,7 @@ describe('Plugin Installer - Marketplace Protection', () => {
   });
 
   describe('Error Handling', () => {
-    it('should handle Claude CLI not available gracefully', async () => {
+    it('should handle missing specweave root gracefully', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -138,9 +131,9 @@ describe('Plugin Installer - Marketplace Protection', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify detectClaudeCli is checked
-        expect(content).toContain('detectClaudeCli');
-        expect(content).toContain('claudeStatus.available');
+        // Verify specweaveRoot is checked
+        expect(content).toContain('specweaveRoot');
+        expect(content).toContain('findSpecweaveRoot');
       }
     });
   });
@@ -198,8 +191,8 @@ describe('refresh-marketplace.sh Safety', () => {
   });
 });
 
-describe('Stale Plugin Cleanup (v0.35.2)', () => {
-  it('should call cleanupStalePlugins after marketplace refresh', async () => {
+describe('Stale Plugin Cleanup', () => {
+  it('should NOT import cleanupStalePlugins in plugin-installer (moved to refresh-plugins)', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -208,36 +201,29 @@ describe('Stale Plugin Cleanup (v0.35.2)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify cleanupStalePlugins is imported
-      expect(content).toContain("import { cleanupStalePlugins }");
-
-      // Verify it's called
-      expect(content).toContain('cleanupStalePlugins(');
-
-      // Verify the cleanup result is handled
-      expect(content).toContain('cleanupResult.removedCount');
-      expect(content).toContain('cleanupResult.removedPlugins');
+      // cleanupStalePlugins was removed from plugin-installer in v1.0.535
+      // (it's now only in refresh-plugins.ts)
+      expect(content).not.toContain("import { cleanupStalePlugins }");
     }
   });
 
-  it('should display cleanup results to user', async () => {
+  it('should have cleanupStalePlugins in refresh-plugins command instead', async () => {
     const sourceFile = path.join(
       process.cwd(),
-      'src/cli/helpers/init/plugin-installer.ts'
+      'src/cli/commands/refresh-plugins.ts'
     );
 
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify user-friendly messages
-      expect(content).toContain('stale plugin');
-      expect(content).toContain('Removed');
+      // Verify cleanupStalePlugins is used in refresh-plugins
+      expect(content).toContain('cleanupStalePlugins');
     }
   });
 });
 
-describe('Inline Copier Installation (v1.0.278)', () => {
-  it('should use copyPlugin for plugin installation, NOT vskill CLI', async () => {
+describe('Inline Copier Installation (v1.0.535)', () => {
+  it('should use copyPluginSkillsToProject for plugin installation, NOT vskill CLI', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -247,7 +233,7 @@ describe('Inline Copier Installation (v1.0.278)', () => {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
       // Verify inline copier is used
-      expect(content).toContain('copyPlugin');
+      expect(content).toContain('copyPluginSkillsToProject');
       expect(content).toContain('plugin-copier');
 
       // Verify no vskill shell-out
@@ -257,7 +243,7 @@ describe('Inline Copier Installation (v1.0.278)', () => {
     }
   });
 
-  it('should document the inline copier approach in comments', async () => {
+  it('should document the approach in comments', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -266,9 +252,9 @@ describe('Inline Copier Installation (v1.0.278)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify the comment explains the copier approach
-      expect(content).toContain('inline copier');
+      // Verify the comment explains the approach
       expect(content).toContain('plugin');
+      expect(content).toContain('skill');
     }
   });
 });
@@ -284,10 +270,10 @@ describe('Regression Prevention', () => {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
       // Verify the implementation uses inline copier
-      expect(content).toContain('copyPlugin');
+      expect(content).toContain('copyPluginSkillsToProject');
 
-      // Verify it documents lazy loading mode
-      expect(content).toContain('lazy');
+      // Verify it documents that lazy/CLI-based installation was replaced
+      expect(content).toContain('replaced');
       expect(content).toContain('on-demand');
     }
   });
@@ -308,17 +294,17 @@ describe('Regression Prevention', () => {
       expect(content).not.toContain('marketplaceCachePath');
 
       // Verify inline copier handles installation directly (no cache management needed)
-      expect(content).toContain('copyPlugin');
+      expect(content).toContain('copyPluginSkillsToProject');
     }
   });
 });
 
 /**
- * CRITICAL TEST: Verify INIT installs core plugin (sw)
+ * CRITICAL TEST: Verify INIT installs all plugins
  */
-describe('Plugin Installer - Core Plugin Installation on INIT', () => {
-  describe('Lazy Mode (Default) - installs sw core plugin only', () => {
-    it('should install CORE plugin (sw) during lazy mode init', async () => {
+describe('Plugin Installer - All Plugin Installation on INIT', () => {
+  describe('All plugins installed at init time (v1.0.535)', () => {
+    it('should install ALL plugins from marketplace.json during init', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -327,25 +313,9 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify lazy mode installs core plugin via essentialPlugins
-        expect(content).toContain("name: 'sw'");
-        expect(content).toContain("marketplace: 'specweave'");
-        expect(content).toContain('Core SpecWeave framework');
-      }
-    });
-
-    it('should use detect-intent for on-demand plugin loading', async () => {
-      const sourceFile = path.join(
-        process.cwd(),
-        'src/cli/helpers/init/plugin-installer.ts'
-      );
-
-      if (await fs.pathExists(sourceFile)) {
-        const content = await fs.readFile(sourceFile, 'utf-8');
-
-        // Verify detect-intent hook is documented for on-demand loading
-        expect(content).toContain('detect-intent');
-        expect(content).toContain('on-demand');
+        // Verify all plugins from marketplace are iterated
+        expect(content).toContain('allPlugins');
+        expect(content).toContain('for (const plugin of allPlugins)');
       }
     });
 
@@ -364,7 +334,7 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       }
     });
 
-    it('should install core plugin via copyPlugin with result handling', async () => {
+    it('should install plugins via copyPluginSkillsToProject with result handling', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -373,8 +343,8 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify copyPlugin is used for core plugin installation
-        expect(content).toContain('copyPlugin');
+        // Verify copyPluginSkillsToProject is used for plugin installation
+        expect(content).toContain('copyPluginSkillsToProject');
 
         // Verify skipped case is handled gracefully
         expect(content).toContain('result.skipped');
@@ -382,8 +352,8 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
     });
   });
 
-  describe('installLazyMode function behavior', () => {
-    it('should define installLazyMode as an async function', async () => {
+  describe('installAllPlugins function behavior', () => {
+    it('should define installAllPlugins as an async function', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -393,12 +363,12 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
         // Verify function signature
-        expect(content).toContain('async function installLazyMode(');
+        expect(content).toContain('async function installAllPlugins(');
         expect(content).toContain('): Promise<PluginInstallResult>');
       }
     });
 
-    it('should return success when core plugin is installed', async () => {
+    it('should return success when plugins are installed', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -408,11 +378,11 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
         // Verify success condition
-        expect(content).toContain('success: installedCount > 0');
+        expect(content).toContain('success: successCount > 0');
       }
     });
 
-    it('should track installed count for core plugin', async () => {
+    it('should track success count for installed plugins', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -421,11 +391,11 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify installedCount is incremented for core plugin
-        const installedCountIncrements = (content.match(/installedCount\+\+/g) || []).length;
+        // Verify successCount is incremented for installed plugins
+        const successCountIncrements = (content.match(/successCount\+\+/g) || []).length;
 
-        // Should have at least 1 increment (for sw core plugin)
-        expect(installedCountIncrements).toBeGreaterThanOrEqual(1);
+        // Should have at least 1 increment
+        expect(successCountIncrements).toBeGreaterThanOrEqual(1);
       }
     });
   });

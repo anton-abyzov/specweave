@@ -190,7 +190,7 @@ SpecWeave solves multi-agent chaos with **file-based coordination**:
 
 ### Three Pillars
 
-**Programmable AI** — Skills extend what AI coding agents can do — structured markdown instructions that define how an agent behaves. Customize any skill via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates.
+**Extensible AI** — Skills extend what AI coding agents can do — structured markdown instructions that define how an agent behaves. Customize any skill via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates.
 
 **Autonomous Teams** — Run agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts. Work on auth, payments, and notifications simultaneously.
 
@@ -283,7 +283,7 @@ Claude: *automatically uses React Hook Form + Zod*
 | Obfuscated behavior | Transparent SKILL.md |
 | Can't customize | Extend via skill-memories |
 | Vendor lock-in | You control the logic |
-| Suggestions only | Programmable reasoning |
+| Suggestions only | Structured reasoning |
 
 **Enable auto-learning:**
 ```bash
@@ -291,7 +291,7 @@ Claude: *automatically uses React Hook Form + Zod*
 /sw:reflect-status   # See what Claude has learned
 ```
 
-**[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://verified-skill.com/docs/skills/extensible/skill-generation)**
+**[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-structured-expertise)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://verified-skill.com/docs/skills/extensible/skill-generation)**
 
 **AI-Powered Skill Generation:** SpecWeave automatically detects recurring patterns across your project's living docs using LLM analysis -- not hardcoded keyword matching. When patterns mature, it suggests generating project-specific Claude Code skills complete with evals and benchmarks. Use `--seed` mode to bootstrap instantly on existing projects. [Learn more](https://verified-skill.com/docs/skills/extensible/skill-generation).
 

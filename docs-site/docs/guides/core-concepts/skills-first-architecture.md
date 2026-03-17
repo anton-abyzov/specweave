@@ -304,7 +304,7 @@ The user says `/sw:increment "user auth"`. The skill spawns PM → Architect →
 |---------|------|
 | **Models** | Raw AI capability (Opus, Sonnet, Haiku) |
 | **Agents** | Internal workers that skills spawn for isolated tasks |
-| **Skills** | User-facing programs that orchestrate agents |
+| **Skills** | User-facing workflows that orchestrate agents |
 
 **The rule**: Build Skills, not Agents. Users invoke skills. Skills compose agents internally. Agents are implementation details that can be swapped, upgraded, and parallelized without changing the user experience.
 
@@ -314,7 +314,7 @@ SpecWeave has followed this pattern since day one — every `/sw:*` command is a
 
 ## Further Reading
 
-- [Skills Are Structured Expertise](/docs/overview/skills-as-programs) — Why skills are structured expertise, not prompts
+- [Skills Are Structured Expertise](/docs/overview/skills-as-structured-expertise) — Why skills are structured expertise, not prompts
 - [Skills, Plugins & Marketplaces](/docs/skills/fundamentals) — How skills, plugins, and marketplaces relate
 - [Claude Code Architecture](/docs/overview/claude-code-architecture) — Technical component reference
 - [Extensible Skills](/docs/skills/extensible/) — How to customize skills for your project

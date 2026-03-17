@@ -76,7 +76,7 @@ describe('External Tool Closure Sync', () => {
     // Create necessary directories
     mkdirSync(join(projectRoot, '.specweave/increments/0128-test-increment'), { recursive: true });
     mkdirSync(join(projectRoot, '.specweave/docs/internal/specs/specweave/FS-128'), { recursive: true });
-    mkdirSync(join(projectRoot, '.specweave/state'), { recursive: true });
+    mkdirSync(join(projectRoot, '.specweave/state/.locks'), { recursive: true });
 
     // Create test increment metadata with GitHub issues
     const metadata = {

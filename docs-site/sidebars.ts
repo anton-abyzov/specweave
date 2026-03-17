@@ -24,8 +24,8 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
-          id: 'overview/skills-as-programs',
-          label: 'Skills Are Programs in English',
+          id: 'overview/skills-as-structured-expertise',
+          label: 'Skills Are Structured Expertise',
         },
         {
           type: 'doc',

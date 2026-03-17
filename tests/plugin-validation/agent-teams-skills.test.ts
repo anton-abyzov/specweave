@@ -84,7 +84,7 @@ describe('T-001: team-lead SKILL.md', () => {
     const content = readFileSync(skillPath, 'utf-8');
     const requiredSkills = [
       'frontend:architect',
-      'testing:qa',
+      'sw:e2e',
       'sw:security',
       'sw:architect',
       'infra:devops',
@@ -201,9 +201,9 @@ describe('T-007: team-build SKILL.md', () => {
 
   it('should map testing preset to testing skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toContain('testing:unit');
-    expect(content).toContain('testing:e2e');
-    expect(content).toContain('testing:qa');
+    expect(content).toContain('sw:tdd-red');
+    expect(content).toContain('sw:e2e');
+    expect(content).toContain('sw:validate');
   });
 
   it('should map tdd preset to red/green/refactor skills', () => {

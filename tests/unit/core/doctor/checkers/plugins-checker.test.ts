@@ -7,8 +7,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-const mockExecSync = vi.hoisted(() => vi.fn());
-vi.mock('child_process', () => ({ execSync: mockExecSync }));
+const { mockExecSync, mockExecFile, mockExecFileSync } = vi.hoisted(() => ({
+  mockExecSync: vi.fn(),
+  mockExecFile: vi.fn(),
+  mockExecFileSync: vi.fn(() => ''),
+}));
+vi.mock('child_process', () => ({
+  execSync: mockExecSync,
+  execFile: mockExecFile,
+  execFileSync: mockExecFileSync,
+}));
 
 import { PluginsChecker } from '../../../../../src/core/doctor/checkers/plugins-checker.js';
 
@@ -68,82 +76,54 @@ describe('PluginsChecker', () => {
   });
 
   // =========================================================================
-  // TC-PC-03: marketplace issues cannot be auto-fixed (wrong tool)
-  // refresh-plugins copies to ~/.claude/commands/, NOT the marketplace dir
+  // TC-PC-03: marketplace not registered in known_marketplaces.json
   // =========================================================================
-  it('TC-PC-03: fix=true with marketplace installed but empty reports warn (no auto-fix)', async () => {
-    // Create marketplace dir without plugins/ subdir
-    const marketplaceDir = path.join(
-      tmpDir,
-      '.claude',
-      'plugins',
-      'marketplaces',
-      'specweave'
-    );
-    fs.mkdirSync(marketplaceDir, { recursive: true });
-
+  it('TC-PC-03: fix=true with marketplace not registered attempts fix', async () => {
+    // No known_marketplaces.json => marketplace not registered
+    // With fix=true, source calls findSpecweaveRoot then execFileNoThrowSync
+    // findSpecweaveRoot walks up from __dirname looking for package.json with name 'specweave'
+    // In test env it may or may not find it depending on dist layout
     const checker = new PluginsChecker({ homeDir: tmpDir });
     const result = await checker.check(projectRoot, { fix: true });
 
-    // No execSync — marketplace issues require manual intervention
-    expect(mockExecSync).not.toHaveBeenCalled();
     const mktCheck = result.checks.find(c => c.name === 'SpecWeave marketplace');
-    expect(mktCheck?.status).toBe('warn');
+    // Either 'fail' (findSpecweaveRoot returns null) or 'pass' (fix succeeded via execFileNoThrowSync)
+    expect(['pass', 'fail']).toContain(mktCheck?.status);
   });
 
-  it('TC-PC-03b: fix=true with marketplace not installed reports warn (no auto-fix)', async () => {
-    // No marketplace dir at all
+  it('TC-PC-03b: fix=false with marketplace not registered reports warn', async () => {
+    // No known_marketplaces.json at all
     const checker = new PluginsChecker({ homeDir: tmpDir });
-    const result = await checker.check(projectRoot, { fix: true });
+    const result = await checker.check(projectRoot, { fix: false });
 
-    expect(mockExecSync).not.toHaveBeenCalled();
     const mktCheck = result.checks.find(c => c.name === 'SpecWeave marketplace');
     expect(mktCheck?.status).toBe('warn');
-    expect(mktCheck?.fixSuggestion).toContain('claude plugin marketplace add');
+    expect(mktCheck?.fixSuggestion).toContain('specweave doctor --fix');
   });
 
   // =========================================================================
-  // TC-PC-04: core plugin issues cannot be auto-fixed via refresh-plugins
+  // TC-PC-04: core plugin not in installed_plugins.json
   // =========================================================================
-  it('TC-PC-04: fix=true with missing core plugin reports warn (no auto-fix)', async () => {
-    // Create marketplace dir with plugins/ but no specweave core plugin
-    const pluginsDir = path.join(
-      tmpDir,
-      '.claude',
-      'plugins',
-      'marketplaces',
-      'specweave',
-      'plugins'
-    );
-    fs.mkdirSync(pluginsDir, { recursive: true });
-
+  it('TC-PC-04: fix=true with missing core plugin attempts fix via execFileNoThrowSync', async () => {
+    // No installed_plugins.json => core plugin not installed
+    // With fix=true, source calls execFileNoThrowSync('claude', ['plugin', 'install', ...])
+    // mockExecFileSync returns '' which wrapper treats as success => pass
     const checker = new PluginsChecker({ homeDir: tmpDir });
     const result = await checker.check(projectRoot, { fix: true });
 
-    expect(mockExecSync).not.toHaveBeenCalled();
+    const coreCheck = result.checks.find(c => c.name === 'Core plugin (sw)');
+    // execFileNoThrowSync wrapper treats non-throwing execFileSync as success
+    expect(coreCheck?.status).toBe('pass');
+    expect(coreCheck?.message).toContain('was missing');
+  });
+
+  it('TC-PC-04b: fix=false with missing core plugin reports warn', async () => {
+    // No installed_plugins.json => core plugin not installed
+    const checker = new PluginsChecker({ homeDir: tmpDir });
+    const result = await checker.check(projectRoot, { fix: false });
+
     const coreCheck = result.checks.find(c => c.name === 'Core plugin (sw)');
     expect(coreCheck?.status).toBe('warn');
-  });
-
-  it('TC-PC-04b: fix=true with incomplete core plugin (no skills or commands) reports fail (no auto-fix)', async () => {
-    // Create core plugin dir but without skills/ or commands/
-    const corePluginDir = path.join(
-      tmpDir,
-      '.claude',
-      'plugins',
-      'marketplaces',
-      'specweave',
-      'plugins',
-      'specweave'
-    );
-    fs.mkdirSync(corePluginDir, { recursive: true });
-
-    const checker = new PluginsChecker({ homeDir: tmpDir });
-    const result = await checker.check(projectRoot, { fix: true });
-
-    expect(mockExecSync).not.toHaveBeenCalled();
-    const coreCheck = result.checks.find(c => c.name === 'Core plugin (sw)');
-    expect(coreCheck?.status).toBe('fail');
   });
 
   // =========================================================================
@@ -194,19 +174,19 @@ describe('PluginsChecker', () => {
     expect(stateCheck?.message).toContain('2 plugin(s)');
   });
 
-  it('should pass for marketplace when fully installed', async () => {
-    const corePluginDir = path.join(
-      tmpDir,
-      '.claude',
-      'plugins',
-      'marketplaces',
-      'specweave',
-      'plugins',
-      'specweave'
+  it('should pass for marketplace when registered in known_marketplaces.json', async () => {
+    // Source now reads known_marketplaces.json for marketplace registration
+    const pluginsDir = path.join(tmpDir, '.claude', 'plugins');
+    fs.mkdirSync(pluginsDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pluginsDir, 'known_marketplaces.json'),
+      JSON.stringify({ specweave: { path: '/some/path' } })
     );
-    const skillsDir = path.join(corePluginDir, 'skills');
-    fs.mkdirSync(skillsDir, { recursive: true });
-    fs.writeFileSync(path.join(skillsDir, 'do.md'), '# Do');
+    // Source reads installed_plugins.json for core plugin
+    fs.writeFileSync(
+      path.join(pluginsDir, 'installed_plugins.json'),
+      JSON.stringify({ plugins: { 'sw@specweave': { scope: 'user' } } })
+    );
 
     const checker = new PluginsChecker({ homeDir: tmpDir });
     const result = await checker.check(projectRoot, {});

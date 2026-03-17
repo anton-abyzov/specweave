@@ -181,6 +181,7 @@ vi.mock('../../../../src/utils/logger.js', () => ({
 vi.mock('@inquirer/prompts', () => ({
   input: mockInput,
   confirm: mockConfirm,
+  select: vi.fn().mockResolvedValue('existing'),
 }));
 
 vi.mock('chalk', () => {
@@ -202,6 +203,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
+  scanMisplacedRepos: vi.fn().mockReturnValue([]),
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
@@ -212,6 +214,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   createConfigFile: mockCreateConfigFile,
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
+  ensureSkillCreator: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({

@@ -130,13 +130,13 @@ describe('PreCompact Hook Registration', () => {
     expect(hooksJson.hooks).toHaveProperty('PreCompact');
   });
 
-  it('should use fail-fast-wrapper for PreCompact', () => {
+  it('should use run-hook.sh for PreCompact', () => {
     const preCompactHooks = hooksJson.hooks.PreCompact;
     expect(preCompactHooks).toBeDefined();
     expect(preCompactHooks.length).toBeGreaterThan(0);
     const command = preCompactHooks[0].hooks[0].command;
-    expect(command).toContain('fail-fast-wrapper.sh');
-    expect(command).toContain('pre-compact.sh');
+    expect(command).toContain('run-hook.sh');
+    expect(command).toContain('pre-compact');
   });
 });
 

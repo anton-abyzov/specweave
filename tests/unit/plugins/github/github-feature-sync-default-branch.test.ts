@@ -14,12 +14,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // ---------------------------------------------------------------------------
 
 const mockExecFileNoThrow = vi.hoisted(() => vi.fn());
-vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/vendor/utils/execFileNoThrow.js', () => ({
   execFileNoThrow: mockExecFileNoThrow,
 }));
 
 const mockGetGitHubAuthFromProject = vi.hoisted(() => vi.fn());
-vi.mock('../../../../src/utils/auth-helpers.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/vendor/utils/auth-helpers.js', () => ({
   getGitHubAuthFromProject: mockGetGitHubAuthFromProject,
 }));
 

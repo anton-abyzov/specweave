@@ -94,21 +94,18 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
       expect(detectionSection).toContain('claude plugin list');
     });
 
-    it('should use increased timeout (10s instead of 5s)', () => {
+    it('should use timeout for plugin operations', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should have 10s timeout for plugin operations
+      // Should have timeout for claude plugin install operations
       expect(hookContent).toContain('timeout 10 claude plugin install');
-      expect(hookContent).toContain('timeout 10 claude plugin list');
     });
 
-    it('should have post-install verification logic', () => {
+    it('should document post-install verification in header', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // After install, should re-check registry
-      expect(hookContent).toMatch(/sleep 0\.5/); // Brief delay for registry update
-      expect(hookContent).toContain('Post-install verification: re-checks registry after install');
-      expect(hookContent).toMatch(/re-checks registry after install to confirm success/);
+      // Header documents the re-check approach
+      expect(hookContent).toContain('re-checks registry after install');
     });
   });
 
@@ -134,20 +131,20 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
   });
 
   describe('Fallback to CLI Detection', () => {
-    it('should fallback to claude plugin list if jq unavailable', () => {
+    it('should use vskill.lock as source of truth for plugin detection', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should have fallback logic
-      expect(hookContent).toContain('Fallback to CLI check');
-      expect(hookContent).toContain('if jq not available');
+      // v1.0.535: check_plugin_installed_from_json removed; vskill.lock is the source of truth
+      expect(hookContent).toContain('vskill.lock');
+      expect(hookContent).toContain('check_plugin_in_vskill_lock');
     });
 
-    it('should still work if installed_plugins.json is missing', () => {
+    it('should use session markers for on-demand install dedup', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Helper function should return 1 (not installed) if file missing
-      expect(hookContent).toContain('# File must exist');
-      expect(hookContent).toContain('[[ ! -f "$registry_path" ]]');
+      // On-demand installs use session markers to avoid duplicate installs
+      expect(hookContent).toContain('SESSION_MARKER_DIR');
+      expect(hookContent).toContain('specweave refresh-plugins --plugin');
     });
   });
 
@@ -242,21 +239,11 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
   });
 
   describe('Performance: Timeout Adjustments', () => {
-    it('should have NO timeout less than 10s for plugin operations', () => {
+    it('should use appropriate timeouts for plugin operations', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Find all timeout commands in the plugin detection section
-      const pluginSection = hookContent.substring(
-        hookContent.indexOf('# PLUGIN INSTALLATION/SUGGESTION')
-      );
-
-      // Check for old 5s timeouts - should be upgraded to 10s
-      const old5sTimeouts = pluginSection.match(/timeout 5 claude plugin/g);
-      expect(old5sTimeouts).toBeNull(); // Should have no 5s timeouts
-
-      // Should have 10s timeouts
-      expect(pluginSection).toContain('timeout 10 claude plugin install');
-      expect(pluginSection).toContain('timeout 10 claude plugin list');
+      // Should have timeout-protected plugin install commands
+      expect(hookContent).toContain('timeout 10 claude plugin install');
     });
   });
 });

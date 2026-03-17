@@ -62,7 +62,9 @@ const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
 
 // Inline copier mocks (replaces vskill CLI)
 const mockCopyPlugin = vi.hoisted(() => vi.fn());
+const mockCopyPluginSkillsToProject = vi.hoisted(() => vi.fn());
 const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
+const mockGetProjectRoot = vi.hoisted(() => vi.fn());
 
 const mockOra = vi.hoisted(() => {
   const spinner = {
@@ -235,6 +237,7 @@ vi.mock('../../src/utils/vskill-resolver.js', () => ({
 vi.mock('../../src/utils/plugin-copier.js', () => ({
   copyPlugin: mockCopyPlugin,
   installPlugin: mockCopyPlugin,
+  copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
   findSpecweaveRoot: mockFindSpecweaveRoot,
   computePluginHash: vi.fn(() => 'mock-hash-abc123'),
   readLockfile: vi.fn(() => null),
@@ -242,6 +245,11 @@ vi.mock('../../src/utils/plugin-copier.js', () => ({
   ensureLockfile: vi.fn(() => ({ version: 1, agents: [], skills: {}, createdAt: '', updatedAt: '' })),
   migrateLegacyCommandsDir: vi.fn(() => false),
   fixHookPermissions: vi.fn(),
+}));
+
+// Mock find-project-root (for plugin-installer)
+vi.mock('../../src/utils/find-project-root.js', () => ({
+  getProjectRoot: mockGetProjectRoot,
 }));
 
 // ---------------------------------------------------------------------------
@@ -280,6 +288,8 @@ describe('vskill plugin pipeline integration', () => {
     mockHomedir.mockReturnValue('/home/testuser');
     mockFindSpecweaveRoot.mockReturnValue('/mock/specweave-root');
     mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
+    mockCopyPluginSkillsToProject.mockReturnValue({ success: true, skipped: false });
+    mockGetProjectRoot.mockReturnValue('/mock/project');
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -288,8 +298,8 @@ describe('vskill plugin pipeline integration', () => {
   // TC-026: refresh-plugins end-to-end with inline copier
   // =========================================================================
   describe('TC-026: refresh-plugins end-to-end with inline copier', () => {
-    it('should invoke copyPlugin for plugins listed in marketplace.json', async () => {
-      // Given: a configured project with marketplace.json
+    it('should invoke copyPluginSkillsToProject for plugins listed in marketplace.json', async () => {
+      // Given: a configured project with marketplace.json (no Claude CLI available)
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('marketplace.json')) return true;
         return false;
@@ -303,16 +313,16 @@ describe('vskill plugin pipeline integration', () => {
       // When: refreshPluginsCommand runs with --all
       await refreshPluginsCommand({ all: true });
 
-      // Then: copyPlugin is invoked for each plugin
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(3);
+      // Then: copyPluginSkillsToProject is invoked for each plugin (no CLI available)
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
 
-      const pluginNames = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
+      const pluginNames = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
       expect(pluginNames).toContain('sw');
       expect(pluginNames).toContain('frontend');
       expect(pluginNames).toContain('sw-github');
     });
 
-    it('should pass specweave root to copyPlugin for each plugin', async () => {
+    it('should pass specweave root to copyPluginSkillsToProject for each plugin', async () => {
       // Given: marketplace.json exists
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('marketplace.json')) return true;
@@ -327,13 +337,13 @@ describe('vskill plugin pipeline integration', () => {
       // When: refreshPluginsCommand runs
       await refreshPluginsCommand({ all: true });
 
-      // Then: each copyPlugin call passes the specweave root
-      for (const call of mockCopyPlugin.mock.calls) {
+      // Then: each copyPluginSkillsToProject call passes the specweave root
+      for (const call of mockCopyPluginSkillsToProject.mock.calls) {
         expect(call[1]).toBe('/mock/specweave-root');
       }
     });
 
-    it('should skip unchanged plugins when copyPlugin returns skipped', async () => {
+    it('should skip unchanged plugins when copyPluginSkillsToProject returns skipped', async () => {
       // Given: marketplace.json exists, all plugins are unchanged
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('marketplace.json')) return true;
@@ -345,14 +355,14 @@ describe('vskill plugin pipeline integration', () => {
         return '';
       });
 
-      // copyPlugin returns skipped for all plugins
-      mockCopyPlugin.mockReturnValue({ success: true, skipped: true });
+      // copyPluginSkillsToProject returns skipped for all plugins
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, skipped: true });
 
       // When: refreshPluginsCommand runs with --all
       await refreshPluginsCommand({ all: true });
 
-      // Then: copyPlugin was called but all returned skipped
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(3);
+      // Then: copyPluginSkillsToProject was called but all returned skipped
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
     });
 
     it('should NOT invoke claude plugin install (legacy path)', async () => {
@@ -381,7 +391,7 @@ describe('vskill plugin pipeline integration', () => {
       expect(claudePluginInstallCalls).toHaveLength(0);
     });
 
-    it('should install plugins via copyPlugin without separate CLI registration', async () => {
+    it('should install plugins via copyPluginSkillsToProject without separate CLI registration', async () => {
       // Given: marketplace.json exists
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('marketplace.json')) return true;
@@ -396,8 +406,8 @@ describe('vskill plugin pipeline integration', () => {
       // When: refreshPluginsCommand runs
       await refreshPluginsCommand({ all: true });
 
-      // Then: copyPlugin (now installPlugin) handles native install directly
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(3); // sw, frontend, sw-github
+      // Then: copyPluginSkillsToProject handles direct file copy
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3); // sw, frontend, sw-github
     });
   });
 
@@ -407,19 +417,19 @@ describe('vskill plugin pipeline integration', () => {
   describe('TC-027: Init with inline copier end-to-end', () => {
     /** Setup mocks for a working init-via-copier flow */
     function setupInitMocks(plugins: Array<{ name: string }> = [{ name: 'sw' }, { name: 'sw-github' }]) {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
       mockExistsSync.mockReturnValue(true);
       mockReadFileSync.mockReturnValue(JSON.stringify({ plugins }));
-      mockCleanupStalePlugins.mockResolvedValue({ success: true, removedCount: 0, removedPlugins: [] });
       mockGetPluginScope.mockReturnValue('user');
       mockGetScopeArgs.mockReturnValue([]);
       mockEnablePluginsInSettings.mockReturnValue(true);
       mockFindSpecweaveRoot.mockReturnValue('/mock/specweave-root');
       mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, skipped: false });
+      mockGetProjectRoot.mockReturnValue('/mock/project');
     }
 
-    it('should call copyPlugin (not claude plugin install) during installAllPlugins', async () => {
+    it('should call copyPluginSkillsToProject (not claude plugin install) during installAllPlugins', async () => {
       setupInitMocks();
 
       // When: installAllPlugins runs
@@ -429,8 +439,8 @@ describe('vskill plugin pipeline integration', () => {
       expect(result.success).toBe(true);
       expect(result.successCount).toBeGreaterThanOrEqual(1);
 
-      // Verify: copyPlugin was called, NOT claude plugin install
-      expect(mockCopyPlugin).toHaveBeenCalled();
+      // Verify: copyPluginSkillsToProject was called, NOT claude plugin install
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
 
       // No calls to execFileNoThrowSync with claude plugin install
       const claudePluginInstallCalls = mockExecFileNoThrowSync.mock.calls.filter(
@@ -461,28 +471,28 @@ describe('vskill plugin pipeline integration', () => {
       expect(marketplaceCalls).toHaveLength(0);
     });
 
-    it('should install only the core sw plugin in lazy mode (default)', async () => {
+    it('should install all plugins from marketplace (no lazy mode in v1.0.535+)', async () => {
       setupInitMocks([{ name: 'sw' }, { name: 'frontend' }, { name: 'sw-github' }]);
 
-      // When: installAllPlugins runs in lazy mode
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: true });
+      // When: installAllPlugins runs (always installs all plugins)
+      const result = await installAllPlugins({ dirname: '/test' });
 
-      // Then: only 1 plugin installed (sw)
+      // Then: all 3 plugins installed
       expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
+      expect(result.successCount).toBe(3);
 
-      // Verify: only sw plugin was installed via copyPlugin
-      const copiedPluginNames = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
+      // Verify: all plugins were installed via copyPluginSkillsToProject
+      const copiedPluginNames = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
       expect(copiedPluginNames).toContain('sw');
-      expect(copiedPluginNames).not.toContain('frontend');
-      expect(copiedPluginNames).not.toContain('sw-github');
+      expect(copiedPluginNames).toContain('frontend');
+      expect(copiedPluginNames).toContain('sw-github');
     });
 
-    it('should install all plugins when lazyMode is false', async () => {
+    it('should install all plugins listed in marketplace.json', async () => {
       setupInitMocks([{ name: 'sw' }, { name: 'frontend' }, { name: 'sw-github' }]);
 
-      // When: installAllPlugins runs in full mode
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
+      // When: installAllPlugins runs
+      const result = await installAllPlugins({ dirname: '/test' });
 
       // Then: all plugins installed
       expect(result.success).toBe(true);
@@ -750,15 +760,15 @@ describe('vskill plugin pipeline integration', () => {
       await refreshPluginsCommand({ all: true });
 
       // Setup for init
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
       mockExistsSync.mockReturnValue(true);
       mockReadFileSync.mockReturnValue(JSON.stringify({ plugins: [{ name: 'sw' }] }));
-      mockCleanupStalePlugins.mockResolvedValue({ success: true, removedCount: 0, removedPlugins: [] });
       mockGetPluginScope.mockReturnValue('user');
       mockGetScopeArgs.mockReturnValue([]);
       mockEnablePluginsInSettings.mockReturnValue(true);
       mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, skipped: false });
+      mockGetProjectRoot.mockReturnValue('/mock/project');
 
       await installAllPlugins({ dirname: '/test' });
 

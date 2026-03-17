@@ -29,12 +29,15 @@ const {
   mockResolvePermissions,
   mockDeriveFeatureId,
   mockAddComment,
+  mockCheckRateLimit,
+  mockIsProviderEnabled,
 } = vi.hoisted(() => {
   const _mockGetIssue = vi.fn();
   const _mockCloseIssue = vi.fn();
   const _mockReopenIssue = vi.fn();
   const _mockSearchIssuesByFeature = vi.fn();
   const _mockAddComment = vi.fn();
+  const _mockCheckRateLimit = vi.fn();
 
   // fromRepo always returns the SAME mock functions
   const _mockFromRepo = vi.fn(() => ({
@@ -43,6 +46,7 @@ const {
     reopenIssue: _mockReopenIssue,
     searchIssuesByFeature: _mockSearchIssuesByFeature,
     addComment: _mockAddComment,
+    checkRateLimit: _mockCheckRateLimit,
   }));
 
   return {
@@ -59,6 +63,8 @@ const {
     mockResolvePermissions: vi.fn(),
     mockDeriveFeatureId: vi.fn(),
     mockAddComment: _mockAddComment,
+    mockCheckRateLimit: _mockCheckRateLimit,
+    mockIsProviderEnabled: vi.fn(),
   };
 });
 
@@ -95,6 +101,11 @@ vi.mock('../../../src/sync/config.js', () => ({
 // Mock feature-id-derivation
 vi.mock('../../../src/utils/feature-id-derivation.js', () => ({
   deriveFeatureId: mockDeriveFeatureId,
+}));
+
+// Mock status-mapper (isProviderEnabled gates reconciliation)
+vi.mock('../../../src/sync/status-mapper.js', () => ({
+  isProviderEnabled: mockIsProviderEnabled,
 }));
 
 // Mock logger
@@ -171,6 +182,8 @@ describe('GitHubReconciler', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset static debounce timer so tests don't interfere with each other
+    (GitHubReconciler as any).lastReconcileTime = 0;
     logger = silentLogger();
 
     // Default: config file exists, increments dir exists, metadata.json exists
@@ -189,6 +202,12 @@ describe('GitHubReconciler', () => {
       canUpsert: true,
       canDelete: false,
     });
+
+    // Default: GitHub provider is enabled
+    mockIsProviderEnabled.mockReturnValue(true);
+
+    // Default: rate limit check passes with plenty of remaining calls
+    mockCheckRateLimit.mockResolvedValue({ remaining: 5000, limit: 5000 });
 
     // Default: detect repo succeeds
     mockDetectRepo.mockResolvedValue({ owner: 'test-owner', repo: 'test-repo' });
@@ -212,6 +231,7 @@ describe('GitHubReconciler', () => {
   describe('reconcile()', () => {
     it('should return early when GitHub sync is disabled', async () => {
       mockReadFile.mockResolvedValueOnce(disabledConfig());
+      mockIsProviderEnabled.mockReturnValue(false);
       mockResolvePermissions.mockReturnValue({
         canRead: true,
         canUpdateStatus: false,
@@ -328,6 +348,8 @@ describe('GitHubReconciler', () => {
         if (p.endsWith('config.json')) return false;
         return true;
       });
+      // No config = {} => githubEnabled=false
+      mockIsProviderEnabled.mockReturnValue(false);
 
       const reconciler = new GitHubReconciler({
         projectRoot: PROJECT_ROOT,
@@ -579,19 +601,9 @@ describe('GitHubReconciler', () => {
       expect(result.scanned).toBe(0);
     });
 
-    it('should scan _archive directory for completed increments', async () => {
-      const archivedMetadata = {
-        status: 'completed',
-        feature_id: 'FS-050',
-        externalLinks: {
-          github: {
-            issues: {
-              'US-001': { issueNumber: 700 },
-            },
-          },
-        },
-      };
-
+    it('should NOT scan _archive directory (only active increments are scanned)', async () => {
+      // Source code only scans the main increments directory.
+      // Archived/abandoned dirs are skipped because entry.name.startsWith('_').
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p !== 'string') return false;
         if (p.endsWith('config.json')) return true;
@@ -601,17 +613,10 @@ describe('GitHubReconciler', () => {
         return false;
       });
 
-      mockReadFile
-        .mockResolvedValueOnce(enabledConfig())
-        .mockResolvedValueOnce(JSON.stringify(archivedMetadata));
+      mockReadFile.mockResolvedValueOnce(enabledConfig());
 
-      // Main dir has no active increments; archive has one
-      mockReaddir
-        .mockResolvedValueOnce([dirent('_archive', true)])
-        .mockResolvedValueOnce([dirent('0050-archived-feature', true)]);
-
-      mockGetIssue.mockResolvedValue({ state: 'open' });
-      mockCloseIssue.mockResolvedValue(undefined);
+      // Main dir only has _archive — no active increments
+      mockReaddir.mockResolvedValue([dirent('_archive', true)]);
 
       const reconciler = new GitHubReconciler({
         projectRoot: PROJECT_ROOT,
@@ -620,9 +625,8 @@ describe('GitHubReconciler', () => {
 
       const result = await reconciler.reconcile();
 
-      expect(result.scanned).toBe(1);
-      expect(result.closed).toBe(1);
-      expect(mockCloseIssue).toHaveBeenCalledWith(700, expect.any(String));
+      // _archive is skipped by the entry.name.startsWith('_') filter
+      expect(result.scanned).toBe(0);
     });
 
     it('should NOT do GitHub API search fallback for archived increments', async () => {
@@ -868,7 +872,7 @@ describe('GitHubReconciler', () => {
 
     it('should search GitHub when no user story issues in metadata', async () => {
       const metadata = {
-        status: 'completed',
+        status: 'active',  // must be a searchable status
         feature_id: 'FS-042',
       };
 
@@ -881,7 +885,7 @@ describe('GitHubReconciler', () => {
         { number: 500, title: '[FS-042][US-001] Story 1' },
         { number: 501, title: '[FS-042][US-002] Story 2' },
       ]);
-      mockGetIssue.mockResolvedValue({ state: 'closed' });
+      mockGetIssue.mockResolvedValue({ state: 'open' });
 
       const reconciler = new GitHubReconciler({
         projectRoot: PROJECT_ROOT,
@@ -923,7 +927,7 @@ describe('GitHubReconciler', () => {
 
     it('should skip search results that do not match featureId pattern', async () => {
       const metadata = {
-        status: 'completed',
+        status: 'active',  // must be a searchable status
         feature_id: 'FS-042',
       };
 
@@ -937,7 +941,7 @@ describe('GitHubReconciler', () => {
         { number: 601, title: '[FS-999][US-001] Wrong feature' },
         { number: 602, title: 'No pattern at all' },
       ]);
-      mockGetIssue.mockResolvedValue({ state: 'closed' });
+      mockGetIssue.mockResolvedValue({ state: 'open' });
 
       const reconciler = new GitHubReconciler({
         projectRoot: PROJECT_ROOT,

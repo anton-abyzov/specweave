@@ -62,11 +62,11 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(content).toContain('specweaveRoot');
     });
 
-    it('should have proper documentation for inline copier installation (0232+)', async () => {
+    it('should have proper documentation for direct copy installation (v1.0.535)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Must document the inline copier approach
-      expect(content).toContain('inline copier');
+      // Must document the direct copy approach
+      expect(content).toContain('Copies skill files directly');
       expect(content).toContain('plugin');
       expect(content).toContain('installation');
     });
@@ -95,12 +95,12 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(content).toContain('skipped');
     });
 
-    it('should install core sw plugin via inline copier (0232+)', async () => {
+    it('should install all plugins via copyPluginSkillsToProject (v1.0.535)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // 0232+: Core plugin is 'sw', installed via copyPlugin
-      expect(content).toContain("name: 'sw'");
-      expect(content).toContain('copyPlugin');
+      // v1.0.535: All plugins installed via copyPluginSkillsToProject
+      expect(content).toContain('copyPluginSkillsToProject');
+      expect(content).toContain('allPlugins');
 
       // No plugins.length >= 25 guard (removed as over-engineering)
       expect(content).not.toMatch(/plugins\.length\s*>=\s*25/);

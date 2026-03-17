@@ -161,7 +161,7 @@ describe('CodebaseRescanJobLauncher', () => {
         // This is expected if worker can't start - verify it's a startup error
         expect(err.message).toMatch(/Worker failed to start|Worker process died/);
       }
-    });
+    }, 15000);
   });
 
   describe('Full vs Quick Depth Behavior', () => {

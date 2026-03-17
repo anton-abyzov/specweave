@@ -17,6 +17,7 @@ const {
   mockWriteFile,
   mockReadJson,
   mockRemove,
+  mockReaddir,
   mockExecSync,
   mockGetDirname,
   mockGetSystemPromptForLanguage,
@@ -29,6 +30,7 @@ const {
   mockWriteFile: vi.fn(),
   mockReadJson: vi.fn(),
   mockRemove: vi.fn(),
+  mockReaddir: vi.fn().mockResolvedValue([]),
   mockExecSync: vi.fn(),
   mockGetDirname: vi.fn().mockReturnValue('/fake/adapters'),
   mockGetSystemPromptForLanguage: vi.fn(),
@@ -43,6 +45,7 @@ vi.mock('../../../src/utils/fs-native.js', () => ({
   writeFile: mockWriteFile,
   readJson: mockReadJson,
   remove: mockRemove,
+  readdir: mockReaddir,
 }));
 
 vi.mock('child_process', () => ({
@@ -277,6 +280,8 @@ describe('CursorAdapter', () => {
   });
 
   // ─── compilePlugin() ──────────────────────────────────────
+  // compilePlugin writes individual skill files to .cursor/rules/
+  // via the base class writeSkillFiles() helper.
 
   describe('compilePlugin()', () => {
     const makePlugin = (overrides: Partial<Plugin> = {}): Plugin => ({
@@ -291,76 +296,36 @@ describe('CursorAdapter', () => {
     beforeEach(() => {
       mockEnsureDir.mockResolvedValue(undefined);
       mockWriteFile.mockResolvedValue(undefined);
-      // Default: English language, AGENTS.md exists
+      // Default: English language, no config.json
       mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return true;
         if (p.endsWith('config.json')) return false;
         return false;
       });
       mockReadJson.mockRejectedValue(new Error('not found'));
     });
 
-    it('should throw if AGENTS.md does not exist', async () => {
-      mockPathExists.mockResolvedValue(false);
-
-      await expect(adapter.compilePlugin(makePlugin())).rejects.toThrow('AGENTS.md not found');
-    });
-
-    it('should skip if plugin already compiled', async () => {
-      mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return true;
-        return false;
-      });
-      mockReadFile.mockResolvedValue('# AGENTS\n<!-- Plugin: specweave-test -->');
-
+    it('should ensure .cursor/rules directory exists', async () => {
       await adapter.compilePlugin(makePlugin());
 
-      // Should not write if already compiled
+      expect(mockEnsureDir).toHaveBeenCalledWith(
+        expect.stringContaining('.cursor/rules')
+      );
+    });
+
+    it('should not write files when plugin has no skills', async () => {
+      await adapter.compilePlugin(makePlugin({ skills: [] }));
+
       expect(mockWriteFile).not.toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('already compiled'));
     });
 
-    it('should append plugin section to AGENTS.md', async () => {
-      mockReadFile.mockResolvedValue('# Existing AGENTS.md content');
-
-      const plugin = makePlugin();
-      await adapter.compilePlugin(plugin);
-
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('AGENTS.md'),
-        expect.stringContaining('<!-- Plugin: specweave-test -->'),
-        'utf-8'
-      );
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.stringContaining('<!-- End Plugin: specweave-test -->'),
-        'utf-8'
-      );
-    });
-
-    it('should include plugin description in section', async () => {
-      mockReadFile.mockResolvedValue('# AGENTS');
-
-      const plugin = makePlugin();
-      await adapter.compilePlugin(plugin);
-
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.stringContaining('Test plugin'),
-        'utf-8'
-      );
-    });
-
-    it('should add skills to AGENTS.md with Skills header', async () => {
+    it('should write skill file to .cursor/rules/', async () => {
       mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return true;
+        if (p.endsWith('SKILL.md')) return true;
         if (p.endsWith('config.json')) return false;
         return false;
       });
-      // First call: AGENTS.md content; second call: SKILL.md content
       mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return '# AGENTS';
-        if (p.endsWith('SKILL.md')) return '---\ntitle: Test\n---\n# Skill Body';
+        if (p.endsWith('SKILL.md')) return '# Skill Body';
         return '';
       });
 
@@ -372,79 +337,72 @@ describe('CursorAdapter', () => {
 
       await adapter.compilePlugin(plugin);
 
-      const writeCall = mockWriteFile.mock.calls[0];
-      const content = writeCall[1] as string;
-      expect(content).toContain('## Skills');
-      expect(content).toContain('### test-skill');
-      // Frontmatter should be stripped
-      expect(content).toContain('# Skill Body');
-      expect(content).not.toContain('title: Test');
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        expect.stringContaining('specweave-test-test-skill.md'),
+        expect.stringContaining('# Skill Body'),
+        'utf-8'
+      );
     });
 
-    it('should add agents to AGENTS.md with Agents header', async () => {
+    it('should skip skills without SKILL.md', async () => {
       mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return true;
+        if (p.endsWith('SKILL.md')) return false;
+        if (p.endsWith('config.json')) return false;
+        return false;
+      });
+
+      const plugin = makePlugin({
+        skills: [
+          { name: 'missing-skill', path: '/plugins/test/skills/missing', description: 'No file' },
+        ],
+      });
+
+      await adapter.compilePlugin(plugin);
+
+      expect(mockWriteFile).not.toHaveBeenCalled();
+    });
+
+    it('should write multiple skill files', async () => {
+      mockPathExists.mockImplementation(async (p: string) => {
+        if (p.endsWith('SKILL.md')) return true;
         if (p.endsWith('config.json')) return false;
         return false;
       });
       mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return '# AGENTS';
-        if (p.endsWith('AGENT.md')) return '# Agent Instructions';
+        if (p.endsWith('SKILL.md')) return 'content';
         return '';
       });
 
       const plugin = makePlugin({
-        agents: [
-          { name: 'my-agent', path: '/plugins/test/agents/my-agent', systemPrompt: '', capabilities: [] },
+        skills: [
+          { name: 'a', path: '/p/a', description: '' },
+          { name: 'b', path: '/p/b', description: '' },
         ],
       });
 
       await adapter.compilePlugin(plugin);
 
-      const writeCall = mockWriteFile.mock.calls[0];
-      const content = writeCall[1] as string;
-      expect(content).toContain('## Agents');
-      expect(content).toContain('### my-agent');
-      expect(content).toContain('# Agent Instructions');
-    });
-
-    it('should add commands to AGENTS.md with Commands header', async () => {
-      mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return true;
-        if (p.endsWith('config.json')) return false;
-        if (p.endsWith('cmd.md')) return true;
-        return false;
-      });
-      mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return '# AGENTS';
-        return '---\ndesc: cmd\n---\n# Command Body';
-      });
-
-      const plugin = makePlugin({
-        commands: [
-          { name: 'sw.do', path: '/plugins/test/commands/cmd.md', description: 'Do', prompt: '' },
-        ],
-      });
-
-      await adapter.compilePlugin(plugin);
-
-      const writeCall = mockWriteFile.mock.calls[0];
-      const content = writeCall[1] as string;
-      expect(content).toContain('## Commands');
-      expect(content).toContain('### /sw.do');
-      // Frontmatter should be stripped
-      expect(content).toContain('# Command Body');
+      expect(mockWriteFile).toHaveBeenCalledTimes(2);
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        expect.stringContaining('specweave-test-a.md'),
+        expect.any(String),
+        'utf-8'
+      );
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        expect.stringContaining('specweave-test-b.md'),
+        expect.any(String),
+        'utf-8'
+      );
     });
 
     it('should inject system prompt for non-English language', async () => {
       mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return true;
+        if (p.endsWith('SKILL.md')) return true;
         if (p.endsWith('config.json')) return true;
         return false;
       });
       mockReadJson.mockResolvedValue({ language: 'es' });
       mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return '# AGENTS';
         if (p.endsWith('SKILL.md')) return 'Skill content';
         return '';
       });
@@ -463,178 +421,160 @@ describe('CursorAdapter', () => {
       expect(content).toContain('RESPOND IN SPANISH');
     });
 
-    it('should preserve existing AGENTS.md content', async () => {
-      mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return '# Existing Content\n\nSome existing text.';
-        return '';
-      });
-
+    it('should log installation messages', async () => {
       await adapter.compilePlugin(makePlugin());
 
-      const writeCall = mockWriteFile.mock.calls[0];
-      const content = writeCall[1] as string;
-      expect(content).toMatch(/^# Existing Content\n\nSome existing text\./);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Installing plugin skills for Cursor'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('installed for Cursor'));
     });
 
-    it('should log compilation summary', async () => {
-      mockReadFile.mockResolvedValue('# AGENTS');
+    it('should log skill count', async () => {
+      mockPathExists.mockImplementation(async (p: string) => {
+        if (p.endsWith('SKILL.md')) return true;
+        if (p.endsWith('config.json')) return false;
+        return false;
+      });
+      mockReadFile.mockResolvedValue('content');
 
       const plugin = makePlugin({
         skills: [
           { name: 'a', path: '/p/a', description: '' },
           { name: 'b', path: '/p/b', description: '' },
         ],
-        agents: [{ name: 'c', path: '/p/c', systemPrompt: '', capabilities: [] }],
-        commands: [],
-      });
-
-      // Skills/agents read their files
-      mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('AGENTS.md')) return '# AGENTS';
-        return 'content';
       });
 
       await adapter.compilePlugin(plugin);
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 skills added'));
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('1 agents added'));
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0 commands added'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 skill(s)'));
     });
   });
 
   // ─── unloadPlugin() ───────────────────────────────────────
+  // unloadPlugin removes skill files from .cursor/rules/
+  // via the base class removeSkillFiles() helper.
 
   describe('unloadPlugin()', () => {
-    it('should warn if AGENTS.md not found', async () => {
+    it('should skip removal when rules directory does not exist', async () => {
       mockPathExists.mockResolvedValue(false);
 
       await adapter.unloadPlugin('specweave-test');
 
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('AGENTS.md not found'));
+      // removeSkillFiles returns early if dir doesn't exist
+      // but unloadPlugin still logs
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Unloading plugin'));
     });
 
-    it('should warn if plugin not found in AGENTS.md', async () => {
+    it('should remove matching plugin files from .cursor/rules/', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue('# AGENTS\n\nNo plugins here.');
+      mockReaddir.mockResolvedValue([
+        'specweave-test-skill-a.md',
+        'specweave-test-skill-b.md',
+        'specweave-other-skill.md',
+      ]);
+      mockRemove.mockResolvedValue(undefined);
 
       await adapter.unloadPlugin('specweave-test');
 
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('not found in AGENTS.md'));
-    });
-
-    it('should warn if plugin section is malformed (no end marker)', async () => {
-      mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue('# AGENTS\n\n<!-- Plugin: specweave-test -->\nSome content without end marker');
-
-      await adapter.unloadPlugin('specweave-test');
-
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('malformed'));
-    });
-
-    it('should remove plugin section from AGENTS.md', async () => {
-      mockPathExists.mockResolvedValue(true);
-      const agentsContent = [
-        '# AGENTS',
-        '',
-        'Intro text.',
-        '',
-        '<!-- Plugin: specweave-test -->',
-        '',
-        '# Plugin: specweave-test',
-        '',
-        'Plugin content here.',
-        '',
-        '<!-- End Plugin: specweave-test -->',
-        '',
-        'Footer text.',
-      ].join('\n');
-      mockReadFile.mockResolvedValue(agentsContent);
-      mockWriteFile.mockResolvedValue(undefined);
-
-      await adapter.unloadPlugin('specweave-test');
-
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('AGENTS.md'),
-        expect.any(String),
-        'utf-8'
+      // Should remove only specweave-test-* files
+      expect(mockRemove).toHaveBeenCalledTimes(2);
+      expect(mockRemove).toHaveBeenCalledWith(
+        expect.stringContaining('specweave-test-skill-a.md')
       );
+      expect(mockRemove).toHaveBeenCalledWith(
+        expect.stringContaining('specweave-test-skill-b.md')
+      );
+    });
 
-      const writtenContent = mockWriteFile.mock.calls[0][1] as string;
-      expect(writtenContent).not.toContain('<!-- Plugin: specweave-test -->');
-      expect(writtenContent).not.toContain('Plugin content here.');
-      expect(writtenContent).toContain('# AGENTS');
-      expect(writtenContent).toContain('Intro text.');
-      expect(writtenContent).toContain('Footer text.');
+    it('should not remove files from other plugins', async () => {
+      mockPathExists.mockResolvedValue(true);
+      mockReaddir.mockResolvedValue([
+        'specweave-other-skill.md',
+        'unrelated.txt',
+      ]);
+      mockRemove.mockResolvedValue(undefined);
+
+      await adapter.unloadPlugin('specweave-test');
+
+      expect(mockRemove).not.toHaveBeenCalled();
     });
 
     it('should log success messages', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue(
-        '<!-- Plugin: specweave-x -->content<!-- End Plugin: specweave-x -->'
-      );
-      mockWriteFile.mockResolvedValue(undefined);
+      mockReaddir.mockResolvedValue([]);
 
       await adapter.unloadPlugin('specweave-x');
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Removed from AGENTS.md'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Removed from .cursor/rules/'));
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('specweave-x unloaded'));
     });
   });
 
   // ─── getInstalledPlugins() ─────────────────────────────────
+  // getInstalledPlugins scans .cursor/rules/ directory
+  // via the base class listInstalledPluginsInDir() helper.
 
   describe('getInstalledPlugins()', () => {
-    it('should return empty array when AGENTS.md does not exist', async () => {
+    it('should return empty array when rules directory does not exist', async () => {
       mockPathExists.mockResolvedValue(false);
 
       const result = await adapter.getInstalledPlugins();
       expect(result).toEqual([]);
     });
 
-    it('should return empty array when no plugins in AGENTS.md', async () => {
+    it('should return empty array when rules directory is empty', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue('# AGENTS\n\nNo plugins.');
+      mockReaddir.mockResolvedValue([]);
 
       const result = await adapter.getInstalledPlugins();
       expect(result).toEqual([]);
     });
 
-    it('should parse plugin markers from AGENTS.md', async () => {
+    it('should extract plugin names from dash-separated filenames', async () => {
+      // listInstalledPluginsInDir extracts text before first dash as plugin name
       mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue([
-        '# AGENTS',
-        '<!-- Plugin: specweave-core -->',
-        'Content',
-        '<!-- End Plugin: specweave-core -->',
-        '<!-- Plugin: specweave-github -->',
-        'Content',
-        '<!-- End Plugin: specweave-github -->',
-      ].join('\n'));
+      mockReaddir.mockResolvedValue([
+        'myplugin-skill.md',
+        'otherplugin-feature.md',
+      ]);
 
       const result = await adapter.getInstalledPlugins();
-      expect(result).toEqual(['specweave-core', 'specweave-github']);
+      expect(result).toEqual(expect.arrayContaining(['myplugin', 'otherplugin']));
+      expect(result).toHaveLength(2);
     });
 
-    it('should only match specweave-prefixed plugin names', async () => {
+    it('should skip non-md files', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue([
-        '<!-- Plugin: specweave-core -->',
-        '<!-- Plugin: other-plugin -->',
-        '<!-- Plugin: specweave-github -->',
-      ].join('\n'));
+      mockReaddir.mockResolvedValue([
+        'plugin-skill.md',
+        'plugin-other.txt',
+        'readme.md', // no dash, skipped
+      ]);
 
       const result = await adapter.getInstalledPlugins();
-      // Regex only matches specweave-[a-z0-9-]+
-      expect(result).toEqual(['specweave-core', 'specweave-github']);
-      expect(result).not.toContain('other-plugin');
+      expect(result).toEqual(['plugin']);
     });
 
-    it('should handle AGENTS.md with single plugin', async () => {
+    it('should skip files without a dash', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReadFile.mockResolvedValue('<!-- Plugin: specweave-testing -->');
+      mockReaddir.mockResolvedValue([
+        'nodash.md',
+        'plugin-skill.md',
+      ]);
 
       const result = await adapter.getInstalledPlugins();
-      expect(result).toEqual(['specweave-testing']);
+      expect(result).toEqual(['plugin']);
+    });
+
+    it('should deduplicate plugin names', async () => {
+      mockPathExists.mockResolvedValue(true);
+      mockReaddir.mockResolvedValue([
+        'myplugin-skill-a.md',
+        'myplugin-skill-b.md',
+        'myplugin-skill-c.md',
+      ]);
+
+      const result = await adapter.getInstalledPlugins();
+      expect(result).toEqual(['myplugin']);
     });
   });
 });
