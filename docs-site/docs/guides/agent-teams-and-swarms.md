@@ -55,9 +55,26 @@ Build an e-commerce checkout with Stripe payments, order history, and email noti
 
 ---
 
-## Operating Modes
+## Team-Lead Orchestration
 
-Team-lead isn't just for implementation. It adapts to your intent:
+The `/sw:team-lead` skill is the entry point for all multi-agent coordination. It auto-detects what you need and spawns the right team.
+
+:::tip Two ways to invoke
+**Slash command:**
+```bash
+/sw:team-lead "Build user auth with login, signup, and OAuth"
+```
+
+**Natural language** -- just describe a complex feature:
+```
+Build an e-commerce checkout with Stripe payments, order history, and email notifications
+```
+SpecWeave auto-detects when parallel agents are needed and spawns a coordinated team.
+:::
+
+### Operating Modes
+
+Team-lead adapts to your intent:
 
 | Mode | Trigger | What Happens |
 |------|---------|--------------|
@@ -71,8 +88,14 @@ Team-lead isn't just for implementation. It adapts to your intent:
 The orchestrator selects the mode based on your phrasing. You can also be explicit:
 
 ```bash
+# Slash command with mode
 /sw:team-lead "review the checkout module"    # → review mode
 /sw:team-lead "brainstorm onboarding UX"      # → brainstorm mode
+
+# Natural language equivalents
+# "Let's brainstorm approaches for onboarding UX"
+# "Use a team to build the checkout flow"
+# "Review my recent changes with multiple reviewers"
 ```
 
 ---
