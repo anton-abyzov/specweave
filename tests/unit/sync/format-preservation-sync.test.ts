@@ -91,7 +91,7 @@ const {
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: MockGitHubClientV2,
 }));
 
@@ -118,7 +118,7 @@ import {
   type TaskCompletionInfo,
   type ACCompletionInfo,
 } from '../../../src/sync/format-preservation-sync.js';
-import { GitHubClientV2 } from '../../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubClientV2 } from '../../../plugins/specweave/lib/integrations/github/github-client-v2.js';
 import { JiraClient } from '../../../src/integrations/jira/jira-client.js';
 import { AdoClient } from '../../../src/integrations/ado/ado-client.js';
 import type { LivingDocsUSFile } from '../../../src/types/living-docs-us-file.js';

@@ -11,9 +11,9 @@
  * 5. Race condition prevention (no duplicate comments)
  *
  * Related Files:
- * - plugins/specweave-github/lib/per-us-sync.ts (syncACCheckboxesToGitHub)
+ * - plugins/specweave/lib/integrations/github/per-us-sync.ts (syncACCheckboxesToGitHub)
  * - src/sync/sync-coordinator.ts (syncACCheckboxesToGitHub method)
- * - plugins/specweave-github/lib/github-feature-sync.ts (updateUserStoryIssue)
+ * - plugins/specweave/lib/integrations/github/github-feature-sync.ts (updateUserStoryIssue)
  *
  * @see https://github.com/anton-abyzov/specweave/issues/966
  */
@@ -132,7 +132,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       // Act: Import and call syncACCheckboxesToGitHub
       const { syncACCheckboxesToGitHub } = await import(
-        '../../../../plugins/specweave-github/lib/per-us-sync.js'
+        '../../../../plugins/specweave/lib/integrations/github/per-us-sync.js'
       );
 
       const token =
@@ -215,7 +215,7 @@ describe('GitHub AC Checkbox Sync', () => {
       const issueNumber = parseInt(issueMatch![1], 10);
 
       const { syncACCheckboxesToGitHub } = await import(
-        '../../../../plugins/specweave-github/lib/per-us-sync.js'
+        '../../../../plugins/specweave/lib/integrations/github/per-us-sync.js'
       );
 
       const token =
@@ -293,7 +293,7 @@ describe('GitHub AC Checkbox Sync', () => {
       const issueNumber = parseInt(issueMatch![1], 10);
 
       const { syncACCheckboxesToGitHub } = await import(
-        '../../../../plugins/specweave-github/lib/per-us-sync.js'
+        '../../../../plugins/specweave/lib/integrations/github/per-us-sync.js'
       );
 
       const token =

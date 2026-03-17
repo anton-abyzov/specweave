@@ -309,7 +309,7 @@ export class ExternalItemSyncService {
 
     if (options.externalTool === 'github') {
       try {
-        const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
+        const { GitHubClientV2 } = await import('../../plugins/specweave/lib/integrations/github/github-client-v2.js');
         const configPath = path.join(options.projectRoot, '.specweave/config.json');
         const configContent = await fs.readFile(configPath, 'utf-8');
         const config = JSON.parse(configContent);
@@ -458,7 +458,7 @@ export class ExternalItemSyncService {
 
     if (options.externalTool === 'github') {
       try {
-        const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
+        const { GitHubClientV2 } = await import('../../plugins/specweave/lib/integrations/github/github-client-v2.js');
         const configPath = path.join(options.projectRoot, '.specweave/config.json');
         const configContent = await fs.readFile(configPath, 'utf-8');
         const config = JSON.parse(configContent);

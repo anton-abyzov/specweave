@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AdoRateLimiter } from '../../../../plugins/specweave-ado/lib/ado-rate-limiter.js';
+import { AdoRateLimiter } from '../../../../plugins/specweave/lib/integrations/ado/ado-rate-limiter.js';
 
 describe('AdoRateLimiter — client integration', () => {
   it('1 token left → consumed → next consume returns false', () => {
@@ -51,7 +51,7 @@ describe('AdoRateLimiter — client integration', () => {
 
   it('AdoClient constructor accepts rateLimiter config', async () => {
     // Import dynamically to avoid https mock issues
-    const { AdoClient } = await import('../../../../plugins/specweave-ado/lib/ado-client.js');
+    const { AdoClient } = await import('../../../../plugins/specweave/lib/integrations/ado/ado-client.js');
 
     const limiter = new AdoRateLimiter({ capacity: 200 });
     const client = new AdoClient({
@@ -66,7 +66,7 @@ describe('AdoRateLimiter — client integration', () => {
   });
 
   it('exhausted limiter causes AdoClient.request to throw before HTTP call', async () => {
-    const { AdoClient } = await import('../../../../plugins/specweave-ado/lib/ado-client.js');
+    const { AdoClient } = await import('../../../../plugins/specweave/lib/integrations/ado/ado-client.js');
 
     const limiter = new AdoRateLimiter({ capacity: 0, windowMs: 60_000 });
     const client = new AdoClient({

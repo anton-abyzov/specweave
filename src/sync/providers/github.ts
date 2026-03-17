@@ -2,7 +2,7 @@
  * GitHub Provider Adapter
  *
  * Implements ProviderAdapter for GitHub Issues + REST API.
- * Wraps the existing GitHubClientV2 from specweave-github plugin.
+ * Wraps the existing GitHubClientV2 from specweave plugin (github integration).
  */
 
 import {

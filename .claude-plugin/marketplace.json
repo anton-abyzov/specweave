@@ -9,87 +9,10 @@
   "plugins": [
     {
       "name": "sw",
-      "description": "SpecWeave framework - increment lifecycle, living docs, PM-led planning",
+      "description": "SpecWeave unified plugin — increment lifecycle, living docs, PM-led planning, GitHub/JIRA/ADO sync, docs generation, release management, diagrams, AI media",
       "source": "./plugins/specweave",
       "category": "development",
       "version": "1.0.323",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-github",
-      "description": "GitHub integration - bidirectional sync, issue tracking, task management",
-      "source": "./plugins/specweave-github",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-jira",
-      "description": "JIRA integration - bidirectional sync with epics/stories",
-      "source": "./plugins/specweave-jira",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-ado",
-      "description": "Azure DevOps integration - bidirectional sync with work items",
-      "source": "./plugins/specweave-ado",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-release",
-      "description": "Release management - version alignment, RC workflows, multi-repo coordination, semantic versioning",
-      "source": "./plugins/specweave-release",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-diagrams",
-      "description": "Architecture diagram generation - Mermaid, C4 Model, sequence diagrams, ER diagrams, deployment diagrams",
-      "source": "./plugins/specweave-diagrams",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "docs",
-      "description": "SpecWeave documentation - living docs build, validation, health, organization",
-      "source": "./plugins/specweave-docs",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-media",
-      "description": "Media generation - AI images (Imagen 4), AI video (Veo 3.1), programmatic video (Remotion)",
-      "source": "./plugins/specweave-media",
-      "category": "development",
-      "version": "1.0.0",
       "author": {
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"

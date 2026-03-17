@@ -21,8 +21,8 @@
  */
 
 import { SyncInterceptor, InterceptorResult } from '../core/sync/sync-interceptor.js';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
-import { GitHubIssue } from '../../plugins/specweave-github/lib/types.js';
+import { GitHubClientV2 } from '../../plugins/specweave/lib/integrations/github/github-client-v2.js';
+import { GitHubIssue } from '../../plugins/specweave/lib/integrations/github/types.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
 
 /**

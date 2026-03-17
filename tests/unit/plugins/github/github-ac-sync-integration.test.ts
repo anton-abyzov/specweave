@@ -33,12 +33,12 @@ vi.mock('fs', () => ({
 }));
 
 const mockPushSyncUserStories = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-push-sync.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-push-sync.js', () => ({
   pushSyncUserStories: mockPushSyncUserStories,
 }));
 
-import { postACProgressComments } from '../../../../plugins/specweave-github/lib/github-ac-comment-poster.js';
-import { autoCloseCompletedUserStories } from '../../../../plugins/specweave-github/lib/github-us-auto-closer.js';
+import { postACProgressComments } from '../../../../plugins/specweave/lib/integrations/github/github-ac-comment-poster.js';
+import { autoCloseCompletedUserStories } from '../../../../plugins/specweave/lib/integrations/github/github-us-auto-closer.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

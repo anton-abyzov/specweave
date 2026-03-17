@@ -4,7 +4,7 @@
  * Tests the spec frontmatter updater that records GitHub issue links
  * in spec.md YAML frontmatter after push sync completes.
  *
- * Expected module: plugins/specweave-github/lib/github-spec-frontmatter-updater.ts (does NOT exist yet)
+ * Expected module: plugins/specweave/lib/integrations/github/github-spec-frontmatter-updater.ts (does NOT exist yet)
  *
  * The module should:
  * - Read spec.md, parse YAML frontmatter
@@ -32,11 +32,11 @@ vi.mock('fs/promises', () => ({
 // RED phase import — module does NOT exist yet
 import {
   updateSpecFrontmatter,
-} from '../../../../plugins/specweave-github/lib/github-spec-frontmatter-updater.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-spec-frontmatter-updater.js';
 
 import type {
   PushSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-push-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-push-sync.js';
 
 import type {
   GitHubSyncMetadata,

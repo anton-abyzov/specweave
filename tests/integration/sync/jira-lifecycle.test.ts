@@ -19,7 +19,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import axios, { AxiosInstance } from 'axios';
-import { JiraStatusSync } from '../../../plugins/specweave-jira/lib/jira-status-sync.js';
+import { JiraStatusSync } from '../../../plugins/specweave/lib/integrations/jira/jira-status-sync.js';
 
 const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN;
 const JIRA_EMAIL = process.env.JIRA_EMAIL;

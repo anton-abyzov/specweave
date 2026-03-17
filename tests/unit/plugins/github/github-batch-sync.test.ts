@@ -30,7 +30,7 @@ const { MockOrchestrator, mockSyncSpec } = vi.hoisted(() => {
   });
   return { MockOrchestrator, mockSyncSpec };
 });
-vi.mock('../../../../plugins/specweave-github/lib/github-sync-orchestrator.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-sync-orchestrator.js', () => ({
   GitHubSyncOrchestrator: MockOrchestrator,
 }));
 
@@ -38,7 +38,7 @@ import {
   batchSyncAllSpecs,
   type BatchSyncConfig,
   type BatchSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-batch-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-batch-sync.js';
 
 // ---------------------------------------------------------------------------
 // Shared test data

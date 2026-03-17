@@ -439,6 +439,6 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 
 - [Status Sync Guide](./status-sync-guide.md) - Configure sync with external tools
 - [Multi-Project Sync](./multi-project-sync.md) - Sync to multiple projects/repos
-- [GitHub Sync](../../../plugins/specweave-github/README.md) - GitHub-specific setup
-- [JIRA Sync](../../../plugins/specweave-jira/README.md) - JIRA-specific setup
-- [ADO Sync](../../../plugins/specweave-ado/README.md) - Azure DevOps-specific setup
+- [GitHub Sync](./github-integration.md) - GitHub-specific setup
+- [JIRA Sync](./spec-commit-sync.md) - JIRA sync via SpecWeave
+- [ADO Sync](./spec-commit-sync.md) - Azure DevOps sync via SpecWeave

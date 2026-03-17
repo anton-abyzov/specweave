@@ -49,20 +49,26 @@ YOUR ANALYSIS MUST INCLUDE:
   ### Red Lines
   Absolute dealbreakers — conditions under which an approach should be rejected outright.
 
+PROGRESS UPDATES (MANDATORY — prevents false stuck detection):
+  After completing each APPROACH step, send a brief heartbeat:
+  SendMessage({
+    to: "team-lead",
+    message: "STATUS: [Step N/4] [what you just finished]. Proceeding to [next step].",
+    summary: "Critic: step N/4 done"
+  })
+
 COMMUNICATION:
   When done, signal completion:
   SendMessage({
-    type: "message",
-    recipient: "team-lead",
-    content: "PERSPECTIVE_COMPLETE: Critic perspective ready. Top risk: [biggest risk identified]. Safest approach: [name]. Red lines: [count] identified.",
+    to: "team-lead",
+    message: "PERSPECTIVE_COMPLETE: Critic perspective ready. Top risk: [biggest risk identified]. Safest approach: [name]. Red lines: [count] identified.",
     summary: "Critic perspective complete"
   })
 
   If you discover something important during analysis:
   SendMessage({
-    type: "message",
-    recipient: "team-lead",
-    content: "INSIGHT: [important risk or assumption that affects the brainstorm]",
+    to: "team-lead",
+    message: "INSIGHT: [important risk or assumption that affects the brainstorm]",
     summary: "Critic found risk"
   })
 

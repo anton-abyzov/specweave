@@ -4,7 +4,7 @@
  * Tests the push-sync function that creates/updates GitHub issues
  * from SpecWeave user stories via the `gh` CLI.
  *
- * Expected module: plugins/specweave-github/lib/github-push-sync.ts (does NOT exist yet)
+ * Expected module: plugins/specweave/lib/integrations/github/github-push-sync.ts (does NOT exist yet)
  *
  * @see T-006: Push Sync implementation
  */
@@ -21,7 +21,7 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 }));
 
 const mockGenerateIssueBody = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-issue-body-generator.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-issue-body-generator.js', () => ({
   generateIssueBody: mockGenerateIssueBody,
 }));
 
@@ -30,7 +30,7 @@ import {
   type PushSyncOptions,
   type PushSyncResult,
   type UserStoryForSync,
-} from '../../../../plugins/specweave-github/lib/github-push-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-push-sync.js';
 import { SyncError } from '../../../../src/core/errors/sync-error.js';
 
 // ---------------------------------------------------------------------------

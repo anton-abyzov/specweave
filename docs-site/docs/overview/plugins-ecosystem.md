@@ -1,113 +1,52 @@
 ---
 sidebar_position: 2
 title: Plugin Ecosystem
-description: SpecWeave's modular plugin architecture — 8 bundled plugins with 44 skills, plus 100,000+ community skills via verified-skill.com
+description: SpecWeave's unified plugin architecture — 1 bundled plugin with 44 skills, plus 100,000+ community skills via verified-skill.com
 keywords: [plugins, skills, agents, commands, github, jira, integration, vskill]
 ---
 
 # Plugin Ecosystem
 
-SpecWeave uses a **modular plugin architecture**. The core framework ships with **8 bundled plugins** providing 44 skills. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
+SpecWeave uses a **unified plugin architecture**. The core framework ships with **1 bundled plugin** providing 44 skills covering the full development lifecycle including GitHub, JIRA, Azure DevOps sync, release management, diagrams, media generation, and documentation. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
 
 ![Plugin Architecture](/img/diagrams/plugin-architecture.svg)
 
 :::info Core Plugin vs Community Skills
-**Bundled plugins** install automatically with `specweave init`. **Community skills** are installed on-demand via `npx vskill install`. See [Installing Skills](../skills/installation.md) for details.
+The **bundled plugin** installs automatically with `specweave init`. **Community skills** are installed on-demand via `npx vskill install`. See [Installing Skills](../skills/installation.md) for details.
 :::
 
-## Bundled Plugins (8)
+## Bundled Plugin
 
-These plugins ship with every SpecWeave installation.
+The unified `specweave` plugin ships with every installation. All capabilities are organized into a single plugin for simpler installation, faster loading, and easier maintenance.
 
-### specweave (sw) — Core Framework
+### specweave (sw) — Unified Framework
 
-The foundation of SpecWeave, always loaded in every project.
+The complete SpecWeave platform: core lifecycle, integrations, release management, diagrams, media, and documentation tools.
 
-- **28 Skills**: increment, pm, architect, plan, do, done, auto, validate, grill, judge-llm, debug, brainstorm, team-lead, team-build, team-merge, code-reviewer, tdd-cycle, tdd-red, tdd-green, tdd-refactor, e2e, get, import, pr, npm, progress-sync, sync-docs, skill-gen
+- **44 Skills** organized by domain:
+  - **Core (28)**: increment, pm, architect, plan, do, done, auto, validate, grill, judge-llm, debug, brainstorm, team-lead, team-build, team-merge, code-reviewer, tdd-cycle, tdd-red, tdd-green, tdd-refactor, e2e, get, import, pr, npm, progress-sync, sync-docs, skill-gen
+  - **GitHub (4)**: github-sync, github-issue-standard, pr-review, github-multi-project
+  - **JIRA (3)**: jira-sync, jira-mapper, jira-resource-validator
+  - **Azure DevOps (4)**: ado-sync, ado-mapper, ado-multi-project, ado-resource-validator
+  - **Release (1)**: release-expert
+  - **Diagrams (1)**: diagrams
+  - **Media (3)**: image, video, remotion
 - **3 Agents**: PM, Architect, Test-Aware Planner (plus sub-agents within skills like code-reviewer and team-lead)
-- **Commands**: Full increment lifecycle (`/sw:increment`, `/sw:do`, `/sw:done`, `/sw:auto`, `/sw:validate`)
+- **74+ Commands**: Full increment lifecycle, GitHub/JIRA/ADO sync, release management, documentation tools
 
 ```bash
-# The PM agent creates a spec with user stories and acceptance criteria
+# Plan a feature
 /sw:increment "User authentication with OAuth"
 
-# Execute tasks from the spec
+# Execute tasks
 /sw:do
+
+# Sync to GitHub
+/sw:github-sync 0023 --time-range 1M
 
 # Close with quality gates
 /sw:done
 ```
-
----
-
-### specweave-github (sw-github) — GitHub Integration
-
-Bidirectional sync between SpecWeave increments and GitHub Issues.
-
-- **4 Skills**: github-sync, github-issue-standard, pr-review, github-multi-project
-- Auto-creates issues on increment planning
-- Task-level progress tracking via checkboxes
-- Universal Hierarchy: Epic to Milestone, Increment to Issue
-
-```bash
-/sw-github:sync 0023 --time-range 1M
-```
-
----
-
-### specweave-jira (sw-jira) — JIRA Integration
-
-Enterprise JIRA integration with Epic/Story sync.
-
-- **3 Skills**: jira-sync, jira-mapper, jira-resource-validator
-- Bidirectional Epic and Story sync
-- Status mapping (Planning to To Do, Active to In Progress)
-
----
-
-### specweave-ado (sw-ado) — Azure DevOps Integration
-
-Enterprise Azure DevOps sync with Work Items.
-
-- **4 Skills**: ado-sync, ado-mapper, ado-multi-project, ado-resource-validator
-- Epic to Azure DevOps Epic mapping
-- Multi-project organization strategies
-
----
-
-### specweave-release (sw-release) — Release Management
-
-Multi-repo releases with semantic versioning and RC workflows.
-
-- **1 Skill**: release-expert
-- Coordinates releases across monorepo and polyrepo setups
-
----
-
-### specweave-diagrams (sw-diagrams) — Diagram Generation
-
-Mermaid diagrams following C4 Model conventions.
-
-- **1 Skill**: diagrams
-- C4 Context, Container, Component, sequence, ER, and deployment diagrams
-
----
-
-### specweave-media (sw-media) — Media Generation
-
-AI-powered image and video generation.
-
-- **3 Skills**: image, video, remotion
-- Integrates with AI image/video generation APIs
-
----
-
-### specweave-docs (docs) — Documentation Tools
-
-Documentation generation and Docusaurus preview.
-
-- **7 Commands**: view, generate, build, validate, health, init, organize
-- No standalone skills (documentation capabilities are in the core plugin)
 
 ---
 

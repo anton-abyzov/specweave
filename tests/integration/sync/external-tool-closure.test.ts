@@ -22,7 +22,7 @@ import { tmpdir } from 'os';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'fs';
 
 // Mock all external clients
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: {
     fromRepo: vi.fn(() => ({
       createOrGetMilestone: vi.fn().mockResolvedValue({ number: 1, title: 'Test Milestone' }),
@@ -58,7 +58,7 @@ vi.mock('../../../src/integrations/ado/ado-pat-provider.js', () => ({
 
 // Import after mocking
 const { SyncCoordinator } = await import('../../../src/sync/sync-coordinator.js');
-const { GitHubClientV2 } = await import('../../../plugins/specweave-github/lib/github-client-v2.js');
+const { GitHubClientV2 } = await import('../../../plugins/specweave/lib/integrations/github/github-client-v2.js');
 const { JiraClient } = await import('../../../src/integrations/jira/jira-client.js');
 const { AdoClient } = await import('../../../src/integrations/ado/ado-client.js');
 
