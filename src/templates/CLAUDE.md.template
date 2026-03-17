@@ -25,11 +25,11 @@
 **Invoke**: `/skill-name` | auto-trigger by keywords | `Skill({ skill: "name" })`
 **Parallel work**: Append "use subagents" to requests
 
-**Key skills**: `sw:pm`, `sw:architect`, `sw:grill`, `sw:tdd-cycle`, `frontend:*`, `backend:*`, `testing:*`
+**Key skills**: `sw:pm`, `sw:architect`, `sw:grill`, `sw:tdd-cycle`
 
 **Skill chaining** — skills are NOT "one and done":
 1. **Planning**: `sw:pm` (specs) → `sw:architect` (design)
-2. **Implementation**: Invoke domain skill per tech (React → `frontend:architect`, .NET → `backend:dotnet`, Stripe → `payments:payment-core`, etc.)
+2. **Implementation**: Use `sw:architect` for all domains. Optional domain plugins available via `vskill install` (frontend, backend, testing, etc.)
 3. **Closure**: `sw:grill` runs automatically via `/sw:done`
 
 **Complexity gate** — before chaining domain skills:

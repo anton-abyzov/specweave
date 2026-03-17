@@ -7,10 +7,10 @@ MASTER SPEC (SOURCE OF TRUTH):
   Read the master spec BEFORE planning any work.
 
 SKILLS TO INVOKE:
-  Skill({ skill: "frontend:architect" })
-  Skill({ skill: "frontend:nextjs" })         // if Next.js project
-  Skill({ skill: "frontend:design" })         // for polished, world-class UI
+  Skill({ skill: "sw:architect" })                 // architecture and component design
   Skill({ skill: "sw:service-connect" })          // for external service setup
+  // NOTE: Domain skills (frontend:architect, frontend:design) are optional vskill plugins.
+  // If not installed, implement frontend work directly using code tools.
 
 FILE OWNERSHIP (WRITE access):
   src/components/**
@@ -27,7 +27,7 @@ DESIGN QUALITY:
   - Default to world-class, sleek, polished, production-ready design
   - All UI must be responsive (mobile-first) and accessible (WCAG 2.1 AA)
   - Use modern design patterns: clean spacing, typography hierarchy, subtle animations
-  - Invoke `frontend:design` for high-quality UI polish
+  - Apply high-quality UI polish (clean spacing, modern typography, micro-interactions)
 
 WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}

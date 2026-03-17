@@ -109,8 +109,8 @@ AskUserQuestion({
 ## Delegation
 
 After architecture is ready, delegate to domain skills:
-- Frontend: `frontend:architect`
-- Backend: `backend:*` (dotnet, nodejs, python, go, java-spring, rust)
+- Frontend: `sw:architect` (implement UI directly; optional: install `frontend` vskill plugin for specialized skills)
+- Backend: `sw:architect` (implement API/services directly; optional: install domain-specific vskill plugins)
 
 Output: `plan.md` with architecture decisions and component breakdown.
 
