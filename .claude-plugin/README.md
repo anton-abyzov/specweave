@@ -45,10 +45,7 @@ If automatic setup doesn't work (or folder not trusted):
 # 3. Install core plugin
 /plugin install specweave
 
-# 4. (Optional) Install other plugins as needed
-/plugin install sw-github@specweave
-
-# 5. Restart Claude Code
+# 4. Restart Claude Code
 ```
 
 ### Verify Installation
@@ -62,23 +59,21 @@ After installing plugins, type `/sw:` to see available commands:
 - `/sw:validate` - Validate increment
 - ... (19 total commands)
 
-Type `/github:` to see GitHub commands (if installed):
-- `/github:sync` - Sync with GitHub Issues
-- `/github:create-issue` - Create issue
-- `/github:close-issue` - Close issue
-- `/github:status` - GitHub status
+Type `/sw:github-` to see GitHub commands:
+- `/sw:github-sync` - Sync with GitHub Issues
+- `/sw:github-create` - Create issue
+- `/sw:github-close` - Close issue
+- `/sw:github-status` - GitHub status
 
 ## Marketplace Structure
 
 ```
 .claude-plugin/
-├── marketplace.json      # Plugin registry (18 SpecWeave plugins)
+├── marketplace.json      # Plugin registry (1 unified plugin)
 └── README.md             # This file
 
-plugins/                  # Individual plugin locations
-├── specweave/.claude-plugin/plugin.json       # Core plugin manifest
-├── specweave-github/.claude-plugin/plugin.json     # GitHub plugin manifest
-└── ... (17 plugins total, each with plugin.json)
+plugins/                  # Plugin location
+└── specweave/.claude-plugin/plugin.json       # Unified plugin manifest
 ```
 
 **Note**: The marketplace itself (`marketplace.json`) is a registry that points to plugins. Each individual plugin has its own `plugin.json` manifest in `plugins/*/.claude-plugin/`.
@@ -99,9 +94,9 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
   },
   "plugins": [
     {
-      "name": "specweave-github",
-      "description": "GitHub integration - full sync (all permissions)",
-      "source": "../plugins/specweave-github",
+      "name": "sw",
+      "description": "SpecWeave unified plugin — core framework with GitHub, JIRA, ADO sync, release, diagrams, media, and docs",
+      "source": "../plugins/specweave",
       "category": "productivity",
       "version": "1.0.0",
       "author": {
@@ -115,7 +110,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 
 **Key Schema Requirements**:
 - ✅ `$schema` - References Claude's official marketplace schema
-- ✅ `source` - Relative path to plugin directory (e.g., `"../plugins/specweave-github"`)
+- ✅ `source` - Relative path to plugin directory (e.g., `"../plugins/specweave"`)
 - ✅ `category` - Plugin category: `development`, `productivity`, `security`, or `learning`
 - ✅ `author.email` - Author email address (required by Claude's schema)
 - ❌ No separate `path` field (follows Claude's schema)
@@ -129,10 +124,10 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - No namespacing
 
 **With Plugin System** (new):
-- Commands: `/sw:increment`, `/sw:do`, `/sw-github:sync`
+- Commands: `/sw:increment`, `/sw:do`, `/sw:github-sync`
 - Plugin-namespaced via `.claude-plugin/`
 - Proper marketplace structure
-- Each plugin has its own namespace (e.g., `specweave`, `specweave-github`)
+- Single unified plugin namespace (`specweave`)
 
 ## Available Plugins
 
@@ -160,21 +155,19 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - `architect` - System Architect
 - `tech-lead` - Technical Lead
 
-### 2. GitHub Integration (`specweave-github`)
-**Location**: `./plugins/specweave-github`
+### GitHub Integration (built into `specweave`)
 
-**Commands** (invoked as `/sw-github:command`):
-- `create-issue` - Create GitHub issue
-- `sync` - Sync increments with issues
-- `close-issue` - Close GitHub issue
-- `status` - Show GitHub sync status
+**Commands** (invoked as `/sw:github-command`):
+- `github-create` - Create GitHub issue
+- `github-sync` - Sync increments with issues
+- `github-close` - Close GitHub issue
+- `github-status` - Show GitHub sync status
 
 **Skills**:
 - `github-sync` - Full sync (all permissions)
-- `github-issue-tracker` - Task-level tracking
-
-**Agents**:
-- `github-manager` - GitHub CLI specialist
+- `github-issue-standard` - Issue standard formatting
+- `pr-review` - Pull request review
+- `github-multi-project` - Multi-project sync
 
 ## Troubleshooting
 
@@ -271,7 +264,7 @@ cd plugins/
    ```bash
    /plugin
    ```
-   Should show interactive menu with 18 SpecWeave plugins
+   Should show interactive menu with SpecWeave plugin
 
 4. **Install specific plugin**:
    ```bash

@@ -27,17 +27,17 @@ vi.mock('axios', () => ({
   },
 }));
 
-vi.mock('../../../../plugins/specweave-jira/lib/jira-deployment-detector.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/jira/jira-deployment-detector.js', () => ({
   detectDeploymentType: vi.fn(async () => ({ type: 'cloud', baseUrl: 'https://test.atlassian.net/rest/api/3' })),
   getApiBaseUrl: vi.fn(() => 'https://test.atlassian.net/rest/api/3'),
 }));
 
-vi.mock('../../../../plugins/specweave-jira/lib/content-format-adapter.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/jira/content-format-adapter.js', () => ({
   toCommentBody: vi.fn((text: string) => ({ type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] })),
   toDescription: vi.fn((text: string) => ({ type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] })),
 }));
 
-const { JiraStatusSync } = await import('../../../../plugins/specweave-jira/lib/jira-status-sync.js');
+const { JiraStatusSync } = await import('../../../../plugins/specweave/lib/integrations/jira/jira-status-sync.js');
 
 describe('JIRA Circuit Breaker Integration', () => {
   let registry: CircuitBreakerRegistry;

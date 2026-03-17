@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { AdoStatusSync, ExternalStatus } from '../../../plugins/specweave-ado/lib/ado-status-sync.js';
+import { AdoStatusSync, ExternalStatus } from '../../../plugins/specweave/lib/integrations/ado/ado-status-sync.js';
 import axios from 'axios';
 
 // Mock axios

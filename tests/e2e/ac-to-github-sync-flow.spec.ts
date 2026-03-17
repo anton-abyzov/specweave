@@ -389,7 +389,7 @@ external:
 
       // Import sync function
       const { syncACCheckboxesToGitHub } = await import(
-        '../../plugins/specweave-github/lib/per-us-sync.js'
+        '../../plugins/specweave/lib/integrations/github/per-us-sync.js'
       );
 
       const token =

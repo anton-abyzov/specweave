@@ -15,7 +15,7 @@ import path from 'path';
 import os from 'os';
 
 // Mock GitHubClientV2 to avoid import issues with execFileNoThrow
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: {
     fromRepo: vi.fn(() => ({
       createOrGetMilestone: vi.fn(),

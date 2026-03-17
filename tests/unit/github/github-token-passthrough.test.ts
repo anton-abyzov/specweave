@@ -216,7 +216,7 @@ describe('File Implementation Verification', () => {
     const fs = await import('fs');
     const path = await import('path');
 
-    const pluginDir = path.join(process.cwd(), 'plugins/specweave-github/lib');
+    const pluginDir = path.join(process.cwd(), 'plugins/specweave/lib/integrations/github');
 
     const filesToCheck = [
       'github-client-v2.ts',

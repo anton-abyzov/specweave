@@ -147,20 +147,20 @@ describe('Handoff Context Generator', () => {
         expect(skillNames).toContain('/sw:done');
       });
 
-      it('should map frontend to frontend skills', () => {
-        // Given: Frontend plugin installed
+      it('should map sw plugin to architecture skills that cover frontend', () => {
+        // Given: Core sw plugin installed (frontend is now part of sw after consolidation)
         const options: HandoffContextOptions = {
-          plugins: ['frontend'],
+          plugins: ['sw'],
           projectPath: '/path/to/project',
         };
 
         // When: generateHandoffContext() is called
         const context = generateHandoffContext(options);
 
-        // Then: should include frontend expertise
+        // Then: should include workflow skills (sw:architect covers all domains including frontend)
         expect(
           context.availableSkills.some(
-            (s) => s.category === 'frontend' || s.name.includes('frontend')
+            (s) => s.category === 'workflow'
           )
         ).toBe(true);
       });

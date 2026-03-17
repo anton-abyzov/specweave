@@ -11,7 +11,7 @@ import path from 'path';
 import os from 'os';
 
 // Mock GitHubClientV2 to avoid import issues with execFileNoThrow
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: {
     fromRepo: vi.fn(() => ({
       createOrGetMilestone: vi.fn(),
@@ -154,7 +154,7 @@ feature_id: FS-049
       expect.stringContaining('Automatic external sync disabled (autoSyncOnCompletion=false)')
     );
     expect(mockLogger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Run /specweave-github:sync')
+      expect.stringContaining('Run /sw:github-sync')
     );
   });
 

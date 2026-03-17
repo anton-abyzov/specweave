@@ -190,7 +190,7 @@ Testing project-specific task generation and GitHub sync.
     expect(frontendUSContent).not.toContain('T-002');
 
     // Step 5: Sync to GitHub (dry-run mode for E2E test)
-    const syncOutput = execSync('specweave-github sync-spec specweave/FS-040 --dry-run', {
+    const syncOutput = execSync('specweave github-sync specweave/FS-040 --dry-run', {
       cwd: testProjectRoot,
       encoding: 'utf-8',
       env: getCleanEnv(),
@@ -203,7 +203,7 @@ Testing project-specific task generation and GitHub sync.
 
     // Step 6: Verify GitHub issue builder generates correct body
     const { UserStoryIssueBuilder } = await import(
-      path.join(testProjectRoot, 'node_modules', 'specweave', 'plugins', 'specweave-github', 'lib', 'user-story-issue-builder.js')
+      path.join(testProjectRoot, 'node_modules', 'specweave', 'plugins', 'specweave', 'lib', 'integrations', 'github', 'user-story-issue-builder.js')
     );
 
     const builder = new UserStoryIssueBuilder(
@@ -349,7 +349,7 @@ title: "Completion Sync Test"
 
     // Build GitHub issue
     const { UserStoryIssueBuilder } = await import(
-      path.join(testProjectRoot, 'node_modules', 'specweave', 'plugins', 'specweave-github', 'lib', 'user-story-issue-builder.js')
+      path.join(testProjectRoot, 'node_modules', 'specweave', 'plugins', 'specweave', 'lib', 'integrations', 'github', 'user-story-issue-builder.js')
     );
 
     const builder = new UserStoryIssueBuilder(

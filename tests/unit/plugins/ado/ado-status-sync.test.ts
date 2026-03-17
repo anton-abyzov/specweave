@@ -10,7 +10,7 @@ vi.mock('axios', () => ({
   default: { create: vi.fn(() => mockClient) },
 }));
 
-import { AdoStatusSync } from '../../../../plugins/specweave-ado/lib/ado-status-sync.js';
+import { AdoStatusSync } from '../../../../plugins/specweave/lib/integrations/ado/ado-status-sync.js';
 import { SyncError } from '../../../../src/core/errors/sync-error.js';
 import { SyncCircuitBreaker } from '../../../../src/core/increment/sync-circuit-breaker.js';
 

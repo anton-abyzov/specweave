@@ -10,7 +10,7 @@
  * 3. Status change (active → complete) → GitHub issue closed
  *
  * Related Files:
- * - plugins/specweave-github/lib/github-feature-sync.ts (createUserStoryIssue)
+ * - plugins/specweave/lib/integrations/github/github-feature-sync.ts (createUserStoryIssue)
  * - .specweave/increments/0034-github-ac-checkboxes-fix/reports/ULTRATHINK-AC-PROJECT-SPECIFIC-DESIGN.md
  */
 
@@ -112,10 +112,10 @@ completed: 2025-11-15
 
     // Execute: Sync to GitHub
     const { GitHubClientV2 } = await import(
-      '../../../../plugins/specweave-github/lib/github-client-v2.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-client-v2.js'
     );
     const { GitHubFeatureSync } = await import(
-      '../../../../plugins/specweave-github/lib/github-feature-sync.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-feature-sync.js'
     );
 
     const repo = await GitHubClientV2.detectRepo(process.cwd());
@@ -190,10 +190,10 @@ created: 2025-11-15
 
     // Execute: Sync to GitHub
     const { GitHubClientV2 } = await import(
-      '../../../../plugins/specweave-github/lib/github-client-v2.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-client-v2.js'
     );
     const { GitHubFeatureSync } = await import(
-      '../../../../plugins/specweave-github/lib/github-feature-sync.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-feature-sync.js'
     );
 
     const repo = await GitHubClientV2.detectRepo(process.cwd());
@@ -259,10 +259,10 @@ created: 2025-11-15
 
     // Execute: First sync (creates OPEN issue)
     const { GitHubClientV2 } = await import(
-      '../../../../plugins/specweave-github/lib/github-client-v2.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-client-v2.js'
     );
     const { GitHubFeatureSync } = await import(
-      '../../../../plugins/specweave-github/lib/github-feature-sync.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-feature-sync.js'
     );
 
     const repo = await GitHubClientV2.detectRepo(process.cwd());

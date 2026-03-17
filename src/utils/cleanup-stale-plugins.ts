@@ -23,6 +23,13 @@ import { execFileNoThrowSync } from './execFileNoThrow.js';
 const REMOVED_PLUGINS = new Set([
   'sw-tooling',    // Removed 2025-12-11 (functionality moved to core /sw:skill)
   'sw-plugin-dev', // Removed 2026-02-02 (functionality moved to core /sw:skill)
+  'sw-github',     // Removed 2026-03-17 (consolidated into sw)
+  'sw-jira',       // Removed 2026-03-17 (consolidated into sw)
+  'sw-ado',        // Removed 2026-03-17 (consolidated into sw)
+  'sw-release',    // Removed 2026-03-17 (consolidated into sw)
+  'sw-diagrams',   // Removed 2026-03-17 (consolidated into sw)
+  'docs',          // Removed 2026-03-17 (consolidated into sw)
+  'sw-media',      // Removed 2026-03-17 (consolidated into sw)
 ]);
 
 /**

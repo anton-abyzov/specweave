@@ -19,7 +19,7 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 }));
 
 const mockGenerateIssueBody = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-issue-body-generator.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-issue-body-generator.js', () => ({
   generateIssueBody: mockGenerateIssueBody,
 }));
 
@@ -28,7 +28,7 @@ import {
   type CrossRepoSyncOptions,
   type CrossRepoSyncResult,
   type CrossRepoUserStory,
-} from '../../../../plugins/specweave-github/lib/github-cross-repo-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-cross-repo-sync.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -651,7 +651,7 @@ export class SmartDocOrganizer {
 
     lines.push('## Next Steps');
     lines.push('');
-    lines.push('Run `/specweave-docs:view` to view the organized documentation.');
+    lines.push('Run `/sw:docs-view` to view the organized documentation.');
     lines.push('');
 
     return lines.join('\n');

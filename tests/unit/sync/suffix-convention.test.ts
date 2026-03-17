@@ -32,9 +32,9 @@ const PLUGIN_ROOT = join(__dirname, '..', '..', '..', 'plugins');
 
 describe('suffix convention enforcement', () => {
   const pluginDirs = [
-    join(PLUGIN_ROOT, 'specweave-github', 'lib'),
-    join(PLUGIN_ROOT, 'specweave-jira', 'lib'),
-    join(PLUGIN_ROOT, 'specweave-ado', 'lib'),
+    join(PLUGIN_ROOT, 'specweave', 'lib', 'integrations', 'github'),
+    join(PLUGIN_ROOT, 'specweave', 'lib', 'integrations', 'jira'),
+    join(PLUGIN_ROOT, 'specweave', 'lib', 'integrations', 'ado'),
   ];
 
   it('zero inline suffix concatenation patterns in plugin libs', () => {

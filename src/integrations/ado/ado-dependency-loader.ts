@@ -293,7 +293,7 @@ export class AdoDependencyLoader {
       // Check for cancelation (both new handler and legacy signal)
       if (cancelHandler.shouldCancel() || signal?.aborted) {
         this.logger.warn('\n⚠️  Preload canceled by user');
-        this.logger.log(`\n💡 Resume with: /specweave-ado:preload-dependencies --resume`);
+        this.logger.log(`\n💡 Resume with: /sw:ado-preload-dependencies --resume`);
         cancelHandler.unregister();
         throw new Error('Preload canceled');
       }

@@ -66,11 +66,11 @@ describe('cleanupStalePlugins', () => {
 
   it('should succeed when no stale plugins found', async () => {
     const marketplacePath = path.join(tmpDir, 'marketplace.json');
-    writeMarketplace(marketplacePath, [{ name: 'sw' }, { name: 'sw-github' }]);
+    writeMarketplace(marketplacePath, [{ name: 'sw' }, { name: 'frontend' }]);
     writeSettings({
       enabledPlugins: {
         'sw@specweave': true,
-        'sw-github@specweave': true,
+        'frontend@specweave': true,
       },
     });
 

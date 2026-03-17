@@ -52,7 +52,7 @@ vi.mock('yaml', () => ({
   default: { parse: vi.fn(), stringify: vi.fn() },
 }));
 
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: {
     detectRepo: vi.fn(),
     fromRepo: mockFromRepo,

@@ -137,7 +137,7 @@ vi.mock('fs', () => {
 });
 
 // Mock GitHub client (dynamic import from source resolves to plugins/ at project root)
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: {
     fromRepo: () => mockGitHubClientV2,
   },

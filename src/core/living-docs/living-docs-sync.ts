@@ -1683,7 +1683,7 @@ export class LivingDocsSync {
             }
           }
           // Method 4: Legacy plugins.settings (backward compatibility)
-          if (!tools.includes('github') && config.plugins?.settings?.['specweave-github']?.defaultProfile) {
+          if (!tools.includes('github') && (config.plugins?.settings?.['sw']?.defaultProfile || config.plugins?.settings?.['specweave-github']?.defaultProfile)) {
             this.logger.log(`   ✅ GitHub sync enabled (legacy plugins.settings)`);
             tools.push('github');
           }
@@ -1760,8 +1760,8 @@ export class LivingDocsSync {
       this.logger.log(`   🔄 Syncing to GitHub...`);
 
       // Dynamic import to avoid circular dependencies
-      const { GitHubClientV2 } = await import('../../../plugins/specweave-github/lib/github-client-v2.js');
-      const { GitHubFeatureSync } = await import('../../../plugins/specweave-github/lib/github-feature-sync.js');
+      const { GitHubClientV2 } = await import('../../../plugins/specweave/lib/integrations/github/github-client-v2.js');
+      const { GitHubFeatureSync } = await import('../../../plugins/specweave/lib/integrations/github/github-feature-sync.js');
 
       // CRITICAL FIX (2025-11-24): Load GitHub config from config.json FIRST, then environment
       // Bug: Was only reading from env vars, ignoring config.json completely
@@ -1874,7 +1874,7 @@ export class LivingDocsSync {
       this.logger.log(`   🔄 Syncing to JIRA...`);
 
       // Dynamic import to avoid circular dependencies
-      const { JiraSpecSync } = await import('../../../plugins/specweave-jira/lib/jira-spec-sync.js');
+      const { JiraSpecSync } = await import('../../../plugins/specweave/lib/integrations/jira/jira-spec-sync.js');
 
       // Load JIRA config from config.json FIRST, then environment
       const configPath = path.join(this.projectRoot, '.specweave/config.json');
@@ -1996,7 +1996,7 @@ export class LivingDocsSync {
       this.logger.log(`   🔄 Syncing to Azure DevOps...`);
 
       // Dynamic import to avoid circular dependencies
-      const { AdoSpecSync } = await import('../../../plugins/specweave-ado/lib/ado-spec-sync.js');
+      const { AdoSpecSync } = await import('../../../plugins/specweave/lib/integrations/ado/ado-spec-sync.js');
 
       // Load ADO config from config.json FIRST, then environment
       const configPath = path.join(this.projectRoot, '.specweave/config.json');

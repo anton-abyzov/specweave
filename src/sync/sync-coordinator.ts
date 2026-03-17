@@ -10,7 +10,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { LivingDocsUSFile, getOrigin } from '../types/living-docs-us-file.js';
 import { FormatPreservationSyncService, CompletionCommentData } from './format-preservation-sync.js';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubClientV2 } from '../../plugins/specweave/lib/integrations/github/github-client-v2.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { FrontmatterUpdater } from './frontmatter-updater.js';
 import { autoDetectProjectIdSync } from '../utils/project-detection.js';
@@ -453,7 +453,7 @@ export class SyncCoordinator {
       if (!autoSync) {
         this.logger.log('⚠️  Automatic external sync disabled (autoSyncOnCompletion=false)');
         this.logger.log('   GitHub issues will NOT be closed automatically');
-        this.logger.log('   Run /specweave-github:sync to close issues manually');
+        this.logger.log('   Run /sw:github-sync to close issues manually');
         result.syncMode = 'manual-only';
         result.success = true;
         return result;
@@ -597,7 +597,7 @@ export class SyncCoordinator {
         if (!autoSync) {
           this.logger.log('⚠️  Automatic external sync disabled (autoSyncOnCompletion=false)');
           this.logger.log('   Living docs will be updated, but external tools require manual sync');
-          this.logger.log('   Run /specweave-github:sync or /specweave-jira:sync to sync manually');
+          this.logger.log('   Run /sw:github-sync or /sw:jira-sync to sync manually');
           result.syncMode = 'manual-only';
           // Continue to sync living docs only (skip GitHub sync)
         } else {
@@ -807,7 +807,7 @@ export class SyncCoordinator {
       if (!this.adoProfile || !this.adoProfile.organization || !this.adoProfile.project) {
         this.logger.log('  ⚠️  No ADO profile resolved or incomplete configuration');
         this.logger.log('  💡 Set external_sync.ado.profile in increment metadata.json');
-        this.logger.log('  💡 Or run /specweave-ado:sync to select a profile');
+        this.logger.log('  💡 Or run /sw:ado-sync to select a profile');
         return;
       }
 

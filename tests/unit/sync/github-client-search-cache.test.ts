@@ -12,7 +12,7 @@ vi.mock('../../../plugins/specweave/lib/vendor/utils/execFileNoThrow.js', () => 
 }));
 
 // Import after mocks
-import { GitHubClientV2 } from '../../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubClientV2 } from '../../../plugins/specweave/lib/integrations/github/github-client-v2.js';
 
 function makeClient() {
   return GitHubClientV2.fromRepo('test-owner', 'test-repo');

@@ -18,7 +18,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { ExternalChange } from './external-change-puller.js';
-import { ConflictResolver, ConflictResolution } from '../../plugins/specweave-ado/lib/conflict-resolver.js';
+import { ConflictResolver, ConflictResolution } from '../../plugins/specweave/lib/integrations/ado/conflict-resolver.js';
 
 /**
  * Options for applying a single change

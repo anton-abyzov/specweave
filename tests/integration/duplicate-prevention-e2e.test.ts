@@ -3,7 +3,7 @@
  *
  * Tests ALL THREE layers of duplicate prevention working together:
  * 1. Import DuplicateDetector (src/importers/duplicate-detector.ts)
- * 2. GitHub DuplicateDetector (plugins/specweave-github/lib/duplicate-detector.ts)
+ * 2. GitHub DuplicateDetector (plugins/specweave/lib/integrations/github/duplicate-detector.ts)
  * 3. ID Generator (src/id-generators/us-id-generator.ts)
  *
  * This validates that the system prevents duplicates across:

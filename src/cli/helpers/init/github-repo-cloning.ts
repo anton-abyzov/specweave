@@ -376,7 +376,7 @@ export async function triggerGitHubRepoCloning(
 ): Promise<GitHubCloningResult> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
-    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /specweave-github:clone-repos)\n'));
+    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /sw:github-clone-repos)\n'));
     return { clonedRepos: [] };
   }
 

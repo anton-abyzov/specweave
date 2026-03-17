@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js';
+import { UserStoryIssueBuilder } from '../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js';
 import { writeFileSync, mkdirSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -326,14 +326,14 @@ created: 2025-11-22`;
  * 2. Module resolution issues prevent direct import in tests
  * 3. The logic is critical and must be tested
  *
- * @see plugins/specweave-github/lib/github-client-v2.ts
+ * @see plugins/specweave/lib/integrations/github/github-client-v2.ts
  */
 describe('GitHubClientV2 Title Validation (Issue #749 Fix)', () => {
   /**
    * Replicates the validation logic from GitHubClientV2.validateIssueTitle()
    * This must be kept in sync with the actual implementation!
    *
-   * @see plugins/specweave-github/lib/github-client-v2.ts lines 208-243
+   * @see plugins/specweave/lib/integrations/github/github-client-v2.ts lines 208-243
    */
   const validateTitle = (title: string) => {
     // Check for deprecated [Increment XXXX] format

@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * - Label management
  */
 
-import { IssueStateManager } from '../../../plugins/specweave-github/lib/IssueStateManager.js';
+import { IssueStateManager } from '../../../plugins/specweave/lib/integrations/github/IssueStateManager.js';
 
 describe('IssueStateManager', () => {
   describe('determineState', () => {

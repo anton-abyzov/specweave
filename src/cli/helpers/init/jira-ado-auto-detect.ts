@@ -11,8 +11,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { select, confirm } from '@inquirer/prompts';
 import { JiraClient } from '../../../integrations/jira/jira-client.js';
-import { fetchBoardsForProject, type JiraBoard } from '../../../../plugins/specweave-jira/lib/jira-board-resolver.js';
-import { fetchAreaPathsForProject, type AdoAreaPath } from '../../../../plugins/specweave-ado/lib/ado-board-resolver.js';
+import { fetchBoardsForProject, type JiraBoard } from '../../../../plugins/specweave/lib/integrations/jira/jira-board-resolver.js';
+import { fetchAreaPathsForProject, type AdoAreaPath } from '../../../../plugins/specweave/lib/integrations/ado/ado-board-resolver.js';
 import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
 import {
   type HierarchyMappingConfig,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AdoRateLimiter } from '../../../../plugins/specweave-ado/lib/ado-rate-limiter.js';
+import { AdoRateLimiter } from '../../../../plugins/specweave/lib/integrations/ado/ado-rate-limiter.js';
 
 describe('AdoRateLimiter', () => {
   let limiter: AdoRateLimiter;

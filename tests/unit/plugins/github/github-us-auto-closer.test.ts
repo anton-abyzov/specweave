@@ -7,7 +7,7 @@
  * Updated for v1.0.302: parseIssueLinks reads from metadata.json
  * (sibling of spec.md) instead of spec.md frontmatter.
  *
- * Expected module: plugins/specweave-github/lib/github-us-auto-closer.ts
+ * Expected module: plugins/specweave/lib/integrations/github/github-us-auto-closer.ts
  *
  * @see T-007: RED phase
  * @see T-008: GREEN phase (implementation)
@@ -38,7 +38,7 @@ import {
   autoCloseCompletedUserStories,
   type AutoCloseOptions,
   type AutoCloseResult,
-} from '../../../../plugins/specweave-github/lib/github-us-auto-closer.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-us-auto-closer.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

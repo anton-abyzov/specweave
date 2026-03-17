@@ -57,10 +57,11 @@ Plugins are **extension packages** that add capabilities to Claude Code. SpecWea
 ```
 Claude Code (base)
   └── Plugins
-      ├── specweave-core       ← Core workflow (increment, do, auto, done)
-      ├── specweave-github     ← GitHub Issues, PRs, milestones
-      ├── specweave-jira       ← JIRA epics, stories, sprints
-      └── ... (13 plugins total)
+      └── specweave            ← Unified plugin
+          ├── Core workflow    (increment, do, auto, done)
+          ├── GitHub integration (Issues, PRs, milestones)
+          ├── JIRA integration   (epics, stories, sprints)
+          └── ... (all integrations bundled)
 ```
 
 Plugins load **on-demand** based on what you're doing. Say "React frontend" and the frontend plugin activates. Say "Kubernetes deploy" and the infrastructure plugin loads. No manual configuration needed.

@@ -9,9 +9,9 @@
  * @integration
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { AdoClient, createAdoClient } from '../../../plugins/specweave-ado/lib/ado-client.js';
+import { AdoClient, createAdoClient } from '../../../plugins/specweave/lib/integrations/ado/ado-client.js';
 import { AdoDescriptionUpdater } from '../../../src/core/ado-description-updater.js';
-import { mapAdoStateToSpecweave } from '../../../plugins/specweave-ado/lib/ado-pull-sync.js';
+import { mapAdoStateToSpecweave } from '../../../plugins/specweave/lib/integrations/ado/ado-pull-sync.js';
 
 const hasCredentials =
   !!process.env.AZURE_DEVOPS_PAT &&

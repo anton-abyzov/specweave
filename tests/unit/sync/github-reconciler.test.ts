@@ -84,7 +84,7 @@ vi.mock('yaml', () => ({
 }));
 
 // Mock GitHubClientV2
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => {
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => {
   return {
     GitHubClientV2: {
       detectRepo: mockDetectRepo,

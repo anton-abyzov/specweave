@@ -124,7 +124,7 @@ async function setupAdoWithExistingCredentials(
 
     try {
       const { fetchAreaPathsForProject } = await import(
-        '../../../../plugins/specweave-ado/lib/ado-board-resolver.js'
+        '../../../../plugins/specweave/lib/integrations/ado/ado-board-resolver.js'
       );
       const areasResult = await fetchAreaPathsForProject(
         adoCredentials.org,

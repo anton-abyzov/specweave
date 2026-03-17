@@ -19,7 +19,7 @@ const mockRequest = vi.hoisted(() => {
 
 vi.mock('https', () => ({ default: mockRequest }));
 
-import { AdoClient } from '../../../../plugins/specweave-ado/lib/ado-client.js';
+import { AdoClient } from '../../../../plugins/specweave/lib/integrations/ado/ado-client.js';
 
 describe('AdoClient — pullWorkItemState', () => {
   let client: AdoClient;

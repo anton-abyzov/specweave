@@ -278,7 +278,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
 export async function configureNoRepository(): Promise<GitHubProfile[]> {
   console.log(chalk.yellow('\n⏭️  Repository configuration deferred'));
   console.log(chalk.gray('You can configure repositories later using:'));
-  console.log(chalk.white('  /specweave-github:setup\n'));
+  console.log(chalk.white('  /sw:github-setup\n'));
 
   return [];
 }

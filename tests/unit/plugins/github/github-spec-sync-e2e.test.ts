@@ -27,8 +27,8 @@ vi.mock('child_process', () => ({
   execFile: mockExecFile,
 }));
 
-import { GitHubSyncOrchestrator } from '../../../../plugins/specweave-github/lib/github-sync-orchestrator.js';
-import type { UserStoryForSync } from '../../../../plugins/specweave-github/lib/github-push-sync.js';
+import { GitHubSyncOrchestrator } from '../../../../plugins/specweave/lib/integrations/github/github-sync-orchestrator.js';
+import type { UserStoryForSync } from '../../../../plugins/specweave/lib/integrations/github/github-push-sync.js';
 
 // ---------------------------------------------------------------------------
 // Test data
@@ -342,7 +342,7 @@ describe('GitHub Sync E2E (mocked CLI)', () => {
   it('should detect and resolve conflicts between spec and GitHub states', async () => {
     // Import directly to test conflict resolver integration
     const { GitHubConflictResolver } = await import(
-      '../../../../plugins/specweave-github/lib/github-conflict-resolver.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-conflict-resolver.js'
     );
 
     const resolver = new GitHubConflictResolver();
@@ -394,10 +394,10 @@ describe('GitHub Sync E2E (mocked CLI)', () => {
   // =========================================================================
   it('should generate and parse issue body in a round-trip', async () => {
     const { generateIssueBody } = await import(
-      '../../../../plugins/specweave-github/lib/github-issue-body-generator.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-issue-body-generator.js'
     );
     const { parseIssueBody } = await import(
-      '../../../../plugins/specweave-github/lib/github-issue-body-parser.js'
+      '../../../../plugins/specweave/lib/integrations/github/github-issue-body-parser.js'
     );
 
     const body = generateIssueBody({

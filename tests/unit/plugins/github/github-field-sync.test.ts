@@ -3,7 +3,7 @@
  *
  * RED phase (TDD): These tests import from a module that does NOT exist yet.
  * They will fail at import time until the implementation is created at:
- *   plugins/specweave-github/lib/github-field-sync.ts
+ *   plugins/specweave/lib/integrations/github/github-field-sync.ts
  *
  * @see T-013: Status and Priority field sync for GitHub Projects V2
  */
@@ -30,17 +30,17 @@ function makeMockClient() {
 
 import {
   GitHubFieldSync,
-} from '../../../../plugins/specweave-github/lib/github-field-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-field-sync.js';
 
 import type {
   FieldSyncConfig,
   FieldSyncItem,
   FieldSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-field-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-field-sync.js';
 
 import type {
   GitHubGraphQLClient,
-} from '../../../../plugins/specweave-github/lib/github-graphql-client.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-graphql-client.js';
 
 // ---------------------------------------------------------------------------
 // Shared test data

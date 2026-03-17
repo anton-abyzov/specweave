@@ -12,7 +12,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { findSourceDir } from './path-utils.js';
-import { copyPluginSkillsToProject, findSpecweaveRoot } from '../../../utils/plugin-copier.js';
+import { copyPluginSkillsToProject, findSpecweaveRoot, migrateSatelliteToUnifiedLock } from '../../../utils/plugin-copier.js';
 import { getDirname } from '../../../utils/esm-helpers.js';
 import { getProjectRoot } from '../../../utils/find-project-root.js';
 import { enablePluginsInSettings } from './claude-plugin-enabler.js';
@@ -73,6 +73,14 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 
     console.log(chalk.blue(`   Found ${allPlugins.length} plugins available`));
     spinner.succeed(`Found ${allPlugins.length} plugins`);
+
+    // Clean satellite plugin entries from lockfiles (post-consolidation)
+    try {
+      const projectRoot = options.projectRoot || getProjectRoot();
+      migrateSatelliteToUnifiedLock(projectRoot);
+    } catch {
+      // Non-blocking
+    }
 
     // Find specweave root for the plugin copier
     const specweaveRoot = findSpecweaveRoot(__dirname);
@@ -140,8 +148,8 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     console.log(chalk.cyan('Available capabilities:'));
     console.log(chalk.gray('   /sw:increment - Plan new features'));
     console.log(chalk.gray('   /sw:do - Execute tasks'));
-    console.log(chalk.gray('   /specweave-github:sync - GitHub integration'));
-    console.log(chalk.gray('   /specweave-jira:sync - JIRA integration'));
+    console.log(chalk.gray('   /sw:github-sync - GitHub integration'));
+    console.log(chalk.gray('   /sw:jira-sync - JIRA integration'));
     console.log(chalk.gray('   /sw:docs preview - Documentation preview'));
     console.log(chalk.gray('   ...and more!'));
 

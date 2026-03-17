@@ -10,7 +10,7 @@
  * Pure logic class — no mocks needed.
  *
  * @see T-011: Conflict detection and resolution
- * @see plugins/specweave-github/lib/github-conflict-resolver.ts (not yet created)
+ * @see plugins/specweave/lib/integrations/github/github-conflict-resolver.ts (not yet created)
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -21,14 +21,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
   GitHubConflictResolver,
-} from '../../../../plugins/specweave-github/lib/github-conflict-resolver.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-conflict-resolver.js';
 
 import type {
   ConflictResolution,
   ConflictField,
   ResolvedConflict,
   ConflictResolverConfig,
-} from '../../../../plugins/specweave-github/lib/github-conflict-resolver.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-conflict-resolver.js';
 
 // ---------------------------------------------------------------------------
 // Shared test data

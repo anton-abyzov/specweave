@@ -34,11 +34,11 @@ vi.mock('fs', () => ({
   existsSync: vi.fn(),
 }));
 
-vi.mock('../../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: class {},
 }));
 
-vi.mock('../../../../plugins/specweave-github/lib/user-story-issue-builder.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js', () => ({
   UserStoryIssueBuilder: class {
     buildIssueBody() {
       return Promise.resolve({
@@ -51,7 +51,7 @@ vi.mock('../../../../plugins/specweave-github/lib/user-story-issue-builder.js', 
   },
 }));
 
-vi.mock('../../../../plugins/specweave-github/lib/completion-calculator.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/completion-calculator.js', () => ({
   CompletionCalculator: class {
     calculateCompletion() {
       return Promise.resolve({ overallComplete: false, acsPercentage: 0, tasksPercentage: 0 });
@@ -62,7 +62,7 @@ vi.mock('../../../../plugins/specweave-github/lib/completion-calculator.js', () 
   },
 }));
 
-vi.mock('../../../../plugins/specweave-github/lib/duplicate-detector.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/duplicate-detector.js', () => ({
   DuplicateDetector: {
     createWithProtection: vi.fn().mockResolvedValue({
       issue: { number: 1 },
@@ -73,7 +73,7 @@ vi.mock('../../../../plugins/specweave-github/lib/duplicate-detector.js', () => 
   },
 }));
 
-import { GitHubFeatureSync } from '../../../../plugins/specweave-github/lib/github-feature-sync.js';
+import { GitHubFeatureSync } from '../../../../plugins/specweave/lib/integrations/github/github-feature-sync.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -4,7 +4,7 @@
  * Tests the sync orchestrator that wires push sync, Projects V2 board,
  * field sync, and frontmatter updates into a single flow.
  *
- * Expected module: plugins/specweave-github/lib/github-sync-orchestrator.ts (does NOT exist yet)
+ * Expected module: plugins/specweave/lib/integrations/github/github-sync-orchestrator.ts (does NOT exist yet)
  *
  * The module should:
  * - Push user stories to GitHub issues via pushSyncUserStories
@@ -23,7 +23,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // ---------------------------------------------------------------------------
 
 const mockPushSyncUserStories = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-push-sync.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-push-sync.js', () => ({
   pushSyncUserStories: mockPushSyncUserStories,
 }));
 
@@ -42,7 +42,7 @@ const {
   });
   return { MockBoardResolverV2, mockFindOrCreateProject, mockAddIssuesToProject };
 });
-vi.mock('../../../../plugins/specweave-github/lib/github-board-resolver-v2.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-board-resolver-v2.js', () => ({
   GitHubBoardResolverV2: MockBoardResolverV2,
 }));
 
@@ -56,12 +56,12 @@ const {
   });
   return { MockFieldSync, mockSyncItemFields };
 });
-vi.mock('../../../../plugins/specweave-github/lib/github-field-sync.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-field-sync.js', () => ({
   GitHubFieldSync: MockFieldSync,
 }));
 
 const mockUpdateSpecFrontmatter = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-spec-frontmatter-updater.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-spec-frontmatter-updater.js', () => ({
   updateSpecFrontmatter: mockUpdateSpecFrontmatter,
 }));
 
@@ -69,7 +69,7 @@ const { MockGraphQLClient } = vi.hoisted(() => {
   const MockGraphQLClient = vi.fn();
   return { MockGraphQLClient };
 });
-vi.mock('../../../../plugins/specweave-github/lib/github-graphql-client.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-graphql-client.js', () => ({
   GitHubGraphQLClient: MockGraphQLClient,
 }));
 
@@ -79,21 +79,21 @@ vi.mock('../../../../plugins/specweave-github/lib/github-graphql-client.js', () 
 
 import {
   GitHubSyncOrchestrator,
-} from '../../../../plugins/specweave-github/lib/github-sync-orchestrator.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-sync-orchestrator.js';
 
 import type {
   SyncOrchestratorConfig,
   SyncOrchestratorResult,
-} from '../../../../plugins/specweave-github/lib/github-sync-orchestrator.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-sync-orchestrator.js';
 
 import type {
   UserStoryForSync,
   PushSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-push-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-push-sync.js';
 
 import type {
   FieldSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-field-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-field-sync.js';
 
 import type {
   GitHubSyncMetadata,

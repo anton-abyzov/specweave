@@ -20,7 +20,7 @@ export interface AnalyticsEvent {
   type: AnalyticsEventType;
   /** Command, skill, or agent name */
   name: string;
-  /** Source plugin (e.g., 'specweave', 'specweave-github') */
+  /** Source plugin (e.g., 'sw') */
   plugin?: string;
   /** Current increment context if available */
   increment?: string;

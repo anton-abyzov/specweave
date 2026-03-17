@@ -24,6 +24,7 @@ import {
   installPlugin,
   findSpecweaveRoot,
   migrateBundledToGlobalLock,
+  migrateSatelliteToUnifiedLock,
 } from '../../utils/plugin-copier.js';
 import { cleanupStalePlugins } from '../../utils/cleanup-stale-plugins.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
@@ -149,6 +150,14 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     migrateBundledToGlobalLock(migProjectRoot);
   } catch {
     // Non-blocking: migration errors don't abort plugin refresh
+  }
+
+  // Step 0.7: Remove satellite plugin entries from lockfiles (post-consolidation cleanup)
+  try {
+    const migProjectRoot = getProjectRoot();
+    migrateSatelliteToUnifiedLock(migProjectRoot);
+  } catch {
+    // Non-blocking: satellite migration errors don't abort plugin refresh
   }
 
   log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));

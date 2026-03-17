@@ -126,7 +126,7 @@ vi.mock('../../../../src/sync/sync-coordinator.js', () => ({
 }));
 
 // The source uses dynamic import() for GitHubACCheckboxSync from the plugin path
-vi.mock('../../../../plugins/specweave-github/lib/github-ac-checkbox-sync.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-ac-checkbox-sync.js', () => ({
   GitHubACCheckboxSync: MockSyncCoordinator,
 }));
 

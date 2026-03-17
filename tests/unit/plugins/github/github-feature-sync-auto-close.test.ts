@@ -48,7 +48,7 @@ vi.mock('../../../../plugins/specweave/lib/vendor/utils/execFileNoThrow.js', () 
   execFileNoThrow: mockExecFileNoThrow,
 }));
 
-vi.mock('../../../../plugins/specweave-github/lib/github-client-v2.js', () => {
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => {
   class MockGitHubClientV2 {
     getIssue = mockGetIssue;
     getLastComment = mockGetLastComment;
@@ -56,7 +56,7 @@ vi.mock('../../../../plugins/specweave-github/lib/github-client-v2.js', () => {
   return { GitHubClientV2: MockGitHubClientV2 };
 });
 
-vi.mock('../../../../plugins/specweave-github/lib/completion-calculator.js', () => {
+vi.mock('../../../../plugins/specweave/lib/integrations/github/completion-calculator.js', () => {
   class MockCompletionCalculator {
     calculateCompletion = mockCalculateCompletion;
     buildCompletionComment = mockBuildCompletionComment;
@@ -66,7 +66,7 @@ vi.mock('../../../../plugins/specweave-github/lib/completion-calculator.js', () 
   return { CompletionCalculator: MockCompletionCalculator };
 });
 
-vi.mock('../../../../plugins/specweave-github/lib/user-story-issue-builder.js', () => {
+vi.mock('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js', () => {
   class MockUserStoryIssueBuilder {
     buildIssueContent = vi.fn().mockReturnValue({
       title: 'Test Title',
@@ -79,7 +79,7 @@ vi.mock('../../../../plugins/specweave-github/lib/user-story-issue-builder.js', 
   return { UserStoryIssueBuilder: MockUserStoryIssueBuilder };
 });
 
-vi.mock('../../../../plugins/specweave-github/lib/duplicate-detector.js', () => {
+vi.mock('../../../../plugins/specweave/lib/integrations/github/duplicate-detector.js', () => {
   class MockDuplicateDetector {}
   return { DuplicateDetector: MockDuplicateDetector };
 });
@@ -104,7 +104,7 @@ vi.mock('yaml', () => ({
   parse: vi.fn().mockReturnValue({}),
 }));
 
-import { GitHubFeatureSync } from '../../../../plugins/specweave-github/lib/github-feature-sync.js';
+import { GitHubFeatureSync } from '../../../../plugins/specweave/lib/integrations/github/github-feature-sync.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

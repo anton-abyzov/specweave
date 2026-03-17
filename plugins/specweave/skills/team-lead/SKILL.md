@@ -112,14 +112,19 @@ Skip increment pre-flight entirely. Brainstorm doesn't need a spec — it explor
 2. Read agent templates from `agents/brainstorm-advocate.md`, `agents/brainstorm-critic.md`, `agents/brainstorm-pragmatist.md`
 3. Replace `[BRAINSTORM_QUESTION]` with the user's question/topic
 4. Spawn all 3 agents in parallel via `Task()` with `mode: "bypassPermissions"`
-5. Collect `PERSPECTIVE_COMPLETE:` messages from all agents
-6. Synthesize perspectives into a decision matrix:
+5. **PASSIVE WAIT (CRITICAL)**: Do NOT apply §8b stuck detection to brainstorm agents.
+   Brainstorm agents send `STATUS:` heartbeats (not task-granularity `T-{N}/{total}`).
+   Wait patiently for `PERSPECTIVE_COMPLETE:` messages — expected 2-5 minutes per agent.
+   **Do NOT send STATUS_CHECK or shutdown_request** while agents are working.
+   The only valid intervention is responding to `BLOCKING_ISSUE:` messages.
+6. Collect ALL 3 `PERSPECTIVE_COMPLETE:` messages before proceeding. Do NOT start synthesis after receiving only 1 or 2.
+7. Synthesize perspectives into a decision matrix:
    - Compare approaches across dimensions (effort, risk, value, alignment)
    - Highlight points of agreement and disagreement
    - Provide a ranked recommendation
-7. Offer handoff: "Ready to proceed? Run `/sw:increment` to formalize the chosen approach."
-8. Cleanup: shutdown agents, TeamDelete
-9. **STOP** — do not proceed to implementation sections
+8. Offer handoff: "Ready to proceed? Run `/sw:increment` to formalize the chosen approach."
+9. Cleanup: shutdown agents, TeamDelete
+10. **STOP** — do not proceed to implementation sections
 
 ---
 

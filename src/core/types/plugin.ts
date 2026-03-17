@@ -18,7 +18,7 @@
  * @see https://github.com/anthropics/claude-code/blob/main/.claude-plugin/marketplace.json
  */
 export interface PluginManifest {
-  /** Plugin name (e.g., "specweave-github") */
+  /** Plugin name (e.g., "sw") */
   name: string;
 
   /** Human-readable description */

@@ -54,9 +54,10 @@ A **lazy loading architecture** that:
 │  │    detection     │     │  │   ├── increment/                   │ │
 │  │  - Install       │     │  │   ├── architect/                   │ │
 │  │    trigger       │     │  │   └── ... (~48 skills)             │ │
-│  │  - State track   │     │  ├── specweave-github/                │ │
-│  └──────────────────┘     │  ├── specweave-jira/                  │ │
-│           │               │  └── ... (13 plugins)                  │ │
+│  │  - State track   │     │  ├── specweave/                       │ │
+│  └──────────────────┘     │  │   ├── lib/integrations/github/     │ │
+│           │               │  │   ├── lib/integrations/jira/       │ │
+│           │               │  │   └── lib/integrations/ado/        │ │
 │           │               └──────────────────────────────────────┘ │
 │           │                              │                          │
 │           ▼                              ▼                          │

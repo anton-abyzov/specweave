@@ -108,10 +108,10 @@ async function syncGitHubACProgress(
   const result = emptyResult();
 
   const { postACProgressComments } = await import(
-    '../../plugins/specweave-github/lib/github-ac-comment-poster.js'
+    '../../plugins/specweave/lib/integrations/github/github-ac-comment-poster.js'
   );
   const { autoCloseCompletedUserStories } = await import(
-    '../../plugins/specweave-github/lib/github-us-auto-closer.js'
+    '../../plugins/specweave/lib/integrations/github/github-us-auto-closer.js'
   );
 
   const options = {
@@ -160,7 +160,7 @@ async function syncJiraACProgress(
   const result = emptyResult();
 
   const { JiraStatusSync } = await import(
-    '../../plugins/specweave-jira/lib/jira-status-sync.js'
+    '../../plugins/specweave/lib/integrations/jira/jira-status-sync.js'
   );
 
   const jiraSync = new JiraStatusSync(
@@ -227,10 +227,10 @@ async function syncAdoACProgress(
   const result = emptyResult();
 
   const { AdoStatusSync } = await import(
-    '../../plugins/specweave-ado/lib/ado-status-sync.js'
+    '../../plugins/specweave/lib/integrations/ado/ado-status-sync.js'
   );
   const { AdoClient } = await import(
-    '../../plugins/specweave-ado/lib/ado-client.js'
+    '../../plugins/specweave/lib/integrations/ado/ado-client.js'
   );
 
   const adoSync = new AdoStatusSync(

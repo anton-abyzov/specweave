@@ -14,7 +14,7 @@ import type { AdoAreaPathMapping, AdoAreaPathMappingConfig } from '../../../core
 import {
   fetchAreaPathsForProject,
   type AdoAreaPath,
-} from '../../../../plugins/specweave-ado/lib/ado-board-resolver.js';
+} from '../../../../plugins/specweave/lib/integrations/ado/ado-board-resolver.js';
 import {
   generateProjectId,
   getExistingProjectIds,

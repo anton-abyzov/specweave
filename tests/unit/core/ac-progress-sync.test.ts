@@ -27,15 +27,15 @@ const { mockAdoGetStatus, mockAdoUpdateStatus, mockAdoAddComment } = vi.hoisted(
   mockAdoAddComment: vi.fn(),
 }));
 
-vi.mock('../../../plugins/specweave-github/lib/github-ac-comment-poster.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-ac-comment-poster.js', () => ({
   postACProgressComments: mockPostACProgressComments,
 }));
 
-vi.mock('../../../plugins/specweave-github/lib/github-us-auto-closer.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-us-auto-closer.js', () => ({
   autoCloseCompletedUserStories: mockAutoCloseCompletedUserStories,
 }));
 
-vi.mock('../../../plugins/specweave-jira/lib/jira-status-sync.js', () => {
+vi.mock('../../../plugins/specweave/lib/integrations/jira/jira-status-sync.js', () => {
   class MockJiraStatusSync {
     init = vi.fn();
     getStatus = mockJiraGetStatus;
@@ -46,7 +46,7 @@ vi.mock('../../../plugins/specweave-jira/lib/jira-status-sync.js', () => {
   return { JiraStatusSync: MockJiraStatusSync };
 });
 
-vi.mock('../../../plugins/specweave-ado/lib/ado-status-sync.js', () => {
+vi.mock('../../../plugins/specweave/lib/integrations/ado/ado-status-sync.js', () => {
   class MockAdoStatusSync {
     getStatus = mockAdoGetStatus;
     updateStatus = mockAdoUpdateStatus;
@@ -54,7 +54,7 @@ vi.mock('../../../plugins/specweave-ado/lib/ado-status-sync.js', () => {
   return { AdoStatusSync: MockAdoStatusSync };
 });
 
-vi.mock('../../../plugins/specweave-ado/lib/ado-client.js', () => {
+vi.mock('../../../plugins/specweave/lib/integrations/ado/ado-client.js', () => {
   class MockAdoClient {
     addComment = mockAdoAddComment;
   }

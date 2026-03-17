@@ -1,6 +1,6 @@
 {
   "name": "sw",
-  "description": "SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
+  "description": "SpecWeave unified plugin. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, brownfield support, GitHub/JIRA/ADO bidirectional sync, documentation generation, release management, architecture diagrams, and AI media generation.",
   "version": "1.0.0",
   "author": {
     "name": "SpecWeave Team",
@@ -17,6 +17,13 @@
     "tdd",
     "pm",
     "architect",
-    "living-docs"
+    "living-docs",
+    "github",
+    "jira",
+    "azure-devops",
+    "sync",
+    "release",
+    "diagrams",
+    "media"
   ]
 }

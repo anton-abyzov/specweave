@@ -5,7 +5,7 @@
  * The rate limiter queries `gh api rate_limit`, tracks cumulative usage,
  * and gates sync operations when approaching API limits.
  *
- * @see plugins/specweave-github/lib/github-rate-limiter.ts (not yet created)
+ * @see plugins/specweave/lib/integrations/github/github-rate-limiter.ts (not yet created)
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -20,7 +20,7 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 import {
   GitHubRateLimiter,
   type RateLimitStatus,
-} from '../../../../plugins/specweave-github/lib/github-rate-limiter.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-rate-limiter.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

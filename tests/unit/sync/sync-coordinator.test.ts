@@ -331,7 +331,7 @@ vi.mock('../../../src/integrations/ado/ado-pat-provider.js', () => ({
   getAdoPat: mockGetAdoPat,
 }));
 
-vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/github-client-v2.js', () => ({
   GitHubClientV2: {
     fromRepo: mockGhFromRepo,
   },
@@ -362,7 +362,7 @@ vi.mock('../../../src/sync/format-preservation-sync.js', () => ({
   FormatPreservationSyncService: MockFormatPreservationSyncService,
 }));
 
-vi.mock('../../../plugins/specweave-github/lib/user-story-content-builder.js', () => ({
+vi.mock('../../../plugins/specweave/lib/integrations/github/user-story-content-builder.js', () => ({
   UserStoryContentBuilder: MockUserStoryContentBuilder,
 }));
 

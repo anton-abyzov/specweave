@@ -57,20 +57,26 @@ YOUR ANALYSIS MUST INCLUDE:
   Features or aspects that seem important but aren't worth the effort right now.
   YAGNI candidates.
 
+PROGRESS UPDATES (MANDATORY — prevents false stuck detection):
+  After completing each APPROACH step, send a brief heartbeat:
+  SendMessage({
+    to: "team-lead",
+    message: "STATUS: [Step N/4] [what you just finished]. Proceeding to [next step].",
+    summary: "Pragmatist: step N/4 done"
+  })
+
 COMMUNICATION:
   When done, signal completion:
   SendMessage({
-    type: "message",
-    recipient: "team-lead",
-    content: "PERSPECTIVE_COMPLETE: Pragmatist perspective ready. Recommends: [approach name]. Estimated effort: [X days]. Key insight: [most important practical consideration].",
+    to: "team-lead",
+    message: "PERSPECTIVE_COMPLETE: Pragmatist perspective ready. Recommends: [approach name]. Estimated effort: [X days]. Key insight: [most important practical consideration].",
     summary: "Pragmatist perspective complete"
   })
 
   If you discover something important during analysis:
   SendMessage({
-    type: "message",
-    recipient: "team-lead",
-    content: "INSIGHT: [practical finding that affects feasibility]",
+    to: "team-lead",
+    message: "INSIGHT: [practical finding that affects feasibility]",
     summary: "Pragmatist found practical insight"
   })
 

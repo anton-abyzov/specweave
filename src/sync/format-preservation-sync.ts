@@ -11,7 +11,7 @@
 
 import path from 'path';
 import { LivingDocsUSFile, getOrigin } from '../types/living-docs-us-file.js';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubClientV2 } from '../../plugins/specweave/lib/integrations/github/github-client-v2.js';
 import { JiraClient } from '../integrations/jira/jira-client.js';
 import { AdoClient } from '../integrations/ado/ado-client.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
