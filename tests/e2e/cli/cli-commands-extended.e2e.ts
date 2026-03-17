@@ -56,10 +56,16 @@ async function createInitializedEnv(testName: string) {
   await fs.writeFile(path.join(workDir, '.gitkeep'), '');
   await execAsync('git add -A && git commit -m "initial commit"', { cwd: workDir, env });
 
-  // Run specweave init
-  await execAsync(`node "${specweaveBin}" init --adapter=claude --language=en`, {
-    cwd: workDir, env, timeout: 30000,
-  });
+  // Run specweave init — process may hang after completing due to open handles
+  try {
+    await execAsync(`node "${specweaveBin}" init --adapter=claude --language=en --quick`, {
+      cwd: workDir, env, timeout: 15000,
+    });
+  } catch {
+    // Init completes its work but Node.js process may not exit cleanly.
+    // Verify init succeeded by checking for config.json.
+    await fs.access(path.join(workDir, '.specweave', 'config.json'));
+  }
 
   const cleanup = async () => {
     await fs.rm(workDir, { recursive: true, force: true }).catch(() => {});

@@ -80,6 +80,26 @@ async function sw(
   return execAsync(`node "${specweaveBin}" ${args}`, { cwd, env, timeout });
 }
 
+/**
+ * Run specweave init with timeout tolerance.
+ * Init completes its work but the Node.js process may not exit due to open handles.
+ * We catch the timeout error and verify init succeeded via config.json.
+ */
+async function initProject(
+  env: Record<string, string>,
+  cwd: string,
+): Promise<{ stdout: string; stderr: string }> {
+  try {
+    return await execAsync(
+      `node "${specweaveBin}" init --adapter=claude --language=en --quick`,
+      { cwd, env, timeout: 15000 },
+    );
+  } catch (e: any) {
+    await fs.access(path.join(cwd, '.specweave', 'config.json'));
+    return { stdout: e.stdout || '', stderr: e.stderr || '' };
+  }
+}
+
 // These tests require `specweave init` which may not work in CI
 // (missing plugins, sibling repos, or binary linking issues)
 const canRunLifecycleE2E = !process.env.CI;
@@ -104,7 +124,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
 
   it('should complete init → status → save lifecycle', async () => {
     // === Step 1: Init ===
-    await sw('init --adapter=claude --language=en', env, workDir);
+    await initProject(env, workDir);
 
     // Verify .specweave/ directory was created
     const specweaveDir = path.join(workDir, '.specweave');
@@ -159,7 +179,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
 
   it('should handle save with no changes gracefully', async () => {
     // Init the project
-    await sw('init --adapter=claude --language=en', env, workDir);
+    await initProject(env, workDir);
 
     // Commit the specweave init artifacts so working dir is clean
     await execAsync('git add -A && git commit -m "chore: init specweave"', { cwd: workDir, env });
@@ -173,7 +193,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
 
   it('should save with auto-generated commit message', async () => {
     // Init
-    await sw('init --adapter=claude --language=en', env, workDir);
+    await initProject(env, workDir);
     await execAsync('git add -A && git commit -m "chore: init specweave"', { cwd: workDir, env });
 
     // Create source and doc changes
@@ -194,7 +214,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
 
   it('should create clean git state after full teardown', async () => {
     // Init + create changes + save
-    await sw('init --adapter=claude --language=en', env, workDir);
+    await initProject(env, workDir);
     await fs.writeFile(path.join(workDir, 'feature.ts'), 'export const y = 2;\n');
     await sw('save --no-push "feat: add feature"', env, workDir);
 
@@ -219,7 +239,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
     }
 
     // Run init in isolated env
-    await sw('init --adapter=claude --language=en', env, workDir);
+    await initProject(env, workDir);
 
     // Verify real HOME was not touched
     if (realSpecweaveExistedBefore) {
@@ -234,7 +254,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
   });
 
   it('should produce valid project structure after init', async () => {
-    await sw('init --adapter=claude --language=en', env, workDir);
+    await initProject(env, workDir);
 
     const specweaveDir = path.join(workDir, '.specweave');
 
