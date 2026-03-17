@@ -159,10 +159,10 @@ Before closing this increment, the following MUST be true:
 **Validation commands**:
 ```bash
 # Check AC coverage and task linkage
-/specweave:validate {{INCREMENT_ID}}
+/sw:validate {{INCREMENT_ID}}
 
 # Close increment (validates automatically)
-/specweave:done {{INCREMENT_ID}}
+/sw:done {{INCREMENT_ID}}
 ```
 
 ---
