@@ -171,4 +171,9 @@ Then in Claude Code:
 
 ---
 
-**Next**: [Key Features](/docs/overview/features) ->
+## Next Steps
+
+- [Key Features](/docs/overview/features) — What SpecWeave provides
+- [Getting Started](/docs/getting-started) — Install and run your first increment
+- [Why SpecWeave?](/docs/overview/why-specweave) — The problem SpecWeave solves
+- [Complete Workflow](/docs/workflows/overview) — The full development journey
