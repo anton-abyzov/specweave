@@ -23,7 +23,7 @@ SpecWeave was built using SpecWeave. Every feature, every bug fix, every archite
 | **Test Files** | 581 |
 | **Documentation Files** | 4,405 |
 | **CLI Commands** | 47 |
-| **Plugins** | 24 |
+| **Plugins** | 13 |
 | **Hook Scripts** | 65 |
 | **Public Exports** | 2,893 |
 
