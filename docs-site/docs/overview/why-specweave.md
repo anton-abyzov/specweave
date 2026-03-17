@@ -139,9 +139,9 @@ SpecWeave takes this further: as long as the spec and plan are solid, and progre
 
 SpecWeave wraps every AI coding session in a **spec-driven workflow** that turns conversations into permanent, searchable documentation.
 
-### Skills Are Programs in English
+### Skills Are Structured Expertise
 
-Unlike prompts that you copy-paste, SpecWeave skills are reusable programs — each one controls how AI thinks and acts for a specific domain. 100+ skills ship out of the box. Customize any skill without forking via `skill-memories/`. [Deep dive →](./skills-as-programs)
+Unlike prompts that you copy-paste, SpecWeave skills are reusable, structured instructions — each one defines how AI thinks and acts for a specific domain. 100+ skills ship out of the box. Customize any skill without forking via `skill-memories/`. [Deep dive →](./skills-as-structured-expertise)
 
 ### You Don't Need Claude Code Expertise
 

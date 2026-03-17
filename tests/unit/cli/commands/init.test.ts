@@ -219,6 +219,7 @@ vi.mock('../../../../src/utils/logger.js', () => ({
 vi.mock('@inquirer/prompts', () => ({
   input: mockInput,
   confirm: mockConfirm,
+  select: vi.fn().mockResolvedValue('existing'),
 }));
 
 vi.mock('chalk', () => {
@@ -240,6 +241,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
+  scanMisplacedRepos: vi.fn().mockReturnValue([]),
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
@@ -250,6 +252,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   createConfigFile: mockCreateConfigFile,
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
+  ensureSkillCreator: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({
@@ -1168,12 +1171,11 @@ describe('init command', () => {
       expect(mockInstallAllPlugins).toHaveBeenCalledWith(
         expect.objectContaining({
           forceRefresh: undefined,
-          lazyMode: true,
         })
       );
     });
 
-    it('should pass lazyMode=false when fullInstall option is set', async () => {
+    it('should call installAllPlugins when fullInstall option is set', async () => {
       mockExistsSync.mockReturnValue(false);
       mockDetectTool.mockResolvedValue('claude');
 
@@ -1181,7 +1183,7 @@ describe('init command', () => {
 
       expect(mockInstallAllPlugins).toHaveBeenCalledWith(
         expect.objectContaining({
-          lazyMode: false,
+          dirname: expect.any(String),
         })
       );
     });

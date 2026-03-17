@@ -417,7 +417,7 @@ describe('status-commands', () => {
       expect(result).toBe(false);
     });
 
-    it('should run pre-completion living docs sync', async () => {
+    it('should run post-completion sync via LifecycleHookDispatcher', async () => {
       mockRead
         .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
         .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
@@ -427,7 +427,9 @@ describe('status-commands', () => {
         skipValidation: true,
       });
 
-      expect(mockSyncIncrement).toHaveBeenCalledWith('0001-test');
+      // Living docs sync is now handled by LifecycleHookDispatcher.onIncrementDone
+      // (not called directly in completeIncrement)
+      expect(mockOnIncrementDone).toHaveBeenCalled();
     });
 
     it('should return true even when hooks throw (error-isolated)', async () => {

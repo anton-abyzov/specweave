@@ -74,10 +74,10 @@ describe('AdapterLoader', () => {
         platform: 'darwin',
       });
 
-      // No other adapters detected - must mock ALL adapters in detection order
-      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(false);
-      vi.spyOn(GeminiAdapter.prototype, 'detect').mockResolvedValue(false);
-      vi.spyOn(CodexAdapter.prototype, 'detect').mockResolvedValue(false);
+      // No other adapters detected - mock ALL adapter instances
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(false);
+      }
 
       const detected = await adapterLoader.detectTool();
 
