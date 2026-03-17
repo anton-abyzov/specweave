@@ -223,13 +223,16 @@ graph LR
 
 ## Quick Command Reference
 
-| Phase | Command | What It Does |
-|-------|---------|--------------|
-| **Planning** | `/sw:increment "feature"` | Creates spec, plan, tasks |
-| **Implementation** | `/sw:do` | Executes tasks, auto-resumes |
-| **Progress Check** | `/sw:progress` | Shows status, next task |
-| **Validation** | `/sw:validate` | Quality checks |
-| **Completion** | `/sw:done` | Closes increment |
+Every command can also be triggered with natural language -- just describe what you want.
+
+| Phase | Slash Command | Natural Language | What It Does |
+|-------|--------------|-----------------|--------------|
+| **Planning** | `/sw:increment "feature"` | "Let's build a payment system" | Creates spec, plan, tasks |
+| **Implementation** | `/sw:do` | "Start implementing" | Executes tasks, auto-resumes |
+| **Autonomous** | `/sw:auto` | "Ship it while I sleep" | Hands-free execution |
+| **Progress Check** | `/sw:progress` | "What's the status?" | Shows status, next task |
+| **Validation** | `/sw:validate` | "Check if everything looks good" | Quality checks |
+| **Completion** | `/sw:done` | "We're done" | Closes increment |
 
 ## Workflow Patterns
 

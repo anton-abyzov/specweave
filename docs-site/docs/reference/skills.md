@@ -49,10 +49,16 @@ These skills form the foundation of spec-driven development.
 **Purpose**: Explore a problem from multiple angles before committing to an implementation path. Uses Tree of Thought divergent exploration with selectable cognitive lenses.
 
 ```bash
+# Slash command
 /sw:brainstorm "real-time notifications"              # Standard depth
 /sw:brainstorm "auth system" --depth deep              # All 5 phases + deepening
 /sw:brainstorm "payment gateway" --lens six-hats       # Specific lens
 /sw:brainstorm "API design" --depth quick              # Fast 3-approach comparison
+
+# Natural language
+# "Brainstorm approaches for real-time notifications"
+# "Let's explore options for the auth system"
+# "What are our options for payment processing?"
 ```
 
 **5-Phase Flow:**
@@ -89,7 +95,12 @@ These skills form the foundation of spec-driven development.
 **Purpose**: Plan and create SpecWeave increments with PM and Architect collaboration.
 
 ```bash
+# Slash command
 /sw:increment "User authentication with JWT"
+
+# Natural language (auto-detected)
+# "Let's build user authentication with JWT"
+# "I need a payment system with Stripe"
 ```
 
 **What it does:**
@@ -166,7 +177,12 @@ Control the development workflow from start to finish.
 **Purpose**: Autonomous execution that runs for hours.
 
 ```bash
-/sw:auto  # Start autonomous execution
+# Slash command
+/sw:auto
+
+# Natural language
+# "Ship it while I sleep"
+# "Start implementing autonomously"
 ```
 
 **Features:**
@@ -180,10 +196,15 @@ Control the development workflow from start to finish.
 **Purpose**: Comprehensive implementation audit using parallel subagents.
 
 ```bash
+# Slash command
 /sw:grill                    # Full project audit
 /sw:grill 0007               # Specific increment
 /sw:grill src/auth           # Specific module
 /sw:grill --focus security   # Focus on security
+
+# Natural language
+# "Audit the code quality"
+# "Review the implementation for issues"
 ```
 
 **Audits:**
@@ -218,11 +239,16 @@ Ensure code quality and test coverage.
 **Purpose**: Elite multi-agent code review. Spawns up to 6 specialized reviewer agents in parallel, then aggregates findings into a unified report with deduplication and severity ranking.
 
 ```bash
+# Slash command
 /sw:code-reviewer                    # Auto-detect scope (PR, changes, or project)
 /sw:code-reviewer --pr 42            # Review a specific PR
 /sw:code-reviewer --changes          # Review uncommitted changes
 /sw:code-reviewer --increment 0042   # Review changes from an increment
 /sw:code-reviewer --cross-repo       # Aggregate across umbrella repos
+
+# Natural language
+# "Review my code changes"
+# "Do a security review of the auth module"
 ```
 
 **Specialized Reviewers (spawned in parallel):**
@@ -242,6 +268,7 @@ Ensure code quality and test coverage.
 **Purpose**: Phase-agnostic orchestrator for parallel multi-agent work. Auto-detects operating mode from your intent.
 
 ```bash
+# Slash command
 /sw:team-lead "Build checkout flow"              # Implementation mode (default)
 /sw:team-lead "Brainstorm auth approaches"       # Brainstorm mode
 /sw:team-lead "Plan the payment system"          # Planning mode
@@ -249,6 +276,11 @@ Ensure code quality and test coverage.
 /sw:team-lead "Research caching strategies"      # Research mode
 /sw:team-lead "Write tests for checkout"         # Testing mode
 /sw:team-lead --mode plan "user dashboard"       # Explicit mode override
+
+# Natural language
+# "Build this with parallel agents"
+# "Use a team to implement user auth"
+# "Split this across frontend and backend agents"
 ```
 
 **6 Operating Modes:**
