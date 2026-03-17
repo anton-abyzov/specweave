@@ -2,7 +2,7 @@
 
 SpecWeave provides a comprehensive suite of tools and workflows for building production-grade software with AI assistance.
 
-## 🚀 Two Ways to Work (Flexibility for All Project Sizes)
+## Two Ways to Work
 
 ### Interactive Quick Build
 
@@ -42,19 +42,19 @@ Professional planning with slash commands and multi-agent coordination:
 # Implement with hooks auto-updating docs
 ```
 
-**Both approaches** use the same powerful plugin system and multi-agent architecture under the hood!
+**Both approaches** use the same plugin system and multi-agent architecture under the hood.
 
 ---
 
-## 🎯 Specification-First Development
+## Specification-First Development
 
 ### Append-Only Snapshots + Living Documentation
 
 **SpecWeave's Core Power**: Maintains both historical audit trails and current documentation simultaneously.
 
-**The Innovation**: Unlike traditional documentation that gets outdated or loses historical context, SpecWeave gives you BOTH:
+Unlike traditional documentation that gets outdated or loses historical context, SpecWeave gives you both:
 
-#### 📸 Append-Only Increment Snapshots (Historical Context)
+#### Append-Only Increment Snapshots (Historical Context)
 ```
 .specweave/increments/
 ├── 0001-user-authentication/
@@ -68,7 +68,7 @@ Professional planning with slash commands and multi-agent coordination:
 
 **Never modified after completion** - Complete audit trail of every feature built.
 
-#### 📄 Living Up-to-Date Documentation (Current State)
+#### Living Up-to-Date Documentation (Current State)
 ```
 .specweave/docs/
 ├── internal/
@@ -110,7 +110,7 @@ Professional planning with slash commands and multi-agent coordination:
 
 Living documentation organized by purpose:
 
-## 🧠 Context Precision (70%+ Token Reduction)
+## Context Precision (70%+ Token Reduction)
 
 ### Selective Loading
 - **Context Manifests**: Each increment declares what it needs
@@ -131,7 +131,7 @@ max_context_tokens: 10000
 
 **Result**: Load exactly what's needed, save 70%+ on AI costs.
 
-## 🤖 AI Agents & Skills
+## AI Agents and Skills
 
 ### 11 Core Agents
 
@@ -161,7 +161,7 @@ User: "Create authentication system"
 → Generates complete spec + architecture + plan
 \`\`\`
 
-## 🧪 Test-Validated Development
+## Test-Validated Development
 
 ### Test-Aware Planning
 
@@ -192,7 +192,7 @@ E2E tests MUST tell the truth:
 - ❌ No false positives
 - ❌ No masking failures
 
-## 📊 Mermaid Diagrams (C4 Model)
+## Mermaid Diagrams (C4 Model)
 
 ### Architecture Visualization
 
@@ -219,7 +219,7 @@ C4Context
     Rel(specweave, github, "Syncs increments")
 \`\`\`
 
-## 🌐 Framework-Agnostic
+## Framework-Agnostic
 
 ### Supports ANY Tech Stack
 
@@ -240,7 +240,7 @@ SpecWeave detects your tech stack from:
 - `pom.xml` / `build.gradle` → Java
 - `*.csproj` → C#/.NET
 
-## 🔄 Incremental Development
+## Incremental Development
 
 ### Auto-Numbered Increments
 
@@ -264,7 +264,7 @@ Prevent context-switching:
 - **Large teams**: 3-5 in progress
 - **Force override**: Available but discouraged
 
-## 🔗 External Integrations
+## External Integrations
 
 ### JIRA Sync
 - Bidirectional conversion
@@ -283,7 +283,7 @@ Prevent context-switching:
 - Issues ↔ RFCs/Tasks
 - Checkable subtasks
 
-## 🏢 Brownfield Excellence (The Hardest Problem Solved)
+## Brownfield Excellence
 
 ### Why Brownfield is Most Complicated
 
@@ -301,7 +301,7 @@ Brownfield projects are the **ultimate challenge** in software development:
 
 - ❌ **Living documentation** that stays current as code evolves
 
-**Most frameworks give up here. SpecWeave excels.**
+Most frameworks struggle here. SpecWeave was designed for it.
 
 ### Intelligent Documentation Merging
 
@@ -313,16 +313,13 @@ SpecWeave's **brownfield-onboarder** skill intelligently consolidates existing d
 
 **What it does:**
 
-- 📄 **Extracts knowledge** from existing docs, wikis, Confluence, legacy CLAUDE.md
-
-- 🧠 **Preserves context** - historical decisions, team conventions, domain knowledge
-
-- 📁 **Distributes intelligently** - routes content to appropriate SpecWeave folders
+- **Extracts knowledge** from existing docs, wikis, Confluence, legacy CLAUDE.md
+- **Preserves context** — historical decisions, team conventions, domain knowledge
+- **Distributes intelligently** — routes content to appropriate SpecWeave folders
   - Strategy docs → `.specweave/docs/internal/strategy/`
   - Architecture → `.specweave/docs/internal/architecture/`
   - Operations → `.specweave/docs/internal/operations/`
-
-- 🎯 **No bloat** - smart organization without polluting CLAUDE.md
+- **No bloat** — smart organization without polluting CLAUDE.md
 
 ### Retroactive Architecture Documentation
 
@@ -381,30 +378,25 @@ Create comprehensive architecture for **existing systems** without disrupting pr
 
 ### Living Documentation That Never Gets Stale
 
-The **killer feature** for brownfield: documentation that **auto-updates** as code evolves.
+For brownfield projects, the key advantage is documentation that **auto-updates** as code evolves.
 
 **How it works:**
 
-1. **Initial Documentation** - SpecWeave creates complete specs, HLDs, ADRs, diagrams
-
-2. **Code Changes** - You modify code using `/sw:do`
-
-3. **Auto-Update** - Hooks automatically update:
+1. **Initial Documentation** — SpecWeave creates complete specs, HLDs, ADRs, diagrams
+2. **Code Changes** — You modify code using `/sw:do`
+3. **Auto-Update** — Hooks automatically update:
    - Specifications reflect new requirements
    - ADRs move from Proposed → Accepted
    - Architecture diagrams update with new components
    - HLDs reflect current system state
    - RFCs document new patterns
-
-4. **Always Current** - Documentation never drifts from code
+4. **Always Current** — Documentation never drifts from code
 
 **Technologies:**
 
-- **Claude Hooks** - Post-task-completion hook runs after every task
-
-- **Living Docs Sync** - `/sw:sync-docs update` propagates changes
-
-- **Version Control** - All docs in Git, full history preserved
+- **Claude Hooks** — Post-task-completion hook runs after every task
+- **Living Docs Sync** — `/sw:sync-docs update` propagates changes
+- **Version Control** — All docs in Git, full history preserved
 
 ### Structure Evolution and Maintenance
 
@@ -517,27 +509,20 @@ Brownfield + SpecWeave = **Compliance-Ready**
 
 **Perfect for regulated industries:**
 
-- 🏥 **Healthcare (HIPAA)** - Complete audit trail, document all changes
-
-- 🏦 **Finance (SOC 2, PCI-DSS)** - Prove compliance with specifications
-
-- 🏛️ **Government (FedRAMP)** - Architecture documentation required
-
-- 💊 **Pharmaceutical (FDA)** - Validation documentation mandatory
+- **Healthcare (HIPAA)** — Complete audit trail, document all changes
+- **Finance (SOC 2, PCI-DSS)** — Prove compliance with specifications
+- **Government (FedRAMP)** — Architecture documentation required
+- **Pharmaceutical (FDA)** — Validation documentation mandatory
 
 **What you get:**
 
-- ✅ Complete change history (increments never deleted)
+- Complete change history (increments never deleted)
+- Decision rationale (ADRs for all choices)
+- Test validation (4-level testing strategy)
+- Living documentation (always current)
+- Traceability (specs → code → tests)
 
-- ✅ Decision rationale (ADRs for all choices)
-
-- ✅ Test validation (4-level testing strategy)
-
-- ✅ Living documentation (always current)
-
-- ✅ Traceability (specs → code → tests)
-
-## 🎨 Documentation Approaches
+## Documentation Approaches
 
 ### Comprehensive Upfront (Enterprise)
 - 500-600+ page specifications before coding
@@ -551,9 +536,9 @@ Brownfield + SpecWeave = **Compliance-Ready**
 - Adapt to changing requirements
 - Best for: Startups, MVPs, prototypes
 
-**Both approaches fully supported!**
+Both approaches are fully supported.
 
-## ⚙️ Claude Hooks (Auto-Update)
+## Claude Hooks (Auto-Update)
 
 ### Post-Task-Completion Hook
 
@@ -571,7 +556,7 @@ Checks regression risk before modifying existing code.
 
 Logs and notifies when AI needs clarification.
 
-## 📦 Slash Commands
+## Slash Commands
 
 Framework-agnostic commands:
 
@@ -588,9 +573,9 @@ Framework-agnostic commands:
 
 All commands adapt to detected tech stack.
 
-## 🎯 Additional Capabilities
+## Additional Capabilities
 
-### ✅ Already Implemented
+### Already Implemented
 
 - **Multi-language support**: Work in 11 languages with FREE LLM-native translation
   - Supports: English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese
@@ -602,7 +587,7 @@ All commands adapt to detected tech stack.
   - MCP protocol for efficient context management
   - Typical savings: $60-120/month per developer
 
-### 🔜 Roadmap
+### Roadmap
 
 - **Vector search**: Semantic spec search across all increments (v2.0)
 - **Enterprise analytics**: Advanced compliance tracking and team metrics
@@ -611,7 +596,7 @@ All commands adapt to detected tech stack.
 
 **Ready to get started?**
 
-- [Quickstart Guide](/docs/guides/getting-started/quickstart) - Get up and running in 5 minutes
-- [Installation](/docs/guides/getting-started/installation) - Detailed installation instructions
+- [Quickstart Guide](/docs/getting-started) - Get up and running in 5 minutes
+- [Installation](/docs/getting-started/installation) - Detailed installation instructions
 
 **Previous**: [What is SpecWeave?](/docs/overview/introduction) | **Next**: [Philosophy](/docs/overview/philosophy) →
