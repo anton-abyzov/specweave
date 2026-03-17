@@ -401,7 +401,7 @@ Result: Unclear requirements, scope creep, rework
 Solution: Always create spec.md and plan.md first
 ```
 
-### ❌ Mistake 2: Multiple Increments in Progress
+### Mistake 2: Multiple Increments in Progress
 
 ```
 Problem: Start 0002 before finishing 0001
@@ -409,7 +409,7 @@ Result: Context switching, neither complete, docs stale
 Solution: One increment at a time (WIP limit = 1)
 ```
 
-### ❌ Mistake 3: Manual Documentation
+### Mistake 3: Manual Documentation
 
 ```
 Problem: Edit docs manually, forget to update
@@ -417,7 +417,7 @@ Result: Docs drift, become outdated, lose trust
 Solution: Let hooks auto-update living docs
 ```
 
-### ❌ Mistake 4: No Test Strategy
+### Mistake 4: No Test Strategy
 
 ```
 Problem: Write tests as afterthought
@@ -425,7 +425,7 @@ Result: Poor coverage, bugs in production
 Solution: Define test strategy in plan.md
 ```
 
-### ❌ Mistake 5: Ignoring Validation
+### Mistake 5: Ignoring Validation
 
 ```
 Problem: Mark tasks done without checking
