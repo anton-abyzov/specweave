@@ -26,7 +26,7 @@ import { join, resolve, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { execFileNoThrowSync } from './execFileNoThrow.js';
-import { getProjectRoot } from './find-project-root.js';
+// getProjectRoot no longer used here — bundled plugins use global lock
 import { getPluginScope, getScopeArgs } from '../core/types/plugin-scope.js';
 
 // ---------------------------------------------------------------------------
@@ -77,6 +77,9 @@ interface MarketplacePlugin {
 // ---------------------------------------------------------------------------
 
 const LOCKFILE_NAME = 'vskill.lock';
+
+/** Global bundled plugin hash cache filename */
+export const GLOBAL_LOCKFILE_NAME = 'plugins-lock.json';
 
 /** Legacy installation path — used only for migration cleanup */
 const LEGACY_COMMANDS_DIR = join(homedir(), '.claude', 'commands');
@@ -224,6 +227,63 @@ export function ensureLockfile(dir: string): VskillLock {
 }
 
 // ---------------------------------------------------------------------------
+// Global lockfile (bundled plugin hash cache at ~/.specweave/)
+// ---------------------------------------------------------------------------
+
+/**
+ * Return the global lock directory (~/.specweave/), creating it if needed.
+ * Accepts an optional homeDir override for testing.
+ */
+export function getGlobalLockDir(homeOverride?: string): string {
+  const home = homeOverride ?? homedir();
+  if (!home) throw new Error('No home directory');
+  const dir = join(home, '.specweave');
+  mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+/**
+ * Read the global plugins-lock.json.
+ */
+export function readGlobalLockfile(homeOverride?: string): VskillLock | null {
+  try {
+    const dir = getGlobalLockDir(homeOverride);
+    const p = join(dir, GLOBAL_LOCKFILE_NAME);
+    if (!existsSync(p)) return null;
+    return JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Write the global plugins-lock.json.
+ */
+export function writeGlobalLockfile(lock: VskillLock, homeOverride?: string): void {
+  const dir = getGlobalLockDir(homeOverride);
+  const toWrite = { ...lock, updatedAt: new Date().toISOString() };
+  writeFileSync(join(dir, GLOBAL_LOCKFILE_NAME), JSON.stringify(toWrite, null, 2) + '\n', 'utf-8');
+}
+
+/**
+ * Ensure global lockfile exists, creating one if needed.
+ */
+export function ensureGlobalLockfile(homeOverride?: string): VskillLock {
+  const existing = readGlobalLockfile(homeOverride);
+  if (existing) return existing;
+
+  const lock: VskillLock = {
+    version: 1,
+    agents: ['claude-code'],
+    skills: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  writeGlobalLockfile(lock, homeOverride);
+  return lock;
+}
+
+// ---------------------------------------------------------------------------
 // Root finder
 // ---------------------------------------------------------------------------
 
@@ -308,10 +368,15 @@ export function installPlugin(
     execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
   }
 
-  // 4. Compute hash and check lockfile
+  // 4. Compute hash and check global lockfile
   const sha = computePluginHash(sourceDir);
-  const lockDir = getProjectRoot();
-  const lock = ensureLockfile(lockDir);
+  let lock: VskillLock;
+  try {
+    lock = ensureGlobalLockfile();
+  } catch {
+    // Permission denied or no home dir — create in-memory lock, skip persistence
+    lock = { version: 1, agents: ['claude-code'], skills: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  }
 
   if (!options.force && lock.skills[pluginName]?.sha === sha) {
     // Hash unchanged — but only skip if the plugin is actually installed in Claude Code.
@@ -378,7 +443,7 @@ export function installPlugin(
     lock.agents.push('claude-code');
   }
   try {
-    writeLockfile(lock, lockDir);
+    writeGlobalLockfile(lock);
   } catch {
     // Non-fatal: lockfile write failure shouldn't block install
   }

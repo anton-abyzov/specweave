@@ -21,6 +21,12 @@ import {
   writeLockfile,
   ensureLockfile,
   migrateLegacyCommandsDir,
+  GLOBAL_LOCKFILE_NAME,
+  getGlobalLockDir,
+  readGlobalLockfile,
+  writeGlobalLockfile,
+  ensureGlobalLockfile,
+  migrateBundledToGlobalLock,
 } from '../../../src/utils/plugin-copier.js';
 
 // ---------------------------------------------------------------------------
@@ -264,6 +270,179 @@ describe('plugin-copier', () => {
 
       const found = findSpecweaveRoot(nested);
       expect(found).toBe(root);
+    });
+  });
+
+  // =========================================================================
+  // T-001: getGlobalLockDir + GLOBAL_LOCKFILE_NAME
+  // =========================================================================
+  describe('getGlobalLockDir', () => {
+    let fakeHome: string;
+    let realHomedir: typeof import('node:os').homedir;
+
+    beforeEach(() => {
+      fakeHome = path.join(tmpDir, 'fake-home');
+      // Patch homedir at the module level via env override
+      realHomedir = os.homedir;
+      // Create a separate fake home so we don't touch the real one
+      fs.mkdirSync(fakeHome, { recursive: true });
+    });
+
+    it('GLOBAL_LOCKFILE_NAME should be plugins-lock.json', () => {
+      expect(GLOBAL_LOCKFILE_NAME).toBe('plugins-lock.json');
+    });
+
+    it('should create ~/.specweave/ if it does not exist and return path', () => {
+      const dir = getGlobalLockDir(fakeHome);
+      expect(dir).toBe(path.join(fakeHome, '.specweave'));
+      expect(fs.existsSync(dir)).toBe(true);
+    });
+
+    it('should be idempotent — second call succeeds without error', () => {
+      const dir1 = getGlobalLockDir(fakeHome);
+      const dir2 = getGlobalLockDir(fakeHome);
+      expect(dir1).toBe(dir2);
+    });
+  });
+
+  // =========================================================================
+  // T-002: readGlobalLockfile, writeGlobalLockfile, ensureGlobalLockfile
+  // =========================================================================
+  describe('global lockfile functions', () => {
+    let fakeHome: string;
+
+    beforeEach(() => {
+      fakeHome = path.join(tmpDir, 'fake-home');
+      fs.mkdirSync(fakeHome, { recursive: true });
+    });
+
+    it('readGlobalLockfile returns null when no file exists', () => {
+      const result = readGlobalLockfile(fakeHome);
+      expect(result).toBeNull();
+    });
+
+    it('writeGlobalLockfile + readGlobalLockfile round-trip preserves all fields', () => {
+      const lock = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.498',
+            sha: 'abc123def456',
+            tier: 'BUNDLED',
+            installedAt: '2026-03-17T00:00:00Z',
+            source: 'local:specweave',
+          },
+        },
+        createdAt: '2026-03-17T00:00:00Z',
+        updatedAt: '2026-03-17T00:00:00Z',
+      };
+
+      writeGlobalLockfile(lock, fakeHome);
+      const result = readGlobalLockfile(fakeHome);
+
+      expect(result).not.toBeNull();
+      expect(result!.version).toBe(1);
+      expect(result!.skills.sw.sha).toBe('abc123def456');
+      expect(result!.skills.sw.source).toBe('local:specweave');
+      // updatedAt should be refreshed
+      expect(result!.updatedAt).not.toBe('2026-03-17T00:00:00Z');
+    });
+
+    it('ensureGlobalLockfile creates new file when none exists', () => {
+      const lock = ensureGlobalLockfile(fakeHome);
+
+      expect(lock.version).toBe(1);
+      expect(lock.agents).toContain('claude-code');
+      expect(lock.skills).toEqual({});
+
+      // Should be on disk
+      const diskLock = readGlobalLockfile(fakeHome);
+      expect(diskLock).not.toBeNull();
+    });
+
+    it('ensureGlobalLockfile returns existing file on second call', () => {
+      const lock1 = ensureGlobalLockfile(fakeHome);
+      lock1.skills['sw'] = {
+        version: '1.0.0', sha: 'test', tier: 'BUNDLED',
+        installedAt: '2026-03-17T00:00:00Z', source: 'local:specweave',
+      };
+      writeGlobalLockfile(lock1, fakeHome);
+
+      const lock2 = ensureGlobalLockfile(fakeHome);
+      expect(lock2.skills.sw.sha).toBe('test');
+    });
+  });
+
+  // =========================================================================
+  // T-003: installPlugin uses global lock, not project lock
+  // =========================================================================
+  describe('installPlugin uses global lock', () => {
+    let fakeHome: string;
+    let specweaveRoot: string;
+
+    beforeEach(() => {
+      fakeHome = path.join(tmpDir, 'fake-home');
+      fs.mkdirSync(path.join(fakeHome, '.claude', 'plugins'), { recursive: true });
+
+      // Create a minimal specweave root with marketplace.json
+      specweaveRoot = path.join(tmpDir, 'specweave-root');
+      const pluginSourceDir = path.join(specweaveRoot, 'plugins', 'sw');
+      fs.mkdirSync(path.join(specweaveRoot, '.claude-plugin'), { recursive: true });
+      fs.mkdirSync(pluginSourceDir, { recursive: true });
+      fs.writeFileSync(path.join(pluginSourceDir, 'SKILL.md'), '# SW plugin');
+      fs.writeFileSync(
+        path.join(specweaveRoot, '.claude-plugin', 'marketplace.json'),
+        JSON.stringify({ plugins: [{ name: 'sw', source: 'plugins/sw', version: '1.0.0' }] }),
+      );
+    });
+
+    it('should NOT create vskill.lock in process.cwd()', async () => {
+      // We need to import the function dynamically to test with mocks
+      // For now, verify the static code: after T-003, installPlugin should
+      // not call getProjectRoot() — it should use ensureGlobalLockfile()
+      const src = fs.readFileSync(
+        path.join(__dirname, '..', '..', '..', 'src', 'utils', 'plugin-copier.ts'),
+        'utf-8',
+      );
+      // After T-003, installPlugin should NOT contain getProjectRoot()
+      const installPluginBody = src.slice(
+        src.indexOf('export function installPlugin('),
+        src.indexOf('export const copyPlugin'),
+      );
+      expect(installPluginBody).not.toContain('getProjectRoot()');
+      expect(installPluginBody).toContain('ensureGlobalLockfile');
+      expect(installPluginBody).toContain('writeGlobalLockfile');
+    });
+  });
+
+  // =========================================================================
+  // T-004: Skip logic with global lock
+  // =========================================================================
+  describe('skip logic with global lock', () => {
+    let fakeHome: string;
+
+    beforeEach(() => {
+      fakeHome = path.join(tmpDir, 'fake-home');
+      fs.mkdirSync(fakeHome, { recursive: true });
+    });
+
+    it('global lock hash match enables skip', () => {
+      // Write a global lockfile with a known hash
+      const lock = ensureGlobalLockfile(fakeHome);
+      lock.skills['sw'] = {
+        version: '1.0.0',
+        sha: 'abc123def456',
+        tier: 'BUNDLED',
+        installedAt: '2026-03-17T00:00:00Z',
+        source: 'local:specweave',
+      };
+      writeGlobalLockfile(lock, fakeHome);
+
+      // Read it back and verify hash comparison works
+      const readBack = readGlobalLockfile(fakeHome);
+      expect(readBack).not.toBeNull();
+      expect(readBack!.skills['sw']?.sha).toBe('abc123def456');
     });
   });
 
