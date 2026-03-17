@@ -18,6 +18,7 @@ const {
   mockReadJson,
   mockRemove,
   mockReaddir,
+  mockStat,
   mockExecSync,
   mockGetDirname,
   mockGetSystemPromptForLanguage,
@@ -31,6 +32,7 @@ const {
   mockReadJson: vi.fn(),
   mockRemove: vi.fn(),
   mockReaddir: vi.fn().mockResolvedValue([]),
+  mockStat: vi.fn(),
   mockExecSync: vi.fn(),
   mockGetDirname: vi.fn().mockReturnValue('/fake/adapters'),
   mockGetSystemPromptForLanguage: vi.fn(),
@@ -46,6 +48,7 @@ vi.mock('../../../src/utils/fs-native.js', () => ({
   readJson: mockReadJson,
   remove: mockRemove,
   readdir: mockReaddir,
+  stat: mockStat,
 }));
 
 vi.mock('child_process', () => ({
@@ -338,7 +341,7 @@ describe('CursorAdapter', () => {
       await adapter.compilePlugin(plugin);
 
       expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test-test-skill.md'),
+        expect.stringContaining('specweave-test/test-skill.md'),
         expect.stringContaining('# Skill Body'),
         'utf-8'
       );
@@ -384,12 +387,12 @@ describe('CursorAdapter', () => {
 
       expect(mockWriteFile).toHaveBeenCalledTimes(2);
       expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test-a.md'),
+        expect.stringContaining('specweave-test/a.md'),
         expect.any(String),
         'utf-8'
       );
       expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test-b.md'),
+        expect.stringContaining('specweave-test/b.md'),
         expect.any(String),
         'utf-8'
       );
@@ -464,34 +467,24 @@ describe('CursorAdapter', () => {
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Unloading plugin'));
     });
 
-    it('should remove matching plugin files from .cursor/rules/', async () => {
+    it('should remove the plugin subdirectory from .cursor/rules/', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReaddir.mockResolvedValue([
-        'specweave-test-skill-a.md',
-        'specweave-test-skill-b.md',
-        'specweave-other-skill.md',
-      ]);
       mockRemove.mockResolvedValue(undefined);
 
       await adapter.unloadPlugin('specweave-test');
 
-      // Should remove only specweave-test-* files
-      expect(mockRemove).toHaveBeenCalledTimes(2);
+      // Should remove the specweave-test/ subdirectory
+      expect(mockRemove).toHaveBeenCalledTimes(1);
       expect(mockRemove).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test-skill-a.md')
-      );
-      expect(mockRemove).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test-skill-b.md')
+        expect.stringContaining('.cursor/rules/specweave-test')
       );
     });
 
-    it('should not remove files from other plugins', async () => {
-      mockPathExists.mockResolvedValue(true);
-      mockReaddir.mockResolvedValue([
-        'specweave-other-skill.md',
-        'unrelated.txt',
-      ]);
-      mockRemove.mockResolvedValue(undefined);
+    it('should not remove other plugin directories', async () => {
+      mockPathExists.mockImplementation(async (p: string) =>
+        // Only the target plugin dir exists
+        !p.includes('specweave-test')
+      );
 
       await adapter.unloadPlugin('specweave-test');
 
@@ -529,52 +522,34 @@ describe('CursorAdapter', () => {
       expect(result).toEqual([]);
     });
 
-    it('should extract plugin names from dash-separated filenames', async () => {
-      // listInstalledPluginsInDir extracts text before first dash as plugin name
+    it('should return subdirectory names as plugin names', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReaddir.mockResolvedValue([
-        'myplugin-skill.md',
-        'otherplugin-feature.md',
-      ]);
+      mockReaddir.mockResolvedValue(['myplugin', 'otherplugin']);
+      mockStat.mockResolvedValue({ isDirectory: () => true });
 
       const result = await adapter.getInstalledPlugins();
       expect(result).toEqual(expect.arrayContaining(['myplugin', 'otherplugin']));
       expect(result).toHaveLength(2);
     });
 
-    it('should skip non-md files', async () => {
+    it('should exclude non-directory entries', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReaddir.mockResolvedValue([
-        'plugin-skill.md',
-        'plugin-other.txt',
-        'readme.md', // no dash, skipped
-      ]);
+      mockReaddir.mockResolvedValue(['plugin', 'README.md']);
+      mockStat
+        .mockResolvedValueOnce({ isDirectory: () => true })
+        .mockResolvedValueOnce({ isDirectory: () => false });
 
       const result = await adapter.getInstalledPlugins();
       expect(result).toEqual(['plugin']);
     });
 
-    it('should skip files without a dash', async () => {
+    it('should list all plugin subdirectories', async () => {
       mockPathExists.mockResolvedValue(true);
-      mockReaddir.mockResolvedValue([
-        'nodash.md',
-        'plugin-skill.md',
-      ]);
+      mockReaddir.mockResolvedValue(['sw', 'frontend-design', 'skill-creator']);
+      mockStat.mockResolvedValue({ isDirectory: () => true });
 
       const result = await adapter.getInstalledPlugins();
-      expect(result).toEqual(['plugin']);
-    });
-
-    it('should deduplicate plugin names', async () => {
-      mockPathExists.mockResolvedValue(true);
-      mockReaddir.mockResolvedValue([
-        'myplugin-skill-a.md',
-        'myplugin-skill-b.md',
-        'myplugin-skill-c.md',
-      ]);
-
-      const result = await adapter.getInstalledPlugins();
-      expect(result).toEqual(['myplugin']);
+      expect(result).toEqual(['sw', 'frontend-design', 'skill-creator']);
     });
   });
 });

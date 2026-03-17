@@ -111,10 +111,22 @@ function scanPluginCache(): { name: string; path: string }[] {
 export function shouldOfferMigration(lockDir?: string): boolean {
   const lockPath = join(lockDir || process.cwd(), LOCKFILE_NAME);
 
-  // Already migrated
+  // Already migrated (project-local lock exists)
   if (existsSync(lockPath)) {
     return false;
   }
+
+  // Also check global plugins-lock.json — if bundled plugins are tracked there,
+  // no migration is needed
+  try {
+    const globalLockPath = join(homedir(), '.specweave', 'plugins-lock.json');
+    if (existsSync(globalLockPath)) {
+      const globalLock = JSON.parse(readFileSync(globalLockPath, 'utf-8'));
+      if (globalLock.skills && Object.keys(globalLock.skills).length > 0) {
+        return false;
+      }
+    }
+  } catch { /* non-fatal */ }
 
   // Check if there are any plugins to migrate
   const plugins = scanPluginCache();
