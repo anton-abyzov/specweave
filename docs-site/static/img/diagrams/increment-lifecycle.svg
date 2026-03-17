@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#6b58b8"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#10b981"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+
+  <!-- Plan -->
+  <rect x="20" y="60" width="140" height="56" rx="10" fill="#6b58b8" opacity="0.1" stroke="#6b58b8" stroke-width="1.5"/>
+  <text x="90" y="84" text-anchor="middle" fill="#6b58b8" font-size="13" font-weight="600">Plan</text>
+  <text x="90" y="102" text-anchor="middle" fill="#1a1a2e" font-size="10" opacity="0.7">/sw:increment</text>
+
+  <!-- Arrow 1 -->
+  <line x1="160" y1="88" x2="192" y2="88" stroke="#6b58b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Execute -->
+  <rect x="204" y="60" width="140" height="56" rx="10" fill="#6b58b8" opacity="0.1" stroke="#6b58b8" stroke-width="1.5"/>
+  <text x="274" y="84" text-anchor="middle" fill="#6b58b8" font-size="13" font-weight="600">Execute</text>
+  <text x="274" y="102" text-anchor="middle" fill="#1a1a2e" font-size="10" opacity="0.7">/sw:do</text>
+
+  <!-- Arrow 2 -->
+  <line x1="344" y1="88" x2="376" y2="88" stroke="#6b58b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Validate -->
+  <rect x="388" y="60" width="140" height="56" rx="10" fill="#6b58b8" opacity="0.1" stroke="#6b58b8" stroke-width="1.5"/>
+  <text x="458" y="84" text-anchor="middle" fill="#6b58b8" font-size="13" font-weight="600">Validate</text>
+  <text x="458" y="102" text-anchor="middle" fill="#1a1a2e" font-size="10" opacity="0.7">/sw:validate</text>
+
+  <!-- Arrow 3 -->
+  <line x1="528" y1="88" x2="560" y2="88" stroke="#6b58b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Close -->
+  <rect x="572" y="60" width="128" height="56" rx="10" fill="#10b981" opacity="0.12" stroke="#10b981" stroke-width="1.5"/>
+  <text x="636" y="84" text-anchor="middle" fill="#10b981" font-size="13" font-weight="600">Close</text>
+  <text x="636" y="102" text-anchor="middle" fill="#1a1a2e" font-size="10" opacity="0.7">/sw:done</text>
+
+  <!-- Auto branch -->
+  <line x1="274" y1="116" x2="274" y2="152" stroke="#10b981" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <rect x="204" y="154" width="140" height="46" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-width="1.5"/>
+  <text x="274" y="174" text-anchor="middle" fill="#10b981" font-size="13" font-weight="600">Auto</text>
+  <text x="274" y="190" text-anchor="middle" fill="#1a1a2e" font-size="10" opacity="0.7">/sw:auto</text>
+
+  <!-- Title -->
+  <text x="360" y="30" text-anchor="middle" fill="#1a1a2e" font-size="15" font-weight="700">Increment Lifecycle</text>
+</svg>

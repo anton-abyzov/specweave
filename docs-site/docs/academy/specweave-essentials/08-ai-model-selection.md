@@ -187,7 +187,7 @@ ai:
 
 ## Glossary Terms Used
 
-- **[LLM](/docs/glossary/terms/llm)** — Large Language Model
+- **LLM** — Large Language Model
 - **Inference** — Using trained models
 
 ---

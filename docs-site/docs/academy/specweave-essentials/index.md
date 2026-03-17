@@ -125,8 +125,8 @@ Prefer watching? Start with the Complete Masterclass:
 Before starting, familiarize yourself with these terms:
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work (feature, bug fix)
-- **[spec.md](/docs/glossary/terms/specs)** — Business requirements (WHAT)
-- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** — Testable success conditions
+- **spec.md** — Business requirements (WHAT)
+- **Acceptance Criteria** — Testable success conditions
 - **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
 - **[Quality Gates](/docs/glossary/terms/quality-gate)** — Validation before shipping
 

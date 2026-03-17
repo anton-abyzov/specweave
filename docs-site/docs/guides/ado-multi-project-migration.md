@@ -167,7 +167,7 @@ az devops project create --name PaymentService --org https://dev.azure.com/youro
 
 Or use the SpecWeave command:
 ```bash
-/specweave-ado:create-projects
+/sw-ado:create-projects
 ```
 
 ### Step 6: Re-sync Specs to New Structure
@@ -176,11 +176,11 @@ After migration, sync your specs to the new ADO structure:
 
 ```bash
 # Sync all specs
-/specweave-ado:sync-all
+/sw-ado:sync-all
 
 # Or sync individually
-/specweave-ado:sync-spec AuthService/spec-001
-/specweave-ado:sync-spec UserService/spec-002
+/sw-ado:sync-spec AuthService/spec-001
+/sw-ado:sync-spec UserService/spec-002
 ```
 
 ### Step 7: Verify Migration
@@ -190,10 +190,10 @@ After migration, sync your specs to the new ADO structure:
 ls -la .specweave/docs/internal/specs/
 
 # Verify ADO links
-/specweave-ado:status
+/sw-ado:status
 
 # Test sync
-/specweave-ado:sync-spec AuthService/spec-001 --dry-run
+/sw-ado:sync-spec AuthService/spec-001 --dry-run
 ```
 
 ## Migration Patterns
@@ -281,7 +281,7 @@ rm -rf .specweave/docs/internal/specs
 mv .specweave/docs/internal/specs.backup .specweave/docs/internal/specs
 
 # Re-sync with original structure
-/specweave-ado:sync-all
+/sw-ado:sync-all
 ```
 
 ## Common Issues and Solutions
@@ -312,7 +312,7 @@ specweave dedupe-specs --strategy newest
 
 **Solution**: Run link repair:
 ```bash
-/specweave-ado:repair-links
+/sw-ado:repair-links
 ```
 
 ### Issue 4: Rate Limiting During Migration
@@ -366,10 +366,10 @@ Notify your team:
 Update your pipelines:
 ```yaml
 # Before
-- run: /specweave-ado:sync-spec spec-001
+- run: /sw-ado:sync-spec spec-001
 
 # After
-- run: /specweave-ado:sync-spec AuthService/spec-001
+- run: /sw-ado:sync-spec AuthService/spec-001
 ```
 
 ### 5. Monitor After Migration

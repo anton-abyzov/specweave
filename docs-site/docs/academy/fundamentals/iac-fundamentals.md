@@ -2673,27 +2673,27 @@ Congratulations! You now understand Infrastructure as Code fundamentals.
 **To deepen your knowledge**, explore these topics:
 
 ### Terraform
-- [Terraform guide](/docs/glossary/terms/terraform) - Complete Terraform reference
+- Terraform guide - Complete Terraform reference
 - [Terraform Registry](https://registry.terraform.io/) - Browse modules and providers
 - [Terraform Best Practices](https://www.terraform-best-practices.com/) - Community best practices
 
 ### Kubernetes
-- [Kubernetes guide](/docs/glossary/terms/kubernetes) - Complete K8s reference
+- Kubernetes guide - Complete K8s reference
 - Helm guide - K8s package manager
 - [Kubernetes Patterns](https://k8spatterns.io/) - Design patterns for K8s
 
 ### Docker
-- [Docker guide](/docs/glossary/terms/docker) - Complete Docker reference
+- Docker guide - Complete Docker reference
 - [Docker Hub](https://hub.docker.com/) - Public container registry
 - [Docker Best Practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 
 ### CI/CD
-- [CI/CD guide](/docs/glossary/terms/ci-cd) - Continuous integration and deployment
-- [GitHub Actions guide](/docs/glossary/terms/github-actions) - GitHub CI/CD
+- CI/CD guide - Continuous integration and deployment
+- GitHub Actions guide - GitHub CI/CD
 - [GitOps](https://www.gitops.tech/) - Git-based deployment strategy
 
 ### Related Concepts
-- [Microservices Architecture](/docs/glossary/terms/microservices)
+- Microservices Architecture
 - Service Mesh
 - Observability
 - Site Reliability Engineering (SRE)

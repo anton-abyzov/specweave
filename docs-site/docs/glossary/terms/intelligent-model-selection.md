@@ -101,4 +101,4 @@ Task agent with model: haiku
 
 - [Cost Tracking](/docs/reference/cost-tracking)
 - [Phase Detection](/docs/glossary/terms/skills-vs-agents)
-- [Hooks](/docs/glossary/terms/hooks)
+- Hooks

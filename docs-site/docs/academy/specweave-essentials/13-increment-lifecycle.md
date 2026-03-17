@@ -574,7 +574,7 @@ Practice lifecycle management:
 ## Glossary Terms Used
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
-- **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
+- **WIP Limits** — Work-in-progress constraints
 - **[Quality Gate](/docs/glossary/terms/quality-gate)** — Validation checkpoint
 - **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
 

@@ -43,4 +43,4 @@ Design principles for skill authoring — how to design skills that users can ex
 
 - **[Skills Overview](/docs/skills/)** — Both skill layers at a glance
 - **[Verified Skills Standard](/docs/skills/verified/)** — How skills earn trust through 3-tier security certification
-- **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
+- **[verified-skill.com](https://verified-skill.com)** — The trusted skill registry

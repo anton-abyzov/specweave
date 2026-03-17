@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480">
+  <style>
+    text { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+
+  <!-- Title -->
+  <text x="350" y="28" text-anchor="middle" fill="#1a1a2e" font-size="15" font-weight="700">Plugin Architecture</text>
+
+  <!-- Tier 1: Core -->
+  <rect x="20" y="46" width="660" height="200" rx="12" fill="#6b58b8" opacity="0.06" stroke="#6b58b8" stroke-width="1.5"/>
+  <text x="40" y="70" fill="#6b58b8" font-size="13" font-weight="700">SpecWeave Core</text>
+  <text x="268" y="70" fill="#6b58b8" font-size="11" opacity="0.7">8 bundled plugins, ~42 skills</text>
+
+  <!-- Core plugin boxes row 1 -->
+  <rect x="40" y="84" width="145" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="112" y="107" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw (core framework)</text>
+
+  <rect x="195" y="84" width="145" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="267" y="107" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-github</text>
+
+  <rect x="350" y="84" width="145" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="422" y="107" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-jira</text>
+
+  <rect x="505" y="84" width="155" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="582" y="107" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-ado</text>
+
+  <!-- Core plugin boxes row 2 -->
+  <rect x="40" y="132" width="145" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="112" y="155" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-release</text>
+
+  <rect x="195" y="132" width="145" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="267" y="155" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-diagrams</text>
+
+  <rect x="350" y="132" width="145" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="422" y="155" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-media</text>
+
+  <rect x="505" y="132" width="155" height="38" rx="6" fill="white" stroke="#6b58b8" stroke-width="1"/>
+  <text x="582" y="155" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">sw-docs</text>
+
+  <!-- Core detail -->
+  <text x="40" y="196" fill="#1a1a2e" font-size="10" opacity="0.6">Agents: PM, Architect, Tech Lead, QA Lead, Security Engineer, Code Reviewer</text>
+  <text x="40" y="212" fill="#1a1a2e" font-size="10" opacity="0.6">Lifecycle: /sw:increment, /sw:do, /sw:auto, /sw:validate, /sw:done</text>
+  <text x="40" y="228" fill="#1a1a2e" font-size="10" opacity="0.6">Syncs: GitHub Issues, JIRA Stories, Azure DevOps Work Items</text>
+
+  <!-- Tier 2: Marketplace -->
+  <rect x="20" y="260" width="660" height="98" rx="12" fill="#10b981" opacity="0.06" stroke="#10b981" stroke-width="1.5"/>
+  <text x="40" y="284" fill="#10b981" font-size="13" font-weight="700">vskill Marketplace</text>
+  <text x="202" y="284" fill="#10b981" font-size="11" opacity="0.7">5 plugins, 7 skills</text>
+
+  <rect x="40" y="296" width="110" height="34" rx="6" fill="white" stroke="#10b981" stroke-width="1"/>
+  <text x="95" y="317" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">mobile</text>
+
+  <rect x="162" y="296" width="110" height="34" rx="6" fill="white" stroke="#10b981" stroke-width="1"/>
+  <text x="217" y="317" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">skills</text>
+
+  <rect x="284" y="296" width="110" height="34" rx="6" fill="white" stroke="#10b981" stroke-width="1"/>
+  <text x="339" y="317" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">marketing</text>
+
+  <rect x="406" y="296" width="120" height="34" rx="6" fill="white" stroke="#10b981" stroke-width="1"/>
+  <text x="466" y="317" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">productivity</text>
+
+  <rect x="538" y="296" width="122" height="34" rx="6" fill="white" stroke="#10b981" stroke-width="1"/>
+  <text x="599" y="317" text-anchor="middle" fill="#1a1a2e" font-size="11" font-weight="500">google-workspace</text>
+
+  <!-- Tier 3: Community -->
+  <rect x="20" y="374" width="660" height="90" rx="12" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/>
+  <text x="40" y="400" fill="#1a1a2e" font-size="13" font-weight="700">verified-skill.com Registry</text>
+  <text x="280" y="400" fill="#1a1a2e" font-size="11" opacity="0.7">99,680+ community skills</text>
+
+  <text x="40" y="424" fill="#1a1a2e" font-size="10" opacity="0.6">Categories: Coding (53,752), AI/ML (13,176), Design, DevOps, Data, Testing, Marketing, and more</text>
+  <text x="40" y="440" fill="#1a1a2e" font-size="10" opacity="0.6">Install: npx vskill install &lt;skill-name&gt;  |  Search: npx vskill find "query"</text>
+</svg>

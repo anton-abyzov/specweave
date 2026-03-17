@@ -56,7 +56,7 @@ SpecWeave deliberately **does not sync** scheduling and planning metadata:
 ### GitHub Users: GitHub Projects
 
 **Setup**:
-1. SpecWeave syncs increments → GitHub Issues (automatic via `/specweave-github:create-issue`)
+1. SpecWeave syncs increments → GitHub Issues (automatic via `/sw-github:create-issue`)
 2. Create GitHub Project for scheduling (Web UI or CLI)
 3. Add SpecWeave issues to Project
 4. Manage sprints/estimates/dates in Project UI
@@ -116,7 +116,7 @@ gh project item-add <PROJECT_NUMBER> \
 ### JIRA Users: JIRA Boards + Sprints
 
 **Setup**:
-1. SpecWeave syncs increments → JIRA Epics/Stories (via `/specweave-jira:sync`)
+1. SpecWeave syncs increments → JIRA Epics/Stories (via `/sw-jira:sync`)
 2. Use JIRA's native sprint planning
 3. Assign stories to sprints in JIRA
 4. SpecWeave reflects implementation status only
@@ -158,7 +158,7 @@ gh project item-add <PROJECT_NUMBER> \
 ### Azure DevOps Users: ADO Boards + Iterations
 
 **Setup**:
-1. SpecWeave syncs increments → ADO Work Items (via `/specweave-ado:sync`)
+1. SpecWeave syncs increments → ADO Work Items (via `/sw-ado:sync`)
 2. Use ADO's iteration planning
 3. Set Iteration Path and Effort in ADO
 4. SpecWeave reflects implementation status only

@@ -148,17 +148,17 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 **GitHub**:
 ```bash
-/specweave-github:create-issue 0001
+/sw-github:create-issue 0001
 ```
 
 **JIRA**:
 ```bash
-/specweave-jira:sync 0001
+/sw-jira:sync 0001
 ```
 
 **Azure DevOps**:
 ```bash
-/specweave-ado:sync 0001
+/sw-ado:sync 0001
 ```
 
 ### 2. Work Normally

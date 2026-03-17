@@ -259,8 +259,8 @@ git checkout abc123 -- .specweave/increments/0001/tasks.md
 ## Glossary Terms Used
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
-- **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
-- **[Hooks](/docs/glossary/terms/hooks)** — Automated scripts at lifecycle events
+- **WIP Limits** — Work-in-progress constraints
+- **Hooks** — Automated scripts at lifecycle events
 
 ---
 

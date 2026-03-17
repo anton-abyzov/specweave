@@ -305,7 +305,7 @@ interface Chat {
 - ✅ C4 diagrams (visual architecture)
 - ✅ Data models
 - ✅ **Test strategy** with coverage targets
-- ✅ Test approach ([TDD](/docs/glossary/terms/tdd), [BDD](/docs/glossary/terms/bdd), traceability)
+- ✅ Test approach (TDD, BDD, traceability)
 
 ### Step 4: Test-Aware Planner Generates Tasks
 
@@ -433,7 +433,7 @@ coverage_target: 88%
 ```
 
 **Key elements:**
-- ✅ [BDD](/docs/glossary/terms/bdd) test plans (Given/When/Then)
+- ✅ BDD test plans (Given/When/Then)
 - ✅ Embedded test cases per task
 - ✅ Coverage targets per task
 - ✅ AC-ID traceability
@@ -542,7 +542,7 @@ Would you like to:
 
 - **Startup/MVP**: Brief (1-2 pages, core user stories)
 - **Enterprise**: Detailed (10+ pages, all edge cases)
-- **[Brownfield](/docs/glossary/terms/brownfield)**: Context-heavy (link to existing docs)
+- **Brownfield**: Context-heavy (link to existing docs)
 
 **Rule of thumb**: Enough detail that any developer can understand requirements without asking questions.
 
@@ -556,7 +556,7 @@ Would you like to:
 
 **Max recommended**: 25 tasks. If more, split into multiple increments.
 
-### Q: Should I always use [TDD](/docs/glossary/terms/tdd)?
+### Q: Should I always use TDD?
 
 **A**: TDD is optional but recommended for:
 
@@ -618,7 +618,7 @@ Before moving to implementation:
 
 ### Tasks (tasks)
 - [ ] All AC-IDs mapped to tasks
-- [ ] Test plans embedded ([BDD](/docs/glossary/terms/bdd) format)
+- [ ] Test plans embedded (BDD format)
 - [ ] Coverage targets per task
 - [ ] Dependencies identified
 - [ ] Effort estimated
@@ -639,7 +639,7 @@ Planning complete! Move to implementation:
 **Learn more:**
 - [Implementation Workflow](/docs/workflows/implementation)
 - [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
-- [Specs](/docs/glossary/terms/specs)
+- Specs
 
 ---
 

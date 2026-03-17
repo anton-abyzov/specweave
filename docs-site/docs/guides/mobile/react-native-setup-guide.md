@@ -653,4 +653,4 @@ If you encounter issues not covered in this guide:
 
 **Related Guides**:
 - [React Native Crash Troubleshooting](../troubleshooting/react-native-expo-crashes.md) - Module-level crashes, white screens
-- [Mobile Architect Agent](../../../../plugins/specweave-mobile/agents/mobile-architect/AGENT.md) - Architecture patterns
+- [Mobile Architecture Patterns](../../patterns/mobile-architecture.md) - Architecture patterns

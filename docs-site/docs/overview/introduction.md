@@ -10,7 +10,7 @@ Where Claude Code, Cursor, Copilot, and Codex are stateless by default, SpecWeav
 
 AI coding tools are powerful. They're also stateless, unstructured, and uncoordinated by default.
 
-Every session starts from zero. Standards vary by who's prompting. Parallel agents have no coordination layer. Multi-repo [brownfield](/docs/glossary/terms/brownfield) codebases — dozens of repos, years of undocumented decisions, existing systems that must be extended — are where AI tools fall apart hardest.
+Every session starts from zero. Standards vary by who's prompting. Parallel agents have no coordination layer. Multi-repo brownfield codebases — dozens of repos, years of undocumented decisions, existing systems that must be extended — are where AI tools fall apart hardest.
 
 **The result:**
 - No documentation = regression risk
@@ -50,7 +50,7 @@ SpecWeave enforces **Spec-Driven Development**:
 5. **Context Precision** - Load only what's needed (70%+ token reduction)
 6. **Test-Validated Features** - Every feature proven through automated tests
 7. **Regression Prevention** - Document existing code before modification
-8. **Framework Agnostic** - Works with ANY tech stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, etc.)
+8. **Framework Agnostic** - Works with ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.)
 
 ## How It Works
 
@@ -90,7 +90,7 @@ Three quality gates validate completion:
 
 ### 4. Auto-Sync Everywhere
 
-Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, and Azure DevOps automatically.
+Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 
 ## Who Should Use SpecWeave?
 
@@ -99,13 +99,13 @@ Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, a
 - **Enterprise teams** building production systems
 - **Startups** needing scalable architecture from day one
 - **Solo developers** building complex applications
-- **Regulated industries** ([healthcare - HIPAA](/docs/glossary/terms/hipaa), [finance - SOC 2](/docs/glossary/terms/soc2))
-- **Teams migrating [brownfield](/docs/glossary/terms/brownfield) codebases** to modern practices
+- **Regulated industries** (healthcare - HIPAA, finance - SOC 2)
+- **Teams migrating brownfield codebases** to modern practices
 
 ### Use Cases
 
-- **[Greenfield](/docs/glossary/terms/greenfield) projects**: Start with comprehensive specs
-- **[Brownfield](/docs/glossary/terms/brownfield) projects**: Document existing code before modification
+- **Greenfield projects**: Start with comprehensive specs
+- **Brownfield projects**: Document existing code before modification
 - **Iterative development**: Build documentation gradually
 - **Compliance-heavy**: Maintain audit trails and traceability
 
@@ -114,7 +114,7 @@ Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, a
 | Feature | Benefit | Uniqueness |
 |---------|---------|------------|
 | **70%+ Token Reduction** | Plugin architecture loads only active increment + relevant agent = ~15K tokens (vs 200K+) | ⭐ Unique |
-| **[Brownfield](/docs/glossary/terms/brownfield) Excellence** | Import existing docs (Notion, Confluence, Wiki), create retroactive specs, ADRs | ⭐ Unique |
+| **Brownfield Excellence** | Import existing docs (Notion, Confluence, Wiki), create retroactive specs, ADRs | ⭐ Unique |
 | **Living Documentation** | Specs auto-update after every task via hooks—never drift from code | ⭐ Unique |
 | **LSP Code Intelligence** | Semantic symbol resolution — 198x faster than grep, zero false positives across TypeScript, Python, Go, Rust, Java, C# | ⭐ Unique |
 | **External Sync** | Push specs to GitHub/JIRA/ADO, read status back—keep existing workflows | Strong |
@@ -129,7 +129,7 @@ Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, a
 | Specs in chat history | **Permanent, searchable specs** |
 | Manual JIRA/GitHub updates | **Auto-sync on every task** |
 | Tests? Maybe later... | **Tests embedded in every task** |
-| Architecture in your head | **[ADRs](/docs/glossary/terms/adr) captured automatically** |
+| Architecture in your head | **ADRs captured automatically** |
 | "Ask John, he knows" | **Living docs, always current** |
 | Onboarding: 2 weeks | **Onboarding: 1 day** |
 

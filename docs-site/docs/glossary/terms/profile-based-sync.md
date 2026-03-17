@@ -311,7 +311,7 @@ graph LR
 
 **Interactive**:
 ```bash
-/specweave-github:sync 0008
+/sw-github:sync 0008
 
 # Prompt:
 # ⏰ Select time range:
@@ -327,20 +327,20 @@ graph LR
 **Command-Line**:
 ```bash
 # Use default (from profile)
-/specweave-github:sync 0008
+/sw-github:sync 0008
 
 # Override with specific range
-/specweave-github:sync 0008 --time-range 1M
-/specweave-github:sync 0008 --time-range 3M
+/sw-github:sync 0008 --time-range 1M
+/sw-github:sync 0008 --time-range 3M
 
 # Use all time (dangerous!)
-/specweave-github:sync 0008 --time-range ALL
+/sw-github:sync 0008 --time-range ALL
 ```
 
 **Dry Run**:
 ```bash
 # Preview sync without executing
-/specweave-github:sync 0008 --dry-run
+/sw-github:sync 0008 --dry-run
 
 # Output:
 # 📊 Sync Preview (DRY RUN)
@@ -394,7 +394,7 @@ sequenceDiagram
 ### Example: Critical Impact Blocked
 
 ```bash
-/specweave-github:sync 0008 --time-range ALL
+/sw-github:sync 0008 --time-range ALL
 
 # Output:
 ❌ This sync may FAIL due to:
@@ -490,7 +490,7 @@ Syncs to client-org/mobile-app repo
 # Set: "sync": {"profile": "client-mobile"}
 
 # 4. Sync increment
-/specweave-github:sync 0009
+/sw-github:sync 0009
 # → Prompt: Select profile (auto-detected: client-mobile)
 # → Prompt: Select time range (default: 1M)
 # → Pre-flight validation (300 API calls, LOW impact)
@@ -710,11 +710,11 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 
 ```bash
 # ❌ Bad: Always sync all time
-/specweave-github:sync 0008 --time-range ALL
+/sw-github:sync 0008 --time-range ALL
 # Result: 30+ minutes, 7,500 API calls, high rate limit risk
 
 # ✅ Good: Use 1M (1 month) by default
-/specweave-github:sync 0008 --time-range 1M
+/sw-github:sync 0008 --time-range 1M
 # Result: 2 minutes, 300 API calls, safe
 ```
 
@@ -748,9 +748,9 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 ## Related Terms
 
 - [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
-- [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation
+- GitHub Actions - CI/CD automation
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Content classification
-- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth
+- Source of Truth - Single source of truth
 - [Increments](/docs/glossary/terms/increments) - Increment structure
 
 ---
@@ -777,6 +777,6 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 **Key Commands**:
 - `/sw:sync-profile create` - Create new profile
 - `/sw:sync-profile list` - List all profiles
-- `/specweave-github:sync 0008` - Sync increment to GitHub
+- `/sw-github:sync 0008` - Sync increment to GitHub
 
 **Result**: Work with unlimited repositories while maintaining safety and performance.

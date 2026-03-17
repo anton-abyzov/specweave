@@ -91,10 +91,10 @@ Real enterprise projects don't live in vacuum — they have JIRA epics, GitHub i
 /sw:sync-progress
 
 # Creates GitHub issue from increment
-/specweave-github:create-issue
+/sw-github:create-issue
 
 # Syncs JIRA epic/story hierarchy
-/specweave-jira:sync
+/sw-jira:sync
 ```
 
 ### 3. Multi-Project Support

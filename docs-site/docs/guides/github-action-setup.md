@@ -26,8 +26,8 @@ SpecWeave GitHub Actions integration brings **automated spec-driven development*
 - ✅ **Auto-generates increment structures** from issues (spec/plan/tasks/tests)
 - ✅ **Validates PRs against specifications** (spec alignment, test coverage)
 - ✅ **Prevents regressions** (brownfield protection - requires docs before modifications)
-- ✅ **Auto-updates documentation** (CLAUDE.md, [API](/docs/glossary/terms/api) docs, changelog)
-- ✅ **Enforces test coverage** (TC-0001 traceability, skill tests, [E2E](/docs/glossary/terms/e2e) tests)
+- ✅ **Auto-updates documentation** (CLAUDE.md, API docs, changelog)
+- ✅ **Enforces test coverage** (TC-0001 traceability, skill tests, E2E tests)
 - ✅ **Scans for security** (vulnerabilities, code security, compliance)
 - ✅ **Detects performance regressions** (compare baseline vs PR)
 - ✅ **Syncs external systems** (JIRA, Slack, Azure DevOps)
@@ -440,7 +440,7 @@ Label: feature
    - ✅ Code aligns with spec
    - ✅ Test coverage (TC-0001 traceability)
    - ✅ Skills have ≥3 test cases
-   - ✅ [ADRs](/docs/glossary/terms/adr) for architecture changes
+   - ✅ ADRs for architecture changes
 4. Posts review comment with findings
 5. Approves, requests changes, or blocks
 
@@ -453,7 +453,7 @@ Label: feature
 ### ✅ Passed Checks
 - Spec exists: docs/internal/strategy/auth/oauth-spec.md
 - Test coverage: 100% (TC-0001 through TC-0010 covered)
-- [ADR](/docs/glossary/terms/adr) exists: .specweave/docs/decisions/005-oauth-strategy.md
+- ADR exists: .specweave/docs/decisions/005-oauth-strategy.md
 
 ### ⚠️ Warnings
 - Performance: New database queries (review indexing)

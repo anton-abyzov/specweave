@@ -34,7 +34,7 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 | **Smithery** | Partial (post-incident) | Server-level | API key management added post-breach | Reactive — improvements after disclosure | API key exposure; path traversal (Jun 2025); 3,000+ MCP servers compromised | 3,000+ MCP servers |
 | **ClawHub** | None built-in | Git-based (community forks) | Community submissions; no formal verification | None — open contribution model | ClawHavoc campaign: 335 infostealer packages deploying Atomic macOS Stealer | 500+ community-submitted skills |
 | **SkillsDirectory.com** | 50+ rules (automated) | Unclear (directory model) | Opaque review criteria | Automated + manual review (details undisclosed) | None publicly reported | ~36K skills indexed |
-| **Verified Skills** (SpecWeave) | 52 regex patterns + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review + blocklist enforcement | None | Growing marketplace at [verifiedskill.com](https://verifiedskill.com) |
+| **Verified Skills** (SpecWeave) | 52 regex patterns + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review + blocklist enforcement | None | Growing marketplace at [verified-skill.com](https://verified-skill.com) |
 | **Vendor Skills** (Anthropic, OpenAI, Google, Microsoft) | Internal code review; sandbox testing | Version-pinned to platform releases | Trusted organization model — vendor-authored or vendor-reviewed | Internal engineering review | None publicly disclosed | ~200 skills total across vendors |
 
 ### Key Observations
@@ -50,7 +50,7 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 **Vendor skills** from Anthropic, OpenAI, Google, and Microsoft carry the highest baseline trust but cover only generic use cases. Domain-specific needs (Terraform, Stripe, Kubernetes) are rarely addressed by vendor-authored skills. The vendor model also creates a false dichotomy: developers who need domain-specific skills are forced to choose between trusted-but-limited vendor skills and feature-rich-but-unvetted community skills. This gap is precisely where SpecWeave's tiered verification model aims to provide a third option.
 
 :::tip SpecWeave's Answer
-SpecWeave addresses these ecosystem-wide security failures through the [Verified Skills Standard](/docs/skills/verified/verified-skills) — a 3-tier certification system (Scanned, Verified, Certified) backed by the [verifiedskill.com](https://verifiedskill.com) registry. See the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard) for the complete specification.
+SpecWeave addresses these ecosystem-wide security failures through the [Verified Skills Standard](/docs/skills/verified/verified-skills) — a 3-tier certification system (Scanned, Verified, Certified) backed by the [verified-skill.com](https://verified-skill.com) registry. See the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard) for the complete specification.
 :::
 
 ### The Trust Gap
@@ -406,11 +406,11 @@ The judge supports multiple LLM providers (Anthropic, OpenAI, Azure, Bedrock, Ol
 
 ### 7. Malicious Skills Blocklist
 
-The `vskill` CLI includes a blocklist system (`vskill blocklist`) that maintains a local cache of known-malicious skills synced from the Verified Skills registry at verifiedskill.com. The blocklist is enforced at install time — before a skill is written to disk.
+The `vskill` CLI includes a blocklist system (`vskill blocklist`) that maintains a local cache of known-malicious skills synced from the Verified Skills registry at verified-skill.com. The blocklist is enforced at install time — before a skill is written to disk.
 
 | Command | Action |
 |---------|--------|
-| `vskill blocklist sync` | Fetch the latest blocklist from verifiedskill.com |
+| `vskill blocklist sync` | Fetch the latest blocklist from verified-skill.com |
 | `vskill blocklist list` | Display all cached blocklist entries with threat type and severity |
 | `vskill blocklist check <name>` | Check whether a specific skill name is blocklisted |
 
@@ -426,7 +426,7 @@ Transparency about what the system does not yet do is as important as what it do
 
 **Local plugin installs skip scanning entirely.** When using `vskill add --plugin` to install a plugin from a local directory, no Tier 1 scan is performed. The lockfile still records `tier: "SCANNED"`, creating a misleading trust signal. Local plugins are assumed to be trusted by the developer who controls the source path.
 
-**Marketplace scanning vs. install-time scanning.** The Verified Skills marketplace at verifiedskill.com performs server-side scanning at submission time. The `vskill` CLI performs client-side Tier 1 scanning at install time for GitHub and registry sources. These are independent scan passes using the same 52-pattern ruleset. A skill scanned server-side at submission and client-side at install receives two independent checks.
+**Marketplace scanning vs. install-time scanning.** The Verified Skills marketplace at verified-skill.com performs server-side scanning at submission time. The `vskill` CLI performs client-side Tier 1 scanning at install time for GitHub and registry sources. These are independent scan passes using the same 52-pattern ruleset. A skill scanned server-side at submission and client-side at install receives two independent checks.
 
 **Certification expiry is stored but not enforced.** The Verified Skills platform stores a `certExpiresAt` timestamp for certified skills, but neither the platform nor the vskill CLI currently enforces expiry. A skill whose certification has lapsed still displays its last-known tier. Enforcement of certification expiry is planned but not yet implemented.
 
@@ -659,7 +659,7 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 |------|-----------|
 | **Agent Skills** | Markdown files (SKILL.md) that provide instructions to AI coding agents. Adopted by 39 agent runtimes as of `skills@1.3.9`. |
 | **ClawHavoc** | A supply chain attack campaign that published 335 infostealer packages to ClawHub, deploying Atomic macOS Stealer. |
-| **Blocklist** | A locally cached list of known-malicious skills, synced from verifiedskill.com via `vskill blocklist sync`. Enforced at install time by the vskill CLI. |
+| **Blocklist** | A locally cached list of known-malicious skills, synced from verified-skill.com via `vskill blocklist sync`. Enforced at install time by the vskill CLI. |
 | **Dynamic Context Injection Block** | A shell command in SKILL.md using Claude Code's built-in `` !`command` `` syntax that runs before the skill content is sent to the agent, injecting runtime context. The scanners include 14 dedicated injection-abuse patterns. |
 | **LLM Judge** | An AI model used in Tier 2 verification to evaluate skill intent beyond what regex patterns can detect. |
 | **Memory Poisoning** | An attack where a skill modifies agent configuration files (CLAUDE.md, MEMORY.md) to persist malicious behavior across sessions. |

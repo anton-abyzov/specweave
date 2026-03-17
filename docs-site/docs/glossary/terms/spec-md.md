@@ -6,7 +6,7 @@ sidebar_label: spec.md
 
 # spec.md (Specification File)
 
-The **spec.md** file is the primary specification document in a SpecWeave [increment](/docs/glossary/terms/increments), containing requirements, [user stories](/docs/glossary/terms/user-stories), and [acceptance criteria](/docs/glossary/terms/acceptance-criteria).
+The **spec.md** file is the primary specification document in a SpecWeave [increment](/docs/glossary/terms/increments), containing requirements, user stories, and acceptance criteria.
 
 ## Purpose
 
@@ -122,6 +122,6 @@ Follow the format:
 ## Related
 
 - [Increments](/docs/glossary/terms/increments) - Contains spec.md
-- [User Stories](/docs/glossary/terms/user-stories) - Format for requirements
+- User Stories - Format for requirements
 - [AC-ID](/docs/glossary/terms/ac-id) - Traceability identifiers
 - [PM Agent](/docs/glossary/terms/pm-agent) - Creates spec.md

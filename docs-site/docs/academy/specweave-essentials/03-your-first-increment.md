@@ -167,7 +167,7 @@ Status: Ready to close
 /sw:next
 ```
 
-This runs the [quality gates](/docs/glossary/terms/acceptance-criteria):
+This runs the quality gates:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -323,7 +323,7 @@ npm test -- --verbose
 ## Glossary Terms Used
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
-- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** — Testable success conditions
+- **Acceptance Criteria** — Testable success conditions
 - **[AC-ID](/docs/glossary/terms/ac-id)** — Acceptance criteria identifier
 - **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
 

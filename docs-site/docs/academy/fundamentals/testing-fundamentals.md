@@ -652,9 +652,9 @@ test('User can login', async ({ page }) => {
 
 ---
 
-## [Test-Driven Development (TDD)](/docs/glossary/terms/tdd)
+## Test-Driven Development (TDD)
 
-**[TDD](/docs/glossary/terms/tdd)**: Write tests **before** writing implementation code.
+**TDD**: Write tests **before** writing implementation code.
 
 ### The Red-Green-Refactor Cycle
 
@@ -815,9 +815,9 @@ export function validatePassword(password: string): boolean {
 
 ---
 
-## [Behavior-Driven Development (BDD)](/docs/glossary/terms/bdd)
+## Behavior-Driven Development (BDD)
 
-**[BDD](/docs/glossary/terms/bdd)**: Extend [TDD](/docs/glossary/terms/tdd) with natural language to describe behavior from user perspective.
+**BDD**: Extend TDD with natural language to describe behavior from user perspective.
 
 ### Given-When-Then Format
 
@@ -968,11 +968,11 @@ Then('I should see {string}', async function (text: string) {
 
 ---
 
-## [Test Coverage](/docs/glossary/terms/test-coverage)
+## Test Coverage
 
 ### What is Coverage?
 
-**[Coverage](/docs/glossary/terms/test-coverage)** measures which parts of your code are executed during tests.
+**Coverage** measures which parts of your code are executed during tests.
 
 ### Coverage Types
 
@@ -2067,18 +2067,18 @@ coverage_target: 85%
 
 ### [Quality Gates](/docs/glossary/terms/quality-gate)
 
-**[`/sw:validate`](/docs/glossary/terms/specweave-validate) command checks**:
+**`/sw:validate` command checks**:
 - ✅ All [AC-IDs](/docs/glossary/terms/ac-id) from [spec.md](/docs/glossary/terms/spec-md) covered in [tasks.md](/docs/glossary/terms/tasks-md)
 - ✅ Test plans exist for each task
 - ✅ Coverage targets met (80-90%)
-- ✅ [BDD](/docs/glossary/terms/bdd) format used (Given/When/Then)
+- ✅ BDD format used (Given/When/Then)
 
 **`npx vitest run` command validates**:
 - ✅ Test files exist (unit, integration, E2E)
 - ✅ Tests reference AC-IDs
 - ✅ Coverage reports meet targets
 
-**[`/sw:done`](/docs/glossary/terms/specweave-done) requires**:
+**`/sw:done` requires**:
 - ✅ All tests passing
 - ✅ Coverage targets met
 - ✅ No failing validation
@@ -2422,13 +2422,13 @@ All files                  |   87.45 |    82.33 |   91.67 |   87.12 |
 
 ### Learn More
 
-- **[TDD Guide](/docs/glossary/terms/tdd)** - Test-Driven Development in depth
-- **[BDD Guide](/docs/glossary/terms/bdd)** - Behavior-Driven Development
-- **[Unit Testing](/docs/glossary/terms/unit-testing)** - Testing individual functions
-- **[Integration Testing](/docs/glossary/terms/integration-testing)** - Testing component interactions
-- **[E2E Testing](/docs/glossary/terms/e2e)** - Testing complete user flows
-- **[Test Pyramid](/docs/glossary/terms/test-pyramid)** - Optimal test distribution
-- **[Test Coverage](/docs/glossary/terms/test-coverage)** - Measuring what's tested
+- **TDD Guide** - Test-Driven Development in depth
+- **BDD Guide** - Behavior-Driven Development
+- **Unit Testing** - Testing individual functions
+- **Integration Testing** - Testing component interactions
+- **E2E Testing** - Testing complete user flows
+- **Test Pyramid** - Optimal test distribution
+- **Test Coverage** - Measuring what's tested
 
 ### SpecWeave Testing Resources
 

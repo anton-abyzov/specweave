@@ -147,7 +147,7 @@ graph TB
 - Definitive status (no conflicts)
 - Single source of truth
 
-**Learn More**: [Three-Layer Architecture](/docs/glossary/terms/three-layer-architecture)
+**Learn More**: Three-Layer Architecture
 
 ---
 
@@ -242,7 +242,7 @@ vim .specweave/increments/0031/tasks.md
 /sw:sync-docs
 
 # Sync to GitHub
-/specweave-github:sync 0031
+/sw-github:sync 0031
 ```
 
 #### Direction 2: GitHub → Living Docs → Increment
@@ -274,7 +274,7 @@ vim .specweave/increments/0031/tasks.md
 
 **Automatic Flow**:
 1. Stakeholder checks GitHub checkbox
-2. GitHub webhook fires (or manual `/specweave-github:sync`)
+2. GitHub webhook fires (or manual `/sw-github:sync`)
 3. Living Docs User Story Implementation updates
 4. Increment tasks.md updates (source of truth)
 
@@ -316,7 +316,7 @@ vim .specweave/increments/0031/tasks.md
 - [ ] T-002: Create login API endpoint
 ```
 
-**Learn More**: [COPIED ACs and Tasks](/docs/glossary/terms/copied-acs-and-tasks)
+**Learn More**: COPIED ACs and Tasks
 
 ---
 
@@ -466,7 +466,7 @@ graph LR
 **Example**:
 ```bash
 # Manual sync command
-/specweave-github:sync-from 0008
+/sw-github:sync-from 0008
 
 # Result:
 # → Pull from GitHub: Issue status, task checkboxes, comments
@@ -766,7 +766,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Create GitHub issue for increment
-/specweave-github:create-issue 0008
+/sw-github:create-issue 0008
 
 # Output:
 # 🚀 Creating GitHub issue for 0008-user-authentication...
@@ -779,7 +779,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Sync increment to external tracker
-/specweave-github:sync 0008
+/sw-github:sync 0008
 
 # Prompts:
 # 1. Select profile (default: specweave-dev)
@@ -796,7 +796,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Pull changes from external tracker (no push)
-/specweave-github:sync-from 0008
+/sw-github:sync-from 0008
 
 # Output:
 # 📥 Pulling from GitHub issue #30...
@@ -811,7 +811,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Close external issue
-/specweave-github:close-issue 0008
+/sw-github:close-issue 0008
 
 # Output:
 # 🔒 Closing GitHub issue #30...
@@ -823,7 +823,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Check sync status for increment
-/specweave-github:status 0008
+/sw-github:status 0008
 
 # Output:
 # 📊 Sync Status: 0008-user-authentication
@@ -1067,9 +1067,9 @@ Links:
 
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync configuration
 - [Living Docs](/docs/glossary/terms/living-docs) - Auto-synced documentation
-- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth principle
+- Source of Truth - Single source of truth principle
 - [Increments](/docs/glossary/terms/increments) - Increment structure
-- [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation
+- GitHub Actions - CI/CD automation
 
 ---
 
@@ -1234,8 +1234,8 @@ specweave init .
 - **Action**: Update `.specweave/config.json` or run `specweave init .`
 
 **2. Command Behavior**
-- Old: `/specweave-github:sync` did everything based on `syncDirection`
-- New: `/specweave-github:sync` respects three permission flags
+- Old: `/sw-github:sync` did everything based on `syncDirection`
+- New: `/sw-github:sync` respects three permission flags
 - **Action**: Review your sync workflows and adjust permissions
 
 **3. Hook Behavior**
@@ -1283,8 +1283,8 @@ specweave init .
 - Conflict resolution built-in
 
 **Manual Commands**:
-- `/specweave-github:sync` - Bidirectional sync
-- `/specweave-github:sync-from` - Import only
-- `/specweave-github:status` - Check sync status
+- `/sw-github:sync` - Bidirectional sync
+- `/sw-github:sync-from` - Import only
+- `/sw-github:status` - Check sync status
 
 **Result**: Work in either system, changes flow automatically, always in sync.

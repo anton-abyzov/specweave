@@ -50,7 +50,7 @@ graph LR
 - 🧪 Creates test strategy
 - 👥 Strategic agent review (Architect, Security, QA, Tech Lead)
 
-**See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
+**See**: ADR (Architecture Decision Records) for design decisions made during planning.
 
 ---
 
@@ -191,7 +191,7 @@ npx vitest run 0007
 ```
 
 **What it checks**:
-- 📊 Per-task coverage (unit, integration, [E2E](/docs/glossary/terms/e2e))
+- 📊 Per-task coverage (unit, integration, E2E)
 - ✅ AC-ID coverage (all acceptance criteria tested)
 - 🎯 Overall coverage vs target (80-90%)
 - 📝 Missing tests and recommendations
@@ -227,9 +227,9 @@ npx vitest run 0007
 ```
 
 **What it syncs**:
-- 📚 [ADRs](/docs/glossary/terms/adr) (Proposed → Accepted)
+- 📚 ADRs (Proposed → Accepted)
 - 🏗️ Architecture diagrams (planned → actual)
-- 📖 [API](/docs/glossary/terms/api) documentation (contracts → endpoints)
+- 📖 API documentation (contracts → endpoints)
 - 📋 Feature lists (planned → completed)
 
 ---
@@ -521,15 +521,15 @@ All commands respect `.specweave/config.json`:
 
 Understanding SpecWeave terminology:
 
-- **[ADR](/docs/glossary/terms/adr)** - Architecture Decision Records
-- **[RFC](/docs/glossary/terms/rfc)** - Request for Comments (specification format)
-- **[API](/docs/glossary/terms/api)** - Application Programming Interface
-- **[E2E](/docs/glossary/terms/e2e)** - End-to-End Testing
-- **[Node.js](/docs/glossary/terms/nodejs)** - JavaScript runtime
-- **[REST](/docs/glossary/terms/rest)** - RESTful API pattern
-- **[GraphQL](/docs/glossary/terms/graphql)** - Query language for APIs
-- **[Microservices](/docs/glossary/terms/microservices)** - Distributed architecture pattern
-- **[IaC](/docs/glossary/terms/iac)** - Infrastructure as Code
+- **ADR** - Architecture Decision Records
+- **RFC** - Request for Comments (specification format)
+- **API** - Application Programming Interface
+- **E2E** - End-to-End Testing
+- **Node.js** - JavaScript runtime
+- **REST** - RESTful API pattern
+- **GraphQL** - Query language for APIs
+- **Microservices** - Distributed architecture pattern
+- **IaC** - Infrastructure as Code
 
 [View full glossary →](/docs/glossary)
 

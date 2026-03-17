@@ -454,4 +454,4 @@ You don't install 22 plugins manually. SpecWeave plugins load based on what you'
 - [Claude Code Skills Docs](https://code.claude.com/docs/en/skills) — Official Anthropic documentation
 - [Claude Code Plugins Docs](https://code.claude.com/docs/en/plugins) — Creating and distributing plugins
 - [All 100+ SpecWeave Skills](/docs/reference/skills) — Browse the complete catalog
-- [verifiedskill.com](https://verifiedskill.com) — The trusted skill registry
+- [verified-skill.com](https://verified-skill.com) — The trusted skill registry

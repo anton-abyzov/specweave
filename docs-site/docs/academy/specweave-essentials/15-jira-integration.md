@@ -763,7 +763,7 @@ specweave init . --reconfigure
 - **JIRA** — Atlassian project tracking tool
 - **Epic** — Large feature spanning multiple sprints
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work in SpecWeave
-- **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content out, status in (not true bidirectional)
+- **Split-Source Sync** — Content out, status in (not true bidirectional)
 
 ---
 

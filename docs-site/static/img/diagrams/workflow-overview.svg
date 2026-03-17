@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 240">
+  <defs>
+    <marker id="wf-arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#6b58b8"/>
+    </marker>
+    <marker id="wf-arrow-accent" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#10b981"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+
+  <!-- Title -->
+  <text x="440" y="24" text-anchor="middle" fill="#1a1a2e" font-size="15" font-weight="700">SpecWeave Workflow</text>
+
+  <!-- Brainstorm -->
+  <rect x="10" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.08" stroke="#6b58b8" stroke-width="1.2"/>
+  <text x="55" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Brainstorm</text>
+  <text x="55" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">ideate</text>
+
+  <line x1="100" y1="73" x2="116" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Plan -->
+  <rect x="120" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.08" stroke="#6b58b8" stroke-width="1.2"/>
+  <text x="165" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Plan</text>
+  <text x="165" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">spec.md</text>
+
+  <line x1="210" y1="73" x2="226" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Architect -->
+  <rect x="230" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.08" stroke="#6b58b8" stroke-width="1.2"/>
+  <text x="275" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Architect</text>
+  <text x="275" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">plan.md</text>
+
+  <line x1="320" y1="73" x2="336" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Tasks -->
+  <rect x="340" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.08" stroke="#6b58b8" stroke-width="1.2"/>
+  <text x="385" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Tasks</text>
+  <text x="385" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">tasks.md</text>
+
+  <line x1="430" y1="73" x2="446" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Implement -->
+  <rect x="450" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.1" stroke="#6b58b8" stroke-width="1.5"/>
+  <text x="495" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Implement</text>
+  <text x="495" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">/sw:do</text>
+
+  <line x1="540" y1="73" x2="556" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Test -->
+  <rect x="560" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.08" stroke="#6b58b8" stroke-width="1.2"/>
+  <text x="605" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Test</text>
+  <text x="605" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">vitest + e2e</text>
+
+  <line x1="650" y1="73" x2="666" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Validate -->
+  <rect x="670" y="48" width="90" height="50" rx="8" fill="#6b58b8" opacity="0.08" stroke="#6b58b8" stroke-width="1.2"/>
+  <text x="715" y="70" text-anchor="middle" fill="#6b58b8" font-size="11" font-weight="600">Validate</text>
+  <text x="715" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">/sw:validate</text>
+
+  <line x1="760" y1="73" x2="776" y2="73" stroke="#6b58b8" stroke-width="1.2" marker-end="url(#wf-arrow)"/>
+
+  <!-- Close -->
+  <rect x="780" y="48" width="88" height="50" rx="8" fill="#10b981" opacity="0.12" stroke="#10b981" stroke-width="1.5"/>
+  <text x="824" y="70" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600">Close</text>
+  <text x="824" y="86" text-anchor="middle" fill="#1a1a2e" font-size="8.5" opacity="0.6">/sw:done</text>
+
+  <!-- TDD Cycle branch from Implement -->
+  <line x1="495" y1="98" x2="495" y2="130" stroke="#10b981" stroke-width="1.2" stroke-dasharray="5,3"/>
+
+  <!-- TDD cycle box -->
+  <rect x="400" y="134" width="190" height="80" rx="10" fill="#10b981" opacity="0.06" stroke="#10b981" stroke-width="1.2"/>
+  <text x="495" y="156" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600">TDD Cycle</text>
+
+  <!-- Red -->
+  <rect x="414" y="166" width="48" height="24" rx="5" fill="#ef4444" opacity="0.15" stroke="#ef4444" stroke-width="1"/>
+  <text x="438" y="182" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">Red</text>
+
+  <!-- Arrow -->
+  <line x1="462" y1="178" x2="470" y2="178" stroke="#10b981" stroke-width="1" marker-end="url(#wf-arrow-accent)"/>
+
+  <!-- Green -->
+  <rect x="474" y="166" width="48" height="24" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="498" y="182" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">Green</text>
+
+  <!-- Arrow -->
+  <line x1="522" y1="178" x2="530" y2="178" stroke="#10b981" stroke-width="1" marker-end="url(#wf-arrow-accent)"/>
+
+  <!-- Refactor -->
+  <rect x="534" y="166" width="48" height="24" rx="5" fill="#6b58b8" opacity="0.15" stroke="#6b58b8" stroke-width="1"/>
+  <text x="558" y="182" text-anchor="middle" fill="#6b58b8" font-size="9" font-weight="600">Refactor</text>
+</svg>

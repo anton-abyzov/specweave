@@ -93,7 +93,7 @@ T-001: AuthService (tasks)
 validLogin() test (tests/unit/auth.test.ts)
 ```
 
-**For compliance** ([HIPAA](/docs/glossary/terms/hipaa), [SOC 2](/docs/glossary/terms/soc2), [FDA](/docs/glossary/terms/fda)):
+**For compliance** (HIPAA, SOC 2, FDA):
 - Complete audit trail
 - Requirement-to-code traceability
 - Test coverage proof

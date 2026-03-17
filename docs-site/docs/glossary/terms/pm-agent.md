@@ -18,7 +18,7 @@ The PM Agent is the first agent activated when you create a new [increment](/doc
 
 **Key responsibilities:**
 - 📋 **Requirements gathering** - Asks clarifying questions about scope
-- 📝 **User story creation** - Generates structured [user stories](/docs/glossary/terms/user-stories) with [acceptance criteria](/docs/glossary/terms/acceptance-criteria)
+- 📝 **User story creation** - Generates structured user stories with acceptance criteria
 - 🎯 **Scope definition** - Defines what's in/out of scope
 - 📊 **Priority assignment** - Labels features as P1 (must-have) or P2 (nice-to-have)
 - 🔗 **AC-ID generation** - Creates traceable [AC-IDs](/docs/glossary/terms/ac-id) for each criterion
@@ -89,6 +89,6 @@ graph LR
 ## Related
 
 - [Increments](/docs/glossary/terms/increments) - What PM Agent creates
-- [User Stories](/docs/glossary/terms/user-stories) - Output format
-- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - Validation criteria
+- User Stories - Output format
+- Acceptance Criteria - Validation criteria
 - [AC-ID](/docs/glossary/terms/ac-id) - Traceability identifiers

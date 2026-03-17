@@ -624,7 +624,7 @@ cat .specweave/config.json
 
 ## Glossary Terms Used
 
-- **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
+- **WIP Limits** — Work-in-progress constraints
 - **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
 

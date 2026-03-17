@@ -197,7 +197,7 @@ After creating your increment spec and tasks:
 Create GitHub issues with checkable task lists:
 
 ```bash
-/specweave-github:sync-spec specweave/FS-031
+/sw-github:sync-spec specweave/FS-031
 ```
 
 **Result**: GitHub issues have checkable task lists like this:

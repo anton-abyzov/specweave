@@ -290,5 +290,5 @@ Main Context
 ## Related Terms
 
 - [Role Orchestrator](/docs/glossary/terms/role-orchestrator)
-- [Hooks](/docs/glossary/terms/hooks)
+- Hooks
 - [Increments](/docs/glossary/terms/increments)

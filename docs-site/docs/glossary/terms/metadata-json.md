@@ -54,7 +54,7 @@ The **`metadata.json`** file tracks [increment](/docs/glossary/terms/increments)
 
 ## Status Values
 
-| Status | Meaning | [WIP Limit](/docs/glossary/terms/wip-limits) |
+| Status | Meaning | WIP Limit |
 |--------|---------|---------------------------------------------|
 | `active` | Currently being worked on | Counts |
 | `paused` | Temporarily blocked | Does not count |
@@ -95,4 +95,4 @@ The **`metadata.json`** file tracks [increment](/docs/glossary/terms/increments)
 - [spec.md](/docs/glossary/terms/spec-md) - Specifications
 - [plan.md](/docs/glossary/terms/plan-md) - Architecture plans
 - [tasks.md](/docs/glossary/terms/tasks-md) - Task tracking
-- [WIP Limits](/docs/glossary/terms/wip-limits) - Work-in-progress limits
+- WIP Limits - Work-in-progress limits

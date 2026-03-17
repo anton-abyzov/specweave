@@ -158,7 +158,7 @@ system with OAuth support.       Add user authentication system with OAuth suppo
 - When syncing increment progress
 
 **Manual** (CLI):
-- Run: `/specweave-github:sync <increment-id>`
+- Run: `/sw-github:sync <increment-id>`
 
 ### What It Does
 
@@ -373,7 +373,7 @@ specweave sync-progress
 # 1. PM closes GitHub issue #456 (all work complete)
 
 # 2. Developer syncs status
-/specweave-github:sync 0001
+/sw-github:sync 0001
 
 # Output:
 # 🔄 Syncing increment 0001-user-auth with GitHub...

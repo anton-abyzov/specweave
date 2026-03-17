@@ -33,7 +33,7 @@ The bottleneck was **typing speed** and **domain knowledge**. Senior developers 
 
 ## The Shift (2023-2024)
 
-[ChatGPT](/docs/glossary/terms/llm) and Claude changed everything. Suddenly:
+ChatGPT and Claude changed everything. Suddenly:
 
 - AI could write functional code in seconds
 - Debugging became "describe the problem → get solution"
@@ -78,7 +78,7 @@ Instead of "code first, think later":
 
 | Phase | What Happens | Who Does It |
 |-------|--------------|-------------|
-| **Specify** | Write requirements with [acceptance criteria](/docs/glossary/terms/acceptance-criteria) | Human (AI assists) |
+| **Specify** | Write requirements with acceptance criteria | Human (AI assists) |
 | **Plan** | Design architecture, break into tasks | AI (human reviews) |
 | **Implement** | Write code, tests, docs | AI (autonomous) |
 | **Validate** | Verify AC met, tests pass | Automated + human |
@@ -176,7 +176,7 @@ Every feature in SpecWeave has:
    ```
 
 2. **AI generates spec.md**
-   - User stories with [acceptance criteria](/docs/glossary/terms/acceptance-criteria)
+   - User stories with acceptance criteria
    - Non-functional requirements
    - Edge cases and constraints
 
@@ -187,7 +187,7 @@ Every feature in SpecWeave has:
 
 4. **AI generates plan.md**
    - Technical architecture
-   - [ADRs](/docs/glossary/terms/adr) for key decisions
+   - ADRs for key decisions
    - Component breakdown
 
 5. **AI generates tasks.md with embedded tests**

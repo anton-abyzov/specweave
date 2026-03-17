@@ -111,7 +111,7 @@ All `true` = same behavior as v0.23.x ✅
 
 **Effect**: `/sw:done` updates living docs locally, but requires manual sync:
 ```bash
-/specweave-github:sync 0047
+/sw-github:sync 0047
 ```
 
 ---
@@ -188,7 +188,7 @@ All `true` = same behavior as v0.23.x ✅
 
 **Fix Option 2** (Manual sync):
 ```bash
-/specweave-github:sync 0047
+/sw-github:sync 0047
 ```
 
 ---

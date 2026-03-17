@@ -758,13 +758,13 @@ tasks.md: All tasks with embedded tests
 ## Related Terms
 
 - [Living Docs](/docs/glossary/terms/living-docs) - Auto-synced documentation
-- [Specs](/docs/glossary/terms/specs) - Specifications (permanent knowledge base)
-- [User Stories](/docs/glossary/terms/user-stories) - User story format
-- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - AC format
+- Specs - Specifications (permanent knowledge base)
+- User Stories - User story format
+- Acceptance Criteria - AC format
 - [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers
-- [WIP Limits](/docs/glossary/terms/wip-limits) - Work in progress limits
-- [TDD](/docs/glossary/terms/tdd) - Test-driven development
-- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth
+- WIP Limits - Work in progress limits
+- TDD - Test-driven development
+- Source of Truth - Single source of truth
 
 ---
 

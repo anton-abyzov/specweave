@@ -15,7 +15,7 @@ description: "Test-Driven Development with SpecWeave"
 ## Why TDD?
 
 :::info TDD is Optional
-[TDD](/docs/glossary/terms/tdd) improves code quality but slows development. Use it when correctness matters (critical logic, APIs). Skip it for prototyping.
+TDD improves code quality but slows development. Use it when correctness matters (critical logic, APIs). Skip it for prototyping.
 :::
 
 ### Test-After (Traditional)
@@ -166,7 +166,7 @@ PASS tests/calculator.test.ts
 
 ## BDD in tasks.md
 
-Every task includes [BDD](/docs/glossary/terms/bdd) test plans:
+Every task includes BDD test plans:
 
 ```markdown
 ### T-004: Implement divide()
@@ -259,10 +259,10 @@ Build a string calculator using TDD:
 
 ## Glossary Terms Used
 
-- **[TDD](/docs/glossary/terms/tdd)** — Test-Driven Development
-- **[BDD](/docs/glossary/terms/bdd)** — Behavior-Driven Development (Given/When/Then)
-- **[Unit Testing](/docs/glossary/terms/unit-testing)** — Testing individual functions
-- **[Test Coverage](/docs/glossary/terms/test-coverage)** — Percentage of code tested
+- **TDD** — Test-Driven Development
+- **BDD** — Behavior-Driven Development (Given/When/Then)
+- **Unit Testing** — Testing individual functions
+- **Test Coverage** — Percentage of code tested
 
 ---
 
