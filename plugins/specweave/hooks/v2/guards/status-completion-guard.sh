@@ -10,7 +10,7 @@
 # @since 1.0.196
 # @see CLAUDE.md "Status Workflow" section
 
-set -e
+set +e  # CRITICAL: Never exit on error - consistent with non-blocking hook principle
 
 INPUT=$(cat)
 

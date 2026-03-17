@@ -44,8 +44,12 @@ describe('Session-Start Prompt Health Check', () => {
   });
 
   afterEach(() => {
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true });
+    try {
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      }
+    } catch {
+      // Ignore cleanup errors from filesystem race conditions
     }
   });
 
