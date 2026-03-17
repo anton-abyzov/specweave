@@ -114,11 +114,11 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 ### Installing Plugins
 
 ```bash
-# Plugins auto-install based on detected tech stack
-# Or install manually:
-vskill install --repo anton-abyzov/vskill --plugin mobile
-vskill install --repo anton-abyzov/vskill --plugin marketing
-vskill add specweave --plugin sw-github
+# The sw plugin installs automatically via specweave init
+# Domain plugins install manually:
+npx vskill install --repo anton-abyzov/vskill --plugin mobile
+npx vskill install --repo anton-abyzov/vskill --plugin marketing
+npx vskill install --repo anton-abyzov/specweave --plugin sw
 ```
 
 ---
