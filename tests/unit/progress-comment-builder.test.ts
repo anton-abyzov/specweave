@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { ProgressCommentBuilder } from '../../plugins/specweave-github/lib/progress-comment-builder.js';
+import { ProgressCommentBuilder } from '../../plugins/specweave/lib/integrations/github/progress-comment-builder.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';

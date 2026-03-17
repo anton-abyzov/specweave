@@ -305,7 +305,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
         try {
           // (0348) Use GitHubACCheckboxSync directly from the GitHub plugin
           const { GitHubACCheckboxSync } = await import(
-            '../../../plugins/specweave-github/lib/github-ac-checkbox-sync.js'
+            '../../../plugins/specweave/lib/integrations/github/github-ac-checkbox-sync.js'
           );
           const acSync = new GitHubACCheckboxSync({
             projectRoot,

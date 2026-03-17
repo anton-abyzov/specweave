@@ -82,8 +82,8 @@ describe('T-001: team-lead SKILL.md', () => {
 
   it('should reference specific SpecWeave skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
+    // After plugin consolidation, frontend:architect is replaced by sw:architect
     const requiredSkills = [
-      'frontend:architect',
       'sw:e2e',
       'sw:security',
       'sw:architect',
@@ -189,7 +189,7 @@ describe('T-007: team-build SKILL.md', () => {
 
   it('should map full-stack preset to correct skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toContain('frontend:architect');
+    // After plugin consolidation, sw:architect is the unified skill for all domains
     expect(content).toContain('sw:architect');
   });
 
@@ -350,11 +350,8 @@ describe('T-023: Full-stack preset end-to-end validation', () => {
     const orchestrate = readFileSync(orchestratePath, 'utf-8');
     const build = readFileSync(buildPath, 'utf-8');
 
-    // Both should reference the same frontend skill
-    expect(orchestrate).toContain('frontend:architect');
-    expect(build).toContain('frontend:architect');
-
-    // Both should reference architect for backend/shared
+    // After plugin consolidation, sw:architect is the unified skill for all domains
+    // Both should reference sw:architect for frontend, backend, and shared
     expect(orchestrate).toContain('sw:architect');
     expect(build).toContain('sw:architect');
   });
@@ -475,10 +472,10 @@ describe('ISSUE-5: Agents must run ALL tests locally before completion', () => {
 describe('ISSUE-6: Frontend agent design quality', () => {
   const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
-  it('should instruct frontend agent to invoke design skill', () => {
+  it('should instruct frontend agent to invoke architecture skill', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    // Agent templates moved to external files — Agent Reference Table lists frontend:design
-    expect(content).toMatch(/frontend:design/);
+    // After plugin consolidation, frontend uses sw:architect (unified skill)
+    expect(content).toMatch(/Frontend.*sw:architect|sw:architect/);
   });
 
   it('should set world-class design quality as default expectation', () => {

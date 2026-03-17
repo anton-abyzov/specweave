@@ -164,11 +164,11 @@ describe('AnalyticsCollector', () => {
     it('should filter by plugin', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
       collector.trackCommand('/sw:do', { plugin: 'specweave' });
-      collector.trackCommand('/sw-github:sync', { plugin: 'specweave-github' });
+      collector.trackCommand('/sw:github-sync', { plugin: 'specweave' });
 
-      const githubEvents = collector.readEventsFiltered({ plugin: 'specweave-github' });
-      expect(githubEvents).toHaveLength(1);
-      expect(githubEvents[0].name).toBe('/sw-github:sync');
+      const swEvents = collector.readEventsFiltered({ plugin: 'specweave' });
+      expect(swEvents).toHaveLength(2);
+      expect(swEvents.map(e => e.name)).toContain('/sw:github-sync');
     });
   });
 

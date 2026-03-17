@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseIssueBody } from '../../../../plugins/specweave-github/lib/github-issue-body-parser.js';
+import { parseIssueBody } from '../../../../plugins/specweave/lib/integrations/github/github-issue-body-parser.js';
 
 describe('parseIssueBody', () => {
   describe('single AC parsing', () => {

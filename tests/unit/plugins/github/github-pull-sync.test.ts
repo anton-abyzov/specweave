@@ -4,7 +4,7 @@
  * Tests the pull-sync function that fetches GitHub issue state and
  * applies changes back to spec.md acceptance criteria.
  *
- * Expected module: plugins/specweave-github/lib/github-pull-sync.ts (does NOT exist yet)
+ * Expected module: plugins/specweave/lib/integrations/github/github-pull-sync.ts (does NOT exist yet)
  *
  * @see T-010: Pull sync (GitHub -> spec)
  */
@@ -21,7 +21,7 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 }));
 
 const mockParseIssueBody = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave-github/lib/github-issue-body-parser.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-issue-body-parser.js', () => ({
   parseIssueBody: mockParseIssueBody,
 }));
 
@@ -32,7 +32,7 @@ import {
   type PullSyncChange,
   type PullSyncConflict,
   type PullSyncResult,
-} from '../../../../plugins/specweave-github/lib/github-pull-sync.js';
+} from '../../../../plugins/specweave/lib/integrations/github/github-pull-sync.js';
 
 import type { GitHubUserStoryLink } from '../../../../src/core/types/sync-profile.js';
 

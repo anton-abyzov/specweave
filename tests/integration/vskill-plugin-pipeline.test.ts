@@ -269,9 +269,8 @@ const MARKETPLACE_JSON = JSON.stringify({
   name: 'specweave',
   version: '1.0.0',
   plugins: [
-    { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework' },
+    { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework with GitHub, JIRA, ADO sync' },
     { name: 'frontend', source: './plugins/specweave-frontend', version: '1.0.50', description: 'Frontend' },
-    { name: 'sw-github', source: './plugins/specweave-github', version: '1.0.30', description: 'GitHub sync' },
   ],
 });
 
@@ -314,12 +313,11 @@ describe('vskill plugin pipeline integration', () => {
       await refreshPluginsCommand({ all: true });
 
       // Then: copyPluginSkillsToProject is invoked for each plugin (no CLI available)
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(2);
 
       const pluginNames = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
       expect(pluginNames).toContain('sw');
       expect(pluginNames).toContain('frontend');
-      expect(pluginNames).toContain('sw-github');
     });
 
     it('should pass specweave root to copyPluginSkillsToProject for each plugin', async () => {
@@ -362,7 +360,7 @@ describe('vskill plugin pipeline integration', () => {
       await refreshPluginsCommand({ all: true });
 
       // Then: copyPluginSkillsToProject was called but all returned skipped
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(2);
     });
 
     it('should NOT invoke claude plugin install (legacy path)', async () => {
@@ -407,7 +405,7 @@ describe('vskill plugin pipeline integration', () => {
       await refreshPluginsCommand({ all: true });
 
       // Then: copyPluginSkillsToProject handles direct file copy
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3); // sw, frontend, sw-github
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(2); // sw, frontend
     });
   });
 

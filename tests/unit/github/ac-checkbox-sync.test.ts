@@ -4,7 +4,7 @@
  * Tests the syncACCheckboxesToGitHub function that updates
  * AC checkboxes in GitHub issue bodies.
  *
- * @see plugins/specweave-github/lib/per-us-sync.ts
+ * @see plugins/specweave/lib/integrations/github/per-us-sync.ts
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';

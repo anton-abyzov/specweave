@@ -131,7 +131,7 @@ This is a test issue to verify the complete GitHub sync flow.
     await fs.writeFile(userStoryPath, userStoryContent);
 
     // Create issue via GitHub CLI
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,
@@ -227,7 +227,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-002-update-test.md');
     await fs.writeFile(userStoryPath, initialContent);
 
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder1 = new UserStoryIssueBuilder(
       userStoryPath,
@@ -338,7 +338,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-003-link-test.md');
     await fs.writeFile(userStoryPath, userStoryContent);
 
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,

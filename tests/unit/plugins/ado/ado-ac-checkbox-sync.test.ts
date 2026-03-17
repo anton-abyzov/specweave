@@ -11,7 +11,7 @@ vi.mock('axios', () => ({
 }));
 
 // Mock the GitHub AC parser (used for parseACStatusFromSpec)
-vi.mock('../../../../plugins/specweave-github/lib/github-ac-checkbox-sync.js', () => ({
+vi.mock('../../../../plugins/specweave/lib/integrations/github/github-ac-checkbox-sync.js', () => ({
   GitHubACCheckboxSync: {
     parseACStatusFromSpec: vi.fn(() => new Map([
       ['AC-US1-01', true],
@@ -22,7 +22,7 @@ vi.mock('../../../../plugins/specweave-github/lib/github-ac-checkbox-sync.js', (
   },
 }));
 
-import { AdoACCheckboxSync } from '../../../../plugins/specweave-ado/lib/ado-ac-checkbox-sync.js';
+import { AdoACCheckboxSync } from '../../../../plugins/specweave/lib/integrations/ado/ado-ac-checkbox-sync.js';
 
 describe('AdoACCheckboxSync — API-based section update', () => {
   let sync: AdoACCheckboxSync;

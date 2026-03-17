@@ -19,7 +19,7 @@ import {
   AdoProfileResolver,
   AdoProfileConfig,
   ProfileResolutionResult,
-} from '../../../plugins/specweave-ado/lib/ado-profile-resolver.js';
+} from '../../../plugins/specweave/lib/integrations/ado/ado-profile-resolver.js';
 
 /**
  * Resolved ADO profile with source information

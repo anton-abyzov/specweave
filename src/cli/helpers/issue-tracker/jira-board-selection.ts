@@ -12,7 +12,7 @@ import { select, checkbox, input, confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import type { JiraBoardMapping, JiraBoardMappingConfig } from '../../../core/types/sync-profile.js';
 import { JiraClient } from '../../../integrations/jira/jira-client.js';
-import { fetchBoardsForProject, type JiraBoard } from '../../../../plugins/specweave-jira/lib/jira-board-resolver.js';
+import { fetchBoardsForProject, type JiraBoard } from '../../../../plugins/specweave/lib/integrations/jira/jira-board-resolver.js';
 import {
   generateProjectId,
   getExistingProjectIds,

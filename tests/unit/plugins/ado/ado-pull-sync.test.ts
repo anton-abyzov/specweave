@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { pullAdoChanges, mapAdoStateToSpecweave, type PullSyncContext } from '../../../../plugins/specweave-ado/lib/ado-pull-sync.js';
+import { pullAdoChanges, mapAdoStateToSpecweave, type PullSyncContext } from '../../../../plugins/specweave/lib/integrations/ado/ado-pull-sync.js';
 
 describe('pullAdoChanges — last-write-wins', () => {
   const makePullContext = (overrides: Partial<PullSyncContext> = {}): PullSyncContext => ({

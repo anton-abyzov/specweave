@@ -131,7 +131,7 @@ External stakeholders need complete context in GitHub issues without accessing t
     await fs.writeFile(userStoryPath, userStoryContent);
 
     // 3. Import builder and test
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,
@@ -270,7 +270,7 @@ created: 2025-11-15
     await fs.writeFile(userStoryPath, userStoryContent);
 
     // Import builder and test
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,
@@ -317,7 +317,7 @@ created: 2025-11-15
     const userStoryPath = path.join(specsDir, 'us-001-external-links.md');
     await fs.writeFile(userStoryPath, userStoryContent);
 
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,
@@ -365,7 +365,7 @@ created: 2025-11-15
     const userStoryPath = path.join(specsDir, 'us-001-minimal.md');
     await fs.writeFile(userStoryPath, userStoryContent);
 
-    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave/lib/integrations/github/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,

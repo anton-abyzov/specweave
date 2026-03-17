@@ -148,7 +148,7 @@ async function linkToAdo(
   log: Logger
 ): Promise<void> {
   try {
-    const { AdoClient } = await import('../../plugins/specweave-ado/lib/ado-client.js');
+    const { AdoClient } = await import('../../plugins/specweave/lib/integrations/ado/ado-client.js');
 
     const adoConfig = {
       organization: config.sync?.ado?.organization || '',

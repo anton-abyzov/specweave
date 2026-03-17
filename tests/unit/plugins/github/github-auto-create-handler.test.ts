@@ -17,7 +17,7 @@ import * as os from 'os';
 
 const HANDLER_PATH = path.resolve(
   __dirname,
-  '../../../../plugins/specweave-github/hooks/github-auto-create-handler.sh',
+  '../../../../plugins/specweave/hooks/v2/integrations/github-auto-create-handler.sh',
 );
 
 function createTempProject(): string {

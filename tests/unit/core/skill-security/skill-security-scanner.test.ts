@@ -391,7 +391,7 @@ describe('T-009: Batch scan JSON export', () => {
         },
       },
       {
-        file: 'plugins/specweave-jira/skills/jira-sync/SKILL.md',
+        file: 'plugins/specweave/skills/jira-sync/SKILL.md',
         result: {
           exitCode: 1,
           passed: true,

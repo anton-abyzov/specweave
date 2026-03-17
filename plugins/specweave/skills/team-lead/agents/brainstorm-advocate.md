@@ -40,20 +40,26 @@ YOUR ANALYSIS MUST INCLUDE:
   ### Migration Path
   If this requires changing existing code, outline the migration strategy.
 
+PROGRESS UPDATES (MANDATORY — prevents false stuck detection):
+  After completing each APPROACH step, send a brief heartbeat:
+  SendMessage({
+    to: "team-lead",
+    message: "STATUS: [Step N/4] [what you just finished]. Proceeding to [next step].",
+    summary: "Advocate: step N/4 done"
+  })
+
 COMMUNICATION:
   When done, signal completion:
   SendMessage({
-    type: "message",
-    recipient: "team-lead",
-    content: "PERSPECTIVE_COMPLETE: Advocate perspective ready. Recommends: [1-sentence summary of proposed approach]. Key argument: [strongest point].",
+    to: "team-lead",
+    message: "PERSPECTIVE_COMPLETE: Advocate perspective ready. Recommends: [1-sentence summary of proposed approach]. Key argument: [strongest point].",
     summary: "Advocate perspective complete"
   })
 
   If you discover something important during analysis:
   SendMessage({
-    type: "message",
-    recipient: "team-lead",
-    content: "INSIGHT: [important discovery that affects the brainstorm]",
+    to: "team-lead",
+    message: "INSIGHT: [important discovery that affects the brainstorm]",
     summary: "Advocate found insight"
   })
 
