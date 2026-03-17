@@ -134,7 +134,7 @@ Power users can manually manage plugin loading using the vskill CLI:
 ```bash
 # Install plugins using vskill (RECOMMENDED)
 vskill add specweave --plugin sw              # Core Skill Fabric
-vskill install --repo anton-abyzov/vskill --plugin frontend  # Frontend development
+vskill install --repo anton-abyzov/vskill --plugin mobile    # Mobile development
 vskill add specweave --plugin sw-github       # GitHub integration
 vskill add specweave --plugin sw-jira         # JIRA integration
 
@@ -142,7 +142,7 @@ vskill add specweave --plugin sw-jira         # JIRA integration
 vskill list
 
 # Remove a plugin
-vskill remove testing
+vskill remove mobile
 ```
 
 **Available plugins:**
@@ -154,11 +154,11 @@ vskill remove testing
 | `sw-github` | `vskill add specweave --plugin sw-github` | GitHub integration |
 | `sw-jira` | `vskill add specweave --plugin sw-jira` | JIRA integration |
 | `sw-ado` | `vskill add specweave --plugin sw-ado` | Azure DevOps integration |
-| `frontend` | `vskill install --repo anton-abyzov/vskill --plugin frontend` | Frontend development |
-| `backend` | `vskill install --repo anton-abyzov/vskill --plugin backend` | Backend development |
-| `infra` | `vskill install --repo anton-abyzov/vskill --plugin infra` | Infrastructure/DevOps |
-| `ml` | `vskill install --repo anton-abyzov/vskill --plugin ml` | Machine learning |
-| `testing` | `vskill install --repo anton-abyzov/vskill --plugin testing` | Testing/QA |
+| `mobile` | `vskill install --repo anton-abyzov/vskill --plugin mobile` | Mobile development |
+| `marketing` | `vskill install --repo anton-abyzov/vskill --plugin marketing` | Marketing & social media |
+| `google-workspace` | `vskill install --repo anton-abyzov/vskill --plugin google-workspace` | Google Workspace CLI |
+| `productivity` | `vskill install --repo anton-abyzov/vskill --plugin productivity` | Personal productivity |
+| `skills` | `vskill install --repo anton-abyzov/vskill --plugin skills` | Skill discovery |
 
 ## Context Forking for Heavy Skills
 

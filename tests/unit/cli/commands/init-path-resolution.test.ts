@@ -376,6 +376,15 @@ describe('init path resolution', () => {
     // Simulate interactive mode: set TTY so isNonInteractive returns false
     const origIsTTY = process.stdin.isTTY;
     Object.defineProperty(process.stdin, 'isTTY', { value: true, configurable: true });
+
+    // Clear CI env vars that would force non-interactive mode (set in GitHub Actions)
+    const ciEnvKeys = ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'CIRCLECI', 'JENKINS_URL'] as const;
+    const savedEnv: Record<string, string | undefined> = {};
+    for (const key of ciEnvKeys) {
+      savedEnv[key] = process.env[key];
+      delete process.env[key];
+    }
+
     try {
       await initCommand(undefined);
 
@@ -387,6 +396,13 @@ describe('init path resolution', () => {
       );
     } finally {
       Object.defineProperty(process.stdin, 'isTTY', { value: origIsTTY, configurable: true });
+      for (const key of ciEnvKeys) {
+        if (savedEnv[key] !== undefined) {
+          process.env[key] = savedEnv[key];
+        } else {
+          delete process.env[key];
+        }
+      }
     }
   });
 
