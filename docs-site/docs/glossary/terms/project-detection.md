@@ -39,21 +39,21 @@ graph LR
 graph TB
     A[Parse Content] --> B{Detect Signals}
 
-    B --> C1[Frontmatter: +20]
-    B --> C2[Increment ID: +10]
-    B --> C3[Team Name: +5]
-    B --> C4[Keywords: +9]
-    B --> C5[Tech Stack: +4]
+    B --> C1["Frontmatter: +20"]
+    B --> C2["Increment ID: +10"]
+    B --> C3["Team Name: +5"]
+    B --> C4["Keywords: +9"]
+    B --> C5["Tech Stack: +4"]
 
-    C1 --> D[Total: 48 points]
+    C1 --> D["Total: 48 points"]
     C2 --> D
     C3 --> D
     C4 --> D
     C5 --> D
 
-    D --> E{Score / Max > 0.7?}
-    E -->|Yes| F[Auto-Select: backend ✅]
-    E -->|No| G[Fallback: default]
+    D --> E{"Score / Max > 0.7?"}
+    E -->|Yes| F["Auto-Select: backend"]
+    E -->|No| G["Fallback: default"]
 
     style F fill:#51cf66
     style G fill:#ffd43b

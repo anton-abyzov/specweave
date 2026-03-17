@@ -58,9 +58,9 @@ SpecWeave with complete traceability:
 
 ```mermaid
 graph LR
-    A[spec.md<br/>AC-US1-01] --> B[tasks.md<br/>T-001: AC-US1-01]
-    B --> C[auth.test.ts<br/>validates AC-US1-01]
-    C --> D[Coverage Report<br/>AC-US1-01: ✅]
+    A["spec.md<br/>AC-US1-01"] --> B["tasks.md<br/>T-001: AC-US1-01"]
+    B --> C["auth.test.ts<br/>validates AC-US1-01"]
+    C --> D["Coverage Report<br/>AC-US1-01: PASS"]
 
     style A fill:#51cf66
     style B fill:#51cf66

@@ -32,7 +32,7 @@ graph LR
 
 ```mermaid
 graph TB
-    A[spec.md<br/>5,000 lines] --> B{Parse & Classify}
+    A[spec.md<br/>5,000 lines] --> B{"Parse & Classify"}
 
     B --> C1[User Story 1<br/>200 lines]
     B --> C2[User Story 2<br/>250 lines]
@@ -202,24 +202,24 @@ graph TB
     A[Parse Content] --> B{Detect Project}
 
     B --> C{Frontmatter?}
-    C -->|Yes| D["project: backend" +20]
+    C -->|Yes| D["project: backend +20"]
     C -->|No| E{Increment ID?}
 
-    E -->|Yes| F["0016-backend-auth" +10]
+    E -->|Yes| F["0016-backend-auth +10"]
     E -->|No| G{Team Name?}
 
-    G -->|Yes| H["team: backend-team" +5]
+    G -->|Yes| H["team: backend-team +5"]
     G -->|No| I{Keywords?}
 
-    I -->|Yes| J["backend, api, service" +9]
+    I -->|Yes| J["backend, api, service +9"]
     I -->|No| K{Tech Stack?}
 
-    K -->|Yes| L["Node.js, PostgreSQL" +4]
-    K -->|No| M[Fallback: default]
+    K -->|Yes| L["Node.js, PostgreSQL +4"]
+    K -->|No| M["Fallback: default"]
 
-    D --> N[Total: 20 → 100% → backend]
-    F --> O[Total: 10 → 50% → backend if >0.7]
-    J --> P[Total: 9 → 45% → backend if >0.7]
+    D --> N["Total: 20 - 100% - backend"]
+    F --> O["Total: 10 - 50% - backend if >0.7"]
+    J --> P["Total: 9 - 45% - backend if >0.7"]
 
     style N fill:#51cf66
     style O fill:#ffd43b

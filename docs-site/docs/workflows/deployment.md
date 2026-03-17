@@ -15,7 +15,7 @@ description: Ship validated code to production
 ```mermaid
 graph LR
     A[Validation Passed] --> B[Merge to Main]
-    B --> C[CI/CD Pipeline]
+    B --> C["CI/CD Pipeline"]
     C --> D[Staging Deploy]
     D --> E{Smoke Tests}
     E -->|Pass| F[Production Deploy]
