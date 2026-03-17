@@ -340,9 +340,9 @@ If you answered "no" to any of these, you've experienced vibe coding pain points
 ## Glossary Terms Used
 
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work with spec, plan, and tasks
-- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** — Testable conditions for success
+- **Acceptance Criteria** — Testable conditions for success
 - **[Quality Gate](/docs/glossary/terms/quality-gate)** — Validation checkpoint before shipping
-- **[Source of Truth](/docs/glossary/terms/source-of-truth)** — Single authoritative data source
+- **Source of Truth** — Single authoritative data source
 
 ---
 

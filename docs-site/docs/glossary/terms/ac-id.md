@@ -554,12 +554,12 @@ test('should authenticate user with valid credentials (AC-US1-01)', async () => 
 
 ## Related Terms
 
-- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - Testable conditions for user stories
-- [User Stories](/docs/glossary/terms/user-stories) - User-focused requirements
-- [Test Coverage](/docs/glossary/terms/test-coverage) - Measuring AC coverage
-- [TDD](/docs/glossary/terms/tdd) - Test-driven development with ACs
-- [BDD](/docs/glossary/terms/bdd) - Behavior-driven development format
-- [Specs](/docs/glossary/terms/specs) - Specifications containing AC-IDs
+- Acceptance Criteria - Testable conditions for user stories
+- User Stories - User-focused requirements
+- Test Coverage - Measuring AC coverage
+- TDD - Test-driven development with ACs
+- BDD - Behavior-driven development format
+- Specs - Specifications containing AC-IDs
 
 ---
 

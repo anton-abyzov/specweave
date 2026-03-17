@@ -260,6 +260,6 @@ Items in backlog >30 days trigger review prompts:
 
 ## Learn More
 
-- [Increment Glossary](/docs/glossary/terms/increment)
+- Increment Glossary
 - [Status Management Commands](/docs/commands/overview)
 - [WIP Limits](/docs/overview/philosophy#wip-limits)

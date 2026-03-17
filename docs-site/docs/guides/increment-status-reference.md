@@ -542,7 +542,7 @@ stateDiagram-v2
 ## Related Documentation
 
 - [Increments](/docs/glossary/terms/increments) - Complete increment guide
-- [WIP Limits](/docs/glossary/terms/wip-limits) - Work in progress limits
+- WIP Limits - Work in progress limits
 - [Status Command](/docs/commands/status) - Status monitoring
 - [Workflow Guide](/docs/guides/workflow) - Development workflow
 

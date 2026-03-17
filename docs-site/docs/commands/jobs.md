@@ -206,16 +206,16 @@ Jobs are automatically created by:
 
 1. **Repository Cloning**
    - `specweave init` with multi-repo/umbrella setup
-   - `/specweave-ado:clone-repos`
+   - `/sw-ado:clone-repos`
 
 2. **Issue Import**
    - `specweave init` + import flow (>50 items)
    - `/sw:import-external`
 
 3. **External Sync**
-   - `/specweave-github:sync` for large syncs
-   - `/specweave-jira:sync` for large syncs
-   - `/specweave-ado:sync` for large syncs
+   - `/sw-github:sync` for large syncs
+   - `/sw-jira:sync` for large syncs
+   - `/sw-ado:sync` for large syncs
 
 ## Rate Limit Handling
 
@@ -288,7 +288,7 @@ Config file may be corrupted. Start fresh:
 
 ```bash
 /sw:import-external    # For imports
-/specweave-ado:clone-repos    # For cloning
+/sw-ado:clone-repos    # For cloning
 ```
 
 ### Too many completed jobs
@@ -326,10 +326,10 @@ npm run rebuild
 ## Related Commands
 
 - `/sw:import-external` - Import issues from external tools
-- `/specweave-ado:clone-repos` - Clone Azure DevOps repositories
-- `/specweave-github:sync` - Sync with GitHub
-- `/specweave-jira:sync` - Sync with JIRA
-- `/specweave-ado:sync` - Sync with Azure DevOps
+- `/sw-ado:clone-repos` - Clone Azure DevOps repositories
+- `/sw-github:sync` - Sync with GitHub
+- `/sw-jira:sync` - Sync with JIRA
+- `/sw-ado:sync` - Sync with Azure DevOps
 
 ## Related Documentation
 

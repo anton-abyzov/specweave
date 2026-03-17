@@ -207,7 +207,7 @@ graph TB
 # Increment 0001 created
 
 # 2. Sync to frontend repo
-/specweave-github:sync 0001
+/sw-github:sync 0001
 # ? Select profile: Frontend Web App (frontend-repo)
 # ✓ Issue created: org/ecommerce-web#12
 
@@ -216,7 +216,7 @@ graph TB
 # Increment 0002 created
 
 # 4. Sync to backend repo
-/specweave-github:sync 0002
+/sw-github:sync 0002
 # ? Select profile: Backend API (backend-repo)
 # ✓ Issue created: org/ecommerce-api#8
 
@@ -225,7 +225,7 @@ graph TB
 # Increment 0003 created
 
 # 6. Sync to mobile repo
-/specweave-github:sync 0003
+/sw-github:sync 0003
 # ? Select profile: Mobile App (mobile-repo)
 # ✓ Issue created: org/ecommerce-mobile#5
 ```
@@ -502,19 +502,19 @@ AZURE_DEVOPS_PAT=xxxxxxxxxxxxxxxxxxx
 ```bash
 # Engineering work → GitHub
 /sw:increment "Add OAuth2 authentication"
-/specweave-github:sync 0001
+/sw-github:sync 0001
 # ? Select profile: Engineering - GitHub (eng-github)
 # ✓ Issue created: acme-corp/platform#42
 
 # Product work → Jira
 /sw:increment "Launch premium tier features"
-/specweave-jira:sync 0002
+/sw-jira:sync 0002
 # ? Select profile: Product - Jira (product-jira)
 # ✓ Epic created: PROD-15
 
 # Infrastructure work → Azure DevOps
 /sw:increment "Upgrade Kubernetes to v1.28"
-/specweave-ado:sync 0003
+/sw-ado:sync 0003
 # ? Select profile: Operations - Azure DevOps (ops-ado)
 # ✓ Work item created: #87
 ```
@@ -863,7 +863,7 @@ graph TB
 
 ```mermaid
 flowchart TD
-    START["User runs:<br/>/specweave-github:sync 0008"]
+    START["User runs:<br/>/sw-github:sync 0008"]
 
     CHECK_META{Increment metadata<br/>has profile?}
 
@@ -953,7 +953,7 @@ sequenceDiagram
     participant Meta as metadata.json
     participant API as External API<br/>(GitHub/Jira/ADO)
 
-    User->>CLI: /specweave-github:sync 0008
+    User->>CLI: /sw-github:sync 0008
 
     CLI->>Meta: Check for existing profile
     alt Has profile
@@ -1016,7 +1016,7 @@ sequenceDiagram
 
     rect rgb(220, 255, 220)
         Note over Dev,SW: Pull Updates (GitHub → SpecWeave)
-        Dev->>SW: /specweave-github:sync 0008
+        Dev->>SW: /sw-github:sync 0008
         SW->>GH: Fetch issue #42
         GH-->>SW: Updated tasks, comments, labels
         SW->>SW: Merge external changes
@@ -1297,9 +1297,9 @@ SpecWeave's **Profile-Based Multi-Project Sync Architecture** enables:
 
 **Key Commands**:
 - `/sw:switch-project <id>` - Switch active project
-- `/specweave-github:sync <increment>` - Sync to GitHub
-- `/specweave-jira:sync <increment>` - Sync to Jira
-- `/specweave-ado:sync <increment>` - Sync to Azure DevOps
+- `/sw-github:sync <increment>` - Sync to GitHub
+- `/sw-jira:sync <increment>` - Sync to Jira
+- `/sw-ado:sync <increment>` - Sync to Azure DevOps
 
 **Result**: Work seamlessly across unlimited repositories while maintaining a single local source of truth.
 

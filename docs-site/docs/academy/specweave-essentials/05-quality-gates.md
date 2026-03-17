@@ -159,7 +159,7 @@ Action: Add tests
 
 ## Gate 3: Documentation
 
-Checks that [acceptance criteria](/docs/glossary/terms/acceptance-criteria) are verified and [living docs](/docs/glossary/terms/living-docs) are synced.
+Checks that acceptance criteria are verified and [living docs](/docs/glossary/terms/living-docs) are synced.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -263,10 +263,10 @@ What happens:
 
 ## Glossary Terms Used
 
-- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** — Testable success conditions
+- **Acceptance Criteria** — Testable success conditions
 - **[AC-ID](/docs/glossary/terms/ac-id)** — Acceptance criteria identifier
 - **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
-- **[Test Coverage](/docs/glossary/terms/test-coverage)** — Percentage of code tested
+- **Test Coverage** — Percentage of code tested
 
 ---
 

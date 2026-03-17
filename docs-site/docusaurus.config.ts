@@ -242,11 +242,6 @@ const config: Config = {
             from: '/docs/overview/skills-as-programs',
             to: '/docs/overview/skills-as-structured-expertise',
           },
-          // Intro page redirect
-          {
-            from: '/docs/intro',
-            to: '/docs/overview/introduction',
-          },
           // Ecosystem — unchanged locations
           {
             from: '/docs/guides/skill-discovery-evaluation',
@@ -451,7 +446,7 @@ const config: Config = {
               to: '/docs/getting-started',
             },
             {
-              label: 'Skills Reference (100+)',
+              label: 'Skills Reference (~48)',
               to: '/docs/reference/skills',
             },
             {

@@ -230,4 +230,4 @@ Skill Studio runs **100% locally** — no cloud dependency, no data leaves your 
 - **[vskill CLI Reference](/docs/skills/vskill-cli)** — Complete command reference
 - **[Extensible Skills Standard](/docs/skills/extensible/)** — Make skills customizable with DCI and skill memories
 - **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** — Best practices for writing skills
-- **[verifiedskill.com](https://verifiedskill.com)** — Submit your skills for verification
+- **[verified-skill.com](https://verified-skill.com)** — Submit your skills for verification

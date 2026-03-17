@@ -159,7 +159,7 @@ Imports work items from GitHub Issues, JIRA, or Azure DevOps.
 
 Bidirectional synchronization with external tools.
 
-**Triggered by**: `/specweave-github:sync`, `/specweave-jira:sync`, `/specweave-ado:sync`
+**Triggered by**: `/sw-github:sync`, `/sw-jira:sync`, `/sw-ado:sync`
 
 **Features**:
 - Push progress to external tools
@@ -343,7 +343,7 @@ If config is corrupted or missing, start a fresh operation:
 
 ```bash
 /sw:import-external    # For imports
-/specweave-ado:clone-repos    # For repo cloning
+/sw-ado:clone-repos    # For repo cloning
 ```
 
 ### Too Many Old Jobs?

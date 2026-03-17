@@ -198,7 +198,7 @@ Contradiction detection is integrated into the existing security scanner infrast
 
 ### Verified Skills Registry Integration
 
-The Verified Skills registry at verifiedskill.com stores contradiction metadata per skill:
+The Verified Skills registry at verified-skill.com stores contradiction metadata per skill:
 
 - **Known conflicts**: Pre-computed conflicts with popular skills
 - **Resolution history**: How developers in the ecosystem have resolved specific conflicts

@@ -10,6 +10,8 @@ description: "Start shipping features with SpecWeave in 5 minutes"
 
 SpecWeave is the spec-driven Skill Fabric for AI coding agents. Skills extend what AI coding agents can do — describe what you want, AI asks the right questions, builds it while you sleep.
 
+![Increment Lifecycle](/img/diagrams/increment-lifecycle.svg)
+
 :::tip Enterprise teams
 Building for enterprise? See [compliance, brownfield, and multi-repo guides](/docs/enterprise).
 :::
@@ -42,7 +44,7 @@ SpecWeave has been used to ship **production applications in weeks, not months**
 | [**BizZone**](https://apps.apple.com/us/app/business-zone/id6756091030) | Student & business events with AI news generation | React Native, AI |
 | [**SketchMate**](https://sketchmate.net/) | AI drawing party game | Web, AI vision |
 | [**JobWeave**](https://jobweave.ai) | AI-powered job search platform | Web, AI |
-| [**VerifiedSkill**](https://verifiedskill.com) | Skill registry & marketplace for AI coding agents | Next.js, Cloudflare |
+| [**VerifiedSkill**](https://verified-skill.com) | Skill registry & marketplace for AI coding agents | Next.js, Cloudflare |
 | [**SpecWeave**](https://github.com/anton-abyzov/specweave) | Spec-driven development framework — built with itself | Node.js, TypeScript |
 | [**EduFeed**](https://edufeed-jet.vercel.app/) | AI learning platform (NotebookLM-style) | Next.js, Supabase, LLM integration |
 
@@ -143,7 +145,7 @@ SpecWeave works everywhere:
 
 ## Explore the Skill Ecosystem
 
-SpecWeave ships with 100+ built-in skills, and you can install community skills from the [verifiedskill.com](https://verifiedskill.com) registry:
+SpecWeave ships with ~42 built-in skills across 8 bundled plugins, and you can install community skills from the [verified-skill.com](https://verified-skill.com) registry:
 
 ```bash
 # Search for skills
