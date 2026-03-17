@@ -138,7 +138,7 @@
         "installCore": "Выполните: /plugin install specweave",
         "step3": "Опционально: Установите дополнительные плагины по необходимости:",
         "installGitHub": "/plugin install sw-github@specweave",
-        "installFrontend": "/plugin install frontend@vskill",
+        "installFrontend": "/plugin install frontend-design@claude-plugins-official",
         "step4": "Начните разработку:",
         "example": "\"/sw:increment 'аутентификация пользователя'\"",
         "autoActivate": "Навыки и агенты активируются автоматически по контексту"
