@@ -1,48 +1,49 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Key Features
 
 SpecWeave provides a comprehensive suite of tools and workflows for building production-grade software with AI assistance.
 
-## Two Ways to Work
+## Three Ways to Work
 
-### Interactive Quick Build
+SpecWeave understands what you want. Just describe it -- or use precise commands when you prefer control.
 
-**Perfect for:** Small projects, prototypes, learning
+### Natural Language (Recommended)
 
-Simply describe what you want - SpecWeave guides you through interactive prompts:
+**Perfect for:** Everyone, especially new users
 
-1. **Approach** - Quick build or spec-first planning
-2. **Features** - Multi-select checkboxes for capabilities
-3. **Tech Stack** - Choose your tools
-4. **Review & Submit** - Confirm and start building
+Just describe what you want. SpecWeave detects your intent and activates the right skill:
 
-**Result:** 2 minutes from idea to working code
+<CommandTabs
+  natural="Build a very simple web calculator app"
+  claude='/sw:increment "web calculator app"'
+  other='increment "web calculator app"'
+/>
 
-**Example:**
-```
-"build a very simple web calculator app"
-→ Select features: ☑ Basic ops ☑ Keyboard ☑ History
-→ Choose stack: React
-→ Build! 🚀
-```
+SpecWeave guides you through approach selection, feature selection, tech stack choice, and review. 2 minutes from idea to working code.
 
-### Specification-First Workflow
+### Slash Commands (Power Users)
 
-**Perfect for:** Production features, team projects, complex systems
-
-Professional planning with slash commands and multi-agent coordination:
+**Perfect for:** Claude Code users who want precision
 
 ```bash
 /sw:increment "user authentication"
-# PM, Architect, QA agents create:
-# ✅ spec.md (requirements with AC-IDs)
-# ✅ plan.md (architecture + test strategy)
-# ✅ tasks.md with embedded tests
-
 /sw:do
-# Implement with hooks auto-updating docs
+/sw:done
 ```
 
-**Both approaches** use the same plugin system and multi-agent architecture under the hood.
+### Other AI Tools
+
+**Perfect for:** Cursor, Copilot, Windsurf, and other AI coding tools
+
+Use the same command names without the `/sw:` prefix:
+```
+increment "user authentication"
+do
+done
+```
+
+**All three methods** trigger the same plugin system and multi-agent architecture under the hood.
 
 ---
 
@@ -403,9 +404,8 @@ For brownfield projects, the key advantage is documentation that **auto-updates*
 As your brownfield project grows, SpecWeave **grows the documentation structure**:
 
 **Scenario: Adding new payment module**
-```bash
-/sw:increment "payment processing module"
-```
+
+Say "I want to add a payment processing module" or use `/sw:increment "payment processing module"`.
 
 **SpecWeave automatically:**
 
@@ -556,20 +556,23 @@ Checks regression risk before modifying existing code.
 
 Logs and notifies when AI needs clarification.
 
-## Slash Commands
+## Commands
 
-Framework-agnostic commands:
+Every command works three ways: natural language, slash commands (Claude Code), or keywords (other AI tools).
 
 **Core Commands:**
-- `/sw:increment "feature"` - Plan new increment (PM-led)
-- `/sw:do` - Execute tasks (smart resume)
-- `/sw:progress` - Check status and completion
-- `/sw:validate 0001` - Optional quality assessment
-- `/sw:done 0001` - Manual close (rarely needed)
+
+| Natural Language | Claude Code | Other AI Tools | What It Does |
+|-----------------|-------------|----------------|-------------|
+| "Let's build [feature]" | `/sw:increment "feature"` | `increment "feature"` | Plan new increment |
+| "Start implementing" | `/sw:do` | `do` | Execute tasks |
+| "What's the status?" | `/sw:progress` | `progress` | Check completion |
+| "Check quality" | `/sw:validate 0001` | `validate 0001` | Quality assessment |
+| "We're done" | `/sw:done 0001` | `done 0001` | Close increment |
 
 **Integration Commands:**
-- `/sw:sync-github` - Sync to GitHub issues
-- `/sw:sync-docs` - Review specs vs implementation
+- `/sw:sync-github` (or "sync to GitHub") - Sync to GitHub issues
+- `/sw:sync-docs` (or "sync the docs") - Review specs vs implementation
 
 All commands adapt to detected tech stack.
 

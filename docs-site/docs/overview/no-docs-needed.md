@@ -1,67 +1,92 @@
 ---
 sidebar_position: 3
-title: "You Don't Need to Learn Claude Code"
-description: "SpecWeave abstracts Claude Code's complexity. Install, use skills, get results — no hooks, plugins, or CLAUDE.md knowledge required."
+title: "Start Building in Minutes"
+description: "Describe what you want, SpecWeave handles planning, architecture, testing, and documentation. From idea to production in minutes."
 ---
 
-# You Don't Need to Learn Claude Code
+import CommandTabs from '@site/src/components/CommandTabs';
 
-Claude Code is powerful. It's also complex — hooks, plugins, CLAUDE.md files, context management, MCP servers, custom slash commands, permission modes.
+# Start Building in Minutes
 
-**You don't need to learn any of that.**
+Structured AI development sounds like overhead — specs, architecture reviews, quality gates, documentation. It sounds like *more work*, not less.
 
-SpecWeave sits on top of Claude Code and handles the complexity for you. Think of it as the difference between writing assembly and writing Python — same machine, radically different experience.
+SpecWeave makes it the path of least resistance.
 
-## What SpecWeave Handles For You
-
-| Claude Code Concept | What You'd Need to Learn | SpecWeave Approach |
-|---|---|---|
-| **Hooks** | Shell scripts, event lifecycle, JSON config | Skills auto-configure hooks during `init` |
-| **CLAUDE.md** | Project instructions, formatting rules | Auto-generated and maintained by SpecWeave |
-| **Plugins** | Installation, marketplace, version management | Auto-loaded based on your project's tech stack |
-| **Context management** | Token budgets, file references, compression | Specs persist in files — zero context loss |
-| **Custom commands** | Markdown files, frontmatter, directory structure | ~48 built-in skills ready to use out of the box |
-| **MCP servers** | Transport protocols, server configuration | CLI tools used first; MCP when needed |
-
-## The Experience
-
-**Without SpecWeave:**
-```
-1. Read Claude Code docs (30+ pages)
-2. Configure hooks for your workflow
-3. Write CLAUDE.md with project instructions
-4. Set up plugins for your tech stack
-5. Create custom commands for repeated tasks
-6. Manage context across sessions manually
-7. Hope the AI remembers what you told it last time
-```
-
-**With SpecWeave:**
 ```bash
 npm install -g specweave
 specweave init .
-/sw:increment "Add dark mode"
-/sw:auto
-# Done. AI handles everything.
 ```
 
-## How It Works Under the Hood
+Then just describe what you want:
 
-SpecWeave uses Claude Code's extension points (hooks, plugins, CLAUDE.md) to create a higher-level experience. When you run `specweave init`:
+<CommandTabs
+  natural="Add dark mode with system preference detection"
+  claude='/sw:increment "Add dark mode with system preference detection"'
+  other='increment "Add dark mode with system preference detection"'
+/>
 
-1. **Hooks** are configured to enforce quality gates, TDD discipline, and progress tracking
-2. **CLAUDE.md** is generated with your project's conventions and SpecWeave workflow rules
-3. **Plugins** auto-load based on your `package.json`, `requirements.txt`, or other project files
-4. **Skills** become available as `/sw:*` commands — each one a reusable program
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
 
-You interact with skills. Skills interact with Claude Code. You never need to touch the plumbing.
+Spec written. Architecture designed. Tests passing. Docs updated.
 
-## When You Might Want to Learn More
+Describe the feature — SpecWeave handles planning, implementation, testing, and documentation.
 
-SpecWeave covers 95% of use cases out of the box. You might want to dig deeper if you:
+## What You Get on Day One
+
+| Capability | What It Does |
+|---|---|
+| **Spec-driven planning** | Every feature starts with requirements, acceptance criteria, and architecture — persisted in version-controlled files that survive across sessions |
+| **Autonomous execution** | Multi-agent coordination: PM writes specs, Architect designs, Planner breaks down tasks, Engineers implement with tests |
+| **Quality gates** | Automated code review, TDD enforcement, and 130+ validation checks run before any feature ships |
+| **Living documentation** | Docs auto-generate and stay current as your codebase evolves — no manual upkeep |
+| **Built-in skills** | ~48 packaged workflows for planning, testing, debugging, releases, and more — ready to use out of the box |
+| **External sync** | Bidirectional sync with GitHub Issues, JIRA, and Azure DevOps — progress flows automatically |
+| **Context persistence** | Specs, plans, and decisions persist in files. No re-explaining. No lost context between sessions |
+
+## The Experience
+
+**Without structure** (how most teams use AI today):
+```
+1. Describe feature in chat
+2. AI generates code — it works
+3. No tests, no docs, no traceability
+4. Session ends — decisions vanish
+5. Next session: re-explain everything from scratch
+6. New team member joins — zero context
+7. "Why did we use JWT instead of sessions?" — nobody remembers
+```
+
+**With SpecWeave:**
+```
+1. Describe feature
+2. Spec written with acceptance criteria
+3. Architecture designed and documented
+4. Tasks generated with test plans
+5. Implemented with tests at every step
+6. Quality-gated before completion
+7. Living docs updated, synced to GitHub/JIRA
+```
+
+Same AI tools. Radically different outcomes.
+
+## How It Works
+
+When you run `specweave init`, SpecWeave configures your AI coding environment with structured workflows, quality enforcement, and persistent context. It works with Claude Code, Cursor, Copilot, and other AI coding tools.
+
+From there, skills handle everything. Each skill packages domain expertise into a reusable workflow — you don't need to learn the underlying tool mechanics. You interact with skills. Skills interact with your AI tool. You never touch the plumbing.
+
+For the full methodology, see [Philosophy](./philosophy). For why this matters, see [Why SpecWeave?](./why-specweave).
+
+## When You Might Want to Go Deeper
+
+SpecWeave covers the vast majority of workflows out of the box. You might want to dig deeper if you:
 
 - Want to **create custom skills** for your team — see [Skill Development Guidelines](../skills/skill-development-guidelines)
 - Need to **customize existing skills** — see [Extensible Skills](../skills/extensible-skills)
-- Are debugging **hook behavior** — see [Troubleshooting](../guides/troubleshooting/common-errors)
+- Are debugging **unexpected behavior** — see [Troubleshooting](../guides/troubleshooting/common-errors)
 
-But for building features? Just describe what you want and let SpecWeave handle the rest.
+But for building features? Describe what you want and let SpecWeave handle the rest.

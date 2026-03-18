@@ -119,7 +119,7 @@ specweave validate-ado
 ### Step 4: Create First Increment (Auto-Syncs!)
 
 ```bash
-# Plan increment
+# Plan increment (say "let's build user auth with Azure AD B2C" or use the command)
 /sw:increment "User authentication with Azure AD B2C"
 
 # Result: Auto-creates ADO Feature!

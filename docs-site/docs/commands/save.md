@@ -2,13 +2,15 @@
 sidebar_position: 7
 ---
 
-# /sw:save - Save Changes Across Repositories
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Save Changes Across Repositories
 
 Save and push changes across all repositories in your project. Works for both single repos and umbrella multi-repo setups.
 
 ## Overview
 
-The `/sw:save` command simplifies git operations across multiple repositories:
+The save command simplifies git operations across multiple repositories:
 
 - **Detects repositories** - Finds all repos (umbrella childRepos or current repo)
 - **Checks for changes** - Identifies repos with uncommitted changes
@@ -18,12 +20,16 @@ The `/sw:save` command simplifies git operations across multiple repositories:
 
 ## Usage
 
+<CommandTabs
+  natural='Save progress'
+  claude='/sw:save "feat: Add menu builder feature"'
+  other='save "feat: Add menu builder feature"'
+/>
+
+Additional options:
 ```bash
 # Interactive (prompts for commit message)
 /sw:save
-
-# With commit message
-/sw:save "feat: Add menu builder feature"
 
 # Dry run (show what would happen, don't execute)
 /sw:save --dry-run
@@ -61,18 +67,18 @@ shared:
 Saving changes...
 
 sw:
-  ✓ git add -A
-  ✓ git commit -m "feat: Complete user registration flow"
-  ✓ git push origin main
+  git add -A
+  git commit -m "feat: Complete user registration flow"
+  git push origin main
 
 backend:
-  ✓ git add -A
-  ✓ git commit -m "feat: Complete user registration flow"
-  ✓ git push origin main
+  git add -A
+  git commit -m "feat: Complete user registration flow"
+  git push origin main
 
 Summary:
-  ✓ Saved: 2/3 repositories
-  ⏭️ Skipped: 1 (no changes)
+  Saved: 2/3 repositories
+  Skipped: 1 (no changes)
 ```
 
 ### Single Repo Mode
@@ -93,12 +99,12 @@ my-project:
 Saving changes...
 
 my-project:
-  ✓ git add -A
-  ✓ git commit -m "chore: Update dependencies"
-  ✓ git push origin main
+  git add -A
+  git commit -m "chore: Update dependencies"
+  git push origin main
 
 Summary:
-  ✓ Saved: 1/1 repository
+  Saved: 1/1 repository
 ```
 
 ## Remote Setup
@@ -107,7 +113,7 @@ When a repository has no remote configured, you'll be prompted:
 
 ```
 sw:
-  ⚠️ No remote configured.
+  No remote configured.
 
 Options:
   1. Enter remote URL manually
@@ -157,7 +163,7 @@ If `githubUrl` is configured in your umbrella config, remotes are set up automat
 
 ```
 sw:
-  ❌ Pushing failed!
+  Pushing failed!
 
   Error: Permission denied (publickey)
 
@@ -173,7 +179,7 @@ sw:
 
 ```
 backend:
-  ❌ Pushing failed!
+  Pushing failed!
 
   Error: Updates were rejected (remote contains work not in local)
 
@@ -194,9 +200,11 @@ backend:
 
 ## Related Commands
 
-- [`/sw-release:align`](/docs/enterprise/release-management) - Align versions across repos (for releases)
-- [`/sw:sync-progress`](/docs/commands/overview#5-monitoring-commands) - Sync task progress to external tools
-- [`/sw-github:sync`](/docs/integrations/issue-trackers) - Sync increments to GitHub issues
+| Natural Language | Claude Code | Other AI Tools | Purpose |
+|-----------------|-------------|----------------|---------|
+| "Align versions" | `/sw-release:align` | `release align` | Align versions across repos (for releases) |
+| "Sync progress" | `/sw:sync-progress` | `sync-progress` | Sync task progress to external tools |
+| "Sync to GitHub" | `/sw-github:sync` | `github-sync` | Sync increments to GitHub issues |
 
 ## See Also
 

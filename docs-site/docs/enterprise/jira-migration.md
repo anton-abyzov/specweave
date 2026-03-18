@@ -112,7 +112,7 @@ specweave validate-jira
 ### Step 4: Create First Increment (Auto-Syncs!)
 
 ```bash
-# Plan increment
+# Plan increment (say "let's build user auth with OAuth" or use the command)
 /sw:increment "User authentication with OAuth"
 
 # Result: Auto-creates JIRA Epic!

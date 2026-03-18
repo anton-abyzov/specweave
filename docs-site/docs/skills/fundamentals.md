@@ -9,7 +9,7 @@ keywords: [skills, plugins, marketplace, SKILL.md, plugin.json, marketplace.json
 There's a lot of confusion around skills, plugins, and marketplaces in Claude Code. This guide clears it up with a practical lens — including how SpecWeave uses all three at scale.
 
 :::tip TL;DR
-**Skill** = a markdown file with instructions for Claude. **Plugin** = a package of skills + agents + hooks. **Marketplace** = a catalog of plugins. **Command** = the old name for skills.
+**Skill** = a markdown file with instructions for Claude. **Plugin** = a package of skills + agents + hooks. **Marketplace** = a catalog of plugins. **Command** = the old name for skills. Every skill can be invoked three ways: **natural language**, **slash command** (`/sw:name`), or **CLI keyword** (`name`).
 :::
 
 ---
@@ -100,22 +100,30 @@ Deploy $ARGUMENTS to production:
 | `argument-hint` | Autocomplete hint shown in UI |
 | `hooks` | Lifecycle hooks scoped to this skill |
 
-### Two Invocation Modes
+### Three Invocation Methods
 
-Skills can be triggered two ways:
+Skills can be triggered three ways:
 
-**1. You invoke directly** — type `/skill-name` (or `/skill-name args`):
+**1. Natural language** (easiest) -- just describe what you want:
 
 ```
+"Let's design the authentication architecture"
+         ↓
+Claude matches "architecture" → sw:architect skill activates
+```
+
+**2. Slash command** (precise) -- type `/skill-name` in Claude Code:
+
+```
+/sw:architect
 /deploy staging
 ```
 
-**2. Claude auto-invokes** — Claude reads the `description` field and decides the skill is relevant to your conversation:
+**3. CLI keyword** (cross-tool) -- type the skill name in Cursor, Copilot, and other AI tools:
 
 ```
-You: "Let's design the authentication architecture"
-         ↓
-Claude matches "architecture" → sw:architect skill activates
+architect
+deploy staging
 ```
 
 ### Controlling Who Can Invoke
@@ -437,13 +445,13 @@ Domain plugins load based on what you're working on:
 
 ## Key Takeaways
 
-1. **Skill = just a SKILL.md file** — instructions for Claude in markdown
-2. **Plugin = a package** — bundles skills + agents + hooks with a `plugin.json` manifest
-3. **Marketplace = a catalog** — lists plugins and where to download them via `marketplace.json`
-4. **Commands = old name for skills** — `.claude/commands/` still works, but skills are the current standard
-5. **Namespacing prevents conflicts** — plugin skills become `/plugin:skill`
-6. **Two invocation modes** — you call it with `/name`, or Claude auto-triggers based on the description
-7. **Real scale** — SpecWeave ships 44 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
+1. **Skill = just a SKILL.md file** -- instructions for Claude in markdown
+2. **Plugin = a package** -- bundles skills + agents + hooks with a `plugin.json` manifest
+3. **Marketplace = a catalog** -- lists plugins and where to download them via `marketplace.json`
+4. **Commands = old name for skills** -- `.claude/commands/` still works, but skills are the current standard
+5. **Namespacing prevents conflicts** -- plugin skills become `/plugin:skill`
+6. **Three invocation methods** -- natural language (auto-trigger), slash command (`/sw:name`), or CLI keyword (`name` in other AI tools)
+7. **Real scale** -- SpecWeave ships 44 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
 
 ---
 

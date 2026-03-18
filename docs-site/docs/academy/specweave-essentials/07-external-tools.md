@@ -5,6 +5,8 @@ title: "Lesson 7: External Tools"
 description: "Connect GitHub, JIRA, and Azure DevOps"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 7: External Tools
 
 **Time**: 35 minutes
@@ -322,7 +324,8 @@ Here's a real-world example showing how integration works end-to-end:
 
 ```bash
 # 1. Create increment (GitHub issue auto-created)
-/sw:increment "User profile feature"
+# Say: "I want to build a user profile feature"
+# Or: /sw:increment "User profile feature"
 
 # Output:
 ✓ Increment 0050-user-profile created

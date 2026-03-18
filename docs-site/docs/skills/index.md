@@ -6,10 +6,15 @@ keywords: [skills, extensible-skills, verified-skills, v-skills, standards, AI a
 
 # Skills
 
-Skills extend what AI coding agents can do — structured markdown files that define how an agent behaves in specific domains. Unlike opaque tool integrations, skills are readable, auditable, and customizable.
+Skills extend what AI coding agents can do -- structured markdown files that define how an agent behaves in specific domains. Unlike opaque tool integrations, skills are readable, auditable, and customizable.
 
-:::tip New to skills?
-Start with **[Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals)** — a beginner guide covering what skills, plugins, and marketplaces are, how they relate, and how SpecWeave uses them at scale.
+:::tip Three Ways to Use Any Skill
+Every skill supports three invocation methods:
+1. **Natural language** -- just describe what you need (e.g., "design the system architecture")
+2. **Slash command** -- `/sw:skill-name` in Claude Code (e.g., `/sw:architect`)
+3. **CLI keyword** -- `skill-name` in Cursor, Copilot, and other AI tools (e.g., `architect`)
+
+Start with **[Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals)** for a deeper guide.
 :::
 
 SpecWeave adds **two complementary layers** to the skill ecosystem, addressing the two fundamental questions every skill user faces:

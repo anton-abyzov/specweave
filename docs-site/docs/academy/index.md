@@ -53,14 +53,16 @@ Our flagship 16-lesson course takes you from zero to confident SpecWeave practit
 
 ### Essential Commands
 
-```
-/sw:increment "feature"  → Plan new work
-/sw:auto                 → Ship while you sleep
-/sw:do                   → Execute one task at a time
-/sw:next                 → Smart continuation
-/sw:progress             → Check status
-/sw:done                 → Close increment
-```
+Every command works with natural language or slash commands:
+
+| Natural Language | Slash Command | What It Does |
+|-----------------|---------------|--------------|
+| "Let's build a payment system" | `/sw:increment "feature"` | Plan new work |
+| "Ship it while I sleep" | `/sw:auto` | Autonomous execution |
+| "Start implementing" | `/sw:do` | Execute one task at a time |
+| "What should I do next?" | `/sw:next` | Smart continuation |
+| "What's the status?" | `/sw:progress` | Check status |
+| "We're done" | `/sw:done` | Close increment |
 
 ### What You'll Build
 

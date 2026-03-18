@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Brainstorming with Cognitive Lenses
 
 **Version**: 1.0.365+
@@ -30,27 +32,18 @@ Without brainstorming, the path from "idea" to "spec" is a straight line — and
 
 ## Quick Start
 
-:::tip Two ways to brainstorm
-**Slash command:**
+<CommandTabs
+  natural="Let's brainstorm how to handle real-time notifications"
+  claude='/sw:brainstorm "how should we handle real-time notifications"'
+  other='brainstorm "how should we handle real-time notifications"'
+/>
+
+Additional options (works in Claude Code and other AI tools):
 ```bash
-/sw:brainstorm "how should we handle real-time notifications"
-```
-
-**Natural language** — just say something like:
-```
-Just brainstorm first — what are our options for real-time notifications?
-```
-Keywords like "brainstorm", "ideate", or "what are our options" auto-trigger this skill.
-:::
-
-```bash
-# Standard: 4-6 approaches with comparison matrix
-/sw:brainstorm "how should we handle real-time notifications"
-
-# Quick: 3 approaches, fast comparison, 2 minutes
+# Quick mode (~2 min): 3 approaches, fast comparison
 /sw:brainstorm "JWT vs OAuth vs Passkeys" --depth quick
 
-# Deep: multiple cognitive lenses, full analysis
+# Deep mode (~15 min): multiple cognitive lenses, full analysis
 /sw:brainstorm "microservices vs monolith for our SaaS" --depth deep
 
 # Specific lens
@@ -212,11 +205,14 @@ Uses live web search to ground ideas in reality — not just model knowledge but
 
 Brainstorms are persistent. Every session saves a state file and document that you can resume later:
 
-```bash
-# Start a brainstorm
-/sw:brainstorm "notification architecture"
+<CommandTabs
+  natural="Let's brainstorm notification architecture"
+  claude='/sw:brainstorm "notification architecture"'
+  other='brainstorm "notification architecture"'
+/>
 
-# ... come back later and go deeper
+Then come back later and go deeper:
+```bash
 /sw:brainstorm "notification architecture" --resume --depth deep --lens triz
 ```
 
@@ -254,9 +250,11 @@ The default criteria (Complexity, Time, Risk, Extensibility, Alignment) work for
 
 ### Example 1: Auth Architecture Decision
 
-```bash
-/sw:brainstorm "authentication for our B2B SaaS" --depth deep --lens six-hats
-```
+<CommandTabs
+  natural="Brainstorm authentication approaches for our B2B SaaS — go deep with Six Thinking Hats"
+  claude='/sw:brainstorm "authentication for our B2B SaaS" --depth deep --lens six-hats'
+  other='brainstorm "authentication for our B2B SaaS" --depth deep --lens six-hats'
+/>
 
 **What you get**:
 - **White Hat**: "Current competitors use OAuth2 + SAML. Enterprise customers require SSO."

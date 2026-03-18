@@ -102,7 +102,7 @@ gh auth status
 ### Step 3: Create First Increment (Auto-Syncs!)
 
 ```bash
-# Plan increment
+# Plan increment (say "let's build user authentication" or use the command)
 /sw:increment "Add user authentication"
 
 # Result: Auto-creates GitHub issue!

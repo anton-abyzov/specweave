@@ -2,7 +2,9 @@
 sidebar_position: 10
 ---
 
-# /sw:auto - Autonomous Execution
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Autonomous Execution
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
 
@@ -10,9 +12,11 @@ Auto mode enables continuous autonomous execution until all tasks are complete. 
 
 ## Usage
 
-```bash
-/sw:auto [INCREMENT_IDS...] [OPTIONS]
-```
+<CommandTabs
+  natural='Ship while I sleep'
+  claude='/sw:auto'
+  other='auto'
+/>
 
 ## Arguments
 
@@ -33,31 +37,31 @@ Auto mode enables continuous autonomous execution until all tasks are complete. 
 ## How It Works
 
 ```
-1. User runs /sw:auto 0001
-           │
-           ▼
+1. User starts autonomous execution
+           |
+           v
 2. setup-auto.sh creates session state
-   └─ .specweave/state/auto-session.json
-           │
-           ▼
+   -- .specweave/state/auto-session.json
+           |
+           v
 3. Claude starts working on tasks
-   └─ /sw:do executes tasks
-           │
-           ▼
+   -- Execute tasks runs sequentially
+           |
+           v
 4. Claude tries to exit (naturally)
-           │
-           ▼
+           |
+           v
 5. Stop Hook intercepts (stop-auto.sh)
-   ├─ Checks: All tasks complete?
-   ├─ Checks: Max iterations reached?
-   ├─ Checks: Completion promise?
-   └─ Checks: Human gate pending?
-           │
-   ┌──────┴──────┐
-   ▼             ▼
+   |- Checks: All tasks complete?
+   |- Checks: Max iterations reached?
+   |- Checks: Completion promise?
+   \- Checks: Human gate pending?
+           |
+   +------+------+
+   v             v
 INCOMPLETE    COMPLETE
-   │             │
-   ▼             ▼
+   |             |
+   v             v
 Block exit    Approve exit
 Re-feed       Session ends
 prompt
@@ -67,13 +71,14 @@ prompt
 
 ### Basic Usage
 
+<CommandTabs
+  natural='Run autonomously'
+  claude='/sw:auto 0001-user-auth'
+  other='auto 0001-user-auth'
+/>
+
+Additional variations:
 ```bash
-# Start auto on current increment
-/sw:auto
-
-# Start on specific increment
-/sw:auto 0001-user-auth
-
 # Multiple increments
 /sw:auto 0001 0002 0003
 ```
@@ -113,23 +118,31 @@ prompt
 
 ### Check Status
 
-```bash
-/sw:auto-status
-```
+You can say "check auto status" or use the command:
 
-**See**: [/sw:auto-status Documentation](./auto-status)
+<CommandTabs
+  natural='How&apos;s auto going?'
+  claude='/sw:auto-status'
+  other='auto-status'
+/>
+
+**See**: [Auto Status Documentation](./auto-status)
 
 ### Cancel Session
 
-```bash
-/sw:cancel-auto
-```
+You can say "stop auto" or use the command:
 
-**See**: [/sw:cancel-auto Documentation](./cancel-auto)
+<CommandTabs
+  natural='Cancel autonomous'
+  claude='/sw:cancel-auto'
+  other='cancel-auto'
+/>
+
+**See**: [Cancel Auto Documentation](./cancel-auto)
 
 ### Resume After Crash
 
-Just run `/sw:do` - it will detect incomplete tasks and continue.
+Just say "continue working" or type `/sw:do` -- it will detect incomplete tasks and continue.
 
 Or use Claude Code's built-in:
 ```bash
@@ -172,7 +185,7 @@ The session ends when ANY of these occur:
 | **Completion promise** | Output contains `<!-- auto-complete:DONE -->` (hidden HTML comment) |
 | **Max iterations** | Reached configured limit (default: 100) |
 | **Max hours** | Time limit exceeded |
-| **User cancellation** | User runs `/sw:cancel-auto` |
+| **User cancellation** | User cancels the session (or types `/sw:cancel-auto` in Claude Code) |
 | **Human gate timeout** | Gate pending too long |
 | **Low confidence score** | Self-assessment score < 0.50 |
 
@@ -233,10 +246,10 @@ After each task, Claude self-assesses execution quality:
 
 | Overall Score | Action |
 |---------------|--------|
-| ≥ 0.90 | ✅ Continue confidently |
-| 0.70-0.89 | ⚠️ Continue with caution, log concerns |
-| 0.50-0.69 | 🟡 Pause for self-review before continuing |
-| < 0.50 | 🔴 Stop and request human review |
+| >= 0.90 | Continue confidently |
+| 0.70-0.89 | Continue with caution, log concerns |
+| 0.50-0.69 | Pause for self-review before continuing |
+| < 0.50 | Stop and request human review |
 
 ---
 
@@ -245,23 +258,23 @@ After each task, Claude self-assesses execution quality:
 Auto mode runs tests after completing testable tasks in a self-healing loop:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT TASK   │
-│                     ↑________________↓                       │
-│                    (max 3 iterations)                        │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+| IMPLEMENT -> TEST -> FAIL? -> FIX -> TEST -> PASS -> NEXT   |
+|                     ^________________|                       |
+|                    (max 3 iterations)                        |
++-------------------------------------------------------------+
 ```
 
 **Mandatory Test Reporting** after every task:
 
 ```markdown
-## 🧪 Test Status Report (after T-003)
+## Test Status Report (after T-003)
 
 | Type | Status | Pass/Total | Coverage |
 |------|--------|------------|----------|
-| Unit | ✅ | 42/42 | 87% |
-| Integration | ✅ | 12/12 | - |
-| E2E | ⚠️ | 8/10 | - |
+| Unit | pass | 42/42 | 87% |
+| Integration | pass | 12/12 | - |
+| E2E | warn | 8/10 | - |
 ```
 
 ---
@@ -271,10 +284,10 @@ Auto mode runs tests after completing testable tasks in a self-healing loop:
 In auto mode, all agents MUST follow auto-execute rules:
 
 ```
-❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
-❌ FORBIDDEN: "Execute the schema in Supabase SQL Editor"
+FORBIDDEN: "Next Steps: Run wrangler deploy"
+FORBIDDEN: "Execute the schema in Supabase SQL Editor"
 
-✅ REQUIRED: Execute commands DIRECTLY using available credentials
+REQUIRED: Execute commands DIRECTLY using available credentials
 ```
 
 ### Credential Lookup Order
@@ -284,8 +297,8 @@ In auto mode, all agents MUST follow auto-execute rules:
 3. CLI tool auth - `wrangler whoami`, `gh auth status`, etc.
 4. Config files - `wrangler.toml`, `.specweave/config.json`
 
-If credentials found → **AUTO-EXECUTE**
-If credentials missing → **ASK** (don't show manual steps)
+If credentials found -> **AUTO-EXECUTE**
+If credentials missing -> **ASK** (don't show manual steps)
 
 ---
 
@@ -352,18 +365,18 @@ done
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:auto-status` | Check session status |
-| `/sw:cancel-auto` | Cancel running session |
-| `/sw:do` | Execute tasks (also works standalone) |
-| `/sw:progress` | Show increment progress |
+| Natural Language | Claude Code | Other AI Tools | Purpose |
+|-----------------|-------------|----------------|---------|
+| "Check auto status" | `/sw:auto-status` | `auto-status` | Check session status |
+| "Stop auto" | `/sw:cancel-auto` | `cancel-auto` | Cancel running session |
+| "Start implementing" | `/sw:do` | `do` | Execute tasks (also works standalone) |
+| "What's the status?" | `/sw:progress` | `progress` | Show increment progress |
 
 ---
 
 ## See Also
 
 - [Commands Overview](./overview) - All SpecWeave commands
-- [/sw:do Documentation](./do) - Task execution
-- [/sw:auto-status Documentation](./auto-status) - Session status
-- [/sw:cancel-auto Documentation](./cancel-auto) - Cancel session
+- [Execute Tasks Documentation](./do) - Task execution
+- [Auto Status Documentation](./auto-status) - Session status
+- [Cancel Auto Documentation](./cancel-auto) - Cancel session

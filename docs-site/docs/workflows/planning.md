@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Planning Workflow: From Idea to Tasks
 
 The planning phase transforms a feature idea into a **complete, executable implementation plan** with specifications, architecture, tasks, and tests.
@@ -106,9 +108,11 @@ See [Skills Reference: brainstorm](/docs/reference/skills#brainstorm) for full d
 
 Simply describe what you want to build:
 
-```bash
-/sw:increment "Add real-time chat with WebSocket support"
-```
+<CommandTabs
+  natural="I want to add real-time chat with WebSocket support"
+  claude='/sw:increment "Add real-time chat with WebSocket support"'
+  other='increment "Add real-time chat with WebSocket support"'
+/>
 
 **What happens:**
 ```mermaid
