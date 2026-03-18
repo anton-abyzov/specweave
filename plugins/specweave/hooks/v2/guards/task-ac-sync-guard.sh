@@ -37,7 +37,7 @@ HOOK_VERSION="1.0.43"
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi
@@ -49,7 +49,7 @@ find_project_root() {
 
 PROJECT_ROOT=$(find_project_root)
 [[ -z "$PROJECT_ROOT" ]] && exit 0
-[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+[[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]] && exit 0
 
 # ============================================================================
 # LOGGING INFRASTRUCTURE

@@ -14,17 +14,17 @@ set +e
 # ============================================================================
 # PROJECT ROOT DETECTION (CRITICAL - must NOT fallback to pwd!)
 # ============================================================================
-if [[ -n "$SPECWEAVE_PROJECT_ROOT" ]] && [[ -d "$SPECWEAVE_PROJECT_ROOT/.specweave" ]]; then
+if [[ -n "$SPECWEAVE_PROJECT_ROOT" ]] && [[ -f "$SPECWEAVE_PROJECT_ROOT/.specweave/config.json" ]]; then
   PROJECT_ROOT="$SPECWEAVE_PROJECT_ROOT"
 else
   PROJECT_ROOT="$PWD"
-  while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+  while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
     PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
   done
 fi
 
-# No .specweave? Exit BEFORE any mkdir (prevents .specweave pollution)
-[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+# No .specweave/config.json? Exit BEFORE any mkdir (prevents .specweave pollution)
+[[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]] && exit 0
 
 STATE_DIR="$PROJECT_ROOT/.specweave/state"
 ACTIVE_FILE="$STATE_DIR/active-increment.json"
