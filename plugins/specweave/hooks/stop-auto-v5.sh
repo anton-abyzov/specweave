@@ -18,17 +18,17 @@ _get_duration_ms() {
 [ -z "${__STOP_AUTO_V5_SOURCED:-}" ] && cat > /dev/null
 
 # Project root detection (walk up to find .specweave/ — prevents pollution of subdirectories)
-if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
     : # env var already set and valid
 else
     PROJECT_ROOT="$PWD"
-    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
         PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
     done
 fi
 
 # Not a SpecWeave project — approve and exit (MUST be before any mkdir)
-if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
     echo '{"decision":"approve"}'
     exit 0
 fi

@@ -26,10 +26,10 @@ INC_ID="$1"
 [[ -z "$INC_ID" ]] && exit 0
 
 PROJECT_ROOT="$PWD"
-while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
-[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+[[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]] && exit 0
 
 SPEC_PATH="$PROJECT_ROOT/.specweave/increments/$INC_ID/spec.md"
 META_PATH="$PROJECT_ROOT/.specweave/increments/$INC_ID/metadata.json"

@@ -22,11 +22,11 @@ INPUT=$(cat)
 # Detect project root via walk-up (cwd may not be root)
 _DIR="$PWD"
 _LIMIT=0
-while [[ "$_DIR" != "/" ]] && [[ ! -d "$_DIR/.specweave" ]] && [[ $_LIMIT -lt 50 ]]; do
+while [[ "$_DIR" != "/" ]] && [[ ! -f "$_DIR/.specweave/config.json" ]] && [[ $_LIMIT -lt 50 ]]; do
   _DIR=$(dirname "$_DIR")
   _LIMIT=$((_LIMIT + 1))
 done
-[[ ! -d "$_DIR/.specweave" ]] && echo '{"decision":"allow"}' && exit 0
+[[ ! -f "$_DIR/.specweave/config.json" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Fast file_path check: skip non-increment files before jq (< 5ms)
 if ! echo "$INPUT" | grep -q '"file_path".*\.specweave/increments/'; then

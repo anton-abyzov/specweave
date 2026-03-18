@@ -18,7 +18,7 @@ SpecWeave uses a **plugin architecture** to provide domain-specific expertise (f
 │   │   ├── sw/1.0.0/         # Core plugin (hooks, skills)
 │   │   │   └── hooks/        # ← Hooks run from HERE, not source
 │   │   ├── sw-router/1.0.1/
-│   │   └── frontend/1.0.0/
+│   │   └── mobile/1.0.0/
 │   └── claude-plugins-official/  # Optional MCP plugins (user-installed)
 │       ├── context7/             # Install: claude plugin install context7@claude-plugins-official
 │       └── playwright/           # Install: claude plugin install playwright@claude-plugins-official
@@ -88,7 +88,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1
 
 ```bash
 # Install a specific plugin
-claude plugin install frontend@vskill
+claude plugin install mobile@vskill
 
 # Install from official registry
 claude plugin install context7@claude-plugins-official
@@ -101,7 +101,7 @@ claude plugin list --available
 
 ```bash
 # Uninstall a single plugin
-claude plugin uninstall frontend@vskill
+claude plugin uninstall mobile@vskill
 
 # Uninstall multiple (run multiple times)
 claude plugin uninstall backend@vskill
@@ -145,7 +145,7 @@ The registry at `~/.claude/plugins/installed_plugins.json` tracks installed plug
 
 | Plugin | Domain | Triggers |
 |--------|--------|----------|
-| `frontend` | React, Vue, Next.js, UI | "Build dashboard", "Create component" |
+| `mobile` | React, Vue, Next.js, UI | "Build dashboard", "Create component" |
 | `backend` | Node.js, APIs, databases | "Build API", "Create endpoint" |
 | `testing` | Playwright, Vitest, TDD | "Write E2E tests", "TDD workflow" |
 | `payments` | Stripe, PayPal, checkout | "Add Stripe", "Payment integration" |
@@ -255,7 +255,7 @@ tail -50 ~/.specweave/logs/lazy-loading.log
 Example output:
 ```
 [2026-01-25T00:10:35] detect-intent | duration=1500ms | cached=false
-[2026-01-25T00:10:36] plugins | installed=frontend,backend | already=none
+[2026-01-25T00:10:36] plugins | installed=mobile,backend | already=none
 ```
 
 ## Character Budget & When to Disable Plugins
@@ -280,8 +280,8 @@ export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
 | Project Type | Plugins | ~Description Chars |
 |--------------|---------|-------------------|
 | **Core only** | sw | ~5,000 |
-| **Web dev** | sw + frontend + backend | ~12,000 |
-| **Full stack** | sw + frontend + backend + infra + testing | ~20,000 |
+| **Web dev** | sw + mobile + backend | ~12,000 |
+| **Full stack** | sw + mobile + backend + infra + testing | ~20,000 |
 | **Mobile** | sw + mobile + payments | ~10,000 |
 | **Everything** | All 13 plugins | ~56,000 (never fits!) |
 

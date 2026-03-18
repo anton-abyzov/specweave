@@ -11,7 +11,7 @@
 # PROJECT ROOT DETECTION
 # =============================================================================
 
-# Find project root by looking for .specweave directory
+# Find project root by looking for .specweave/config.json
 # Returns: Absolute path to project root, or empty string if not found
 find_project_root() {
   local current_dir="${1:-$(pwd)}"
@@ -19,7 +19,7 @@ find_project_root() {
   local depth=0
 
   while [ "$depth" -lt "$max_depth" ]; do
-    if [ -d "$current_dir/.specweave" ]; then
+    if [ -f "$current_dir/.specweave/config.json" ]; then
       echo "$current_dir"
       return 0
     fi

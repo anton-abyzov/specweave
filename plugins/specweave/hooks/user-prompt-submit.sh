@@ -1675,7 +1675,7 @@ TDD_SOURCE=""
 TDD_MSG=""
 
 # Only check TDD if we're in a SpecWeave project (use resolved project root)
-if [[ -n "$SW_PROJECT_ROOT" ]] && [[ -d "$SW_PROJECT_ROOT/.specweave" ]]; then
+if [[ -n "$SW_PROJECT_ROOT" ]] && [[ -f "$SW_PROJECT_ROOT/.specweave/config.json" ]]; then
 
   # Step 1: Check global config (LOWEST priority)
   if [[ -f "$SW_PROJECT_ROOT/.specweave/config.json" ]] && command -v jq >/dev/null 2>&1; then
