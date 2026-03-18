@@ -364,6 +364,31 @@ program
     await createIncrementCommand(options);
   });
 
+// Next ID command - Return the next available increment number
+program
+  .command('next-id')
+  .description('Return the next available increment number (e.g., "0042")')
+  .option('--project <project-id>', 'Project ID for per-project collision prevention')
+  .option('--name <name>', 'Increment name to generate full ID (e.g., "my-feature" → "0042-my-feature")')
+  .action(async (options) => {
+    const { IncrementNumberManager } = await import('../dist/src/core/increment/increment-utils.js');
+    const { resolveEffectiveRoot } = await import('../dist/src/utils/find-project-root.js');
+    const projectRoot = resolveEffectiveRoot(process.cwd());
+
+    let number;
+    if (options.project) {
+      number = IncrementNumberManager.getNextIncrementNumberForProject(projectRoot, options.project);
+    } else {
+      number = IncrementNumberManager.getNextIncrementNumber(projectRoot);
+    }
+
+    if (options.name) {
+      console.log(`${number}-${options.name}`);
+    } else {
+      console.log(number);
+    }
+  });
+
 // Archive command - Archive completed increments and sync living docs
 program
   .command('archive [increments...]')

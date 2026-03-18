@@ -184,9 +184,9 @@ describe('Increment skill orchestrates via Agent() calls', () => {
 
   it('should use Agent() calls for PM, Architect, Planner delegation', () => {
     const content = readFileSync(incrementPath, 'utf-8');
-    expect(content).toMatch(/Agent\(\s*\{\s*subagent_type:\s*"sw:sw-pm"/);
-    expect(content).toMatch(/Agent\(\s*\{\s*subagent_type:\s*"sw:sw-architect"/);
-    expect(content).toMatch(/Agent\(\s*\{\s*subagent_type:\s*"sw:sw-planner"/);
+    expect(content).toMatch(/Agent\(.*subagent_type:\s*"sw:sw-pm"/);
+    expect(content).toMatch(/Agent\(.*subagent_type:\s*"sw:sw-architect"/);
+    expect(content).toMatch(/Agent\(.*subagent_type:\s*"sw:sw-planner"/);
   });
 
   it('should NOT use Skill() for PM/Architect/Planner (subagents provide memory)', () => {

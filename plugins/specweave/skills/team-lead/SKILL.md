@@ -123,7 +123,10 @@ Skip increment pre-flight entirely. Brainstorm doesn't need a spec — it explor
    - Highlight points of agreement and disagreement
    - Provide a ranked recommendation
 8. Offer handoff: "Ready to proceed? Run `/sw:increment` to formalize the chosen approach."
-9. Cleanup: shutdown agents, TeamDelete
+9. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
+   - Phase 1: Send `shutdown_request` to each agent
+   - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
+   - Phase 3: Run the orphaned pane safety net bash script from Step 9 — `SendMessage` shutdown does NOT close tmux panes, this script is the ONLY thing that does
 10. **STOP** — do not proceed to implementation sections
 
 ---
@@ -157,7 +160,10 @@ Planning mode runs PM and Architect agents in parallel for richer, faster spec c
    - Present the spec + plan summary to the user
    - Recommend execution strategy: `/sw:do`, `/sw:auto`, or `/sw:team-lead` (implementation mode)
 
-5. Cleanup: shutdown agents, TeamDelete
+5. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
+   - Phase 1: Send `shutdown_request` to each agent
+   - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
+   - Phase 3: Run the orphaned pane safety net bash script from Step 9 — `SendMessage` shutdown does NOT close tmux panes, this script is the ONLY thing that does
 6. **STOP** — do not proceed to implementation sections
 
 ---
@@ -197,7 +203,10 @@ Skip increment pre-flight. Research is exploratory — no spec needed.
    - Resolve contradictions
    - Produce ranked recommendations
 7. Offer handoff: `/sw:increment` (to act on findings) or `/sw:brainstorm` (to explore approaches)
-8. Cleanup: shutdown agents, TeamDelete
+8. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
+   - Phase 1: Send `shutdown_request` to each agent
+   - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
+   - Phase 3: Run the orphaned pane safety net bash script from Step 9 — `SendMessage` shutdown does NOT close tmux panes, this script is the ONLY thing that does
 9. **STOP** — do not proceed to implementation sections
 
 ---
@@ -218,7 +227,10 @@ Testing mode requires an increment (it needs to know WHAT to test).
 5. Collect `COMPLETION:` messages
 6. Run test suites to verify: `npx vitest run` + `npx playwright test`
 7. Report results: pass/fail counts, coverage, uncovered ACs
-8. Cleanup: shutdown agents, TeamDelete
+8. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
+   - Phase 1: Send `shutdown_request` to each agent
+   - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
+   - Phase 3: Run the orphaned pane safety net bash script from Step 9 — `SendMessage` shutdown does NOT close tmux panes, this script is the ONLY thing that does
 9. **STOP** — do not proceed to implementation sections
 
 ---
@@ -961,7 +973,7 @@ SendMessage({ type: "shutdown_request", recipient: "<agent-2-name>", content: "T
 // ... for every agent you spawned
 ```
 
-Harmless if agents already exited. When an agent receives `shutdown_request` and approves, Claude Code handles its pane cleanup natively.
+Harmless if agents already exited. **NOTE**: `shutdown_request` via `SendMessage` does NOT close the tmux pane — the agent's Claude process exits but the pane persists with "Resume this session". Phase 3 below is the ONLY mechanism that actually kills orphaned panes. **NEVER skip Phase 3.**
 
 #### Phase 2: Destroy Team
 
@@ -971,21 +983,23 @@ TeamDelete();
 
 If `TeamDelete` fails (agents still shutting down), wait 3 seconds, retry once.
 
-#### Phase 3: Orphaned Pane Safety Net (macOS/Linux tmux only)
+#### Phase 3: Kill Orphaned Panes (MANDATORY — this is the ONLY thing that closes tmux panes)
 
-SpecWeave agents often exit via auto-mode before receiving `shutdown_request`, so their panes survive. This catches those orphans. **Skip entirely on Windows or non-tmux terminals.**
+`SendMessage` shutdown does NOT close tmux panes. Agent processes exit but panes persist showing "Resume this session". **This bash script is the ONLY cleanup mechanism. ALWAYS run it.**
 
 ```bash
-if command -v tmux >/dev/null 2>&1 && [ -n "$TMUX" ]; then
-  CURRENT_PANE=$(tmux display-message -p '#{pane_id}')
-  for pane_id in $(tmux list-panes -a -F '#{pane_id}'); do
-    [ "$pane_id" = "$CURRENT_PANE" ] && continue
+if command -v tmux >/dev/null 2>&1; then
+  CURRENT_PANE=$(tmux display-message -p '#{pane_id}' 2>/dev/null || echo "")
+  for pane_id in $(tmux list-panes -a -F '#{pane_id}' 2>/dev/null); do
+    [ -n "$CURRENT_PANE" ] && [ "$pane_id" = "$CURRENT_PANE" ] && continue
     if tmux capture-pane -t "$pane_id" -p -S -50 2>/dev/null | grep -q "Resume this session"; then
       tmux kill-pane -t "$pane_id" 2>/dev/null
     fi
   done
 fi
 ```
+
+**Key**: Removed `$TMUX` guard — even if the orchestrator isn't inside tmux itself, agent panes still exist in tmux and need cleanup. The `tmux` command can manage external sessions.
 
 ### --dry-run Output
 
