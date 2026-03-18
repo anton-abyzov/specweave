@@ -299,7 +299,7 @@ Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmu
 - Copy/paste spec content into Write() calls
 - "Summarize" what an agent would produce
 - Skip any of the 3 Agent() calls
-- Use standalone Agent() without team_name — agents MUST be in a team for tmux visibility
+- Use standalone Agent() without team_name for Phase 1/2 delegation — agents MUST be in a team for tmux visibility (exception: Deep Interview in Step 3a is standalone because it's interactive + sequential)
 - Use Skill() for these — team agents provide memory + resumability + visibility
 
 ## Step 3a: Deep Interview Mode (if enabled)
@@ -330,6 +330,16 @@ Each agent runs in its own tmux pane for visibility. Agents preload their corres
 
 ### 4a. Create Planning Team (REQUIRED — before spawning any agents)
 
+**Cleanup first** — if you previously created a planning team in this session, shut down those agents before proceeding:
+```typescript
+// Only if a previous plan-* team exists from this session:
+SendMessage({ type: "shutdown_request", recipient: "pm" })
+SendMessage({ type: "shutdown_request", recipient: "architect" })
+SendMessage({ type: "shutdown_request", recipient: "planner" })
+TeamDelete()
+```
+
+Then create the new team:
 ```typescript
 TeamCreate({ team_name: "plan-XXXX-name", description: "Planning: <feature description>" })
 ```
@@ -480,7 +490,8 @@ Created increment 0003-user-authentication
 
 - `.specweave/` not found: "Run specweave init first"
 - Vague description: Ask clarifying questions
-- Subagent fails: Fall back to invoking `/sw:pm` or `/sw:architect` skills directly (skills still work standalone)
+- TeamCreate fails: Fall back to standalone Agent() calls without team_name (loses tmux panes but still works)
+- Agent fails: Fall back to invoking `/sw:pm` or `/sw:architect` skills directly (skills still work standalone)
 
 ---
 
