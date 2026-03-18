@@ -5,6 +5,8 @@ description: Security guidelines for running AI agent swarms — prompt injectio
 keywords: [security, prompt injection, agent swarms, OpenClaw, plugins, vetting, autonomous mode]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Agent Security Best Practices
 
 Running multiple AI agents on your codebase is powerful — but it introduces security risks that traditional development doesn't have. This guide covers the critical practices for safe agent swarm operation.
@@ -191,7 +193,22 @@ docker run -it -v $(pwd):/workspace node:22 bash
 
 ### Your Practices for Safe Autonomous Execution
 
-1. **Start with `/sw:do` (manual) before `/sw:auto`** — understand the agent's behavior on your codebase before giving it autonomy
+1. **Start with `/sw:do` (manual) before `/sw:auto`** — understand the agent's behavior on your codebase before giving it autonomy:
+
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+Then when ready for autonomous mode:
+
+<CommandTabs
+  natural="Ship while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
+
 2. **Set reasonable iteration limits** — `auto.maxIterations: 100` for early runs, increase as trust builds
 3. **Check `/sw:auto-status` periodically** — don't go fully hands-off on day one
 4. **Review diffs before pushing** — autonomous execution != autonomous deployment

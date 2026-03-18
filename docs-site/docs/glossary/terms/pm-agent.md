@@ -4,6 +4,8 @@ title: PM Agent (Product Manager Agent)
 sidebar_label: PM Agent
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # PM Agent (Product Manager Agent)
 
 The **PM Agent** is SpecWeave's AI-powered Product Manager that handles requirements gathering, user story creation, and specification planning.
@@ -12,9 +14,11 @@ The **PM Agent** is SpecWeave's AI-powered Product Manager that handles requirem
 
 The PM Agent is the first agent activated when you create a new [increment](/docs/glossary/terms/increments):
 
-```bash
-/sw:increment "Add user authentication"
-```
+<CommandTabs
+  natural="Let's add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
 **Key responsibilities:**
 - 📋 **Requirements gathering** - Asks clarifying questions about scope

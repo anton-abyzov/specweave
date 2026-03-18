@@ -4,6 +4,8 @@ title: "Software Engineering Academy"
 description: "Learn software engineering and SpecWeave from zero to production"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave Software Engineering Academy
 
 **Your Complete Journey from Beginner to Production-Ready Developer**
@@ -53,7 +55,13 @@ Our flagship 16-lesson course takes you from zero to confident SpecWeave practit
 
 ### Essential Commands
 
-Every command works with natural language or slash commands:
+Every command works with natural language or slash commands. Here's the most important one:
+
+<CommandTabs
+  natural="Let's build a payment system"
+  claude='/sw:increment "payment system"'
+  other='increment "payment system"'
+/>
 
 | Natural Language | Slash Command | What It Does |
 |-----------------|---------------|--------------|

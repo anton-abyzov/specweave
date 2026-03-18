@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Brownfield Workflow: Working with Existing Code
 
 Brownfield projects are the **ultimate challenge** in software development—existing code with missing or outdated documentation. SpecWeave makes brownfield work **safe and systematic**.
@@ -453,10 +455,11 @@ describe('Authentication Baseline (Current Behavior)', () => {
 
 **Now** you can safely plan changes:
 
-```bash
-# Say: "Let's add 2FA to the authentication system"
-/sw:increment "0015-add-2fa-to-authentication"
-```
+<CommandTabs
+  natural="Let's add 2FA to the authentication system"
+  claude='/sw:increment "0015-add-2fa-to-authentication"'
+  other='increment "0015-add-2fa-to-authentication"'
+/>
 
 **PM agent asks brownfield-aware questions:**
 

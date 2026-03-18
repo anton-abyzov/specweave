@@ -2,6 +2,8 @@
 sidebar_position: 3
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Background Jobs
 
 SpecWeave's **Background Jobs System** enables long-running operations to continue even after you close Claude. This is essential for enterprise workflows with thousands of repositories and tens of thousands of work items.
@@ -221,9 +223,11 @@ stateDiagram-v2
 
 ### Check All Jobs
 
-```bash
-/sw:jobs
-```
+<CommandTabs
+  natural="Show background jobs"
+  claude="/sw:jobs"
+  other="jobs"
+/>
 
 Shows all active jobs grouped by status.
 
@@ -360,9 +364,11 @@ rm -rf .specweave/state/jobs/<old-job-id>
 
 After `specweave init` with large imports:
 
-```bash
-/sw:jobs
-```
+<CommandTabs
+  natural="Check jobs"
+  claude="/sw:jobs"
+  other="jobs"
+/>
 
 ### 2. Monitor Long Operations
 

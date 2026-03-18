@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Deep Interview Mode
 
 **Version**: 1.0.195+
@@ -209,17 +211,19 @@ Which categories to cover during interview.
 
 You can temporarily disable for a session:
 
-```bash
-# Skip deep interview for this prompt
-/sw:increment --skip-interview "Quick fix for login"
-```
+<CommandTabs
+  natural="I want to add a quick fix for login, skip the interview"
+  claude='/sw:increment --skip-interview "Quick fix for login"'
+  other='increment --skip-interview "Quick fix for login"'
+/>
 
 Or enable for a specific prompt:
 
-```bash
-# Force deep interview even if disabled
-/sw:increment --deep-interview "Complex payment integration"
-```
+<CommandTabs
+  natural="Let's build a complex payment integration, do the full interview"
+  claude='/sw:increment --deep-interview "Complex payment integration"'
+  other='increment --deep-interview "Complex payment integration"'
+/>
 
 ## Related Commands
 

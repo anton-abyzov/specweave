@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Bidirectional Sync
 
 > **⚠️ DEPRECATED as of v0.24.0**: The "bidirectional sync" terminology has been replaced with the **Three-Permission Architecture** for more granular control.
@@ -237,11 +239,19 @@ GitHub Issue Subtasks:
 # Update increment
 vim .specweave/increments/0031/tasks.md
 # → Mark [x] T-001
+```
 
-# Sync to living docs
-/sw:sync-docs
+Sync to living docs:
 
-# Sync to GitHub
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs"
+  other="sync-docs"
+/>
+
+Sync to GitHub:
+
+```bash
 /sw-github:sync 0031
 ```
 
@@ -339,6 +349,7 @@ Resolution:
 **Validation & Reopen**:
 ```bash
 # Task marked complete but code missing
+# Say "check quality" or use the command:
 /sw:validate 0031
 
 # Validation finds: T-001 marked [x] but no code
@@ -551,9 +562,13 @@ sequenceDiagram
 
 **1. Create Increment** (`/sw:increment`):
 
-```bash
-/sw:increment "Add user authentication"
+<CommandTabs
+  natural="Let's add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
+```bash
 # SpecWeave:
 # 1. Generate spec.md (user stories, AC)
 # 2. Generate plan.md (architecture)
@@ -615,9 +630,13 @@ sequenceDiagram
 
 **4. Close Increment** (`/sw:done`):
 
-```bash
-/sw:done 0008
+<CommandTabs
+  natural="We're done with increment 0008"
+  claude="/sw:done 0008"
+  other="done 0008"
+/>
 
+```bash
 # SpecWeave:
 # 1. Validate all tasks complete
 # 2. Finalize completion report

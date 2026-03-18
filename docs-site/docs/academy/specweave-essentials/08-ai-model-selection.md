@@ -5,6 +5,8 @@ title: "Lesson 8: AI Model Selection"
 description: "Choose the right model for each task"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 8: AI Model Selection
 
 **Time**: 25 minutes
@@ -38,8 +40,14 @@ description: "Choose the right model for each task"
 ```
 
 **Example commands:**
+
+<CommandTabs
+  natural="I want to create a new feature"
+  claude='/sw:increment "your feature"'
+  other='increment "your feature"'
+/>
+
 ```bash
-/sw:increment "..."  # Uses Opus for planning
 /sw:qa 0001          # Uses Opus for analysis
 ```
 

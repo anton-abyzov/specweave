@@ -2,6 +2,8 @@
 sidebar_position: 1
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Frequently Asked Questions (FAQ)
 
 ## Two-Spec Architecture
@@ -469,10 +471,17 @@ npm install -g specweave
 # 2. Initialize your project
 cd my-project
 specweave init
+```
 
-# 3. Create your first increment
-/sw:increment "Add user registration"
+Create your first increment:
 
+<CommandTabs
+  natural="Let's add user registration"
+  claude='/sw:increment "Add user registration"'
+  other='increment "Add user registration"'
+/>
+
+```bash
 # Result: spec.md, plan.md, tasks.md created
 # No living docs spec needed for first feature!
 ```

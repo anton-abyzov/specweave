@@ -4,6 +4,8 @@ title: Intelligent Model Selection
 sidebar_label: Intelligent Model Selection
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Intelligent Model Selection
 
 **Intelligent Model Selection** is SpecWeave's automatic system for choosing the right AI model. With Opus 4.6 as the default for maximum quality, SpecWeave uses Haiku for simple mechanical tasks to optimize costs while maintaining quality.
@@ -87,13 +89,11 @@ Model selection is automatic but can be influenced:
 
 Force a specific model when needed:
 
-```bash
-# Force Opus for complex task
-/sw:do --model opus
-
-# Use Haiku for simple search
-Task agent with model: haiku
-```
+<CommandTabs
+  natural="Start implementing with Opus"
+  claude="/sw:do --model opus"
+  other="do --model opus"
+/>
 
 ---
 
