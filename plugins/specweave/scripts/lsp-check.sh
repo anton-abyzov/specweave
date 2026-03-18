@@ -31,7 +31,7 @@ if [ -n "${ENABLE_LSP_TOOL:-}" ]; then
   LSP_ENV_READY="true"
 fi
 
-if [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT/.specweave" ]; then
+if [ -z "$PROJECT_ROOT" ] || [ ! -f "$PROJECT_ROOT/.specweave/config.json" ]; then
   exit 0  # Not a SpecWeave project
 fi
 

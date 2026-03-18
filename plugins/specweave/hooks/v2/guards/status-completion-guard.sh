@@ -40,7 +40,7 @@ if echo "$NEW_STRING" | grep -qE '"status":\s*"completed"'; then
   # Detect project root via walk-up
   _DIR="$PWD"
   _LIMIT=0
-  while [[ "$_DIR" != "/" ]] && [[ ! -d "$_DIR/.specweave" ]] && [[ $_LIMIT -lt 50 ]]; do
+  while [[ "$_DIR" != "/" ]] && [[ ! -f "$_DIR/.specweave/config.json" ]] && [[ $_LIMIT -lt 50 ]]; do
     _DIR=$(dirname "$_DIR")
     _LIMIT=$((_LIMIT + 1))
   done

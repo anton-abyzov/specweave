@@ -15,12 +15,12 @@ set +e
 
 # Find project root
 PROJECT_ROOT="$PWD"
-while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 
-# Exit if no .specweave directory
-[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+# Exit if no .specweave/config.json
+[[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]] && exit 0
 
 # Source resolve-package.sh for dynamic specweave path resolution
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

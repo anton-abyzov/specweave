@@ -22,7 +22,7 @@ PROJECT_ROOT="$1"
 MODE="${2:-background}"  # "background" (daemon) or "foreground" (one-shot)
 
 # Validate project root
-if [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT/.specweave" ]; then
+if [ -z "$PROJECT_ROOT" ] || [ ! -f "$PROJECT_ROOT/.specweave/config.json" ]; then
   exit 0  # Not a SpecWeave project
 fi
 

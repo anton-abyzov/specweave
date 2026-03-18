@@ -17,11 +17,11 @@
 set -e
 
 PROJECT_ROOT="$PWD"
-while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 
-if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
   echo "❌ No .specweave directory found. Are you in a SpecWeave project?"
   exit 1
 fi

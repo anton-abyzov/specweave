@@ -71,7 +71,7 @@ esac
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi
@@ -84,7 +84,7 @@ find_project_root() {
 PROJECT_ROOT=$(find_project_root)
 
 # Exit early if not a SpecWeave project (prevents .specweave pollution)
-if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ -z "$PROJECT_ROOT" ]] || [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
   # Not a SpecWeave project - output success JSON and exit
   # UserPromptSubmit and Stop hooks need {"decision":"approve"}, others need {"continue":true}
   if [[ "$script_name" == stop-* ]] || [[ "$script_name" == user-prompt-submit* ]]; then

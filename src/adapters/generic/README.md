@@ -148,8 +148,8 @@ You manually execute the entire workflow!
 
 **Claude Code (automatic)**:
 ```typescript
-Skill({ skill: "frontend:architect", args: "design components" })
-→ Frontend skill activates and provides specialized guidance
+Skill({ skill: "sw:architect", args: "design components" })
+→ Architect skill activates and provides specialized guidance
 ```
 
 **Note**: In Claude Code, PM/Architect are SKILLS that auto-activate on keywords. For explicit invocation, use the Skill tool.

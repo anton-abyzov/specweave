@@ -22,7 +22,7 @@ set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code c
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi
@@ -35,7 +35,7 @@ find_project_root() {
 PROJECT_ROOT=$(find_project_root)
 
 # Exit early if not a SpecWeave project (prevents .specweave pollution)
-if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ -z "$PROJECT_ROOT" ]] || [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
   echo "Not a SpecWeave project - skipping validation"
   exit 0
 fi

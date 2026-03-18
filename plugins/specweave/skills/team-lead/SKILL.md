@@ -382,29 +382,31 @@ fi
 
 ### Multi-Repo Increment Placement (CRITICAL)
 
-**In umbrella projects with a `repositories/` folder, each agent MUST create its increment in its OWN repo's `.specweave/`:**
+**When `umbrella.enabled: true` in config.json, ALL increments go in the umbrella root `.specweave/increments/` — NOT in child repos.** Use the `project` field in metadata.json to route increments to the correct child repo context.
 
 ```
-# CORRECT: Each repo has its own .specweave/increments/
+# CORRECT: All increments at umbrella root, tagged by project
 umbrella-project/
-├── .specweave/config.json              # Umbrella config ONLY
+├── .specweave/config.json
+├── .specweave/increments/
+│   ├── 0001-domain-models/     # metadata.json: "project": "sw-ecom-domain"
+│   ├── 0002-shared-types/      # metadata.json: "project": "sw-ecom-shared"
+│   └── 0003-api-endpoints/     # metadata.json: "project": "sw-ecom-api"
 ├── repositories/
-│   ├── {ORG}/sw-ecom-domain/
-│   │   └── .specweave/increments/0001-domain-models/
-│   ├── {ORG}/sw-ecom-shared/
-│   │   └── .specweave/increments/0001-shared-types/
-│   └── {ORG}/sw-ecom-api/
-│       └── .specweave/increments/0001-api-endpoints/
+│   ├── {ORG}/sw-ecom-domain/   # NO .specweave/increments/ here
+│   ├── {ORG}/sw-ecom-shared/   # NO .specweave/increments/ here
+│   └── {ORG}/sw-ecom-api/      # NO .specweave/increments/ here
 
-# WRONG: All agents dumping into umbrella root
+# WRONG: Increments inside child repos
 umbrella-project/
-├── .specweave/increments/0001-everything/               # WRONG!
+├── repositories/{ORG}/sw-ecom-domain/
+│   └── .specweave/increments/0001-domain-models/    # WRONG!
 ```
 
 **Rules:**
-- Run `specweave init` in each repo if `.specweave/` doesn't exist
-- Each agent's working directory is its assigned repo inside `repositories/`
-- Never create `.specweave/increments/` in the umbrella root for multi-repo work
+- NEVER create `.specweave/increments/` inside child repos under `repositories/`
+- NEVER run `specweave init` in child repos — the umbrella root owns all increments
+- Each agent works on files inside its assigned repo in `repositories/`, but increments stay at umbrella root
 - Replace `{ORG}` with the actual organization discovered above
 
 ### Phase 1: Upstream Agents (Contracts First)

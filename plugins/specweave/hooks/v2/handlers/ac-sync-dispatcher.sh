@@ -32,7 +32,7 @@ fi
 find_project_root() {
   local dir="$1"
   while [ "$dir" != "/" ]; do
-    if [ -d "$dir/.specweave" ]; then
+    if [ -f "$dir/.specweave/config.json" ]; then
       echo "$dir"
       return 0
     fi

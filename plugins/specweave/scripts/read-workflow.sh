@@ -14,11 +14,11 @@ INCREMENT_ID="${1:-}"
 
 # Find project root
 PROJECT_ROOT="$PWD"
-while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 
-if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
   echo "No SpecWeave project found (missing .specweave/)"
   exit 0
 fi

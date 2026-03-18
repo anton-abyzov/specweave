@@ -22,11 +22,11 @@ set +e  # Never fail
 INPUT=$(cat)
 
 # Project root detection (walk up to find .specweave/ — prevents pollution of subdirectories)
-if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
     : # env var already set and valid
 else
     PROJECT_ROOT="$PWD"
-    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
         PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
     done
 fi
@@ -38,7 +38,7 @@ silent_approve() {
 }
 
 # Not a SpecWeave project — approve and exit (MUST be before any mkdir)
-[ ! -d "$PROJECT_ROOT/.specweave" ] && silent_approve
+[ ! -f "$PROJECT_ROOT/.specweave/config.json" ] && silent_approve
 
 STATE_DIR="$PROJECT_ROOT/.specweave/state"
 QUEUE_DIR="$STATE_DIR/event-queue"

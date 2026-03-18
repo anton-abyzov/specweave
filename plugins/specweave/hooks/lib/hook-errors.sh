@@ -26,7 +26,7 @@ HOOK_ERRORS_VERSION="1.0.0"
 _find_hook_project_root() {
   local dir="${1:-$PWD}"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi
@@ -39,7 +39,7 @@ _find_hook_project_root() {
 _HOOK_PROJECT_ROOT=$(_find_hook_project_root)
 
 # Exit early if not a SpecWeave project (prevents .specweave pollution)
-if [[ -z "$_HOOK_PROJECT_ROOT" ]] || [[ ! -d "$_HOOK_PROJECT_ROOT/.specweave" ]]; then
+if [[ -z "$_HOOK_PROJECT_ROOT" ]] || [[ ! -f "$_HOOK_PROJECT_ROOT/.specweave/config.json" ]]; then
   # Define no-op functions so sourcing scripts don't fail
   log_hook_warning() { :; }
   log_hook_error() { :; }

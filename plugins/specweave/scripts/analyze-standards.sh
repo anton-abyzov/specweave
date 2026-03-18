@@ -9,11 +9,11 @@ set -e
 
 # Detect project root (where .specweave/ is located)
 PROJECT_ROOT="$(pwd)"
-while [[ ! -d "$PROJECT_ROOT/.specweave" ]] && [[ "$PROJECT_ROOT" != "/" ]]; do
+while [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]] && [[ "$PROJECT_ROOT" != "/" ]]; do
   PROJECT_ROOT="$(dirname "$PROJECT_ROOT")"
 done
 
-if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+if [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
   echo "❌ Error: Not in a SpecWeave project (no .specweave/ directory found)"
   exit 1
 fi

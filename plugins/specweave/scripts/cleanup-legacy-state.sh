@@ -16,10 +16,10 @@ set +e
 
 # Find project root
 PROJECT_ROOT="$PWD"
-while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
-[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+[[ ! -f "$PROJECT_ROOT/.specweave/config.json" ]] && exit 0
 
 STATE_DIR="$PROJECT_ROOT/.specweave/state"
 QUEUE_DIR="$STATE_DIR/event-queue"

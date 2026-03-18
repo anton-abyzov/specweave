@@ -24,7 +24,7 @@ NC='\033[0m' # No Color
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi
