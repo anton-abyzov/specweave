@@ -184,8 +184,8 @@ export abstract class AdapterBase implements IAdapter {
 
   /**
    * Helper: Write plugin skill files to a tool-specific rules directory.
-   * Each skill is written as `<plugin>/<skill>/SKILL.md` in a nested subdirectory.
-   * The subdirectory name mirrors the colon-based namespace (e.g., `sw/` -> `sw:`).
+   * Each skill is written as `<skill>/SKILL.md` directly under the rules directory.
+   * No plugin namespace nesting — non-Claude tools require flat structure.
    */
   protected async writeSkillFiles(
     plugin: Plugin,
@@ -193,8 +193,7 @@ export abstract class AdapterBase implements IAdapter {
   ): Promise<void> {
     const projectPath = process.cwd();
     const targetDir = path.join(projectPath, rulesDir);
-    const pluginDir = path.join(targetDir, plugin.manifest.name);
-    await fs.ensureDir(pluginDir);
+    await fs.ensureDir(targetDir);
 
     const language = await this.getLanguageConfig();
 
@@ -205,7 +204,7 @@ export abstract class AdapterBase implements IAdapter {
       const content = await fs.readFile(skillMdPath, 'utf-8');
       const sanitized = this.sanitizeFrontmatter(content, skill.name);
       const modified = this.injectSystemPrompt(sanitized, language);
-      const skillSubdir = path.join(pluginDir, skill.name);
+      const skillSubdir = path.join(targetDir, skill.name);
       await fs.ensureDir(skillSubdir);
       await fs.writeFile(path.join(skillSubdir, 'SKILL.md'), modified, 'utf-8');
     }

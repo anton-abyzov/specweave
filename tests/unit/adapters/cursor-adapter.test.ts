@@ -341,7 +341,7 @@ describe('CursorAdapter', () => {
       await adapter.compilePlugin(plugin);
 
       expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test/test-skill.md'),
+        expect.stringContaining('/test-skill/SKILL.md'),
         expect.stringContaining('# Skill Body'),
         'utf-8'
       );
@@ -387,12 +387,12 @@ describe('CursorAdapter', () => {
 
       expect(mockWriteFile).toHaveBeenCalledTimes(2);
       expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test/a.md'),
+        expect.stringContaining('/a/SKILL.md'),
         expect.any(String),
         'utf-8'
       );
       expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('specweave-test/b.md'),
+        expect.stringContaining('/b/SKILL.md'),
         expect.any(String),
         'utf-8'
       );

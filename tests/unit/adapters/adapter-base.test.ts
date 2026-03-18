@@ -602,28 +602,25 @@ describe('AdapterBase', () => {
       mockReadJson.mockRejectedValue(new Error('no config'));
     });
 
-    it('should write skills as nested SKILL.md directories', async () => {
+    it('should write skills flat under rulesDir (no plugin namespace)', async () => {
       await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
 
       const paths: string[] = mockWriteFile.mock.calls.map((c: any[]) => c[0]);
 
-      // Should write to {rulesDir}/{pluginName}/{skillName}/SKILL.md
-      expect(paths.some(p => p.includes('/sw/increment/SKILL.md'))).toBe(true);
-      expect(paths.some(p => p.includes('/sw/architect/SKILL.md'))).toBe(true);
-      // Must NOT use flat naming
-      expect(paths.some(p => p.includes('sw-increment.md'))).toBe(false);
-      expect(paths.some(p => p.includes('/sw/increment.md'))).toBe(false);
+      // Should write to {rulesDir}/{skillName}/SKILL.md — no sw/ nesting
+      expect(paths.some(p => p.endsWith('/skills/increment/SKILL.md'))).toBe(true);
+      expect(paths.some(p => p.endsWith('/skills/architect/SKILL.md'))).toBe(true);
+      // Must NOT have plugin namespace nesting
+      expect(paths.some(p => p.includes('/sw/'))).toBe(false);
     });
 
-    it('should ensure plugin and skill subdirectories exist', async () => {
+    it('should ensure skill subdirectories exist directly under rulesDir', async () => {
       await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
 
       const ensureDirPaths: string[] = mockEnsureDir.mock.calls.map((c: any[]) => c[0]);
-      // Plugin dir
-      expect(ensureDirPaths.some(p => p.endsWith('/sw'))).toBe(true);
-      // Skill subdirs
-      expect(ensureDirPaths.some(p => p.endsWith('/sw/increment'))).toBe(true);
-      expect(ensureDirPaths.some(p => p.endsWith('/sw/architect'))).toBe(true);
+      // Skill subdirs directly under rulesDir
+      expect(ensureDirPaths.some(p => p.endsWith('/skills/increment'))).toBe(true);
+      expect(ensureDirPaths.some(p => p.endsWith('/skills/architect'))).toBe(true);
     });
 
     it('should inject name into frontmatter when missing', async () => {
