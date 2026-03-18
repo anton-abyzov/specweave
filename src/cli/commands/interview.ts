@@ -21,6 +21,27 @@ function getInterviewStatePath(projectRoot: string, incrementId: string): string
 }
 
 /**
+ * Create an empty interview state file for an increment.
+ * Shared by `create-increment` (auto-init) and `interviewStart` (explicit).
+ * Returns the path written, or null if the file already exists.
+ */
+export function initInterviewStateFile(projectRoot: string, incrementId: string): string | null {
+  const stateDir = path.join(projectRoot, '.specweave', 'state');
+  fs.mkdirSync(stateDir, { recursive: true });
+  const statePath = getInterviewStatePath(projectRoot, incrementId);
+  if (fs.existsSync(statePath)) {
+    return null;
+  }
+  const state: InterviewState = {
+    incrementId,
+    startedAt: new Date().toISOString(),
+    coveredCategories: {}
+  };
+  fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+  return statePath;
+}
+
+/**
  * Get required categories from config
  */
 function getRequiredCategories(projectRoot: string): string[] {
@@ -57,26 +78,13 @@ export async function interviewStart(incrementId: string): Promise<void> {
     process.exit(1);
   }
 
-  const stateDir = path.join(projectRoot, '.specweave', 'state');
-  if (!fs.existsSync(stateDir)) {
-    fs.mkdirSync(stateDir, { recursive: true });
-  }
-
-  const statePath = getInterviewStatePath(projectRoot, incrementId);
-
-  if (fs.existsSync(statePath)) {
+  const created = initInterviewStateFile(projectRoot, incrementId);
+  if (!created) {
     console.log(`⚠️  Interview already started for ${incrementId}`);
     await interviewStatus(incrementId);
     return;
   }
 
-  const state: InterviewState = {
-    incrementId,
-    startedAt: new Date().toISOString(),
-    coveredCategories: {}
-  };
-
-  fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
   console.log(`✅ Interview started for ${incrementId}`);
   console.log('');
   console.log('Cover all categories before creating spec.md:');

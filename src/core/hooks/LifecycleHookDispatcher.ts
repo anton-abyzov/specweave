@@ -216,7 +216,6 @@ export class LifecycleHookDispatcher {
       }
 
       const shouldSyncLivingDocs = doneConfig.sync_living_docs === true && autoSync && !perIncrementSkip;
-      const shouldSyncGitHubProject = doneConfig.sync_to_github_project === true;
       // v1.0.357: Support closing issues for ALL providers (JIRA/ADO/GitHub)
       // close_github_issue is the legacy flag; close_external_issue is the new generic one.
       // SyncCoordinator handles ALL providers despite the legacy flag name.
@@ -262,27 +261,7 @@ export class LifecycleHookDispatcher {
         }
       }
 
-      // STEP 2: After living docs are updated, run closure and direct GitHub sync in parallel.
-      const syncGitHubProject = async () => {
-        if (!shouldSyncGitHubProject) return;
-        try {
-          const { resolveFeatureId } = await import('./feature-id-resolver.js');
-          const featureId = await resolveFeatureId(projectRoot, incrementId);
-          if (!featureId) return;
-
-          const { syncFeatureToGitHub } = await import(
-            './github-project-sync.js'
-          );
-          await syncFeatureToGitHub(projectRoot, featureId);
-          result.syncSuccess.push('GitHub project synced');
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          result.syncErrors.push(`GitHub project sync failed: ${msg}`);
-          LifecycleHookDispatcher.logError('onIncrementDone:githubProject', error);
-        }
-      };
-
-      // SyncCoordinator only handles JIRA/ADO closure (GitHub handled by step 1)
+      // STEP 2: Run closure sync for JIRA/ADO (GitHub already handled by Step 1 via LivingDocsSync).
       const syncClosure = async () => {
         if (!shouldCloseIssue) return;
         try {
@@ -302,7 +281,7 @@ export class LifecycleHookDispatcher {
         }
       };
 
-      await Promise.all([syncClosure(), syncGitHubProject()]);
+      await syncClosure();
 
       // STEP 3: Drain retry queue for this increment before closure completes.
       // Failed syncs queued during the increment's lifetime get one final attempt.
