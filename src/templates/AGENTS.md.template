@@ -310,18 +310,18 @@ umbrella-project/
 
 | Tool | Skills Location | Auto-loaded? |
 |------|----------------|-------------|
-| Cursor | `.cursor/rules/` | Yes |
-| GitHub Copilot | `.github/instructions/` | Yes (as workspace instructions) |
+| Cursor | `.cursor/skills/` | Yes |
+| GitHub Copilot | `.github/copilot/skills/` | Yes (as workspace instructions) |
 | Gemini CLI | `.gemini/` | Reference in prompt |
-| OpenAI Codex | `.codex/rules/` | Reference in prompt |
-| Windsurf | `.windsurf/rules/` | Yes |
-| Continue.dev | `.continue/rules/` | Yes |
-| Cline | `.cline/rules/` | Yes |
-| Zed | `.rules/` | Yes |
-| Amazon Q Developer | `.amazonq/rules/` | Yes |
-| JetBrains AI | `.aiassistant/rules/` | Yes |
-| Aider | `.aider/` | Reference in prompt |
-| Tabnine | `.tabnine/guidelines/` | Yes |
+| OpenAI Codex | `.codex/skills/` | Reference in prompt |
+| Windsurf | `.windsurf/skills/` | Yes |
+| Continue.dev | `.continue/skills/` | Yes |
+| Cline | `.cline/skills/` | Yes |
+| Zed | `.zed/skills/` | Yes |
+| Amazon Q Developer | `.amazonq/skills/` | Yes |
+| JetBrains AI | `.junie/skills/` | Yes |
+| Aider | `.aider/skills/` | Reference in prompt |
+| Tabnine | `.tabnine/skills/` | Yes |
 | Generic (any tool) | `AGENTS.md` (inlined) | Manual |
 
 Install/refresh skills: `specweave refresh-plugins`
