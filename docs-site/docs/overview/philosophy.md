@@ -23,28 +23,25 @@ A small flaw in the plan amplifies into a disproportionate amount of bad code:
 
 ```mermaid
 graph LR
-    subgraph Plan["Plan (small flaw)"]
-        BP["Bad part of plan"]
-        GP["Good part of plan"]
+    subgraph Plan
+        BP["Small flaw in the plan"]
+        GP["Good plan"]
     end
-    subgraph Code["Code (amplified flaw)"]
-        GC1["Good code"]
-        BC["Bad code"]
-        GC2["Good code"]
+    subgraph Code
+        BC["Cascading bugs<br/>Wrong architecture baked in<br/>Expensive rework needed<br/>Tech debt from day one"]
+        GC["Clean, working code"]
     end
 
-    BP --> GC1
-    BP --> BC
-    GP --> GC2
+    BP -->|amplifies into| BC
+    GP --> GC
 
-    style BP fill:#fff3cd,stroke:#ffc107
-    style BC fill:#fff3cd,stroke:#ffc107
-    style GP fill:#d4edda,stroke:#28a745
-    style GC1 fill:#d4edda,stroke:#28a745
-    style GC2 fill:#d4edda,stroke:#28a745
+    style BP fill:#fff3cd,stroke:#ffc107,color:#856404
+    style BC fill:#ffcdd2,stroke:#f44336,color:#b71c1c
+    style GP fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
+    style GC fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
 ```
 
-This is why SpecWeave places human review at the **plan level** — catching a mistake in `spec.md` or `plan.md` prevents an entire cascade of bad code. For uncertain features, use `/sw:brainstorm` before `/sw:increment` to add a research phase with its own review checkpoint.
+This is why SpecWeave places human review at the **plan level** — catching a mistake in `spec.md` or `plan.md` prevents an entire cascade of bad code. For uncertain features, say "let's brainstorm this first" (or `/sw:brainstorm`) before planning to add a research phase with its own review checkpoint.
 
 **What this means in practice:**
 - **Before implementing**: Read and understand the current plan

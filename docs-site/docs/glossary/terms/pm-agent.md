@@ -82,9 +82,9 @@ graph LR
 
 ## When It Activates
 
-- `/sw:increment "feature"` - Creates new increment
-- `/sw:done` - PM validates completion (quality gate)
-- `/sw:increment (to update spec)` - Reviews scope changes
+- Creating an increment -- say "let's build X", use `/sw:increment`, or type `increment` in other AI tools
+- Closing an increment -- say "we're done", use `/sw:done`, or type `done` (PM validates as quality gate)
+- Scope changes -- updating an increment's spec
 
 ## Related
 

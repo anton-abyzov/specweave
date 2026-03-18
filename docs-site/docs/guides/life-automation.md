@@ -5,6 +5,8 @@ description: Use SpecWeave beyond software development — automate knowledge ma
 keywords: [automation, obsidian, research, prototyping, deployment, feedback, publishing, non-code]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Life Automation with SpecWeave
 
 SpecWeave's core model — **spec.md** (what you want), **plan.md** (how to get there), **tasks.md** (step-by-step execution) — doesn't care whether the output is code, a research report, or a reorganized knowledge base. If you can describe acceptance criteria, SpecWeave can coordinate AI to deliver it.
@@ -122,9 +124,11 @@ SpecWeave sets up the `.specweave/` directory with your project structure.
 
 ### Step 2: Create the Increment
 
-```
-/sw:increment "Research World Cup 2026 host cities"
-```
+<CommandTabs
+  natural="I want to research World Cup 2026 host cities"
+  claude='/sw:increment "Research World Cup 2026 host cities"'
+  other='increment "Research World Cup 2026 host cities"'
+/>
 
 The PM skill interviews you about scope. You specify: venue capacities, public transit access, hotel price ranges, safety ratings, and local attractions. The architect suggests a research methodology.
 
@@ -135,9 +139,11 @@ SpecWeave generates:
 
 ### Step 3: Execute
 
-```
-/sw:auto
-```
+<CommandTabs
+  natural="Run autonomously"
+  claude="/sw:auto"
+  other="auto"
+/>
 
 The AI works through each task autonomously:
 - T-001: Compile the list of 16 host cities and venues

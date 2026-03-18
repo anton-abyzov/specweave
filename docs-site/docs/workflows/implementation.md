@@ -1,6 +1,8 @@
-# Implementation Workflow: The /sw:do Command
+import CommandTabs from '@site/src/components/CommandTabs';
 
-The implementation phase is where specs and plans become **working code**—with SpecWeave handling the tedious parts automatically.
+# Implementation Workflow: Execute Tasks
+
+The implementation phase is where specs and plans become **working code**--with SpecWeave handling the tedious parts automatically.
 
 ## Overview
 
@@ -23,11 +25,15 @@ graph LR
 
 **Magic**: Auto-resumes from next incomplete task, updates docs automatically, validates continuously
 
-## The /sw:do Command: Just Works!
+## Start Implementing
 
-```bash
-/sw:do
-```
+Say "start implementing" or "continue working" -- or use the slash command:
+
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
 
 **What happens automatically:**
 

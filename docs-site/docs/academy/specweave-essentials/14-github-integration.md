@@ -266,6 +266,7 @@ Team identification via labels: team:frontend, team:backend, etc.
 When `autoCreateIssues: true`:
 
 ```bash
+# Say: "Let's build user authentication" or use the command:
 /sw:increment "User authentication"
 
 # Output:
@@ -637,6 +638,7 @@ jobs:
 
 ```bash
 # 1. Create increment (auto-creates GitHub issue)
+# Say: "Let's build a user profile page" or:
 /sw:increment "Add user profile page"
 
 # Output:

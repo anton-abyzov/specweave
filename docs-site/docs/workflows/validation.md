@@ -4,6 +4,8 @@ title: Validation Workflow
 description: Verify your increment is ready to ship
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Validation Workflow
 
 **Prove your code works before shipping.**
@@ -31,9 +33,13 @@ graph LR
 
 ## The Validation Command
 
-```bash
-/sw:validate 0001
-```
+Say "check if everything looks good" or "validate it" -- or use the slash command:
+
+<CommandTabs
+  natural="Check if everything looks good"
+  claude="/sw:validate 0001"
+  other="validate 0001"
+/>
 
 This runs comprehensive checks on your increment.
 

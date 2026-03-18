@@ -5,6 +5,8 @@ description: SpecWeave's unified plugin architecture — 1 bundled plugin with 4
 keywords: [plugins, skills, agents, commands, github, jira, integration, vskill]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Plugin Ecosystem
 
 SpecWeave uses a **unified plugin architecture**. The core framework ships with **1 bundled plugin** providing 44 skills covering the full development lifecycle including GitHub, JIRA, Azure DevOps sync, release management, diagrams, media generation, and documentation. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
@@ -34,19 +36,21 @@ The complete SpecWeave platform: core lifecycle, integrations, release managemen
 - **3 Agents**: PM, Architect, Test-Aware Planner (plus sub-agents within skills like code-reviewer and team-lead)
 - **74+ Commands**: Full increment lifecycle, GitHub/JIRA/ADO sync, release management, documentation tools
 
-```bash
-# Plan a feature
-/sw:increment "User authentication with OAuth"
+**Plan a feature:**
 
-# Execute tasks
-/sw:do
+<CommandTabs
+  natural="I want to add user authentication with OAuth"
+  claude='/sw:increment "User authentication with OAuth"'
+  other='increment "User authentication with OAuth"'
+/>
 
-# Sync to GitHub
-/sw:github-sync 0023 --time-range 1M
+**Execute, sync, and close:**
 
-# Close with quality gates
-/sw:done
-```
+<CommandTabs
+  natural="Start implementing, then sync to GitHub when done"
+  claude="/sw:do"
+  other="do"
+/>
 
 ---
 
@@ -94,7 +98,7 @@ Plugins activate based on project context. A typical workflow:
 2. **Architect Agent** (core) designs the technical approach
 3. **GitHub Plugin** auto-creates a GitHub Issue for the increment
 4. **Domain skills** (installed via vskill) provide specialized guidance
-5. **Implementation** proceeds with `/sw:do`
+5. **Implementation** proceeds when you say "start implementing" (or `/sw:do`)
 6. **Sync** keeps external tools updated automatically
 
 ---

@@ -5,15 +5,19 @@ description: Coordinate parallel AI agents with SpecWeave — one command to spl
 keywords: [agent teams, agent swarms, parallel development, multi-agent, team-lead, orchestration, Claude Code]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Agent Teams & Swarms
 
 One command. Multiple agents. Parallel execution across domains.
 
-SpecWeave's `/sw:team-lead` turns a single feature request into a coordinated multi-agent effort — splitting work by domain, running agents in parallel, and merging results when done. Built on [Claude Code's Agent Teams capability](https://code.claude.com/docs/en/agent-teams) and made accessible via a single command.
+SpecWeave's `/sw:team-lead` turns a single feature request into a coordinated multi-agent effort -- splitting work by domain, running agents in parallel, and merging results when done. Built on [Claude Code's Agent Teams capability](https://code.claude.com/docs/en/agent-teams) and made accessible via a single command.
 
-```bash
-/sw:team-lead "Build user authentication with login, signup, and OAuth"
-```
+<CommandTabs
+  natural="Use a team to build user authentication with login, signup, and OAuth"
+  claude='/sw:team-lead "Build user authentication with login, signup, and OAuth"'
+  other='team-lead "Build user authentication with login, signup, and OAuth"'
+/>
 
 That's it. SpecWeave analyzes the feature, identifies domains (frontend, backend, database), spawns specialized agents, and coordinates their work.
 
@@ -36,10 +40,14 @@ Agent teams cut delivery time by running independent work streams simultaneously
 
 ## Quick Start
 
-```bash
-# 1. Launch a team — agents spawn automatically
-/sw:team-lead "Add user dashboard with real-time analytics"
+<CommandTabs
+  natural="Use a team to add a user dashboard with real-time analytics"
+  claude='/sw:team-lead "Add user dashboard with real-time analytics"'
+  other='team-lead "Add user dashboard with real-time analytics"'
+/>
 
+Then monitor and merge:
+```bash
 # 2. Monitor progress across all agents
 /sw:team-status
 
@@ -47,30 +55,11 @@ Agent teams cut delivery time by running independent work streams simultaneously
 /sw:team-merge
 ```
 
-Or just describe a complex feature — SpecWeave auto-detects when parallel agents are needed:
-
-```
-Build an e-commerce checkout with Stripe payments, order history, and email notifications
-```
-
 ---
 
 ## Team-Lead Orchestration
 
-The `/sw:team-lead` skill is the entry point for all multi-agent coordination. It auto-detects what you need and spawns the right team.
-
-:::tip Two ways to invoke
-**Slash command:**
-```bash
-/sw:team-lead "Build user auth with login, signup, and OAuth"
-```
-
-**Natural language** -- just describe a complex feature:
-```
-Build an e-commerce checkout with Stripe payments, order history, and email notifications
-```
-SpecWeave auto-detects when parallel agents are needed and spawns a coordinated team.
-:::
+The `/sw:team-lead` skill is the entry point for all multi-agent coordination. It auto-detects what you need and spawns the right team. You can describe a complex feature in natural language, use the slash command in Claude Code, or use the short form in other AI tools.
 
 ### Operating Modes
 

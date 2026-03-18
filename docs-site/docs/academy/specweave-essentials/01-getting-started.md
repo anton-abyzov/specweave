@@ -5,6 +5,8 @@ title: "Lesson 1: Getting Started"
 description: "Install SpecWeave and run your first command in 15 minutes"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 1: Getting Started
 
 **Time**: 15 minutes
@@ -41,7 +43,8 @@ SpecWeave solves this by making specifications permanent:
 
 ```
 Monday:
-  /sw:increment "user profile feature"
+  "I want to build a user profile feature"
+  (or: /sw:increment "user profile feature")
 
   → Creates spec.md (requirements)
   → Creates plan.md (technical design)
@@ -181,17 +184,16 @@ If you see this, you're ready!
 
 ## The 5-Command Workflow
 
-Here's the entire SpecWeave workflow. You'll learn each command in the following lessons:
+Here's the entire SpecWeave workflow. You can use natural language or slash commands -- both work:
 
-```
-1. /sw:increment "feature"  → Plan the work
-2. /sw:do                   → Execute tasks
-3. /sw:progress             → Check status
-4. /sw:next                 → Close or continue
-5. (repeat)
-```
+| Natural Language | Slash Command | Purpose |
+|-----------------|---------------|---------|
+| "Let's build a login page" | `/sw:increment "feature"` | Plan the work |
+| "Start implementing" | `/sw:do` | Execute tasks |
+| "What's the status?" | `/sw:progress` | Check status |
+| "What should I do next?" | `/sw:next` | Close or continue |
 
-That's it. Five commands cover 90% of daily use.
+That's it. These cover 90% of daily use.
 
 ---
 

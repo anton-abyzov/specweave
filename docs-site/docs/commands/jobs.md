@@ -2,15 +2,19 @@
 sidebar_position: 15
 ---
 
-# /sw:jobs - Background Jobs Monitor
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Background Jobs Monitor
 
 Monitor and manage long-running background operations.
 
 ## Usage
 
-```bash
-/sw:jobs [options]
-```
+<CommandTabs
+  natural='Show background jobs'
+  claude='/sw:jobs'
+  other='jobs'
+/>
 
 ## Options
 
@@ -55,7 +59,7 @@ Paused (1):
   [ghi11111] import-issues (GitHub)
      Progress: 1,234/10,000 (12%)
      Reason: Rate limited (resumes in 45s)
-     Resume: /sw:jobs --resume ghi11111
+     Resume: /sw:jobs --resume ghi11111 (or say "resume job")
 ```
 
 ### Failed Jobs
@@ -119,10 +123,10 @@ Output (updates every second):
 ```
 Following job ae362dfe (Ctrl+C to stop)
 
-[10:53:15] Progress: 154/245 (63%) → infrastructure-apo-platform
-[10:53:25] Progress: 155/245 (63%) → infrastructure-apo-platform
-[10:53:35] Progress: 156/245 (64%) → data-processing-core
-[10:53:45] Progress: 157/245 (64%) → data-processing-core
+[10:53:15] Progress: 154/245 (63%) -> infrastructure-apo-platform
+[10:53:25] Progress: 155/245 (63%) -> infrastructure-apo-platform
+[10:53:35] Progress: 156/245 (64%) -> data-processing-core
+[10:53:45] Progress: 157/245 (64%) -> data-processing-core
 ```
 
 ### View Worker Logs
@@ -181,7 +185,7 @@ Spawning background worker...
 New PID: 45679
 
 Job resumed in background.
-Check progress: /sw:jobs --follow ae362dfe
+Check progress: /sw:jobs --follow ae362dfe (or say "check jobs")
 ```
 
 ### Show All Jobs Including Completed
@@ -225,7 +229,7 @@ When GitHub/JIRA/ADO rate limits are hit:
 2. Job auto-transitions to `paused` status
 3. Worker exits gracefully, saving checkpoint
 4. Notification shown: "Rate limited, wait N minutes"
-5. User resumes: `/sw:jobs --resume <id>`
+5. User resumes: say "resume job" or type `/sw:jobs --resume <id>`
 
 **Typical rate limit windows**:
 - GitHub: 15-60 minutes
@@ -238,13 +242,13 @@ Jobs persist to filesystem for session independence:
 
 ```
 .specweave/state/
-├── background-jobs.json      ← Master job list
-└── jobs/
-    └── <jobId>/
-        ├── config.json       ← Job configuration
-        ├── worker.pid        ← Process ID (while running)
-        ├── worker.log        ← Worker output
-        └── result.json       ← Final results
+|- background-jobs.json      <- Master job list
+\- jobs/
+    \- <jobId>/
+        |- config.json       <- Job configuration
+        |- worker.pid        <- Process ID (while running)
+        |- worker.log        <- Worker output
+        \- result.json       <- Final results
 ```
 
 ### Reading State Directly
@@ -315,7 +319,7 @@ npm run rebuild
 
 ## Tips
 
-1. **Check jobs after init** - Always run `/sw:jobs` after `specweave init` with large imports
+1. **Check jobs after init** - Always run the jobs command (or say "check jobs") after `specweave init` with large imports
 
 2. **Don't close Claude immediately** - Give workers 10-30s to fully detach
 
@@ -325,11 +329,13 @@ npm run rebuild
 
 ## Related Commands
 
-- `/sw:import-external` - Import issues from external tools
-- `/sw-ado:clone-repos` - Clone Azure DevOps repositories
-- `/sw-github:sync` - Sync with GitHub
-- `/sw-jira:sync` - Sync with JIRA
-- `/sw-ado:sync` - Sync with Azure DevOps
+| Natural Language | Claude Code | Other AI Tools | Purpose |
+|-----------------|-------------|----------------|---------|
+| "Import issues" | `/sw:import-external` | `import-external` | Import issues from external tools |
+| "Clone repos" | `/sw-ado:clone-repos` | `ado clone-repos` | Clone Azure DevOps repositories |
+| "Sync to GitHub" | `/sw-github:sync` | `github-sync` | Sync with GitHub |
+| "Sync to JIRA" | `/sw-jira:sync` | `jira-sync` | Sync with JIRA |
+| "Sync to ADO" | `/sw-ado:sync` | `ado-sync` | Sync with Azure DevOps |
 
 ## Related Documentation
 

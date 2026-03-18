@@ -2,7 +2,9 @@
 sidebar_position: 3
 ---
 
-# /sw:do - Execute Tasks
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Execute Tasks
 
 **Implementation Execution**: Execute increment tasks following spec.md and plan.md.
 
@@ -10,12 +12,16 @@ This is the main command for doing work in SpecWeave. It smart-resumes from wher
 
 ## Usage
 
-```bash
-# Auto-resumes from last incomplete task
-/sw:do [increment-id]
+<CommandTabs
+  natural='Start implementing'
+  claude='/sw:do'
+  other='do'
+/>
 
-# Or let it find active increment automatically
-/sw:do
+Additional options:
+```bash
+# Resume a specific increment
+/sw:do 0007
 
 # Override model selection (advanced)
 /sw:do 0007 --model haiku
@@ -36,22 +42,22 @@ This is the main command for doing work in SpecWeave. It smart-resumes from wher
 The command automatically resumes from the last incomplete task:
 
 ```
-📊 Resume Context:
+Resume Context:
 
 Completed: 3/12 tasks (25%)
-├─ [✅] T001: ⚡ haiku - Setup auth module (P1)
-├─ [✅] T002: ⚡ haiku - Create user model (P1)
-├─ [✅] T003: 💎 opus - Implement JWT tokens (P1)
-└─ [⏳] T004: ⚡ haiku - Add password hashing (P1) ← RESUMING HERE
+|- [done] T001: haiku - Setup auth module (P1)
+|- [done] T002: haiku - Create user model (P1)
+|- [done] T003: opus - Implement JWT tokens (P1)
+\- [next] T004: haiku - Add password hashing (P1) <- RESUMING HERE
 
 Remaining: 9 tasks
 ```
 
 **Benefits:**
-- ✅ No manual tracking needed
-- ✅ Seamlessly continue after breaks
-- ✅ Prevents duplicate work
-- ✅ Shows progress at a glance
+- No manual tracking needed
+- Seamlessly continue after breaks
+- Prevents duplicate work
+- Shows progress at a glance
 
 ---
 
@@ -87,7 +93,7 @@ For each task:
 If a task cannot be completed:
 
 ```
-⚠️ Blocker on Task T012: "Add email verification"
+Blocker on Task T012: "Add email verification"
 
 Issue: Email service provider not specified in plan.md
 
@@ -102,19 +108,19 @@ Options:
 After completing tasks that affect testable functionality:
 
 ```
-🧪 Running tests for auth module...
+Running tests for auth module...
 
-  ✓ User model validation
-  ✓ Password hashing
-  ✗ JWT token generation (FAILED)
+  pass - User model validation
+  pass - Password hashing
+  FAIL - JWT token generation
 
-🔧 Fixing test failure...
-   • Updated JWT expiry config
+Fixing test failure...
+   Updated JWT expiry config
 
 Re-running tests...
-  ✓ JWT token generation
+  pass - JWT token generation
 
-✅ All tests passing (3/3)
+All tests passing (3/3)
 ```
 
 ### Step 6: Completion
@@ -122,17 +128,17 @@ Re-running tests...
 When all tasks complete:
 
 ```
-🎉 All tasks completed!
+All tasks completed!
 
-✅ Tasks: 42/42 (100%)
-⏱️  Time taken: 3.2 weeks
+Tasks: 42/42 (100%)
+Time taken: 3.2 weeks
 
-📝 Now syncing implementation learnings to living docs...
+Now syncing implementation learnings to living docs...
 
 Next steps:
 1. Run full test suite: npm test
-2. Validate increment: /sw:validate 0001 --quality
-3. Close increment: /sw:done 0001
+2. Validate increment (or type /sw:validate 0001 --quality in Claude Code)
+3. Close increment (or type /sw:done 0001 in Claude Code)
 ```
 
 ---
@@ -143,17 +149,17 @@ Tasks can include model hints for cost optimization:
 
 | Hint | Model | Use Case |
 |------|-------|----------|
-| ⚡ | Haiku | Simple mechanical tasks (3x faster, 20x cheaper) |
-| 🧠 | Sonnet | Moderate complexity (legacy) |
-| 💎 | Opus | Complex reasoning (default) |
+| fast | Haiku | Simple mechanical tasks (3x faster, 20x cheaper) |
+| standard | Sonnet | Moderate complexity (legacy) |
+| deep | Opus | Complex reasoning (default) |
 
 Example tasks.md:
 
 ```markdown
-### T-001: Setup auth module ⚡
+### T-001: Setup auth module (fast)
 **Status**: [ ] pending
 
-### T-002: Implement JWT strategy 💎
+### T-002: Implement JWT strategy (deep)
 **Status**: [ ] pending
 ```
 
@@ -175,8 +181,8 @@ After EVERY task completion, hooks run automatically:
 When executing deployment tasks:
 
 ```
-❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
-✅ REQUIRED: Execute commands DIRECTLY using available credentials
+FORBIDDEN: "Next Steps: Run wrangler deploy"
+REQUIRED: Execute commands DIRECTLY using available credentials
 ```
 
 Always check for credentials before deployment:
@@ -199,25 +205,25 @@ gh auth status 2>/dev/null
 
 Output:
 ```
-📂 Loading increment 0001-user-authentication...
+Loading increment 0001-user-authentication...
 
-✅ Context loaded (spec.md, plan.md, tasks.md)
+Context loaded (spec.md, plan.md, tasks.md)
 
-🔨 Starting execution (42 tasks)...
+Starting execution (42 tasks)...
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Task T001: Create User model
-✅ Completed | 🪝 Docs updated
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Completed | Docs updated
 
 [... continues for all 42 tasks ...]
 
-🎉 All tasks completed (42/42)
+All tasks completed (42/42)
 
 Next: /sw:validate 0001 --quality
 ```
 
 ### Example 2: Resume After Break
+
+You can say "continue working" or type the command:
 
 ```bash
 /sw:do
@@ -225,13 +231,13 @@ Next: /sw:validate 0001 --quality
 
 Output:
 ```
-📂 Found active increment: 0003-payment-processing
+Found active increment: 0003-payment-processing
 
-📊 Resume Context:
+Resume Context:
    Completed: 15/42 tasks (36%)
-   ← Resuming from T016: Add Stripe webhook handler
+   <- Resuming from T016: Add Stripe webhook handler
 
-🔨 Executing Task T016...
+Executing Task T016...
 ```
 
 ---
@@ -240,19 +246,19 @@ Output:
 
 ### Increment Not Found
 ```
-❌ Error: Increment 0001 not found
+Error: Increment 0001 not found
 
 Available increments:
-  • 0002-core-enhancements (planned)
-  • 0003-payment-processing (in-progress)
+  - 0002-core-enhancements (planned)
+  - 0003-payment-processing (in-progress)
 ```
 
 ### No Tasks to Execute
 ```
-⚠️ Warning: No tasks found in tasks.md
+Warning: No tasks found in tasks.md
 
 Options:
-  1. Re-plan increment: /sw:increment 0001
+  1. Re-plan increment (or type /sw:increment 0001 in Claude Code)
   2. Add tasks manually: Edit tasks.md
 ```
 
@@ -260,28 +266,28 @@ Options:
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:increment` | Plan increment (creates spec.md, plan.md, tasks.md) |
-| `/sw:progress` | Check completion status |
-| `/sw:validate` | Validate quality before closing |
-| `/sw:done` | Close increment (PM validates) |
-| `/sw:auto` | Autonomous execution mode |
+| Natural Language | Claude Code | Other AI Tools | Purpose |
+|-----------------|-------------|----------------|---------|
+| "Let's build X" | `/sw:increment` | `increment` | Plan increment (creates spec.md, plan.md, tasks.md) |
+| "What's the status?" | `/sw:progress` | `progress` | Check completion status |
+| "Check quality" | `/sw:validate` | `validate` | Validate quality before closing |
+| "We're done" | `/sw:done` | `done` | Close increment (PM validates) |
+| "Run autonomously" | `/sw:auto` | `auto` | Autonomous execution mode |
 
 ---
 
 ## Best Practices
 
-1. **Run `/sw:validate --quality`** after execution to ensure quality
+1. **Validate quality after execution** -- run validation (or type `/sw:validate --quality` in Claude Code) to ensure quality
 2. **Let hooks run** - They update docs and sync to GitHub automatically
-3. **Use model hints** - Add ⚡/💎 to tasks for cost optimization
-4. **Check progress often** - Run `/sw:progress` to see status
+3. **Use model hints** - Add fast/deep markers to tasks for cost optimization
+4. **Check progress often** - Ask "what's the status?" or type `/sw:progress`
 
 ---
 
 ## See Also
 
 - [Commands Overview](./overview) - All SpecWeave commands
-- [/sw:auto Documentation](./auto) - Autonomous execution
-- [/sw:progress Documentation](./status) - Progress tracking
-- [/sw:done Documentation](./status-management) - Closing increments
+- [Autonomous Execution Documentation](./auto) - Autonomous execution
+- [Progress Documentation](./status) - Progress tracking
+- [Status Management Documentation](./status-management) - Closing increments

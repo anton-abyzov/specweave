@@ -90,9 +90,9 @@ graph LR
 
 ## When It Activates
 
-- `/sw:increment` - After PM creates spec
-- Architecture questions - When user asks about design
-- `/sw:sync-docs review` - Reviews architecture docs
+- After PM creates spec during an increment -- say "let's build X", use `/sw:increment`, or type `increment`
+- Architecture questions -- when user says "design the system" or asks about design decisions
+- Documentation reviews -- use `/sw:sync-docs review` or say "review architecture docs"
 
 ## Related
 
