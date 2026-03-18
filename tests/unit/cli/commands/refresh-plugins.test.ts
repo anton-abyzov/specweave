@@ -35,9 +35,13 @@ const {
 const {
   mockCleanupLegacyLockfiles,
   mockCleanupOrphanedChildLocks,
+  mockCleanupStalePlugins,
+  mockMigrateUserLevelPlugins,
 } = vi.hoisted(() => ({
   mockCleanupLegacyLockfiles: vi.fn(),
   mockCleanupOrphanedChildLocks: vi.fn(),
+  mockCleanupStalePlugins: vi.fn(),
+  mockMigrateUserLevelPlugins: vi.fn(),
 }));
 
 // Mock plugin-copier
@@ -47,10 +51,12 @@ vi.mock('../../../../src/utils/plugin-copier.js', () => ({
   findSpecweaveRoot: mockFindSpecweaveRoot,
 }));
 
-// Mock stale lockfile cleanup
+// Mock stale lockfile cleanup + migration
 vi.mock('../../../../src/utils/cleanup-stale-plugins.js', () => ({
   cleanupLegacyLockfiles: mockCleanupLegacyLockfiles,
   cleanupOrphanedChildLocks: mockCleanupOrphanedChildLocks,
+  cleanupStalePlugins: mockCleanupStalePlugins,
+  migrateUserLevelPlugins: mockMigrateUserLevelPlugins,
 }));
 
 vi.mock('../../../../src/utils/find-project-root.js', () => ({
@@ -190,6 +196,14 @@ describe('refresh-plugins', () => {
     mockCleanupOrphanedChildLocks.mockReturnValue({
       success: true, removedCount: 0, skippedCount: 0,
       removedPaths: [], skippedPaths: [], errors: [],
+    });
+
+    // Default: stale plugin cleanup + migration return no-op
+    mockCleanupStalePlugins.mockResolvedValue({
+      success: true, removedCount: 0, removedPlugins: [], removedCacheDirs: [],
+    });
+    mockMigrateUserLevelPlugins.mockResolvedValue({
+      success: true, migratedCount: 0, migratedPlugins: [],
     });
   });
 
@@ -492,6 +506,38 @@ describe('refresh-plugins', () => {
       });
 
       // Should not throw — plugin installation still proceeds
+      await refreshPluginsCommand({ quiet: true });
+
+      // Plugin installation should still have been called
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // User-level plugin migration (inc 0573)
+  // -------------------------------------------------------------------------
+
+  describe('user-level plugin migration', () => {
+    it('T-020: calls migrateUserLevelPlugins in native CLI mode', async () => {
+      mockDetectClaudeCli.mockReturnValue(CLI_AVAILABLE);
+
+      await refreshPluginsCommand({});
+
+      expect(mockMigrateUserLevelPlugins).toHaveBeenCalledTimes(1);
+    });
+
+    it('T-021: calls migrateUserLevelPlugins in fallback mode', async () => {
+      mockDetectClaudeCli.mockReturnValue(CLI_UNAVAILABLE);
+
+      await refreshPluginsCommand({});
+
+      expect(mockMigrateUserLevelPlugins).toHaveBeenCalledTimes(1);
+    });
+
+    it('T-022: migration errors are non-blocking', async () => {
+      mockMigrateUserLevelPlugins.mockRejectedValue(new Error('Migration crash'));
+
+      // Should not throw
       await refreshPluginsCommand({ quiet: true });
 
       // Plugin installation should still have been called

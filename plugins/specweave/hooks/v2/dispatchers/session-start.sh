@@ -115,6 +115,24 @@ echo "[$(date -Iseconds)] HEALTH_CHECK | baseline=$BASELINE | level=$WARNING_LEV
 #           still referenced deleted paths, causing all commands/skills to fail
 # ============================================================================
 
+# ============================================================================
+# PLUGIN HEALTH: Ensure sw@specweave is enabled (guards against corruption)
+# v1.0.513: Claude Code's plugin CLI can corrupt enabledPlugins as a side
+# effect of install/uninstall operations (read-modify-write race, settings
+# sync after installed_plugins.json wipe). This fast check repairs it.
+# ============================================================================
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+if command -v jq >/dev/null 2>&1 && [[ -f "$CLAUDE_SETTINGS" ]]; then
+  SW_STATE=$(jq -r '.enabledPlugins["sw@specweave"]' "$CLAUDE_SETTINGS" 2>/dev/null)
+  if [[ "$SW_STATE" != "true" ]]; then
+    jq '.enabledPlugins["sw@specweave"] = true' "$CLAUDE_SETTINGS" > "${CLAUDE_SETTINGS}.tmp" && \
+      mv "${CLAUDE_SETTINGS}.tmp" "$CLAUDE_SETTINGS" 2>/dev/null
+    echo '{"continue":true,"systemMessage":"sw@specweave was disabled (corruption detected) — auto-repaired. Skills are now active."}'
+    mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+    echo "[$(date -Iseconds)] PLUGIN_HEALTH: Repaired sw@specweave (was: $SW_STATE)" >> "$PROJECT_ROOT/.specweave/logs/session.log" 2>/dev/null
+  fi
+fi
+
 # Read stdin to extract agent_type (Claude Code 2.1.2+)
 INPUT=$(cat 2>/dev/null || echo '{}')
 AGENT_TYPE=""
