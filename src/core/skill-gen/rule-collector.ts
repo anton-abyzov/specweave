@@ -24,6 +24,7 @@ const RULE_FILE_PATHS = [
 const RULE_DIRS: ReadonlyArray<{ dir: string; extensions: string[] }> = [
   { dir: '.claude/skills', extensions: ['.md'] },
   { dir: '.cursor/rules', extensions: ['.mdc'] },
+  { dir: '.cursor/skills', extensions: ['.mdc'] },
 ];
 
 export class RuleCollector {

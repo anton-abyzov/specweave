@@ -38,7 +38,7 @@ export class ContinueAdapter extends AdapterBase {
    */
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Continue.dev Adapter\n');
-    const skillsDir = path.join(options.projectPath, '.continue', 'rules');
+    const skillsDir = path.join(options.projectPath, '.continue', 'skills');
     await fs.ensureDir(skillsDir);
     console.log('\n✨ Continue.dev adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
