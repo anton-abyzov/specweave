@@ -26,7 +26,7 @@ import {
   migrateBundledToGlobalLock,
   migrateSatelliteToUnifiedLock,
 } from '../../utils/plugin-copier.js';
-import { cleanupStalePlugins } from '../../utils/cleanup-stale-plugins.js';
+import { cleanupStalePlugins, migrateUserLevelPlugins } from '../../utils/cleanup-stale-plugins.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { enablePluginsInSettings } from '../helpers/init/claude-plugin-enabler.js';
@@ -265,6 +265,18 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     }
   } catch {
     // Non-blocking: cleanup errors don't abort plugin refresh
+  }
+
+  // Step 4d: Migrate user-level domain plugins to project scope + restore sw@specweave
+  // migrateUserLevelPlugins has defensive code that restores sw@specweave after
+  // claude plugin uninstall corrupts the enabledPlugins object as a side effect.
+  try {
+    const migrationResult = await migrateUserLevelPlugins(process.cwd(), options.verbose);
+    if (migrationResult.migratedCount > 0) {
+      log(chalk.green(`  ✓ Migrated ${migrationResult.migratedCount} plugin(s) to project scope: ${migrationResult.migratedPlugins.join(', ')}`));
+    }
+  } catch {
+    // Non-blocking: migration errors don't abort plugin refresh
   }
 
   // Step 5: Summary
