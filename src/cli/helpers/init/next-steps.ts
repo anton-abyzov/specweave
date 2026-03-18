@@ -210,8 +210,12 @@ export function showNextSteps(
   console.log(`   ${stepNumber}. ${chalk.white('specweave sync-setup')}          ${chalk.gray(strings.syncSetup)}`);
   console.log(`   ${stepNumber + 1}. ${chalk.white('specweave increment "feature"')}  ${chalk.gray(strings.firstIncrement)}`);
 
-  // Only show migrate-to-umbrella for single-repo projects
-  if (!context.isUmbrella) {
+  // Multi-repo: show specweave get examples instead of migrate-to-umbrella
+  if (context.isMultiRepo) {
+    console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
+    console.log(`      ${chalk.white('specweave get "org/*"')}          ${chalk.gray('Add all repos from an org')}`);
+  } else if (!context.isUmbrella) {
+    // Only show migrate-to-umbrella for single-repo projects
     console.log(`   ${stepNumber + 2}. ${chalk.white('specweave migrate-to-umbrella')} ${chalk.gray(strings.multiRepo)}`);
   }
 

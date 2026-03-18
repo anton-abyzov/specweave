@@ -268,32 +268,39 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
 ## Critical Rules
 
-1. **NEVER write spec.md/plan.md/tasks.md directly** — ALWAYS delegate via Agent() calls to custom subagents
+1. **NEVER write spec.md/plan.md/tasks.md directly** — ALWAYS delegate via TeamCreate + team-scoped Agent() calls
 2. **Project field is MANDATORY** — Every US MUST have `**Project**:` field
 3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
-4. **Agent delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — spawn `sw:sw-pm`, `sw:sw-architect`, `sw:sw-planner` subagents via Agent() calls
+4. **Team-based delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — create a team via TeamCreate(), then spawn `sw:sw-pm`, `sw:sw-architect`, `sw:sw-planner` agents with team_name
 5. **Increment naming** — Format: `####-descriptive-kebab-case`
 6. **Umbrella mode** — When `umbrella.enabled: true`, ALL increments go in the umbrella root `.specweave/increments/`. The `**Project**:` field per user story routes sync to child repos. Do NOT create increments in child repos.
 
-## CRITICAL: Mandatory Subagent Delegation
+## CRITICAL: Mandatory Team-Based Delegation
 
 **This skill MUST NOT write spec.md, plan.md, or tasks.md directly.**
-Delegate to custom subagents via Agent() calls. Each subagent preloads its corresponding skill with full domain logic.
+Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmux pane for user visibility.
 
-**You MUST spawn these subagents:**
+**Team lifecycle:**
+1. `TeamCreate({ team_name: "plan-XXXX-name", description: "Planning: <feature>" })`
+2. Spawn agents with `team_name` parameter (PM + Architect in parallel, then Planner)
+3. After all complete: `SendMessage({ type: "shutdown_request", recipient: "<agent>" })` for each
+4. `TeamDelete()`
 
-| File | Subagent | Invocation |
-|------|----------|------------|
-| spec.md | sw:sw-pm | `Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: <path>. [UMBRELLA: child repos list if enabled]", description: "PM writes spec.md" })` |
-| plan.md | sw:sw-architect | `Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name. Read spec.md at <path>/spec.md", description: "Architect writes plan.md" })` |
-| tasks.md | sw:sw-planner | `Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XXXX-name. Read spec.md at <path>/spec.md and plan.md at <path>/plan.md", description: "Planner writes tasks.md" })` |
+**You MUST spawn these agents:**
+
+| File | Agent | Invocation |
+|------|-------|------------|
+| spec.md | sw:sw-pm | `Agent({ team_name: "plan-XXXX-name", name: "pm", subagent_type: "sw:sw-pm", mode: "bypassPermissions", prompt: "...", description: "PM writes spec.md" })` |
+| plan.md | sw:sw-architect | `Agent({ team_name: "plan-XXXX-name", name: "architect", subagent_type: "sw:sw-architect", mode: "bypassPermissions", prompt: "...", description: "Architect writes plan.md" })` |
+| tasks.md | sw:sw-planner | `Agent({ team_name: "plan-XXXX-name", name: "planner", subagent_type: "sw:sw-planner", mode: "bypassPermissions", prompt: "...", description: "Planner writes tasks.md" })` |
 
 **DO NOT:**
 - Write user stories, architecture, or tasks inline
 - Copy/paste spec content into Write() calls
 - "Summarize" what an agent would produce
 - Skip any of the 3 Agent() calls
-- Use Skill() for these — subagents provide memory + resumability
+- Use standalone Agent() without team_name — agents MUST be in a team for tmux visibility
+- Use Skill() for these — team agents provide memory + resumability + visibility
 
 ## Step 3a: Deep Interview Mode (if enabled)
 
@@ -315,39 +322,55 @@ The PM agent will:
 **After PM agent returns**, read the interview state file to confirm all categories are covered
 before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
-## Step 4: Delegation (MANDATORY - Custom Subagent Based)
+## Step 4: Delegation (MANDATORY - Team-Based)
 
-**After increment folder + metadata.json are created, spawn subagents using a 2-phase overlap strategy.**
+**After increment folder + metadata.json are created, create a planning team and spawn agents using a 2-phase overlap strategy.**
 
-Each subagent preloads its corresponding skill (with full domain logic, phases, templates). The subagent provides: isolated context, persistent memory, resumability, auto-compaction.
+Each agent runs in its own tmux pane for visibility. Agents preload their corresponding skill (with full domain logic, phases, templates), providing: isolated context, persistent memory, resumability, auto-compaction.
 
-### 4a + 4b. Spawn PM and Architect IN PARALLEL (REQUIRED)
+### 4a. Create Planning Team (REQUIRED — before spawning any agents)
 
-PM and Architect run concurrently. Architect starts codebase exploration immediately while PM writes spec.md. Architect polls for spec.md and reads it once available, then produces plan.md.
+```typescript
+TeamCreate({ team_name: "plan-XXXX-name", description: "Planning: <feature description>" })
+```
+
+**team_name prefix `plan-*`** bypasses the increment-existence-guard (planning doesn't require an active increment).
+
+### 4b. Spawn PM and Architect IN PARALLEL (REQUIRED)
+
+PM and Architect run concurrently in separate tmux panes. Architect starts codebase exploration immediately while PM writes spec.md. Architect polls for spec.md and reads it once available, then produces plan.md.
 
 **Spawn both agents in a single message (parallel tool calls):**
 
 ```typescript
-// Umbrella mode — pass child repos so PM can assign **Project**: per user story
-Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/. UMBRELLA MODE: Child repos: [repo1, repo2, ...]. Design cross-cutting stories — assign **Project**: to each US based on which repo owns that work.", description: "PM writes spec.md" })
+// PM agent — writes spec.md
+// For umbrella mode, include: "UMBRELLA MODE: Child repos: [repo1, repo2, ...]. Design cross-cutting stories — assign **Project**: to each US based on which repo owns that work."
+Agent({ team_name: "plan-XXXX-name", name: "pm", subagent_type: "sw:sw-pm", mode: "bypassPermissions", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/.", description: "PM writes spec.md" })
 
-// Single-project mode — standard PM invocation
-Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/", description: "PM writes spec.md" })
-
-// Architect — spawned IN PARALLEL with PM (starts codebase exploration immediately, waits for spec.md before designing)
-Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name. Increment path: .specweave/increments/XXXX-name/. ADR directory: .specweave/docs/internal/architecture/adr/. PARALLEL MODE: You are spawned in parallel with PM. Start by exploring the codebase and existing ADRs. spec.md may not exist yet — poll for it. Once spec.md is available and has content, read it and design architecture that satisfies all ACs.", description: "Architect writes plan.md" })
+// Architect — spawned IN PARALLEL with PM
+Agent({ team_name: "plan-XXXX-name", name: "architect", subagent_type: "sw:sw-architect", mode: "bypassPermissions", prompt: "Design architecture for increment XXXX-name. Increment path: .specweave/increments/XXXX-name/. ADR directory: .specweave/docs/internal/architecture/adr/. PARALLEL MODE: You are spawned in parallel with PM. Start by exploring the codebase and existing ADRs. spec.md may not exist yet — poll for it. Once spec.md is available and has content, read it and design architecture that satisfies all ACs.", description: "Architect writes plan.md" })
 ```
 
 **IMPORTANT**: Use parallel Agent() tool calls — call PM and Architect in the SAME message so they start concurrently.
 
-### 4c. Spawn Planner Subagent for tasks.md (REQUIRED — after PM + Architect complete)
+### 4c. Spawn Planner (REQUIRED — after PM + Architect complete)
 ```typescript
-Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md", description: "Planner writes tasks.md" })
+Agent({ team_name: "plan-XXXX-name", name: "planner", subagent_type: "sw:sw-planner", mode: "bypassPermissions", prompt: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md", description: "Planner writes tasks.md" })
 ```
 
-**Dependency order**: PM + Architect run in parallel (Phase 1) -> Planner runs after both complete (Phase 2).
+**Dependency order**: PM + Architect run in parallel (Phase 1) → Planner runs after both complete (Phase 2).
 Architect explores the codebase while PM writes spec.md, then reads spec.md to produce plan.md.
 Planner needs both spec.md AND plan.md, so it must wait for Phase 1 to finish.
+
+### 4d. Team Cleanup (REQUIRED — after Planner completes)
+
+```typescript
+SendMessage({ type: "shutdown_request", recipient: "pm" })
+SendMessage({ type: "shutdown_request", recipient: "architect" })
+SendMessage({ type: "shutdown_request", recipient: "planner" })
+TeamDelete()
+// If TeamDelete fails, wait 3 seconds and retry once (max 2 attempts)
+```
 
 ## Step 5: Post-Creation Sync (MANDATORY)
 

@@ -1,19 +1,11 @@
 /**
  * Resolve Structure CLI Command
  *
- * @deprecated Since v1.0.415: Init no longer sets structureDeferred.
- * This command is kept for backward compatibility with existing projects
- * that may still have project.structureDeferred in their config.json.
- * Use `specweave migrate-to-umbrella` for multi-repo setup instead.
- *
- * Usage: specweave resolve-structure --type single|multiple
+ * @deprecated Since v1.0.415. Use `specweave migrate-to-umbrella` instead.
+ * This stub is kept for backward compatibility — it no-ops with a deprecation warning.
  *
  * @module cli/commands/resolve-structure
  */
-
-import * as fs from '../../utils/fs-native.js';
-import * as path from 'path';
-import chalk from 'chalk';
 
 export interface ResolveStructureOptions {
   type: 'single' | 'multiple';
@@ -26,84 +18,15 @@ export interface ResolveStructureResult {
 }
 
 /**
- * Resolve a deferred structure decision.
- *
- * Updates config.json:
- * - Sets multiProject.enabled based on --type
- * - Clears project.structureDeferred
- * - Creates repositories/ directory for multi-repo
+ * @deprecated No-op deprecation stub. Use `specweave migrate-to-umbrella` instead.
  */
 export async function resolveStructureCommand(
-  options: ResolveStructureOptions
+  _options: ResolveStructureOptions
 ): Promise<ResolveStructureResult> {
-  const configPath = path.join(process.cwd(), '.specweave', 'config.json');
-
-  if (!fs.existsSync(configPath)) {
-    return {
-      success: false,
-      message: 'No .specweave/config.json found. Run specweave init first.',
-      previouslyDeferred: false,
-    };
-  }
-
-  let config: Record<string, unknown>;
-  try {
-    config = fs.readJsonSync(configPath);
-  } catch {
-    return {
-      success: false,
-      message: 'Failed to read config.json',
-      previouslyDeferred: false,
-    };
-  }
-
-  const project = config.project as Record<string, unknown> | undefined;
-  const wasDeferred = !!project?.structureDeferred;
-
-  if (!wasDeferred) {
-    return {
-      success: true,
-      message: 'Structure already resolved (not deferred)',
-      previouslyDeferred: false,
-    };
-  }
-
-  // Update config
-  const isMulti = options.type === 'multiple';
-
-  // Update project section
-  if (project) {
-    delete project.structureDeferred;
-  }
-
-  // Update multiProject
-  config.multiProject = { enabled: isMulti };
-
-  // Write updated config
-  try {
-    fs.writeJsonSync(configPath, config, { spaces: 2 });
-  } catch {
-    return {
-      success: false,
-      message: 'Failed to write config.json',
-      previouslyDeferred: true,
-    };
-  }
-
-  // Create repositories/ directory for multi-repo
-  if (isMulti) {
-    const reposDir = path.join(process.cwd(), 'repositories');
-    if (!fs.existsSync(reposDir)) {
-      fs.mkdirSync(reposDir, { recursive: true });
-    }
-  }
-
-  const structureLabel = isMulti ? 'multi-repo' : 'single repo';
-  console.log(chalk.green(`   ✓ Structure resolved: ${structureLabel}`));
-
+  console.warn('Warning: resolve-structure is deprecated since v1.0.415. Use specweave migrate-to-umbrella instead.');
   return {
-    success: true,
-    message: `Structure set to ${structureLabel}`,
-    previouslyDeferred: true,
+    success: false,
+    message: 'Deprecated since v1.0.415. Use specweave migrate-to-umbrella instead.',
+    previouslyDeferred: false,
   };
 }
