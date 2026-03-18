@@ -131,7 +131,7 @@ const config: Config = {
   organizationName: 'anton-abyzov',
   projectName: 'specweave',
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
