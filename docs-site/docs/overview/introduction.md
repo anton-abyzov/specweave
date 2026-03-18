@@ -31,9 +31,18 @@ SpecWeave encodes your standards into version-controlled configuration. Every de
 ```json
 // .specweave/config.json
 {
-  "testing": { "defaultTestMode": "TDD", "tddEnforcement": "strict" },
-  "quality": { "grillRequired": true, "judgeLlmRequired": true },
-  "sync": { "github": true, "jira": true }
+  "testing": {
+    "defaultTestMode": "TDD",       // AI always follows red-green-refactor
+    "tddEnforcement": "strict"      // Tasks cannot close without passing tests
+  },
+  "quality": {
+    "grillRequired": true,          // Code review gate before every close
+    "judgeLlmRequired": true        // Independent AI validation gate
+  },
+  "sync": {
+    "github": true,                 // Auto-sync to GitHub Issues / PRs
+    "jira": true                    // Bidirectional JIRA sync on close
+  }
 }
 ```
 
@@ -56,51 +65,116 @@ SpecWeave enforces **Spec-Driven Development**:
 7. **Regression Prevention** - Document existing code before modification
 8. **Framework Agnostic** - Works with ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.)
 
-## How It Works
+## No Commands to Memorize
 
-### 1. Describe What You Want
+SpecWeave is not a workflow you switch into. It is a behavior layer that changes how your AI works — installed once, active in every conversation.
 
-<CommandTabs
-  natural="I need a dark mode toggle for the settings page"
-  claude='/sw:increment "Add dark mode toggle"'
-  other='increment "Add dark mode toggle"'
-/>
+When you describe what you want, your AI routes internally to the right skill. You just work naturally:
 
-AI agents (PM, Architect, Planner) create:
+| You say | Your AI runs — automatically |
+|---------|------------------------------|
+| "Build me X" / "Let's add Y" | `/sw:increment` → spec + plan + tasks |
+| "Brainstorm approaches for X" | `/sw:brainstorm` → multi-perspective ideation |
+| "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
+| "Ship it" / "We're done" | `/sw:done` → quality gates + close |
+| "Split this into teams" | `/sw:team-lead` → parallel agents (implement mode) |
+| "Brainstorm with perspectives" | `/sw:team-lead` → parallel perspectives (brainstorm mode) |
+| "Plan X in parallel" | `/sw:team-lead` → PM + Architect agents (planning mode) |
+| "Review the code" | `/sw:code-reviewer` → 6 parallel reviewers |
+| "Grill the code" | `/sw:grill` → critical audit before close |
+
+You can also invoke these directly for fine-grained control — but you rarely need to.
+
+## The Workflow
+
+Just describe what you want. Your AI handles the orchestration.
 
 ```
-.specweave/increments/0001-dark-mode/
-├── spec.md    <- WHAT: User stories, acceptance criteria
-├── plan.md    <- HOW: Architecture, ADRs, tech decisions
-└── tasks.md   <- DO: Tasks with embedded tests
+You: "Build me a checkout flow with Stripe"
+  ↓
+AI asks 5-10 clarifying questions
+  (What payment methods? Guest checkout? Subscriptions? Which UI library?)
+  ↓
+Creates: spec.md → plan.md → tasks.md   ← you review the plan here
+  ↓
+You: "Go ahead and build it"
+  → autonomous execution for hours
+  (writes code, runs tests, fixes failures, syncs to GitHub/JIRA)
+  ↓
+You wake up. Review finished work.
+  Tests cover technical correctness. You check the UI and UX.
+  ↓
+You: "Looks good, ship it"
+  → validated, documented, closed.
 ```
 
-### 2. Build It
+**Solo developer:**
+```
+You: "I need user authentication with OAuth and magic links"
+  → AI interviews you, creates spec + plan + tasks
+You: "Build it"
+  → AI works autonomously for hours
+You: "Ship it"
+  → reviewed, validated, done.
+```
 
-<CommandTabs
-  natural="Start implementing the tasks"
-  claude="/sw:do"
-  other="do"
-/>
+**Agent team (parallel):**
+```
+You: "Build an e-commerce MVP"
+  → SpecWeave splits into auth, payments, catalog
+  → 3 agents work in parallel across iTerm/tmux panes
+```
 
-Autonomous execution through all tasks with quality validation.
+**Brownfield project:**
+```
+You: "Migrate the checkout page to React"
+  → SpecWeave analyzes existing code, plans strangler fig migration
+  → TDD-first autonomous execution
+```
 
-### 3. Close It
+For medium-complexity features, brainstorm first — `/sw:brainstorm` explores 4-6 structurally different approaches with cognitive lenses (Six Thinking Hats, SCAMPER, TRIZ, and more) before committing to a plan, then hands off directly to `/sw:increment`.
 
-<CommandTabs
-  natural="We're done, close it up"
-  claude="/sw:done 0001"
-  other="done 0001"
-/>
+### When to Use What
 
-Three quality gates validate completion:
-- All tasks complete
-- Test coverage enforced (unit: 95%, integration: 90%, E2E: 100% — configurable per project)
-- Living docs updated
+The more structure in your workflow, the harder the problems you can solve:
 
-### 4. Auto-Sync Everywhere
+```
+Hardest problem          big refactors,              ○  ← /sw:team-lead
+you can solve          whole new features                 (multi-agent)
+    ↑                                          ○
+    │               medium features               ← /sw:brainstorm → /sw:increment → /sw:auto
+    │              across repos                 (research + plan + implement)
+    │                                    ○
+    │           small features              ← /sw:increment → /sw:do
+    │          across 3-5 files                (plan + implement)
+    │                              ○
+    │       small fixes               ← just talk to AI
+    │       copy changes                 (no planning)
+    └────────────────────────────────────────────→
+      just talk     simple plan    research →    multi-phase
+      to AI         then work it   plan → impl   agent teams
 
-Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
+                 amount of context engineering →
+```
+
+## Agent Swarms
+
+Run multiple AI agents on the same repository — each agent owns an isolated increment. No conflicts.
+
+```
+iTerm2 / tmux split panes:
+┌──────────────────┬──────────────────┬──────────────────┐
+│  Agent 1 (auth)  │ Agent 2 (payments)│ Agent 3 (catalog)│
+│  /sw:auto        │  /sw:auto         │  /sw:auto        │
+│  ████████░░ 80%  │  ██████░░░░ 60%   │  ████░░░░░░ 40%  │
+└──────────────────┴──────────────────┴──────────────────┘
+```
+
+`/sw:team-lead` splits work across 6 modes — brainstorm, plan, implement, review, research, and test. Each agent runs in its own pane using Claude Code's native TeamCreate for true parallelism. Progress syncs to GitHub/JIRA automatically.
+
+**[Full agent teams guide](/docs/guides/agent-teams-and-swarms)**
+
+---
 
 ## Who Should Use SpecWeave?
 
@@ -110,12 +184,12 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 - **Startups** needing scalable architecture from day one
 - **Solo developers** building complex applications
 - **Regulated industries** (healthcare - HIPAA, finance - SOC 2)
-- **Teams migrating brownfield codebases** to modern practices
+- **Teams with brownfield codebases** — use `specweave get` to bring existing repos into SpecWeave (single repo, bulk clone with glob patterns, or entire organizations) without refactoring
 
 ### Use Cases
 
 - **Greenfield projects**: Start with comprehensive specs
-- **Brownfield projects**: Document existing code before modification
+- **Brownfield projects**: Clone existing repos with `specweave get`, document existing code, plan strangler fig migrations
 - **Iterative development**: Build documentation gradually
 - **Compliance-heavy**: Maintain audit trails and traceability
 
@@ -123,13 +197,15 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 
 | Feature | Benefit | Uniqueness |
 |---------|---------|------------|
-| **70%+ Token Reduction** | Plugin architecture loads only active increment + relevant agent = ~15K tokens (vs 200K+) | ⭐ Unique |
-| **Brownfield Excellence** | Import existing docs (Notion, Confluence, Wiki), create retroactive specs, ADRs | ⭐ Unique |
-| **Living Documentation** | Specs auto-update after every task via hooks—never drift from code | ⭐ Unique |
-| **LSP Code Intelligence** | Semantic symbol resolution — 198x faster than grep, zero false positives across TypeScript, Python, Go, Rust, Java, C# | ⭐ Unique |
-| **External Sync** | Push specs to GitHub/JIRA/ADO, read status back—keep existing workflows | Strong |
+| **70%+ Token Reduction** | Plugin architecture loads only active increment + relevant agent = ~15K tokens (vs 200K+) | Unique |
+| **Parallel Agent Teams** | `/sw:team-lead` orchestrates agents across 6 modes — brainstorm, plan, implement, review, research, test | Unique |
+| **Structured Brainstorming** | `/sw:brainstorm` explores 4-6 approaches with cognitive lenses before committing to a plan | Unique |
+| **Brownfield Excellence** | `specweave get` to import repos, automated codebase analysis, strangler fig migrations, retroactive specs | Unique |
+| **Living Documentation** | Specs auto-update after every task via hooks — never drift from code | Unique |
+| **LSP Code Intelligence** | Semantic symbol resolution — 198x faster than grep, zero false positives across TypeScript, Python, Go, Rust, Java, C# | Unique |
+| **External Sync** | Bidirectional sync with GitHub Issues, JIRA, Azure DevOps — circuit breaker resilience, auto-create issues | Strong |
 | **Quality Gates** | Three-gate validation (tasks + test coverage + docs) before closing | Strong |
-| **~42 Built-in Skills** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously | Good |
+| **~44 Built-in Skills** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously | Good |
 | **Universal Stack** | Works with ANY tech stack and ANY AI tool (Claude, Cursor, Copilot) | Expected |
 
 ## What You Get vs. Current State
@@ -142,6 +218,17 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 | Architecture in your head | **ADRs captured automatically** |
 | "Ask John, he knows" | **Living docs, always current** |
 | Onboarding: 2 weeks | **Onboarding: 1 day** |
+
+## Integrations
+
+| Platform | What Syncs |
+|----------|-----------|
+| **GitHub** | Issues, PRs, milestones — bidirectional |
+| **JIRA** | Epics, stories, status — bidirectional |
+| **Azure DevOps** | Work items, area paths — bidirectional |
+| **[Verified Skills](https://verified-skill.com)** | Security scanning, trust certification, public skill registry |
+
+When you close an increment, external tools update automatically. Sync is resilient — a circuit breaker pattern (per-provider, 3-failure threshold, 5-minute auto-reset) prevents cascading failures across integrations.
 
 ## Built With SpecWeave
 
@@ -167,23 +254,7 @@ Then describe what you want to build:
   other='increment "Add dark mode toggle"'
 />
 
-Follow up with implementation and closure:
-
-<CommandTabs
-  natural="Start implementing the tasks"
-  claude="/sw:do"
-  other="do"
-/>
-
-<CommandTabs
-  natural="We're done, finish up"
-  claude="/sw:done 0001"
-  other="done 0001"
-/>
-
-**Pro tip**: Use `/sw:next` (or say "what's next?") to flow through the entire cycle. It auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep going.
-
-**[Full Quickstart Guide](/docs/getting-started)**
+**[Full Getting Started Guide →](/docs/getting-started)**
 
 ---
 
