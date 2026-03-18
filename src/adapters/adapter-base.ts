@@ -286,8 +286,8 @@ export abstract class AdapterBase implements IAdapter {
     let frontmatterBlock = content.substring(3, endOfFrontmatter);
     const body = content.substring(endOfFrontmatter + 3);
 
-    // Strip Claude-specific fields
-    frontmatterBlock = frontmatterBlock.replace(/^user-invocable\s*:.*\n?/gm, '');
+    // Strip Claude-specific fields (both spellings of user-invocable/invokable)
+    frontmatterBlock = frontmatterBlock.replace(/^user-invoc?k?able\s*:.*\n?/gm, '');
     frontmatterBlock = frontmatterBlock.replace(/^allowed-tools\s*:.*\n?/gm, '');
     frontmatterBlock = frontmatterBlock.replace(/^model\s*:.*\n?/gm, '');
 
