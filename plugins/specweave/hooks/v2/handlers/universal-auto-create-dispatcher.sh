@@ -19,7 +19,7 @@ set +e  # Never crash Claude Code
 find_project_root() {
   local dir="$1"
   while [ "$dir" != "/" ]; do
-    [ -d "$dir/.specweave" ] && echo "$dir" && return 0
+    [ -f "$dir/.specweave/config.json" ] && echo "$dir" && return 0
     dir="$(dirname "$dir")"
   done
   return 1

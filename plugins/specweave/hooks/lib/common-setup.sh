@@ -17,7 +17,7 @@ set +e  # NEVER use set -e in hooks
 find_project_root() {
   local dir="${1:-$(pwd)}"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi

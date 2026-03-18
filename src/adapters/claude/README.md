@@ -193,12 +193,12 @@ Skills are invoked explicitly via Skill tool or auto-activate based on keywords:
 ```typescript
 // Explicit invocation
 await Skill({
-  skill: "frontend:architect",
+  skill: "sw:architect",
   args: "Design React component architecture for dashboard"
 });
 
 // Or via slash command
-/frontend:architect Design React component architecture
+/sw:architect Design React component architecture
 ```
 
 Skills like PM and Architect auto-activate based on keywords. For explicit invocation, use the Skill tool.

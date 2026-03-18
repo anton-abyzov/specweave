@@ -22,11 +22,11 @@ set -euo pipefail
 # Project Root Detection (MUST BE FIRST)
 # ============================================================================
 
-# Find project root by searching upward for .specweave/ directory
+# Find project root by searching upward for .specweave/config.json
 find_specweave_root() {
   local dir="$1"
   while [[ "$dir" != "/" ]]; do
-    if [[ -d "$dir/.specweave" ]]; then
+    if [[ -f "$dir/.specweave/config.json" ]]; then
       echo "$dir"
       return 0
     fi

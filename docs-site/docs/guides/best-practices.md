@@ -134,17 +134,17 @@ npm run build:prod  # NOT npm build
 Use Claude's native plugin commands with **short names** from marketplace.json:
 
 ```bash
-# Install SpecWeave plugins (use short names: sw, frontend, etc.)
+# Install SpecWeave plugins (use short names: sw, mobile, etc.)
 claude plugin install sw@specweave
-claude plugin install frontend@vskill
+claude plugin install mobile@vskill
 claude plugin install sw-github@specweave
 
 # List all installed plugins
 claude plugin list
 
 # Enable/disable plugins
-claude plugin enable frontend@vskill
-claude plugin disable frontend@vskill
+claude plugin enable mobile@vskill
+claude plugin disable mobile@vskill
 
 # Install from official marketplace
 claude plugin install commit-commands@claude-plugins-official
@@ -155,7 +155,7 @@ claude plugin install commit-commands@claude-plugins-official
 | Plugin | Install Command | Description |
 |--------|-----------------|-------------|
 | `sw` | `claude plugin install sw@specweave` | Core framework |
-| `frontend` | `claude plugin install frontend@vskill` | React, Next.js, Vue |
+| `mobile` | `claude plugin install mobile@vskill` | React, Next.js, Vue |
 | `backend` | `claude plugin install backend@vskill` | Node.js, Python, APIs |
 | `testing` | `claude plugin install testing@vskill` | Playwright, Vitest |
 | `sw-github` | `claude plugin install sw-github@specweave` | GitHub integration |
@@ -171,7 +171,7 @@ cd ~/.claude/plugins/marketplaces/specweave
 git checkout HEAD -- plugins
 
 # Then retry installation
-claude plugin install frontend@vskill
+claude plugin install mobile@vskill
 ```
 
 ### Lazy Loading (Automatic)
