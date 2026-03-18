@@ -721,7 +721,10 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
 
       for (const skillName of skillNames) {
         const skillMdPath = path.join(skillsPath, skillName, 'SKILL.md');
-        const skillSubdir = path.join(skillsDir, pluginName, skillName);
+        // Prevent double-nesting when plugin name == skill name (single-skill plugins)
+        const skillSubdir = skillName === pluginName
+          ? path.join(skillsDir, pluginName)
+          : path.join(skillsDir, pluginName, skillName);
         fs.mkdirSync(skillSubdir, { recursive: true });
         const targetFile = path.join(skillSubdir, 'SKILL.md');
 
@@ -756,8 +759,8 @@ function sanitizeFrontmatter(content: string, skillName: string): string {
   let frontmatterBlock = content.substring(3, endOfFrontmatter);
   const body = content.substring(endOfFrontmatter + 3);
 
-  // Strip Claude-specific fields
-  frontmatterBlock = frontmatterBlock.replace(/^user-invocable\s*:.*\n?/gm, '');
+  // Strip Claude-specific fields (both spellings of user-invocable/invokable)
+  frontmatterBlock = frontmatterBlock.replace(/^user-invoc?k?able\s*:.*\n?/gm, '');
   frontmatterBlock = frontmatterBlock.replace(/^allowed-tools\s*:.*\n?/gm, '');
   frontmatterBlock = frontmatterBlock.replace(/^model\s*:.*\n?/gm, '');
 
