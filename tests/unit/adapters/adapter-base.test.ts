@@ -113,12 +113,16 @@ class TestAdapter extends AdapterBase {
     return this.injectSystemPrompt(content, language as any);
   }
 
-  async testWriteSkillFiles(plugin: Plugin, rulesDir: string, fileSuffix?: string) {
-    return this.writeSkillFiles(plugin, rulesDir, fileSuffix);
+  async testWriteSkillFiles(plugin: Plugin, rulesDir: string) {
+    return this.writeSkillFiles(plugin, rulesDir);
   }
 
-  async testRemoveSkillFiles(pluginName: string, rulesDir: string, fileSuffix?: string) {
-    return this.removeSkillFiles(pluginName, rulesDir, fileSuffix);
+  async testRemoveSkillFiles(pluginName: string, rulesDir: string) {
+    return this.removeSkillFiles(pluginName, rulesDir);
+  }
+
+  testSanitizeFrontmatter(content: string, skillName: string): string {
+    return this.sanitizeFrontmatter(content, skillName);
   }
 
   async testListInstalledPluginsInDir(rulesDir: string) {
@@ -598,36 +602,63 @@ describe('AdapterBase', () => {
       mockReadJson.mockRejectedValue(new Error('no config'));
     });
 
-    it('should write skills into plugin-named subdirectory', async () => {
+    it('should write skills as nested SKILL.md directories', async () => {
       await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
 
       const paths: string[] = mockWriteFile.mock.calls.map((c: any[]) => c[0]);
 
-      // Should write to {rulesDir}/{pluginName}/{skillName}.md
-      expect(paths.some(p => p.includes('/sw/increment.md'))).toBe(true);
-      expect(paths.some(p => p.includes('/sw/architect.md'))).toBe(true);
+      // Should write to {rulesDir}/{pluginName}/{skillName}/SKILL.md
+      expect(paths.some(p => p.includes('/sw/increment/SKILL.md'))).toBe(true);
+      expect(paths.some(p => p.includes('/sw/architect/SKILL.md'))).toBe(true);
       // Must NOT use flat naming
       expect(paths.some(p => p.includes('sw-increment.md'))).toBe(false);
-      expect(paths.some(p => p.includes('sw-architect.md'))).toBe(false);
+      expect(paths.some(p => p.includes('/sw/increment.md'))).toBe(false);
     });
 
-    it('should ensure plugin subdirectory exists', async () => {
+    it('should ensure plugin and skill subdirectories exist', async () => {
       await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
 
       const ensureDirPaths: string[] = mockEnsureDir.mock.calls.map((c: any[]) => c[0]);
+      // Plugin dir
       expect(ensureDirPaths.some(p => p.endsWith('/sw'))).toBe(true);
+      // Skill subdirs
+      expect(ensureDirPaths.some(p => p.endsWith('/sw/increment'))).toBe(true);
+      expect(ensureDirPaths.some(p => p.endsWith('/sw/architect'))).toBe(true);
     });
 
-    it('should respect custom fileSuffix in subdirectory structure', async () => {
-      const singleSkillPlugin = {
-        manifest: { name: 'myplugin', version: '1.0.0' },
-        skills: [{ name: 'skill-a', path: '/plugins/myplugin/skills/skill-a' }],
-      } as unknown as Plugin;
+    it('should inject name into frontmatter when missing', async () => {
+      mockReadFile.mockResolvedValue('---\ndescription: Test skill\n---\n# Content');
 
-      await adapter.testWriteSkillFiles(singleSkillPlugin, '.github/instructions', '.instructions.md');
+      await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
 
-      const paths: string[] = mockWriteFile.mock.calls.map((c: any[]) => c[0]);
-      expect(paths.some(p => p.includes('/myplugin/skill-a.instructions.md'))).toBe(true);
+      const writtenContent: string = mockWriteFile.mock.calls[0][1];
+      expect(writtenContent).toContain('name: increment');
+    });
+
+    it('should not duplicate name in frontmatter when already present', async () => {
+      mockReadFile.mockResolvedValue('---\nname: increment\ndescription: Test skill\n---\n# Content');
+
+      await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
+
+      const writtenContent: string = mockWriteFile.mock.calls[0][1];
+      // Should only have one name: field
+      const nameMatches = writtenContent.match(/^name:/gm);
+      expect(nameMatches).toHaveLength(1);
+    });
+
+    it('should strip Claude-specific frontmatter fields', async () => {
+      mockReadFile.mockResolvedValue(
+        '---\nname: increment\ndescription: Test\nuser-invocable: false\nallowed-tools: Read, Write, Edit, Bash\nmodel: opus\n---\n# Content'
+      );
+
+      await adapter.testWriteSkillFiles(fakePlugin, '.agent/skills');
+
+      const writtenContent: string = mockWriteFile.mock.calls[0][1];
+      expect(writtenContent).not.toContain('user-invocable');
+      expect(writtenContent).not.toContain('allowed-tools');
+      expect(writtenContent).not.toContain('model:');
+      expect(writtenContent).toContain('name: increment');
+      expect(writtenContent).toContain('description: Test');
     });
   });
 

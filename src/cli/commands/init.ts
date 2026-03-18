@@ -658,7 +658,7 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
     antigravity: '.agent/skills',
     codex: '.codex/skills',
     opencode: '.opencode/skills',
-    copilot: '.github/copilot/skills',
+    copilot: '.github/skills',
     cursor: '.cursor/skills',
     windsurf: '.windsurf/skills',
     cline: '.cline/skills',
@@ -721,10 +721,14 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
 
       for (const skillName of skillNames) {
         const skillMdPath = path.join(skillsPath, skillName, 'SKILL.md');
-        const pluginSubdir = path.join(skillsDir, pluginName);
-        fs.mkdirSync(pluginSubdir, { recursive: true });
-        const targetFile = path.join(pluginSubdir, `${skillName}.md`);
-        fs.copySync(skillMdPath, targetFile, { overwrite: true });
+        const skillSubdir = path.join(skillsDir, pluginName, skillName);
+        fs.mkdirSync(skillSubdir, { recursive: true });
+        const targetFile = path.join(skillSubdir, 'SKILL.md');
+
+        // Read content and ensure frontmatter has name: field
+        let content = nativeFs.readFileSync(skillMdPath, 'utf-8');
+        content = sanitizeFrontmatter(content, skillName);
+        nativeFs.writeFileSync(targetFile, content, 'utf-8');
         copied++;
       }
     } catch {
@@ -734,4 +738,33 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
   }
 
   return copied;
+}
+
+/**
+ * Sanitize frontmatter for non-Claude tools:
+ * 1. Ensure `name:` field is present (required for non-Claude)
+ * 2. Strip Claude-specific fields: user-invocable, allowed-tools, model
+ */
+function sanitizeFrontmatter(content: string, skillName: string): string {
+  if (!content.startsWith('---')) {
+    return `---\nname: ${skillName}\ndescription: ${skillName}\n---\n${content}`;
+  }
+
+  const endOfFrontmatter = content.indexOf('---', 3);
+  if (endOfFrontmatter === -1) return content;
+
+  let frontmatterBlock = content.substring(3, endOfFrontmatter);
+  const body = content.substring(endOfFrontmatter + 3);
+
+  // Strip Claude-specific fields
+  frontmatterBlock = frontmatterBlock.replace(/^user-invocable\s*:.*\n?/gm, '');
+  frontmatterBlock = frontmatterBlock.replace(/^allowed-tools\s*:.*\n?/gm, '');
+  frontmatterBlock = frontmatterBlock.replace(/^model\s*:.*\n?/gm, '');
+
+  // Ensure name: is present
+  if (!/^name\s*:/m.test(frontmatterBlock)) {
+    frontmatterBlock = `\nname: ${skillName}${frontmatterBlock}`;
+  }
+
+  return `---${frontmatterBlock}---${body}`;
 }
