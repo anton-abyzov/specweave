@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave Learning Journey: From Software Engineering to AI-Native Development
 
 **A Comprehensive Course on Modern Spec-Driven Development**
@@ -906,9 +908,11 @@ export ADO_ORGANIZATION=your-org
 
 **Step 1: Create the Increment**
 
-```bash
-/sw:increment "Add user registration"
-```
+<CommandTabs
+  natural="I want to create user registration"
+  claude='/sw:increment "Add user registration"'
+  other='increment "Add user registration"'
+/>
 
 **What Happens:**
 
@@ -979,9 +983,11 @@ export ADO_ORGANIZATION=your-org
 
 **Start Implementation:**
 
-```bash
-/sw:do
-```
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
 
 **What Happens:**
 
@@ -1032,9 +1038,11 @@ export ADO_ORGANIZATION=your-org
 
 When you're done working (or think you are):
 
-```bash
-/sw:next
-```
+<CommandTabs
+  natural="What's next?"
+  claude="/sw:next"
+  other="next"
+/>
 
 **Scenario 1: All Gates Pass**
 
@@ -1601,9 +1609,11 @@ specweave init .
 
 **Then just keep using:**
 
-```bash
-/sw:next
-```
+<CommandTabs
+  natural="What's next?"
+  claude="/sw:next"
+  other="next"
+/>
 
 It will guide you through the entire cycle.
 

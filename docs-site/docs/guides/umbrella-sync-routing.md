@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Umbrella Sync Routing
 
 **For**: Teams using umbrella (multi-repo) SpecWeave projects
@@ -259,7 +261,13 @@ After migration, edit `.specweave/config.json` to add per-repo sync targets:
 }
 ```
 
-Or run `/sw:sync-setup` to configure sync targets interactively.
+Or configure sync targets interactively:
+
+<CommandTabs
+  natural="Connect my GitHub integration"
+  claude="/sw:sync-setup"
+  other="sync-setup"
+/>
 
 ---
 

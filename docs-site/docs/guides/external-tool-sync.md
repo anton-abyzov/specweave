@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # External Tool Sync
 
 **Automatic synchronization between SpecWeave specs and external tools (GitHub, JIRA, Azure DevOps).**
@@ -329,25 +331,25 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 
 ### Example 1: Create New Spec → Auto-Create Work Item
 
-```bash
-# 1. PM creates spec
-/sw:increment "User authentication with OAuth"
+**1. PM creates spec:**
 
-# PM agent generates:
-# - .specweave/docs/internal/specs/spec-001-user-auth.md
-# - .specweave/increments/0001-user-auth/spec.md (subset)
+<CommandTabs
+  natural="I want to add user authentication with OAuth"
+  claude='/sw:increment "User authentication with OAuth"'
+  other='increment "User authentication with OAuth"'
+/>
 
-# 2. post-increment-planning hook fires
-# → Detects spec-001-user-auth.md is new
-# → Creates GitHub issue #456
-# → Adds link to spec-001-user-auth.md
+PM agent generates spec files. Post-increment-planning hook fires, creates GitHub issue #456.
 
-# 3. Developer starts work
-/sw:do
+**2. Developer starts work:**
 
-# 4. As tasks complete, commits are posted to issue #456
-# → Comment: "US-001 implemented in commits abc123f, def456g"
-```
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+As tasks complete, commits are posted to issue #456.
 
 ### Example 2: Update Spec → Auto-Update Work Item
 
@@ -379,18 +381,21 @@ specweave sync-progress
 
 ### Example 3: Close Work Item → Read Status
 
-```bash
-# 1. PM closes GitHub issue #456 (all work complete)
+PM closes GitHub issue #456 (all work complete). Developer syncs status:
 
-# 2. Developer syncs status
-/sw-github:sync 0001
+<CommandTabs
+  natural="Sync to GitHub"
+  claude="/sw-github:sync 0001"
+  other="github-sync 0001"
+/>
 
-# Output:
-# 🔄 Syncing increment 0001-user-auth with GitHub...
-# ✅ Increment marked complete (issue #456 closed)
-
-# 3. SpecWeave marks increment as complete
 ```
+Output:
+🔄 Syncing increment 0001-user-auth with GitHub...
+✅ Increment marked complete (issue #456 closed)
+```
+
+SpecWeave marks increment as complete.
 
 ---
 

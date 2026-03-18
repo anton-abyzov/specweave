@@ -5,6 +5,8 @@ sidebar_label: Backend Fundamentals
 description: Complete guide to backend/server-side development - API design, databases, authentication, microservices, and production best practices
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Backend Development Fundamentals
 
 ## What is Backend Development?
@@ -3264,9 +3266,13 @@ CREATE TABLE comments (
 
 After `/sw:done`, sync docs automatically:
 
-```bash
-/sw:sync-docs update
+<CommandTabs
+  natural="Update the living docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 
+```bash
 # Updates:
 # - .specweave/docs/public/api/authentication.md
 # - .specweave/docs/public/api/posts.md

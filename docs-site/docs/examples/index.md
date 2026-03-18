@@ -5,6 +5,8 @@ description: See SpecWeave in action with real production use cases
 keywords: [examples, use cases, real-world, production, mobile, microservices, brownfield]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Real-World Examples
 
 See how SpecWeave handles real production scenarios - from mobile apps to microservices to brownfield documentation.
@@ -29,9 +31,11 @@ Build "BizZone" - a mobile app that scans business cards using the camera, extra
 
 #### The SpecWeave Approach
 
-```bash
-/sw:increment "Business card scanner with OCR and offline storage"
-```
+<CommandTabs
+  natural="Let's build a business card scanner with OCR and offline storage"
+  claude='/sw:increment "Business card scanner with OCR and offline storage"'
+  other='increment "Business card scanner with OCR and offline storage"'
+/>
 
 **Spec created** (`spec.md`):
 - 4 user stories (camera capture, OCR processing, contact storage, offline sync)
@@ -459,9 +463,11 @@ Auto mode **blocked 3 times** when tests failed:
 ### Starter Projects
 
 **Easy** (30 minutes):
-```bash
-/sw:increment "Add dark mode toggle to website"
-```
+<CommandTabs
+  natural="Let's add a dark mode toggle to the website"
+  claude='/sw:increment "Add dark mode toggle to website"'
+  other='increment "Add dark mode toggle to website"'
+/>
 
 **Medium** (1-2 hours):
 ```bash

@@ -4,6 +4,8 @@ title: Common Errors
 description: Solutions to frequently encountered errors in development
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Common Errors Guide
 
 When you encounter an error, search for it here first.

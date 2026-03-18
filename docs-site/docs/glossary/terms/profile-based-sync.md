@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Profile-Based Sync
 
 **Profile-Based Sync** is SpecWeave's architecture for syncing increments to unlimited external repositories (GitHub, JIRA, Azure DevOps) with intelligent rate limiting, time range filtering, and project-specific configuration. Each sync profile defines how to connect to an external system, with support for multiple profiles per provider.
@@ -480,9 +482,17 @@ Syncs to client-org/mobile-app repo
 # 1. Create profile (once)
 /sw:sync-profile create
 # → Profile: client-mobile created
+```
 
-# 2. Create increment
-/sw:increment "Add dark mode toggle"
+Create increment:
+
+<CommandTabs
+  natural="Let's add a dark mode toggle"
+  claude='/sw:increment "Add dark mode toggle"'
+  other='increment "Add dark mode toggle"'
+/>
+
+```bash
 # → Increment 0009-dark-mode created
 
 # 3. Link increment to profile (optional - can auto-detect)

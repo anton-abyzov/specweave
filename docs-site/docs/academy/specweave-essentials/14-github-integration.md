@@ -5,6 +5,8 @@ title: "Lesson 14: GitHub Integration Guide"
 description: "Complete guide to syncing SpecWeave with GitHub Issues"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 14: GitHub Integration Guide
 
 **Time**: 45 minutes
@@ -265,10 +267,13 @@ Team identification via labels: team:frontend, team:backend, etc.
 
 When `autoCreateIssues: true`:
 
-```bash
-# Say: "Let's build user authentication" or use the command:
-/sw:increment "User authentication"
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "User authentication"'
+  other='increment "User authentication"'
+/>
 
+```
 # Output:
 Creating increment: 0042-user-authentication
 ✓ spec.md generated
@@ -636,11 +641,13 @@ jobs:
 
 ### Full Workflow
 
-```bash
-# 1. Create increment (auto-creates GitHub issue)
-# Say: "Let's build a user profile page" or:
-/sw:increment "Add user profile page"
+<CommandTabs
+  natural="Let's build a user profile page"
+  claude='/sw:increment "Add user profile page"'
+  other='increment "Add user profile page"'
+/>
 
+```bash
 # Output:
 ✓ Increment 0050-user-profile-page created
 ✓ GitHub Issue #200 created
@@ -686,8 +693,15 @@ specweave init . --reconfigure
 /sw-github:status
 
 # 5. Create test increment
-/sw:increment "Test GitHub sync"
+```
 
+<CommandTabs
+  natural="Let's build a test for GitHub sync"
+  claude='/sw:increment "Test GitHub sync"'
+  other='increment "Test GitHub sync"'
+/>
+
+```bash
 # 6. Verify issue created
 gh issue list --limit 5
 ```

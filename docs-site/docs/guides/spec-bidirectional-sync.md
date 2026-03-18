@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Bidirectional Spec Synchronization
 
 **Automatic synchronization between SpecWeave specs and external tools (GitHub, JIRA, Azure DevOps).**

@@ -5,6 +5,8 @@ sidebar_label: GitHub Migration
 sidebar_position: 1
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # GitHub Enterprise Migration Guide
 
 :::tip Enterprise Focus
@@ -101,10 +103,13 @@ gh auth status
 
 ### Step 3: Create First Increment (Auto-Syncs!)
 
-```bash
-# Plan increment (say "let's build user authentication" or use the command)
-/sw:increment "Add user authentication"
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
+```bash
 # Result: Auto-creates GitHub issue!
 # 🔗 GitHub Issue #123 created
 # 🔗 https://github.com/myorg/myproject/issues/123

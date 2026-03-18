@@ -4,6 +4,8 @@ title: "AI Development Fundamentals"
 description: "Understanding deterministic vs non-deterministic programming when working with LLMs"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # AI Development Fundamentals
 
 **Essential concepts for building reliable systems with LLMs.**
@@ -141,11 +143,14 @@ hooks:
 
 Don't trust "it works" - verify against specs:
 
-```bash
-# SpecWeave validates before closing
-/sw:done 0023
+<CommandTabs
+  natural="We're done with increment 0023"
+  claude="/sw:done 0023"
+  other="done 0023"
+/>
 
-# Checks:
+```bash
+# SpecWeave validates before closing:
 # ✓ All tasks completed?
 # ✓ All ACs marked done?
 # ✓ Tests passing?

@@ -5,6 +5,8 @@ sidebar_label: Azure DevOps Migration
 sidebar_position: 3
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Azure DevOps Enterprise Migration Guide
 
 :::tip Enterprise Focus
@@ -118,10 +120,13 @@ specweave validate-ado
 
 ### Step 4: Create First Increment (Auto-Syncs!)
 
-```bash
-# Plan increment (say "let's build user auth with Azure AD B2C" or use the command)
-/sw:increment "User authentication with Azure AD B2C"
+<CommandTabs
+  natural="Let's build user auth with Azure AD B2C"
+  claude='/sw:increment "User authentication with Azure AD B2C"'
+  other='increment "User authentication with Azure AD B2C"'
+/>
 
+```bash
 # Result: Auto-creates ADO Feature!
 # 🔗 ADO Feature #1234 created
 # 🔗 https://dev.azure.com/myorg/MyProject/_workitems/edit/1234

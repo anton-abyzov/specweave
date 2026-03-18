@@ -4,6 +4,8 @@ title: "External Tools Integration Overview"
 description: "Complete guide to integrating SpecWeave with GitHub, JIRA, and Azure DevOps"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # External Tools Integration Overview
 
 **SpecWeave 1.0** provides enterprise-grade bidirectional synchronization with the three major project management platforms:
@@ -163,11 +165,21 @@ gh auth login
 # 2. Initialize SpecWeave with GitHub
 specweave init .
 # Select: "Yes, GitHub Issues"
-
-# 3. Create and sync increment
-/sw:increment "my feature"
-/sw:sync-progress
 ```
+
+**3. Create and sync increment:**
+
+<CommandTabs
+  natural="I want to create my feature"
+  claude='/sw:increment "my feature"'
+  other='increment "my feature"'
+/>
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw:sync-progress"
+  other="progress-sync"
+/>
 
 **[Full GitHub Guide →](/docs/academy/specweave-essentials/14-github-integration)**
 
@@ -220,20 +232,25 @@ specweave init .
 
 When you create an increment locally and want it visible in external tools:
 
-```bash
-# 1. Create increment
-/sw:increment "User authentication feature"
+**1. Create increment:**
 
-# 2. AI generates spec.md, plan.md, tasks.md
+<CommandTabs
+  natural="I want to add user authentication"
+  claude='/sw:increment "User authentication feature"'
+  other='increment "User authentication feature"'
+/>
 
-# 3. Sync to external (happens automatically or manually)
-/sw:sync-progress
+AI generates spec.md, plan.md, tasks.md.
 
-# Result:
-# - GitHub: Creates milestone + issues
-# - JIRA: Creates Epic + Stories + Sub-tasks
-# - ADO: Creates Feature + User Stories + Tasks
-```
+**2. Sync to external (happens automatically or manually):**
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw:sync-progress"
+  other="progress-sync"
+/>
+
+Result: GitHub creates milestone + issues, JIRA creates Epic + Stories + Sub-tasks, ADO creates Feature + User Stories + Tasks.
 
 ```mermaid
 sequenceDiagram
@@ -260,22 +277,31 @@ sequenceDiagram
 
 When work items exist in external tools and you want to implement them:
 
-```bash
-# 1. Import from external tool
-/sw:import-external
+**1. Import from external tool:**
 
-# 2. SpecWeave creates read-only references
-# Result:
-# - FS-001E (E = external)
-# - US-001E-github-issue-42
-# - Frontmatter includes: external_ref, external_url
+<CommandTabs
+  natural="Import issues from external tools"
+  claude="/sw:import-external"
+  other="import"
+/>
 
-# 3. Work on tasks locally
-/sw:do
+SpecWeave creates read-only references (FS-001E, US-001E-github-issue-42).
 
-# 4. Status syncs back (if Gate 2 enabled)
-/sw:sync-progress
-```
+**2. Work on tasks locally:**
+
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+**3. Status syncs back (if Gate 2 enabled):**
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw:sync-progress"
+  other="progress-sync"
+/>
 
 ```mermaid
 sequenceDiagram
@@ -306,24 +332,23 @@ sequenceDiagram
 
 When an increment completes and you want to close all related external items:
 
-```bash
-# 1. All tasks completed
-/sw:progress
-# → "15/15 tasks complete"
+**1. Check all tasks completed:**
 
-# 2. Close increment with quality gates
-/sw:done 0042
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
 
-# 3. SpecWeave validates:
-# - All tasks complete ✓
-# - Test coverage >= 60% ✓
-# - Living docs updated ✓
+**2. Close increment with quality gates:**
 
-# 4. Closes all external items (if Gate 3 enabled)
-# - GitHub: Closes issues, updates milestone
-# - JIRA: Transitions to "Done"
-# - ADO: Sets state to "Closed"
-```
+<CommandTabs
+  natural="We're done, close increment 0042"
+  claude="/sw:done 0042"
+  other="done 0042"
+/>
+
+SpecWeave validates (all tasks complete, test coverage >= 60%, living docs updated) and closes all external items if Gate 3 is enabled (GitHub closes issues, JIRA transitions to "Done", ADO sets state to "Closed").
 
 ---
 

@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Spec Commit Sync: Automatic Traceability from Specs to Code
 
 **Status**: ✅ Implemented
@@ -147,19 +149,28 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 ### 1. Link Increment to External Tool
 
 **GitHub**:
-```bash
-/sw-github:create-issue 0001
-```
+
+<CommandTabs
+  natural="Push to GitHub"
+  claude="/sw-github:create-issue 0001"
+  other="sw-github:create-issue 0001"
+/>
 
 **JIRA**:
-```bash
-/sw-jira:sync 0001
-```
+
+<CommandTabs
+  natural="Push to JIRA"
+  claude="/sw-jira:sync 0001"
+  other="sw-jira:sync 0001"
+/>
 
 **Azure DevOps**:
-```bash
-/sw-ado:sync 0001
-```
+
+<CommandTabs
+  natural="Sync to Azure DevOps"
+  claude="/sw-ado:sync 0001"
+  other="sw-ado:sync 0001"
+/>
 
 ### 2. Work Normally
 

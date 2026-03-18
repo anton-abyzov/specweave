@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lazy Plugin Loading (Upcoming v1.1)
 
 **99% token reduction** for non-SpecWeave work through conditional plugin activation.

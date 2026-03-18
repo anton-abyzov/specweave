@@ -4,6 +4,8 @@ title: Enterprise Application Development 101
 sidebar_label: Enterprise App Development
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Enterprise Application Development 101
 
 ## What is an Enterprise Application?
@@ -272,7 +274,13 @@ Acceptance Criteria:
 ```
 
 **SpecWeave Integration**
-- `/sw:increment "Add wishlist feature"` creates `spec.md`
+
+<CommandTabs
+  natural="I want to add a wishlist feature"
+  claude='/sw:increment "Add wishlist feature"'
+  other='increment "Add wishlist feature"'
+/>
+
 - PM agent generates user stories with AC-IDs
 - Traceability from requirements to tests
 
@@ -352,7 +360,13 @@ git push origin feature/wishlist-backend
 ```
 
 **SpecWeave Integration**
-- `/sw:do` executes tasks from `tasks.md`
+
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
+
 - Embedded test plans (BDD format)
 - AC-ID traceability (spec → task → test)
 
@@ -405,7 +419,12 @@ graph TB
 - Tests embedded in `tasks.md`
 - BDD format: Given/When/Then
 - Coverage targets per task (80-90%)
-- `/sw:validate` checks completeness
+
+<CommandTabs
+  natural="Validate the increment"
+  claude="/sw:validate"
+  other="validate"
+/>
 
 ### Phase 5: Deployment
 
@@ -1023,10 +1042,14 @@ POST   /refunds (admin only)
 ### Development Workflow with SpecWeave
 
 **Phase 1: Planning**
-```bash
-# PM creates increment
-/sw:increment "Add wishlist feature"
 
+<CommandTabs
+  natural="I want to add a wishlist feature"
+  claude='/sw:increment "Add wishlist feature"'
+  other='increment "Add wishlist feature"'
+/>
+
+```bash
 # Generates spec.md with:
 # - User stories (US-001: Save items to wishlist)
 # - Acceptance criteria (AC-US1-01: User can add/remove items)
@@ -1582,15 +1605,24 @@ Deepen your understanding of key concepts:
    ```
 
 2. **Create Your First Increment**
-   ```bash
-   /sw:increment "Add user authentication"
-   ```
+
+   <CommandTabs
+     natural="I want to add user authentication"
+     claude='/sw:increment "Add user authentication"'
+     other='increment "Add user authentication"'
+   />
 
 3. **Follow the Workflow**
    - PM agent generates `spec.md` (user stories, AC)
    - Architect agent creates `plan.md` (HLD, LLD, ADRs)
    - Tech Lead generates `tasks.md` (embedded tests)
-   - `/sw:do` executes tasks
+
+   <CommandTabs
+     natural="Start implementing the tasks"
+     claude="/sw:do"
+     other="do"
+   />
+
    - Living docs sync automatically
 
 4. **Join the Community**

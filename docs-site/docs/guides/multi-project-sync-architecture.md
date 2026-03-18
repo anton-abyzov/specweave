@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Multi-Project Sync Architecture - Complete Guide
 
 **Version**: 0.21.0+

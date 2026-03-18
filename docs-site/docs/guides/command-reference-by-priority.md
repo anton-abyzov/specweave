@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave Command Reference - By Priority
 
 **Last Updated**: 2025-11-14
@@ -200,20 +202,41 @@ Edge cases and specialized integrations.
 
 If you're new to SpecWeave, start with these 5 commands:
 
+**1. Plan new work:**
+
+<CommandTabs
+  natural="I want to add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
+
+**2. Execute tasks:**
+
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+**3. Check progress:**
+
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
+
+**4. Close when done:**
+
+<CommandTabs
+  natural="We're done, close it"
+  claude="/sw:done 0031"
+  other="done 0031"
+/>
+
+**5. Reopen if issues found:**
+
 ```bash
-# 1. Plan new work
-/sw:increment "Add user authentication"
-
-# 2. Execute tasks
-/sw:do
-
-# 3. Check progress
-/sw:progress
-
-# 4. Close when done
-/sw:done 0031
-
-# 5. (NEW!) Reopen if issues found
 /sw:resume 0031 --reason "Auth broken in prod"
 ```
 
@@ -222,27 +245,54 @@ If you're new to SpecWeave, start with these 5 commands:
 ## Daily Workflow Example
 
 **Monday - Start New Feature**:
-```bash
-/sw:increment "Implement payment processing"
-# → Creates increment 0032, generates spec/plan/tasks
+
+<CommandTabs
+  natural="Let's build payment processing"
+  claude='/sw:increment "Implement payment processing"'
+  other='increment "Implement payment processing"'
+/>
+
+```
+→ Creates increment 0032, generates spec/plan/tasks
 ```
 
 **Tuesday-Thursday - Execute Work**:
-```bash
-/sw:do
-# → Smart resume, continues last active increment
-# Work on tasks, mark [x] as you complete them
 
-/sw:progress
-# → Check: 15/20 tasks (75%)
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+```
+→ Smart resume, continues last active increment
+Work on tasks, mark [x] as you complete them
+```
+
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
+
+```
+→ Check: 15/20 tasks (75%)
 ```
 
 **Friday - Complete or Pause**:
-```bash
-/sw:done 0032
-# → PM validates, syncs to living docs, closes increment
 
-# OR if blocked:
+<CommandTabs
+  natural="We're done with 0032, finish up"
+  claude="/sw:done 0032"
+  other="done 0032"
+/>
+
+```
+→ PM validates, syncs to living docs, closes increment
+```
+
+OR if blocked:
+```bash
 /sw:pause 0032 --reason "Waiting for API access"
 ```
 
@@ -353,47 +403,89 @@ Options:
 ## Integration Workflows
 
 ### GitHub Workflow
+
+**1. Plan:**
+
+<CommandTabs
+  natural="Let's build Feature X"
+  claude='/sw:increment "Feature X"'
+  other='increment "Feature X"'
+/>
+
+Auto-creates GitHub issue #123 via hook.
+
+**2. Execute:**
+
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+Tasks update GitHub checkboxes automatically via hook.
+
+**3. Close:**
+
+<CommandTabs
+  natural="We're done, close it"
+  claude="/sw:done 0031"
+  other="done 0031"
+/>
+
+Closes GitHub issue #123.
+
+**4. (If needed) Reopen:**
+
 ```bash
-# 1. Plan
-/sw:increment "Feature X"
-
-# 2. Auto-create GitHub issue (via hook)
-# → Creates issue #123 automatically
-
-# 3. Execute
-/sw:do
-
-# 4. Tasks update GitHub (via hook)
-# → Checkboxes update automatically
-
-# 5. Close
-/sw:done 0031
-# → Closes GitHub issue #123
-
-# 6. (If needed) Reopen
 /sw:resume 0031 --reason "Bug found"
 # → Reopens GitHub issue #123
 ```
 
 ### JIRA Workflow
-```bash
-# 1. Plan
-/sw:increment "Feature X"
 
-# 2. Sync to JIRA
-/sw-jira:sync 0031
-# → Creates JIRA epic
+**1. Plan:**
 
-# 3. Execute
-/sw:do
+<CommandTabs
+  natural="Let's build Feature X"
+  claude='/sw:increment "Feature X"'
+  other='increment "Feature X"'
+/>
 
-# 4. Close
-/sw:done 0031
+**2. Sync to JIRA:**
 
-# 5. Sync completion
-/sw-jira:sync 0031
-# → Transitions JIRA: In Progress → Done
-```
+<CommandTabs
+  natural="Sync to JIRA"
+  claude="/sw-jira:sync 0031"
+  other="jira-sync 0031"
+/>
+
+Creates JIRA epic.
+
+**3. Execute:**
+
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+**4. Close:**
+
+<CommandTabs
+  natural="We're done, close it"
+  claude="/sw:done 0031"
+  other="done 0031"
+/>
+
+**5. Sync completion:**
+
+<CommandTabs
+  natural="Sync to JIRA"
+  claude="/sw-jira:sync 0031"
+  other="jira-sync 0031"
+/>
+
+Transitions JIRA: In Progress to Done.
 
 ---
 

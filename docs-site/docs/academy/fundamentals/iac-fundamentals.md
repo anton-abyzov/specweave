@@ -4,6 +4,8 @@ title: Infrastructure as Code Fundamentals
 sidebar_label: IaC Fundamentals
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Infrastructure as Code Fundamentals
 
 **Target Audience**: Developers learning DevOps and infrastructure management
@@ -2517,10 +2519,13 @@ terraform import aws_instance.example i-1234567890abcdef0
 
 After infrastructure deployment, SpecWeave updates architecture docs:
 
-```bash
-# Sync infrastructure to living docs
-/sw:sync-docs update
+<CommandTabs
+  natural="Update the living docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 
+```bash
 # Results in:
 # 1. Updated HLD with infrastructure diagram
 # 2. ADR documenting infrastructure decisions

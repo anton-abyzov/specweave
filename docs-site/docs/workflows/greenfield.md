@@ -4,6 +4,8 @@ title: Greenfield Workflow
 description: Start a new project from scratch
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Greenfield Workflow
 
 **Build something new with SpecWeave from day one.**
@@ -120,10 +122,11 @@ Consider: scalability, security, maintainability."
 
 ### Plan Increment 0001
 
-```bash
-# Say: "Let's build the core foundation"
-/sw:increment "Core foundation"
-```
+<CommandTabs
+  natural="Let's build the core foundation"
+  claude='/sw:increment "Core foundation"'
+  other='increment "Core foundation"'
+/>
 
 **First increment typically includes:**
 - Project structure
@@ -202,10 +205,13 @@ Task T-003: Set up linting
 
 ### Create Feature Increments
 
-```bash
-# Plan next increment
-/sw:increment "User authentication"
+<CommandTabs
+  natural="Let's add user authentication"
+  claude='/sw:increment "User authentication"'
+  other='increment "User authentication"'
+/>
 
+```bash
 # Implement
 /sw:do
 

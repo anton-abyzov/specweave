@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Bidirectional Task ↔ User Story Linking
 
 **Status**: Production Ready
@@ -18,9 +20,11 @@ SpecWeave automatically creates **bidirectional links** between tasks and user s
 
 When you complete an increment:
 
-```bash
-/sw:done 0031
-```
+<CommandTabs
+  natural="We're done with increment 0031, close it"
+  claude='/sw:done 0031'
+  other='done 0031'
+/>
 
 SpecWeave automatically:
 1. Extracts user stories from `spec.md`

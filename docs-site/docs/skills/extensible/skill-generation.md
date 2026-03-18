@@ -4,6 +4,8 @@ sidebar_label: Skill Generation
 description: Auto-detect recurring patterns from living docs using LLM analysis and generate project-local skills on demand
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Project-Specific Skill Generation
 
 SpecWeave automatically detects recurring patterns in your project and helps you generate permanent AI skills from them. The system uses LLM-based analysis -- not hardcoded keyword matching -- so it discovers patterns specific to your stack, whether that's Express middleware, PyTorch training loops, or Go microservices.
@@ -78,7 +80,16 @@ specweave init
 /sw:skill-gen --seed
 
 # 3. Or just use SpecWeave normally -- signals build over time
-/sw:done 0001  # Signals detected on closure
+```
+
+<CommandTabs
+  natural="We're done with increment 0001"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
+
+```bash
+# Signals detected on closure
 
 # 4. When a pattern qualifies, you'll see:
 # 💡 Skill suggestion: Detected "zod-validation" pattern across 4 sources.

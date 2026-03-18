@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Plugin Management Guide
 
 > Comprehensive guide to managing SpecWeave plugins in Claude Code

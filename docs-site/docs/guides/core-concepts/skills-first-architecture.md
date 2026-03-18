@@ -5,6 +5,8 @@ description: "Why SpecWeave follows Anthropic's recommended layered architecture
 keywords: [skills, agents, models, architecture, anthropic hierarchy, skill-creator, design pattern]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Skills-First Architecture
 
 Anthropic's recommended architecture for building on Claude follows a clear layered hierarchy. SpecWeave has implemented this pattern from the start. This page explains the architecture, why it matters, and how to apply it when building custom skills.
@@ -76,7 +78,13 @@ Every SpecWeave `/sw:*` command follows the Skills-first pattern:
 
 ### `/sw:do` — Execute increment tasks
 
-The user says `/sw:do`. The skill internally spawns implementation agents to work through tasks, run tests, and update progress.
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+The skill internally spawns implementation agents to work through tasks, run tests, and update progress.
 
 ### `/sw:team-lead` — Orchestrate parallel development
 
@@ -84,11 +92,23 @@ The user says `/sw:team-lead`. The skill spawns domain-specialized agents (front
 
 ### `/sw:increment` — Plan a feature
 
-The user says `/sw:increment "Add user auth"`. The skill spawns a PM agent, then an Architect agent, then a Tech Lead agent — each producing their part of the spec.
+<CommandTabs
+  natural="I want to add user auth"
+  claude='/sw:increment "Add user auth"'
+  other='increment "Add user auth"'
+/>
+
+The skill spawns a PM agent, then an Architect agent, then a Tech Lead agent — each producing their part of the spec.
 
 ### `/sw:grill` — Code review
 
-The user says `/sw:grill`. The skill runs three parallel review agents examining quality, security, and maintainability.
+<CommandTabs
+  natural="Review my work"
+  claude="/sw:grill"
+  other="grill"
+/>
+
+The skill runs three parallel review agents examining quality, security, and maintainability.
 
 ### `/sw:judge-llm` — Independent validation
 

@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Sync Configuration Guide
 
 **Version**: 1.0.0

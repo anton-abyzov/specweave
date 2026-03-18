@@ -4,6 +4,8 @@ title: Deployment Workflow
 description: Ship validated code to production
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Deployment Workflow
 
 **Get your validated code into production.**
@@ -334,13 +336,23 @@ Close increment after successful deploy:
 ```bash
 # Verify deployment
 curl https://api.example.com/health
-
-# Close the increment (say "we're done" or use the command)
-/sw:done 0001
-
-# Sync to external tools
-/sw:sync-progress
 ```
+
+Close the increment:
+
+<CommandTabs
+  natural="We're done"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
+
+Sync to external tools:
+
+<CommandTabs
+  natural="Sync progress to all tools"
+  claude="/sw:sync-progress"
+  other="sync-progress"
+/>
 
 ---
 

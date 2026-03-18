@@ -5,6 +5,8 @@ sidebar_label: Multi-Environment Deployment
 sidebar_position: 4
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Multi-Environment Deployment Strategy
 
 :::tip Enterprise Essential
@@ -147,10 +149,13 @@ Local Dev → Dev → QA → Staging → UAT → Preview → Prod
 
 ### Step 2: Deploy to First Environment (Dev)
 
-```bash
-# 1. Create increment (say "let's implement OAuth with Google" or use the command)
-/sw:increment "Implement OAuth with Google"
+<CommandTabs
+  natural="Let's implement OAuth with Google"
+  claude='/sw:increment "Implement OAuth with Google"'
+  other='increment "Implement OAuth with Google"'
+/>
 
+```bash
 # 2. Implement feature (say "start implementing" or use the command)
 /sw:do
 

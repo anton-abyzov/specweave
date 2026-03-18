@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Migration Guide: spec.md Project/Board Fields (v0.31.0)
 
 **Version**: 0.31.0
@@ -110,9 +112,11 @@ done
 
 ### Step 5: Test Sync
 
-```bash
-/sw:sync-specs
-```
+<CommandTabs
+  natural="Sync documentation"
+  claude="/sw:sync-specs"
+  other="sync-specs"
+/>
 
 ---
 

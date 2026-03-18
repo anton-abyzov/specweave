@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Universal Hierarchy Mapping
 
 **Document Type**: Guide

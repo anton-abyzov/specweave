@@ -4,6 +4,8 @@ title: Security Fundamentals
 description: Essential security practices from day one of development
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Security Fundamentals
 
 **Security isn't an afterthought—it's built into every line of code you write.**
@@ -418,7 +420,13 @@ SpecWeave includes security checks in quality gates:
 - [ ] Error handling doesn't leak info
 ```
 
-The `/sw:validate` command includes security checks.
+<CommandTabs
+  natural="Validate the increment"
+  claude="/sw:validate"
+  other="validate"
+/>
+
+The validate command includes security checks.
 
 ---
 

@@ -4,6 +4,8 @@ title: Architect Agent
 sidebar_label: Architect Agent
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Architect Agent
 
 The **Architect Agent** is SpecWeave's AI-powered System Architect that designs technical implementations, creates architecture documentation, and makes technology decisions.
@@ -90,9 +92,16 @@ graph LR
 
 ## When It Activates
 
-- After PM creates spec during an increment -- say "let's build X", use `/sw:increment`, or type `increment`
+- After PM creates spec during an increment:
+
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "User authentication"'
+  other='increment "User authentication"'
+/>
+
 - Architecture questions -- when user says "design the system" or asks about design decisions
-- Documentation reviews -- use `/sw:sync-docs review` or say "review architecture docs"
+- Documentation reviews -- say "review architecture docs", use `/sw:sync-docs review` in Claude Code, or type `sync-docs review` in other AI tools
 
 ## Related
 

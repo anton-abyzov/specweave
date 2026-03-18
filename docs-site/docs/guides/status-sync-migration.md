@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Status Sync Migration Guide
 
 **Upgrading from basic external tool sync to the new status synchronization system**
@@ -283,19 +285,28 @@ Conflicts detected and resolved based on strategy:
 ### Test Plan
 
 1. **Create test increment**
-   ```bash
-   /sw:increment "Migration test"
-   ```
+
+<CommandTabs
+  natural="Let's build a migration test"
+  claude='/sw:increment "Migration test"'
+  other='increment "Migration test"'
+/>
 
 2. **Link to external tool**
-   ```bash
-   /sw-github:create-issue 0998-migration-test
-   ```
+
+<CommandTabs
+  natural="Push to GitHub"
+  claude="/sw-github:create-issue 0998-migration-test"
+  other="sw-github:create-issue 0998-migration-test"
+/>
 
 3. **Complete increment**
-   ```bash
-   /sw:done 0998
-   ```
+
+<CommandTabs
+  natural="We're done"
+  claude="/sw:done 0998"
+  other="done 0998"
+/>
 
 4. **Verify sync**
    - ✅ Prompt appears (if `promptUser: true`)
@@ -365,9 +376,12 @@ If you need to revert to old sync:
    ```
 
 3. **Use old sync commands**
-   ```bash
-   /sw-github:sync 0001 --legacy-mode
-   ```
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:sync 0001 --legacy-mode"
+  other="sw-github:sync 0001 --legacy-mode"
+/>
 
 ---
 
@@ -457,9 +471,12 @@ If you need to revert to old sync:
 ### Q: How do I test without affecting production?
 
 **A**: Use test increments (e.g., `0999-test-sync`) or dry-run mode:
-```bash
-/sw-github:sync 0001 --dry-run
-```
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:sync 0001 --dry-run"
+  other="sw-github:sync 0001 --dry-run"
+/>
 
 ---
 

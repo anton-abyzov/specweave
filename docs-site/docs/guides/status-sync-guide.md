@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Status Synchronization Guide
 
 **Bidirectional status sync between SpecWeave increments and external tools (GitHub, JIRA, Azure DevOps)**
@@ -96,9 +98,11 @@ Edit `.specweave/config.json`:
 
 When creating increment with GitHub sync:
 
-```bash
-/sw-github:create-issue 0001-user-authentication
-```
+<CommandTabs
+  natural="Push to GitHub"
+  claude="/sw-github:create-issue 0001-user-authentication"
+  other="sw-github:create-issue 0001-user-authentication"
+/>
 
 This creates `metadata.json` with GitHub link:
 
@@ -115,9 +119,11 @@ This creates `metadata.json` with GitHub link:
 
 ### 3. Complete Increment
 
-```bash
-/sw:done 0001
-```
+<CommandTabs
+  natural="We're done"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
 
 If status sync is enabled, you'll be prompted:
 
@@ -246,9 +252,11 @@ How to resolve?
 
 Status sync happens automatically when using `/sw:done`:
 
-```bash
-/sw:done 0001-user-authentication
-```
+<CommandTabs
+  natural="We're done"
+  claude="/sw:done 0001-user-authentication"
+  other="done 0001-user-authentication"
+/>
 
 Output:
 
@@ -264,9 +272,11 @@ Output:
 
 Force sync for a specific increment:
 
-```bash
-/sw-github:sync 0001-user-authentication
-```
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:sync 0001-user-authentication"
+  other="sw-github:sync 0001-user-authentication"
+/>
 
 Options:
 
@@ -282,9 +292,11 @@ Options:
 
 Sync multiple increments at once:
 
-```bash
-/sw-github:bulk-sync --time-range 1M
-```
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:bulk-sync --time-range 1M"
+  other="sw-github:bulk-sync --time-range 1M"
+/>
 
 This syncs all increments modified in the last month.
 
@@ -344,9 +356,11 @@ User selects **Option 1** → JIRA updated to `Done`
 
 **A**: Sync fails gracefully with error message. Use retry:
 
-```bash
-/sw-github:sync 0001 --retry
-```
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:sync 0001 --retry"
+  other="sw-github:sync 0001 --retry"
+/>
 
 ### Q: Can I customize status mappings per increment?
 
@@ -379,18 +393,23 @@ User selects **Option 1** → JIRA updated to `Done`
 
 **A**: Yes! The sync is **bidirectional by default**:
 
-```bash
-/sw-github:sync 0001
-```
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:sync 0001"
+  other="sw-github:sync 0001"
+/>
 
 This syncs in both directions:
 - Pulls status/comments/labels FROM GitHub → SpecWeave
 - Pushes task progress/metadata FROM SpecWeave → GitHub
 
 To sync only from GitHub (one-way):
-```bash
-/sw-github:sync 0001 --direction from-github
-```
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:sync 0001 --direction from-github"
+  other="sw-github:sync 0001 --direction from-github"
+/>
 
 ### Q: What if status mapping is invalid?
 
@@ -446,9 +465,11 @@ cat .specweave/logs/sync-events.json | jq '.'
 
 **Solution**: Use bulk sync with delays:
 
-```bash
-/sw-github:bulk-sync --batch-size 5 --delay 1000
-```
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw-github:bulk-sync --batch-size 5 --delay 1000"
+  other="sw-github:bulk-sync --batch-size 5 --delay 1000"
+/>
 
 This syncs 5 at a time with 1-second delay between batches.
 

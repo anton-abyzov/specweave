@@ -4,6 +4,8 @@ title: Analytics Dashboard
 description: Monitor command usage, skill activations, and agent spawns with SpecWeave's built-in analytics dashboard
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Analytics Dashboard
 
 SpecWeave tracks every command invocation, skill activation, and agent spawn in a local JSONL file. The built-in dashboard gives you a visual overview of your usage patterns.

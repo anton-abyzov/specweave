@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Migration Guide: v0.23.x → v0.24.0
 
 **Target Audience**: Existing SpecWeave users upgrading from v0.23.x
@@ -54,9 +56,15 @@ Run any SpecWeave command:
 
 ```bash
 specweave status
-# or
-/sw:progress
 ```
+
+or:
+
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
 
 **What happens**:
 - v0.24.0 detects you're upgrading from v0.23.x
@@ -110,9 +118,12 @@ All `true` = same behavior as v0.23.x ✅
 ```
 
 **Effect**: `/sw:done` updates living docs locally, but requires manual sync:
-```bash
-/sw-github:sync 0047
-```
+
+<CommandTabs
+  natural="Sync to GitHub"
+  claude="/sw-github:sync 0047"
+  other="github-sync 0047"
+/>
 
 ---
 
@@ -286,11 +297,14 @@ npm install -g specweave@0.23.2
 ### Q: How do I test the new permissions?
 
 **A**: Create a test increment and try different permission combinations:
-```bash
-/sw:increment "test-permissions"
-# Modify .specweave/config.json
-# Complete tasks and observe sync behavior
-```
+
+<CommandTabs
+  natural="Let's build test-permissions"
+  claude='/sw:increment "test-permissions"'
+  other='increment "test-permissions"'
+/>
+
+Modify `.specweave/config.json`, complete tasks, and observe sync behavior.
 
 ### Q: What if I find a bug?
 

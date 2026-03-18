@@ -4,6 +4,8 @@ title: LSP Integration
 description: Enable LSP tools for 900x faster code navigation and semantic understanding
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # LSP Integration Guide
 
 Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. LSP is **900x faster** than grep for semantic code understanding.
@@ -268,21 +270,22 @@ export ENABLE_LSP_TOOL=true
 
 LSP runs automatically for all living docs operations:
 
+<CommandTabs
+  natural="Update the docs with a full scan"
+  claude="/sw:living-docs --full-scan"
+  other="living-docs --full-scan"
+/>
+
+Init also uses LSP automatically:
+
 ```bash
-# Full enterprise scan (LSP enabled by default)
-/sw:living-docs --full-scan
-
-# Init also uses LSP automatically
 specweave init
+```
 
-# LSP provides automatically:
-# - Accurate API surface extraction (all exports, types, signatures)
-# - Semantic dependency graphs (not just import text parsing)
-# - Dead code detection (unreferenced symbols)
-# - Type hierarchy maps (inheritance, implementations)
-# - Cross-module relationship mapping
+LSP provides automatically: accurate API surface extraction, semantic dependency graphs, dead code detection, type hierarchy maps, and cross-module relationship mapping.
 
-# Disable only if language servers unavailable (not recommended):
+Disable only if language servers unavailable (not recommended):
+```bash
 /sw:living-docs --full-scan --no-lsp
 ```
 

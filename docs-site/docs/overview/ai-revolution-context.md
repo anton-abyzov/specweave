@@ -4,6 +4,8 @@ title: The AI Development Revolution
 description: How software development fundamentally changed in 2024-2025 and why spec-driven workflows matter
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # The AI Development Revolution
 
 **Why everything you knew about building software just changed.**
@@ -171,9 +173,11 @@ Every feature in SpecWeave has:
 ### How It Works
 
 1. **You describe the feature**
-   ```
-   /sw:increment "User authentication with OAuth"
-   ```
+   <CommandTabs
+     natural="Let's build user authentication with OAuth"
+     claude='/sw:increment "User authentication with OAuth"'
+     other='increment "User authentication with OAuth"'
+   />
 
 2. **AI generates spec.md**
    - User stories with acceptance criteria
@@ -196,17 +200,21 @@ Every feature in SpecWeave has:
    - Clear definition of "done"
 
 6. **Implementation runs autonomously**
-   ```
-   /sw:do
-   ```
+   <CommandTabs
+     natural="Start implementing"
+     claude="/sw:do"
+     other="do"
+   />
    - AI writes code following the plan
    - Tests run automatically
    - Documentation stays in sync
 
 7. **Quality gates validate completion**
-   ```
-   /sw:done 0001
-   ```
+   <CommandTabs
+     natural="We're done"
+     claude="/sw:done 0001"
+     other="done 0001"
+   />
    - All tasks checked? ✓
    - All tests passing? ✓
    - Documentation updated? ✓
