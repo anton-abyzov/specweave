@@ -93,23 +93,12 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 
 | Plugin | Skills Count | Domain |
 |--------|--------------|--------|
-| `sw` (core) | 60+ | Planning, execution, quality, utilities |
+| `sw` (core) | 44 | Planning, execution, quality, sync, utilities |
 | `mobile` | 1 | App Store Connect automation |
-| `backend` | 4 | Node.js, Python, .NET, databases |
-| `infra` | 2 | DevOps, observability |
-| `k8s` | 4 | K8s manifests, Helm, GitOps |
-| `testing` | 3 | Unit, E2E, QA engineering |
-| `sw-github` | 4 | GitHub Issues, multi-repo |
-| `sw-jira` | 3 | JIRA sync, mapping |
-| `sw-ado` | 4 | Azure DevOps sync |
-| `kafka` | 2 | Kafka architecture, ops |
-| `ml` | 4 | ML, MLOps, data science |
-| `mobile` | 2 | Mobile, React Native |
-| `payments` | 3 | Stripe, billing, PCI |
-| `docs` | 5 | Technical writing, Docusaurus |
-| `cost` | 3 | Cloud cost reduction |
-| `sw-diagrams` | 2 | Architecture diagrams |
-| `sw-release` | 2 | Release management |
+| `marketing` | 3 | Marketing and social media |
+| `google-workspace` | 3 | Google Workspace CLI |
+| `productivity` | 1 | Personal productivity |
+| `skills` | 1 | Skill discovery |
 
 ### Installing Plugins
 

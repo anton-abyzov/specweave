@@ -684,14 +684,14 @@ rm -rf .specweave/state/.dedup-cache
 vskill remove sw-github
 
 # Reinstall plugin
-vskill add specweave --plugin sw-github
+npx vskill install --repo anton-abyzov/specweave --plugin sw
 
 # List installed plugins
 vskill list
 
 # If still broken, remove and reinstall
-vskill remove sw-github
-vskill add specweave --plugin sw-github
+vskill remove sw
+npx vskill install --repo anton-abyzov/specweave --plugin sw
 ```
 
 **If all plugins broken**:
