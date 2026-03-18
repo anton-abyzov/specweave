@@ -1387,9 +1387,8 @@ program.on('--help', () => {
   console.log('');
   console.log('Plugin Management (use Claude CLI commands):');
   console.log('  $ claude plugin install sw@specweave        # Install core SpecWeave');
-  console.log('  $ claude plugin install frontend@vskill     # Install frontend plugin');
   console.log('  $ claude plugin list                        # Show installed plugins');
-  console.log('  $ claude plugin uninstall testing@vskill     # Remove a plugin');
+  console.log('  $ vskill install anton-abyzov/vskill --plugin mobile  # Install domain plugin');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
