@@ -311,7 +311,7 @@ umbrella-project/
 | Tool | Skills Location | Auto-loaded? |
 |------|----------------|-------------|
 | Cursor | `.cursor/skills/` | Yes |
-| GitHub Copilot | `.github/copilot/skills/` | Yes (as workspace instructions) |
+| GitHub Copilot | `.github/skills/` | Yes (as workspace instructions) |
 | Gemini CLI | `.gemini/` | Reference in prompt |
 | OpenAI Codex | `.codex/skills/` | Reference in prompt |
 | Windsurf | `.windsurf/skills/` | Yes |

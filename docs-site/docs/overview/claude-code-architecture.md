@@ -131,21 +131,30 @@ my-plugin/
 └── .mcp.json                # MCP server definitions
 ```
 
-### SpecWeave Plugins (24 total)
+### The Bundled Plugin
 
-| Plugin | Skills | Agents | Commands | Purpose |
-|--------|--------|--------|----------|---------|
-| **sw** (core) | 9 | 22 | 22 | Increment lifecycle |
-| **sw-github** | 2 | 1 | 8 | GitHub sync |
-| **sw-jira** | 2 | 1 | 8 | JIRA sync |
-| **frontend** | 3 | 3 | 0 | React/Vue/Next.js |
-| **backend** | 2 | 2 | 1 | Node.js/Python APIs |
-| **k8s** | 1 | 1 | 0 | Kubernetes/GitOps |
-| **ml** | 2 | 3 | 4 | ML pipelines |
-| **infra** | 5 | 5 | 1 | DevOps/SRE |
-| ... | | | | |
+SpecWeave ships as a **single bundled plugin** (`specweave`) that installs automatically with `specweave init`.
 
-**Total: ~48 built-in skills, 22+ agents, 100+ commands**
+| Component | Count | Details |
+|-----------|-------|---------|
+| **Skills** | 44 | Auto-activating expertise (increment, PM, architect, TDD, grill, sync...) |
+| **Commands** | 72 | Slash commands (`/sw:increment`, `/sw:do`, `/sw:done`, `/sw-github:push`...) |
+| **Agents** | 3 + 21 | 3 top-level (PM, Architect, Planner) + 21 sub-agents (team-lead, code-reviewer) |
+
+Key functional areas within the plugin:
+
+| Area | Examples |
+|------|----------|
+| **Increment lifecycle** | `/sw:increment`, `/sw:do`, `/sw:done`, `/sw:validate`, `/sw:auto` |
+| **GitHub/JIRA/ADO sync** | `/sw-github:push`, `/sw-jira:sync`, `/sw-ado:create`, reconcile, close |
+| **Testing & TDD** | `/sw:tdd-cycle`, `/sw:tdd-red`, `/sw:tdd-green`, `/sw:e2e`, `/sw:qa` |
+| **Code review** | `/sw:grill`, `/sw:judge-llm`, `/sw:code-reviewer`, `/sw:pr-review` |
+| **Release management** | `/sw:release-init`, `/sw:release-rc`, `/sw:release-npm`, `/sw:npm` |
+| **Documentation** | `/sw:docs`, `/sw:living-docs`, `/sw:docs-build`, `/sw:docs-view` |
+| **Diagrams & media** | `/sw:diagrams`, `/sw:image`, `/sw:video`, `/sw:remotion` |
+| **Team orchestration** | `/sw:team-lead`, `/sw:team-build`, `/sw:team-merge` |
+
+Additional domain-specific skills are available via the [vskill CLI](https://verified-skill.com) and the community registry (see [Plugin Ecosystem](/docs/overview/plugins-ecosystem)).
 
 ---
 
@@ -583,21 +592,21 @@ SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 │                         SPECWEAVE                                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│   24 PLUGINS                                                        │
-│   ├── sw (core)           - Increment lifecycle                     │
-│   ├── sw-github           - GitHub Issues sync                      │
-│   ├── sw-jira             - JIRA Epic/Story sync                    │
-│   ├── frontend            - React/Vue/Next.js expertise             │
-│   ├── backend             - Node.js/Python APIs                     │
-│   ├── k8s                 - Kubernetes/GitOps                       │
-│   ├── ml                  - ML pipelines/MLOps                      │
-│   └── ... 17 more                                                   │
+│   1 BUNDLED PLUGIN (specweave)                                      │
+│   ├── Increment lifecycle     (plan, do, validate, done, auto)      │
+│   ├── GitHub/JIRA/ADO sync    (push, pull, reconcile, close)        │
+│   ├── Testing & TDD           (red, green, refactor, e2e, qa)       │
+│   ├── Code review             (grill, judge-llm, code-reviewer)     │
+│   ├── Release management      (RC, npm, platform, align)            │
+│   ├── Documentation           (living docs, Docusaurus)             │
+│   ├── Diagrams & media        (Mermaid, AI images/video)            │
+│   └── Team orchestration      (team-lead, team-build, team-merge)   │
 │                                                                      │
-│   136 SKILLS (auto-activate based on keywords)                      │
-│   68 AGENTS (spawn for complex isolated tasks)                      │
-│   53 COMMANDS (user-invoked slash commands)                         │
+│   44 SKILLS (auto-activate based on keywords)                       │
+│   72 COMMANDS (user-invoked slash commands)                         │
+│   24 AGENTS (3 top-level + 21 sub-agents)                          │
 │                                                                      │
-│   HYBRID HOOKS (65+ total)                                          │
+│   HYBRID HOOKS                                                      │
 │   ├── Global (hooks.json)      - Cross-cutting: start, stop, prompt│
 │   └── Skill-scoped (frontmatter) - Command-specific: ~50% fewer    │
 │                                    invocations vs all-global        │
@@ -610,7 +619,7 @@ SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 ## Learn More
 
 ### SpecWeave Resources
-- **[Plugin Ecosystem](/docs/overview/plugins-ecosystem)** — All 13 SpecWeave plugins
+- **[Plugin Ecosystem](/docs/overview/plugins-ecosystem)** — Bundled plugin + vskill marketplace
 - **[SpecWeave Essentials](/docs/academy/specweave-essentials/)** — 16-lesson hands-on curriculum
 - **[Getting Started](/docs/getting-started/)** — Quick start guide
 
@@ -643,5 +652,5 @@ SpecWeave works with any AI coding assistant. Each has different integration dep
   - *Global*: Cross-cutting (always fire)
   - *Skill-scoped*: Command-specific (~50% fewer invocations)
 
-SpecWeave bundles 13 plugins with ~48 built-in skills, 22+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.6.
+SpecWeave's bundled plugin provides 44 skills, 72 commands, and 24 agents with hybrid hooks — all working together to make AI-assisted development seamless. Additional domain skills available via the vskill marketplace.
 :::

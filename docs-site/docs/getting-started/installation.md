@@ -261,23 +261,56 @@ npx specweave init .
 - ✅ Keeps your git history intact
 - ✅ All SpecWeave work isolated in `.specweave/`
 
-### Multiple Projects
+### Multiple Projects (Umbrella Workspace)
 
-Install SpecWeave to multiple projects:
+When working with multiple repositories, use the **umbrella workspace** pattern — initialize once, then clone repos with `specweave get`:
 
 ```bash
-# Install to several projects
-npx specweave init project-a
-npx specweave init project-b
-npx specweave init project-c
+# 1. Create the umbrella workspace
+specweave init my-workspace
+cd my-workspace
 
-# Or using a loop
-for project in project-a project-b project-c; do
-  npx specweave init $project
-done
+# 2. Clone repositories into the workspace
+specweave get my-org/user-service
+specweave get my-org/order-service
+specweave get my-org/notification-service
+
+# Bulk clone an entire GitHub org
+specweave get --org my-org
+
+# Filter by pattern
+specweave get --org my-org --filter "service-*"
 ```
 
-Each project gets its own independent SpecWeave installation.
+> **Using npx?** Replace `specweave get` with `npx specweave get` if you haven't installed globally.
+
+**Directory structure:**
+
+```
+my-workspace/
+├── .specweave/                          ← Single SpecWeave root
+│   ├── increments/                      ← All increments managed here
+│   │   ├── 0001-user-auth/
+│   │   └── 0002-order-api/
+│   ├── docs/
+│   └── config.json
+├── repositories/
+│   └── my-org/
+│       ├── user-service/                ← Cloned repo
+│       ├── order-service/               ← Cloned repo
+│       └── notification-service/        ← Cloned repo
+├── CLAUDE.md
+└── AGENTS.md
+```
+
+**Why umbrella?** Centralizing specs prevents fragmentation across repos. A single increment can span multiple repositories, and all planning, tracking, and living docs stay in one place.
+
+**Key principles:**
+
+- ✅ One `specweave init` — the umbrella workspace owns all configuration
+- ✅ Increments centralized at umbrella root, tagged by project
+- ✅ Child repos do NOT get their own `.specweave/increments/`
+- ✅ Cross-repo coordination via `/sw:team-lead` for parallel work across repos
 
 ## Verification
 
