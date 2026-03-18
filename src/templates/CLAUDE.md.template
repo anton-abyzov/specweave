@@ -29,7 +29,7 @@
 
 **Skill chaining** — skills are NOT "one and done":
 1. **Planning**: `sw:pm` (specs) → `sw:architect` (design)
-2. **Implementation**: Use `sw:architect` for all domains. Optional domain plugins available via `vskill install` (frontend, backend, testing, etc.)
+2. **Implementation**: Use `sw:architect` for all domains. Optional domain plugins available via `vskill install` (mobile, marketing, etc.)
 3. **Closure**: `sw:grill` runs automatically via `/sw:done`
 
 **Complexity gate** — before chaining domain skills:
