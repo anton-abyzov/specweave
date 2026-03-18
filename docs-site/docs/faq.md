@@ -412,19 +412,25 @@ monorepo/
         └── 0008-mobile-basic-login/
 ```
 
-**2. Microservices (Multiple Repos)**:
+**2. Microservices (Multiple Repos)** — use the umbrella workspace pattern:
 ```
-parent-folder/                     ← Create parent folder
-├── .specweave/                    ← One SpecWeave for entire system
+my-workspace/                          ← specweave init my-workspace
+├── .specweave/                        ← One SpecWeave for entire system
 │   ├── docs/internal/specs/
-│   │   └── spec-0005-auth/        ← System-wide authentication
+│   │   └── spec-0005-auth/
 │   └── increments/
-│       ├── 0007-user-svc-auth/    ← Auth for user-service
-│       └── 0008-order-svc-auth/   ← Auth for order-service
-├── user-service/                  ← Separate git repo (or submodule)
-├── order-service/                 ← Separate git repo (or submodule)
-└── notification-service/
+│       ├── 0007-user-svc-auth/
+│       └── 0008-order-svc-auth/
+├── repositories/
+│   └── my-org/
+│       ├── user-service/              ← specweave get my-org/user-service
+│       ├── order-service/             ← specweave get my-org/order-service
+│       └── notification-service/      ← specweave get my-org/notification-service
+├── CLAUDE.md
+└── AGENTS.md
 ```
+
+Run `specweave init` once to create the workspace, then `specweave get` for each repo (or `specweave get --org my-org` to bulk-clone all repos in an organization).
 
 **3. Small Project (No Living Docs)**:
 ```

@@ -24,7 +24,6 @@ import {
   type InitOptions,
   type LanguageSelectionResult,
   findSourceDir,
-  findPackageRoot,
   detectNestedSpecweave,
   detectUmbrellaParent,
   detectSuspiciousPath,
@@ -589,24 +588,6 @@ async function installNonClaudeAdapter(
     techStack: options.techStack ? { language: options.techStack } : undefined,
     docsApproach: 'incremental'
   });
-
-  // Copy plugins folder for non-Claude adapters
-  if (toolName !== 'claude') {
-    spinner.start('Copying plugins folder for command execution...');
-    const specweavePackageRoot = findPackageRoot(__dirname);
-    if (specweavePackageRoot) {
-      const sourcePluginsDir = path.join(specweavePackageRoot, 'plugins');
-      const targetPluginsDir = path.join(targetDir, 'plugins');
-
-      if (fs.existsSync(sourcePluginsDir)) {
-        fs.copySync(sourcePluginsDir, targetPluginsDir, {
-          overwrite: true,
-          filter: (src) => !path.basename(src).startsWith('.')
-        });
-        spinner.succeed('Plugins folder copied successfully');
-      }
-    }
-  }
 
   // Install core plugin
   try {

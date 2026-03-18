@@ -71,12 +71,12 @@ adapters:
     priority: P1
 
   - name: copilot
-    description: "GitHub Copilot adapter - Skills installed in .github/copilot/skills/"
+    description: "GitHub Copilot adapter - Skills installed in .github/skills/"
     automation_level: basic
     status: active
     directory: copilot
     features:
-      - .github/copilot/skills/*.instructions.md per-context skill files
+      - .github/skills/<plugin>/<skill>/SKILL.md nested skill directories
       - Works with GitHub Copilot VS Code extension and IDE integrations
       - Skills auto-read as workspace instructions
     requirements:
@@ -362,7 +362,7 @@ capabilities:
     antigravity: .agent/skills/
     codex: .codex/skills/
     opencode: .opencode/skills/
-    copilot: .github/copilot/skills/
+    copilot: .github/skills/
     cursor: .cursor/skills/
     windsurf: .windsurf/skills/
     cline: .cline/skills/

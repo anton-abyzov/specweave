@@ -133,7 +133,7 @@ SendMessage({ type: "shutdown_request", recipient: "<agent-2>", content: "Merge 
 // ... for every agent in this team
 ```
 
-Harmless if agents already exited.
+Harmless if agents already exited. **NOTE**: `shutdown_request` via `SendMessage` does NOT close the tmux pane — Phase 7c below is the ONLY mechanism that kills orphaned panes. **NEVER skip 7c.**
 
 **7b. Destroy team:**
 
@@ -143,13 +143,15 @@ TeamDelete()
 
 If `TeamDelete` fails (agents still shutting down), wait 3 seconds, retry once.
 
-**7c. Orphaned pane safety net (macOS/Linux tmux only — skip on Windows):**
+**7c. Kill orphaned panes (MANDATORY — this is the ONLY thing that closes tmux panes):**
+
+`SendMessage` shutdown does NOT close tmux panes. **ALWAYS run this script.**
 
 ```bash
-if command -v tmux >/dev/null 2>&1 && [ -n "$TMUX" ]; then
-  CURRENT_PANE=$(tmux display-message -p '#{pane_id}')
-  for pane_id in $(tmux list-panes -a -F '#{pane_id}'); do
-    [ "$pane_id" = "$CURRENT_PANE" ] && continue
+if command -v tmux >/dev/null 2>&1; then
+  CURRENT_PANE=$(tmux display-message -p '#{pane_id}' 2>/dev/null || echo "")
+  for pane_id in $(tmux list-panes -a -F '#{pane_id}' 2>/dev/null); do
+    [ -n "$CURRENT_PANE" ] && [ "$pane_id" = "$CURRENT_PANE" ] && continue
     if tmux capture-pane -t "$pane_id" -p -S -50 2>/dev/null | grep -q "Resume this session"; then
       tmux kill-pane -t "$pane_id" 2>/dev/null
     fi

@@ -64,7 +64,7 @@ export class WindsurfAdapter extends AdapterBase {
   async compilePlugin(plugin: Plugin): Promise<void> {
     const skillsDir = '.windsurf/skills';
     console.log(`\n📦 Installing plugin skills for Windsurf: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, skillsDir, '.md');
+    await this.writeSkillFiles(plugin, skillsDir);
     console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Windsurf!`);
   }
@@ -78,7 +78,7 @@ export class WindsurfAdapter extends AdapterBase {
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from Windsurf: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.windsurf/skills', '.md');
+    await this.removeSkillFiles(pluginName, '.windsurf/skills');
     console.log(`   ✓ Removed from .windsurf/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }

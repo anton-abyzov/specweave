@@ -205,11 +205,12 @@ fi
 ### 3b. Get Unique ID
 
 ```bash
-# Check ALL folders for existing IDs
-find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" 2>/dev/null | grep -oE '[0-9]{4}E?' | sort -u | tail -5
+# Get the next available increment ID (deterministic, scans all dirs including archive/abandoned/paused)
+NEXT_ID=$(specweave next-id --name "your-feature-name")
+# Returns e.g. "0579-your-feature-name"
 
-# For multi-repo, also check child repos
-find repositories -path "*/specweave/increments/*" -maxdepth 5 -type d -name "[0-9]*" 2>/dev/null | grep -oE '[0-9]{4}E?' | sort -u | tail -5
+# Or get just the number:
+# specweave next-id → "0579"
 ```
 
 ### 3c. Create via CLI (preferred)
@@ -285,6 +286,18 @@ Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmu
 2. Spawn agents with `team_name` parameter (PM + Architect in parallel, then Planner)
 3. After all complete: `SendMessage({ type: "shutdown_request", recipient: "<agent>" })` for each
 4. `TeamDelete()`
+5. **Kill orphaned panes** — `SendMessage` shutdown does NOT close tmux panes:
+   ```bash
+   if command -v tmux >/dev/null 2>&1; then
+     CURRENT_PANE=$(tmux display-message -p '#{pane_id}' 2>/dev/null || echo "")
+     for pane_id in $(tmux list-panes -a -F '#{pane_id}' 2>/dev/null); do
+       [ -n "$CURRENT_PANE" ] && [ "$pane_id" = "$CURRENT_PANE" ] && continue
+       if tmux capture-pane -t "$pane_id" -p -S -50 2>/dev/null | grep -q "Resume this session"; then
+         tmux kill-pane -t "$pane_id" 2>/dev/null
+       fi
+     done
+   fi
+   ```
 
 **You MUST spawn these agents:**
 
