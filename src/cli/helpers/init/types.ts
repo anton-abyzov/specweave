@@ -226,6 +226,8 @@ export interface UmbrellaDiscoveryResult {
  */
 export interface NextStepsContext {
   isUmbrella?: boolean;
+  /** True when user selected multi-repo during init (deferred or clone) */
+  isMultiRepo?: boolean;
   /** Repo names found at repositories/{name}/.git (1-level, missing org subfolder) */
   misplacedRepos?: string[];
 }

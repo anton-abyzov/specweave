@@ -257,6 +257,9 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
   ensureSkillCreator: mockEnsureSkillCreator,
+  promptProjectSetup: mockPromptProjectSetup,
+  promptRepoUrls: mockPromptRepoUrls,
+  cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({

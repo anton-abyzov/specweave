@@ -12,7 +12,7 @@ import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 
-export type ProjectSetupChoice = 'existing' | 'clone-repos' | 'scratch';
+export type ProjectSetupChoice = 'existing' | 'clone-repos' | 'multi-repo-deferred' | 'scratch';
 
 export interface ParsedRepo {
   org: string;
@@ -79,6 +79,8 @@ function getProjectSetupStrings(language: SupportedLanguage) {
     existingDesc: string;
     cloneRepos: string;
     cloneReposDesc: string;
+    multiRepoDeferred: string;
+    multiRepoDeferredDesc: string;
     scratch: string;
     scratchDesc: string;
     repoPrompt: string;
@@ -89,6 +91,8 @@ function getProjectSetupStrings(language: SupportedLanguage) {
       existingDesc: 'Already have code or will add it manually',
       cloneRepos: 'Clone GitHub repositories',
       cloneReposDesc: 'Enter org/repo or URLs to clone into this workspace',
+      multiRepoDeferred: 'Multiple repos (set up later with `specweave get`)',
+      multiRepoDeferredDesc: 'Mark as multi-repo workspace, add repos later',
       scratch: 'Starting from scratch',
       scratchDesc: 'No code yet — first increment creates code',
       repoPrompt: 'Enter GitHub repo URLs or org/repo shorthand (space-separated):',
@@ -99,6 +103,8 @@ function getProjectSetupStrings(language: SupportedLanguage) {
       existingDesc: 'Код уже есть или будет добавлен вручную',
       cloneRepos: 'Клонировать репозитории GitHub',
       cloneReposDesc: 'Введите org/repo или URL для клонирования',
+      multiRepoDeferred: 'Несколько репозиториев (настроить позже через `specweave get`)',
+      multiRepoDeferredDesc: 'Пометить как мульти-репо, добавить репозитории позже',
       scratch: 'Начать с нуля',
       scratchDesc: 'Кода пока нет — первый инкремент создаст его',
       repoPrompt: 'Введите GitHub URL или org/repo через пробел:',
@@ -109,6 +115,8 @@ function getProjectSetupStrings(language: SupportedLanguage) {
       existingDesc: 'Ya tienes código o lo agregarás manualmente',
       cloneRepos: 'Clonar repositorios de GitHub',
       cloneReposDesc: 'Ingresa org/repo o URLs para clonar',
+      multiRepoDeferred: 'Múltiples repos (configurar después con `specweave get`)',
+      multiRepoDeferredDesc: 'Marcar como workspace multi-repo, agregar repos después',
       scratch: 'Empezar desde cero',
       scratchDesc: 'Sin código aún — el primer incremento lo creará',
       repoPrompt: 'Ingresa URLs de GitHub o org/repo separados por espacios:',
@@ -128,6 +136,7 @@ export async function promptProjectSetup(language: SupportedLanguage): Promise<P
     choices: [
       { name: strings.existing, value: 'existing' as const, description: strings.existingDesc },
       { name: strings.cloneRepos, value: 'clone-repos' as const, description: strings.cloneReposDesc },
+      { name: strings.multiRepoDeferred, value: 'multi-repo-deferred' as const, description: strings.multiRepoDeferredDesc },
       { name: strings.scratch, value: 'scratch' as const, description: strings.scratchDesc },
     ],
     default: 'existing',

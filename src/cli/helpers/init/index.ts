@@ -123,6 +123,12 @@ export {
   type EnsureSkillCreatorResult,
 } from './skill-creator-installer.js';
 
+// Vskill init invoker — syncs skills to non-Claude agents (v1.0.569+)
+export {
+  ensureVskillInit,
+  type VskillInitResult,
+} from './vskill-init-invoker.js';
+
 // Smart .gitignore generator (v1.0.130+)
 export {
   generateSmartGitignore,

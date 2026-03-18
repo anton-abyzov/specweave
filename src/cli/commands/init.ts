@@ -42,6 +42,9 @@ import {
   showNextSteps,
   installGitHooks,
   ensureSkillCreator,
+  promptProjectSetup,
+  promptRepoUrls,
+  cloneReposIntoWorkspace,
 } from '../helpers/init/index.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
@@ -304,17 +307,6 @@ export async function initCommand(
       spinner.start('Using ' + toolName + '...');
     }
 
-    // Multi-repo question for greenfield projects
-    let isMultiRepo = false;
-    if (!continueExisting && !isCI) {
-      spinner.stop();
-      isMultiRepo = await confirm({
-        message: 'Will this project use multiple repositories? (microservices, umbrella)',
-        default: false
-      });
-      spinner.start('Configuring project...');
-    }
-
     // Provider auto-detection from .git/config (silent, no prompts)
     const providerInfo = detectProvider(targetDir);
 
@@ -347,7 +339,42 @@ export async function initCommand(
       await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
     }
 
-    // Git init
+    // Post-scaffold: Project setup question (BEFORE git init so !hasGit is true for greenfield)
+    // Ask how the user wants to set up code — skip if already has .git, repositories/, or CI mode
+    let isMultiRepo = false;
+    if (!isCI && !continueExisting) {
+      const hasGit = fs.existsSync(path.join(targetDir, '.git'));
+      const hasRepos = fs.existsSync(path.join(targetDir, 'repositories'));
+
+      if (!hasGit && !hasRepos) {
+        spinner.stop();
+        try {
+          const setupChoice = await promptProjectSetup(language);
+
+          if (setupChoice === 'clone-repos') {
+            isMultiRepo = true;
+            const repos = await promptRepoUrls(language);
+            if (repos.length > 0) {
+              const result = cloneReposIntoWorkspace(targetDir, repos);
+              console.log(chalk.green(`\n   ✓ Cloned ${result.totalCloned} repo(s)`));
+              if (result.totalFailed > 0) {
+                console.log(chalk.yellow(`   ⚠ ${result.totalFailed} repo(s) failed to clone`));
+              }
+
+              // Re-scan for umbrella after cloning
+              umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+            }
+          } else if (setupChoice === 'multi-repo-deferred') {
+            isMultiRepo = true;
+            // Create repositories/ directory for future use
+            fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
+          }
+        } catch { /* non-fatal — user can set up repos later */ }
+        spinner.start('Configuring project...');
+      }
+    }
+
+    // Git init (after post-scaffold so initial commit captures cloned repos)
     const gitDir = path.join(targetDir, '.git');
     if (!fs.existsSync(gitDir)) {
       const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, shell: false });
@@ -415,10 +442,9 @@ export async function initCommand(
           };
         }
 
-        // Multi-repo structure from greenfield question
+        // Multi-repo: set multiProject.enabled (NOT umbrella.enabled — umbrella requires childRepos)
         if (isMultiRepo) {
-          config.repository = { ...config.repository, structure: 'multiple' };
-          config.project = { ...config.project, structureDeferred: false };
+          config.multiProject = { enabled: true };
         }
 
         fs.writeJsonSync(configPath, config, { spaces: 2 });
@@ -427,43 +453,18 @@ export async function initCommand(
       }
     }
 
-    // Post-scaffold: Project setup question
-    // Ask how the user wants to set up code — skip if already has .git, repositories/, or CI mode
-    if (!isCI && !continueExisting) {
-      const hasGit = fs.existsSync(path.join(targetDir, '.git'));
-      const hasRepos = fs.existsSync(path.join(targetDir, 'repositories'));
-
-      if (!hasGit && !hasRepos) {
-        spinner.stop();
-        try {
-          const { promptProjectSetup, promptRepoUrls, cloneReposIntoWorkspace } = await import('../helpers/init/repo-connect.js');
-          const setupChoice = await promptProjectSetup(language);
-
-          if (setupChoice === 'clone-repos') {
-            const repos = await promptRepoUrls(language);
-            if (repos.length > 0) {
-              const result = cloneReposIntoWorkspace(targetDir, repos);
-              console.log(chalk.green(`\n   ✓ Cloned ${result.totalCloned} repo(s)`));
-              if (result.totalFailed > 0) {
-                console.log(chalk.yellow(`   ⚠ ${result.totalFailed} repo(s) failed to clone`));
-              }
-
-              // Re-scan for umbrella and update config
-              umbrellaDiscovery = scanUmbrellaRepos(targetDir);
-              if (umbrellaDiscovery && fs.existsSync(configPath)) {
-                try {
-                  const config = fs.readJsonSync(configPath);
-                  const umbrellaFragment = buildUmbrellaConfig(umbrellaDiscovery, finalProjectName);
-                  config.umbrella = umbrellaFragment.umbrella;
-                  config.repository = { ...config.repository, ...umbrellaFragment.repository };
-                  fs.writeJsonSync(configPath, config, { spaces: 2 });
-                } catch { /* non-fatal */ }
-              }
-            }
-          }
-        } catch { /* non-fatal — user can set up repos later */ }
-        spinner.start('Finalizing...');
-      }
+    // Optional sync-setup chain after multi-repo setup
+    if (isMultiRepo && !isCI) {
+      try {
+        const connectTools = await confirm({
+          message: 'Connect external tools now? (GitHub Issues, JIRA, ADO)',
+          default: false,
+        });
+        if (connectTools) {
+          const { syncSetupCommand } = await import('./sync-setup.js');
+          await syncSetupCommand();
+        }
+      } catch { /* non-fatal */ }
     }
 
     // Plugin install (Claude only)
@@ -501,6 +502,7 @@ export async function initCommand(
 
       setupLspEnvVar();
     }
+
 
     // Git hooks
     if (isGitRepo && !continueExisting) {
@@ -552,7 +554,7 @@ export async function initCommand(
       language,
       usedDotNotation,
       toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined,
-      { isUmbrella: !!umbrellaDiscovery, misplacedRepos }
+      { isUmbrella: !!umbrellaDiscovery, isMultiRepo, misplacedRepos }
     );
   } catch (error) {
     spinner.fail('Failed to create project');
