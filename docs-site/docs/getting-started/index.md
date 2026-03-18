@@ -4,6 +4,8 @@ title: "Getting Started"
 description: "Start shipping features with SpecWeave in 5 minutes"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Getting Started with SpecWeave
 
 **From zero to shipping in 5 minutes.**
@@ -15,6 +17,26 @@ SpecWeave is the spec-driven Skill Fabric for AI coding agents. Skills extend wh
 :::tip Enterprise teams
 Building for enterprise? See [compliance, brownfield, and multi-repo guides](/docs/enterprise).
 :::
+
+---
+
+## Three Ways to Work
+
+SpecWeave understands what you want. Pick the style that feels right:
+
+| Style | How It Works | Best For |
+|-------|-------------|----------|
+| **Natural language** | Just describe what you want — SpecWeave detects your intent and activates the right skill | Everyone, especially new users |
+| **Slash commands** | Type `/sw:increment`, `/sw:do`, `/sw:done` for precise control | Power users on Claude Code |
+| **CLI keywords** | Type `increment`, `do`, `done` without the `/sw:` prefix | Cursor, Copilot, and other AI tools |
+
+All three methods trigger the same workflow. Here is what it looks like:
+
+<CommandTabs
+  natural="I want to add user authentication with OAuth support"
+  claude='/sw:increment "Add user authentication with OAuth"'
+  other='increment "Add user authentication with OAuth"'
+/>
 
 ---
 
@@ -71,18 +93,13 @@ Answer the prompts — SpecWeave auto-detects your tech stack and configures acc
 
 ### 3. Create Your First Feature
 
-:::tip Two ways to start
-**Slash command:**
-```bash
-/sw:increment "Add user authentication with OAuth"
-```
+Describe what you want to build:
 
-**Natural language** — just describe what you want:
-```
-Build a user authentication system with OAuth and social login
-```
-SpecWeave auto-detects your intent and runs the right skill.
-:::
+<CommandTabs
+  natural="Build a user authentication system with OAuth and social login"
+  claude='/sw:increment "Add user authentication with OAuth"'
+  other='increment "Add user authentication with OAuth"'
+/>
 
 SpecWeave creates three permanent files:
 - `spec.md` — WHAT (user stories, acceptance criteria)
@@ -92,27 +109,40 @@ SpecWeave creates three permanent files:
 ### 4. Build It
 
 **Option A: Ship While You Sleep**
-```bash
-/sw:auto
-```
-Or just say: `Ship it while I sleep` — SpecWeave starts autonomous execution.
+
+<CommandTabs
+  natural="Ship it while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
 
 **Option B: Step-by-Step Control**
-```bash
-/sw:do          # Execute one task
-/sw:progress    # Check status
-/sw:done 0001   # Complete with validation
-```
+
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
+
+Check progress and close when ready:
+
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
 
 ### 5. Parallelize Complex Features
 
 For features spanning multiple domains, SpecWeave can split work across parallel agents:
 
-```bash
-/sw:team-lead "Build user auth with login, signup, and OAuth"
-```
+<CommandTabs
+  natural="Build user auth with login, signup, and OAuth — use parallel agents"
+  claude='/sw:team-lead "Build user auth with login, signup, and OAuth"'
+  other='team-lead "Build user auth with login, signup, and OAuth"'
+/>
 
-Or just describe a complex feature — SpecWeave auto-detects when parallel agents are needed and spawns a coordinated team. Built on [Claude Code's Agent Teams](https://code.claude.com/docs/en/agent-teams), made accessible via a single command. See the [Agent Teams guide](/docs/guides/agent-teams-and-swarms) for details.
+Just describe a complex feature — SpecWeave auto-detects when parallel agents are needed and spawns a coordinated team. Built on [Claude Code's Agent Teams](https://code.claude.com/docs/en/agent-teams), made accessible via a single command. See the [Agent Teams guide](/docs/guides/agent-teams-and-swarms) for details.
 
 ### 6. Quality Gates
 

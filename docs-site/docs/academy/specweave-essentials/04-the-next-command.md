@@ -5,6 +5,8 @@ title: "Lesson 4: The :next Command"
 description: "Your workflow compass"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 4: The `:next` Command
 
 **Time**: 25 minutes
@@ -27,9 +29,13 @@ description: "Your workflow compass"
 
 ### The SpecWeave Way
 
-```bash
-/sw:next
-```
+Just say "what should I do next?" or "let's move forward" -- or use the slash command:
+
+<CommandTabs
+  natural="What should I do next?"
+  claude="/sw:next"
+  other="next"
+/>
 
 That's it. The system:
 1. Finds active work
@@ -224,9 +230,9 @@ C. Cancel (continue as-is)
 | "What should I work on?" | ✅ Yes |
 | "Let's move forward" | ✅ Yes |
 | "Just finished that task" | ✅ Yes |
-| "Need to check status" | ❌ Use `/sw:progress` |
-| "Want to start specific feature" | ❌ Use `/sw:increment` |
-| "Need to pause work" | ❌ Use `/sw:pause` |
+| "Need to check status" | Use `/sw:progress` or say "what's the status?" |
+| "Want to start specific feature" | Use `/sw:increment` or say "let's build X" |
+| "Need to pause work" | Use `/sw:pause` or say "pause this" |
 
 ---
 

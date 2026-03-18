@@ -40,10 +40,10 @@ When something isn't working:
 
 **Solution**:
 ```bash
-# Create new
+# Create new (say "let's build X" or use the command)
 /sw:increment "Your feature"
 
-# Or resume existing
+# Or resume existing (say "resume work" or use the command)
 /sw:resume 0001
 ```
 

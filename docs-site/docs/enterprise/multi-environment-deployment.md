@@ -148,13 +148,13 @@ Local Dev → Dev → QA → Staging → UAT → Preview → Prod
 ### Step 2: Deploy to First Environment (Dev)
 
 ```bash
-# 1. Create increment
+# 1. Create increment (say "let's implement OAuth with Google" or use the command)
 /sw:increment "Implement OAuth with Google"
 
-# 2. Implement feature
+# 2. Implement feature (say "start implementing" or use the command)
 /sw:do
 
-# 3. Complete increment
+# 3. Complete increment (say "we're done" or use the command)
 /sw:done 0018
 
 # 4. Deploy to dev (manual or CI/CD)

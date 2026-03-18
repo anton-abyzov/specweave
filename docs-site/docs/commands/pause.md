@@ -2,15 +2,19 @@
 sidebar_position: 2
 ---
 
-# pause
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Pause
 
 System command used by SpecWeave to pause increments when blocked.
 
 ## Synopsis
 
-```bash
-specweave pause <increment-id> [options]
-```
+<CommandTabs
+  natural='Pause this'
+  claude='/sw:pause 0007'
+  other='pause 0007'
+/>
 
 :::warning System Command
 This is primarily a **system command** used by SpecWeave internally. SpecWeave **automatically pauses** work when it detects blockages. You typically don't need to call this manually.
@@ -21,10 +25,10 @@ This is primarily a **system command** used by SpecWeave internally. SpecWeave *
 The `pause` command temporarily suspends work on an active increment. SpecWeave calls this automatically when it detects you're blocked.
 
 **SpecWeave automatically pauses when**:
-- 🚧 Missing dependencies (API keys, credentials, configuration)
-- 👥 Waiting for external approvals or responses
-- 🔄 Persistent compilation or test failures
-- 📝 You explicitly indicate "I'm blocked" or "waiting for..."
+- Missing dependencies (API keys, credentials, configuration)
+- Waiting for external approvals or responses
+- Persistent compilation or test failures
+- You explicitly indicate "I'm blocked" or "waiting for..."
 
 **Manual pause only for**:
 - Business decisions (strategic pivot, deprioritization)
@@ -69,11 +73,11 @@ specweave pause 0007 --reason "Waiting for API keys (IT ticket #1234)" --force
 ### Example 1: Automatic Pause (Typical)
 
 ```bash
-# You're working on implementation
+# You're working on implementation (or said "start implementing")
 $ specweave do
 
 # SpecWeave detects missing Stripe API keys
-🤖 SpecWeave: I need Stripe production API keys to continue
+SpecWeave: I need Stripe production API keys to continue
 
    Options:
    1. Provide keys now
@@ -87,31 +91,31 @@ $ 2
 # specweave pause 0007-payment-integration \
 #   --reason "Waiting for Stripe production API keys (IT ticket #1234)"
 
-✅ Increment 0007-payment-integration automatically paused
-📝 Reason: Waiting for Stripe production API keys (IT ticket #1234)
-⏸️  No longer counts toward active limit
-💡 I've filed IT ticket #1234 for you
+Increment 0007-payment-integration automatically paused
+Reason: Waiting for Stripe production API keys (IT ticket #1234)
+No longer counts toward active limit
+I've filed IT ticket #1234 for you
 ```
 
 **What SpecWeave did**:
-- ✅ Detected blockage automatically
-- ✅ Paused increment (status → `paused`)
-- ✅ Filed IT ticket for you
-- ✅ Freed WIP limit slot
-- ✅ Suggested next action
+- Detected blockage automatically
+- Paused increment (status -> `paused`)
+- Filed IT ticket for you
+- Freed WIP limit slot
+- Suggested next action
 
 ### Example 2: Manual Pause (Business Decision)
 
 ```bash
-# Strategic decision to deprioritize
+# Strategic decision to deprioritize (or say "pause this")
 $ specweave pause 0005-ui-redesign \
   --reason "Pausing UI redesign - focusing on backend performance per CEO directive"
 
-⏸️  Pausing increment 0005-ui-redesign...
+Pausing increment 0005-ui-redesign...
 
-✅ Increment 0005-ui-redesign paused
-📝 Reason: Pausing UI redesign - focusing on backend performance per CEO directive
-⏸️  No longer counts toward active limit
+Increment 0005-ui-redesign paused
+Reason: Pausing UI redesign - focusing on backend performance per CEO directive
+No longer counts toward active limit
 ```
 
 **When to manually pause**:
@@ -130,7 +134,7 @@ specweave pause 0008-feature-x \
 specweave inc "0009-critical-bug-fix"
 specweave do
 
-# Resume later
+# Resume later (or say "resume work")
 specweave resume 0008
 ```
 
@@ -146,11 +150,11 @@ specweave pause 0007 \
   --force
 
 # Output:
-⚠️  Increment 0007 is already paused
+Increment 0007 is already paused
    Previous reason: Waiting for API access
    Paused at: 2025-11-04T10:00:00Z
 
-✅ Reason updated
+Reason updated
 ```
 
 ## Behavior
@@ -165,12 +169,12 @@ graph LR
 ```
 
 **Valid transitions**:
-- `active` → `paused` ✅
-- `paused` → `paused` (with `--force`) ✅
+- `active` -> `paused`
+- `paused` -> `paused` (with `--force`)
 
 **Invalid transitions**:
-- `completed` → `paused` ❌
-- `abandoned` → `paused` ❌ (use `resume` first)
+- `completed` -> `paused`
+- `abandoned` -> `paused` (use `resume` first)
 
 ### Metadata Changes
 
@@ -187,12 +191,12 @@ graph LR
 // After pause
 {
   "id": "0007-payment-integration",
-  "status": "paused",                          // ← Changed
+  "status": "paused",
   "type": "feature",
   "created": "2025-11-01T10:00:00Z",
   "lastActivity": "2025-11-04T10:00:00Z",
-  "pausedReason": "Waiting for API keys",      // ← Added
-  "pausedAt": "2025-11-04T10:00:00Z"           // ← Added
+  "pausedReason": "Waiting for API keys",
+  "pausedAt": "2025-11-04T10:00:00Z"
 }
 ```
 
@@ -201,24 +205,24 @@ graph LR
 ```bash
 # Before pause
 $ specweave status
-▶️  Active (1): 0007-payment-integration
-📈 WIP Limit: ✅ 1/1
+Active (1): 0007-payment-integration
+WIP Limit: 1/1
 
 # Try to start new work
 $ specweave inc "0008-feature"
-❌ Cannot create! WIP limit reached
+Cannot create! WIP limit reached
 
-# Pause current work
+# Pause current work (or say "pause this")
 $ specweave pause 0007 --reason "Blocked"
 
 # After pause
 $ specweave status
-⏸️  Paused (1): 0007-payment-integration
-📈 WIP Limit: ✅ 0/1
+Paused (1): 0007-payment-integration
+WIP Limit: 0/1
 
 # Now can start new work
 $ specweave inc "0008-feature"
-✅ Created!
+Created!
 ```
 
 ## Error Handling
@@ -227,7 +231,7 @@ $ specweave inc "0008-feature"
 
 ```bash
 $ specweave pause 0007 --reason "Blocked"
-⚠️  Increment 0007 is already paused
+Increment 0007 is already paused
    Previous reason: Waiting for API keys
    Paused at: 2025-11-04T10:00:00Z
 
@@ -240,7 +244,7 @@ $ specweave pause 0007 --reason "Blocked"
 
 ```bash
 $ specweave pause 0001
-❌ Cannot pause increment 0001
+Cannot pause increment 0001
    Current status: completed
    Only active increments can be paused
 ```
@@ -251,11 +255,11 @@ $ specweave pause 0001
 
 ```bash
 $ specweave pause 0003
-❌ Cannot pause increment 0003
+Cannot pause increment 0003
    Current status: abandoned
    Only active increments can be paused
 
-   💡 Resume it first: specweave resume 0003
+   Resume it first: specweave resume 0003 (or say "resume work")
 ```
 
 **Solution**: Resume first, then pause.
@@ -265,10 +269,10 @@ $ specweave pause 0003
 ### 1. Always Document Why
 
 ```bash
-# ❌ Bad - no context
+# Bad - no context
 specweave pause 0007
 
-# ✅ Good - clear context
+# Good - clear context
 specweave pause 0007 --reason "Waiting for Stripe prod API keys (IT#1234, ETA: 3 days)"
 ```
 
@@ -285,7 +289,7 @@ Good reasons include:
 - **When** expected resolution
 
 ```bash
-# ✅ Excellent
+# Excellent
 specweave pause 0007 \
   --reason "Waiting for Stripe prod API keys (IT ticket #1234, contact: ops@company.com, ETA: Nov 6)"
 ```
@@ -293,19 +297,19 @@ specweave pause 0007 \
 ### 3. Review Paused Work Weekly
 
 ```bash
-# Check paused increments
+# Check paused increments (or say "what's the status?")
 $ specweave status
 
-⏸️  Paused (3):
-  ⏸ 0003-kubernetes [feature]
+Paused (3):
+  0003-kubernetes [feature]
      Reason: Waiting for DevOps approval
-     Paused: 45 days ago  # ⚠️ Too long!
+     Paused: 45 days ago  # Too long!
 ```
 
 **Action**:
-- If blockage resolved → `resume`
-- If no longer relevant → `abandon`
-- If still valid → update reason with new ETA
+- If blockage resolved -> `resume` (or say "resume work")
+- If no longer relevant -> `abandon` (or say "abandon this")
+- If still valid -> update reason with new ETA
 
 ### 4. Keep Paused Count Low
 
@@ -321,15 +325,15 @@ If you have 5+ paused increments, something is wrong:
 ### Scenario 1: Blocked by Another Team
 
 ```bash
-# Blocked by backend team
+# Blocked by backend team (or say "pause this")
 specweave pause 0007-frontend-feature \
   --reason "Waiting for backend API (ticket BACK-123, owner: @john)"
 
 # Check in 2 days
 $ specweave status
-⏸️  Paused: 0007-frontend-feature (2 days ago)
+Paused: 0007-frontend-feature (2 days ago)
 
-# API ready, resume
+# API ready, resume (or say "resume work")
 $ specweave resume 0007
 ```
 
@@ -340,7 +344,7 @@ $ specweave resume 0007
 specweave pause 0005-new-dashboard \
   --reason "Waiting for VP approval on design mockups (meeting: Nov 5)"
 
-# Decision made
+# Decision made (or say "resume work")
 $ specweave resume 0005
 ```
 
@@ -349,16 +353,16 @@ $ specweave resume 0005
 ```bash
 # Anti-pattern: pausing everything
 $ specweave status
-⏸️  Paused (8):  # ⚠️ Way too many!
-  ⏸ 0001 (90 days ago)
-  ⏸ 0003 (45 days ago)
-  ⏸ 0005 (30 days ago)
+Paused (8):  # Way too many!
+  0001 (90 days ago)
+  0003 (45 days ago)
+  0005 (30 days ago)
   ...
 ```
 
 **Fix**: Audit and clean up
 ```bash
-# Abandon old/irrelevant work
+# Abandon old/irrelevant work (or say "abandon this")
 $ specweave abandon 0001 --reason "Requirements changed, no longer needed"
 $ specweave abandon 0003 --reason "Postponed indefinitely"
 
@@ -368,29 +372,29 @@ $ specweave resume 0005
 
 ## Integration with Other Commands
 
-### pause → status
+### pause -> status
 
 ```bash
 $ specweave pause 0007 --reason "Blocked"
 $ specweave status
 
-⏸️  Paused (1):
-  ⏸ 0007-payment-integration [feature]
-     Reason: Blocked  # ← Reason shown
+Paused (1):
+  0007-payment-integration [feature]
+     Reason: Blocked
 ```
 
-### pause → resume
+### pause -> resume
 
 ```bash
 $ specweave pause 0007 --reason "Waiting for API"
 # ... later ...
 $ specweave resume 0007
 
-✅ Resumed
-📝 Was paused for: Waiting for API
+Resumed
+Was paused for: Waiting for API
 ```
 
-### pause → abandon
+### pause -> abandon
 
 ```bash
 $ specweave pause 0007 --reason "Waiting for API"
@@ -408,11 +412,11 @@ $ specweave abandon 0007 --reason "Requirements changed"
 ## Summary
 
 **Key Points**:
-- ✅ Use `pause` for **temporary** blockages
-- ✅ Always provide a clear reason
-- ✅ Paused increments don't count toward WIP limit
-- ✅ Review paused work weekly
-- ✅ Keep paused count low (2-3 max)
+- Use `pause` for **temporary** blockages
+- Always provide a clear reason
+- Paused increments don't count toward WIP limit
+- Review paused work weekly
+- Keep paused count low (2-3 max)
 
 **Command**:
 ```bash
@@ -420,4 +424,4 @@ specweave pause <increment-id> --reason "<clear explanation>"
 ```
 
 **Philosophy**:
-> Pausing isn't failure—it's explicit acknowledgment of reality. Document it, move on, return when unblocked.
+> Pausing isn't failure--it's explicit acknowledgment of reality. Document it, move on, return when unblocked.

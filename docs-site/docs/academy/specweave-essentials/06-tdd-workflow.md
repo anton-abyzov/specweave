@@ -5,6 +5,8 @@ title: "Lesson 6: TDD Workflow"
 description: "Test-Driven Development with SpecWeave"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 6: TDD Workflow
 
 **Time**: 45 minutes
@@ -73,9 +75,11 @@ Let's build a calculator using TDD.
 
 ### Step 1: Create Increment
 
-```bash
-/sw:increment "Calculator with basic operations"
-```
+<CommandTabs
+  natural="I want to create a calculator with basic operations"
+  claude='/sw:increment "Calculator with basic operations"'
+  other='increment "Calculator with basic operations"'
+/>
 
 ### Step 2: Start TDD
 
@@ -250,6 +254,8 @@ Build a string calculator using TDD:
 - Negative numbers throw error
 
 ```bash
+# Natural language: "I want to build a string calculator using TDD"
+# Or slash commands:
 /sw:increment "String calculator with TDD"
 /sw:tdd-cycle
 /sw:next

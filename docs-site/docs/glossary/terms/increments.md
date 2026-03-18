@@ -386,7 +386,7 @@ graph TB
 
 ### Phase 1: Planning (PLANNING Status)
 
-**Command**: `/sw:increment "feature description"`
+**Invoke**: Say "let's build X", use `/sw:increment "X"` in Claude Code, or type `increment "X"` in other AI tools.
 
 **What Happens**:
 1. PM agent generates spec.md (user stories, AC)
@@ -400,7 +400,7 @@ graph TB
 
 ### Phase 2: Implementation (ACTIVE Status)
 
-**Command**: `/sw:do`
+**Invoke**: Say "start implementing", use `/sw:do` in Claude Code, or type `do` in other AI tools.
 
 **What Happens**:
 1. Smart resume (continues from last incomplete task)
@@ -414,7 +414,7 @@ graph TB
 
 ### Phase 3: Validation
 
-**Command**: `/sw:validate 0008` or `/sw:qa 0008`
+**Invoke**: Say "check quality", use `/sw:validate 0008` or `/sw:qa 0008` in Claude Code, or type `validate 0008` in other AI tools.
 
 **What Happens**:
 1. Rule-based validation:
@@ -430,7 +430,7 @@ graph TB
 
 ### Phase 4: Done
 
-**Command**: `/sw:done 0008`
+**Invoke**: Say "we're done", use `/sw:done 0008` in Claude Code, or type `done 0008` in other AI tools.
 
 **What Happens**:
 1. PM validation (checks all gates)
@@ -530,25 +530,27 @@ graph LR
 
 ## Increment Commands
 
+All commands can be invoked via natural language, slash commands in Claude Code, or CLI keywords in other AI tools.
+
 ### Primary Commands
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:increment` | Plan new increment | `/sw:increment "user auth"` |
-| `/sw:do` | Execute tasks (smart resume) | `/sw:do` |
-| `/sw:done` | Close increment | `/sw:done 0008` |
-| `/sw:validate` | Validate increment | `/sw:validate 0008` |
-| `/sw:qa` | Quality assessment | `/sw:qa 0008` |
-| `/sw:progress` | Check current progress | `/sw:progress` |
-| `/sw:status` | Show all increments | `/sw:status` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "Let's build X" | `/sw:increment "X"` | `increment "X"` | Plan new increment |
+| "Start implementing" | `/sw:do` | `do` | Execute tasks |
+| "We're done" | `/sw:done 0008` | `done 0008` | Close increment |
+| "Check quality" | `/sw:validate 0008` | `validate 0008` | Validate increment |
+| "Assess quality" | `/sw:qa 0008` | `qa 0008` | Quality assessment |
+| "What's the status?" | `/sw:progress` | `progress` | Check progress |
+| "List all increments" | `/sw:status` | `status` | Show all increments |
 
 ### State Management
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:pause` | Pause active increment | `/sw:pause 0008 --reason="blocked"` |
-| `/sw:resume` | Resume paused increment | `/sw:resume 0008` |
-| `/sw:abandon` | Abandon increment | `/sw:abandon 0008 --reason="obsolete"` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "Pause this" | `/sw:pause 0008` | `pause 0008` | Pause active increment |
+| "Resume work" | `/sw:resume 0008` | `resume 0008` | Resume paused increment |
+| "Cancel this" | `/sw:abandon 0008` | `abandon 0008` | Abandon increment |
 
 ### Documentation
 

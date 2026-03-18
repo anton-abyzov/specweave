@@ -1,0 +1,218 @@
+/* CommandTabs — tabbed invocation methods for SpecWeave skills */
+
+.wrapper {
+  border-radius: var(--sw-radius-lg);
+  border: 1px solid var(--sw-border-light);
+  overflow: hidden;
+  margin: var(--sw-space-4) 0;
+  box-shadow: var(--sw-shadow-xs);
+  background: var(--sw-surface-primary);
+}
+
+/* ---- Tab bar ---- */
+
+.tabBar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--sw-border-light);
+  background: var(--sw-gray-50);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sw-space-1-5);
+  padding: var(--sw-space-2-5) var(--sw-space-3);
+  border: none;
+  background: transparent;
+  color: var(--sw-text-secondary);
+  font-family: var(--sw-font-sans);
+  font-size: var(--sw-font-size-sm);
+  font-weight: var(--sw-font-weight-medium);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--sw-duration-fast) var(--sw-easing-ease),
+              background-color var(--sw-duration-fast) var(--sw-easing-ease);
+  white-space: nowrap;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background-color var(--sw-duration-fast) var(--sw-easing-ease);
+}
+
+.tab:hover {
+  color: var(--sw-text-primary);
+  background: rgba(107, 88, 184, 0.04);
+}
+
+.tabActive {
+  color: var(--sw-color-primary-600);
+}
+
+.tabActive::after {
+  background: var(--sw-color-primary-500);
+}
+
+.tabIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.tabIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tabLabel {
+  line-height: 1;
+}
+
+/* ---- Tab panels ---- */
+
+.panel {
+  position: relative;
+  animation: fadeIn var(--sw-duration-fast) var(--sw-easing-ease);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Natural language / chat bubble panel ---- */
+
+.bubblePanel {
+  padding: var(--sw-space-4);
+}
+
+.bubble {
+  display: inline-block;
+  max-width: 100%;
+  padding: var(--sw-space-3) var(--sw-space-4);
+  border-radius: var(--sw-radius-xl) var(--sw-radius-xl) var(--sw-radius-xl) var(--sw-radius-xs);
+  background: linear-gradient(
+    135deg,
+    var(--sw-color-primary-50) 0%,
+    rgba(107, 88, 184, 0.08) 100%
+  );
+  border: 1px solid rgba(107, 88, 184, 0.1);
+  color: var(--sw-text-primary);
+  font-size: var(--sw-font-size-sm);
+  line-height: var(--sw-line-height-relaxed);
+  word-break: break-word;
+}
+
+.bubbleQuote {
+  font-style: italic;
+}
+
+/* ---- Code panel ---- */
+
+.codePanel {
+  position: relative;
+}
+
+.codePre {
+  margin: 0;
+  padding: var(--sw-space-3) var(--sw-space-4);
+  padding-right: var(--sw-space-10);
+  overflow-x: auto;
+  font-family: var(--sw-font-mono);
+  font-size: var(--sw-font-size-sm);
+  line-height: var(--sw-line-height-relaxed);
+  color: var(--sw-text-primary);
+  background: transparent;
+}
+
+.copyButton {
+  position: absolute;
+  top: var(--sw-space-2);
+  right: var(--sw-space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-text-secondary);
+  cursor: pointer;
+  transition: var(--sw-transition-colors);
+}
+
+.copyButton:hover {
+  background: var(--sw-gray-200);
+  color: var(--sw-text-primary);
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 480px) {
+  .tabBar {
+    flex-direction: column;
+  }
+
+  .tab {
+    justify-content: flex-start;
+    padding: var(--sw-space-2) var(--sw-space-3);
+  }
+
+  .tab::after {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+
+  .tabActive::after {
+    background: var(--sw-color-primary-500);
+  }
+}
+
+/* ---- Dark mode ---- */
+
+:global([data-theme='dark']) .wrapper {
+  background: var(--sw-surface-secondary);
+  border-color: var(--sw-border-default);
+}
+
+:global([data-theme='dark']) .tabBar {
+  background: var(--sw-surface-tertiary);
+  border-bottom-color: var(--sw-border-default);
+}
+
+:global([data-theme='dark']) .tab:hover {
+  background: rgba(169, 155, 216, 0.08);
+}
+
+:global([data-theme='dark']) .tabActive {
+  color: var(--sw-color-primary-500);
+}
+
+:global([data-theme='dark']) .bubble {
+  background: linear-gradient(
+    135deg,
+    rgba(169, 155, 216, 0.1) 0%,
+    rgba(107, 88, 184, 0.06) 100%
+  );
+  border-color: rgba(169, 155, 216, 0.15);
+}
+
+:global([data-theme='dark']) .copyButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

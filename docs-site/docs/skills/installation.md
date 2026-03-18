@@ -142,13 +142,13 @@ npx vskill install --repo anton-abyzov/vskill --plugin mobile
 
 ### Plugin namespacing
 
-Plugin skills are prefixed with the plugin name to prevent conflicts:
+Plugin skills are prefixed with the plugin name to prevent conflicts. Each can be invoked three ways:
 
-```
-/mobile:appstore       — App store skill from the mobile plugin
-/marketing:slack-messaging — Slack skill from the marketing plugin
-/sw:increment          — SpecWeave increment skill from the sw plugin
-```
+| Natural Language | Claude Code | Other AI |
+|-----------------|-------------|----------|
+| "App store submission" | `/mobile:appstore` | `appstore` |
+| "Post to Slack" | `/marketing:slack-messaging` | `slack-messaging` |
+| "Let's build X" | `/sw:increment` | `increment` |
 
 ---
 
@@ -249,7 +249,7 @@ Each agent has a known skill directory:
 |-------|-----------|-------------|
 | Claude Code | `.claude/skills/` | `~/.claude/skills/` |
 | Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
-| GitHub Copilot | `.github/copilot/skills/` | `~/.github/copilot/skills/` |
+| GitHub Copilot | `.github/skills/` | `~/.github/skills/` |
 | Gemini CLI | `.gemini/skills/` | `~/.gemini/skills/` |
 
 vskill creates symlinks (default) or copies (`--copy`) of the skill into each agent's directory.
@@ -322,10 +322,10 @@ Global skills install to your home directory (e.g., `~/.claude/skills/`) and are
 
 ## SpecWeave Plugin Auto-Loading
 
-If you use SpecWeave, plugins load automatically based on what you're working on:
+If you use SpecWeave, plugins load automatically based on natural language keywords in your conversation:
 
-- Say "mobile app" → `mobile` plugin activates
-- Say "post on social media" → `marketing` plugin activates
+- Say "mobile app" → `mobile` plugin activates (or use `/mobile:appstore` / `appstore`)
+- Say "post on social media" → `marketing` plugin activates (or use `/marketing:slack-messaging` / `slack-messaging`)
 - Say "Google Drive" → `google-workspace` plugin activates
 
 You don't need to manually install SpecWeave plugins — `specweave init` handles setup. However, you can manually control loading:

@@ -2,15 +2,19 @@
 sidebar_position: 12
 ---
 
-# /sw:cancel-auto - Cancel Auto Session
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Cancel Auto Session
 
 **Cancel the running auto session and generate summary.**
 
 ## Usage
 
-```bash
-/sw:cancel-auto [OPTIONS]
-```
+<CommandTabs
+  natural='Stop auto'
+  claude='/sw:cancel-auto'
+  other='cancel-auto'
+/>
 
 ## Options
 
@@ -21,10 +25,8 @@ sidebar_position: 12
 
 ## Examples
 
+Additional options:
 ```bash
-# Interactive cancel (asks for confirmation)
-/sw:cancel-auto
-
 # Force cancel without confirmation
 /sw:cancel-auto --force
 
@@ -48,7 +50,7 @@ sidebar_position: 12
 ## Output Example
 
 ```
-📊 Current Session
+Current Session
 
 Session ID: auto-2025-12-29-abc123
 Status: running
@@ -59,11 +61,11 @@ Duration: 2h 15m
 
 Cancel this session? [y/N] y
 
-✅ Session cancelled
+Session cancelled
 
 Summary: .specweave/logs/auto-2025-12-29-abc123-summary.md
 
-💡 To resume work later, just run /sw:do
+To resume work later, say "continue working" or type /sw:do
 ```
 
 ---
@@ -101,23 +103,23 @@ Iterations: 47
 
 - Cancelling doesn't undo completed work
 - `tasks.md` progress is preserved
-- You can resume anytime with `/sw:do`
+- You can resume anytime by saying "continue working" or typing `/sw:do`
 - Use Claude Code's `/resume` to restore full conversation context
 
 ---
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:auto` | Start auto session |
-| `/sw:auto-status` | Check session status |
-| `/sw:do` | Resume work on tasks |
+| Natural Language | Claude Code | Other AI Tools | Purpose |
+|-----------------|-------------|----------------|---------|
+| "Run autonomously" | `/sw:auto` | `auto` | Start auto session |
+| "Check auto status" | `/sw:auto-status` | `auto-status` | Check session status |
+| "Start implementing" | `/sw:do` | `do` | Resume work on tasks |
 
 ---
 
 ## See Also
 
-- [/sw:auto Documentation](./auto) - Start autonomous execution
-- [/sw:auto-status Documentation](./auto-status) - Session status
+- [Autonomous Execution Documentation](./auto) - Start autonomous execution
+- [Auto Status Documentation](./auto-status) - Session status
 - [Commands Overview](./overview) - All SpecWeave commands

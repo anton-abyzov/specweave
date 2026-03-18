@@ -18,7 +18,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'overview/introduction', label: 'What is SpecWeave?'},
         {type: 'doc', id: 'overview/skills-as-structured-expertise', label: 'Skills Are Structured Expertise'},
         {type: 'doc', id: 'overview/why-specweave', label: 'Why SpecWeave?'},
-        {type: 'doc', id: 'overview/no-docs-needed', label: "You Don't Need Claude Code Docs"},
+        {type: 'doc', id: 'overview/no-docs-needed', label: 'Start Building in Minutes'},
         {type: 'doc', id: 'overview/claude-code-basics', label: 'Claude Code Basics'},
         {type: 'doc', id: 'overview/claude-code-architecture', label: 'Claude Code Architecture'},
         {type: 'doc', id: 'overview/features', label: 'Key Features'},

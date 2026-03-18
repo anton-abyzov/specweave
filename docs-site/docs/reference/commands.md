@@ -4,27 +4,31 @@ title: Commands Reference
 description: Complete reference for all SpecWeave slash commands
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Commands Reference
 
-This page lists all SpecWeave slash commands organized by purpose. Commands execute specific actions in your development workflow.
+This page lists all SpecWeave commands organized by purpose. Every command can be invoked three ways:
+
+1. **Natural language** -- just describe what you want (easiest)
+2. **Slash command** -- `/sw:name` in Claude Code (precise)
+3. **Keyword** -- type `name` without prefix in Cursor, Copilot, and other AI tools
 
 :::info Commands vs Skills
-**Commands** are action-oriented (`/sw:do`, `/sw:done`) while **Skills** provide domain expertise (`/sw:pm`, `/sw:architect`). Both are invoked the same way - with `/sw:name` or `/sw-plugin:name`.
+**Commands** are action-oriented (`/sw:do`, `/sw:done`) while **Skills** provide domain expertise (`/sw:pm`, `/sw:architect`). Both support all three invocation methods.
 
 For domain expertise, see [Skills Reference](./skills).
 :::
 
 ## Quick Reference Card
 
-```
-PLAN → EXECUTE → MONITOR → GRILL → COMPLETE
-
-/sw:increment "feature"    Start new work
-/sw:auto                   Run autonomously (hours!)
-/sw:progress               Check status
-/sw:grill 0007             Code review (MANDATORY)
-/sw:next                   Complete and suggest next
-```
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "let's build X" | `/sw:increment "X"` | `increment "X"` | Start new work |
+| "ship while I sleep" | `/sw:auto` | `auto` | Run autonomously (hours!) |
+| "what's the status?" | `/sw:progress` | `progress` | Check status |
+| "review my work" | `/sw:grill 0007` | `grill 0007` | Code review (MANDATORY) |
+| "what's next?" | `/sw:next` | `next` | Complete and suggest next |
 
 ---
 
@@ -32,19 +36,22 @@ PLAN → EXECUTE → MONITOR → GRILL → COMPLETE
 
 Start new work and create specifications.
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:increment` | Create new increment | `/sw:increment "User auth with JWT"` |
-| `/sw:status` | View/manage backlog | `/sw:status` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "let's build X", "I want to create X", "add feature X" | `/sw:increment "X"` | `increment "X"` | Create new increment |
+| "what's in progress?" | `/sw:status` | `status` | View/manage backlog |
 
 ### /sw:increment
 
 **The entry point for all new work.**
 
-```bash
-# Basic usage
-/sw:increment "User authentication with JWT"
+<CommandTabs
+  natural="I want to build user authentication with JWT"
+  claude='/sw:increment "User authentication with JWT"'
+  other='increment "User authentication with JWT"'
+/>
 
+```bash
 # With options
 /sw:increment "Payment processing" --priority high
 ```
@@ -64,20 +71,25 @@ Start new work and create specifications.
 
 Execute tasks and implement features.
 
-| Command | Purpose | Best For |
-|---------|---------|----------|
-| `/sw:auto` | Autonomous execution | Hands-free work (hours) |
-| `/sw:do` | Manual task execution | Complex decisions |
-| `/sw:auto-parallel` | Multi-agent parallel | Large isolated features |
-| `/sw:auto-status` | Check auto progress | Monitoring |
-| `/sw:cancel-auto` | Emergency stop | Only when needed |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "ship while I sleep", "autonomous mode" | `/sw:auto` | `auto` | Hands-free work (hours) |
+| "start implementing", "execute tasks" | `/sw:do` | `do` | Manual task execution |
+| "parallel agents" | `/sw:auto-parallel` | `auto-parallel` | Multi-agent parallel |
+| "check auto progress" | `/sw:auto-status` | `auto-status` | Monitoring |
+| "stop auto mode" | `/sw:cancel-auto` | `cancel-auto` | Emergency stop |
 
 ### /sw:auto
 
 **Ship features while you sleep.** The flagship command.
 
+<CommandTabs
+  natural="Ship it while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
+
 ```bash
-/sw:auto           # Start autonomous execution
 /sw:auto --tdd     # With TDD enforcement
 ```
 
@@ -101,8 +113,13 @@ Execute tasks and implement features.
 
 **Manual task-by-task execution.**
 
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
+
 ```bash
-/sw:do        # Auto-finds active increment
 /sw:do 0007   # Specific increment
 ```
 
@@ -116,9 +133,11 @@ Execute tasks and implement features.
 
 **Multi-agent parallel execution in isolated git worktrees.**
 
-```bash
-/sw:auto-parallel      # Start parallel execution
-```
+<CommandTabs
+  natural="Build this with parallel agents"
+  claude="/sw:auto-parallel"
+  other="auto-parallel"
+/>
 
 **Spawns specialized agents:**
 - Frontend Agent (React, Vue)
@@ -133,9 +152,11 @@ Each works in its own worktree - no merge conflicts during execution.
 
 **Check autonomous execution progress from another terminal.**
 
-```bash
-/sw:auto-status    # Current status
-```
+<CommandTabs
+  natural="Check auto mode progress"
+  claude="/sw:auto-status"
+  other="auto-status"
+/>
 
 Shows: Current task, completion percentage, recent activity, errors.
 
@@ -143,9 +164,11 @@ Shows: Current task, completion percentage, recent activity, errors.
 
 **Emergency stop for autonomous execution.**
 
-```bash
-/sw:cancel-auto    # Stop immediately
-```
+<CommandTabs
+  natural="Stop auto mode"
+  claude="/sw:cancel-auto"
+  other="cancel-auto"
+/>
 
 :::warning Use Sparingly
 Only use if auto mode is stuck or producing bad results. Normal completion happens automatically.
@@ -157,18 +180,23 @@ Only use if auto mode is stuck or producing bad results. Normal completion happe
 
 Track progress and status.
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:progress` | Detailed progress report | `/sw:progress 0007` |
-| `/sw:status` | List all increments | `/sw:status` |
-| `/sw:jobs` | View background jobs | `/sw:jobs` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "what's the status?", "show progress" | `/sw:progress` | `progress` | Detailed progress report |
+| "list all increments" | `/sw:status` | `status` | List all increments |
+| "show background jobs", "check jobs" | `/sw:jobs` | `jobs` | View background jobs |
 
 ### /sw:progress
 
 **Detailed progress for an increment.**
 
+<CommandTabs
+  natural="How far along are we?"
+  claude="/sw:progress"
+  other="progress"
+/>
+
 ```bash
-/sw:progress         # Current increment
 /sw:progress 0007    # Specific increment
 ```
 
@@ -199,18 +227,23 @@ Track progress and status.
 
 Validate quality before completion.
 
-| Command | Purpose | When to Use |
-|---------|---------|-------------|
-| `/sw:validate` | Rule-based validation (120+ checks) | Quick validation |
-| `/sw:qa` | AI quality assessment | Before release |
-| `/sw:grill` | Implementation audit | Deep code review |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "check quality", "validate it" | `/sw:validate` | `validate` | Rule-based validation (120+ checks) |
+| "quality check", "assess quality" | `/sw:qa` | `qa` | AI quality assessment |
+| "review my work", "critique the code" | `/sw:grill` | `grill` | Implementation audit |
 
 ### /sw:validate
 
 **Fast rule-based validation.**
 
+<CommandTabs
+  natural="Validate the increment"
+  claude="/sw:validate 0007"
+  other="validate 0007"
+/>
+
 ```bash
-/sw:validate 0007              # Quick check
 /sw:validate 0007 --quality    # Include AI assessment
 ```
 
@@ -224,10 +257,14 @@ Validate quality before completion.
 
 **AI-powered quality gate using LLM-as-Judge pattern.**
 
+<CommandTabs
+  natural="Assess the quality of this increment"
+  claude="/sw:qa 0007 --gate"
+  other="qa 0007 --gate"
+/>
+
 ```bash
-/sw:qa 0007          # Standard assessment
 /sw:qa 0007 --pre    # Pre-implementation check
-/sw:qa 0007 --gate   # Full quality gate
 ```
 
 **Returns:** 🟢 PASS | 🟡 CONCERNS | 🔴 FAIL
@@ -245,9 +282,13 @@ Validate quality before completion.
 
 **Comprehensive implementation audit.**
 
+<CommandTabs
+  natural="Review my implementation for issues"
+  claude="/sw:grill 0007"
+  other="grill 0007"
+/>
+
 ```bash
-/sw:grill                    # Full project
-/sw:grill 0007               # Specific increment
 /sw:grill src/auth           # Specific module
 /sw:grill --focus security   # Focus area
 /sw:grill --full             # Maximum depth
@@ -268,18 +309,20 @@ Validate quality before completion.
 
 Finish work and move on.
 
-| Command | Purpose | Recommended |
-|---------|---------|-------------|
-| `/sw:next` | Complete + suggest next | Yes |
-| `/sw:done` | Close increment | Use `/sw:next` instead |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "what's next?" | `/sw:next` | `next` | Complete + suggest next (recommended) |
+| "we're done", "close it", "finish up" | `/sw:done` | `done` | Close increment |
 
 ### /sw:next
 
 **Smart workflow transition.** (Recommended)
 
-```bash
-/sw:next    # Complete current and suggest next
-```
+<CommandTabs
+  natural="What should I work on next?"
+  claude="/sw:next"
+  other="next"
+/>
 
 **What it does:**
 1. Validates quality gates
@@ -290,9 +333,11 @@ Finish work and move on.
 
 **Close specific increment.**
 
-```bash
-/sw:done 0007    # Close increment 0007
-```
+<CommandTabs
+  natural="We're done with this increment"
+  claude="/sw:done 0007"
+  other="done 0007"
+/>
 
 **Prerequisites:**
 - `/sw:grill` must pass first (creates marker file)
@@ -317,22 +362,23 @@ Finish work and move on.
 
 Control increment lifecycle.
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:pause` | Pause increment | `/sw:pause 0007` |
-| `/sw:resume` | Resume paused | `/sw:resume 0007` |
-| `/sw:abandon` | Abandon increment | `/sw:abandon 0007` |
-| `/sw:resume` | Reopen completed | `/sw:resume 0007` |
-| `/sw:restore` | Restore abandoned | `/sw:restore 0007` |
-| `/sw:archive` | Manual archive | `/sw:archive 0007` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "pause this", "put on hold" | `/sw:pause 0007` | `pause 0007` | Pause increment |
+| "resume work", "continue where we left off" | `/sw:resume 0007` | `resume 0007` | Resume paused / reopen completed |
+| "abandon this", "cancel increment" | `/sw:abandon 0007` | `abandon 0007` | Abandon increment |
+| "restore the abandoned increment" | `/sw:restore 0007` | `restore 0007` | Restore abandoned |
+| "archive the increment" | `/sw:archive 0007` | `archive 0007` | Manual archive |
 
 ### /sw:pause
 
 **Pause active increment.**
 
-```bash
-/sw:pause 0007    # Pause for later
-```
+<CommandTabs
+  natural="Pause this work for now"
+  claude="/sw:pause 0007"
+  other="pause 0007"
+/>
 
 Moves to `_paused/` folder. Resume with `/sw:resume`.
 
@@ -340,17 +386,21 @@ Moves to `_paused/` folder. Resume with `/sw:resume`.
 
 **Resume paused increment.**
 
-```bash
-/sw:resume 0007   # Continue working
-```
+<CommandTabs
+  natural="Resume where we left off"
+  claude="/sw:resume 0007"
+  other="resume 0007"
+/>
 
 ### /sw:abandon
 
 **Abandon increment (soft delete).**
 
-```bash
-/sw:abandon 0007   # Move to _abandoned/
-```
+<CommandTabs
+  natural="Cancel this increment"
+  claude="/sw:abandon 0007"
+  other="abandon 0007"
+/>
 
 Can be restored with `/sw:restore`.
 
@@ -409,20 +459,22 @@ Integrate with GitHub, JIRA, Azure DevOps.
 
 Sync and manage documentation.
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:sync-docs` | Sync living docs | `/sw:sync-docs` |
-| `/sw:sync-specs` | Sync specs only | `/sw:sync-specs` |
-| `/sw:import` | Import external issues | `/sw:import` |
-| `/sw:docs` | Load project context | `/sw:docs auth` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "update the docs", "sync documentation" | `/sw:sync-docs` | `sync-docs` | Sync living docs |
+| "sync specs" | `/sw:sync-specs` | `sync-specs` | Sync specs only |
+| "import issues" | `/sw:import` | `import` | Import external issues |
+| "load auth context" | `/sw:docs auth` | `docs auth` | Load project context |
 
 ### /sw:sync-docs
 
 **Synchronize living documentation.**
 
-```bash
-/sw:sync-docs    # Update all docs
-```
+<CommandTabs
+  natural="Update the documentation"
+  claude="/sw:sync-docs"
+  other="sync-docs"
+/>
 
 Syncs: ADRs, specs, runbooks to external systems.
 
@@ -441,13 +493,13 @@ Syncs: ADRs, specs, runbooks to external systems.
 
 Maintenance and diagnostics.
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/sw:save` | Git commit current work | `/sw:save` |
-| `/sw:fix-duplicates` | Fix ID collisions | `/sw:fix-duplicates` |
-| `/sw:check-hooks` | Verify hook setup | `/sw:check-hooks` |
-| `/sw:reflect` | Review learnings | `/sw:reflect` |
-| `/sw:analytics` | Usage analytics | `/sw:analytics` |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "save my work" | `/sw:save` | `save` | Git commit current work |
+| "fix duplicate IDs" | `/sw:fix-duplicates` | `fix-duplicates` | Fix ID collisions |
+| "check hooks" | `/sw:check-hooks` | `check-hooks` | Verify hook setup |
+| "review learnings" | `/sw:reflect` | `reflect` | Review learnings |
+| "show analytics" | `/sw:analytics` | `analytics` | Usage analytics |
 
 ### /sw:save
 
@@ -473,20 +525,22 @@ Scans for nested repositories and commits each appropriately.
 
 Test-Driven Development workflow.
 
-| Command | Purpose | TDD Phase |
-|---------|---------|-----------|
-| `/sw:tdd-red` | Write failing tests | RED |
-| `/sw:tdd-green` | Minimal implementation | GREEN |
-| `/sw:tdd-refactor` | Improve code | REFACTOR |
-| `/sw:tdd-cycle` | Full TDD workflow | All |
+| Natural Language | Claude Code | Other AI | TDD Phase |
+|-----------------|-------------|----------|-----------|
+| "write failing tests first" | `/sw:tdd-red` | `tdd-red` | RED |
+| "make the tests pass" | `/sw:tdd-green` | `tdd-green` | GREEN |
+| "refactor the code" | `/sw:tdd-refactor` | `tdd-refactor` | REFACTOR |
+| "TDD", "test-driven development" | `/sw:tdd-cycle` | `tdd-cycle` | All |
 
 ### /sw:tdd-cycle
 
 **Complete TDD workflow.**
 
-```bash
-/sw:tdd-cycle    # RED → GREEN → REFACTOR
-```
+<CommandTabs
+  natural="Let's do test-driven development"
+  claude="/sw:tdd-cycle"
+  other="tdd-cycle"
+/>
 
 **Enforces:**
 1. Write failing test first
@@ -547,57 +601,37 @@ specweave lsp hover file.ts 42 10   # Type at position
 
 ### Daily Workflow
 
-```bash
-# Start new feature
-/sw:increment "Add user dashboard"
-
-# Autonomous execution (go grab coffee)
-/sw:auto
-
-# Check progress (from another terminal)
-/sw:auto-status
-
-# Complete and move on
-/sw:next
-```
+| Step | Natural Language | Claude Code | Other AI |
+|------|-----------------|-------------|----------|
+| Start new feature | "Build a user dashboard" | `/sw:increment "Add user dashboard"` | `increment "Add user dashboard"` |
+| Autonomous execution | "Ship while I sleep" | `/sw:auto` | `auto` |
+| Check progress | "How far along?" | `/sw:auto-status` | `auto-status` |
+| Complete and move on | "What's next?" | `/sw:next` | `next` |
 
 ### Quality Check Before Release
 
-```bash
-# Quick validation
-/sw:validate 0007
-
-# AI quality gate
-/sw:qa 0007 --gate
-
-# Deep code audit
-/sw:grill 0007
-```
+| Step | Natural Language | Claude Code | Other AI |
+|------|-----------------|-------------|----------|
+| Quick validation | "Validate it" | `/sw:validate 0007` | `validate 0007` |
+| AI quality gate | "Assess quality" | `/sw:qa 0007 --gate` | `qa 0007 --gate` |
+| Deep code audit | "Review the code" | `/sw:grill 0007` | `grill 0007` |
 
 ### Sync to External Tools
 
-```bash
-# GitHub
-/sw-github:sync 0007
-
-# JIRA
-/sw-jira:sync 0007
-
-# Azure DevOps
-/sw-ado:sync 0007
-```
+| Platform | Claude Code | Other AI |
+|----------|-------------|----------|
+| GitHub | `/sw-github:sync 0007` | `github-sync 0007` |
+| JIRA | `/sw-jira:sync 0007` | `jira-sync 0007` |
+| Azure DevOps | `/sw-ado:sync 0007` | `ado-sync 0007` |
 
 ### State Management
 
-```bash
-# Pause/resume
-/sw:pause 0007
-/sw:resume 0007
-
-# Abandon/restore
-/sw:abandon 0007
-/sw:restore 0007
-```
+| Action | Natural Language | Claude Code | Other AI |
+|--------|-----------------|-------------|----------|
+| Pause | "Put this on hold" | `/sw:pause 0007` | `pause 0007` |
+| Resume | "Continue working" | `/sw:resume 0007` | `resume 0007` |
+| Abandon | "Cancel this" | `/sw:abandon 0007` | `abandon 0007` |
+| Restore | "Bring it back" | `/sw:restore 0007` | `restore 0007` |
 
 ---
 

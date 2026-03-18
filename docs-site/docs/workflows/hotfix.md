@@ -4,6 +4,8 @@ title: Hotfix Workflow
 description: Handle production emergencies quickly and safely
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Hotfix Workflow
 
 **Fix production issues fast—but not recklessly.**
@@ -61,9 +63,11 @@ graph LR
 
 ## Step 2: Create Hotfix Increment
 
-```bash
-/sw:increment "hotfix: fix auth token validation"
-```
+<CommandTabs
+  natural="Critical hotfix needed: fix auth token validation"
+  claude='/sw:increment "hotfix: fix auth token validation"'
+  other='increment "hotfix: fix auth token validation"'
+/>
 
 This creates a lightweight increment:
 
@@ -305,7 +309,7 @@ npm run deploy:rollback
 After hotfix is stable:
 
 ```bash
-# Close the hotfix increment
+# Close the hotfix increment (say "we're done" or use the command)
 /sw:done 0015
 
 # Sync progress

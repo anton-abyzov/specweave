@@ -3,6 +3,8 @@ sidebar_position: 5
 title: Autonomous Execution Guide
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Autonomous Execution Guide
 
 Learn how to use SpecWeave's autonomous execution mode (`/sw:auto`) to work hands-free until all tasks are complete.
@@ -43,18 +45,11 @@ Auto mode enables continuous autonomous execution using Claude Code's Stop Hook 
 
 ## Quick Start
 
-:::tip Two ways to go autonomous
-**Slash command:**
-```bash
-/sw:auto
-```
-
-**Natural language** — just say:
-```
-Ship it while I sleep
-```
-SpecWeave detects your intent and starts autonomous execution.
-:::
+<CommandTabs
+  natural="Ship it while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
 
 ### Basic Usage
 

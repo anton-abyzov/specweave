@@ -5,6 +5,8 @@ description: Understanding Claude Code - the AI coding assistant that powers Spe
 keywords: [claude code, basics, installation, plugins, skills, agents, anthropic, getting started]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Claude Code Basics
 
 **Claude Code is the AI coding assistant that SpecWeave is built on.** Understanding its core concepts helps you get the most out of SpecWeave.
@@ -68,7 +70,9 @@ Plugins load **on-demand** based on what you're doing. Say "React frontend" and 
 
 ### Skills
 
-Skills are **auto-activating expertise modules** inside plugins. When you describe a task, relevant skills activate based on keywords.
+Skills are **auto-activating expertise modules** inside plugins. You can trigger them in two ways:
+
+**Natural language** -- just describe what you need. SpecWeave detects your intent and activates the right skill:
 
 ```
 You: "Design the authentication architecture"
@@ -78,13 +82,15 @@ Claude Code detects: "architecture" keyword
 sw:architect skill activates → System design expertise loads
 ```
 
-You can also invoke skills explicitly:
+**Slash commands** -- for explicit control:
 
 ```bash
 /sw:architect      # Activate architect expertise
 /sw:pm             # Activate PM expertise
 /sw:security       # Activate security expertise
 ```
+
+Most users never need slash commands. Describing what you want is enough -- SpecWeave routes to the right skill automatically.
 
 **SpecWeave has ~48 built-in skills** covering PM, architecture, security, testing, frontend, backend, DevOps, and more.
 
@@ -118,13 +124,26 @@ Hooks are **automated actions** that fire in response to events. SpecWeave uses 
 
 Hooks run automatically. You don't invoke them - they enforce quality standards behind the scenes.
 
-### Commands vs Skills
+### Three Invocation Methods
 
-| Feature | Commands (`/command`) | Skills (auto-activate) |
-|---------|----------------------|----------------------|
-| **How invoked** | You type `/sw:increment` | Auto-detects from your description |
-| **When to use** | Explicit workflow steps | Expertise needed during work |
-| **Example** | `/sw:done 0001` | Mention "security" → security loads |
+| Method | How It Works | Example |
+|--------|-------------|---------|
+| **Natural language** | Describe what you want -- SpecWeave detects intent | "I want to add dark mode" |
+| **Slash commands** | Explicit Claude Code commands with `/sw:` prefix | `/sw:increment "dark mode"` |
+| **Keywords** | Same command names without prefix (other AI tools) | `increment "dark mode"` |
+
+All three trigger the same underlying skills and produce identical results.
+
+#### Common Activation Phrases
+
+| What You Want | Natural Language | Slash Command |
+|--------------|-----------------|---------------|
+| Plan a feature | "Let's build [feature]" | `/sw:increment` |
+| Start building | "Start implementing" | `/sw:do` |
+| Check progress | "What's the status?" | `/sw:progress` |
+| Go autonomous | "Ship while I sleep" | `/sw:auto` |
+| Finish up | "We're done" | `/sw:done` |
+| Brainstorm | "Let's brainstorm ideas" | `/sw:brainstorm` |
 
 ---
 

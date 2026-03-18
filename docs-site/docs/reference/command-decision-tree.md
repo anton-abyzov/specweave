@@ -6,24 +6,24 @@ description: Know exactly which SpecWeave command to use in any situation
 
 # SpecWeave Command Decision Tree
 
-**Quick guide**: Find the right command for your situation.
+**What do you want to do?** Just say it in plain English, use a slash command, or type a keyword. All three work.
 
 ---
 
 ## Quick Reference Card
 
-| I want to... | Command |
-|--------------|---------|
-| Start new feature | `/sw:increment "feature name"` |
-| Implement current feature | `/sw:do` |
-| See what's in progress | `/sw:progress` |
-| Code review before close | `/sw:grill 0001` **(mandatory!)** |
-| Complete an increment | `/sw:done 0001` (requires grill) |
-| Pause for other work | `/sw:pause 0001` |
-| Resume paused work | `/sw:resume 0001` |
-| Validate before closing | `/sw:validate 0001` |
-| Sync to GitHub/JIRA | `/sw:sync-progress` |
-| Save and push changes | `/sw:save` |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Start new feature | "Let's build X" | `/sw:increment "X"` | `increment "X"` |
+| Implement current feature | "Start implementing" | `/sw:do` | `do` |
+| See what's in progress | "What's the status?" | `/sw:progress` | `progress` |
+| Code review before close | "Review my work" | `/sw:grill 0001` | `grill 0001` |
+| Complete an increment | "We're done" | `/sw:done 0001` | `done 0001` |
+| Pause for other work | "Put this on hold" | `/sw:pause 0001` | `pause 0001` |
+| Resume paused work | "Continue where we left off" | `/sw:resume 0001` | `resume 0001` |
+| Validate before closing | "Check quality" | `/sw:validate 0001` | `validate 0001` |
+| Sync to GitHub/JIRA | "Sync progress" | `/sw:sync-progress` | `sync-progress` |
+| Save and push changes | "Save my work" | `/sw:save` | `save` |
 
 ---
 
@@ -64,46 +64,45 @@ flowchart TD
 
 ### Starting Work
 
-| Scenario | Command | Notes |
-|----------|---------|-------|
-| New feature | `/sw:increment "feature name"` | Creates spec, plan, tasks |
-| New bug fix | `/sw:increment "fix: bug description"` | Use `fix:` prefix |
-| New experiment | `/sw:increment "experiment: idea"` | Use `experiment:` prefix |
-| Resume from backlog | `/sw:resume 0001` | Picks up where you left off |
+| Scenario | Natural Language | Claude Code | Other AI |
+|----------|-----------------|-------------|----------|
+| New feature | "Build X" | `/sw:increment "X"` | `increment "X"` |
+| New bug fix | "Fix the login bug" | `/sw:increment "fix: bug"` | `increment "fix: bug"` |
+| New experiment | "Let's experiment with X" | `/sw:increment "experiment: X"` | `increment "experiment: X"` |
+| Resume from backlog | "Resume where we left off" | `/sw:resume 0001` | `resume 0001` |
 
 ### During Implementation
 
-| Scenario | Command | Notes |
-|----------|---------|-------|
-| Implement tasks | `/sw:do` | Autonomous implementation |
-| Check progress | `/sw:progress` | Shows task completion |
-| View current status | `/sw:status` | Shows all increments |
-| Run quality check | `/sw:qa` | AI quality assessment |
+| Scenario | Natural Language | Claude Code | Other AI |
+|----------|-----------------|-------------|----------|
+| Implement tasks | "Start implementing" | `/sw:do` | `do` |
+| Check progress | "How far along?" | `/sw:progress` | `progress` |
+| View current status | "List all increments" | `/sw:status` | `status` |
+| Run quality check | "Assess quality" | `/sw:qa` | `qa` |
 
 ### Pausing Work
 
-| Scenario | Command | Notes |
-|----------|---------|-------|
-| Temporarily blocked | `/sw:pause 0001` | External dependency, will resume |
-| Deprioritized | `/sw:status 0001` | Not abandoned, just later |
-| Feature canceled | `/sw:abandon 0001` | Won't continue this work |
+| Scenario | Natural Language | Claude Code | Other AI |
+|----------|-----------------|-------------|----------|
+| Temporarily blocked | "Pause this" | `/sw:pause 0001` | `pause 0001` |
+| Feature canceled | "Abandon this" | `/sw:abandon 0001` | `abandon 0001` |
 
 ### Completing Work
 
-| Scenario | Command | Notes |
-|----------|---------|-------|
-| Validate before closing | `/sw:validate 0001` | Checks tasks, tests, docs |
-| Code review before close | `/sw:grill 0001` | **MANDATORY** - blocks /sw:done |
-| Close with PM review | `/sw:done 0001` | Requires grill to pass first |
-| Move to next increment | `/sw:next` | Auto-close current, suggest next |
+| Scenario | Natural Language | Claude Code | Other AI |
+|----------|-----------------|-------------|----------|
+| Validate before closing | "Check quality" | `/sw:validate 0001` | `validate 0001` |
+| Code review before close | "Review my work" | `/sw:grill 0001` | `grill 0001` |
+| Close with PM review | "We're done" | `/sw:done 0001` | `done 0001` |
+| Move to next increment | "What's next?" | `/sw:next` | `next` |
 
 ### Syncing & Saving
 
-| Scenario | Command | Notes |
-|----------|---------|-------|
-| Sync to external tools | `/sw:sync-progress` | GitHub/JIRA/ADO |
-| Update living docs | `/sw:sync-docs` | Bidirectional sync |
-| Save and push to git | `/sw:save` | Commits and pushes |
+| Scenario | Natural Language | Claude Code | Other AI |
+|----------|-----------------|-------------|----------|
+| Sync to external tools | "Sync progress" | `/sw:sync-progress` | `sync-progress` |
+| Update living docs | "Update the docs" | `/sw:sync-docs` | `sync-docs` |
+| Save and push to git | "Save my work" | `/sw:save` | `save` |
 
 ---
 
@@ -299,42 +298,41 @@ Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 
 ### Most Used (Daily)
 
-| Command | Shortcut | Purpose |
-|---------|----------|---------|
-| `/sw:increment` | - | Start new work |
-| `/sw:do` | - | Implement tasks |
-| `/sw:progress` | - | Check completion |
-| `/sw:done` | - | Complete increment |
-| `/sw:save` | - | Commit and push |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "Let's build X" | `/sw:increment` | `increment` | Start new work |
+| "Start implementing" | `/sw:do` | `do` | Implement tasks |
+| "What's the status?" | `/sw:progress` | `progress` | Check completion |
+| "We're done" | `/sw:done` | `done` | Complete increment |
+| "Save my work" | `/sw:save` | `save` | Commit and push |
 
 ### Frequent (Weekly)
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:pause` | Temporarily stop |
-| `/sw:resume` | Continue paused |
-| `/sw:validate` | Pre-close check |
-| `/sw:sync-progress` | Sync external tools |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "Pause this" | `/sw:pause` | `pause` | Temporarily stop |
+| "Continue working" | `/sw:resume` | `resume` | Continue paused |
+| "Check quality" | `/sw:validate` | `validate` | Pre-close check |
+| "Sync progress" | `/sw:sync-progress` | `sync-progress` | Sync external tools |
 
 ### Occasional (As Needed)
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:status` | Deprioritize |
-| `/sw:abandon` | Cancel work |
-| `/sw:resume` | Needs more work |
-| `/sw:qa` | Quality assessment |
+| Natural Language | Claude Code | Other AI | Purpose |
+|-----------------|-------------|----------|---------|
+| "List all increments" | `/sw:status` | `status` | View all work |
+| "Cancel this" | `/sw:abandon` | `abandon` | Cancel work |
+| "Assess quality" | `/sw:qa` | `qa` | Quality assessment |
 
 ---
 
 ## Tips
 
-1. **Start with `/sw:increment`** — Always plan before coding
-2. **Use `/sw:progress` often** — Stay aware of status
-3. **Validate before closing** — `/sw:validate` catches issues
-4. **Always grill before done** — `/sw:grill` is mandatory for closure
-5. **Sync at end of day** — `/sw:sync-progress` keeps everyone informed
-6. **Save frequently** — `/sw:save` protects your work
+1. **Use natural language first** -- just describe what you want and SpecWeave picks the right skill
+2. **Start with planning** -- say "let's build X" or `/sw:increment` before coding
+3. **Check progress often** -- ask "what's the status?" or `/sw:progress`
+4. **Validate before closing** -- "check quality" or `/sw:validate` catches issues
+5. **Always grill before done** -- "review my work" or `/sw:grill` is mandatory for closure
+6. **Sync at end of day** -- "sync progress" or `/sw:sync-progress` keeps everyone informed
 
 ---
 

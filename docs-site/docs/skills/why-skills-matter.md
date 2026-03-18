@@ -17,7 +17,7 @@ A video walkthrough of these concepts is coming soon. Subscribe to the [SpecWeav
 
 ## What is a Skill?
 
-**A skill is a `SKILL.md` file with instructions — Claude adds it to its toolkit, uses it automatically when relevant, or you invoke it directly with `/skill-name`.**
+**A skill is a `SKILL.md` file with instructions -- Claude adds it to its toolkit and you invoke it three ways: natural language ("design the architecture"), slash command (`/sw:architect`), or CLI keyword (`architect` in other AI tools).**
 
 The core insight: **same prompt, dramatically different quality.**
 

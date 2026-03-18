@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Workflows: The Complete Journey
 
 SpecWeave provides clear, repeatable workflows for every phase of software development—from initial concept to production deployment.
@@ -121,7 +123,13 @@ graph LR
 - plan.md (architecture, approach)
 - tasks.md (checklist, embedded tests)
 
-**Command**: `/sw:increment "feature name"` — or just say: `Let's build a payment system with Stripe`
+**Command**:
+
+<CommandTabs
+  natural="Let's build a payment system with Stripe"
+  claude='/sw:increment "payment system with Stripe"'
+  other='increment "payment system with Stripe"'
+/>
 
 **[→ Full Planning Workflow](/docs/workflows/planning)**
 
@@ -153,7 +161,7 @@ graph LR
 - Updated documentation
 - Completed tasks
 
-**Command**: `/sw:do` — or just say: `Start implementing`
+**Command**: `/sw:do` -- or just say: "Start implementing"
 
 **[→ Full Implementation Workflow](/docs/workflows/implementation)**
 
@@ -185,7 +193,7 @@ graph LR
 - Completion summary
 - Deployment readiness
 
-**Command**: `/sw:validate` — or just say: `Check if everything looks good`
+**Command**: `/sw:validate` -- or just say: "Check if everything looks good"
 
 **[→ Full Validation Workflow](/docs/workflows/validation)**
 
@@ -225,14 +233,14 @@ graph LR
 
 Every command can also be triggered with natural language -- just describe what you want.
 
-| Phase | Slash Command | Natural Language | What It Does |
-|-------|--------------|-----------------|--------------|
-| **Planning** | `/sw:increment "feature"` | "Let's build a payment system" | Creates spec, plan, tasks |
-| **Implementation** | `/sw:do` | "Start implementing" | Executes tasks, auto-resumes |
-| **Autonomous** | `/sw:auto` | "Ship it while I sleep" | Hands-free execution |
-| **Progress Check** | `/sw:progress` | "What's the status?" | Shows status, next task |
-| **Validation** | `/sw:validate` | "Check if everything looks good" | Quality checks |
-| **Completion** | `/sw:done` | "We're done" | Closes increment |
+| Phase | Natural Language | Slash Command | What It Does |
+|-------|-----------------|--------------|--------------|
+| **Planning** | "Let's build a payment system" | `/sw:increment "feature"` | Creates spec, plan, tasks |
+| **Implementation** | "Start implementing" | `/sw:do` | Executes tasks, auto-resumes |
+| **Autonomous** | "Ship it while I sleep" | `/sw:auto` | Hands-free execution |
+| **Progress Check** | "What's the status?" | `/sw:progress` | Shows status, next task |
+| **Validation** | "Check if everything looks good" | `/sw:validate` | Quality checks |
+| **Completion** | "We're done" | `/sw:done` | Closes increment |
 
 ## Workflow Patterns
 
@@ -454,6 +462,7 @@ Solution: Run /sw:validate before /sw:done
 
 ### Week 2: Planning
 ```bash
+# Say: "Let's build payment processing with Stripe"
 /sw:increment "0015-payment-processing"
 # PM agent creates:
 # ✅ spec.md (5 user stories, 15 AC-IDs)

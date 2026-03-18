@@ -121,6 +121,7 @@ Consider: scalability, security, maintainability."
 ### Plan Increment 0001
 
 ```bash
+# Say: "Let's build the core foundation"
 /sw:increment "Core foundation"
 ```
 

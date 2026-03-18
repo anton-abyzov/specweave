@@ -103,20 +103,16 @@ Prefer watching? Start with the Complete Masterclass:
 
 ## Quick Reference
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   ESSENTIAL COMMANDS                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  /sw:increment "feature"  → Plan new work                   │
-│  /sw:auto                 → Ship while you sleep            │
-│  /sw:do                   → Execute one task at a time      │
-│  /sw:next                 → Smart continuation              │
-│  /sw:progress             → Check status                    │
-│  /sw:done                 → Close increment                 │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+Every command can be triggered with natural language or a slash command:
+
+| Natural Language | Slash Command | What It Does |
+|-----------------|---------------|--------------|
+| "Let's build a payment system" | `/sw:increment "feature"` | Plan new work |
+| "Ship it while I sleep" | `/sw:auto` | Autonomous execution |
+| "Start implementing" | `/sw:do` | Execute one task at a time |
+| "What should I do next?" | `/sw:next` | Smart continuation |
+| "What's the status?" | `/sw:progress` | Check status |
+| "We're done" | `/sw:done` | Close increment |
 
 ---
 

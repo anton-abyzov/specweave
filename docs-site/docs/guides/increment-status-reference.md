@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Increment Status Reference
 
 Complete guide to increment statuses, lifecycle, and auto-transitions in SpecWeave.
@@ -57,14 +59,13 @@ graph TB
 - ✅ **BACKLOG → PLANNING**: When spec.md created (resume planning)
 
 **Example**:
-```bash
-/sw:increment "user authentication"
-# Creates increment in PLANNING status
-# PM generates spec.md
-# Architect generates plan.md
-# Test planner generates tasks.md
-# Status: planning
-```
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "user authentication"'
+  other='increment "user authentication"'
+/>
+
+This creates the increment in PLANNING status. The PM generates spec.md, the Architect generates plan.md, and the test planner generates tasks.md.
 
 ---
 
@@ -87,12 +88,13 @@ graph TB
 - ✅ **ACTIVE → COMPLETED**: When all tasks marked done
 
 **Example**:
-```bash
-/sw:do
-# Executes tasks in ACTIVE increment
-# Marks tasks complete
-# Status: active
-```
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+This executes tasks in the ACTIVE increment and marks tasks complete.
 
 **WIP Impact**:
 ```
@@ -188,13 +190,13 @@ Total WIP: 1 ✅
 - ✅ **COMPLETED → ACTIVE**: Can reopen if issues found
 
 **Example**:
-```bash
-/sw:done 0008
-# Validates all gates
-# Marks increment complete
-# Syncs living docs
-# Status: completed
-```
+<CommandTabs
+  natural="We're done with 0008"
+  claude="/sw:done 0008"
+  other="done 0008"
+/>
+
+This validates all gates, marks the increment complete, and syncs living docs.
 
 ---
 

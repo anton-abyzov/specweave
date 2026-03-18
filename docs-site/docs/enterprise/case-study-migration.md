@@ -141,6 +141,7 @@ Used brownfield quick-start approach:
 
 ```bash
 # Team's first SpecWeave increment
+# Say: "Let's add Apple Pay support" or use the command:
 /sw:increment "Add Apple Pay support"
 
 # PM agent generates:
@@ -156,11 +157,11 @@ Used brownfield quick-start approach:
 ### Team Workflow
 
 ```
-Morning standup:
+Morning standup (say "what's the status?" or use /sw:progress):
 /sw:progress
 → Shows: "3/8 tasks complete (37%)"
 
-During development:
+During development (say "start implementing" or use /sw:do):
 /sw:do
 → Implements task with AI assistance
 

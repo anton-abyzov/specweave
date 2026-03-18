@@ -5,6 +5,8 @@ title: "Lesson 13: Increment Lifecycle Management"
 description: "Master cleanup, archiving, status transitions, and workspace management"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 13: Increment Lifecycle Management
 
 **Time**: 45 minutes
@@ -504,22 +506,22 @@ Ready for: Continue implementing tasks
 Practice lifecycle management:
 
 ```bash
-# 1. Create a test increment
+# 1. Create a test increment (or say "let's build a test lifecycle feature")
 /sw:increment "Test lifecycle feature"
 
-# 2. Check status
+# 2. Check status (or say "what's the status?")
 /sw:status
 
-# 3. Pause it
+# 3. Pause it (or say "pause this")
 /sw:pause 0001 --reason "Testing pause"
 
-# 4. Resume it
+# 4. Resume it (or say "resume work")
 /sw:resume 0001
 
 # 5. Move to backlog
 /sw:status 0001
 
-# 6. Abandon it (cleanup)
+# 6. Abandon it (or say "abandon this")
 /sw:abandon 0001 --reason "Test complete"
 ```
 

@@ -2,15 +2,19 @@
 sidebar_position: 11
 ---
 
-# /sw:auto-status - Session Status
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Auto Session Status
 
 **Show the current auto session status and progress.**
 
 ## Usage
 
-```bash
-/sw:auto-status [OPTIONS]
-```
+<CommandTabs
+  natural='Check auto status'
+  claude='/sw:auto-status'
+  other='auto-status'
+/>
 
 ## Options
 
@@ -21,10 +25,8 @@ sidebar_position: 11
 
 ## Examples
 
+Additional options:
 ```bash
-# Check current session
-/sw:auto-status
-
 # Get JSON output
 /sw:auto-status --json
 
@@ -56,24 +58,24 @@ sidebar_position: 11
 ## Output Example
 
 ```
-🤖 Auto Session Status
+Auto Session Status
 
-Status: 🟢 RUNNING
+Status: RUNNING
 
 Session ID: auto-2025-12-29-abc123
 Duration: 2h 15m
 Iteration: 47 / 100
 
-Progress: [████████████████░░░░░░░░░░░░░░] 47%
+Progress: [================............] 47%
 
-📋 Increment Queue
+Increment Queue
    Total: 3 | Completed: 2 | Failed: 0
 
-📌 Current Increment: 0003-payment-integration
+Current Increment: 0003-payment-integration
    Tasks: 12 / 18 (67%)
 
-💡 Actions:
-   Cancel: /sw:cancel-auto
+Actions:
+   Cancel: /sw:cancel-auto (or say "stop auto")
    Let it run: Close this tab, work will continue
 ```
 
@@ -111,10 +113,10 @@ Progress: [████████████████░░░░░░░
 
 | Status | Description |
 |--------|-------------|
-| 🟢 **running** | Session actively executing tasks |
-| ✅ **completed** | All tasks finished successfully |
-| ⏸️ **paused** | Waiting for human review (low score, test failures) |
-| ❌ **cancelled** | User cancelled via `/sw:cancel-auto` |
+| **running** | Session actively executing tasks |
+| **completed** | All tasks finished successfully |
+| **paused** | Waiting for human review (low score, test failures) |
+| **cancelled** | User cancelled the session (or typed `/sw:cancel-auto` in Claude Code) |
 
 ---
 
@@ -129,16 +131,16 @@ Progress: [████████████████░░░░░░░
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:auto` | Start auto session |
-| `/sw:cancel-auto` | Cancel running session |
-| `/sw:progress` | Show increment progress |
+| Natural Language | Claude Code | Other AI Tools | Purpose |
+|-----------------|-------------|----------------|---------|
+| "Run autonomously" | `/sw:auto` | `auto` | Start auto session |
+| "Stop auto" | `/sw:cancel-auto` | `cancel-auto` | Cancel running session |
+| "What's the status?" | `/sw:progress` | `progress` | Show increment progress |
 
 ---
 
 ## See Also
 
-- [/sw:auto Documentation](./auto) - Start autonomous execution
-- [/sw:cancel-auto Documentation](./cancel-auto) - Cancel session
+- [Autonomous Execution Documentation](./auto) - Start autonomous execution
+- [Cancel Auto Documentation](./cancel-auto) - Cancel session
 - [Commands Overview](./overview) - All SpecWeave commands

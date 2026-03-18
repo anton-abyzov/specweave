@@ -241,6 +241,7 @@ Iterations:
 When an increment is created:
 
 ```bash
+# Say: "Let's build user authentication" or use the command:
 /sw:increment "User authentication"
 
 # Output:
@@ -768,7 +769,7 @@ ADO_PAT=service_account_pat
 ### Full Workflow
 
 ```bash
-# 1. Create increment
+# 1. Create increment (say "let's build a user profile feature" or use the command)
 /sw:increment "User profile feature"
 
 # Output:

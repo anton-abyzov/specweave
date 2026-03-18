@@ -4,12 +4,16 @@ title: Skills Reference
 description: Complete reference for all SpecWeave skills organized by domain
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Skills Reference
 
-SpecWeave provides **100+ specialized skills** that activate automatically based on context or can be invoked directly. Skills are more powerful than commands - they provide domain expertise, best practices, and guided workflows.
+SpecWeave provides **100+ specialized skills** that activate automatically based on context or can be invoked directly. Skills are more powerful than commands -- they provide domain expertise, best practices, and guided workflows.
 
-:::tip Skills = Commands Now
-In Claude Code, skills and slash commands execute identically. Use `/sw:skill-name` to invoke any skill. Skills auto-activate when their keywords are detected in your prompts.
+:::tip Three Ways to Invoke Any Skill
+1. **Natural language** -- just describe what you want (e.g., "design the system architecture")
+2. **Slash command** -- `/sw:skill-name` in Claude Code
+3. **Keyword** -- `skill-name` without prefix in Cursor, Copilot, and other AI tools
 :::
 
 ## How Skills Work
@@ -18,15 +22,16 @@ In Claude Code, skills and slash commands execute identically. Use `/sw:skill-na
 graph LR
     A[Your Request] --> B{Keyword Match?}
     B -->|Yes| C[Auto-Activate Skill]
-    B -->|No| D[Use /sw:skill-name]
+    B -->|No| D[Use /sw:skill-name or keyword]
     C --> E[Domain Expertise Applied]
     D --> E
 ```
 
 **Invocation methods:**
-1. **Auto-activation**: Just describe what you need - skills activate based on keywords
-2. **Direct invocation**: `/sw:skill-name` or `/sw-plugin:skill-name`
-3. **Chaining**: Skills can invoke other skills for complex workflows
+1. **Natural language** (easiest): Just describe what you need -- skills activate based on keywords
+2. **Slash command** (precise): `/sw:skill-name` or `/sw-plugin:skill-name` in Claude Code
+3. **CLI keyword** (cross-tool): `skill-name` without prefix in Cursor, Copilot, and other AI tools
+4. **Chaining**: Skills can invoke other skills for complex workflows
 
 ---
 
@@ -34,31 +39,31 @@ graph LR
 
 These skills form the foundation of spec-driven development.
 
-| Skill | Description | When to Use |
-|-------|-------------|-------------|
-| [`sw:increment`](#increment) | Plan and create increments with PM/Architect collaboration | Starting any new feature |
-| [`sw:pm`](#pm) | Product Manager for specs, user stories, acceptance criteria | Writing requirements |
-| [`sw:architect`](#architect) | System architect for technical designs and ADRs | Architecture decisions |
-| [`sw:role-orchestrator`](#role-orchestrator) | Multi-agent coordination (PM, Architect, DevOps, QA) | Complex full-stack features |
-| [`sw:roadmap-planner`](#roadmap-planner) | Product roadmap and feature prioritization | Quarterly planning |
-| [`sw:plan`](#plan) | Generate plan.md and tasks.md for an existing increment | Regenerating plan/tasks |
-| [`sw:brainstorm`](#brainstorm) | Multi-perspective ideation with cognitive lenses | Exploring approaches before committing |
+| Natural Language | Claude Code | Other AI | Description |
+|-----------------|-------------|----------|-------------|
+| "let's build X", "add feature X" | [`/sw:increment`](#increment) | `increment` | Plan and create increments |
+| "write specs", "define requirements" | [`/sw:pm`](#pm) | `pm` | Product Manager for specs |
+| "design the system", "architecture" | [`/sw:architect`](#architect) | `architect` | System architect for designs |
+| "coordinate all agents" | [`/sw:role-orchestrator`](#role-orchestrator) | `role-orchestrator` | Multi-agent coordination |
+| "plan the roadmap" | [`/sw:roadmap-planner`](#roadmap-planner) | `roadmap-planner` | Product roadmap planning |
+| "regenerate the plan" | [`/sw:plan`](#plan) | `plan` | Generate plan.md and tasks.md |
+| "brainstorm X", "explore ideas" | [`/sw:brainstorm`](#brainstorm) | `brainstorm` | Multi-perspective ideation |
 
 ### brainstorm
 
 **Purpose**: Explore a problem from multiple angles before committing to an implementation path. Uses Tree of Thought divergent exploration with selectable cognitive lenses.
 
+<CommandTabs
+  natural="Brainstorm approaches for real-time notifications"
+  claude='/sw:brainstorm "real-time notifications"'
+  other='brainstorm "real-time notifications"'
+/>
+
 ```bash
-# Slash command
-/sw:brainstorm "real-time notifications"              # Standard depth
+# Options
 /sw:brainstorm "auth system" --depth deep              # All 5 phases + deepening
 /sw:brainstorm "payment gateway" --lens six-hats       # Specific lens
 /sw:brainstorm "API design" --depth quick              # Fast 3-approach comparison
-
-# Natural language
-# "Brainstorm approaches for real-time notifications"
-# "Let's explore options for the auth system"
-# "What are our options for payment processing?"
 ```
 
 **5-Phase Flow:**
@@ -94,14 +99,11 @@ These skills form the foundation of spec-driven development.
 
 **Purpose**: Plan and create SpecWeave increments with PM and Architect collaboration.
 
-```bash
-# Slash command
-/sw:increment "User authentication with JWT"
-
-# Natural language (auto-detected)
-# "Let's build user authentication with JWT"
-# "I need a payment system with Stripe"
-```
+<CommandTabs
+  natural="Let's build user authentication with JWT"
+  claude='/sw:increment "User authentication with JWT"'
+  other='increment "User authentication with JWT"'
+/>
 
 **What it does:**
 - Detects tech stack automatically
@@ -185,32 +187,29 @@ These skills form the foundation of spec-driven development.
 
 Control the development workflow from start to finish.
 
-| Skill | Description | When to Use |
-|-------|-------------|-------------|
-| `sw:do` | Execute tasks manually | Task-by-task control |
-| `sw:auto` | Autonomous execution | Hands-free development |
-| `sw:auto-parallel` | Multi-agent parallel execution | Large features with isolation |
-| `sw:auto-status` | Check autonomous progress | Monitoring from another session |
-| `sw:cancel-auto` | Emergency stop | Only when auto mode needs abort |
-| `sw:progress` | Show increment status | Checking completion |
-| `sw:next` | Smart workflow transition | Completing and moving on |
-| `sw:done` | Close increment | Finishing work |
-| `sw:validate` | Rule-based validation | Quick quality check |
-| `sw:qa` | AI quality gate | Pre-release assessment |
-| `sw:grill` | Implementation auditor | Comprehensive code audit |
+| Natural Language | Claude Code | Other AI | Description |
+|-----------------|-------------|----------|-------------|
+| "start implementing", "execute tasks" | `sw:do` | `do` | Execute tasks manually |
+| "ship while I sleep", "autonomous mode" | `sw:auto` | `auto` | Autonomous execution |
+| "parallel agents" | `sw:auto-parallel` | `auto-parallel` | Multi-agent parallel execution |
+| "check auto progress" | `sw:auto-status` | `auto-status` | Check autonomous progress |
+| "stop auto mode" | `sw:cancel-auto` | `cancel-auto` | Emergency stop |
+| "what's the status?", "show progress" | `sw:progress` | `progress` | Show increment status |
+| "what's next?" | `sw:next` | `next` | Smart workflow transition |
+| "we're done", "close it" | `sw:done` | `done` | Close increment |
+| "check quality", "validate it" | `sw:validate` | `validate` | Rule-based validation |
+| "quality check" | `sw:qa` | `qa` | AI quality gate |
+| "review my work", "critique the code" | `sw:grill` | `grill` | Implementation auditor |
 
 ### auto
 
 **Purpose**: Autonomous execution that runs for hours.
 
-```bash
-# Slash command
-/sw:auto
-
-# Natural language
-# "Ship it while I sleep"
-# "Start implementing autonomously"
-```
+<CommandTabs
+  natural="Ship it while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
 
 **Features:**
 - Continuous loop: Read task → Implement → Test → Fix → Next
@@ -222,16 +221,15 @@ Control the development workflow from start to finish.
 
 **Purpose**: Comprehensive implementation audit using parallel subagents.
 
+<CommandTabs
+  natural="Audit the code quality"
+  claude="/sw:grill 0007"
+  other="grill 0007"
+/>
+
 ```bash
-# Slash command
-/sw:grill                    # Full project audit
-/sw:grill 0007               # Specific increment
 /sw:grill src/auth           # Specific module
 /sw:grill --focus security   # Focus on security
-
-# Natural language
-# "Audit the code quality"
-# "Review the implementation for issues"
 ```
 
 **Audits:**
@@ -249,33 +247,33 @@ Control the development workflow from start to finish.
 
 Ensure code quality and test coverage.
 
-| Skill | Plugin | Description |
-|-------|--------|-------------|
-| `sw:tdd-red` | sw | Write failing tests first |
-| `sw:tdd-green` | sw | Minimal implementation to pass |
-| `sw:tdd-refactor` | sw | Improve code quality |
-| `sw:tdd-cycle` | sw | Full TDD workflow |
-| `sw:code-reviewer` | sw | Elite multi-agent code review (6 parallel reviewers) |
-| `sw:team-lead` | sw | Phase-agnostic orchestrator (brainstorm, plan, implement, review, research, test) |
-| `sw:judge-llm` | sw | LLM-as-Judge quality assessment |
-| `sw:debug` | sw | Systematic 4-phase debugging with escalation protocol |
-| `sw:e2e` | sw | End-to-end testing skill |
+| Natural Language | Claude Code | Other AI | Description |
+|-----------------|-------------|----------|-------------|
+| "write failing tests first" | `sw:tdd-red` | `tdd-red` | Write failing tests first |
+| "make the tests pass" | `sw:tdd-green` | `tdd-green` | Minimal implementation to pass |
+| "refactor the code" | `sw:tdd-refactor` | `tdd-refactor` | Improve code quality |
+| "TDD", "test-driven development" | `sw:tdd-cycle` | `tdd-cycle` | Full TDD workflow |
+| "review code", "code review" | `sw:code-reviewer` | `code-reviewer` | Elite multi-agent code review |
+| "parallel agents", "team work" | `sw:team-lead` | `team-lead` | Phase-agnostic orchestrator |
+| "judge the quality" | `sw:judge-llm` | `judge-llm` | LLM-as-Judge quality assessment |
+| "debug this" | `sw:debug` | `debug` | Systematic 4-phase debugging |
+| "e2e tests", "playwright tests" | `sw:e2e` | `e2e` | End-to-end testing |
 
 ### code-reviewer
 
 **Purpose**: Elite multi-agent code review. Spawns up to 6 specialized reviewer agents in parallel, then aggregates findings into a unified report with deduplication and severity ranking.
 
+<CommandTabs
+  natural="Review my code changes"
+  claude="/sw:code-reviewer"
+  other="code-reviewer"
+/>
+
 ```bash
-# Slash command
-/sw:code-reviewer                    # Auto-detect scope (PR, changes, or project)
 /sw:code-reviewer --pr 42            # Review a specific PR
 /sw:code-reviewer --changes          # Review uncommitted changes
 /sw:code-reviewer --increment 0042   # Review changes from an increment
 /sw:code-reviewer --cross-repo       # Aggregate across umbrella repos
-
-# Natural language
-# "Review my code changes"
-# "Do a security review of the auth module"
 ```
 
 **Specialized Reviewers (spawned in parallel):**
@@ -294,20 +292,18 @@ Ensure code quality and test coverage.
 
 **Purpose**: Phase-agnostic orchestrator for parallel multi-agent work. Auto-detects operating mode from your intent.
 
+<CommandTabs
+  natural="Build this with parallel agents"
+  claude='/sw:team-lead "Build checkout flow"'
+  other='team-lead "Build checkout flow"'
+/>
+
 ```bash
-# Slash command
-/sw:team-lead "Build checkout flow"              # Implementation mode (default)
 /sw:team-lead "Brainstorm auth approaches"       # Brainstorm mode
 /sw:team-lead "Plan the payment system"          # Planning mode
-/sw:team-lead "Review recent changes"            # Review mode (delegates to code-reviewer)
+/sw:team-lead "Review recent changes"            # Review mode
 /sw:team-lead "Research caching strategies"      # Research mode
-/sw:team-lead "Write tests for checkout"         # Testing mode
 /sw:team-lead --mode plan "user dashboard"       # Explicit mode override
-
-# Natural language
-# "Build this with parallel agents"
-# "Use a team to implement user auth"
-# "Split this across frontend and backend agents"
 ```
 
 **6 Operating Modes:**

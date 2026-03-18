@@ -5,6 +5,8 @@ title: "Lesson 10: Advanced Patterns"
 description: "Master advanced workflows"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 10: Advanced Patterns
 
 **Time**: 35 minutes
@@ -93,6 +95,7 @@ cd frontend && /sw:do
 
 ```bash
 # Create hotfix (bypasses WIP)
+# Say: "Critical hotfix needed: Fix CVE-2025-1234"
 /sw:increment "Critical: Fix CVE-2025-1234" --type hotfix
 
 # Fast-track execution
@@ -286,6 +289,7 @@ Here's a comprehensive reference of commands organized by when you'll use them:
 
 ```bash
 # Create new work
+# Say: "Let's build a new feature" or:
 /sw:increment "feature"      # New feature increment
 /sw:increment "fix" --type bug       # Bug fix
 /sw:increment "spike" --type spike   # Exploration
@@ -300,10 +304,12 @@ cat .specweave/increments/0001-feature/tasks.md
 
 ```bash
 # Execute work
+# Say: "Start implementing" or:
 /sw:do                        # Auto-resume active increment
 /sw:do 0001                   # Specific increment
 
 # Check progress
+# Say: "What's the status?" or:
 /sw:progress                  # All increments
 /sw:progress 0001             # Specific increment
 

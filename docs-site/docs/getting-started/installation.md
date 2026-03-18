@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave Installation
 
 Comprehensive installation guide for all scenarios.
@@ -299,8 +301,7 @@ ls -la .claude/hooks/       # Should have 8 hooks
 # For other AI tool users
 cat AGENTS.md               # Should exist
 
-# Test a command (Claude Code only)
-# Open Claude Code and type: /sw:progress
+# Test a command (Claude Code: /sw:progress, or just say "what's the status?")
 ```
 
 ### Verification Checklist
@@ -317,32 +318,22 @@ cat AGENTS.md               # Should exist
 
 ### Test the Interactive Flow
 
-**Try the quick build workflow:**
+**Try the quick build workflow** — just describe what you want:
 
-```bash
-# Open Claude Code in your project and type:
-"build a very simple web calculator app"
+<CommandTabs
+  natural="Build a very simple web calculator app"
+  claude='/sw:increment "web calculator app"'
+  other='increment "web calculator app"'
+/>
 
-# SpecWeave will guide you through:
-# 1. Approach selection (Quick build vs plan first)
-# 2. Feature selection (multi-select checkboxes)
-# 3. Tech stack choice (Vanilla, React, etc.)
-# 4. Review and submit
+SpecWeave guides you through approach selection, feature selection, tech stack choice, and review. Your app will be built in ~2 minutes.
 
-# Your app will be built in ~2 minutes!
+This creates:
 ```
-
-**Or use slash commands for full control:**
-
-```bash
-# In Claude Code:
-/sw:increment "my first feature"
-
-# This creates:
-# ✅ .specweave/increments/0001-my-first-feature/
-#    ├── spec.md (requirements)
-#    ├── plan.md (architecture)
-#    └── tasks.md (implementation steps with embedded tests)
+.specweave/increments/0001-web-calculator-app/
+├── spec.md (requirements)
+├── plan.md (architecture)
+└── tasks.md (implementation steps with embedded tests)
 ```
 
 ## Configuration

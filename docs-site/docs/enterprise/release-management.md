@@ -5,6 +5,8 @@ sidebar_label: Release Management
 sidebar_position: 5
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Enterprise Release Management & Versioning
 
 :::tip Critical for Enterprises
@@ -50,13 +52,13 @@ Sprint 24 (Nov 13 - Nov 27, 2025)
 **SpecWeave Integration**:
 
 ```bash
-# 1. Plan sprint
+# 1. Plan sprint (all commands also work via natural language)
 /sw:sprint create 24 --start "2025-11-13" --end "2025-11-27"
 
 # 2. Link increments to sprint
 /sw:sprint link 24 --increments 0018,0019,0020,0021
 
-# 3. Track progress during sprint
+# 3. Track progress during sprint (say "what's the sprint status?")
 /sw:sprint status 24
 
 # Output:
@@ -171,7 +173,7 @@ Week of Nov 13-19, 2025
 **SpecWeave Integration**:
 
 ```bash
-# 1. Complete increment
+# 1. Complete increment (say "we're done" or use the command)
 /sw:done 0018
 
 # 2. Create release immediately

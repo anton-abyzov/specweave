@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # GitHub Integration Guide
 
 **SpecWeave GitHub Integration** - Seamless task-level synchronization between SpecWeave increments and GitHub issues.
@@ -156,16 +158,13 @@ specweave plugin enable specweave
 
 ### Step 2: Create an Increment
 
-```bash
-# Plan a new increment
-/sw:increment "0005-user-authentication"
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "0005-user-authentication"'
+  other='increment "0005-user-authentication"'
+/>
 
-# SpecWeave PM generates:
-# - spec.md (product requirements)
-# - plan.md (technical architecture)
-# - tasks.md (implementation tasks)
-# - tests.md (test strategy)
-```
+SpecWeave PM generates spec.md (product requirements), plan.md (technical architecture), tasks.md (implementation tasks), and tests.md (test strategy).
 
 ### Step 3: Sync Tasks to GitHub
 

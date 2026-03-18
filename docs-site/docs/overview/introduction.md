@@ -1,6 +1,10 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # What is SpecWeave?
 
 **SpecWeave is a spec-first AI development framework** — a behavior layer that brings structure, persistence, and quality gates to any AI coding tool.
+
+Describe what you want to build. SpecWeave handles planning, architecture, testing, and documentation — across any AI coding tool.
 
 Where Claude Code, Cursor, Copilot, and Codex are stateless by default, SpecWeave adds the missing layer: standards that survive sessions, specs that never disappear, and quality that's enforced — not hoped for.
 
@@ -54,20 +58,13 @@ SpecWeave enforces **Spec-Driven Development**:
 
 ## How It Works
 
-### 1. One Command Creates Foundation
+### 1. Describe What You Want
 
-:::tip Two ways to activate
-**Slash command:**
-```bash
-/sw:increment "Add dark mode toggle"
-```
-
-**Natural language** — just describe what you want:
-```
-I need a dark mode toggle for the settings page
-```
-SpecWeave auto-detects your intent and activates the right skill.
-:::
+<CommandTabs
+  natural="I need a dark mode toggle for the settings page"
+  claude='/sw:increment "Add dark mode toggle"'
+  other='increment "Add dark mode toggle"'
+/>
 
 AI agents (PM, Architect, Planner) create:
 
@@ -78,19 +75,23 @@ AI agents (PM, Architect, Planner) create:
 └── tasks.md   <- DO: Tasks with embedded tests
 ```
 
-### 2. One Command Builds
+### 2. Build It
 
-```bash
-/sw:do
-```
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
 
 Autonomous execution through all tasks with quality validation.
 
-### 3. One Command Closes
+### 3. Close It
 
-```bash
-/sw:done 0001
-```
+<CommandTabs
+  natural="We're done, close it up"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
 
 Three quality gates validate completion:
 - All tasks complete
@@ -158,14 +159,29 @@ cd your-project
 specweave init .
 ```
 
-Then in Claude Code:
-```bash
-/sw:increment "Add dark mode toggle"
-/sw:do
-/sw:done 0001
-```
+Then describe what you want to build:
 
-**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+<CommandTabs
+  natural="I need a dark mode toggle for the settings page"
+  claude='/sw:increment "Add dark mode toggle"'
+  other='increment "Add dark mode toggle"'
+/>
+
+Follow up with implementation and closure:
+
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
+
+<CommandTabs
+  natural="We're done, finish up"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
+
+**Pro tip**: Use `/sw:next` (or say "what's next?") to flow through the entire cycle. It auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep going.
 
 **[Full Quickstart Guide](/docs/getting-started)**
 

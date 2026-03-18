@@ -454,6 +454,7 @@ describe('Authentication Baseline (Current Behavior)', () => {
 **Now** you can safely plan changes:
 
 ```bash
+# Say: "Let's add 2FA to the authentication system"
 /sw:increment "0015-add-2fa-to-authentication"
 ```
 

@@ -2,25 +2,29 @@
 sidebar_position: 4
 ---
 
-# abandon
+import CommandTabs from '@site/src/components/CommandTabs';
+
+# Abandon
 
 Permanently abandon an increment when requirements change or work becomes obsolete.
 
 ## Synopsis
 
-```bash
-specweave abandon <increment-id> [options]
-```
+<CommandTabs
+  natural='Abandon this'
+  claude='/sw:abandon 0008'
+  other='abandon 0008'
+/>
 
 ## Description
 
 The `abandon` command permanently cancels work on an increment by moving it to the `_archive/` folder. This preserves all work for reference while freeing up your WIP limit.
 
 **Use abandon when**:
-- 🔄 Requirements changed (feature no longer needed)
-- ❌ Approach was wrong (discovered better solution)
-- 🔀 Superseded (replaced by different increment)
-- 🧪 Experiment failed (spike didn't pan out)
+- Requirements changed (feature no longer needed)
+- Approach was wrong (discovered better solution)
+- Superseded (replaced by different increment)
+- Experiment failed (spike didn't pan out)
 
 :::warning Permanent Action
 Abandon is **permanent** and moves the increment to `_archive/`. Unlike pause, abandoned increments require manual restoration.
@@ -61,29 +65,29 @@ specweave abandon 0008 --reason "Obsolete" --force
 ### Example 1: Abandon with Reason
 
 ```bash
-# Requirements changed, feature no longer needed
+# Requirements changed, feature no longer needed (or say "abandon this")
 specweave abandon 0008-social-features \
   --reason "Requirements changed - pivoting to enterprise focus"
 
 # Output:
-⚠️  This will move increment 0008-social-features to _archive/
+This will move increment 0008-social-features to _archive/
    Reason: Requirements changed - pivoting to enterprise focus
 
 Continue? [y/N]: y
 
-✅ Increment 0008-social-features abandoned
-📦 Moved to: .specweave/increments/_archive/0008-social-features/
-📝 Reason: Requirements changed - pivoting to enterprise focus
-💾 All work preserved for reference
+Increment 0008-social-features abandoned
+Moved to: .specweave/increments/_archive/0008-social-features/
+Reason: Requirements changed - pivoting to enterprise focus
+All work preserved for reference
 
-💡 To un-abandon: Manually move back to increments/ folder
+To un-abandon: Manually move back to increments/ folder
 ```
 
 **What happened**:
-- ✅ Increment moved to `_archive/` folder
-- ✅ Metadata updated (status: abandoned, timestamp)
-- ✅ WIP limit freed (can start other work)
-- ✅ All files preserved for reference
+- Increment moved to `_archive/` folder
+- Metadata updated (status: abandoned, timestamp)
+- WIP limit freed (can start other work)
+- All files preserved for reference
 
 ### Example 2: Abandon Without Reason (Interactive)
 
@@ -91,7 +95,7 @@ Continue? [y/N]: y
 specweave abandon 0009-experiment
 
 # Output:
-❓ Why are you abandoning this increment?
+Why are you abandoning this increment?
    1. Requirements changed
    2. Approach was wrong
    3. Superseded by different work
@@ -100,13 +104,13 @@ specweave abandon 0009-experiment
 
 > 4
 
-⚠️  This will move increment 0009-experiment to _archive/
+This will move increment 0009-experiment to _archive/
    Reason: Experiment failed
 
 Continue? [y/N]: y
 
-✅ Increment 0009-experiment abandoned
-📦 Moved to: .specweave/increments/_archive/0009-experiment/
+Increment 0009-experiment abandoned
+Moved to: .specweave/increments/_archive/0009-experiment/
 ```
 
 ### Example 3: Force Abandon (Skip Confirmation)
@@ -116,25 +120,25 @@ Continue? [y/N]: y
 specweave abandon 0010 --reason "Obsolete" --force
 
 # Output:
-✅ Increment 0010 abandoned (forced)
-📦 Moved to: .specweave/increments/_archive/0010/
-📝 Reason: Obsolete
+Increment 0010 abandoned (forced)
+Moved to: .specweave/increments/_archive/0010/
+Reason: Obsolete
 ```
 
 ### Example 4: Abandon During Pivot
 
 ```bash
-# Business pivot scenario
+# Business pivot scenario (or say "what's the status?" first)
 specweave status
-▶️  Active (2):
-  ● 0008-consumer-features
-  ● 0009-social-integration
+Active (2):
+  0008-consumer-features
+  0009-social-integration
 
-# Abandon both consumer-focused features
+# Abandon both consumer-focused features (or say "abandon this" for each)
 specweave abandon 0008 --reason "Pivot to enterprise - consumer features postponed"
 specweave abandon 0009 --reason "Pivot to enterprise - social features postponed"
 
-# Start new enterprise features
+# Start new enterprise features (or say "let's build enterprise SSO")
 specweave inc "0010-enterprise-sso"
 ```
 
@@ -150,12 +154,12 @@ graph LR
 ```
 
 **Valid transitions**:
-- `active` → `abandoned` ✅
-- `paused` → `abandoned` ✅
+- `active` -> `abandoned`
+- `paused` -> `abandoned`
 
 **Invalid transitions**:
-- `completed` → `abandoned` ❌ (completed work cannot be abandoned)
-- `abandoned` → `abandoned` ℹ️ (already abandoned, no-op)
+- `completed` -> `abandoned` (completed work cannot be abandoned)
+- `abandoned` -> `abandoned` (already abandoned, no-op)
 
 ### Metadata Changes
 
@@ -172,12 +176,12 @@ graph LR
 // After abandon
 {
   "id": "0008-social-features",
-  "status": "abandoned",                        // ← Changed
+  "status": "abandoned",
   "type": "feature",
   "created": "2025-11-01T10:00:00Z",
   "lastActivity": "2025-11-04T10:00:00Z",
-  "abandonedReason": "Pivot to enterprise",     // ← Added
-  "abandonedAt": "2025-11-04T10:00:00Z"         // ← Added
+  "abandonedReason": "Pivot to enterprise",
+  "abandonedAt": "2025-11-04T10:00:00Z"
 }
 ```
 
@@ -186,20 +190,20 @@ graph LR
 ```bash
 # Before abandon
 .specweave/increments/
-├── 0007-feature-x/
-├── 0008-social-features/    # ← Active
-└── 0009-feature-z/
+|- 0007-feature-x/
+|- 0008-social-features/    # <- Active
+\- 0009-feature-z/
 
 # After abandon
 .specweave/increments/
-├── 0007-feature-x/
-├── 0009-feature-z/
-└── _archive/
-    └── 0008-social-features/  # ← Moved here
-        ├── spec.md
-        ├── plan.md
-        ├── tasks.md
-        └── metadata.json (status: abandoned)
+|- 0007-feature-x/
+|- 0009-feature-z/
+\- _archive/
+    \- 0008-social-features/  # <- Moved here
+        |- spec.md
+        |- plan.md
+        |- tasks.md
+        \- metadata.json (status: abandoned)
 ```
 
 ### WIP Limit Impact
@@ -207,18 +211,18 @@ graph LR
 ```bash
 # Before abandon
 $ specweave status
-▶️  Active (2): 0008-social-features, 0009-feature-z
-📈 WIP Limit: ⚠️  2/1 (EXCEEDS LIMIT!)
+Active (2): 0008-social-features, 0009-feature-z
+WIP Limit: 2/1 (EXCEEDS LIMIT!)
 
-# Abandon one increment
+# Abandon one increment (or say "abandon this")
 $ specweave abandon 0008 --reason "No longer needed"
 
 # After abandon
 $ specweave status
-▶️  Active (1): 0009-feature-z
-📈 WIP Limit: ✅ 1/1
+Active (1): 0009-feature-z
+WIP Limit: 1/1
 
-💡 WIP limit freed - can start new work
+WIP limit freed - can start new work
 ```
 
 ## Error Handling
@@ -227,7 +231,7 @@ $ specweave status
 
 ```bash
 $ specweave abandon 0001
-❌ Cannot abandon increment 0001
+Cannot abandon increment 0001
    Status: completed
    Completed increments cannot be abandoned
 ```
@@ -238,7 +242,7 @@ $ specweave abandon 0001
 
 ```bash
 $ specweave abandon 0008
-⚠️  Increment 0008 is already abandoned
+Increment 0008 is already abandoned
    Location: .specweave/increments/_archive/0008-old-feature/
    Reason: Requirements changed
    Abandoned: 5 days ago
@@ -252,23 +256,23 @@ No action needed.
 
 ```bash
 $ specweave abandon 9999
-❌ Increment not found: 9999
-💡 Check available increments: specweave status
+Increment not found: 9999
+Check available increments: specweave status (or say "what's the status?")
 ```
 
-**Solution**: Check increment ID with `specweave status`.
+**Solution**: Check increment ID with status command.
 
 ### Cancelled Abandonment
 
 ```bash
 $ specweave abandon 0008 --reason "Not needed"
 
-⚠️  This will move increment 0008 to _archive/
+This will move increment 0008 to _archive/
    Reason: Not needed
 
 Continue? [y/N]: n
 
-❌ Abandonment cancelled
+Abandonment cancelled
    Increment 0008 remains active
 ```
 
@@ -277,10 +281,10 @@ Continue? [y/N]: n
 ### 1. Always Document Why
 
 ```bash
-# ❌ Bad - no reason
+# Bad - no reason
 specweave abandon 0008
 
-# ✅ Good - clear reason
+# Good - clear reason
 specweave abandon 0008 --reason "Requirements changed - feature no longer aligns with product strategy"
 ```
 
@@ -322,9 +326,9 @@ specweave abandon 0008 --reason "Approach wrong, but analysis useful"
 
 ```
 Is this increment...
-├─ Temporarily blocked? → Use 'pause' (can resume)
-├─ Permanently obsolete? → Use 'abandon'
-└─ Uncertain? → Pause first, abandon later if still not relevant
+|- Temporarily blocked? -> Use 'pause' (or say "pause this")
+|- Permanently obsolete? -> Use 'abandon' (or say "abandon this")
+\- Uncertain? -> Pause first, abandon later if still not relevant
 ```
 
 ## Common Scenarios
@@ -339,7 +343,7 @@ specweave abandon 0008-consumer-onboarding \
 specweave abandon 0009-social-features \
   --reason "Pivot to enterprise - social integration not in roadmap"
 
-# Start enterprise work
+# Start enterprise work (or say "let's build enterprise SSO")
 specweave inc "0010-enterprise-sso"
 ```
 
@@ -368,19 +372,19 @@ specweave inc "0011-auth0-integration"
 ### Scenario 4: Clean Up Old Work
 
 ```bash
-# Review paused increments
+# Review paused increments (or say "what's the status?")
 specweave status --paused
 
-⏸️  Paused (3):
-  ⏸ 0005-kubernetes (paused 45 days)
-  ⏸ 0007-refactor (paused 30 days)
-  ⏸ 0008-experiment (paused 60 days)
+Paused (3):
+  0005-kubernetes (paused 45 days)
+  0007-refactor (paused 30 days)
+  0008-experiment (paused 60 days)
 
-# Abandon stale work
+# Abandon stale work (or say "abandon this" for each)
 specweave abandon 0005 --reason "Postponed indefinitely, cloud provider changed"
 specweave abandon 0008 --reason "Too old, requirements likely changed"
 
-# Resume relevant work
+# Resume relevant work (or say "resume work")
 specweave resume 0007
 ```
 
@@ -397,14 +401,14 @@ specweave inc "0010-try-graphql" --type=experiment
 # Automatic abandonment
 $ specweave status
 
-📊 Auto-Abandoned (1):
-  🧪 0010-try-graphql [experiment]
+Auto-Abandoned (1):
+  0010-try-graphql [experiment]
      Abandoned: automatically (14+ days inactive)
      Reason: Auto-abandoned due to inactivity
      Last activity: 15 days ago
 
-💡 Experiments auto-abandon after 14 days to prevent accumulation
-   To prevent: Update lastActivity via 'specweave do' or manual touch
+Experiments auto-abandon after 14 days to prevent accumulation
+To prevent: Update lastActivity via 'specweave do' or manual touch
 ```
 
 **Configuration** (`.specweave/config.json`):
@@ -425,14 +429,14 @@ To restore an abandoned increment:
 mv .specweave/increments/_archive/0008-feature \
    .specweave/increments/0008-feature
 
-# 2. Resume via command
+# 2. Resume via command (or say "resume work")
 specweave resume 0008
 
 # Output:
-✅ Increment 0008-feature resumed
-⚠️  Note: Was abandoned 10 days ago
+Increment 0008-feature resumed
+Note: Was abandoned 10 days ago
    Reason: Requirements changed
-💡 Review spec.md to ensure still relevant
+Review spec.md to ensure still relevant
 ```
 
 :::tip Review Before Resuming
@@ -441,17 +445,17 @@ Always review the spec before resuming abandoned work. Requirements may have evo
 
 ## Integration with Other Commands
 
-### abandon → status
+### abandon -> status
 
 ```bash
 $ specweave abandon 0008 --reason "Obsolete"
 $ specweave status
 
-❌ Abandoned (1):
-  0008-old-feature (Obsolete)  # ← Shown in abandoned section
+Abandoned (1):
+  0008-old-feature (Obsolete)  # <- Shown in abandoned section
 ```
 
-### pause → abandon
+### pause -> abandon
 
 ```bash
 $ specweave pause 0007 --reason "Waiting for decision"
@@ -459,19 +463,19 @@ $ specweave pause 0007 --reason "Waiting for decision"
 $ specweave abandon 0007 --reason "Decision: feature not needed"
 ```
 
-### abandon → retrospective
+### abandon -> retrospective
 
 ```bash
 $ specweave abandon 0008 --reason "Experiment failed"
 
 # Later: Review for learnings
 $ specweave status --abandoned
-❌ Abandoned (3):
+Abandoned (3):
   0008-graphql (Experiment failed)
   0009-custom-auth (Superseded)
   0010-old-ui (Requirements changed)
 
-# Pattern: High experiment failure rate → improve spike process
+# Pattern: High experiment failure rate -> improve spike process
 ```
 
 ## Statistics
@@ -481,18 +485,18 @@ View abandonment statistics:
 ```bash
 specweave status
 
-✅ Completed (4):
+Completed (4):
   0001-core-framework
   0002-core-enhancements
   0003-model-selection
   0004-plugin-architecture
 
-❌ Abandoned (3):
+Abandoned (3):
   0008-old-approach (Requirements changed)
   0009-failed-experiment (Experiment failed)
   0010-superseded (Replaced by 0011)
 
-📊 Summary:
+Summary:
   - Success rate: 57% (4/7 completed)
   - Abandonment rate: 43% (3/7 abandoned)
   - Common reasons: Requirements changed (2), Experiment failed (1)
@@ -509,9 +513,9 @@ specweave status
 ls .specweave/increments/_archive/
 
 # Common patterns?
-# - Requirements changing too often? → Improve planning
-# - High experiment failure? → Better spike process
-# - Many superseded? → Too much parallel work
+# - Requirements changing too often? -> Improve planning
+# - High experiment failure? -> Better spike process
+# - Many superseded? -> Too much parallel work
 ```
 
 ### Extract Best Practices
@@ -542,12 +546,12 @@ ls .specweave/increments/_archive/
 ## Summary
 
 **Key Points**:
-- ✅ Use `abandon` for **permanent** cancellation
-- ✅ Always provide clear reason
-- ✅ Work moved to `_archive/` (preserved)
-- ✅ Frees WIP limit
-- ✅ Cannot abandon completed increments
-- ✅ Experiments auto-abandon after 14 days
+- Use `abandon` for **permanent** cancellation
+- Always provide clear reason
+- Work moved to `_archive/` (preserved)
+- Frees WIP limit
+- Cannot abandon completed increments
+- Experiments auto-abandon after 14 days
 
 **Command**:
 ```bash
@@ -555,4 +559,4 @@ specweave abandon <increment-id> --reason "<clear explanation>"
 ```
 
 **Philosophy**:
-> Abandoning isn't failure—it's learning. Document why, extract learnings, move forward.
+> Abandoning isn't failure--it's learning. Document why, extract learnings, move forward.

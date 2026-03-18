@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # What is an Increment?
 
 An **increment** is SpecWeave's fundamental unit of work—a complete, self-contained feature with specifications, architecture, implementation plan, and tests.
@@ -126,18 +128,11 @@ SpecWeave supports different work types:
 
 ## Increment Lifecycle
 
-:::tip Two ways to create an increment
-**Slash command:**
-```bash
-/sw:increment "user authentication with JWT"
-```
-
-**Natural language** — just describe what you want:
-```
-Let's add user authentication with JWT and refresh tokens
-```
-SpecWeave auto-detects your intent and creates the increment.
-:::
+<CommandTabs
+  natural="Let's add user authentication with JWT and refresh tokens"
+  claude='/sw:increment "user authentication with JWT"'
+  other='increment "user authentication with JWT"'
+/>
 
 ```mermaid
 stateDiagram-v2

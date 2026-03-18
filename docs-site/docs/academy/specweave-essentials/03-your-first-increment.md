@@ -5,6 +5,8 @@ title: "Lesson 3: Your First Increment"
 description: "Build a complete feature from start to finish"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 3: Your First Increment
 
 **Time**: 45 minutes
@@ -23,9 +25,13 @@ A **Dark Mode Toggle** — simple but complete:
 
 ## Step 1: Create the Increment
 
-```bash
-/sw:increment "Add dark mode toggle"
-```
+Tell SpecWeave what you want to build. You can describe it naturally, or use the slash command:
+
+<CommandTabs
+  natural="I want to add a dark mode toggle"
+  claude='/sw:increment "Add dark mode toggle"'
+  other='increment "Add dark mode toggle"'
+/>
 
 ### What Happens
 
@@ -106,9 +112,13 @@ Just tell Claude: "Add AC-US1-05 for animated transitions"
 
 ## Step 3: Execute the Tasks
 
-```bash
-/sw:do
-```
+Start implementing the tasks. Just say "start implementing" or use the command:
+
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
 
 Watch as each task is completed:
 
@@ -143,9 +153,13 @@ EXECUTION COMPLETE: 5/5 tasks
 
 ## Step 4: Check Progress
 
-```bash
-/sw:progress
-```
+Ask for the status, or use the progress command:
+
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -163,9 +177,13 @@ Status: Ready to close
 
 ## Step 5: Close the Increment
 
-```bash
-/sw:next
-```
+Tell SpecWeave you're done, and it will validate and close:
+
+<CommandTabs
+  natural="We're done, finish up"
+  claude="/sw:next"
+  other="next"
+/>
 
 This runs the quality gates:
 
@@ -266,13 +284,13 @@ export function ThemeToggle() {
 
 You just completed a full cycle:
 
-```
-1. /sw:increment  → Created spec, plan, tasks
-2. (Reviewed specs)      → Verified requirements
-3. /sw:do         → Implemented all tasks
-4. /sw:progress   → Checked status
-5. /sw:next       → Validated and closed
-```
+| Step | Natural Language | Slash Command | What Happened |
+|------|-----------------|---------------|---------------|
+| 1 | "I want to add a dark mode toggle" | `/sw:increment` | Created spec, plan, tasks |
+| 2 | *(Review specs)* | | Verified requirements |
+| 3 | "Start implementing" | `/sw:do` | Implemented all tasks |
+| 4 | "What's the status?" | `/sw:progress` | Checked status |
+| 5 | "We're done" | `/sw:next` | Validated and closed |
 
 **Total time**: ~30 minutes
 **Result**: Working feature + full documentation + tests
@@ -290,6 +308,10 @@ Choose a simple feature for your project:
 - Add a simple notification toast
 
 ```bash
+# Option A: Natural language
+"Let's build a back to top button"
+
+# Option B: Slash commands
 /sw:increment "Your feature here"
 /sw:do
 /sw:next
@@ -331,10 +353,10 @@ npm test -- --verbose
 
 ## Key Takeaways
 
-1. **One command** creates all specs: `/sw:increment`
+1. **Describe what you want** -- say "I want to add X" or use `/sw:increment`
 2. **Review** before implementing
-3. **Execute** with `/sw:do`
-4. **Close** with `/sw:next` (validates quality gates)
+3. **Execute** -- say "start implementing" or use `/sw:do`
+4. **Close** -- say "we're done" or use `/sw:next` (validates quality gates)
 5. **Everything documented** automatically
 
 ---
