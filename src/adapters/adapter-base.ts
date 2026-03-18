@@ -184,13 +184,12 @@ export abstract class AdapterBase implements IAdapter {
 
   /**
    * Helper: Write plugin skill files to a tool-specific rules directory.
-   * Each skill is written as `<plugin>/<skill>.md` in a plugin-named subdirectory.
+   * Each skill is written as `<plugin>/<skill>/SKILL.md` in a nested subdirectory.
    * The subdirectory name mirrors the colon-based namespace (e.g., `sw/` -> `sw:`).
    */
   protected async writeSkillFiles(
     plugin: Plugin,
     rulesDir: string,
-    fileSuffix = '.md',
   ): Promise<void> {
     const projectPath = process.cwd();
     const targetDir = path.join(projectPath, rulesDir);
@@ -204,8 +203,11 @@ export abstract class AdapterBase implements IAdapter {
       if (!(await fs.pathExists(skillMdPath))) continue;
 
       const content = await fs.readFile(skillMdPath, 'utf-8');
-      const modified = this.injectSystemPrompt(content, language);
-      await fs.writeFile(path.join(pluginDir, `${skill.name}${fileSuffix}`), modified, 'utf-8');
+      const sanitized = this.sanitizeFrontmatter(content, skill.name);
+      const modified = this.injectSystemPrompt(sanitized, language);
+      const skillSubdir = path.join(pluginDir, skill.name);
+      await fs.ensureDir(skillSubdir);
+      await fs.writeFile(path.join(skillSubdir, 'SKILL.md'), modified, 'utf-8');
     }
   }
 
@@ -216,7 +218,6 @@ export abstract class AdapterBase implements IAdapter {
   protected async removeSkillFiles(
     pluginName: string,
     rulesDir: string,
-    _fileSuffix = '.md',
   ): Promise<void> {
     const projectPath = process.cwd();
     const pluginDir = path.join(projectPath, rulesDir, pluginName);
@@ -267,6 +268,35 @@ export abstract class AdapterBase implements IAdapter {
     } catch {
       return 'en';
     }
+  }
+
+  /**
+   * Sanitize frontmatter for non-Claude tools:
+   * 1. Ensure `name:` field is present (required for non-Claude)
+   * 2. Strip Claude-specific fields: user-invocable, allowed-tools, model
+   */
+  protected sanitizeFrontmatter(content: string, skillName: string): string {
+    if (!content.startsWith('---')) {
+      return `---\nname: ${skillName}\ndescription: ${skillName}\n---\n${content}`;
+    }
+
+    const endOfFrontmatter = content.indexOf('---', 3);
+    if (endOfFrontmatter === -1) return content;
+
+    let frontmatterBlock = content.substring(3, endOfFrontmatter);
+    const body = content.substring(endOfFrontmatter + 3);
+
+    // Strip Claude-specific fields
+    frontmatterBlock = frontmatterBlock.replace(/^user-invocable\s*:.*\n?/gm, '');
+    frontmatterBlock = frontmatterBlock.replace(/^allowed-tools\s*:.*\n?/gm, '');
+    frontmatterBlock = frontmatterBlock.replace(/^model\s*:.*\n?/gm, '');
+
+    // Ensure name: is present
+    if (!/^name\s*:/m.test(frontmatterBlock)) {
+      frontmatterBlock = `\nname: ${skillName}${frontmatterBlock}`;
+    }
+
+    return `---${frontmatterBlock}---${body}`;
   }
 
   /**

@@ -2,8 +2,8 @@
  * GitHub Copilot Adapter
  *
  * Basic-automation adapter for GitHub Copilot.
- * Uses per-context skill files in .github/copilot/skills/.
- * GitHub Copilot reads *.instructions.md files for context-specific rules.
+ * Uses per-context skill files in .github/skills/.
+ * GitHub Copilot reads SKILL.md files in nested skill directories.
  */
 
 import * as path from 'path';
@@ -43,7 +43,7 @@ export class CopilotAdapter extends AdapterBase {
    */
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing GitHub Copilot Adapter\n');
-    const skillsDir = path.join(options.projectPath, '.github', 'copilot', 'skills');
+    const skillsDir = path.join(options.projectPath, '.github', 'skills');
     await fs.ensureDir(skillsDir);
     console.log('\n✨ GitHub Copilot adapter installed!');
     console.log('   Run `specweave refresh-plugins` to install skills.');
@@ -59,14 +59,14 @@ export class CopilotAdapter extends AdapterBase {
   /**
    * Compile and install a plugin for GitHub Copilot
    *
-   * Writes skill files into .github/copilot/skills/ for per-context rule loading.
+   * Writes skill files into .github/skills/ as nested SKILL.md directories.
    *
    * @param plugin Plugin to install
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
-    const skillsDir = '.github/copilot/skills';
+    const skillsDir = '.github/skills';
     console.log(`\n📦 Installing plugin skills for GitHub Copilot: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, skillsDir, '.instructions.md');
+    await this.writeSkillFiles(plugin, skillsDir);
     console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for GitHub Copilot!`);
   }
@@ -74,14 +74,14 @@ export class CopilotAdapter extends AdapterBase {
   /**
    * Unload a plugin from GitHub Copilot
    *
-   * Removes plugin skill files from .github/copilot/skills/
+   * Removes plugin skill files from .github/skills/
    *
    * @param pluginName Name of plugin to unload
    */
   async unloadPlugin(pluginName: string): Promise<void> {
     console.log(`\n🗑️  Unloading plugin from GitHub Copilot: ${pluginName}`);
-    await this.removeSkillFiles(pluginName, '.github/copilot/skills', '.instructions.md');
-    console.log(`   ✓ Removed from .github/copilot/skills/`);
+    await this.removeSkillFiles(pluginName, '.github/skills');
+    console.log(`   ✓ Removed from .github/skills/`);
     console.log(`\n✅ Plugin ${pluginName} unloaded!`);
   }
 
@@ -89,7 +89,7 @@ export class CopilotAdapter extends AdapterBase {
    * Get list of installed plugins for GitHub Copilot
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return await this.listInstalledPluginsInDir('.github/copilot/skills');
+    return await this.listInstalledPluginsInDir('.github/skills');
   }
 
   /**
@@ -106,7 +106,7 @@ export class CopilotAdapter extends AdapterBase {
     return `
 GitHub Copilot Adapter
 
-Skills are installed in .github/copilot/skills/ — Copilot loads *.instructions.md files as per-context rules.
+Skills are installed in .github/skills/ — Copilot loads SKILL.md files from nested skill directories.
 
 Quick Start:
   Run: specweave refresh-plugins
