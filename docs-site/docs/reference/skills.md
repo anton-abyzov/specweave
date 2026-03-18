@@ -152,6 +152,33 @@ These skills form the foundation of spec-driven development.
 - QA for testing strategy
 - Security for compliance
 
+### roadmap-planner
+
+**Purpose**: Product roadmap and feature prioritization.
+
+```bash
+/sw:roadmap-planner  # Roadmap planning guidance
+```
+
+**Covers:**
+- Quarterly and annual roadmap planning
+- Feature prioritization (RICE, MoSCoW)
+- Dependency mapping across increments
+- Milestone tracking
+
+### plan
+
+**Purpose**: Generate plan.md and tasks.md for an existing increment.
+
+```bash
+/sw:plan 0007  # Regenerate plan and tasks for increment 0007
+```
+
+**Covers:**
+- Generating plan.md with architecture decisions
+- Creating tasks.md with proper AC-ID linking
+- Rebuilding task breakdown from spec
+
 ---
 
 ## Execution & Workflow Skills

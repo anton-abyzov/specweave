@@ -37,7 +37,7 @@ Subscribe to the [SpecWeave YouTube channel](https://www.youtube.com/@antonabyzo
 
 ### Practical Example: SpecWeave + vskill
 
-How SpecWeave delivers 126 skills across 22 plugins through a single marketplace — with skill chaining, dynamic context injection, and on-demand loading.
+How SpecWeave delivers 44 skills in 1 core plugin + 9 skills across 5 marketplace plugins through a single marketplace — with skill chaining, dynamic context injection, and on-demand loading.
 
 ---
 

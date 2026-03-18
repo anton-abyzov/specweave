@@ -301,7 +301,7 @@ SpecWeave takes a defense-in-depth approach to skill security. No single mechani
 
 ### 1. Deterministic Security Scanner
 
-The `vskill` CLI implements **52 regex-based pattern checks** across **9 detection categories**. Every skill installed via `vskill add` is scanned at install time, and every skill submitted to the Verified Skills marketplace is scanned server-side before listing.
+The `vskill` CLI implements **52 regex-based pattern checks** across **9 detection categories**. Every skill installed via `npx vskill install` is scanned at install time, and every skill submitted to the Verified Skills marketplace is scanned server-side before listing.
 
 | Category | Pattern Count | Severity | Examples |
 |----------|--------------|----------|----------|
@@ -414,7 +414,7 @@ The `vskill` CLI includes a blocklist system (`vskill blocklist`) that maintains
 | `vskill blocklist list` | Display all cached blocklist entries with threat type and severity |
 | `vskill blocklist check <name>` | Check whether a specific skill name is blocklisted |
 
-When `vskill add` installs a skill from GitHub, it runs a blocklist check before proceeding to Tier 1 scanning. If the skill name matches a blocklist entry, installation is refused with the threat type and reason displayed. The `--force` flag overrides the block with a warning.
+When `npx vskill install` installs a skill from GitHub, it runs a blocklist check before proceeding to Tier 1 scanning. If the skill name matches a blocklist entry, installation is refused with the threat type and reason displayed. The `--force` flag overrides the block with a warning.
 
 The blocklist is sourced from the platform's analysis of skills reported by the community and from automated scanning of public skill registries. Each entry includes the skill name, threat type (e.g., credential-theft, prompt-injection), severity level, and the source registry where the malicious skill was found.
 
@@ -424,7 +424,7 @@ Transparency about what the system does not yet do is as important as what it do
 
 **Lockfile tier is always "SCANNED".** The `vskill.lock` file records a `tier` field for every installed skill, but the value is currently hardcoded to `"SCANNED"` regardless of the skill's actual verification tier. A skill that has been Verified (Tier 2) or Certified (Tier 3) on the marketplace still appears as `"SCANNED"` in the lockfile. This means the lockfile does not currently reflect the real trust level of installed skills.
 
-**Local plugin installs skip scanning entirely.** When using `vskill add --plugin` to install a plugin from a local directory, no Tier 1 scan is performed. The lockfile still records `tier: "SCANNED"`, creating a misleading trust signal. Local plugins are assumed to be trusted by the developer who controls the source path.
+**Local plugin installs skip scanning entirely.** When using `npx vskill install --plugin` to install a plugin from a local directory, no Tier 1 scan is performed. The lockfile still records `tier: "SCANNED"`, creating a misleading trust signal. Local plugins are assumed to be trusted by the developer who controls the source path.
 
 **Marketplace scanning vs. install-time scanning.** The Verified Skills marketplace at verified-skill.com performs server-side scanning at submission time. The `vskill` CLI performs client-side Tier 1 scanning at install time for GitHub and registry sources. These are independent scan passes using the same 52-pattern ruleset. A skill scanned server-side at submission and client-side at install receives two independent checks.
 
