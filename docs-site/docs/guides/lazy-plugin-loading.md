@@ -134,10 +134,10 @@ Power users can manually manage plugin loading using the vskill CLI:
 
 ```bash
 # Install plugins using vskill (RECOMMENDED)
-vskill add specweave --plugin sw              # Core Skill Fabric
-vskill install --repo anton-abyzov/vskill --plugin mobile    # Mobile development
-vskill add specweave --plugin sw-github       # GitHub integration
-vskill add specweave --plugin sw-jira         # JIRA integration
+npx vskill install --repo anton-abyzov/specweave --plugin sw       # Core Skill Fabric
+npx vskill install --repo anton-abyzov/vskill --plugin mobile     # Mobile development
+npx vskill install --repo anton-abyzov/specweave --plugin sw      # GitHub/JIRA/ADO included in sw
+npx vskill install --repo anton-abyzov/specweave --plugin sw      # All integrations in core
 
 # List installed plugins
 vskill list
@@ -150,11 +150,8 @@ vskill remove mobile
 
 | Short Name | Install Command | Description |
 |------------|-----------------|-------------|
-| `sw` | `vskill add specweave --plugin sw` | Core SpecWeave functionality |
-| `sw-router` | `vskill add specweave --plugin sw-router` | Agent routing |
-| `sw-github` | `vskill add specweave --plugin sw-github` | GitHub integration |
-| `sw-jira` | `vskill add specweave --plugin sw-jira` | JIRA integration |
-| `sw-ado` | `vskill add specweave --plugin sw-ado` | Azure DevOps integration |
+| `sw` | `npx vskill install --repo anton-abyzov/specweave --plugin sw` | Core SpecWeave functionality |
+| `sw-router` | `npx vskill install --repo anton-abyzov/specweave --plugin sw-router` | Agent routing |
 | `mobile` | `vskill install --repo anton-abyzov/vskill --plugin mobile` | Mobile development |
 | `marketing` | `vskill install --repo anton-abyzov/vskill --plugin marketing` | Marketing & social media |
 | `google-workspace` | `vskill install --repo anton-abyzov/vskill --plugin google-workspace` | Google Workspace CLI |
@@ -218,7 +215,7 @@ If hot-reload fails:
 2. "Restart Claude Code" option offered
 3. Failure logged to `~/.specweave/logs/lazy-loading.log`
 4. Retry mechanism attempts up to 3 times
-5. Fallback: `vskill add specweave --plugin sw`
+5. Fallback: `npx vskill install --repo anton-abyzov/specweave --plugin sw`
 
 ## Cross-Platform Support
 
