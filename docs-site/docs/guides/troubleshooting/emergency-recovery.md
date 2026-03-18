@@ -4,6 +4,8 @@ title: Emergency Recovery Guide
 description: How to recover from crashes, freezes, and common issues in SpecWeave
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Emergency Recovery Guide
 
 This guide covers how to recover from common issues when using SpecWeave with Claude Code.

@@ -5,6 +5,8 @@ title: "Lesson 15: JIRA Integration Guide"
 description: "Complete guide to syncing SpecWeave with JIRA Epics and Stories"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 15: JIRA Integration Guide
 
 **Time**: 45 minutes
@@ -248,10 +250,13 @@ Team identification via Component field
 
 When an increment is created:
 
-```bash
-# Say: "Let's build user authentication" or use the command:
-/sw:increment "User authentication"
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "User authentication"'
+  other='increment "User authentication"'
+/>
 
+```
 # Output:
 Creating increment: 0042-user-authentication
 ✓ spec.md generated
@@ -688,10 +693,13 @@ Set up JIRA webhooks for real-time sync:
 
 ### Full Workflow
 
-```bash
-# 1. Create increment (say "let's build a user profile feature" or use the command)
-/sw:increment "User profile feature"
+<CommandTabs
+  natural="Let's build a user profile feature"
+  claude='/sw:increment "User profile feature"'
+  other='increment "User profile feature"'
+/>
 
+```bash
 # Output:
 ✓ Increment 0050-user-profile created
 ✓ JIRA Epic PROJ-500 created
@@ -741,8 +749,15 @@ specweave init . --reconfigure
 /sw-jira:status
 
 # 5. Create test increment
-/sw:increment "Test JIRA sync"
+```
 
+<CommandTabs
+  natural="Let's build a test for JIRA sync"
+  claude='/sw:increment "Test JIRA sync"'
+  other='increment "Test JIRA sync"'
+/>
+
+```bash
 # 6. Verify in JIRA
 # Check your project for new Epic
 ```

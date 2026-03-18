@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Living Documentation
 
 **Living Documentation** is documentation that stays automatically synchronized with your codebase and project state. Unlike traditional static documentation that becomes outdated, living docs are updated automatically through hooks, automation, and bidirectional sync with external systems.
@@ -755,10 +757,13 @@ New developers can **read living docs** to understand the project:
 
 If automatic sync is disabled, you can manually sync:
 
-```bash
-# Sync all completed increments to living docs
-/sw:sync-docs update
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 
+```bash
 # Or copy manually (emergency only):
 cp .specweave/increments/0001-core-framework/spec.md \
    .specweave/docs/internal/specs/spec-001-core-framework.md

@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Scheduling and Planning with SpecWeave
 
 **How to manage sprints, estimates, and release planning alongside SpecWeave implementation tracking**

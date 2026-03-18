@@ -7,6 +7,8 @@ difficulty: "intermediate"
 prerequisites: "Node.js installed, basic CLI familiarity"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave Essentials
 
 **Your journey from first command to production-ready workflows.**
@@ -103,7 +105,13 @@ Prefer watching? Start with the Complete Masterclass:
 
 ## Quick Reference
 
-Every command can be triggered with natural language or a slash command:
+Every command can be triggered with natural language or a slash command. Here's the most important one:
+
+<CommandTabs
+  natural="Let's build a payment system"
+  claude='/sw:increment "payment system"'
+  other='increment "payment system"'
+/>
 
 | Natural Language | Slash Command | What It Does |
 |-----------------|---------------|--------------|

@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Multi-Project Setup Guide
 
 Complete guide to setting up and using SpecWeave's multi-project mode for enterprise teams managing multiple repos, microservices, or projects.
@@ -449,7 +451,13 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO).
 # - JIRA epic created in WEBAPP project
 ```
 
-Use `/sw:sync-setup` to configure external tool connections interactively.
+Use the sync setup command to configure external tool connections interactively:
+
+<CommandTabs
+  natural="Connect my GitHub integration"
+  claude="/sw:sync-setup"
+  other="sync-setup"
+/>
 
 ---
 
@@ -550,7 +558,13 @@ specweave migrate-to-umbrella --reorganize-specs
 **Solution**:
 1. Add the project to `multiProject.projects` in config.json
 2. Create the folder: `mkdir -p .specweave/docs/internal/specs/my-project`
-3. Re-run living docs sync: `/sw:sync-docs`
+3. Re-run living docs sync:
+
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs"
+  other="sync-docs"
+/>
 
 ### Problem: Sync profiles not working
 
@@ -559,7 +573,13 @@ specweave migrate-to-umbrella --reorganize-specs
 **Solution**:
 1. Check config: `cat .specweave/config.json`
 2. Verify `externalTools` mapping in the project config
-3. Use `/sw:sync-setup` to reconfigure connections
+3. Use `/sw:sync-setup` to reconfigure connections:
+
+<CommandTabs
+  natural="Connect my GitHub integration"
+  claude="/sw:sync-setup"
+  other="sync-setup"
+/>
 4. Restart SpecWeave after config changes
 
 ---
@@ -580,7 +600,22 @@ specweave migrate-to-umbrella --reorganize-specs
 
 ## See Also
 
-- `/sw:import` - Import existing docs from external sources
-- `/sw:sync-setup` - Configure external tool connections
-- `/sw:sync-docs` - Sync living docs for an increment
+<CommandTabs
+  natural="Import issues from GitHub"
+  claude="/sw:import"
+  other="import"
+/>
+
+<CommandTabs
+  natural="Connect my GitHub integration"
+  claude="/sw:sync-setup"
+  other="sync-setup"
+/>
+
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs"
+  other="sync-docs"
+/>
+
 - `specweave migrate-to-umbrella` - CLI command for multi-repo setup

@@ -5,6 +5,8 @@ sidebar_label: "Case Study: Migration"
 sidebar_position: 8
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Case Study: Migrating a 50-Developer Team to SpecWeave
 
 **A practical walkthrough of adopting SpecWeave in an enterprise environment.**
@@ -139,11 +141,13 @@ Used brownfield quick-start approach:
 
 ### Day 4-5: First Increment
 
-```bash
-# Team's first SpecWeave increment
-# Say: "Let's add Apple Pay support" or use the command:
-/sw:increment "Add Apple Pay support"
+<CommandTabs
+  natural="Let's add Apple Pay support"
+  claude='/sw:increment "Add Apple Pay support"'
+  other='increment "Add Apple Pay support"'
+/>
 
+```bash
 # PM agent generates:
 # ✅ spec.md with user stories
 # ✅ plan.md with architecture

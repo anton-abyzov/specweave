@@ -5,6 +5,8 @@ title: "Lesson 9: Troubleshooting"
 description: "Fix common issues quickly"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 9: Troubleshooting
 
 **Time**: 25 minutes
@@ -16,10 +18,13 @@ description: "Fix common issues quickly"
 
 When something isn't working:
 
-```bash
-# Step 1: Check status
-/sw:status
+<CommandTabs
+  natural="What's the current status?"
+  claude="/sw:status"
+  other="status"
+/>
 
+```bash
 # Step 2: Validate structure
 /sw:validate 0001
 
@@ -39,10 +44,14 @@ When something isn't working:
 **Cause**: No [increment](/docs/glossary/terms/increments) in progress.
 
 **Solution**:
-```bash
-# Create new (say "let's build X" or use the command)
-/sw:increment "Your feature"
 
+<CommandTabs
+  natural="Let's build a new feature"
+  claude='/sw:increment "Your feature"'
+  other='increment "Your feature"'
+/>
+
+```bash
 # Or resume existing (say "resume work" or use the command)
 /sw:resume 0001
 ```
@@ -54,10 +63,14 @@ When something isn't working:
 **Cause**: Too many increments active.
 
 **Solution**:
-```bash
-# Complete one
-/sw:done 0001
 
+<CommandTabs
+  natural="We're done with increment 0001"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
+
+```bash
 # Or pause one
 /sw:pause 0002
 

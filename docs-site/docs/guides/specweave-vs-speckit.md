@@ -4,6 +4,8 @@ title: SpecWeave vs SpecKit
 description: Understanding how SpecWeave extends the spec-driven development foundation laid by GitHub's SpecKit
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave vs GitHub SpecKit: Understanding the Ecosystem
 
 ## The Core Insight: SpecKit is a Particular Case of SpecWeave

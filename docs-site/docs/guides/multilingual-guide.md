@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Multilingual Guide - SpecWeave Internationalization
 
 **Version**: 0.6.0

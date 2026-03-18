@@ -5,6 +5,8 @@ sidebar_label: JIRA Migration
 sidebar_position: 2
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # JIRA Enterprise Migration Guide
 
 :::tip Enterprise Focus
@@ -111,10 +113,13 @@ specweave validate-jira
 
 ### Step 4: Create First Increment (Auto-Syncs!)
 
-```bash
-# Plan increment (say "let's build user auth with OAuth" or use the command)
-/sw:increment "User authentication with OAuth"
+<CommandTabs
+  natural="Let's build user auth with OAuth"
+  claude='/sw:increment "User authentication with OAuth"'
+  other='increment "User authentication with OAuth"'
+/>
 
+```bash
 # Result: Auto-creates JIRA Epic!
 # 🔗 JIRA Epic BACKEND-45 created
 # 🔗 https://company.atlassian.net/browse/BACKEND-45

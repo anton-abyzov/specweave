@@ -4,6 +4,8 @@ title: QA Lead Agent (Deprecated)
 sidebar_label: QA Lead Agent
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # QA Lead Agent (Deprecated)
 
 :::note
@@ -85,9 +87,11 @@ Recommendations:
 
 ### Validate Quality
 
-```bash
-/sw:qa 0001 --gate
-```
+<CommandTabs
+  natural="Quality check on increment 0001"
+  claude="/sw:qa 0001 --gate"
+  other="qa 0001 --gate"
+/>
 
 ## Test Pyramid Enforcement
 

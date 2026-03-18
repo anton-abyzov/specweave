@@ -4,6 +4,8 @@ title: tasks.md (Task Checklist)
 sidebar_label: tasks.md
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # tasks.md (Task Checklist)
 
 The **tasks.md** file is the implementation checklist for a SpecWeave [increment](/docs/glossary/terms/increments), containing tasks with embedded test plans.
@@ -175,9 +177,13 @@ graph LR
 
 Track progress by saying "what's the status?", using `/sw:progress` in Claude Code, or typing `progress` in other AI tools.
 
-```bash
-/sw:progress
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
 
+```bash
 📊 Increment 0001: User Authentication
 Progress: 6/8 tasks (75%)
 

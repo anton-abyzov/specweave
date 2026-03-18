@@ -6,6 +6,8 @@ description: How SpecWeave's AI agents map to traditional software engineering r
 keywords: [specweave agents, pm agent, architect agent, tech lead, qa lead, security agent, performance agent, AI agents, engineering roles, software development]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Software Engineering Roles & SpecWeave AI Agents
 
 ## Introduction
@@ -119,10 +121,13 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 
 **How PM Agent Helps**:
 
-```markdown
-# User creates increment
-/sw:increment "Add user authentication with OAuth"
+<CommandTabs
+  natural="I want to add user authentication with OAuth"
+  claude='/sw:increment "Add user authentication with OAuth"'
+  other='increment "Add user authentication with OAuth"'
+/>
 
+```markdown
 # PM Agent activates automatically and:
 1. Generates spec.md with:
    - User stories (US-001, US-002, US-003)
@@ -511,9 +516,11 @@ npx vitest run 0008
 
 ### Step 1: Product Planning (PM Agent)
 
-```bash
-/sw:increment "Add real-time chat with WebSocket support"
-```
+<CommandTabs
+  natural="I want to add real-time chat with WebSocket support"
+  claude='/sw:increment "Add real-time chat with WebSocket support"'
+  other='increment "Add real-time chat with WebSocket support"'
+/>
 
 **PM Agent activates**:
 1. Creates spec.md with user stories:
@@ -607,9 +614,11 @@ npx vitest run 0008
 
 ### Step 8: Quality Gate (QA Lead Agent)
 
-```bash
-/sw:qa 0009
-```
+<CommandTabs
+  natural="Check quality on increment 0009"
+  claude="/sw:qa 0009"
+  other="qa 0009"
+/>
 
 **QA Lead Agent validates**:
 - ✅ All AC-IDs tested (AC-US1-01, AC-US1-02, AC-US1-03)
@@ -637,9 +646,11 @@ npx vitest run 0008
 
 ### Step 10: Closure (PM Agent)
 
-```bash
-/sw:done 0009
-```
+<CommandTabs
+  natural="We're done with increment 0009"
+  claude="/sw:done 0009"
+  other="done 0009"
+/>
 
 **PM Agent validates**:
 - ✅ All P1 tasks complete
@@ -697,9 +708,11 @@ graph TD
 
 Always begin with `/sw:increment` to let PM Agent create the spec:
 
-```bash
-/sw:increment "Add user authentication"
-```
+<CommandTabs
+  natural="I want to add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
 PM Agent generates spec.md, which triggers Architect Agent, Tech Lead Agent, etc.
 

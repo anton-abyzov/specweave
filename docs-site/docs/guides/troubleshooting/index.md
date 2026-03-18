@@ -4,6 +4,8 @@ title: Troubleshooting
 description: Guides for resolving common issues with SpecWeave
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Troubleshooting
 
 When things go wrong, these guides help you get back on track.
@@ -43,7 +45,13 @@ unset SPECWEAVE_DISABLE_HOOKS
 
 ### "Sync Throttled"
 
-SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or use `/sw:sync-progress` to force sync.
+SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or force sync:
+
+<CommandTabs
+  natural="Sync progress"
+  claude="/sw:sync-progress"
+  other="sync-progress"
+/>
 
 ## Getting Help
 
