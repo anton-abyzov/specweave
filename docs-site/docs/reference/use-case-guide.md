@@ -6,103 +6,97 @@ description: Find the right skill or command for your task
 
 # Use Case Guide
 
-Find the right SpecWeave skill or command for what you're trying to do.
+Find the right SpecWeave skill or command for what you're trying to do. Every skill supports three invocation methods -- natural language, slash commands, and CLI keywords.
 
 ## "I want to..." Quick Lookup
 
 ### Planning & Starting Work
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Start a new feature | `/sw:increment "feature"` | Command |
-| Get help writing specs | `/sw:pm` | Skill |
-| Design system architecture | `/sw:architect` | Skill |
-| Plan a product roadmap | `/sw:roadmap-planner` | Skill |
-| Break down a complex feature | `/sw:role-orchestrator` | Skill |
-| Create tasks with test plans | `/sw:plan` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Start a new feature | "Let's build X" | `/sw:increment "X"` | `increment "X"` |
+| Get help writing specs | "Write specs" | `/sw:pm` | `pm` |
+| Design system architecture | "Design the system" | `/sw:architect` | `architect` |
+| Plan a product roadmap | "Plan the roadmap" | `/sw:roadmap-planner` | `roadmap-planner` |
+| Break down a complex feature | "Coordinate all agents" | `/sw:role-orchestrator` | `role-orchestrator` |
+| Create tasks with test plans | "Generate tasks" | `/sw:plan` | `plan` |
 
 ### Implementing Features
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Work autonomously (hours) | `/sw:auto` | Command |
-| Work task-by-task manually | `/sw:do` | Command |
-| Work with multiple agents | `/sw:auto-parallel` | Command |
-| Orchestrate parallel teams | `/sw:team-lead "feature"` | Skill |
-| Brainstorm with agent perspectives | `/sw:team-lead "brainstorm X"` | Skill |
-| Plan with PM + Architect in parallel | `/sw:team-lead "plan X"` | Skill |
-| Research a topic with agents | `/sw:team-lead "research X"` | Skill |
-| Check auto mode progress | `/sw:auto-status` | Command |
-| Get React/Vue/Angular help | `/sw:architect` | Skill |
-| Get Node.js API help | `/backend:nodejs` | Skill |
-| Get .NET help | `/backend:dotnet` | Skill |
-| Get Python help | `/backend:python` | Skill |
-| Optimize database queries | `/backend:database-optimizer` | Skill |
-| Set up Kubernetes | `/k8s:deployment-generate` | Skill |
-| Design Kafka architecture | `/kafka:architect` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Work autonomously (hours) | "Ship while I sleep" | `/sw:auto` | `auto` |
+| Work task-by-task manually | "Start implementing" | `/sw:do` | `do` |
+| Work with multiple agents | "Parallel agents" | `/sw:auto-parallel` | `auto-parallel` |
+| Orchestrate parallel teams | "Team work on X" | `/sw:team-lead "X"` | `team-lead "X"` |
+| Brainstorm with agents | "Brainstorm X" | `/sw:team-lead "brainstorm X"` | `team-lead "brainstorm X"` |
+| Plan with PM + Architect | "Plan X with a team" | `/sw:team-lead "plan X"` | `team-lead "plan X"` |
+| Research a topic with agents | "Research X" | `/sw:team-lead "research X"` | `team-lead "research X"` |
+| Check auto mode progress | "Check auto progress" | `/sw:auto-status` | `auto-status` |
+| Get frontend help | "Help with React" | `/sw:architect` | `architect` |
+| Get Node.js API help | "Node.js API" | `/backend:nodejs` | `nodejs` |
+| Optimize database queries | "Optimize queries" | `/backend:database-optimizer` | `database-optimizer` |
+| Set up Kubernetes | "K8s deployment" | `/k8s:deployment-generate` | `deployment-generate` |
+| Design Kafka architecture | "Kafka event design" | `/kafka:architect` | `kafka-architect` |
 
 ### Testing & Quality
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Validate quickly (rules) | `/sw:validate` | Command |
-| AI quality assessment | `/sw:qa --gate` | Command |
-| Deep implementation audit | `/sw:grill` | Command |
-| Follow TDD strictly | `/sw:tdd-cycle` | Skill |
-| Write failing tests first | `/sw:tdd-red` | Skill |
-| Get test strategy help | `/testing:qa` | Skill |
-| Write E2E tests | `/testing:e2e` | Skill |
-| Code review my changes | `/sw:code-reviewer` | Skill |
-| Review a specific PR | `/sw:code-reviewer --pr 42` | Skill |
-| Cross-repo code review | `/sw:code-reviewer --cross-repo` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Validate quickly (rules) | "Check quality" | `/sw:validate` | `validate` |
+| AI quality assessment | "Assess quality" | `/sw:qa --gate` | `qa --gate` |
+| Deep implementation audit | "Review my work" | `/sw:grill` | `grill` |
+| Follow TDD strictly | "Test-driven development" | `/sw:tdd-cycle` | `tdd-cycle` |
+| Write failing tests first | "Write failing tests" | `/sw:tdd-red` | `tdd-red` |
+| Write E2E tests | "E2E tests" | `/sw:e2e` | `e2e` |
+| Code review my changes | "Review code" | `/sw:code-reviewer` | `code-reviewer` |
+| Review a specific PR | "Review PR 42" | `/sw:code-reviewer --pr 42` | `code-reviewer --pr 42` |
 
 ### Completing & Managing Work
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Finish and get next task | `/sw:next` | Command |
-| Close specific increment | `/sw:done 0007` | Command |
-| Check progress | `/sw:progress` | Command |
-| Pause for later | `/sw:pause` | Command |
-| Resume paused work | `/sw:resume` | Command |
-| Abandon increment | `/sw:abandon` | Command |
-| Reopen completed work | `/sw:resume` | Command |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Finish and get next task | "What's next?" | `/sw:next` | `next` |
+| Close specific increment | "We're done" | `/sw:done 0007` | `done 0007` |
+| Check progress | "How far along?" | `/sw:progress` | `progress` |
+| Pause for later | "Put this on hold" | `/sw:pause` | `pause` |
+| Resume paused work | "Continue working" | `/sw:resume` | `resume` |
+| Abandon increment | "Cancel this" | `/sw:abandon` | `abandon` |
 
 ### Syncing with External Tools
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Sync to GitHub Issues | `/sw-github:sync` | Command |
-| Sync to JIRA | `/sw-jira:sync` | Command |
-| Sync to Azure DevOps | `/sw-ado:sync` | Command |
-| Configure external sync | `/sw:external-sync-wizard` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Sync to GitHub Issues | "Sync to GitHub" | `/sw-github:sync` | `github-sync` |
+| Sync to JIRA | "Sync to JIRA" | `/sw-jira:sync` | `jira-sync` |
+| Sync to Azure DevOps | "Sync to ADO" | `/sw-ado:sync` | `ado-sync` |
+| Configure external sync | "Set up sync" | `/sw:external-sync-wizard` | `external-sync-wizard` |
 
 ### Documentation
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Write technical docs | `/sw:docs-writer` | Skill |
-| Update living docs | `/sw:sync-docs` | Skill |
-| Navigate project docs | `/sw:living-docs-navigator` | Skill |
-| Build Docusaurus site | `/docs:docusaurus` | Skill |
-| Preview documentation | `/docs:preview` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Write technical docs | "Write documentation" | `/sw:docs-writer` | `docs-writer` |
+| Update living docs | "Update the docs" | `/sw:sync-docs` | `sync-docs` |
+| Navigate project docs | "Show me the docs" | `/sw:living-docs-navigator` | `living-docs-navigator` |
+| Build Docusaurus site | "Docusaurus setup" | `/docs:docusaurus` | `docusaurus` |
 
 ### Security & Compliance
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Security assessment | `/sw:security` | Skill |
-| Detect security patterns | `/sw:security-patterns` | Skill |
-| SOC 2/HIPAA compliance | `/sw:compliance-architecture` | Skill |
-| PCI-DSS for payments | `/payments:pci-compliance` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Security assessment | "Security review" | `/sw:security` | `security` |
+| Detect security patterns | "Check for vulnerabilities" | `/sw:security-patterns` | `security-patterns` |
+| SOC 2/HIPAA compliance | "Compliance check" | `/sw:compliance-architecture` | `compliance-architecture` |
+| PCI-DSS for payments | "PCI compliance" | `/payments:pci-compliance` | `pci-compliance` |
 
 ### Cost & Performance
 
-| I want to... | Use this | Type |
-|--------------|----------|------|
-| Optimize cloud costs | `/cost:cost-optimization` | Skill |
-| Analyze AWS costs | `/cost:aws-cost-expert` | Skill |
-| Improve performance | `/sw:performance` | Skill |
+| I want to... | Natural Language | Claude Code | Other AI |
+|--------------|-----------------|-------------|----------|
+| Optimize cloud costs | "Reduce cloud costs" | `/cost:cost-optimization` | `cost-optimization` |
+| Analyze AWS costs | "AWS cost analysis" | `/cost:aws-cost-expert` | `aws-cost-expert` |
+| Improve performance | "Optimize performance" | `/sw:performance` | `performance` |
 
 ---
 
@@ -405,20 +399,20 @@ Sync to External Tool
 
 ## Skill Auto-Activation Keywords
 
-Skills activate automatically when you mention these keywords:
+Skills activate automatically when you use these keywords in natural language. You can also use slash commands or CLI keywords directly.
 
-| Keywords | Skill Activated |
-|----------|-----------------|
-| "user story", "acceptance criteria", "requirements" | `sw:pm` |
-| "architecture", "ADR", "design decision" | `sw:architect` |
-| "React", "Vue", "Angular", "frontend" | `sw:architect` |
-| "Node.js", "Express", "API endpoint" | `backend:nodejs` |
-| "database", "SQL", "query optimization" | `backend:database-optimizer` |
-| "Kubernetes", "K8s", "pods", "deployment" | `k8s:*` |
-| "Kafka", "events", "streaming" | `kafka:architect` |
-| "test", "TDD", "unit test", "E2E" | `sw:tdd-cycle` |
-| "security", "OWASP", "vulnerability" | `sw:security` |
-| "compliance", "SOC 2", "HIPAA", "GDPR" | `sw:compliance-architecture` |
+| Natural Language Keywords | Claude Code | Other AI |
+|--------------------------|-------------|----------|
+| "user story", "acceptance criteria", "requirements" | `/sw:pm` | `pm` |
+| "architecture", "ADR", "design decision" | `/sw:architect` | `architect` |
+| "React", "Vue", "Angular", "frontend" | `/sw:architect` | `architect` |
+| "Node.js", "Express", "API endpoint" | `/backend:nodejs` | `nodejs` |
+| "database", "SQL", "query optimization" | `/backend:database-optimizer` | `database-optimizer` |
+| "Kubernetes", "K8s", "pods", "deployment" | `/k8s:deployment-generate` | `deployment-generate` |
+| "Kafka", "events", "streaming" | `/kafka:architect` | `kafka-architect` |
+| "test", "TDD", "unit test", "E2E" | `/sw:tdd-cycle` | `tdd-cycle` |
+| "security", "OWASP", "vulnerability" | `/sw:security` | `security` |
+| "compliance", "SOC 2", "HIPAA", "GDPR" | `/sw:compliance-architecture` | `compliance-architecture` |
 
 ---
 

@@ -5,6 +5,8 @@ description: Why SpecWeave exists - the problems with unstructured AI coding and
 keywords: [specweave, why, comparison, vibe coding, ai development, spec-driven, alternative]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Why SpecWeave?
 
 **AI changed how we write code. SpecWeave changes how we ship products.**
@@ -74,36 +76,28 @@ The key insight: **bad plans generate orders of magnitude more problems than bad
 ```mermaid
 graph LR
     subgraph Research
-        BR[Bad Research]
-        GR[Good Research]
+        BR["Small flaw"]
+        GR["Good research"]
     end
     subgraph Plan
-        GP[Good Plan]
-        BP1[Bad Plan]
-        BP2[Bad Plan]
+        BP["Wrong architecture<br/>Missing edge cases<br/>Flawed assumptions"]
+        GP["Good plan"]
     end
     subgraph Code
-        GC1[Good Code]
-        BC[Bad Code ⬛⬛⬛]
-        GC2[Good Code]
+        BC["Bugs everywhere<br/>Security vulnerabilities<br/>Tech debt compounds<br/>Weeks of sprints wasted<br/>Team confusion spreads<br/>Production incidents<br/>10–100x cost to fix"]
+        GC["Clean, working code"]
     end
 
-    BR --> BP1
-    BR --> BP2
-    GR --> GP
-    GP --> GC1
-    BP1 --> BC
-    BP2 --> BC
-    GR --> GC2
+    BR -->|amplifies| BP
+    BP -->|explodes into| BC
+    GR --> GP --> GC
 
-    style BR fill:#fff3cd,stroke:#ffc107
-    style BP1 fill:#fff3cd,stroke:#ffc107
-    style BP2 fill:#fff3cd,stroke:#ffc107
-    style BC fill:#fff3cd,stroke:#ffc107
-    style GR fill:#d4edda,stroke:#28a745
-    style GP fill:#d4edda,stroke:#28a745
-    style GC1 fill:#d4edda,stroke:#28a745
-    style GC2 fill:#d4edda,stroke:#28a745
+    style BR fill:#fff3cd,stroke:#ffc107,color:#856404
+    style BP fill:#ffe0b2,stroke:#ff9800,color:#e65100
+    style BC fill:#ffcdd2,stroke:#f44336,color:#b71c1c
+    style GR fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
+    style GP fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
+    style GC fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
 ```
 
 **Errors compound at each stage.** A small flaw in research produces a proportionally larger flaw in the plan, which produces an even larger proportion of bad code. This is why human review should concentrate on **specifications** — the highest-leverage checkpoint where misunderstandings are cheapest to correct.
@@ -112,7 +106,7 @@ As Sean Grove puts it: **"Specs are the new code."**
 
 ### Where Human Review Matters Most
 
-SpecWeave places human review at the **plan level**, not the code level. You review `spec.md` and `plan.md` — the artifacts that matter most — while AI handles implementation. For complex or uncertain features, `/sw:brainstorm` adds a research phase before planning, giving you a second review checkpoint:
+SpecWeave places human review at the **plan level**, not the code level. You review `spec.md` and `plan.md` — the artifacts that matter most — while AI handles implementation. For complex or uncertain features, say "let's brainstorm this first" (or `/sw:brainstorm`) to add a research phase before planning, giving you a second review checkpoint:
 
 ```mermaid
 graph LR
@@ -143,9 +137,9 @@ SpecWeave wraps every AI coding session in a **spec-driven workflow** that turns
 
 Unlike prompts that you copy-paste, SpecWeave skills are reusable, structured instructions — each one defines how AI thinks and acts for a specific domain. ~48 built-in skills ship out of the box. Customize any skill without forking via `skill-memories/`. [Deep dive →](./skills-as-structured-expertise)
 
-### You Don't Need Claude Code Expertise
+### Start Building in Minutes
 
-SpecWeave abstracts Claude Code's complexity — hooks, plugins, CLAUDE.md, context management. Install, describe your feature, skills handle the rest. [Learn more →](./no-docs-needed)
+Skills encode expertise so you don't need to learn it yourself. Install SpecWeave, describe your feature, and skills handle planning, testing, and documentation. [Learn more →](./no-docs-needed)
 
 ### Enterprise Ready from Day One
 
@@ -174,12 +168,13 @@ Every feature produces three files that persist across sessions:
 
 SpecWeave doesn't just plan - it **executes autonomously for hours**:
 
-```bash
-/sw:increment "User authentication"   # Creates spec + plan + tasks
-/sw:auto                               # Executes autonomously
-```
+<CommandTabs
+  natural="I want to add user authentication. Then ship it while I sleep."
+  claude='/sw:increment "User authentication" then /sw:auto'
+  other='increment "User authentication" then auto'
+/>
 
-What happens during `/sw:auto`:
+What happens during autonomous execution:
 1. Reads the spec and tasks
 2. Implements each task in order
 3. Runs tests after each task
@@ -196,16 +191,16 @@ SpecWeave isn't one AI assistant - it's a **team of 68+ specialized agents** pow
 
 | Agent | Role | When It Activates |
 |-------|------|-------------------|
-| **PM** | Requirements, user stories, acceptance criteria | `/sw:increment` |
+| **PM** | Requirements, user stories, acceptance criteria | "Let's build [feature]" or `/sw:increment` |
 | **Architect** | System design, ADRs, tech stack decisions | Complex features |
-| **QA Lead** | Test strategy, quality gates, validation | `/sw:validate` |
+| **QA Lead** | Test strategy, quality gates, validation | "Check quality" or `/sw:validate` |
 | **Security** | OWASP review, vulnerability detection | Mention "security" |
 | **DevOps** | CI/CD, infrastructure, deployment | Infrastructure work |
-| **Tech Lead** | Code quality, patterns, refactoring | `/sw:grill` |
+| **Tech Lead** | Code quality, patterns, refactoring | "Review the code" or `/sw:grill` |
 | **Frontend** | React/Vue/Angular architecture | Frontend work |
 | **Backend** | .NET/Node.js/Python patterns | Backend work |
 
-Agents auto-activate based on context. Mention "security" and security expertise loads. No configuration needed.
+Agents auto-activate based on context. Just describe what you need -- mention "security" and security expertise loads, say "let's build X" and the PM activates. No configuration needed.
 
 ---
 
@@ -279,10 +274,11 @@ specweave init .
 
 Then describe what you want:
 
-```bash
-/sw:increment "Add user authentication"
-/sw:auto
-```
+<CommandTabs
+  natural="I want to add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
 SpecWeave handles the rest.
 

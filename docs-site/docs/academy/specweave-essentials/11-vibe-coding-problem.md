@@ -77,7 +77,7 @@ Each request produced isolated code. No shared services. No consistent patterns.
 
 **Real cost**: Technical debt from day 1. Refactoring becomes the norm, not the exception.
 
-**SpecWeave solution**: The `/sw:increment` command creates a **complete architecture** before any code is written. All components are designed to work together.
+**SpecWeave solution**: Saying "let's build X" (or using `/sw:increment`) creates a **complete architecture** before any code is written. All components are designed to work together.
 
 ---
 
@@ -98,7 +98,7 @@ Generated code →  copy/paste → ship
 
 **Real cost**: Bugs in production. Security vulnerabilities. Customer trust destroyed.
 
-**SpecWeave solution**: `/sw:qa` and `/sw:validate` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
+**SpecWeave solution**: Saying "check quality" or "validate it" (or using `/sw:qa` and `/sw:validate`) enforces quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
 
 ---
 

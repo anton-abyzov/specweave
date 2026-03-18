@@ -14,7 +14,7 @@ SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, 
 
 | Aspect | Skills | Custom Subagents |
 |--------|--------|-----------------|
-| **Activation** | Automatic (keywords) or `/command` | Explicit (`Agent()` call) |
+| **Activation** | Natural language, `/command`, or CLI keyword | Explicit (`Agent()` call) |
 | **Context** | Main conversation or forked (`context: fork`) | Always isolated |
 | **Memory** | None (stateless) | Persistent (`memory: project/user/local`) |
 | **Resumable** | No | Yes (by agent ID) |
@@ -26,7 +26,7 @@ SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, 
 
 ## Skills
 
-**Skills** are markdown instructions that AI assistants follow. They can auto-activate on keywords, be invoked as `/commands`, or be preloaded by subagents.
+**Skills** are markdown instructions that AI assistants follow. They can be invoked three ways: natural language (auto-activation on keywords), slash commands (`/sw:name`) in Claude Code, or CLI keywords (`name`) in other AI tools. Skills can also be preloaded by subagents.
 
 ### How They Work
 

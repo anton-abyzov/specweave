@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Best Practices for SpecWeave with Claude Code
 
 This guide combines SpecWeave's spec-driven methodology with Claude Code's best practices to maximize your productivity.
@@ -347,13 +349,34 @@ Skills trigger on keywords in their descriptions:
 
 ### Essential Commands
 
+Plan new work:
+<CommandTabs
+  natural="Let's build a user authentication feature"
+  claude='/sw:increment "user authentication"'
+  other='increment "user authentication"'
+/>
+
+Execute tasks:
+<CommandTabs
+  natural="Start implementing"
+  claude="/sw:do"
+  other="do"
+/>
+
+Check status:
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
+
+Additional commands:
 ```bash
-# SpecWeave
-/sw:increment "feature"   # Plan new work
-/sw:do                    # Execute tasks
-/sw:progress              # Check status
-/sw:validate              # Quality check
-/sw:done                  # Close increment
+# Quality check
+/sw:validate
+
+# Close increment
+/sw:done
 
 # Claude Code Context
 /clear                    # Reset context
@@ -373,8 +396,8 @@ claude plugin enable X    # Enable plugin
 Is this a small, clear task?
 ├── Yes → Just ask Claude directly
 └── No → Is there existing code?
-    ├── Yes → /sw:docs first, then /sw:increment
-    └── No → /sw:increment directly
+    ├── Yes → "Update the docs" first, then "Let's build X"
+    └── No → Describe what you want to build (or /sw:increment)
 ```
 
 ## Further Reading

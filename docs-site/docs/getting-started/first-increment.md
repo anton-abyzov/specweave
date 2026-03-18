@@ -4,6 +4,8 @@ title: "Your First Increment"
 description: "Create and complete your first SpecWeave increment in 15 minutes"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Your First Increment
 
 **Build a real feature in 15 minutes.**
@@ -37,11 +39,13 @@ For this tutorial, we'll use: **"Add a greeting message component"**
 
 ## Step 2: Create the Increment
 
-In Claude Code:
+Describe what you want to build:
 
-```bash
-/sw:increment "Add greeting message component"
-```
+<CommandTabs
+  natural="I want to add a greeting message component"
+  claude='/sw:increment "Add greeting message component"'
+  other='increment "Add greeting message component"'
+/>
 
 **What happens:**
 
@@ -85,9 +89,11 @@ Open `spec.md` and review the generated content:
 
 ### Option A: Autonomous Mode
 
-```bash
-/sw:auto
-```
+<CommandTabs
+  natural="Ship it while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
 
 Watch SpecWeave:
 1. Pick up the first task
@@ -107,15 +113,19 @@ Tests: 4 passed, 0 failed
 
 ### Option B: Step-by-Step
 
-```bash
-/sw:do
-```
+<CommandTabs
+  natural="Start implementing the tasks"
+  claude="/sw:do"
+  other="do"
+/>
 
 Executes one task at a time. Check progress:
 
-```bash
-/sw:progress
-```
+<CommandTabs
+  natural="What's the status?"
+  claude="/sw:progress"
+  other="progress"
+/>
 
 Output:
 ```
@@ -132,9 +142,11 @@ Output:
 
 Before closing, run validation:
 
-```bash
-/sw:validate 0001
-```
+<CommandTabs
+  natural="Check quality on increment 0001"
+  claude="/sw:validate 0001"
+  other="validate 0001"
+/>
 
 SpecWeave checks:
 - All tasks marked complete
@@ -150,9 +162,11 @@ SpecWeave checks:
 
 When all checks pass:
 
-```bash
-/sw:done 0001
-```
+<CommandTabs
+  natural="We're done with increment 0001"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
 
 SpecWeave:
 1. Validates quality gates one final time
@@ -233,10 +247,10 @@ Implementation tasks with embedded tests.
 
 ## Next Steps
 
-| Goal | Command/Resource |
-|------|------------------|
-| **Start next feature** | `/sw:increment "next feature"` |
-| **Check all progress** | `/sw:status` |
+| Goal | How |
+|------|-----|
+| **Start next feature** | Say "Let's build [next feature]" or `/sw:increment "next feature"` |
+| **Check all progress** | Say "What's the status?" or `/sw:status` |
 | **Learn TDD workflow** | [Lesson 6: TDD](/docs/academy/specweave-essentials/06-tdd-workflow) |
 | **Connect GitHub** | [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) |
 | **Full curriculum** | [SpecWeave Essentials](/docs/academy/specweave-essentials/) |
@@ -251,7 +265,7 @@ Edit `spec.md` directly. SpecWeave tracks changes and adapts tasks accordingly.
 
 ### What if tests fail?
 
-In `/sw:auto` mode, SpecWeave automatically tries to fix failing tests (up to 3 attempts). In `/sw:do` mode, you'll be prompted to fix them.
+In autonomous mode (`/sw:auto` or "ship while I sleep"), SpecWeave automatically tries to fix failing tests (up to 3 attempts). In step-by-step mode (`/sw:do` or "start implementing"), you'll be prompted to fix them.
 
 ### Can I skip tasks?
 

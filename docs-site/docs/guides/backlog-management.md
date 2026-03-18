@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Backlog Management Guide
 
 ## Overview
@@ -26,9 +28,14 @@ Use the backlog when you want to:
 
 ### Move to Backlog
 
+<CommandTabs
+  natural="Let's build Feature B"
+  claude='/sw:increment "Feature B"'
+  other='increment "Feature B"'
+/>
+
+Then move to backlog:
 ```bash
-# Create increment and move to backlog
-/sw:increment "Feature B"
 /sw:status 0032 --reason="Low priority, focus on 0031 first"
 ```
 

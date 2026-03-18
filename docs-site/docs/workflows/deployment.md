@@ -335,7 +335,7 @@ Close increment after successful deploy:
 # Verify deployment
 curl https://api.example.com/health
 
-# Close the increment
+# Close the increment (say "we're done" or use the command)
 /sw:done 0001
 
 # Sync to external tools
