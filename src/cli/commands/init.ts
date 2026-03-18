@@ -721,10 +721,8 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
 
       for (const skillName of skillNames) {
         const skillMdPath = path.join(skillsPath, skillName, 'SKILL.md');
-        // Prevent double-nesting when plugin name == skill name (single-skill plugins)
-        const skillSubdir = skillName === pluginName
-          ? path.join(skillsDir, pluginName)
-          : path.join(skillsDir, pluginName, skillName);
+        // Flat structure: skills go directly under skillsDir, no plugin namespace
+        const skillSubdir = path.join(skillsDir, skillName);
         fs.mkdirSync(skillSubdir, { recursive: true });
         const targetFile = path.join(skillSubdir, 'SKILL.md');
 
