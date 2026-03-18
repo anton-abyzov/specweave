@@ -4,6 +4,8 @@ title: "Skills Are Structured Expertise"
 description: "A skill is a SKILL.md file with instructions — Claude adds it to its toolkit and uses it when relevant, or you invoke it with /skill-name."
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Skills Are Structured Expertise
 
 Most AI coding tools give you prompts. SpecWeave gives you **structured expertise**.
@@ -99,8 +101,13 @@ Install SpecWeave, describe your feature, and skills do the rest.
 ```bash
 npm install -g specweave
 specweave init .
-/sw:increment "Add user authentication"  # Skills take over from here
 ```
+
+<CommandTabs
+  natural="Let's add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
 ## Extensibility: Stable Core, Customizable Extensions
 
