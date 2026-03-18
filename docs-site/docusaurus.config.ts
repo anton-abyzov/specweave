@@ -131,7 +131,7 @@ const config: Config = {
   organizationName: 'anton-abyzov',
   projectName: 'specweave',
 
-  onBrokenLinks: 'warn', // TODO: Change to 'throw' once all links are fixed
+  onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
@@ -400,21 +400,9 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'skillsSidebar',
-          position: 'left',
-          label: 'Skills',
-        },
-        {
-          type: 'docSidebar',
           sidebarId: 'enterpriseSidebar',
           position: 'left',
           label: 'Enterprise',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'referenceSidebar',
-          position: 'left',
-          label: 'Reference',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
