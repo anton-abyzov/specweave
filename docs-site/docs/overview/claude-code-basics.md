@@ -84,11 +84,13 @@ sw:architect skill activates → System design expertise loads
 
 **Slash commands** -- for explicit control:
 
-```bash
-/sw:architect      # Activate architect expertise
-/sw:pm             # Activate PM expertise
-/sw:security       # Activate security expertise
-```
+<CommandTabs
+  natural="Design the authentication architecture"
+  claude="/sw:architect"
+  other="architect"
+/>
+
+Other examples: `/sw:pm` (product management), `/sw:security` (security audit).
 
 Most users never need slash commands. Describing what you want is enough -- SpecWeave routes to the right skill automatically.
 

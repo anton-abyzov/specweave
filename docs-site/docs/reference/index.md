@@ -84,18 +84,23 @@ In Claude Code, skills and commands are invoked the same way - with `/sw:name`. 
 
 ### Quality
 
-```bash
-/sw:validate                          # Quick rule check
-/sw:qa --gate                         # AI quality gate
-/sw:grill                             # Deep audit
-```
+<CommandTabs
+  natural="Check the quality of my work"
+  claude="/sw:validate"
+  other="validate"
+/>
+
+Additional: `/sw:qa --gate` (AI quality gate), `/sw:grill` (deep audit).
 
 ### Completion
 
-```bash
-/sw:next                              # Complete + suggest next
-/sw-github:sync 0007                  # Sync to GitHub
-```
+<CommandTabs
+  natural="What's next?"
+  claude="/sw:next"
+  other="next"
+/>
+
+Additional: `/sw-github:sync 0007` (sync to GitHub).
 
 ---
 
