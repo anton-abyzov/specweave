@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Living Documentation
 
 **Living documentation** is documentation that automatically stays synchronized with your code—no manual updates, no drift, always current.
@@ -441,12 +443,15 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 
 ### Manual Sync (Rarely Needed)
 
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
+
 ```bash
 # Review docs vs implementation
 /sw:sync-docs review
-
-# Update docs from implementation
-/sw:sync-docs update
 ```
 
 **Note**: Hooks handle updates automatically, manual sync rarely needed.

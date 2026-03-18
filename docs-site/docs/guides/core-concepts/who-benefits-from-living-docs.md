@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Who Benefits from Living Documentation?
 
 Living documentation provides different levels of value to different stakeholders. This page provides an **honest assessment** of who benefits and how.
@@ -113,16 +115,20 @@ graph TB
 
 When you run `/sw:increment`, living docs are automatically injected:
 
-```bash
-/sw:increment "Add user authentication"
+<CommandTabs
+  natural="I want to add user authentication"
+  claude='/sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
-# What happens behind the scenes:
-# 1. System reads .specweave/docs/internal/specs/
-#    to understand existing features
-# 2. System reads .specweave/docs/internal/architecture/
-#    to understand current design patterns
-# 3. System reads existing ADRs to avoid contradicting decisions
-# 4. All this context is injected into the planning prompt
+```
+What happens behind the scenes:
+1. System reads .specweave/docs/internal/specs/
+   to understand existing features
+2. System reads .specweave/docs/internal/architecture/
+   to understand current design patterns
+3. System reads existing ADRs to avoid contradicting decisions
+4. All this context is injected into the planning prompt
 ```
 
 **Result**: The PM agent has full project context when planning new features.
@@ -168,12 +174,13 @@ During general conversation, Claude doesn't automatically know about living docs
 
 ### 1. Use the Context Command
 
-```bash
-# Before working on a feature, load its context
-/sw:docs authentication
+<CommandTabs
+  natural="Load docs about authentication"
+  claude="/sw:docs authentication"
+  other="docs authentication"
+/>
 
-# Output: Relevant living docs content injected into conversation
-```
+Output: Relevant living docs content injected into conversation.
 
 ### 2. Reference Living Docs in Prompts
 
@@ -184,9 +191,13 @@ implement the caching strategy for user sessions"
 
 ### 3. Use Planning Commands
 
+<CommandTabs
+  natural="I want to add OAuth support"
+  claude='/sw:increment "Add OAuth support"'
+  other='increment "Add OAuth support"'
+/>
+
 ```bash
-# Planning commands automatically inject living docs context
-/sw:increment "Add OAuth support"
 /sw:plan 0050
 ```
 
@@ -281,12 +292,14 @@ Claude: *living-docs-navigator skill activates*
 
 To bridge the gap, use the context loading command:
 
-```bash
-# Load context for a topic
-/sw:docs <topic>
+<CommandTabs
+  natural="Load docs about authentication"
+  claude="/sw:docs authentication"
+  other="docs authentication"
+/>
 
-# Examples:
-/sw:docs authentication    # Load auth-related docs
+Other examples:
+```bash
 /sw:docs database          # Load DB-related docs
 /sw:docs api               # Load API-related docs
 ```

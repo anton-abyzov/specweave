@@ -5,6 +5,8 @@ title: "Lesson 11: The Vibe Coding Problem"
 description: "Understanding why AI-assisted development fails without structure"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 11: The Vibe Coding Problem
 
 **Time**: 30 minutes
@@ -77,7 +79,13 @@ Each request produced isolated code. No shared services. No consistent patterns.
 
 **Real cost**: Technical debt from day 1. Refactoring becomes the norm, not the exception.
 
-**SpecWeave solution**: Saying "let's build X" (or using `/sw:increment`) creates a **complete architecture** before any code is written. All components are designed to work together.
+**SpecWeave solution**: `/sw:increment` creates a **complete architecture** before any code is written. All components are designed to work together.
+
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "User authentication"'
+  other='increment "User authentication"'
+/>
 
 ---
 
@@ -98,7 +106,13 @@ Generated code →  copy/paste → ship
 
 **Real cost**: Bugs in production. Security vulnerabilities. Customer trust destroyed.
 
-**SpecWeave solution**: Saying "check quality" or "validate it" (or using `/sw:qa` and `/sw:validate`) enforces quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
+**SpecWeave solution**: `/sw:qa` and `/sw:validate` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
+
+<CommandTabs
+  natural="Check quality on this increment"
+  claude="/sw:qa 0001"
+  other="qa 0001"
+/>
 
 ---
 
@@ -254,10 +268,14 @@ Week 2:
 
 **SpecWeave Approach**:
 
+<CommandTabs
+  natural="I want to add user authentication with JWT"
+  claude='/sw:increment "User authentication with JWT"'
+  other='increment "User authentication with JWT"'
+/>
+
 ```
 Day 1:
-  /sw:increment "User authentication with JWT"
-
   → spec.md created with:
     - AC-US1-01: Login with email/password
     - AC-US1-02: JWT token issued on success

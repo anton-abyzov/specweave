@@ -6,6 +6,8 @@ description: User stories with checkable task lists for better traceability and 
 keywords: [tasks, user stories, project isolation, github sync, traceability]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Project-Specific Tasks
 
 **Version**: 0.18.3
@@ -176,9 +178,11 @@ Configure project keywords in `.specweave/config.json`:
 
 After creating your increment spec and tasks:
 
-```bash
-/sw:sync-docs update
-```
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 
 **What Happens**:
 1. Parses increment spec.md → Extracts user stories
@@ -196,9 +200,11 @@ After creating your increment spec and tasks:
 
 Create GitHub issues with checkable task lists:
 
-```bash
-/sw-github:sync-spec specweave/FS-031
-```
+<CommandTabs
+  natural="Push to GitHub"
+  claude="/sw-github:sync-spec specweave/FS-031"
+  other="sw-github:sync-spec specweave/FS-031"
+/>
 
 **Result**: GitHub issues have checkable task lists like this:
 
@@ -316,9 +322,11 @@ Old user stories (without `## Tasks` section) still work:
 
 Re-run living docs sync to add `## Tasks` sections:
 
-```bash
-/sw:sync-docs update
-```
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 
 **What Changes**:
 - User story files updated with `## Tasks` section
@@ -329,7 +337,14 @@ Re-run living docs sync to add `## Tasks` sections:
 
 Tasks are automatically included:
 - Create increment as usual
-- Run `/sw:sync-docs update`
+- Run sync-docs update:
+
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
+
 - User stories generated with `## Tasks` sections
 
 ---
@@ -372,7 +387,13 @@ Tasks are automatically included:
 2. Old GitHub sync code
 
 **Solution**:
-- Re-run `/sw:sync-docs update`
+- Re-run sync-docs update:
+
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 - Update to the latest version
 - Verify user story file has `## Tasks` section
 
@@ -429,9 +450,12 @@ Tasks are automatically included:
 **Frequency**: After completing each task or at end of day.
 
 **Command**:
-```bash
-/sw:sync-docs update
-```
+
+<CommandTabs
+  natural="Update the docs"
+  claude="/sw:sync-docs update"
+  other="sync-docs update"
+/>
 
 **Why**: Keeps user story task lists in sync with increment tasks.md.
 

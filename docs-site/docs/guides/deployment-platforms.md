@@ -4,6 +4,8 @@ title: "Deployment Platforms"
 description: "The complete guide to modern deployment platforms - Cloudflare, Vercel, Supabase, Railway, Render, and Netlify vs AWS/Azure/GCP"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # The Modern Developer Stack: Deployment Platforms Guide
 
 **Why Cloudflare, Vercel, Supabase, and friends are often better than AWS/Azure/GCP — and how to choose between them.**
@@ -714,13 +716,21 @@ vercel
 
 ## SpecWeave Commands for Deployment
 
+Close your increment first:
+
+<CommandTabs
+  natural="We're done, close increment 0001"
+  claude="/sw:done 0001"
+  other="done 0001"
+/>
+
+Then deploy to your platform:
+
 ```bash
 # Deploy to Vercel
-/sw:done 0001  # Closes increment, triggers git push
 vercel         # Deploy (or auto via GitHub integration)
 
 # Deploy to Cloudflare
-/sw:done 0001  # Closes increment, triggers git push
 wrangler deploy # Deploy Workers
 wrangler pages deploy dist # Deploy Pages
 

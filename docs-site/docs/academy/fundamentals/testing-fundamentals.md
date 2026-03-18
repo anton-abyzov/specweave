@@ -6,6 +6,8 @@ description: Comprehensive guide to software testing covering the testing pyrami
 keywords: [testing, quality assurance, TDD, BDD, test pyramid, unit testing, integration testing, E2E testing, test coverage, QA]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Testing Fundamentals & Quality Assurance
 
 Testing is not just about catching bugs—it's about building confidence in your software, documenting expected behavior, and enabling fearless refactoring. This guide covers testing from first principles to advanced strategies, with real-world examples and SpecWeave integration.
@@ -2067,21 +2069,33 @@ coverage_target: 85%
 
 ### [Quality Gates](/docs/glossary/terms/quality-gate)
 
-**`/sw:validate` command checks**:
-- ✅ All [AC-IDs](/docs/glossary/terms/ac-id) from [spec.md](/docs/glossary/terms/spec-md) covered in [tasks.md](/docs/glossary/terms/tasks-md)
-- ✅ Test plans exist for each task
-- ✅ Coverage targets met (80-90%)
-- ✅ BDD format used (Given/When/Then)
+<CommandTabs
+  natural="Validate the increment"
+  claude="/sw:validate"
+  other="validate"
+/>
 
-**`npx vitest run` command validates**:
-- ✅ Test files exist (unit, integration, E2E)
-- ✅ Tests reference AC-IDs
-- ✅ Coverage reports meet targets
+**`/sw:validate` checks**:
+- All [AC-IDs](/docs/glossary/terms/ac-id) from [spec.md](/docs/glossary/terms/spec-md) covered in [tasks.md](/docs/glossary/terms/tasks-md)
+- Test plans exist for each task
+- Coverage targets met (80-90%)
+- BDD format used (Given/When/Then)
+
+**`npx vitest run` validates**:
+- Test files exist (unit, integration, E2E)
+- Tests reference AC-IDs
+- Coverage reports meet targets
+
+<CommandTabs
+  natural="We're done, close the increment"
+  claude="/sw:done"
+  other="done"
+/>
 
 **`/sw:done` requires**:
-- ✅ All tests passing
-- ✅ Coverage targets met
-- ✅ No failing validation
+- All tests passing
+- Coverage targets met
+- No failing validation
 
 ---
 

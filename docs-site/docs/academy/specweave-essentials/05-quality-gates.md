@@ -5,6 +5,8 @@ title: "Lesson 5: Quality Gates"
 description: "The 3-gate validation system"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 5: Quality Gates
 
 **Time**: 35 minutes
@@ -192,9 +194,12 @@ Gate 3 checks checkboxes in spec.md:
 ```
 
 **Fix unchecked ACs:**
-```bash
-/sw:sync-acs
-```
+
+<CommandTabs
+  natural="Sync the acceptance criteria"
+  claude="/sw:sync-acs"
+  other="sync-acs"
+/>
 
 ---
 
@@ -249,9 +254,11 @@ quality:
 
 **Never for convenience.**
 
-```bash
-/sw:done 0001 --force --reason "Production hotfix for CVE-2025-1234"
-```
+<CommandTabs
+  natural="Force close increment 0001, production hotfix for CVE-2025-1234"
+  claude='/sw:done 0001 --force --reason "Production hotfix for CVE-2025-1234"'
+  other='done 0001 --force --reason "Production hotfix for CVE-2025-1234"'
+/>
 
 What happens:
 - Gates skipped

@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Increments
 
 **An Increment** is a focused unit of work in SpecWeave that represents a complete, shippable slice of functionality. Each increment contains a specification, implementation plan, and task checklist with embedded tests. Increments are the fundamental building block of SpecWeave's development workflow.
@@ -492,8 +494,13 @@ graph LR
 
 **Scenario 1: 0 Active** → Create new (no warnings)
 
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "user authentication"'
+  other='increment "user authentication"'
+/>
+
 ```bash
-/sw:increment "user authentication"
 # ✅ Creates 0008-user-authentication (no conflict)
 ```
 

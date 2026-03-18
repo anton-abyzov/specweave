@@ -4,6 +4,8 @@ title: Reference
 description: Complete reference documentation for SpecWeave skills and commands
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Reference Documentation
 
 Complete reference for all SpecWeave skills, commands, and capabilities.
@@ -56,16 +58,26 @@ In Claude Code, skills and commands are invoked the same way - with `/sw:name`. 
 
 ### Planning
 
+<CommandTabs
+  natural="Let's build a new feature"
+  claude='/sw:increment "Feature description"'
+  other='increment "Feature description"'
+/>
+
 ```bash
-/sw:increment "Feature description"    # Start new work
 /sw:pm                                 # Product management
 /sw:architect                          # System design
 ```
 
 ### Execution
 
+<CommandTabs
+  natural="Ship while I sleep"
+  claude="/sw:auto"
+  other="auto"
+/>
+
 ```bash
-/sw:auto                              # Autonomous (hours!)
 /sw:do                                # Manual task-by-task
 /sw:progress                          # Check status
 ```

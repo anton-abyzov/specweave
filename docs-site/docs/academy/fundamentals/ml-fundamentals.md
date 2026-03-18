@@ -4,6 +4,8 @@ title: ML/AI Integration Fundamentals
 sidebar_label: ML/AI Integration
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # ML/AI Integration Fundamentals
 
 ## Table of Contents
@@ -1298,7 +1300,13 @@ await openai.chat.completions.create({ /* small prompt */ });
 5. Optimize token usage and costs
 
 **SpecWeave Integration:**
-- Create AI increment: `/sw:increment "ai-code-review"`
+
+<CommandTabs
+  natural="I want to add AI code review"
+  claude='/sw:increment "ai-code-review"'
+  other='increment "ai-code-review"'
+/>
+
 - Document model selection in ADRs
 - Track AI costs in increment reports
 - Use BDD tests for AI behavior validation

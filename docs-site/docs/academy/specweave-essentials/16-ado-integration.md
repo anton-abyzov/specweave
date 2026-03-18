@@ -5,6 +5,8 @@ title: "Lesson 16: Azure DevOps Integration Guide"
 description: "Complete guide to syncing SpecWeave with Azure DevOps Work Items"
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Lesson 16: Azure DevOps Integration Guide
 
 **Time**: 45 minutes
@@ -240,10 +242,13 @@ Iterations:
 
 When an increment is created:
 
-```bash
-# Say: "Let's build user authentication" or use the command:
-/sw:increment "User authentication"
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='/sw:increment "User authentication"'
+  other='increment "User authentication"'
+/>
 
+```
 # Output:
 Creating increment: 0042-user-authentication
 ✓ spec.md generated
@@ -768,10 +773,13 @@ ADO_PAT=service_account_pat
 
 ### Full Workflow
 
-```bash
-# 1. Create increment (say "let's build a user profile feature" or use the command)
-/sw:increment "User profile feature"
+<CommandTabs
+  natural="Let's build a user profile feature"
+  claude='/sw:increment "User profile feature"'
+  other='increment "User profile feature"'
+/>
 
+```bash
 # Output:
 ✓ Increment 0050-user-profile created
 ✓ Azure DevOps Feature AB#2000 created
@@ -827,8 +835,15 @@ specweave init . --reconfigure
 /sw-ado:status
 
 # 5. Create test increment
-/sw:increment "Test ADO sync"
+```
 
+<CommandTabs
+  natural="Let's build a test for ADO sync"
+  claude='/sw:increment "Test ADO sync"'
+  other='increment "Test ADO sync"'
+/>
+
+```bash
 # 6. Verify in Azure DevOps
 # Check your project board for new Feature
 ```
