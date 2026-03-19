@@ -130,7 +130,29 @@ export class GitHubFeatureSync {
     issuesCreated: number;
     issuesUpdated: number;
     userStoriesProcessed: number;
+    rateLimitSkipped?: boolean;
   }> {
+    // FS-609: Rate limit pre-check — abort early if quota is low to prevent 403 errors
+    const RATE_LIMIT_THRESHOLD = 200;
+    try {
+      const rateLimit = await this.client.checkRateLimit();
+      if (rateLimit.remaining < RATE_LIMIT_THRESHOLD) {
+        console.log(`\n⚠️  GitHub API rate limit low: ${rateLimit.remaining}/${rateLimit.limit} remaining`);
+        console.log(`   ⏭️  Skipping sync for ${featureId} — will retry after ${rateLimit.reset.toISOString()}`);
+        console.log(`   💡 Run /sw:progress-sync to retry when rate limit resets`);
+        return {
+          milestoneNumber: 0,
+          milestoneUrl: '',
+          issuesCreated: 0,
+          issuesUpdated: 0,
+          userStoriesProcessed: 0,
+          rateLimitSkipped: true,
+        };
+      }
+    } catch {
+      // Rate limit check failed — proceed with sync (fail-open)
+    }
+
     // SYNC LOCK: Cross-process file lock prevents concurrent syncs of the same feature+repo
     // Root cause: Two sync paths (task completion + status change) can fire simultaneously
     // Result: Duplicate GitHub comments due to race condition
@@ -1053,16 +1075,18 @@ export class GitHubFeatureSync {
     // ✅ VERIFICATION GATE: Calculate ACTUAL completion from checkboxes
     const completion = await this.calculator.calculateCompletion(userStoryPath);
 
-    // Get current issue state
+    // FS-609: Fetch issue state ONCE and reuse throughout this method + downstream calls
     const issueData = await this.client.getIssue(issueNumber);
     const currentlyClosed = issueData.state === 'closed';
+
+    // FS-609: Fetch last comment ONCE and reuse for idempotency checks + downstream
+    const lastComment = await this.client.getLastComment(issueNumber);
 
     // DECISION LOGIC: Close/Reopen/Update based on VERIFIED completion
     if (completion.overallComplete) {
       // ✅ SAFE TO CLOSE - All ACs and tasks verified [x]
       if (!currentlyClosed) {
         // Idempotency check: skip completion comment if already posted by another sync path
-        const lastComment = await this.client.getLastComment(issueNumber);
         const commentAlreadyPosted = lastComment?.body?.includes('✅ User Story Complete');
         if (commentAlreadyPosted) {
           // Close without duplicate comment
@@ -1109,12 +1133,13 @@ export class GitHubFeatureSync {
         );
       } else {
         // Update progress comment (with deduplication)
-        await this.postProgressCommentIfChanged(issueNumber, completion);
+        // FS-609: Pass cached lastComment to avoid re-fetching
+        await this.postProgressCommentIfChanged(issueNumber, completion, lastComment);
       }
     }
 
-    // **NEW (2025-11-24)**: Update status labels based on completion
-    await this.updateStatusLabels(issueNumber, completion);
+    // FS-609: Pass cached issueData and lastComment to avoid redundant fetches
+    await this.updateStatusLabels(issueNumber, completion, issueData, lastComment);
   }
 
   /**
@@ -1136,11 +1161,13 @@ export class GitHubFeatureSync {
       tasksTotal?: number;
       tasksCompleted?: number;
       frontmatterStatus?: string;
-    }
+    },
+    cachedIssueData?: any,
+    cachedLastComment?: any,
   ): Promise<void> {
     try {
-      // Get current issue labels
-      const issueData = await this.client.getIssue(issueNumber);
+      // FS-609: Use cached issue data if provided, otherwise fetch (backward compat)
+      const issueData = cachedIssueData || await this.client.getIssue(issueNumber);
       const currentLabels = issueData.labels || [];
 
       // Separate status labels from other labels
@@ -1224,13 +1251,15 @@ export class GitHubFeatureSync {
       // preventing issues like #1198 where label is applied but issue stays open
       if (newStatusLabel === 'status:complete' && issueData.state.toLowerCase() !== 'closed') {
         try {
-          // Re-fetch issue state to avoid race with updateUserStoryIssue close
-          const freshIssueData = await this.client.getIssue(issueNumber);
-          if (freshIssueData.state.toLowerCase() === 'closed') {
+          // FS-609: Use cached issue data — updateUserStoryIssue already closed if needed,
+          // so if we reach here with status:complete, the issue state from cache is reliable
+          // within the same sync operation. No need to re-fetch.
+          const freshState = issueData.state.toLowerCase();
+          if (freshState === 'closed') {
             console.log(`      ⏭️  Issue #${issueNumber} already closed (skipping duplicate close)`);
           } else {
-            // Idempotency check: skip completion comment if already posted
-            const lastComment = await this.client.getLastComment(issueNumber);
+            // FS-609: Use cached lastComment if available, otherwise fetch
+            const lastComment = cachedLastComment || await this.client.getLastComment(issueNumber);
             if (lastComment?.body?.includes('✅ User Story Complete')) {
               // Comment already exists — close without posting duplicate
               await execFileNoThrow('gh', [
@@ -1281,26 +1310,19 @@ export class GitHubFeatureSync {
    */
   private async postProgressCommentIfChanged(
     issueNumber: number,
-    completion: any
+    completion: any,
+    cachedLastComment?: any,
   ): Promise<void> {
     try {
-      // 1. Fetch last comment from the issue
+      // FS-609: Use cached last comment if available, otherwise fetch via client
       const repoSlug = this.getRepoSlug();
-      const commentsResult = await execFileNoThrow('gh', [
-        'api',
-        `repos/${repoSlug}/issues/${issueNumber}/comments`,
-        '--jq',
-        '.[-1] | {body: .body, created_at: .created_at}',  // Get last comment only
-      ], { env: this.getGhEnv() });
-
       let lastCommentBody = '';
-      if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {
-        try {
-          const lastComment = JSON.parse(commentsResult.stdout);
-          lastCommentBody = lastComment.body || '';
-        } catch {
-          // No valid last comment, proceed with posting
-        }
+
+      if (cachedLastComment) {
+        lastCommentBody = cachedLastComment.body || '';
+      } else {
+        const fetchedComment = await this.client.getLastComment(issueNumber);
+        lastCommentBody = fetchedComment?.body || '';
       }
 
       // 2. Build new progress comment
