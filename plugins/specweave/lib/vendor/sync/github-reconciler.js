@@ -42,6 +42,7 @@ export class GitHubReconciler {
         this.configCache = null;
         this.projectRoot = options.projectRoot;
         this.dryRun = options.dryRun ?? false;
+        this.full = options.full ?? false;
         this.logger = options.logger ?? consoleLogger;
     }
     /**
@@ -91,13 +92,15 @@ export class GitHubReconciler {
                 }
             }
             catch { /* Non-blocking: proceed if rate limit check fails */ }
+            // 2c. Bulk-fetch issue states in a single search call
+            const issueStateMap = await this.client.bulkFetchIssueStates(this.full ? 1000 : 100);
             // 3. Scan active increments only (archived/abandoned are skipped)
             const increments = await this.scanIncrements();
             result.scanned = increments.length;
             this.logger.log(`\n📊 Scanning ${increments.length} increment(s) for GitHub state drift...\n`);
             // 4. Check and fix each increment
             for (const inc of increments) {
-                await this.reconcileIncrement(inc, result);
+                await this.reconcileIncrement(inc, result, issueStateMap);
             }
             // 5. Report summary
             this.logger.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -125,7 +128,7 @@ export class GitHubReconciler {
     /**
      * Reconcile a single increment
      */
-    async reconcileIncrement(inc, result) {
+    async reconcileIncrement(inc, result, issueStateMap) {
         const status = inc.metadataStatus;
         // Determine expected GitHub state
         const shouldBeClosed = status === 'completed' || status === 'abandoned';
@@ -136,21 +139,28 @@ export class GitHubReconciler {
         }
         // Check main issue
         if (inc.mainIssue) {
-            await this.reconcileIssue(inc.incrementId, inc.mainIssue.number, shouldBeClosed, shouldBeOpen, status, result);
+            await this.reconcileIssue(inc.incrementId, inc.mainIssue.number, shouldBeClosed, shouldBeOpen, status, result, issueStateMap);
         }
         // Check User Story issues
         for (const us of inc.userStoryIssues) {
-            await this.reconcileIssue(`${inc.incrementId}/${us.userStoryId}`, us.issueNumber, shouldBeClosed, shouldBeOpen, status, result);
+            await this.reconcileIssue(`${inc.incrementId}/${us.userStoryId}`, us.issueNumber, shouldBeClosed, shouldBeOpen, status, result, issueStateMap);
         }
     }
     /**
      * Reconcile a single issue
      */
-    async reconcileIssue(context, issueNumber, shouldBeClosed, shouldBeOpen, metadataStatus, result) {
+    async reconcileIssue(context, issueNumber, shouldBeClosed, shouldBeOpen, metadataStatus, result, issueStateMap) {
         try {
-            // Get current GitHub state
-            const issue = await this.client.getIssue(issueNumber);
-            const isCurrentlyClosed = issue.state === 'closed';
+            // Try bulk map first, fallback to individual API call
+            const cachedState = issueStateMap?.get(issueNumber);
+            let isCurrentlyClosed;
+            if (cachedState !== undefined) {
+                isCurrentlyClosed = cachedState === 'closed';
+            }
+            else {
+                const issue = await this.client.getIssue(issueNumber);
+                isCurrentlyClosed = issue.state === 'closed';
+            }
             // Check for mismatch
             if (shouldBeClosed && !isCurrentlyClosed) {
                 // Should be closed but is open
@@ -736,7 +746,7 @@ Auto-closed by SpecWeave`;
      * @param dryRun - If true, only report what would happen
      * @param logger - Logger instance
      */
-    static async reconcileMilestones(projectRoot, dryRun = false, logger) {
+    static async reconcileMilestones(projectRoot, dryRun = false, logger, full = false) {
         const log = logger ?? consoleLogger;
         const result = { staleClosed: 0, duplicatesClosed: 0, errors: [] };
         try {
@@ -748,15 +758,23 @@ Auto-closed by SpecWeave`;
             }
             const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
             const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
-            // 1. Fetch all open milestones from GitHub
+            // 1. Fetch milestones — default: cap at 20 most recent; --full: paginate all
             log.log('   Fetching open milestones from GitHub...');
-            const msResult = await execFileNoThrow('gh', [
-                'api',
-                `repos/${repoSlug}/milestones`,
-                '--paginate',
-                '-q',
-                '.[] | {number, title, open_issues, closed_issues, state}',
-            ]);
+            const msArgs = full
+                ? [
+                    'api',
+                    `repos/${repoSlug}/milestones`,
+                    '--paginate',
+                    '-q',
+                    '.[] | {number, title, open_issues, closed_issues, state}',
+                ]
+                : [
+                    'api',
+                    `repos/${repoSlug}/milestones?per_page=20&sort=updated&direction=desc`,
+                    '-q',
+                    '.[] | {number, title, open_issues, closed_issues, state}',
+                ];
+            const msResult = await execFileNoThrow('gh', msArgs);
             if (!msResult.success) {
                 result.errors.push(`Failed to list milestones: ${msResult.stderr}`);
                 return result;
