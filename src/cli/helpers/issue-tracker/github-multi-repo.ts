@@ -33,7 +33,7 @@ import { getGitHubAuth } from '../../../utils/auth-helpers.js';
 /**
  * GitHub setup type options
  */
-export type GitHubSetupType = 'none' | 'single' | 'multiple' | 'monorepo' | 'auto-detect';
+export type GitHubSetupType = 'none' | 'multiple' | 'monorepo' | 'auto-detect';
 
 /**
  * GitHub repository profile
@@ -83,8 +83,8 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   const MAX_RECURSION_DEPTH = 3;
   if (recursionDepth >= MAX_RECURSION_DEPTH) {
     console.log(chalk.red(`\n❌ Too many setup redirections (${MAX_RECURSION_DEPTH} attempts)`));
-    console.log(chalk.yellow('   Falling back to single repository setup\n'));
-    return { setupType: 'single' };
+    console.log(chalk.yellow('   Falling back to multiple repository setup\n'));
+    return { setupType: 'multiple' };
   }
   // CRITICAL: Check if user already answered this question in init.ts
   // Map repositoryHosting to architecture type for RepoStructureManager
@@ -237,10 +237,6 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
         value: 'none' as const
       },
       {
-        name: '📦 Single repository',
-        value: 'single' as const
-      },
-      {
         name: '🎯 Multiple repositories (microservices/polyrepo)',
         value: 'multiple' as const
       },
@@ -253,7 +249,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
         value: 'auto-detect' as const
       }
     ],
-    default: 'single'
+    default: 'multiple'
   });
 
   // Return just the setup type (profiles will be collected by configure* functions)
@@ -271,88 +267,6 @@ export async function configureNoRepository(): Promise<GitHubProfile[]> {
   console.log(chalk.white('  /sw:github-setup\n'));
 
   return [];
-}
-
-/**
- * Configure single repository
- *
- * @param projectPath - Path to project directory
- * @returns Single profile array
- */
-export async function configureSingleRepository(projectPath: string): Promise<GitHubProfile[]> {
-  console.log(chalk.cyan('\n📦 Single Repository Setup\n'));
-
-  // Try to detect from git remote
-  const primaryRemote = await detectPrimaryGitHubRemote(projectPath);
-
-  let defaultOwner = '';
-  let defaultRepo = '';
-
-  if (primaryRemote && primaryRemote.owner && primaryRemote.repo) {
-    console.log(chalk.green(`✓ Detected: ${primaryRemote.owner}/${primaryRemote.repo}`));
-    defaultOwner = primaryRemote.owner;
-    defaultRepo = primaryRemote.repo;
-
-    const useDetected = await confirm({
-      message: 'Use detected repository?',
-      default: true
-    });
-
-    if (useDetected) {
-      return [{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: defaultOwner,
-        repo: defaultRepo,
-        isDefault: true
-      }];
-    }
-  }
-
-  // Manual entry
-  const owner = await input({
-    message: 'GitHub owner/organization:',
-    default: defaultOwner,
-    validate: (val: string) => {
-      if (!val.trim()) {
-        return 'Owner is required';
-      }
-      // P1-4: Regex DoS protection - length check before regex
-      if (val.length > 256) {
-        return 'Owner name too long (max 256 characters)';
-      }
-      if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(val)) {
-        return 'Invalid GitHub username/organization format';
-      }
-      return true;
-    }
-  });
-
-  const repo = await input({
-    message: 'Repository name:',
-    default: defaultRepo,
-    validate: (val: string) => {
-      if (!val.trim()) {
-        return 'Repository name is required';
-      }
-      // P1-4: Regex DoS protection - length check before regex
-      if (val.length > 256) {
-        return 'Repository name too long (max 256 characters)';
-      }
-      if (!/^[a-zA-Z0-9._-]+$/.test(val)) {
-        return 'Invalid repository name format';
-      }
-      return true;
-    }
-  });
-
-  return [{
-    id: 'main',
-    displayName: 'Main Repository',
-    owner,
-    repo,
-    isDefault: true
-  }];
 }
 
 /**
@@ -504,8 +418,54 @@ export async function configureMonorepo(projectPath: string): Promise<{
   console.log(chalk.cyan('\n📚 Monorepo Setup\n'));
   console.log(chalk.gray('Configure a single repository with multiple projects.\n'));
 
-  // First configure the repository (similar to single repo)
-  const profiles = await configureSingleRepository(projectPath);
+  // Configure the single repository for the monorepo
+  const primaryRemote = await detectPrimaryGitHubRemote(projectPath);
+
+  let owner = '';
+  let repo = '';
+
+  if (primaryRemote && primaryRemote.owner && primaryRemote.repo) {
+    console.log(chalk.green(`✓ Detected: ${primaryRemote.owner}/${primaryRemote.repo}`));
+    const useDetected = await confirm({
+      message: 'Use detected repository?',
+      default: true
+    });
+    if (useDetected) {
+      owner = primaryRemote.owner;
+      repo = primaryRemote.repo;
+    }
+  }
+
+  if (!owner) {
+    owner = await input({
+      message: 'GitHub owner/organization:',
+      default: primaryRemote?.owner || '',
+      validate: (val: string) => {
+        if (!val.trim()) return 'Owner is required';
+        if (val.length > 256) return 'Owner name too long (max 256 characters)';
+        if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(val)) return 'Invalid GitHub username/organization format';
+        return true;
+      }
+    });
+    repo = await input({
+      message: 'Repository name:',
+      default: primaryRemote?.repo || '',
+      validate: (val: string) => {
+        if (!val.trim()) return 'Repository name is required';
+        if (val.length > 256) return 'Repository name too long (max 256 characters)';
+        if (!/^[a-zA-Z0-9._-]+$/.test(val)) return 'Invalid repository name format';
+        return true;
+      }
+    });
+  }
+
+  const profiles: GitHubProfile[] = [{
+    id: 'main',
+    displayName: 'Main Repository',
+    owner,
+    repo,
+    isDefault: true
+  }];
 
   // Then ask for projects within the monorepo
   console.log(chalk.cyan('\n📂 Projects in Monorepo\n'));
@@ -542,8 +502,8 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
   const MAX_RECURSION_DEPTH = 3;
   if (recursionDepth >= MAX_RECURSION_DEPTH) {
     console.log(chalk.red(`\n❌ Too many auto-detection attempts (${MAX_RECURSION_DEPTH} attempts)`));
-    console.log(chalk.yellow('   Falling back to single repository setup\n'));
-    return configureSingleRepository(projectPath);
+    console.log(chalk.yellow('   Falling back to multiple repositories setup\n'));
+    return configureMultipleRepositories(projectPath);
   }
   const spinner = ora('Detecting GitHub repositories...').start();
 
@@ -555,8 +515,8 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
     console.log(chalk.yellow('\n⚠️  No GitHub remotes found'));
     console.log(chalk.gray('   Falling back to manual configuration\n'));
 
-    // Fall back to single repo configuration
-    return configureSingleRepository(projectPath);
+    // Fall back to multiple repositories configuration
+    return configureMultipleRepositories(projectPath);
   }
 
   spinner.succeed(`Found ${uniqueRepos.length} GitHub repositor${uniqueRepos.length === 1 ? 'y' : 'ies'}`);
@@ -579,8 +539,6 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
     switch (setupType) {
       case 'none':
         return configureNoRepository();
-      case 'single':
-        return configureSingleRepository(projectPath);
       case 'multiple':
         return configureMultipleRepositories(projectPath);
       case 'monorepo':

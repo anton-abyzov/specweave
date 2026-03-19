@@ -153,7 +153,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
     it('should fallback to legacy flow when clonedRepos is empty array', async () => {
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single',
+        setupType: 'multiple',
         profiles: [
           { id: '1', owner: 'myorg', repo: 'fallback-repo', displayName: 'Fallback', isDefault: true }
         ]
@@ -184,7 +184,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       // Mock promptGitHubSetupType to return single-repo profiles
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single',
+        setupType: 'multiple',
         profiles: [
           { id: '1', owner: 'myorg', repo: 'my-app', displayName: 'My App', isDefault: true }
         ]
@@ -255,7 +255,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       // Mock promptGitHubSetupType to return no profiles
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single'
+        setupType: 'multiple'
         // No profiles!
       });
 
@@ -311,7 +311,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       // Mock promptGitHubSetupType
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single',
+        setupType: 'multiple',
         profiles: [
           { id: '1', owner: 'myorg', repo: 'my-app', displayName: 'My App', isDefault: true }
         ]
@@ -377,7 +377,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       // Mock promptGitHubSetupType for legacy flow
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single',
+        setupType: 'multiple',
         profiles: [
           { id: '1', owner: 'legacy-org', repo: 'legacy-repo', displayName: 'Legacy', isDefault: true }
         ]
@@ -432,7 +432,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       // Mock promptGitHubSetupType
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single',
+        setupType: 'multiple',
         profiles: [
           { id: '1', owner: 'myorg', repo: 'my-app', displayName: 'My App', isDefault: true }
         ]
@@ -464,7 +464,7 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       // Mock promptGitHubSetupType to return no profiles (fallback case)
       const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
       vi.mocked(promptGitHubSetupType).mockResolvedValue({
-        setupType: 'single'
+        setupType: 'multiple'
         // No profiles
       });
 

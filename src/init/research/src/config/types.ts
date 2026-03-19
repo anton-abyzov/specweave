@@ -16,7 +16,7 @@ export const SpecWeaveConfigSchema = z.object({
   version: z.string(),
   project: z.object({
     name: z.string(),
-    type: z.enum(['single', 'multi'])
+    type: z.enum(['multi'])
   }),
   research: ResearchConfigSchema,
   livingDocs: z.object({

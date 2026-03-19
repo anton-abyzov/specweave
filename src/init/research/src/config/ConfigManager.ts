@@ -21,7 +21,7 @@ export class ConfigManager {
       if (error.code === 'ENOENT') {
         return {
           version: '1.0.0',
-          project: { name: 'specweave-project', type: 'single' },
+          project: { name: 'specweave-project', type: 'multi' },
           research: {},
           livingDocs: { enabled: true, baseDir: '.specweave/docs' }
         };
