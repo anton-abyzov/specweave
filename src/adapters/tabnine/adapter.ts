@@ -32,6 +32,10 @@ export class TabnineAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.tabnine/skills';
+  }
+
   async compilePlugin(plugin: Plugin): Promise<void> {
     const skillsDir = '.tabnine/skills';
     console.log(`\n📦 Installing plugin skills for Tabnine: ${plugin.manifest.name}`);

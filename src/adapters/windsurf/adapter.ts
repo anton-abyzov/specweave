@@ -54,6 +54,10 @@ export class WindsurfAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.windsurf/skills';
+  }
+
   /**
    * Compile and install a plugin for Windsurf
    *
