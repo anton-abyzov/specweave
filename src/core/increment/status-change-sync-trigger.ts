@@ -32,6 +32,7 @@
 
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { SyncCircuitBreaker } from './sync-circuit-breaker.js';
+import { SyncThrottle } from '../sync-throttle.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
@@ -88,6 +89,13 @@ export class StatusChangeSyncTrigger {
     if (!this.circuitBreaker.canSync()) {
       this.logger.warn('⚠️  Sync circuit breaker open - skipping auto-sync');
       this.logger.warn('💡 Run /sw:sync-progress manually to retry');
+      return;
+    }
+
+    // Throttle: skip if another trigger path already fired for this increment
+    const throttle = new SyncThrottle(resolveEffectiveRoot());
+    if (throttle.shouldSkip(incrementId)) {
+      this.logger.log(`⏭️  Sync throttled for ${incrementId} (recent sync in progress)`);
       return;
     }
 
@@ -228,6 +236,8 @@ export class StatusChangeSyncTrigger {
       }
 
       this.circuitBreaker.recordSuccess();
+      // Record throttle so other trigger paths skip this increment
+      new SyncThrottle(projectRoot).record(incrementId);
       this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
     };
 

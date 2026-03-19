@@ -333,3 +333,7 @@ Modify `.specweave/config.json`, complete tasks, and observe sync behavior.
 
 **Version**: v0.24.0
 **Last Updated**: 2025-11-20
+
+---
+
+**Related**: [Changelog](/docs/reference/changelog) | [v0.31 Migration](./migration-v031-project-fields.md)

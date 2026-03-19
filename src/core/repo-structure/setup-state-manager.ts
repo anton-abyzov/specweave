@@ -240,7 +240,8 @@ export class SetupStateManager {
       return false;
     }
 
-    if (state.version !== '1.0') {
+    // Accept both '1.0' (legacy) and '1.0.0' (current) versions
+    if (state.version !== '1.0' && state.version !== '1.0.0') {
       return false;
     }
 

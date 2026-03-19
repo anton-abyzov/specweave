@@ -489,3 +489,7 @@ If you need to revert to old sync:
 ---
 
 **Need Help?** Open an issue at https://github.com/anton-abyzov/specweave/issues
+
+---
+
+**Related**: [External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Status Sync Guide](./status-sync-guide.md) | [Sync Configuration](./sync-configuration.md)

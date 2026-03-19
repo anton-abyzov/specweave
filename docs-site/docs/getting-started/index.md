@@ -14,6 +14,10 @@ SpecWeave is the spec-driven Skill Fabric for AI coding agents. Skills extend wh
 
 ![Increment Lifecycle](/img/diagrams/increment-lifecycle.svg)
 
+:::tip Watch it in action
+See the full workflow in 4 minutes: [SpecWeave + OpenCode Demo](/docs/academy/videos/opencode-web-calculator) | [YouTube](https://youtu.be/WVwyqsHS8dc)
+:::
+
 :::tip Enterprise teams
 Building for enterprise? See [compliance, brownfield, and multi-repo guides](/docs/enterprise).
 :::
@@ -59,15 +63,15 @@ SpecWeave has been used to ship **production applications in weeks, not months**
 
 | App | Description | Tech Stack |
 |-----|-------------|------------|
+| [**SpecWeave**](https://github.com/anton-abyzov/specweave) | Spec-driven development framework — 550+ increments, built with itself | Node.js, TypeScript, 255K+ LOC |
+| [**VerifiedSkill**](https://verified-skill.com) | Skill registry & marketplace for AI coding agents | Next.js 15, Cloudflare Workers, Prisma |
+| [**EasyChamp**](https://easychamp.com) | Sports league platform with 18+ microservices, ArgoCD GitOps | .NET, React, Python, Terraform |
+| [**WC26**](https://wc-26.net/) | World Cup 2026 travel & ticket companion — 5 services, 35 increments | React Router, React Native/Expo, Cloudflare Workers |
+| [**Lulla**](https://lulla-app.pages.dev/) | Baby cry classifier with iOS + Apple Watch — 28 increments | Swift, Core ML, Cloudflare Workers |
+| [**JobWeave**](https://jobweave.ai) | AI career platform with resume builder, interview prep, Gmail smart reply | Next.js 15, Prisma, Supabase, Multi-AI |
 | [**SkillUp**](https://skillup-football.com/) | Football coaching platform with Stripe monetization | React Native, Cloudflare Workers |
-| [**WC26**](https://wc-26.net/) | World Cup 2026 companion with AI travel planner | Mobile + Web, real-time data |
-| [**Lulla**](https://lulla-app.pages.dev/) | Baby cry classifier with Apple Watch | Swift, Core ML, Cloudflare R2 |
-| [**EasyChamp**](https://easychamp.com) | Sports league platform with 20+ microservices | GCP, ArgoCD GitOps, ML video analytics |
 | [**BizZone**](https://apps.apple.com/us/app/business-zone/id6756091030) | Student & business events with AI news generation | React Native, AI |
 | [**SketchMate**](https://sketchmate.net/) | AI drawing party game | Web, AI vision |
-| [**JobWeave**](https://jobweave.ai) | AI-powered job search platform | Web, AI |
-| [**VerifiedSkill**](https://verified-skill.com) | Skill registry & marketplace for AI coding agents | Next.js, Cloudflare |
-| [**SpecWeave**](https://github.com/anton-abyzov/specweave) | Spec-driven development framework — built with itself | Node.js, TypeScript |
 | [**EduFeed**](https://edufeed-jet.vercel.app/) | AI learning platform (NotebookLM-style) | Next.js, Supabase, LLM integration |
 
 ---
