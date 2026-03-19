@@ -206,6 +206,13 @@ async function main() {
 
     const result = await sync.syncFeatureToGitHub(featureId);
 
+    // FS-609: Surface rate limit skip instead of misleading "Sync complete!"
+    if (result.rateLimitSkipped) {
+      console.log(`\n⚠️  Sync skipped — GitHub API rate limit too low`);
+      console.log(`   💡 Run /sw:progress-sync to retry when rate limit resets`);
+      process.exit(2); // Non-zero exit signals skip (not failure)
+    }
+
     console.log(`\n✅ Sync complete!`);
     console.log(`   🎯 Milestone: #${result.milestoneNumber}`);
     console.log(`   📝 Issues created: ${result.issuesCreated}`);
