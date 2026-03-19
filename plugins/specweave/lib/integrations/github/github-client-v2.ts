@@ -11,12 +11,15 @@
 import { execFileNoThrow } from '../../vendor/utils/execFileNoThrow.js';
 import { GitHubIssue, GitHubMilestone, GitHubExternalChange } from './types';
 import { SyncProfile, GitHubConfig, TimeRangePreset } from '../../../../../src/core/types/sync-profile';
+import { checkAndDecrement } from '../../../../../src/sync/github-rate-limit-budget.js';
+import { findProjectRoot } from '../../../../../src/utils/find-project-root.js';
 
 export class GitHubClientV2 {
   private owner: string;
   private repo: string;
   private fullRepo: string;
   private token?: string;
+  private projectRoot?: string;
 
   // Session cache: avoids redundant API calls for the same issue within 30s
   private static issueCache = new Map<string, { data: any; fetchedAt: number }>();
@@ -26,7 +29,7 @@ export class GitHubClientV2 {
   /**
    * Create GitHub client from sync profile
    */
-  constructor(profile: SyncProfile) {
+  constructor(profile: SyncProfile, projectRoot?: string) {
     if (profile.provider !== 'github') {
       throw new Error(`Expected GitHub profile, got ${profile.provider}`);
     }
@@ -39,6 +42,7 @@ export class GitHubClientV2 {
     this.repo = config.repo;
     this.fullRepo = `${this.owner}/${this.repo}`;
     this.token = config.token;
+    this.projectRoot = projectRoot;
   }
 
   /**
@@ -55,6 +59,34 @@ export class GitHubClientV2 {
   }
 
   /**
+   * Set the project root for rate-limit budget tracking.
+   * When set, all API calls check the shared budget before executing.
+   */
+  setProjectRoot(root: string): void {
+    this.projectRoot = root;
+  }
+
+  /**
+   * Budget-gated wrapper around execFileNoThrow.
+   * Checks shared rate-limit budget before making API calls.
+   * Skips the call with a warning if budget is exhausted.
+   */
+  private async execWithBudget(
+    command: string,
+    args: string[],
+    options?: { env?: NodeJS.ProcessEnv; cwd?: string },
+  ): Promise<{ stdout: string; stderr: string; exitCode: number; success?: boolean }> {
+    if (this.projectRoot) {
+      const allowed = await checkAndDecrement(this.projectRoot);
+      if (!allowed) {
+        console.warn(`⚠️  GitHub API call skipped — rate limit budget exhausted (remaining < 200)`);
+        return { stdout: '', stderr: 'Rate limit budget exhausted', exitCode: 1, success: false };
+      }
+    }
+    return execFileNoThrow(command, args, options);
+  }
+
+  /**
    * Create client from owner/repo directly
    */
   static fromRepo(owner: string, repo: string): GitHubClientV2 {
@@ -64,7 +96,8 @@ export class GitHubClientV2 {
       config: { owner, repo },
       timeRange: { default: '1M', max: '6M' },
     };
-    return new GitHubClientV2(profile);
+    const projectRoot = findProjectRoot() ?? undefined;
+    return new GitHubClientV2(profile, projectRoot);
   }
 
   /**
@@ -185,7 +218,7 @@ export class GitHubClientV2 {
       args.splice(4, 0, '-f', `description=${description}`);
     }
 
-    const result = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
+    const result = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
@@ -200,7 +233,7 @@ export class GitHubClientV2 {
   private async getMilestoneByTitle(
     title: string
   ): Promise<GitHubMilestone | null> {
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'api',
       `repos/${this.fullRepo}/milestones?per_page=100&state=all`,
       '--jq',
@@ -382,7 +415,7 @@ export class GitHubClientV2 {
       // gh CLI requires milestone TITLE, not number
       if (typeof milestone === 'number') {
         // Fetch milestone by number to get title
-        const msResult = await execFileNoThrow('gh', [
+        const msResult = await this.execWithBudget('gh', [
           'api',
           `repos/${this.fullRepo}/milestones/${milestone}`,
           '--jq',
@@ -399,7 +432,7 @@ export class GitHubClientV2 {
     }
 
     // Create issue (returns URL)
-    const createResult = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
+    const createResult = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (createResult.exitCode !== 0) {
       throw new Error(
@@ -445,7 +478,7 @@ export class GitHubClientV2 {
       return cached.data;
     }
 
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'issue',
       'view',
       String(issueNumber),
@@ -508,7 +541,7 @@ export class GitHubClientV2 {
       args.push('--state', 'all');
     }
 
-    const result = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
+    const result = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       // Search failed, return null (treat as not found)
@@ -534,10 +567,33 @@ export class GitHubClientV2 {
   }
 
   /**
+   * Edit issue body directly without fetching current state first.
+   * Use this for already-linked issues where we know the issue exists.
+   * Saves 1 API call compared to the fetch-then-edit pattern.
+   */
+  async editIssueBody(issueNumber: number, newBody: string): Promise<void> {
+    const result = await this.execWithBudget('gh', [
+      'issue',
+      'edit',
+      String(issueNumber),
+      '--repo',
+      this.fullRepo,
+      '--body',
+      newBody,
+    ], { env: this.getGhEnv() });
+
+    if (result.exitCode !== 0) {
+      throw new Error(
+        `Failed to edit issue #${issueNumber}: ${result.stderr || result.stdout}`
+      );
+    }
+  }
+
+  /**
    * Update issue body
    */
   async updateIssueBody(issueNumber: number, newBody: string): Promise<void> {
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'issue',
       'edit',
       String(issueNumber),
@@ -562,7 +618,7 @@ export class GitHubClientV2 {
       await this.addComment(issueNumber, comment);
     }
 
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'issue',
       'close',
       String(issueNumber),
@@ -588,7 +644,7 @@ export class GitHubClientV2 {
       await this.addComment(issueNumber, comment);
     }
 
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'issue',
       'reopen',
       String(issueNumber),
@@ -607,7 +663,7 @@ export class GitHubClientV2 {
    * Add comment to issue
    */
   async addComment(issueNumber: number, comment: string): Promise<void> {
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'issue',
       'comment',
       String(issueNumber),
@@ -632,7 +688,7 @@ export class GitHubClientV2 {
   async getLastComment(issueNumber: number): Promise<{body: string; author: string} | null> {
     // Query the last comment directly using per_page=1 + page from last page
     // sort=created&direction=desc gives newest first, per_page=1 returns just one
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'api',
       `repos/${this.fullRepo}/issues/${issueNumber}/comments?sort=created&direction=desc&per_page=1`,
       '--jq',
@@ -672,7 +728,7 @@ export class GitHubClientV2 {
     const query = `query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){number title body url state labels(first:10){nodes{name}}comments(last:1){nodes{body author{login}}}}}}`;
 
     try {
-      const result = await execFileNoThrow('gh', [
+      const result = await this.execWithBudget('gh', [
         'api', 'graphql',
         '-f', `query=${query}`,
         '-F', `owner=${this.owner}`,
@@ -732,7 +788,7 @@ export class GitHubClientV2 {
       args.push('--add-label', label);
     }
 
-    const result = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
+    const result = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -749,7 +805,7 @@ export class GitHubClientV2 {
    * @param limit Max results — 100 for default mode, 1000 for --full
    */
   async bulkFetchIssueStates(limit: number = 100): Promise<Map<number, 'open' | 'closed'>> {
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'search', 'issues',
       `repo:${this.fullRepo} [FS- in:title`,
       '--json', 'number,state',
@@ -794,7 +850,7 @@ export class GitHubClientV2 {
       ? `[${featureId}][${userStoryId}]`
       : `[${featureId}]`;
 
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'issue',
       'list',
       '--repo',
@@ -839,7 +895,7 @@ export class GitHubClientV2 {
     // GitHub search query
     const query = `repo:${this.fullRepo} is:issue created:${since}..${until}`;
 
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'search',
       'issues',
       query,
@@ -928,7 +984,7 @@ export class GitHubClientV2 {
     limit: number;
     reset: Date;
   }> {
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'api',
       'rate_limit',
       '--jq',
@@ -1038,7 +1094,7 @@ export class GitHubClientV2 {
       : `.[] | {number, title, state, updated_at, user: .user.login, assignee: .assignee.login, labels: [.labels[].name]}`;
 
     // Use GitHub API to fetch issues updated since timestamp
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'api',
       `repos/${this.fullRepo}/issues`,
       '--method', 'GET',
@@ -1097,7 +1153,7 @@ export class GitHubClientV2 {
    * @returns Array of events with action details
    */
   async getIssueEvents(issueNumber: number, perPage = 30): Promise<any[]> {
-    const result = await execFileNoThrow('gh', [
+    const result = await this.execWithBudget('gh', [
       'api',
       `repos/${this.fullRepo}/issues/${issueNumber}/events`,
       '-f', `per_page=${perPage}`,

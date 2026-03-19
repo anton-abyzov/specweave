@@ -9,8 +9,9 @@ import { execFileNoThrow } from "../../vendor/utils/execFileNoThrow.js";
 import { getGitHubAuthFromProject } from "../../vendor/utils/auth-helpers.js";
 import { LockManager } from "../../../../../src/utils/lock-manager.js";
 import { normalizeIssueBody } from "./github-body-utils.js";
-import { ensureLabels } from "./label-cache.js";
+import { ensureLabels, setLabelCacheDir } from "./label-cache.js";
 import { MilestoneCache } from "./milestone-cache.js";
+import { getIssueNumberFromMetadata } from "./metadata-issue-lookup.js";
 class GitHubFeatureSync {
   constructor(client, specsDir, projectRoot) {
     // Cached default branch for the sync session (one API call per session)
@@ -125,6 +126,8 @@ class GitHubFeatureSync {
     try {
       console.log(`
 \u{1F504} Syncing Feature ${featureId} to GitHub...`);
+      const stateDir = path.join(this.projectRoot, ".specweave", "state");
+      setLabelCacheDir(stateDir);
       const featureFolder = await this.findFeatureFolder(featureId, projectName);
       if (!featureFolder) {
         console.log(`   \u26A0\uFE0F  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
@@ -194,6 +197,19 @@ class GitHubFeatureSync {
           } catch (err) {
             console.log(`      \u26A0\uFE0F  Issue #${userStory.existingIssue} deleted on GitHub, creating new`);
           }
+        }
+        try {
+          const incrementsDir = path.join(this.projectRoot, ".specweave", "increments");
+          const metadataIssueNumber = await getIssueNumberFromMetadata(incrementsDir, featureId, userStory.id);
+          if (metadataIssueNumber) {
+            console.log(`      \u26A1 Issue #${metadataIssueNumber} found in metadata (skipping dup detection)`);
+            issueNumber = metadataIssueNumber;
+            await this.updateUserStoryIssue(metadataIssueNumber, issueContent, userStory.filePath);
+            issuesUpdated++;
+            continue;
+          }
+        } catch (metadataErr) {
+          console.warn(`      \u26A0\uFE0F  Metadata path failed: ${metadataErr.message}, falling back to dup detection`);
         }
         const titlePattern = `[${featureId}][${userStory.id}]`;
         const milestoneTitle = `${featureData.id}: ${featureData.title}`;
