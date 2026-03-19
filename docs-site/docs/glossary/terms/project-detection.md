@@ -425,11 +425,11 @@ Implement authentication...
 | **fallbackProject** | ✅ | Default project if detection fails | `"default"` |
 | **detectionThreshold** | ✅ | Minimum confidence (0.0-1.0) | `0.7` |
 | **projects** | ✅ | Project configurations | `{"backend": {...}}` |
-| **projects.{id}.name** | ✅ | Human-readable name | `"Backend Services"` |
-| **projects.{id}.team** | ⚠️  | Team name (optional) | `"Backend Team"` |
-| **projects.{id}.keywords** | ⚠️  | Keywords for detection | `["backend", "api"]` |
-| **projects.{id}.techStack** | ⚠️  | Tech stack for detection | `["Node.js", "PostgreSQL"]` |
-| **projects.{id}.specsFolder** | ✅ | Output folder path | `".specweave/docs/internal/specs/backend"` |
+| `projects.{id}.name` | ✅ | Human-readable name | `"Backend Services"` |
+| `projects.{id}.team` | ⚠️  | Team name (optional) | `"Backend Team"` |
+| `projects.{id}.keywords` | ⚠️  | Keywords for detection | `["backend", "api"]` |
+| `projects.{id}.techStack` | ⚠️  | Tech stack for detection | `["Node.js", "PostgreSQL"]` |
+| `projects.{id}.specsFolder` | ✅ | Output folder path | `".specweave/docs/internal/specs/backend"` |
 
 ---
 
