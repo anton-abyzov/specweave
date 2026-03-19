@@ -393,3 +393,7 @@ specweave sync-progress 0001-feature
 ---
 
 **Need help?** Open an issue at https://github.com/anton-abyzov/specweave/issues
+
+---
+
+**Related**: [External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Bidirectional Spec Sync](./spec-bidirectional-sync.md) | [Sync Strategies](./sync-strategies.md)

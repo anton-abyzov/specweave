@@ -20,6 +20,8 @@ import { CompletionCalculator } from './completion-calculator.js';
 import { DuplicateDetector } from './duplicate-detector.js';
 import { execFileNoThrow } from '../../vendor/utils/execFileNoThrow.js';
 import { getGitHubAuthFromProject } from '../../vendor/utils/auth-helpers.js';
+import { LockManager } from '../../../../../src/utils/lock-manager.js';
+import { normalizeIssueBody } from './github-body-utils.js';
 
 interface FeatureFrontmatter {
   id: string;
@@ -56,11 +58,6 @@ export class GitHubFeatureSync {
 
   // Cached default branch for the sync session (one API call per session)
   private defaultBranch: string | null = null;
-
-  // SYNC LOCK: Prevent concurrent syncs of the same feature
-  // Maps featureId → last sync timestamp
-  private static syncLocks: Map<string, number> = new Map();
-  private static readonly LOCK_DURATION_MS = 30000; // 30 seconds
 
   constructor(client: GitHubClientV2, specsDir: string, projectRoot: string) {
     this.client = client;
@@ -134,18 +131,17 @@ export class GitHubFeatureSync {
     issuesUpdated: number;
     userStoriesProcessed: number;
   }> {
-    // SYNC LOCK CHECK: Prevent concurrent/rapid syncs of the same feature+repo
+    // SYNC LOCK: Cross-process file lock prevents concurrent syncs of the same feature+repo
     // Root cause: Two sync paths (task completion + status change) can fire simultaneously
     // Result: Duplicate GitHub comments due to race condition
-    // Key includes owner/repo so cross-project syncs (same featureId, different repos) aren't throttled
-    const lockKey = `${this.client.getOwner()}/${this.client.getRepo()}:${featureId}`;
-    const now = Date.now();
-    const lastSync = GitHubFeatureSync.syncLocks.get(lockKey);
+    const owner = this.client.getOwner();
+    const repo = this.client.getRepo();
+    const lockDir = path.join(this.projectRoot, '.specweave', 'state', 'locks', `github-sync-${owner}-${repo}`);
+    const lock = new LockManager(lockDir, 120);
+    const acquired = await lock.acquire();
 
-    if (lastSync && (now - lastSync) < GitHubFeatureSync.LOCK_DURATION_MS) {
-      const secondsRemaining = Math.ceil((GitHubFeatureSync.LOCK_DURATION_MS - (now - lastSync)) / 1000);
-      console.log(`\n⏭️  Sync already in progress for ${featureId} (or completed ${Math.floor((now - lastSync) / 1000)}s ago)`);
-      console.log(`   ℹ️  Sync will be available in ${secondsRemaining}s to prevent duplicates`);
+    if (!acquired) {
+      console.log(`\n⏭️  Sync already in progress for ${featureId} (lock held by another process)`);
       console.log(`   💡 This prevents race conditions between task completion and status change syncs`);
 
       // Return placeholder result (sync was skipped, not failed)
@@ -158,8 +154,7 @@ export class GitHubFeatureSync {
       };
     }
 
-    // Acquire lock
-    GitHubFeatureSync.syncLocks.set(lockKey, now);
+    try {
     console.log(`\n🔄 Syncing Feature ${featureId} to GitHub...`);
 
     // 1. Load Feature FEATURE.md
@@ -344,6 +339,9 @@ export class GitHubFeatureSync {
       issuesUpdated,
       userStoriesProcessed: userStories.length,
     };
+    } finally {
+      await lock.release();
+    }
   }
 
   /**
@@ -1016,19 +1014,41 @@ export class GitHubFeatureSync {
     },
     userStoryPath: string
   ): Promise<void> {
-    // Update issue body
+    // Body diff check: skip `gh issue edit` when body is unchanged (FS-587)
     const repoSlug = this.getRepoSlug();
-    await execFileNoThrow('gh', [
-      'issue',
-      'edit',
-      issueNumber.toString(),
-      '--title',
-      issueContent.title,
-      '--body',
-      issueContent.body,
-      '-R',
-      repoSlug,
-    ], { env: this.getGhEnv() });
+    let shouldEdit = true;
+    try {
+      const viewResult = await execFileNoThrow('gh', [
+        'issue', 'view', issueNumber.toString(),
+        '--json', 'body', '--jq', '.body',
+        '-R', repoSlug,
+      ], { env: this.getGhEnv() });
+
+      if (viewResult.exitCode === 0 && viewResult.stdout) {
+        const currentNormalized = normalizeIssueBody(viewResult.stdout);
+        const newNormalized = normalizeIssueBody(issueContent.body);
+        if (currentNormalized === newNormalized) {
+          shouldEdit = false;
+          console.log(`      ⏭️  Body unchanged, skipping gh issue edit for #${issueNumber}`);
+        }
+      }
+    } catch {
+      // 404 or other error fetching current body — proceed with edit
+    }
+
+    if (shouldEdit) {
+      await execFileNoThrow('gh', [
+        'issue',
+        'edit',
+        issueNumber.toString(),
+        '--title',
+        issueContent.title,
+        '--body',
+        issueContent.body,
+        '-R',
+        repoSlug,
+      ], { env: this.getGhEnv() });
+    }
 
     // ✅ VERIFICATION GATE: Calculate ACTUAL completion from checkboxes
     const completion = await this.calculator.calculateCompletion(userStoryPath);

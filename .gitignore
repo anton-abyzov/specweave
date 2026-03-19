@@ -212,6 +212,7 @@ generated-media/
 /NVM_GLOBAL_PACKAGES_SOLUTION.md
 
 # MCP/Playwright test artifacts (screenshots, traces, etc.)
+screenshots/
 .playwright-mcp/
 .playwright-cli/
 .*-mcp/
