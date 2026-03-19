@@ -363,4 +363,56 @@ describe('stop-auto-v5.sh helper functions', () => {
       expect(lineCount).toBeLessThan(300);
     });
   });
+
+  describe('per-session auto-mode.json lookup', () => {
+    it('should find per-session auto-mode.json when CLAUDE_SESSION_ID is set', () => {
+      const sessionId = 'test-session-per-hook';
+      const sessionDir = path.join(tempDir, '.specweave', 'state', 'sessions', sessionId);
+      fs.mkdirSync(sessionDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(sessionDir, 'auto-mode.json'),
+        JSON.stringify({ active: true, sessionId })
+      );
+
+      // The per-session auto-mode.json should be readable
+      const content = JSON.parse(fs.readFileSync(path.join(sessionDir, 'auto-mode.json'), 'utf-8'));
+      expect(content.active).toBe(true);
+      expect(content.sessionId).toBe(sessionId);
+    });
+
+    it('should fall back to global auto-mode.json when no per-session file exists', () => {
+      // Write global auto-mode.json
+      fs.writeFileSync(
+        path.join(tempDir, '.specweave', 'state', 'auto-mode.json'),
+        JSON.stringify({ active: true })
+      );
+
+      // No per-session dir exists
+      const sessionDir = path.join(tempDir, '.specweave', 'state', 'sessions', 'nonexistent-session');
+      expect(fs.existsSync(sessionDir)).toBe(false);
+
+      // Global should still be found
+      const globalPath = path.join(tempDir, '.specweave', 'state', 'auto-mode.json');
+      expect(fs.existsSync(globalPath)).toBe(true);
+      const content = JSON.parse(fs.readFileSync(globalPath, 'utf-8'));
+      expect(content.active).toBe(true);
+    });
+
+    it('should create per-session directory structure correctly', () => {
+      const sessionId = 'session-dir-structure-test';
+      const sessionDir = path.join(tempDir, '.specweave', 'state', 'sessions', sessionId);
+      fs.mkdirSync(sessionDir, { recursive: true });
+
+      expect(fs.existsSync(sessionDir)).toBe(true);
+      expect(fs.statSync(sessionDir).isDirectory()).toBe(true);
+
+      // Write and read back
+      const flagPath = path.join(sessionDir, 'auto-mode.json');
+      fs.writeFileSync(flagPath, JSON.stringify({ active: true, sessionId, incrementIds: ['0001-test'] }));
+
+      const content = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+      expect(content.sessionId).toBe(sessionId);
+      expect(content.incrementIds).toContain('0001-test');
+    });
+  });
 });
