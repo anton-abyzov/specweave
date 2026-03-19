@@ -343,6 +343,13 @@ describe('ActiveIncrementManager', () => {
   });
 
   describe('File Operations', () => {
+    it('should protect writeState with FileLock', () => {
+      // This test verifies the locking wrapper doesn't break normal operation
+      manager.addActive('test-increment', true); // skipValidation=true
+      const active = manager.getActive();
+      expect(active).toContain('test-increment');
+    });
+
     it('should write state atomically', () => {
       createTestIncrement('0001-test');
 

@@ -110,8 +110,14 @@ if [ -n "$CLAUDE_SESSION_ID" ] && [ -f "$STATE_DIR/sessions/$CLAUDE_SESSION_ID/a
     log "Using per-session auto-mode: $CLAUDE_SESSION_ID"
 fi
 
-TURN_FILE="$STATE_DIR/.stop-auto-turns"
-DEDUP_PREV="$STATE_DIR/.stop-auto-dedup-prev"
+# Per-session turn counter and dedup files when session ID is available
+if [ -n "$CLAUDE_SESSION_ID" ] && [ -d "$STATE_DIR/sessions/$CLAUDE_SESSION_ID" ]; then
+    TURN_FILE="$STATE_DIR/sessions/$CLAUDE_SESSION_ID/.stop-auto-turns"
+    DEDUP_PREV="$STATE_DIR/sessions/$CLAUDE_SESSION_ID/.stop-auto-dedup-prev"
+else
+    TURN_FILE="$STATE_DIR/.stop-auto-turns"
+    DEDUP_PREV="$STATE_DIR/.stop-auto-dedup-prev"
+fi
 
 # 1. Quick exits
 [ ! -d "$SW" ] && silent_approve "Not a SpecWeave project" "not_specweave_project"

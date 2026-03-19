@@ -91,6 +91,7 @@ export interface AutoModeFlag {
   successCriteria?: SuccessCriterion[];
   successSummary?: string; // Human-readable summary of what ends the session
   userGoal?: string; // Original user intent/prompt
+  sessionId?: string; // Claude Code session that owns this auto session
 }
 
 /**

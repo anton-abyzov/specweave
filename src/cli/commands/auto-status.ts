@@ -50,7 +50,19 @@ export function createAutoStatusCommand(): Command {
  * Handle auto-status command
  */
 async function handleAutoStatus(projectPath: string, options: AutoStatusOptions): Promise<void> {
-  const autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+  // Check per-session auto-mode.json first
+  const sessionId = process.env.CLAUDE_SESSION_ID;
+  let autoFlagPath: string;
+  if (sessionId) {
+    const sessionPath = path.join(projectPath, '.specweave/state/sessions', sessionId, 'auto-mode.json');
+    if (fs.existsSync(sessionPath)) {
+      autoFlagPath = sessionPath;
+    } else {
+      autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+    }
+  } else {
+    autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+  }
   const incrementsDir = path.join(projectPath, '.specweave/increments');
 
   // Check if auto mode is active

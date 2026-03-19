@@ -50,7 +50,19 @@ export function createCancelAutoCommand(): Command {
  * Handle cancel-auto command
  */
 async function handleCancelAuto(projectPath: string, options: CancelAutoOptions): Promise<void> {
-  const autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+  // Check per-session auto-mode.json first
+  const sessionId = process.env.CLAUDE_SESSION_ID;
+  let autoFlagPath: string;
+  if (sessionId) {
+    const sessionPath = path.join(projectPath, '.specweave/state/sessions', sessionId, 'auto-mode.json');
+    if (fs.existsSync(sessionPath)) {
+      autoFlagPath = sessionPath;
+    } else {
+      autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+    }
+  } else {
+    autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+  }
 
   // Check if auto mode is active
   if (!fs.existsSync(autoFlagPath)) {
@@ -112,6 +124,18 @@ async function handleCancelAuto(projectPath: string, options: CancelAutoOptions)
     if (fs.existsSync(file)) {
       try {
         fs.unlinkSync(file);
+      } catch {
+        // Ignore cleanup errors
+      }
+    }
+  }
+
+  // Clean per-session state directory
+  if (sessionId) {
+    const sessionDir = path.join(projectPath, '.specweave/state/sessions', sessionId);
+    if (fs.existsSync(sessionDir)) {
+      try {
+        fs.rmSync(sessionDir, { recursive: true, force: true });
       } catch {
         // Ignore cleanup errors
       }
