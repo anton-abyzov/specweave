@@ -23,6 +23,7 @@ import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 export interface ReconcileOptions {
   projectRoot: string;
   dryRun?: boolean;
+  full?: boolean;
   logger?: Logger;
 }
 
@@ -73,6 +74,7 @@ const SEARCHABLE_STATUSES = new Set([
 export class GitHubReconciler {
   private projectRoot: string;
   private dryRun: boolean;
+  private full: boolean;
   private logger: Logger;
   private client: GitHubClientV2 | null = null;
   private configCache: any | null = null;
@@ -84,6 +86,7 @@ export class GitHubReconciler {
   constructor(options: ReconcileOptions) {
     this.projectRoot = options.projectRoot;
     this.dryRun = options.dryRun ?? false;
+    this.full = options.full ?? false;
     this.logger = options.logger ?? consoleLogger;
   }
 
@@ -142,6 +145,11 @@ export class GitHubReconciler {
         }
       } catch { /* Non-blocking: proceed if rate limit check fails */ }
 
+      // 2c. Bulk-fetch issue states in a single search call
+      const issueStateMap = await this.client!.bulkFetchIssueStates(
+        this.full ? 1000 : 100
+      );
+
       // 3. Scan active increments only (archived/abandoned are skipped)
       const increments = await this.scanIncrements();
       result.scanned = increments.length;
@@ -150,7 +158,7 @@ export class GitHubReconciler {
 
       // 4. Check and fix each increment
       for (const inc of increments) {
-        await this.reconcileIncrement(inc, result);
+        await this.reconcileIncrement(inc, result, issueStateMap);
       }
 
       // 5. Report summary
@@ -183,7 +191,8 @@ export class GitHubReconciler {
    */
   private async reconcileIncrement(
     inc: IncrementGitHubState,
-    result: ReconcileResult
+    result: ReconcileResult,
+    issueStateMap?: Map<number, 'open' | 'closed'>,
   ): Promise<void> {
     const status = inc.metadataStatus;
 
@@ -204,7 +213,8 @@ export class GitHubReconciler {
         shouldBeClosed,
         shouldBeOpen,
         status,
-        result
+        result,
+        issueStateMap,
       );
     }
 
@@ -216,7 +226,8 @@ export class GitHubReconciler {
         shouldBeClosed,
         shouldBeOpen,
         status,
-        result
+        result,
+        issueStateMap,
       );
     }
   }
@@ -230,12 +241,19 @@ export class GitHubReconciler {
     shouldBeClosed: boolean,
     shouldBeOpen: boolean,
     metadataStatus: string,
-    result: ReconcileResult
+    result: ReconcileResult,
+    issueStateMap?: Map<number, 'open' | 'closed'>,
   ): Promise<void> {
     try {
-      // Get current GitHub state
-      const issue = await this.client!.getIssue(issueNumber);
-      const isCurrentlyClosed = issue.state === 'closed';
+      // Try bulk map first, fallback to individual API call
+      const cachedState = issueStateMap?.get(issueNumber);
+      let isCurrentlyClosed: boolean;
+      if (cachedState !== undefined) {
+        isCurrentlyClosed = cachedState === 'closed';
+      } else {
+        const issue = await this.client!.getIssue(issueNumber);
+        isCurrentlyClosed = issue.state === 'closed';
+      }
 
       // Check for mismatch
       if (shouldBeClosed && !isCurrentlyClosed) {
@@ -926,6 +944,7 @@ Auto-closed by SpecWeave`;
     projectRoot: string,
     dryRun: boolean = false,
     logger?: Logger,
+    full: boolean = false,
   ): Promise<{ staleClosed: number; duplicatesClosed: number; errors: string[] }> {
     const log = logger ?? consoleLogger;
     const result = { staleClosed: 0, duplicatesClosed: 0, errors: [] as string[] };
@@ -941,15 +960,23 @@ Auto-closed by SpecWeave`;
       const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
       const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
 
-      // 1. Fetch all open milestones from GitHub
+      // 1. Fetch milestones — default: cap at 20 most recent; --full: paginate all
       log.log('   Fetching open milestones from GitHub...');
-      const msResult = await execFileNoThrow('gh', [
-        'api',
-        `repos/${repoSlug}/milestones`,
-        '--paginate',
-        '-q',
-        '.[] | {number, title, open_issues, closed_issues, state}',
-      ]);
+      const msArgs = full
+        ? [
+            'api',
+            `repos/${repoSlug}/milestones`,
+            '--paginate',
+            '-q',
+            '.[] | {number, title, open_issues, closed_issues, state}',
+          ]
+        : [
+            'api',
+            `repos/${repoSlug}/milestones?per_page=20&sort=updated&direction=desc`,
+            '-q',
+            '.[] | {number, title, open_issues, closed_issues, state}',
+          ];
+      const msResult = await execFileNoThrow('gh', msArgs);
 
       if (!msResult.success) {
         result.errors.push(`Failed to list milestones: ${msResult.stderr}`);

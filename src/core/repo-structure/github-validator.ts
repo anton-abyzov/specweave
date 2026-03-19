@@ -15,6 +15,7 @@
  */
 
 import { getActionableError, formatActionableError, type GitApiError } from './git-error-handler.js';
+import { createGitHubProvider } from './providers/github-provider.js';
 
 /**
  * Validation result
@@ -113,47 +114,13 @@ export async function validateOwner(
   owner: string,
   token?: string
 ): Promise<OwnerValidationResult> {
-  const headers: Record<string, string> = {
-    'Accept': 'application/vnd.github.v3+json'
+  const provider = createGitHubProvider();
+  const result = await provider.validateOwner(owner, token);
+  return {
+    valid: result.valid,
+    type: result.type === 'organization' ? 'org' : result.type,
+    error: result.error,
   };
-
-  if (token) {
-    headers['Authorization'] = `token ${token}`;
-  }
-
-  try {
-    // Try as user first (covers both users and organizations)
-    const userResponse = await fetch(`https://api.github.com/users/${owner}`, { headers });
-
-    if (userResponse.status === 200) {
-      const data: any = await userResponse.json();
-      return { valid: true, type: data.type === 'Organization' ? 'org' : 'user' };
-    }
-
-    // Try as organization if user endpoint failed
-    const orgResponse = await fetch(`https://api.github.com/orgs/${owner}`, { headers });
-
-    if (orgResponse.status === 200) {
-      return { valid: true, type: 'org' };
-    }
-
-    // Not found
-    const apiError: GitApiError = {
-      status: 404,
-      message: 'Not Found',
-      platform: 'github',
-      operation: 'validate_owner',
-      resourceType: 'user',
-      resourceName: owner
-    };
-
-    return { valid: false, error: formatActionableError(getActionableError(apiError)) };
-  } catch (error) {
-    return {
-      valid: false,
-      error: `Network error: ${error instanceof Error ? error.message : String(error)}`
-    };
-  }
 }
 
 /**

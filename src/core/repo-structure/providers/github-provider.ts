@@ -95,10 +95,12 @@ export class GitHubProvider extends BaseGitProvider {
         return { valid: true, type: 'organization' };
       }
 
-      // Not found
+      // Use actual response status — prefer more informative error (401/403) over 404
+      const useUserStatus = userResponse.status !== 404 && orgResponse.status === 404;
+      const response = useUserStatus ? userResponse : orgResponse;
       const apiError: GitApiError = {
-        status: 404,
-        message: 'Not Found',
+        status: response.status,
+        message: response.statusText,
         platform: 'github',
         operation: 'validate_owner',
         resourceType: 'user',

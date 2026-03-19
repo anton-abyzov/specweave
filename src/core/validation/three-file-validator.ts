@@ -40,6 +40,10 @@ export enum ValidationErrorCode {
   PLAN_CONTAINS_AC = 'PLAN_CONTAINS_AC',
   PLAN_CONTAINS_TASK_CHECKBOXES = 'PLAN_CONTAINS_TASK_CHECKBOXES',
 
+  // metadata.json violations
+  METADATA_MISSING_PROJECT = 'METADATA_MISSING_PROJECT',
+  METADATA_UNKNOWN_PROJECT = 'METADATA_UNKNOWN_PROJECT',
+
   // General violations
   FILE_NOT_FOUND = 'FILE_NOT_FOUND'
 }
@@ -50,7 +54,7 @@ export enum ValidationErrorCode {
 export interface ValidationIssue {
   code: ValidationErrorCode;
   severity: ValidationSeverity;
-  file: 'spec.md' | 'plan.md' | 'tasks.md';
+  file: 'spec.md' | 'plan.md' | 'tasks.md' | 'metadata.json';
   line?: number;
   message: string;
   fix?: string;
@@ -75,14 +79,18 @@ export interface ThreeFileValidationResult {
 export class ThreeFileValidator {
   /**
    * Validate an increment's three core files
+   *
+   * @param incrementDir - Path to increment directory
+   * @param projectRoot - Optional project root for config-based validation
    */
-  validateIncrement(incrementDir: string): ThreeFileValidationResult {
+  validateIncrement(incrementDir: string, projectRoot?: string): ThreeFileValidationResult {
     const issues: ValidationIssue[] = [];
 
     // Validate each file
     issues.push(...this.validateSpecFile(incrementDir));
     issues.push(...this.validatePlanFile(incrementDir));
     issues.push(...this.validateTasksFile(incrementDir));
+    issues.push(...this.validateMetadataProject(incrementDir, projectRoot));
 
     // Calculate summary
     const errors = issues.filter(i => i.severity === ValidationSeverity.ERROR).length;
@@ -321,6 +329,64 @@ export class ThreeFileValidator {
         });
       }
     });
+
+    return issues;
+  }
+
+  /**
+   * Validate metadata.json project field for umbrella routing
+   */
+  private validateMetadataProject(incrementDir: string, projectRoot?: string): ValidationIssue[] {
+    const issues: ValidationIssue[] = [];
+    if (!projectRoot) return issues;
+
+    // Load config
+    let config: any;
+    try {
+      const configPath = path.join(projectRoot, '.specweave', 'config.json');
+      if (!fs.existsSync(configPath)) return issues;
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    } catch {
+      return issues;
+    }
+
+    if (!config.umbrella?.enabled) return issues;
+
+    // Load metadata
+    const metadataPath = path.join(incrementDir, 'metadata.json');
+    let metadata: any;
+    try {
+      if (!fs.existsSync(metadataPath)) return issues;
+      metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+    } catch {
+      return issues;
+    }
+
+    const childRepos = config.umbrella.childRepos ?? [];
+
+    // Rule: Missing project in umbrella with multiple child repos
+    if (childRepos.length > 1 && !metadata.project) {
+      issues.push({
+        code: ValidationErrorCode.METADATA_MISSING_PROJECT,
+        severity: ValidationSeverity.WARNING,
+        file: 'metadata.json',
+        message: 'Increment has no `project` field — sync will use global fallback. Consider re-creating with `--project`',
+      });
+    }
+
+    // Rule: Unknown project name
+    if (metadata.project) {
+      const knownIds = childRepos.map((r: any) => r.id);
+      const umbrellaName = config.umbrella.projectName;
+      if (!knownIds.includes(metadata.project) && metadata.project !== umbrellaName) {
+        issues.push({
+          code: ValidationErrorCode.METADATA_UNKNOWN_PROJECT,
+          severity: ValidationSeverity.WARNING,
+          file: 'metadata.json',
+          message: `Project '${metadata.project}' not found in config.json childRepos or umbrella.projectName`,
+        });
+      }
+    }
 
     return issues;
   }

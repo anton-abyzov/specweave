@@ -4,18 +4,19 @@
  * Generates unique User Story IDs with support for both internal and external origins.
  * - Internal IDs: US-001, US-002, US-003 (no suffix)
  * - External IDs: US-001E, US-002E, US-003E (E suffix)
+ * - Prefixed IDs: US-SPE-001, US-VSK-002E (umbrella multi-repo)
  *
  * ID generation strategy:
- * 1. Extract numeric part from all existing IDs (ignoring suffix)
+ * 1. Extract numeric part from all existing IDs (ignoring suffix and prefix)
  * 2. Find maximum number across both internal and external IDs
  * 3. Increment to get next sequential number
- * 4. Add E suffix for external origin, no suffix for internal
+ * 4. Add prefix/E suffix as appropriate
  */
 
 export type Origin = 'internal' | 'external';
 
 export interface ParsedUsId {
-  /** Full ID string (e.g., "US-003E") */
+  /** Full ID string (e.g., "US-003E", "US-SPE-001") */
   id: string;
 
   /** Numeric part (e.g., 3) */
@@ -23,50 +24,58 @@ export interface ParsedUsId {
 
   /** Origin type */
   origin: Origin;
+
+  /** Optional prefix (e.g., "SPE", "VSK") */
+  prefix?: string;
 }
 
 /**
  * Parse User Story ID to extract components
  *
- * @param id - User Story ID (e.g., "US-001", "US-002E")
+ * Supports both plain (US-001, US-001E) and prefixed (US-SPE-001, US-VSK-002E) formats.
+ *
+ * @param id - User Story ID (e.g., "US-001", "US-SPE-001", "US-002E")
  * @returns Parsed ID components
  * @throws Error if ID format is invalid
  */
 export function parseUsId(id: string): ParsedUsId {
-  // Match: US-001 or US-001E
-  const match = id.match(/^US-(\d+)(E)?$/);
+  // Match: US-001, US-001E, US-SPE-001, US-SPE-001E
+  const match = id.match(/^US-(?:([A-Za-z]{2,6})-)?(\d+)(E)?$/);
 
   if (!match) {
-    throw new Error(`Invalid User Story ID format: ${id}. Expected format: US-XXX or US-XXXE`);
+    throw new Error(`Invalid User Story ID format: ${id}. Expected format: US-XXX, US-XXXE, US-PREFIX-XXX, or US-PREFIX-XXXE`);
   }
 
-  const number = parseInt(match[1], 10);
-  const origin: Origin = match[2] === 'E' ? 'external' : 'internal';
+  const prefix = match[1] || undefined;
+  const number = parseInt(match[2], 10);
+  const origin: Origin = match[3] === 'E' ? 'external' : 'internal';
 
   return {
     id,
     number,
-    origin
+    origin,
+    prefix
   };
 }
 
 /**
- * Format User Story ID with optional E suffix
+ * Format User Story ID with optional prefix and E suffix
  */
-function formatUsId(number: number, origin: Origin): string {
+function formatUsId(number: number, origin: Origin, prefix?: string): string {
   const formattedNumber = String(number).padStart(3, '0');
-  return origin === 'external' ? `US-${formattedNumber}E` : `US-${formattedNumber}`;
+  const suffix = origin === 'external' ? 'E' : '';
+  return prefix ? `US-${prefix}-${formattedNumber}${suffix}` : `US-${formattedNumber}${suffix}`;
 }
 
 /**
  * Get next sequential User Story ID
  *
- * Finds maximum numeric ID across all existing IDs (internal + external)
- * and generates next sequential ID with appropriate suffix.
+ * Finds maximum numeric ID across all existing IDs (internal + external,
+ * all prefixes) and generates next sequential ID with appropriate prefix/suffix.
  */
-export function getNextUsId(existingIds: string[], origin: Origin): string {
+export function getNextUsId(existingIds: string[], origin: Origin, prefix?: string): string {
   if (existingIds.length === 0) {
-    return formatUsId(1, origin);
+    return formatUsId(1, origin, prefix);
   }
 
   const numbers = existingIds
@@ -80,7 +89,7 @@ export function getNextUsId(existingIds: string[], origin: Origin): string {
     .filter(n => n > 0);
 
   const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
-  return formatUsId(maxNumber + 1, origin);
+  return formatUsId(maxNumber + 1, origin, prefix);
 }
 
 /**
@@ -131,6 +140,6 @@ export function isExternalUsId(id: string): boolean {
 /**
  * Generate range of User Story IDs
  */
-export function generateUsIdRange(start: number, count: number, origin: Origin): string[] {
-  return Array.from({ length: count }, (_, i) => formatUsId(start + i, origin));
+export function generateUsIdRange(start: number, count: number, origin: Origin, prefix?: string): string[] {
+  return Array.from({ length: count }, (_, i) => formatUsId(start + i, origin, prefix));
 }

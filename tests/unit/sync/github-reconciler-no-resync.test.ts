@@ -27,6 +27,7 @@ const {
     reopenIssue: vi.fn(),
     searchIssuesByFeature: vi.fn(),
     addComment: vi.fn(),
+    bulkFetchIssueStates: vi.fn().mockResolvedValue(new Map()),
   }));
 
   return {

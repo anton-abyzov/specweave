@@ -742,6 +742,36 @@ export class GitHubClientV2 {
   }
 
   /**
+   * Bulk-fetch issue states for all SpecWeave-managed issues in a single search call.
+   * Returns a Map<issueNumber, 'open' | 'closed'> so the reconciler can skip
+   * per-issue getIssue() API calls.
+   *
+   * @param limit Max results — 100 for default mode, 1000 for --full
+   */
+  async bulkFetchIssueStates(limit: number = 100): Promise<Map<number, 'open' | 'closed'>> {
+    const result = await execFileNoThrow('gh', [
+      'search', 'issues',
+      `repo:${this.fullRepo} [FS- in:title`,
+      '--json', 'number,state',
+      '--limit', String(limit),
+      '--state', 'all',
+    ], { env: this.getGhEnv() });
+
+    const map = new Map<number, 'open' | 'closed'>();
+    if (result.exitCode !== 0) return map;
+
+    try {
+      const issues = JSON.parse(result.stdout);
+      for (const issue of issues) {
+        map.set(issue.number, (issue.state?.toLowerCase() ?? 'open') as 'open' | 'closed');
+      }
+    } catch {
+      // Parse failure → empty map → all issues fall back to getIssue()
+    }
+    return map;
+  }
+
+  /**
    * Search for issues by feature ID and user story pattern (NEW in v0.28.33)
    *
    * Searches for issues with title matching pattern: [FS-XXX][US-YYY]

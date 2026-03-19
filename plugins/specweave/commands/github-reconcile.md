@@ -16,6 +16,7 @@ sw-github:reconcile [options]
 
 - `--dry-run`: Preview changes without making them
 - `--verbose`: Show detailed output for each issue checked
+- `--full`: Deep reconciliation — removes issue search cap (1000 vs 100) and paginates all milestones
 
 ## What It Does
 
@@ -42,6 +43,7 @@ import { GitHubReconciler } from '../../../src/sync/github-reconciler.js';
 const reconciler = new GitHubReconciler({
   projectRoot: process.cwd(),
   dryRun: args.includes('--dry-run'),
+  full: args.includes('--full'),
 });
 
 const result = await reconciler.reconcile();
