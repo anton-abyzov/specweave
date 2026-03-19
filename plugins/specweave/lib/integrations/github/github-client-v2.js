@@ -254,16 +254,18 @@ FIX:
    *
    * CRITICAL: Includes duplicate detection to prevent creating duplicate issues
    */
-  async createEpicIssue(title, body, milestone, labels = []) {
+  async createEpicIssue(title, body, milestone, labels = [], options) {
     this.validateIssueTitle(title);
-    const titlePatternMatch = title.match(/^\[FS-\d{3,}E?\](?:\[US-\d{3,}E?\])?/);
-    if (titlePatternMatch) {
-      const titlePattern = titlePatternMatch[0];
-      const existingIssue = await this.searchIssueByTitle(titlePattern, true);
-      if (existingIssue) {
-        console.log(`\u26A0\uFE0F Issue already exists: #${existingIssue.number} - "${existingIssue.title}"`);
-        console.log(`   Returning existing issue instead of creating duplicate.`);
-        return existingIssue;
+    if (!options?.skipDuplicateCheck) {
+      const titlePatternMatch = title.match(/^\[FS-\d{3,}E?\](?:\[US-\d{3,}E?\])?/);
+      if (titlePatternMatch) {
+        const titlePattern = titlePatternMatch[0];
+        const existingIssue = await this.searchIssueByTitle(titlePattern, true);
+        if (existingIssue) {
+          console.log(`\u26A0\uFE0F Issue already exists: #${existingIssue.number} - "${existingIssue.title}"`);
+          console.log(`   Returning existing issue instead of creating duplicate.`);
+          return existingIssue;
+        }
       }
     }
     const args = [
@@ -499,6 +501,54 @@ ${body}`;
       return JSON.parse(result.stdout);
     } catch {
       return null;
+    }
+  }
+  /**
+   * Get issue details AND last comment in a single GraphQL call.
+   *
+   * Replaces sequential getIssue() + getLastComment() to halve API usage.
+   * Falls back to sequential REST calls if GraphQL fails.
+   *
+   * @param issueNumber - GitHub issue number
+   * @returns Issue data + last comment (or null if no comments)
+   */
+  async getIssueWithLastComment(issueNumber) {
+    const query = `query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){number title body url state labels(first:10){nodes{name}}comments(last:1){nodes{body author{login}}}}}}`;
+    try {
+      const result = await execFileNoThrow("gh", [
+        "api",
+        "graphql",
+        "-f",
+        `query=${query}`,
+        "-F",
+        `owner=${this.owner}`,
+        "-F",
+        `repo=${this.repo}`,
+        "-F",
+        `number=${issueNumber}`
+      ], { env: this.getGhEnv() });
+      if (result.exitCode !== 0) {
+        throw new Error(result.stderr || "GraphQL query failed");
+      }
+      const data = JSON.parse(result.stdout);
+      const gqlIssue = data.data.repository.issue;
+      const issue = {
+        number: gqlIssue.number,
+        title: gqlIssue.title,
+        body: gqlIssue.body,
+        state: gqlIssue.state?.toLowerCase() ?? gqlIssue.state,
+        html_url: gqlIssue.url,
+        labels: gqlIssue.labels?.nodes?.map((l) => l.name) || []
+      };
+      const commentNodes = gqlIssue.comments?.nodes || [];
+      const lastComment = commentNodes.length > 0 ? { body: commentNodes[0].body, author: commentNodes[0].author?.login || "" } : null;
+      const cacheKey = `${this.fullRepo}#${issueNumber}`;
+      _GitHubClientV2.issueCache.set(cacheKey, { data: issue, fetchedAt: Date.now() });
+      return { issue, lastComment };
+    } catch {
+      const issue = await this.getIssue(issueNumber);
+      const lastComment = await this.getLastComment(issueNumber);
+      return { issue, lastComment };
     }
   }
   /**

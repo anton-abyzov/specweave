@@ -1,5 +1,6 @@
 import { execFileSync } from "child_process";
 import { getGitHubAuthFromProject } from "../../../../../src/utils/auth-helpers.js";
+import { ensureLabels } from "./label-cache.js";
 function getGhEnv() {
   const { token } = getGitHubAuthFromProject(process.cwd());
   return token ? { ...process.env, GH_TOKEN: token } : process.env;
@@ -274,23 +275,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       try {
         const safeLabels = labels.filter((l) => /^[a-zA-Z0-9:_\- ]+$/.test(l));
         if (repo) {
-          for (const label of safeLabels) {
-            try {
-              execFileSync("gh", [
-                "label",
-                "create",
-                label,
-                "--repo",
-                repo,
-                "--color",
-                "ededed",
-                "--description",
-                "SpecWeave auto-label",
-                "--force"
-              ], { encoding: "utf-8", env: getGhEnv() });
-            } catch {
-            }
-          }
+          await ensureLabels(repo, safeLabels, getGhEnv());
         }
         const args = [
           "issue",
@@ -326,9 +311,9 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       }
     }
     let duplicatesClosed = 0;
-    if (!wasReused && process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== "1") {
+    if (!wasReused && process.env.SPECWEAVE_VERIFY_DUPLICATES === "1") {
       console.log(`
-\u2501\u2501\u2501 PHASE 3: VERIFICATION \u2501\u2501\u2501`);
+\u2501\u2501\u2501 PHASE 3: VERIFICATION (opt-in) \u2501\u2501\u2501`);
       const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
       if (!verification.success && verification.duplicates.length > 0) {
         console.log(`

@@ -32,6 +32,7 @@
 
 import { execFileSync } from 'child_process';
 import { getGitHubAuthFromProject } from '../../../../../src/utils/auth-helpers.js';
+import { ensureLabels } from './label-cache.js';
 
 /**
  * Get environment object with GH_TOKEN for gh CLI commands.
@@ -423,16 +424,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
         // Sanitize labels: only allow alphanumeric, hyphens, colons, spaces
         const safeLabels = labels.filter(l => /^[a-zA-Z0-9:_\- ]+$/.test(l));
         if (repo) {
-          for (const label of safeLabels) {
-            try {
-              execFileSync('gh', [
-                'label', 'create', label, '--repo', repo,
-                '--color', 'ededed', '--description', 'SpecWeave auto-label', '--force'
-              ], { encoding: 'utf-8', env: getGhEnv() });
-            } catch {
-              // Label creation failure is non-fatal
-            }
-          }
+          await ensureLabels(repo, safeLabels, getGhEnv());
         }
 
         const args = [
@@ -480,19 +472,18 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       }
     }
 
-    // PHASE 3: Verification — ENABLED BY DEFAULT (FS-587)
-    // Phase 1 searches before create, but Phase 3 catches race conditions from
-    // parallel sync sessions. Disable with SPECWEAVE_SKIP_VERIFY_DUPLICATES=1
-    // if you want to reduce API calls at the cost of duplicate safety.
+    // PHASE 3: Verification — DISABLED BY DEFAULT (FS-612)
+    // Phase 1 already searches before create. Phase 3 catches race conditions
+    // from parallel sync sessions but costs 1+ extra API calls per issue.
+    // Opt-in with SPECWEAVE_VERIFY_DUPLICATES=1 if you need extra safety.
     //
     // FS-609: Skip Phase 3 when reusing an existing issue (wasReused=true).
     // Phase 3 exists to catch race conditions during CREATION — if no new issue
-    // was created, there's nothing to verify. The identical search from Phase 1
-    // would just be wasted API calls.
+    // was created, there's nothing to verify.
     let duplicatesClosed = 0;
 
-    if (!wasReused && process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== '1') {
-    console.log(`\n━━━ PHASE 3: VERIFICATION ━━━`);
+    if (!wasReused && process.env.SPECWEAVE_VERIFY_DUPLICATES === '1') {
+    console.log(`\n━━━ PHASE 3: VERIFICATION (opt-in) ━━━`);
     const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
 
     if (!verification.success && verification.duplicates.length > 0) {
@@ -515,7 +506,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
     } else if (verification.success) {
       console.log(`   ✅ No duplicates detected!`);
     }
-    } // end SPECWEAVE_SKIP_VERIFY_DUPLICATES guard
+    } // end SPECWEAVE_VERIFY_DUPLICATES guard
 
     // Final Summary
     console.log(`\n✅ Issue creation complete!`);
