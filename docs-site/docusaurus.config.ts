@@ -136,7 +136,7 @@ const config: Config = {
   // Mermaid diagrams support
   markdown: {
     mermaid: true,
-    format: 'detect',
+    format: 'mdx',
     hooks: {
       onBrokenMarkdownImages: () => {},
     },

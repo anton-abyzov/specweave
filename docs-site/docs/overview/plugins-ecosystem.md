@@ -9,7 +9,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 # Plugin Ecosystem
 
-SpecWeave uses a **unified plugin architecture**. The core framework ships with **1 bundled plugin** providing 44 skills covering the full development lifecycle including GitHub, JIRA, Azure DevOps sync, release management, diagrams, media generation, and documentation. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
+SpecWeave uses a **unified plugin architecture**. SpecWeave ships with **1 bundled plugin** providing 44 skills covering the full development lifecycle including GitHub, JIRA, Azure DevOps sync, release management, diagrams, media generation, and documentation. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
 
 ![Plugin Architecture](/img/diagrams/plugin-architecture.svg)
 

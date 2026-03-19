@@ -175,6 +175,85 @@ describe('AdoClient', () => {
 
       await expect(client.createWorkItem({ workItemType: 'Task', title: '' })).rejects.toThrow();
     });
+
+    it('should call linkWorkItems when parentId is provided', async () => {
+      // First call: create work item
+      mockFetch.mockResolvedValueOnce(mockResponse({
+        id: 300,
+        fields: { 'System.Title': 'Child Story', 'System.WorkItemType': 'User Story', 'System.State': 'New' },
+        url: 'https://dev.azure.com/test-org/_apis/wit/workItems/300'
+      }));
+      // Second call: link to parent (PATCH with relations)
+      mockFetch.mockResolvedValueOnce(mockResponse({ id: 300 }));
+
+      const result = await client.createWorkItem({
+        workItemType: 'User Story',
+        title: 'Child Story',
+        parentId: 500,
+      });
+
+      expect(result.id).toBe(300);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      // Verify the second call is a PATCH with Hierarchy-Reverse link
+      const linkCall = mockFetch.mock.calls[1];
+      expect(linkCall[1].method).toBe('PATCH');
+      const linkBody = JSON.parse(linkCall[1].body);
+      expect(linkBody[0].op).toBe('add');
+      expect(linkBody[0].path).toBe('/relations/-');
+      expect(linkBody[0].value.rel).toBe('System.LinkTypes.Hierarchy-Reverse');
+      expect(linkBody[0].value.url).toContain('/workitems/500');
+    });
+
+    it('should not call linkWorkItems when parentId is omitted', async () => {
+      mockFetch.mockResolvedValueOnce(mockResponse({
+        id: 301,
+        fields: { 'System.Title': 'No Parent', 'System.WorkItemType': 'User Story', 'System.State': 'New' },
+        url: 'https://dev.azure.com/test-org/_apis/wit/workItems/301'
+      }));
+
+      await client.createWorkItem({
+        workItemType: 'User Story',
+        title: 'No Parent',
+      });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw when linkWorkItems fails with non-409 status', async () => {
+      // First call: create work item (succeeds)
+      mockFetch.mockResolvedValueOnce(mockResponse({
+        id: 302,
+        fields: { 'System.Title': 'Will Fail Link', 'System.WorkItemType': 'User Story', 'System.State': 'New' },
+        url: 'https://dev.azure.com/test-org/_apis/wit/workItems/302'
+      }));
+      // Second call: link fails with 500
+      mockFetch.mockResolvedValueOnce(mockResponse('Internal Server Error', { ok: false, status: 500 }));
+
+      await expect(client.createWorkItem({
+        workItemType: 'User Story',
+        title: 'Will Fail Link',
+        parentId: 600,
+      })).rejects.toThrow('Failed to link work item #302 to parent #600');
+    });
+
+    it('should succeed when linkWorkItems returns 409 (duplicate)', async () => {
+      // First call: create work item (succeeds)
+      mockFetch.mockResolvedValueOnce(mockResponse({
+        id: 303,
+        fields: { 'System.Title': 'Duplicate Link', 'System.WorkItemType': 'User Story', 'System.State': 'New' },
+        url: 'https://dev.azure.com/test-org/_apis/wit/workItems/303'
+      }));
+      // Second call: link returns 409 (already linked)
+      mockFetch.mockResolvedValueOnce(mockResponse('Link already exists', { ok: false, status: 409 }));
+
+      const result = await client.createWorkItem({
+        workItemType: 'User Story',
+        title: 'Duplicate Link',
+        parentId: 700,
+      });
+
+      expect(result.id).toBe(303);
+    });
   });
 
   describe('updateWorkItem', () => {
