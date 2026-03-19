@@ -18,6 +18,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const {
   mockExistsSync,
   mockReadFile,
+  mockBulkFetchIssueStates,
   mockReaddir,
   mockWriteFile,
   mockGetIssue,
@@ -38,6 +39,7 @@ const {
   const _mockSearchIssuesByFeature = vi.fn();
   const _mockAddComment = vi.fn();
   const _mockCheckRateLimit = vi.fn();
+  const _mockBulkFetchIssueStates = vi.fn();
 
   // fromRepo always returns the SAME mock functions
   const _mockFromRepo = vi.fn(() => ({
@@ -47,6 +49,7 @@ const {
     searchIssuesByFeature: _mockSearchIssuesByFeature,
     addComment: _mockAddComment,
     checkRateLimit: _mockCheckRateLimit,
+    bulkFetchIssueStates: _mockBulkFetchIssueStates,
   }));
 
   return {
@@ -65,6 +68,7 @@ const {
     mockAddComment: _mockAddComment,
     mockCheckRateLimit: _mockCheckRateLimit,
     mockIsProviderEnabled: vi.fn(),
+    mockBulkFetchIssueStates: _mockBulkFetchIssueStates,
   };
 });
 
@@ -222,6 +226,9 @@ describe('GitHubReconciler', () => {
 
     // Default: searchIssuesByFeature returns empty
     mockSearchIssuesByFeature.mockResolvedValue([]);
+
+    // Default: bulkFetchIssueStates returns empty map (all issues fall back to getIssue)
+    mockBulkFetchIssueStates.mockResolvedValue(new Map());
   });
 
   // =========================================================================

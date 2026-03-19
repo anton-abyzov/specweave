@@ -214,7 +214,7 @@ function extractUserStories(lines: string[]): UserStory[] {
 
   // Regex patterns (T-029: Support E suffix for external IDs)
   // Updated: Support 3+ digits for US-XXX (Y2K fix)
-  const usHeaderRegex = /^###?\s+(US-\d{3,}E?):\s*(.+)$/;  // ### US-001E: Title or ## US-1000: Title
+  const usHeaderRegex = /^###?\s+(US-(?:[A-Za-z]{2,6}-)?\d{3,}E?):\s*(.+)$/;  // ### US-001E: Title or ## US-SPE-001: Title
   const acRegex = /^-\s*\[[x ]\]\s*\*\*(AC-US\d+E?-\d{2})\*\*/;  // - [ ] **AC-US1E-01**
   const priorityRegex = /\*\*Priority\*\*:\s*(P[0-3])/;
 

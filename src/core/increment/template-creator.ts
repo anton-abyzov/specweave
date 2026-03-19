@@ -285,6 +285,22 @@ export async function createIncrementTemplates(
       };
     }
 
+    // Auto-populate project field for umbrella sync routing
+    try {
+      const configPath = path.join(projectRoot, '.specweave', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        if (rawConfig.umbrella?.enabled) {
+          const detectedProject = detectProjectFromCwd(rawConfig.umbrella, process.cwd(), projectRoot);
+          if (detectedProject) {
+            metadata.project = detectedProject;
+          }
+        }
+      }
+    } catch {
+      // Config load failure is non-fatal for project detection
+    }
+
     fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     createdFiles.push('metadata.json');
 
@@ -372,6 +388,45 @@ export async function createIncrementTemplates(
       nextSteps: [],
     };
   }
+}
+
+/**
+ * Detect project from current working directory in umbrella mode.
+ *
+ * Uses childRepos[].path matching to determine which child repo
+ * the cwd belongs to, enabling sync routing Phase 1 activation.
+ *
+ * @param umbrellaConfig - The umbrella section of config.json
+ * @param cwd - Current working directory
+ * @param umbrellaRoot - Umbrella project root path
+ * @returns Child repo ID, umbrella projectName, or undefined
+ */
+export function detectProjectFromCwd(
+  umbrellaConfig: { enabled?: boolean; projectName?: string; childRepos?: Array<{ id: string; path: string; disabled?: boolean }> } | undefined,
+  cwd: string,
+  umbrellaRoot: string,
+): string | undefined {
+  if (!umbrellaConfig?.enabled) return undefined;
+
+  const resolvedCwd = path.resolve(cwd);
+  const childRepos = umbrellaConfig.childRepos ?? [];
+
+  // Longest prefix match for overlapping repo paths
+  let bestMatch: { id: string; pathLength: number } | undefined;
+
+  for (const repo of childRepos) {
+    const repoAbsPath = path.resolve(umbrellaRoot, repo.path);
+    if (resolvedCwd === repoAbsPath || resolvedCwd.startsWith(repoAbsPath + path.sep)) {
+      if (!bestMatch || repoAbsPath.length > bestMatch.pathLength) {
+        bestMatch = { id: repo.id, pathLength: repoAbsPath.length };
+      }
+    }
+  }
+
+  if (bestMatch) return bestMatch.id;
+
+  // cwd at umbrella root or outside any child repo
+  return umbrellaConfig.projectName;
 }
 
 /**
