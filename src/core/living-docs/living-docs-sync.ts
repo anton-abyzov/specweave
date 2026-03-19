@@ -1859,7 +1859,12 @@ export class LivingDocsSync {
       // Pass projectName so cross-project mode reads the correct FEATURE.md per repo
       const result = await sync.syncFeatureToGitHub(featureId, projectName);
 
-      this.logger.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
+      // FS-609: Surface rate limit skip clearly instead of misleading success message
+      if (result.rateLimitSkipped) {
+        this.logger.warn(`   ⚠️  GitHub sync skipped — API rate limit too low. Run /sw:progress-sync to retry`);
+      } else {
+        this.logger.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
+      }
 
     } catch (error) {
       if (error instanceof Error && error.message.includes('Cannot find module')) {
