@@ -21,7 +21,7 @@ import { createSubagentStartHandler, createSubagentStopHandler } from './hooks/h
 import { passthroughHandler } from './hooks/handlers/passthrough.js';
 import { createWorkspaceRouteHandlers } from './routes/workspace-routes.js';
 import { isPortReachable } from '../../hooks/hooks-status.js';
-import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
+import { hasSpecweaveIncrements, findUmbrellaRoot } from '../../utils/find-project-root.js';
 import { SCOPE_PORTS } from '../../utils/docs-preview/types.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';
 
@@ -363,7 +363,8 @@ export class DashboardServer {
         sendJson(res, { ok: false, error: 'Not a SpecWeave project' }, 400);
         return;
       }
-      const info = this.addProject(resolvedPath);
+      const effectiveRoot = findUmbrellaRoot(resolvedPath) || resolvedPath;
+      const info = this.addProject(effectiveRoot);
       sendJson(res, { ok: true, data: info });
     });
 
