@@ -1137,7 +1137,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   hooks: {
     post_task_completion: {
       sync_tasks_md: true,
-      external_tracker_sync: true,
+      external_tracker_sync: false,
     },
     post_increment_planning: {
       auto_create_github_issue: true,
