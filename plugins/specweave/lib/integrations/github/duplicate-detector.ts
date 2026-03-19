@@ -484,9 +484,14 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
     // Phase 1 searches before create, but Phase 3 catches race conditions from
     // parallel sync sessions. Disable with SPECWEAVE_SKIP_VERIFY_DUPLICATES=1
     // if you want to reduce API calls at the cost of duplicate safety.
+    //
+    // FS-609: Skip Phase 3 when reusing an existing issue (wasReused=true).
+    // Phase 3 exists to catch race conditions during CREATION — if no new issue
+    // was created, there's nothing to verify. The identical search from Phase 1
+    // would just be wasted API calls.
     let duplicatesClosed = 0;
 
-    if (process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== '1') {
+    if (!wasReused && process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== '1') {
     console.log(`\n━━━ PHASE 3: VERIFICATION ━━━`);
     const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
 
