@@ -475,7 +475,6 @@ export async function configureGitHubRepositories(
   const {
     promptGitHubSetupType,
     configureNoRepository,
-    configureSingleRepository,
     configureMultipleRepositories,
     configureMonorepo,
     autoDetectRepositories
@@ -498,9 +497,6 @@ export async function configureGitHubRepositories(
   switch (setupType) {
     case 'none':
       return { profiles: await configureNoRepository() };
-
-    case 'single':
-      return { profiles: await configureSingleRepository(projectPath) };
 
     case 'multiple':
       return { profiles: await configureMultipleRepositories(projectPath) };

@@ -45,12 +45,12 @@ Increment planning produces specs, plans, and task breakdowns that require user 
 STEP 0A: Discipline Check (BLOCKING)
 STEP 0B: WIP Enforcement
 STEP 0C: Tech Stack Detection
-STEP 0D: Structure Resolution (if deferred from init)
 STEP 1:  Pre-flight (TDD mode, multi-project, Deep Interview check)
 STEP 2:  Project Context (resolve project/board)
 STEP 3:  Create Increment (via Template API) ← folder + ID exist after this
 STEP 3a: Deep Interview (if enabled) ← runs AFTER folder exists
-STEP 4:  Delegation (architect + planner)
+STEP 4:  Direct Specification Writing (universal, CLI-first)
+STEP 4a: Enhanced: Team-Based Delegation (optional, Claude Code only)
 STEP 5:  Post-Creation Sync
 STEP 6:  Execution Strategy Recommendation
 ```
@@ -116,31 +116,6 @@ Auto-detect from project files:
 
 If detection fails, ask user.
 
-## Step 0D: Structure Resolution (if deferred)
-
-Check if the user deferred their repository structure decision during init (greenfield projects):
-
-```bash
-DEFERRED=$(jq -r '.project.structureDeferred // false' .specweave/config.json 2>/dev/null)
-```
-
-If `DEFERRED` is `true`, this is the user's **first increment** and they need to define their project structure.
-
-Based on the user's feature description and what you've learned from tech stack detection:
-
-1. **Ask the user** about their repository structure:
-   - **Single repo** — one repository (monorepo or standard project)
-   - **Multiple repos** — microservices, EDA, parent/child architecture
-
-2. **Run the resolve command** based on their answer:
-   ```bash
-   specweave resolve-structure --type single
-   # OR
-   specweave resolve-structure --type multiple
-   ```
-
-3. This clears the deferred flag and configures the project accordingly. Continue with the normal increment flow.
-
 ## Step 1: Pre-flight Checks
 
 ```bash
@@ -170,7 +145,7 @@ Every US MUST have `**Project**:` field. For 2-level structures, also `**Board**
 
 ### 3a. Determine Increment Location
 
-**CRITICAL for umbrella vs single-repo:**
+**Determine where increments are stored:**
 
 ```bash
 # Check umbrella mode
@@ -188,7 +163,7 @@ elif [ -d "repositories" ]; then
   echo "Organization: $ORG"
   ls -d repositories/*/* 2>/dev/null | head -20
 else
-  echo "SINGLE-REPO: Use .specweave/increments/"
+  echo "WORKSPACE: Use .specweave/increments/"
 fi
 ```
 
@@ -202,7 +177,7 @@ fi
 - Each repository has its OWN `.specweave/increments/` directory
 - Run `specweave init` in each repo if `.specweave/` doesn't exist
 
-### 3b. Create Increment (Preferred — Atomic)
+### 3b. Create Increment
 
 ```bash
 specweave create-increment --auto-id --name "your-feature-name" --title "Feature Title" --description "Brief description" --project "my-app"
@@ -212,20 +187,9 @@ This atomically reserves the next available ID and creates the increment directo
 
 **Optional flags**: `--type hotfix` | `--priority P1` | `--board "team-name"` | `--json`
 
-### 3c. Legacy two-step creation (when explicit ID is needed)
+For diagnostic purposes, `specweave next-id` is available to preview the next number.
 
-```bash
-# Step 1: Get the next available increment ID
-NEXT_ID=$(specweave next-id --name "your-feature-name")
-# Returns e.g. "0579-your-feature-name"
-
-# Step 2: Create with explicit ID
-specweave create-increment --id "$NEXT_ID" --title "Feature Title" --description "Brief description" --project "my-app"
-```
-
-**Note**: The two-step approach has a TOCTOU race — another process can claim the ID between steps. Prefer `--auto-id` for concurrent environments.
-
-### 3d. Create manually (if CLI unavailable)
+### 3c. Create manually (if CLI unavailable)
 
 ```bash
 mkdir -p .specweave/increments/XXXX-name
@@ -273,31 +237,50 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
 ## Critical Rules
 
-1. **NEVER write spec.md/plan.md/tasks.md directly** — when TeamCreate is available, ALWAYS delegate via TeamCreate + team-scoped Agent() calls (see Adapter Compatibility for fallback)
+1. **Prefer team-based delegation when TeamCreate is available**; write spec files directly otherwise
 2. **Project field is MANDATORY** — Every US MUST have `**Project**:` field
 3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --auto-id --name "name" --title "Title" --description "Desc" --project "my-app"`
-4. **Team-based delegation is the ONLY way** to produce spec.md/plan.md/tasks.md when TeamCreate is available — create a team via TeamCreate(), then spawn `sw:sw-pm`, `sw:sw-architect`, `sw:sw-planner` agents with team_name
+4. **Team-based delegation is the preferred path** when TeamCreate is available — but direct spec writing is the universal default that works with ALL AI tools
 5. **Increment naming** — Format: `####-descriptive-kebab-case`
 6. **Umbrella mode** — When `umbrella.enabled: true`, ALL increments go in the umbrella root `.specweave/increments/`. The `**Project**:` field per user story routes sync to child repos. Do NOT create increments in child repos.
 
-## Adapter Compatibility
+## Step 3a: Deep Interview Mode (if enabled)
 
-The team-based delegation below uses Claude Code tools (TeamCreate, Agent, SendMessage).
-If these tools are unavailable (OpenCode, Cursor, other adapters):
+**IMPORTANT**: This step runs AFTER the increment folder is created (Step 3), so the
+interview state file can reference the real increment ID.
 
-**Fallback: Direct spec writing**
+**If deep interview is enabled, delegate to PM subagent (if Agent tool available) or conduct inline:**
+
+```typescript
+Agent({ subagent_type: "sw:sw-pm", prompt: "Deep interview for increment XXXX-name: <user description>. Increment path: <path>", description: "PM deep interview" })
+```
+
+The PM agent will:
+1. Assess complexity and determine question count (trivial: 0-3, small: 4-8, medium: 9-18, large: 19-40)
+2. Interview the user across relevant categories
+3. Write interview state to `.specweave/state/interview-{increment-id}.json`
+4. Return interview summary for spec.md creation
+
+**After PM agent returns**, read the interview state file to confirm all categories are covered
+before proceeding to spec.md creation (especially when `enforcement: "strict"`).
+
+## Step 4: Direct Specification Writing (Universal — works with ALL AI tools)
+
+**After increment folder + metadata.json are created, write the spec files using CLI commands and templates.**
+
+This is the default path. It works with Claude Code, Cursor, OpenCode, Copilot, Aider, and any other AI tool.
+
 1. Create the increment: `specweave create-increment --auto-id --name "feature-name" --title "Title" --description "Desc" --project "my-app"`
-2. Write spec.md directly with user stories and ACs
-3. Write plan.md with architecture decisions
-4. Write tasks.md with BDD test plans for each AC
+2. Write `spec.md` with user stories and acceptance criteria (use the User Story Format above)
+3. Write `plan.md` with architecture decisions and ADR references
+4. Write `tasks.md` with BDD test plans (Given/When/Then) for each AC
 5. Run: `specweave sync-living-docs {increment-id}`
 
-Skip to Step 5 after writing all files.
+Proceed to Step 5 after writing all files.
 
-## CRITICAL: Mandatory Team-Based Delegation
+### Step 4a: Enhanced — Team-Based Delegation (Optional, Claude Code only)
 
-**This skill MUST NOT write spec.md, plan.md, or tasks.md directly** (when TeamCreate is available).
-Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmux pane for user visibility.
+**If TeamCreate is available**, use team-based delegation for better quality. This provides isolated context, persistent memory, resumability, auto-compaction, and tmux pane visibility for each agent.
 
 **Team lifecycle:**
 1. `TeamCreate({ team_name: "plan-XXXX-name", description: "Planning: <feature>" })`
@@ -317,7 +300,7 @@ Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmu
    fi
    ```
 
-**You MUST spawn these agents:**
+**Agents to spawn:**
 
 | File | Agent | Invocation |
 |------|-------|------------|
@@ -325,7 +308,7 @@ Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmu
 | plan.md | sw:sw-architect | `Agent({ team_name: "plan-XXXX-name", name: "architect", subagent_type: "sw:sw-architect", mode: "bypassPermissions", prompt: "...", description: "Architect writes plan.md" })` |
 | tasks.md | sw:sw-planner | `Agent({ team_name: "plan-XXXX-name", name: "planner", subagent_type: "sw:sw-planner", mode: "bypassPermissions", prompt: "...", description: "Planner writes tasks.md" })` |
 
-**DO NOT:**
+**DO NOT (when using team-based delegation):**
 - Write user stories, architecture, or tasks inline
 - Copy/paste spec content into Write() calls
 - "Summarize" what an agent would produce
@@ -333,33 +316,7 @@ Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmu
 - Use standalone Agent() without team_name for Phase 1/2 delegation — agents MUST be in a team for tmux visibility (exception: Deep Interview in Step 3a is standalone because it's interactive + sequential)
 - Use Skill() for these — team agents provide memory + resumability + visibility
 
-## Step 3a: Deep Interview Mode (if enabled)
-
-**IMPORTANT**: This step runs AFTER the increment folder is created (Step 3), so the
-interview state file can reference the real increment ID.
-
-**If deep interview is enabled, delegate to PM subagent:**
-
-```typescript
-Agent({ subagent_type: "sw:sw-pm", prompt: "Deep interview for increment XXXX-name: <user description>. Increment path: <path>", description: "PM deep interview" })
-```
-
-The PM agent will:
-1. Assess complexity and determine question count (trivial: 0-3, small: 4-8, medium: 9-18, large: 19-40)
-2. Interview the user across relevant categories
-3. Write interview state to `.specweave/state/interview-{increment-id}.json`
-4. Return interview summary for spec.md creation
-
-**After PM agent returns**, read the interview state file to confirm all categories are covered
-before proceeding to spec.md creation (especially when `enforcement: "strict"`).
-
-## Step 4: Delegation (MANDATORY - Team-Based)
-
-**After increment folder + metadata.json are created, create a planning team and spawn agents using a 2-phase overlap strategy.**
-
-Each agent runs in its own tmux pane for visibility. Agents preload their corresponding skill (with full domain logic, phases, templates), providing: isolated context, persistent memory, resumability, auto-compaction.
-
-### 4a. Create Planning Team (REQUIRED — before spawning any agents)
+#### 4a-i. Create Planning Team (before spawning any agents)
 
 **Cleanup first** — if you previously created a planning team in this session, shut down those agents before proceeding:
 ```typescript
@@ -377,7 +334,7 @@ TeamCreate({ team_name: "plan-XXXX-name", description: "Planning: <feature descr
 
 **team_name prefix `plan-*`** bypasses the increment-existence-guard (planning doesn't require an active increment).
 
-### 4b. Spawn PM and Architect IN PARALLEL (REQUIRED)
+#### 4a-ii. Spawn PM and Architect IN PARALLEL
 
 PM and Architect run concurrently in separate tmux panes. Architect starts codebase exploration immediately while PM writes spec.md. Architect polls for spec.md and reads it once available, then produces plan.md.
 
@@ -394,7 +351,7 @@ Agent({ team_name: "plan-XXXX-name", name: "architect", subagent_type: "sw:sw-ar
 
 **IMPORTANT**: Use parallel Agent() tool calls — call PM and Architect in the SAME message so they start concurrently.
 
-### 4c. Spawn Planner (REQUIRED — after PM + Architect complete)
+#### 4a-iii. Spawn Planner (after PM + Architect complete)
 ```typescript
 Agent({ team_name: "plan-XXXX-name", name: "planner", subagent_type: "sw:sw-planner", mode: "bypassPermissions", prompt: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md", description: "Planner writes tasks.md" })
 ```
@@ -403,7 +360,7 @@ Agent({ team_name: "plan-XXXX-name", name: "planner", subagent_type: "sw:sw-plan
 Architect explores the codebase while PM writes spec.md, then reads spec.md to produce plan.md.
 Planner needs both spec.md AND plan.md, so it must wait for Phase 1 to finish.
 
-### 4d. Team Cleanup (REQUIRED — after Planner completes)
+#### 4a-iv. Team Cleanup (after Planner completes)
 
 ```typescript
 SendMessage({ type: "shutdown_request", recipient: "pm" })

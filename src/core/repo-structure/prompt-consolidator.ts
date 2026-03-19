@@ -8,9 +8,10 @@
  */
 
 /**
- * Architecture choice (GitHub-only, 2 options)
+ * Architecture choice
+ * v0581: 'single' removed — always multi-repo
  */
-export type ArchitectureChoice = 'single' | 'github-parent';
+export type ArchitectureChoice = 'github-parent';
 
 /**
  * Architecture prompt option
@@ -38,20 +39,8 @@ export function getArchitecturePrompt(): {
     question: 'What is your repository architecture?',
     options: [
       {
-        value: 'single',
-        label: '1️⃣  Single repository',
-        description: 'All code in one repository',
-        example: `
-my-project/
-├── .specweave/
-├── frontend/
-├── backend/
-└── shared/
-        `.trim()
-      },
-      {
         value: 'github-parent',
-        label: '2️⃣  Multiple repositories (microservices/polyrepo)',
+        label: 'Multiple repositories (microservices/polyrepo)',
         description: 'Multiple GitHub repos - all equal, first is default for issues',
         example: `
 my-org/
@@ -62,45 +51,6 @@ my-org/
       }
     ]
   };
-}
-
-/**
- * Get parent folder benefits explanation
- * @deprecated v1.0.13 - Parent repo concept removed. Kept for backward compatibility.
- * @returns Detailed benefits with examples
- */
-export function getParentRepoBenefits(): string {
-  // v1.0.13: This function is deprecated - all repos are now equal
-  return `
-**Multi-Repository Setup**
-Each repository is equal - first one is used as default for issue tracking.
-
-my-org/
-├── frontend-app/          ← GitHub repo (default)
-├── backend-api/           ← GitHub repo
-└── shared-lib/            ← GitHub repo
-  `.trim();
-}
-
-/**
- * Get repository count clarification
- *
- * @param parentCount - Number of parent repos
- * @param implCount - Number of implementation repos
- * @returns Clarification message
- */
-export function getRepoCountClarification(parentCount: number, implCount: number): string {
-  const total = parentCount + implCount;
-
-  if (parentCount === 1) {
-    return `**Total repositories to create**: ${total}
-  • 1 parent repository (specs, docs, increments)
-  • ${implCount} implementation ${implCount === 1 ? 'repository' : 'repositories'}
-
-This means **${total} GitHub repositories** will be created.`;
-  }
-
-  return `**Total repositories to create**: ${total}`;
 }
 
 /**
@@ -224,11 +174,3 @@ ${scopes.map(s => `• ${s}`).join('\n')}
   `.trim();
 }
 
-const ARCHITECTURE_LABELS: Record<ArchitectureChoice, string> = {
-  'single': 'Single repository',
-  'github-parent': 'Parent repo + nested repos (GitHub)'
-};
-
-export function formatArchitectureChoice(choice: ArchitectureChoice): string {
-  return ARCHITECTURE_LABELS[choice] ?? choice;
-}
