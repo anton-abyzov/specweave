@@ -66,7 +66,7 @@ npx tsc --init
 claude
 
 # Initialize SpecWeave
-/sw:init
+sw:init
 ```
 
 SpecWeave creates:
@@ -111,7 +111,7 @@ my-new-app/
 
 ```bash
 # Use architect agent
-/sw:agent architect
+sw:agent architect
 "Design architecture for [product description].
 Consider: scalability, security, maintainability."
 ```
@@ -124,7 +124,7 @@ Consider: scalability, security, maintainability."
 
 <CommandTabs
   natural="Let's build the core foundation"
-  claude='/sw:increment "Core foundation"'
+  claude='sw:increment "Core foundation"'
   other='increment "Core foundation"'
 />
 
@@ -165,7 +165,7 @@ Set up project foundation with all tooling.
 ## Step 4: Implement Foundation
 
 ```bash
-/sw:do
+sw:do
 ```
 
 SpecWeave guides implementation:
@@ -193,10 +193,10 @@ Task T-003: Set up linting
 
 ```bash
 # Verify everything works
-/sw:validate 0001
+sw:validate 0001
 
 # Complete the increment
-/sw:done 0001
+sw:done 0001
 ```
 
 ---
@@ -207,16 +207,16 @@ Task T-003: Set up linting
 
 <CommandTabs
   natural="Let's add user authentication"
-  claude='/sw:increment "User authentication"'
+  claude='sw:increment "User authentication"'
   other='increment "User authentication"'
 />
 
 ```bash
 # Implement
-/sw:do
+sw:do
 
 # Complete
-/sw:done 0002
+sw:done 0002
 ```
 
 ### Typical Increment Progression
@@ -246,7 +246,7 @@ Task T-003: Set up linting
 
 ```bash
 # Create ADR for important decisions
-/sw:agent architect
+sw:agent architect
 "Create ADR for choosing PostgreSQL
 over MongoDB for this project."
 ```

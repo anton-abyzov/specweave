@@ -214,7 +214,7 @@ The registry at `~/.claude/plugins/installed_plugins.json` tracks installed plug
 
 ### New Skills Not Available After Install
 
-**Symptom**: Plugin installed but `/sw:*` commands don't work.
+**Symptom**: Plugin installed but `sw:*` commands don't work.
 
 **Cause**: Claude Code loads skills at session start, not dynamically.
 

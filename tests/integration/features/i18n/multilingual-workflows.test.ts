@@ -350,7 +350,7 @@ describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('description:');
 
     // Verify command syntax
-    expect(content).toContain('/sw:translate');
+    expect(content).toContain('sw:translate');
     expect(content).toContain('target-language');
     expect(content).toContain('--scope');
   });

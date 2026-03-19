@@ -12,7 +12,7 @@ Permanently abandon an increment when requirements change or work becomes obsole
 
 <CommandTabs
   natural='Abandon this'
-  claude='/sw:abandon 0008'
+  claude='sw:abandon 0008'
   other='abandon 0008'
 />
 

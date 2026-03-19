@@ -16,13 +16,13 @@ SpecWeave automatically creates **bidirectional links** between tasks and user s
 
 ## How It Works
 
-### Automatic During `/sw:done`
+### Automatic During `sw:done`
 
 When you complete an increment:
 
 <CommandTabs
   natural="We're done with increment 0031, close it"
-  claude='/sw:done 0031'
+  claude='sw:done 0031'
   other='done 0031'
 />
 
@@ -204,7 +204,7 @@ AI assistants (Claude, GitHub Copilot, ChatGPT) can:
 
 ### 3. Zero Manual Work ✅
 
-- Links created automatically during `/sw:done`
+- Links created automatically during `sw:done`
 - No manual linking needed
 - Idempotent (safe to run sync multiple times)
 
@@ -283,7 +283,7 @@ To disable bidirectional linking (not recommended):
 
 ### Duplicate Prevention
 
-**Scenario**: Run `/sw:done` twice on same increment
+**Scenario**: Run `sw:done` twice on same increment
 
 **Behavior**: Checks if `**User Story**:` already exists → Skip
 
@@ -330,7 +330,7 @@ To disable bidirectional linking (not recommended):
 
 ## Manual Sync
 
-If automatic sync didn't work during `/sw:done`:
+If automatic sync didn't work during `sw:done`:
 
 ```bash
 specweave sync-living-docs 0031-external-tool-status-sync

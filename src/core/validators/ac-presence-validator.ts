@@ -11,9 +11,9 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
  * with external living docs. This is required for AC sync hooks to function.
  *
  * **Validation Gates**:
- * 1. `/sw:increment` (after spec generation) - BLOCKS if ACs missing
- * 2. `/sw:do` (before starting work) - BLOCKS if ACs missing
- * 3. `/sw:validate` (rule-based validation) - WARNS if ACs missing
+ * 1. `sw:increment` (after spec generation) - BLOCKS if ACs missing
+ * 2. `sw:do` (before starting work) - BLOCKS if ACs missing
+ * 3. `sw:validate` (rule-based validation) - WARNS if ACs missing
  * 4. Pre-commit hook (git) - WARNS if ACs missing in new specs
  *
  * **See**: ADR-0062 (AC Embedding Architecture)

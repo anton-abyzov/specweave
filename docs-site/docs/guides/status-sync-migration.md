@@ -110,13 +110,13 @@ Create a test increment to verify mappings work:
 
 ```bash
 # 1. Create test increment
-/sw:increment "Test status sync"
+sw:increment "Test status sync"
 
 # 2. Link to GitHub (creates issue)
-/sw-github:create-issue 0999-test-status-sync
+sw-github:create-issue 0999-test-status-sync
 
 # 3. Complete increment
-/sw:done 0999
+sw:done 0999
 
 # 4. Verify prompt appears
 # Output should show:
@@ -288,7 +288,7 @@ Conflicts detected and resolved based on strategy:
 
 <CommandTabs
   natural="Let's build a migration test"
-  claude='/sw:increment "Migration test"'
+  claude='sw:increment "Migration test"'
   other='increment "Migration test"'
 />
 
@@ -296,7 +296,7 @@ Conflicts detected and resolved based on strategy:
 
 <CommandTabs
   natural="Push to GitHub"
-  claude="/sw-github:create-issue 0998-migration-test"
+  claude="sw-github:create-issue 0998-migration-test"
   other="sw-github:create-issue 0998-migration-test"
 />
 
@@ -304,7 +304,7 @@ Conflicts detected and resolved based on strategy:
 
 <CommandTabs
   natural="We're done"
-  claude="/sw:done 0998"
+  claude="sw:done 0998"
   other="done 0998"
 />
 
@@ -317,7 +317,7 @@ Conflicts detected and resolved based on strategy:
    ```bash
    # Close GitHub issue manually
    # Then sync from external:
-   /sw-github:sync-from 0998
+   sw-github:sync-from 0998
    ```
    - ✅ Prompt appears about SpecWeave status change
    - ✅ Selecting "Yes" updates SpecWeave to `completed`
@@ -327,7 +327,7 @@ Conflicts detected and resolved based on strategy:
    # Change SpecWeave status to "active"
    # Change GitHub status to "closed"
    # Then sync:
-   /sw-github:sync 0998
+   sw-github:sync 0998
    ```
    - ✅ Conflict detected
    - ✅ Prompt shows both statuses with timestamps
@@ -339,7 +339,7 @@ Conflicts detected and resolved based on strategy:
 
 ### What Still Works
 
-✅ **Old sync commands** - `/sw-github:sync` still works
+✅ **Old sync commands** - `sw-github:sync` still works
 ✅ **Existing metadata** - Old `metadata.json` files compatible
 ✅ **Profiles** - Sync profiles unchanged
 
@@ -379,7 +379,7 @@ If you need to revert to old sync:
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:sync 0001 --legacy-mode"
+  claude="sw-github:sync 0001 --legacy-mode"
   other="sw-github:sync 0001 --legacy-mode"
 />
 
@@ -474,7 +474,7 @@ If you need to revert to old sync:
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:sync 0001 --dry-run"
+  claude="sw-github:sync 0001 --dry-run"
   other="sw-github:sync 0001 --dry-run"
 />
 

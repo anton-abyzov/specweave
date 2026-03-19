@@ -95,7 +95,7 @@ export interface AutoModeFlag {
 
 /**
  * Completion condition types for quality gates
- * NOTE: These are checked by /sw:done, NOT by auto mode itself
+ * NOTE: These are checked by sw:done, NOT by auto mode itself
  */
 export type CompletionConditionType =
   | 'build' // Build must pass
@@ -131,8 +131,8 @@ export interface AutoConfig {
   // Stop hook retry settings (for stuck detection)
   maxRetries?: number; // Max retries on same incomplete work before escalating (default: 20)
   requireTests?: boolean; // Require tests to pass before completion (default: false)
-  requireValidation?: boolean; // Require /sw:validate before completion (default: true)
-  requireJudgeLLM?: boolean; // Require /sw:judge-llm before completion (default: false)
+  requireValidation?: boolean; // Require sw:validate before completion (default: true)
+  requireJudgeLLM?: boolean; // Require sw:judge-llm before completion (default: false)
   requireLLMEval?: boolean; // Use LLM to evaluate completion (default: false)
   // Legacy fields (still supported in config but not used by simplified auto mode)
   maxHours?: number;
@@ -160,7 +160,7 @@ export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   maxTurns: 20, // HARD STOP: Max total turns in auto session (never resets during session)
   maxRetries: 20, // Attempts before escalating stuck session warning (resets when work changes)
   requireTests: false, // Set true to require tests pass before completion
-  requireValidation: true, // Run /sw:validate before completion
+  requireValidation: true, // Run sw:validate before completion
   requireJudgeLLM: false, // Set true to require AI quality verification
   requireLLMEval: false, // Set true to use LLM completion evaluation
   maxHours: 600,

@@ -1056,7 +1056,7 @@ describe('RecentWorkScanner', () => {
       expect(incrementCount).toBe(5);
     });
 
-    it('should suggest /sw:reopen for increment matches', () => {
+    it('should suggest sw:reopen for increment matches', () => {
       const match: RecentWorkMatch = {
         type: 'increment',
         id: '0102-auth',
@@ -1069,11 +1069,11 @@ describe('RecentWorkScanner', () => {
 
       const result = RecentWorkScanner.formatMatches([match]);
 
-      expect(result).toContain('/sw:reopen 0102-auth');
+      expect(result).toContain('sw:reopen 0102-auth');
       expect(result).not.toContain('--task');
     });
 
-    it('should suggest /sw:reopen with --task for task matches', () => {
+    it('should suggest sw:reopen with --task for task matches', () => {
       const match: RecentWorkMatch = {
         type: 'task',
         id: 'T-001',
@@ -1086,7 +1086,7 @@ describe('RecentWorkScanner', () => {
 
       const result = RecentWorkScanner.formatMatches([match]);
 
-      expect(result).toContain('/sw:reopen 0103-feature --task T-001');
+      expect(result).toContain('sw:reopen 0103-feature --task T-001');
     });
 
     it('should show count header', () => {
@@ -1255,7 +1255,7 @@ describe('RecentWorkScanner', () => {
 
       expect(formatted).toContain('Found 1 related item(s)');
       expect(formatted).toContain('0121-login');
-      expect(formatted).toContain('/sw:reopen');
+      expect(formatted).toContain('sw:reopen');
     });
   });
 });

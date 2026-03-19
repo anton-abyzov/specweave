@@ -163,7 +163,7 @@ export class AsyncProjectLoader {
       // Check for cancelation
       if (this.cancelHandler.shouldCancel()) {
         this.progressTracker.cancel();
-        this.cancelHandler.suggestResume('/sw:jira-import-projects --resume');
+        this.cancelHandler.suggestResume('sw:jira-import-projects --resume');
 
         return {
           projects,

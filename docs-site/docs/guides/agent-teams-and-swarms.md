@@ -11,11 +11,11 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 One command. Multiple agents. Parallel execution across domains.
 
-SpecWeave's `/sw:team-lead` turns a single feature request into a coordinated multi-agent effort -- splitting work by domain, running agents in parallel, and merging results when done. Built on [Claude Code's Agent Teams capability](https://code.claude.com/docs/en/agent-teams) and made accessible via a single command.
+SpecWeave's `sw:team-lead` turns a single feature request into a coordinated multi-agent effort -- splitting work by domain, running agents in parallel, and merging results when done. Built on [Claude Code's Agent Teams capability](https://code.claude.com/docs/en/agent-teams) and made accessible via a single command.
 
 <CommandTabs
   natural="Use a team to build user authentication with login, signup, and OAuth"
-  claude='/sw:team-lead "Build user authentication with login, signup, and OAuth"'
+  claude='sw:team-lead "Build user authentication with login, signup, and OAuth"'
   other='team-lead "Build user authentication with login, signup, and OAuth"'
 />
 
@@ -42,24 +42,24 @@ Agent teams cut delivery time by running independent work streams simultaneously
 
 <CommandTabs
   natural="Use a team to add a user dashboard with real-time analytics"
-  claude='/sw:team-lead "Add user dashboard with real-time analytics"'
+  claude='sw:team-lead "Add user dashboard with real-time analytics"'
   other='team-lead "Add user dashboard with real-time analytics"'
 />
 
 Then monitor and merge:
 ```bash
 # 2. Monitor progress across all agents
-/sw:team-status
+sw:team-status
 
 # 3. Merge completed work in dependency order
-/sw:team-merge
+sw:team-merge
 ```
 
 ---
 
 ## Team-Lead Orchestration
 
-The `/sw:team-lead` skill is the entry point for all multi-agent coordination. It auto-detects what you need and spawns the right team. You can describe a complex feature in natural language, use the slash command in Claude Code, or use the short form in other AI tools.
+The `sw:team-lead` skill is the entry point for all multi-agent coordination. It auto-detects what you need and spawns the right team. You can describe a complex feature in natural language, use the slash command in Claude Code, or use the short form in other AI tools.
 
 ### Operating Modes
 
@@ -78,8 +78,8 @@ The orchestrator selects the mode based on your phrasing. You can also be explic
 
 ```bash
 # Slash command with mode
-/sw:team-lead "review the checkout module"    # → review mode
-/sw:team-lead "brainstorm onboarding UX"      # → brainstorm mode
+sw:team-lead "review the checkout module"    # → review mode
+sw:team-lead "brainstorm onboarding UX"      # → brainstorm mode
 
 # Natural language equivalents
 # "Let's brainstorm approaches for onboarding UX"
@@ -96,7 +96,7 @@ The orchestrator selects the mode based on your phrasing. You can also be explic
 Describe a feature. The orchestrator analyzes it, identifies domains, and creates one increment per domain:
 
 ```bash
-/sw:team-lead "Add user authentication with login, signup, and OAuth"
+sw:team-lead "Add user authentication with login, signup, and OAuth"
 ```
 
 The orchestrator:
@@ -142,7 +142,7 @@ Each agent runs autonomously on its increment:
 Check progress across all agents at any time:
 
 ```bash
-/sw:team-status
+sw:team-status
 
 # ┌───────────────────────────────────────────────────────────┐
 # │  PARALLEL SESSION: user-auth                               │
@@ -161,7 +161,7 @@ Check progress across all agents at any time:
 When all agents complete, merge their work in dependency order:
 
 ```bash
-/sw:team-merge
+sw:team-merge
 ```
 
 The merge skill:
@@ -260,7 +260,7 @@ All agents use Claude Opus 4.6 for maximum reasoning capability.
 Here's what happens when you run:
 
 ```bash
-/sw:team-lead "Build user authentication with login, signup, and OAuth"
+sw:team-lead "Build user authentication with login, signup, and OAuth"
 ```
 
 **1. Analysis** (10 seconds)
@@ -298,11 +298,11 @@ Agent 3 (Frontend):
 
 **5. Quality Gates** (per agent)
 
-Each agent runs `/sw:grill` on its increment before signaling completion.
+Each agent runs `sw:grill` on its increment before signaling completion.
 
 **6. Merge**
 
-`/sw:team-merge` combines work: schema first, then backend, then frontend. All three increments close.
+`sw:team-merge` combines work: schema first, then backend, then frontend. All three increments close.
 
 ---
 
@@ -379,7 +379,7 @@ Use a preset for a pre-configured team shape:
 | `migration` | analyzer, migrator, validator | Codebase migrations and upgrades |
 
 ```bash
-/sw:team-lead "Add checkout flow" --preset full-stack
+sw:team-lead "Add checkout flow" --preset full-stack
 ```
 
 ---
@@ -392,7 +392,7 @@ Use a preset for a pre-configured team shape:
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌─────────────┐                                                        │
-│  │   YOU        │  /sw:team-lead "Build e-commerce checkout"      │
+│  │   YOU        │  sw:team-lead "Build e-commerce checkout"      │
 │  │  (Human)     │                                                        │
 │  └──────┬──────┘                                                        │
 │         │                                                                │
@@ -464,4 +464,4 @@ Running multiple agents amplifies security risks. See [Agent Security Best Pract
 - [Claude Code Agent Teams](https://code.claude.com/docs/en/agent-teams) — The inspiration behind SpecWeave's team-lead
 - [Agent Security Best Practices](./agent-security-best-practices) — Safe agent swarm operation
 - [Multi-Project Setup](./multi-project-setup) — Coordinate multiple repositories
-- [Autonomous Execution](./autonomous-execution) — `/sw:auto` deep dive
+- [Autonomous Execution](./autonomous-execution) — `sw:auto` deep dive

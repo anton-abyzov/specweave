@@ -63,7 +63,7 @@ export class SuggestionEngine {
       // Print suggestion
       const sourceCount = top.uniqueSourceFiles?.length ?? top.incrementIds.length;
       console.log(
-        `\u{1F4A1} Skill suggestion: Detected "${top.pattern}" pattern across ${sourceCount} sources. Run /sw:skill-gen to generate project skills.`,
+        `\u{1F4A1} Skill suggestion: Detected "${top.pattern}" pattern across ${sourceCount} sources. Run sw:skill-gen to generate project skills.`,
       );
 
       // Mark as suggested and save

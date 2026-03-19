@@ -4,7 +4,7 @@
  *
  * Design rationale:
  * - requireLLMEval: Lightweight LLM check integrated in stop hook (fast, cheap)
- * - requireJudgeLLM: Heavy /sw:judge-llm call (slow, expensive, manual)
+ * - requireJudgeLLM: Heavy sw:judge-llm call (slow, expensive, manual)
  * - Production preset enables lightweight checks, not heavy ones
  */
 
@@ -221,7 +221,7 @@ export function getQualityGatePreset(preset: QualityGatePreset): QualityGateSett
       requireTests: true,
       requireValidation: true,
       requireLLMEval: true, // Lightweight LLM check in stop hook
-      requireJudgeLLM: false, // Heavy /sw:judge-llm - too expensive for every run
+      requireJudgeLLM: false, // Heavy sw:judge-llm - too expensive for every run
       requireGrill: true, // Grill report required before closure
       skipQualityGates: false,
     },

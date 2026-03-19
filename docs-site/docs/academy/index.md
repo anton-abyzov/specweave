@@ -59,18 +59,18 @@ Every command works with natural language or slash commands. Here's the most imp
 
 <CommandTabs
   natural="Let's build a payment system"
-  claude='/sw:increment "payment system"'
+  claude='sw:increment "payment system"'
   other='increment "payment system"'
 />
 
 | Natural Language | Slash Command | What It Does |
 |-----------------|---------------|--------------|
-| "Let's build a payment system" | `/sw:increment "feature"` | Plan new work |
-| "Ship it while I sleep" | `/sw:auto` | Autonomous execution |
-| "Start implementing" | `/sw:do` | Execute one task at a time |
-| "What should I do next?" | `/sw:next` | Smart continuation |
-| "What's the status?" | `/sw:progress` | Check status |
-| "We're done" | `/sw:done` | Close increment |
+| "Let's build a payment system" | `sw:increment "feature"` | Plan new work |
+| "Ship it while I sleep" | `sw:auto` | Autonomous execution |
+| "Start implementing" | `sw:do` | Execute one task at a time |
+| "What should I do next?" | `sw:next` | Smart continuation |
+| "What's the status?" | `sw:progress` | Check status |
+| "We're done" | `sw:done` | Close increment |
 
 ### What You'll Build
 

@@ -15,7 +15,7 @@
     "projectSuccess": "SpecWeave 项目创建成功！",
     "readyToBuild": "🚀 准备好使用 SpecWeave 构建了！",
     "nestedCdCommand": "cd {{path}}",
-    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "nestedIncCommand": "sw:increment \"your-feature\"",
     "pluginEnableLater": "您可以稍后使用以下命令启用插件：specweave plugin enable <name>",
     "genericError": "错误：",
     "errors": {
@@ -140,7 +140,7 @@
         "installGitHub": "/plugin install sw-github@specweave",
         "installFrontend": "/plugin install frontend-design@claude-plugins-official",
         "step4": "开始构建：",
-        "example": "\"/sw:increment 'user authentication'\"",
+        "example": "\"sw:increment 'user authentication'\"",
         "autoActivate": "技能和代理会根据上下文自动激活"
       },
       "cursor": {
@@ -273,7 +273,7 @@
   "increment": {
     "creating": "📝 正在创建增量：{name}",
     "created": "✅ 增量 {id} 创建成功！",
-    "nextStepDo": "下一步：运行 /sw:do 开始实施",
+    "nextStepDo": "下一步：运行 sw:do 开始实施",
     "errors": {
       "incompleteFound": "无法创建新增量！之前的增量尚未完成"
     }

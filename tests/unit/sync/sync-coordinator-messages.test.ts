@@ -154,7 +154,7 @@ feature_id: FS-049
       expect.stringContaining('Automatic external sync disabled (autoSyncOnCompletion=false)')
     );
     expect(mockLogger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Run /sw:github-sync')
+      expect.stringContaining('Run sw:github-sync')
     );
   });
 

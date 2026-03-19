@@ -130,19 +130,19 @@ SpecWeave supports different work types:
 
 <CommandTabs
   natural="Let's add user authentication with JWT and refresh tokens"
-  claude='/sw:increment "user authentication with JWT"'
+  claude='sw:increment "user authentication with JWT"'
   other='increment "user authentication with JWT"'
 />
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning : /sw:increment
-    Planning --> Active : /sw:do
+    [*] --> Planning : sw:increment
+    Planning --> Active : sw:do
     Active --> Active : Complete tasks
-    Active --> Paused : /sw:pause
-    Paused --> Active : /sw:resume
+    Active --> Paused : sw:pause
+    Paused --> Active : sw:resume
     Active --> Completed : All tasks done
-    Active --> Abandoned : /sw:abandon
+    Active --> Abandoned : sw:abandon
     Completed --> [*]
     Abandoned --> [*]
 ```
@@ -161,7 +161,7 @@ stateDiagram-v2
 1. **Keep increments focused** - One feature or fix per increment
 2. **Complete before starting new** - Finish 0001 before 0002
 3. **Use descriptive names** - `0001-user-authentication` not `0001`
-4. **Document scope changes** - Use `/sw:increment (to update spec)`
+4. **Document scope changes** - Use `sw:increment (to update spec)`
 5. **Close properly** - Validate tests, update docs, create completion report
 
 ### ❌ DON'T
@@ -257,7 +257,7 @@ Answer: Read living docs
 ## Next Steps
 
 - [Creating Your First Increment](/docs/workflows/planning)
-- [The /sw:do Workflow](/docs/workflows/implementation)
+- [The sw:do Workflow](/docs/workflows/implementation)
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---

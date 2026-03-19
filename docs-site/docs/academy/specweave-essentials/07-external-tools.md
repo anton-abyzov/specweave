@@ -94,7 +94,7 @@ specweave init .
 ### Step 3: Verify
 
 ```bash
-/sw-github:status
+sw-github:status
 ```
 
 ```
@@ -108,7 +108,7 @@ Ready for sync!
 ### Creating Issues
 
 ```bash
-/sw-github:create-issue 0001
+sw-github:create-issue 0001
 ```
 
 Creates:
@@ -129,7 +129,7 @@ Creates:
 ### Syncing Progress
 
 ```bash
-/sw-github:sync 0001
+sw-github:sync 0001
 ```
 
 ```
@@ -174,7 +174,7 @@ Task (T-XXX)      →    Sub-task
 ### Creating JIRA Items
 
 ```bash
-/sw-jira:sync 0001 --create
+sw-jira:sync 0001 --create
 ```
 
 Creates:
@@ -208,7 +208,7 @@ ADO_PROJECT=your-project
 ### Syncing
 
 ```bash
-/sw-ado:sync 0001
+sw-ado:sync 0001
 ```
 
 ---
@@ -218,7 +218,7 @@ ADO_PROJECT=your-project
 The master command syncs everything:
 
 ```bash
-/sw:sync-progress
+sw:sync-progress
 ```
 
 ```
@@ -293,7 +293,7 @@ External → SpecWeave only.
 ### Authentication Failed
 
 ```bash
-/sw-github:status
+sw-github:status
 # Check if token valid/expired
 ```
 
@@ -301,16 +301,16 @@ External → SpecWeave only.
 
 ```bash
 # Force from SpecWeave
-/sw-github:sync 0001 --force
+sw-github:sync 0001 --force
 
 # Force from external
-/sw:sync-progress --from-external
+sw:sync-progress --from-external
 ```
 
 ### Rate Limit
 
 ```bash
-/sw:sync-diagnostics
+sw:sync-diagnostics
 # Wait for reset or use different token
 ```
 
@@ -325,7 +325,7 @@ Here's a real-world example showing how integration works end-to-end:
 ```bash
 # 1. Create increment (GitHub issue auto-created)
 # Say: "I want to build a user profile feature"
-# Or: /sw:increment "User profile feature"
+# Or: sw:increment "User profile feature"
 
 # Output:
 ✓ Increment 0050-user-profile created
@@ -360,7 +360,7 @@ Implementation of user profile viewing and editing.
 
 ```bash
 # 2. Implement tasks
-/sw:do
+sw:do
 
 # As each task completes, GitHub syncs automatically:
 T-001: Create ProfileService
@@ -379,7 +379,7 @@ T-001: Create ProfileService
 
 ```bash
 # 3. Finish and close
-/sw:done 0050
+sw:done 0050
 
 # Output:
 ✓ All tasks complete (5/5)
@@ -495,20 +495,20 @@ During `specweave init`, you'll be asked:
 
 ```bash
 # Status & Diagnostics
-/sw-github:status          # Check GitHub connection
-/sw-jira:status            # Check JIRA connection
-/sw-ado:status             # Check ADO connection
-/sw:sync-diagnostics       # Rate limits, errors
+sw-github:status          # Check GitHub connection
+sw-jira:status            # Check JIRA connection
+sw-ado:status             # Check ADO connection
+sw:sync-diagnostics       # Rate limits, errors
 
 # Syncing
-/sw:sync-progress          # Full sync (all systems)
-/sw-github:sync 0001       # GitHub sync (one increment)
-/sw-jira:sync 0001         # JIRA sync (one increment)
-/sw-ado:sync 0001          # ADO sync (one increment)
+sw:sync-progress          # Full sync (all systems)
+sw-github:sync 0001       # GitHub sync (one increment)
+sw-jira:sync 0001         # JIRA sync (one increment)
+sw-ado:sync 0001          # ADO sync (one increment)
 
 # Issue Management
-/sw-github:create-issue 0001   # Create GitHub issue
-/sw-github:close-issue 0001    # Close GitHub issue
+sw-github:create-issue 0001   # Create GitHub issue
+sw-github:close-issue 0001    # Close GitHub issue
 ```
 
 ---

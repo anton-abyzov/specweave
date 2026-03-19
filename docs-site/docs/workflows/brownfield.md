@@ -457,7 +457,7 @@ describe('Authentication Baseline (Current Behavior)', () => {
 
 <CommandTabs
   natural="Let's add 2FA to the authentication system"
-  claude='/sw:increment "0015-add-2fa-to-authentication"'
+  claude='sw:increment "0015-add-2fa-to-authentication"'
   other='increment "0015-add-2fa-to-authentication"'
 />
 
@@ -515,7 +515,7 @@ Please answer so I can create a safe modification plan."
 ### Phase 6: Implement Safely
 
 ```bash
-/sw:do
+sw:do
 ```
 
 **Implementation with safety checks:**
@@ -604,10 +604,10 @@ graph TB
 "Create tests for current auth behavior"
 
 # 3. Plan changes
-/sw:increment "0015-add-2fa"
+sw:increment "0015-add-2fa"
 
 # 4. Implement with safety net
-/sw:do
+sw:do
 # Baseline tests catch regressions!
 ```
 
@@ -624,12 +624,12 @@ graph TB
 ```bash
 # Month 1: Auth module
 "Document auth module"
-/sw:increment "0015-modernize-auth"
+sw:increment "0015-modernize-auth"
 # Result: Auth modernized ✅
 
 # Month 2: Payment module
 "Document payment module"
-/sw:increment "0018-modernize-payments"
+sw:increment "0018-modernize-payments"
 # Result: Payments modernized ✅
 
 # Month 3: Notifications
@@ -675,12 +675,12 @@ npm test
 ### Week 3: First Modification
 
 ```bash
-/sw:increment "0001-add-apple-pay"
+sw:increment "0001-add-apple-pay"
 # PM agent considers existing payment module
 # Architect designs extension (not replacement)
 # Test-aware planner includes baseline + new tests
 
-/sw:do
+sw:do
 # Implement with regression protection
 # Baseline tests ensure no breaks
 # New tests validate Apple Pay

@@ -26,9 +26,9 @@ quadrantChart
 | Workflow Level | What You Can Ship | SpecWeave Equivalent |
 |---------------|-------------------|---------------------|
 | Just talk to AI | Copy changes, small fixes | No SpecWeave needed |
-| Make a simple plan, work the plan | Small features across 3-5 files | `/sw:increment` + `/sw:do` |
-| Research → Plan → Implement phase by phase | Medium features across projects and repos | `/sw:brainstorm` → `/sw:increment` → `/sw:auto` |
-| Multiple research steps, multiple plans, many sessions | Big refactors, whole new features | `/sw:brainstorm` → `/sw:increment` → `/sw:team-lead` |
+| Make a simple plan, work the plan | Small features across 3-5 files | `sw:increment` + `sw:do` |
+| Research → Plan → Implement phase by phase | Medium features across projects and repos | `sw:brainstorm` → `sw:increment` → `sw:auto` |
+| Multiple research steps, multiple plans, many sessions | Big refactors, whole new features | `sw:brainstorm` → `sw:increment` → `sw:team-lead` |
 
 The more you invest in planning, the harder the problems you can tackle. SpecWeave scales with you — from a quick increment for simple features to full agent teams for complex multi-repo work.
 
@@ -38,11 +38,11 @@ SpecWeave places human review at the highest-leverage checkpoints — **after re
 
 ```mermaid
 graph LR
-    A["Feature Idea"] --> B["Research Phase<br/>/sw:brainstorm"]
+    A["Feature Idea"] --> B["Research Phase<br/>sw:brainstorm"]
     B --> C{{"HUMAN REVIEW<br/>Approach OK?"}}
-    C -->|Yes| D["Planning Phase<br/>/sw:increment<br/>(spec + plan + tasks)"]
+    C -->|Yes| D["Planning Phase<br/>sw:increment<br/>(spec + plan + tasks)"]
     D --> E{{"HUMAN REVIEW<br/>Plan OK?"}}
-    E -->|Yes| F["Implementation<br/>/sw:do or /sw:auto"]
+    E -->|Yes| F["Implementation<br/>sw:do or sw:auto"]
     E -->|Edit| D
     C -->|Rethink| B
 
@@ -72,7 +72,7 @@ graph LR
 
 **Duration**: 15-60 minutes (automated)
 
-**Command**: `/sw:increment "feature description"`
+**Command**: `sw:increment "feature description"`
 
 **Output**: Complete increment with spec.md, plan.md, tasks.md
 
@@ -82,19 +82,19 @@ graph LR
 
 In the [RPI (Research/Plan/Implement)](https://www.youtube.com/watch?v=rmvDxxNubIg) methodology, the **Research phase** is where you investigate the codebase and explore approaches *before* committing to a plan. SpecWeave has research built in at multiple levels:
 
-**Built-in research (always runs):** The PM agent automatically scans existing docs, ADRs, prior increments, and project structure before writing `spec.md`. This happens inside `/sw:increment` — you don't need to do anything extra.
+**Built-in research (always runs):** The PM agent automatically scans existing docs, ADRs, prior increments, and project structure before writing `spec.md`. This happens inside `sw:increment` — you don't need to do anything extra.
 
 **Deep Interview mode (configurable):** When `planning.deepInterview.enabled: true` in config, the PM asks 5-40 clarifying questions (scaled to complexity) before any spec work begins. This is the most thorough built-in research phase.
 
 **Explicit research with brainstorm (recommended for complex features):**
 
 ```bash
-/sw:brainstorm "real-time notifications"         # Standard: 4-6 approaches
-/sw:brainstorm "auth system" --depth deep        # Deep: multiple cognitive lenses
-/sw:brainstorm "API design" --depth quick        # Quick: 3-approach comparison
+sw:brainstorm "real-time notifications"         # Standard: 4-6 approaches
+sw:brainstorm "auth system" --depth deep        # Deep: multiple cognitive lenses
+sw:brainstorm "API design" --depth quick        # Quick: 3-approach comparison
 ```
 
-This produces a persistent brainstorm document with a comparison matrix and recommendation — your **research artifact** for human review. When ready, it hands off directly to `/sw:increment` with the selected approach as context.
+This produces a persistent brainstorm document with a comparison matrix and recommendation — your **research artifact** for human review. When ready, it hands off directly to `sw:increment` with the selected approach as context.
 
 **When to add explicit brainstorm:** Architectural decisions, uncertain approaches, features touching multiple systems, brownfield migrations. The more complex the problem, the more valuable the explicit research phase — see the complexity ceiling chart above.
 
@@ -110,7 +110,7 @@ Simply describe what you want to build:
 
 <CommandTabs
   natural="I want to add real-time chat with WebSocket support"
-  claude='/sw:increment "Add real-time chat with WebSocket support"'
+  claude='sw:increment "Add real-time chat with WebSocket support"'
   other='increment "Add real-time chat with WebSocket support"'
 />
 
@@ -472,14 +472,14 @@ coverage_target: 88%
 📊 Estimated Effort: 3-5 days
 
 Would you like to:
-1. Proceed with implementation (/sw:do)
+1. Proceed with implementation (sw:do)
 2. Modify scope (edit spec)
 3. Adjust architecture (edit plan)
-4. Regenerate tasks (/sw:increment --regenerate)
+4. Regenerate tasks (sw:increment --regenerate)
 ```
 
 **Options:**
-- ✅ Proceed → `/sw:do`
+- ✅ Proceed → `sw:do`
 - 🔄 Modify → Edit files, regenerate
 - ❌ Cancel → Delete increment
 
@@ -588,7 +588,7 @@ rm .specweave/increments/0012-chat/plan.md
 rm .specweave/increments/0012-chat/tasks.md
 
 # 3. Regenerate with updated spec
-/sw:increment "0012-real-time-chat" --regenerate
+sw:increment "0012-real-time-chat" --regenerate
 ```
 
 **During implementation** (mid-coding discovery):
@@ -596,7 +596,7 @@ rm .specweave/increments/0012-chat/tasks.md
 # 1. Stop coding — don't push through with a known-bad plan
 # 2. Update spec.md/plan.md/tasks.md to reflect new understanding
 # 3. Review changes for consistency across all three files
-# 4. Resume implementation with /sw:do
+# 4. Resume implementation with sw:do
 ```
 
 The key rule: **never let code drift from the plan**. If they diverge, fix one to match the other immediately.
@@ -637,7 +637,7 @@ Before moving to implementation:
 Planning complete! Move to implementation:
 
 ```bash
-/sw:do
+sw:do
 ```
 
 **Learn more:**

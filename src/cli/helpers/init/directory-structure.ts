@@ -405,7 +405,7 @@ export function createConfigFile(
       },
       post_increment_planning: {
         // Only create external issue at planning time.
-        // Living docs sync runs AFTER agents finish (Step 5 of /sw:increment).
+        // Living docs sync runs AFTER agents finish (Step 5 of sw:increment).
         auto_create_github_issue: true,
       },
       post_increment_done: {

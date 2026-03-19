@@ -100,7 +100,7 @@ When creating increment with GitHub sync:
 
 <CommandTabs
   natural="Push to GitHub"
-  claude="/sw-github:create-issue 0001-user-authentication"
+  claude="sw-github:create-issue 0001-user-authentication"
   other="sw-github:create-issue 0001-user-authentication"
 />
 
@@ -121,7 +121,7 @@ This creates `metadata.json` with GitHub link:
 
 <CommandTabs
   natural="We're done"
-  claude="/sw:done 0001"
+  claude="sw:done 0001"
   other="done 0001"
 />
 
@@ -250,11 +250,11 @@ How to resolve?
 
 ### Sync After Increment Completion
 
-Status sync happens automatically when using `/sw:done`:
+Status sync happens automatically when using `sw:done`:
 
 <CommandTabs
   natural="We're done"
-  claude="/sw:done 0001-user-authentication"
+  claude="sw:done 0001-user-authentication"
   other="done 0001-user-authentication"
 />
 
@@ -274,7 +274,7 @@ Force sync for a specific increment:
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:sync 0001-user-authentication"
+  claude="sw-github:sync 0001-user-authentication"
   other="sw-github:sync 0001-user-authentication"
 />
 
@@ -282,10 +282,10 @@ Options:
 
 ```bash
 # Specify direction
-/sw-github:sync 0001 --direction to-external
+sw-github:sync 0001 --direction to-external
 
 # Dry run (preview changes)
-/sw-github:sync 0001 --dry-run
+sw-github:sync 0001 --dry-run
 ```
 
 ### Bulk Sync
@@ -294,7 +294,7 @@ Sync multiple increments at once:
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:bulk-sync --time-range 1M"
+  claude="sw-github:bulk-sync --time-range 1M"
   other="sw-github:bulk-sync --time-range 1M"
 />
 
@@ -358,7 +358,7 @@ User selects **Option 1** → JIRA updated to `Done`
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:sync 0001 --retry"
+  claude="sw-github:sync 0001 --retry"
   other="sw-github:sync 0001 --retry"
 />
 
@@ -395,7 +395,7 @@ User selects **Option 1** → JIRA updated to `Done`
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:sync 0001"
+  claude="sw-github:sync 0001"
   other="sw-github:sync 0001"
 />
 
@@ -407,7 +407,7 @@ To sync only from GitHub (one-way):
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:sync 0001 --direction from-github"
+  claude="sw-github:sync 0001 --direction from-github"
   other="sw-github:sync 0001 --direction from-github"
 />
 
@@ -467,7 +467,7 @@ cat .specweave/logs/sync-events.json | jq '.'
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw-github:bulk-sync --batch-size 5 --delay 1000"
+  claude="sw-github:bulk-sync --batch-size 5 --delay 1000"
   other="sw-github:bulk-sync --batch-size 5 --delay 1000"
 />
 

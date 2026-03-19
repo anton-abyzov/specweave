@@ -651,9 +651,9 @@ describe('DashboardDataAggregator', () => {
       mockFsp.readFile.mockImplementation(async (p: string) => {
         if (typeof p === 'string' && p === eventsPath) {
           return [
-            JSON.stringify({ name: '/sw:do', type: 'skill', success: true, timestamp: new Date().toISOString(), plugin: 'specweave' }),
-            JSON.stringify({ name: '/sw:plan', type: 'skill', success: true, timestamp: new Date().toISOString(), plugin: 'specweave' }),
-            JSON.stringify({ name: '/sw:do', type: 'skill', success: false, timestamp: new Date().toISOString(), plugin: 'specweave' }),
+            JSON.stringify({ name: 'sw:do', type: 'skill', success: true, timestamp: new Date().toISOString(), plugin: 'specweave' }),
+            JSON.stringify({ name: 'sw:plan', type: 'skill', success: true, timestamp: new Date().toISOString(), plugin: 'specweave' }),
+            JSON.stringify({ name: 'sw:do', type: 'skill', success: false, timestamp: new Date().toISOString(), plugin: 'specweave' }),
           ].join('\n');
         }
         throw new Error('ENOENT');
@@ -664,7 +664,7 @@ describe('DashboardDataAggregator', () => {
       expect(result.totalEvents).toBe(3);
       expect(result.successRate).toBe(67); // 2/3
       expect(result.topSkills).toHaveLength(2);
-      expect(result.topSkills[0].name).toBe('/sw:do');
+      expect(result.topSkills[0].name).toBe('sw:do');
       expect(result.topSkills[0].count).toBe(2);
     });
 

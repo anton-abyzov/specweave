@@ -114,7 +114,7 @@ done
 
 <CommandTabs
   natural="Sync documentation"
-  claude="/sw:sync-specs"
+  claude="sw:sync-specs"
   other="sync-specs"
 />
 

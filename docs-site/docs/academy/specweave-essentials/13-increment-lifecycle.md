@@ -24,7 +24,7 @@ Every increment goes through a predictable lifecycle:
                     │  (planned)  │
                     └──────┬──────┘
                            │
-            /sw:resume
+            sw:resume
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────┐
@@ -34,14 +34,14 @@ Every increment goes through a predictable lifecycle:
 │    └──────────┘    └─────┬──────┘    └─────┬─────┘          │
 │                          │                  │                │
 │                          │                  │                │
-│                    /sw:pause    /sw:done      │
+│                    sw:pause    sw:done      │
 │                          │                  │                │
 │                          ▼                  ▼                │
 │                    ┌──────────┐      ┌───────────┐          │
 │                    │  PAUSED  │      │ COMPLETED │          │
 │                    └──────────┘      └─────┬─────┘          │
 │                                            │                │
-│                                    /sw:archive       │
+│                                    sw:archive       │
 │                                            │                │
 │                                            ▼                │
 │                                     ┌───────────┐           │
@@ -50,7 +50,7 @@ Every increment goes through a predictable lifecycle:
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
                            │
-                    /sw:abandon
+                    sw:abandon
                            │
                            ▼
                     ┌───────────┐
@@ -66,7 +66,7 @@ Every increment goes through a predictable lifecycle:
 
 ```bash
 # All increments (active, paused, backlog)
-/sw:status
+sw:status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -94,7 +94,7 @@ COMPLETED THIS WEEK (2)
 
 ```bash
 # Specific increment details
-/sw:status 0042
+sw:status 0042
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -139,10 +139,10 @@ Pause an increment when:
 ### Pausing
 
 ```bash
-/sw:pause 0042
+sw:pause 0042
 
 # Optional: Provide reason
-/sw:pause 0042 --reason "Waiting for Stripe API credentials"
+sw:pause 0042 --reason "Waiting for Stripe API credentials"
 ```
 
 **What happens**:
@@ -154,7 +154,7 @@ Pause an increment when:
 ### Resuming
 
 ```bash
-/sw:resume 0042
+sw:resume 0042
 
 # If WIP limit reached:
 # "Cannot resume: 2/2 WIP slots in use. Complete or pause another increment first."
@@ -175,10 +175,10 @@ Pause an increment when:
 For increments you've planned but aren't ready to start:
 
 ```bash
-/sw:status 0044
+sw:status 0044
 
 # Or during creation:
-/sw:increment "Analytics dashboard" --backlog
+sw:increment "Analytics dashboard" --backlog
 ```
 
 **Backlog vs Paused**:
@@ -189,7 +189,7 @@ For increments you've planned but aren't ready to start:
 
 ```bash
 # View backlog with priorities
-/sw:status --backlog
+sw:status --backlog
 
 # Output:
 BACKLOG (3 items)
@@ -198,7 +198,7 @@ BACKLOG (3 items)
   Priority 3: 0046-performance-tuning   (When time permits)
 
 # Reorder backlog
-/sw:status reorder
+sw:status reorder
 # Interactive: Drag and drop priority
 ```
 
@@ -209,12 +209,12 @@ BACKLOG (3 items)
 ### The Done Command
 
 ```bash
-/sw:done 0042
+sw:done 0042
 ```
 
 **What happens**:
 1. **Task validation**: Are all tasks marked complete?
-2. **Quality gate**: Runs `/sw:qa --gate`
+2. **Quality gate**: Runs `sw:qa --gate`
 3. **PM validation**: AI reviews against acceptance criteria
 4. **Completion report**: Generated in increment folder
 5. **External sync**: Closes GitHub issue, updates JIRA status
@@ -223,7 +223,7 @@ BACKLOG (3 items)
 ### If Quality Gate Fails
 
 ```
-/sw:done 0042
+sw:done 0042
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PM VALIDATION: 0042-user-authentication
@@ -249,7 +249,7 @@ Fix these issues and try again.
 
 ```bash
 # Skip quality gates (hotfix scenario)
-/sw:done 0042 --expedite
+sw:done 0042 --expedite
 
 # Requires confirmation:
 # "This will close without validation. Are you sure? (y/N)"
@@ -279,7 +279,7 @@ Over time, completed increments accumulate:
 ### Manual Archive
 
 ```bash
-/sw:archive 0042
+sw:archive 0042
 ```
 
 **What happens**:
@@ -292,13 +292,13 @@ Over time, completed increments accumulate:
 
 ```bash
 # Archive all completed increments older than 30 days
-/sw:archive --completed --older-than 30d
+sw:archive --completed --older-than 30d
 
 # Archive specific list
-/sw:archive 0042 0043 0044
+sw:archive 0042 0043 0044
 
 # Preview what would be archived (dry run)
-/sw:archive --completed --dry-run
+sw:archive --completed --dry-run
 ```
 
 ### Archive Best Practices
@@ -309,7 +309,7 @@ Recommended schedule:
   Monthly: Archive all completed increments
 
 Automated (via cron or CI):
-  /sw:archive --completed --older-than 7d --auto-yes
+  sw:archive --completed --older-than 7d --auto-yes
 ```
 
 ---
@@ -320,10 +320,10 @@ Need to reference an old increment? Restore it:
 
 ```bash
 # Restore to active folder
-/sw:restore 0042
+sw:restore 0042
 
 # Just view without restoring
-/sw:restore 0042 --view-only
+sw:restore 0042 --view-only
 ```
 
 ---
@@ -333,10 +333,10 @@ Need to reference an old increment? Restore it:
 For increments that won't be completed (requirements changed, feature cancelled):
 
 ```bash
-/sw:abandon 0042
+sw:abandon 0042
 
 # With reason (recommended)
-/sw:abandon 0042 --reason "Feature cancelled by stakeholder"
+sw:abandon 0042 --reason "Feature cancelled by stakeholder"
 ```
 
 **What happens**:
@@ -359,7 +359,7 @@ For increments that won't be completed (requirements changed, feature cancelled)
 Fix any status desync between files:
 
 ```bash
-/sw:sync-status
+sw:sync-status
 
 # Output:
 Checking status consistency...
@@ -374,7 +374,7 @@ All statuses synced.
 Check for issues:
 
 ```bash
-/sw:validate --all
+sw:validate --all
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -396,7 +396,7 @@ Total: 2 valid, 1 warning, 1 error
 If duplicate increments were created:
 
 ```bash
-/sw:fix-duplicates
+sw:fix-duplicates
 
 # Output:
 Found duplicates:
@@ -413,7 +413,7 @@ Keep the original (Nov 20) and remove duplicate? (Y/n)
 Track ongoing work:
 
 ```bash
-/sw:progress
+sw:progress
 
 # Output for active increment:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -443,7 +443,7 @@ NEXT UP:
 Synchronize everything at once:
 
 ```bash
-/sw:sync-progress
+sw:sync-progress
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -474,7 +474,7 @@ All systems synchronized!
 Get intelligent guidance on what to do next:
 
 ```bash
-/sw:workflow
+sw:workflow
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -486,9 +486,9 @@ Current State: 0042-user-authentication
 Phase: IMPLEMENTATION (60% complete)
 
 Recommended Actions:
-  1. Continue implementation: /sw:do
-  2. Check progress: /sw:progress
-  3. Validate quality: /sw:qa 0042
+  1. Continue implementation: sw:do
+  2. Check progress: sw:progress
+  3. Validate quality: sw:qa 0042
 
 Blockers Detected: None
 
@@ -507,22 +507,22 @@ Practice lifecycle management:
 
 ```bash
 # 1. Create a test increment (or say "let's build a test lifecycle feature")
-/sw:increment "Test lifecycle feature"
+sw:increment "Test lifecycle feature"
 
 # 2. Check status (or say "what's the status?")
-/sw:status
+sw:status
 
 # 3. Pause it (or say "pause this")
-/sw:pause 0001 --reason "Testing pause"
+sw:pause 0001 --reason "Testing pause"
 
 # 4. Resume it (or say "resume work")
-/sw:resume 0001
+sw:resume 0001
 
 # 5. Move to backlog
-/sw:status 0001
+sw:status 0001
 
 # 6. Abandon it (or say "abandon this")
-/sw:abandon 0001 --reason "Test complete"
+sw:abandon 0001 --reason "Test complete"
 ```
 
 ---
@@ -540,25 +540,25 @@ Practice lifecycle management:
 
 ```bash
 # Add to weekly routine:
-/sw:archive --completed --older-than 7d
+sw:archive --completed --older-than 7d
 ```
 
 ### 3. Use Backlog for Future Work
 
 ```bash
 # Don't start what you can't finish
-/sw:increment "Future feature" --backlog
+sw:increment "Future feature" --backlog
 ```
 
 ### 4. Always Provide Reasons
 
 ```bash
 # Good:
-/sw:pause 0042 --reason "Waiting for Stripe API keys"
-/sw:abandon 0042 --reason "Feature cancelled per PM decision"
+sw:pause 0042 --reason "Waiting for Stripe API keys"
+sw:abandon 0042 --reason "Feature cancelled per PM decision"
 
 # Bad:
-/sw:pause 0042  # Why? No one will remember
+sw:pause 0042  # Why? No one will remember
 ```
 
 ---
@@ -569,7 +569,7 @@ Practice lifecycle management:
 2. **Pause when blocked**, not when busy with other work
 3. **Archive completed work** to keep workspace clean
 4. **Abandon obsolete increments** rather than leaving them in limbo
-5. **Use /sw:workflow** for intelligent guidance
+5. **Use sw:workflow** for intelligent guidance
 
 ---
 

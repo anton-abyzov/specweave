@@ -474,7 +474,7 @@ $ specweave init
 2. Change `strategy` from `"simple"` to `"filtered"`
 3. Replace `projectKey` with `containers` array
 4. Add board names to `subOrganizations`
-5. Test sync: `/sw-jira:sync <increment-id>`
+5. Test sync: `sw-jira:sync <increment-id>`
 
 ---
 
@@ -538,7 +538,7 @@ curl -u email:token https://mycompany.atlassian.net/rest/agile/1.0/board?project
 
 **Recommendation**: Start with SIMPLE, upgrade to FILTERED when needed, use CUSTOM only if you must.
 
-**Questions?** See [SpecWeave Sync Documentation](https://verified-skill.com/guides/external-sync)
+**Questions?** See [SpecWeave Sync Documentation](https://spec-weave.com/docs/guides/external-sync)
 
 ---
 

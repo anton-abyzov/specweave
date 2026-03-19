@@ -85,7 +85,7 @@ SpecWeave syncs **different data types in different directions**:
 ### When It Runs
 
 **Automatic** (via hooks):
-- After creating new increment with `/sw:increment`
+- After creating new increment with `sw:increment`
 - When spec.md is created in `.specweave/docs/internal/specs/`
 
 **Manual** (CLI):
@@ -170,7 +170,7 @@ To GitHub Issue Body:
 - When syncing increment progress
 
 **Manual** (CLI):
-- Run: `/sw-github:sync <increment-id>`
+- Run: `sw-github:sync <increment-id>`
 
 ### What It Does
 
@@ -335,7 +335,7 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 
 <CommandTabs
   natural="I want to add user authentication with OAuth"
-  claude='/sw:increment "User authentication with OAuth"'
+  claude='sw:increment "User authentication with OAuth"'
   other='increment "User authentication with OAuth"'
 />
 
@@ -345,7 +345,7 @@ PM agent generates spec files. Post-increment-planning hook fires, creates GitHu
 
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -385,7 +385,7 @@ PM closes GitHub issue #456 (all work complete). Developer syncs status:
 
 <CommandTabs
   natural="Sync to GitHub"
-  claude="/sw-github:sync 0001"
+  claude="sw-github:sync 0001"
   other="github-sync 0001"
 />
 

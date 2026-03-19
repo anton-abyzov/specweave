@@ -138,7 +138,7 @@ SpecWeave does **not** use a global "active project" switch. Instead, project ro
 
 ### The `**Project**:` Field
 
-When you create an increment with `/sw:increment`, the PM skill adds a `**Project**:` field to each user story in spec.md:
+When you create an increment with `sw:increment`, the PM skill adds a `**Project**:` field to each user story in spec.md:
 
 ```markdown
 ### US-FE-001: Login Page UI
@@ -165,10 +165,10 @@ You don't need to "switch projects" before creating increments. Simply describe 
 
 ```bash
 # No switching needed — just create the increment
-/sw:increment "Add dark mode to the web app"
+sw:increment "Add dark mode to the web app"
 # → PM adds **Project**: web-app to the user stories
 
-/sw:increment "Add biometric auth to the mobile app"
+sw:increment "Add biometric auth to the mobile app"
 # → PM adds **Project**: mobile-app to the user stories
 ```
 
@@ -284,7 +284,7 @@ architecture/
 
 #### 5. `legacy/` - Brownfield Imports
 
-**Purpose**: Imported documentation from external sources (via `/sw:import`)
+**Purpose**: Imported documentation from external sources (via `sw:import`)
 
 **Example**:
 ```
@@ -303,7 +303,7 @@ When creating increments in multi-project mode, you must specify the target proj
 
 ### Per-User-Story Project Field
 
-The PM skill adds `**Project**:` to each user story during `/sw:increment`:
+The PM skill adds `**Project**:` to each user story during `sw:increment`:
 
 ```markdown
 ## User Stories
@@ -355,12 +355,12 @@ Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
 
 ```bash
 # Morning: Frontend team work
-/sw:increment "Add dark mode to the web app"
+sw:increment "Add dark mode to the web app"
 # PM adds **Project**: web-app to user stories
 # Spec synced to: specs/web-app/spec-004-dark-mode.md
 
 # Afternoon: Mobile team work
-/sw:increment "Add biometric auth for mobile"
+sw:increment "Add biometric auth for mobile"
 # PM adds **Project**: mobile-app to user stories
 # Spec synced to: specs/mobile-app/spec-001-biometric-auth.md
 ```
@@ -371,15 +371,15 @@ Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
 
 ```bash
 # Infrastructure work
-/sw:increment "Upgrade Kubernetes to 1.28"
+sw:increment "Upgrade Kubernetes to 1.28"
 # → **Project**: platform-infra
 
 # Backend work
-/sw:increment "Add rate limiting middleware to the API"
+sw:increment "Add rate limiting middleware to the API"
 # → **Project**: backend-api
 
 # Frontend work
-/sw:increment "Implement new design system"
+sw:increment "Implement new design system"
 # → **Project**: frontend-app
 ```
 
@@ -388,10 +388,10 @@ Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
 **Scenario**: 5 microservices, each with its own project
 
 ```bash
-/sw:increment "Add OAuth2 support to user service"
+sw:increment "Add OAuth2 support to user service"
 # → **Project**: user-service
 
-/sw:increment "Implement order tracking"
+sw:increment "Implement order tracking"
 # → **Project**: order-service
 
 # Each service gets its own specs, modules, team docs
@@ -439,7 +439,7 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO).
 
 ```bash
 # Create increment (syncs to the matching external tools)
-/sw:increment "Add payment integration to the web app"
+sw:increment "Add payment integration to the web app"
 
 # Result:
 # - Spec synced to: specs/web-app/spec-005-payment-integration.md
@@ -451,7 +451,7 @@ Use the sync setup command to configure external tool connections interactively:
 
 <CommandTabs
   natural="Connect my GitHub integration"
-  claude="/sw:sync-setup"
+  claude="sw:sync-setup"
   other="sync-setup"
 />
 
@@ -512,7 +512,7 @@ specs/mobile-app/
 
 ### 5. Legacy Cleanup
 
-**After brownfield import** (via `/sw:import`):
+**After brownfield import** (via `sw:import`):
 - Review classification weekly
 - Move misclassified files immediately
 - Delete obsolete content monthly
@@ -555,7 +555,7 @@ specweave init
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs"
+  claude="sw:sync-docs"
   other="sync-docs"
 />
 
@@ -566,11 +566,11 @@ specweave init
 **Solution**:
 1. Check config: `cat .specweave/config.json`
 2. Verify `externalTools` mapping in the project config
-3. Use `/sw:sync-setup` to reconfigure connections:
+3. Use `sw:sync-setup` to reconfigure connections:
 
 <CommandTabs
   natural="Connect my GitHub integration"
-  claude="/sw:sync-setup"
+  claude="sw:sync-setup"
   other="sync-setup"
 />
 4. Restart SpecWeave after config changes
@@ -581,19 +581,19 @@ specweave init
 
 <CommandTabs
   natural="Import issues from GitHub"
-  claude="/sw:import"
+  claude="sw:import"
   other="import"
 />
 
 <CommandTabs
   natural="Connect my GitHub integration"
-  claude="/sw:sync-setup"
+  claude="sw:sync-setup"
   other="sync-setup"
 />
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs"
+  claude="sw:sync-docs"
   other="sync-docs"
 />
 

@@ -238,7 +238,7 @@ async function _registerAndInit(
   if (showPath) {
     console.log(chalk.dim(`   Path: ${relPath}`));
   }
-  console.log(chalk.dim(`   Next: /sw:increment to plan work in ${repo}\n`));
+  console.log(chalk.dim(`   Next: sw:increment to plan work in ${repo}\n`));
 }
 
 async function _runInit(repoDir: string): Promise<void> {

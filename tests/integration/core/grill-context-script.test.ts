@@ -2,7 +2,7 @@
  * Grill Context Script Integration Tests
  *
  * Tests for read-grill-context.sh - the bash script that loads
- * increment context for the /sw:grill code review command.
+ * increment context for the sw:grill code review command.
  *
  * The script outputs structured context that gets injected via
  * the UserPromptSubmit hook's additionalContext field.

@@ -62,7 +62,7 @@ or:
 
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 
@@ -117,11 +117,11 @@ All `true` = same behavior as v0.23.x ✅
 }
 ```
 
-**Effect**: `/sw:done` updates living docs locally, but requires manual sync:
+**Effect**: `sw:done` updates living docs locally, but requires manual sync:
 
 <CommandTabs
   natural="Sync to GitHub"
-  claude="/sw-github:sync 0047"
+  claude="sw-github:sync 0047"
   other="github-sync 0047"
 />
 
@@ -199,7 +199,7 @@ All `true` = same behavior as v0.23.x ✅
 
 **Fix Option 2** (Manual sync):
 ```bash
-/sw-github:sync 0047
+sw-github:sync 0047
 ```
 
 ---
@@ -300,7 +300,7 @@ npm install -g specweave@0.23.2
 
 <CommandTabs
   natural="Let's build test-permissions"
-  claude='/sw:increment "test-permissions"'
+  claude='sw:increment "test-permissions"'
   other='increment "test-permissions"'
 />
 

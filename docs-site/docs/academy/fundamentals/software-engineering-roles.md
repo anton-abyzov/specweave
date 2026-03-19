@@ -32,7 +32,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: Product Manager
 - **Expertise**: Product strategy, requirements gathering, user stories, feature prioritization
 - **Activates**: When planning features, creating specs, defining acceptance criteria
-- **Commands**: `/sw:increment`, `/sw:done`
+- **Commands**: `sw:increment`, `sw:done`
 - **Output**: `spec.md` with user stories and acceptance criteria
 
 **2. Architect Agent** (`architect`)
@@ -53,14 +53,14 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: QA Engineer
 - **Expertise**: Test strategy, test planning, quality gates
 - **Activates**: When planning test coverage, validating quality
-- **Commands**: `npx vitest run`, `/sw:qa`
+- **Commands**: `npx vitest run`, `sw:qa`
 - **Output**: Test plans, quality assessment reports
 
 **5. TDD Cycle Agent** (`tdd-cycle`)
 - **Role**: TDD (Test-Driven Development) Workflow Leader
 - **Expertise**: Red-Green-Refactor cycle, test-first development
 - **Activates**: When using TDD workflow
-- **Commands**: `/sw:tdd-cycle`, `/sw:tdd-red`, `/sw:tdd-green`, `/sw:tdd-refactor`
+- **Commands**: `sw:tdd-cycle`, `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor`
 - **Output**: TDD workflow guidance, test implementation
 
 **6. Planner Agent** (`sw-planner`)
@@ -95,7 +95,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: Translation Specialist
 - **Expertise**: Multilingual support, content translation
 - **Activates**: When translating specs/docs to English (multilingual workflow)
-- **Commands**: `/sw:translate`
+- **Commands**: `sw:translate`
 - **Output**: Translated content (maintains code blocks, technical terms)
 
 **11. Code Reviewer Agent** (`code-reviewer`)
@@ -123,7 +123,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 
 <CommandTabs
   natural="I want to add user authentication with OAuth"
-  claude='/sw:increment "Add user authentication with OAuth"'
+  claude='sw:increment "Add user authentication with OAuth"'
   other='increment "Add user authentication with OAuth"'
 />
 
@@ -136,7 +136,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
    - Priority assignments (P1, P2, P3)
 2. Creates [living docs](/docs/glossary/terms/living-docs) in .specweave/docs/internal/specs/
 3. Links to external PM tools (Jira, ADO, GitHub Issues)
-4. Validates increment completion via /sw:done
+4. Validates increment completion via sw:done
 ```
 
 **Example Output** (spec.md):
@@ -226,7 +226,7 @@ Use PostgreSQL for transactional data, Redis for session cache.
 - MySQL: Weaker JSON support than PostgreSQL (rejected)
 ```
 
-Architect Agent stores ADRs permanently in [living docs](/docs/glossary/terms/living-docs), updated via `/sw:sync-docs`.
+Architect Agent stores ADRs permanently in [living docs](/docs/glossary/terms/living-docs), updated via `sw:sync-docs`.
 
 ---
 
@@ -308,7 +308,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 **QA Lead Agent**:
 - Defines test strategy (unit/integration/E2E targets)
 - Validates test coverage via `npx vitest run`
-- Runs quality gates via `/sw:qa`
+- Runs quality gates via `sw:qa`
 - Ensures AC-ID traceability (spec.md AC → tasks.md tests)
 
 **Test-Aware Planner Agent**:
@@ -332,7 +332,7 @@ npx vitest run 0008
 # Developer adds test for AC-US1-03
 
 # 3. QA Lead runs quality gate
-/sw:qa 0008
+sw:qa 0008
 
 # Output:
 # ✅ PASS - All tests passing, coverage targets met
@@ -478,7 +478,7 @@ npx vitest run 0008
 
 ```markdown
 # Docs Writer updates documentation after feature completion
-# Invoked via /sw:sync-docs or manually
+# Invoked via sw:sync-docs or manually
 
 1. [Living Docs](/docs/glossary/terms/living-docs) Sync:
    - Updates .specweave/docs/internal/ (architecture, ADRs)
@@ -499,7 +499,7 @@ npx vitest run 0008
 
 ```bash
 # After implementing authentication feature
-/sw:sync-docs update
+sw:sync-docs update
 
 # Docs Writer Agent:
 1. Copies increment spec.md → living docs spec-0008-user-authentication.md
@@ -518,7 +518,7 @@ npx vitest run 0008
 
 <CommandTabs
   natural="I want to add real-time chat with WebSocket support"
-  claude='/sw:increment "Add real-time chat with WebSocket support"'
+  claude='sw:increment "Add real-time chat with WebSocket support"'
   other='increment "Add real-time chat with WebSocket support"'
 />
 
@@ -606,7 +606,7 @@ npx vitest run 0008
 ### Step 7: Implementation & Testing
 
 **Developer implements** tasks from tasks.md:
-1. Uses TDD workflow (`/sw:tdd-cycle`)
+1. Uses TDD workflow (`sw:tdd-cycle`)
 2. TDD Orchestrator guides red-green-refactor cycle
 3. Runs tests via `npx vitest run`
 
@@ -616,7 +616,7 @@ npx vitest run 0008
 
 <CommandTabs
   natural="Check quality on increment 0009"
-  claude="/sw:qa 0009"
+  claude="sw:qa 0009"
   other="qa 0009"
 />
 
@@ -633,7 +633,7 @@ npx vitest run 0008
 ### Step 9: Documentation (Docs Writer Agent)
 
 ```bash
-/sw:sync-docs update
+sw:sync-docs update
 ```
 
 **Docs Writer Agent**:
@@ -648,7 +648,7 @@ npx vitest run 0008
 
 <CommandTabs
   natural="We're done with increment 0009"
-  claude="/sw:done 0009"
+  claude="sw:done 0009"
   other="done 0009"
 />
 
@@ -706,11 +706,11 @@ graph TD
 
 ### 1. Start with PM Agent
 
-Always begin with `/sw:increment` to let PM Agent create the spec:
+Always begin with `sw:increment` to let PM Agent create the spec:
 
 <CommandTabs
   natural="I want to add user authentication"
-  claude='/sw:increment "Add user authentication"'
+  claude='sw:increment "Add user authentication"'
   other='increment "Add user authentication"'
 />
 
@@ -727,8 +727,8 @@ Always validate before closing:
 
 ```bash
 npx vitest run 0008  # Check test coverage
-/sw:qa 0008           # Run quality assessment
-/sw:done 0008         # PM validation + closure
+sw:qa 0008           # Run quality assessment
+sw:done 0008         # PM validation + closure
 ```
 
 ### 4. Keep Living Docs Synced
@@ -736,7 +736,7 @@ npx vitest run 0008  # Check test coverage
 After completing tasks, sync living docs:
 
 ```bash
-/sw:sync-docs update
+sw:sync-docs update
 ```
 
 This keeps `.specweave/docs/internal/` permanently up-to-date.
@@ -755,7 +755,7 @@ Acceptance Criteria IDs (AC-US1-01) enable traceability:
 **Beginner**:
 1. Read [Getting Started](../../guides/getting-started/quickstart.md)
 2. Understand [What is an Increment](../../guides/core-concepts/what-is-an-increment.md)
-3. Try `/sw:increment "simple feature"` to see PM Agent in action
+3. Try `sw:increment "simple feature"` to see PM Agent in action
 
 **Intermediate**:
 1. **Planning Workflow** (coming soon) - PM + Architect + Tech Lead collaboration

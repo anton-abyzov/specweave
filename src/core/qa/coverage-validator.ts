@@ -1,7 +1,7 @@
 /**
  * Coverage Validator
  *
- * Validates test coverage against configured targets during /sw:done execution.
+ * Validates test coverage against configured targets during sw:done execution.
  * Supports multiple coverage formats: Istanbul, c8, Jest, lcov.
  *
  * @module qa/coverage-validator

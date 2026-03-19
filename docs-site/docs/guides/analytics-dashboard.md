@@ -22,13 +22,13 @@ This starts a local web server and opens the dashboard in your browser.
 
 SpecWeave records three types of events:
 
-- **Commands** -- every `/sw:do`, `/sw:increment`, `/sw:auto`, `/sw:done`, etc.
+- **Commands** -- every `sw:do`, `sw:increment`, `sw:auto`, `sw:done`, etc.
 - **Skills** -- skill activations like `sw:increment`, `sw:grill`, `sw:do`, `sw:done`
 - **Agents** -- agent spawns (Explore, general-purpose, Plan, etc.)
 
 ### Implicit Tracking
 
-Analytics captures **all** invocations, including implicit ones. When `/sw:team-lead` orchestrates parallel agents and those agents internally invoke skills like `/sw:do` or spawn sub-agents, every call is tracked automatically via PostToolUse hooks. This means the dashboard shows the true volume of work -- not just what the user types, but everything the AI agents do behind the scenes.
+Analytics captures **all** invocations, including implicit ones. When `sw:team-lead` orchestrates parallel agents and those agents internally invoke skills like `sw:do` or spawn sub-agents, every call is tracked automatically via PostToolUse hooks. This means the dashboard shows the true volume of work -- not just what the user types, but everything the AI agents do behind the scenes.
 
 Each event includes:
 

@@ -1360,7 +1360,7 @@
         },
         "mandatory": {
           "type": "boolean",
-          "description": "When true, BLOCKS prompts detected as implementation work until an increment is created via /sw:increment. Overrides the LLM mandatory decision. Default: true (enforced).",
+          "description": "When true, BLOCKS prompts detected as implementation work until an increment is created via sw:increment. Overrides the LLM mandatory decision. Default: true (enforced).",
           "default": true
         }
       },

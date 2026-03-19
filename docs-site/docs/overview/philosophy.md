@@ -41,7 +41,7 @@ graph LR
     style GC fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
 ```
 
-This is why SpecWeave places human review at the **plan level** — catching a mistake in `spec.md` or `plan.md` prevents an entire cascade of bad code. For uncertain features, say "let's brainstorm this first" (or `/sw:brainstorm`) before planning to add a research phase with its own review checkpoint.
+This is why SpecWeave places human review at the **plan level** — catching a mistake in `spec.md` or `plan.md` prevents an entire cascade of bad code. For uncertain features, say "let's brainstorm this first" (or `sw:brainstorm`) before planning to add a research phase with its own review checkpoint.
 
 **What this means in practice:**
 - **Before implementing**: Read and understand the current plan

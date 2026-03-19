@@ -73,15 +73,15 @@ When you describe what you want, your AI routes internally to the right skill. Y
 
 | You say | Your AI runs — automatically |
 |---------|------------------------------|
-| "Build me X" / "Let's add Y" | `/sw:increment` → spec + plan + tasks |
-| "Brainstorm approaches for X" | `/sw:brainstorm` → multi-perspective ideation |
-| "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
-| "Ship it" / "We're done" | `/sw:done` → quality gates + close |
-| "Split this into teams" | `/sw:team-lead` → parallel agents (implement mode) |
-| "Brainstorm with perspectives" | `/sw:team-lead` → parallel perspectives (brainstorm mode) |
-| "Plan X in parallel" | `/sw:team-lead` → PM + Architect agents (planning mode) |
-| "Review the code" | `/sw:code-reviewer` → 6 parallel reviewers |
-| "Grill the code" | `/sw:grill` → critical audit before close |
+| "Build me X" / "Let's add Y" | `sw:increment` → spec + plan + tasks |
+| "Brainstorm approaches for X" | `sw:brainstorm` → multi-perspective ideation |
+| "Go ahead" / "Build it" | `sw:auto` → autonomous execution |
+| "Ship it" / "We're done" | `sw:done` → quality gates + close |
+| "Split this into teams" | `sw:team-lead` → parallel agents (implement mode) |
+| "Brainstorm with perspectives" | `sw:team-lead` → parallel perspectives (brainstorm mode) |
+| "Plan X in parallel" | `sw:team-lead` → PM + Architect agents (planning mode) |
+| "Review the code" | `sw:code-reviewer` → 6 parallel reviewers |
+| "Grill the code" | `sw:grill` → critical audit before close |
 
 You can also invoke these directly for fine-grained control — but you rarely need to.
 
@@ -132,20 +132,20 @@ You: "Migrate the checkout page to React"
   → TDD-first autonomous execution
 ```
 
-For medium-complexity features, brainstorm first — `/sw:brainstorm` explores 4-6 structurally different approaches with cognitive lenses (Six Thinking Hats, SCAMPER, TRIZ, and more) before committing to a plan, then hands off directly to `/sw:increment`.
+For medium-complexity features, brainstorm first — `sw:brainstorm` explores 4-6 structurally different approaches with cognitive lenses (Six Thinking Hats, SCAMPER, TRIZ, and more) before committing to a plan, then hands off directly to `sw:increment`.
 
 ### When to Use What
 
 The more structure in your workflow, the harder the problems you can solve:
 
 ```
-Hardest problem          big refactors,              ○  ← /sw:team-lead
+Hardest problem          big refactors,              ○  ← sw:team-lead
 you can solve          whole new features                 (multi-agent)
     ↑                                          ○
-    │               medium features               ← /sw:brainstorm → /sw:increment → /sw:auto
+    │               medium features               ← sw:brainstorm → sw:increment → sw:auto
     │              across repos                 (research + plan + implement)
     │                                    ○
-    │           small features              ← /sw:increment → /sw:do
+    │           small features              ← sw:increment → sw:do
     │          across 3-5 files                (plan + implement)
     │                              ○
     │       small fixes               ← just talk to AI
@@ -165,12 +165,12 @@ Run multiple AI agents on the same repository — each agent owns an isolated in
 iTerm2 / tmux split panes:
 ┌──────────────────┬──────────────────┬──────────────────┐
 │  Agent 1 (auth)  │ Agent 2 (payments)│ Agent 3 (catalog)│
-│  /sw:auto        │  /sw:auto         │  /sw:auto        │
+│  sw:auto        │  sw:auto         │  sw:auto        │
 │  ████████░░ 80%  │  ██████░░░░ 60%   │  ████░░░░░░ 40%  │
 └──────────────────┴──────────────────┴──────────────────┘
 ```
 
-`/sw:team-lead` splits work across 6 modes — brainstorm, plan, implement, review, research, and test. Each agent runs in its own pane using Claude Code's native TeamCreate for true parallelism. Progress syncs to GitHub/JIRA automatically.
+`sw:team-lead` splits work across 6 modes — brainstorm, plan, implement, review, research, and test. Each agent runs in its own pane using Claude Code's native TeamCreate for true parallelism. Progress syncs to GitHub/JIRA automatically.
 
 **[Full agent teams guide](/docs/guides/agent-teams-and-swarms)**
 
@@ -198,8 +198,8 @@ iTerm2 / tmux split panes:
 | Feature | Benefit | Uniqueness |
 |---------|---------|------------|
 | **70%+ Token Reduction** | Plugin architecture loads only active increment + relevant agent = ~15K tokens (vs 200K+) | Unique |
-| **Parallel Agent Teams** | `/sw:team-lead` orchestrates agents across 6 modes — brainstorm, plan, implement, review, research, test | Unique |
-| **Structured Brainstorming** | `/sw:brainstorm` explores 4-6 approaches with cognitive lenses before committing to a plan | Unique |
+| **Parallel Agent Teams** | `sw:team-lead` orchestrates agents across 6 modes — brainstorm, plan, implement, review, research, test | Unique |
+| **Structured Brainstorming** | `sw:brainstorm` explores 4-6 approaches with cognitive lenses before committing to a plan | Unique |
 | **Brownfield Excellence** | `specweave get` to import repos, automated codebase analysis, strangler fig migrations, retroactive specs | Unique |
 | **Living Documentation** | Specs auto-update after every task via hooks — never drift from code | Unique |
 | **LSP Code Intelligence** | Semantic symbol resolution — 198x faster than grep, zero false positives across TypeScript, Python, Go, Rust, Java, C# | Unique |
@@ -250,7 +250,7 @@ Then describe what you want to build:
 
 <CommandTabs
   natural="I need a dark mode toggle for the settings page"
-  claude='/sw:increment "Add dark mode toggle"'
+  claude='sw:increment "Add dark mode toggle"'
   other='increment "Add dark mode toggle"'
 />
 

@@ -11,7 +11,7 @@ const pluginsDir = join(projectRoot, 'plugins', 'specweave', 'skills');
 /**
  * Validation Tests: E2E Test Execution in Done Skill
  *
- * Ensures that /sw:done detects and runs E2E tests as a blocking
+ * Ensures that sw:done detects and runs E2E tests as a blocking
  * gate before increment closure.
  */
 

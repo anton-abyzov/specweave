@@ -466,7 +466,7 @@ describe('human-readable output', () => {
     expect(output).toContain('No active increments');
   });
 
-  it('shows next steps with /sw:do when active with increments', async () => {
+  it('shows next steps with sw:do when active with increments', async () => {
     createIncrement('0001-feature', 'active');
     writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
 
@@ -474,7 +474,7 @@ describe('human-readable output', () => {
     const output = consoleLogs.join('\n');
 
     expect(output).toContain('NEXT STEPS');
-    expect(output).toContain('/sw:do');
+    expect(output).toContain('sw:do');
     expect(output).toContain('cancel-auto');
   });
 
@@ -857,7 +857,7 @@ describe('Increment Status Integration', () => {
 });
 
 describe('Next Steps Guidance', () => {
-  it('should show /sw:do when active with increments', async () => {
+  it('should show sw:do when active with increments', async () => {
     writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
     createIncrement('0001-feature', 'active');
 
@@ -865,7 +865,7 @@ describe('Next Steps Guidance', () => {
     const output = consoleLogs.join('\n');
 
     expect(output).toContain('NEXT STEPS');
-    expect(output).toContain('/sw:do');
+    expect(output).toContain('sw:do');
   });
 
   it('should show cancel command when active', async () => {

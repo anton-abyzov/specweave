@@ -1,7 +1,7 @@
 /**
  * Tests for Auto Skill Self-Sufficiency
  *
- * The /sw:auto skill MUST be self-sufficient — it should NOT shell out
+ * The sw:auto skill MUST be self-sufficient — it should NOT shell out
  * to the `specweave auto` CLI command. Instead, it should use Read/Write/Edit/Glob
  * tools directly to:
  * 1. Find and activate increments

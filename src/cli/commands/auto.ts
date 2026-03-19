@@ -229,7 +229,7 @@ export async function handleAutoCommand(
     console.log(chalk.yellow('⚠️  No increments found'));
     console.log('');
     console.log('Create an increment first:');
-    console.log('  • ' + chalk.cyan('/sw:increment "Feature description"'));
+    console.log('  • ' + chalk.cyan('sw:increment "Feature description"'));
     console.log('  • ' + chalk.cyan('specweave increment --title "Feature"'));
   }
 }
@@ -444,12 +444,12 @@ async function printStartMessage(
     console.log(`    ${icon} ${criterion.description} ${reqLabel}`);
   }
   console.log('');
-  console.log(chalk.gray('  Then run /sw:done <id> to close increment'));
-  console.log(chalk.gray('  Or /sw:cancel-auto to stop early'));
+  console.log(chalk.gray('  Then run sw:done <id> to close increment'));
+  console.log(chalk.gray('  Or sw:cancel-auto to stop early'));
   console.log('');
   console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log('');
 
-  console.log(chalk.blue('Start working with: ') + chalk.cyan('/sw:do'));
+  console.log(chalk.blue('Start working with: ') + chalk.cyan('sw:do'));
   console.log('');
 }

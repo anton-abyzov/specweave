@@ -4,7 +4,7 @@
     {
       "id": 1,
       "name": "display-qualifying-patterns",
-      "prompt": "Run /sw:skill-gen. The project has a skill-signals.json with 3 signals: 'error-handling' (4 increments, confidence 0.8), 'api-patterns' (3 increments, confidence 0.6), and 'naming-conventions' (1 increment, confidence 0.33). MinSignalCount is 3.",
+      "prompt": "Run sw:skill-gen. The project has a skill-signals.json with 3 signals: 'error-handling' (4 increments, confidence 0.8), 'api-patterns' (3 increments, confidence 0.6), and 'naming-conventions' (1 increment, confidence 0.33). MinSignalCount is 3.",
       "expected_output": "Display the 2 qualifying patterns (error-handling and api-patterns) with their details. Do not display naming-conventions (below threshold).",
       "assertions": [
         {
@@ -32,7 +32,7 @@
     {
       "id": 2,
       "name": "no-signals-available",
-      "prompt": "Run /sw:skill-gen. The project has a skill-signals.json with 2 signals, both with only 1 increment ID each. MinSignalCount is 3.",
+      "prompt": "Run sw:skill-gen. The project has a skill-signals.json with 2 signals, both with only 1 increment ID each. MinSignalCount is 3.",
       "expected_output": "Inform the user that no qualifying patterns were found and explain the minimum threshold.",
       "assertions": [
         {
@@ -55,7 +55,7 @@
     {
       "id": 3,
       "name": "missing-signals-file",
-      "prompt": "Run /sw:skill-gen. The project does not have a .specweave/state/skill-signals.json file.",
+      "prompt": "Run sw:skill-gen. The project does not have a .specweave/state/skill-signals.json file.",
       "expected_output": "Inform the user that no signals have been detected yet and suggest running increments with living docs enabled.",
       "assertions": [
         {

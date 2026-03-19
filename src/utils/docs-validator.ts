@@ -656,7 +656,7 @@ export class DocsValidator {
       lines.push('QUICK FIXES:');
       lines.push('───────────────────────────────────────────────────────────────');
       lines.push('  1. Run validation with auto-fix:');
-      lines.push('     /sw:docs-validate --fix');
+      lines.push('     sw:docs-validate --fix');
       lines.push('');
       lines.push('  2. Or fix manually:');
 

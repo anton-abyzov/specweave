@@ -288,7 +288,7 @@ describe('quality-gates-config', () => {
 describe('Quality gates and LLM eval relationship', () => {
   it('requireLLMEval should be independent from requireJudgeLLM', () => {
     // requireLLMEval: Lightweight LLM check integrated in stop hook
-    // requireJudgeLLM: Heavy /sw:judge-llm call (separate command)
+    // requireJudgeLLM: Heavy sw:judge-llm call (separate command)
     // They serve different purposes and should not be mutually exclusive
 
     const production = getQualityGatePreset('production');

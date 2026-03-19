@@ -207,7 +207,7 @@ If the `**Project**:` field doesn't match any child repo name, ID, or prefix, th
 
 ## How Agents Use the Project Field
 
-When `/sw:increment` creates a new increment, the increment skill detects umbrella mode and passes child repo context to the PM agent (`sw:pm`). The PM then sets the `**Project**:` field in each user story.
+When `sw:increment` creates a new increment, the increment skill detects umbrella mode and passes child repo context to the PM agent (`sw:pm`). The PM then sets the `**Project**:` field in each user story.
 
 ### Umbrella mode (`umbrella.enabled: true`)
 
@@ -255,7 +255,7 @@ Or configure sync targets interactively:
 
 <CommandTabs
   natural="Connect my GitHub integration"
-  claude="/sw:sync-setup"
+  claude="sw:sync-setup"
   other="sync-setup"
 />
 

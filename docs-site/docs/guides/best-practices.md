@@ -34,10 +34,10 @@ SpecWeave's task format enforces this naturally:
 
 | Claude Code Phase | SpecWeave Equivalent | Command |
 |-------------------|----------------------|---------|
-| **Explore** | Research/brownfield analysis | `/sw:docs`, `/sw:discrepancies` |
-| **Plan** | Increment planning | `/sw:increment "feature"` |
-| **Code** | Task execution | `/sw:do` |
-| **Commit** | Validation + closure | `/sw:validate`, `/sw:done` |
+| **Explore** | Research/brownfield analysis | `sw:docs`, `sw:discrepancies` |
+| **Plan** | Increment planning | `sw:increment "feature"` |
+| **Code** | Task execution | `sw:do` |
+| **Commit** | Validation + closure | `sw:validate`, `sw:done` |
 
 ### When to Skip Planning
 
@@ -60,8 +60,8 @@ For these, just ask Claude directly.
 /clear
 
 # Then start fresh with SpecWeave
-/sw:status  # See where you are
-/sw:do      # Continue or start new work
+sw:status  # See where you are
+sw:do      # Continue or start new work
 ```
 
 ### 2. Use `/compact` Wisely
@@ -71,7 +71,7 @@ For these, just ask Claude directly.
 /compact Focus on the payment integration
 
 # SpecWeave equivalent: close completed increments
-/sw:done 0015  # Clear completed work from context
+sw:done 0015  # Clear completed work from context
 ```
 
 ### 3. After 2+ Failed Corrections
@@ -81,7 +81,7 @@ Don't keep trying in a polluted context:
 ```bash
 /clear
 # Rewrite your prompt with lessons learned
-/sw:do  # Fresh start with the same increment
+sw:do  # Fresh start with the same increment
 ```
 
 ### 4. Leverage Subagents
@@ -89,7 +89,7 @@ Don't keep trying in a polluted context:
 SpecWeave automatically spawns subagents for specialized tasks:
 
 ```markdown
-# When you run /sw:do, SpecWeave may spawn:
+# When you run sw:do, SpecWeave may spawn:
 - sw:architect → For React/Vue/Next.js
 - backend:database-optimizer → For API/database work
 - testing:qa → For E2E tests
@@ -99,7 +99,7 @@ These run in **isolated context**, keeping your main conversation clean.
 
 ## CLAUDE.md Best Practices
 
-SpecWeave generates comprehensive `CLAUDE.md` via `specweave update` (or `/sw:update-instructions` skill). Keep it lean:
+SpecWeave generates comprehensive `CLAUDE.md` via `specweave update` (or `sw:update-instructions` skill). Keep it lean:
 
 ### Include
 
@@ -218,7 +218,7 @@ Claude auto-checkpoints before changes:
 /rewind  # Restore conversation, code, or both
 ```
 
-**SpecWeave equivalent**: Increment metadata tracks all changes. You can always see what was done via `/sw:progress`.
+**SpecWeave equivalent**: Increment metadata tracks all changes. You can always see what was done via `sw:progress`.
 
 ## Effective Prompting with SpecWeave
 
@@ -253,7 +253,7 @@ Ask about:
 - Security implications
 
 Keep interviewing until you have comprehensive understanding,
-then create the increment via /sw:increment.
+then create the increment via sw:increment.
 ```
 
 ## Hooks: Guaranteed vs. Advisory Behavior
@@ -312,7 +312,7 @@ SpecWeave provides built-in hooks for:
 
 ```markdown
 # Planning chain
-/sw:increment → pm skill → architect skill
+sw:increment → pm skill → architect skill
 
 # Implementation chain
 Spec complete → frontend/backend skills → LSP automatic
@@ -352,31 +352,31 @@ Skills trigger on keywords in their descriptions:
 Plan new work:
 <CommandTabs
   natural="Let's build a user authentication feature"
-  claude='/sw:increment "user authentication"'
+  claude='sw:increment "user authentication"'
   other='increment "user authentication"'
 />
 
 Execute tasks:
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
 Check status:
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 
 Additional commands:
 ```bash
 # Quality check
-/sw:validate
+sw:validate
 
 # Close increment
-/sw:done
+sw:done
 
 # Claude Code Context
 /clear                    # Reset context
@@ -397,7 +397,7 @@ Is this a small, clear task?
 ├── Yes → Just ask Claude directly
 └── No → Is there existing code?
     ├── Yes → "Update the docs" first, then "Let's build X"
-    └── No → Describe what you want to build (or /sw:increment)
+    └── No → Describe what you want to build (or sw:increment)
 ```
 
 ## Further Reading

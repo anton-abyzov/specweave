@@ -16,7 +16,7 @@ describe('error-formatter', () => {
       expect(error.title).toContain('not found');
       expect(error.suggestions).toBeDefined();
       expect(error.suggestions!.length).toBeGreaterThan(0);
-      expect(error.relatedCommands).toContain('/sw:status');
+      expect(error.relatedCommands).toContain('sw:status');
     });
 
     it('generates SPEC_NOT_FOUND error', () => {
@@ -25,39 +25,39 @@ describe('error-formatter', () => {
       expect(error.title).toContain('spec.md');
       expect(error.description).toContain('0042');
       expect(error.suggestions).toBeDefined();
-      expect(error.relatedCommands).toContain('/sw:increment');
+      expect(error.relatedCommands).toContain('sw:increment');
     });
 
     it('generates WRONG_COMMAND_FOR_NEW_INCREMENT error', () => {
       const error = ERROR_MESSAGES.WRONG_COMMAND_FOR_NEW_INCREMENT();
 
-      expect(error.title).toContain('/sw:plan');
+      expect(error.title).toContain('sw:plan');
       expect(error.title).toContain('EXISTING');
-      expect(error.description).toContain('/sw:increment');
+      expect(error.description).toContain('sw:increment');
       expect(error.example).toBeDefined();
-      expect(error.example).toContain('/sw:increment');
+      expect(error.example).toContain('sw:increment');
     });
 
     it('generates WRONG_COMMAND_FOR_EXISTING_INCREMENT error', () => {
       const error = ERROR_MESSAGES.WRONG_COMMAND_FOR_EXISTING_INCREMENT('0042');
 
-      expect(error.title).toContain('/sw:increment');
+      expect(error.title).toContain('sw:increment');
       expect(error.title).toContain('NEW');
       expect(error.description).toContain('0042');
-      expect(error.relatedCommands).toContain('/sw:plan');
+      expect(error.relatedCommands).toContain('sw:plan');
     });
 
     it('generates INTERNAL_SKILL_DIRECT_CALL error', () => {
       const error = ERROR_MESSAGES.INTERNAL_SKILL_DIRECT_CALL('increment-planner', [
-        '/sw:increment',
-        '/sw:plan'
+        'sw:increment',
+        'sw:plan'
       ]);
 
       expect(error.title).toContain('increment-planner');
       expect(error.title).toContain('internal');
       expect(error.suggestions).toBeDefined();
       expect(error.relatedCommands).toHaveLength(2);
-      expect(error.relatedCommands).toContain('/sw:increment');
+      expect(error.relatedCommands).toContain('sw:increment');
     });
 
     it('generates INVALID_INCREMENT_NUMBER error', () => {
@@ -74,7 +74,7 @@ describe('error-formatter', () => {
 
       expect(error.title).toContain('0042');
       expect(error.title).toContain('exists');
-      expect(error.relatedCommands).toContain('/sw:status');
+      expect(error.relatedCommands).toContain('sw:status');
     });
 
     it('generates INVALID_STATUS_TRANSITION error', () => {
@@ -82,7 +82,7 @@ describe('error-formatter', () => {
 
       expect(error.title).toContain('backlog');
       expect(error.title).toContain('completed');
-      expect(error.relatedCommands).toContain('/sw:workflow');
+      expect(error.relatedCommands).toContain('sw:workflow');
     });
 
     it('generates INCREMENT_NOT_READY error', () => {
@@ -91,16 +91,16 @@ describe('error-formatter', () => {
       expect(error.title).toContain('0042');
       expect(error.title).toContain('not ready');
       expect(error.description).toContain('All tasks must be completed');
-      expect(error.relatedCommands).toContain('/sw:validate');
+      expect(error.relatedCommands).toContain('sw:validate');
     });
 
     it('generates MISSING_REQUIRED_ARG error', () => {
-      const error = ERROR_MESSAGES.MISSING_REQUIRED_ARG('increment-id', '/sw:done');
+      const error = ERROR_MESSAGES.MISSING_REQUIRED_ARG('increment-id', 'sw:done');
 
       expect(error.title).toContain('increment-id');
       expect(error.description).toContain('required');
       expect(error.suggestions).toBeDefined();
-      expect(error.suggestions![0]).toContain('/sw:done');
+      expect(error.suggestions![0]).toContain('sw:done');
     });
   });
 
@@ -110,7 +110,7 @@ describe('error-formatter', () => {
         title: 'Test Error',
         description: 'This is a test',
         suggestions: ['Try this', 'Or this'],
-        relatedCommands: ['/sw:test']
+        relatedCommands: ['sw:test']
       };
 
       // Should not throw

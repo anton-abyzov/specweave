@@ -24,7 +24,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'overview/claude-code-basics', label: 'Claude Code Basics'},
         {type: 'doc', id: 'overview/claude-code-architecture', label: 'Claude Code Architecture'},
         {type: 'doc', id: 'overview/features', label: 'Key Features'},
-        {type: 'doc', id: 'overview/plugins-ecosystem', label: 'Plugin Ecosystem'},
+        {type: 'doc', id: 'overview/plugins-ecosystem', label: 'Skills & Capabilities'},
         {type: 'doc', id: 'overview/philosophy', label: 'Philosophy'},
         {type: 'doc', id: 'overview/dogfooding', label: 'Dogfooding'},
       ],

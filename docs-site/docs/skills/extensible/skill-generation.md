@@ -77,14 +77,14 @@ Additionally, when generating a skill, the system checks if a skill with the sam
 specweave init
 
 # 2. For existing projects -- seed signals immediately
-/sw:skill-gen --seed
+sw:skill-gen --seed
 
 # 3. Or just use SpecWeave normally -- signals build over time
 ```
 
 <CommandTabs
   natural="We're done with increment 0001"
-  claude="/sw:done 0001"
+  claude="sw:done 0001"
   other="done 0001"
 />
 
@@ -95,7 +95,7 @@ specweave init
 # 💡 Skill suggestion: Detected "zod-validation" pattern across 4 sources.
 
 # 5. Generate the skill
-/sw:skill-gen
+sw:skill-gen
 ```
 
 ## Prerequisites
@@ -131,7 +131,7 @@ Developer runs `specweave init` on an existing project, then starts building fea
 Or, to skip the cold start, run seed mode:
 
 ```
-/sw:skill-gen --seed
+sw:skill-gen --seed
 ```
 
 Output:
@@ -159,12 +159,12 @@ After a few more increments, `zod-api-validation` appears in 4 distinct source f
 
 ```
 💡 Skill suggestion: Detected "zod-api-validation" pattern across 4 sources.
-   Run /sw:skill-gen to generate project skills.
+   Run sw:skill-gen to generate project skills.
 ```
 
 ### Week 3 -- Generate the Skill
 
-The developer runs `/sw:skill-gen`, selects `zod-api-validation`, and skill-creator generates:
+The developer runs `sw:skill-gen`, selects `zod-api-validation`, and skill-creator generates:
 
 - `.claude/skills/zod-api-validation/SKILL.md` -- triggering description, full instructions
 - `evals/evals.json` -- test cases for quality validation
@@ -205,7 +205,7 @@ All fields are optional. Defaults apply when `skillGen` is absent from config.
 Seed mode solves the cold start problem. Instead of waiting for 3+ increment closures to build signals organically, it scans **all** existing living docs in a single LLM call and creates signals immediately.
 
 ```bash
-/sw:skill-gen --seed
+sw:skill-gen --seed
 ```
 
 Behavior:
@@ -242,7 +242,7 @@ Characteristics:
 Run manually with:
 
 ```bash
-/sw:skill-gen --refresh
+sw:skill-gen --refresh
 ```
 
 ## Skill-Creator Integration
@@ -334,21 +334,21 @@ The store is validated with Zod on load. Corrupted files are backed up and repla
 | No patterns detected | Living docs directory is empty | Run a few increments with living docs enabled, or check `.specweave/docs/internal/` |
 | No patterns detected | LLM not configured | Add LLM provider config to `.specweave/config.json` |
 | "No LLM config found" warning | Missing provider configuration | Configure an LLM provider -- see [LLM setup docs](../../guides/llm-configuration) |
-| Suggestion never appears | Patterns haven't reached `minSignalCount` threshold | Lower `minSignalCount` in config or run `/sw:skill-gen --seed` to bootstrap |
+| Suggestion never appears | Patterns haven't reached `minSignalCount` threshold | Lower `minSignalCount` in config or run `sw:skill-gen --seed` to bootstrap |
 | Duplicate suggestion | Existing rules not detected | Ensure rule files (CLAUDE.md, .cursorrules) exist at project root |
 | Skill-creator not found | Auto-install failed or `claude` CLI missing | Run `claude install-skill https://github.com/anthropics/skills/tree/main/skills/skill-creator` manually |
-| Stale skill warnings | Project evolved since skill was generated | Run `/sw:skill-gen --refresh` to check drift, regenerate if needed |
+| Stale skill warnings | Project evolved since skill was generated | Run `sw:skill-gen --refresh` to check drift, regenerate if needed |
 | Signal store corrupted | Manual edit or disk error | Delete `.specweave/state/skill-signals.json` -- it will be recreated on next closure |
 
 ## Usage
 
 ```bash
 # See detected patterns and generate skills
-/sw:skill-gen
+sw:skill-gen
 
 # Bootstrap signals from existing living docs (cold start shortcut)
-/sw:skill-gen --seed
+sw:skill-gen --seed
 
 # Check existing skills for drift against current living docs
-/sw:skill-gen --refresh
+sw:skill-gen --refresh
 ```

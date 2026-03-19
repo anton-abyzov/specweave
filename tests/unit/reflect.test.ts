@@ -651,7 +651,7 @@ describe.skip('Reflect Integration', () => {
         expect(content).toContain('## Overview');
         expect(content).toContain('## How It Works');
         expect(content).toContain('## Usage');
-        expect(content).toContain('/sw:reflect');
+        expect(content).toContain('sw:reflect');
     });
 
     it('should have valid command files', () => {

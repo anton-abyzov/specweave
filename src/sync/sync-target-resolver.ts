@@ -107,7 +107,7 @@ export function validateSyncTargets(config: SpecWeaveConfig): string[] {
     if (!child.sync) {
       warnings.push(
         `Child repo "${child.id}" has no sync config — it will fall back to global defaults. ` +
-        `Run /sw:sync-setup to configure per-repo sync targets.`,
+        `Run sw:sync-setup to configure per-repo sync targets.`,
       );
     }
   }

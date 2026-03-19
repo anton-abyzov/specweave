@@ -148,7 +148,7 @@ Plugin skills are prefixed with the plugin name to prevent conflicts. Each can b
 |-----------------|-------------|----------|
 | "App store submission" | `/mobile:appstore` | `appstore` |
 | "Post to Slack" | `/marketing:slack-messaging` | `slack-messaging` |
-| "Let's build X" | `/sw:increment` | `increment` |
+| "Let's build X" | `sw:increment` | `increment` |
 
 ---
 
@@ -338,7 +338,7 @@ npx vskill install --repo anton-abyzov/specweave --plugin sw-github
 export SPECWEAVE_DISABLE_AUTO_LOAD=1
 ```
 
-For details on how lazy loading works, see the [Plugin Ecosystem](/docs/overview/plugins-ecosystem) guide.
+For details on how lazy loading works, see the [Skills & Capabilities](/docs/overview/skills-and-capabilities) guide.
 
 ---
 

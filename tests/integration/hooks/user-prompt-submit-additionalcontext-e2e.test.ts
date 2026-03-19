@@ -175,7 +175,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         { spaces: 2 }
       );
 
-      const result = executeHook('/sw:status');
+      const result = executeHook('sw:status');
 
       expect(result.exitCode).toBe(0);
 
@@ -262,7 +262,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         title: 'Schema Test'
       });
 
-      const result = executeHook('/sw:progress');
+      const result = executeHook('sw:progress');
 
       expect(result.exitCode).toBe(0);
       expect(result.parsed).toBeTruthy();
@@ -291,7 +291,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         title: 'Handle "quotes" and \\backslashes'
       });
 
-      const result = executeHook('/sw:status');
+      const result = executeHook('sw:status');
 
       expect(result.exitCode).toBe(0);
 
@@ -300,7 +300,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
     });
 
     it('should handle newlines in context without breaking JSON', () => {
-      const result = executeHook('/sw:progress');
+      const result = executeHook('sw:progress');
 
       expect(result.exitCode).toBe(0);
 
@@ -336,7 +336,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         { spaces: 2 }
       );
 
-      const result = executeHook('/sw:increment "new feature"');
+      const result = executeHook('sw:increment "new feature"');
 
       expect(result.exitCode).toBe(0);
 
@@ -372,9 +372,9 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
     it('should NEVER use systemMessage field (Claude Code ignores it)', () => {
       // Test multiple scenarios
       const prompts = [
-        '/sw:status',
-        '/sw:progress',
-        '/sw:increment "test"',
+        'sw:status',
+        'sw:progress',
+        'sw:increment "test"',
         'implement new feature',
         'build dashboard'
       ];
@@ -402,7 +402,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         title: 'Complex task with "quotes" and émojis 🎉'
       });
 
-      const result = executeHook('/sw:status');
+      const result = executeHook('sw:status');
 
       expect(result.exitCode).toBe(0);
 
@@ -442,7 +442,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         title: 'Structure Test'
       });
 
-      const result = executeHook('/sw:progress');
+      const result = executeHook('sw:progress');
 
       expect(result.exitCode).toBe(0);
 

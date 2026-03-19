@@ -118,9 +118,9 @@ QUICK START:
    - Architect agent creates plan.md
 
 3. Use slash commands:
-   /sw:increment "payment processing"
-   /sw:progress
-   /sw-github:push
+   sw:increment "payment processing"
+   sw:progress
+   sw-github:push
 
 WHAT THIS PROVIDES:
 

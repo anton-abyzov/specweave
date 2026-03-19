@@ -5,7 +5,7 @@
  * Simplified architecture (v1.0.110+):
  * - Trust the framework (hooks handle sync, state, validation)
  * - Minimal session management (just filesystem reads)
- * - Quality gates in /sw:done (not auto mode)
+ * - Quality gates in sw:done (not auto mode)
  */
 
 // Types

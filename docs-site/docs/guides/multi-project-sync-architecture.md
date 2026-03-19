@@ -205,29 +205,29 @@ graph TB
 
 ```bash
 # 1. Create frontend increment
-/sw:increment "Add product search to web app"
+sw:increment "Add product search to web app"
 # Increment 0001 created
 
 # 2. Sync to frontend repo
-/sw-github:sync 0001
+sw-github:sync 0001
 # ? Select profile: Frontend Web App (frontend-repo)
 # ✓ Issue created: org/ecommerce-web#12
 
 # 3. Create backend increment
-/sw:increment "Add payment processing API"
+sw:increment "Add payment processing API"
 # Increment 0002 created
 
 # 4. Sync to backend repo
-/sw-github:sync 0002
+sw-github:sync 0002
 # ? Select profile: Backend API (backend-repo)
 # ✓ Issue created: org/ecommerce-api#8
 
 # 5. Create mobile increment
-/sw:increment "Add push notifications to mobile app"
+sw:increment "Add push notifications to mobile app"
 # Increment 0003 created
 
 # 6. Sync to mobile repo
-/sw-github:sync 0003
+sw-github:sync 0003
 # ? Select profile: Mobile App (mobile-repo)
 # ✓ Issue created: org/ecommerce-mobile#5
 ```
@@ -367,19 +367,19 @@ graph TB
 
 ```bash
 # Morning: Internal Tools work
-/sw:increment "Add SSO integration to internal tools"
+sw:increment "Add SSO integration to internal tools"
 # → PM adds **Project**: internal-tools to user stories
 # → Spec synced to: .specweave/docs/internal/specs/internal-tools/
 # → Auto-syncs to: platform/internal-tools
 
 # Afternoon: Customer Portal work
-/sw:increment "Build self-service dashboard for customer portal"
+sw:increment "Build self-service dashboard for customer portal"
 # → PM adds **Project**: customer-portal to user stories
 # → Spec synced to: .specweave/docs/internal/specs/customer-portal/
 # → Auto-syncs to: platform/customer-portal
 
 # Evening: Admin Dashboard work
-/sw:increment "Add user management UI to admin dashboard"
+sw:increment "Add user management UI to admin dashboard"
 # → PM adds **Project**: admin-dashboard to user stories
 # → Spec synced to: .specweave/docs/internal/specs/admin-dashboard/
 # → Auto-syncs to: platform/admin-dashboard
@@ -503,20 +503,20 @@ AZURE_DEVOPS_PAT=xxxxxxxxxxxxxxxxxxx
 
 ```bash
 # Engineering work → GitHub
-/sw:increment "Add OAuth2 authentication"
-/sw-github:sync 0001
+sw:increment "Add OAuth2 authentication"
+sw-github:sync 0001
 # ? Select profile: Engineering - GitHub (eng-github)
 # ✓ Issue created: acme-corp/platform#42
 
 # Product work → Jira
-/sw:increment "Launch premium tier features"
-/sw-jira:sync 0002
+sw:increment "Launch premium tier features"
+sw-jira:sync 0002
 # ? Select profile: Product - Jira (product-jira)
 # ✓ Epic created: PROD-15
 
 # Infrastructure work → Azure DevOps
-/sw:increment "Upgrade Kubernetes to v1.28"
-/sw-ado:sync 0003
+sw:increment "Upgrade Kubernetes to v1.28"
+sw-ado:sync 0003
 # ? Select profile: Operations - Azure DevOps (ops-ado)
 # ✓ Work item created: #87
 ```
@@ -836,15 +836,15 @@ graph TB
 
 ```bash
 # Morning: Client A work
-/sw:increment "Add checkout flow to client-a e-commerce"
+sw:increment "Add checkout flow to client-a e-commerce"
 # → PM adds **Project**: client-a → auto-syncs to: client-a/ecommerce (GitHub) AND clienta.atlassian.net (Jira)
 
 # Afternoon: Client B work
-/sw:increment "Build admin dashboard analytics for client-b"
+sw:increment "Build admin dashboard analytics for client-b"
 # → PM adds **Project**: client-b → auto-syncs to: client-b/admin (GitHub only)
 
 # Evening: Client C work
-/sw:increment "Add offline mode to client-c mobile app"
+sw:increment "Add offline mode to client-c mobile app"
 # → PM adds **Project**: client-c → Prompt: Sync to GitHub or ADO? (or both)
 ```
 
@@ -862,7 +862,7 @@ graph TB
 
 ```mermaid
 flowchart TD
-    START["User runs:<br/>/sw-github:sync 0008"]
+    START["User runs:<br/>sw-github:sync 0008"]
 
     CHECK_META{Increment metadata<br/>has profile?}
 
@@ -952,7 +952,7 @@ sequenceDiagram
     participant Meta as metadata.json
     participant API as External API
 
-    User->>CLI: /sw-github:sync 0008
+    User->>CLI: sw-github:sync 0008
 
     CLI->>Meta: Check for existing profile
     alt Has profile
@@ -1015,7 +1015,7 @@ sequenceDiagram
 
     rect rgb(220, 255, 220)
         Note over Dev,SW: Pull Updates (GitHub → SpecWeave)
-        Dev->>SW: /sw-github:sync 0008
+        Dev->>SW: sw-github:sync 0008
         SW->>GH: Fetch issue #42
         GH-->>SW: Updated tasks, comments, labels
         SW->>SW: Merge external changes
@@ -1296,9 +1296,9 @@ SpecWeave's **Profile-Based Multi-Project Sync Architecture** enables:
 
 **Key Commands**:
 - `**Project**: <id>` in spec.md - Per-increment project routing
-- `/sw-github:sync <increment>` - Sync to GitHub
-- `/sw-jira:sync <increment>` - Sync to Jira
-- `/sw-ado:sync <increment>` - Sync to Azure DevOps
+- `sw-github:sync <increment>` - Sync to GitHub
+- `sw-jira:sync <increment>` - Sync to Jira
+- `sw-ado:sync <increment>` - Sync to Azure DevOps
 
 **Result**: Work seamlessly across unlimited repositories while maintaining a single local source of truth.
 

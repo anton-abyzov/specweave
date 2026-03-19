@@ -91,7 +91,7 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
 
       // Should have case for "new" action
       expect(hookContent).toContain('new)');
-      expect(hookContent).toContain('/sw:increment');
+      expect(hookContent).toContain('sw:increment');
     });
 
     it('should handle "hotfix" increment action', () => {
@@ -208,12 +208,12 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
   });
 
   describe('Skip Conditions', () => {
-    it('should skip when prompt starts with /sw:', () => {
+    it('should skip when prompt starts with sw:', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should skip for /sw: commands (user already in workflow)
-      expect(hookContent).toContain('/sw:');
-      expect(hookContent).toMatch(/grep.*\/sw:/);
+      // Should skip for sw: commands (user already in workflow)
+      expect(hookContent).toContain('sw:');
+      expect(hookContent).toMatch(/grep.*sw:/);
     });
   });
 

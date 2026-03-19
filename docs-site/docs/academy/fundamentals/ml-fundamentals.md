@@ -1303,7 +1303,7 @@ await openai.chat.completions.create({ /* small prompt */ });
 
 <CommandTabs
   natural="I want to add AI code review"
-  claude='/sw:increment "ai-code-review"'
+  claude='sw:increment "ai-code-review"'
   other='increment "ai-code-review"'
 />
 

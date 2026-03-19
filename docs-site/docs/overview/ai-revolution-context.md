@@ -175,7 +175,7 @@ Every feature in SpecWeave has:
 1. **You describe the feature**
    <CommandTabs
      natural="Let's build user authentication with OAuth"
-     claude='/sw:increment "User authentication with OAuth"'
+     claude='sw:increment "User authentication with OAuth"'
      other='increment "User authentication with OAuth"'
    />
 
@@ -202,7 +202,7 @@ Every feature in SpecWeave has:
 6. **Implementation runs autonomously**
    <CommandTabs
      natural="Start implementing"
-     claude="/sw:do"
+     claude="sw:do"
      other="do"
    />
    - AI writes code following the plan
@@ -212,7 +212,7 @@ Every feature in SpecWeave has:
 7. **Quality gates validate completion**
    <CommandTabs
      natural="We're done"
-     claude="/sw:done 0001"
+     claude="sw:done 0001"
      other="done 0001"
    />
    - All tasks checked? ✓

@@ -127,17 +127,17 @@ export async function livingDocsCommand(options: LivingDocsOptions): Promise<voi
       process.exit(1);
     }
   } else {
-    // v1.0.144+: Spawn background worker that can be monitored with /sw:jobs
+    // v1.0.144+: Spawn background worker that can be monitored with sw:jobs
     // Previous v1.0.103 approach (foreground: true) created job but never executed work!
     // Now we spawn a proper background worker that:
     // - Is registered as a trackable job in background-jobs.json
-    // - Can be monitored with /sw:jobs
+    // - Can be monitored with sw:jobs
     // - Writes progress to .specweave/state/jobs/{jobId}/progress.json
     // - Creates professional living docs output
     try {
       console.log(chalk.blue('\n🔄 Starting Living Docs Builder\n'));
       console.log(chalk.gray('  This runs as a background job you can monitor'));
-      console.log(chalk.gray('  Check progress: /sw:jobs'));
+      console.log(chalk.gray('  Check progress: sw:jobs'));
       console.log(chalk.gray('  View logs: specweave jobs --logs <jobId>\n'));
 
       const { job, pid, isBackground } = await launchLivingDocsJob({

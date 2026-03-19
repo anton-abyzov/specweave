@@ -61,7 +61,7 @@ graph TB
 **Example**:
 <CommandTabs
   natural="Let's build user authentication"
-  claude='/sw:increment "user authentication"'
+  claude='sw:increment "user authentication"'
   other='increment "user authentication"'
 />
 
@@ -90,7 +90,7 @@ This creates the increment in PLANNING status. The PM generates spec.md, the Arc
 **Example**:
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -125,7 +125,7 @@ Total WIP: 1 ✅
 
 **Example**:
 ```bash
-/sw:status 0009 --reason="waiting for API design"
+sw:status 0009 --reason="waiting for API design"
 # Moves increment to backlog
 # Doesn't count toward WIP
 # Can resume later
@@ -166,7 +166,7 @@ Total WIP: 1 ✅
 
 **Manual Pause**:
 ```bash
-/sw:pause 0008 --reason="waiting for DevOps approval"
+sw:pause 0008 --reason="waiting for DevOps approval"
 ```
 
 ---
@@ -186,13 +186,13 @@ Total WIP: 1 ✅
 - PM validation passed
 
 **Transitions**:
-- ✅ **ACTIVE → COMPLETED**: Via `/sw:done`
+- ✅ **ACTIVE → COMPLETED**: Via `sw:done`
 - ✅ **COMPLETED → ACTIVE**: Can reopen if issues found
 
 **Example**:
 <CommandTabs
   natural="We're done with 0008"
-  claude="/sw:done 0008"
+  claude="sw:done 0008"
   other="done 0008"
 />
 
@@ -215,12 +215,12 @@ This validates all gates, marks the increment complete, and syncs living docs.
 - Long-term deprioritization
 
 **Transitions**:
-- ✅ **Any → ABANDONED**: Via `/sw:abandon`
+- ✅ **Any → ABANDONED**: Via `sw:abandon`
 - ✅ **ABANDONED → ACTIVE**: Can un-abandon if needed (rare)
 
 **Example**:
 ```bash
-/sw:abandon 0008 --reason="Pivot to enterprise, consumer features on hold"
+sw:abandon 0008 --reason="Pivot to enterprise, consumer features on hold"
 # Marks increment abandoned
 # Documents reason
 # Status: abandoned
@@ -249,7 +249,7 @@ AUTO-TRANSITION ✨
      ↓
 All tasks complete
      ↓
-/sw:done
+sw:done
      ↓
 [COMPLETED] ← Shipped!
 ```
@@ -279,7 +279,7 @@ AUTO-TRANSITION ✨
      ↓
 Business priorities change
      ↓
-/sw:status
+sw:status
      ↓
 [BACKLOG] ← Not started yet
      ↓
@@ -384,7 +384,7 @@ Total WIP: 2/2 (hard cap reached) ⚠️
 ### View Status
 
 ```bash
-/sw:status
+sw:status
 # Shows all increments with statuses
 ```
 
@@ -392,19 +392,19 @@ Total WIP: 2/2 (hard cap reached) ⚠️
 
 ```bash
 # Pause (usually automatic)
-/sw:pause 0008 --reason="waiting for approval"
+sw:pause 0008 --reason="waiting for approval"
 
 # Resume (usually automatic)
-/sw:resume 0008
+sw:resume 0008
 
 # Move to backlog
-/sw:status 0008 --reason="low priority"
+sw:status 0008 --reason="low priority"
 
 # Abandon
-/sw:abandon 0008 --reason="requirements changed"
+sw:abandon 0008 --reason="requirements changed"
 
 # Complete
-/sw:done 0008
+sw:done 0008
 ```
 
 ---
@@ -443,15 +443,15 @@ Total WIP: 2/2 (hard cap reached) ⚠️
 
 ✅ **DO**: Finish current work first
 ```bash
-/sw:do  # Complete current
-/sw:done 0008  # Close increment
-/sw:increment "new feature"  # Start next
+sw:do  # Complete current
+sw:done 0008  # Close increment
+sw:increment "new feature"  # Start next
 ```
 
 ❌ **DON'T**: Start new while others active
 ```bash
 # 0008 active (80% complete)
-/sw:increment "new feature"  # BAD! Complete 0008 first
+sw:increment "new feature"  # BAD! Complete 0008 first
 ```
 
 ---

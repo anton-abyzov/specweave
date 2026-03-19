@@ -114,12 +114,12 @@ const PLUGIN_DESCRIPTIONS: Record<string, string> = {
  * Plugin skill summaries for continuation context
  */
 const PLUGIN_SKILLS: Record<string, string> = {
-  'sw': '/sw:increment, /sw:do, /sw:done - Core workflow',
+  'sw': 'sw:increment, sw:do, sw:done - Core workflow',
   'frontend': 'Frontend architecture and React expertise',
   'backend': 'Backend API and database expertise',
-  'sw-github': '/sw-github:sync - GitHub issue sync',
-  'sw-jira': '/sw-jira:sync - JIRA issue sync',
-  'sw-ado': '/sw-ado:sync - Azure DevOps sync',
+  'sw-github': 'sw-github:sync - GitHub issue sync',
+  'sw-jira': 'sw-jira:sync - JIRA issue sync',
+  'sw-ado': 'sw-ado:sync - Azure DevOps sync',
   'k8s': 'Kubernetes architecture and manifests',
   'infra': 'Infrastructure as Code and DevOps',
   'testing': 'QA strategy and E2E testing',

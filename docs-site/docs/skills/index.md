@@ -11,7 +11,7 @@ Skills extend what AI coding agents can do -- structured markdown files that def
 :::tip Three Ways to Use Any Skill
 Every skill supports three invocation methods:
 1. **Natural language** -- just describe what you need (e.g., "design the system architecture")
-2. **Slash command** -- `/sw:skill-name` in Claude Code (e.g., `/sw:architect`)
+2. **Slash command** -- `sw:skill-name` in Claude Code (e.g., `sw:architect`)
 3. **CLI keyword** -- `skill-name` in Cursor, Copilot, and other AI tools (e.g., `architect`)
 
 Start with **[Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals)** for a deeper guide.

@@ -44,7 +44,7 @@ SpecWeave solves this by making specifications permanent:
 ```
 Monday:
   "I want to build a user profile feature"
-  (or: /sw:increment "user profile feature")
+  (or: sw:increment "user profile feature")
 
   → Creates spec.md (requirements)
   → Creates plan.md (technical design)
@@ -159,7 +159,7 @@ You should see:
 Let's verify everything works:
 
 ```bash
-/sw:status
+sw:status
 ```
 
 You should see something like:
@@ -188,10 +188,10 @@ Here's the entire SpecWeave workflow. You can use natural language or slash comm
 
 | Natural Language | Slash Command | Purpose |
 |-----------------|---------------|---------|
-| "Let's build a login page" | `/sw:increment "feature"` | Plan the work |
-| "Start implementing" | `/sw:do` | Execute tasks |
-| "What's the status?" | `/sw:progress` | Check status |
-| "What should I do next?" | `/sw:next` | Close or continue |
+| "Let's build a login page" | `sw:increment "feature"` | Plan the work |
+| "Start implementing" | `sw:do` | Execute tasks |
+| "What's the status?" | `sw:progress` | Check status |
+| "What should I do next?" | `sw:next` | Close or continue |
 
 That's it. These cover 90% of daily use.
 
@@ -203,7 +203,7 @@ That's it. These cover 90% of daily use.
 
 ```bash
 # 1. Check status
-/sw:status
+sw:status
 
 # 2. Explore the structure
 ls .specweave/

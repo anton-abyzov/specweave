@@ -74,45 +74,45 @@ This is the canonical pattern: **the `agents/` subdirectory inside a skill conta
 
 ## How SpecWeave Implements This
 
-Every SpecWeave `/sw:*` command follows the Skills-first pattern:
+Every SpecWeave `sw:*` command follows the Skills-first pattern:
 
-### `/sw:do` — Execute increment tasks
+### `sw:do` — Execute increment tasks
 
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
 The skill internally spawns implementation agents to work through tasks, run tests, and update progress.
 
-### `/sw:team-lead` — Orchestrate parallel development
+### `sw:team-lead` — Orchestrate parallel development
 
-The user says `/sw:team-lead`. The skill spawns domain-specialized agents (frontend, backend, testing, database) that work in parallel across worktrees.
+The user says `sw:team-lead`. The skill spawns domain-specialized agents (frontend, backend, testing, database) that work in parallel across worktrees.
 
-### `/sw:increment` — Plan a feature
+### `sw:increment` — Plan a feature
 
 <CommandTabs
   natural="I want to add user auth"
-  claude='/sw:increment "Add user auth"'
+  claude='sw:increment "Add user auth"'
   other='increment "Add user auth"'
 />
 
 The skill spawns a PM agent, then an Architect agent, then a Tech Lead agent — each producing their part of the spec.
 
-### `/sw:grill` — Code review
+### `sw:grill` — Code review
 
 <CommandTabs
   natural="Review my work"
-  claude="/sw:grill"
+  claude="sw:grill"
   other="grill"
 />
 
 The skill runs three parallel review agents examining quality, security, and maintainability.
 
-### `/sw:judge-llm` — Independent validation
+### `sw:judge-llm` — Independent validation
 
-The user says `/sw:judge-llm`. The skill spawns an evaluator agent using extended thinking for thorough, independent assessment.
+The user says `sw:judge-llm`. The skill spawns an evaluator agent using extended thinking for thorough, independent assessment.
 
 **The user never configures or thinks about the agents.** They invoke skills. Skills handle agent orchestration.
 
@@ -120,7 +120,7 @@ The user says `/sw:judge-llm`. The skill spawns an evaluator agent using extende
 ┌─────────────────────────────────────────────────────────┐
 │  USER                                                   │
 │                                                         │
-│  /sw:team-lead "Build checkout flow"                    │
+│  sw:team-lead "Build checkout flow"                    │
 │         │                                               │
 │         ▼                                               │
 │  ┌─────────────────────────────────────────────────┐    │
@@ -146,7 +146,7 @@ The user says `/sw:judge-llm`. The skill spawns an evaluator agent using extende
 
 ### For users
 
-You don't need to understand agent configuration, context management, or model selection. You say what you want — `/sw:do`, `/sw:grill`, `/sw:increment` — and the skill handles everything.
+You don't need to understand agent configuration, context management, or model selection. You say what you want — `sw:do`, `sw:grill`, `sw:increment` — and the skill handles everything.
 
 This is why SpecWeave's tagline works: *"Skills Are Structured Expertise."* You invoke a skill. The skill runs agents internally. You get results.
 
@@ -314,7 +314,7 @@ sw:increment/
     └── tasks.md      # Tasks template
 ```
 
-The user says `/sw:increment "user auth"`. The skill spawns PM → Architect → Planner in sequence, each building on the previous agent's output. The user sees a complete spec, plan, and task breakdown.
+The user says `sw:increment "user auth"`. The skill spawns PM → Architect → Planner in sequence, each building on the previous agent's output. The user sees a complete spec, plan, and task breakdown.
 
 ---
 
@@ -328,7 +328,7 @@ The user says `/sw:increment "user auth"`. The skill spawns PM → Architect →
 
 **The rule**: Build Skills, not Agents. Users invoke skills. Skills compose agents internally. Agents are implementation details that can be swapped, upgraded, and parallelized without changing the user experience.
 
-SpecWeave has followed this pattern since day one — every `/sw:*` command is a skill. When `/sw:team-lead` spawns 5 parallel agents across frontend, backend, and testing domains, you didn't build those agents. You invoked a skill.
+SpecWeave has followed this pattern since day one — every `sw:*` command is a skill. When `sw:team-lead` spawns 5 parallel agents across frontend, backend, and testing domains, you didn't build those agents. You invoked a skill.
 
 ---
 

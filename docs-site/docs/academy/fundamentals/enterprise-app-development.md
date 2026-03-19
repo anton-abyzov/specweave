@@ -277,7 +277,7 @@ Acceptance Criteria:
 
 <CommandTabs
   natural="I want to add a wishlist feature"
-  claude='/sw:increment "Add wishlist feature"'
+  claude='sw:increment "Add wishlist feature"'
   other='increment "Add wishlist feature"'
 />
 
@@ -363,7 +363,7 @@ git push origin feature/wishlist-backend
 
 <CommandTabs
   natural="Start implementing the tasks"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -422,7 +422,7 @@ graph TB
 
 <CommandTabs
   natural="Validate the increment"
-  claude="/sw:validate"
+  claude="sw:validate"
   other="validate"
 />
 
@@ -1045,7 +1045,7 @@ POST   /refunds (admin only)
 
 <CommandTabs
   natural="I want to add a wishlist feature"
-  claude='/sw:increment "Add wishlist feature"'
+  claude='sw:increment "Add wishlist feature"'
   other='increment "Add wishlist feature"'
 />
 
@@ -1075,7 +1075,7 @@ POST   /refunds (admin only)
 # - T-005: Documentation update
 
 # Execute tasks
-/sw:do
+sw:do
 
 # Claude Code implements T-001, T-002, etc.
 # After each task: post-task-completion hook syncs living docs
@@ -1084,7 +1084,7 @@ POST   /refunds (admin only)
 **Phase 4: Testing**
 ```bash
 # Validate test coverage
-/sw:validate
+sw:validate
 
 # Output:
 # ✅ T-001: 92% coverage (target: 90%)
@@ -1194,7 +1194,7 @@ Result: Clear traceability from requirement to test
 **Benefits**
 - Understand test purpose (AC-US1-01 explains why this test exists)
 - Safe refactoring (if requirement changes, update linked tests)
-- Coverage analysis (/sw:validate shows AC-ID coverage)
+- Coverage analysis (sw:validate shows AC-ID coverage)
 
 ### 4. Living Documentation (Auto-Sync)
 
@@ -1608,7 +1608,7 @@ Deepen your understanding of key concepts:
 
    <CommandTabs
      natural="I want to add user authentication"
-     claude='/sw:increment "Add user authentication"'
+     claude='sw:increment "Add user authentication"'
      other='increment "Add user authentication"'
    />
 
@@ -1619,7 +1619,7 @@ Deepen your understanding of key concepts:
 
    <CommandTabs
      natural="Start implementing the tasks"
-     claude="/sw:do"
+     claude="sw:do"
      other="do"
    />
 
@@ -1628,7 +1628,7 @@ Deepen your understanding of key concepts:
 4. **Join the Community**
    - [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
    - [Discord Community](https://discord.gg/specweave)
-   - [Documentation](https://verified-skill.com)
+   - [Documentation](https://spec-weave.com)
 
 ### Additional Resources
 

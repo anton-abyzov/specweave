@@ -9,7 +9,7 @@
  * Mirrors the GitHub reconciler pattern for consistency.
  *
  * Triggered by:
- * - /sw:jira-reconcile command (manual)
+ * - sw:jira-reconcile command (manual)
  * - SessionStart hook (automatic, if configured)
  * - post-increment-status-change.sh (on resume/abandon)
  */

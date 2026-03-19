@@ -2,7 +2,7 @@
  * Tests for status-completion-guard.sh
  *
  * This guard prevents direct status changes to "completed" in metadata.json.
- * Status MUST be changed via /sw:done (with marker file) or /sw:auto (verified).
+ * Status MUST be changed via sw:done (with marker file) or sw:auto (verified).
  *
  * @since 1.0.196
  */

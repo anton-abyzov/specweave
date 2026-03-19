@@ -759,7 +759,7 @@ If automatic sync is disabled, you can manually sync:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 

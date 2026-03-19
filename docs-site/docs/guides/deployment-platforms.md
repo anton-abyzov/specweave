@@ -421,7 +421,7 @@ sequenceDiagram
     participant Git as GitHub
     participant Deploy as Vercel/CF
 
-    Dev->>SW: /sw:done 0001
+    Dev->>SW: sw:done 0001
     SW->>SW: Validate quality gates
     SW->>Git: git push (auto-commit)
     Git->>Deploy: Webhook trigger
@@ -720,7 +720,7 @@ Close your increment first:
 
 <CommandTabs
   natural="We're done, close increment 0001"
-  claude="/sw:done 0001"
+  claude="sw:done 0001"
   other="done 0001"
 />
 

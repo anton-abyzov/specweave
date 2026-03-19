@@ -1001,7 +1001,7 @@ export class EnterpriseDocAnalyzer {
     for (const category of categories) {
       if (category.fileCount > 30) {
         recommendations.push(
-          `📁 "${category.name}" has ${category.fileCount} files. Run /sw:organize-docs to generate themed navigation indexes for easier browsing.`
+          `📁 "${category.name}" has ${category.fileCount} files. Run sw:organize-docs to generate themed navigation indexes for easier browsing.`
         );
       }
     }

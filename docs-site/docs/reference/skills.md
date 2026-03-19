@@ -12,7 +12,7 @@ SpecWeave provides **100+ specialized skills** that activate automatically based
 
 :::tip Three Ways to Invoke Any Skill
 1. **Natural language** -- just describe what you want (e.g., "design the system architecture")
-2. **Slash command** -- `/sw:skill-name` in Claude Code
+2. **Slash command** -- `sw:skill-name` in Claude Code
 3. **Keyword** -- `skill-name` without prefix in Cursor, Copilot, and other AI tools
 :::
 
@@ -22,14 +22,14 @@ SpecWeave provides **100+ specialized skills** that activate automatically based
 graph LR
     A[Your Request] --> B{Keyword Match?}
     B -->|Yes| C[Auto-Activate Skill]
-    B -->|No| D[Use /sw:skill-name or keyword]
+    B -->|No| D[Use sw:skill-name or keyword]
     C --> E[Domain Expertise Applied]
     D --> E
 ```
 
 **Invocation methods:**
 1. **Natural language** (easiest): Just describe what you need -- skills activate based on keywords
-2. **Slash command** (precise): `/sw:skill-name` or `/sw-plugin:skill-name` in Claude Code
+2. **Slash command** (precise): `sw:skill-name` or `sw-plugin:skill-name` in Claude Code
 3. **CLI keyword** (cross-tool): `skill-name` without prefix in Cursor, Copilot, and other AI tools
 4. **Chaining**: Skills can invoke other skills for complex workflows
 
@@ -41,13 +41,13 @@ These skills form the foundation of spec-driven development.
 
 | Natural Language | Claude Code | Other AI | Description |
 |-----------------|-------------|----------|-------------|
-| "let's build X", "add feature X" | [`/sw:increment`](#increment) | `increment` | Plan and create increments |
-| "write specs", "define requirements" | [`/sw:pm`](#pm) | `pm` | Product Manager for specs |
-| "design the system", "architecture" | [`/sw:architect`](#architect) | `architect` | System architect for designs |
-| "coordinate all agents" | [`/sw:role-orchestrator`](#role-orchestrator) | `role-orchestrator` | Multi-agent coordination |
-| "plan the roadmap" | [`/sw:roadmap-planner`](#roadmap-planner) | `roadmap-planner` | Product roadmap planning |
-| "regenerate the plan" | [`/sw:plan`](#plan) | `plan` | Generate plan.md and tasks.md |
-| "brainstorm X", "explore ideas" | [`/sw:brainstorm`](#brainstorm) | `brainstorm` | Multi-perspective ideation |
+| "let's build X", "add feature X" | [`sw:increment`](#increment) | `increment` | Plan and create increments |
+| "write specs", "define requirements" | [`sw:pm`](#pm) | `pm` | Product Manager for specs |
+| "design the system", "architecture" | [`sw:architect`](#architect) | `architect` | System architect for designs |
+| "coordinate all agents" | [`sw:role-orchestrator`](#role-orchestrator) | `role-orchestrator` | Multi-agent coordination |
+| "plan the roadmap" | [`sw:roadmap-planner`](#roadmap-planner) | `roadmap-planner` | Product roadmap planning |
+| "regenerate the plan" | [`sw:plan`](#plan) | `plan` | Generate plan.md and tasks.md |
+| "brainstorm X", "explore ideas" | [`sw:brainstorm`](#brainstorm) | `brainstorm` | Multi-perspective ideation |
 
 ### brainstorm
 
@@ -55,15 +55,15 @@ These skills form the foundation of spec-driven development.
 
 <CommandTabs
   natural="Brainstorm approaches for real-time notifications"
-  claude='/sw:brainstorm "real-time notifications"'
+  claude='sw:brainstorm "real-time notifications"'
   other='brainstorm "real-time notifications"'
 />
 
 ```bash
 # Options
-/sw:brainstorm "auth system" --depth deep              # All 5 phases + deepening
-/sw:brainstorm "payment gateway" --lens six-hats       # Specific lens
-/sw:brainstorm "API design" --depth quick              # Fast 3-approach comparison
+sw:brainstorm "auth system" --depth deep              # All 5 phases + deepening
+sw:brainstorm "payment gateway" --lens six-hats       # Specific lens
+sw:brainstorm "API design" --depth quick              # Fast 3-approach comparison
 ```
 
 **5-Phase Flow:**
@@ -71,7 +71,7 @@ These skills form the foundation of spec-driven development.
 2. **Diverge** — Generate 4-6 approaches via selected cognitive lens
 3. **Evaluate** — Comparison matrix with scoring and explicit recommendation
 4. **Deepen** (deep only) — Abstraction laddering, analogies, pre-mortem analysis
-5. **Output** — Save persistent brainstorm doc, offer handoff to `/sw:increment`
+5. **Output** — Save persistent brainstorm doc, offer handoff to `sw:increment`
 
 **Depth Modes:**
 - `quick` — 3 inline approaches, skip lenses (Phase 1+3)
@@ -101,7 +101,7 @@ These skills form the foundation of spec-driven development.
 
 <CommandTabs
   natural="Let's build user authentication with JWT"
-  claude='/sw:increment "User authentication with JWT"'
+  claude='sw:increment "User authentication with JWT"'
   other='increment "User authentication with JWT"'
 />
 
@@ -116,7 +116,7 @@ These skills form the foundation of spec-driven development.
 **Purpose**: Product Manager for spec-driven development.
 
 ```bash
-/sw:pm  # Activate PM guidance
+sw:pm  # Activate PM guidance
 ```
 
 **Covers:**
@@ -130,7 +130,7 @@ These skills form the foundation of spec-driven development.
 **Purpose**: System architect for scalable, maintainable designs.
 
 ```bash
-/sw:architect  # Get architecture guidance
+sw:architect  # Get architecture guidance
 ```
 
 **Covers:**
@@ -144,7 +144,7 @@ These skills form the foundation of spec-driven development.
 **Purpose**: Multi-agent orchestration for complex features.
 
 ```bash
-/sw:role-orchestrator "Build SaaS dashboard with payments"
+sw:role-orchestrator "Build SaaS dashboard with payments"
 ```
 
 **Coordinates:**
@@ -159,7 +159,7 @@ These skills form the foundation of spec-driven development.
 **Purpose**: Product roadmap and feature prioritization.
 
 ```bash
-/sw:roadmap-planner  # Roadmap planning guidance
+sw:roadmap-planner  # Roadmap planning guidance
 ```
 
 **Covers:**
@@ -173,7 +173,7 @@ These skills form the foundation of spec-driven development.
 **Purpose**: Generate plan.md and tasks.md for an existing increment.
 
 ```bash
-/sw:plan 0007  # Regenerate plan and tasks for increment 0007
+sw:plan 0007  # Regenerate plan and tasks for increment 0007
 ```
 
 **Covers:**
@@ -207,7 +207,7 @@ Control the development workflow from start to finish.
 
 <CommandTabs
   natural="Ship it while I sleep"
-  claude="/sw:auto"
+  claude="sw:auto"
   other="auto"
 />
 
@@ -223,13 +223,13 @@ Control the development workflow from start to finish.
 
 <CommandTabs
   natural="Audit the code quality"
-  claude="/sw:grill 0007"
+  claude="sw:grill 0007"
   other="grill 0007"
 />
 
 ```bash
-/sw:grill src/auth           # Specific module
-/sw:grill --focus security   # Focus on security
+sw:grill src/auth           # Specific module
+sw:grill --focus security   # Focus on security
 ```
 
 **Audits:**
@@ -265,15 +265,15 @@ Ensure code quality and test coverage.
 
 <CommandTabs
   natural="Review my code changes"
-  claude="/sw:code-reviewer"
+  claude="sw:code-reviewer"
   other="code-reviewer"
 />
 
 ```bash
-/sw:code-reviewer --pr 42            # Review a specific PR
-/sw:code-reviewer --changes          # Review uncommitted changes
-/sw:code-reviewer --increment 0042   # Review changes from an increment
-/sw:code-reviewer --cross-repo       # Aggregate across umbrella repos
+sw:code-reviewer --pr 42            # Review a specific PR
+sw:code-reviewer --changes          # Review uncommitted changes
+sw:code-reviewer --increment 0042   # Review changes from an increment
+sw:code-reviewer --cross-repo       # Aggregate across umbrella repos
 ```
 
 **Specialized Reviewers (spawned in parallel):**
@@ -286,7 +286,7 @@ Ensure code quality and test coverage.
 
 **Smart routing**: Not all 6 reviewers run every time. Reviewers are selected based on what files changed (e.g., TypeScript files trigger the type reviewer, database files trigger performance).
 
-**vs `/sw:grill`**: Grill is increment-scoped and runs during closure (mandatory gate). Code-reviewer is general-purpose — use it anytime on any scope.
+**vs `sw:grill`**: Grill is increment-scoped and runs during closure (mandatory gate). Code-reviewer is general-purpose — use it anytime on any scope.
 
 ### team-lead
 
@@ -294,16 +294,16 @@ Ensure code quality and test coverage.
 
 <CommandTabs
   natural="Build this with parallel agents"
-  claude='/sw:team-lead "Build checkout flow"'
+  claude='sw:team-lead "Build checkout flow"'
   other='team-lead "Build checkout flow"'
 />
 
 ```bash
-/sw:team-lead "Brainstorm auth approaches"       # Brainstorm mode
-/sw:team-lead "Plan the payment system"          # Planning mode
-/sw:team-lead "Review recent changes"            # Review mode
-/sw:team-lead "Research caching strategies"      # Research mode
-/sw:team-lead --mode plan "user dashboard"       # Explicit mode override
+sw:team-lead "Brainstorm auth approaches"       # Brainstorm mode
+sw:team-lead "Plan the payment system"          # Planning mode
+sw:team-lead "Review recent changes"            # Review mode
+sw:team-lead "Research caching strategies"      # Research mode
+sw:team-lead --mode plan "user dashboard"       # Explicit mode override
 ```
 
 **6 Operating Modes:**
@@ -313,7 +313,7 @@ Ensure code quality and test coverage.
 | **Brainstorm** | Spawns advocate + critic + pragmatist agents, synthesizes decision matrix | No |
 | **Planning** | PM + Architect agents in parallel for richer specs | Creates one |
 | **Implementation** | Domain agents (frontend, backend, database) with contract-first spawning | Required |
-| **Review** | Delegates to `/sw:code-reviewer` for parallel multi-agent review | Optional |
+| **Review** | Delegates to `sw:code-reviewer` for parallel multi-agent review | Optional |
 | **Research** | 1-3 researcher agents exploring different facets of a topic | No |
 | **Testing** | Testing agents split by layer (unit, integration, E2E) | Required |
 
@@ -337,7 +337,7 @@ Build modern web applications with best practices. These are available as commun
 **Purpose**: Frontend architecture for React, Vue, or Angular.
 
 ```bash
-/sw:architect  # Frontend architecture guidance
+sw:architect  # Frontend architecture guidance
 ```
 
 **Covers:**
@@ -351,7 +351,7 @@ Build modern web applications with best practices. These are available as commun
 **Purpose**: Next.js 14+ App Router patterns.
 
 ```bash
-/sw:architect  # Next.js guidance
+sw:architect  # Next.js guidance
 ```
 
 **Covers:**
@@ -470,7 +470,7 @@ Integrate with GitHub, JIRA, and Azure DevOps. All sync skills are part of the u
 **Purpose**: Two-way sync between SpecWeave and GitHub Issues.
 
 ```bash
-/sw:github-sync 0007  # Sync increment 0007 to GitHub
+sw:github-sync 0007  # Sync increment 0007 to GitHub
 ```
 
 **Maps:**
@@ -483,7 +483,7 @@ Integrate with GitHub, JIRA, and Azure DevOps. All sync skills are part of the u
 **Purpose**: Bidirectional JIRA integration.
 
 ```bash
-/sw:jira-sync 0007  # Sync to JIRA
+sw:jira-sync 0007  # Sync to JIRA
 ```
 
 **Maps:**
@@ -555,7 +555,7 @@ Build machine learning systems.
 **Purpose**: Generate images using AI. Google Imagen 4 (with `GEMINI_API_KEY`) or Pollinations.ai (free fallback).
 
 ```bash
-/sw:image "hero image for SaaS landing page"
+sw:image "hero image for SaaS landing page"
 ```
 
 **Generates:**
@@ -568,7 +568,7 @@ Build machine learning systems.
 **Purpose**: Generate videos using AI. Google Veo 3.1 (with `GEMINI_API_KEY`) or Pollinations.ai (free fallback).
 
 ```bash
-/sw:video "product demo showing the dashboard in action"
+sw:video "product demo showing the dashboard in action"
 ```
 
 ### remotion
@@ -576,7 +576,7 @@ Build machine learning systems.
 **Purpose**: Create programmatic videos with Remotion (React components rendered to MP4).
 
 ```bash
-/sw:remotion "animated product launch video with logo reveal"
+sw:remotion "animated product launch video with logo reveal"
 ```
 - Illustrations
 
@@ -622,7 +622,7 @@ Build secure, compliant systems. These are available as community skills via [ve
 **Purpose**: Security vulnerability assessment.
 
 ```bash
-/sw:security  # Security guidance
+sw:security  # Security guidance
 ```
 
 **Covers:**
@@ -636,7 +636,7 @@ Build secure, compliant systems. These are available as community skills via [ve
 **Purpose**: Enterprise compliance for regulated industries.
 
 ```bash
-/sw:compliance-architecture  # Compliance guidance
+sw:compliance-architecture  # Compliance guidance
 ```
 
 **Covers:**
@@ -690,7 +690,7 @@ Create and maintain documentation. These are available as community skills via [
 **Purpose**: Technical documentation generation.
 
 ```bash
-/sw:docs-writer  # Generate documentation
+sw:docs-writer  # Generate documentation
 ```
 
 **Creates:**
@@ -763,7 +763,7 @@ General-purpose development utilities. These are available as community skills v
 **Purpose**: Improve code clarity without changing behavior.
 
 ```bash
-/sw:code-simplifier  # Simplify recent changes
+sw:code-simplifier  # Simplify recent changes
 ```
 
 **Does:**
@@ -777,9 +777,9 @@ General-purpose development utilities. These are available as community skills v
 **Purpose**: Code navigation (LSP workaround for Claude Code v2.1.0+).
 
 ```bash
-/sw:lsp refs MyFunction     # Find references
-/sw:lsp def MyClass         # Go to definition
-/sw:lsp hover file.ts 42 10 # Type info at position
+sw:lsp refs MyFunction     # Find references
+sw:lsp def MyClass         # Go to definition
+sw:lsp hover file.ts 42 10 # Type info at position
 ```
 
 ---
@@ -797,7 +797,7 @@ Manage releases and versions.
 **Purpose**: Full release orchestration, version alignment, and coordination.
 
 ```bash
-/sw:release-expert  # Release guidance
+sw:release-expert  # Release guidance
 ```
 
 **Covers:**
@@ -821,7 +821,7 @@ Create technical diagrams.
 **Purpose**: Create and generate Mermaid/C4 diagrams.
 
 ```bash
-/sw:diagrams  # Create diagrams
+sw:diagrams  # Create diagrams
 ```
 
 **Creates:**

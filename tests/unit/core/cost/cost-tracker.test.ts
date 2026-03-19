@@ -78,14 +78,14 @@ describe('CostTracker', () => {
     });
 
     it('should create a session with correct initial values', () => {
-      const sessionId = tracker.startSession('pm', 'opus', '0003', '/sw:increment');
+      const sessionId = tracker.startSession('pm', 'opus', '0003', 'sw:increment');
       const session = tracker.getSession(sessionId);
 
       expect(session).toBeDefined();
       expect(session!.agent).toBe('pm');
       expect(session!.model).toBe('opus');
       expect(session!.increment).toBe('0003');
-      expect(session!.command).toBe('/sw:increment');
+      expect(session!.command).toBe('sw:increment');
       expect(session!.startedAt).toBeDefined();
       expect(session!.endedAt).toBeUndefined();
       expect(session!.tokenUsage).toEqual({

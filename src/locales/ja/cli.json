@@ -15,7 +15,7 @@
     "projectSuccess": "SpecWeave プロジェクトが正常に作成されました！",
     "readyToBuild": "🚀 SpecWeave でビルドする準備ができました！",
     "nestedCdCommand": "cd {{path}}",
-    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "nestedIncCommand": "sw:increment \"your-feature\"",
     "pluginEnableLater": "プラグインは後から有効にできます: specweave plugin enable <name>",
     "genericError": "エラー:",
     "errors": {
@@ -140,7 +140,7 @@
         "installGitHub": "/plugin install sw-github@specweave",
         "installFrontend": "/plugin install frontend-design@claude-plugins-official",
         "step4": "ビルドを開始:",
-        "example": "\"/sw:increment 'user authentication'\"",
+        "example": "\"sw:increment 'user authentication'\"",
         "autoActivate": "スキルとエージェントはコンテキストに基づいて自動的にアクティブになります"
       },
       "cursor": {
@@ -273,7 +273,7 @@
   "increment": {
     "creating": "📝 インクリメントを作成中: {name}",
     "created": "✅ インクリメント {id} が正常に作成されました！",
-    "nextStepDo": "次のステップ: /sw:do を実行して実装を開始してください",
+    "nextStepDo": "次のステップ: sw:do を実行して実装を開始してください",
     "errors": {
       "incompleteFound": "新しいインクリメントを作成できません！前のインクリメントが未完了です"
     }

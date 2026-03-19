@@ -171,13 +171,13 @@ specweave init .
 
 <CommandTabs
   natural="I want to create my feature"
-  claude='/sw:increment "my feature"'
+  claude='sw:increment "my feature"'
   other='increment "my feature"'
 />
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw:sync-progress"
+  claude="sw:sync-progress"
   other="progress-sync"
 />
 
@@ -236,7 +236,7 @@ When you create an increment locally and want it visible in external tools:
 
 <CommandTabs
   natural="I want to add user authentication"
-  claude='/sw:increment "User authentication feature"'
+  claude='sw:increment "User authentication feature"'
   other='increment "User authentication feature"'
 />
 
@@ -246,7 +246,7 @@ AI generates spec.md, plan.md, tasks.md.
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw:sync-progress"
+  claude="sw:sync-progress"
   other="progress-sync"
 />
 
@@ -258,9 +258,9 @@ sequenceDiagram
     participant SpecWeave
     participant External as External Tool
 
-    User->>SpecWeave: /sw:increment "feature"
+    User->>SpecWeave: sw:increment "feature"
     SpecWeave->>SpecWeave: Generate spec, plan, tasks
-    User->>SpecWeave: /sw:sync-progress
+    User->>SpecWeave: sw:sync-progress
     SpecWeave->>External: Check Gate 1 (canUpsertInternalItems)
     alt Gate OPEN
         SpecWeave->>External: Create Feature/Epic
@@ -281,7 +281,7 @@ When work items exist in external tools and you want to implement them:
 
 <CommandTabs
   natural="Import issues from external tools"
-  claude="/sw:import-external"
+  claude="sw:import-external"
   other="import"
 />
 
@@ -291,7 +291,7 @@ SpecWeave creates read-only references (FS-001E, US-001E-github-issue-42).
 
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -299,7 +299,7 @@ SpecWeave creates read-only references (FS-001E, US-001E-github-issue-42).
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw:sync-progress"
+  claude="sw:sync-progress"
   other="progress-sync"
 />
 
@@ -309,16 +309,16 @@ sequenceDiagram
     participant SpecWeave
     participant User
 
-    User->>SpecWeave: /sw:import-external
+    User->>SpecWeave: sw:import-external
     SpecWeave->>External: Fetch open items (JQL/WIQL/GraphQL)
     External-->>SpecWeave: Return issues/work items
     SpecWeave->>SpecWeave: Create FS-XXXE folders (read-only refs)
     SpecWeave-->>User: "Imported 5 items"
 
-    User->>SpecWeave: /sw:do (work on tasks)
+    User->>SpecWeave: sw:do (work on tasks)
     SpecWeave->>SpecWeave: Complete task T-001
 
-    User->>SpecWeave: /sw:sync-progress
+    User->>SpecWeave: sw:sync-progress
     SpecWeave->>External: Check Gate 2 (canUpdateExternalItems)
     alt Gate OPEN
         SpecWeave->>External: Update status to "Done"
@@ -336,7 +336,7 @@ When an increment completes and you want to close all related external items:
 
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 
@@ -344,7 +344,7 @@ When an increment completes and you want to close all related external items:
 
 <CommandTabs
   natural="We're done, close increment 0042"
-  claude="/sw:done 0042"
+  claude="sw:done 0042"
   other="done 0042"
 />
 
@@ -440,8 +440,8 @@ specweave context projects
 
 # Check authentication
 gh auth status          # GitHub
-/sw-jira:status         # JIRA
-/sw-ado:status          # ADO
+sw-jira:status         # JIRA
+sw-ado:status          # ADO
 ```
 
 ### "Duplicate issues" created
@@ -510,13 +510,13 @@ When importing external items:
 Regular health checks:
 ```bash
 # Check sync status
-/sw:workflow
+sw:workflow
 
 # View external items dashboard
-/sw:external
+sw:external
 
 # Check for drift
-/sw:sync-diagnostics
+sw:sync-diagnostics
 ```
 
 ---

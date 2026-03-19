@@ -9,7 +9,7 @@ description: Learn once, never repeat. Enable Claude to learn from corrections a
 **Correct once, never again.** The Reflect system enables Claude to learn from your corrections and patterns, persisting knowledge across sessions.
 
 :::tip Self-Improving AI
-Enable `/sw:reflect-on` to start building AI memory that compounds over time.
+Enable `sw:reflect-on` to start building AI memory that compounds over time.
 :::
 
 ---
@@ -55,7 +55,7 @@ flowchart LR
 ### Enable Auto-Learning
 
 ```bash
-/sw:reflect-on
+sw:reflect-on
 ```
 
 Now the stop hook will automatically analyze sessions and extract learnings.
@@ -65,13 +65,13 @@ Now the stop hook will automatically analyze sessions and extract learnings.
 After any session, trigger reflection manually:
 
 ```bash
-/sw:reflect
+sw:reflect
 ```
 
 ### Check Status
 
 ```bash
-/sw:reflect-status
+sw:reflect-status
 ```
 
 ---
@@ -151,11 +151,11 @@ Claude: "I'll use <Button variant='primary'>..."
 
 | Command | Description |
 |---------|-------------|
-| `/sw:reflect` | Analyze current session, extract learnings |
-| `/sw:reflect-on` | Enable automatic reflection on session end |
-| `/sw:reflect-off` | Disable automatic reflection |
-| `/sw:reflect-status` | Show configuration and memory statistics |
-| `/sw:reflect-clear` | Remove specific learnings |
+| `sw:reflect` | Analyze current session, extract learnings |
+| `sw:reflect-on` | Enable automatic reflection on session end |
+| `sw:reflect-off` | Disable automatic reflection |
+| `sw:reflect-status` | Show configuration and memory statistics |
+| `sw:reflect-clear` | Remove specific learnings |
 
 ---
 
@@ -298,7 +298,7 @@ git checkout HEAD~1 -- .specweave/skills/frontend/MEMORY.md
 
 ## Integration with Auto Mode
 
-When `/sw:auto` runs with reflection enabled:
+When `sw:auto` runs with reflection enabled:
 
 ```
 1. Start auto session
@@ -322,7 +322,7 @@ When `/sw:auto` runs with reflection enabled:
 
 ### Learnings Not Persisting
 
-1. Check reflection is enabled: `/sw:reflect-status`
+1. Check reflection is enabled: `sw:reflect-status`
 2. Verify skills directory exists: `ls .specweave/skills/`
 3. Check file permissions
 4. Review logs: `.specweave/logs/reflect/`
@@ -330,7 +330,7 @@ When `/sw:auto` runs with reflection enabled:
 ### Wrong Learnings Applied
 
 1. View memory file: `cat .specweave/skills/frontend/MEMORY.md`
-2. Remove specific learning: `/sw:reflect-clear --learning LRN-XXX`
+2. Remove specific learning: `sw:reflect-clear --learning LRN-XXX`
 3. Or use git rollback
 
 ### Too Many Learnings
@@ -352,7 +352,7 @@ Increase confidence threshold:
 - Memory files contain only **patterns and learnings**, not raw conversation
 - No sensitive data (credentials, keys) is stored
 - Memory files can be gitignored if needed
-- Clear all learnings: `/sw:reflect-clear --all`
+- Clear all learnings: `sw:reflect-clear --all`
 
 ---
 
@@ -369,5 +369,5 @@ The Reflect system enables **correct once, never again**:
 
 ```bash
 # Start now
-/sw:reflect-on
+sw:reflect-on
 ```

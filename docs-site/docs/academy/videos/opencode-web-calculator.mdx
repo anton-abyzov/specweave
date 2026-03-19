@@ -45,7 +45,7 @@ import YouTubeEmbed from '@site/src/components/ui/YouTubeEmbed';
 
 1. How to initialize SpecWeave with a **non-cloud AI tool** (OpenCode)
 2. The **PM questionnaire flow** — how SpecWeave gathers requirements interactively
-3. How `/sw:do` **autonomously implements, tests, and grills** your code
+3. How `sw:do` **autonomously implements, tests, and grills** your code
 4. The full **spec-driven lifecycle**: spec.md, plan.md, tasks.md, working app
 
 ---
@@ -61,7 +61,7 @@ This demo uses **OpenCode** with the **MiniMax M2.5 free model** — everything 
 ```
 specweave init → describe feature → PM Questionnaire → spec.md + plan.md + tasks.md
                                                                 ↓
-                      Working App ← /sw:do (implement + test + grill)
+                      Working App ← sw:do (implement + test + grill)
 ```
 
 ---
@@ -76,7 +76,7 @@ specweave init
 "Create a web calculator with a backend"
 
 # 3. Implement all tasks
-/sw:do
+sw:do
 
 # 4. Run the result
 node server.js

@@ -11,8 +11,8 @@ Living documentation provides different levels of value to different stakeholder
 | **Human Developers** | 🟢 HIGH | Onboarding, knowledge preservation | Read docs directly |
 | **Human Auditors** | 🟢 HIGH | Compliance, traceability | Git history + structure |
 | **External Tool Sync** | 🟢 HIGH | Source of truth for GitHub/JIRA/ADO | Bidirectional sync |
-| **LLM during Planning** | 🟢 HIGH | Context injection via `/sw:increment` | Auto-injected context |
-| **LLM during Execution** | 🟡 MEDIUM | Context available via `/sw:docs` | On-demand retrieval |
+| **LLM during Planning** | 🟢 HIGH | Context injection via `sw:increment` | Auto-injected context |
+| **LLM during Execution** | 🟡 MEDIUM | Context available via `sw:docs` | On-demand retrieval |
 | **LLM during General Chat** | 🔴 LOW | Must explicitly reference docs | Manual file reads |
 
 ---
@@ -113,11 +113,11 @@ graph TB
 
 **Value**: 🟢 HIGH
 
-When you run `/sw:increment`, living docs are automatically injected:
+When you run `sw:increment`, living docs are automatically injected:
 
 <CommandTabs
   natural="I want to add user authentication"
-  claude='/sw:increment "Add user authentication"'
+  claude='sw:increment "Add user authentication"'
   other='increment "Add user authentication"'
 />
 
@@ -137,11 +137,11 @@ What happens behind the scenes:
 
 **Value**: 🟡 MEDIUM
 
-During `/sw:do`, agents work primarily from increment files (spec.md, tasks.md), but can access living docs via:
+During `sw:do`, agents work primarily from increment files (spec.md, tasks.md), but can access living docs via:
 
 ```bash
 # Explicit context loading
-/sw:docs auth
+sw:docs auth
 
 # Loads relevant living docs:
 # - .specweave/docs/internal/specs/*auth*
@@ -176,7 +176,7 @@ During general conversation, Claude doesn't automatically know about living docs
 
 <CommandTabs
   natural="Load docs about authentication"
-  claude="/sw:docs authentication"
+  claude="sw:docs authentication"
   other="docs authentication"
 />
 
@@ -193,12 +193,12 @@ implement the caching strategy for user sessions"
 
 <CommandTabs
   natural="I want to add OAuth support"
-  claude='/sw:increment "Add OAuth support"'
+  claude='sw:increment "Add OAuth support"'
   other='increment "Add OAuth support"'
 />
 
 ```bash
-/sw:plan 0050
+sw:plan 0050
 ```
 
 ### 4. CLAUDE.md Integration
@@ -288,20 +288,20 @@ Claude: *living-docs-navigator skill activates*
 
 ---
 
-## The `/sw:docs` Command
+## The `sw:docs` Command
 
 To bridge the gap, use the context loading command:
 
 <CommandTabs
   natural="Load docs about authentication"
-  claude="/sw:docs authentication"
+  claude="sw:docs authentication"
   other="docs authentication"
 />
 
 Other examples:
 ```bash
-/sw:docs database          # Load DB-related docs
-/sw:docs api               # Load API-related docs
+sw:docs database          # Load DB-related docs
+sw:docs api               # Load API-related docs
 ```
 
 **What it does**:
@@ -343,8 +343,8 @@ Other examples:
 
 ### For Maximum Value Today
 
-1. **Use `/sw:increment`** for planning (auto-context)
-2. **Use `/sw:docs`** before implementation work
+1. **Use `sw:increment`** for planning (auto-context)
+2. **Use `sw:docs`** before implementation work
 3. **Reference living docs paths** in prompts
 4. **Keep CLAUDE.md updated** with docs references
 
@@ -388,10 +388,10 @@ authentication specs or ADRs in .specweave/docs/internal/"
 
 Claude will search and avoid contradicting existing decisions.
 
-### Tip 4: Use /sw:docs for Explicit Loading
+### Tip 4: Use sw:docs for Explicit Loading
 
 ```bash
-/sw:docs authentication
+sw:docs authentication
 ```
 
 Loads all auth-related living docs into conversation.
@@ -426,9 +426,9 @@ Claude follows links when exploring context.
 |-----------|--------------|-------------------|
 | **CLAUDE.md** | References living docs structure | Always visible |
 | **living-docs-navigator skill** | Progressive disclosure | When context needed |
-| **/sw:docs command** | Explicit search + load | User invokes |
-| **/sw:increment planning** | Auto-injects existing specs | During planning |
-| **/sw:do workflow** | Loads relevant ADRs | During execution |
+| **sw:docs command** | Explicit search + load | User invokes |
+| **sw:increment planning** | Auto-injects existing specs | During planning |
+| **sw:do workflow** | Loads relevant ADRs | During execution |
 
 **The key insight**: No RAG needed. Progressive disclosure + explicit references + grep searches = full context when you need it.
 
@@ -438,5 +438,5 @@ Claude follows links when exploring context.
 
 - [Living Documentation Overview](/docs/guides/core-concepts/living-documentation)
 - [Context Loading Command](/docs/commands/overview)
-- [Planning with /sw:increment](/docs/workflows/planning)
+- [Planning with sw:increment](/docs/workflows/planning)
 - [CLAUDE.md Integration](/docs/overview/introduction)

@@ -72,7 +72,7 @@ describe('DashboardDataAggregator - Skill & Agent tracking', () => {
   describe('event type separation', () => {
     it('should NOT count skill or agent events in topCommands', async () => {
       writeEvents([
-        { name: '/sw:do', type: 'command', success: true, timestamp: '2026-02-15T10:00:00Z' },
+        { name: 'sw:do', type: 'command', success: true, timestamp: '2026-02-15T10:00:00Z' },
         { name: 'sw:pm', type: 'skill', success: true, timestamp: '2026-02-15T11:00:00Z', plugin: 'specweave' },
         { name: 'Explore', type: 'agent', success: true, timestamp: '2026-02-15T12:00:00Z', plugin: 'specweave' },
       ]);
@@ -80,13 +80,13 @@ describe('DashboardDataAggregator - Skill & Agent tracking', () => {
       const result = await aggregator.getAnalyticsSummary();
 
       expect(result.topCommands).toHaveLength(1);
-      expect(result.topCommands[0].name).toBe('/sw:do');
+      expect(result.topCommands[0].name).toBe('sw:do');
     });
 
     it('should correctly separate mixed command, skill, and agent events', async () => {
       writeEvents([
-        { name: '/sw:do', type: 'command', success: true, timestamp: '2026-02-15T10:00:00Z' },
-        { name: '/sw:pm', type: 'command', success: true, timestamp: '2026-02-15T10:01:00Z' },
+        { name: 'sw:do', type: 'command', success: true, timestamp: '2026-02-15T10:00:00Z' },
+        { name: 'sw:pm', type: 'command', success: true, timestamp: '2026-02-15T10:01:00Z' },
         { name: 'sw:pm', type: 'skill', success: true, timestamp: '2026-02-15T10:02:00Z', plugin: 'specweave' },
         { name: 'sw:do', type: 'skill', success: true, timestamp: '2026-02-15T10:03:00Z', plugin: 'specweave' },
         { name: 'Explore', type: 'agent', success: true, timestamp: '2026-02-15T10:04:00Z', plugin: 'specweave' },
@@ -104,15 +104,15 @@ describe('DashboardDataAggregator - Skill & Agent tracking', () => {
   describe('backward compatibility', () => {
     it('should process existing command-only events without false positives', async () => {
       writeEvents([
-        { name: '/sw:do', type: 'command', success: true, timestamp: '2026-02-15T10:00:00Z', plugin: 'specweave' },
-        { name: '/sw:auto', type: 'command', success: true, timestamp: '2026-02-15T11:00:00Z', plugin: 'specweave' },
+        { name: 'sw:do', type: 'command', success: true, timestamp: '2026-02-15T10:00:00Z', plugin: 'specweave' },
+        { name: 'sw:auto', type: 'command', success: true, timestamp: '2026-02-15T11:00:00Z', plugin: 'specweave' },
       ]);
 
       const result = await aggregator.getAnalyticsSummary();
 
       expect(result.totalEvents).toBe(2);
       expect(result.topCommands).toHaveLength(2);
-      // Commands with /sw: prefix should NOT appear as skills when type is "command"
+      // Commands with sw: prefix should NOT appear as skills when type is "command"
       expect(result.topSkills).toHaveLength(0);
       expect(result.topAgents).toHaveLength(0);
     });

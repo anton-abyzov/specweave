@@ -2071,11 +2071,11 @@ coverage_target: 85%
 
 <CommandTabs
   natural="Validate the increment"
-  claude="/sw:validate"
+  claude="sw:validate"
   other="validate"
 />
 
-**`/sw:validate` checks**:
+**`sw:validate` checks**:
 - All [AC-IDs](/docs/glossary/terms/ac-id) from [spec.md](/docs/glossary/terms/spec-md) covered in [tasks.md](/docs/glossary/terms/tasks-md)
 - Test plans exist for each task
 - Coverage targets met (80-90%)
@@ -2088,11 +2088,11 @@ coverage_target: 85%
 
 <CommandTabs
   natural="We're done, close the increment"
-  claude="/sw:done"
+  claude="sw:done"
   other="done"
 />
 
-**`/sw:done` requires**:
+**`sw:done` requires**:
 - All tests passing
 - Coverage targets met
 - No failing validation
@@ -2450,7 +2450,7 @@ All files                  |   87.45 |    82.33 |   91.67 |   87.12 |
 - **BDD Format**: Given/When/Then for test plans
 - **AC-ID Traceability**: spec.md → tasks.md → tests
 - **Coverage Targets**: 80-90% per task, validated via `npx vitest run`
-- **Quality Gates**: `/sw:validate`, `/sw:done` enforce testing
+- **Quality Gates**: `sw:validate`, `sw:done` enforce testing
 
 ### Testing Tools
 

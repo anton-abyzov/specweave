@@ -146,7 +146,7 @@ export interface SyncSettings {
   /**
    * GATE 3: Controls automatic sync on increment completion
    * When true, sync happens automatically when increment completes
-   * When false, user must manually trigger sync via /sw:github-sync
+   * When false, user must manually trigger sync via sw:github-sync
    * @default true (opt-in UX, as per ADR-0065)
    */
   autoSyncOnCompletion?: boolean;
@@ -215,9 +215,9 @@ export interface SyncConfiguration {
    * - sync-progress runs and no issue exists
    *
    * When false (default), user must manually run:
-   * - /sw-github:create for GitHub
-   * - /sw-jira:create for JIRA
-   * - /sw-ado:create for Azure DevOps
+   * - sw-github:create for GitHub
+   * - sw-jira:create for JIRA
+   * - sw-ado:create for Azure DevOps
    *
    * @default false (opt-in for safety)
    */
@@ -540,7 +540,7 @@ export interface TranslationScope {
 export interface TranslationConfiguration {
   /**
    * Master switch for auto-translation
-   * When false, user must use /sw:translate manually
+   * When false, user must use sw:translate manually
    */
   enabled: boolean;
 
@@ -559,14 +559,14 @@ export interface TranslationConfiguration {
   /**
    * Translation method
    * - 'auto': Hooks trigger translation automatically
-   * - 'manual': User must run /sw:translate
+   * - 'manual': User must run sw:translate
    * - 'none': Translation disabled entirely
    */
   method: 'auto' | 'manual' | 'none';
 
   /**
    * Keep SpecWeave framework terms in English
-   * e.g., increment, spec.md, tasks.md, /sw:*
+   * e.g., increment, spec.md, tasks.md, sw:*
    */
   preserveFrameworkTerms: boolean;
 
@@ -873,7 +873,7 @@ export interface SkillGenConfig {
   suggest?: boolean;
   /** Minimum number of increments a pattern must appear in before qualifying. Default: 3 */
   minSignalCount?: number;
-  /** Pattern IDs permanently excluded from suggestions (still visible in /sw:skill-gen). Default: [] */
+  /** Pattern IDs permanently excluded from suggestions (still visible in sw:skill-gen). Default: [] */
   declinedSuggestions?: string[];
   /** Maximum number of signals to retain (prunes lowest-confidence when exceeded). Default: 100 */
   maxSignals?: number;

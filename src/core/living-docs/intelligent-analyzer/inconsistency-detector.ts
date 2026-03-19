@@ -946,7 +946,7 @@ export async function saveReviewNeeded(
       '1. Update each broken link to point to the correct file',
       '2. Remove links to deleted content',
       '3. Use relative paths where possible',
-      '4. Run `/sw:organize-docs` to regenerate navigation indexes',
+      '4. Run `sw:organize-docs` to regenerate navigation indexes',
     ];
     fs.writeFileSync(blFile, lines.join('\n'));
     savedFiles.push(blFile);

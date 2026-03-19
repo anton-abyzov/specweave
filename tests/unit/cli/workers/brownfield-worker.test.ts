@@ -1510,7 +1510,7 @@ describe('BrownfieldAnalysisWorker', () => {
           'Address critical discrepancies first - they may impact onboarding'
         );
         expect(report.recommendations).toContain(
-          'Consider using /sw:discrepancy-to-increment to batch discrepancies'
+          'Consider using sw:discrepancy-to-increment to batch discrepancies'
         );
       }
     });

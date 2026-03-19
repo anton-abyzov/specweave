@@ -20,7 +20,7 @@ SpecWeave **automatically manages** increment status. The system detects blockag
 
 <CommandTabs
   natural='Show progress'
-  claude='/sw:status'
+  claude='sw:status'
   other='status'
 />
 
@@ -192,7 +192,7 @@ SpecWeave **automatically manages** increment status. These commands are primari
 
 <CommandTabs
   natural='Pause this'
-  claude='/sw:pause 0007'
+  claude='sw:pause 0007'
   other='pause 0007 --reason "Pausing for hotfix"'
 />
 
@@ -214,7 +214,7 @@ SpecWeave **automatically manages** increment status. These commands are primari
 
 <CommandTabs
   natural='Resume work'
-  claude='/sw:resume 0007'
+  claude='sw:resume 0007'
   other='resume 0007'
 />
 
@@ -231,7 +231,7 @@ SpecWeave **automatically manages** increment status. These commands are primari
 
 <CommandTabs
   natural='Abandon this'
-  claude='/sw:abandon 0007'
+  claude='sw:abandon 0007'
   other='abandon 0007 --reason "Pivot to enterprise, consumer features on hold"'
 />
 
@@ -314,10 +314,10 @@ $ specweave do  # System pauses automatically when blocked
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Pause this" | `/sw:pause` | `pause` | Pause increment (mostly automatic) |
-| "Resume work" | `/sw:resume` | `resume` | Resume increment (mostly automatic) |
-| "Abandon this" | `/sw:abandon` | `abandon` | Cancel increment permanently |
-| "What's the status?" | `/sw:progress` | `progress` | Detailed progress for specific increment |
+| "Pause this" | `sw:pause` | `pause` | Pause increment (mostly automatic) |
+| "Resume work" | `sw:resume` | `resume` | Resume increment (mostly automatic) |
+| "Abandon this" | `sw:abandon` | `abandon` | Cancel increment permanently |
+| "What's the status?" | `sw:progress` | `progress` | Detailed progress for specific increment |
 
 ## Related Documentation
 

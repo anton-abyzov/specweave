@@ -128,7 +128,7 @@ cat .specweave/config.json
 ### Test Connection
 
 ```bash
-/sw-jira:status
+sw-jira:status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -252,7 +252,7 @@ When an increment is created:
 
 <CommandTabs
   natural="Let's build user authentication"
-  claude='/sw:increment "User authentication"'
+  claude='sw:increment "User authentication"'
   other='increment "User authentication"'
 />
 
@@ -278,7 +278,7 @@ Created JIRA hierarchy:
 ### Manual Creation
 
 ```bash
-/sw-jira:sync 0042 --create
+sw-jira:sync 0042 --create
 
 # Creates Epic → Stories → Sub-tasks
 ```
@@ -315,7 +315,7 @@ Labels: specweave, feature:auth
 ### Manual Sync
 
 ```bash
-/sw-jira:sync 0042
+sw-jira:sync 0042
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -367,7 +367,7 @@ Configure custom workflow mappings:
 If someone updates status in JIRA:
 
 ```bash
-/sw-jira:sync 0042 --from-external
+sw-jira:sync 0042 --from-external
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -406,7 +406,7 @@ Update tasks.md? (Y/n)
 When creating increment:
 
 ```bash
-/sw:increment "User authentication"
+sw:increment "User authentication"
 
 # Output includes:
 ✓ Epic AUTH-100 assigned to Sprint 23 (current active sprint)
@@ -415,7 +415,7 @@ When creating increment:
 ### Sprint Planning View
 
 ```bash
-/sw-jira:sprint-status
+sw-jira:sprint-status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -551,7 +551,7 @@ Map SpecWeave data to custom JIRA fields:
 ### Automatic Close on Done
 
 ```bash
-/sw:done 0042
+sw:done 0042
 
 # Output includes:
 ✓ JIRA Epic AUTH-100 transitioned to "Done"
@@ -563,10 +563,10 @@ Map SpecWeave data to custom JIRA fields:
 ### Manual Close
 
 ```bash
-/sw-jira:close 0042
+sw-jira:close 0042
 
 # Or close with specific resolution:
-/sw-jira:close 0042 --resolution "Won't Do"
+sw-jira:close 0042 --resolution "Won't Do"
 ```
 
 ---
@@ -577,7 +577,7 @@ Map SpecWeave data to custom JIRA fields:
 
 ```bash
 # Check credentials
-/sw-jira:status
+sw-jira:status
 
 # Common issues:
 # 1. Using company SSO email instead of Atlassian email
@@ -606,7 +606,7 @@ curl -u "email:token" \
 ```bash
 # JIRA workflow may not allow direct transitions
 # Check available transitions:
-/sw-jira:transitions AUTH-102
+sw-jira:transitions AUTH-102
 
 # Output:
 Available transitions for AUTH-102:
@@ -626,7 +626,7 @@ Available transitions for AUTH-102:
 
 ```bash
 # Get all custom fields:
-/sw-jira:fields
+sw-jira:fields
 
 # Output:
 Custom Fields:
@@ -695,7 +695,7 @@ Set up JIRA webhooks for real-time sync:
 
 <CommandTabs
   natural="Let's build a user profile feature"
-  claude='/sw:increment "User profile feature"'
+  claude='sw:increment "User profile feature"'
   other='increment "User profile feature"'
 />
 
@@ -710,7 +710,7 @@ Set up JIRA webhooks for real-time sync:
       └─ Sub-task PROJ-505 "T-003: Edit form"
 
 # 2. Work on tasks
-/sw:do
+sw:do
 
 # Each task completion syncs to JIRA
 # Sub-tasks transition: To Do → Done
@@ -721,7 +721,7 @@ Set up JIRA webhooks for real-time sync:
 # Story PROJ-504 shows 0%
 
 # 4. Complete increment
-/sw:done 0050
+sw:done 0050
 
 # All JIRA issues closed automatically
 ```
@@ -746,14 +746,14 @@ EOF
 specweave init . --reconfigure
 
 # 4. Test connection
-/sw-jira:status
+sw-jira:status
 
 # 5. Create test increment
 ```
 
 <CommandTabs
   natural="Let's build a test for JIRA sync"
-  claude='/sw:increment "Test JIRA sync"'
+  claude='sw:increment "Test JIRA sync"'
   other='increment "Test JIRA sync"'
 />
 

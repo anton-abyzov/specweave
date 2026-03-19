@@ -152,7 +152,7 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 <CommandTabs
   natural="Push to GitHub"
-  claude="/sw-github:create-issue 0001"
+  claude="sw-github:create-issue 0001"
   other="sw-github:create-issue 0001"
 />
 
@@ -160,7 +160,7 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 <CommandTabs
   natural="Push to JIRA"
-  claude="/sw-jira:sync 0001"
+  claude="sw-jira:sync 0001"
   other="sw-jira:sync 0001"
 />
 
@@ -168,7 +168,7 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 <CommandTabs
   natural="Sync to Azure DevOps"
-  claude="/sw-ado:sync 0001"
+  claude="sw-ado:sync 0001"
   other="sw-ado:sync 0001"
 />
 
@@ -176,7 +176,7 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 ```bash
 # Work on tasks
-/sw:do
+sw:do
 
 # Complete tasks (TodoWrite updates)
 # Hook fires automatically after each completion

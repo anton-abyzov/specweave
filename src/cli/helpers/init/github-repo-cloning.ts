@@ -8,7 +8,7 @@
  * - Fetches repos from GitHub org via API
  * - Filters by user-selected pattern (all/glob/regex)
  * - Creates background clone jobs
- * - Tracks progress via /sw:jobs
+ * - Tracks progress via sw:jobs
  *
  * @module cli/helpers/init/github-repo-cloning
  */
@@ -376,7 +376,7 @@ export async function triggerGitHubRepoCloning(
 ): Promise<GitHubCloningResult> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
-    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /sw:github-clone-repos)\n'));
+    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with sw:github-clone-repos)\n'));
     return { clonedRepos: [] };
   }
 
@@ -476,8 +476,8 @@ export async function triggerGitHubRepoCloning(
 
     if (result.isBackground) {
       console.log(chalk.green(`   ✓ Clone job started in background (PID: ${result.pid})`));
-      console.log(chalk.cyan('\n   Check progress: /sw:jobs'));
-      console.log(chalk.cyan(`   Kill if needed: /sw:jobs --kill ${result.job.id}`));
+      console.log(chalk.cyan('\n   Check progress: sw:jobs'));
+      console.log(chalk.cyan(`   Kill if needed: sw:jobs --kill ${result.job.id}`));
       console.log(chalk.gray('\n   Init will continue - cloning runs independently.\n'));
     } else {
       console.log(chalk.yellow('   ⚠️ Running in foreground (clone worker not found)'));
@@ -616,7 +616,7 @@ export async function cloneSingleGitHubRepo(
   if (!result.skippedPreFlight) {
     console.log(chalk.green(`   ✓ Clone job started (Job ID: ${result.job.id})`));
     console.log(chalk.gray(`   Target: repositories/${owner}/${repo}`));
-    console.log(chalk.cyan(`   Check progress: /sw:jobs`));
+    console.log(chalk.cyan(`   Check progress: sw:jobs`));
   }
 
   return {

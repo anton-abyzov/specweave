@@ -37,7 +37,7 @@ Say "check if everything looks good" or "validate it" -- or use the slash comman
 
 <CommandTabs
   natural="Check if everything looks good"
-  claude="/sw:validate 0001"
+  claude="sw:validate 0001"
   other="validate 0001"
 />
 
@@ -57,7 +57,7 @@ All tasks in tasks.md must be marked complete.
 
 **If failing:**
 ```bash
-/sw:progress 0001
+sw:progress 0001
 # See which tasks are incomplete
 ```
 
@@ -128,7 +128,7 @@ npm run format
 ### Quick Validation
 
 ```bash
-/sw:validate 0001 --quick
+sw:validate 0001 --quick
 ```
 
 - Task completion
@@ -138,7 +138,7 @@ npm run format
 ### Full Validation
 
 ```bash
-/sw:validate 0001
+sw:validate 0001
 ```
 
 - All quick checks
@@ -149,7 +149,7 @@ npm run format
 ### AI Quality Assessment
 
 ```bash
-/sw:qa 0001
+sw:qa 0001
 ```
 
 - All validation checks
@@ -198,7 +198,7 @@ Status: READY TO SHIP
 - Status: PASS
 
 ## Conclusion
-All validation gates passed. Ready for /sw:done.
+All validation gates passed. Ready for sw:done.
 ```
 
 ---
@@ -334,7 +334,7 @@ jobs:
 After all validation checks pass, run the **code grill** - a demanding senior engineer review:
 
 ```bash
-/sw:grill 0001
+sw:grill 0001
 ```
 
 The grill performs:
@@ -354,21 +354,21 @@ The grill performs:
 
 ```bash
 # If grill fails
-/sw:grill 0001          # Fix issues, re-run
+sw:grill 0001          # Fix issues, re-run
 
 # If grill passes
-/sw:done 0001           # Now you can close
+sw:done 0001           # Now you can close
 ```
 
 :::warning Grill is Mandatory
-`/sw:done` will **block** if grill hasn't passed. The grill creates a marker file that `/sw:done` checks before allowing closure.
+`sw:done` will **block** if grill hasn't passed. The grill creates a marker file that `sw:done` checks before allowing closure.
 :::
 
 ### Close the Increment
 
 ```bash
 # All checks passed AND grill passed? Close the increment
-/sw:done 0001
+sw:done 0001
 ```
 
 This:

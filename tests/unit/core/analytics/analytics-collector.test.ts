@@ -47,7 +47,7 @@ describe('AnalyticsCollector', () => {
   describe('trackCommand()', () => {
     it('should write command event to events.jsonl', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do', { plugin: 'specweave' });
+      collector.trackCommand('sw:do', { plugin: 'specweave' });
 
       expect(fs.existsSync(eventsFile)).toBe(true);
 
@@ -55,7 +55,7 @@ describe('AnalyticsCollector', () => {
       const event = JSON.parse(content);
 
       expect(event.type).toBe('command');
-      expect(event.name).toBe('/sw:do');
+      expect(event.name).toBe('sw:do');
       expect(event.plugin).toBe('specweave');
       expect(event.success).toBe(true);
       expect(event.timestamp).toBeDefined();
@@ -63,7 +63,7 @@ describe('AnalyticsCollector', () => {
 
     it('should track command with error', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:done', {
+      collector.trackCommand('sw:done', {
         success: false,
         error: 'Validation failed',
       });
@@ -77,7 +77,7 @@ describe('AnalyticsCollector', () => {
 
     it('should track command with duration', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:validate', { duration: 1234 });
+      collector.trackCommand('sw:validate', { duration: 1234 });
 
       const content = fs.readFileSync(eventsFile, 'utf-8').trim();
       const event = JSON.parse(content);
@@ -87,7 +87,7 @@ describe('AnalyticsCollector', () => {
 
     it('should track command with increment context', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do', { increment: '0001-test' });
+      collector.trackCommand('sw:do', { increment: '0001-test' });
 
       const content = fs.readFileSync(eventsFile, 'utf-8').trim();
       const event = JSON.parse(content);
@@ -137,14 +137,14 @@ describe('AnalyticsCollector', () => {
 
     it('should read multiple events', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
-      collector.trackCommand('/sw:progress');
+      collector.trackCommand('sw:do');
+      collector.trackCommand('sw:progress');
       collector.trackSkill('pm');
 
       const events = collector.readEvents();
       expect(events).toHaveLength(3);
-      expect(events[0].name).toBe('/sw:do');
-      expect(events[1].name).toBe('/sw:progress');
+      expect(events[0].name).toBe('sw:do');
+      expect(events[1].name).toBe('sw:progress');
       expect(events[2].name).toBe('pm');
     });
   });
@@ -152,7 +152,7 @@ describe('AnalyticsCollector', () => {
   describe('readEventsFiltered()', () => {
     it('should filter by type', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
       collector.trackSkill('planner');
       collector.trackAgent('architect');
 
@@ -163,12 +163,12 @@ describe('AnalyticsCollector', () => {
 
     it('should filter by plugin', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do', { plugin: 'specweave' });
-      collector.trackCommand('/sw:github-sync', { plugin: 'specweave' });
+      collector.trackCommand('sw:do', { plugin: 'specweave' });
+      collector.trackCommand('sw:github-sync', { plugin: 'specweave' });
 
       const swEvents = collector.readEventsFiltered({ plugin: 'specweave' });
       expect(swEvents).toHaveLength(2);
-      expect(swEvents.map(e => e.name)).toContain('/sw:github-sync');
+      expect(swEvents.map(e => e.name)).toContain('sw:github-sync');
     });
   });
 
@@ -176,7 +176,7 @@ describe('AnalyticsCollector', () => {
     it('should not track events when disabled', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
       collector.disable();
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
 
       expect(fs.existsSync(eventsFile)).toBe(false);
     });
@@ -185,7 +185,7 @@ describe('AnalyticsCollector', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
       collector.disable();
       collector.enable();
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
 
       expect(fs.existsSync(eventsFile)).toBe(true);
     });
@@ -195,7 +195,7 @@ describe('AnalyticsCollector', () => {
     it('trackCommand should work', () => {
       // Need to set project root first
       AnalyticsCollector.getInstance(testDir);
-      trackCommand('/sw:test');
+      trackCommand('sw:test');
 
       const events = AnalyticsCollector.getInstance().readEvents();
       expect(events).toHaveLength(1);

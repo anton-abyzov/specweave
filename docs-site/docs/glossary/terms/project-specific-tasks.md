@@ -521,7 +521,7 @@ export class TaskProjectSpecificGenerator {
 ### For Teams
 
 1. **Single Source of Truth**: Update increment tasks.md, not User Story files
-2. **Sync After Updates**: Say "update the docs", use `/sw:sync-docs` in Claude Code, or type `sync-docs` in other AI tools
+2. **Sync After Updates**: Say "update the docs", use `sw:sync-docs` in Claude Code, or type `sync-docs` in other AI tools
 3. **Verify Filtering**: Check User Stories have correct project-specific tasks
 4. **Track Progress**: Use project-specific completion percentages
 

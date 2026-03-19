@@ -55,8 +55,8 @@ Controls automatic vs manual sync.
 
 **Default**: `true` (automatic sync enabled)
 
-- **`true`** (default): Sync happens automatically on `/sw:done`
-- **`false`**: Requires manual `/sw-github:sync` command
+- **`true`** (default): Sync happens automatically on `sw:done`
+- **`false`**: Requires manual `sw-github:sync` command
 
 ### canUpdateStatus
 
@@ -122,7 +122,7 @@ Controls status field updates in external tools.
 ### "Automatic sync DISABLED"
 
 **Option 1**: Set `autoSyncOnCompletion = true`
-**Option 2**: Run `/sw-github:sync` manually
+**Option 2**: Run `sw-github:sync` manually
 
 ### "GitHub sync SKIPPED"
 

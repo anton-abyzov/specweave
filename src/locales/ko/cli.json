@@ -15,7 +15,7 @@
     "projectSuccess": "SpecWeave 프로젝트가 성공적으로 생성되었습니다!",
     "readyToBuild": "🚀 SpecWeave 로 빌드할 준비가 되었습니다!",
     "nestedCdCommand": "cd {{path}}",
-    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "nestedIncCommand": "sw:increment \"your-feature\"",
     "pluginEnableLater": "플러그인은 나중에 활성화할 수 있습니다: specweave plugin enable <name>",
     "genericError": "오류:",
     "errors": {
@@ -140,7 +140,7 @@
         "installGitHub": "/plugin install sw-github@specweave",
         "installFrontend": "/plugin install frontend-design@claude-plugins-official",
         "step4": "빌드 시작:",
-        "example": "\"/sw:increment 'user authentication'\"",
+        "example": "\"sw:increment 'user authentication'\"",
         "autoActivate": "스킬과 에이전트는 컨텍스트에 따라 자동으로 활성화됩니다"
       },
       "cursor": {
@@ -273,7 +273,7 @@
   "increment": {
     "creating": "📝 인크리먼트 생성 중: {name}",
     "created": "✅ 인크리먼트 {id} 가 성공적으로 생성되었습니다!",
-    "nextStepDo": "다음 단계: /sw:do 를 실행하여 구현을 시작하십시오",
+    "nextStepDo": "다음 단계: sw:do 를 실행하여 구현을 시작하십시오",
     "errors": {
       "incompleteFound": "새 인크리먼트를 생성할 수 없습니다! 이전 인크리먼트가 완료되지 않았습니다"
     }

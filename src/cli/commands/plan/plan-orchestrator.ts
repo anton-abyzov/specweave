@@ -1,7 +1,7 @@
 /**
  * Plan Command Orchestrator
  *
- * Main orchestration logic for /sw:plan command.
+ * Main orchestration logic for sw:plan command.
  * Coordinates: detection → validation → architect agent → task generator → file write
  *
  * Part of increment 0039: Ultra-Smart Next Command
@@ -36,7 +36,7 @@ export class PlanCommandOrchestrator {
   }
 
   /**
-   * Execute /sw:plan command
+   * Execute sw:plan command
    */
   async execute(config: PlanCommandConfig): Promise<PlanCommandResult> {
     const startTime = Date.now();
