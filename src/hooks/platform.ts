@@ -384,3 +384,27 @@ export async function consumeStdin(): Promise<string> {
     }
   });
 }
+
+/**
+ * Hook input parsed from stdin JSON
+ */
+export interface HookInput {
+  session_id?: string;
+  env_file?: string;
+  transcript_path?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Parse hook stdin as JSON, returning typed HookInput.
+ * Falls back to empty object if stdin is empty or invalid JSON.
+ */
+export async function parseHookInput(): Promise<HookInput> {
+  const raw = await consumeStdin();
+  if (!raw || !raw.trim()) return {};
+  try {
+    return JSON.parse(raw) as HookInput;
+  } catch {
+    return {};
+  }
+}
