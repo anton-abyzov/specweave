@@ -432,6 +432,26 @@ sw:team-lead "Add checkout flow" --preset full-stack
 
 ---
 
+## Closure (Context Overflow Prevention)
+
+After all agents complete their tasks, the team-lead needs to close each increment. Running `sw:done` directly in the orchestrator's context can cause overflow -- the closure pipeline loads 4+ skill definitions (grill, judge-llm, sync-docs, qa) into an already-full context window.
+
+SpecWeave solves this with **sw-closer subagents**. Each `sw-closer` runs the full `sw:done` pipeline in a fresh, isolated context:
+
+```
+All agents complete
+  │
+  ├── sw-closer (increment 0042-auth-schema)    ← fresh context
+  ├── sw-closer (increment 0043-auth-api)       ← fresh context
+  └── sw-closer (increment 0044-auth-ui)        ← fresh context
+```
+
+The `sw:team-merge` command spawns these automatically in dependency order (shared first, then downstream). Each closer runs quality gates (grill, judge-llm, PM validation) and post-closure sync independently.
+
+If a closer fails, the increment stays open and the failure is reported -- other increments continue closing normally.
+
+---
+
 ## Works With Any AI Tool
 
 The coordination layer is file-based markdown. While Claude Code gets the deepest integration, any AI tool can participate:
