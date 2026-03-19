@@ -211,8 +211,8 @@ Code → Build → Test → Deploy → Monitor
 
 **SpecWeave tracks DORA automatically:**
 ```
-.specweave/metrics/dora-latest.json
-.specweave/metrics/dora-report.md
+metrics/dora-latest.json
+metrics/dora-report.md
 ```
 
 > **:next** → *Module 2: The AI Revolution*
