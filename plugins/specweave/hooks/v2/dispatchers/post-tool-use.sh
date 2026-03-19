@@ -279,39 +279,59 @@ case "$FILE_PATH" in
       if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]] || [[ "$CURRENT_STATUS" == "reopened" ]]; then
         log_debug "IMMEDIATE SYNC: Status is $CURRENT_STATUS - syncing to external tools"
 
-        # Map raw status to canonical event name (consistent with lifecycle-detector)
-        case "$CURRENT_STATUS" in
-          completed|done) BRIDGE_EVENT="increment.done" ;;
-          reopened) BRIDGE_EVENT="increment.reopened" ;;
-          *) BRIDGE_EVENT="increment.$CURRENT_STATUS" ;;
-        esac
-
-        BRIDGE_HANDLER="$HOOK_DIR/handlers/project-bridge-handler.sh"
-        if [[ -f "$BRIDGE_HANDLER" ]]; then
-          # Run synchronously but with timeout to not block too long
-          (
-            if command -v gtimeout >/dev/null 2>&1; then
-              gtimeout 15 bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
-            elif command -v timeout >/dev/null 2>&1; then
-              timeout 15 bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
-            else
-              bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
-            fi
-          )
-          log_debug "IMMEDIATE SYNC completed for $INC_ID"
+        # ====================================================================
+        # SYNC MODE CHECK (0618): queued vs immediate
+        # ====================================================================
+        SYNC_CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
+        SYNC_MODE="queued"
+        if command -v jq >/dev/null 2>&1 && [[ -f "$SYNC_CONFIG_PATH" ]]; then
+          SYNC_MODE=$(jq -r '.sync.mode // "queued"' "$SYNC_CONFIG_PATH" 2>/dev/null || echo "queued")
         fi
 
-        # ========================================================================
-        # EXPLICIT CLOSURE (v1.0.257+): Close external issues on completion
-        # ========================================================================
-        # Only on completed/done - triggers provider-agnostic closure for ALL
-        # user stories, ensuring external issues are closed even if AC sync
-        # missed them. NOT called on reopened or on every AC change.
-        if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]]; then
-          AC_CLOSE_DISPATCHER="${HOOK_DIR}/handlers/ac-sync-dispatcher.sh"
-          if [[ -f "$AC_CLOSE_DISPATCHER" ]]; then
-            log_debug "EXPLICIT CLOSURE: Triggering provider-agnostic closure for $INC_ID"
-            SPECWEAVE_CLOSE_ALL=1 safe_run_background "$AC_CLOSE_DISPATCHER" "ac-close" "$INC_ID"
+        if [[ "$SYNC_MODE" == "queued" ]]; then
+          # Queue event to pending.jsonl instead of direct sync
+          QUEUE_DIR="$PROJECT_ROOT/.specweave/state/event-queue"
+          mkdir -p "$QUEUE_DIR" 2>/dev/null || true
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"incrementId\":\"$INC_ID\",\"eventType\":\"status.changed\",\"metadata\":{\"newStatus\":\"$CURRENT_STATUS\"},\"timestamp\":\"$TIMESTAMP\"}" >> "$QUEUE_DIR/pending.jsonl"
+          log_debug "QUEUED SYNC: Event queued for $INC_ID (status.changed -> $CURRENT_STATUS)"
+        else
+          # IMMEDIATE MODE (legacy): direct sync calls
+
+          # Map raw status to canonical event name (consistent with lifecycle-detector)
+          case "$CURRENT_STATUS" in
+            completed|done) BRIDGE_EVENT="increment.done" ;;
+            reopened) BRIDGE_EVENT="increment.reopened" ;;
+            *) BRIDGE_EVENT="increment.$CURRENT_STATUS" ;;
+          esac
+
+          BRIDGE_HANDLER="$HOOK_DIR/handlers/project-bridge-handler.sh"
+          if [[ -f "$BRIDGE_HANDLER" ]]; then
+            # Run synchronously but with timeout to not block too long
+            (
+              if command -v gtimeout >/dev/null 2>&1; then
+                gtimeout 15 bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
+              elif command -v timeout >/dev/null 2>&1; then
+                timeout 15 bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
+              else
+                bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
+              fi
+            )
+            log_debug "IMMEDIATE SYNC completed for $INC_ID"
+          fi
+
+          # ========================================================================
+          # EXPLICIT CLOSURE (v1.0.257+): Close external issues on completion
+          # ========================================================================
+          # Only on completed/done - triggers provider-agnostic closure for ALL
+          # user stories, ensuring external issues are closed even if AC sync
+          # missed them. NOT called on reopened or on every AC change.
+          if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]]; then
+            AC_CLOSE_DISPATCHER="${HOOK_DIR}/handlers/ac-sync-dispatcher.sh"
+            if [[ -f "$AC_CLOSE_DISPATCHER" ]]; then
+              log_debug "EXPLICIT CLOSURE: Triggering provider-agnostic closure for $INC_ID"
+              SPECWEAVE_CLOSE_ALL=1 safe_run_background "$AC_CLOSE_DISPATCHER" "ac-close" "$INC_ID"
+            fi
           fi
         fi
       fi

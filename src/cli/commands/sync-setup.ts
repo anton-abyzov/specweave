@@ -64,6 +64,30 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
   // Quick / non-interactive mode
   const isNonTTY = !process.stdin.isTTY;
   if (options.quick || isNonTTY) {
+    // Validate existing config instead of just printing a hint
+    try {
+      const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      if (raw.sync?.enabled && raw.sync?.provider) {
+        console.log(chalk.green(`✓ Sync already configured: ${raw.sync.provider}`));
+
+        // Run health checks to validate the configuration
+        const results = await runHealthChecksForConfig(raw, projectPath);
+        if (results.length > 0) {
+          console.log(formatHealthCheckResults(results));
+        }
+
+        const failedChecks = results.filter((r: any) => r.status === 'fail');
+        if (failedChecks.length === 0) {
+          console.log(chalk.green('✓ All health checks passed'));
+        } else {
+          console.log(chalk.yellow(`⚠ ${failedChecks.length} health check(s) failed. Run specweave sync-setup interactively to fix.`));
+        }
+        return;
+      }
+    } catch {
+      // Config read failed, fall through to hint
+    }
+
     console.log(chalk.gray('⏭️  Run specweave sync-setup interactively to configure external sync.'));
     console.log(chalk.gray('   Supported providers: GitHub Issues, JIRA, Azure DevOps'));
     return;
