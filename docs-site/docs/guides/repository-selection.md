@@ -2,7 +2,7 @@
 
 **Batch Select 10+ Repositories in Seconds with Smart Pattern Matching**
 
-Strategic Init's repository selection streamlines multi-repo setup by detecting patterns and allowing batch selection instead of manual URL entry - saving 5+ minutes when setting up projects with many repositories.
+Strategic Init's repository selection streamlines workspace setup by detecting patterns and allowing batch selection instead of manual URL entry - saving 5+ minutes when setting up projects with many repositories.
 
 ---
 
@@ -11,17 +11,16 @@ Strategic Init's repository selection streamlines multi-repo setup by detecting 
 Repository selection is **Phase 6** of Strategic Init and triggers when:
 
 1. You indicate **3+ repositories** in your project
-2. OR Strategic Init detects multi-repo architecture from your vision
-3. OR You explicitly choose multi-repo setup
+2. OR Strategic Init detects multiple repositories from your vision
+3. OR You choose to connect repositories during init
 
 **Example**:
 ```
-Question: How many repositories are in this project?
-  ○ Single repository (monorepo)
-  ○ 2-5 repositories
-  ● 10+ repositories              ← Selected
+Which repositories to connect?
+  ○ Connect repositories now
+  ● Add later via specweave get    ← Selected
 
-✓ Multi-repo detected → Repository selection enabled
+✓ Repository selection enabled
 ```
 
 ---
@@ -382,7 +381,7 @@ Projects detected:
 
 **Scenario**: Single repository, multiple services in subdirectories
 
-**Solution**: Use single repository with project folders
+**Solution**: Use one repository with project folders
 ```
 Repository: myapp-monorepo
 Projects defined by folders:
@@ -646,4 +645,4 @@ Add comments to config.json:
 
 ---
 
-**Ready to select your repositories?** Run `specweave init` and answer the multi-repo questions!
+**Ready to select your repositories?** Run `specweave init` and connect your repositories!

@@ -199,7 +199,7 @@ function createMockProvider(overrides: Partial<GitProvider> = {}): GitProvider {
 function createMockConfig(overrides: Partial<RepoStructureConfig> = {}): RepoStructureConfig {
   const provider = createMockProvider();
   return {
-    architecture: 'single',
+    architecture: 'multi-repo',
     urlType: 'ssh',
     platform: 'github',
     provider,
@@ -253,22 +253,23 @@ describe('RepoStructureManager', () => {
     it('should show header when no pre-selected architecture', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      // User selects single architecture
+      // User selects github-parent architecture (0581: 'single' removed)
       mockSelect
-        .mockResolvedValueOnce('single')      // Architecture
-        .mockResolvedValueOnce('github')       // Platform
-        .mockResolvedValueOnce('ssh');          // URL type
+        .mockResolvedValueOnce('github-parent') // Architecture
+        .mockResolvedValueOnce('github')         // Platform
+        .mockResolvedValueOnce('ssh');           // URL type
 
-      // Single repo config inputs
-      mockInput
-        .mockResolvedValueOnce('myowner')
-        .mockResolvedValueOnce('my-repo')
-        .mockResolvedValueOnce('My description');
-      mockConfirm.mockResolvedValueOnce(false); // Don't create on GitHub
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo',
+        urlType: 'ssh',
+        platform: 'github',
+        provider: mockProvider,
+        repositories: [{ id: 'main', name: 'my-repo', owner: 'myowner', description: 'My description', path: '.', visibility: 'private', createOnGitHub: false, isNested: false }]
+      });
 
       const result = await manager.promptStructure();
 
-      expect(result.architecture).toBe('single');
+      expect(result.architecture).toBe('multi-repo');
       consoleSpy.mockRestore();
     });
 
@@ -280,17 +281,17 @@ describe('RepoStructureManager', () => {
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh');
 
-      // Single repo config
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('repo')
-        .mockResolvedValueOnce('desc');
-      mockConfirm.mockResolvedValueOnce(false);
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo',
+        urlType: 'ssh',
+        platform: 'github',
+        provider: mockProvider,
+        repositories: [{ id: 'main', name: 'repo', owner: 'owner', description: 'desc', path: '.', visibility: 'private', createOnGitHub: false, isNested: false }]
+      });
 
-      const result = await manager.promptStructure('single');
+      const result = await manager.promptStructure('github-parent');
 
-      expect(result.architecture).toBe('single');
-      // Architecture select should NOT have been called (only platform + url type = 2)
+      expect(result.architecture).toBe('multi-repo');
       consoleSpy.mockRestore();
     });
 
@@ -298,14 +299,13 @@ describe('RepoStructureManager', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       mockSelect
-        .mockResolvedValueOnce('single')
+        .mockResolvedValueOnce('github-parent')
         .mockResolvedValueOnce('ssh');
 
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('repo')
-        .mockResolvedValueOnce('desc');
-      mockConfirm.mockResolvedValueOnce(false);
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo', urlType: 'ssh', platform: 'github', provider: mockProvider,
+        repositories: [{ id: 'main', name: 'repo', owner: 'owner', description: 'desc', path: '.', visibility: 'private', createOnGitHub: false, isNested: false }]
+      });
 
       const result = await manager.promptStructure(undefined, 'github');
 
@@ -317,14 +317,13 @@ describe('RepoStructureManager', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       mockSelect
-        .mockResolvedValueOnce('single')
+        .mockResolvedValueOnce('github-parent')
         .mockResolvedValueOnce('github');
 
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('repo')
-        .mockResolvedValueOnce('desc');
-      mockConfirm.mockResolvedValueOnce(false);
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo', urlType: 'https', platform: 'github', provider: mockProvider,
+        repositories: [{ id: 'main', name: 'repo', owner: 'owner', description: 'desc', path: '.', visibility: 'private', createOnGitHub: false, isNested: false }]
+      });
 
       const result = await manager.promptStructure(undefined, undefined, 'https');
 
@@ -337,7 +336,7 @@ describe('RepoStructureManager', () => {
       mockRegistry.getProvider.mockReturnValueOnce(undefined);
 
       await expect(
-        manager.promptStructure('single', 'gitlab')
+        manager.promptStructure('github-parent', 'gitlab')
       ).rejects.toThrow('Platform gitlab is not available');
 
       consoleSpy.mockRestore();
@@ -345,7 +344,7 @@ describe('RepoStructureManager', () => {
 
     it('should throw when platform provider not found (user-selected)', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      mockSelect.mockResolvedValueOnce('single');
+      mockSelect.mockResolvedValueOnce('github-parent');
       mockRegistry.getProvider.mockReturnValueOnce(undefined);
       mockSelect.mockResolvedValueOnce('gitlab');
 
@@ -361,7 +360,7 @@ describe('RepoStructureManager', () => {
 
       mockDetectAndResumeSetup.mockResolvedValueOnce({
         version: '1.0.0',
-        architecture: 'single',
+        architecture: 'single', // Old state with 'single' - should map to 'multi-repo'
         repos: [{
           id: 'main',
           repo: 'my-repo',
@@ -380,7 +379,7 @@ describe('RepoStructureManager', () => {
 
       const result = await manager.promptStructure();
 
-      expect(result.architecture).toBe('single');
+      expect(result.architecture).toBe('multi-repo'); // 0581: 'single' maps to 'multi-repo'
       expect(result.repositories).toHaveLength(1);
       consoleSpy.mockRestore();
     });
@@ -390,31 +389,29 @@ describe('RepoStructureManager', () => {
 
       mockDetectAndResumeSetup.mockResolvedValueOnce({
         version: '1.0.0',
-        architecture: 'single',
+        architecture: 'multi-repo',
         repos: [],
         currentStep: 'architecture-selected',
         timestamp: '2024-01-01T00:00:00Z',
         envCreated: false
       });
 
-      mockConfirm
-        .mockResolvedValueOnce(false)  // No, don't resume
-        .mockResolvedValueOnce(false); // Don't create on GitHub
+      mockConfirm.mockResolvedValueOnce(false);  // No, don't resume
 
       mockSelect
-        .mockResolvedValueOnce('single')
+        .mockResolvedValueOnce('github-parent')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh');
 
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('repo')
-        .mockResolvedValueOnce('desc');
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo', urlType: 'ssh', platform: 'github', provider: mockProvider,
+        repositories: [{ id: 'main', name: 'repo', owner: 'owner', description: 'desc', path: '.', visibility: 'private', createOnGitHub: false, isNested: false }]
+      });
 
       const result = await manager.promptStructure();
 
       expect(mockDeleteState).toHaveBeenCalled();
-      expect(result.architecture).toBe('single');
+      expect(result.architecture).toBe('multi-repo');
       consoleSpy.mockRestore();
     });
 
@@ -441,141 +438,22 @@ describe('RepoStructureManager', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should map unknown architecture to single via default case', async () => {
+    it('should map unknown architecture to multi-repo via default case (0581)', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      // mapArchitectureChoice default returns 'single', so monorepo maps to single
       mockSelect
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh');
 
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('repo')
-        .mockResolvedValueOnce('desc');
-      mockConfirm.mockResolvedValueOnce(false);
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo', urlType: 'ssh', platform: 'github', provider: mockProvider,
+        repositories: [{ id: 'main', name: 'repo', owner: 'owner', description: 'desc', path: '.', visibility: 'private', createOnGitHub: false, isNested: false }]
+      });
 
       const result = await manager.promptStructure('monorepo' as any);
 
-      // monorepo maps to 'single' via default case in mapArchitectureChoice
-      expect(result.architecture).toBe('single');
-      consoleSpy.mockRestore();
-    });
-
-    it('should detect existing git repo and use it', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(true); // .git exists
-      mockExecSync.mockReturnValue('git@github.com:existorg/existrepo.git\n');
-      mockConfirm.mockResolvedValueOnce(true); // Use existing
-
-      mockSelect
-        .mockResolvedValueOnce('github')
-        .mockResolvedValueOnce('ssh');
-
-      const result = await manager.promptStructure('single');
-
-      expect(result.repositories[0].name).toBe('existrepo');
-      expect(result.repositories[0].owner).toBe('existorg');
-      expect(result.repositories[0].createOnGitHub).toBe(false);
-      consoleSpy.mockRestore();
-    });
-
-    it('should fetch description and visibility from GitHub when token available', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(true);
-      mockExecSync.mockReturnValue('git@github.com:org/repo.git\n');
-      mockConfirm.mockResolvedValueOnce(true);
-
-      // Mock global fetch for GitHub API
-      const originalFetch = global.fetch;
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          description: 'Fetched description',
-          private: false
-        })
-      }) as any;
-
-      mockSelect
-        .mockResolvedValueOnce('github')
-        .mockResolvedValueOnce('ssh');
-
-      const result = await manager.promptStructure('single');
-
-      expect(result.repositories[0].description).toBe('Fetched description');
-      expect(result.repositories[0].visibility).toBe('public');
-
-      global.fetch = originalFetch;
-      consoleSpy.mockRestore();
-    });
-
-    it('should use defaults when GitHub API fetch fails', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(true);
-      mockExecSync.mockReturnValue('git@github.com:org/repo.git\n');
-      mockConfirm.mockResolvedValueOnce(true);
-
-      const originalFetch = global.fetch;
-      global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error')) as any;
-
-      mockSelect
-        .mockResolvedValueOnce('github')
-        .mockResolvedValueOnce('ssh');
-
-      const result = await manager.promptStructure('single');
-
-      expect(result.repositories[0].description).toContain('SpecWeave project');
-      expect(result.repositories[0].visibility).toBe('private');
-
-      global.fetch = originalFetch;
-      consoleSpy.mockRestore();
-    });
-
-    it('should fall through to manual config when no remote or match fails', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(true);
-      mockExecSync.mockImplementation(() => { throw new Error('No remote'); });
-
-      mockSelect
-        .mockResolvedValueOnce('github')
-        .mockResolvedValueOnce('ssh');
-
-      mockInput
-        .mockResolvedValueOnce('myowner')
-        .mockResolvedValueOnce('myrepo')
-        .mockResolvedValueOnce('Description');
-      mockConfirm.mockResolvedValueOnce(false);
-
-      const result = await manager.promptStructure('single');
-
-      expect(result.repositories[0].owner).toBe('myowner');
-      consoleSpy.mockRestore();
-    });
-
-    it('should ask visibility when creating repo on GitHub', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(false);
-
-      mockSelect
-        .mockResolvedValueOnce('github')
-        .mockResolvedValueOnce('ssh')
-        .mockResolvedValueOnce('public');  // Visibility
-
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('new-repo')
-        .mockResolvedValueOnce('New repo');
-      mockConfirm.mockResolvedValueOnce(true); // Create on GitHub
-
-      const result = await manager.promptStructure('single');
-
-      expect(result.repositories[0].visibility).toBe('public');
-      expect(result.repositories[0].createOnGitHub).toBe(true);
+      // 0581: all architectures map to 'multi-repo'
+      expect(result.architecture).toBe('multi-repo');
       consoleSpy.mockRestore();
     });
   });
@@ -643,7 +521,7 @@ describe('RepoStructureManager', () => {
 
       mockDetectAndResumeSetup.mockResolvedValueOnce({
         version: '1.0.0',
-        architecture: 'single',
+        architecture: 'multi-repo',
         repos: [],
         currentStep: 'in-progress',
         timestamp: '2024-01-01T00:00:00Z',
@@ -787,54 +665,24 @@ describe('RepoStructureManager', () => {
     });
   });
 
-  describe('single repo - user declines existing repo', () => {
-    it('should fall through to manual config when user declines existing', async () => {
+  describe('multi-repo via github-parent (0581)', () => {
+    it('should delegate to configureMultiRepo', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(true);
-      mockExecSync.mockReturnValue('git@github.com:existorg/existrepo.git\n');
-      mockConfirm
-        .mockResolvedValueOnce(false)  // Don't use existing
-        .mockResolvedValueOnce(true);  // Create on GitHub
-
-      mockSelect
-        .mockResolvedValueOnce('github')
-        .mockResolvedValueOnce('ssh')
-        .mockResolvedValueOnce('private');  // Visibility
-
-      mockInput
-        .mockResolvedValueOnce('newowner')
-        .mockResolvedValueOnce('newrepo')
-        .mockResolvedValueOnce('New description');
-
-      const result = await manager.promptStructure('single');
-
-      expect(result.repositories[0].owner).toBe('newowner');
-      expect(result.repositories[0].name).toBe('newrepo');
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('single repo - non-github remote URL', () => {
-    it('should fallback to manual config when remote does not match github pattern', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      mockExistsSync.mockReturnValue(true);
-      mockExecSync.mockReturnValue('https://gitlab.com/org/repo.git\n');
 
       mockSelect
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh');
 
-      mockInput
-        .mockResolvedValueOnce('owner')
-        .mockResolvedValueOnce('repo')
-        .mockResolvedValueOnce('desc');
-      mockConfirm.mockResolvedValueOnce(false);
+      mockConfigureMultiRepo.mockResolvedValueOnce({
+        architecture: 'multi-repo', urlType: 'ssh', platform: 'github', provider: mockProvider,
+        repositories: [{ id: 'main', name: 'newrepo', owner: 'newowner', description: 'New description', path: '.', visibility: 'private', createOnGitHub: true, isNested: false }]
+      });
 
-      const result = await manager.promptStructure('single');
+      const result = await manager.promptStructure('github-parent');
 
-      expect(result.repositories[0].owner).toBe('owner');
+      expect(result.repositories[0].owner).toBe('newowner');
+      expect(result.repositories[0].name).toBe('newrepo');
+      expect(mockConfigureMultiRepo).toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
   });

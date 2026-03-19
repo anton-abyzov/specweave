@@ -88,14 +88,11 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   }
   // CRITICAL: Check if user already answered this question in init.ts
   // Map repositoryHosting to architecture type for RepoStructureManager
-  let preSelectedArchitecture: 'single' | 'github-parent' | undefined = undefined;
+  let preSelectedArchitecture: 'github-parent' | undefined = undefined;
 
   if (repositoryHosting) {
-    // GitHub providers - map to architecture for RepoStructureManager
-    if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
-      preSelectedArchitecture = 'single';
-    } else if (repositoryHosting === 'github-multirepo') {
-      // 🔥 FIX: Don't return early! Pass to RepoStructureManager which has parent repo logic!
+    // GitHub provider - map to architecture for RepoStructureManager
+    if (repositoryHosting === 'github') {
       preSelectedArchitecture = 'github-parent';
     }
     // 🔥 FIX (v1.0.31): For non-GitHub repo hosting (local, bitbucket, ado, other),
@@ -140,9 +137,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       // CRITICAL FIX: Use repositoryHosting if already selected
       if (repositoryHosting) {
         console.log(chalk.yellow('   → Using previously selected setup type\n'));
-        if (preSelectedArchitecture === 'single') {
-          return { setupType: 'single' };
-        } else if (preSelectedArchitecture === 'github-parent') {
+        if (preSelectedArchitecture === 'github-parent') {
           return { setupType: 'multiple' };
         }
         return { setupType: 'none' };
@@ -179,9 +174,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
         // This is more critical - fall back to legacy flow
         if (repositoryHosting) {
           console.log(chalk.yellow('   → Using previously selected setup type\n'));
-          if (preSelectedArchitecture === 'single') {
-            return { setupType: 'single' };
-          } else if (preSelectedArchitecture === 'github-parent') {
+          if (preSelectedArchitecture === 'github-parent') {
             return { setupType: 'multiple' };
           }
           return { setupType: 'none' };
@@ -214,7 +207,6 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
 
         // Map to setup type
         const setupType: GitHubSetupType =
-          config.architecture === 'single' ? 'single' :
           config.architecture === 'monorepo' ? 'monorepo' :
           'multiple';
 
@@ -231,9 +223,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   // If repositoryHosting was provided but we didn't use RepoStructureManager
   // (e.g., no projectPath/githubToken), map directly to setupType
   if (repositoryHosting && preSelectedArchitecture) {
-    if (preSelectedArchitecture === 'single') {
-      return { setupType: 'single' };
-    } else if (preSelectedArchitecture === 'github-parent') {
+    if (preSelectedArchitecture === 'github-parent') {
       return { setupType: 'multiple' };
     }
   }

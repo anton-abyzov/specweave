@@ -221,13 +221,13 @@ Read only what's needed for the current task:
 └── state/                # Runtime state (active increment, caches)
 ```
 
-### Multi-Repo Structure
+### Repository Structure
 
-**In umbrella projects with `repositories/` folder, each repo has its own `.specweave/`:**
+**Every workspace uses `repositories/` to organize code. Each repo has its own `.specweave/`:**
 
 ```
-umbrella-project/
-├── .specweave/config.json          # Umbrella config ONLY
+workspace/
+├── .specweave/config.json          # Workspace config ONLY
 ├── repositories/
 │   ├── org/frontend/
 │   │   └── .specweave/increments/  # Frontend increments HERE
@@ -237,7 +237,7 @@ umbrella-project/
 │       └── .specweave/increments/  # Shared increments HERE
 ```
 
-**Rules**: Each repo manages its own increments. Never create agent increments in the umbrella root.
+**Rules**: Each repo manages its own increments. Never create increments in the workspace root.
 <!-- SW:END:structure -->
 
 <!-- SW:SECTION:agents version="1.0.326" -->

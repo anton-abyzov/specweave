@@ -2,7 +2,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 # Umbrella Sync Routing
 
-**For**: Teams using umbrella (multi-repo) SpecWeave projects
+**For**: Teams using SpecWeave workspaces with multiple repositories
 **Version**: 1.0.366+
 
 ---
@@ -36,7 +36,7 @@ When SpecWeave syncs an increment to external tools, it reads the `**Project**:`
 resolveSyncTarget(projectName, config)
 │
 ├─ umbrella.enabled = false (or absent)?
-│  └─ GLOBAL targets (single-repo mode)
+│  └─ GLOBAL targets (default)
 │
 │  (umbrella mode)
 │
@@ -124,9 +124,9 @@ SpecWeave reads the project name from your spec.md in this order:
 
 ## Scenarios
 
-### Scenario 1: Single Repo (No Umbrella)
+### Scenario 1: Single Repository (No Umbrella Config)
 
-**Setup**: Standard single-repo project. No `umbrella` section in config.
+**Setup**: Standard workspace with one repository. No `umbrella` section in config.
 
 ```json
 {
@@ -221,8 +221,8 @@ When `/sw:increment` creates a new increment, the increment skill detects umbrel
 ### Single-project mode (`umbrella.enabled: false` or absent)
 
 - All user stories get the same `**Project**:` value
-- Standard single-project spec design
-- All routing goes to the single global target
+- Standard spec design
+- All routing goes to the global target
 
 **Key insight**: Routing is determined at spec creation time, not at sync time. The `**Project**:` field is the contract between planning and sync.
 
@@ -230,19 +230,9 @@ When `/sw:increment` creates a new increment, the increment skill detects umbrel
 
 ## Setup
 
-### New umbrella project
+### Configuring sync targets for child repos
 
-When you run `specweave migrate-to-umbrella`, it automatically:
-
-1. Sets `umbrella.enabled: true`
-2. Registers the first child repo
-3. Copies global sync config to `umbrella.sync`
-
-You then add `sync` config to each child repo as needed.
-
-### Adding sync targets to child repos
-
-After migration, edit `.specweave/config.json` to add per-repo sync targets:
+Edit `.specweave/config.json` to add per-repo sync targets:
 
 ```json
 {

@@ -51,15 +51,11 @@ export type ProjectMaturity = 'greenfield' | 'brownfield';
  * Repository hosting configuration
  */
 export type RepositoryHosting =
-  | 'github-single'
-  | 'github-multirepo'
-  | 'bitbucket-single'
-  | 'bitbucket-multirepo'
-  | 'ado-single'
-  | 'ado-multirepo'
+  | 'github'
+  | 'bitbucket'
+  | 'ado'
   | 'local'
-  | 'other-single'
-  | 'other-multirepo';
+  | 'other';
 
 /**
  * Detected parent .specweave folder info
@@ -225,9 +221,6 @@ export interface UmbrellaDiscoveryResult {
  * Context for conditional next steps display
  */
 export interface NextStepsContext {
-  isUmbrella?: boolean;
-  /** True when user selected multi-repo during init (deferred or clone) */
-  isMultiRepo?: boolean;
   /** Repo names found at repositories/{name}/.git (1-level, missing org subfolder) */
   misplacedRepos?: string[];
 }

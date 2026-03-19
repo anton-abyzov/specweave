@@ -209,7 +209,7 @@ Includes the last 10 completed jobs in the output.
 Jobs are automatically created by:
 
 1. **Repository Cloning**
-   - `specweave init` with multi-repo/umbrella setup
+   - `specweave init` when connecting repositories
    - `/sw-ado:clone-repos`
 
 2. **Issue Import**

@@ -10,15 +10,19 @@
  * @module create-increment
  */
 
+import * as path from 'path';
 import chalk from 'chalk';
 import { createIncrementTemplates } from '../../core/increment/template-creator.js';
 import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatcher.js';
 import { readConfig } from '../../core/config/config-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { initInterviewStateFile } from './interview.js';
+import { IncrementNumberManager } from '../../core/increment/increment-utils.js';
 
 export interface CreateIncrementOptions {
-  id: string;
+  id?: string;
+  autoId?: boolean;
+  name?: string;
   title: string;
   description: string;
   project: string;
@@ -32,6 +36,8 @@ export interface CreateIncrementOptions {
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
   const {
     id,
+    autoId,
+    name,
     title,
     description,
     project,
@@ -42,8 +48,28 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     projectRoot: rawProjectRoot,
   } = options;
 
+  // Validate: either --id OR (--auto-id + --name) must be provided
+  if (id && autoId) {
+    throw new Error('Cannot use both --id and --auto-id. Use one or the other.');
+  }
+  if (!id && !autoId) {
+    throw new Error('Either --id or (--auto-id + --name) is required.');
+  }
+  if (autoId && !name) {
+    throw new Error('--auto-id requires --name to generate the increment ID.');
+  }
+
   // Resolve effective root: umbrella root in multi-repo, local root in single-repo
   const projectRoot = rawProjectRoot || resolveEffectiveRoot(process.cwd());
+
+  // Resolve increment ID: explicit or auto-generated
+  let resolvedId: string;
+  if (autoId && name) {
+    const nextNumber = IncrementNumberManager.getNextIncrementNumber(projectRoot);
+    resolvedId = `${nextNumber}-${name}`;
+  } else {
+    resolvedId = id!;
+  }
 
   // Read testing config to pass testMode and coverageTarget
   let testMode: string | undefined;
@@ -64,7 +90,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   }
 
   const result = await createIncrementTemplates({
-    incrementId: id,
+    incrementId: resolvedId,
     title,
     description,
     projectId: project,
@@ -74,6 +100,8 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     testMode,
     coverageTarget,
     projectRoot,
+    autoId,
+    name,
   });
 
   if (!result.success) {
@@ -85,6 +113,11 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     throw new Error(result.error);
   }
 
+  // Update resolvedId from result in case auto-id retry changed it
+  const finalId = autoId
+    ? path.basename(result.incrementPath)
+    : resolvedId;
+
   // Auto-initialize interview state when deep interview is enabled.
   // The interview-enforcement-guard blocks spec.md writes until all categories
   // are covered. Without this, the guard fires "Interview Required" because
@@ -92,7 +125,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   // other would create it.
   if (deepInterviewConfig?.enabled) {
     try {
-      const created = initInterviewStateFile(projectRoot, id);
+      const created = initInterviewStateFile(projectRoot, finalId);
       if (created && !json && deepInterviewConfig.enforcement === 'strict') {
         const categories = deepInterviewConfig.categories ||
           ['architecture', 'integrations', 'ui-ux', 'performance', 'security', 'edge-cases'];
@@ -109,7 +142,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
 
   // Await post-increment-planning hooks to ensure GitHub/JIRA/ADO sync completes
   try {
-    await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, id);
+    await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, finalId);
   } catch (error: any) {
     // Log but don't fail increment creation
     console.error(chalk.yellow(`⚠️  Post-planning sync warning: ${error.message}`));
@@ -123,7 +156,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
       nextSteps: result.nextSteps,
     }));
   } else {
-    console.log(chalk.green(`\nIncrement created: ${id}`));
+    console.log(chalk.green(`\nIncrement created: ${finalId}`));
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
     console.log(chalk.blue('\nNext steps:'));

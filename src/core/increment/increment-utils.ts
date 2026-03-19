@@ -51,6 +51,25 @@ export type LifecycleFolder = typeof RECOGNIZED_LIFECYCLE_FOLDERS[number];
  */
 export class IncrementNumberManager {
   /**
+   * Derive directories to scan from RECOGNIZED_LIFECYCLE_FOLDERS.
+   * Single source of truth — all scan methods use this.
+   *
+   * @param incrementsDir - Path to .specweave/increments directory
+   * @returns Array of { path, label } for active dir + all lifecycle folders
+   * @private
+   * @since 1.0.400
+   */
+  private static getDirsToScan(incrementsDir: string): Array<{ path: string; label: string }> {
+    return [
+      { path: incrementsDir, label: 'active' },
+      ...RECOGNIZED_LIFECYCLE_FOLDERS.map(folder => ({
+        path: path.join(incrementsDir, folder),
+        label: folder,
+      })),
+    ];
+  }
+
+  /**
    * Get the next available increment number across all directories.
    *
    * GAP-FILLING STRATEGY (v0.33.1+):
@@ -170,20 +189,12 @@ export class IncrementNumberManager {
     // Normalize to 4-digit string
     const normalizedNumber = String(incrementNumber).padStart(4, '0');
 
-    // Directories to check
-    const dirsToCheck = [
-      incrementsDir,
-      path.join(incrementsDir, '_archive'),
-      path.join(incrementsDir, '_abandoned'),
-      path.join(incrementsDir, '_paused')
-    ];
-
-    // Check each directory
-    for (const dir of dirsToCheck) {
-      if (!fs.existsSync(dir)) continue;
+    // Use getDirsToScan() for single source of truth
+    for (const { path: dirPath } of this.getDirsToScan(incrementsDir)) {
+      if (!fs.existsSync(dirPath)) continue;
 
       try {
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
@@ -263,16 +274,8 @@ export class IncrementNumberManager {
   private static getAllIncrementNumbers(incrementsDir: string): Set<number> {
     const numbers = new Set<number>();
 
-    // Directories to scan
-    const dirsToScan = [
-      incrementsDir,
-      path.join(incrementsDir, '_archive'),
-      path.join(incrementsDir, '_abandoned'),
-      path.join(incrementsDir, '_paused')
-    ];
-
-    // Scan each directory
-    for (const dirPath of dirsToScan) {
+    // Use getDirsToScan() for single source of truth
+    for (const { path: dirPath } of this.getDirsToScan(incrementsDir)) {
       if (!fs.existsSync(dirPath)) continue;
 
       try {
@@ -349,13 +352,8 @@ export class IncrementNumberManager {
     let scannedDirs = 0;
     let totalIncrements = 0;
 
-    // Directories to scan
-    const dirsToScan = [
-      { path: incrementsDir, label: 'main' },
-      { path: path.join(incrementsDir, '_archive'), label: '_archive' },
-      { path: path.join(incrementsDir, '_abandoned'), label: '_abandoned' },
-      { path: path.join(incrementsDir, '_paused'), label: '_paused' }
-    ];
+    // Use getDirsToScan() for single source of truth
+    const dirsToScan = this.getDirsToScan(incrementsDir);
 
     // Scan each directory
     for (const { path: dirPath, label } of dirsToScan) {
@@ -710,14 +708,8 @@ export class IncrementNumberManager {
     const normalizedNumber = String(incrementNumber).padStart(4, '0');
     const duplicates: string[] = [];
 
-    const dirsToCheck = [
-      { path: incrementsDir, label: 'active' },
-      { path: path.join(incrementsDir, '_archive'), label: '_archive' },
-      { path: path.join(incrementsDir, '_abandoned'), label: '_abandoned' },
-      { path: path.join(incrementsDir, '_paused'), label: '_paused' }
-    ];
-
-    for (const { path: dirPath, label } of dirsToCheck) {
+    // Use getDirsToScan() for single source of truth
+    for (const { path: dirPath, label } of this.getDirsToScan(incrementsDir)) {
       if (!fs.existsSync(dirPath)) continue;
 
       try {
@@ -740,6 +732,60 @@ export class IncrementNumberManager {
     }
 
     return duplicates;
+  }
+
+  /**
+   * Find existing increments with the same name suffix in active and _backlog dirs.
+   *
+   * Only scans active (main) and _backlog directories — archived and abandoned
+   * increments are excluded since reusing their names is acceptable.
+   *
+   * @param nameSuffix - The kebab-case name to search for (e.g., "user-auth")
+   * @param projectRoot - Project root directory (defaults to process.cwd())
+   * @returns Array of matching increment folder names (e.g., ["0010-user-auth"])
+   *
+   * @example
+   * ```typescript
+   * const dupes = IncrementNumberManager.findNameDuplicates('user-auth');
+   * // ["0010-user-auth"] if active increment exists with that name
+   * ```
+   *
+   * @since 1.0.400
+   */
+  static findNameDuplicates(
+    nameSuffix: string,
+    projectRoot: string = process.cwd()
+  ): string[] {
+    const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
+    const matches: string[] = [];
+
+    // Only scan active and _backlog — not _archive/_abandoned
+    const dirsToCheck = [
+      incrementsDir,
+      path.join(incrementsDir, '_backlog'),
+    ];
+
+    for (const dirPath of dirsToCheck) {
+      if (!fs.existsSync(dirPath)) continue;
+
+      try {
+        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+
+          // Extract name suffix after NNNN[GJAE]?-
+          const match = entry.name.match(/^\d{3,4}[GJAE]?-(.+)$/);
+          if (match && match[1] === nameSuffix) {
+            matches.push(entry.name);
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return matches;
   }
 
   /**
