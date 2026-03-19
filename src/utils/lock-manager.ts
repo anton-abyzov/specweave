@@ -10,8 +10,13 @@ import * as path from 'path';
 import { Logger, consoleLogger } from './logger.js';
 
 /**
- * Check if locks should be disabled (VSCode or CI context)
- * Inline implementation after environment-detection.ts removal
+ * Check if locks should be disabled
+ *
+ * VSCode detection was removed intentionally: VSCode is where multi-session
+ * concurrency is most common (multiple terminals, Claude Code instances).
+ * Skipping locks there defeats the purpose of locking.
+ *
+ * Only CI environments skip locks (single-threaded, no concurrent sessions).
  */
 function shouldSkipLocks(): boolean {
   // Explicit disable always wins
@@ -24,20 +29,14 @@ function shouldSkipLocks(): boolean {
     return false;
   }
 
-  // Auto-detect VSCode or CI
-  const isVSCode = !!(
-    process.env.VSCODE_PID ||
-    process.env.TERM_PROGRAM === 'vscode' ||
-    process.env.VSCODE_IPC_HOOK
-  );
-
+  // Only skip in CI environments (single-threaded, no concurrent sessions)
   const isCI = !!(
     process.env.CI === 'true' ||
     process.env.GITHUB_ACTIONS === 'true' ||
     process.env.GITLAB_CI === 'true'
   );
 
-  return isVSCode || isCI;
+  return isCI;
 }
 
 const DEFAULT_STALE_THRESHOLD_SECONDS = 300; // 5 minutes
@@ -61,7 +60,7 @@ export class LockManager {
     this.skipLocks = shouldSkipLocks();
 
     if (this.skipLocks) {
-      this.logger.debug('Lock manager disabled (VSCode/CI context)');
+      this.logger.debug('Lock manager disabled (CI context)');
     }
   }
 
@@ -71,7 +70,7 @@ export class LockManager {
    * @returns true if lock acquired, false if failed
    */
   async acquire(): Promise<boolean> {
-    // Skip locking in VSCode/CI
+    // Skip locking in CI
     if (this.skipLocks) {
       return true;
     }
@@ -124,7 +123,7 @@ export class LockManager {
    * Releases the lock
    */
   async release(): Promise<void> {
-    // Skip locking in VSCode/CI
+    // Skip locking in CI
     if (this.skipLocks) {
       return;
     }

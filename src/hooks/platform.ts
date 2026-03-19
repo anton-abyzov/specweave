@@ -270,84 +270,8 @@ export function appendLog(logPath: string, message: string): void {
   }
 }
 
-/**
- * Cross-platform file locking using directory creation
- *
- * mkdir is atomic on all platforms (Windows, macOS, Linux)
- */
-export class FileLock {
-  private lockDir: string;
-  private pidFile: string;
-  private acquired = false;
-
-  constructor(lockPath: string) {
-    this.lockDir = lockPath + '.lock.d';
-    this.pidFile = path.join(this.lockDir, 'pid');
-  }
-
-  /**
-   * Try to acquire lock
-   *
-   * @param staleLockSeconds - Consider lock stale after this many seconds
-   * @returns true if lock acquired, false if held by another process
-   */
-  acquire(staleLockSeconds = 300): boolean {
-    try {
-      // Try atomic mkdir
-      fs.mkdirSync(this.lockDir);
-      fs.writeFileSync(this.pidFile, String(process.pid), 'utf-8');
-      this.acquired = true;
-      return true;
-    } catch (err: any) {
-      if (err.code !== 'EEXIST') {
-        return false;
-      }
-
-      // Lock exists - check if stale
-      try {
-        const lockPid = parseInt(fs.readFileSync(this.pidFile, 'utf-8').trim(), 10);
-
-        // Check if process is still running
-        if (!isNaN(lockPid)) {
-          try {
-            process.kill(lockPid, 0); // Signal 0 just checks existence
-            return false; // Process is running, lock is valid
-          } catch {
-            // Process not running, check age
-          }
-        }
-
-        // Check lock age
-        const stat = fs.statSync(this.pidFile);
-        const ageSeconds = (Date.now() - stat.mtimeMs) / 1000;
-
-        if (ageSeconds > staleLockSeconds) {
-          // Stale lock - remove and retry
-          fs.rmSync(this.lockDir, { recursive: true, force: true });
-          return this.acquire(staleLockSeconds);
-        }
-
-        return false;
-      } catch {
-        return false;
-      }
-    }
-  }
-
-  /**
-   * Release the lock
-   */
-  release(): void {
-    if (this.acquired) {
-      try {
-        fs.rmSync(this.lockDir, { recursive: true, force: true });
-      } catch {
-        // Ignore cleanup errors
-      }
-      this.acquired = false;
-    }
-  }
-}
+// Re-export FileLock from canonical location for backward compatibility
+export { FileLock } from '../utils/file-lock.js';
 
 /**
  * Hook result interface (matches Claude Code hook protocol)

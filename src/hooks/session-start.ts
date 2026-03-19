@@ -20,7 +20,7 @@ import {
   findProjectRoot,
   spawnNodeBackground,
   outputHookResult,
-  consumeStdin,
+  parseHookInput,
   appendLog,
 } from './platform.js';
 import { cleanOrphanedStateFiles } from '../utils/state-cleanup.js';
@@ -55,7 +55,7 @@ async function main(): Promise<void> {
   }
 
   // Consume stdin (required by hook protocol)
-  await consumeStdin();
+  const hookInput = await parseHookInput();
 
   const logFile = path.join(projectRoot, '.specweave', 'logs', 'session-start.log');
 
@@ -64,6 +64,23 @@ async function main(): Promise<void> {
   const cleaned = cleanOrphanedStateFiles(stateDir);
   if (cleaned > 0) {
     appendLog(logFile, `Cleaned ${cleaned} orphaned state files`);
+  }
+
+  // v0.608: Per-session state isolation
+  if (hookInput.session_id) {
+    try {
+      const { createSessionDir, bridgeSessionId, gcDeadSessions } = await import('../core/session/session-state-manager.js');
+      createSessionDir(hookInput.session_id, projectRoot);
+      if (hookInput.env_file) {
+        bridgeSessionId(hookInput.session_id, hookInput.env_file);
+      }
+      const gcCleaned = gcDeadSessions(projectRoot);
+      if (gcCleaned > 0) {
+        appendLog(logFile, `GC: removed ${gcCleaned} dead session(s)`);
+      }
+    } catch (err) {
+      appendLog(logFile, `Session state setup failed: ${err}`);
+    }
   }
 
   // v1.0.583: Clean up stale plugin references from settings on every session start.
