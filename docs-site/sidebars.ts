@@ -49,6 +49,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/core-concepts/who-benefits-from-living-docs', label: 'Who Benefits from Living Docs?'},
         {type: 'doc', id: 'guides/core-concepts/skills-first-architecture', label: 'Skills-First Architecture'},
         {type: 'doc', id: 'guides/core-concepts/background-jobs', label: 'Background Jobs'},
+        {type: 'doc', id: 'guides/core-concepts/deterministic-llm-hybrid', label: 'Deterministic Config + LLM Execution'},
       ],
     },
     {
