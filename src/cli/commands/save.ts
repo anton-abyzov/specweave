@@ -122,7 +122,7 @@ export async function executeSave(options: SaveOptions = {}): Promise<void> {
       return;
     }
 
-    logger.log(`Mode: ${repos.length === 1 ? 'Single repository' : `Umbrella (${repos.length} child repos)`}\n`);
+    logger.log(`Mode: Workspace (${repos.length} ${repos.length === 1 ? 'repository' : 'repositories'})\n`);
 
     if (dryRun) {
       logger.log('🔍 DRY RUN MODE - No changes will be made\n');

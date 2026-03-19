@@ -9,25 +9,21 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import {
   getArchitecturePrompt,
-  getParentRepoBenefits,
-  getRepoCountClarification,
   getVisibilityPrompt,
-  formatArchitectureChoice,
 } from '../../../src/core/repo-structure/prompt-consolidator.js';
 
 describe('getArchitecturePrompt', () => {
-  it('should return question with 2 architecture options (GitHub-only)', () => {
+  it('should return question with 1 architecture option (github-parent only)', () => {
     // Given: No input
     // When: getArchitecturePrompt is called
     const result = getArchitecturePrompt();
 
-    // Then: Returns question + 2 options (single, github-parent)
+    // Then: Returns question + 1 option (github-parent)
     expect(result.question).toBeDefined();
     expect(result.question).toContain('architecture');
-    expect(result.options).toHaveLength(2);
+    expect(result.options).toHaveLength(1);
 
     const values = result.options.map((c: any) => c.value);
-    expect(values).toContain('single');
     expect(values).toContain('github-parent');
   });
 
@@ -43,66 +39,6 @@ describe('getArchitecturePrompt', () => {
       expect(choice.label).toBeDefined();
       expect(choice.value).toBeDefined();
     });
-  });
-});
-
-describe('getParentRepoBenefits', () => {
-  it('should return markdown with multi-repository setup explanation', () => {
-    // Given: No input
-    // When: getParentRepoBenefits is called
-    const result = getParentRepoBenefits();
-
-    // Then: Returns markdown explaining multi-repository setup
-    // Note: v1.0.13 deprecated parent repo concept - all repos are equal now
-    expect(result).toBeDefined();
-    expect(typeof result).toBe('string');
-    expect(result).toContain('Multi-Repository Setup');
-    expect(result).toContain('GitHub repo');
-    expect(result.length).toBeGreaterThan(50);
-  });
-});
-
-describe('getRepoCountClarification', () => {
-  it('should show total with parent + implementation repositories', () => {
-    // Given: parentCount=1, implCount=2
-    const parentCount = 1;
-    const implCount = 2;
-
-    // When: getRepoCountClarification is called
-    const result = getRepoCountClarification(parentCount, implCount);
-
-    // Then: Returns total count with parent + implementation breakdown
-    expect(result).toContain('3');
-    expect(result).toContain('1 parent');
-    expect(result).toContain('2 implementation');
-    expect(result).toContain('repositories'); // plural
-  });
-
-  it('should use singular "repository" when implCount=1', () => {
-    // Given: parentCount=1, implCount=1
-    const parentCount = 1;
-    const implCount = 1;
-
-    // When: getRepoCountClarification is called
-    const result = getRepoCountClarification(parentCount, implCount);
-
-    // Then: Returns singular "repository" for single implementation repo
-    expect(result).toContain('2');
-    expect(result).toContain('1 parent');
-    expect(result).toContain('1 implementation repository');
-  });
-
-  it('should handle no parent repository case', () => {
-    // Given: parentCount=0, implCount=3
-    const parentCount = 0;
-    const implCount = 3;
-
-    // When: getRepoCountClarification is called
-    const result = getRepoCountClarification(parentCount, implCount);
-
-    // Then: Returns total count without parent mention
-    expect(result).toContain('3');
-    expect(result).toContain('repositories');
   });
 });
 
@@ -136,30 +72,3 @@ describe('getVisibilityPrompt', () => {
   });
 });
 
-describe('formatArchitectureChoice', () => {
-  it('should format each ArchitectureChoice to human-readable string', () => {
-    // Given: Each ArchitectureChoice value (2 options)
-    const choices = ['single', 'github-parent'];
-
-    // When: formatArchitectureChoice is called for each
-    choices.forEach(choice => {
-      const result = formatArchitectureChoice(choice as any);
-
-      // Then: Returns human-readable string
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(5);
-    });
-  });
-
-  it('should return original choice as string for unknown choice', () => {
-    // Given: unknown choice
-    const unknownChoice = 'unknown-architecture' as any;
-
-    // When: formatArchitectureChoice is called
-    const result = formatArchitectureChoice(unknownChoice);
-
-    // Then: Returns original choice as string
-    expect(result).toBe('unknown-architecture');
-  });
-});

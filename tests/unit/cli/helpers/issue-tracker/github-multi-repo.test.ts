@@ -124,7 +124,6 @@ vi.mock('../../../../../src/core/repo-structure/repo-structure-manager.js', () =
 import {
   promptGitHubSetupType,
   configureNoRepository,
-  configureSingleRepository,
   configureMultipleRepositories,
   configureMonorepo,
   autoDetectRepositories,
@@ -167,12 +166,12 @@ describe('github-multi-repo', () => {
     describe('recursion depth guard (Issue #5)', () => {
       it('should return single setup when max recursion depth reached', async () => {
         const result = await promptGitHubSetupType(undefined, undefined, undefined, 3);
-        expect(result).toEqual({ setupType: 'single' });
+        expect(result).toEqual({ setupType: 'multiple' });
       });
 
       it('should return single setup when recursion depth exceeds max', async () => {
         const result = await promptGitHubSetupType(undefined, undefined, undefined, 5);
-        expect(result).toEqual({ setupType: 'single' });
+        expect(result).toEqual({ setupType: 'multiple' });
       });
 
       it('should NOT trigger guard at depth 0', async () => {
@@ -229,16 +228,16 @@ describe('github-multi-repo', () => {
         // No projectPath/token -> skip RepoStructureManager
         // repositoryHosting set but preSelectedArchitecture is undefined -> skip direct return
         // Falls to legacy select prompt
-        mockSelect.mockResolvedValueOnce('single');
+        mockSelect.mockResolvedValueOnce('multiple');
         const result = await promptGitHubSetupType(undefined, undefined, 'bitbucket');
-        expect(result).toEqual({ setupType: 'single' });
+        expect(result).toEqual({ setupType: 'multiple' });
       });
     });
 
     describe('RepoStructureManager integration', () => {
       it('should handle repositories needing creation on GitHub', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'new-repo', owner: 'org', description: 'New', createOnGitHub: true },
           ],
@@ -251,12 +250,12 @@ describe('github-multi-repo', () => {
 
         const result = await promptGitHubSetupType('/project', 'ghp_token');
         expect(mockCreateRepositories).toHaveBeenCalledWith(config);
-        expect(result.setupType).toBe('single');
+        expect(result.setupType).toBe('multiple');
       });
 
       it('should continue when repository creation fails (non-fatal)', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'new-repo', owner: 'org', description: 'New', createOnGitHub: true },
           ],
@@ -268,7 +267,7 @@ describe('github-multi-repo', () => {
         mockCreateSpecWeaveStructure.mockResolvedValueOnce(undefined);
 
         const result = await promptGitHubSetupType('/project', 'ghp_token');
-        expect(result.setupType).toBe('single');
+        expect(result.setupType).toBe('multiple');
         expect(result.profiles).toHaveLength(1);
       });
 
@@ -346,7 +345,7 @@ describe('github-multi-repo', () => {
 
       it('should handle createSpecWeaveStructure failure gracefully (non-fatal)', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'repo', owner: 'org', description: 'Repo', createOnGitHub: false },
           ],
@@ -358,7 +357,7 @@ describe('github-multi-repo', () => {
 
         const result = await promptGitHubSetupType('/project', 'ghp_token');
         // Should still succeed - createSpecWeaveStructure failure is non-fatal
-        expect(result.setupType).toBe('single');
+        expect(result.setupType).toBe('multiple');
         expect(result.profiles).toHaveLength(1);
       });
 
@@ -508,89 +507,6 @@ describe('github-multi-repo', () => {
     it('should log deferred message', async () => {
       await configureNoRepository();
       expect(console.log).toHaveBeenCalled();
-    });
-  });
-
-  // =============================================================
-  // configureSingleRepository
-  // =============================================================
-  describe('configureSingleRepository', () => {
-    it('should use detected remote when user confirms', async () => {
-      mockDetectPrimaryGitHubRemote.mockResolvedValueOnce({
-        name: 'origin',
-        url: 'git@github.com:myorg/my-app.git',
-        owner: 'myorg',
-        repo: 'my-app',
-        provider: 'github',
-      });
-      mockConfirm.mockResolvedValueOnce(true);
-
-      const result = await configureSingleRepository('/project');
-      expect(result).toEqual([{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: 'myorg',
-        repo: 'my-app',
-        isDefault: true,
-      }]);
-    });
-
-    it('should fall back to manual entry when user rejects detected remote', async () => {
-      mockDetectPrimaryGitHubRemote.mockResolvedValueOnce({
-        name: 'origin',
-        url: 'https://github.com/detected/repo.git',
-        owner: 'detected',
-        repo: 'repo',
-        provider: 'github',
-      });
-      mockConfirm.mockResolvedValueOnce(false);
-      mockInput.mockResolvedValueOnce('custom-org');
-      mockInput.mockResolvedValueOnce('custom-repo');
-
-      const result = await configureSingleRepository('/project');
-      expect(result).toEqual([{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: 'custom-org',
-        repo: 'custom-repo',
-        isDefault: true,
-      }]);
-    });
-
-    it('should prompt manual entry when no remote detected', async () => {
-      mockDetectPrimaryGitHubRemote.mockResolvedValueOnce(null);
-      mockInput.mockResolvedValueOnce('my-org');
-      mockInput.mockResolvedValueOnce('my-repo');
-
-      const result = await configureSingleRepository('/project');
-      expect(result).toEqual([{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: 'my-org',
-        repo: 'my-repo',
-        isDefault: true,
-      }]);
-    });
-
-    it('should prompt manual entry when remote has no owner/repo', async () => {
-      mockDetectPrimaryGitHubRemote.mockResolvedValueOnce({
-        name: 'origin',
-        url: 'https://example.com/unknown',
-        owner: undefined,
-        repo: undefined,
-        provider: 'unknown',
-      });
-      mockInput.mockResolvedValueOnce('entered-org');
-      mockInput.mockResolvedValueOnce('entered-repo');
-
-      const result = await configureSingleRepository('/project');
-      expect(result).toEqual([{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: 'entered-org',
-        repo: 'entered-repo',
-        isDefault: true,
-      }]);
     });
   });
 
@@ -775,23 +691,25 @@ describe('github-multi-repo', () => {
       expect(result[1].isDefault).toBe(false);
     });
 
-    it('should fall back to configureSingleRepository when no repos detected', async () => {
+    it('should fall back to configureMultipleRepositories when no repos detected', async () => {
       mockDetectGitHubRemotes.mockResolvedValueOnce([]);
       mockGetUniqueRepositories.mockReturnValueOnce([]);
-      // configureSingleRepository: no detected remote -> manual entry
-      mockDetectPrimaryGitHubRemote.mockResolvedValueOnce(null);
+      // configureMultipleRepositories: set up mocks for the fallback
+      mockDetectGitHubRemotes.mockResolvedValueOnce([]);
+      mockGetUniqueRepositories.mockReturnValueOnce([]);
+      mockNumber.mockResolvedValueOnce(2);
+      mockInput.mockResolvedValueOnce('fallback');
+      mockInput.mockResolvedValueOnce('Fallback');
       mockInput.mockResolvedValueOnce('fallback-org');
       mockInput.mockResolvedValueOnce('fallback-repo');
+      mockInput.mockResolvedValueOnce('fallback2');
+      mockInput.mockResolvedValueOnce('Fallback2');
+      mockInput.mockResolvedValueOnce('fallback-org');
+      mockInput.mockResolvedValueOnce('fallback-repo2');
 
       const result = await autoDetectRepositories('/project');
       expect(mockOraFail).toHaveBeenCalled();
-      expect(result).toEqual([{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: 'fallback-org',
-        repo: 'fallback-repo',
-        isDefault: true,
-      }]);
+      expect(result).toHaveLength(2);
     });
 
     it('should redirect to setup type prompt when user rejects detected repos', async () => {
@@ -808,32 +726,6 @@ describe('github-multi-repo', () => {
 
       const result = await autoDetectRepositories('/project');
       expect(result).toEqual([]);
-    });
-
-    it('should redirect to single repo when user rejects and picks single', async () => {
-      mockDetectGitHubRemotes.mockResolvedValueOnce([
-        { name: 'origin', owner: 'org', repo: 'app' },
-      ]);
-      mockGetUniqueRepositories.mockReturnValueOnce([
-        { owner: 'org', repo: 'app' },
-      ]);
-      mockConfirm.mockResolvedValueOnce(false);
-
-      // promptGitHubSetupType -> select 'single'
-      mockSelect.mockResolvedValueOnce('single');
-      // configureSingleRepository
-      mockDetectPrimaryGitHubRemote.mockResolvedValueOnce(null);
-      mockInput.mockResolvedValueOnce('manual-org');
-      mockInput.mockResolvedValueOnce('manual-repo');
-
-      const result = await autoDetectRepositories('/project');
-      expect(result).toEqual([{
-        id: 'main',
-        displayName: 'Main Repository',
-        owner: 'manual-org',
-        repo: 'manual-repo',
-        isDefault: true,
-      }]);
     });
 
     it('should redirect to multiple repos when user rejects and picks multiple', async () => {
@@ -876,7 +768,7 @@ describe('github-multi-repo', () => {
 
       // promptGitHubSetupType -> select 'monorepo'
       mockSelect.mockResolvedValueOnce('monorepo');
-      // configureMonorepo -> configureSingleRepository
+      // configureMonorepo -> inline repo config
       mockDetectPrimaryGitHubRemote.mockResolvedValueOnce(null);
       mockInput.mockResolvedValueOnce('org');
       mockInput.mockResolvedValueOnce('mono');
@@ -889,21 +781,23 @@ describe('github-multi-repo', () => {
     });
 
     describe('recursion depth guard (Issue #5)', () => {
-      it('should fall back to configureSingleRepository at max recursion depth', async () => {
-        // At depth 3, should not call detectGitHubRemotes
-        mockDetectPrimaryGitHubRemote.mockResolvedValueOnce(null);
+      it('should fall back to configureMultipleRepositories at max recursion depth', async () => {
+        // At depth 3, should not call detectGitHubRemotes for auto-detect
+        // but configureMultipleRepositories will call it
+        mockDetectGitHubRemotes.mockResolvedValueOnce([]);
+        mockGetUniqueRepositories.mockReturnValueOnce([]);
+        mockNumber.mockResolvedValueOnce(2);
+        mockInput.mockResolvedValueOnce('safe');
+        mockInput.mockResolvedValueOnce('Safe');
         mockInput.mockResolvedValueOnce('safe-org');
         mockInput.mockResolvedValueOnce('safe-repo');
+        mockInput.mockResolvedValueOnce('safe2');
+        mockInput.mockResolvedValueOnce('Safe2');
+        mockInput.mockResolvedValueOnce('safe-org');
+        mockInput.mockResolvedValueOnce('safe-repo2');
 
         const result = await autoDetectRepositories('/project', 3);
-        expect(mockDetectGitHubRemotes).not.toHaveBeenCalled();
-        expect(result).toEqual([{
-          id: 'main',
-          displayName: 'Main Repository',
-          owner: 'safe-org',
-          repo: 'safe-repo',
-          isDefault: true,
-        }]);
+        expect(result).toHaveLength(2);
       });
 
       it('should work at depth 0 (default)', async () => {
@@ -926,8 +820,8 @@ describe('github-multi-repo', () => {
   // =============================================================
   describe('type exports', () => {
     it('should export GitHubSetupType values', () => {
-      const types: GitHubSetupType[] = ['none', 'single', 'multiple', 'monorepo', 'auto-detect'];
-      expect(types).toHaveLength(5);
+      const types: GitHubSetupType[] = ['none', 'multiple', 'monorepo', 'auto-detect'];
+      expect(types).toHaveLength(4);
     });
 
     it('should export GitHubProfile interface shape', () => {
@@ -945,7 +839,7 @@ describe('github-multi-repo', () => {
       const config: GitHubConfiguration = {
         token: 'tok',
         instanceType: 'cloud',
-        setupType: 'single',
+        setupType: 'multiple',
         profiles: [],
       };
       expect(config.instanceType).toBe('cloud');

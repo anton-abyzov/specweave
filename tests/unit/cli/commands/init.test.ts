@@ -168,7 +168,7 @@ const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
 }));
 
 const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace } = vi.hoisted(() => ({
-  mockPromptProjectSetup: vi.fn().mockResolvedValue('existing' as const),
+  mockPromptProjectSetup: vi.fn().mockResolvedValue('add-later' as const),
   mockPromptRepoUrls: vi.fn().mockResolvedValue([]),
   mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));
@@ -225,7 +225,7 @@ vi.mock('../../../../src/utils/logger.js', () => ({
 vi.mock('@inquirer/prompts', () => ({
   input: mockInput,
   confirm: mockConfirm,
-  select: vi.fn().mockResolvedValue('existing'),
+  select: vi.fn().mockResolvedValue('add-later'),
 }));
 
 vi.mock('chalk', () => {
@@ -1280,12 +1280,8 @@ describe('init command', () => {
       );
     });
 
-    it('should copy plugins folder for non-Claude adapters', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        // Only match the source plugins directory, not target paths
-        if (typeof p === 'string' && p.includes('plugins') && p.includes('package-root')) return true;
-        return false;
-      });
+    it('should skip plugin compilation for non-Claude adapters that do not support plugins', async () => {
+      mockExistsSync.mockReturnValue(false);
       const mockAdapter = {
         install: vi.fn(),
         postInstall: vi.fn(),
@@ -1296,7 +1292,7 @@ describe('init command', () => {
 
       await initCommand('copy-test', { adapter: 'generic', quick: true });
 
-      expect(mockCopySync).toHaveBeenCalled();
+      expect(mockAdapter.compilePlugin).not.toHaveBeenCalled();
     });
   });
 
@@ -1422,7 +1418,7 @@ describe('init command', () => {
         expect.objectContaining({
           pluginAutoInstalled: true,
         }),
-        expect.objectContaining({ isUmbrella: false })
+        expect.objectContaining({ misplacedRepos: [] })
       );
     });
 
@@ -1438,7 +1434,7 @@ describe('init command', () => {
         'en',
         true, // usedDotNotation
         expect.anything(),
-        expect.objectContaining({ isUmbrella: false })
+        expect.objectContaining({ misplacedRepos: [] })
       );
     });
 
@@ -1460,7 +1456,7 @@ describe('init command', () => {
         'en',
         false,
         undefined,
-        expect.objectContaining({ isUmbrella: false })
+        expect.objectContaining({ misplacedRepos: [] })
       );
     });
   });

@@ -1127,7 +1127,7 @@ describe('configureGitHubRepositories', () => {
 
   it('should return fallback single profile when promptGitHubSetupType returns no profiles', async () => {
     mockPromptGitHubSetupType.mockResolvedValue({
-      setupType: 'single',
+      setupType: 'multiple',
     });
 
     const result = await configureGitHubRepositories(
@@ -1171,16 +1171,6 @@ describe('configureGitHubRepositories', () => {
 
     expect(mockConfigureNoRepository).toHaveBeenCalled();
     expect(result.profiles).toEqual([{ id: 'none' }]);
-  });
-
-  it('should handle legacy flow with setupType "single"', async () => {
-    mockPromptGitHubSetupType.mockResolvedValue({ setupType: 'single' });
-    mockConfigureSingleRepository.mockResolvedValue([{ id: '1', owner: 'o', repo: 'r' }]);
-
-    const result = await configureGitHubRepositories('/project', 'en');
-
-    expect(mockConfigureSingleRepository).toHaveBeenCalledWith('/project');
-    expect(result.profiles).toHaveLength(1);
   });
 
   it('should handle legacy flow with setupType "multiple"', async () => {
