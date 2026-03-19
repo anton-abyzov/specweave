@@ -256,7 +256,7 @@ ${this.generateIntegrationSkillsTable(skills)}
   private getSkillActivation(skillName: string): string {
     const activations: Record<string, string> = {
       'specweave-detector': 'User asks about SpecWeave',
-      'increment': '/sw:increment or feature planning',
+      'increment': 'sw:increment or feature planning',
       'context-loader': 'Working on increments',
       'skill-router': 'Ambiguous requests',
       'spec-driven-debugging': 'Bug or test failure',

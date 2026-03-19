@@ -192,7 +192,7 @@ describe('T-008: Integration tests — full pipeline with fixtures', () => {
       // Suggestion should have been printed
       expect(consoleSpy).toHaveBeenCalled();
       const logCalls = consoleSpy.mock.calls.map(c => String(c[0]));
-      const suggestionMsg = logCalls.find(m => m.includes('/sw:skill-gen'));
+      const suggestionMsg = logCalls.find(m => m.includes('sw:skill-gen'));
       expect(suggestionMsg).toBeDefined();
     });
 
@@ -298,7 +298,7 @@ describe('T-008: Integration tests — full pipeline with fixtures', () => {
       await writeFile(join(docsDir, 'overview.md'), await readFile(join(TS_FIXTURE, 'overview.md'), 'utf-8'));
       await collector.collect('inc-001');
       await engine.evaluate();
-      const logAfter1 = consoleSpy.mock.calls.filter(c => String(c[0]).includes('/sw:skill-gen'));
+      const logAfter1 = consoleSpy.mock.calls.filter(c => String(c[0]).includes('sw:skill-gen'));
       expect(logAfter1).toHaveLength(0);
 
       // Increment 2 — add 2nd doc, uniqueSourceFiles=2, confidence=0.67 (still below)
@@ -306,7 +306,7 @@ describe('T-008: Integration tests — full pipeline with fixtures', () => {
       await collector.collect('inc-002');
       consoleSpy.mockClear();
       await engine.evaluate();
-      const logAfter2 = consoleSpy.mock.calls.filter(c => String(c[0]).includes('/sw:skill-gen'));
+      const logAfter2 = consoleSpy.mock.calls.filter(c => String(c[0]).includes('sw:skill-gen'));
       expect(logAfter2).toHaveLength(0);
 
       // Increment 3 — add 3rd doc, uniqueSourceFiles=3, confidence=1.0 (qualifies!)
@@ -314,7 +314,7 @@ describe('T-008: Integration tests — full pipeline with fixtures', () => {
       await collector.collect('inc-003');
       consoleSpy.mockClear();
       await engine.evaluate();
-      const logAfter3 = consoleSpy.mock.calls.filter(c => String(c[0]).includes('/sw:skill-gen'));
+      const logAfter3 = consoleSpy.mock.calls.filter(c => String(c[0]).includes('sw:skill-gen'));
       expect(logAfter3).toHaveLength(1);
 
       // Verify the store is valid JSON matching Zod schema

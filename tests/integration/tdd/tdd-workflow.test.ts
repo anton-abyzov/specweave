@@ -105,7 +105,7 @@ describe('TDD Workflow Integration', () => {
     });
   });
 
-  describe('/sw:do TDD Awareness', () => {
+  describe('sw:do TDD Awareness', () => {
     it('should have TDD mode check in do skill', () => {
       // do.md command moved to skills/do/SKILL.md
       const doPath = path.join(process.cwd(), 'plugins/specweave/skills/do/SKILL.md');

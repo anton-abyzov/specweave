@@ -20,7 +20,7 @@ Welcome to the SpecWeave Learning Journey — a comprehensive educational path t
 - Practical workflow mastery with hands-on exercises
 
 **Navigation System:**
-Throughout this journey, use `:next` to advance to the next lesson. This mirrors SpecWeave's `/sw:next` command — your constant companion in real-world development.
+Throughout this journey, use `:next` to advance to the next lesson. This mirrors SpecWeave's `sw:next` command — your constant companion in real-world development.
 
 ```
 :next → Proceed to next lesson
@@ -653,19 +653,19 @@ planning → in-progress → completed
 
 | Command | Transition | Purpose |
 |---------|------------|---------|
-| `/sw:increment "feature"` | → planning | Create new |
-| `/sw:do` | planning → in-progress | Start work |
-| `/sw:pause 0001` | in-progress → paused | Temporary stop |
-| `/sw:resume 0001` | paused → in-progress | Continue |
-| `/sw:status 0001` | any → backlog | Defer |
-| `/sw:done 0001` | in-progress → completed | Finish |
-| `/sw:abandon 0001` | any → abandoned | Cancel |
-| `/sw:archive 0001` | completed → archived | Clean up |
+| `sw:increment "feature"` | → planning | Create new |
+| `sw:do` | planning → in-progress | Start work |
+| `sw:pause 0001` | in-progress → paused | Temporary stop |
+| `sw:resume 0001` | paused → in-progress | Continue |
+| `sw:status 0001` | any → backlog | Defer |
+| `sw:done 0001` | in-progress → completed | Finish |
+| `sw:abandon 0001` | any → abandoned | Cancel |
+| `sw:archive 0001` | completed → archived | Clean up |
 
-**The Magic of `/sw:next`:**
+**The Magic of `sw:next`:**
 
 ```
-/sw:next
+sw:next
 
 What it does:
 1. Finds active increment
@@ -681,18 +681,18 @@ One command. Full workflow.
 
 ```bash
 # Day 1: Start feature
-/sw:increment "Add dark mode"
+sw:increment "Add dark mode"
   → Creates 0001-dark-mode/
   → Generates spec.md, plan.md, tasks.md
 
 # Day 2-4: Implementation
-/sw:do
+sw:do
   → Executes tasks T-001 through T-008
   → Updates status automatically
   → Hooks update living docs
 
 # Day 5: Completion
-/sw:next
+sw:next
   → Validates: ✓ Tasks ✓ Tests ✓ Docs
   → Closes 0001
   → Runs QA assessment
@@ -761,7 +761,7 @@ complete         60%+ coverage    Living docs
 **What Happens on Failure:**
 
 ```
-/sw:done 0001
+sw:done 0001
 
 ❌ Gate 1: 2 P1 tasks incomplete
 ✅ Gate 2: All tests passing
@@ -910,7 +910,7 @@ export ADO_ORGANIZATION=your-org
 
 <CommandTabs
   natural="I want to create user registration"
-  claude='/sw:increment "Add user registration"'
+  claude='sw:increment "Add user registration"'
   other='increment "Add user registration"'
 />
 
@@ -985,7 +985,7 @@ export ADO_ORGANIZATION=your-org
 
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -1018,7 +1018,7 @@ export ADO_ORGANIZATION=your-org
 **Monitoring Progress:**
 
 ```bash
-/sw:progress
+sw:progress
 
 0001-user-registration [████████░░░░] 67%
 ├── T-001 ✓ AuthService
@@ -1032,7 +1032,7 @@ export ADO_ORGANIZATION=your-org
 
 ---
 
-### Lesson 4.4: The `/sw:next` Command
+### Lesson 4.4: The `sw:next` Command
 
 **The Central Workflow Command**
 
@@ -1040,7 +1040,7 @@ When you're done working (or think you are):
 
 <CommandTabs
   natural="What's next?"
-  claude="/sw:next"
+  claude="sw:next"
   other="next"
 />
 
@@ -1076,7 +1076,7 @@ Found 1 planned increment:
   → Password reset flow
   → Dependencies: 0001 (✅ complete)
 
-Next Action: Run `/sw:do 0002` to begin
+Next Action: Run `sw:do 0002` to begin
 ```
 
 **Scenario 2: Gates Fail**
@@ -1112,7 +1112,7 @@ Current WIP: 0/2 (slots available)
 🎯 Next Work Suggestions
 
 Options:
-1. Create new: /sw:increment "feature"
+1. Create new: sw:increment "feature"
 2. Check backlog: .specweave/increments/_backlog/
 3. Review roadmap: .specweave/docs/internal/roadmap.md
 ```
@@ -1138,7 +1138,7 @@ Status    ────────────────→ Issue state
 **GitHub Sync:**
 
 ```bash
-/sw-github:sync 0001
+sw-github:sync 0001
 
 Syncing 0001-user-registration to GitHub...
   ✓ Issue #42 created
@@ -1150,7 +1150,7 @@ Syncing 0001-user-registration to GitHub...
 **JIRA Sync:**
 
 ```bash
-/sw-jira:sync 0001
+sw-jira:sync 0001
 
 Syncing to JIRA...
   ✓ Epic PROJ-123 created
@@ -1162,7 +1162,7 @@ Syncing to JIRA...
 **Sync Progress Command:**
 
 ```bash
-/sw:sync-progress
+sw:sync-progress
 
 Syncing to all configured tools...
   ✓ tasks.md → Living docs
@@ -1182,9 +1182,9 @@ Syncing to all configured tools...
 
 | Agent | Role | When Invoked |
 |-------|------|--------------|
-| **PM Agent** | User stories, ACs, requirements | `/sw:increment` |
+| **PM Agent** | User stories, ACs, requirements | `sw:increment` |
 | **Architect Agent** | System design, ADRs | During planning |
-| **Tech Lead Agent** | Implementation, code review | `/sw:do` |
+| **Tech Lead Agent** | Implementation, code review | `sw:do` |
 | **QA Lead Agent** | Test strategy, coverage | Test creation |
 | **Security Agent** | Threat modeling, OWASP | Security reviews |
 | **DevOps Agent** | IaC, pipelines, deployment | Infrastructure |
@@ -1217,13 +1217,13 @@ Completed Feature
 
 ```bash
 # Security review
-/sw:qa 0001
+sw:qa 0001
 
 # TDD workflow
-/sw:tdd-cycle
+sw:tdd-cycle
 
 # Architecture planning
-/sw:plan 0001
+sw:plan 0001
 ```
 
 > **:next** → *Lesson 5.2: TDD Workflow*
@@ -1235,25 +1235,25 @@ Completed Feature
 **Red-Green-Refactor with SpecWeave:**
 
 ```
-/sw:tdd-cycle
+sw:tdd-cycle
 
 Phase 1: RED (Write Failing Tests)
   ↓
-/sw:tdd-red
+sw:tdd-red
   → Writes comprehensive failing tests
   → Tests define expected behavior
   → All tests RED (failing)
 
 Phase 2: GREEN (Make Tests Pass)
   ↓
-/sw:tdd-green
+sw:tdd-green
   → Implements minimal code
   → Focus on making tests pass
   → All tests GREEN (passing)
 
 Phase 3: REFACTOR (Improve Code)
   ↓
-/sw:tdd-refactor
+sw:tdd-refactor
   → Improves code quality
   → Applies design patterns
   → Tests remain GREEN
@@ -1292,7 +1292,7 @@ SpecWeave isn't just for new projects. Import existing documentation:
 specweave init .
 
 # Import issues from external tools
-/sw:import
+sw:import
 ```
 
 **Auto-Classification:**
@@ -1312,7 +1312,7 @@ Classified:
 For code without specs, create retroactive documentation:
 
 ```bash
-/sw:increment "Document authentication system"
+sw:increment "Document authentication system"
 
 # AI analyzes existing code
 # Creates spec.md describing current behavior
@@ -1351,7 +1351,7 @@ With SpecWeave:
 
 2. **Selective Context Loading**
    ```bash
-   /sw:docs authentication
+   sw:docs authentication
 
    Searching living docs...
    Found 3 relevant files:
@@ -1520,11 +1520,11 @@ Knowledge persists
 Week 1: Fundamentals
   → Install SpecWeave
   → Create first increment
-  → Complete with /sw:next
+  → Complete with sw:next
   → Experience full cycle
 
 Week 2: Workflow Mastery
-  → Use /sw:do for automation
+  → Use sw:do for automation
   → Understand quality gates
   → Practice TDD workflow
   → Explore living docs
@@ -1589,7 +1589,7 @@ You've completed the SpecWeave Learning Journey. You now understand:
 ✅ **Practical Workflow**
 - Installation and setup
 - Creating increments
-- The power of `/sw:next`
+- The power of `sw:next`
 - External tool sync
 
 ✅ **Advanced Topics**
@@ -1604,14 +1604,14 @@ You've completed the SpecWeave Learning Journey. You now understand:
 npm install -g specweave
 cd your-project
 specweave init .
-/sw:increment "Your first feature"
+sw:increment "Your first feature"
 ```
 
 **Then just keep using:**
 
 <CommandTabs
   natural="What's next?"
-  claude="/sw:next"
+  claude="sw:next"
   other="next"
 />
 
@@ -1627,28 +1627,28 @@ It will guide you through the entire cycle.
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  START WORK                                             │
-│  /sw:increment "feature" → Create increment      │
-│  /sw:do                  → Execute tasks         │
+│  sw:increment "feature" → Create increment      │
+│  sw:do                  → Execute tasks         │
 │                                                         │
 │  FLOW CONTROL                                           │
-│  /sw:next     → Smart transition (THE KEY!)      │
-│  /sw:progress → Check status                     │
-│  /sw:done ID  → Manual close                     │
+│  sw:next     → Smart transition (THE KEY!)      │
+│  sw:progress → Check status                     │
+│  sw:done ID  → Manual close                     │
 │                                                         │
 │  QUALITY                                                │
-│  /sw:validate ID → Run checks                    │
-│  /sw:qa ID       → Quality assessment            │
-│  /sw:tdd-cycle   → TDD workflow                  │
+│  sw:validate ID → Run checks                    │
+│  sw:qa ID       → Quality assessment            │
+│  sw:tdd-cycle   → TDD workflow                  │
 │                                                         │
 │  SYNC                                                   │
-│  /sw:sync-progress → Sync all systems            │
-│  /sw:sync-docs     → Sync living docs            │
+│  sw:sync-progress → Sync all systems            │
+│  sw:sync-docs     → Sync living docs            │
 │                                                         │
 │  LIFECYCLE                                              │
-│  /sw:pause ID   → Pause work                     │
-│  /sw:resume ID  → Resume work                    │
-│  /sw:status ID → Move to backlog                │
-│  /sw:abandon ID → Cancel increment               │
+│  sw:pause ID   → Pause work                     │
+│  sw:resume ID  → Resume work                    │
+│  sw:status ID → Move to backlog                │
+│  sw:abandon ID → Cancel increment               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```

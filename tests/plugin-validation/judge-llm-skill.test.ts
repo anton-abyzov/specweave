@@ -13,7 +13,7 @@ const pluginsDir = join(projectRoot, 'plugins', 'specweave');
  *
  * Ensures judge-llm exists as an invocable skill (not just a command),
  * follows the correct frontmatter conventions, and is integrated into
- * the /sw:done closure flow alongside grill.
+ * the sw:done closure flow alongside grill.
  */
 
 // ─────────────────────────────────────────────────────────────────────
@@ -62,9 +62,9 @@ describe('Judge LLM: skill registration', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// Part 2: judge-llm integrated into /sw:done closure flow
+// Part 2: judge-llm integrated into sw:done closure flow
 // ─────────────────────────────────────────────────────────────────────
-describe('Judge LLM: integration in /sw:done', () => {
+describe('Judge LLM: integration in sw:done', () => {
   const donePath = join(pluginsDir, 'skills', 'done', 'SKILL.md');
 
   it('should reference judge-llm in the done skill', () => {
@@ -83,9 +83,9 @@ describe('Judge LLM: integration in /sw:done', () => {
     expect(step3JudgeIndex).toBeGreaterThan(step2GrillIndex);
   });
 
-  it('should invoke judge-llm via Skill tool or /sw:judge-llm', () => {
+  it('should invoke judge-llm via Skill tool or sw:judge-llm', () => {
     const content = readFileSync(donePath, 'utf-8');
-    expect(content).toMatch(/\/sw:judge-llm|Skill\(.*judge-llm/i);
+    expect(content).toMatch(/sw:judge-llm|Skill\(.*judge-llm/i);
   });
 
   it('should block closure on REJECTED verdict from judge-llm', () => {

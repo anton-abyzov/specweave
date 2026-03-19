@@ -175,11 +175,11 @@ graph LR
 
 ## Progress Tracking
 
-Track progress by saying "what's the status?", using `/sw:progress` in Claude Code, or typing `progress` in other AI tools.
+Track progress by saying "what's the status?", using `sw:progress` in Claude Code, or typing `progress` in other AI tools.
 
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 

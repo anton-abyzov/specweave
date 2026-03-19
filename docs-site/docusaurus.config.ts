@@ -347,6 +347,11 @@ const config: Config = {
             from: '/docs/academy/videos/005-opencode-web-calculator',
             to: '/docs/academy/videos/opencode-web-calculator',
           },
+          // Plugin Ecosystem → Skills & Capabilities rename
+          {
+            from: '/docs/overview/plugins-ecosystem',
+            to: '/docs/overview/skills-and-capabilities',
+          },
         ],
       },
     ],

@@ -213,7 +213,7 @@ iTerm2 / tmux split panes:
 
 `/sw:team-lead "feature"` splits work → each agent runs `/sw:auto` → quality gates ensure consistency → progress syncs to GitHub/JIRA.
 
-**[Full agent teams guide](https://verified-skill.com/docs/guides/agent-teams-and-swarms)**
+**[Full agent teams guide](https://spec-weave.com/docs/guides/agent-teams-and-swarms)**
 
 ---
 
@@ -227,7 +227,7 @@ SpecWeave is built for the reality of enterprise development.
 - **External sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time. Local-first, works offline.
 - **Multi-environment** — dev, QA, staging, UAT, production deployment pipelines.
 
-**[Enterprise documentation](https://verified-skill.com/docs/enterprise)**
+**[Enterprise documentation](https://spec-weave.com/docs/enterprise)**
 
 ---
 
@@ -257,7 +257,7 @@ specweave lsp def src/cli/commands/init.ts init   # Go to definition
 specweave lsp hover src/core/config.ts Config     # Type information
 ```
 
-**[LSP documentation](https://verified-skill.com/docs/guides/lsp-code-intelligence)**
+**[LSP documentation](https://spec-weave.com/docs/guides/lsp-code-intelligence)**
 
 ---
 
@@ -291,9 +291,9 @@ Claude: *automatically uses React Hook Form + Zod*
 /sw:reflect-status   # See what Claude has learned
 ```
 
-**[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-structured-expertise)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://verified-skill.com/docs/skills/extensible/skill-generation)**
+**[Skills deep dive](https://spec-weave.com/docs/overview/skills-as-structured-expertise)** | **[Skill development guidelines](https://spec-weave.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://spec-weave.com/docs/skills/extensible/skill-generation)**
 
-**AI-Powered Skill Generation:** SpecWeave automatically detects recurring patterns across your project's living docs using LLM analysis -- not hardcoded keyword matching. When patterns mature, it suggests generating project-specific Claude Code skills complete with evals and benchmarks. Use `--seed` mode to bootstrap instantly on existing projects. [Learn more](https://verified-skill.com/docs/skills/extensible/skill-generation).
+**AI-Powered Skill Generation:** SpecWeave automatically detects recurring patterns across your project's living docs using LLM analysis -- not hardcoded keyword matching. When patterns mature, it suggests generating project-specific Claude Code skills complete with evals and benchmarks. Use `--seed` mode to bootstrap instantly on existing projects. [Learn more](https://spec-weave.com/docs/skills/extensible/skill-generation).
 
 ---
 
@@ -318,7 +318,7 @@ You: "Add dark mode to the app"
 → SpecWeave creates spec, plans architecture, builds it autonomously.
 ```
 
-> **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://verified-skill.com/docs/guides/troubleshooting/common-errors#node-version-error).
+> **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
 
 **Plugin Installation**: SpecWeave detects which plugins your project needs and suggests them with install commands, but never auto-installs without your consent. To opt into automatic installation, set `"pluginAutoLoad": { "suggestOnly": false }` in `.specweave/config.json`.
 
@@ -338,7 +338,7 @@ These run automatically from natural language — see the table above. Use direc
 | `/sw:progress-sync` | Push to GitHub / JIRA / ADO | "Sync progress" |
 | `/sw:next` | Auto-close + suggest next | "What's next?" |
 
-**[Full command reference](https://verified-skill.com/docs/commands/overview)**
+**[Full command reference](https://spec-weave.com/docs/commands/overview)**
 
 ---
 
@@ -398,7 +398,7 @@ specweave dashboard
 
 All analytics data stays local in `.specweave/state/analytics/events.jsonl` — nothing is sent externally.
 
-**[Analytics dashboard guide](https://verified-skill.com/docs/guides/analytics-dashboard)**
+**[Analytics dashboard guide](https://spec-weave.com/docs/guides/analytics-dashboard)**
 
 ---
 

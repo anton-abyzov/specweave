@@ -29,7 +29,7 @@ Tell SpecWeave what you want to build. You can describe it naturally, or use the
 
 <CommandTabs
   natural="I want to add a dark mode toggle"
-  claude='/sw:increment "Add dark mode toggle"'
+  claude='sw:increment "Add dark mode toggle"'
   other='increment "Add dark mode toggle"'
 />
 
@@ -116,7 +116,7 @@ Start implementing the tasks. Just say "start implementing" or use the command:
 
 <CommandTabs
   natural="Start implementing the tasks"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -157,7 +157,7 @@ Ask for the status, or use the progress command:
 
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 
@@ -181,7 +181,7 @@ Tell SpecWeave you're done, and it will validate and close:
 
 <CommandTabs
   natural="We're done, finish up"
-  claude="/sw:next"
+  claude="sw:next"
   other="next"
 />
 
@@ -286,11 +286,11 @@ You just completed a full cycle:
 
 | Step | Natural Language | Slash Command | What Happened |
 |------|-----------------|---------------|---------------|
-| 1 | "I want to add a dark mode toggle" | `/sw:increment` | Created spec, plan, tasks |
+| 1 | "I want to add a dark mode toggle" | `sw:increment` | Created spec, plan, tasks |
 | 2 | *(Review specs)* | | Verified requirements |
-| 3 | "Start implementing" | `/sw:do` | Implemented all tasks |
-| 4 | "What's the status?" | `/sw:progress` | Checked status |
-| 5 | "We're done" | `/sw:next` | Validated and closed |
+| 3 | "Start implementing" | `sw:do` | Implemented all tasks |
+| 4 | "What's the status?" | `sw:progress` | Checked status |
+| 5 | "We're done" | `sw:next` | Validated and closed |
 
 **Total time**: ~30 minutes
 **Result**: Working feature + full documentation + tests
@@ -312,9 +312,9 @@ Choose a simple feature for your project:
 "Let's build a back to top button"
 
 # Option B: Slash commands
-/sw:increment "Your feature here"
-/sw:do
-/sw:next
+sw:increment "Your feature here"
+sw:do
+sw:next
 ```
 
 ---
@@ -353,10 +353,10 @@ npm test -- --verbose
 
 ## Key Takeaways
 
-1. **Describe what you want** -- say "I want to add X" or use `/sw:increment`
+1. **Describe what you want** -- say "I want to add X" or use `sw:increment`
 2. **Review** before implementing
-3. **Execute** -- say "start implementing" or use `/sw:do`
-4. **Close** -- say "we're done" or use `/sw:next` (validates quality gates)
+3. **Execute** -- say "start implementing" or use `sw:do`
+4. **Close** -- say "we're done" or use `sw:next` (validates quality gates)
 5. **Everything documented** automatically
 
 ---

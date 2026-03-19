@@ -1,5 +1,5 @@
 /**
- * Integration tests for /sw:plan command
+ * Integration tests for sw:plan command
  *
  * Tests the complete pipeline:
  * Increment detection → Validation → Agent invocation → File generation → Metadata update

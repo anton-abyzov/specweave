@@ -213,7 +213,7 @@ You can temporarily disable for a session:
 
 <CommandTabs
   natural="I want to add a quick fix for login, skip the interview"
-  claude='/sw:increment --skip-interview "Quick fix for login"'
+  claude='sw:increment --skip-interview "Quick fix for login"'
   other='increment --skip-interview "Quick fix for login"'
 />
 
@@ -221,7 +221,7 @@ Or enable for a specific prompt:
 
 <CommandTabs
   natural="Let's build a complex payment integration, do the full interview"
-  claude='/sw:increment --deep-interview "Complex payment integration"'
+  claude='sw:increment --deep-interview "Complex payment integration"'
   other='increment --deep-interview "Complex payment integration"'
 />
 
@@ -229,9 +229,9 @@ Or enable for a specific prompt:
 
 | Command | Description |
 |---------|-------------|
-| `/sw:increment` | Creates increment (triggers interview if enabled) |
-| `/sw:pm` | PM skill with interview capabilities |
-| `/sw:architect` | Architect skill for technical questions |
+| `sw:increment` | Creates increment (triggers interview if enabled) |
+| `sw:pm` | PM skill with interview capabilities |
+| `sw:architect` | Architect skill for technical questions |
 
 ## Troubleshooting
 

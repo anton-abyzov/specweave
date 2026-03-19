@@ -14,7 +14,7 @@ Auto mode enables continuous autonomous execution until all tasks are complete. 
 
 <CommandTabs
   natural='Ship while I sleep'
-  claude='/sw:auto'
+  claude='sw:auto'
   other='auto'
 />
 
@@ -73,43 +73,43 @@ prompt
 
 <CommandTabs
   natural='Run autonomously'
-  claude='/sw:auto 0001-user-auth'
+  claude='sw:auto 0001-user-auth'
   other='auto 0001-user-auth'
 />
 
 Additional variations:
 ```bash
 # Multiple increments
-/sw:auto 0001 0002 0003
+sw:auto 0001 0002 0003
 ```
 
 ### With Options
 
 ```bash
 # Limit iterations
-/sw:auto --max-iterations 50
+sw:auto --max-iterations 50
 
 # Time limit
-/sw:auto --max-hours 8
+sw:auto --max-hours 8
 
 # Simple mode (minimal context)
-/sw:auto --simple
+sw:auto --simple
 
 # Preview only
-/sw:auto --dry-run
+sw:auto --dry-run
 
 # All backlog items
-/sw:auto --all-backlog
+sw:auto --all-backlog
 ```
 
 ### Pre-approve Gates
 
 ```bash
 # Skip deploy gate (pre-approved)
-/sw:auto --skip-gates deploy
+sw:auto --skip-gates deploy
 
 # Multiple gates
-/sw:auto --skip-gates "deploy,migrate"
+sw:auto --skip-gates "deploy,migrate"
 ```
 
 ---
@@ -122,7 +122,7 @@ You can say "check auto status" or use the command:
 
 <CommandTabs
   natural='How&apos;s auto going?'
-  claude='/sw:auto-status'
+  claude='sw:auto-status'
   other='auto-status'
 />
 
@@ -134,7 +134,7 @@ You can say "stop auto" or use the command:
 
 <CommandTabs
   natural='Cancel autonomous'
-  claude='/sw:cancel-auto'
+  claude='sw:cancel-auto'
   other='cancel-auto'
 />
 
@@ -142,7 +142,7 @@ You can say "stop auto" or use the command:
 
 ### Resume After Crash
 
-Just say "continue working" or type `/sw:do` -- it will detect incomplete tasks and continue.
+Just say "continue working" or type `sw:do` -- it will detect incomplete tasks and continue.
 
 Or use Claude Code's built-in:
 ```bash
@@ -185,7 +185,7 @@ The session ends when ANY of these occur:
 | **Completion promise** | Output contains `<!-- auto-complete:DONE -->` (hidden HTML comment) |
 | **Max iterations** | Reached configured limit (default: 100) |
 | **Max hours** | Time limit exceeded |
-| **User cancellation** | User cancels the session (or types `/sw:cancel-auto` in Claude Code) |
+| **User cancellation** | User cancels the session (or types `sw:cancel-auto` in Claude Code) |
 | **Human gate timeout** | Gate pending too long |
 | **Low confidence score** | Self-assessment score < 0.50 |
 
@@ -200,7 +200,7 @@ Pure stop hook loop behavior:
 - Just: loop + tasks.md completion + max iterations
 
 ```bash
-/sw:auto --simple
+sw:auto --simple
 ```
 
 ---
@@ -367,10 +367,10 @@ done
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Check auto status" | `/sw:auto-status` | `auto-status` | Check session status |
-| "Stop auto" | `/sw:cancel-auto` | `cancel-auto` | Cancel running session |
-| "Start implementing" | `/sw:do` | `do` | Execute tasks (also works standalone) |
-| "What's the status?" | `/sw:progress` | `progress` | Show increment progress |
+| "Check auto status" | `sw:auto-status` | `auto-status` | Check session status |
+| "Stop auto" | `sw:cancel-auto` | `cancel-auto` | Cancel running session |
+| "Start implementing" | `sw:do` | `do` | Execute tasks (also works standalone) |
+| "What's the status?" | `sw:progress` | `progress` | Show increment progress |
 
 ---
 

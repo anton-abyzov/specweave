@@ -4,7 +4,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 **Version**: 1.0.365+
 
-`/sw:brainstorm` is a structured ideation skill that explores problems from multiple perspectives before you commit to an implementation path. It uses established cognitive frameworks (Six Thinking Hats, SCAMPER, TRIZ) to expand the solution space beyond the "obvious" answer.
+`sw:brainstorm` is a structured ideation skill that explores problems from multiple perspectives before you commit to an implementation path. It uses established cognitive frameworks (Six Thinking Hats, SCAMPER, TRIZ) to expand the solution space beyond the "obvious" answer.
 
 ## Why This Exists
 
@@ -28,32 +28,32 @@ graph LR
     style F fill:#fff3e0
 ```
 
-Without brainstorming, the path from "idea" to "spec" is a straight line — and that's where most bad architectural decisions get locked in. `/sw:brainstorm` adds a structured exploration phase that saves hours of rework later.
+Without brainstorming, the path from "idea" to "spec" is a straight line — and that's where most bad architectural decisions get locked in. `sw:brainstorm` adds a structured exploration phase that saves hours of rework later.
 
 ## Quick Start
 
 <CommandTabs
   natural="Let's brainstorm how to handle real-time notifications"
-  claude='/sw:brainstorm "how should we handle real-time notifications"'
+  claude='sw:brainstorm "how should we handle real-time notifications"'
   other='brainstorm "how should we handle real-time notifications"'
 />
 
 Additional options (works in Claude Code and other AI tools):
 ```bash
 # Quick mode (~2 min): 3 approaches, fast comparison
-/sw:brainstorm "JWT vs OAuth vs Passkeys" --depth quick
+sw:brainstorm "JWT vs OAuth vs Passkeys" --depth quick
 
 # Deep mode (~15 min): multiple cognitive lenses, full analysis
-/sw:brainstorm "microservices vs monolith for our SaaS" --depth deep
+sw:brainstorm "microservices vs monolith for our SaaS" --depth deep
 
 # Specific lens
-/sw:brainstorm "payment gateway architecture" --lens six-hats
+sw:brainstorm "payment gateway architecture" --lens six-hats
 
 # Resume a previous session
-/sw:brainstorm "payment gateway" --resume
+sw:brainstorm "payment gateway" --resume
 
 # Custom evaluation criteria
-/sw:brainstorm "marketing strategy" --criteria "brand-fit,audience-reach,cost,differentiation"
+sw:brainstorm "marketing strategy" --criteria "brand-fit,audience-reach,cost,differentiation"
 ```
 
 ## The 5-Phase Flow
@@ -117,7 +117,7 @@ Goes beyond comparison into structural analysis:
 
 Saves a persistent brainstorm document to `.specweave/docs/brainstorms/YYYY-MM-DD-topic.md` and offers handoff:
 
-1. **Turn into increment** — passes brainstorm context (problem frame, selected approach, risks, constraints) to `/sw:increment` so the PM agent has a head start
+1. **Turn into increment** — passes brainstorm context (problem frame, selected approach, risks, constraints) to `sw:increment` so the PM agent has a head start
 2. **Go deeper** — re-run with different lenses or deeper mode
 3. **Park for later** — the document and idea tree persist for revisiting
 
@@ -207,13 +207,13 @@ Brainstorms are persistent. Every session saves a state file and document that y
 
 <CommandTabs
   natural="Let's brainstorm notification architecture"
-  claude='/sw:brainstorm "notification architecture"'
+  claude='sw:brainstorm "notification architecture"'
   other='brainstorm "notification architecture"'
 />
 
 Then come back later and go deeper:
 ```bash
-/sw:brainstorm "notification architecture" --resume --depth deep --lens triz
+sw:brainstorm "notification architecture" --resume --depth deep --lens triz
 ```
 
 Resume mode:
@@ -228,13 +228,13 @@ The default criteria (Complexity, Time, Risk, Extensibility, Alignment) work for
 
 ```bash
 # Marketing brainstorm
-/sw:brainstorm "launch strategy" --criteria "brand-fit,audience-reach,cost,differentiation"
+sw:brainstorm "launch strategy" --criteria "brand-fit,audience-reach,cost,differentiation"
 
 # Database selection
-/sw:brainstorm "database choice" --criteria "read-perf,write-perf,ops-complexity,cost,ecosystem"
+sw:brainstorm "database choice" --criteria "read-perf,write-perf,ops-complexity,cost,ecosystem"
 
 # Business decision
-/sw:brainstorm "pricing model" --criteria "revenue-impact,customer-retention,implementation-effort,competitive-position"
+sw:brainstorm "pricing model" --criteria "revenue-impact,customer-retention,implementation-effort,competitive-position"
 ```
 
 **Preset auto-detection**: If you don't specify `--criteria`, the skill detects context and picks appropriate criteria:
@@ -252,7 +252,7 @@ The default criteria (Complexity, Time, Risk, Extensibility, Alignment) work for
 
 <CommandTabs
   natural="Brainstorm authentication approaches for our B2B SaaS — go deep with Six Thinking Hats"
-  claude='/sw:brainstorm "authentication for our B2B SaaS" --depth deep --lens six-hats'
+  claude='sw:brainstorm "authentication for our B2B SaaS" --depth deep --lens six-hats'
   other='brainstorm "authentication for our B2B SaaS" --depth deep --lens six-hats'
 />
 
@@ -270,7 +270,7 @@ The default criteria (Complexity, Time, Risk, Extensibility, Alignment) work for
 ### Example 2: Payment Flow Optimization
 
 ```bash
-/sw:brainstorm "our checkout flow has 40% drop-off" --lens scamper
+sw:brainstorm "our checkout flow has 40% drop-off" --lens scamper
 ```
 
 **SCAMPER produces**:
@@ -283,7 +283,7 @@ The default criteria (Complexity, Time, Risk, Extensibility, Alignment) work for
 ### Example 3: New Product Ideation
 
 ```bash
-/sw:brainstorm "developer productivity tool for code review" --depth deep --lens adjacent
+sw:brainstorm "developer productivity tool for code review" --depth deep --lens adjacent
 ```
 
 **Adjacent Possible** uses web search to find:

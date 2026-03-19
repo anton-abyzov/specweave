@@ -37,8 +37,8 @@ SpecWeave implements a **Universal Hierarchy** that maps consistently across all
 **Key Insight**: GitHub Epics = Milestones, NOT Issue Type "Epic"!
 
 **Sync Approach**:
-- Epic/Feature/User Story syncing happens **automatically** via living docs sync (triggered by `/sw:done`)
-- Increments sync to GitHub issues via `/sw-github:sync` (manual or automatic via hooks)
+- Epic/Feature/User Story syncing happens **automatically** via living docs sync (triggered by `sw:done`)
+- Increments sync to GitHub issues via `sw-github:sync` (manual or automatic via hooks)
 
 ### JIRA
 
@@ -117,7 +117,7 @@ type: epic  # ← Internal SpecWeave type
 
 **Use Case**: Universal sync for all external tools (GitHub, JIRA, ADO)
 
-**Trigger**: Automatically when running `/sw:done` after completing an increment
+**Trigger**: Automatically when running `sw:done` after completing an increment
 
 **How It Works**:
 1. SpecWeave analyzes the increment's spec.md

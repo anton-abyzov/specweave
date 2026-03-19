@@ -348,8 +348,8 @@ export async function createIncrementTemplates(
     const nextSteps = externalSource
       ? [
           `Imported from ${externalSource.platform}: ${externalSource.externalUrl}`,
-          `Review and refine spec: /sw:do ${incrementId}`,
-          `Start working: /sw:auto ${incrementId}`,
+          `Review and refine spec: sw:do ${incrementId}`,
+          `Start working: sw:auto ${incrementId}`,
         ]
       : [
           `Complete product specification: Tell Claude "Complete the spec for increment ${incrementId}"`,
@@ -668,7 +668,7 @@ This will activate the Architect skill which will:
  * IMPORTANT: TDD is an EXECUTION practice, NOT a planning practice.
  * Tasks.md templates are ALWAYS standard format during planning.
  * TDD discipline (RED-GREEN-REFACTOR) is enforced during task execution
- * via /sw:tdd-cycle, /sw:tdd-red, /sw:tdd-green, /sw:tdd-refactor commands.
+ * via sw:tdd-cycle, sw:tdd-red, sw:tdd-green, sw:tdd-refactor commands.
  *
  * The testMode setting in config.json determines execution behavior, not template format.
  */
@@ -679,7 +679,7 @@ function generateTasksTemplate(options: {
   const { title } = options;
 
   // ALWAYS use standard templates during planning
-  // TDD is enforced at EXECUTION time via /sw:tdd-* commands
+  // TDD is enforced at EXECUTION time via sw:tdd-* commands
   return generateStandardTasksTemplate(title);
 }
 
@@ -688,7 +688,7 @@ function generateTasksTemplate(options: {
  *
  * NOTE: TDD-specific task generation was removed from planning phase.
  * TDD discipline (RED-GREEN-REFACTOR triplets) is applied at EXECUTION time
- * via the /sw:tdd-cycle, /sw:tdd-red, /sw:tdd-green, /sw:tdd-refactor commands.
+ * via the sw:tdd-cycle, sw:tdd-red, sw:tdd-green, sw:tdd-refactor commands.
  * See plugins/specweave/commands/tdd-*.md for TDD execution workflow.
  */
 function generateStandardTasksTemplate(title: string): string {

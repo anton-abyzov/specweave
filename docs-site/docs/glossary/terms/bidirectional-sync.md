@@ -245,14 +245,14 @@ Sync to living docs:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs"
+  claude="sw:sync-docs"
   other="sync-docs"
 />
 
 Sync to GitHub:
 
 ```bash
-/sw-github:sync 0031
+sw-github:sync 0031
 ```
 
 #### Direction 2: GitHub → Living Docs → Increment
@@ -284,7 +284,7 @@ Sync to GitHub:
 
 **Automatic Flow**:
 1. Stakeholder checks GitHub checkbox
-2. GitHub webhook fires (or manual `/sw-github:sync`)
+2. GitHub webhook fires (or manual `sw-github:sync`)
 3. Living Docs User Story Implementation updates
 4. Increment tasks.md updates (source of truth)
 
@@ -350,7 +350,7 @@ Resolution:
 ```bash
 # Task marked complete but code missing
 # Say "check quality" or use the command:
-/sw:validate 0031
+sw:validate 0031
 
 # Validation finds: T-001 marked [x] but no code
 # → Reopen in increment: [ ] T-001
@@ -477,7 +477,7 @@ graph LR
 **Example**:
 ```bash
 # Manual sync command
-/sw-github:sync-from 0008
+sw-github:sync-from 0008
 
 # Result:
 # → Pull from GitHub: Issue status, task checkboxes, comments
@@ -538,7 +538,7 @@ sequenceDiagram
     participant External as GitHub Issue
 
     Note over Dev,External: Phase 1: Increment Planning
-    Dev->>Local: /sw:increment "user auth"
+    Dev->>Local: sw:increment "user auth"
     Local->>Local: Generate spec.md, plan.md, tasks.md
     Local->>External: Create GitHub issue #30
     External->>Local: Return issue URL
@@ -552,7 +552,7 @@ sequenceDiagram
     Hook->>Local: Update tasks.md, metadata.json
 
     Note over Dev,External: Phase 3: Completion
-    Dev->>Local: /sw:done 0008
+    Dev->>Local: sw:done 0008
     Local->>External: Close GitHub issue #30
     External->>Local: Confirm closure
     Local->>Local: Archive increment
@@ -560,11 +560,11 @@ sequenceDiagram
 
 ### Step-by-Step Example
 
-**1. Create Increment** (`/sw:increment`):
+**1. Create Increment** (`sw:increment`):
 
 <CommandTabs
   natural="Let's add user authentication"
-  claude='/sw:increment "Add user authentication"'
+  claude='sw:increment "Add user authentication"'
   other='increment "Add user authentication"'
 />
 
@@ -628,11 +628,11 @@ sequenceDiagram
 #    status: done
 ```
 
-**4. Close Increment** (`/sw:done`):
+**4. Close Increment** (`sw:done`):
 
 <CommandTabs
   natural="We're done with increment 0008"
-  claude="/sw:done 0008"
+  claude="sw:done 0008"
   other="done 0008"
 />
 
@@ -751,7 +751,7 @@ Bidirectional sync happens **automatically** via hooks:
 
 ### Post-Increment-Done Hook
 
-**When**: After `/sw:done` completes
+**When**: After `sw:done` completes
 
 **Location**: `plugins/specweave/hooks/post-increment-done.sh`
 
@@ -763,7 +763,7 @@ Bidirectional sync happens **automatically** via hooks:
 
 **Example**:
 ```bash
-/sw:done 0008
+sw:done 0008
 
 # Hook fires automatically:
 # ✅ Living docs final sync
@@ -785,7 +785,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Create GitHub issue for increment
-/sw-github:create-issue 0008
+sw-github:create-issue 0008
 
 # Output:
 # 🚀 Creating GitHub issue for 0008-user-authentication...
@@ -798,7 +798,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Sync increment to external tracker
-/sw-github:sync 0008
+sw-github:sync 0008
 
 # Prompts:
 # 1. Select profile (default: specweave-dev)
@@ -815,7 +815,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Pull changes from external tracker (no push)
-/sw-github:sync-from 0008
+sw-github:sync-from 0008
 
 # Output:
 # 📥 Pulling from GitHub issue #30...
@@ -830,7 +830,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Close external issue
-/sw-github:close-issue 0008
+sw-github:close-issue 0008
 
 # Output:
 # 🔒 Closing GitHub issue #30...
@@ -842,7 +842,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Check sync status for increment
-/sw-github:status 0008
+sw-github:status 0008
 
 # Output:
 # 📊 Sync Status: 0008-user-authentication
@@ -1127,7 +1127,7 @@ The old "bidirectional sync" was a binary flag that controlled all sync operatio
 **1. canUpsertInternalItems** (UPSERT = CREATE + UPDATE)
 - **Controls**: Creating and updating SpecWeave-originated work items
 - **Flow**: Increment progress → Living specs → CREATE/UPDATE external tool
-- **Example**: Creating GitHub issue when running `/sw:increment`, then updating it as tasks complete
+- **Example**: Creating GitHub issue when running `sw:increment`, then updating it as tasks complete
 - **Default**: `false` (explicit opt-in required)
 
 **2. canUpdateExternalItems** (Full Content Updates)
@@ -1253,8 +1253,8 @@ specweave init .
 - **Action**: Update `.specweave/config.json` or run `specweave init .`
 
 **2. Command Behavior**
-- Old: `/sw-github:sync` did everything based on `syncDirection`
-- New: `/sw-github:sync` respects three permission flags
+- Old: `sw-github:sync` did everything based on `syncDirection`
+- New: `sw-github:sync` respects three permission flags
 - **Action**: Review your sync workflows and adjust permissions
 
 **3. Hook Behavior**
@@ -1302,8 +1302,8 @@ specweave init .
 - Conflict resolution built-in
 
 **Manual Commands**:
-- `/sw-github:sync` - Bidirectional sync
-- `/sw-github:sync-from` - Import only
-- `/sw-github:status` - Check sync status
+- `sw-github:sync` - Bidirectional sync
+- `sw-github:sync-from` - Import only
+- `sw-github:status` - Check sync status
 
 **Result**: Work in either system, changes flow automatically, always in sync.

@@ -2521,7 +2521,7 @@ After infrastructure deployment, SpecWeave updates architecture docs:
 
 <CommandTabs
   natural="Update the living docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 

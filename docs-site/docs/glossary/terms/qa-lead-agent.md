@@ -89,7 +89,7 @@ Recommendations:
 
 <CommandTabs
   natural="Quality check on increment 0001"
-  claude="/sw:qa 0001 --gate"
+  claude="sw:qa 0001 --gate"
   other="qa 0001 --gate"
 />
 

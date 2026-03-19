@@ -1,7 +1,7 @@
 /**
- * Integration Test: /sw:jobs Hook Interception
+ * Integration Test: sw:jobs Hook Interception
  *
- * Tests that the UserPromptSubmit hook intercepts /sw:jobs and returns
+ * Tests that the UserPromptSubmit hook intercepts sw:jobs and returns
  * job status output via additionalContext (not systemMessage).
  *
  * @since 1.0.258
@@ -17,7 +17,7 @@ import { findProjectRoot } from '../../test-utils/project-root.js';
 
 const projectRoot = findProjectRoot(import.meta.url);
 
-describe('/sw:jobs Hook Interception', () => {
+describe('sw:jobs Hook Interception', () => {
   const hookPath = path.join(
     projectRoot,
     'plugins/specweave/hooks/user-prompt-submit.sh'
@@ -117,8 +117,8 @@ exit 0
     return parsed?.hookSpecificOutput?.additionalContext ?? null;
   }
 
-  it('intercepts /sw:jobs prompt', () => {
-    const { parsed, exitCode } = executeHook('/sw:jobs');
+  it('intercepts sw:jobs prompt', () => {
+    const { parsed, exitCode } = executeHook('sw:jobs');
 
     expect(exitCode).toBe(0);
     expect(parsed).toBeTruthy();
@@ -127,7 +127,7 @@ exit 0
   });
 
   it('returns output via additionalContext (not systemMessage)', () => {
-    const { parsed } = executeHook('/sw:jobs');
+    const { parsed } = executeHook('sw:jobs');
 
     const context = extractAdditionalContext(parsed);
     expect(context).toBeTruthy();
@@ -141,7 +141,7 @@ exit 0
     const stateFile = path.join(testRoot, '.specweave', 'state', 'background-jobs.json');
     fs.writeFileSync(stateFile, JSON.stringify({ jobs: [] }));
 
-    const { parsed } = executeHook('/sw:jobs');
+    const { parsed } = executeHook('sw:jobs');
     const context = extractAdditionalContext(parsed);
 
     // Should show something (even if "no jobs")
@@ -169,7 +169,7 @@ exit 0
       }]
     }));
 
-    const { parsed } = executeHook('/sw:jobs');
+    const { parsed } = executeHook('sw:jobs');
     const context = extractAdditionalContext(parsed);
 
     expect(context).toBeTruthy();
@@ -178,7 +178,7 @@ exit 0
   });
 
   it('passes arguments through to the script', () => {
-    const { parsed } = executeHook('/sw:jobs --all');
+    const { parsed } = executeHook('sw:jobs --all');
 
     expect(parsed).toBeTruthy();
     // Hook should still intercept and return
@@ -186,14 +186,14 @@ exit 0
   });
 
   it('does NOT intercept non-matching prompts', () => {
-    // "/sw:jobs" must match exactly, not partial matches
-    const { parsed } = executeHook('tell me about /sw:jobs');
+    // "sw:jobs" must match exactly, not partial matches
+    const { parsed } = executeHook('tell me about sw:jobs');
 
     // This should NOT be intercepted by the jobs handler
     // (it might be handled by other hook logic though)
     if (parsed?.hookSpecificOutput?.additionalContext) {
       // If it was intercepted, it shouldn't be by the jobs handler
-      // Since the regex is ^/sw:jobs, "tell me about" won't match
+      // Since the regex is ^sw:jobs, "tell me about" won't match
       const context = extractAdditionalContext(parsed);
       expect(context).not.toContain('clone');
     }

@@ -117,7 +117,7 @@ async function handleAutoStatus(projectPath: string, options: AutoStatusOptions)
   if (isActive && activeIncrements.length > 0) {
     console.log(chalk.bold('NEXT STEPS'));
     console.log('━'.repeat(50));
-    console.log('  • Continue working: ' + chalk.cyan('/sw:do'));
+    console.log('  • Continue working: ' + chalk.cyan('sw:do'));
     console.log('  • Cancel auto mode: ' + chalk.cyan('specweave cancel-auto'));
     console.log('');
   } else if (isActive && activeIncrements.length === 0) {

@@ -37,12 +37,12 @@ A script that executes automatically at specific points in the SpecWeave workflo
 A specific, actionable work item within an increment. Tasks are defined in `tasks.md` and link to acceptance criteria.
 
 ### TDD (Test-Driven Development)
-A development approach where tests are written before implementation code. SpecWeave supports TDD by saying "test-driven development", using `/sw:tdd-cycle` in Claude Code, or typing `tdd-cycle` in other AI tools.
+A development approach where tests are written before implementation code. SpecWeave supports TDD by saying "test-driven development", using `sw:tdd-cycle` in Claude Code, or typing `tdd-cycle` in other AI tools.
 
 ## AI and Automation
 
 ### Autonomous Mode
-SpecWeave's autonomous execution feature. Invoke by saying "ship while I sleep", using `/sw:auto` in Claude Code, or typing `auto` in other AI tools. Executes tasks continuously without manual intervention until all work is complete.
+SpecWeave's autonomous execution feature. Invoke by saying "ship while I sleep", using `sw:auto` in Claude Code, or typing `auto` in other AI tools. Executes tasks continuously without manual intervention until all work is complete.
 
 ### Claude Code
 Anthropic's CLI tool that integrates with SpecWeave for AI-powered development assistance.

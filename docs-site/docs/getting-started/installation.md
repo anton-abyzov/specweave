@@ -257,7 +257,7 @@ npx specweave init .
 > my-org/frontend my-org/backend my-org/shared
 ```
 
-This accepts GitHub `org/repo` shorthand, GitHub HTTPS URLs, and GitHub SSH URLs — space-separated. The repos are cloned into `repositories/{org}/{repo}/` immediately.
+This accepts GitHub `org/repo` shorthand, GitHub HTTPS URLs, and GitHub SSH URLs — space-separated. SpecWeave runs `git clone` for each repo right away, placing them at `repositories/{org}/{repo}/`.
 
 **If you choose "Add later"**, init completes without cloning. You can add repos any time with `specweave get` (see [Adding Repositories](#adding-repositories) below). This is the right choice when:
 - You're building a single app with no child repos
@@ -388,7 +388,7 @@ my-workspace/
 - One `specweave init` -- the workspace owns all configuration
 - Increments centralized at workspace root, tagged by project
 - Individual repos do NOT get their own `.specweave/increments/`
-- ✅ Cross-repo coordination via `/sw:team-lead` for parallel work across repos
+- ✅ Cross-repo coordination via `sw:team-lead` for parallel work across repos
 
 ## Verification
 
@@ -412,7 +412,7 @@ ls -la .claude/hooks/       # Should have 8 hooks
 # For other AI tool users
 cat AGENTS.md               # Should exist
 
-# Test a command (Claude Code: /sw:progress, or just say "what's the status?")
+# Test a command (Claude Code: sw:progress, or just say "what's the status?")
 ```
 
 ### Verification Checklist
@@ -433,7 +433,7 @@ cat AGENTS.md               # Should exist
 
 <CommandTabs
   natural="Build a very simple web calculator app"
-  claude='/sw:increment "web calculator app"'
+  claude='sw:increment "web calculator app"'
   other='increment "web calculator app"'
 />
 

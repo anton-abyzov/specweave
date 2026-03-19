@@ -145,7 +145,7 @@ Don't trust "it works" - verify against specs:
 
 <CommandTabs
   natural="We're done with increment 0023"
-  claude="/sw:done 0023"
+  claude="sw:done 0023"
   other="done 0023"
 />
 

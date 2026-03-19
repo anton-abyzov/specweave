@@ -142,9 +142,9 @@ describe('Handoff Context Generator', () => {
 
         // Then: should include core skills
         const skillNames = context.availableSkills.map((s) => s.name);
-        expect(skillNames).toContain('/sw:increment');
-        expect(skillNames).toContain('/sw:do');
-        expect(skillNames).toContain('/sw:done');
+        expect(skillNames).toContain('sw:increment');
+        expect(skillNames).toContain('sw:do');
+        expect(skillNames).toContain('sw:done');
       });
 
       it('should map sw plugin to architecture skills that cover frontend', () => {

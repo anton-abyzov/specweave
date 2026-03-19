@@ -16,7 +16,7 @@ Just describe what you want. SpecWeave detects your intent and activates the rig
 
 <CommandTabs
   natural="Build a very simple web calculator app"
-  claude='/sw:increment "web calculator app"'
+  claude='sw:increment "web calculator app"'
   other='increment "web calculator app"'
 />
 
@@ -27,16 +27,16 @@ SpecWeave guides you through approach selection, feature selection, tech stack c
 **Perfect for:** Claude Code users who want precision
 
 ```bash
-/sw:increment "user authentication"
-/sw:do
-/sw:done
+sw:increment "user authentication"
+sw:do
+sw:done
 ```
 
 ### Other AI Tools
 
 **Perfect for:** Cursor, Copilot, Windsurf, and other AI coding tools
 
-Use the same command names without the `/sw:` prefix:
+Use the same command names without the `sw:` prefix:
 ```
 increment "user authentication"
 do

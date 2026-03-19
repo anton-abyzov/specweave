@@ -43,41 +43,41 @@ export const ERROR_MESSAGES = {
     suggestions: [
       `Check if increment exists: ls .specweave/increments/ | grep "${id}"`,
       `Use 4-digit format: 0001, 0042, 0157 (not 1, 42, 157)`,
-      `Create new increment: /sw:increment "description"`
+      `Create new increment: sw:increment "description"`
     ],
-    relatedCommands: ['/sw:status', '/sw:increment']
+    relatedCommands: ['sw:status', 'sw:increment']
   }),
 
   SPEC_NOT_FOUND: (incrementId: string): FormattedError => ({
     title: 'spec.md not found',
     description: `Increment '${incrementId}' exists but has no spec.md file.`,
     suggestions: [
-      `Create spec.md using: /sw:increment (for new increments)`,
+      `Create spec.md using: sw:increment (for new increments)`,
       `Or manually create: .specweave/increments/${incrementId}/spec.md`
     ],
-    relatedCommands: ['/sw:increment']
+    relatedCommands: ['sw:increment']
   }),
 
   // Skill routing errors
   WRONG_COMMAND_FOR_NEW_INCREMENT: (): FormattedError => ({
-    title: '/sw:plan is for EXISTING increments only',
-    description: 'You are trying to plan a new increment. Use /sw:increment instead.',
+    title: 'sw:plan is for EXISTING increments only',
+    description: 'You are trying to plan a new increment. Use sw:increment instead.',
     suggestions: [
-      `/sw:increment creates NEW increments from scratch`,
-      `/sw:plan generates plan.md for EXISTING increments (with spec.md)`
+      `sw:increment creates NEW increments from scratch`,
+      `sw:plan generates plan.md for EXISTING increments (with spec.md)`
     ],
-    relatedCommands: ['/sw:increment'],
-    example: `/sw:increment "Add user authentication"`
+    relatedCommands: ['sw:increment'],
+    example: `sw:increment "Add user authentication"`
   }),
 
   WRONG_COMMAND_FOR_EXISTING_INCREMENT: (incrementId: string): FormattedError => ({
-    title: '/sw:increment is for NEW increments',
-    description: `Increment '${incrementId}' already exists. Use /sw:plan to generate plan.md.`,
+    title: 'sw:increment is for NEW increments',
+    description: `Increment '${incrementId}' already exists. Use sw:plan to generate plan.md.`,
     suggestions: [
-      `/sw:plan ${incrementId} - Generate plan.md and tasks.md`,
-      `/sw:do ${incrementId} - Start implementation`
+      `sw:plan ${incrementId} - Generate plan.md and tasks.md`,
+      `sw:do ${incrementId} - Start implementation`
     ],
-    relatedCommands: ['/sw:plan', '/sw:do']
+    relatedCommands: ['sw:plan', 'sw:do']
   }),
 
   INTERNAL_SKILL_DIRECT_CALL: (skillName: string, allowedCallers: string[]): FormattedError => ({
@@ -104,11 +104,11 @@ export const ERROR_MESSAGES = {
     title: `Increment '${id}' already exists`,
     description: `An increment with this number already exists.`,
     suggestions: [
-      `Check existing: /sw:status`,
+      `Check existing: sw:status`,
       `Use next available number`,
       `Or specify different name: ${id}-alternative`
     ],
-    relatedCommands: ['/sw:status', '/sw:fix-duplicates']
+    relatedCommands: ['sw:status', 'sw:fix-duplicates']
   }),
 
   // Status errors
@@ -117,20 +117,20 @@ export const ERROR_MESSAGES = {
     description: `This status transition is not allowed by the workflow.`,
     suggestions: [
       `Valid transitions from ${from}:`,
-      `Check /sw:workflow for status transition rules`
+      `Check sw:workflow for status transition rules`
     ],
-    relatedCommands: ['/sw:workflow', '/sw:status']
+    relatedCommands: ['sw:workflow', 'sw:status']
   }),
 
   INCREMENT_NOT_READY: (incrementId: string, reason: string): FormattedError => ({
     title: `Increment '${incrementId}' is not ready`,
     description: reason,
     suggestions: [
-      `Check status: /sw:status ${incrementId}`,
+      `Check status: sw:status ${incrementId}`,
       `View tasks: cat .specweave/increments/${incrementId}/tasks.md`,
-      `Validate: /sw:validate ${incrementId}`
+      `Validate: sw:validate ${incrementId}`
     ],
-    relatedCommands: ['/sw:status', '/sw:validate']
+    relatedCommands: ['sw:status', 'sw:validate']
   }),
 
   // General errors

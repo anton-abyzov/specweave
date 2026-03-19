@@ -192,7 +192,7 @@ AZURE_DEVOPS_PAT=xxxxxxxxxxxx
 ### Interactive Creation
 
 ```bash
-/sw:sync-profile create
+sw:sync-profile create
 
 # Prompts:
 # 1. Provider? (github/jira/ado)
@@ -313,7 +313,7 @@ graph LR
 
 **Interactive**:
 ```bash
-/sw-github:sync 0008
+sw-github:sync 0008
 
 # Prompt:
 # ⏰ Select time range:
@@ -329,20 +329,20 @@ graph LR
 **Command-Line**:
 ```bash
 # Use default (from profile)
-/sw-github:sync 0008
+sw-github:sync 0008
 
 # Override with specific range
-/sw-github:sync 0008 --time-range 1M
-/sw-github:sync 0008 --time-range 3M
+sw-github:sync 0008 --time-range 1M
+sw-github:sync 0008 --time-range 3M
 
 # Use all time (dangerous!)
-/sw-github:sync 0008 --time-range ALL
+sw-github:sync 0008 --time-range ALL
 ```
 
 **Dry Run**:
 ```bash
 # Preview sync without executing
-/sw-github:sync 0008 --dry-run
+sw-github:sync 0008 --dry-run
 
 # Output:
 # 📊 Sync Preview (DRY RUN)
@@ -396,7 +396,7 @@ sequenceDiagram
 ### Example: Critical Impact Blocked
 
 ```bash
-/sw-github:sync 0008 --time-range ALL
+sw-github:sync 0008 --time-range ALL
 
 # Output:
 ❌ This sync may FAIL due to:
@@ -480,7 +480,7 @@ Syncs to client-org/mobile-app repo
 
 ```bash
 # 1. Create profile (once)
-/sw:sync-profile create
+sw:sync-profile create
 # → Profile: client-mobile created
 ```
 
@@ -488,7 +488,7 @@ Create increment:
 
 <CommandTabs
   natural="Let's add a dark mode toggle"
-  claude='/sw:increment "Add dark mode toggle"'
+  claude='sw:increment "Add dark mode toggle"'
   other='increment "Add dark mode toggle"'
 />
 
@@ -500,7 +500,7 @@ Create increment:
 # Set: "sync": {"profile": "client-mobile"}
 
 # 4. Sync increment
-/sw-github:sync 0009
+sw-github:sync 0009
 # → Prompt: Select profile (auto-detected: client-mobile)
 # → Prompt: Select time range (default: 1M)
 # → Pre-flight validation (300 API calls, LOW impact)
@@ -515,7 +515,7 @@ Create increment:
 # → Update checkbox: [x] T-001
 
 # 6. Close increment
-/sw:done 0009
+sw:done 0009
 # → Hook fires: post-increment-done
 # → Close GitHub issue #45
 # → Final living docs sync
@@ -528,7 +528,7 @@ Create increment:
 ### List Profiles
 
 ```bash
-/sw:sync-profile list
+sw:sync-profile list
 
 # Output:
 📋 Sync Profiles (3 total)
@@ -551,7 +551,7 @@ Create increment:
 ### Get Profile Details
 
 ```bash
-/sw:sync-profile get specweave-dev
+sw:sync-profile get specweave-dev
 
 # Output:
 📋 Profile: specweave-dev
@@ -576,7 +576,7 @@ Last Used: 2025-11-10 15:30:00
 ### Update Profile
 
 ```bash
-/sw:sync-profile update specweave-dev
+sw:sync-profile update specweave-dev
 
 # Prompts:
 # 1. Change display name? (SpecWeave Development)
@@ -590,7 +590,7 @@ Last Used: 2025-11-10 15:30:00
 ### Delete Profile
 
 ```bash
-/sw:sync-profile delete internal-jira
+sw:sync-profile delete internal-jira
 
 # Prompt:
 # ⚠️  This will delete profile "internal-jira"
@@ -720,11 +720,11 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 
 ```bash
 # ❌ Bad: Always sync all time
-/sw-github:sync 0008 --time-range ALL
+sw-github:sync 0008 --time-range ALL
 # Result: 30+ minutes, 7,500 API calls, high rate limit risk
 
 # ✅ Good: Use 1M (1 month) by default
-/sw-github:sync 0008 --time-range 1M
+sw-github:sync 0008 --time-range 1M
 # Result: 2 minutes, 300 API calls, safe
 ```
 
@@ -785,8 +785,8 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 - Provider-specific limits (GitHub: 5K/hour, JIRA: 100/min, ADO: 200/5min)
 
 **Key Commands**:
-- `/sw:sync-profile create` - Create new profile
-- `/sw:sync-profile list` - List all profiles
-- `/sw-github:sync 0008` - Sync increment to GitHub
+- `sw:sync-profile create` - Create new profile
+- `sw:sync-profile list` - List all profiles
+- `sw-github:sync 0008` - Sync increment to GitHub
 
 **Result**: Work with unlimited repositories while maintaining safety and performance.

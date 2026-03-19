@@ -49,9 +49,9 @@ describe('Project-Scope Guard in Hook', () => {
   });
 
   describe('Non-Initialized Projects', () => {
-    it('should block /sw:increment in non-initialized project', () => {
+    it('should block sw:increment in non-initialized project', () => {
       const result = executeHook(
-        { prompt: '/sw:increment "new feature"' },
+        { prompt: 'sw:increment "new feature"' },
         tempDir
       );
 
@@ -61,9 +61,9 @@ describe('Project-Scope Guard in Hook', () => {
       expect(result.stdout).toContain('specweave init');
     });
 
-    it('should block /sw:do in non-initialized project', () => {
+    it('should block sw:do in non-initialized project', () => {
       const result = executeHook(
-        { prompt: '/sw:do' },
+        { prompt: 'sw:do' },
         tempDir
       );
 
@@ -83,7 +83,7 @@ describe('Project-Scope Guard in Hook', () => {
 
     it('should provide helpful error message with all options', () => {
       const result = executeHook(
-        { prompt: '/sw:progress' },
+        { prompt: 'sw:progress' },
         tempDir
       );
 
@@ -112,7 +112,7 @@ describe('Project-Scope Guard in Hook', () => {
 
     it('should handle whitespace before skill name', () => {
       const result = executeHook(
-        { prompt: '  /sw:do' },
+        { prompt: '  sw:do' },
         tempDir
       );
 
@@ -131,9 +131,9 @@ describe('Project-Scope Guard in Hook', () => {
       );
     });
 
-    it('should NOT block /sw:increment in initialized project', () => {
+    it('should NOT block sw:increment in initialized project', () => {
       const result = executeHook(
-        { prompt: '/sw:increment "new feature"' },
+        { prompt: 'sw:increment "new feature"' },
         tempDir
       );
 
@@ -142,9 +142,9 @@ describe('Project-Scope Guard in Hook', () => {
       expect(result.stdout).not.toContain('Not Initialized');
     });
 
-    it('should NOT block /sw:do in initialized project', () => {
+    it('should NOT block sw:do in initialized project', () => {
       const result = executeHook(
-        { prompt: '/sw:do' },
+        { prompt: 'sw:do' },
         tempDir
       );
 
@@ -185,7 +185,7 @@ describe('Project-Scope Guard in Hook', () => {
   describe('Guard Configuration', () => {
     it('should respect SPECWEAVE_DISABLE_GUARD environment variable', () => {
       const result = spawnSync('bash', [HOOK_PATH], {
-        input: JSON.stringify({ prompt: '/sw:increment "test"' }),
+        input: JSON.stringify({ prompt: 'sw:increment "test"' }),
         encoding: 'utf8',
         cwd: tempDir,
         env: {
@@ -213,7 +213,7 @@ describe('Project-Scope Guard in Hook', () => {
       );
 
       const result = executeHook(
-        { prompt: '/sw:increment "test"' },
+        { prompt: 'sw:increment "test"' },
         tempDir
       );
 
@@ -232,7 +232,7 @@ describe('Project-Scope Guard in Hook', () => {
       );
 
       const result = executeHook(
-        { prompt: '/sw:do' },
+        { prompt: 'sw:do' },
         tempDir
       );
 
@@ -246,7 +246,7 @@ describe('Project-Scope Guard in Hook', () => {
       // No config.json created
 
       const result = executeHook(
-        { prompt: '/sw:increment "test"' },
+        { prompt: 'sw:increment "test"' },
         tempDir
       );
 
@@ -259,7 +259,7 @@ describe('Project-Scope Guard in Hook', () => {
       const start = Date.now();
 
       executeHook(
-        { prompt: '/sw:do' },
+        { prompt: 'sw:do' },
         tempDir
       );
 
@@ -287,7 +287,7 @@ describe('Project-Scope Guard in Hook', () => {
 
       // Execute hook from nested directory
       const result = executeHook(
-        { prompt: '/sw:do' },
+        { prompt: 'sw:do' },
         nestedDir
       );
 

@@ -1,111 +1,178 @@
 ---
 sidebar_position: 2
-title: Plugin Ecosystem
-description: SpecWeave's unified plugin architecture — 1 bundled plugin with 44 skills, plus 100,000+ community skills via verified-skill.com
-keywords: [plugins, skills, agents, commands, github, jira, integration, vskill]
+title: Skills & Capabilities
+description: SpecWeave ships with 45 skills, 73 commands, and 3 AI agents covering the full development lifecycle — planning, implementation, testing, code review, and external sync
+keywords: [skills, agents, commands, capabilities, github, jira, azure-devops, tdd, code-review]
+slug: skills-and-capabilities
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';
 
-# Plugin Ecosystem
+# Skills & Capabilities
 
-SpecWeave uses a **unified plugin architecture**. SpecWeave ships with **1 bundled plugin** providing 44 skills covering the full development lifecycle including GitHub, JIRA, Azure DevOps sync, release management, diagrams, media generation, and documentation. Additional domain-specific plugins are available via the [vskill CLI](../skills/vskill-cli.md) and the [verified-skill.com](https://verified-skill.com) registry (100,000+ community skills).
+SpecWeave ships **batteries-included**. Every installation comes with **45 skills**, **73 commands**, and **3 AI agents** covering the full development lifecycle — no plugins to install, no configuration required.
 
-![Plugin Architecture](/img/diagrams/plugin-architecture.svg)
+## What's Included
 
-:::info Core Plugin vs Community Skills
-The **bundled plugin** installs automatically with `specweave init`. **Community skills** are installed on-demand via `npx vskill install`. See [Installing Skills](../skills/installation.md) for details.
-:::
+### Planning & Design (7 skills)
 
-## Bundled Plugin
+Define what to build before writing code.
 
-The unified `specweave` plugin ships with every installation. All capabilities are organized into a single plugin for simpler installation, faster loading, and easier maintenance.
+| Skill | What it does |
+|-------|-------------|
+| `increment` | Create a new feature/bugfix/hotfix with spec, plan, and tasks |
+| `pm` | Product Manager — writes specs with user stories and acceptance criteria |
+| `architect` | System Architect — designs technical approach with ADRs |
+| `plan` | Generate plan.md and tasks.md for an increment |
+| `brainstorm` | Multi-perspective ideation with selectable cognitive lenses |
+| `diagrams` | Mermaid architecture diagrams following C4 Model conventions |
+| `skill-gen` | Generate project-specific skills from detected patterns |
 
-### specweave (sw) — Unified Framework
+### Implementation (6 skills)
 
-The complete SpecWeave platform: core lifecycle, integrations, release management, diagrams, media, and documentation tools.
+Execute tasks with autonomous workflows.
 
-- **44 Skills** organized by domain:
-  - **Core (28)**: increment, pm, architect, plan, do, done, auto, validate, grill, judge-llm, debug, brainstorm, team-lead, team-build, team-merge, code-reviewer, tdd-cycle, tdd-red, tdd-green, tdd-refactor, e2e, get, import, pr, npm, progress-sync, sync-docs, skill-gen
-  - **GitHub (4)**: github-sync, github-issue-standard, pr-review, github-multi-project
-  - **JIRA (3)**: jira-sync, jira-mapper, jira-resource-validator
-  - **Azure DevOps (4)**: ado-sync, ado-mapper, ado-multi-project, ado-resource-validator
-  - **Release (1)**: release-expert
-  - **Diagrams (1)**: diagrams
-  - **Media (3)**: image, video, remotion
-- **3 Agents**: PM, Architect, Test-Aware Planner (plus sub-agents within skills like code-reviewer and team-lead)
-- **74+ Commands**: Full increment lifecycle, GitHub/JIRA/ADO sync, release management, documentation tools
+| Skill | What it does |
+|-------|-------------|
+| `do` | Execute increment tasks following spec and plan |
+| `auto` | Fully autonomous execution — implement, test, fix, repeat |
+| `get` | Clone and register repositories into the workspace |
+| `import` | Import external issues from GitHub, Jira, or Azure DevOps |
+| `debug` | Systematic 4-phase debugging with escalation protocol |
+| `help` | Skill discovery and usage guidance |
 
-**Plan a feature:**
+### Testing & TDD (6 skills)
 
-<CommandTabs
-  natural="I want to add user authentication with OAuth"
-  claude='/sw:increment "User authentication with OAuth"'
-  other='increment "User authentication with OAuth"'
-/>
+Test-driven development with full cycle support.
 
-**Execute, sync, and close:**
+| Skill | What it does |
+|-------|-------------|
+| `tdd-cycle` | Full red-green-refactor cycle with validation gates |
+| `tdd-red` | Write failing tests that define expected behavior |
+| `tdd-green` | Write minimal code to make failing tests pass |
+| `tdd-refactor` | Refactor code with test safety net |
+| `e2e` | Generate and run Playwright E2E tests traced to acceptance criteria |
+| `validate` | Rule-based quality checks (130+ rules) |
 
-<CommandTabs
-  natural="Start implementing, then sync to GitHub when done"
-  claude="/sw:do"
-  other="do"
-/>
+### Code Review & Quality (4 skills)
+
+Multi-agent review before shipping.
+
+| Skill | What it does |
+|-------|-------------|
+| `code-reviewer` | Parallel specialized reviewers for logic, security, performance, and more |
+| `grill` | Critical code review and quality interrogation |
+| `judge-llm` | Deep validation using extended thinking |
+| `pr-review` | Pull request review against spec acceptance criteria |
+
+### Team & Parallel Work (3 skills)
+
+Coordinate multiple AI agents working simultaneously.
+
+| Skill | What it does |
+|-------|-------------|
+| `team-lead` | Orchestrate parallel multi-agent work across domains |
+| `team-build` | Spawn coordinated teams from battle-tested presets |
+| `team-merge` | Merge completed parallel agent work |
+
+### Lifecycle & Release (5 skills)
+
+Close increments and ship releases.
+
+| Skill | What it does |
+|-------|-------------|
+| `done` | Close increment with PM 3-gate validation |
+| `pr` | Create pull request from increment feature branch |
+| `npm` | Full patch release with npm publish and GitHub Release |
+| `release-expert` | Multi-repo release coordination and version alignment |
+| `progress-sync` | Sync progress to all connected external tools |
+
+### GitHub Integration (3 skills)
+
+| Skill | What it does |
+|-------|-------------|
+| `github-sync` | Two-way sync between specs and GitHub Projects |
+| `github-issue-standard` | Consistent issue format with checkable acceptance criteria |
+| `github-multi-project` | Coordinate specs and tasks across multiple repositories |
+
+### Jira Integration (3 skills)
+
+| Skill | What it does |
+|-------|-------------|
+| `jira-sync` | Two-way sync between increments and Jira epics/stories |
+| `jira-mapper` | Bidirectional mapping (Increment → Epic + Stories + Subtasks) |
+| `jira-resource-validator` | Validate and auto-create Jira projects and boards |
+
+### Azure DevOps Integration (4 skills)
+
+| Skill | What it does |
+|-------|-------------|
+| `ado-sync` | Two-way sync between increments and ADO work items |
+| `ado-mapper` | Bidirectional conversion (Increment ↔ Epic/Feature/Story/Task) |
+| `ado-multi-project` | Organize tasks across multiple ADO projects |
+| `ado-resource-validator` | Validate and auto-create ADO projects, area paths, and teams |
+
+### Media Generation (3 skills)
+
+| Skill | What it does |
+|-------|-------------|
+| `image` | AI image generation via Google Gemini and Pollinations.ai |
+| `video` | AI video generation via Google Veo 3.1 and Pollinations.ai |
+| `remotion` | Programmatic video creation with React components |
+
+### Documentation (1 skill)
+
+| Skill | What it does |
+|-------|-------------|
+| `sync-docs` | Sync living docs for an increment |
 
 ---
 
-## vskill Marketplace Plugins (5)
+## AI Agents
 
-These plugins are installed via the [vskill CLI](../skills/vskill-cli.md):
+Skills handle specific tasks. Agents are specialized AI personas that collaborate during planning:
+
+| Agent | Role |
+|-------|------|
+| **PM** | Writes spec.md with user stories and acceptance criteria |
+| **Architect** | Writes plan.md with architecture decisions and component design |
+| **Planner** | Generates tasks.md with BDD test plans (Given/When/Then) |
+
+Skills like `code-reviewer` and `team-lead` spawn additional sub-agents internally for parallel work.
+
+---
+
+## Commands (73)
+
+Commands are the low-level operations that skills and sync workflows invoke. Most users interact with skills directly — commands run behind the scenes for operations like `github-push`, `jira-pull`, `ado-create`, `docs-build`, `release-rc`, and more.
+
+See [Commands Reference](../reference/commands.md) for the full list.
+
+---
+
+## Extending with Domain Skills
+
+Need capabilities beyond the built-in 45? The [vskill CLI](../skills/vskill-cli.md) installs domain-specific skills:
 
 ```bash
 npx vskill install --repo anton-abyzov/vskill --plugin <name>
 ```
 
-| Plugin | Skills | Description |
-|--------|--------|-------------|
-| **mobile** | 1 (appstore) | Mobile development — React Native, Expo, Flutter, SwiftUI, app store |
-| **skills** | 1 (scout) | Skill discovery and evaluation |
-| **marketing** | 2 (slack-messaging, social-media-posting) | Cross-platform social media and Slack automation |
-| **productivity** | 1 (survey-passing) | Expert network survey automation |
-| **google-workspace** | 2 (gws, greet-anton) | Google Workspace CLI — Gmail, Drive, Sheets, Docs, Calendar |
+| Plugin | Skills | Use case |
+|--------|--------|----------|
+| **mobile** | appstore | App Store Connect automation, TestFlight, certificates |
+| **marketing** | slack-messaging, social-media-posting | Slack automation, cross-platform social media |
+| **google-workspace** | gws | Gmail, Drive, Sheets, Docs, Calendar via CLI |
+| **productivity** | survey-passing | Expert network survey automation |
+| **skills** | scout | Discover and install community skills |
 
----
-
-## Community Skills (100,000+)
-
-The [verified-skill.com](https://verified-skill.com) registry hosts community-contributed skills across all domains:
-
-```bash
-# Search the registry
-npx vskill find "react components"
-
-# Install from the registry
-npx vskill install <skill-name>
-```
-
-Browse by category: Coding (53,752), AI/ML (13,176), Design, DevOps, Data, Testing, Marketing, and more.
-
-See [Verified Skills](../skills/verified/verified-skills.md) for the trust tier system and security model.
-
----
-
-## How Plugins Work Together
-
-Plugins activate based on project context. A typical workflow:
-
-1. **PM Agent** (core) creates the spec with user stories
-2. **Architect Agent** (core) designs the technical approach
-3. **GitHub Plugin** auto-creates a GitHub Issue for the increment
-4. **Domain skills** (installed via vskill) provide specialized guidance
-5. **Implementation** proceeds when you say "start implementing" (or `/sw:do`)
-6. **Sync** keeps external tools updated automatically
+The [verified-skill.com](https://verified-skill.com) registry hosts community-contributed skills searchable via `npx vskill find "query"`.
 
 ---
 
 ## Extending with CLAUDE.md
 
-Beyond plugins, customize SpecWeave behavior through your project's `CLAUDE.md` file:
+Beyond skills, customize SpecWeave behavior through your project's `CLAUDE.md` file:
 
 | Area | Examples |
 |------|----------|
@@ -118,7 +185,7 @@ Beyond plugins, customize SpecWeave behavior through your project's `CLAUDE.md` 
 
 ## Next Steps
 
-- [Installing Skills](../skills/installation.md) — Install community skills from the registry
-- [vskill CLI Reference](../skills/vskill-cli.md) — Full CLI documentation
 - [Getting Started](../getting-started/index.md) — Your first SpecWeave increment
-- [Workflows](../workflows/overview.md) — Complete development journey
+- [Skills Reference](../reference/skills.md) — Detailed skill documentation
+- [vskill CLI](../skills/vskill-cli.md) — Install domain-specific skills
+- [Commands Reference](../reference/commands.md) — Full command list

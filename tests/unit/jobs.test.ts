@@ -1,5 +1,5 @@
 /**
- * Tests for /sw:jobs command
+ * Tests for sw:jobs command
  *
  * Tests both read-jobs.sh (bash) and jobs.js (Node) implementations
  */
@@ -12,7 +12,7 @@ import { execSync } from 'child_process';
 // CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debugger flags from breaking child processes
 import { getCleanEnv } from '../test-utils/clean-env.js';
 
-describe('/sw:jobs command', () => {
+describe('sw:jobs command', () => {
   let tempDir: string;
   let specweaveDir: string;
   let stateDir: string;
@@ -402,11 +402,11 @@ describe('/sw:jobs command', () => {
       });
 
       expect(result).toContain('Commands:');
-      expect(result).toContain('/sw:do');
-      expect(result).toContain('/sw:progress');
-      expect(result).toContain('/sw:done <id>');
-      expect(result).toContain('/sw:jobs --id <id>');
-      expect(result).toContain('/sw:jobs --all');
+      expect(result).toContain('sw:do');
+      expect(result).toContain('sw:progress');
+      expect(result).toContain('sw:done <id>');
+      expect(result).toContain('sw:jobs --id <id>');
+      expect(result).toContain('sw:jobs --all');
     });
 
     it('should handle missing dashboard gracefully', () => {
@@ -420,7 +420,7 @@ describe('/sw:jobs command', () => {
       });
 
       expect(result).toContain('No increment data available');
-      expect(result).toContain('Run /sw:status to rebuild cache');
+      expect(result).toContain('Run sw:status to rebuild cache');
     });
   });
 

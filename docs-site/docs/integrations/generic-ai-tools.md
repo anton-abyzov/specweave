@@ -351,12 +351,12 @@ exit 1
 
 | Command | Description | Manual Equivalent |
 |---------|-------------|-------------------|
-| `/sw:increment "X"` | Plan new feature | Create spec.md and tasks.md files manually |
-| `/sw:do` | Work on tasks | Read tasks.md, implement, update checkboxes |
-| `/sw:progress` | Check status | `grep -c '\[x\]' tasks.md` vs total tasks |
-| `/sw:done` | Close increment | Verify all [x], update metadata.json status |
-| `/sw:validate` | Quality check | Run tests, check coverage, lint |
-| `/sw:reflect` | Extract learnings | Save patterns to .specweave/memory/*.md |
+| `sw:increment "X"` | Plan new feature | Create spec.md and tasks.md files manually |
+| `sw:do` | Work on tasks | Read tasks.md, implement, update checkboxes |
+| `sw:progress` | Check status | `grep -c '\[x\]' tasks.md` vs total tasks |
+| `sw:done` | Close increment | Verify all [x], update metadata.json status |
+| `sw:validate` | Quality check | Run tests, check coverage, lint |
+| `sw:reflect` | Extract learnings | Save patterns to .specweave/memory/*.md |
 
 ---
 

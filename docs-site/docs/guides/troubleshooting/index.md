@@ -49,7 +49,7 @@ SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or force sy
 
 <CommandTabs
   natural="Sync progress"
-  claude="/sw:sync-progress"
+  claude="sw:sync-progress"
   other="sync-progress"
 />
 

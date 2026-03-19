@@ -166,7 +166,7 @@ WHAT TO EXTRACT (only if HIGH confidence it's reusable AND truly new):
    - Example: "frontend: Use Tailwind, not styled-components" (tech choice for project)
 
 3. **Workflow corrections**: User corrected SpecWeave command usage
-   - Example: "general: Run /sw:validate before /sw:done" (workflow preference)
+   - Example: "general: Run sw:validate before sw:done" (workflow preference)
 
 WHAT NOT TO EXTRACT (be strict!):
 - Anything semantically similar to existing learnings (check above!)
