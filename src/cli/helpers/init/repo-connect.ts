@@ -139,11 +139,78 @@ export async function promptRepoUrls(language: SupportedLanguage): Promise<Parse
 }
 
 // ---------------------------------------------------------------------------
-// Cloning
+// Job system integration
+// ---------------------------------------------------------------------------
+
+/** Threshold: repos at or below this count clone foreground (blocking); above clone as background job */
+export const FOREGROUND_CLONE_THRESHOLD = 3;
+
+/**
+ * Map ParsedRepo[] to the format expected by launchCloneJob().
+ */
+export function mapParsedReposToCloneOptions(repos: ParsedRepo[]): Array<{
+  owner: string;
+  name: string;
+  path: string;
+  cloneUrl: string;
+}> {
+  return repos.map(r => ({
+    owner: r.org,
+    name: r.name,
+    path: `repositories/${r.org}/${r.name}`,
+    cloneUrl: r.cloneUrl,
+  }));
+}
+
+/**
+ * Clone repos foreground (blocking) with inline progress.
+ * Used for small batches (≤ FOREGROUND_CLONE_THRESHOLD) during init.
+ * For larger batches, use launchCloneJob() in background mode.
+ */
+export async function runForegroundClone(
+  projectPath: string,
+  repos: Array<{ owner: string; name: string; path: string; cloneUrl: string }>,
+): Promise<RepoConnectResult> {
+  const results: RepoConnectResult['repos'] = [];
+  let totalCloned = 0;
+  let totalFailed = 0;
+
+  for (const repo of repos) {
+    const orgDir = path.join(projectPath, 'repositories', repo.owner);
+    const repoDir = path.join(orgDir, repo.name);
+    const relPath = `repositories/${repo.owner}/${repo.name}`;
+
+    // Check for .git (not just directory) to avoid false-positive on partial clones
+    if (fs.existsSync(path.join(repoDir, '.git'))) {
+      results.push({ org: repo.owner, name: repo.name, path: relPath, success: true });
+      totalCloned++;
+      continue;
+    }
+
+    fs.mkdirSync(orgDir, { recursive: true });
+    console.log(chalk.gray(`   Cloning ${repo.owner}/${repo.name}...`));
+    const result = execFileNoThrowSync('git', ['clone', repo.cloneUrl, repo.name], { cwd: orgDir });
+
+    if (result.success) {
+      results.push({ org: repo.owner, name: repo.name, path: relPath, success: true });
+      totalCloned++;
+    } else {
+      const error = result.stderr?.replace(/https:\/\/[^@]*@/g, 'https://***@') || 'Unknown error';
+      results.push({ org: repo.owner, name: repo.name, path: relPath, success: false, error });
+      totalFailed++;
+    }
+  }
+
+  return { repos: results, totalCloned, totalFailed };
+}
+
+// ---------------------------------------------------------------------------
+// Cloning (legacy — kept for backward compatibility, will be removed)
 // ---------------------------------------------------------------------------
 
 /**
  * Clone repos into `repositories/{org}/{name}/` under the target directory.
+ * @deprecated Use launchCloneJob() with mapParsedReposToCloneOptions() instead
  */
 export function cloneReposIntoWorkspace(
   targetDir: string,

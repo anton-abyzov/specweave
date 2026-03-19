@@ -70,19 +70,37 @@ Closure order respects contract chain:
 
 For each teammate's increment, in dependency order:
 
+**PRE-CLOSURE**: Ensure increment is in "active" or "ready_for_review" status:
 ```bash
-# PRE-CLOSURE: Ensure increment is in "active" status (agents may not have activated it)
 STATUS=$(jq -r '.status' .specweave/increments/<id>/metadata.json)
 if [ "$STATUS" = "planned" ] || [ "$STATUS" = "backlog" ]; then
   # Edit metadata.json to set "status": "active"
 fi
-
-# Run sw:done --auto per increment -- triggers quality gates, skips user confirmation
-sw:done <increment-id> --auto
-
-# If sw:done fails, fix root cause and retry (max 2 retries)
-# Common fixes: sync ACs, update task counts, write missing reports
 ```
+
+#### Step 4a: Closure via Subagent (Claude Code — preferred)
+
+Spawn an `sw-closer` subagent per increment for a fresh context:
+
+```typescript
+Agent({
+  subagent_type: "sw:sw-closer",
+  prompt: "Close increment <ID>. Increment path: .specweave/increments/<ID>/",
+  description: "Close increment <ID>"
+})
+```
+
+Wait for each sw-closer to complete before spawning the next (dependency order). If a closer fails, log the failure and continue to the next increment.
+
+#### Step 4b: Direct Closure (Non-cloud tools / fallback)
+
+If the `Agent` tool is NOT available, invoke closure directly:
+
+```bash
+sw:done <increment-id> --auto
+```
+
+If `sw:done` fails, fix root cause and retry (max 2 retries). Common fixes: sync ACs, update task counts, write missing reports.
 
 This ensures:
 - Increment is in correct lifecycle status before closure attempt

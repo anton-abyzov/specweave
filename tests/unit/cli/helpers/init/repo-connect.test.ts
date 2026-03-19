@@ -59,7 +59,14 @@ vi.mock('@inquirer/prompts', () => ({
 // Import under test (after mocks)
 // ============================================================================
 
-import { parseRepoInput, cloneReposIntoWorkspace, promptProjectSetup } from '../../../../../src/cli/helpers/init/repo-connect.js';
+import {
+  parseRepoInput,
+  cloneReposIntoWorkspace,
+  promptProjectSetup,
+  mapParsedReposToCloneOptions,
+  runForegroundClone,
+  FOREGROUND_CLONE_THRESHOLD,
+} from '../../../../../src/cli/helpers/init/repo-connect.js';
 
 // ============================================================================
 // parseRepoInput
@@ -137,7 +144,149 @@ describe('parseRepoInput', () => {
 });
 
 // ============================================================================
-// cloneReposIntoWorkspace
+// FOREGROUND_CLONE_THRESHOLD
+// ============================================================================
+
+describe('FOREGROUND_CLONE_THRESHOLD', () => {
+  it('should equal 3', () => {
+    expect(FOREGROUND_CLONE_THRESHOLD).toBe(3);
+  });
+});
+
+// ============================================================================
+// mapParsedReposToCloneOptions
+// ============================================================================
+
+describe('mapParsedReposToCloneOptions', () => {
+  it('should map ParsedRepo fields to CloneLaunchOptions repo format', () => {
+    const parsed = [
+      { org: 'acme', name: 'api', cloneUrl: 'https://github.com/acme/api.git' },
+    ];
+    const result = mapParsedReposToCloneOptions(parsed);
+    expect(result).toEqual([
+      { owner: 'acme', name: 'api', path: 'repositories/acme/api', cloneUrl: 'https://github.com/acme/api.git' },
+    ]);
+  });
+
+  it('should handle multi-org repos', () => {
+    const parsed = [
+      { org: 'org-a', name: 'frontend', cloneUrl: 'https://github.com/org-a/frontend.git' },
+      { org: 'org-b', name: 'backend', cloneUrl: 'https://github.com/org-b/backend.git' },
+    ];
+    const result = mapParsedReposToCloneOptions(parsed);
+    expect(result[0].owner).toBe('org-a');
+    expect(result[0].path).toBe('repositories/org-a/frontend');
+    expect(result[1].owner).toBe('org-b');
+    expect(result[1].path).toBe('repositories/org-b/backend');
+  });
+
+  it('should return empty array for empty input', () => {
+    expect(mapParsedReposToCloneOptions([])).toEqual([]);
+  });
+
+  it('should preserve cloneUrl without modification', () => {
+    const parsed = [
+      { org: 'x', name: 'y', cloneUrl: 'https://github.com/x/y.git' },
+    ];
+    const result = mapParsedReposToCloneOptions(parsed);
+    expect(result[0].cloneUrl).toBe('https://github.com/x/y.git');
+  });
+});
+
+// ============================================================================
+// runForegroundClone
+// ============================================================================
+
+describe('runForegroundClone', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockExistsSync.mockReturnValue(false);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  it('should clone repos via git and return results', async () => {
+    mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '' });
+
+    const repos = [
+      { owner: 'acme', name: 'api', path: 'repositories/acme/api', cloneUrl: 'https://github.com/acme/api.git' },
+    ];
+    const result = await runForegroundClone('/workspace', repos);
+
+    expect(result.totalCloned).toBe(1);
+    expect(result.totalFailed).toBe(0);
+    expect(mockMkdirSync).toHaveBeenCalledWith(
+      expect.stringContaining('repositories/acme'),
+      { recursive: true },
+    );
+    expect(mockExecFileNoThrowSync).toHaveBeenCalledWith(
+      'git',
+      ['clone', 'https://github.com/acme/api.git', 'api'],
+      expect.objectContaining({ cwd: expect.stringContaining('repositories/acme') }),
+    );
+  });
+
+  it('should handle partial failures', async () => {
+    mockExecFileNoThrowSync
+      .mockReturnValueOnce({ success: true, stdout: '', stderr: '' })
+      .mockReturnValueOnce({ success: false, stdout: '', stderr: 'fatal: not found' });
+
+    const repos = [
+      { owner: 'acme', name: 'api', path: 'repositories/acme/api', cloneUrl: 'https://github.com/acme/api.git' },
+      { owner: 'acme', name: 'bad', path: 'repositories/acme/bad', cloneUrl: 'https://github.com/acme/bad.git' },
+    ];
+    const result = await runForegroundClone('/workspace', repos);
+
+    expect(result.totalCloned).toBe(1);
+    expect(result.totalFailed).toBe(1);
+    expect(result.repos[1].error).toContain('not found');
+  });
+
+  it('should skip already-cloned repos (checks .git, not just directory)', async () => {
+    mockExistsSync.mockImplementation((p: string) =>
+      typeof p === 'string' && p.includes('already-there') && p.endsWith('.git'),
+    );
+
+    const repos = [
+      { owner: 'acme', name: 'already-there', path: 'repositories/acme/already-there', cloneUrl: 'https://github.com/acme/already-there.git' },
+    ];
+    const result = await runForegroundClone('/workspace', repos);
+
+    expect(result.totalCloned).toBe(1);
+    expect(result.totalFailed).toBe(0);
+    expect(mockExecFileNoThrowSync).not.toHaveBeenCalled();
+  });
+
+  it('should NOT skip directory without .git (partial clone)', async () => {
+    mockExistsSync.mockReturnValue(false);
+    mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '' });
+
+    const repos = [
+      { owner: 'acme', name: 'partial', path: 'repositories/acme/partial', cloneUrl: 'https://github.com/acme/partial.git' },
+    ];
+    const result = await runForegroundClone('/workspace', repos);
+
+    expect(result.totalCloned).toBe(1);
+    expect(mockExecFileNoThrowSync).toHaveBeenCalled();
+  });
+
+  it('should sanitize PAT tokens from error messages', async () => {
+    mockExecFileNoThrowSync.mockReturnValue({
+      success: false, stdout: '',
+      stderr: 'fatal: https://user:ghp_secret@github.com/x/y.git not found',
+    });
+
+    const repos = [
+      { owner: 'x', name: 'y', path: 'repositories/x/y', cloneUrl: 'https://github.com/x/y.git' },
+    ];
+    const result = await runForegroundClone('/workspace', repos);
+
+    expect(result.repos[0].error).not.toContain('ghp_secret');
+    expect(result.repos[0].error).toContain('***');
+  });
+});
+
+// ============================================================================
+// cloneReposIntoWorkspace (legacy — to be removed)
 // ============================================================================
 
 describe('cloneReposIntoWorkspace', () => {
