@@ -1243,9 +1243,13 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
 
       for (const us of userStories) {
         const storyInfo = storyItemMap?.[us.id];
+        if (!storyInfo?.workItemId) {
+          this.logger.warn(`⚠️  Skipping ADO metadata for ${us.id}: story was not synced`);
+          continue;
+        }
         metadata.externalLinks.ado.userStories[us.id] = {
-          workItemId: storyInfo?.workItemId || workItemId,
-          workItemUrl: storyInfo?.workItemUrl || workItemUrl,
+          workItemId: storyInfo.workItemId,
+          workItemUrl: storyInfo.workItemUrl,
           syncedAt: now,
         };
       }

@@ -1,6 +1,6 @@
 # SpecWeave Integration Guide for Non-Claude AI Tools
 
-SpecWeave is designed to be AI-tool agnostic. While it has first-class support for Claude Code with plugins and hooks, the core framework works with **any AI coding assistant**.
+SpecWeave is designed to be AI-tool agnostic. While it has first-class support for Claude Code with plugins and hooks, the core system works with **any AI coding assistant**.
 
 ## Core Principle
 
@@ -56,7 +56,7 @@ Add to `.cursorrules`:
 ```
 # SpecWeave Workflow Rules
 
-Read CLAUDE.md for complete framework documentation.
+Read CLAUDE.md for complete SpecWeave documentation.
 
 Key behaviors:
 1. Check .specweave/increments/ for current work
@@ -222,7 +222,7 @@ with open(".specweave/increments/0001-feature/tasks.md") as f:
 message = client.messages.create(
     model="claude-sonnet-4-6",
     max_tokens=4096,
-    system=f"""You are working with SpecWeave framework.
+    system=f"""You are working with SpecWeave.
 
 RULES:
 {rules}

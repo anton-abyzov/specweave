@@ -235,12 +235,35 @@ npx specweave init .
 **What happens:**
 1. Creates project directory (if needed)
 2. Detects your AI tool (Claude, Cursor, Copilot, etc.)
-3. Asks which repositories to connect (or "add later via `specweave get`")
+3. Asks which repositories to connect (see below)
 4. Creates `.specweave/` structure and `repositories/` directory
 5. Installs appropriate components
 6. Generates `CLAUDE.md` and `AGENTS.md`
 7. Sets up `.gitignore`
 8. Initializes git repository (if git is available)
+
+**Step 3 — the repository prompt** looks like this:
+
+```
+? Which repositories to connect?
+> Connect repositories          Enter org/repo or URLs to clone into this workspace
+  Add later via specweave get   Create workspace now, add repositories later
+```
+
+**If you choose "Connect repositories"**, you'll be asked:
+
+```
+? Enter GitHub repo URLs or org/repo shorthand (space-separated):
+> my-org/frontend my-org/backend my-org/shared
+```
+
+This accepts GitHub `org/repo` shorthand, GitHub HTTPS URLs, and GitHub SSH URLs — space-separated. The repos are cloned into `repositories/{org}/{repo}/` immediately.
+
+**If you choose "Add later"**, init completes without cloning. You can add repos any time with `specweave get` (see [Adding Repositories](#adding-repositories) below). This is the right choice when:
+- You're building a single app with no child repos
+- Your repos are on GitLab, Bitbucket, or another host (not GitHub)
+- You want to register local repos already on disk
+- You want to bulk-clone an entire GitHub org
 
 ### Existing Project (Brownfield)
 
@@ -255,6 +278,7 @@ npx specweave init .
 3. ✅ Preserves your existing code and git history
 4. Adds SpecWeave structure without touching your code
 5. Uses directory name as project name (or prompts if invalid)
+6. The repository connect prompt is **skipped** in existing git repos — use `specweave get` to add repositories after init
 
 **Safe Operations:**
 - ✅ Never modifies existing source code
@@ -264,7 +288,11 @@ npx specweave init .
 
 ### Adding Repositories
 
-Every workspace starts with a `repositories/` directory. During init you can connect repositories immediately or add them later with `specweave get`:
+:::tip Building a single app with no child repos?
+Skip this section — you're already set up. `repositories/` is created automatically but you don't need to use it.
+:::
+
+Use `specweave get` to add repositories to your workspace — during init or any time after:
 
 ```bash
 # 1. Create the workspace
@@ -284,6 +312,55 @@ specweave get "my-org/service-*"
 ```
 
 > **Using npx?** Replace `specweave get` with `npx specweave get` if you haven't installed globally.
+
+**All supported input formats:**
+
+```bash
+# GitHub shorthand (most common)
+specweave get my-org/user-service
+
+# Full HTTPS URL
+specweave get https://github.com/my-org/user-service
+
+# SSH (for private repos)
+specweave get git@github.com:my-org/private-service
+
+# GitLab, Bitbucket, or any Git host
+specweave get https://gitlab.com/my-org/repo
+specweave get git@bitbucket.org:team/repo
+
+# Local repo already on disk (registers without re-cloning)
+specweave get ./path/to/existing-repo
+specweave get ~/projects/my-service
+```
+
+:::tip Already have repos cloned locally?
+`specweave get ./path` registers existing repos in your workspace without copying or moving files. Use this when repos are already cloned via corporate tooling, VPN, or manual `git clone`.
+:::
+
+**Bulk clone options:**
+
+```bash
+# All repos in org
+specweave get "my-org/*"
+
+# Filter by pattern
+specweave get "my-org/service-*"
+
+# Skip archived and forked repos
+specweave get "my-org/*" --no-archived --no-forks
+
+# Limit number of repos
+specweave get "my-org/*" --limit 50
+```
+
+:::tip Private repos & bulk clone
+Bulk operations require GitHub authentication. Run `gh auth login` or set the `GH_TOKEN` environment variable. Single repos use your existing git credentials (SSH keys or credential helper).
+:::
+
+:::info Large organizations
+Bulk cloning runs as a background job. Monitor progress with `specweave jobs`. The job survives terminal closure and skips already-cloned repos on resume.
+:::
 
 **Directory structure:**
 

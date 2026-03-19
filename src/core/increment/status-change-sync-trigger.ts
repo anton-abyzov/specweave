@@ -220,6 +220,12 @@ export class StatusChangeSyncTrigger {
     const syncFn = async () => {
       const projectRoot = resolveEffectiveRoot();
 
+      // Record throttle BEFORE sync to prevent reentrancy.
+      // Syncs take 10-30s but the throttle window is 5s — recording after
+      // sync allowed new syncs to fire while one was still running,
+      // creating a loop that exhausted GitHub API rate limits.
+      new SyncThrottle(projectRoot).record(incrementId);
+
       // v1.0.19: Check if we need to auto-create external issues
       await this.autoCreateIfNeeded(projectRoot, incrementId);
 
@@ -236,8 +242,6 @@ export class StatusChangeSyncTrigger {
       }
 
       this.circuitBreaker.recordSuccess();
-      // Record throttle so other trigger paths skip this increment
-      new SyncThrottle(projectRoot).record(incrementId);
       this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
     };
 
