@@ -15,7 +15,7 @@ model: opus
 
 Expert ideation facilitator. Combines structured frameworks (Six Thinking Hats, SCAMPER, TRIZ) with engineering judgment. Goal: **expand the solution space** before committing to an implementation path.
 
-**Principles:** Diverge before converging | Every approach gets fair hearing | Tables over essays | Feeds into `/sw:increment`, never replaces it
+**Principles:** Diverge before converging | Every approach gets fair hearing | Tables over essays | Feeds into `sw:increment`, never replaces it
 
 ---
 
@@ -131,7 +131,7 @@ When `--resume`: find most recent state file (`ls -t .specweave/state/brainstorm
 
 ### Custom Evaluation Criteria (`--criteria`)
 
-Override defaults: `/sw:brainstorm "topic" --criteria "perf,cost,complexity,risk"`. Preset sets auto-detected:
+Override defaults: `sw:brainstorm "topic" --criteria "perf,cost,complexity,risk"`. Preset sets auto-detected:
 - **Engineering** (default): Complexity, Time, Risk, Extensibility, Alignment
 - **Marketing/Product**: Brand Fit, Audience Reach, Cost, Differentiation, Time-to-Market
 - **Infrastructure**: Performance, Reliability, Cost, Operational Complexity, Scalability
@@ -369,11 +369,11 @@ Selected approach: [Name]
 
 What would you like to do?
 
-1. Turn this into an increment → /sw:increment "[approach summary]"
+1. Turn this into an increment → sw:increment "[approach summary]"
    (Passes brainstorm context: problem frame, selected approach, constraints)
 
 2. Brainstorm deeper with different lenses
-   → /sw:brainstorm "[topic]" --depth deep --lens [lens]
+   → sw:brainstorm "[topic]" --depth deep --lens [lens]
 
 3. Done for now — revisit later
 ```
@@ -498,7 +498,7 @@ Save to `.specweave/docs/brainstorms/YYYY-MM-DD-{topic-slug}.md`. Structure:
 [topic] tree with approaches, variants, and status markers (SELECTED/abandoned)
 
 ## Next Steps
-- `/sw:increment` | Brainstorm deeper | Park for later
+- `sw:increment` | Brainstorm deeper | Park for later
 ```
 
 **Notes:** Omit Deep Analysis for quick/standard. Omit Idea Tree variants for quick.
@@ -538,7 +538,7 @@ These are targets, not hard limits. Prefer conciseness, but expand when the prob
 - pros and cons of different approaches
 
 **Routing from CLAUDE.md:**
-- "Just brainstorm first" → routes to `/sw:brainstorm` (not an opt-out)
+- "Just brainstorm first" → routes to `sw:brainstorm` (not an opt-out)
 
 **Phase detection:**
 - Maps to `planning` phase (pre-increment ideation)

@@ -7,7 +7,7 @@ description: >
   Do NOT activate for Claude Code's built-in /help command.
 ---
 
-# /sw:help — SpecWeave Discovery
+# sw:help — SpecWeave Discovery
 
 You are showing the user what SpecWeave can do. Gather context first, then display organized help.
 
@@ -71,7 +71,7 @@ Parse the status JSON. If active increments exist, show:
 ```
 Active now:
   [ID] [title] — [progress]% ([completed]/[total] tasks)
-  Next: /sw:do [ID] (continue) | /sw:progress (status) | /sw:done [ID] (close)
+  Next: sw:do [ID] (continue) | sw:progress (status) | sw:done [ID] (close)
 ```
 
 #### C. Skills by Workflow Stage
@@ -80,63 +80,63 @@ Always show this section. Use a table format:
 
 ```
 PLAN — Define what to build
-  /sw:increment     Plan a new feature, bug fix, or change
-  /sw:pm            Product Manager — write specs and requirements
-  /sw:architect     System Architect — design architecture and ADRs
-  /sw:brainstorm    Multi-perspective ideation with cognitive lenses
-  /sw:plan          Generate plan.md and tasks.md for an increment
+  sw:increment     Plan a new feature, bug fix, or change
+  sw:pm            Product Manager — write specs and requirements
+  sw:architect     System Architect — design architecture and ADRs
+  sw:brainstorm    Multi-perspective ideation with cognitive lenses
+  sw:plan          Generate plan.md and tasks.md for an increment
 
 IMPLEMENT — Build it
-  /sw:do            Execute tasks step by step
-  /sw:auto          Autonomous execution (unattended)
-  /sw:team-lead     Parallel multi-agent orchestration
-  /sw:tdd-cycle     Test-driven development (red-green-refactor)
-  /sw:tdd-red       Write failing tests first
-  /sw:tdd-green     Make failing tests pass
-  /sw:tdd-refactor  Refactor with test safety net
+  sw:do            Execute tasks step by step
+  sw:auto          Autonomous execution (unattended)
+  sw:team-lead     Parallel multi-agent orchestration
+  sw:tdd-cycle     Test-driven development (red-green-refactor)
+  sw:tdd-red       Write failing tests first
+  sw:tdd-green     Make failing tests pass
+  sw:tdd-refactor  Refactor with test safety net
 
 VERIFY — Check quality
-  /sw:validate      130+ rule-based checks + AI quality assessment
-  /sw:grill         Critical code review before closure
-  /sw:judge-llm     Independent AI validation (ultrathink)
-  /sw:code-reviewer  6 parallel specialized reviewers
-  /sw:e2e           Playwright E2E tests traced to acceptance criteria
-  /sw:debug         Systematic 4-phase debugging with escalation
+  sw:validate      130+ rule-based checks + AI quality assessment
+  sw:grill         Critical code review before closure
+  sw:judge-llm     Independent AI validation (ultrathink)
+  sw:code-reviewer  6 parallel specialized reviewers
+  sw:e2e           Playwright E2E tests traced to acceptance criteria
+  sw:debug         Systematic 4-phase debugging with escalation
 
 CLOSE — Ship it
-  /sw:done          Close increment with PM 3-gate validation
-  /sw:next          Close current and suggest next work
-  /sw:pr            Create pull request from increment branch
+  sw:done          Close increment with PM 3-gate validation
+  sw:next          Close current and suggest next work
+  sw:pr            Create pull request from increment branch
 
 SYNC — Connect external tools
-  /sw:progress-sync  Sync progress to GitHub/JIRA/ADO
-  /sw:sync-setup     Configure GitHub, JIRA, or ADO integration
-  /sw:import         Import issues from external tools
+  sw:progress-sync  Sync progress to GitHub/JIRA/ADO
+  sw:sync-setup     Configure GitHub, JIRA, or ADO integration
+  sw:import         Import issues from external tools
 
 EXPLORE — Understand your project
-  /sw:docs          Browse and search living docs
-  /sw:progress      Show increment progress and task completion
-  /sw:analytics     Usage statistics dashboard
-  /sw:doctor        Installation health diagnostics
-  /sw:diagrams      Generate Mermaid architecture diagrams
+  sw:docs          Browse and search living docs
+  sw:progress      Show increment progress and task completion
+  sw:analytics     Usage statistics dashboard
+  sw:doctor        Installation health diagnostics
+  sw:diagrams      Generate Mermaid architecture diagrams
 
 CREATE — Generate media
-  /sw:image         AI image generation (Gemini, Pollinations)
-  /sw:video         AI video generation (Veo 3.1, Pollinations)
-  /sw:diagrams      Mermaid diagrams following C4 Model
-  /sw:remotion      Programmatic video with React/Remotion
+  sw:image         AI image generation (Gemini, Pollinations)
+  sw:video         AI video generation (Veo 3.1, Pollinations)
+  sw:diagrams      Mermaid diagrams following C4 Model
+  sw:remotion      Programmatic video with React/Remotion
 
 EXTEND — Customize SpecWeave
-  /sw:skill-gen     Generate project-specific skills from patterns
-  /sw:get           Clone and register repos into workspace
+  sw:skill-gen     Generate project-specific skills from patterns
+  sw:get           Clone and register repos into workspace
 ```
 
 #### D. Quick Reference
 
 ```
-Workflow: /sw:increment → /sw:do → /sw:done
-Autonomous: /sw:increment → /sw:auto (runs unattended)
-Team mode: /sw:increment → /sw:team-lead (parallel agents)
+Workflow: sw:increment → sw:do → sw:done
+Autonomous: sw:increment → sw:auto (runs unattended)
+Team mode: sw:increment → sw:team-lead (parallel agents)
 
 Docs: https://spec-weave.com
 ```

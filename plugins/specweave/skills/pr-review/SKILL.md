@@ -57,7 +57,7 @@ Build a review checklist from ACs.
 ## Step 3: Get PR Diff
 
 ```bash
-gh pr diff ${PR_NUMBER} > /tmp/sw-pr-diff-${PR_NUMBER}.diff
+gh pr diff ${PR_NUMBER} > /tmpsw-pr-diff-${PR_NUMBER}.diff
 ```
 
 Also get the list of changed files:
@@ -108,13 +108,13 @@ Determine review action based on AC coverage:
 
 ```bash
 gh pr review ${PR_NUMBER} \
-  --body-file /tmp/sw-pr-review-${PR_NUMBER}.md \
+  --body-file /tmpsw-pr-review-${PR_NUMBER}.md \
   --{approve|request-changes|comment}
 ```
 
 Clean up:
 ```bash
-rm -f /tmp/sw-pr-diff-${PR_NUMBER}.diff /tmp/sw-pr-review-${PR_NUMBER}.md
+rm -f /tmpsw-pr-diff-${PR_NUMBER}.diff /tmpsw-pr-review-${PR_NUMBER}.md
 ```
 
 ## Step 6: Post Inline Comments (Optional)
@@ -140,7 +140,7 @@ For teams that want automated PR reviews, this skill can be triggered via Claude
 {
   "tasks": [{
     "schedule": "*/30 * * * *",
-    "command": "/sw:pr-review --all-open",
+    "command": "sw:pr-review --all-open",
     "description": "Review all open PRs every 30 minutes"
   }]
 }

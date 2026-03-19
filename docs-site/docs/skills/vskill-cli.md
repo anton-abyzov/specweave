@@ -229,7 +229,9 @@ vskill list --agents
 
 ### `update`
 
-Update installed skills from the registry. Re-runs security scan with diff analysis.
+Update installed skills from their source. Re-runs security scan with diff analysis. By default updates **all** installed skills (no flags needed).
+
+Supports all source types including `local:specweave` skills (core SpecWeave skills installed via `specweave refresh-plugins`). These are updated from the local plugin cache.
 
 ```bash
 vskill update [skill] [options]
@@ -239,17 +241,20 @@ vskill update [skill] [options]
 
 | Flag | Description |
 |------|-------------|
-| `--all` | Update all installed skills |
+| `--all` | Explicit flag (same as default behavior) |
 | `--agent <id>` | Update only for specific agent (repeatable) |
 
 **Examples:**
 
 ```bash
+# Update all installed skills (default)
+vskill update
+
 # Update a specific skill
 vskill update auth-guard
 
-# Update all installed skills
-vskill update --all
+# Update only for Cursor
+vskill update --agent cursor
 ```
 
 ---

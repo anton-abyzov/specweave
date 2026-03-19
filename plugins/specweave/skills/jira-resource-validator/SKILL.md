@@ -92,7 +92,7 @@ This skill ensures your Jira configuration in `.env` is valid and all resources 
 
 ✅ **Automatically activates when**:
 - You set up Jira integration for the first time
-- You run `/sw-jira:sync` and resources are missing
+- You run `sw-jira:sync` and resources are missing
 - Your `.env` has invalid Jira configuration
 - You mention "jira setup" or "jira validation"
 
@@ -282,7 +282,7 @@ Checking boards: 101,102,QA,Dashboard...
 
 **Scenario**: New project, no Jira resources exist yet
 
-**Action**: Run `/sw-jira:sync`
+**Action**: Run `sw-jira:sync`
 
 **What Happens**:
 ```bash
@@ -663,10 +663,10 @@ Retry? [Y/n]:
 
 ### Automatic Validation
 
-When using `/sw-jira:sync`, validation runs automatically:
+When using `sw-jira:sync`, validation runs automatically:
 
 ```bash
-/sw-jira:sync 0014
+sw-jira:sync 0014
 
 # Internally calls:
 1. validateJiraResources()

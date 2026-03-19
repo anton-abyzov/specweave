@@ -5,7 +5,7 @@ context: fork
 model: opus
 ---
 
-# /sw:skill-gen — Project-Specific Skill Generation
+# sw:skill-gen — Project-Specific Skill Generation
 
 ## Project Overrides
 
@@ -170,7 +170,7 @@ This skill activates when the user:
 - Says "skill-gen", "generate skills", "create project skills"
 - Says "codify patterns", "skill generation", "detected patterns"
 - Responds to a suggestion printed during increment closure
-- Runs `/sw:skill-gen` explicitly
+- Runs `sw:skill-gen` explicitly
 
 ## Resources
 

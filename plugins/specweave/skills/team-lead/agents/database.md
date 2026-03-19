@@ -32,9 +32,9 @@ WORKFLOW:
        content: "PLAN_READY: Created [increment path]\nTasks: [count]\nACs covered: [AC-IDs]\nKey decisions: [schema changes summary]\nFiles: [migration files, schema changes]\nArchitecture: [approach]",
        summary: "Database plan ready — proceeding to implementation" })
   9. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
-  10. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  10. Execute tasks autonomously: sw:auto --simple (minimal context mode to prevent context overflow)
       Tasks should include: Prisma migration generation, seed data, schema validation
-  11. During /sw:auto execution, after EACH task completion send heartbeat:
+  11. During sw:auto execution, after EACH task completion send heartbeat:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
        summary: "Database agent: task {N} of {total} done" })
@@ -48,7 +48,7 @@ WORKFLOW:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "COMPLETION: [increment path]\nTasks: {completed}/{total}\nTests: [pass/fail/skip]\nACs satisfied: [AC-IDs]\nFiles changed: [list]",
        summary: "Database agent: all tasks complete, tests passing" })
-  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  16. Do NOT run sw:done or sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

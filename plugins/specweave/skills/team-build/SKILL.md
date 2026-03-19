@@ -15,15 +15,15 @@ Spawn a coordinated team of agents from a preset configuration. Each preset defi
 ## Quick Start
 
 ```
-/sw:team-build --preset full-stack "Build checkout flow"
-/sw:team-build --preset review "Review auth module"
-/sw:team-build --preset brainstorm "Brainstorm payment architecture"
-/sw:team-build --preset testing "Test payment service"
-/sw:team-build --preset tdd "Implement rate limiter"
-/sw:team-build --preset migration "Migrate users to v2 schema"
+sw:team-build --preset full-stack "Build checkout flow"
+sw:team-build --preset review "Review auth module"
+sw:team-build --preset brainstorm "Brainstorm payment architecture"
+sw:team-build --preset testing "Test payment service"
+sw:team-build --preset tdd "Implement rate limiter"
+sw:team-build --preset migration "Migrate users to v2 schema"
 ```
 
-**Note:** For the complete mode documentation and 9-domain skill mapping, see `/sw:team-lead`.
+**Note:** For the complete mode documentation and 9-domain skill mapping, see `sw:team-lead`.
 
 ## How It Works
 
@@ -83,7 +83,7 @@ Agent 2          Agent 3
 (Backend)        (Frontend)
     |               |
     v               v
-  /sw:grill       /sw:grill
+  sw:grill       sw:grill
 ```
 
 **Why contract-first**: Backend and frontend agents import from `src/types/` and `src/shared/`. By resolving the contract first, both downstream agents work against stable interfaces — no integration surprises.
@@ -91,7 +91,7 @@ Agent 2          Agent 3
 #### Example
 
 ```
-/sw:team-build --preset full-stack "Build user profile page with avatar upload"
+sw:team-build --preset full-stack "Build user profile page with avatar upload"
 ```
 
 This spawns:
@@ -141,8 +141,8 @@ REVIEW_COMPLETE     REVIEW_COMPLETE     REVIEW_COMPLETE     |
 #### Example
 
 ```
-/sw:team-build --preset review "Review auth module before release"
-/sw:team-build --preset review "Review PR #63"
+sw:team-build --preset review "Review auth module before release"
+sw:team-build --preset review "Review PR #63"
 ```
 
 This spawns three parallel reviewers:
@@ -191,7 +191,7 @@ unit tests      e2e tests       coverage report |
 #### Example
 
 ```
-/sw:team-build --preset testing "Test payment service end to end"
+sw:team-build --preset testing "Test payment service end to end"
 ```
 
 This spawns:
@@ -234,7 +234,7 @@ Agent 2 (Green)
 Agent 3 (Refactor)
     |
     v
-   GATE — all tests still pass + /sw:grill
+   GATE — all tests still pass + sw:grill
 ```
 
 **Strict sequential execution.** Agent 2 cannot start until Agent 1's tests are verified failing. Agent 3 cannot start until Agent 2's implementation passes all tests. This enforces true TDD discipline.
@@ -246,7 +246,7 @@ When `testing.defaultTestMode: "TDD"` is set in `.specweave/config.json`, this p
 #### Example
 
 ```
-/sw:team-build --preset tdd "Implement rate limiter with sliding window"
+sw:team-build --preset tdd "Implement rate limiter with sliding window"
 ```
 
 This spawns sequentially:
@@ -286,7 +286,7 @@ Agent 2          Agent 3
 (Backend)        (Frontend)
     |               |
     v               v
-  /sw:grill       /sw:grill
+  sw:grill       sw:grill
 ```
 
 **Schema-first ensures safety.** The migration and new types must be validated before downstream agents modify application code. Both backend and frontend work against the finalized schema in parallel.
@@ -294,7 +294,7 @@ Agent 2          Agent 3
 #### Example
 
 ```
-/sw:team-build --preset migration "Migrate users to v2 schema with address normalization"
+sw:team-build --preset migration "Migrate users to v2 schema with address normalization"
 ```
 
 This spawns:
@@ -336,7 +336,7 @@ PERSPECTIVE_COMPLETE PERSPECTIVE_COMPLETE PERSPECTIVE_COMPLETE|
                     |
                     v
             Decision matrix + recommendation
-            → /sw:increment if proceeding
+            → sw:increment if proceeding
 ```
 
 **All agents run in parallel.** Each signals `PERSPECTIVE_COMPLETE:`. Team-lead synthesizes into a decision matrix with scored options.
@@ -344,7 +344,7 @@ PERSPECTIVE_COMPLETE PERSPECTIVE_COMPLETE PERSPECTIVE_COMPLETE|
 #### Example
 
 ```
-/sw:team-build --preset brainstorm "Microservices vs monolith for our growing app"
+sw:team-build --preset brainstorm "Microservices vs monolith for our growing app"
 ```
 
 This spawns:
@@ -381,8 +381,8 @@ This spawns:
 Each spawned agent integrates with the standard SpecWeave workflow:
 
 1. **Increment context** — agents read `spec.md` and `tasks.md` from the active increment
-2. **Task execution** — agents use `/sw:do` or `/sw:auto` to work through their assigned tasks
-3. **Quality gates** — agents run `/sw:grill` before marking tasks complete
+2. **Task execution** — agents use `sw:do` or `sw:auto` to work through their assigned tasks
+3. **Quality gates** — agents run `sw:grill` before marking tasks complete
 4. **Progress tracking** — task status updates flow back to `tasks.md` with AC linkage
 5. **Ownership boundaries** — agents only modify files within their assigned directories
 6. **Conflict prevention** — ownership scopes are non-overlapping to prevent merge conflicts
@@ -394,8 +394,8 @@ These presets operate without increments:
 1. **Read-only analysis** — agents examine code but do not modify it
 2. **Independent reports** — each agent produces findings independently
 3. **Team-lead synthesis** — team-lead merges and deduplicates agent outputs
-4. **No closure needed** — no `/sw:done` or `/sw:grill` required
-5. **Follow-up bridge** — if actionable items found, suggest `/sw:increment` to formalize
+4. **No closure needed** — no `sw:done` or `sw:grill` required
+5. **Follow-up bridge** — if actionable items found, suggest `sw:increment` to formalize
 
 ### Organization Discovery (resolve BEFORE spawning agents)
 
@@ -417,7 +417,7 @@ Resolve the `{ORG}` placeholder from `.specweave/config.json` (in priority order
 ### Agent Lifecycle
 
 ```
-Spawn → Load increment context → Claim tasks → /sw:do or /sw:auto → /sw:grill → Report completion
+Spawn → Load increment context → Claim tasks → sw:do or sw:auto → sw:grill → Report completion
 ```
 
 ### Error Handling
@@ -433,7 +433,7 @@ If user provides an unknown preset name:
 
 ```
 Error: Unknown preset "xyz". Available presets: full-stack, review, brainstorm, testing, tdd, migration.
-Use /sw:team-build --help to see preset details.
+Use sw:team-build --help to see preset details.
 ```
 
 ## Custom Presets
@@ -473,7 +473,7 @@ Custom presets follow the same execution rules: agents with no `dependsOn` run i
 | Gate agent blocks forever | Kill the stuck agent and check its output for errors |
 | Ownership conflict | Ensure no two agents in the same preset share directory ownership |
 | TDD gate rejects Green | Agent 1 (Red) tests must genuinely fail — check for accidentally passing tests |
-| Agents out of sync | Run `/sw:progress` to see per-agent task status and identify blockers |
+| Agents out of sync | Run `sw:progress` to see per-agent task status and identify blockers |
 
 ## Resources
 

@@ -585,6 +585,24 @@ specweave update --no-plugins # Skip plugin refresh
 
 Updates: CLI version, plugins, CLAUDE.md instructions.
 
+### specweave refresh-plugins
+
+**Refresh skills/plugins for all AI tools.**
+
+```bash
+specweave refresh-plugins          # Refresh core plugin
+specweave refresh-plugins --all    # All plugins
+specweave refresh-plugins --force  # Force re-copy even if unchanged
+```
+
+Copies skills to tool-specific directories based on the configured adapter. For non-Claude tools (OpenCode, Cursor, Copilot, etc.), SKILL.md frontmatter is automatically normalized:
+
+- **`name:`** ensured (derived from skill directory name)
+- **`description:`** ensured (extracted from body if missing)
+- Claude-specific fields (`hooks`, `model`, `allowed-tools`, etc.) stripped
+
+This ensures non-Claude tools can discover and invoke skills correctly.
+
 ### specweave lsp
 
 **Code navigation (workaround for Claude Code v2.1.0+ LSP bug).**

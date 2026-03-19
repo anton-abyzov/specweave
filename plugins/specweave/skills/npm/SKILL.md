@@ -3,7 +3,7 @@ description: Full patch release with npm publish and GitHub Release. Flags: --qu
 user-invokable: false
 ---
 
-# /sw:npm - NPM Release Automation
+# sw:npm - NPM Release Automation
 
 You are the NPM Release Assistant. Your job is to automate the patch version release process.
 
@@ -66,12 +66,12 @@ fi
 
 | Command | Flow | Use Case |
 |---------|------|----------|
-| `/sw:npm` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish** -> Push tag -> **GH Release** | **DEFAULT: FULL RELEASE** |
-| `/sw:npm --quick` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish locally** -> NO GH release | **QUICK: Save + Local Release** |
-| `/sw:npm --ci` | Bump -> Push -> **CI publishes + GH Release** | Let GitHub Actions handle everything |
-| `/sw:npm --only` | Bump -> Build -> **Publish locally** -> NO push | Quick local release, push later |
-| `/sw:npm --only --local` | **Bump ONLY** -> NO build, NO publish, NO git | FASTEST: Local testing only |
-| `/sw:npm --stable` | Same as default, but promotes prerelease to stable | **PROMOTE TO STABLE** |
+| `sw:npm` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish** -> Push tag -> **GH Release** | **DEFAULT: FULL RELEASE** |
+| `sw:npm --quick` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish locally** -> NO GH release | **QUICK: Save + Local Release** |
+| `sw:npm --ci` | Bump -> Push -> **CI publishes + GH Release** | Let GitHub Actions handle everything |
+| `sw:npm --only` | Bump -> Build -> **Publish locally** -> NO push | Quick local release, push later |
+| `sw:npm --only --local` | **Bump ONLY** -> NO build, NO publish, NO git | FASTEST: Local testing only |
+| `sw:npm --stable` | Same as default, but promotes prerelease to stable | **PROMOTE TO STABLE** |
 
 ## Detecting Mode
 
@@ -460,7 +460,7 @@ gh release view "v$NEW_VERSION" --json tagName,url
 
 ## QUICK MODE WORKFLOW (--quick flag) - SAVE + LOCAL RELEASE
 
-Use this workflow when `--quick` flag is detected. This combines `/sw:save` behavior with local npm publish. **NO GitHub workflow trigger** - everything happens locally.
+Use this workflow when `--quick` flag is detected. This combines `sw:save` behavior with local npm publish. **NO GitHub workflow trigger** - everything happens locally.
 
 **Use case**: You want to quickly save your work AND release a new patch version without waiting for GitHub Actions. Perfect for:
 - Hotfixes that need immediate npm availability
@@ -808,7 +808,7 @@ fi
 5. Publish: `npm publish --registry https://registry.npmjs.org`
 6. Push: `git push origin $BRANCH --follow-tags`
 
-**Or use**: `/sw:npm` (no flags) for full instant release
+**Or use**: `sw:npm` (no flags) for full instant release
 ```
 
 ## Local Mode Success Criteria
@@ -909,22 +909,22 @@ Skip this step entirely — there's only one repo and it was already pushed.
 
 ```bash
 # DEFAULT: Full release (auto-commits dirty, publishes, pushes + tag, GH release)
-/sw:npm
+sw:npm
 
 # QUICK: Save + local release (auto-commits, pushes, publishes - NO GH release)
-/sw:npm --quick
+sw:npm --quick
 
 # CI release (GitHub Actions handles npm publish) - requires clean tree
-/sw:npm --ci
+sw:npm --ci
 
 # Quick local publish, sync git later
-/sw:npm --only
+sw:npm --only
 
 # FASTEST: Version bump only (no publish, no git, no build)
-/sw:npm --only --local
+sw:npm --only --local
 
 # PROMOTE prerelease to stable (1.0.0-rc.5 -> 1.0.1)
-/sw:npm --stable
+sw:npm --stable
 ```
 
 | Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed | GH Release | Umbrella Sync |

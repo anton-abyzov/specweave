@@ -270,7 +270,7 @@ else
   echo "Solutions:"
   echo "  1. Enable billing at https://aistudio.google.com/ for Veo"
   echo "  2. Try again in a few minutes (Pollinations may recover)"
-  echo "  3. Consider /sw-media:remotion for programmatic video (no AI, no API key)"
+  echo "  3. Consider sw-media:remotion for programmatic video (no AI, no API key)"
 fi
 ```
 
@@ -342,7 +342,7 @@ If no `GEMINI_API_KEY` is set, inform the user:
 > The same key works for both image AND video generation.
 > Video costs ~$0.75-3.20 per clip depending on model/resolution.
 >
-> For programmatic video (no AI, no API key), try `/sw-media:remotion`.
+> For programmatic video (no AI, no API key), try `sw-media:remotion`.
 
 ## Activation Keywords
 

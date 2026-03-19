@@ -13,9 +13,9 @@ Create videos entirely in React using Remotion. Each frame is a React component.
 | Use Case | Tool |
 |----------|------|
 | Precise animations, branded content, data visualizations | **Remotion** (this skill) |
-| Creative/artistic video from text description | `/sw-media:video` (AI models) |
+| Creative/artistic video from text description | `sw-media:video` (AI models) |
 | Product demos, marketing, changelogs | **Remotion** |
-| Realistic footage, scenes, landscapes | `/sw-media:video` |
+| Realistic footage, scenes, landscapes | `sw-media:video` |
 
 ## Workflow
 

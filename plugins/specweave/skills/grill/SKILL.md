@@ -1,5 +1,5 @@
 ---
-description: Critical code review and quality interrogation before increment completion. Use when finishing a feature, before /sw:done, or when saying "grill the code", "review my work", "critique implementation".
+description: Critical code review and quality interrogation before increment completion. Use when finishing a feature, before sw:done, or when saying "grill the code", "review my work", "critique implementation".
 argument-hint: "[increment-id]"
 allowed-tools: Read, Grep, Glob, Bash
 context: fork
@@ -16,7 +16,7 @@ I'm a demanding senior engineer who stress-tests your implementation before it s
 
 ## When to Use This Skill
 
-**MANDATORY before `/sw:done`** - This skill MUST be called before closing any increment.
+**MANDATORY before `sw:done`** - This skill MUST be called before closing any increment.
 
 Call me when you need to:
 - **Finish a feature** - Before marking an increment complete
@@ -29,9 +29,9 @@ Call me when you need to:
 
 This skill is the **PRE-SHIP quality gate**. Focuses on: correctness, edge cases, performance issues, error handling.
 
-- For deep security audits → use `/sw:security`
-- For design pattern guidance → use `/sw:architect`
-- For code style/clarity → use `/sw:code-simplifier`
+- For deep security audits → use `sw:security`
+- For design pattern guidance → use `sw:architect`
+- For code style/clarity → use `sw:code-simplifier`
 
 ## My Mindset: The Demanding Reviewer
 
@@ -219,8 +219,8 @@ Ship readiness: READY | NOT READY | NEEDS REVIEW
 To see all findings including low-confidence ones:
 
 ```
-/sw:grill 0042 --verbose       # Show findings with confidence >= 50
-/sw:grill 0042 --threshold 30  # Show findings with confidence >= 30
+sw:grill 0042 --verbose       # Show findings with confidence >= 50
+sw:grill 0042 --threshold 30  # Show findings with confidence >= 30
 ```
 
 Default threshold is 70. Lowering it is useful when debugging a specific area or doing a thorough pre-release review.
@@ -283,7 +283,7 @@ Default threshold is 70. Lowering it is useful when debugging a specific area or
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {IF PASS:}
-✅ Code passes the grill. Ready for /sw:done {increment-id}
+✅ Code passes the grill. Ready for sw:done {increment-id}
 
 {IF FAIL:}
 ❌ Code FAILS the grill. Fix BLOCKER/CRITICAL issues before closing.
@@ -291,7 +291,7 @@ Default threshold is 70. Lowering it is useful when debugging a specific area or
 Blocking issues:
 {list of BLOCKER and CRITICAL issues}
 
-After fixing, run: /sw:grill {increment-id} {focus-area}
+After fixing, run: sw:grill {increment-id} {focus-area}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -309,7 +309,7 @@ When called, you can specify a focus area:
 | `correctness` | AC satisfaction, business logic, data integrity |
 | `all` (default) | Everything above |
 
-**Usage**: `/sw:grill 0042` or `/sw:grill 0042 security`
+**Usage**: `sw:grill 0042` or `sw:grill 0042 security`
 
 ---
 
@@ -358,11 +358,11 @@ Then write the report using the Write tool:
 
 ---
 
-## Integration with /sw:done
+## Integration with sw:done
 
-`/sw:done` calls `/sw:grill` as Step 2 (blocking gate). The CLI re-verifies `grill-report.json` exists when running `specweave complete`.
+`sw:done` calls `sw:grill` as Step 2 (blocking gate). The CLI re-verifies `grill-report.json` exists when running `specweave complete`.
 
-You can also run `/sw:grill` standalone at any time for early feedback.
+You can also run `sw:grill` standalone at any time for early feedback.
 
 ---
 

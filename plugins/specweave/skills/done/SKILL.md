@@ -11,12 +11,12 @@ argument-hint: "<increment-id> [--auto]"
 
 **PM-Led Closure**: Validate tasks, tests, and docs before closing.
 
-**AUTO-CLOSURE DEFAULT**: After `/sw:do` completes all tasks, `/sw:done` runs automatically — no user confirmation needed. Quality gates (grill, judge-llm, PM validation) provide the safety net. If something is wrong, the user can re-open the increment.
+**AUTO-CLOSURE DEFAULT**: After `sw:do` completes all tasks, `sw:done` runs automatically — no user confirmation needed. Quality gates (grill, judge-llm, PM validation) provide the safety net. If something is wrong, the user can re-open the increment.
 
 ## Usage
 
 ```
-/sw:done <increment-id> [--auto]
+sw:done <increment-id> [--auto]
 ```
 
 Argument: Required increment ID (e.g., "001", "0001", "0042", "0153-feature-name"). Numeric portion extracted and zero-padded to 4 digits.
@@ -148,7 +148,7 @@ After the CLI completes, display the sync result summary:
 | Issue closure            | OK / SKIPPED              |
 ```
 
-If any operation failed, display: "Run `/sw:progress-sync` to retry failed sync operations."
+If any operation failed, display: "Run `sw:progress-sync` to retry failed sync operations."
 
 **Supplemental closure** (not handled by hooks — run manually if applicable):
 
@@ -177,7 +177,7 @@ Verify that `.specweave/docs/internal/specs/{project}/FS-XXX/` contains `FEATURE
 
 ### Step 11: Post-Closure Quality Assessment
 
-Runs ONLY if closure succeeded. Invoke: `/sw:qa ${incrementId}`
+Runs ONLY if closure succeeded. Invoke: `sw:qa ${incrementId}`
 
 Evaluates 7 dimensions: Clarity, Testability, Completeness, Feasibility, Maintainability, Edge Cases, Risk Assessment.
 

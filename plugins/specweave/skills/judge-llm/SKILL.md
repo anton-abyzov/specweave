@@ -1,15 +1,15 @@
 ---
-description: Ultrathink LLM-as-Judge validation of completed work. Uses extended thinking and Opus model for thorough, independent evaluation. Use when saying "judge my code", "judge-llm", "deep validate", or as part of /sw:done closure.
+description: Ultrathink LLM-as-Judge validation of completed work. Uses extended thinking and Opus model for thorough, independent evaluation. Use when saying "judge my code", "judge-llm", "deep validate", or as part of sw:done closure.
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
 # Ultrathink LLM-as-Judge Validation
 
-**ULTRATHINK BY DEFAULT** - Validate completed work using extended thinking and the LLM-as-Judge pattern. Provides an independent second opinion separate from `/sw:grill`.
+**ULTRATHINK BY DEFAULT** - Validate completed work using extended thinking and the LLM-as-Judge pattern. Provides an independent second opinion separate from `sw:grill`.
 
-## How It Differs from /sw:grill
+## How It Differs from sw:grill
 
-| Aspect | `/sw:grill` | `/sw:judge-llm` |
+| Aspect | `sw:grill` | `sw:judge-llm` |
 |--------|-------------|-----------------|
 | Execution | In-session (same context) | **Separate Opus API call** |
 | Context | Shares conversation context | **Fresh context (no bias)** |
@@ -32,25 +32,25 @@ allowed-tools: Read, Grep, Glob, Bash
 
 ```bash
 # DEFAULT: Ultrathink validation (recommended)
-/sw:judge-llm src/file.ts
-/sw:judge-llm "src/**/*.ts"
+sw:judge-llm src/file.ts
+sw:judge-llm "src/**/*.ts"
 
 # Validate git changes (ultrathink by default)
-/sw:judge-llm --staged           # Staged changes
-/sw:judge-llm --last-commit      # Last commit
-/sw:judge-llm --diff main        # Diff vs branch
+sw:judge-llm --staged           # Staged changes
+sw:judge-llm --last-commit      # Last commit
+sw:judge-llm --diff main        # Diff vs branch
 
 # Quick mode (ONLY if you need speed over thoroughness)
-/sw:judge-llm src/file.ts --quick
+sw:judge-llm src/file.ts --quick
 
 # Timeout control (default: 60s)
-/sw:judge-llm src/file.ts --timeout 120000
+sw:judge-llm src/file.ts --timeout 120000
 
 # Additional options
-/sw:judge-llm src/file.ts --strict   # Fail on any concern
-/sw:judge-llm src/file.ts --fix      # Include fix suggestions
-/sw:judge-llm src/file.ts --export   # Export report to markdown
-/sw:judge-llm src/file.ts --verbose  # Show progress to console
+sw:judge-llm src/file.ts --strict   # Fail on any concern
+sw:judge-llm src/file.ts --fix      # Include fix suggestions
+sw:judge-llm src/file.ts --export   # Export report to markdown
+sw:judge-llm src/file.ts --verbose  # Show progress to console
 ```
 
 ## External API Cost Consent (MANDATORY)
@@ -182,9 +182,9 @@ Progress logged to `.specweave/logs/judge-llm.log`. Default timeout 60s aborts i
 
 ## Related
 
-- `/sw:grill` - Confidence-scored pre-ship quality gate (in-session)
-- `/sw:validate` - Rule-based increment validation
-- `/sw:done` - Increment closure (runs both grill and judge-llm)
+- `sw:grill` - Confidence-scored pre-ship quality gate (in-session)
+- `sw:validate` - Rule-based increment validation
+- `sw:done` - Increment closure (runs both grill and judge-llm)
 
 ## Resources
 
