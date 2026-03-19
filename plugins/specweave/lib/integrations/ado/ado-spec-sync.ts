@@ -451,11 +451,12 @@ export class AdoSpecSync {
 
     for (const us of spec.metadata.userStories) {
       // Create or update ADO User Story for each user story
-      const storyTitle = `[${us.id}] ${us.title}`;
+      const specId = spec.metadata.id.toUpperCase();
+      const storyTitle = `[${specId}][${us.id}] ${us.title}`;
       const storyDescription = this.generateStoryDescription(us);
 
-      // Check if story already exists (by searching for US-ID in title)
-      const existingStory = await this.findStoryByTitle(us.id);
+      // Check if story already exists (scoped to current feature by spec ID)
+      const existingStory = await this.findStoryByTitle(specId, us.id);
 
       let storyId: number;
       if (existingStory) {
@@ -671,16 +672,17 @@ ${acList}
   /**
    * Find story by title pattern
    */
-  private async findStoryByTitle(usId: string): Promise<AdoUserStory | null> {
+  private async findStoryByTitle(featureId: string, usId: string): Promise<AdoUserStory | null> {
     // Use the resolved type ('Issue' for Basic process, 'User Story' for Agile) so the
     // WIQL query matches exactly what createStory() created — prevents duplicate creation.
+    // Scope to feature ID to avoid matching stories from other increments (US-IDs are reused).
     const resolvedType = await this.resolveWorkItemType('User Story');
     const wiql = `
       SELECT [System.Id], [System.Title], [System.Description], [System.State]
       FROM WorkItems
       WHERE [System.TeamProject] = '${this.config.project}'
         AND [System.WorkItemType] = '${resolvedType}'
-        AND [System.Title] CONTAINS '[${usId}]'
+        AND [System.Title] CONTAINS '[${featureId}][${usId}]'
     `;
 
     const response = await this.client.post('/wit/wiql?api-version=7.0', {
@@ -813,10 +815,45 @@ ${acList}
       });
     }
 
-    // Re-apply parent link separately — ADO rejects adding a duplicate relation,
-    // so we catch that error and continue (parent is already set, which is correct).
+    // Re-parent: fetch current relations, compare, and swap if different.
+    // Previous implementation silently caught 409 errors, which masked cases where
+    // the story was linked to the WRONG parent from a different increment.
     if (updates.parentId) {
-      try {
+      const detailResp = await this.client.get(`/wit/workitems/${storyId}?$expand=relations&api-version=7.0`);
+      const relations: Array<{ rel: string; url: string }> = detailResp.data.relations || [];
+
+      // Find existing parent (Hierarchy-Reverse = child-to-parent link)
+      let existingParentId: number | null = null;
+      let existingParentIndex: number = -1;
+      for (let i = 0; i < relations.length; i++) {
+        if (relations[i].rel === 'System.LinkTypes.Hierarchy-Reverse') {
+          const urlParts = relations[i].url.split('/');
+          existingParentId = parseInt(urlParts[urlParts.length - 1], 10);
+          existingParentIndex = i;
+          break;
+        }
+      }
+
+      if (existingParentId === updates.parentId) {
+        // Parent already correct — no-op
+      } else if (existingParentId !== null && existingParentId !== updates.parentId) {
+        // Wrong parent — remove old and add new in a single PATCH (atomic)
+        await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
+          { op: 'remove', path: `/relations/${existingParentIndex}` },
+          {
+            op: 'add',
+            path: '/relations/-',
+            value: {
+              rel: 'System.LinkTypes.Hierarchy-Reverse',
+              url: `https://dev.azure.com/${this.config.organization}/${this.config.project}/_apis/wit/workitems/${updates.parentId}`,
+              attributes: { name: 'Parent' }
+            }
+          }
+        ], {
+          headers: { 'Content-Type': 'application/json-patch+json' }
+        });
+      } else {
+        // No existing parent — add new link
         await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
           {
             op: 'add',
@@ -830,8 +867,6 @@ ${acList}
         ], {
           headers: { 'Content-Type': 'application/json-patch+json' }
         });
-      } catch {
-        // Duplicate relation — parent already set, ignore
       }
     }
   }
