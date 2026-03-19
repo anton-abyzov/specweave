@@ -33,9 +33,9 @@ WORKFLOW:
        content: "PLAN_READY: Created [increment path]\nTasks: [count]\nACs covered: [AC-IDs]\nKey decisions: [security findings, hardening approach]\nFiles: [file list]\nRisk areas: [identified vulnerabilities]",
        summary: "Security plan ready — proceeding to implementation" })
   9. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
-  10. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  10. Execute tasks autonomously: sw:auto --simple (minimal context mode to prevent context overflow)
       Tasks should include: auth/authz middleware, input validation, sanitization, OWASP hardening
-  11. During /sw:auto execution, after EACH task completion send heartbeat:
+  11. During sw:auto execution, after EACH task completion send heartbeat:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
        summary: "Security agent: task {N} of {total} done" })
@@ -46,7 +46,7 @@ WORKFLOW:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "COMPLETION: [increment path]\nTasks: {completed}/{total}\nTests: [pass/fail/skip]\nAudit: [npm audit results]\nACs satisfied: [AC-IDs]\nFindings: [security issues found/fixed]",
        summary: "Security agent: all tasks complete, audit clean" })
-  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  16. Do NOT run sw:done or sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

@@ -1,5 +1,5 @@
 ---
-description: Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Use when asking about GitHub integration setup, troubleshooting sync issues, or configuring sync settings. For actual syncing, use /sw-github:sync-spec command.
+description: Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Use when asking about GitHub integration setup, troubleshooting sync issues, or configuring sync settings. For actual syncing, use sw-github:sync-spec command.
 user-invokable: false
 ---
 
@@ -9,7 +9,7 @@ user-invokable: false
 
 **Default Behavior**: **Two-way sync** (push & pull) - Changes in either system are automatically synchronized
 
-**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/sw-github:sync-spec` command directly. This skill should NOT auto-activate when the command is being invoked.
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `sw-github:sync-spec` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 ## When to Activate
 
@@ -20,11 +20,11 @@ user-invokable: false
 - User needs help configuring GitHub integration
 
 ❌ **Do NOT activate when**:
-- User invokes `/sw-github:sync-spec` command (command handles it)
+- User invokes `sw-github:sync-spec` command (command handles it)
 - Command is already running (avoid duplicate invocation)
 - Task completion hook is syncing (automatic process)
 
-**Integration**: Works with `/sw-github:sync-spec` command
+**Integration**: Works with `sw-github:sync-spec` command
 
 ---
 
@@ -176,7 +176,7 @@ As a developer, I want to install SpecWeave via NPM so that I can use it in my p
 
 **Use Case**: Import existing GitHub Projects as SpecWeave specs
 
-**Command**: `/sw-github:import-project <project-number>`
+**Command**: `sw-github:import-project <project-number>`
 
 **Actions**:
 1. Fetch project via GitHub GraphQL API
@@ -248,7 +248,7 @@ gh auth status
 ### Sync Spec to GitHub
 
 ```bash
-/sw-github:sync-spec spec-001
+sw-github:sync-spec spec-001
 ```
 
 Creates or updates GitHub Project for spec-001.
@@ -256,7 +256,7 @@ Creates or updates GitHub Project for spec-001.
 ### Sync All Specs
 
 ```bash
-/sw-github:sync-spec --all
+sw-github:sync-spec --all
 ```
 
 Syncs all specs to GitHub Projects.
@@ -264,7 +264,7 @@ Syncs all specs to GitHub Projects.
 ### Import Project
 
 ```bash
-/sw-github:import-project 123
+sw-github:import-project 123
 ```
 
 Imports GitHub Project #123 as a SpecWeave spec.
@@ -272,7 +272,7 @@ Imports GitHub Project #123 as a SpecWeave spec.
 ### Check Status
 
 ```bash
-/sw-github:status spec-001
+sw-github:status spec-001
 ```
 
 Shows sync status (project ID, last sync time, progress %).
@@ -293,11 +293,11 @@ PM: Creates .specweave/docs/internal/specs/spec-005-user-auth.md
 → Issues created for each user story
 
 # 3. Implement increments
-/sw:increment "Add login flow"
+sw:increment "Add login flow"
 → Increment 0010 created (implements US-001, US-002)
 
 # 4. Work on tasks
-/sw:do
+sw:do
 → Task completed
 → Hook fires
 → Spec updated (AC marked complete)
@@ -338,7 +338,7 @@ The spec is always the source of truth. GitHub Projects are a mirror for visibil
 2. Manual edits to project/issue body/title
 
 **Resolution**:
-- Run `/sw-github:sync-spec spec-001 --force` to overwrite project from spec
+- Run `sw-github:sync-spec spec-001 --force` to overwrite project from spec
 - Or manually update spec metadata to match project
 
 ---
@@ -396,7 +396,7 @@ The spec is always the source of truth. GitHub Projects are a mirror for visibil
 **Progress not updating?**
 - Check `autoSyncSpecs: true` in config
 - Verify hook execution: `.specweave/logs/hooks-debug.log`
-- Manually sync: `/sw-github:sync-spec spec-001`
+- Manually sync: `sw-github:sync-spec spec-001`
 
 ---
 
@@ -552,8 +552,8 @@ For distributed strategies, issues can be created in different repos:
 ## Related
 
 - **github-issue-tracker**: DEPRECATED - use spec sync instead
-- **Commands**: `/sw-github:sync-spec`, `/sw-github:import-project`, `/sw-github:status`
-- **Team Skills**: `/sw:team-lead`, `/sw:team-status`, `/sw:team-merge`
+- **Commands**: `sw-github:sync-spec`, `sw-github:import-project`, `sw-github:status`
+- **Team Skills**: `sw:team-lead`, `sw:team-status`, `sw:team-merge`
 
 ---
 

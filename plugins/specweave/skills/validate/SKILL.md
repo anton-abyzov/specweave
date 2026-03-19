@@ -23,7 +23,7 @@ You are helping the user validate a SpecWeave increment with optional AI-powered
 ## Usage
 
 ```
-/sw:validate <increment-id> [--quality] [--export] [--fix] [--always]
+sw:validate <increment-id> [--quality] [--export] [--fix] [--always]
 ```
 
 **Flags**: `--quality` (AI assessment) | `--export` (suggestions to tasks.md) | `--fix` (auto-fix HIGH issues) | `--always` (save quality preference)
@@ -131,7 +131,7 @@ Report includes: executive summary, rule-based results by category, AI quality s
 ## Related
 
 - `increment-quality-judge` skill: AI assessment engine
-- `/sw:done`: validates before closing
+- `sw:done`: validates before closing
 - `specweave qa <id>`: CLI equivalent
 
 ## Resources

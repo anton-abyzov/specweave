@@ -9,17 +9,17 @@ description: Merge completed parallel agent work and trigger GitHub sync per inc
 ## Usage
 
 ```bash
-/sw:team-merge
-/sw:team-merge --dry-run            # Preview merge plan
-/sw:team-merge --skip-sync          # Merge without GitHub/JIRA sync
+sw:team-merge
+sw:team-merge --dry-run            # Preview merge plan
+sw:team-merge --skip-sync          # Merge without GitHub/JIRA sync
 ```
 
 ## What This Skill Does
 
 1. **Verify all teammates completed** -- block if any are still running
-2. **Run quality gates per domain** -- `/sw:grill` for each increment
-3. **Close increments in dependency order** -- `/sw:done` per increment
-4. **Trigger sync** -- pushes to GitHub (`/sw-github:sync`) or JIRA (`/sw-jira:push`)
+2. **Run quality gates per domain** -- `sw:grill` for each increment
+3. **Close increments in dependency order** -- `sw:done` per increment
+4. **Trigger sync** -- pushes to GitHub (`sw-github:sync`) or JIRA (`sw-jira:push`)
 
 ## Workflow
 
@@ -30,7 +30,7 @@ Native Agent Teams share the filesystem, so verification is straightforward:
 ```
 For each teammate's increment:
   - Check tasks.md is 100% complete
-  - Verify /sw:grill quality gate passed
+  - Verify sw:grill quality gate passed
   - If any teammate still running -> report and ask user to wait
 ```
 
@@ -77,16 +77,16 @@ if [ "$STATUS" = "planned" ] || [ "$STATUS" = "backlog" ]; then
   # Edit metadata.json to set "status": "active"
 fi
 
-# Run /sw:done --auto per increment -- triggers quality gates, skips user confirmation
-/sw:done <increment-id> --auto
+# Run sw:done --auto per increment -- triggers quality gates, skips user confirmation
+sw:done <increment-id> --auto
 
-# If /sw:done fails, fix root cause and retry (max 2 retries)
+# If sw:done fails, fix root cause and retry (max 2 retries)
 # Common fixes: sync ACs, update task counts, write missing reports
 ```
 
 This ensures:
 - Increment is in correct lifecycle status before closure attempt
-- `/sw:grill` runs for each increment
+- `sw:grill` runs for each increment
 - `tasks.md` and `spec.md` ACs are validated
 - `metadata.json` is updated to `completed`
 - Living docs are generated
@@ -98,10 +98,10 @@ For each closed increment, trigger external sync:
 
 ```bash
 # GitHub Issues sync
-/sw-github:sync <increment-id>
+sw-github:sync <increment-id>
 
 # JIRA sync (if configured)
-/sw-jira:push <increment-id>
+sw-jira:push <increment-id>
 ```
 
 ### Step 6: Execution Summary
@@ -165,12 +165,12 @@ fi
 |--------|-------------|
 | `--dry-run` | Show merge plan without executing |
 | `--skip-sync` | Merge without triggering GitHub/JIRA sync |
-| `--skip-done` | Skip running /sw:done (increments stay active) |
+| `--skip-done` | Skip running sw:done (increments stay active) |
 
 ## Example
 
 ```
-User: /sw:team-merge
+User: sw:team-merge
 
 Checking teammates...
   backend (0301-api-endpoints)   -- done, grill passed
@@ -179,9 +179,9 @@ Checking teammates...
 
 Closure order: 0300 -> 0301 -> 0302
 
-Running /sw:done 0300-shared-types...      done
-Running /sw:done 0301-api-endpoints...     done
-Running /sw:done 0302-ui-components...     done
+Running sw:done 0300-shared-types...      done
+Running sw:done 0301-api-endpoints...     done
+Running sw:done 0302-ui-components...     done
 
 Syncing to GitHub...
   0300 -> issue #45 closed

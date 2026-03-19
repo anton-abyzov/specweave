@@ -1,5 +1,5 @@
 ---
-description: Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use /sw-jira:sync command instead.
+description: Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use sw-jira:sync command instead.
 user-invokable: false
 allowed-tools: Read, Task
 ---
@@ -10,7 +10,7 @@ Coordinates JIRA synchronization by delegating to `jira-mapper` agent.
 
 **Sync Behavior**: Content (specs, tasks) syncs SpecWeave → JIRA. Status (open/closed) syncs JIRA → SpecWeave.
 
-**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about JIRA sync. For actual syncing, users should use the `/sw-jira:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about JIRA sync. For actual syncing, users should use the `sw-jira:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 ## When to Activate
 
@@ -21,7 +21,7 @@ Coordinates JIRA synchronization by delegating to `jira-mapper` agent.
 - User needs help configuring JIRA integration
 
 ❌ **Do NOT activate when**:
-- User invokes `/sw-jira:sync` command (command handles it)
+- User invokes `sw-jira:sync` command (command handles it)
 - Command is already running (avoid duplicate invocation)
 - Task completion hook is syncing (automatic process)
 
