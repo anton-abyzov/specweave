@@ -15,7 +15,13 @@ _get_duration_ms() {
 }
 
 # ── Stdin & paths ────────────────────────────────────────────────────────
-[ -z "${__STOP_AUTO_V5_SOURCED:-}" ] && cat > /dev/null
+if [ -z "${__STOP_AUTO_V5_SOURCED:-}" ]; then
+    STDIN_DATA=$(cat)
+    CLAUDE_SESSION_ID=$(echo "$STDIN_DATA" | jq -r '.session_id // ""' 2>/dev/null || echo "")
+else
+    STDIN_DATA=""
+    CLAUDE_SESSION_ID=""
+fi
 
 # Project root detection (walk up to find .specweave/ — prevents pollution of subdirectories)
 if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -f "$PROJECT_ROOT/.specweave/config.json" ]]; then
@@ -97,6 +103,13 @@ block() {
 INC_DIR="$SW/increments"
 CFG="$SW/config.json"
 SESSION="$STATE_DIR/auto-mode.json"
+
+# Per-session auto-mode.json takes priority over global
+if [ -n "$CLAUDE_SESSION_ID" ] && [ -f "$STATE_DIR/sessions/$CLAUDE_SESSION_ID/auto-mode.json" ]; then
+    SESSION="$STATE_DIR/sessions/$CLAUDE_SESSION_ID/auto-mode.json"
+    log "Using per-session auto-mode: $CLAUDE_SESSION_ID"
+fi
+
 TURN_FILE="$STATE_DIR/.stop-auto-turns"
 DEDUP_PREV="$STATE_DIR/.stop-auto-dedup-prev"
 
