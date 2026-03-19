@@ -139,8 +139,9 @@ export async function scanGitHub(
           };
         }
       }
-    } catch {
+    } catch (err) {
       // Budget check failed — proceed with reactive rate limit handling
+      log(`Budget check failed, proceeding with reactive rate limit handling: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
