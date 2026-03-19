@@ -18,6 +18,7 @@ import path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { FileLock } from '../../utils/file-lock.js';
 
 /**
  * Active increment state stored in .specweave/state/active-increment.json
