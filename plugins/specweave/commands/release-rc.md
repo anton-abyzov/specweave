@@ -2,7 +2,7 @@
 description: Manage Release Candidate (RC) lifecycle including creation, testing, validation, and promotion to production. Handles RC iteration (rc.1, rc.2, rc.3), tracks testing status, coordinates RC across multiple repositories, manages canary deployments, and promotes RC to final release when validation passes.
 ---
 
-# /sw-release:rc - Manage Release Candidates
+# sw-release:rc - Manage Release Candidates
 
 Manage the complete Release Candidate (RC) lifecycle from creation to production promotion.
 
@@ -34,32 +34,32 @@ Manage the complete Release Candidate (RC) lifecycle from creation to production
 
 ```bash
 # Create new RC
-/sw-release:rc create <version>
-/sw-release:rc create 1.0.0
+sw-release:rc create <version>
+sw-release:rc create 1.0.0
 
 # Create RC iteration (bug fixes)
-/sw-release:rc iterate <rc-version>
-/sw-release:rc iterate 1.0.0-rc.2
+sw-release:rc iterate <rc-version>
+sw-release:rc iterate 1.0.0-rc.2
 
 # Show RC status
-/sw-release:rc status <rc-version>
-/sw-release:rc status 1.0.0-rc.3
+sw-release:rc status <rc-version>
+sw-release:rc status 1.0.0-rc.3
 
 # Run RC validation tests
-/sw-release:rc test <rc-version>
-/sw-release:rc test 1.0.0-rc.3
+sw-release:rc test <rc-version>
+sw-release:rc test 1.0.0-rc.3
 
 # Promote RC to production
-/sw-release:rc promote <rc-version>
-/sw-release:rc promote 1.0.0-rc.3
+sw-release:rc promote <rc-version>
+sw-release:rc promote 1.0.0-rc.3
 
 # Rollback failed RC
-/sw-release:rc rollback <rc-version>
-/sw-release:rc rollback 1.0.0-rc.2
+sw-release:rc rollback <rc-version>
+sw-release:rc rollback 1.0.0-rc.2
 
 # Multi-repo RC (creates RC for all repos)
-/sw-release:rc create-multi <product-version>
-/sw-release:rc create-multi product-v3.0.0
+sw-release:rc create-multi <product-version>
+sw-release:rc create-multi product-v3.0.0
 ```
 
 ## Workflow: Single-Repo RC
@@ -67,7 +67,7 @@ Manage the complete Release Candidate (RC) lifecycle from creation to production
 ### Step 1: Create Initial RC
 
 ```bash
-/sw-release:rc create 1.0.0
+sw-release:rc create 1.0.0
 ```
 
 ```markdown
@@ -97,8 +97,8 @@ RC created successfully! ✓
 Next steps:
   1. Wait for CI/CD to complete
   2. Deploy to staging: (automated via CI/CD)
-  3. Run validation: /sw-release:rc test 1.0.0-rc.1
-  4. Review status: /sw-release:rc status 1.0.0-rc.1
+  3. Run validation: sw-release:rc test 1.0.0-rc.1
+  4. Review status: sw-release:rc status 1.0.0-rc.1
   5. If issues: Fix and iterate to rc.2
   6. If pass: Promote to v1.0.0
 
@@ -108,7 +108,7 @@ Monitor build: https://github.com/myorg/myapp/actions/runs/542
 ### Step 2: Monitor RC Testing
 
 ```bash
-/sw-release:rc status 1.0.0-rc.1
+sw-release:rc status 1.0.0-rc.1
 ```
 
 ```markdown
@@ -169,7 +169,7 @@ Blocking: Mobile testing, exploratory testing incomplete
 ### Step 3: Found Bug → Iterate to rc.2
 
 ```bash
-/sw-release:rc iterate 1.0.0-rc.1
+sw-release:rc iterate 1.0.0-rc.1
 ```
 
 ```markdown
@@ -209,7 +209,7 @@ Monitor: https://github.com/myorg/myapp/actions/runs/548
 ### Step 4: All Tests Pass → Promote to Production
 
 ```bash
-/sw-release:rc promote 1.0.0-rc.3
+sw-release:rc promote 1.0.0-rc.3
 ```
 
 ```markdown
@@ -253,7 +253,7 @@ Canary deployment started! ✓
 I'll monitor the metrics and notify you when ready for next wave.
 
 Monitor dashboard: https://grafana.example.com/d/prod-release
-Rollback command: /sw-release:rc rollback 1.0.0-rc.3
+Rollback command: sw-release:rc rollback 1.0.0-rc.3
 ```
 
 ## Workflow: Multi-Repo RC
@@ -261,7 +261,7 @@ Rollback command: /sw-release:rc rollback 1.0.0-rc.3
 ### Create Coordinated RC
 
 ```bash
-/sw-release:rc create-multi product-v3.0.0
+sw-release:rc create-multi product-v3.0.0
 ```
 
 ```markdown
@@ -306,9 +306,9 @@ Next steps:
   1. Wait for all builds to complete
   2. Deploy to staging (coordinated)
   3. Run cross-service E2E tests
-  4. Validate: /sw-release:rc status product-v3.0.0-rc.1
+  4. Validate: sw-release:rc status product-v3.0.0-rc.1
   5. Iterate if needed: Fix issues → rc.2
-  6. Promote: /sw-release:rc promote product-v3.0.0-rc.3
+  6. Promote: sw-release:rc promote product-v3.0.0-rc.3
 ```
 
 ## RC Testing Checklist
@@ -368,7 +368,7 @@ Scheduled: 2025-01-16 10:00 UTC
 **If issues detected during canary**:
 
 ```bash
-/sw-release:rc rollback 1.0.0-rc.3
+sw-release:rc rollback 1.0.0-rc.3
 ```
 
 ```markdown
@@ -426,26 +426,26 @@ Next steps:
 
 ```bash
 # 1. Create release increment
-/sw:increment "0090-v1-0-0-release"
+sw:increment "0090-v1-0-0-release"
 
 # 2. Create RC
-/sw-release:rc create 1.0.0
+sw-release:rc create 1.0.0
 # → Creates v1.0.0-rc.1
 
 # 3. Testing phase
-/sw-release:rc test 1.0.0-rc.1
+sw-release:rc test 1.0.0-rc.1
 # → Runs automated tests
 
 # 4. Iterate if needed
-/sw-release:rc iterate 1.0.0-rc.1
+sw-release:rc iterate 1.0.0-rc.1
 # → Creates v1.0.0-rc.2
 
 # 5. Promote when ready
-/sw-release:rc promote 1.0.0-rc.3
+sw-release:rc promote 1.0.0-rc.3
 # → Creates v1.0.0, deploys to production
 
 # 6. Mark increment complete
-/sw:done 0090
+sw:done 0090
 # → Updates living docs
 ```
 
@@ -473,10 +473,10 @@ Next steps:
 
 ## Related Commands
 
-- `/sw-release:init` - Initialize release strategy
-- `/sw-release:align` - Align versions before RC
-- `/sw-release:coordinate` - Coordinate multi-repo RC
-- `/sw:done` - Complete release increment
+- `sw-release:init` - Initialize release strategy
+- `sw-release:align` - Align versions before RC
+- `sw-release:coordinate` - Coordinate multi-repo RC
+- `sw:done` - Complete release increment
 
 ## Dependencies
 

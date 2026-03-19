@@ -2,7 +2,7 @@
 description: Align versions across multiple repositories according to release strategy. Analyzes conventional commits to suggest version bumps, detects version conflicts, validates cross-repo compatibility, and executes version alignment (updates package.json, creates git tags, updates changelogs). Supports lockstep, independent, and umbrella versioning strategies.
 ---
 
-# /sw-release:align - Align Repository Versions
+# sw-release:align - Align Repository Versions
 
 Align versions across multiple repositories according to your release strategy.
 
@@ -19,21 +19,21 @@ Align versions across multiple repositories according to your release strategy.
 
 ```bash
 # Interactive alignment (prompts for confirmation)
-/sw-release:align
+sw-release:align
 
 # Align specific repositories only
-/sw-release:align --repos frontend,backend
+sw-release:align --repos frontend,backend
 
 # Dry run (show what would change, don't execute)
-/sw-release:align --dry-run
+sw-release:align --dry-run
 
 # Force alignment (skip validation)
-/sw-release:align --force
+sw-release:align --force
 
 # Align for specific strategy
-/sw-release:align --strategy lockstep
-/sw-release:align --strategy independent
-/sw-release:align --strategy umbrella
+sw-release:align --strategy lockstep
+sw-release:align --strategy independent
+sw-release:align --strategy umbrella
 ```
 
 ## Workflow
@@ -221,7 +221,7 @@ shared-lib (v1.5.0 → v1.5.1):
 Version alignment complete! ✓
 
 Next steps:
-1. Create release increment: /sw:increment "0080-product-v5-release"
+1. Create release increment: sw:increment "0080-product-v5-release"
 2. Or trigger CI/CD: Git tags will trigger automated releases
 3. Monitor: Check CI/CD pipelines for build/test/publish
 ```
@@ -393,13 +393,13 @@ test: add unit tests
 
 ```bash
 # Align versions within a specific project
-/sw-release:align --project frontend-team
+sw-release:align --project frontend-team
 
 # Align across all projects
-/sw-release:align --all-projects
+sw-release:align --all-projects
 
 # Align specific project's repos only
-/sw-release:align --project backend-team --repos api,database
+sw-release:align --project backend-team --repos api,database
 ```
 
 ## Best Practices
@@ -427,7 +427,7 @@ test: add unit tests
 ### Lockstep Alignment
 
 ```bash
-User: /sw-release:align --strategy lockstep
+User: sw-release:align --strategy lockstep
 
 Release Manager: Analyzing repositories with lockstep strategy...
 
@@ -456,7 +456,7 @@ Proposed:
 ### Independent Alignment with Conflict
 
 ```bash
-User: /sw-release:align
+User: sw-release:align
 
 Release Manager: Analyzing repositories with independent strategy...
 
@@ -483,10 +483,10 @@ Would you like me to create a coordinated release increment?
 
 ## Related Commands
 
-- `/sw-release:init` - Initialize release strategy
-- `/sw-release:rc` - Create release candidates for aligned versions
-- `/sw-release:coordinate` - Plan coordinated multi-repo release
-- `/sw-release:publish` - Execute release after alignment
+- `sw-release:init` - Initialize release strategy
+- `sw-release:rc` - Create release candidates for aligned versions
+- `sw-release:coordinate` - Plan coordinated multi-repo release
+- `sw-release:publish` - Execute release after alignment
 
 ## Dependencies
 

@@ -5,7 +5,7 @@ argument-hint: [--resume jobId] [--depth level] [--full-scan]
 
 # Living Docs Builder (Standalone)
 
-**Usage**: `/sw:living-docs [options]`
+**Usage**: `sw:living-docs [options]`
 
 ---
 
@@ -34,7 +34,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 **LSP runs automatically** - just ensure language servers are installed:
 ```bash
 # Full scan (LSP enabled by default)
-/sw:living-docs --full-scan
+sw:living-docs --full-scan
 
 # Install language servers for your stack:
 npm install -g typescript-language-server typescript  # TypeScript/JS
@@ -43,7 +43,7 @@ go install golang.org/x/tools/gopls@latest            # Go
 rustup component add rust-analyzer                     # Rust
 
 # Disable LSP only if needed (not recommended):
-/sw:living-docs --full-scan --no-lsp
+sw:living-docs --full-scan --no-lsp
 ```
 
 **LSP provides** (automatically):
@@ -77,7 +77,7 @@ rustup component add rust-analyzer                     # Rust
 ### Launch New Analysis (Interactive)
 
 ```bash
-/sw:living-docs
+sw:living-docs
 
 # Prompts for:
 # 1. Analysis depth (quick/standard/deep-native/deep-interactive)
@@ -90,13 +90,13 @@ rustup component add rust-analyzer                     # Rust
 
 ```bash
 # Check for orphaned jobs first
-/sw:jobs
+sw:jobs
 
 # If you see an orphaned living-docs-builder job:
-/sw:living-docs --resume abc12345
+sw:living-docs --resume abc12345
 
 # Or let it auto-detect:
-/sw:living-docs
+sw:living-docs
 # → "Found orphaned job abc12345. Resume? [Y/n]"
 ```
 
@@ -104,17 +104,17 @@ rustup component add rust-analyzer                     # Rust
 
 ```bash
 # Quick scan - basic structure + imports + tech detection + inconsistencies
-/sw:living-docs --depth quick
+sw:living-docs --depth quick
 
 # Standard analysis - modules + dependencies + relationships + diagrams
-/sw:living-docs --depth standard --priority auth,payments
+sw:living-docs --depth standard --priority auth,payments
 
 # AI-powered deep analysis (FREE with MAX subscription)
-/sw:living-docs --depth deep-native --priority core,api
+sw:living-docs --depth deep-native --priority core,api
 
 # FULL ENTERPRISE SCAN - All 8 phases (A through H)
 # Generates complete knowledge base: company history, team structure, delivery docs, diagrams
-/sw:living-docs --full-scan
+sw:living-docs --full-scan
 ```
 
 ---
@@ -231,7 +231,7 @@ Standard mode adds:
 
 **Command**:
 ```bash
-/sw:living-docs --full-scan
+sw:living-docs --full-scan
 
 # Uses deep-native (Claude MAX) for AI-powered analysis
 # Runs ALL 8 phases: A → B → C → D → E → F → G → H
@@ -242,10 +242,10 @@ Standard mode adds:
 **Resume after interruption**:
 ```bash
 # Check progress
-/sw:jobs
+sw:jobs
 
 # Resume from checkpoint (all previous work preserved)
-/sw:living-docs --resume <jobId>
+sw:living-docs --resume <jobId>
 ```
 
 ### Deep-Native (Recommended for MAX Users)
@@ -257,10 +257,10 @@ Uses your Claude MAX subscription via `claude --print`:
 - Uses **Opus 4.5** for best quality
 
 ```bash
-/sw:living-docs --depth deep-native
+sw:living-docs --depth deep-native
 
 # Monitor progress:
-/sw:jobs --follow <jobId>
+sw:jobs --follow <jobId>
 ```
 
 ---
@@ -345,8 +345,8 @@ const { job, pid, isBackground } = await launchLivingDocsJob({
    Priority: auth, payments, api
    PID: 45678
 
-   Monitor: /sw:jobs --follow ldb-abc12345
-   Logs: /sw:jobs --logs ldb-abc12345
+   Monitor: sw:jobs --follow ldb-abc12345
+   Logs: sw:jobs --logs ldb-abc12345
 
 💡 This job runs in background and survives terminal close.
    Output will be saved to:
@@ -373,7 +373,7 @@ When resuming a job:
 
 ```bash
 # Example: Job crashed during deep-dive phase
-/sw:living-docs --resume abc12345
+sw:living-docs --resume abc12345
 
 # Output:
 # Resuming from checkpoint: phase=deep-dive, module=auth (5/18)
@@ -389,10 +389,10 @@ For umbrella projects with clone/import jobs:
 
 ```bash
 # Launch after clone completes
-/sw:living-docs --depends-on clone-xyz123 --depth standard
+sw:living-docs --depends-on clone-xyz123 --depth standard
 
 # Launch after both clone and import complete
-/sw:living-docs --depends-on clone-xyz123,import-abc456
+sw:living-docs --depends-on clone-xyz123,import-abc456
 ```
 
 The job will:
@@ -485,11 +485,11 @@ After completion (varies by depth):
 # Claude crashed after init, living docs job orphaned
 
 # Step 1: Check what's there
-/sw:jobs
+sw:jobs
 # Shows: [ldb-abc123] living-docs-builder - ORPHANED (worker died)
 
 # Step 2: Resume
-/sw:living-docs --resume ldb-abc123
+sw:living-docs --resume ldb-abc123
 
 # Output:
 # ✅ Resuming Living Docs Builder (ldb-abc123)
@@ -502,16 +502,16 @@ After completion (varies by depth):
 ```bash
 # Full enterprise scan - generates complete knowledge base
 # For large projects, this runs across multiple sessions
-/sw:living-docs --full-scan --depends-on clone-main123
+sw:living-docs --full-scan --depends-on clone-main123
 
 # Monitor progress (runs in background, survives terminal close)
-/sw:jobs --follow ldb-xyz789
+sw:jobs --follow ldb-xyz789
 
 # Resume after interruption (all progress preserved)
-/sw:living-docs --resume ldb-xyz789
+sw:living-docs --resume ldb-xyz789
 
 # Alternatively: Focus on critical modules first (faster initial pass)
-/sw:living-docs --depth standard \
+sw:living-docs --depth standard \
   --priority auth,payments,billing,core
 ```
 
@@ -532,10 +532,10 @@ specweave jobs --wait ldb-latest  # Wait for completion
 
 ### Worker Crashed
 ```
-/sw:jobs
+sw:jobs
 # Shows: ORPHANED status
 
-/sw:living-docs --resume <jobId>
+sw:living-docs --resume <jobId>
 # Resumes from last checkpoint
 ```
 
@@ -553,14 +553,14 @@ Some repositories may be missing from analysis.
 ℹ️  No existing code detected (greenfield project)
     Living docs will sync automatically as you create increments.
 
-    To force analysis anyway: /sw:living-docs --force
+    To force analysis anyway: sw:living-docs --force
 ```
 
 ---
 
 ## See Also
 
-- `/sw:jobs` - Monitor all background jobs
+- `sw:jobs` - Monitor all background jobs
 
 ---
 

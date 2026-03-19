@@ -2,7 +2,7 @@
 
 ## Investigation Summary
 
-**Issue**: User reports never seeing labels/box art during `/sw:auto` execution, even though the code clearly generates them.
+**Issue**: User reports never seeing labels/box art during `sw:auto` execution, even though the code clearly generates them.
 
 ## Root Cause Analysis
 

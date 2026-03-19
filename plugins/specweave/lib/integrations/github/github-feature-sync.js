@@ -93,7 +93,7 @@ class GitHubFeatureSync {
       const featureFolder = await this.findFeatureFolder(featureId, projectName);
       if (!featureFolder) {
         console.log(`   \u26A0\uFE0F  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
-        console.log(`   \u{1F4A1} Run /sw:sync-docs or /sw:living-docs to generate living docs first`);
+        console.log(`   \u{1F4A1} Run sw:sync-docs or sw:living-docs to generate living docs first`);
         return {
           milestoneNumber: 0,
           milestoneUrl: "",

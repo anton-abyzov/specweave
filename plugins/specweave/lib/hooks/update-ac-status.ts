@@ -145,7 +145,7 @@ async function syncACsToLivingDocs(projectRoot: string, incrementId: string): Pr
  * Sync AC checkboxes to GitHub issues (v1.0.68)
  *
  * CRITICAL FIX: Previously, AC completion only updated spec.md locally.
- * GitHub issues were NOT updated until manual /sw:sync-progress was run.
+ * GitHub issues were NOT updated until manual sw:sync-progress was run.
  * This fixes issue #966 by auto-syncing to GitHub after AC updates.
  *
  * @param projectRoot - Project root directory

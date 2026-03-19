@@ -50,37 +50,37 @@ This command clones GitHub repositories **after** initial SpecWeave setup (`spec
 
 ```bash
 # Clone a single repo (owner/repo shorthand)
-/sw-github:clone --repo "owner/repo"
+sw-github:clone --repo "owner/repo"
 
 # Clone a single repo (full URL)
-/sw-github:clone --repo "https://github.com/owner/repo"
+sw-github:clone --repo "https://github.com/owner/repo"
 
 # Clone a single repo (SSH URL)
-/sw-github:clone --repo "git@github.com:owner/repo.git"
+sw-github:clone --repo "git@github.com:owner/repo.git"
 
 # Clone a single repo (bare host)
-/sw-github:clone --repo "github.com/owner/repo"
+sw-github:clone --repo "github.com/owner/repo"
 
 # Single repo dry-run (validate only)
-/sw-github:clone --repo "owner/repo" --dry-run
+sw-github:clone --repo "owner/repo" --dry-run
 
 # Interactive mode (prompts for everything)
-/sw-github:clone
+sw-github:clone
 
 # Clone from specific org
-/sw-github:clone --org "mycompany"
+sw-github:clone --org "mycompany"
 
 # With pattern filter (glob)
-/sw-github:clone --pattern "api-*"
+sw-github:clone --pattern "api-*"
 
 # Regex pattern
-/sw-github:clone --pattern "regex:^frontend-.*$"
+sw-github:clone --pattern "regex:^frontend-.*$"
 
 # Dry-run (preview only)
-/sw-github:clone --dry-run
+sw-github:clone --dry-run
 
 # Resume/retry - just run again! Already cloned repos are skipped
-/sw-github:clone
+sw-github:clone
 ```
 
 **Flag precedence**: When `--repo` is provided, `--org` and `--pattern` are ignored.
@@ -121,7 +121,7 @@ if (args.repo) {
     console.log(chalk.green(`✅ ${result.owner}/${result.repo} already cloned.`));
   } else if (result.cloned) {
     console.log(chalk.green(`\n✅ Cloning ${result.owner}/${result.repo} started!`));
-    console.log(chalk.cyan(`   /sw:jobs → Check progress`));
+    console.log(chalk.cyan(`   sw:jobs → Check progress`));
   } else if (args.dryRun) {
     console.log(chalk.cyan(`🔎 DRY RUN: Would clone ${result.owner}/${result.repo}`));
   }
@@ -438,19 +438,19 @@ if (jobId) {
   console.log(chalk.gray('   • Cloning runs in background - you can continue working'));
   console.log(chalk.gray('   • Already-cloned repos are automatically skipped'));
   console.log(chalk.gray('   • Individual failures do NOT stop the job'));
-  console.log(chalk.gray('   • To resume after interruption: just run /sw-github:clone again!\n'));
+  console.log(chalk.gray('   • To resume after interruption: just run sw-github:clone again!\n'));
 
   console.log(chalk.blue('🔧 Commands:'));
-  console.log(chalk.cyan(`   /sw:jobs                    → Check progress`));
-  console.log(chalk.cyan(`   /sw:jobs --follow ${jobId.slice(0, 8)} → Follow live`));
-  console.log(chalk.cyan(`   /sw:jobs --logs ${jobId.slice(0, 8)}   → View logs`));
+  console.log(chalk.cyan(`   sw:jobs                    → Check progress`));
+  console.log(chalk.cyan(`   sw:jobs --follow ${jobId.slice(0, 8)} → Follow live`));
+  console.log(chalk.cyan(`   sw:jobs --logs ${jobId.slice(0, 8)}   → View logs`));
 }
 ```
 
 ## Examples
 
 ### Example 1: Fresh Clone
-**User**: `/sw-github:clone --org acme-corp`
+**User**: `sw-github:clone --org acme-corp`
 
 **Output**:
 ```
@@ -486,16 +486,16 @@ Clone 512 repositories to current directory? (Y/n)
    • Cloning runs in background - you can continue working
    • Already-cloned repos are automatically skipped
    • Individual failures do NOT stop the job
-   • To resume after interruption: just run /sw-github:clone again!
+   • To resume after interruption: just run sw-github:clone again!
 
 🔧 Commands:
-   /sw:jobs                    → Check progress
-   /sw:jobs --follow abc12345  → Follow live
-   /sw:jobs --logs abc12345    → View logs
+   sw:jobs                    → Check progress
+   sw:jobs --follow abc12345  → Follow live
+   sw:jobs --logs abc12345    → View logs
 ```
 
 ### Example 2: Resume After Interruption
-**User**: `/sw-github:clone` (after previous job was interrupted at 87/512)
+**User**: `sw-github:clone` (after previous job was interrupted at 87/512)
 
 **Output**:
 ```
@@ -521,7 +521,7 @@ Clone 425 repositories to current directory? (Y/n)
 ```
 
 ### Example 3: Pattern Filter
-**User**: `/sw-github:clone --pattern "api-*"`
+**User**: `sw-github:clone --pattern "api-*"`
 
 **Output**:
 ```
@@ -539,7 +539,7 @@ Clone 425 repositories to current directory? (Y/n)
 ```
 
 ### Example 4: Dry Run
-**User**: `/sw-github:clone --dry-run`
+**User**: `sw-github:clone --dry-run`
 
 **Output**:
 ```
@@ -554,7 +554,7 @@ Clone 425 repositories to current directory? (Y/n)
 ```
 
 ### Example 5: Clone Single Repo
-**User**: `/sw-github:clone --repo "anton-abyzov/vskill"`
+**User**: `sw-github:clone --repo "anton-abyzov/vskill"`
 
 **Output**:
 ```
@@ -568,13 +568,13 @@ Clone 425 repositories to current directory? (Y/n)
 
    ✓ Clone job started (Job ID: abc12345)
    Target: repositories/anton-abyzov/vskill
-   Check progress: /sw:jobs
+   Check progress: sw:jobs
 
 ✅ Cloning anton-abyzov/vskill started!
 ```
 
 ### Example 6: Single Repo (Already Cloned)
-**User**: `/sw-github:clone --repo "anton-abyzov/vskill"`
+**User**: `sw-github:clone --repo "anton-abyzov/vskill"`
 
 **Output**:
 ```
@@ -585,13 +585,13 @@ Clone 425 repositories to current directory? (Y/n)
 
 After `specweave init` completes, you can add individual repos at any time:
 ```bash
-/sw-github:clone --repo "owner/repo"
+sw-github:clone --repo "owner/repo"
 ```
 
 ## Important Notes
 
 ### Resume = Just Re-run!
-**There's no special resume command.** Just run `/sw-github:clone` again:
+**There's no special resume command.** Just run `sw-github:clone` again:
 - Already-cloned repos are detected via `.git` folder
 - They're automatically skipped (instant, no API calls)
 - Only remaining repos are queued for cloning
@@ -609,15 +609,15 @@ After job completes with warnings:
 cat .specweave/state/jobs/<jobId>/result.json
 
 # Just run clone again - it skips successful ones!
-/sw-github:clone
+sw-github:clone
 ```
 
 ## Related Commands
 
-- `/sw:init` - Initial SpecWeave setup (includes repo cloning option)
-- `/sw:jobs` - Monitor background jobs
-- `/sw:jobs --follow <id>` - Watch progress live
-- `/sw-github:sync` - Sync with GitHub Issues
+- `sw:init` - Initial SpecWeave setup (includes repo cloning option)
+- `sw:jobs` - Monitor background jobs
+- `sw:jobs --follow <id>` - Watch progress live
+- `sw-github:sync` - Sync with GitHub Issues
 
 ## Error Handling
 

@@ -9,7 +9,7 @@ description: Show usage analytics dashboard - command invocations, skill activat
 ## Usage
 
 ```bash
-/sw:analytics [OPTIONS]
+sw:analytics [OPTIONS]
 ```
 
 ## Options
@@ -26,25 +26,25 @@ description: Show usage analytics dashboard - command invocations, skill activat
 
 ```bash
 # Show dashboard (all time)
-/sw:analytics
+sw:analytics
 
 # Last 7 days
-/sw:analytics --since 7d
+sw:analytics --since 7d
 
 # Last 24 hours
-/sw:analytics --since 24h
+sw:analytics --since 24h
 
 # Export to JSON
-/sw:analytics --export json
+sw:analytics --export json
 
 # Export to CSV
-/sw:analytics --export csv
+sw:analytics --export csv
 
 # Show only commands
-/sw:analytics --type command
+sw:analytics --type command
 
 # Raw JSON output for scripting
-/sw:analytics --json
+sw:analytics --json
 ```
 
 ## Execution
@@ -88,11 +88,11 @@ Total Events: 1,234
 Success Rate: 98.5%
 
 🔧 Top Commands:
-     156 │ /sw:do
-      89 │ /sw:increment
-      67 │ /sw:progress
-      34 │ /sw:done
-      28 │ /sw:validate
+     156 │ sw:do
+      89 │ sw:increment
+      67 │ sw:progress
+      34 │ sw:done
+      28 │ sw:validate
 
 ⚡ Top Skills:
       45 │ increment
@@ -142,9 +142,9 @@ interface AnalyticsEvent {
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:status` | Show increment status |
-| `/sw:progress` | Show task progress |
-| `/sw:jobs` | Show background jobs |
+| `sw:status` | Show increment status |
+| `sw:progress` | Show task progress |
+| `sw:jobs` | Show background jobs |
 
 ## Notes
 

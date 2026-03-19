@@ -10,19 +10,19 @@ Import additional JIRA projects after initial setup with advanced filtering and 
 
 ```bash
 # Import all active projects
-/sw-jira:import-projects --filter active
+sw-jira:import-projects --filter active
 
 # Import with preset filter
-/sw-jira:import-projects --preset production
+sw-jira:import-projects --preset production
 
 # Import with custom JQL
-/sw-jira:import-projects --jql "project NOT IN (TEST, SANDBOX)"
+sw-jira:import-projects --jql "project NOT IN (TEST, SANDBOX)"
 
 # Dry-run preview (no changes)
-/sw-jira:import-projects --dry-run
+sw-jira:import-projects --dry-run
 
 # Resume interrupted import
-/sw-jira:import-projects --resume
+sw-jira:import-projects --resume
 ```
 
 ## Options
@@ -41,7 +41,7 @@ Import additional JIRA projects after initial setup with advanced filtering and 
 ### Import Active Projects Only
 
 ```bash
-/sw-jira:import-projects --filter active
+sw-jira:import-projects --filter active
 ```
 
 Filters out archived projects, shows preview, prompts for confirmation, merges with existing.
@@ -49,7 +49,7 @@ Filters out archived projects, shows preview, prompts for confirmation, merges w
 ### Import with Production Preset
 
 ```bash
-/sw-jira:import-projects --preset production
+sw-jira:import-projects --preset production
 ```
 
 Uses the "production" preset filter (active + software + excludes TEST/SANDBOX).
@@ -57,7 +57,7 @@ Uses the "production" preset filter (active + software + excludes TEST/SANDBOX).
 ### Custom JQL Filter
 
 ```bash
-/sw-jira:import-projects --jql "lead = currentUser() AND status != Archived"
+sw-jira:import-projects --jql "lead = currentUser() AND status != Archived"
 ```
 
 Imports projects where you are the lead and not archived.
@@ -65,7 +65,7 @@ Imports projects where you are the lead and not archived.
 ### Dry-Run Preview
 
 ```bash
-/sw-jira:import-projects --filter active --dry-run
+sw-jira:import-projects --filter active --dry-run
 ```
 
 Shows which projects would be imported without making any changes.

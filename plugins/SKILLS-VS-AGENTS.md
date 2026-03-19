@@ -103,7 +103,7 @@ plugins/specweave/
 
 ### How It Works
 
-**Subagent file** (`agents/sw-pm.md`):
+**Subagent file** (`agentssw-pm.md`):
 ```yaml
 ---
 name: sw-pm
@@ -129,13 +129,13 @@ model: opus
 ...full domain logic, phases, templates...
 ```
 
-> **Note**: Skills have `context: fork` and `model` for standalone invocation (e.g., `/sw:pm`). When preloaded by a subagent, the subagent's isolation takes precedence — `context: fork` doesn't cause "double-forking".
+> **Note**: Skills have `context: fork` and `model` for standalone invocation (e.g., `sw:pm`). When preloaded by a subagent, the subagent's isolation takes precedence — `context: fork` doesn't cause "double-forking".
 
 **Why this works**:
 - The **subagent** owns: isolation, memory, model, resumability, background execution
-- The **skill** owns: domain logic, supporting files (phases, templates), user-invocable `/sw:pm`
+- The **skill** owns: domain logic, supporting files (phases, templates), user-invocable `sw:pm`
 - The `skills:` field **guarantees** skill content is injected at startup (no discovery step needed)
-- Users can still run `/sw:pm` directly for ad-hoc spec work outside increment flow
+- Users can still run `sw:pm` directly for ad-hoc spec work outside increment flow
 
 ### Invocation from the Increment Orchestrator
 
@@ -225,7 +225,7 @@ Agent({ subagent_type: "general-purpose", prompt: "Research Stripe integration p
 **A:** If the agent needs **persistent memory**, **resumability**, or **background execution** — make it a custom subagent. If it's a **one-shot task** or **user-invocable command** — make it a skill with `context: fork`. If it's **reference knowledge** — skill without fork.
 
 ### Q: Can a skill work both standalone AND preloaded by a subagent?
-**A:** Yes. Remove `context: fork` from the skill. Users invoke it directly via `/sw:pm` (runs inline). The subagent preloads it via `skills: [sw:pm]` (runs in subagent's isolated context). Same logic, two execution modes.
+**A:** Yes. Remove `context: fork` from the skill. Users invoke it directly via `sw:pm` (runs inline). The subagent preloads it via `skills: [sw:pm]` (runs in subagent's isolated context). Same logic, two execution modes.
 
 ### Q: What happens if the skills: preloading fails?
 **A:** The subagent still runs — it just won't have the skill content injected. The subagent's own markdown body (system prompt) is always available. To guard against this, keep critical instructions in the subagent body and use skills for detailed/phase logic.

@@ -104,16 +104,16 @@ Good: npm run build → node script.js → Success
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:increment "name"` | Plan new feature (PM-led) |
-| `/sw:do` | Execute tasks from active increment |
-| `/sw:done 0001` | Close increment (validates gates) |
-| `/sw:progress` | Show task completion status |
-| `/sw:validate 0001` | Quality check before closing |
-| `/sw:progress-sync` | Sync tasks.md with reality |
-| `/sw:sync-docs update` | Sync to living docs |
-| `/sw-github:sync 0001` | Sync increment to GitHub issue |
-| `/sw-jira:sync 0001` | Sync to Jira |
-| `/sw-ado:sync 0001` | Sync to Azure DevOps |
+| `sw:increment "name"` | Plan new feature (PM-led) |
+| `sw:do` | Execute tasks from active increment |
+| `sw:done 0001` | Close increment (validates gates) |
+| `sw:progress` | Show task completion status |
+| `sw:validate 0001` | Quality check before closing |
+| `sw:progress-sync` | Sync tasks.md with reality |
+| `sw:sync-docs update` | Sync to living docs |
+| `sw-github:sync 0001` | Sync increment to GitHub issue |
+| `sw-jira:sync 0001` | Sync to Jira |
+| `sw-ado:sync 0001` | Sync to Azure DevOps |
 <!-- SW:END:commands -->
 
 <!-- SW:SECTION:nonclaudetools version="1.0.326" -->
@@ -125,7 +125,7 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 
 | Capability | Claude Code | Non-Claude Tools |
 |------------|-------------|------------------|
-| **Plan Mode** | `EnterPlanMode` → `/sw:increment` | Manual: Create spec.md + plan.md + tasks.md |
+| **Plan Mode** | `EnterPlanMode` → `sw:increment` | Manual: Create spec.md + plan.md + tasks.md |
 | **Subagents** | `Task` tool for parallel work | Split into multiple chat sessions |
 | **Verification** | PostToolUse hooks auto-validate | Manual: Run tests, check ACs |
 | **Hooks** | Auto-run on events | YOU must mimic (see below) |
@@ -137,21 +137,21 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **After EVERY task completion:**
 1. Update tasks.md: `[ ] pending` → `[x] completed`
 2. Update spec.md ACs if satisfied: `[ ] AC` → `[x] AC`
-3. Run `/sw:progress-sync`
-4. Run `/sw-github:sync <id>` (if GitHub configured)
+3. Run `sw:progress-sync`
+4. Run `sw-github:sync <id>` (if GitHub configured)
 
 **After all ACs for a User Story are done:**
-- Run `/sw:sync-docs update`
+- Run `sw:sync-docs update`
 
 **After increment completion:**
-1. `/sw:validate <id>`
-2. `/sw:sync-docs update`
-3. `/sw-github:close-issue <id>`
+1. `sw:validate <id>`
+2. `sw:sync-docs update`
+3. `sw-github:close-issue <id>`
 
 **Session start:**
 1. `specweave jobs` (check background jobs)
-2. `/sw:progress` (check current state)
-3. `/sw:do` (continue work)
+2. `sw:progress` (check current state)
+3. `sw:do` (continue work)
 
 **Background jobs**: Monitor with `specweave jobs` (clone-repos, import-issues, living-docs-builder, sync-external).
 <!-- SW:END:nonclaudetools -->
@@ -164,8 +164,8 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 | Level | Location | Update Method |
 |-------|----------|---------------|
 | **Source** | tasks.md + spec.md | Edit directly |
-| **Derived** | .specweave/docs/internal/specs/ | `/sw:sync-docs update` |
-| **Mirror** | GitHub/Jira/ADO | `/sw-github:sync`, `/sw-jira:sync`, `/sw-ado:sync` |
+| **Derived** | .specweave/docs/internal/specs/ | `sw:sync-docs update` |
+| **Mirror** | GitHub/Jira/ADO | `sw-github:sync`, `sw-jira:sync`, `sw-ado:sync` |
 
 **Update order**: ALWAYS tasks.md/spec.md FIRST → progress-sync → sync-docs → external tools
 
@@ -173,12 +173,12 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 
 | Command | When to Run |
 |---------|-------------|
-| `/sw:progress-sync` | After editing tasks.md |
-| `/sw:sync-docs update` | After US complete |
-| `/sw-github:sync <id>` | After each task |
-| `/sw-github:close-issue <id>` | On increment done |
-| `/sw-jira:sync <id>` | After each task |
-| `/sw-ado:sync <id>` | After each task |
+| `sw:progress-sync` | After editing tasks.md |
+| `sw:sync-docs update` | After US complete |
+| `sw-github:sync <id>` | After each task |
+| `sw-github:close-issue <id>` | On increment done |
+| `sw-jira:sync <id>` | After each task |
+| `sw-ado:sync <id>` | After each task |
 <!-- SW:END:syncworkflow -->
 
 <!-- SW:SECTION:contextloading version="1.0.326" -->
@@ -328,7 +328,7 @@ specweave context projects
 4. Sync to external trackers if enabled
 
 ### Closing Increment
-1. `/sw:done 0001` — PM validates 3 gates (tasks, tests, docs)
+1. `sw:done 0001` — PM validates 3 gates (tasks, tests, docs)
 2. Living docs synced automatically
 3. GitHub/Jira issue closed if enabled
 <!-- SW:END:workflows -->
@@ -339,9 +339,9 @@ specweave context projects
 | Issue | Fix |
 |-------|-----|
 | Commands not working (non-Claude) | Read `plugins/specweave/commands/<name>.md`, follow manually |
-| GitHub/Jira not updating | `/sw:progress-sync` → `/sw:sync-docs update` → `/sw-github:sync <id>` |
+| GitHub/Jira not updating | `sw:progress-sync` → `sw:sync-docs update` → `sw-github:sync <id>` |
 | .md files in project root | `mv *.md .specweave/increments/<current>/reports/` |
-| Progress % wrong | Update tasks.md manually or `/sw:progress-sync` |
+| Progress % wrong | Update tasks.md manually or `sw:progress-sync` |
 | Tool crashes on start | Load only active increment's spec.md + tasks.md, not entire docs/ |
 | Missing **Project**: field | `specweave context projects`, add `**Project**:` to every US |
 | Skills not activating (non-Claude) | Expected — read SKILL.md from `plugins/specweave*/skills/` |

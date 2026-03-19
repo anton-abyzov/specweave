@@ -61,9 +61,9 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 ### Slash Commands
 | Command | Purpose |
 |---------|---------|
-| `/sw:increment` | Create new feature increment |
-| `/sw:progress` | Show increment progress |
-| `/sw-github:push` | Sync to GitHub issues |
+| `sw:increment` | Create new feature increment |
+| `sw:progress` | Show increment progress |
+| `sw-github:push` | Sync to GitHub issues |
 | `specweave init` | Bootstrap new project |
 
 **Plus more commands** (see `.claude/commands/`)
@@ -198,7 +198,7 @@ await Skill({
 });
 
 // Or via slash command
-/sw:architect Design React component architecture
+sw:architect Design React component architecture
 ```
 
 Skills like PM and Architect auto-activate based on keywords. For explicit invocation, use the Skill tool.

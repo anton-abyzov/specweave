@@ -243,7 +243,7 @@ export class GitHubClientV2 {
         `  ❌ WRONG: "[Increment XXXX] Title" (old format)\n\n` +
         `WHY: Correct data flow is: Increment → Living Docs → GitHub\n` +
         `      Living docs are the source of truth for GitHub sync.\n\n` +
-        `FIX: Use /sw:sync-docs to generate living docs, then sync to GitHub.`
+        `FIX: Use sw:sync-docs to generate living docs, then sync to GitHub.`
       );
     }
 
@@ -267,8 +267,8 @@ export class GitHubClientV2 {
         `WHY: FS-XXX format ensures traceability to Feature folders in living docs.\n` +
         `     Plain increment IDs create duplicates and break the sync architecture.\n\n` +
         `FIX:\n` +
-        `  1. Use /sw:sync-progress to sync with proper format\n` +
-        `  2. Or use /sw-github:sync to create issues correctly\n` +
+        `  1. Use sw:sync-progress to sync with proper format\n` +
+        `  2. Or use sw-github:sync to create issues correctly\n` +
         `  3. Ensure increment has proper spec.md with User Stories`
       );
     }

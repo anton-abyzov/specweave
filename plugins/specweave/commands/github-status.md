@@ -9,7 +9,7 @@ Display the current GitHub sync status for a SpecWeave increment.
 ## Usage
 
 ```bash
-/sw:github:status [increment-id] [options]
+sw:github:status [increment-id] [options]
 ```
 
 ## Arguments
@@ -27,22 +27,22 @@ Display the current GitHub sync status for a SpecWeave increment.
 
 ```bash
 # Check current increment
-/sw:github:status
+sw:github:status
 
 # Check specific increment
-/sw:github:status 0004
+sw:github:status 0004
 
 # Check all increments
-/sw:github:status --all
+sw:github:status --all
 
 # Verbose output with full details
-/sw:github:status 0004 --verbose
+sw:github:status 0004 --verbose
 
 # JSON output for scripting
-/sw:github:status 0004 --json
+sw:github:status 0004 --json
 
 # Health check
-/sw:github:status --check-health
+sw:github:status --check-health
 ```
 
 ## Output Format
@@ -237,7 +237,7 @@ Summary:
 - Closed Issues: 2
 
 Issues:
-⚠️  Increment 0005: Not synced to GitHub (run /sw:github:create-issue 0005)
+⚠️  Increment 0005: Not synced to GitHub (run sw:github:create-issue 0005)
 ```
 
 ### JSON Output
@@ -358,7 +358,7 @@ plugins:
 ### 1. Quick Progress Check
 
 ```bash
-/sw:github:status 0004
+sw:github:status 0004
 ```
 
 See current sync state, progress, and last update time.
@@ -366,7 +366,7 @@ See current sync state, progress, and last update time.
 ### 2. Troubleshooting Sync Issues
 
 ```bash
-/sw:github:status 0004 --verbose
+sw:github:status 0004 --verbose
 ```
 
 Get detailed sync information to diagnose problems.
@@ -374,7 +374,7 @@ Get detailed sync information to diagnose problems.
 ### 3. Monitoring All Increments
 
 ```bash
-/sw:github:status --all
+sw:github:status --all
 ```
 
 Dashboard view of all increments and their sync state.
@@ -382,7 +382,7 @@ Dashboard view of all increments and their sync state.
 ### 4. CI/CD Integration
 
 ```bash
-/sw:github:status 0004 --json | jq '.sync.status'
+sw:github:status 0004 --json | jq '.sync.status'
 ```
 
 Check sync status in scripts/automation.
@@ -390,7 +390,7 @@ Check sync status in scripts/automation.
 ### 5. Health Monitoring
 
 ```bash
-/sw:github:status --check-health
+sw:github:status --check-health
 ```
 
 Verify all sync components are working correctly.
@@ -418,7 +418,7 @@ Local changes not synced to GitHub:
 - Task T-008 completed (1 hour ago)
 - Task T-009 started (30 minutes ago)
 
-Action: Run /sw:github:sync 0004
+Action: Run sw:github:sync 0004
 ```
 
 **Sync Failed**:
@@ -438,7 +438,7 @@ Action: Wait for rate limit reset, then retry
 No GitHub issue found for increment 0004.
 
 Action: Create issue first
-  /sw:github:create-issue 0004
+  sw:github:create-issue 0004
 ```
 
 ## Requirements
@@ -449,14 +449,14 @@ Action: Create issue first
 
 ## Related Commands
 
-- `/sw:github:create-issue`: Create GitHub issue
-- `/sw:github:sync`: Sync increment with GitHub
-- `/sw:github:close-issue`: Close GitHub issue
-- `/sw:progress`: Check increment progress (local only)
+- `sw:github:create-issue`: Create GitHub issue
+- `sw:github:sync`: Sync increment with GitHub
+- `sw:github:close-issue`: Close GitHub issue
+- `sw:progress`: Check increment progress (local only)
 
 ## Tips
 
-1. **Quick Check**: Run `/sw:github:status` before syncing to see if sync is needed
+1. **Quick Check**: Run `sw:github:status` before syncing to see if sync is needed
 
 2. **Verbose Mode**: Use `--verbose` when troubleshooting sync issues
 
@@ -474,7 +474,7 @@ Monitor sync status in real-time:
 
 ```bash
 # Refresh every 30 seconds
-watch -n 30 '/sw:github:status 0004'
+watch -n 30 'sw:github:status 0004'
 ```
 
 ### Custom Health Checks
@@ -519,13 +519,13 @@ plugins:
 Generate HTML dashboard:
 
 ```bash
-/sw:github:status --all --format html > status.html
+sw:github:status --all --format html > status.html
 open status.html
 ```
 
 ---
 
-**Command**: `/sw:github:status`
+**Command**: `sw:github:status`
 **Plugin**: specweave-github
 **Agent**: github-sync
 **Version**: 1.0.0

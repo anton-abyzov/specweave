@@ -118,7 +118,7 @@ class PerUSAdoSync {
         action: "skipped"
       };
     }
-    const existingItem = await this.findExistingWorkItem(mapping.project, story.id);
+    const existingItem = await this.findExistingWorkItem(mapping.project, featureId, story.id);
     if (existingItem) {
       await this.adoClient.updateWorkItem(
         mapping.project,
@@ -158,11 +158,12 @@ class PerUSAdoSync {
     }
   }
   /**
-   * Find existing work item by US ID in title
+   * Find existing work item by Feature ID + US ID in title.
+   * Scoped to current feature to prevent cross-increment matches (FS-604).
    */
-  async findExistingWorkItem(project, usId) {
+  async findExistingWorkItem(project, featureId, usId) {
     try {
-      const query = `[System.Title] Contains '[${usId}]'`;
+      const query = `[System.Title] Contains '[${featureId}][${usId}]'`;
       const results = await this.adoClient.searchWorkItems(project, query);
       return results.length > 0 ? { id: results[0].id } : null;
     } catch {

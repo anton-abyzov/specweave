@@ -64,7 +64,7 @@ Only on user confirmation: update status → completed, set completion date, gen
 
 ### Step 3.5: Post-Closure Quality Assessment
 
-After successful closure, automatically run `/sw:qa ${incrementId}`. Quality gate: PASS (≥80), CONCERNS (60-79), FAIL (<60). If FAIL, suggest creating follow-up increment.
+After successful closure, automatically run `sw:qa ${incrementId}`. Quality gate: PASS (≥80), CONCERNS (60-79), FAIL (<60). If FAIL, suggest creating follow-up increment.
 
 ### Step 4: Suggest Next Work
 
@@ -75,7 +75,7 @@ After successful closure, automatically run `/sw:qa ${incrementId}`. Quality gat
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:do` | Execute tasks in increment |
-| `/sw:progress` | Check status (no action) |
-| `/sw:done` | Explicit close with validation |
-| `/sw:next` | **Smart transition** (close + QA + suggest next) |
+| `sw:do` | Execute tasks in increment |
+| `sw:progress` | Check status (no action) |
+| `sw:done` | Explicit close with validation |
+| `sw:next` | **Smart transition** (close + QA + suggest next) |

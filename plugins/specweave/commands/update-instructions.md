@@ -25,7 +25,7 @@ Smart merge for CLAUDE.md and AGENTS.md instruction files.
 ## Usage
 
 ```
-/sw:update-instructions
+sw:update-instructions
 ```
 
 Or via CLI:

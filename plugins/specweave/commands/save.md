@@ -4,7 +4,7 @@ description: Smart auto-commit with remote sync (handles pull/rebase/stash, auto
 argument-hint: "[message]"
 ---
 
-# /sw:save - Smart Save with Auto-Sync
+# sw:save - Smart Save with Auto-Sync
 
 ## Project Overrides
 
@@ -13,15 +13,15 @@ argument-hint: "[message]"
 ## Usage
 
 ```bash
-/sw:save           # Fully automatic - generates message, syncs, pushes
-/sw:save "msg"     # Your message, auto-sync
-/sw:save -i        # Interactive - asks before each step
-/sw:save --dry-run # Preview without executing
+sw:save           # Fully automatic - generates message, syncs, pushes
+sw:save "msg"     # Your message, auto-sync
+sw:save -i        # Interactive - asks before each step
+sw:save --dry-run # Preview without executing
 ```
 
 ## Core Guarantee
 
-**After `/sw:save` completes, `git status` must be clean in every repo** — zero untracked files, zero unstaged changes. Achieved by:
+**After `sw:save` completes, `git status` must be clean in every repo** — zero untracked files, zero unstaged changes. Achieved by:
 - Committing all important files (source, config, docs, specs, lock files)
 - Gitignoring all unimportant files (build output, deps, OS junk, secrets)
 - Applying this per-repo for both umbrella and all nested repositories

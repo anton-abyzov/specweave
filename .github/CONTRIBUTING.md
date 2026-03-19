@@ -141,7 +141,7 @@ SpecWeave follows these key principles for all contributions:
 
 ### 4. Incremental Development
 - Work in small, measurable increments
-- Use SpecWeave's own workflow (`/sw:increment`, `/sw:do`, etc.)
+- Use SpecWeave's own workflow (`sw:increment`, `sw:do`, etc.)
 - All work traces back to specs
 
 ### 5. Multi-Tool Support
@@ -459,7 +459,7 @@ This command...
 
 > **WARNING: Do NOT use `name:` in YAML frontmatter** for plugin-based skills/commands.
 > The `name` field causes Claude Code to strip the plugin namespace prefix
-> (e.g., `/sw:grill` becomes `/grill`). Skill/command names are derived from
+> (e.g., `sw:grill` becomes `/grill`). Skill/command names are derived from
 > the directory name (skills) or filename (commands) automatically.
 
 **Must be**:

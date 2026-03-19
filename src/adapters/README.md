@@ -67,7 +67,7 @@ interface IAdapter {
 **Files Installed**:
 - `.claude/skills/` - Auto-activating skills (specweave-detector, skill-router, etc.)
 - `.claude/agents/` - Specialized agents (PM, Architect, DevOps, QA, Security)
-- Skills provide increment management via `/sw:increment`, `/sw:do`, `/sw:done`
+- Skills provide increment management via `sw:increment`, `sw:do`, `sw:done`
 - `.claude/hooks/` - Auto-update hooks (post-task-completion, etc.)
 
 **Features**:
@@ -145,7 +145,7 @@ Copy spec.md, plan.md, and tasks.md from your increment folder.
 **Critical Insight**: Commands work differently across tools.
 
 ### Claude Code (Native Slash Commands)
-- User types `/sw:increment "user auth"` in Claude chat
+- User types `sw:increment "user auth"` in Claude chat
 - Skill `sw:increment` is loaded via plugin system
 - Skill executes with full project context
 

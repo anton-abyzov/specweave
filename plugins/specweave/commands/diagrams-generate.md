@@ -2,7 +2,7 @@
 description: Generate Mermaid architecture diagrams following C4 Model conventions for system documentation.
 ---
 
-# /sw-diagrams:diagrams-generate
+# sw-diagrams:diagrams-generate
 
 Generate Mermaid architecture diagrams following C4 Model conventions.
 

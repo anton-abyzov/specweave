@@ -18,7 +18,7 @@ Run SpecWeave installation health diagnostics to detect and fix common issues.
 ## Usage
 
 ```
-/sw:doctor [--fix] [--verbose]
+sw:doctor [--fix] [--verbose]
 ```
 
 **Flags**: `--fix` (auto-remediate safe issues) | `--verbose` (show details)

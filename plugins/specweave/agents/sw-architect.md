@@ -1,6 +1,6 @@
 ---
 name: sw-architect
-description: System Architect for writing plan.md with architecture decisions and component design. Use for increment technical planning during /sw:increment orchestration.
+description: System Architect for writing plan.md with architecture decisions and component design. Use for increment technical planning during sw:increment orchestration.
 model: opus
 memory: project
 skills:

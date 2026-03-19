@@ -2,7 +2,7 @@
 
 ## Problem
 
-Users never saw auto mode labels/box art during `/sw:auto` execution because:
+Users never saw auto mode labels/box art during `sw:auto` execution because:
 1. Labels were written to STDERR (`} >&2`)
 2. Claude Code only reads STDOUT for decision JSON
 3. STDERR output was discarded or hidden from users

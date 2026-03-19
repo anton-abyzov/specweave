@@ -10,14 +10,14 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 
 **GitHub issue content is generated FROM living docs.** If living docs are stale, the closing summary will have outdated information.
 
-**You MUST run `/sw:sync-specs` BEFORE closing (unless using /sw:sync-progress):**
+**You MUST run `sw:sync-specs` BEFORE closing (unless using sw:sync-progress):**
 
 ```bash
 # STEP 1: Ensure living docs reflect final state
-/sw:sync-specs <increment-id>
+sw:sync-specs <increment-id>
 
 # STEP 2: Then close GitHub issue
-/sw-github:close <increment-id>
+sw-github:close <increment-id>
 ```
 
 **Why?**
@@ -25,14 +25,14 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 - User story completion status read from living docs
 - AC checkboxes reflect living docs state
 
-**Note:** `/sw:done` and `/sw:sync-progress` call sync-specs automatically.
+**Note:** `sw:done` and `sw:sync-progress` call sync-specs automatically.
 
 ---
 
-**Usage**: `/sw-github:close <increment-id>`
+**Usage**: `sw-github:close <increment-id>`
 
 ```bash
-/sw:github:close-issue <increment-id> [options]
+sw:github:close-issue <increment-id> [options]
 ```
 
 ## Arguments
@@ -50,16 +50,16 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 
 ```bash
 # Basic usage (auto-generates completion summary)
-/sw:github:close-issue 0004
+sw:github:close-issue 0004
 
 # With custom comment
-/sw:github:close-issue 0004 --comment "Merged to main, deploying to production"
+sw:github:close-issue 0004 --comment "Merged to main, deploying to production"
 
 # Force close (skip validation)
-/sw:github:close-issue 0004 --force
+sw:github:close-issue 0004 --force
 
 # Reopen closed issue
-/sw:github:close-issue 0004 --reopen
+sw:github:close-issue 0004 --reopen
 ```
 
 ## What This Command Does
@@ -67,7 +67,7 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 1. **Validates Increment Completion**
    - All tasks completed (48/48)
    - All tests passing
-   - PM gates passed (from `/sw:done`)
+   - PM gates passed (from `sw:done`)
    - Documentation updated
 
 2. **Generates Completion Summary**
@@ -227,19 +227,19 @@ Issues:
   - TC-127: E2E sync test
 
 ✗ PM Gates: Not run yet
-  - Run /sw:done 0004 first
+  - Run sw:done 0004 first
 
 Fix these issues, then retry:
-  /sw:github:close-issue 0004
+  sw:github:close-issue 0004
 
 Or force close (not recommended):
-  /sw:github:close-issue 0004 --force
+  sw:github:close-issue 0004 --force
 ```
 
 ## Requirements
 
 - GitHub CLI (`gh`) installed and authenticated
-- Increment marked as complete (via `/sw:done`)
+- Increment marked as complete (via `sw:done`)
 - Valid GitHub issue exists for increment
 
 ## Error Handling
@@ -251,10 +251,10 @@ Or force close (not recommended):
 Status: in_progress (should be: completed)
 
 Complete the increment first:
-  /sw:done 0004
+  sw:done 0004
 
 Then close the issue:
-  /sw:github:close-issue 0004
+  sw:github:close-issue 0004
 ```
 
 **Issue not found**:
@@ -264,7 +264,7 @@ Then close the issue:
 Check .metadata.yaml for issue number.
 
 Create issue first:
-  /sw:github:create-issue 0004
+  sw:github:create-issue 0004
 ```
 
 **Issue already closed**:
@@ -288,15 +288,15 @@ Contact repository admin for access.
 
 ## Related Commands
 
-- `/sw:done <increment-id>`: Mark increment complete (run this first)
-- `/sw:github:sync <increment-id>`: Sync final progress before closing
-- `/sw:github:status <increment-id>`: Check issue status
+- `sw:done <increment-id>`: Mark increment complete (run this first)
+- `sw:github:sync <increment-id>`: Sync final progress before closing
+- `sw:github:status <increment-id>`: Check issue status
 
 ## Tips
 
-1. **Auto-Close**: Enable `auto_close_issue: true` for automatic closing when running `/sw:done`
+1. **Auto-Close**: Enable `auto_close_issue: true` for automatic closing when running `sw:done`
 
-2. **Final Sync**: Always run `/sw:github:sync` before closing to ensure latest progress is posted
+2. **Final Sync**: Always run `sw:github:sync` before closing to ensure latest progress is posted
 
 3. **Validation**: Don't skip validation (`--force`) unless absolutely necessary - it ensures quality
 
@@ -405,11 +405,11 @@ Close multiple completed increments:
 
 ```bash
 # Close all completed increments
-/sw:github:close-issue --status completed --all
+sw:github:close-issue --status completed --all
 
 # Close specific increments
 for i in 0004 0005 0006; do
-  /sw:github:close-issue $i
+  sw:github:close-issue $i
 done
 ```
 
@@ -418,7 +418,7 @@ done
 Reopen issue with explanation:
 
 ```bash
-/sw:github:close-issue 0004 --reopen \
+sw:github:close-issue 0004 --reopen \
   --comment "Reopening: Critical bug found in production (issue #140). Need to add rollback mechanism."
 ```
 
@@ -427,13 +427,13 @@ Reopen issue with explanation:
 Close and lock issue to prevent further comments:
 
 ```bash
-/sw:github:close-issue 0004 --lock \
+sw:github:close-issue 0004 --lock \
   --lock-reason "resolved"  # or "off-topic", "spam", "too heated"
 ```
 
 ---
 
-**Command**: `/sw:github:close-issue`
+**Command**: `sw:github:close-issue`
 **Plugin**: specweave-github
 **Agent**: github-sync
 **Version**: 1.0.0

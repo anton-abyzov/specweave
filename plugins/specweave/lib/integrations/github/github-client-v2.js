@@ -176,7 +176,7 @@ GitHub issues MUST use living docs format:
 WHY: Correct data flow is: Increment \u2192 Living Docs \u2192 GitHub
       Living docs are the source of truth for GitHub sync.
 
-FIX: Use /sw:sync-docs to generate living docs, then sync to GitHub.`
+FIX: Use sw:sync-docs to generate living docs, then sync to GitHub.`
       );
     }
     const plainIncrementPattern = /^\[\d{3,4}E?\]\s/;
@@ -200,8 +200,8 @@ WHY: FS-XXX format ensures traceability to Feature folders in living docs.
      Plain increment IDs create duplicates and break the sync architecture.
 
 FIX:
-  1. Use /sw:sync-progress to sync with proper format
-  2. Or use /sw-github:sync to create issues correctly
+  1. Use sw:sync-progress to sync with proper format
+  2. Or use sw-github:sync to create issues correctly
   3. Ensure increment has proper spec.md with User Stories`
       );
     }

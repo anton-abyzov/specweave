@@ -43,14 +43,14 @@ When you describe what you want, your AI routes internally to the right skill. Y
 
 | You say | Your AI runs — automatically |
 |---------|------------------------------|
-| "Build me X" / "Let's add Y" | `/sw:increment` → spec + plan + tasks |
-| "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
-| "Ship it" / "We're done" | `/sw:done` → quality gates + close |
-| "Split this into teams" | `/sw:team-lead` → parallel agents (implement mode) |
-| "Brainstorm approaches for X" | `/sw:team-lead` → parallel perspectives (brainstorm mode) |
-| "Plan X in parallel" | `/sw:team-lead` → PM + Architect agents (planning mode) |
-| "Review the code" | `/sw:code-reviewer` → 6 parallel reviewers |
-| "Grill the code" | `/sw:grill` → critical audit before close |
+| "Build me X" / "Let's add Y" | `sw:increment` → spec + plan + tasks |
+| "Go ahead" / "Build it" | `sw:auto` → autonomous execution |
+| "Ship it" / "We're done" | `sw:done` → quality gates + close |
+| "Split this into teams" | `sw:team-lead` → parallel agents (implement mode) |
+| "Brainstorm approaches for X" | `sw:team-lead` → parallel perspectives (brainstorm mode) |
+| "Plan X in parallel" | `sw:team-lead` → PM + Architect agents (planning mode) |
+| "Review the code" | `sw:code-reviewer` → 6 parallel reviewers |
+| "Grill the code" | `sw:grill` → critical audit before close |
 
 You can also invoke these directly for fine-grained control — but you rarely need to.
 
@@ -161,13 +161,13 @@ SpecWeave embodies this principle. Each **increment** is a focused, reviewable u
 The more structure in your workflow, the harder the problems you can solve:
 
 ```
-Hardest problem          big refactors,              ○  ← /sw:team-lead
+Hardest problem          big refactors,              ○  ← sw:team-lead
 you can solve          whole new features                 (multi-agent)
     ↑                                          ○
-    │               medium features               ← /sw:brainstorm → /sw:increment → /sw:auto
+    │               medium features               ← sw:brainstorm → sw:increment → sw:auto
     │              across repos                 (research + plan + implement)
     │                                    ○
-    │           small features              ← /sw:increment → /sw:do
+    │           small features              ← sw:increment → sw:do
     │          across 3-5 files                (plan + implement)
     │                              ○
     │       small fixes               ← just talk to AI
@@ -206,12 +206,12 @@ Run multiple AI agents on the same repository — locally, in the cloud, or with
 iTerm2 / tmux split panes:
 ┌──────────────────┬──────────────────┬──────────────────┐
 │  Agent 1 (auth)  │ Agent 2 (payments)│ Agent 3 (catalog)│
-│  /sw:auto        │  /sw:auto         │  /sw:auto        │
+│  sw:auto        │  sw:auto         │  sw:auto        │
 │  ████████░░ 80%  │  ██████░░░░ 60%   │  ████░░░░░░ 40%  │
 └──────────────────┴──────────────────┴──────────────────┘
 ```
 
-`/sw:team-lead "feature"` splits work → each agent runs `/sw:auto` → quality gates ensure consistency → progress syncs to GitHub/JIRA.
+`sw:team-lead "feature"` splits work → each agent runs `sw:auto` → quality gates ensure consistency → progress syncs to GitHub/JIRA.
 
 **[Full agent teams guide](https://spec-weave.com/docs/guides/agent-teams-and-swarms)**
 
@@ -287,8 +287,8 @@ Claude: *automatically uses React Hook Form + Zod*
 
 **Enable auto-learning:**
 ```bash
-/sw:reflect-on       # Corrections become permanent knowledge
-/sw:reflect-status   # See what Claude has learned
+sw:reflect-on       # Corrections become permanent knowledge
+sw:reflect-status   # See what Claude has learned
 ```
 
 **[Skills deep dive](https://spec-weave.com/docs/overview/skills-as-structured-expertise)** | **[Skill development guidelines](https://spec-weave.com/docs/guides/skill-development-guidelines)** | **[Skill generation](https://spec-weave.com/docs/skills/extensible/skill-generation)**
@@ -330,13 +330,13 @@ These run automatically from natural language — see the table above. Use direc
 
 | Command | Purpose | Natural trigger |
 |---------|---------|----------------|
-| `/sw:increment "feature"` | Create spec + plan + tasks | "Build me X" |
-| `/sw:auto` | Autonomous execution | "Go ahead and build it" |
-| `/sw:do` | Execute one task at a time | "Do the next task" |
-| `/sw:grill` | Code review before close | "Review the code" |
-| `/sw:done` | Close with quality validation | "Ship it" |
-| `/sw:progress-sync` | Push to GitHub / JIRA / ADO | "Sync progress" |
-| `/sw:next` | Auto-close + suggest next | "What's next?" |
+| `sw:increment "feature"` | Create spec + plan + tasks | "Build me X" |
+| `sw:auto` | Autonomous execution | "Go ahead and build it" |
+| `sw:do` | Execute one task at a time | "Do the next task" |
+| `sw:grill` | Code review before close | "Review the code" |
+| `sw:done` | Close with quality validation | "Ship it" |
+| `sw:progress-sync` | Push to GitHub / JIRA / ADO | "Sync progress" |
+| `sw:next` | Auto-close + suggest next | "What's next?" |
 
 **[Full command reference](https://spec-weave.com/docs/commands/overview)**
 
@@ -364,7 +364,7 @@ Every SpecWeave skill can be submitted to [verified-skill.com](https://verified-
 | Capability | SpecWeave | BMAD Method | GitHub SpecKit |
 |------------|-----------|-------------|----------------|
 | **Parallel agent coordination** | Increment-scoped isolation | No | No |
-| **Autonomous execution** | Hours of unattended `/sw:auto` | No | No |
+| **Autonomous execution** | Hours of unattended `sw:auto` | No | No |
 | **Agent swarms (iTerm/tmux)** | Visual parallel monitoring | No | No |
 | **Quality gates** | Code Grill before every release | No | No |
 | **Living documentation** | Auto-updated after every task | Manual | Manual |
@@ -390,7 +390,7 @@ specweave dashboard
 **What you get:**
 
 - **Overview** — increment progress, task completion, acceptance criteria status at a glance
-- **Analytics** — command invocations, skill activations, agent spawns tracked locally in JSONL. Captures implicit calls too (team-lead spawning agents, agents calling `/sw:do` internally). Daily breakdowns, success rates, and top-used commands/skills
+- **Analytics** — command invocations, skill activations, agent spawns tracked locally in JSONL. Captures implicit calls too (team-lead spawning agents, agents calling `sw:do` internally). Daily breakdowns, success rates, and top-used commands/skills
 - **Multi-project support** — switch between projects via `?project=` query param. All views are project-scoped
 - **Cost tracking** — token usage and cost estimates per increment
 - **Live updates** — SSE-powered real-time refresh as increments and tasks change

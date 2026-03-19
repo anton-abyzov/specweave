@@ -113,7 +113,7 @@ Present as a clean dashboard.
 - If server is already running: "Docs server running at http://localhost:<port>"
 - If server is NOT running: Show the `specweave docs preview` instructions (see section 4 below)
 
-This ensures every `/sw:docs` invocation gives the user a clear path to browse docs in their browser.
+This ensures every `sw:docs` invocation gives the user a clear path to browse docs in their browser.
 
 ### 2. `--list`: List topics only
 
@@ -121,7 +121,7 @@ Same as dashboard but skip server/Docusaurus diagnostics. Just list folder names
 
 ### 3. Topic argument: Search and load docs
 
-When user provides a topic (e.g., `/sw:docs sync`, `/sw:docs troubleshooting`):
+When user provides a topic (e.g., `sw:docs sync`, `sw:docs troubleshooting`):
 
 1. **Search** across all configured directories and child repos:
    ```bash

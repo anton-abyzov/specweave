@@ -38,61 +38,61 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 
 | Command | Description |
 |---------|-------------|
-| /sw:increment | Plan new Product Increment with spec.md, plan.md, tasks.md |
-| /sw:do | Execute increment implementation following spec and plan |
-| /sw:progress | Show detailed progress for active increments |
-| /sw:done | Close increment with PM validation (3-gate quality check) |
-| /sw:auto | Start autonomous execution with stop hook feedback loop |
-| /sw:auto-status | Show current auto session status and progress |
-| /sw:cancel-auto | Emergency cancel of running auto session |
-| /sw:auto-parallel | Enable parallel agent execution for multi-domain features |
-| /sw:save | Smart save with auto-generated commits and git handling |
-| /sw:validate | Validate increment with rule-based checks and AI assessment |
-| /sw:qa | Run quality assessment with risk scoring and gate decisions |
-| /sw:judge-llm | Ultrathink LLM-as-Judge validation of completed work |
-| /sw:status | Show increment status overview (active, backlog, paused, etc.) |
-| /sw:next | Smart increment transition - auto-close and suggest next work |
-| /sw:pause | Pause an active increment |
-| /sw:resume | Resume a paused or backlog increment |
-| /sw:abandon | Abandon an incomplete increment |
-| /sw:archive | Manually archive completed increments |
-| /sw:restore | Restore archived increments back to active |
-| /sw:reopen | Reopen a completed increment for additional work |
-| /sw:backlog | Move an increment to backlog |
-| /sw:plan | Generate plan.md and tasks.md using Architect Agent |
-| /sw:increment-quality-judge-v2 | AI-powered quality assessment with BMAD risk scoring |
-| /sw:tdd-cycle | Execute comprehensive TDD workflow with strict discipline |
-| /sw:tdd-red | Write comprehensive failing tests (TDD red phase) |
-| /sw:tdd-green | Implement minimal code to make tests pass (TDD green phase) |
-| /sw:tdd-refactor | Refactor code with comprehensive test safety net |
-| /sw:sync-docs | Strategic documentation sync (review or export) |
-| /sw:sync-progress | Comprehensive progress sync to all systems |
-| /sw:sync-status | Detect and fix status desyncs |
-| /sw:living-docs | Launch Living Docs Builder independently |
-| /sw:import-external | Auto-import external work items (GitHub/JIRA/ADO) |
-| /sw:discrepancies | View and manage code-to-spec discrepancies |
-| /sw:discrepancy-to-increment | Convert discrepancies into new increment |
-| /sw:fix-duplicates | Detect and resolve duplicate increments |
-| /sw:reconcile | Reconcile increment ID collisions after merge |
-| /sw:reflect | Analyze session and extract learnings to CLAUDE.md |
-| /sw:reflect-on | Enable automatic reflection on session end |
-| /sw:reflect-off | Disable automatic reflection |
-| /sw:reflect-status | Show reflection configuration and statistics |
-| /sw:reflect-check | Diagnostic tool for reflection system health |
-| /sw:reflect-clear | Clear specific learnings from Skill Memories |
-| /sw:code-reviewer | Elite multi-agent code review system |
-| /sw:code-standards-analyzer | Generate coding standards from codebase patterns |
-| /sw:grill | Comprehensive implementation auditor |
-| /sw:feature-dev | Feature Development Workflow (7-phase structured approach) |
-| /sw:role-orchestrator | Multi-agent orchestration for complex tasks |
-| /sw:docs-writer | Technical documentation writer |
-| /sw:translate | Translate SpecWeave project content |
-| /sw:skill | Create and validate Claude Code skills |
-| /sw:npm | Full patch release with npm publish |
-| /sw-media:image | AI image generation (Google Imagen 4 / Pollinations.ai) |
-| /sw-media:video | AI video generation (Google Veo 3.1 / Pollinations.ai) |
-| /sw-media:remotion | Programmatic video from React with Remotion |
-| /sw:analytics | Show usage analytics dashboard |
+| sw:increment | Plan new Product Increment with spec.md, plan.md, tasks.md |
+| sw:do | Execute increment implementation following spec and plan |
+| sw:progress | Show detailed progress for active increments |
+| sw:done | Close increment with PM validation (3-gate quality check) |
+| sw:auto | Start autonomous execution with stop hook feedback loop |
+| sw:auto-status | Show current auto session status and progress |
+| sw:cancel-auto | Emergency cancel of running auto session |
+| sw:auto-parallel | Enable parallel agent execution for multi-domain features |
+| sw:save | Smart save with auto-generated commits and git handling |
+| sw:validate | Validate increment with rule-based checks and AI assessment |
+| sw:qa | Run quality assessment with risk scoring and gate decisions |
+| sw:judge-llm | Ultrathink LLM-as-Judge validation of completed work |
+| sw:status | Show increment status overview (active, backlog, paused, etc.) |
+| sw:next | Smart increment transition - auto-close and suggest next work |
+| sw:pause | Pause an active increment |
+| sw:resume | Resume a paused or backlog increment |
+| sw:abandon | Abandon an incomplete increment |
+| sw:archive | Manually archive completed increments |
+| sw:restore | Restore archived increments back to active |
+| sw:reopen | Reopen a completed increment for additional work |
+| sw:backlog | Move an increment to backlog |
+| sw:plan | Generate plan.md and tasks.md using Architect Agent |
+| sw:increment-quality-judge-v2 | AI-powered quality assessment with BMAD risk scoring |
+| sw:tdd-cycle | Execute comprehensive TDD workflow with strict discipline |
+| sw:tdd-red | Write comprehensive failing tests (TDD red phase) |
+| sw:tdd-green | Implement minimal code to make tests pass (TDD green phase) |
+| sw:tdd-refactor | Refactor code with comprehensive test safety net |
+| sw:sync-docs | Strategic documentation sync (review or export) |
+| sw:sync-progress | Comprehensive progress sync to all systems |
+| sw:sync-status | Detect and fix status desyncs |
+| sw:living-docs | Launch Living Docs Builder independently |
+| sw:import-external | Auto-import external work items (GitHub/JIRA/ADO) |
+| sw:discrepancies | View and manage code-to-spec discrepancies |
+| sw:discrepancy-to-increment | Convert discrepancies into new increment |
+| sw:fix-duplicates | Detect and resolve duplicate increments |
+| sw:reconcile | Reconcile increment ID collisions after merge |
+| sw:reflect | Analyze session and extract learnings to CLAUDE.md |
+| sw:reflect-on | Enable automatic reflection on session end |
+| sw:reflect-off | Disable automatic reflection |
+| sw:reflect-status | Show reflection configuration and statistics |
+| sw:reflect-check | Diagnostic tool for reflection system health |
+| sw:reflect-clear | Clear specific learnings from Skill Memories |
+| sw:code-reviewer | Elite multi-agent code review system |
+| sw:code-standards-analyzer | Generate coding standards from codebase patterns |
+| sw:grill | Comprehensive implementation auditor |
+| sw:feature-dev | Feature Development Workflow (7-phase structured approach) |
+| sw:role-orchestrator | Multi-agent orchestration for complex tasks |
+| sw:docs-writer | Technical documentation writer |
+| sw:translate | Translate SpecWeave project content |
+| sw:skill | Create and validate Claude Code skills |
+| sw:npm | Full patch release with npm publish |
+| sw-media:image | AI image generation (Google Imagen 4 / Pollinations.ai) |
+| sw-media:video | AI video generation (Google Veo 3.1 / Pollinations.ai) |
+| sw-media:remotion | Programmatic video from React with Remotion |
+| sw:analytics | Show usage analytics dashboard |
 
 ## Installation
 

@@ -197,7 +197,7 @@ Try it:
 ```bash
 npm install -g specweave
 specweave init .
-/sw:increment "your feature"
+sw:increment "your feature"
 ```
 
 **2026**: Claude Code transparent AI → SpecWeave extendability + LSP + living docs
@@ -563,7 +563,7 @@ Status: [x] completed
 
 **Command**:
 ```bash
-/sw:progress-sync 0042
+sw:progress-sync 0042
 # Creates/updates issues in all 3 repos
 # Syncs task completion status
 # Links related issues across repos
@@ -618,14 +618,14 @@ Most frameworks ADVISE best practices. SpecWeave ENFORCES them.
 **Problem**: Using `name:` in SKILL.md frontmatter strips the plugin prefix.
 
 ```yaml
-# ❌ WRONG (strips /sw: prefix)
+# ❌ WRONG (strips sw: prefix)
 ---
 name: grill
 description: Critical code review
 ---
 ```
 
-Result: Skill registers as `/grill` instead of `/sw:grill` → command not found
+Result: Skill registers as `/grill` instead of `sw:grill` → command not found
 
 **Pre-commit hook catches this**:
 
@@ -642,7 +642,7 @@ git commit -m "Add grill skill"
    - Commands: Filename (commands/do.md → 'do')
 
    Plugin prefix comes from plugin.json: "name": "sw"
-   Final command: /sw:grill
+   Final command: sw:grill
 
    See: .specweave/docs/public/troubleshooting/skill-name-prefix-stripping.md
 
@@ -817,16 +817,16 @@ npm install -g specweave
 specweave init .
 
 # Create your first increment (feature/bug/hotfix)
-/sw:increment "Add Stripe checkout"
+sw:increment "Add Stripe checkout"
 
 # Enable skill learning (extendable skills)
-/sw:reflect-on
+sw:reflect-on
 
 # Use LSP for fast code intelligence
 specweave lsp refs src/payment.ts PaymentService
 
 # Sync to GitHub/JIRA
-/sw:progress-sync
+sw:progress-sync
 ```
 
 **Full documentation**: https://verified-skill.com

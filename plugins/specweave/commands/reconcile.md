@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 ## Philosophy
 
-**Renumber, don't delete.** Unlike `/sw:fix-duplicates` which removes duplicates, this command:
+**Renumber, don't delete.** Unlike `sw:fix-duplicates` which removes duplicates, this command:
 - Keeps ALL increments intact
 - Renumbers the "later" ones (by modification date) to next available IDs
 - Updates all references (metadata, living docs, external sync)
@@ -23,7 +23,7 @@ Run after merging branches that may have created increments with same IDs:
 git checkout main
 git merge feature-branch-a
 git merge feature-branch-b
-/sw:reconcile           # Fix any ID collisions
+sw:reconcile           # Fix any ID collisions
 git add . && git commit -m "reconcile: fix increment ID collisions"
 ```
 
@@ -31,16 +31,16 @@ git add . && git commit -m "reconcile: fix increment ID collisions"
 
 ```bash
 # Detect and fix all ID collisions (interactive)
-/sw:reconcile
+sw:reconcile
 
 # Preview what would change (dry-run)
-/sw:reconcile --dry-run
+sw:reconcile --dry-run
 
 # Auto-fix without confirmation
-/sw:reconcile --force
+sw:reconcile --force
 
 # Check specific increment number
-/sw:reconcile 0001
+sw:reconcile 0001
 ```
 
 ## Options
@@ -130,7 +130,7 @@ Creates `reports/RECONCILE-{timestamp}.md` documenting:
 Two developers imported issues from JIRA, both got 0001E:
 
 ```bash
-/sw:reconcile
+sw:reconcile
 ```
 
 **Output**:
@@ -175,13 +175,13 @@ References updated: 7
 💡 Next steps:
   1. Review the changes
   2. git add . && git commit -m "reconcile: fix ID collisions"
-  3. Run /sw-github:sync or /sw-jira:sync to update external tools
+  3. Run sw-github:sync or sw-jira:sync to update external tools
 ```
 
 ### Example 2: Dry-Run Preview
 
 ```bash
-/sw:reconcile --dry-run
+sw:reconcile --dry-run
 ```
 
 **Output**:
@@ -210,7 +210,7 @@ Run without --dry-run to apply changes.
 Three developers created 0001E increments:
 
 ```bash
-/sw:reconcile
+sw:reconcile
 ```
 
 **Output**:
@@ -234,7 +234,7 @@ Proceed? [y/N]: y
 Collision between active and archived increment:
 
 ```bash
-/sw:reconcile
+sw:reconcile
 ```
 
 **Output**:
@@ -326,7 +326,7 @@ Warning: Could not update GitHub milestone
   Milestone "FS-001E" not found on remote
 
 The increment was renumbered locally.
-Run /sw-github:sync to recreate the milestone.
+Run sw-github:sync to recreate the milestone.
 ```
 
 ## Reconcile Report Format
@@ -337,7 +337,7 @@ Run /sw-github:sync to recreate the milestone.
 # Increment ID Reconciliation Report
 
 **Date**: 2026-02-01 12:00:00 UTC
-**Command**: /sw:reconcile
+**Command**: sw:reconcile
 **Trigger**: Post-merge ID collision resolution
 
 ## Collisions Detected
@@ -411,25 +411,25 @@ The reconcile command should:
 
 ## Related Commands
 
-- `/sw:fix-duplicates` - Remove actual duplicates (same increment in multiple locations)
-- `/sw:status` - View all increments
-- `/sw:sync-docs` - Sync living docs after reconciliation
-- `/sw-github:sync` - Update GitHub references after reconciliation
+- `sw:fix-duplicates` - Remove actual duplicates (same increment in multiple locations)
+- `sw:status` - View all increments
+- `sw:sync-docs` - Sync living docs after reconciliation
+- `sw-github:sync` - Update GitHub references after reconciliation
 
 ## Best Practices
 
 1. **Always run after multi-branch merge** - Make it a habit
 2. **Use dry-run first** - Preview changes before applying
 3. **Commit the reconciliation** - The renumbering should be a separate commit
-4. **Sync external tools** - Run `/sw-github:sync` or `/sw-jira:sync` after reconcile
+4. **Sync external tools** - Run `sw-github:sync` or `sw-jira:sync` after reconcile
 
 ```bash
 # Recommended post-merge workflow
 git merge feature-branch
-/sw:reconcile --dry-run    # Preview
-/sw:reconcile              # Apply
+sw:reconcile --dry-run    # Preview
+sw:reconcile              # Apply
 git add . && git commit -m "reconcile: fix ID collisions after merge"
-/sw-github:sync            # Update external tools
+sw-github:sync            # Update external tools
 ```
 
 ## Safety Notes
