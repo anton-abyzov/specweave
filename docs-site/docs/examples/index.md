@@ -2,467 +2,231 @@
 sidebar_position: 8
 title: Real-World Examples
 description: See SpecWeave in action with real production use cases
-keywords: [examples, use cases, real-world, production, mobile, microservices, brownfield]
+keywords: [examples, use cases, real-world, production, mobile, multi-repo, monorepo]
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';
 
 # Real-World Examples
 
-See how SpecWeave handles real production scenarios - from mobile apps to microservices to brownfield documentation.
+See how teams use SpecWeave to ship real products — from beginner projects to production apps with millions of users.
 
-:::tip All Examples Are Real
-These aren't toy examples. They're based on actual SpecWeave increments from production projects, including SpecWeave itself (150+ features built with SpecWeave).
+:::tip Every Example Is Verifiable
+These are actual open-source projects built with SpecWeave. Every repo structure, tech stack, and increment count is real. No fabricated metrics.
 :::
 
 ---
 
-## Mobile App Development
+## 🟢 Beginner: URL Shortener
 
-### Building a React Native Business Card Scanner
+### Multi-Repo Shared Library Pattern
 
-**Duration**: 2.5 hours autonomous execution
-**Lines of Code**: ~3,200
-**Tests Written**: 42 (unit + integration + E2E)
+**Repos**: 3 (frontend, backend, common) · **Tech**: React + Vite, Express, TypeScript, Vitest
 
-#### The Challenge
+A URL shortener demonstrating the **shared library pattern** — a common TypeScript library consumed by both frontend and backend.
 
-Build "BizZone" - a mobile app that scans business cards using the camera, extracts contact info with OCR, and saves to local storage with offline sync.
+```
+sw-url-shortener/
+├── common/           # @url-shortener/common — shared types, validators, generators
+├── backend/          # Express API — URL creation, redirect, click stats
+└── frontend/         # React + Vite — URL submission, stats dashboard
+```
 
-#### The SpecWeave Approach
+#### Getting Started
 
 <CommandTabs
-  natural="Let's build a business card scanner with OCR and offline storage"
-  claude='sw:increment "Business card scanner with OCR and offline storage"'
-  other='increment "Business card scanner with OCR and offline storage"'
+  natural="Let's build a URL shortener with shared types across frontend and backend"
+  claude='sw:increment "Build URL shortener with shared library pattern"'
+  other='increment "Build URL shortener with shared library pattern"'
 />
 
-**Spec created** (`spec.md`):
-- 4 user stories (camera capture, OCR processing, contact storage, offline sync)
-- 18 acceptance criteria
-- Success metrics (scan accuracy >90%, offline-first)
+#### What SpecWeave Generated
 
-**Plan generated** (`plan.md`):
-- **Architecture Decision**: Expo Camera API + Google ML Kit OCR
-- **ADR-001**: Why Expo over bare React Native (faster iteration, managed workflow)
-- **ADR-002**: AsyncStorage + Network State for offline-first
-- **Tech Stack**: Expo SDK 50, TypeScript, Zustand for state
-
-**Tasks breakdown** (`tasks.md`):
-- 25 tasks with embedded BDD tests
-- Integration tests for camera permissions
-- E2E tests with Playwright (test mode camera)
-
-#### Autonomous Execution
-
-```bash
-sw:auto
-```
-
-**What happened** (over 2.5 hours):
-
-1. **Setup** (Iteration 1-5): Installed Expo dependencies, configured Camera permissions
-2. **Camera Screen** (Iteration 6-12): Built UI, integrated camera, added capture button
-3. **OCR Integration** (Iteration 13-20): Connected ML Kit, text extraction, contact parsing
-4. **Storage Layer** (Iteration 21-28): AsyncStorage setup, contact CRUD operations
-5. **Offline Sync** (Iteration 29-35): Network state detection, queue system, sync logic
-6. **Testing** (Iteration 36-47): Wrote and ran 42 tests, fixed 3 failing tests via self-healing
-
-**Final output**:
-```
-✅ AUTO SESSION COMPLETE
-📊 SESSION SUMMARY
-├─ Iterations: 47/2500
-├─ Tasks completed: 25/25
-├─ Tests: 42 passed, 0 failed
-├─ Files created: 18 source + 14 test files
-└─ Living docs: Updated with API specs
-```
+- **spec.md**: 2 user stories — URL shortening (6-char alphanumeric codes) and click statistics
+- **plan.md**: Shared library first, then backend API, then frontend UI (dependency order)
+- **tasks.md**: Separated by package — common (types + validators), backend (Express routes + tests), frontend (React components + tests)
 
 #### Key Features Demonstrated
 
-- ✅ **Mobile-specific skills** auto-routed (React Native architect, mobile testing)
-- ✅ **Platform-specific tests** (Camera permissions, AsyncStorage mocking)
-- ✅ **Expo workflow** (managed build, EAS integration)
-- ✅ **Self-healing** (3 test failures fixed autonomously)
+- ✅ **Shared library pattern** — TypeScript interfaces reused across packages via `file:` links
+- ✅ **Multi-package coordination** — SpecWeave respects dependency order (common → backend → frontend)
+- ✅ **Test isolation** — Each package has its own Vitest config and test suite
 
-**See the increment**: [Browse mobile app increment →](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0089-bizzone-scanner)
-
----
-
-## Microservices Coordination
-
-### Adding Payment Webhooks Across 3 Repos
-
-**Duration**: 1.2 hours autonomous execution
-**Repositories**: 3 (backend service, frontend, shared types)
-**Pull Requests Created**: 3 (auto-synced to GitHub)
-
-#### The Challenge
-
-Add Stripe payment webhooks that require changes across:
-- `shared/` - New TypeScript types for webhook events
-- `backend/` - Webhook handler endpoint + validation
-- `frontend/` - UI to show payment status
-
-#### The SpecWeave Approach
-
-```bash
-# In umbrella project root
-sw:increment "Add Stripe payment webhooks across all services"
-```
-
-**Multi-repo structure**:
-```
-my-project/
-├── repositories/
-│   ├── shared/          # Types package
-│   ├── backend/         # Express API
-│   └── frontend/        # React app
-└── .specweave/
-    └── increments/0042-payment-webhooks/
-```
-
-**Spec created**:
-- Cross-repo user stories (type definitions, backend handler, frontend display)
-- Dependency graph (shared → backend → frontend)
-- Acceptance criteria with repo tags
-
-**Plan generated**:
-- **ADR-003**: Why webhook validation over polling (real-time, Stripe best practice)
-- **ADR-004**: Event-driven architecture with domain events
-- **Execution order**: shared first (types), then backend (handler), then frontend (UI)
-
-#### Autonomous Execution
-
-```bash
-sw:auto
-```
-
-**What happened**:
-
-1. **Shared types** (Iteration 1-8):
-   - Created `PaymentWebhookEvent` interface
-   - Added event type enum
-   - Exported from index
-   - `npm link` for local development
-
-2. **Backend handler** (Iteration 9-22):
-   - Installed `stripe` SDK
-   - Created `/webhooks/payment` endpoint
-   - Added signature validation
-   - Wrote integration tests (mocked Stripe)
-   - Used `npm link shared` for local types
-
-3. **Frontend UI** (Iteration 23-30):
-   - Created `PaymentStatus` component
-   - Polling endpoint for status updates
-   - Success/failure states
-   - E2E test with mock webhook
-
-4. **GitHub sync** (Iteration 31-35):
-   - Created 3 PRs automatically
-   - Linked PRs in descriptions
-   - Added review checklist
-
-**Final output**:
-```
-✅ AUTO SESSION COMPLETE
-📊 SESSION SUMMARY
-├─ Repositories: 3 (shared, backend, frontend)
-├─ Pull Requests: 3 created and linked
-├─ Tests: 67 passed (28 unit, 24 integration, 15 E2E)
-└─ Living docs: Cross-repo architecture diagram added
-```
-
-#### Key Features Demonstrated
-
-- ✅ **Multi-repo coordination** with dependency order
-- ✅ **GitHub sync** creates linked PRs
-- ✅ **npm link workflow** for local cross-repo development
-- ✅ **E2E testing** across service boundaries
+**Source**: [github.com/anton-abyzov/sw-url-shortener](https://github.com/anton-abyzov/sw-url-shortener)
 
 ---
 
-## Brownfield Documentation
+## 🟡 Intermediate: Meeting Cost Calculator
 
-### Documenting a 10-Year-Old Legacy Codebase
+### Multi-Project Configuration with Prefixes
 
-**Duration**: 3 hours (manual + auto hybrid)
-**Codebase Size**: 450,000 lines of code
-**Documentation Generated**: 127 pages
+**Projects**: 4 (root, backend, frontend, shared) · **Tech**: TypeScript monorepo
 
-#### The Challenge
+A meeting cost calculator showing **multi-project SpecWeave configuration** — each sub-project gets its own prefix for routing increments and syncing to external tools.
 
-Inherit a decade-old PHP monolith with:
-- Zero documentation
-- 47 database tables (no ER diagrams)
-- 200+ endpoints (no API specs)
-- Business logic scattered across 80 files
-
-**Goal**: Onboard new developers in days, not months.
-
-#### The SpecWeave Approach
-
-**Phase 1: Discovery** (Manual - 1 hour)
-```bash
-sw:living-docs --brownfield --discovery-mode
+```
+sw-meeting-cost/
+├── sw-meeting-cost/         # Root project (prefix: SW)
+├── sw-meeting-cost-be/      # Backend API (prefix: BE)
+├── sw-meeting-cost-fe/      # Frontend app (prefix: FE)
+└── sw-meeting-cost-shared/  # Shared utilities (prefix: SHARED)
 ```
 
-SpecWeave scanned the codebase and generated:
-- Module detection report (12 domains found: Auth, Orders, Payments, Inventory, etc.)
-- Discrepancy list (code without docs)
-- Recommended documentation structure
+#### Getting Started
 
-**Phase 2: Incremental Documentation** (Auto - 2 hours)
+<CommandTabs
+  natural="I want to build a meeting cost calculator with separate frontend and backend"
+  claude='sw:increment "Build meeting cost calculator with multi-project setup"'
+  other='increment "Build meeting cost calculator with multi-project setup"'
+/>
 
-Created 12 increments (one per domain):
-```bash
-sw:increment "Document Authentication Module"
-sw:increment "Document Orders Module"
-# ... 10 more
-```
+#### Multi-Project Config
 
-Each increment generated:
-- **spec.md**: What the module does (business purpose)
-- **plan.md**: How it works (architecture, database schema, API endpoints)
-- **tasks.md**: Document each class/function
-
-**Executed autonomously**:
-```bash
-sw:auto --queue-all
-```
-
-#### What Happened
-
-For each module, SpecWeave:
-1. **Analyzed code** (function signatures, dependencies, database queries)
-2. **Generated docs** (markdown with code examples)
-3. **Created diagrams** (ER diagrams, sequence diagrams via Mermaid)
-4. **Extracted business logic** (found implicit rules in code)
-5. **Built search index** (searchable documentation site)
-
-**Example output for "Orders Module"**:
-
-```markdown
-# Orders Module
-
-## Overview
-Handles order creation, fulfillment, and status tracking.
-
-## Database Schema
-**Tables**: orders, order_items, order_status_history
-
-**Relationships**:
-- orders 1:N order_items
-- orders 1:N order_status_history
-
-## API Endpoints
-
-### POST /api/orders
-Creates a new order with validation.
-
-**Request**:
-```json
-{
-  "customer_id": 123,
-  "items": [{"product_id": 456, "quantity": 2}]
-}
-```
-
-**Business Rules**:
-- Must validate customer exists
-- Must check inventory availability
-- Must calculate tax based on shipping address
-- Triggers email notification on success
-```
-
-#### Key Features Demonstrated
-
-- ✅ **Brownfield discovery** finds undocumented modules
-- ✅ **Code-to-spec extraction** reverse-engineers business logic
-- ✅ **Diagram generation** creates visual architecture docs
-- ✅ **Searchable docs** via Docusaurus integration
-- ✅ **Discrepancy tracking** identifies code-to-spec drift
-
-**Result**: New developers onboarded in 2 days (down from 2-3 months).
-
----
-
-## GitHub Actions CI/CD Integration
-
-### Automated Release Pipeline
-
-**Scenario**: Publish npm package on every increment completion
-
-#### Setup
+SpecWeave routes user stories to the correct project based on the `**Project**:` field:
 
 ```yaml
-# .github/workflows/release.yml
-name: SpecWeave Release
-
-on:
-  push:
-    tags:
-      - 'v*.*.*'
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install SpecWeave
-        run: npm install -g specweave
-
-      - name: Validate Increment
-        run: specweave validate --increment=${{ github.ref_name }}
-
-      - name: Build
-        run: npm run build
-
-      - name: Publish to npm
-        run: npm publish --registry https://registry.npmjs.org
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create GitHub Release
-        run: |
-          gh release create ${{ github.ref_name }} \
-            --title "${{ github.ref_name }}" \
-            --notes-file .specweave/increments/*/reports/completion-report.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
-#### Workflow
-
-```bash
-# Developer completes increment
-sw:done 0089
-
-# SpecWeave automatically:
-# 1. Validates all quality gates
-# 2. Bumps version in package.json
-# 3. Creates git tag
-# 4. Pushes to GitHub
-
-# GitHub Actions triggers:
-# 5. Runs tests
-# 6. Builds package
-# 7. Publishes to npm
-# 8. Creates GitHub Release with notes
-```
-
-**Result**: Zero-touch releases. From `sw:done` to npm in 2 minutes.
-
----
-
-## Performance: Large-Scale Refactoring
-
-### Refactoring 50 Files with Test Safety Net
-
-**Duration**: 1.8 hours autonomous
-**Files Changed**: 52
-**Tests Maintained**: 186 (all passing throughout)
-
-#### The Challenge
-
-Refactor authentication system from session-based to JWT:
-- 50 files use old `req.session`
-- Need to migrate to `req.user` (JWT)
-- Can't break existing functionality
-- Must maintain test coverage
-
-#### The SpecWeave Approach
-
-```bash
-sw:increment "Migrate auth from sessions to JWT"
-```
-
-**TDD Strict Mode enabled**:
-```json
+# .specweave/config.json (simplified)
 {
-  "auto": {
-    "tddStrictMode": true
-  }
+  "projects": [
+    { "name": "sw-meeting-cost",    "prefix": "SW" },
+    { "name": "sw-meeting-cost-be", "prefix": "BE" },
+    { "name": "sw-meeting-cost-fe", "prefix": "FE" },
+    { "name": "sw-meeting-cost-shared", "prefix": "SHARED" }
+  ]
 }
 ```
 
-**Spec created**:
-- Backward compatibility during migration
-- Rollout strategy (feature flag)
-- Rollback plan if issues arise
-
-**Tasks breakdown** (52 tasks):
-- One task per file migration
-- Each task has embedded tests
-- Integration tests added
-- E2E tests updated
-
-#### Autonomous Execution with TDD Discipline
-
-```bash
-sw:auto
-```
-
-**What happened**:
-
-Auto mode **blocked 3 times** when tests failed:
-1. **Iteration 18**: Middleware order wrong → Fixed, tests green
-2. **Iteration 34**: Database schema migration missing → Added, tests green
-3. **Iteration 47**: E2E test timeout → Increased timeout, tests green
-
-**Every time**:
-- Auto mode detected failure
-- Analyzed error
-- Applied fix
-- Re-ran tests
-- Continued only when green
-
-**Final output**:
-```
-✅ AUTO SESSION COMPLETE
-📊 SESSION SUMMARY
-├─ Files migrated: 52
-├─ Tests maintained: 186 (100% passing)
-├─ Zero regressions detected
-├─ Rollback not needed
-└─ Living docs: Migration guide added
+Each user story in spec.md targets a specific project:
+```markdown
+### US-001: Calculate meeting cost
+**Project**: sw-meeting-cost-be    # ← Routes to backend project
 ```
 
 #### Key Features Demonstrated
 
-- ✅ **TDD strict mode** ensures tests always pass
-- ✅ **Self-healing** fixes test failures automatically (up to 3 retries)
-- ✅ **Regression prevention** validates every change
-- ✅ **Rollback safety** via feature flag and comprehensive tests
+- ✅ **Multi-project prefixes** — Each sub-project has its own ID prefix for tracking
+- ✅ **Cross-project user stories** — One increment spans multiple projects
+- ✅ **Sync routing** — GitHub Issues / JIRA tickets created per-project based on `**Project**:` field
+
+**Source**: [github.com/anton-abyzov/sw-meeting-cost](https://github.com/anton-abyzov/sw-meeting-cost)
+
+---
+
+## 🔴 Advanced: FIFA World Cup 2026 Travel Companion
+
+### Production Multi-Repo App with Mobile
+
+**Repos**: 5 · **Increments**: 36 completed · **Live**: [wc-26.net](https://wc-26.net) · **Mobile**: App Store
+
+The most comprehensive SpecWeave example — a full production platform with web app, API, scraper, mobile app, and database, all coordinated through SpecWeave increments.
+
+```
+sw-wc26-travel/
+├── wc26-web/        # React 19 + React Router — Cloudflare Pages
+├── wc26-api/        # Hono.js REST API — Cloudflare Workers
+├── wc26-scraper/    # AI-powered scraper — Cloudflare Workers + Workers AI (Llama 3.1)
+├── wc26-mobile/     # Expo / React Native — App Store (v1.0.3)
+└── wc26-supabase/   # Supabase schema + migrations
+```
+
+#### Getting Started
+
+<CommandTabs
+  natural="Let's build a World Cup travel companion with match schedules, tickets, and trip planning"
+  claude='sw:increment "Build WC2026 travel companion — matches, tickets, venues, trip planner"'
+  other='increment "Build WC2026 travel companion — matches, tickets, venues, trip planner"'
+/>
+
+#### How 36 Increments Built a Production App
+
+| Increment | What It Built | Repos Touched |
+|-----------|--------------|---------------|
+| 0001 - MVP | Match schedules, venue maps, basic UI | web, api, scraper |
+| 0002 | Enhanced travel & ticket experience | web, api |
+| 0003 | Team squads & player data | api, scraper |
+| 0005 | Profile image uploads | web, api, supabase |
+| 0008 | **React Native mobile app** | mobile (new repo) |
+| 0009 | Smart AI travel planning | web, api |
+| 0010 | Google Maps integration | web |
+| ... | 29 more increments | various |
+
+**MVP increment (0001)** alone had **58 tasks** across 3 repos, organized in 9 phases:
+1. Foundation → 2. Data Layer → 3. Scraper → 4. API Routes → 5. Web UI → 6. Interactive Maps → 7. Trip Planner → 8. Auth → 9. Polish & Testing
+
+#### Tech Stack
+
+| Layer | Technology | Deployment |
+|-------|-----------|------------|
+| **Web** | React 19, TailwindCSS, TanStack Query, Leaflet | Cloudflare Pages |
+| **API** | Hono.js, TypeScript, JWT auth | Cloudflare Workers |
+| **Scraper** | Workers AI (Llama 3.1), cron triggers | Cloudflare Workers |
+| **Mobile** | Expo SDK 54+, React Native New Architecture, NativeWind | App Store |
+| **Database** | Supabase (PostgreSQL), Cloudflare R2 | Managed |
+
+#### Key Features Demonstrated
+
+- ✅ **Multi-repo coordination** — 5 repos with cross-project dependencies
+- ✅ **Incremental delivery** — 36 increments from MVP to production
+- ✅ **Mobile app** — Full React Native/Expo app published to App Store
+- ✅ **AI integration** — Workers AI (Llama 3.1) for content parsing and travel planning
+- ✅ **Production deployment** — Live at wc-26.net with real users
+
+**Source**: [github.com/anton-abyzov/sw-wc26-travel](https://github.com/anton-abyzov/sw-wc26-travel)
+
+---
+
+## 🏗️ Framework Showcase: SpecWeave Building Itself
+
+### 610+ Increments of Dogfooding
+
+**Repos**: 3 (specweave CLI, vskill, vskill-platform) · **Increments**: 610+ · **Live**: [spec-weave.com](https://spec-weave.com)
+
+SpecWeave is itself built with SpecWeave — every feature, bugfix, docs page, and release is an increment.
+
+#### The Numbers
+
+| Metric | Value |
+|--------|-------|
+| Total increments | 610+ |
+| Child repositories | 3 (specweave, vskill, vskill-platform) |
+| Umbrella coordination | All increments managed from umbrella root |
+| External sync | GitHub Issues, JIRA, Azure DevOps |
+
+#### Example: This Very Documentation
+
+<CommandTabs
+  natural="The examples page needs updating with real projects"
+  claude='sw:increment "Docs examples rewrite with real projects"'
+  other='increment "Docs examples rewrite with real projects"'
+/>
+
+This page you're reading right now was created as increment **0611** — with spec.md defining the user stories, plan.md documenting the approach, and tasks.md tracking the work.
+
+#### Key Features Demonstrated
+
+- ✅ **Umbrella repo pattern** — All increments in umbrella root, routed by `**Project**:` field
+- ✅ **Continuous spec-driven development** — 610+ increments over months of active development
+- ✅ **Self-referential** — The tool documents its own features using its own workflow
 
 ---
 
 ## Comparison Matrix
 
-| Use Case | Duration | LOC | Tests | Key Feature |
-|----------|----------|-----|-------|-------------|
-| **Mobile App** | 2.5h | 3,200 | 42 | Mobile-specific skills |
-| **Microservices** | 1.2h | 1,800 | 67 | Multi-repo coordination |
-| **Brownfield Docs** | 3h | 450k analyzed | N/A | Code-to-spec extraction |
-| **CI/CD Pipeline** | 2min | Setup only | N/A | GitHub Actions integration |
-| **Large Refactor** | 1.8h | 52 files | 186 | TDD strict mode |
+| Project | Repos | Increments | Tech Stack | Best For |
+|---------|-------|------------|------------|----------|
+| **URL Shortener** | 3 | 1+ | React, Express, TS | Learning shared library pattern |
+| **Meeting Cost** | 4 | 1+ | TS monorepo | Multi-project configuration |
+| **WC26 Travel** | 5 | 36 | Hono, React, Expo | Production multi-repo + mobile |
+| **SpecWeave** | 3+ | 610+ | TS, Node.js | Umbrella repo at scale |
 
 ---
 
-## Try These Examples
+## Try It Yourself
 
 ### Starter Projects
 
 **Easy** (30 minutes):
+
 <CommandTabs
   natural="Let's add a dark mode toggle to the website"
   claude='sw:increment "Add dark mode toggle to website"'
@@ -470,59 +234,68 @@ Auto mode **blocked 3 times** when tests failed:
 />
 
 **Medium** (1-2 hours):
-```bash
-sw:increment "Build REST API with CRUD operations and tests"
-```
+
+<CommandTabs
+  natural="I want to build a REST API with CRUD operations and full test coverage"
+  claude='sw:increment "Build REST API with CRUD operations and tests"'
+  other='increment "Build REST API with CRUD operations and tests"'
+/>
 
 **Advanced** (2-4 hours):
-```bash
-sw:increment "Create React Native todo app with offline sync"
-```
+
+<CommandTabs
+  natural="Let's create a React Native todo app with offline sync and cloud backup"
+  claude='sw:increment "Create React Native todo app with offline sync"'
+  other='increment "Create React Native todo app with offline sync"'
+/>
 
 ### Learning Path
 
-1. **Start small** - Single-repo, 5-10 tasks
-2. **Add complexity** - Multi-file changes, more tests
-3. **Go autonomous** - Let `sw:auto` run for hours
-4. **Scale up** - Multi-repo, complex integrations
+1. **Start small** — Single-repo, 5-10 tasks
+2. **Add complexity** — Multi-file changes, more tests
+3. **Go autonomous** — Let `sw:auto` run for hours
+4. **Scale up** — Multi-repo, complex integrations
 
 ---
 
-## Community Examples
+## What Can You Build?
 
-Share your SpecWeave success stories! [Join Discord](https://discord.gg/UYg4BGJ65V) and post in `#show-and-tell`.
-
-### Featured Community Projects
-
-- **E-commerce Platform** (3 developers, 6 months, 200 increments)
-- **Healthcare Dashboard** (HIPAA-compliant, brownfield migration)
-- **IoT Device Manager** (multi-repo, 12 services)
-
----
-
-## What's Your Use Case?
-
-Not seeing your scenario? SpecWeave handles:
+SpecWeave handles any software project:
 
 - ✅ Single-page apps (React, Vue, Angular)
 - ✅ Full-stack monoliths (Next.js, Rails, Django)
 - ✅ Microservices (multi-repo, event-driven)
-- ✅ Mobile apps (React Native, Expo, Flutter coming)
-- ✅ CLI tools (Node, Python, Go)
+- ✅ Mobile apps (React Native, Expo, Flutter)
+- ✅ CLI tools (Node, Python, Go, Rust)
 - ✅ Libraries & SDKs (published to npm/PyPI)
 - ✅ Documentation sites (Docusaurus, VitePress)
 - ✅ Infrastructure (Terraform, Kubernetes)
-- ✅ Non-code automation (research, knowledge management, publishing workflows)
+- ✅ Non-code automation (research, knowledge management, publishing)
 
-**Not building software?** See our [Life Automation guide](/docs/guides/life-automation) for non-code use cases — Obsidian automation, internet research, rapid prototyping, and more.
+**Not building software?** See our [Life Automation guide](/docs/guides/life-automation) for non-code use cases.
 
-[Contact us](https://discord.gg/UYg4BGJ65V) to discuss your specific use case!
+---
+
+## More Examples
+
+Browse all SpecWeave example repositories:
+
+| Category | Repos | Highlights |
+|----------|-------|-----------|
+| **GitHub Sync** | sw-gh-habit-tracker, sw-gh-polls, sw-gh-inventory, sw-gh-ai-prompt | GitHub Issues ↔ SpecWeave sync |
+| **JIRA Sync** | sw-jira-feedback-board, sw-jira-fitness-tracker, sw-jira-todo-sync | JIRA ↔ SpecWeave bidirectional sync |
+| **ADO Sync** | sw-ado-expense-tracker | Azure DevOps ↔ SpecWeave sync |
+| **Multi-Repo** | sw-url-shortener, sw-markdown-editor, sw-voice-memo | Shared library patterns |
+| **Games** | sw-mini-doom | 3D WebGL shooter with Three.js |
+| **Supabase** | sw-finance-snapshot | Supabase backend integration |
+
+All repos: [github.com/anton-abyzov](https://github.com/anton-abyzov?tab=repositories&q=sw-)
 
 ---
 
 ## Next Steps
 
 - **Try an example**: Pick one from above and run it
-- **Read the guides**: [Guides section](/docs/guides/multi-project-setup)
+- **Read the guides**: [Multi-project setup](/docs/guides/multi-project-setup) · [Autonomous execution](/docs/guides/autonomous-execution)
 - **Watch videos**: [YouTube tutorials](https://www.youtube.com/@antonabyzov)
 - **Join community**: [Discord](https://discord.gg/UYg4BGJ65V)
