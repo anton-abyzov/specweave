@@ -1272,7 +1272,7 @@ SpecWeave uses GitHub CLI, so any GitHub instance supported by `gh` works.
 - Monitor drift with `/status`
 
 **Need Help?**
-- Documentation: https://verified-skill.com
+- Documentation: https://spec-weave.com
 - Issues: https://github.com/anton-abyzov/specweave/issues
 - Discussions: https://github.com/anton-abyzov/specweave/discussions
 

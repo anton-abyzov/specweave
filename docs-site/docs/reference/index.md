@@ -44,6 +44,14 @@ In Claude Code, skills and commands are invoked the same way - with `/sw:name`. 
 - **Completion**: `/sw:next`, `/sw:done`
 - **Sync**: `/sw-github:sync`, `/sw-jira:sync`, `/sw-ado:sync`
 
+### [Configuration Reference](./configuration)
+
+**Every config.json property** documented with types, defaults, and examples:
+- Quick reference table of all disableable features
+- config.json sections: testing, living docs, sync, CI/CD, and more
+- metadata.json fields for per-increment overrides
+- Environment variables for runtime control
+
 ### [Use Case Guide](./use-case-guide)
 
 **Find the right tool** for your task:
@@ -133,4 +141,5 @@ npx vskill install --repo anton-abyzov/specweave --plugin sw
 
 - [Skills Reference](./skills) - All skills by domain
 - [Commands Reference](./commands) - All commands by purpose
+- [Configuration Reference](./configuration) - All config properties
 - [Use Case Guide](./use-case-guide) - Find the right tool

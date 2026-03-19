@@ -111,7 +111,30 @@ Skip increment pre-flight entirely. Brainstorm doesn't need a spec — it explor
 1. Create team: `TeamCreate({ team_name: "brainstorm-{slug}", description: "Brainstorm: {topic}" })`
 2. Read agent templates from `agents/brainstorm-advocate.md`, `agents/brainstorm-critic.md`, `agents/brainstorm-pragmatist.md`
 3. Replace `[BRAINSTORM_QUESTION]` with the user's question/topic
-4. Spawn all 3 agents in parallel via `Task()` with `mode: "bypassPermissions"`
+4. Spawn all 3 agents in parallel — each call MUST include `team_name` so agents join the team (and get tmux panes):
+   ```
+   Task({
+     team_name: "brainstorm-{slug}",
+     name: "brainstorm-advocate",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced brainstorm-advocate.md content>
+   })
+   Task({
+     team_name: "brainstorm-{slug}",
+     name: "brainstorm-critic",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced brainstorm-critic.md content>
+   })
+   Task({
+     team_name: "brainstorm-{slug}",
+     name: "brainstorm-pragmatist",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced brainstorm-pragmatist.md content>
+   })
+   ```
 5. **PASSIVE WAIT (CRITICAL)**: Do NOT apply §8b stuck detection to brainstorm agents.
    Brainstorm agents send `STATUS:` heartbeats (not task-granularity `T-{N}/{total}`).
    Wait patiently for `PERSPECTIVE_COMPLETE:` messages — expected 2-5 minutes per agent.
@@ -144,7 +167,23 @@ Planning mode runs PM and Architect agents in parallel for richer, faster spec c
 2. **Spawn PM + Architect in parallel** (TRUE parallelism):
    - Read `agents/pm.md`, replace `[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`, `[FEATURE_DESCRIPTION]`
    - Read `agents/architect.md`, replace `[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`
-   - **Spawn BOTH via `Task()` with `mode: "bypassPermissions"` in a single step**
+   - **Spawn BOTH in a single step — each call MUST include `team_name`:**
+     ```
+     Task({
+       team_name: "plan-{feature-slug}",
+       name: "pm-agent",
+       subagent_type: "general-purpose",
+       mode: "bypassPermissions",
+       prompt: <replaced pm.md content>
+     })
+     Task({
+       team_name: "plan-{feature-slug}",
+       name: "architect-agent",
+       subagent_type: "general-purpose",
+       mode: "bypassPermissions",
+       prompt: <replaced architect.md content>
+     })
+     ```
    - PM writes spec.md with user stories and ACs
    - Architect starts codebase exploration immediately (does NOT need spec.md for this)
    - Architect polls for spec.md, reads it when PM finishes, then designs architecture
@@ -196,7 +235,16 @@ Skip increment pre-flight. Research is exploratory — no spec needed.
    - Multi-faceted topic: spawn 2-3 researchers with different scopes
      (e.g., "research auth" → one agent on OAuth providers, one on session management, one on security best practices)
 3. Replace `[RESEARCH_TOPIC]` and `[RESEARCH_SCOPE]` in each agent prompt
-4. Spawn all researchers in parallel via `Task()` with `mode: "bypassPermissions"`
+4. Spawn all researchers in parallel — each call MUST include `team_name`:
+   ```
+   Task({
+     team_name: "research-{slug}",
+     name: "researcher-{scope}",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced researcher.md content>
+   })
+   ```
 5. Collect `RESEARCH_COMPLETE:` messages
 6. Merge findings into a unified research report:
    - Cross-reference findings between agents
@@ -223,7 +271,23 @@ Testing mode requires an increment (it needs to know WHAT to test).
    - **Unit test agent**: read `agents/testing.md`, override scope to unit tests only
    - **E2E test agent**: read `agents/testing.md`, override scope to E2E tests only
    - Split scope via the agent prompt, not via separate templates
-4. Spawn both in parallel via `Task()` with `mode: "bypassPermissions"`
+4. Spawn both in parallel — each call MUST include `team_name`:
+   ```
+   Task({
+     team_name: "test-{id}",
+     name: "unit-test-agent",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced testing.md content with unit-test scope>
+   })
+   Task({
+     team_name: "test-{id}",
+     name: "e2e-test-agent",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced testing.md content with e2e scope>
+   })
+   ```
 5. Collect `COMPLETION:` messages
 6. Run test suites to verify: `npx vitest run` + `npx playwright test`
 7. Report results: pass/fail counts, coverage, uncovered ACs

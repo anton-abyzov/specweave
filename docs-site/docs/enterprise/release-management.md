@@ -586,6 +586,6 @@ Report Hash: sha256:a1b2c3d4e5f6...
 
 ## 🆘 Getting Help
 
-- **Documentation**: https://verified-skill.com
+- **Documentation**: https://spec-weave.com
 - **GitHub Issues**: https://github.com/anton-abyzov/specweave/issues
 - **Enterprise Support**: enterprise@verified-skill.com

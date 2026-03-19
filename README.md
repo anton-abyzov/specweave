@@ -412,7 +412,7 @@ All analytics data stays local in `.specweave/state/analytics/events.jsonl` — 
 
 ## Documentation
 
-**[verified-skill.com](https://verified-skill.com)** — guides, examples, and full reference.
+**[spec-weave.com](https://spec-weave.com)** — guides, examples, and full reference.
 
 ## Troubleshooting
 
