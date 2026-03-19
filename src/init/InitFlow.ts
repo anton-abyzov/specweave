@@ -122,13 +122,11 @@ export async function executeStrategicInit(): Promise<InitFlowResult> {
 
   const methodology = await promptMethodology();
 
-  // PHASE 6: Repository Selection (if multi-repo)
+  // PHASE 6: Repository Selection (always multi-repo since v0581)
   let repositories: any[] = [];
-  const isMultiRepo = await promptIsMultiRepo();
-
-  if (isMultiRepo) {
-    console.log('\n📦 Phase 6: Repository Selection\n');
-    repositories = await promptRepositorySelection();
+  console.log('\n📦 Phase 6: Repository Selection\n');
+  repositories = await promptRepositorySelection();
+  if (repositories.length > 0) {
     console.log(`\n✓ Selected ${repositories.length} repositories`);
   }
 
@@ -267,10 +265,6 @@ async function promptMethodology(): Promise<'agile' | 'waterfall'> {
   console.log(`\n✓ Methodology: ${methodology === 'agile' ? 'Agile (iterative sprints)' : 'Waterfall (sequential phases)'}`);
 
   return methodology;
-}
-
-async function promptIsMultiRepo(): Promise<boolean> {
-  return false;
 }
 
 async function promptRepositorySelection(): Promise<any[]> {

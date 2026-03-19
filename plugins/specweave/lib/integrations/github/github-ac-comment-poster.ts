@@ -12,6 +12,7 @@ import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { execFileNoThrow } from '../../../../../src/utils/execFileNoThrow.js';
+import { buildFingerprint, extractFingerprint } from './github-body-utils.js';
 
 export interface CommentPostOptions {
   owner: string;
@@ -87,21 +88,50 @@ export async function postACProgressComments(
     const allComplete = acStates.length > 0 && acStates.every(ac => ac.completed);
 
     if (!allComplete) {
-      const commentBody = buildProgressCommentForUS(incrementId, usId, acStates);
+      const total = acStates.length;
+      const completed = acStates.filter(ac => ac.completed).length;
+      const currentFingerprint = buildFingerprint(completed, total);
 
-      const execResult = await execFileNoThrow(
-        'gh',
-        ['issue', 'comment', String(link.issueNumber), '--body', commentBody, '-R', repoSlug],
-        env ? { env } : {},
-      );
+      // Dedup: fetch last comment and check fingerprint before posting
+      let shouldPost = true;
+      try {
+        const commentsResult = await execFileNoThrow(
+          'gh',
+          [
+            'api',
+            `repos/${repoSlug}/issues/${link.issueNumber}/comments`,
+            '--jq', '.[-1].body',
+          ],
+          env ? { env } : {},
+        );
+        if (commentsResult.success && commentsResult.stdout.trim()) {
+          const lastFingerprint = extractFingerprint(commentsResult.stdout);
+          if (lastFingerprint === `${completed}/${total}`) {
+            shouldPost = false;
+          }
+        }
+      } catch {
+        // If comment fetch fails, proceed with posting
+      }
 
-      if (execResult.success) {
-        result.posted.push({ usId, issueNumber: link.issueNumber });
-      } else {
-        result.errors.push({
-          usId,
-          error: execResult.stderr || 'Unknown error posting comment',
-        });
+      if (shouldPost) {
+        const commentBody = buildProgressCommentForUS(incrementId, usId, acStates)
+          + currentFingerprint + '\n';
+
+        const execResult = await execFileNoThrow(
+          'gh',
+          ['issue', 'comment', String(link.issueNumber), '--body', commentBody, '-R', repoSlug],
+          env ? { env } : {},
+        );
+
+        if (execResult.success) {
+          result.posted.push({ usId, issueNumber: link.issueNumber });
+        } else {
+          result.errors.push({
+            usId,
+            error: execResult.stderr || 'Unknown error posting comment',
+          });
+        }
       }
     }
 

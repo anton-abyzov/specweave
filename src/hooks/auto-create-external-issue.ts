@@ -17,6 +17,7 @@
  */
 
 import { autoCreateExternalIssue, AutoCreateResult } from '../sync/external-issue-auto-creator.js';
+import { SyncThrottle } from '../core/sync-throttle.js';
 import { consoleLogger } from '../utils/logger.js';
 import { findProjectRoot } from './platform.js';
 
@@ -55,7 +56,19 @@ async function main(): Promise<void> {
     console.warn('   This may cause issues if not running from the project root.');
   }
 
+  // Throttle: skip if another trigger path already fired for this increment recently
+  const throttle = new SyncThrottle(projectRoot);
+  if (throttle.shouldSkip(incrementId)) {
+    console.log(`   ⏭️  Throttled: sync for ${incrementId} already in progress`);
+    process.exit(0);
+  }
+
   const result = await autoCreateExternalIssue(projectRoot, incrementId, consoleLogger);
+
+  // Record throttle after successful create
+  if (result.success && !result.skipped) {
+    throttle.record(incrementId);
+  }
 
   printResult(result);
 

@@ -49,551 +49,66 @@ done
 
 ## Specification-First Development
 
-### Append-Only Snapshots + Living Documentation
+Maintain both historical audit trails and current documentation simultaneously. Increments are immutable snapshots (like Git commits for specs), while living docs auto-update to reflect the current state of your codebase.
 
-**SpecWeave's Core Power**: Maintains both historical audit trails and current documentation simultaneously.
-
-Unlike traditional documentation that gets outdated or loses historical context, SpecWeave gives you both:
-
-#### Append-Only Increment Snapshots (Historical Context)
-```
-.specweave/increments/
-├── 0001-user-authentication/
-│   ├── spec.md              # What was planned (AC-IDs)
-│   ├── plan.md              # How it was built + test strategy
-│   ├── tasks.md             # What was done + embedded tests
-│   └── logs/                # Execution history
-├── 0002-oauth-integration/  # Extends/modifies 0001
-└── 0003-password-reset/     # Related feature
-```
-
-**Never modified after completion** - Complete audit trail of every feature built.
-
-#### Living Up-to-Date Documentation (Current State)
-```
-.specweave/docs/
-├── internal/
-│   ├── strategy/      # WHAT and WHY (PRDs, user stories)
-│   ├── architecture/  # HOW (system design, ADRs, RFCs)
-│   ├── delivery/      # Roadmap, release plans
-│   ├── operations/    # Runbooks, SLOs, monitoring
-│   └── governance/    # Security, compliance
-└── public/            # Customer-facing documentation
-```
-
-**Auto-updated after each task** - Always reflects current code state.
-
-### Why This Matters
-
-| Problem | Traditional Approach | SpecWeave Solution |
-|---------|---------------------|-------------------|
-| **"Why did we do it this way?"** | Context lost, tribal knowledge | Read historical increment snapshots |
-| **"What's the current architecture?"** | Docs outdated | Living docs auto-updated |
-| **"What changed in this feature?"** | Git commits only | Complete increment snapshot with spec, plan, tests |
-| **"Prove compliance"** | Reconstruct from memory | Complete audit trail in increments |
-| **"Onboard new developer"** | Days of reading code | Read current docs + historical increments |
-
-### Real-World Benefits
-
-- **Compliance-Ready**: SOC 2, HIPAA, FDA audits have complete paper trail
-- **Context Recovery**: Understand decisions made 6 months ago
-- **Impact Analysis**: See all related changes by searching increments
-- **Rollback Intelligence**: Know exactly what to revert
-- **Knowledge Transfer**: No tribal knowledge silos
-- **Debugging**: Trace feature evolution across increments
-
-**Think of it as "Git for Specifications"**:
-- Increments = commits (immutable snapshots)
-- Living docs = working directory (current state)
-- Both essential, both version controlled
-
-### 5-Pillar Documentation Structure
-
-Living documentation organized by purpose:
+[Learn more about Living Documentation](/docs/guides/core-concepts/living-documentation) | [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment)
 
 ## Context Precision (70%+ Token Reduction)
 
-### Selective Loading
-- **Context Manifests**: Each increment declares what it needs
-- **Section Anchors**: Load specific sections, not entire files
-- **Glob Patterns**: Match multiple related files
-- **Cache-Friendly**: Reuse frequently-loaded context
-
-### Example Manifest
-
-\`\`\`yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/login-spec.md
-  - .specweave/docs/internal/strategy/auth/oauth.md#token-flow
-documentation:
-  - .specweave/docs/internal/architecture/adr/0001-auth-method.md
-max_context_tokens: 10000
-\`\`\`
-
-**Result**: Load exactly what's needed, save 70%+ on AI costs.
+Each increment declares exactly what context it needs via manifests with section anchors and glob patterns. Load only what's relevant -- save 70%+ on AI costs compared to loading entire files.
 
 ## AI Agents and Skills
 
-### 11 Core Agents
+11 specialized AI agents (PM, Architect, Tech Lead, QA, Security, Performance, Docs Writer, TDD Orchestrator, Test Planner, Translator, Code Reviewer) collaborate automatically. Skills detect your intent and route to the right agent -- no manual orchestration needed.
 
-| Agent | Role | Expertise |
-|-------|------|-----------|
-| **PM** | Product Manager AI | Requirements, user stories, market research, roadmaps |
-| **Architect** | System Architect | Design, ADRs, component architecture, C4 diagrams |
-| **Tech Lead** | Technical Lead | Code review, best practices, technical guidance |
-| **QA Lead** | Quality Assurance | Test strategy, test cases, coverage validation |
-| **Security** | Security Engineer | Threat modeling, security scanning, vulnerability analysis |
-| **Performance** | Performance Engineer | Optimization, profiling, scalability analysis |
-| **Docs Writer** | Technical Writer | Documentation creation, guides, API references |
-| **TDD Orchestrator** | TDD Master | Red-Green-Refactor workflow, test-first development |
-| **Test-Aware Planner** | Test Planning Specialist | Test case generation, AC-ID mapping, coverage targets |
-| **Translator** | Multilingual Support | Content translation, i18n workflows |
-| **Code Reviewer** | Code Review Specialist | Quality gates, code analysis, review automation |
-
-### Auto-Role Routing
-
-Skills automatically detect expertise and route requests:
-
-\`\`\`
-User: "Create authentication system"
-→ specweave-detector activates
-→ Routes to increment skill
-→ Invokes PM, Architect, Tech Lead agents
-→ Generates complete spec + architecture + plan
-\`\`\`
+[See all 100+ skills](/docs/reference/skills) | [Agent Teams & Swarms](/docs/guides/agent-teams-and-swarms)
 
 ## Test-Validated Development
 
-### Test-Aware Planning
+Every feature is proven through a 4-level testing pipeline: specification acceptance criteria (AC-IDs), embedded BDD test plans (Given/When/Then), YAML skill test cases, and automated code tests (Playwright E2E + Vitest unit). Tests must tell the truth -- no false positives, no masking failures.
 
-1. **Specification Acceptance Criteria** (AC-ID format: AC-US1-01)
-   - Business-level acceptance criteria in spec.md
-   - Technology-agnostic validation
-   - Linked to user stories
+[Validation workflow](/docs/workflows/validation) | [TDD cycle](/docs/reference/commands)
 
-2. **Embedded Test Plans** (tasks)
-   - BDD format (Given/When/Then) per task
-   - Maps AC-IDs to test implementations
-   - Coverage targets (80-90% per task)
+## Dashboard & Observability
 
-3. **Skill Test Cases** (YAML-based)
-   - Minimum 3 tests per skill
-   - Structured validation
+A built-in web dashboard (`specweave dashboard`) provides real-time visibility into your development workflow: analytics, cost tracking, error tracing, sync audit, service management, notifications, and more -- all powered by SSE live updates.
 
-4. **Code Tests** (Automated)
-   - E2E with Playwright (MANDATORY for UI)
-   - Unit and integration tests
-   - >80% coverage for critical paths
+[Dashboard Overview](/docs/guides/analytics-dashboard)
 
-### Truth-Telling Requirement
+## Architecture Diagrams (C4 Model)
 
-E2E tests MUST tell the truth:
-- ✅ If test passes → feature actually works
-- ✅ If test fails → exactly what failed
-- ❌ No false positives
-- ❌ No masking failures
-
-## Mermaid Diagrams (C4 Model)
-
-### Architecture Visualization
-
-SpecWeave uses the **C4 Model** for architecture diagrams:
-
-- **C4-1: Context** - System boundaries, external actors
-- **C4-2: Container** - Applications, services, databases
-- **C4-3: Component** - Internal structure
-- **C4-4: Code** - Class diagrams (optional)
-
-### Example Diagram
-
-\`\`\`mermaid
-C4Context
-    title System Context Diagram for SpecWeave
-
-    Person(user, "Developer", "Uses SpecWeave to build software")
-    System(specweave, "SpecWeave", "Spec-Driven Development Framework")
-    System_Ext(claude, "Claude Code", "AI coding assistant")
-    System_Ext(github, "GitHub", "Version control and CI/CD")
-
-    Rel(user, specweave, "Uses")
-    Rel(specweave, claude, "Invokes agents")
-    Rel(specweave, github, "Syncs increments")
-\`\`\`
+Auto-generate Mermaid diagrams following the C4 Model: Context, Container, Component, and Code-level views. Sequence diagrams and ER diagrams for data flows.
 
 ## Framework-Agnostic
 
-### Supports ANY Tech Stack
-
-- **TypeScript/JavaScript**: Next.js, NestJS, Express, React
-- **Python**: FastAPI, Django, Flask
-- **Go**: Gin, Echo, Fiber
-- **Rust**: Actix, Rocket, Axum
-- **Java**: Spring Boot, Quarkus
-- **C#/.NET**: ASP.NET Core, Blazor
-
-### Auto-Detection
-
-SpecWeave detects your tech stack from:
-- `package.json` → TypeScript/JavaScript
-- `requirements.txt` / `pyproject.toml` → Python
-- `go.mod` → Go
-- `Cargo.toml` → Rust
-- `pom.xml` / `build.gradle` → Java
-- `*.csproj` → C#/.NET
-
-## Incremental Development
-
-### Auto-Numbered Increments
-
-\`\`\`
-.specweave/increments/
-├── 0001-user-authentication/
-│   ├── spec.md              # What and Why (with AC-IDs)
-│   ├── plan.md              # How (architecture + test strategy)
-│   ├── tasks.md             # Checklist + embedded tests
-│   ├── logs/                # Execution logs
-│   ├── scripts/             # Helper scripts
-│   └── reports/             # Completion reports
-└── 0002-payment-processing/
-    └── ...
-\`\`\`
-
-### WIP Limits
-
-Prevent context-switching:
-- **Solo/small teams**: 1-2 in progress
-- **Large teams**: 3-5 in progress
-- **Force override**: Available but discouraged
+Works with any tech stack -- TypeScript/JavaScript, Python, Go, Rust, Java, C#/.NET. Auto-detects your stack from `package.json`, `go.mod`, `Cargo.toml`, `pom.xml`, and others.
 
 ## External Integrations
 
-### JIRA Sync
-- Bidirectional conversion
-- Epics ↔ Increments
-- Stories ↔ PRDs/RFCs
-- Tasks ↔ Tasks
+Bidirectional sync with **GitHub** (Issues, Milestones), **JIRA** (Epics, Stories, Tasks), and **Azure DevOps** (4-level hierarchy). Increments map to external work items automatically.
 
-### Azure DevOps Sync
-- 4-level hierarchy support
-- Epics → Features → User Stories → Tasks
-- Area Paths and Iterations
-- Work item synchronization
-
-### GitHub Sync
-- Milestones ↔ Release Plans
-- Issues ↔ RFCs/Tasks
-- Checkable subtasks
+[External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Sync Deep Dives](/docs/guides/sync-strategies)
 
 ## Brownfield Excellence
 
-### Why Brownfield is Most Complicated
+The hardest challenge in software: existing codebases with zero documentation and tribal knowledge. SpecWeave handles intelligent documentation merging, retroactive architecture generation (HLDs, ADRs, C4 diagrams), regression prevention through baseline tests, and living docs that auto-update as code evolves.
 
-Brownfield projects are the **ultimate challenge** in software development:
-
-- ❌ Existing codebase with **zero or outdated documentation**
-
-- ❌ **Tribal knowledge** scattered across team members
-
-- ❌ **Risk of breaking production** with every change
-
-- ❌ Need to **merge with existing docs, wikis, Confluence pages**
-
-- ❌ **Complex architecture** that was never properly documented
-
-- ❌ **Living documentation** that stays current as code evolves
-
-Most frameworks struggle here. SpecWeave was designed for it.
-
-### Intelligent Documentation Merging
-
-SpecWeave's **brownfield-onboarder** skill intelligently consolidates existing documentation:
-
-```bash
-"Read brownfield-onboarder skill and merge my existing docs/"
-```
-
-**What it does:**
-
-- **Extracts knowledge** from existing docs, wikis, Confluence, legacy CLAUDE.md
-- **Preserves context** — historical decisions, team conventions, domain knowledge
-- **Distributes intelligently** — routes content to appropriate SpecWeave folders
-  - Strategy docs → `.specweave/docs/internal/strategy/`
-  - Architecture → `.specweave/docs/internal/architecture/`
-  - Operations → `.specweave/docs/internal/operations/`
-- **No bloat** — smart organization without polluting CLAUDE.md
-
-### Retroactive Architecture Documentation
-
-Create comprehensive architecture for **existing systems** without disrupting production:
-
-```bash
-"Analyze authentication module and create complete architecture docs"
-```
-
-**SpecWeave generates:**
-
-#### High-Level Design (HLD)
-
-- System architecture overview
-
-- Component relationships
-
-- Data flow diagrams
-
-- Integration points
-
-#### Architecture Decision Records (ADRs)
-
-- **ADR-0001**: Why we chose JWT over sessions
-
-- **ADR-0002**: OAuth 2.0 provider selection rationale
-
-- **ADR-0003**: Token refresh strategy
-
-- Status: Accepted (for existing patterns) or Proposed (for changes)
-
-#### C4 Model Diagrams
-
-- **C4-1 Context**: System boundaries, external actors
-
-- **C4-2 Container**: Services, databases, APIs
-
-- **C4-3 Component**: Internal module structure
-
-- **Sequence Diagrams**: Login flow, token refresh, logout
-
-- **ER Diagrams**: User, Session, Token data models
-
-**Example:**
-```bash
-"Create complete architecture documentation for auth system"
-# Generates:
-# - .specweave/docs/internal/architecture/hld-authentication.md
-# - .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
-# - .specweave/docs/internal/architecture/adr/0002-oauth-provider.md
-# - .specweave/docs/internal/architecture/diagrams/auth-context.c4.mmd
-# - .specweave/docs/internal/architecture/diagrams/auth-container.c4.mmd
-# - .specweave/docs/internal/architecture/diagrams/auth-component.c4.mmd
-# - .specweave/docs/internal/architecture/diagrams/login-sequence.mmd
-```
-
-### Living Documentation That Never Gets Stale
-
-For brownfield projects, the key advantage is documentation that **auto-updates** as code evolves.
-
-**How it works:**
-
-1. **Initial Documentation** — SpecWeave creates complete specs, HLDs, ADRs, diagrams
-2. **Code Changes** — You modify code using `/sw:do`
-3. **Auto-Update** — Hooks automatically update:
-   - Specifications reflect new requirements
-   - ADRs move from Proposed → Accepted
-   - Architecture diagrams update with new components
-   - HLDs reflect current system state
-   - RFCs document new patterns
-4. **Always Current** — Documentation never drifts from code
-
-**Technologies:**
-
-- **Claude Hooks** — Post-task-completion hook runs after every task
-- **Living Docs Sync** — `/sw:sync-docs update` propagates changes
-- **Version Control** — All docs in Git, full history preserved
-
-### Structure Evolution and Maintenance
-
-As your brownfield project grows, SpecWeave **grows the documentation structure**:
-
-**Scenario: Adding new payment module**
-
-Say "I want to add a payment processing module" or use `/sw:increment "payment processing module"`.
-
-**SpecWeave automatically:**
-
-1. Creates new strategy docs: `.specweave/docs/internal/strategy/payments/`
-
-2. Generates architecture docs with ADRs
-
-3. Links to existing auth system (dependency tracking)
-
-4. Updates system-level HLD to include payment module
-
-5. Adds payment module to C4 Container diagram
-
-6. Creates RFCs for new patterns
-
-7. Maintains incremental history in `.specweave/increments/`
-
-**Result:** Your documentation structure **organically evolves** with your codebase.
-
-### Regression Prevention (Safety First)
-
-Before modifying **any existing code**, SpecWeave enforces safety:
-
-1. ✅ **Analyze current implementation**
-   - Reads existing code
-   - Maps dependencies
-   - Identifies integration points
-
-2. ✅ **Generate retroactive specifications**
-   - Documents current behavior (WHAT/WHY)
-   - Creates architecture docs (HOW)
-   - Maps data flows
-
-3. ✅ **Create baseline tests**
-   - Captures current behavior in tests
-   - Prevents accidental regression
-   - Serves as living documentation
-
-4. ✅ **Impact analysis**
-   - Dependency graph generation
-   - Affected modules identification
-   - Risk assessment
-
-5. ✅ **User review and approval**
-   - You review generated docs
-   - Approve changes before implementation
-
-6. ✅ **Safe implementation**
-   - Modify code with confidence
-   - Baseline tests catch regressions
-   - Living docs stay current
-
-### Real-World Brownfield Scenario
-
-**Before SpecWeave:**
-```
-Existing Project Problems:
-❌ 50K+ lines of code, zero documentation
-❌ Original developers left, tribal knowledge lost
-❌ Need to add OAuth, terrified of breaking login
-❌ Scattered docs in Confluence, wikis, old READMEs
-❌ Architecture decisions unknown
-❌ Every change risks production
-```
-
-**After SpecWeave:**
-```bash
-# Day 1: Initialize and merge
-npx specweave init .
-"Merge existing Confluence docs and wiki pages"
-# ✅ All knowledge consolidated in SpecWeave structure
-
-# Day 2: Document existing auth
-"Analyze authentication module and create full documentation"
-# ✅ HLDs, ADRs, C4 diagrams generated
-# ✅ Current implementation fully documented
-
-# Day 3: Create baseline tests
-"Create comprehensive tests for current auth behavior"
-# ✅ Regression prevention in place
-
-# Day 4: Add OAuth safely
-/sw:increment "Add OAuth 2.0 support"
-/sw:do
-# ✅ OAuth added with:
-#    - Updated specs and ADRs
-#    - Extended architecture diagrams
-#    - Baseline tests prevent regression
-#    - Living docs auto-updated
-
-# Day 5 onward: Maintain forever
-# ✅ Every change auto-updates documentation
-# ✅ Architecture diagrams always current
-# ✅ ADRs reflect actual decisions
-# ✅ No documentation drift ever
-```
-
-### Compliance and Audit Trail
-
-Brownfield + SpecWeave = **Compliance-Ready**
-
-**Perfect for regulated industries:**
-
-- **Healthcare (HIPAA)** — Complete audit trail, document all changes
-- **Finance (SOC 2, PCI-DSS)** — Prove compliance with specifications
-- **Government (FedRAMP)** — Architecture documentation required
-- **Pharmaceutical (FDA)** — Validation documentation mandatory
-
-**What you get:**
-
-- Complete change history (increments never deleted)
-- Decision rationale (ADRs for all choices)
-- Test validation (4-level testing strategy)
-- Living documentation (always current)
-- Traceability (specs → code → tests)
-
-## Documentation Approaches
-
-### Comprehensive Upfront (Enterprise)
-- 500-600+ page specifications before coding
-- Full architecture and ADRs upfront
-- Complete API contracts
-- Best for: Enterprise, regulated industries
-
-### Incremental/Evolutionary (Startup)
-- Start with overview (10-20 pages)
-- Build documentation as you go
-- Adapt to changing requirements
-- Best for: Startups, MVPs, prototypes
-
-Both approaches are fully supported.
+[Brownfield workflow](/docs/workflows/brownfield)
 
 ## Claude Hooks (Auto-Update)
 
-### Post-Task-Completion Hook
-
-Automatically:
-- Updates CLAUDE.md when structure changes
-- Updates API/CLI reference
-- Updates changelog
-- Commits doc changes
-
-### Pre-Implementation Hook
-
-Checks regression risk before modifying existing code.
-
-### Human-Input-Required Hook
-
-Logs and notifies when AI needs clarification.
+Post-task hooks automatically update CLAUDE.md, API references, and changelogs. Pre-implementation hooks check regression risk. Human-input-required hooks log when AI needs clarification.
 
 ## Commands
 
 Every command works three ways: natural language, slash commands (Claude Code), or keywords (other AI tools).
 
-**Core Commands:**
-
-| Natural Language | Claude Code | Other AI Tools | What It Does |
-|-----------------|-------------|----------------|-------------|
-| "Let's build [feature]" | `/sw:increment "feature"` | `increment "feature"` | Plan new increment |
-| "Start implementing" | `/sw:do` | `do` | Execute tasks |
-| "What's the status?" | `/sw:progress` | `progress` | Check completion |
-| "Check quality" | `/sw:validate 0001` | `validate 0001` | Quality assessment |
-| "We're done" | `/sw:done 0001` | `done 0001` | Close increment |
-
-**Integration Commands:**
-- `/sw:sync-github` (or "sync to GitHub") - Sync to GitHub issues
-- `/sw:sync-docs` (or "sync the docs") - Review specs vs implementation
-
-All commands adapt to detected tech stack.
+[Command Overview](/docs/commands/overview) | [Decision Tree](/docs/reference/command-decision-tree) | [Commands by Priority](/docs/guides/command-reference-by-priority)
 
 ## Additional Capabilities
 
-### Already Implemented
-
-- **Multi-language support**: Work in 11 languages with FREE LLM-native translation
-  - Supports: English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese
-  - Auto-translates specs, plans, tasks, and living docs to English
-  - Zero translation costs (uses same LLM session)
-
-- **Cost optimization**: 75%+ context reduction through intelligent plugin architecture
-  - Plugin-based system loads only what you need
-  - MCP protocol for efficient context management
-  - Typical savings: $60-120/month per developer
-
-### Roadmap
-
-- **Vector search**: Semantic spec search across all increments (v2.0)
-- **Enterprise analytics**: Advanced compliance tracking and team metrics
+- **Multi-language support**: Work in 11 languages with free LLM-native translation (English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese)
+- **Cost optimization**: 75%+ context reduction through intelligent plugin architecture -- typical savings of $60-120/month per developer
 
 ---
 
@@ -602,4 +117,4 @@ All commands adapt to detected tech stack.
 - [Quickstart Guide](/docs/getting-started) - Get up and running in 5 minutes
 - [Installation](/docs/getting-started/installation) - Detailed installation instructions
 
-**Previous**: [What is SpecWeave?](/docs/overview/introduction) | **Next**: [Philosophy](/docs/overview/philosophy) →
+**Previous**: [What is SpecWeave?](/docs/overview/introduction) | **Next**: [Philosophy](/docs/overview/philosophy)

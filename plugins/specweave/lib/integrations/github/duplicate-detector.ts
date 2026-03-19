@@ -480,13 +480,13 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       }
     }
 
-    // PHASE 3: Verification — SKIPPED BY DEFAULT to reduce API calls (FS-529)
-    // Phase 1 already searched for duplicates. Phase 3 only adds value if there's a
-    // race condition from parallel sync sessions, which is rare. Enable with
-    // SPECWEAVE_VERIFY_DUPLICATES=1 env var if needed.
+    // PHASE 3: Verification — ENABLED BY DEFAULT (FS-587)
+    // Phase 1 searches before create, but Phase 3 catches race conditions from
+    // parallel sync sessions. Disable with SPECWEAVE_SKIP_VERIFY_DUPLICATES=1
+    // if you want to reduce API calls at the cost of duplicate safety.
     let duplicatesClosed = 0;
 
-    if (process.env.SPECWEAVE_VERIFY_DUPLICATES === '1') {
+    if (process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== '1') {
     console.log(`\n━━━ PHASE 3: VERIFICATION ━━━`);
     const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
 
@@ -510,7 +510,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
     } else if (verification.success) {
       console.log(`   ✅ No duplicates detected!`);
     }
-    } // end SPECWEAVE_VERIFY_DUPLICATES guard
+    } // end SPECWEAVE_SKIP_VERIFY_DUPLICATES guard
 
     // Final Summary
     console.log(`\n✅ Issue creation complete!`);

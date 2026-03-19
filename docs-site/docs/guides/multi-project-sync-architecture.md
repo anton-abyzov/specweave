@@ -1316,3 +1316,7 @@ SpecWeave's **Profile-Based Multi-Project Sync Architecture** enables:
 **Last Updated**: 2025-11-16
 **Version**: 0.21.0+
 **Feedback**: https://github.com/anton-abyzov/specweave/issues
+
+---
+
+**Related**: [External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Umbrella Sync Routing](./umbrella-sync-routing.md) | [Sync Strategies](./sync-strategies.md)
