@@ -15,6 +15,11 @@ vi.mock('../../../../plugins/specweave/lib/vendor/utils/execFileNoThrow.js', () 
   execFileNoThrow: mockExecFileNoThrow,
 }));
 
+// Mock budget to always allow — these tests focus on dedup, not budget
+vi.mock('../../../../src/sync/github-rate-limit-budget.js', () => ({
+  checkAndDecrement: vi.fn().mockResolvedValue(true),
+}));
+
 import { GitHubClientV2 } from '../../../../plugins/specweave/lib/integrations/github/github-client-v2.js';
 
 describe('createEpicIssue skipDuplicateCheck', () => {

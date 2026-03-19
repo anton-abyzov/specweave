@@ -19,6 +19,7 @@ import { Logger, consoleLogger } from '../utils/logger.js';
 import { resolvePermissions, SyncPreset } from './config.js';
 import { isProviderEnabled } from './status-mapper.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
+import { acquireLock, releaseLock } from './reconciler-lock.js';
 
 export interface ReconcileOptions {
   projectRoot: string;
@@ -103,6 +104,13 @@ export class GitHubReconciler {
       details: [],
     };
 
+    // Global lock: prevent concurrent reconciler runs across processes
+    const lockAcquired = await acquireLock(this.projectRoot);
+    if (!lockAcquired) {
+      this.logger.log('⏭️  Reconciler already running in another process — skipping');
+      return result;
+    }
+
     try {
       // Debounce: skip if last run was less than 5 minutes ago
       const now = Date.now();
@@ -183,6 +191,8 @@ export class GitHubReconciler {
       result.errors.push(`Reconciliation error: ${error.message}`);
       this.logger.error('❌ Reconciliation failed:', error.message);
       return result;
+    } finally {
+      await releaseLock(this.projectRoot);
     }
   }
 

@@ -77,6 +77,12 @@ vi.mock('../../../src/utils/execFileNoThrow.js', () => ({
   execFileNoThrow: mockExecFileNoThrow,
 }));
 
+// Mock reconciler lock
+vi.mock('../../../src/sync/reconciler-lock.js', () => ({
+  acquireLock: vi.fn().mockResolvedValue(true),
+  releaseLock: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('../../../src/utils/logger.js', () => ({
   consoleLogger: {
     log: vi.fn(),
