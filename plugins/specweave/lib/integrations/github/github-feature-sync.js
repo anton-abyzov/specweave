@@ -9,6 +9,8 @@ import { execFileNoThrow } from "../../vendor/utils/execFileNoThrow.js";
 import { getGitHubAuthFromProject } from "../../vendor/utils/auth-helpers.js";
 import { LockManager } from "../../../../../src/utils/lock-manager.js";
 import { normalizeIssueBody } from "./github-body-utils.js";
+import { ensureLabels } from "./label-cache.js";
+import { MilestoneCache } from "./milestone-cache.js";
 class GitHubFeatureSync {
   constructor(client, specsDir, projectRoot) {
     // Cached default branch for the sync session (one API call per session)
@@ -622,56 +624,17 @@ ${yamlFm}---${body}
     return folders;
   }
   /**
-   * Create GitHub Milestone for Feature (with duplicate detection)
+   * Create GitHub Milestone for Feature (with duplicate detection + session cache)
    */
   async createMilestone(featureData) {
     const title = `${featureData.id}: ${featureData.title}`;
     const owner = this.client.getOwner();
     const repo = this.client.getRepo();
-    const existingResult = await execFileNoThrow("gh", [
-      "api",
-      `repos/${owner}/${repo}/milestones?per_page=100&state=all`,
-      "--paginate",
-      "--jq",
-      `.[] | select(.title == "${title}") | {number, html_url}`
-    ], { env: this.getGhEnv() });
-    console.log(`   \u{1F50D} Milestone detection: exitCode=${existingResult.exitCode}, stdout length=${existingResult.stdout.length}`);
-    if (existingResult.exitCode !== 0) {
-      console.log(`   \u26A0\uFE0F  Detection failed: ${existingResult.stderr}`);
-    }
-    if (existingResult.exitCode === 0 && existingResult.stdout.trim()) {
-      const existing = JSON.parse(existingResult.stdout);
-      console.log(`   \u267B\uFE0F  Reusing existing Milestone #${existing.number}`);
-      return {
-        number: existing.number,
-        url: existing.html_url
-      };
-    }
-    console.log(`   \u2139\uFE0F  No existing milestone found, creating new one...`);
     const description = `Feature ${featureData.id}
 
 Status: ${featureData.status}
 Created: ${featureData.created}`;
-    const result = await execFileNoThrow("gh", [
-      "api",
-      `repos/${owner}/${repo}/milestones`,
-      "-X",
-      "POST",
-      "-f",
-      `title=${title}`,
-      "-f",
-      `description=${description}`,
-      "-f",
-      "state=open"
-    ], { env: this.getGhEnv() });
-    if (result.exitCode !== 0) {
-      throw new Error(`Failed to create Milestone: ${result.stderr || result.stdout}`);
-    }
-    const milestone = JSON.parse(result.stdout);
-    return {
-      number: milestone.number,
-      url: milestone.html_url
-    };
+    return MilestoneCache.getOrCreate(owner, repo, title, description, this.getGhEnv());
   }
   /**
    * Create GitHub Issue for User Story with AC/Task Verification
@@ -682,20 +645,7 @@ Created: ${featureData.created}`;
    */
   async createUserStoryIssue(issueContent, milestoneTitle, userStoryPath) {
     const repoSlug = `${this.client.getOwner()}/${this.client.getRepo()}`;
-    for (const label of issueContent.labels) {
-      await execFileNoThrow("gh", [
-        "label",
-        "create",
-        label,
-        "--repo",
-        repoSlug,
-        "--color",
-        "ededed",
-        "--description",
-        "SpecWeave auto-label",
-        "--force"
-      ], { env: this.getGhEnv() });
-    }
+    await ensureLabels(repoSlug, issueContent.labels, this.getGhEnv());
     const result = await execFileNoThrow("gh", [
       "issue",
       "create",
@@ -784,9 +734,8 @@ Created: ${featureData.created}`;
       ], { env: this.getGhEnv() });
     }
     const completion = await this.calculator.calculateCompletion(userStoryPath);
-    const issueData = await this.client.getIssue(issueNumber);
+    const { issue: issueData, lastComment } = await this.client.getIssueWithLastComment(issueNumber);
     const currentlyClosed = issueData.state === "closed";
-    const lastComment = await this.client.getLastComment(issueNumber);
     let mutatedIssue = false;
     if (completion.overallComplete) {
       if (!currentlyClosed) {

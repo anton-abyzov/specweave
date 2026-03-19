@@ -275,17 +275,21 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
     if (!parsedArgs.dryRun) {
       result.externalSyncResult = {};
 
-      // Extract project name from spec.md for distributed sync routing
+      // FS-612: Parse spec.md ONCE and reuse across Step 5a (AC checkbox sync)
+      // and Step 5b (AC progress sync) to avoid duplicate file reads.
       let projectName: string | undefined;
+      let cachedAllUSIds: string[] = [];
       const specPath = path.join(incrementPath!, 'spec.md');
       if (existsSync(specPath)) {
         try {
-          const specContent = await fs.readFile(specPath, 'utf-8');
-          const fmMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
+          const cachedSpecContent = await fs.readFile(specPath, 'utf-8');
+          const fmMatch = cachedSpecContent.match(/^---\n([\s\S]*?)\n---/);
           if (fmMatch) {
             const parsed = yaml.parse(fmMatch[1]);
             projectName = parsed?.project;
           }
+          // Pre-parse user story IDs for Step 5b
+          cachedAllUSIds = parseAllUserStoryIds(cachedSpecContent);
         } catch {
           // Ignore frontmatter parse errors
         }
@@ -347,12 +351,11 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       // Step 6b: Sync AC progress to all providers (auto-close/transition complete issues)
       // This handles JIRA transitions, ADO state changes, and GitHub auto-close
       // for user stories where all ACs are complete.
+      // FS-612: Reuse cachedAllUSIds from the spec.md parse above (no duplicate read)
       if (permissionsOk && (!parsedArgs.noGithub || !parsedArgs.noJira || !parsedArgs.noAdo)) {
         try {
-          const specPath = path.join(incrementPath!, 'spec.md');
           if (existsSync(specPath)) {
-            const specContent = await fs.readFile(specPath, 'utf-8');
-            const allUSIds = parseAllUserStoryIds(specContent);
+            const allUSIds = cachedAllUSIds;
 
             if (allUSIds.length > 0) {
               // Build metadata for external links

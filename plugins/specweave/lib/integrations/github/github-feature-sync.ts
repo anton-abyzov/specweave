@@ -22,6 +22,8 @@ import { execFileNoThrow } from '../../vendor/utils/execFileNoThrow.js';
 import { getGitHubAuthFromProject } from '../../vendor/utils/auth-helpers.js';
 import { LockManager } from '../../../../../src/utils/lock-manager.js';
 import { normalizeIssueBody } from './github-body-utils.js';
+import { ensureLabels } from './label-cache.js';
+import { MilestoneCache } from './milestone-cache.js';
 
 interface FeatureFrontmatter {
   id: string;
@@ -885,71 +887,18 @@ export class GitHubFeatureSync {
   }
 
   /**
-   * Create GitHub Milestone for Feature (with duplicate detection)
+   * Create GitHub Milestone for Feature (with duplicate detection + session cache)
    */
   private async createMilestone(featureData: FeatureFrontmatter): Promise<{
     number: number;
     url: string;
   }> {
     const title = `${featureData.id}: ${featureData.title}`;
-
-    // CRITICAL: Check if milestone already exists before creating
-    // NOTE: Must use per_page=100 to handle repos with 30+ milestones (GitHub default is 30)
-    // BUG FIX: Without pagination, milestone #31+ won't be found → false "not found" → HTTP 422 duplicate error
-    // FIX (v1.0.302): Use explicit owner/repo from config, not :owner/:repo which resolves from git remote
     const owner = this.client.getOwner();
     const repo = this.client.getRepo();
-
-    const existingResult = await execFileNoThrow('gh', [
-      'api',
-      `repos/${owner}/${repo}/milestones?per_page=100&state=all`,
-      '--paginate',
-      '--jq',
-      `.[] | select(.title == "${title}") | {number, html_url}`,
-    ], { env: this.getGhEnv() });
-
-    // DEBUG: Log detection result
-    console.log(`   🔍 Milestone detection: exitCode=${existingResult.exitCode}, stdout length=${existingResult.stdout.length}`);
-    if (existingResult.exitCode !== 0) {
-      console.log(`   ⚠️  Detection failed: ${existingResult.stderr}`);
-    }
-
-    if (existingResult.exitCode === 0 && existingResult.stdout.trim()) {
-      const existing = JSON.parse(existingResult.stdout);
-      console.log(`   ♻️  Reusing existing Milestone #${existing.number}`);
-      return {
-        number: existing.number,
-        url: existing.html_url,
-      };
-    }
-
-    console.log(`   ℹ️  No existing milestone found, creating new one...`);
-
-    // Milestone doesn't exist, create new one
     const description = `Feature ${featureData.id}\n\nStatus: ${featureData.status}\nCreated: ${featureData.created}`;
 
-    const result = await execFileNoThrow('gh', [
-      'api',
-      `repos/${owner}/${repo}/milestones`,
-      '-X',
-      'POST',
-      '-f',
-      `title=${title}`,
-      '-f',
-      `description=${description}`,
-      '-f',
-      'state=open',
-    ], { env: this.getGhEnv() });
-
-    if (result.exitCode !== 0) {
-      throw new Error(`Failed to create Milestone: ${result.stderr || result.stdout}`);
-    }
-
-    const milestone = JSON.parse(result.stdout);
-    return {
-      number: milestone.number,
-      url: milestone.html_url,
-    };
+    return MilestoneCache.getOrCreate(owner, repo, title, description, this.getGhEnv());
   }
 
   /**
@@ -969,14 +918,9 @@ export class GitHubFeatureSync {
     milestoneTitle: string,
     userStoryPath: string
   ): Promise<number> {
-    // Step 0: Ensure all required labels exist in the target repo
+    // Step 0: Ensure all required labels exist in the target repo (session-cached)
     const repoSlug = `${this.client.getOwner()}/${this.client.getRepo()}`;
-    for (const label of issueContent.labels) {
-      await execFileNoThrow('gh', [
-        'label', 'create', label, '--repo', repoSlug,
-        '--color', 'ededed', '--description', 'SpecWeave auto-label', '--force'
-      ], { env: this.getGhEnv() });
-    }
+    await ensureLabels(repoSlug, issueContent.labels, this.getGhEnv());
 
     // Step 1: Create issue (always open initially - gh CLI limitation)
     const result = await execFileNoThrow('gh', [
@@ -1091,12 +1035,10 @@ export class GitHubFeatureSync {
     // ✅ VERIFICATION GATE: Calculate ACTUAL completion from checkboxes
     const completion = await this.calculator.calculateCompletion(userStoryPath);
 
-    // FS-609: Fetch issue state ONCE and reuse throughout this method + downstream calls
-    const issueData = await this.client.getIssue(issueNumber);
+    // FS-612: Fetch issue state + last comment in a SINGLE GraphQL call
+    // (replaces sequential getIssue() + getLastComment() — saves 1 API call per US)
+    const { issue: issueData, lastComment } = await this.client.getIssueWithLastComment(issueNumber);
     const currentlyClosed = issueData.state === 'closed';
-
-    // FS-609: Fetch last comment ONCE and reuse for idempotency checks + downstream
-    const lastComment = await this.client.getLastComment(issueNumber);
 
     // FS-609: Track whether this method mutated the issue (close/reopen/comment).
     // If mutations happened, cached data is stale and must not be passed downstream.
