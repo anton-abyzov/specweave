@@ -115,6 +115,10 @@ Ready to build with SpecWeave using ANY AI tool!
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.agents/skills';
+  }
+
   /**
    * Compile and install a plugin for Generic adapter
    *

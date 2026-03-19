@@ -56,6 +56,10 @@ export class CopilotAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.github/skills';
+  }
+
   /**
    * Compile and install a plugin for GitHub Copilot
    *

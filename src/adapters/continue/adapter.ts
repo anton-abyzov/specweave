@@ -51,6 +51,10 @@ export class ContinueAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.continue/skills';
+  }
+
   /**
    * Compile and install a plugin for Continue.dev
    *

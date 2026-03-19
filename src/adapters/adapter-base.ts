@@ -183,6 +183,14 @@ export abstract class AdapterBase implements IAdapter {
   }
 
   /**
+   * Get the tool-specific skills directory path.
+   * Default: '.claude/skills' (override in concrete adapters)
+   */
+  getSkillsDirectory(): string {
+    return '.claude/skills';
+  }
+
+  /**
    * Helper: Write plugin skill files to a tool-specific rules directory.
    * Each skill is written as `<skill>/SKILL.md` directly under the rules directory.
    * No plugin namespace nesting — non-Claude tools require flat structure.

@@ -110,6 +110,10 @@ export class AntigravityAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.agent/skills';
+  }
+
   /**
    * Compile and install a plugin for Antigravity.
    * Writes each SKILL.md as a separate file in `.agent/skills/`.

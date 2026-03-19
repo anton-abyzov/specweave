@@ -121,6 +121,10 @@ export class CodexAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.codex/skills';
+  }
+
   /**
    * Compile and install a plugin for OpenAI Codex.
    * Writes each SKILL.md as a separate file in `.codex/skills/`.

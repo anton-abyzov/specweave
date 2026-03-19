@@ -35,6 +35,10 @@ export class OpenCodeAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.opencode/skills';
+  }
+
   async compilePlugin(plugin: Plugin): Promise<void> {
     const skillsDir = '.opencode/skills';
     console.log(`\n📦 Installing plugin skills for OpenCode: ${plugin.manifest.name}`);

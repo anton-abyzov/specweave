@@ -22,7 +22,7 @@ import {
   existsSync,
   rmSync,
 } from 'node:fs';
-import { join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname, normalize } from 'node:path';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { execFileNoThrowSync } from './execFileNoThrow.js';
@@ -36,6 +36,8 @@ import { getPluginScope, getScopeArgs } from '../core/types/plugin-scope.js';
 export interface CopyPluginOptions {
   /** Force reinstall even if hash matches lockfile */
   force?: boolean;
+  /** Override target skills directory (relative to projectRoot). Defaults to '.claude/skills'. */
+  targetSkillsDir?: string;
 }
 
 export interface CopyPluginResult {
@@ -652,10 +654,11 @@ export function copyPluginSkillsToProject(
     return { success: true, sha, skipped: true };
   }
 
-  // 5. Recursively copy each skill directory to .claude/skills/{skillName}/
+  // 5. Recursively copy each skill directory to the target skills directory.
   //    Copies ALL files (SKILL.md, agents/, phases/, templates/, evals/, etc.)
   //    so that SKILL.md references to subdirectories resolve correctly.
-  const targetSkillsBase = join(projectRoot, '.claude', 'skills');
+  const skillsDirRelative = options.targetSkillsDir || join('.claude', 'skills');
+  const targetSkillsBase = join(projectRoot, skillsDirRelative);
   let copiedCount = 0;
 
   try {
@@ -695,10 +698,12 @@ export function copyPluginSkillsToProject(
     return { success: false, sha, error: `Failed to copy skills: ${err}` };
   }
 
-  // 6. Recursively copy hooks to .claude/hooks/ if present
+  // 6. Recursively copy hooks to .claude/hooks/ if present (Claude-only).
   //    Includes subdirectories (lib/, v2/, universal/) that top-level hooks reference.
+  //    Hooks are Claude-specific infrastructure — skip for non-Claude adapters.
+  const isClaudeTarget = !options.targetSkillsDir || normalize(options.targetSkillsDir) === normalize(join('.claude', 'skills'));
   const hooksDir = join(sourceDir, 'hooks');
-  if (existsSync(hooksDir)) {
+  if (isClaudeTarget && existsSync(hooksDir)) {
     const targetHooksDir = join(projectRoot, '.claude', 'hooks');
     try {
       const hookFiles = readdirSync(hooksDir, { recursive: true, encoding: 'utf-8' });
@@ -722,8 +727,10 @@ export function copyPluginSkillsToProject(
     }
   }
 
-  // 7. Migrate: remove legacy ~/.claude/commands/<name>/ if present
-  migrateLegacyCommandsDir(pluginName);
+  // 7. Migrate: remove legacy ~/.claude/commands/<name>/ if present (Claude-only)
+  if (isClaudeTarget) {
+    migrateLegacyCommandsDir(pluginName);
+  }
 
   // 8. Update lockfile
   lock.skills[pluginName] = {
