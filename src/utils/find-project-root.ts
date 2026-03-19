@@ -189,6 +189,24 @@ export function resolveEffectiveRoot(startDir: string = process.cwd()): string {
 }
 
 /**
+ * Get the umbrella-aware .specweave directory path.
+ *
+ * Uses resolveEffectiveRoot() to find the correct root — returns the
+ * umbrella root's .specweave/ when inside an umbrella workspace, or
+ * the nearest project root's .specweave/ in standalone mode.
+ *
+ * This is the RECOMMENDED function for code that writes to .specweave/.
+ * Unlike getSpecWeaveDir() which uses findProjectRoot() (nearest root,
+ * returns null), this always returns a valid path.
+ *
+ * @param startDir - Directory to start searching from (defaults to process.cwd())
+ * @returns Absolute path to the effective .specweave directory
+ */
+export function getSpecweavePath(startDir?: string): string {
+  return path.join(resolveEffectiveRoot(startDir), '.specweave');
+}
+
+/**
  * Get SpecWeave directory path (.specweave folder)
  *
  * @param projectRoot - Project root (will search if not provided)
