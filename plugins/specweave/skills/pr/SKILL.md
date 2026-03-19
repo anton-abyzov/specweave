@@ -94,7 +94,7 @@ Read spec.md to build the PR body. Use `--body-file` to avoid shell quoting issu
 
 ```bash
 # Create temp file for PR body
-cat > /tmp/sw-pr-body-${INCREMENT_ID}.md << 'PREOF'
+cat > /tmpsw-pr-body-${INCREMENT_ID}.md << 'PREOF'
 ## Summary
 
 <!-- Auto-generated from SpecWeave increment {INCREMENT_ID} -->
@@ -128,7 +128,7 @@ PREOF
 ```bash
 gh pr create \
   --title "[${INCREMENT_ID}] {spec title}" \
-  --body-file /tmp/sw-pr-body-${INCREMENT_ID}.md \
+  --body-file /tmpsw-pr-body-${INCREMENT_ID}.md \
   --base ${TARGET_BRANCH} \
   --head ${BRANCH_NAME}
 ```
@@ -141,7 +141,7 @@ PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
 
 Clean up temp file:
 ```bash
-rm -f /tmp/sw-pr-body-${INCREMENT_ID}.md
+rm -f /tmpsw-pr-body-${INCREMENT_ID}.md
 ```
 
 If `deleteOnMerge` is true, add auto-delete label or note in PR description.

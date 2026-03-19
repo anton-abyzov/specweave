@@ -11,18 +11,18 @@ Orchestrate end-to-end progress synchronization: **tasks.md → spec.md ACs → 
 
 ## ⚠️ CRITICAL: AUTO-CREATE IS MANDATORY
 
-**When `/sw:sync-progress` is executed and no external issue exists, it MUST automatically create the issue using the Skill tool.**
+**When `sw:sync-progress` is executed and no external issue exists, it MUST automatically create the issue using the Skill tool.**
 
 The command MUST invoke:
-- `/sw-github:create <increment-id>` for GitHub
-- `/sw-jira:create <increment-id>` for JIRA
-- `/sw-ado:create <increment-id>` for Azure DevOps
+- `sw-github:create <increment-id>` for GitHub
+- `sw-jira:create <increment-id>` for JIRA
+- `sw-ado:create <increment-id>` for Azure DevOps
 
 **DO NOT just report "No issues linked" - ACTUALLY CREATE THE ISSUE.**
 
 ---
 
-## What is /sw:sync-progress?
+## What is sw:sync-progress?
 
 **The TRUE "single button" to sync progress across all systems**:
 
@@ -32,7 +32,7 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 **One command does EVERYTHING - including creating missing external issues!**
 ```bash
-/sw:sync-progress
+sw:sync-progress
 ```
 
 **No more "No GitHub issue linked" errors!** The command auto-creates missing issues.
@@ -58,11 +58,11 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 ## When to Use This Command
 
-### ✅ Use /sw:sync-progress when:
+### ✅ Use sw:sync-progress when:
 
 1. **First-time sync (no external issue yet)**: Just created increment, want to sync → auto-creates GitHub/JIRA/ADO issues!
 2. **After completing tasks**: You've marked tasks as done in tasks.md and want to sync everywhere
-3. **Before closing increment**: Final sync before `/sw:done` to ensure all systems in sync
+3. **Before closing increment**: Final sync before `sw:done` to ensure all systems in sync
 4. **Progress check**: Want to update status line and external tools with latest progress
 5. **After bulk task completion**: Completed multiple tasks, sync all at once
 6. **Manual sync trigger**: Hooks didn't fire or you want to force a sync
@@ -70,7 +70,7 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 ### ❌ Don't use when:
 
-1. **Only want to sync GitHub (issue already exists)**: Use `/sw-github:sync` instead
+1. **Only want to sync GitHub (issue already exists)**: Use `sw-github:sync` instead
 4. **Increment not started**: No tasks to sync yet
 5. **Don't want auto-create**: Use `--no-create` flag or manual commands
 
@@ -94,7 +94,7 @@ Phase 2: Spec → Living Docs (User Stories)
 
 Phase 3: AUTO-CREATE External Issues (NEW!)
   ├─ Checks each configured external tool for linked issues
-  ├─ If no issue exists → AUTO-CREATE via /sw-github:create, /sw-jira:create, /sw-ado:create
+  ├─ If no issue exists → AUTO-CREATE via sw-github:create, sw-jira:create, sw-ado:create
   ├─ Respects permissions (canUpsertInternalItems, canUpdateExternalItems)
   └─ Skip with --no-create flag if needed
 
@@ -117,7 +117,7 @@ Phase 5: Status Line Cache
 
 ```bash
 # Single command does EVERYTHING
-/sw:sync-progress
+sw:sync-progress
 ```
 
 **What happens**:
@@ -135,7 +135,7 @@ Phase 5: Status Line Cache
 
 ```bash
 # Single command syncs everything
-/sw:sync-progress
+sw:sync-progress
 ```
 
 **What happens**:
@@ -151,13 +151,13 @@ Phase 5: Status Line Cache
 
 ```bash
 # Final sync before closure
-/sw:sync-progress 0053
+sw:sync-progress 0053
 
 # Then close increment
-/sw:done 0053
+sw:done 0053
 ```
 
-**Why important**: `/sw:done` validates completion. Final sync ensures:
+**Why important**: `sw:done` validates completion. Final sync ensures:
 - All ACs marked complete
 - All user stories synced
 - All GitHub issues closed
@@ -169,7 +169,7 @@ Phase 5: Status Line Cache
 
 ```bash
 # Preview mode
-/sw:sync-progress 0053 --dry-run
+sw:sync-progress 0053 --dry-run
 ```
 
 **Output**:
@@ -191,7 +191,7 @@ Run without --dry-run to execute sync.
 
 ```bash
 # Skip external tools
-/sw:sync-progress 0053 --no-github --no-jira --no-ado
+sw:sync-progress 0053 --no-github --no-jira --no-ado
 ```
 
 **What syncs**:
@@ -216,16 +216,16 @@ Run without --dry-run to execute sync.
 **Combine flags**:
 ```bash
 # Full sync with auto-create (DEFAULT - just works!)
-/sw:sync-progress
+sw:sync-progress
 
 # Sync only, don't create missing issues
-/sw:sync-progress 0053 --no-create
+sw:sync-progress 0053 --no-create
 
 # Dry-run with no external tools
-/sw:sync-progress --dry-run --no-github
+sw:sync-progress --dry-run --no-github
 
 # Force sync, skip GitHub
-/sw:sync-progress --force --no-github
+sw:sync-progress --force --no-github
 ```
 
 ---
@@ -234,13 +234,13 @@ Run without --dry-run to execute sync.
 
 | Command | Scope | Auto-Create? | When to Use |
 |---------|-------|--------------|-------------|
-| `/sw-github:create` | Create GitHub issue | ✅ | Manual issue creation |
-| `/sw-github:sync` | Docs → GitHub only | ❌ | GitHub-only sync (issue must exist) |
-| `/sw:sync-progress` | **Tasks → Docs → Create → Sync** | ✅ | **Complete sync** ✅ (RECOMMENDED!) |
+| `sw-github:create` | Create GitHub issue | ✅ | Manual issue creation |
+| `sw-github:sync` | Docs → GitHub only | ❌ | GitHub-only sync (issue must exist) |
+| `sw:sync-progress` | **Tasks → Docs → Create → Sync** | ✅ | **Complete sync** ✅ (RECOMMENDED!) |
 
 **Rule of thumb**:
-- Need **complete sync** (just works) → Use `/sw:sync-progress` ✅
-- Need **sync only** (no auto-create) → Use `/sw:sync-progress --no-create`
+- Need **complete sync** (just works) → Use `sw:sync-progress` ✅
+- Need **sync only** (no auto-create) → Use `sw:sync-progress --no-create`
 
 ---
 
@@ -250,10 +250,10 @@ Run without --dry-run to execute sync.
 
 ```bash
 # Explicit increment ID
-/sw:sync-progress 0053
+sw:sync-progress 0053
 
 # Auto-detect from active increment
-/sw:sync-progress
+sw:sync-progress
 ```
 
 **How auto-detection works**:
@@ -310,7 +310,7 @@ The command checks `.specweave/config.json` for:
 **Fix**:
 ```bash
 # Provide increment ID explicitly
-/sw:sync-progress 0053
+sw:sync-progress 0053
 ```
 
 ---
@@ -325,7 +325,7 @@ The command checks `.specweave/config.json` for:
 **Fix**:
 ```bash
 # Manually add ACs to spec.md, then retry sync
-/sw:sync-progress 0053
+sw:sync-progress 0053
 ```
 
 **Why this happens**: spec.md missing inline ACs (ADR-0064 requirement).
@@ -343,7 +343,7 @@ The command checks `.specweave/config.json` for:
 
 ```bash
 # Retry GitHub sync only (when rate limit resets)
-/sw-github:sync 0053
+sw-github:sync 0053
 ```
 
 ---
@@ -354,24 +354,24 @@ The command checks `.specweave/config.json` for:
 
 ```bash
 # 1. Plan increment
-/sw:increment "Safe feature deletion"
+sw:increment "Safe feature deletion"
 
 # 2. Execute tasks
-/sw:do
+sw:do
 
 # [Complete tasks manually or via sub-agents...]
 
 # 3. Sync progress after each batch of tasks
-/sw:sync-progress
+sw:sync-progress
 
 # 4. Final sync before closure
-/sw:sync-progress 0053
+sw:sync-progress 0053
 
 # 5. Validate quality
-/sw:validate 0053 --quality
+sw:validate 0053 --quality
 
 # 6. Close increment
-/sw:done 0053
+sw:done 0053
 ```
 
 ---
@@ -381,7 +381,7 @@ The command checks `.specweave/config.json` for:
 ### ✅ DO:
 
 1. **Sync after task batches**: Complete 3-5 tasks → sync → continue
-2. **Final sync before closure**: Ensure 100% sync before `/sw:done`
+2. **Final sync before closure**: Ensure 100% sync before `sw:done`
 3. **Use dry-run first**: Preview changes with `--dry-run`
 4. **Check external tools**: Verify GitHub/JIRA after sync
 5. **Review status line**: Ensure completion % updated correctly
@@ -389,7 +389,7 @@ The command checks `.specweave/config.json` for:
 ### ❌ DON'T:
 
 1. **Don't sync for every task**: Batching is more efficient
-2. **Don't skip final sync**: Always sync before `/sw:done`
+2. **Don't skip final sync**: Always sync before `sw:done`
 3. **Don't ignore warnings**: AC sync warnings indicate missing ACs
 4. **Don't force sync without understanding**: `--force` bypasses validation
 5. **Don't sync before tasks complete**: Sync when progress actually changed
@@ -408,7 +408,7 @@ Problem: Manual multi-step sync is error-prone
   4. Check each system for correctness
 
 Solution: Single command orchestrates all steps
-  /sw:sync-progress → Does all 4 steps automatically
+  sw:sync-progress → Does all 4 steps automatically
 ```
 
 **Benefits**:
@@ -428,10 +428,10 @@ Before this command, users had to manually sync ACs, docs, and external tools se
 
 ## Related Commands
 
-- `/sw-github:sync` - Sync docs → GitHub only
-- `/sw-jira:sync` - Sync docs → JIRA only
-- `/sw-ado:sync` - Sync docs → ADO only
-- `/sw:update-status` - Update status line cache
+- `sw-github:sync` - Sync docs → GitHub only
+- `sw-jira:sync` - Sync docs → JIRA only
+- `sw-ado:sync` - Sync docs → ADO only
+- `sw:update-status` - Update status line cache
 
 ---
 

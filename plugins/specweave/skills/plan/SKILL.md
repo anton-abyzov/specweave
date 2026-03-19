@@ -2,18 +2,18 @@
 description: Generate plan.md and tasks.md for increment. Use when saying "create plan", "generate tasks", or "plan the increment".
 ---
 
-# /sw:plan - Generate Implementation Plan
+# sw:plan - Generate Implementation Plan
 
 **⚠️ FOR EXISTING INCREMENTS ONLY - NOT for creating new increments!**
 
-**When to use `/sw:plan`:**
+**When to use `sw:plan`:**
 - You already have `spec.md` created
 - Increment status is PLANNING or ACTIVE
 - You need to generate/regenerate `plan.md` and `tasks.md`
 
-**When NOT to use `/sw:plan`:**
-- Creating a brand new increment from scratch → Use `/sw:increment` instead
-- No `spec.md` exists yet → Use `/sw:increment` instead
+**When NOT to use `sw:plan`:**
+- Creating a brand new increment from scratch → Use `sw:increment` instead
+- No `spec.md` exists yet → Use `sw:increment` instead
 
 ---
 
@@ -22,10 +22,10 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
 ## Usage
 
 ```bash
-/sw:plan                      # Auto-detect PLANNING increment
-/sw:plan 0039                 # Explicit increment ID
-/sw:plan --force              # Overwrite existing plan/tasks
-/sw:plan 0039 --verbose       # Verbose output
+sw:plan                      # Auto-detect PLANNING increment
+sw:plan 0039                 # Explicit increment ID
+sw:plan --force              # Overwrite existing plan/tasks
+sw:plan 0039 --verbose       # Verbose output
 ```
 
 ## What It Does
@@ -55,7 +55,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
      return;
    }
 
-   // If user tries to use /sw:plan for NEW increments
+   // If user tries to use sw:plan for NEW increments
    if (userIsCreatingNew) {
      formatError(ERROR_MESSAGES.WRONG_COMMAND_FOR_NEW_INCREMENT());
      return;
@@ -97,20 +97,20 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
    ══════════════════════════════════════════
    Tasks: [N] pending | Domains: [N] ([list])
    ──────────────────────────────────────────
-   Recommended: /sw:do        (≤8 tasks, 1 domain)
-   Recommended: /sw:auto      (9-15 tasks, 1-2 domains)
-   Recommended: /sw:team-lead (>15 tasks OR 3+ domains)
+   Recommended: sw:do        (≤8 tasks, 1 domain)
+   Recommended: sw:auto      (9-15 tasks, 1-2 domains)
+   Recommended: sw:team-lead (>15 tasks OR 3+ domains)
    ══════════════════════════════════════════
-   ⚠️  /sw:team-lead uses more tokens but produces higher quality
+   ⚠️  sw:team-lead uses more tokens but produces higher quality
       through parallel domain-specialized agents.
 
-   Next: /sw:team-lead [ID] | /sw:auto [ID] | /sw:do [ID]
+   Next: sw:team-lead [ID] | sw:auto [ID] | sw:do [ID]
    ```
 
    Show ONLY the matching recommendation line (not all three).
    For 3+ domains, add a stronger nudge:
    ```
-   ⚡ This is a multi-domain feature. /sw:team-lead is strongly recommended
+   ⚡ This is a multi-domain feature. sw:team-lead is strongly recommended
       for parallel execution across [domain1], [domain2], [domain3].
    ```
 
@@ -124,7 +124,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
 
 **Auto-detect and plan**:
 ```bash
-/sw:plan
+sw:plan
 # ✅ Auto-detected increment: 0039-ultra-smart-next-command
 # ✅ Generated plan.md (2.5K)
 # ✅ Generated tasks.md (4.2K, 15 tasks)
@@ -133,7 +133,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
 
 **Force regenerate**:
 ```bash
-/sw:plan 0039 --force
+sw:plan 0039 --force
 # ⚠️  Overwriting existing plan.md
 # ⚠️  Overwriting existing tasks.md
 # ✅ Generated plan.md (2.8K)
@@ -142,11 +142,11 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
 
 **Multiple PLANNING increments**:
 ```bash
-/sw:plan
+sw:plan
 # ❌ Multiple increments in PLANNING status found:
 #    - 0040-feature-a
 #    - 0041-feature-b
-# Please specify: /sw:plan 0040
+# Please specify: sw:plan 0040
 ```
 
 ## Self-Awareness Check
@@ -187,18 +187,18 @@ Planning for framework features requires different considerations than user apps
 **Typical workflow**:
 ```bash
 # 1. Create increment (generates spec.md)
-/sw:increment "Add user authentication"
+sw:increment "Add user authentication"
 # Status: BACKLOG → PLANNING (spec.md created)
 
 # 2. Edit spec.md (add requirements, ACs)
 # ... edit spec.md ...
 
 # 3. Generate plan and tasks
-/sw:plan
+sw:plan
 # Status: PLANNING → ACTIVE (tasks.md created)
 
 # 4. Execute tasks
-/sw:do
+sw:do
 ```
 
 ## Error Handling
@@ -206,7 +206,7 @@ Planning for framework features requires different considerations than user apps
 **spec.md not found**:
 ```bash
 ❌ spec.md not found in increment '0039-ultra-smart-next-command'
-💡 Create spec.md first using `/sw:increment` or manually
+💡 Create spec.md first using `sw:increment` or manually
 ```
 
 **plan.md already exists**:
@@ -218,7 +218,7 @@ Planning for framework features requires different considerations than user apps
 **Increment closed**:
 ```bash
 ❌ Cannot generate plan for COMPLETED increment
-💡 Reopen increment with `/sw:reopen` first
+💡 Reopen increment with `sw:reopen` first
 ```
 
 ## Architecture
@@ -241,7 +241,7 @@ When the execution strategy analysis (Step 6) identifies **2+ viable execution a
 
 **When to use**: Presenting execution strategy options where the task dependency graph helps visualize parallelism, critical path, or execution order trade-offs.
 
-**When NOT to use**: When there's only one viable strategy, or when the choice is purely about tooling (e.g., `/sw:do` vs `/sw:auto`) without structural implications.
+**When NOT to use**: When there's only one viable strategy, or when the choice is purely about tooling (e.g., `sw:do` vs `sw:auto`) without structural implications.
 
 ### Example: Task Execution Strategy with DAG Preview
 
@@ -269,10 +269,10 @@ AskUserQuestion({
 
 ## Related Commands
 
-- `/sw:increment` - Create new increment (generates spec.md)
-- `/sw:do` - Execute tasks from tasks.md
-- `/sw:validate` - Validate increment structure
-- `/sw:sync-docs` - Sync spec changes to living docs
+- `sw:increment` - Create new increment (generates spec.md)
+- `sw:do` - Execute tasks from tasks.md
+- `sw:validate` - Validate increment structure
+- `sw:sync-docs` - Sync spec changes to living docs
 
 ## Notes
 

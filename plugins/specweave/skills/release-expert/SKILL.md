@@ -429,21 +429,21 @@ shared-lib v3.0.0 -> Incompatible (MAJOR change)
 
 ```bash
 # 1. Plan release increment
-/sw:increment "0025-product-v3-release"
+sw:increment "0025-product-v3-release"
 
 # 2. Execute wave-by-wave
-/sw:do
+sw:do
 
 # 3. Complete release
-/sw:done 0025
+sw:done 0025
 ```
 
 ## Commands
 
-- `/sw-release:release-expert` - Full release orchestration and version alignment
-- `/sw-release:validate-versions` - Check compatibility
-- `/sw-release:bump <repo> <type>` - Bump specific repo
-- `/sw-release:matrix` - Show version matrix
+- `sw-release:release-expert` - Full release orchestration and version alignment
+- `sw-release:validate-versions` - Check compatibility
+- `sw-release:bump <repo> <type>` - Bump specific repo
+- `sw-release:matrix` - Show version matrix
 
 ---
 

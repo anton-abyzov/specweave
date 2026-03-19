@@ -171,7 +171,7 @@ Generated E2E tests:
   {TEST_DIR}/us-002.spec.ts (2 ACs: AC-US2-01, AC-US2-02)
 
 Total: 5 tests across 2 files
-Next: Implement test steps, then run with /sw:e2e --run <id>
+Next: Implement test steps, then run with sw:e2e --run <id>
 ```
 
 ---
@@ -276,7 +276,7 @@ If not installed:
 @axe-core/playwright is not installed. Install it:
   npm install -D @axe-core/playwright axe-core
 
-Then re-run: /sw:e2e --a11y <id>
+Then re-run: sw:e2e --a11y <id>
 ```
 
 ### 6b. Inject A11y Scans
@@ -400,7 +400,7 @@ Default: `['wcag2a', 'wcag2aa', 'wcag21aa']` (covers standard compliance).
 
 | Scenario | Behavior |
 |----------|----------|
-| No spec.md | "spec.md not found at increment path. Run /sw:increment first." |
+| No spec.md | "spec.md not found at increment path. Run sw:increment first." |
 | spec.md with no ACs | "No acceptance criteria found in spec.md — nothing to generate." Exit cleanly. |
 | ACs without GWT format | Generate test stub with `// TODO: implement` comment |
 | Duplicate AC-IDs | Warn, append `-dup1` suffix |

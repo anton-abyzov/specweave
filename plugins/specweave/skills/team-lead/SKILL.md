@@ -1,5 +1,5 @@
 ---
-description: Phase-agnostic orchestrator for parallel multi-agent work — brainstorm, plan, implement, review, research, or test. Auto-detects mode from intent. Use for implementation (3+ domains or 15+ tasks), brainstorming (multiple perspectives), parallel planning (PM + Architect), code review (delegates to /sw:code-reviewer), research (multiple topics), or testing (parallel test layers). Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "brainstorm with agents", "plan in parallel", "review code", "research this".
+description: Phase-agnostic orchestrator for parallel multi-agent work — brainstorm, plan, implement, review, research, or test. Auto-detects mode from intent. Use for implementation (3+ domains or 15+ tasks), brainstorming (multiple perspectives), parallel planning (PM + Architect), code review (delegates to sw:code-reviewer), research (multiple topics), or testing (parallel test layers). Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "brainstorm with agents", "plan in parallel", "review code", "research this".
 hooks:
   PreToolUse:
     - matcher: TeamCreate
@@ -54,7 +54,7 @@ hooks:
 ## Usage
 
 ```bash
-/sw:team-lead "<feature description>" [OPTIONS]
+sw:team-lead "<feature description>" [OPTIONS]
 ```
 
 ## Options
@@ -96,7 +96,7 @@ hooks:
 | BRAINSTORM | No | brainstorm-advocate, brainstorm-critic, brainstorm-pragmatist | Parallel → synthesize | Decision matrix |
 | PLANNING | Creates one | pm, architect (+ optional security reviewer) | PM + Architect parallel (Architect explores while PM specs) | spec.md, plan.md, tasks.md |
 | IMPLEMENTATION | Required | backend, frontend, database, testing, security | Contract-first phases | Working code |
-| REVIEW | Optional | Delegates to /sw:code-reviewer | Parallel | Review report |
+| REVIEW | Optional | Delegates to sw:code-reviewer | Parallel | Review report |
 | RESEARCH | No | researcher (1-3 instances) | Parallel → merge | Research report |
 | TESTING | Required | testing (split by layer) | Parallel | Test suites |
 
@@ -145,7 +145,7 @@ Skip increment pre-flight entirely. Brainstorm doesn't need a spec — it explor
    - Compare approaches across dimensions (effort, risk, value, alignment)
    - Highlight points of agreement and disagreement
    - Provide a ranked recommendation
-8. Offer handoff: "Ready to proceed? Run `/sw:increment` to formalize the chosen approach."
+8. Offer handoff: "Ready to proceed? Run `sw:increment` to formalize the chosen approach."
 9. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
    - Phase 1: Send `shutdown_request` to each agent
    - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
@@ -197,7 +197,7 @@ Planning mode runs PM and Architect agents in parallel for richer, faster spec c
 4. **Post-planning**:
    - Run `specweave sync-living-docs {increment-id}` to sync external tools
    - Present the spec + plan summary to the user
-   - Recommend execution strategy: `/sw:do`, `/sw:auto`, or `/sw:team-lead` (implementation mode)
+   - Recommend execution strategy: `sw:do`, `sw:auto`, or `sw:team-lead` (implementation mode)
 
 5. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
    - Phase 1: Send `shutdown_request` to each agent
@@ -209,7 +209,7 @@ Planning mode runs PM and Architect agents in parallel for richer, faster spec c
 
 ### 0c. REVIEW Mode
 
-**Delegates entirely to `/sw:code-reviewer`.**
+**Delegates entirely to `sw:code-reviewer`.**
 
 Team-lead does NOT spawn its own reviewer agents for review mode. The code-reviewer skill handles its own orchestration with 6 specialized reviewers.
 
@@ -250,7 +250,7 @@ Skip increment pre-flight. Research is exploratory — no spec needed.
    - Cross-reference findings between agents
    - Resolve contradictions
    - Produce ranked recommendations
-7. Offer handoff: `/sw:increment` (to act on findings) or `/sw:brainstorm` (to explore approaches)
+7. Offer handoff: `sw:increment` (to act on findings) or `sw:brainstorm` (to explore approaches)
 8. **Cleanup (ALL 3 phases from Step 9 — NEVER skip Phase 3)**:
    - Phase 1: Send `shutdown_request` to each agent
    - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
@@ -312,7 +312,7 @@ The team-lead works best with an increment (spec.md, plan.md, tasks.md) but can 
 - `SPECWEAVE_NO_INCREMENT=1` is set (via `specweave team --no-increment`)
 - The user explicitly opted out of increment creation
 
-In free-form mode: **skip the rest of Section 0.5** and proceed directly to Step 1. Agents will work from the natural language description instead of a spec. Note: without a spec, `/sw:done` closure is not available — the team-lead simply coordinates agent completion.
+In free-form mode: **skip the rest of Section 0.5** and proceed directly to Step 1. Agents will work from the natural language description instead of a spec. Note: without a spec, `sw:done` closure is not available — the team-lead simply coordinates agent completion.
 
 ### Standard mode: Verify increment exists
 
@@ -324,7 +324,7 @@ find .specweave/increments -maxdepth 2 -name "spec.md" 2>/dev/null | head -5
 find repositories -path "*/.specweave/increments/*/spec.md" -maxdepth 6 2>/dev/null | head -5
 ```
 
-### If NO increment exists → Auto-invoke /sw:increment
+### If NO increment exists → Auto-invoke sw:increment
 
 Do NOT ask permission. Invoke the increment skill with the user's feature description:
 
@@ -332,11 +332,11 @@ Do NOT ask permission. Invoke the increment skill with the user's feature descri
 Skill({ skill: "sw:increment", args: "the user's feature description" })
 ```
 
-Wait for /sw:increment to complete (spec.md, plan.md, tasks.md created and user exits plan mode).
+Wait for sw:increment to complete (spec.md, plan.md, tasks.md created and user exits plan mode).
 Then continue to Step 1.
 
-If /sw:increment fails (user rejects plan, skill errors, etc.): **STOP. Do NOT proceed.**
-Report the failure to the user and ask them to run `/sw:increment` manually.
+If sw:increment fails (user rejects plan, skill errors, etc.): **STOP. Do NOT proceed.**
+Report the failure to the user and ask them to run `sw:increment` manually.
 
 ### If increment exists → Read the master spec
 
@@ -469,13 +469,13 @@ umbrella-project/
 │   ├── 0002-shared-types/      # metadata.json: "project": "sw-ecom-shared"
 │   └── 0003-api-endpoints/     # metadata.json: "project": "sw-ecom-api"
 ├── repositories/
-│   ├── {ORG}/sw-ecom-domain/   # NO .specweave/increments/ here
-│   ├── {ORG}/sw-ecom-shared/   # NO .specweave/increments/ here
-│   └── {ORG}/sw-ecom-api/      # NO .specweave/increments/ here
+│   ├── {ORG}sw-ecom-domain/   # NO .specweave/increments/ here
+│   ├── {ORG}sw-ecom-shared/   # NO .specweave/increments/ here
+│   └── {ORG}sw-ecom-api/      # NO .specweave/increments/ here
 
 # WRONG: Increments inside child repos
 umbrella-project/
-├── repositories/{ORG}/sw-ecom-domain/
+├── repositories/{ORG}sw-ecom-domain/
 │   └── .specweave/increments/0001-domain-models/    # WRONG!
 ```
 
@@ -855,16 +855,16 @@ Quality gates are split: agents handle tests, team-lead handles closure (grill, 
 
 ```
 Agent Workflow:
-  1. Execute all assigned tasks via /sw:auto --simple
+  1. Execute all assigned tasks via sw:auto --simple
   2. Run all tests for owned code (unit + integration + E2E)
   3. Run linter/type-check for owned code
   4. If tests fail -> fix issues and repeat from step 2
   5. Do NOT signal completion until all tests pass
   6. Signal COMPLETION via SendMessage (include task count, test results summary)
-  7. Do NOT run /sw:grill or /sw:done — team-lead handles closure centrally
+  7. Do NOT run sw:grill or sw:done — team-lead handles closure centrally
 ```
 
-**Why agents don't run /sw:done**: The /sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Centralizing closure on the team-lead (which has a cleaner context) avoids this.
+**Why agents don't run sw:done**: The sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Centralizing closure on the team-lead (which has a cleaner context) avoids this.
 
 ### Active Phase Rules (CRITICAL — While Agents Are Implementing)
 
@@ -880,8 +880,8 @@ ALLOWED during active phase:
   ✓ Shutdown stuck agents
 
 FORBIDDEN during active phase:
-  ✗ Run /sw:grill on any increment
-  ✗ Run /sw:done on any increment
+  ✗ Run sw:grill on any increment
+  ✗ Run sw:done on any increment
   ✗ Invoke any closure-related skills (judge-llm, sync-docs, qa)
   ✗ Read full plan/spec files (use PLAN_READY summaries instead)
   ✗ Call TeamDelete() (kills all running agents — only use after all agents done or stuck)
@@ -896,14 +896,14 @@ ALLOWED but use with caution:
 
 **Closure begins ONLY after ALL agents have signaled COMPLETION (or been declared stuck).**
 
-**Do NOT manually run grill/done per increment — delegate to `/sw:team-merge`.**
+**Do NOT manually run grill/done per increment — delegate to `sw:team-merge`.**
 
 ```
 AFTER ALL AGENTS COMPLETE (3 steps only):
   1. Verify ALL agents signaled COMPLETION (no unresolved BLOCKING_ISSUE)
-  2. Invoke /sw:team-merge — it handles:
+  2. Invoke sw:team-merge — it handles:
      - Status validation (activates "planned" increments)
-     - /sw:done per increment in dependency order
+     - sw:done per increment in dependency order
      - Sync to GitHub/JIRA/ADO
      - Team state archival
   3. Run Step 9 cleanup (TeamDelete + kill tmux panes)
@@ -913,7 +913,7 @@ AFTER ALL AGENTS COMPLETE (3 steps only):
 The team-merge skill has its own retry logic and error handling.
 Attempting inline closure bloats the orchestrator's context and causes the "stuck after first agent" bug.
 
-**If /sw:team-merge fails**, report the failure to the user with the error message. Do NOT retry inline.
+**If sw:team-merge fails**, report the failure to the user with the error message. Do NOT retry inline.
 
 ### Grill Checklist per Domain
 
@@ -976,7 +976,7 @@ When an agent is declared stuck:
 
 - Enforce the 15-task cap (Section 3b)
 - Agents use `--simple` flag in auto-mode (reduces context per iteration)
-- Agents do NOT run /sw:done (team-lead handles closure centrally)
+- Agents do NOT run sw:done (team-lead handles closure centrally)
 - Heartbeat STATUS messages let team-lead detect problems early instead of after long silences
 - If an agent's task count exceeds 15 despite the cap, the team-lead should split it before spawning
 
@@ -985,11 +985,11 @@ When an agent is declared stuck:
 ## 9. Workflow Summary
 
 ```
-/sw:team-lead "Build checkout flow"
+sw:team-lead "Build checkout flow"
   │
   ├── Step 0: VERIFY INCREMENT EXISTS (BLOCKING)
   │     ├── Found? → Read master spec.md as source of truth
-  │     └── Missing? → Auto-invoke /sw:increment, wait for completion
+  │     └── Missing? → Auto-invoke sw:increment, wait for completion
   ├── Step 0b: ACTIVATE MASTER INCREMENT (MANDATORY)
   │     └── Edit metadata.json: set status to "active" BEFORE spawning agents
   ├── Step 1: Analyze feature (from master spec) → identify domains → decide increment split
@@ -1014,17 +1014,17 @@ When an agent is declared stuck:
   │
   │ ── CLOSURE PHASE (all agents done) ──
   │
-  ├── Step 7: Invoke /sw:team-merge (handles all closure: done, sync, archival)
+  ├── Step 7: Invoke sw:team-merge (handles all closure: done, sync, archival)
   ├── Step 8: Shutdown agents → TeamDelete() → orphaned pane safety net (Step 9 below)
   └── Done.
 ```
 
-**IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.
-Direct invocation of `/sw:team-lead` without an existing increment will trigger the guard and auto-invoke `/sw:increment`.
+**IMPORTANT**: The intended entry point is: `sw:increment` → `sw:do` (detects 3+ domains) → `sw:team-lead`.
+Direct invocation of `sw:team-lead` without an existing increment will trigger the guard and auto-invoke `sw:increment`.
 
 ### Step 9: Post-Completion Cleanup (MANDATORY — NEVER SKIP)
 
-**After delivering results OR after /sw:team-merge, clean up the team.**
+**After delivering results OR after sw:team-merge, clean up the team.**
 
 #### Phase 1: Graceful Agent Shutdown
 
@@ -1093,7 +1093,7 @@ To execute, run without --dry-run.
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| **TeamCreate blocked by guard** | No increment with spec.md exists | Run `/sw:increment "feature"` first, then retry `/sw:team-lead`. The guard requires a substantive spec.md (>200 bytes, not a template) |
+| **TeamCreate blocked by guard** | No increment with spec.md exists | Run `sw:increment "feature"` first, then retry `sw:team-lead`. The guard requires a substantive spec.md (>200 bytes, not a template) |
 | **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"`. Trust prompts require interactive input agents cannot provide |
 | **Session freezes after first agent completes** | Closure ran during active phase (pre-v0528 bug) | Ensure §8 active-phase rules are followed: NO grill/done until ALL agents signal COMPLETION |
 | **Agent proceeds with wrong plan** | Async model means agents don't wait for approval | Send `PLAN_CORRECTION` immediately; agent should pause and revise. If ignored, send `shutdown_request` |
@@ -1102,12 +1102,12 @@ To execute, run without --dry-run.
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
 | **Agent stuck in extended thinking** | Too many tasks (>15) causing context overflow | Enforce 15-task cap per agent; split large domains into 2 agents; agents use `--simple` mode |
-| **Agent hung on /sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run /sw:done — team-lead handles closure centrally |
+| **Agent hung on sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run sw:done — team-lead handles closure centrally |
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
 | **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |
-| **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `/sw:auto` on its increment |
+| **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `sw:auto` on its increment |
 | **`specweave complete` exits silently** | metadata.json status is "planned" (not "active") | Agents don't manage lifecycle status. Team-lead MUST activate the increment before spawning agents (see Step 0). Fix: edit metadata.json to set `"status": "active"` before running `specweave complete` |
-| **Closure fails on multiple increments** | Quality gates fail (grill, desync, missing reports) | Fix each issue and retry `/sw:done --auto` (max 2 retries per increment). See Section 8 closure failure table |
+| **Closure fails on multiple increments** | Quality gates fail (grill, desync, missing reports) | Fix each issue and retry `sw:done --auto` (max 2 retries per increment). See Section 8 closure failure table |
 
 ---
 
@@ -1116,7 +1116,7 @@ To execute, run without --dry-run.
 ### Example 1: Full-Stack Feature
 
 ```
-User: /sw:team-lead "Build user authentication with login, signup, password reset, and OAuth"
+User: sw:team-lead "Build user authentication with login, signup, password reset, and OAuth"
 
 Orchestrator detects domains: shared/types, database, backend, frontend, testing, security
 Creates 6 increments.
@@ -1135,14 +1135,14 @@ Phase 2 (after contracts ready):
 ### Example 2: Frontend-Only (No Dependencies)
 
 ```
-User: /sw:team-lead "Redesign dashboard" --domains frontend,testing
+User: sw:team-lead "Redesign dashboard" --domains frontend,testing
 -> No upstream dependencies. Both agents spawn in parallel immediately.
 ```
 
 ### Example 3: Dry Run
 
 ```
-User: /sw:team-lead "Add payment processing" --dry-run
+User: sw:team-lead "Add payment processing" --dry-run
 -> Shows plan with domains, phases, file ownership. No agents spawned.
 ```
 
@@ -1152,11 +1152,11 @@ User: /sw:team-lead "Add payment processing" --dry-run
 
 | Skill | Purpose |
 |-------|---------|
-| `/sw:team-status` | Show progress of all agents in the current team session |
-| `/sw:team-merge` | Merge completed agent work in dependency order |
-| `/sw:auto` | Autonomous execution (single-agent mode) |
-| `/sw:architect` | System architecture and ADRs |
-| `/sw:grill` | Quality validation gate |
+| `sw:team-status` | Show progress of all agents in the current team session |
+| `sw:team-merge` | Merge completed agent work in dependency order |
+| `sw:auto` | Autonomous execution (single-agent mode) |
+| `sw:architect` | System architecture and ADRs |
+| `sw:grill` | Quality validation gate |
 
 ## Resources
 
