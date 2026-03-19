@@ -4,9 +4,17 @@ title: Command Decision Tree
 description: Know exactly which SpecWeave command to use in any situation
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # SpecWeave Command Decision Tree
 
-**What do you want to do?** Just say it in plain English, use a slash command, or type a keyword. All three work.
+**What do you want to do?** Just say it in plain English, use a slash command, or type a keyword. All three work:
+
+<CommandTabs
+  natural="Let's build user authentication"
+  claude='sw:increment "Add user authentication"'
+  other='increment "Add user authentication"'
+/>
 
 ---
 
