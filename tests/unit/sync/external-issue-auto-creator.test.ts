@@ -1070,6 +1070,115 @@ describe('ExternalIssueAutoCreator', () => {
       expect(result.provider).toBe('jira');
     });
 
+    // FIX 0610: backfillExternalLinks writes epicKey/featureId, checkExistingIssue must recognize them
+    it('should skip when metadata has externalLinks.jira.epicKey (backfilled by LivingDocsSync)', async () => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: {
+          autoCreateOnIncrement: true,
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
+        },
+      });
+      setupIncrementFiles({
+        specContent: SPEC_CONTENT_WITH_STORIES,
+        specExists: true,
+        metadataExists: true,
+        metadataContent: JSON.stringify({
+          externalLinks: { jira: { epicKey: 'PROJ-100' } },
+        }),
+        incrementId: '0001-test-feature',
+      });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('PROJ-100');
+    });
+
+    it('should skip when metadata has externalLinks.jira.issueKey', async () => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: {
+          autoCreateOnIncrement: true,
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
+        },
+      });
+      setupIncrementFiles({
+        specContent: SPEC_CONTENT_WITH_STORIES,
+        specExists: true,
+        metadataExists: true,
+        metadataContent: JSON.stringify({
+          externalLinks: { jira: { issueKey: 'PROJ-200' } },
+        }),
+        incrementId: '0001-test-feature',
+      });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('PROJ-200');
+    });
+
+    it('should skip when metadata has externalLinks.ado.featureId (backfilled by LivingDocsSync)', async () => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: {
+          autoCreateOnIncrement: true,
+          ado: { enabled: true },
+        },
+      });
+      setupIncrementFiles({
+        specContent: SPEC_CONTENT_WITH_STORIES,
+        specExists: true,
+        metadataExists: true,
+        metadataContent: JSON.stringify({
+          externalLinks: { ado: { featureId: 555 } },
+        }),
+        incrementId: '0001-test-feature',
+      });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('#555');
+    });
+
+    it('should skip when metadata has externalLinks.ado.workItemId', async () => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: {
+          autoCreateOnIncrement: true,
+          ado: { enabled: true },
+        },
+      });
+      setupIncrementFiles({
+        specContent: SPEC_CONTENT_WITH_STORIES,
+        specExists: true,
+        metadataExists: true,
+        metadataContent: JSON.stringify({
+          externalLinks: { ado: { workItemId: 666 } },
+        }),
+        incrementId: '0001-test-feature',
+      });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('#666');
+    });
+
     it('should handle corrupt metadata.json gracefully', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
