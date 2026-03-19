@@ -32,6 +32,10 @@ export class AmazonQAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.amazonq/skills';
+  }
+
   async compilePlugin(plugin: Plugin): Promise<void> {
     const skillsDir = '.amazonq/skills';
     console.log(`\n📦 Installing plugin skills for Amazon Q: ${plugin.manifest.name}`);

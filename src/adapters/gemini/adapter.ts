@@ -120,6 +120,10 @@ export class GeminiAdapter extends AdapterBase {
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.gemini';
+  }
+
   /**
    * Compile and install a plugin for Gemini CLI.
    * Writes each SKILL.md as a separate file in `.gemini/`.
