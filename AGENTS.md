@@ -156,6 +156,19 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **Background jobs**: Monitor with `specweave jobs` (clone-repos, import-issues, living-docs-builder, sync-external).
 <!-- SW:END:nonclaudetools -->
 
+## Available Subagent Types
+
+SpecWeave uses specialized subagents for different phases of the increment workflow. These run in isolated contexts to keep the main agent's context clean.
+
+| Subagent | Purpose | When to Use |
+|----------|---------|-------------|
+| `sw:sw-closer` | Runs full `sw:done` closure pipeline in fresh context | After team-lead/team-merge completes, prevents context overflow |
+| `sw:sw-pm` | Writes spec.md with user stories and acceptance criteria | During `sw:increment` planning phase |
+| `sw:sw-architect` | Writes plan.md with architecture decisions | During `sw:increment` planning phase |
+| `sw:sw-planner` | Writes tasks.md with BDD test plans | During `sw:increment` planning phase |
+
+Agent definitions live in `plugins/specweave/agents/`. The team-lead orchestrator spawns these automatically when needed.
+
 <!-- SW:SECTION:syncworkflow version="1.0.326" -->
 ## Sync Workflow
 
