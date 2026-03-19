@@ -4,7 +4,7 @@ description: Check Azure DevOps sync status for increment
 
 # ADO Status Command
 
-**Usage**: `/sw-ado:status <increment-id>`
+**Usage**: `sw-ado:status <increment-id>`
 
 **Purpose**: Display ADO sync status and work item details
 
@@ -55,8 +55,8 @@ Next Sync: Automatic on task completion
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-ado:pull` | Pull changes from ADO |
-| `/sw-ado:push` | Push progress to ADO |
-| `/sw-ado:sync` | Two-way sync |
-| `/sw-ado:create` | Create ADO work item |
-| `/sw-ado:close` | Close work item |
+| `sw-ado:pull` | Pull changes from ADO |
+| `sw-ado:push` | Push progress to ADO |
+| `sw-ado:sync` | Two-way sync |
+| `sw-ado:create` | Create ADO work item |
+| `sw-ado:close` | Close work item |

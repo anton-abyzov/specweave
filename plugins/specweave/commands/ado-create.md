@@ -4,7 +4,7 @@ description: Create Azure DevOps work item from SpecWeave increment
 
 # Create ADO Work Item Command
 
-**Usage**: `/sw-ado:create <increment-id>`
+**Usage**: `sw-ado:create <increment-id>`
 
 **Purpose**: Create an Epic, Feature, or User Story in Azure DevOps from a SpecWeave increment
 
@@ -139,7 +139,7 @@ This setting was configured during 'specweave init'.
 ## Example Usage
 
 ```
-User: /sw-ado:create-workitem 0005-payment-integration
+User: sw-ado:create-workitem 0005-payment-integration
 
 # If permission granted:
 Claude: Checking ADO permissions...
@@ -171,8 +171,8 @@ Claude: Checking ADO permissions...
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-ado:pull` | Pull changes from ADO |
-| `/sw-ado:push` | Push progress to ADO |
-| `/sw-ado:sync` | Two-way sync |
-| `/sw-ado:status` | Check sync status |
-| `/sw-ado:close` | Close work item when complete |
+| `sw-ado:pull` | Pull changes from ADO |
+| `sw-ado:push` | Push progress to ADO |
+| `sw-ado:sync` | Two-way sync |
+| `sw-ado:status` | Check sync status |
+| `sw-ado:close` | Close work item when complete |

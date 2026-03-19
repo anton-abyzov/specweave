@@ -81,10 +81,10 @@ allowed-tools: Read, Write, Edit, Bash
 ### MEDIUM PRIORITY
 
 2. **Add `disable-model-invocation: true` to critical commands**
-   - `/sw:do`, `/sw:done`, `/sw:auto`
-   - `/sw:save`, `/sw:npm`
-   - `/sw-github:sync`, `/sw-github:push`
-   - `/sw-jira:sync`, `/sw-ado:sync`
+   - `sw:do`, `sw:done`, `sw:auto`
+   - `sw:save`, `sw:npm`
+   - `sw-github:sync`, `sw-github:push`
+   - `sw-jira:sync`, `sw-ado:sync`
 
 ### LOW PRIORITY
 

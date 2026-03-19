@@ -4,7 +4,7 @@ description: Pull latest changes from GitHub Issues (like git pull). Imports com
 
 # GitHub Pull Command
 
-**Usage**: `/sw-github:pull [increment-id]`
+**Usage**: `sw-github:pull [increment-id]`
 
 **Purpose**: Pull latest changes from GitHub Issues to your local increment (like `git pull`)
 
@@ -14,10 +14,10 @@ description: Pull latest changes from GitHub Issues (like git pull). Imports com
 
 ```bash
 # Pull for current/active increment
-/sw-github:pull
+sw-github:pull
 
 # Pull for specific increment
-/sw-github:pull 0005
+sw-github:pull 0005
 ```
 
 ---
@@ -49,7 +49,7 @@ const metadata = JSON.parse(await fs.readFile(
 
 const issueNumber = metadata?.external_sync?.github?.issue;
 if (!issueNumber) {
-  console.log(`Not linked to GitHub. Run: /sw-github:create ${incrementId}`);
+  console.log(`Not linked to GitHub. Run: sw-github:create ${incrementId}`);
   return;
 }
 ```
@@ -103,7 +103,7 @@ URL: https://github.com/owner/repo/issues/123
 ### Example 1: Simple Pull
 
 ```
-User: /sw-github:pull
+User: sw-github:pull
 
 Claude:
 Pulling from GitHub...
@@ -119,12 +119,12 @@ Pull complete!
 ### Example 2: Not Linked
 
 ```
-User: /sw-github:pull 0005
+User: sw-github:pull 0005
 
 Claude:
 Increment 0005 not linked to GitHub yet.
 
-To link: /sw-github:create 0005
+To link: sw-github:create 0005
 ```
 
 ---
@@ -133,7 +133,7 @@ To link: /sw-github:create 0005
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-github:push` | Push local changes to GitHub |
-| `/sw-github:sync` | Two-way sync (pull + push) |
-| `/sw-github:status` | Check sync status |
-| `/sw-github:create` | Create GitHub issue |
+| `sw-github:push` | Push local changes to GitHub |
+| `sw-github:sync` | Two-way sync (pull + push) |
+| `sw-github:status` | Check sync status |
+| `sw-github:create` | Create GitHub issue |

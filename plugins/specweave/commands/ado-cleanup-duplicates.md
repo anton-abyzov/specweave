@@ -27,7 +27,7 @@ justification: |
 ## Usage
 
 ```bash
-/sw-ado:cleanup-duplicates <feature-id> [--dry-run]
+sw-ado:cleanup-duplicates <feature-id> [--dry-run]
 ```
 
 ## What It Does
@@ -46,7 +46,7 @@ justification: |
 ### Dry Run (No Changes)
 
 ```bash
-/sw-ado:cleanup-duplicates FS-031 --dry-run
+sw-ado:cleanup-duplicates FS-031 --dry-run
 ```
 
 **Output**:
@@ -78,7 +78,7 @@ This was a DRY RUN - no changes made.
 ### Actual Cleanup
 
 ```bash
-/sw-ado:cleanup-duplicates FS-031
+sw-ado:cleanup-duplicates FS-031
 ```
 
 **Output**:
@@ -155,7 +155,7 @@ Auto-closed by SpecWeave Duplicate Cleanup
 ```
 WARNING: 10 duplicate(s) detected!
    Run cleanup command to resolve:
-   /sw-ado:cleanup-duplicates FS-031
+   sw-ado:cleanup-duplicates FS-031
 ```
 
 ## Architecture
@@ -174,9 +174,9 @@ WARNING: 10 duplicate(s) detected!
 
 ## Related Commands
 
-- `/sw-ado:sync` - Sync Feature to ADO (with duplicate detection)
-- `/sw-ado:reconcile` - Reconcile work item states
-- `/sw:validate` - Validate increment completeness
+- `sw-ado:sync` - Sync Feature to ADO (with duplicate detection)
+- `sw-ado:reconcile` - Reconcile work item states
+- `sw:validate` - Validate increment completeness
 
 ## Implementation
 
@@ -203,7 +203,7 @@ After cleanup:
 
 1. **Verify cleanup**: Check ADO for remaining work items
 2. **Check Feature FEATURE.md**: Verify frontmatter has correct work item IDs
-3. **Re-run sync**: `/sw-ado:sync` (should show no duplicates)
+3. **Re-run sync**: `sw-ado:sync` (should show no duplicates)
 4. **Duplicate detection**: Automatically enabled via AdoDuplicateDetector
 
 ---

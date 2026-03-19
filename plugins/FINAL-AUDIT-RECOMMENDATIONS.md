@@ -110,10 +110,10 @@ done
    - Skills: Auto-load when keywords match (unpredictable context usage)
 
 2. **Side Effects**: Commands with side effects should require explicit invocation
-   - `/sw:do` - Executes tasks (major changes)
-   - `/sw:save` - Git commit/push
-   - `/sw:npm` - NPM publish
-   - `/sw:done` - Closes increments
+   - `sw:do` - Executes tasks (major changes)
+   - `sw:save` - Git commit/push
+   - `sw:npm` - NPM publish
+   - `sw:done` - Closes increments
 
 3. **Predictability**: Users expect commands to require explicit invocation
    - Auto-activation for "deploy", "sync", "publish" would be dangerous
@@ -133,15 +133,15 @@ disable-model-invocation: true
 
 | Command | Reason |
 |---------|--------|
-| `/sw:do` | Executes tasks (major side effects) |
-| `/sw:done` | Closes increments |
-| `/sw:auto` | Autonomous execution mode |
-| `/sw:save` | Git commit/push |
-| `/sw:npm` | NPM publish |
-| `/sw-github:sync` | GitHub sync |
-| `/sw-github:push` | GitHub push |
-| `/sw-jira:sync` | JIRA sync |
-| `/sw-ado:sync` | ADO sync |
+| `sw:do` | Executes tasks (major side effects) |
+| `sw:done` | Closes increments |
+| `sw:auto` | Autonomous execution mode |
+| `sw:save` | Git commit/push |
+| `sw:npm` | NPM publish |
+| `sw-github:sync` | GitHub sync |
+| `sw-github:push` | GitHub push |
+| `sw-jira:sync` | JIRA sync |
+| `sw-ado:sync` | ADO sync |
 
 ---
 

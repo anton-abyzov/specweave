@@ -24,7 +24,7 @@ Core hooks automate SpecWeave's fundamental workflows:
 **Triggers**: BEFORE user's command executes (prompt-based hook)
 
 **Actions** (Zero-Token Validation):
-1. **Discipline enforcement** - Blocks `/sw:increment` if incomplete increments exist
+1. **Discipline enforcement** - Blocks `sw:increment` if incomplete increments exist
 2. **Context injection** - Adds active increment status to every prompt
 3. **Command suggestions** - Guides users to SpecWeave commands
 
@@ -119,7 +119,7 @@ Core hooks automate SpecWeave's fundamental workflows:
 ---
 
 ### 5. `stop-auto.sh` (Auto Mode)
-**Triggers**: When Claude tries to exit during autonomous execution (`/sw:auto`)
+**Triggers**: When Claude tries to exit during autonomous execution (`sw:auto`)
 
 **Actions**:
 1. Checks if all tasks are complete
@@ -144,7 +144,7 @@ Core hooks automate SpecWeave's fundamental workflows:
 
 **Use case**: Enables autonomous execution loops. Claude works until ALL tasks complete and tests pass, then gracefully exits.
 
-**See**: `/sw:auto` command documentation for full auto mode details.
+**See**: `sw:auto` command documentation for full auto mode details.
 
 ---
 
@@ -156,11 +156,11 @@ Core hooks automate SpecWeave's fundamental workflows:
 - Monitors task completion count in `.specweave/state/.last-task-completion`
 - Plays pleasant sound (Glass.aiff) when count increases
 - Runs in background (never blocks or delays hook execution)
-- **Smart auto mode detection**: Skips during `/sw:auto` (Stop hook plays ONE sound at END)
+- **Smart auto mode detection**: Skips during `sw:auto` (Stop hook plays ONE sound at END)
 
 **Behavior by Mode**:
 - **Normal mode**: Sound plays after EACH task completion
-- **Auto mode** (`/sw:auto`): NO sounds during execution, ONE completion sound when main orchestrator finishes
+- **Auto mode** (`sw:auto`): NO sounds during execution, ONE completion sound when main orchestrator finishes
 
 **Platforms**:
 - macOS: `Glass.aiff` (built-in system sound)
@@ -253,7 +253,7 @@ Hooks are configured via `.specweave/config.json` (created automatically during 
 - `external_tracker_sync: true` - Syncs progress to GitHub/Jira/ADO (requires sync profile configured)
 
 **post-increment-planning**:
-- `auto_create_issue: true` - Automatically creates GitHub issue after `/sw:increment` completes
+- `auto_create_issue: true` - Automatically creates GitHub issue after `sw:increment` completes
 
 ### Sound Notifications
 
@@ -314,7 +314,7 @@ bash -n plugins/specweave-github/hooks/post-task-completion.sh
 ```
 
 ### Test Integrated Workflow
-1. Create increment: `/sw:increment "test feature"`
+1. Create increment: `sw:increment "test feature"`
 2. Complete a task (via TodoWrite)
 3. Check logs: `tail -f .specweave/logs/hooks-debug.log`
 4. Verify hook execution in logs
@@ -459,8 +459,8 @@ bash -n plugins/specweave-ado/hooks/post-task-completion.sh
 ```
 
 **Test integrated workflow**:
-1. Create increment: `/sw:increment "test"`
-2. Create GitHub issue: `/sw-github:create-issue 0001`
+1. Create increment: `sw:increment "test"`
+2. Create GitHub issue: `sw-github:create-issue 0001`
 3. Complete a task (TodoWrite)
 4. Check logs: `tail -f .specweave/logs/hooks-debug.log`
 5. Verify:

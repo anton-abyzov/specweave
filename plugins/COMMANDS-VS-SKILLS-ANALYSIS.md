@@ -85,11 +85,11 @@ Commands with **side effects** that users should control:
 
 | Command Type | Example | Should Remain Command |
 |--------------|---------|----------------------|
-| Git operations | `/sw:save`, `/commit` | ✅ Yes |
-| Deployment | `/sw:deploy`, `/sw:npm` | ✅ Yes |
-| External sync | `/sw-github:sync`, `/sw-jira:sync` | ✅ Yes |
-| State changes | `/sw:do`, `/sw:done`, `/sw:auto` | ✅ Yes |
-| Destructive | `/sw:abandon`, `/sw:archive` | ✅ Yes |
+| Git operations | `sw:save`, `/commit` | ✅ Yes |
+| Deployment | `sw:deploy`, `sw:npm` | ✅ Yes |
+| External sync | `sw-github:sync`, `sw-jira:sync` | ✅ Yes |
+| State changes | `sw:do`, `sw:done`, `sw:auto` | ✅ Yes |
+| Destructive | `sw:abandon`, `sw:archive` | ✅ Yes |
 
 **Recommendation**: Add `disable-model-invocation: true` to critical commands.
 
@@ -99,9 +99,9 @@ Informational or reference commands:
 
 | Command Type | Example | Could Be Skill |
 |--------------|---------|----------------|
-| Status/info | `/sw:status`, `/sw:progress` | ⚠️ Maybe |
-| Quality checks | `/sw:validate`, `/sw:qa` | ⚠️ Maybe |
-| TDD guidance | `/sw:tdd-cycle` | ⚠️ Maybe |
+| Status/info | `sw:status`, `sw:progress` | ⚠️ Maybe |
+| Quality checks | `sw:validate`, `sw:qa` | ⚠️ Maybe |
+| TDD guidance | `sw:tdd-cycle` | ⚠️ Maybe |
 
 **Note**: These are borderline - they're often invoked intentionally.
 
@@ -134,14 +134,14 @@ hooks:
 ```
 
 Commands to update:
-- `/sw:do` - Executes tasks (major side effects)
-- `/sw:done` - Closes increments
-- `/sw:auto` - Autonomous mode
-- `/sw:save` - Git commit
-- `/sw:npm` - NPM publish
-- `/sw-github:sync`, `/sw-github:push` - GitHub sync
-- `/sw-jira:sync`, `/sw-jira:push` - JIRA sync
-- `/sw-ado:sync`, `/sw-ado:push` - ADO sync
+- `sw:do` - Executes tasks (major side effects)
+- `sw:done` - Closes increments
+- `sw:auto` - Autonomous mode
+- `sw:save` - Git commit
+- `sw:npm` - NPM publish
+- `sw-github:sync`, `sw-github:push` - GitHub sync
+- `sw-jira:sync`, `sw-jira:push` - JIRA sync
+- `sw-ado:sync`, `sw-ado:push` - ADO sync
 
 ### 4. Skills with `context: fork` are for domain expertise
 

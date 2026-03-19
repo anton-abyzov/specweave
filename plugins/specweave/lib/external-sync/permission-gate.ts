@@ -84,9 +84,9 @@ Options:
      }
    }
 
-2. Pull-only mode: /sw-${toolLower}:sync \${incrementId} --direction from-${toolLower}
+2. Pull-only mode: sw-${toolLower}:sync \${incrementId} --direction from-${toolLower}
 
-3. View status: /sw-${toolLower}:status \${incrementId}
+3. View status: sw-${toolLower}:status \${incrementId}
 `.trim();
 }
 
