@@ -47,9 +47,10 @@ export async function getBudgetState(projectRoot: string): Promise<BudgetState> 
   try {
     const raw = await fs.readFile(statePath(projectRoot), 'utf-8');
     return JSON.parse(raw) as BudgetState;
-  } catch {
+  } catch (err) {
     // Fail-closed: if we can't read the state file, assume budget is exhausted.
     // This prevents runaway API calls when the state file is missing or corrupt.
+    console.warn('[rate-limit-budget] Failed to read state file, defaulting to exhausted:', err);
     return { ...defaultState(), remaining: 0 };
   }
 }
@@ -95,6 +96,7 @@ export async function validateBudget(projectRoot: string): Promise<void> {
 
   if (result.exitCode !== 0) {
     // API call failed — update lastChecked to avoid hammering, keep existing budget
+    console.warn('[rate-limit-budget] gh api rate_limit failed (exit', result.exitCode, '):', result.stderr || '(no stderr)');
     state.lastChecked = new Date().toISOString();
     await writeBudgetState(projectRoot, state);
     return;
@@ -103,14 +105,21 @@ export async function validateBudget(projectRoot: string): Promise<void> {
   try {
     const data = JSON.parse(result.stdout);
     const rate = data.rate;
+    if (!rate || typeof rate.remaining !== 'number') {
+      console.warn('[rate-limit-budget] Unexpected rate_limit response structure:', result.stdout.slice(0, 200));
+      state.lastChecked = new Date().toISOString();
+      await writeBudgetState(projectRoot, state);
+      return;
+    }
     state.remaining = rate.remaining;
     state.limit = rate.limit;
     state.resetAt = new Date(rate.reset * 1000).toISOString();
     state.lastChecked = new Date().toISOString();
     state.callsSinceValidation = 0;
     await writeBudgetState(projectRoot, state);
-  } catch {
+  } catch (err) {
     // Parse failure — update lastChecked only
+    console.warn('[rate-limit-budget] Failed to parse rate_limit response:', err, '| stdout:', result.stdout.slice(0, 200));
     state.lastChecked = new Date().toISOString();
     await writeBudgetState(projectRoot, state);
   }
@@ -122,6 +131,7 @@ export async function validateBudget(projectRoot: string): Promise<void> {
 export function needsValidation(state: BudgetState): boolean {
   if (state.callsSinceValidation >= VALIDATION_INTERVAL_CALLS) return true;
   const elapsed = Date.now() - new Date(state.lastChecked).getTime();
+  if (isNaN(elapsed)) return true; // corrupt lastChecked — force re-validation
   return elapsed >= VALIDATION_INTERVAL_MS;
 }
 
