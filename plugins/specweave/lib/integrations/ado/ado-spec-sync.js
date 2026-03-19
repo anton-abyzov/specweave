@@ -319,9 +319,10 @@ class AdoSpecSync {
     }
     console.log(`   Syncing ${spec.metadata.userStories.length} user stories...`);
     for (const us of spec.metadata.userStories) {
-      const storyTitle = `[${us.id}] ${us.title}`;
+      const specId = spec.metadata.id.toUpperCase();
+      const storyTitle = `[${specId}][${us.id}] ${us.title}`;
       const storyDescription = this.generateStoryDescription(us);
-      const existingStory = await this.findStoryByTitle(us.id);
+      const existingStory = await this.findStoryByTitle(specId, us.id);
       let storyId;
       if (existingStory) {
         const resolvedStoryType = await this.resolveWorkItemType("User Story");
@@ -495,14 +496,14 @@ ${acList}
   /**
    * Find story by title pattern
    */
-  async findStoryByTitle(usId) {
+  async findStoryByTitle(featureId, usId) {
     const resolvedType = await this.resolveWorkItemType("User Story");
     const wiql = `
       SELECT [System.Id], [System.Title], [System.Description], [System.State]
       FROM WorkItems
       WHERE [System.TeamProject] = '${this.config.project}'
         AND [System.WorkItemType] = '${resolvedType}'
-        AND [System.Title] CONTAINS '[${usId}]'
+        AND [System.Title] CONTAINS '[${featureId}][${usId}]'
     `;
     const response = await this.client.post("/wit/wiql?api-version=7.0", {
       query: wiql
@@ -610,7 +611,36 @@ ${acList}
       });
     }
     if (updates.parentId) {
-      try {
+      const detailResp = await this.client.get(`/wit/workitems/${storyId}?$expand=relations&api-version=7.0`);
+      const relations = detailResp.data.relations || [];
+      let existingParentId = null;
+      let existingParentIndex = -1;
+      for (let i = 0; i < relations.length; i++) {
+        if (relations[i].rel === "System.LinkTypes.Hierarchy-Reverse") {
+          const urlParts = relations[i].url.split("/");
+          existingParentId = parseInt(urlParts[urlParts.length - 1], 10);
+          existingParentIndex = i;
+          break;
+        }
+      }
+      if (existingParentId === updates.parentId) {
+        // Parent already correct — no-op
+      } else if (existingParentId !== null && existingParentId !== updates.parentId) {
+        await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
+          { op: "remove", path: `/relations/${existingParentIndex}` },
+          {
+            op: "add",
+            path: "/relations/-",
+            value: {
+              rel: "System.LinkTypes.Hierarchy-Reverse",
+              url: `https://dev.azure.com/${this.config.organization}/${this.config.project}/_apis/wit/workitems/${updates.parentId}`,
+              attributes: { name: "Parent" }
+            }
+          }
+        ], {
+          headers: { "Content-Type": "application/json-patch+json" }
+        });
+      } else {
         await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
           {
             op: "add",
@@ -624,7 +654,6 @@ ${acList}
         ], {
           headers: { "Content-Type": "application/json-patch+json" }
         });
-      } catch {
       }
     }
   }
