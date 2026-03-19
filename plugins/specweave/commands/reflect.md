@@ -11,21 +11,21 @@ argument-hint: [--on | --off | --status | --clear [--skill name | --all]]
 
 ```bash
 # Manual reflection (analyzes session signals)
-/sw:reflect
-/sw:reflect "Focus on the API patterns we discussed"
+sw:reflect
+sw:reflect "Focus on the API patterns we discussed"
 
 # Enable auto-reflection on session end
-/sw:reflect --on
+sw:reflect --on
 
 # Disable auto-reflection
-/sw:reflect --off
+sw:reflect --off
 
 # Show reflection config and learning statistics
-/sw:reflect --status
+sw:reflect --status
 
 # Clear learnings
-/sw:reflect --clear --skill frontend
-/sw:reflect --clear --all
+sw:reflect --clear --skill frontend
+sw:reflect --clear --all
 ```
 
 ## Subcommands
@@ -75,12 +75,12 @@ Auto-reflection ENABLED
 Stop hook will analyze sessions on exit.
 Learnings saved to CLAUDE.md Skill Memories section.
 
-Disable with: /sw:reflect --off
+Disable with: sw:reflect --off
 ```
 
 ### `--off` - Disable Auto-Reflection
 
-Disables automatic session analysis. Manual `/sw:reflect` still works.
+Disables automatic session analysis. Manual `sw:reflect` still works.
 
 **CRITICAL: This is a SIMPLE operation. NO Glob, NO parallel tool calls needed.**
 
@@ -94,10 +94,10 @@ Disables automatic session analysis. Manual `/sw:reflect` still works.
 ```
 Auto-reflection DISABLED
 
-Manual /sw:reflect still works.
+Manual sw:reflect still works.
 Existing learnings preserved.
 
-Re-enable with: /sw:reflect --on
+Re-enable with: sw:reflect --on
 ```
 
 **WARNING**: Do NOT use Glob to scan directories - this operation only writes ONE file.
@@ -140,8 +140,8 @@ RECENT LEARNINGS
 Remove specific learnings from CLAUDE.md Skill Memories section.
 
 ```bash
-/sw:reflect --clear --skill frontend   # Clear all learnings for skill
-/sw:reflect --clear --all              # Clear ALL learnings (requires confirmation)
+sw:reflect --clear --skill frontend   # Clear all learnings for skill
+sw:reflect --clear --all              # Clear ALL learnings (requires confirmation)
 ```
 
 **Execution:**

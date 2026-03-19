@@ -10,14 +10,14 @@ Create a GitHub issue for the specified SpecWeave increment.
 
 **GitHub issue content is generated FROM living docs.** If living docs don't exist or are stale, the issue will be incomplete.
 
-**You MUST run `/sw:sync-specs` BEFORE creating (unless using /sw:sync-progress):**
+**You MUST run `sw:sync-specs` BEFORE creating (unless using sw:sync-progress):**
 
 ```bash
 # STEP 1: Ensure living docs exist and are current
-/sw:sync-specs <increment-id>
+sw:sync-specs <increment-id>
 
 # STEP 2: Then create GitHub issue
-/sw-github:create <increment-id>
+sw-github:create <increment-id>
 ```
 
 **Why?**
@@ -26,14 +26,14 @@ Create a GitHub issue for the specified SpecWeave increment.
 - Task checklist reflects living docs structure
 - Without sync-specs, issue will be created from raw increment spec.md (less structured)
 
-**Note:** `/sw:sync-progress` calls sync-specs automatically before creating issues.
+**Note:** `sw:sync-progress` calls sync-specs automatically before creating issues.
 
 ---
 
-**Usage**: `/sw-github:create <increment-id>`
+**Usage**: `sw-github:create <increment-id>`
 
 ```bash
-/sw:github:create-issue <increment-id> [options]
+sw:github:create-issue <increment-id> [options]
 ```
 
 ## Arguments
@@ -52,19 +52,19 @@ Create a GitHub issue for the specified SpecWeave increment.
 
 ```bash
 # Basic usage
-/sw:github:create-issue 0004
+sw:github:create-issue 0004
 
 # With custom labels
-/sw:github:create-issue 0004 --labels "urgent,backend"
+sw:github:create-issue 0004 --labels "urgent,backend"
 
 # Assign to developer
-/sw:github:create-issue 0004 --assignee @developer1
+sw:github:create-issue 0004 --assignee @developer1
 
 # Add to project
-/sw:github:create-issue 0004 --project 3
+sw:github:create-issue 0004 --project 3
 
 # Force recreate
-/sw:github:create-issue 0004 --force
+sw:github:create-issue 0004 --force
 ```
 
 ## What This Command Does
@@ -218,18 +218,18 @@ Options:
 1. Wait 30 minutes
 2. Use authenticated token (higher limit)
 
-Run /sw:github:status 0004 to check sync state.
+Run sw:github:status 0004 to check sync state.
 ```
 
 ## Related Commands
 
-- `/sw:github:sync <increment-id>`: Update existing issue
-- `/sw:github:close-issue <increment-id>`: Close issue
-- `/sw:github:status <increment-id>`: Check sync status
+- `sw:github:sync <increment-id>`: Update existing issue
+- `sw:github:close-issue <increment-id>`: Close issue
+- `sw:github:status <increment-id>`: Check sync status
 
 ## Tips
 
-1. **Auto-Create**: Enable `auto_create_issue: true` in config to auto-create issues when running `/sw:inc`
+1. **Auto-Create**: Enable `auto_create_issue: true` in config to auto-create issues when running `sw:inc`
 
 2. **Templates**: Customize issue template in `.specweave/github/issue-template.md`
 
@@ -274,7 +274,7 @@ Create issues for multiple increments:
 
 ```bash
 for i in 0004 0005 0006; do
-  /sw:github:create-issue $i
+  sw:github:create-issue $i
 done
 ```
 
@@ -283,7 +283,7 @@ Or using a script:
 ```bash
 # Create issues for all increments in backlog
 ls .specweave/increments/_backlog/ | while read inc; do
-  /sw:github:create-issue $inc
+  sw:github:create-issue $inc
 done
 ```
 
@@ -292,7 +292,7 @@ done
 Preview issue body before creating:
 
 ```bash
-/sw:github:create-issue 0004 --dry-run
+sw:github:create-issue 0004 --dry-run
 ```
 
 Output:
@@ -323,7 +323,7 @@ Run without --dry-run to create this issue.
 
 ---
 
-**Command**: `/sw:github:create-issue`
+**Command**: `sw:github:create-issue`
 **Plugin**: specweave-github
 **Agent**: github-sync
 **Version**: 1.0.0

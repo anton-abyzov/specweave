@@ -13,13 +13,13 @@ disable-model-invocation: true
 ## Usage
 
 ```bash
-/sw:state <id> pause   [--reason="reason"]      # Pause active increment
-/sw:state <id> resume                            # Resume paused/backlog increment
-/sw:state <id> backlog [--reason="reason"]      # Move to backlog (planned, not started)
-/sw:state <id> reopen  [--reason="reason"]      # Reopen completed work
-/sw:state <id> reopen  --task T-003 [--reason]  # Reopen specific task
-/sw:state <id> reopen  --user-story US-001      # Reopen user story + related tasks
-/sw:state <id> reopen  --force                  # Bypass WIP limit checks
+sw:state <id> pause   [--reason="reason"]      # Pause active increment
+sw:state <id> resume                            # Resume paused/backlog increment
+sw:state <id> backlog [--reason="reason"]      # Move to backlog (planned, not started)
+sw:state <id> reopen  [--reason="reason"]      # Reopen completed work
+sw:state <id> reopen  --task T-003 [--reason]  # Reopen specific task
+sw:state <id> reopen  --user-story US-001      # Reopen user story + related tasks
+sw:state <id> reopen  --force                  # Bypass WIP limit checks
 ```
 
 ## Actions
@@ -35,14 +35,14 @@ When blocked by external dependency, waiting for review, or deprioritized.
 2. Validate increment exists and is "active"
 3. Prompt for reason if not provided via --reason
 4. Update metadata.json: status → "paused", pausedReason, pausedAt
-5. Display confirmation, suggest `/sw:state <id> resume` to continue
+5. Display confirmation, suggest `sw:state <id> resume` to continue
 
 **Examples:**
 ```bash
-/sw:state 0006 pause --reason="Waiting for Stripe API keys"
+sw:state 0006 pause --reason="Waiting for Stripe API keys"
 
 # Interactive (prompts for reason)
-/sw:state 0006 pause
+sw:state 0006 pause
 ```
 
 **Edge cases:**
@@ -61,17 +61,17 @@ When blocker resolved, ready to start backlog work, or reviving abandoned work.
 3. Calculate pause/backlog duration
 4. Update metadata.json: status → "active", clear pause/backlog fields
 5. Show context recovery (progress %, last activity, duration)
-6. Suggest `/sw:do` to continue work
+6. Suggest `sw:do` to continue work
 
 **Examples:**
 ```bash
-/sw:state 0006 resume
+sw:state 0006 resume
 # → Increment 0006 resumed. Was paused for: 3 days, 4 hours
-# → Continue with: /sw:do
+# → Continue with: sw:do
 
-/sw:state 0032 resume
+sw:state 0032 resume
 # → Increment 0032 activated from backlog. Was in backlog for: 5 days
-# → Start work with: /sw:do
+# → Start work with: sw:do
 ```
 
 **Edge cases:**
@@ -95,7 +95,7 @@ For planned work not ready to start. Does NOT count toward WIP limits.
 
 **Examples:**
 ```bash
-/sw:state 0032 backlog --reason="Low priority, focus on 0031 first"
+sw:state 0032 backlog --reason="Low priority, focus on 0031 first"
 ```
 
 **Edge cases:**
@@ -129,19 +129,19 @@ When issues discovered after completion. Supports reopening entire increment, sp
 **Examples:**
 ```bash
 # Reopen entire increment
-/sw:state 0031 reopen --reason="GitHub sync failing in production"
+sw:state 0031 reopen --reason="GitHub sync failing in production"
 
 # Natural language (everything after action is the reason)
-/sw:state 0043 reopen Bug found in AC sync implementation
+sw:state 0043 reopen Bug found in AC sync implementation
 
 # Reopen specific task
-/sw:state 0031 reopen --task T-003 --reason="API rate limiting not handled"
+sw:state 0031 reopen --task T-003 --reason="API rate limiting not handled"
 
 # Reopen user story
-/sw:state 0025 reopen --user-story US-002 --reason="Security requirements not satisfied"
+sw:state 0025 reopen --user-story US-002 --reason="Security requirements not satisfied"
 
 # Force reopen (bypass WIP limits)
-/sw:state 0031 reopen --force --reason="Production down"
+sw:state 0031 reopen --force --reason="Production down"
 ```
 
 **WIP Limit Validation:**
@@ -152,9 +152,9 @@ WIP LIMIT WARNING:
   Reopening 0031 will EXCEED the limit (3/2)!
 
 Options:
-1. Pause another feature: /sw:state 0030 pause --reason="Paused for fix"
-2. Complete another feature: /sw:done 0029
-3. Force reopen: /sw:state 0031 reopen --force --reason="Critical"
+1. Pause another feature: sw:state 0030 pause --reason="Paused for fix"
+2. Complete another feature: sw:done 0029
+3. Force reopen: sw:state 0031 reopen --force --reason="Critical"
 ```
 
 **Audit Trail** (metadata.json):
@@ -190,7 +190,7 @@ active ──pause──→ paused ──resume──→ active
 
 ## Stale Increment Warnings
 
-Increments paused/backlog for 7+ days trigger warnings in `/sw:status`:
+Increments paused/backlog for 7+ days trigger warnings in `sw:status`:
 
 ```
 Paused (1):

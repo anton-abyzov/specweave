@@ -107,7 +107,7 @@ describe('T-001: team-lead SKILL.md', () => {
 
   it('should contain quality gate instructions (sw:grill)', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/sw:grill|quality gate/i);
+    expect(content).toMatch(sw:grill|quality gate/i);
   });
 
   it('should contain communication protocol', () => {
@@ -268,12 +268,12 @@ describe('T-012: Agent spawn prompt templates', () => {
 
   it('should include workflow instructions (sw:do or sw:auto)', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/sw:do|sw:auto/);
+    expect(content).toMatch(sw:do|sw:auto/);
   });
 
   it('should include quality gate (sw:grill) in spawn prompts', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/sw:grill|quality gate|before.*complet/i);
+    expect(content).toMatch(sw:grill|quality gate|before.*complet/i);
   });
 });
 
@@ -330,12 +330,12 @@ describe('T-016: team-merge SKILL.md', () => {
 
   it('should reference sw:done per increment after merge', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/sw:done|done.*per.*increment|close.*increment/i);
+    expect(content).toMatch(sw:done|done.*per.*increment|close.*increment/i);
   });
 
   it('should reference sync triggers (GitHub/JIRA)', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/sw-github:sync|sw-jira:push|sync.*trigger|github.*sync/i);
+    expect(content).toMatch(sw-github:sync|sw-jira:push|sync.*trigger|github.*sync/i);
   });
 });
 
@@ -526,13 +526,13 @@ describe('ISSUE-8: Agents prefer auto mode for autonomous work', () => {
   it('should instruct agents to prefer sw:auto for autonomous execution', () => {
     const content = readFileSync(skillPath, 'utf-8');
     // Section 8 Per-Agent Quality Gate: "Execute all assigned tasks via sw:auto"
-    expect(content).toMatch(/sw:auto/);
+    expect(content).toMatch(sw:auto/);
   });
 
   it('should instruct team-lead to handle closure via sw:done centrally', () => {
     const content = readFileSync(skillPath, 'utf-8');
     // Agents do NOT run sw:done — team-lead handles closure centrally (Section 8)
-    expect(content).toMatch(/sw:done/);
+    expect(content).toMatch(sw:done/);
     expect(content).toMatch(/team.lead.*handles.*closure|closure.*central|Do NOT run.*sw:grill.*sw:done/i);
   });
 });

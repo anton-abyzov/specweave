@@ -11,12 +11,12 @@ description: EMERGENCY ONLY - Cancel running auto session and generate summary r
 
 **⚠️ EMERGENCY USE ONLY - Manually cancel the running auto session.**
 
-> **Note**: Auto mode is designed to run until completion. In most cases, just close the Claude Code session and resume later with `/sw:do`. Only use this command in true emergencies.
+> **Note**: Auto mode is designed to run until completion. In most cases, just close the Claude Code session and resume later with `sw:do`. Only use this command in true emergencies.
 
 ## Usage
 
 ```bash
-/sw:cancel-auto [OPTIONS]
+sw:cancel-auto [OPTIONS]
 ```
 
 ## Options
@@ -29,10 +29,10 @@ description: EMERGENCY ONLY - Cancel running auto session and generate summary r
 
 ```bash
 # Interactive cancel (asks for confirmation)
-/sw:cancel-auto
+sw:cancel-auto
 
 # Force cancel without confirmation (emergency)
-/sw:cancel-auto --force
+sw:cancel-auto --force
 ```
 
 ## What It Does
@@ -62,7 +62,7 @@ Cancel this session? [y/N] y
 
 Summary: .specweave/logs/auto-2025-12-29-abc123-summary.md
 
-💡 To resume work later, just run /sw:do
+💡 To resume work later, just run sw:do
 ```
 
 ## Execution
@@ -76,10 +76,10 @@ bash plugins/specweave/scripts/cancel-auto.sh [args]
 ## Notes
 
 - **This command should rarely be needed** - auto mode is designed to run until completion
-- **Preferred approach**: Just close the Claude Code session to pause, resume later with `/sw:do`
+- **Preferred approach**: Just close the Claude Code session to pause, resume later with `sw:do`
 - Cancelling doesn't undo completed work
 - tasks.md progress is preserved
-- You can resume anytime with `/sw:do`
+- You can resume anytime with `sw:do`
 - Use Claude Code's `/resume` to restore full conversation context
 
 ## When to Use

@@ -1,6 +1,6 @@
 ---
 name: sw-pm
-description: Product Manager for writing spec.md with user stories and acceptance criteria. Use for increment specification creation during /sw:increment orchestration.
+description: Product Manager for writing spec.md with user stories and acceptance criteria. Use for increment specification creation during sw:increment orchestration.
 model: opus
 memory: project
 skills:

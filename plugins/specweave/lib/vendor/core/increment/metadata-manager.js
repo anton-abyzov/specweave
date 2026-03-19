@@ -179,7 +179,7 @@ export class MetadataManager {
                 `Resolution options:\n` +
                 `  1. Use a different increment number\n` +
                 `  2. Delete/archive the existing increment(s)\n` +
-                `  3. Run /sw:fix-duplicates to resolve conflicts`, incrementId);
+                `  3. Run sw:fix-duplicates to resolve conflicts`, incrementId);
         }
     }
     /**
@@ -229,7 +229,7 @@ export class MetadataManager {
                 this.logger.log(`   Living docs sync will trigger when spec.md is ready`);
                 // Don't trigger sync yet - will happen via:
                 // 1. AutoTransitionManager.handleTasksCreated() → updateStatus() → StatusChangeSyncTrigger
-                // 2. Or manual /sw:sync-docs command
+                // 2. Or manual sw:sync-docs command
             }
             else {
                 this.logger.log(`📚 New active increment detected - triggering living docs sync...`);
@@ -250,7 +250,7 @@ export class MetadataManager {
                     }
                     catch (error) {
                         this.logger.error(`❌ Living docs sync failed for ${incrementId}:`, error);
-                        this.logger.log(`💡 Run /sw:sync-docs ${incrementId} to retry`);
+                        this.logger.log(`💡 Run sw:sync-docs ${incrementId} to retry`);
                     }
                 })();
             }
@@ -313,10 +313,10 @@ export class MetadataManager {
         else if (newStatus === IncrementStatus.READY_FOR_REVIEW) {
             // v0.28.63+: All tasks completed, awaiting user approval
             metadata.readyForReviewAt = new Date().toISOString();
-            this.logger.log(`📋 Increment ${incrementId} ready for review - run /sw:done to close`);
+            this.logger.log(`📋 Increment ${incrementId} ready for review - run sw:done to close`);
         }
         else if (newStatus === IncrementStatus.COMPLETED) {
-            // v0.28.63+: User explicitly approved completion via /sw:done
+            // v0.28.63+: User explicitly approved completion via sw:done
             metadata.approvedAt = new Date().toISOString();
         }
         else if (newStatus === IncrementStatus.ABANDONED) {
@@ -356,7 +356,7 @@ export class MetadataManager {
                 `2. YAML frontmatter syntax in spec.md\n` +
                 `3. Disk space availability\n` +
                 `\n` +
-                `To check for desyncs, run: /sw:sync-status`, incrementId, error instanceof Error ? error : undefined);
+                `To check for desyncs, run: sw:sync-status`, incrementId, error instanceof Error ? error : undefined);
         }
         // **CRITICAL**: Update active increment state
         const activeManager = new ActiveIncrementManager(rootDir);

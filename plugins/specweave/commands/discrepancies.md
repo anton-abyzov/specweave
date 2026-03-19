@@ -12,16 +12,16 @@ View and manage documentation discrepancies. Supports two modes:
 
 ```bash
 # Brownfield discrepancies (documentation gaps)
-/sw:discrepancies                  # List pending brownfield discrepancies
-/sw:discrepancies --module payment # Filter by module name
-/sw:discrepancies --type missing-docs    # Filter by type
-/sw:discrepancies --priority critical    # Filter by priority
-/sw:discrepancies show DISC-0001   # View details
-/sw:discrepancies ignore DISC-0001 "False positive"  # Ignore with reason
+sw:discrepancies                  # List pending brownfield discrepancies
+sw:discrepancies --module payment # Filter by module name
+sw:discrepancies --type missing-docs    # Filter by type
+sw:discrepancies --priority critical    # Filter by priority
+sw:discrepancies show DISC-0001   # View details
+sw:discrepancies ignore DISC-0001 "False positive"  # Ignore with reason
 
 # Code-to-spec discrepancies (legacy)
-/sw:discrepancies --check          # Run code-spec check now
-/sw:discrepancies --severity major # Filter by severity
+sw:discrepancies --check          # Run code-spec check now
+sw:discrepancies --severity major # Filter by severity
 ```
 
 ## Arguments
@@ -54,8 +54,8 @@ DISC-0003   MINOR      api-route          GET /api/orders path changed
 DISC-0004   TRIVIAL    type-definition    User type updated
 DISC-0005   MAJOR      api-route          New DELETE /api/users/:id
 
-Use '/sw:discrepancies show <id>' to view details
-Use '/sw:discrepancies accept <id>' to apply patch
+Use 'sw:discrepancies show <id>' to view details
+Use 'sw:discrepancies accept <id>' to apply patch
 ```
 
 ### show <id>
@@ -83,8 +83,8 @@ Description: Function signature has changed from documented version.
 Recommended: review-required
 Patch Available: Yes
 
-Use '/sw:discrepancies accept DISC-0002' to apply patch
-Use '/sw:discrepancies dismiss DISC-0002' to mark intentional
+Use 'sw:discrepancies accept DISC-0002' to apply patch
+Use 'sw:discrepancies dismiss DISC-0002' to mark intentional
 ```
 
 ### check
@@ -109,7 +109,7 @@ Results:
   - Minor: 1
   - Trivial: 1
 
-Use '/sw:discrepancies' to view list
+Use 'sw:discrepancies' to view list
 ```
 
 ### accept <id>
@@ -139,4 +139,4 @@ Remaining: 4 discrepancies
 
 ## Related
 
-- `/sw:sync-monitor`: Dashboard showing discrepancy count
+- `sw:sync-monitor`: Dashboard showing discrepancy count

@@ -31,9 +31,9 @@ specweave jobs
 
 ## Arguments
 
-- `/sw:jobs` — Show active and recent jobs
-- `/sw:jobs --all` — Show all jobs including completed
-- `/sw:jobs --id <job-id>` — Show details for specific job
+- `sw:jobs` — Show active and recent jobs
+- `sw:jobs --all` — Show all jobs including completed
+- `sw:jobs --id <job-id>` — Show details for specific job
 
 ## Data Shown
 
@@ -47,6 +47,6 @@ specweave jobs
 
 ## Related Commands
 
-- `/sw:progress` — Increment task/AC completion
-- `/sw-github:clone` — Trigger GitHub repo cloning
-- `/sw-ado:clone` — Trigger ADO repo cloning
+- `sw:progress` — Increment task/AC completion
+- `sw-github:clone` — Trigger GitHub repo cloning
+- `sw-ado:clone` — Trigger ADO repo cloning

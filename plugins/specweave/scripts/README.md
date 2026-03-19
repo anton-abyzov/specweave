@@ -6,15 +6,15 @@ These scripts provide instant (<100ms) output for status queries that don't requ
 
 ## Why These Exist
 
-Status commands (`/sw:status`, `/sw:progress`, `/sw:jobs`) were taking 3+ minutes because they expanded as prompts requiring LLM processing. These commands need NO reasoning - they just read JSON and format output.
+Status commands (`sw:status`, `sw:progress`, `sw:jobs`) were taking 3+ minutes because they expanded as prompts requiring LLM processing. These commands need NO reasoning - they just read JSON and format output.
 
 **Performance comparison:**
 
 | Command | Before | After |
 |---------|--------|-------|
-| `/sw:status` | 3+ min | <100ms |
-| `/sw:progress` | 2+ min | <100ms |
-| `/sw:jobs` | 3+ min | <100ms |
+| `sw:status` | 3+ min | <100ms |
+| `sw:progress` | 2+ min | <100ms |
+| `sw:jobs` | 3+ min | <100ms |
 
 ## Scripts
 
@@ -60,7 +60,7 @@ These scripts work across all contexts through a layered architecture:
 | Layer | Context | Speed | How It Works |
 |-------|---------|-------|--------------|
 | **Command `!` Block** | Claude Code | <100ms | Command file auto-executes script via `` ```! `` block |
-| **Hook** | Claude Code | <100ms | `UserPromptSubmit` intercepts `/sw:*`, runs script, blocks prompt |
+| **Hook** | Claude Code | <100ms | `UserPromptSubmit` intercepts `sw:*`, runs script, blocks prompt |
 | **CLI** | Terminal | ~500ms | `specweave status` / direct `bash scripts/*.sh` |
 
 ### 1. Claude Code (Command Auto-Execution - Primary)
@@ -79,14 +79,14 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh" "$ARGUMENTS"
 ```
 ```
 
-When user types `/sw:status`, the `` ```! `` block executes automatically.
+When user types `sw:status`, the `` ```! `` block executes automatically.
 
 ### 2. Claude Code (Hook - Fallback)
 
 The `UserPromptSubmit` hook provides a fallback intercept layer:
 
 ```
-User types: /sw:status
+User types: sw:status
 Hook runs: bash plugins/specweave/scripts/read-status.sh
 Output appears instantly (<10ms)
 LLM never processes the prompt
@@ -110,7 +110,7 @@ bash plugins/specweave/scripts/read-progress.sh 0045
 
 | Situation | Recommended Path |
 |-----------|------------------|
-| Quick status check in Claude Code | Just type `/sw:status` (auto-executes) |
+| Quick status check in Claude Code | Just type `sw:status` (auto-executes) |
 | Using other AI tools (Cursor, etc.) | Not supported - use CLI instead |
 | Terminal/scripting | `specweave status` or `bash scripts/*.sh` |
 | CI/CD pipelines | Direct `bash scripts/*.sh` |
@@ -162,7 +162,7 @@ DESCRIPTION
   What this command does...
 
 EXECUTION PATHS
-  1. Claude Code:  /sw:newcmd  (hook intercepts)
+  1. Claude Code:  sw:newcmd  (hook intercepts)
   2. Any LLM:      Skill instructs to run this script
   3. Terminal:     specweave newcmd
 `);

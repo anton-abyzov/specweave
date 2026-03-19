@@ -84,16 +84,16 @@ board: digital-operations    # REQUIRED for 2-level
 ### Increment Lifecycle
 
 ```
-1. Plan    → /sw:inc "feature-name"
+1. Plan    → sw:inc "feature-name"
             ↓ PM agent creates spec.md, plan.md, tasks.md, tests.md
 
-2. Execute → /sw:do
+2. Execute → sw:do
             ↓ Selects next task, executes, marks complete
 
-3. Validate → /sw:validate 0001
+3. Validate → sw:validate 0001
             ↓ Checks spec compliance, test coverage
 
-4. Close   → /sw:done 0001
+4. Close   → sw:done 0001
             ↓ Creates COMPLETION-SUMMARY.md, archives
 ```
 
@@ -102,15 +102,15 @@ board: digital-operations    # REQUIRED for 2-level
 **THE IRON RULE**: Cannot start increment N+1 until increment N is DONE!
 
 **Enforcement**:
-- `/sw:inc` **blocks** if previous increments incomplete
-- Use `/sw:status` to check all increments
-- Use `/sw:done` to close incomplete work
+- `sw:inc` **blocks** if previous increments incomplete
+- Use `sw:status` to check all increments
+- Use `sw:done` to close incomplete work
 - `--force` flag for emergencies (logged, should be rare)
 
 **What "DONE" Means**:
 1. All tasks in `tasks.md` marked `[x] Completed`, OR
 2. `COMPLETION-SUMMARY.md` exists with "✅ COMPLETE" status, OR
-3. Explicit closure via `/sw:done`
+3. Explicit closure via `sw:done`
 
 **Three Options for Closing**:
 1. **Adjust Scope** - Remove features from spec.md, regenerate tasks
@@ -120,19 +120,19 @@ board: digital-operations    # REQUIRED for 2-level
 **Example**:
 ```bash
 # Check status
-/sw:status
+sw:status
 # Shows: 0002 (73% complete), 0003 (50% complete)
 
 # Try to start new increment
-/sw:inc "0004-new-feature"
+sw:inc "0004-new-feature"
 # ❌ Blocked! "Close 0002 and 0003 first"
 
 # Close previous work
-/sw:done
+sw:done
 # Interactive: Choose force-complete, move tasks, or reduce scope
 
 # Now can proceed
-/sw:inc "0004-new-feature"
+sw:inc "0004-new-feature"
 # ✅ Works! Clean slate
 ```
 
@@ -239,7 +239,7 @@ vim plugins/specweave/skills/increment/SKILL.md
 npm run install:skills
 
 # Test (skill activates from .claude/)
-/sw:inc "test feature"
+sw:inc "test feature"
 
 # WRONG: Edit installed file
 vim .claude/skills/increment/SKILL.md  # ❌ Gets overwritten!
@@ -349,7 +349,7 @@ Until hooks are fully automated, **YOU MUST**:
 **Core Framework** (always loaded):
 - 7 core skills (increment, plan, context-loader, etc.)
 - 3 core agents (PM, Architect, Tech Lead)
-- 7 core commands (/sw:inc, /sw:do, etc.)
+- 7 core commands (sw:inc, sw:do, etc.)
 
 **Plugins** (opt-in):
 - `specweave-github` - GitHub integration (issue sync, PR creation)
@@ -376,7 +376,7 @@ Until hooks are fully automated, **YOU MUST**:
    - Scans package.json, directories, env vars
    - Suggests plugins: "Found React. Enable frontend-stack? (Y/n)"
 
-2. **First Increment** (during `/sw:inc`):
+2. **First Increment** (during `sw:inc`):
    - Analyzes increment description for keywords
    - Suggests before creating spec: "This needs kubernetes plugin. Enable? (Y/n)"
 
@@ -441,29 +441,29 @@ SpecWeave works with multiple AI coding assistants:
 ## Key Commands
 
 ### Increment Lifecycle
-- `/sw:inc "feature-name"` - Plan new increment (PM-led process)
-- `/sw:do` - Execute next task (smart resume)
-- `/sw:progress` - Show progress, PM gate status, next action
-- `/sw:validate 0001` - Validate spec, tests, quality
-- `/sw:done 0001` - Close increment (PM validation)
-- `/sw:next` - Auto-close if ready, suggest next work
+- `sw:inc "feature-name"` - Plan new increment (PM-led process)
+- `sw:do` - Execute next task (smart resume)
+- `sw:progress` - Show progress, PM gate status, next action
+- `sw:validate 0001` - Validate spec, tests, quality
+- `sw:done 0001` - Close increment (PM validation)
+- `sw:next` - Auto-close if ready, suggest next work
 
 ### Increment Discipline
-- `/sw:status` - Show all increments and completion status
-- `/sw:close` - Interactive closure of incomplete increments
+- `sw:status` - Show all increments and completion status
+- `sw:close` - Interactive closure of incomplete increments
 
 ### Documentation Sync
-- `/sw:sync-docs review` - Review strategic docs before implementation
-- `/sw:sync-docs update` - Update living docs from completed increments
+- `sw:sync-docs review` - Review strategic docs before implementation
+- `sw:sync-docs update` - Update living docs from completed increments
 
 ### External Platform Sync
-- `/sw-github:sync` - Bidirectional GitHub sync
-- `/sw-jira:sync` - Bidirectional Jira sync
+- `sw-github:sync` - Bidirectional GitHub sync
+- `sw-jira:sync` - Bidirectional Jira sync
 
 ## Common Questions
 
 ### Q: Where do I create a new increment?
-**A**: Use `/sw:inc "####-descriptive-name"`. It creates:
+**A**: Use `sw:inc "####-descriptive-name"`. It creates:
 ```
 .specweave/increments/####-descriptive-name/
 ├── spec.md
@@ -480,10 +480,10 @@ SpecWeave works with multiple AI coding assistants:
 ```
 
 ### Q: How do I know what tasks are left?
-**A**: Use `/sw:progress` or read `.specweave/increments/####/tasks.md`
+**A**: Use `sw:progress` or read `.specweave/increments/####/tasks.md`
 
 ### Q: Can I start a new increment before finishing the current one?
-**A**: NO! The framework **blocks** you. Use `/sw:status` to check, `/sw:close` to close.
+**A**: NO! The framework **blocks** you. Use `sw:status` to check, `sw:close` to close.
 
 ### Q: Where do I edit skills/agents/commands?
 **A**: Edit in `src/` (source of truth), then run `npm run install:all` to sync to `.claude/`
@@ -514,8 +514,8 @@ I activate when you ask about:
 
 ## When to Use Other Skills/Agents
 
-- **increment** - Planning NEW increments (/sw:increment)
-- **PM agent** - Leading increment creation (auto-invoked by /sw:inc)
+- **increment** - Planning NEW increments (sw:increment)
+- **PM agent** - Leading increment creation (auto-invoked by sw:inc)
 - **Architect agent** - Designing system architecture
 - **Tech Lead agent** - Code review, best practices
 - **plan** - Regenerating plan.md and tasks.md for existing increments

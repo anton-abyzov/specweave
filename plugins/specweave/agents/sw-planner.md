@@ -1,6 +1,6 @@
 ---
 name: sw-planner
-description: Test-Aware Planner for generating tasks.md with BDD test plans. Reads spec.md and plan.md to produce implementation tasks with Given/When/Then scenarios. Use during /sw:increment orchestration.
+description: Test-Aware Planner for generating tasks.md with BDD test plans. Reads spec.md and plan.md to produce implementation tasks with Given/When/Then scenarios. Use during sw:increment orchestration.
 model: sonnet
 memory: project
 ---

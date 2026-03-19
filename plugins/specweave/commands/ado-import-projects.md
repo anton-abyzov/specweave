@@ -20,19 +20,19 @@ This command allows users to import additional Azure DevOps projects **after** i
 
 ```bash
 # Basic import (interactive)
-/sw-ado:import-projects
+sw-ado:import-projects
 
 # With area path granularity
-/sw-ado:import-projects --granularity two-level
+sw-ado:import-projects --granularity two-level
 
 # Dry-run (preview)
-/sw-ado:import-projects --dry-run
+sw-ado:import-projects --dry-run
 
 # Resume interrupted import
-/sw-ado:import-projects --resume
+sw-ado:import-projects --resume
 
 # Combined
-/sw-ado:import-projects --granularity top-level --dry-run
+sw-ado:import-projects --granularity top-level --dry-run
 ```
 
 ## Your Task
@@ -227,7 +227,7 @@ if (args.resume) {
 ## Examples
 
 ### Example 1: Basic Import with Area Paths
-**User**: `/sw-ado:import-projects`
+**User**: `sw-ado:import-projects`
 
 **Output**:
 ```
@@ -276,7 +276,7 @@ Area paths configured:
 ```
 
 ### Example 2: Top-Level Only
-**User**: `/sw-ado:import-projects --granularity top-level`
+**User**: `sw-ado:import-projects --granularity top-level`
 
 **Output**:
 ```
@@ -290,7 +290,7 @@ Select area path granularity: top-level (forced via CLI)
 ```
 
 ### Example 3: Dry-Run
-**User**: `/sw-ado:import-projects --dry-run`
+**User**: `sw-ado:import-projects --dry-run`
 
 **Output**:
 ```
@@ -314,9 +314,9 @@ Total: 8 projects would be configured
 
 ## Related Commands
 
-- `/sw:init` - Initial SpecWeave setup
-- `/sw-ado:sync` - Sync increments with ADO work items
-- `/sw-ado:refresh-cache` - Clear cached ADO data
+- `sw:init` - Initial SpecWeave setup
+- `sw-ado:sync` - Sync increments with ADO work items
+- `sw-ado:refresh-cache` - Clear cached ADO data
 
 ## Error Handling
 

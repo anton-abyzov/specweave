@@ -13,7 +13,7 @@ describe('Brainstorm Skill — Docs & Template (US-003: AC-US3-07/08)', () => {
     const template = readFile('src/templates/CLAUDE.md.template');
 
     it('contains sw:brainstorm reference near brainstorm opt-out', () => {
-      expect(template).toMatch(/sw:brainstorm/);
+      expect(template).toMatch(sw:brainstorm/);
     });
 
     it('has brainstorm routing line', () => {
@@ -25,7 +25,7 @@ describe('Brainstorm Skill — Docs & Template (US-003: AC-US3-07/08)', () => {
     const skillsRef = readFile('docs-site/docs/reference/skills.md');
 
     it('lists sw:brainstorm in skills table', () => {
-      expect(skillsRef).toMatch(/sw:brainstorm/);
+      expect(skillsRef).toMatch(sw:brainstorm/);
     });
 
     it('has brainstorm usage examples or description', () => {

@@ -9,7 +9,7 @@ description: Show current auto session status, progress, and any pending gates. 
 ## Usage
 
 ```bash
-/sw:auto-status [OPTIONS]
+sw:auto-status [OPTIONS]
 ```
 
 ## Options
@@ -23,13 +23,13 @@ description: Show current auto session status, progress, and any pending gates. 
 
 ```bash
 # Check current session
-/sw:auto-status
+sw:auto-status
 
 # Get JSON output
-/sw:auto-status --json
+sw:auto-status --json
 
 # Quick status check
-/sw:auto-status --simple
+sw:auto-status --simple
 ```
 
 ## What It Shows
@@ -69,7 +69,7 @@ Progress: [████████████████░░░░░░░
    Tasks: 12 / 18 (67%)
 
 💡 Actions:
-   Cancel: /sw:cancel-auto
+   Cancel: sw:cancel-auto
    Let it run: Close this tab, work will continue
 ```
 
@@ -111,9 +111,9 @@ bash plugins/specweave/scripts/auto-status.sh [args]
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:auto` | Start auto session |
-| `/sw:cancel-auto` | Cancel running session |
-| `/sw:approve-gate` | Approve pending human gate |
+| `sw:auto` | Start auto session |
+| `sw:cancel-auto` | Cancel running session |
+| `sw:approve-gate` | Approve pending human gate |
 
 ## Notes
 
