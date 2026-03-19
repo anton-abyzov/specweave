@@ -13,7 +13,7 @@ const config: Config = {
   },
 
   // Production URL
-  url: 'https://verified-skill.com',
+  url: 'https://spec-weave.com',
   baseUrl: '/',
 
   // SEO: Schema.org structured data for search engines
@@ -37,8 +37,8 @@ const config: Config = {
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'SpecWeave',
-        url: 'https://verified-skill.com',
-        logo: 'https://verified-skill.com/img/logo.svg',
+        url: 'https://spec-weave.com',
+        logo: 'https://spec-weave.com/img/logo.svg',
         sameAs: [
           'https://github.com/anton-abyzov/specweave',
           'https://www.npmjs.com/package/specweave',
@@ -363,11 +363,11 @@ const config: Config = {
       { name: 'twitter:creator', content: '@aabyzov' },
       { name: 'twitter:title', content: 'SpecWeave - Program Your AI in English' },
       { name: 'twitter:description', content: 'Skills extend what AI coding agents can do. Describe what you want, AI asks the right questions, builds it while you sleep. 100+ reusable skills for Claude Code.' },
-      { name: 'twitter:image', content: 'https://verified-skill.com/img/specweave-social-card-v2.jpg' },
+      { name: 'twitter:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: 'SpecWeave - Program Your AI in English' },
       { property: 'og:description', content: 'Skills extend what AI coding agents can do. Describe what you want, AI asks the right questions, builds it while you sleep. 100+ reusable skills for Claude Code.' },
-      { property: 'og:image', content: 'https://verified-skill.com/img/specweave-social-card-v2.jpg' },
+      { property: 'og:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
     ],
 
     // Color mode configuration
