@@ -28,8 +28,10 @@ export {
   detectUmbrellaParent,
   detectSuspiciousPath,
   scanUmbrellaRepos,
+  scanWorkspaceRepos,
   scanMisplacedRepos,
   buildUmbrellaConfig,
+  buildWorkspaceConfig,
   isSystemTempDir,
   SUSPICIOUS_PATH_SEGMENTS,
 } from './path-utils.js';

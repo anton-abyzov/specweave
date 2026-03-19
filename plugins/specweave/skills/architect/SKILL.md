@@ -106,6 +106,13 @@ AskUserQuestion({
 })
 ```
 
+## Project Field (Mandatory on Every Component)
+
+Every component/module block in plan.md MUST include `**Project**: <repo-id>`. This is unconditionally required — no conditional guards based on workspace size or flags.
+
+- **Multi-repo**: Each component specifies which repo owns it via `**Project**:`
+- **Single-repo**: All components get `**Project**: <workspace.name>`
+
 ## Delegation
 
 After architecture is ready, delegate to domain skills:

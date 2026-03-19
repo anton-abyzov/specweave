@@ -34,6 +34,15 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
   execFileNoThrowSync: mockExecFileNoThrowSync,
 }));
 
+// Mock enableAgentTeamsEnvVar to track call args
+const { mockEnableAgentTeamsEnvVar } = vi.hoisted(() => ({
+  mockEnableAgentTeamsEnvVar: vi.fn(),
+}));
+
+vi.mock('../../../../src/cli/helpers/init/claude-settings-env.js', () => ({
+  enableAgentTeamsEnvVar: mockEnableAgentTeamsEnvVar,
+}));
+
 import { handleTeamCommand, TeamCommandOptions } from '../../../../src/cli/commands/team.js';
 
 describe('Team Command', () => {
@@ -92,6 +101,7 @@ describe('Team Command', () => {
     mockSpawn.mockClear();
     mockOn.mockClear();
     mockExecFileNoThrowSync.mockReset();
+    mockEnableAgentTeamsEnvVar.mockClear();
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -227,12 +237,18 @@ describe('Team Command', () => {
   });
 
   describe('settings.json env var auto-fix', () => {
-    it('should add env var to settings.json if missing', async () => {
+    it('should call enableAgentTeamsEnvVar with project directory', async () => {
       await handleTeamCommand(undefined, {});
 
-      const settingsPath = path.join(tempDir, '.claude', 'settings.json');
-      const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      expect(settings.env?.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS).toBe('1');
+      const calls = mockEnableAgentTeamsEnvVar.mock.calls.map((c: unknown[]) => c[0]);
+      expect(calls).toContainEqual(process.cwd());
+    });
+
+    it('should also call enableAgentTeamsEnvVar with os.homedir() for global settings', async () => {
+      await handleTeamCommand(undefined, {});
+
+      const calls = mockEnableAgentTeamsEnvVar.mock.calls.map((c: unknown[]) => c[0]);
+      expect(calls).toContainEqual(os.homedir());
     });
   });
 });

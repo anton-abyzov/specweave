@@ -199,7 +199,7 @@ describe('Increment skill orchestrates via Agent() calls', () => {
 
   it('should NOT reference wrong namespace sw:agents:*', () => {
     const content = readFileSync(incrementPath, 'utf-8');
-    expect(content).not.toMatch(sw:agents:/);
+    expect(content).not.toMatch(/sw:agents:/);
   });
 
   it('should instruct NEVER to write spec/plan/tasks directly', () => {

@@ -106,7 +106,7 @@ export class MarkdownGenerator {
    * Generate markdown content for living docs User Story
    * CRITICAL: Includes parent tracking info for re-import hierarchy updates
    */
-  generateUserStoryMarkdown(data: UserStoryMarkdownData): string {
+  generateUserStoryMarkdown(data: UserStoryMarkdownData, projectId?: string): string {
     const parts: string[] = [];
 
     // Title
@@ -115,6 +115,10 @@ export class MarkdownGenerator {
 
     // Origin badge
     parts.push(`**Origin**: ${data.originBadge}`);
+
+    // Project field — mandatory per US-006/US-007, placed inside US block
+    const resolvedProject = data.metadata.sourceRepo || projectId || 'unknown';
+    parts.push(`**Project**: ${resolvedProject}`);
     parts.push('');
 
     // Status and Priority

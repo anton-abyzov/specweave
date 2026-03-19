@@ -44,6 +44,18 @@ Overview
 
   afterEach(() => {
     fs.rmSync(tempDir, { recursive: true, force: true });
+    // Clean up any .specweave/ written to the parent of os.tmpdir() (two levels up from tempDir).
+    // These tests simulate an umbrella root by writing to path.resolve(tempDir, '..', '..'),
+    // which lands outside os.tmpdir() and must be cleaned up explicitly.
+    try {
+      const parentConfigDir = path.resolve(tempDir, '..', '..', '.specweave');
+      if (fs.existsSync(parentConfigDir)) {
+        const configFile = path.join(parentConfigDir, 'config.json');
+        if (fs.existsSync(configFile)) fs.unlinkSync(configFile);
+        // Only remove the directory if it's now empty (other tests may still need it)
+        try { fs.rmdirSync(parentConfigDir); } catch { /* not empty, skip */ }
+      }
+    } catch { /* non-critical cleanup */ }
   });
 
   function writeMetadata(data: Record<string, unknown>): void {
