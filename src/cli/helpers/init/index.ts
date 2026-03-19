@@ -115,10 +115,12 @@ export {
   mapParsedReposToCloneOptions,
   runForegroundClone,
   FOREGROUND_CLONE_THRESHOLD,
+  promptRepoUrlsLoop,
   cloneReposIntoWorkspace, // @deprecated — kept for backward compat
   type ProjectSetupChoice,
   type ParsedRepo,
   type RepoConnectResult,
+  type RepoUrlsLoopResult,
 } from './repo-connect.js';
 
 // Skill-creator auto-installer (v1.0.548+)

@@ -6,11 +6,13 @@
  */
 
 import chalk from 'chalk';
-import { select, input } from '@inquirer/prompts';
+import { select, input, confirm } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import { parseBulkSource, buildBulkRepoList, getAuthToken } from '../get/bulk-get.js';
+import { launchCloneJob } from '../../../core/background/job-launcher.js';
 
 export type ProjectSetupChoice = 'clone-repos' | 'add-later';
 
@@ -80,6 +82,11 @@ function getProjectSetupStrings(language: SupportedLanguage) {
     addLater: string;
     addLaterDesc: string;
     repoPrompt: string;
+    repoPromptPattern: string;
+    addMoreRepos: string;
+    bulkDetected: string;
+    bulkMatched: string;
+    cloneJobStarted: string;
   }> = {
     en: {
       question: 'Which repositories to connect?',
@@ -88,6 +95,11 @@ function getProjectSetupStrings(language: SupportedLanguage) {
       addLater: 'Add later via specweave get',
       addLaterDesc: 'Create workspace now, add repositories later',
       repoPrompt: 'Enter GitHub repo URLs or org/repo shorthand (space-separated):',
+      repoPromptPattern: 'Enter repos or patterns (org/repo, org/*, org/prefix-*):',
+      addMoreRepos: 'Do you want to add more repositories?',
+      bulkDetected: 'Pattern detected for',
+      bulkMatched: 'repos matched',
+      cloneJobStarted: 'Background clone job started',
     },
     ru: {
       question: 'Какие репозитории подключить?',
@@ -96,6 +108,11 @@ function getProjectSetupStrings(language: SupportedLanguage) {
       addLater: 'Добавить позже через specweave get',
       addLaterDesc: 'Создать рабочее пространство, добавить репозитории позже',
       repoPrompt: 'Введите GitHub URL или org/repo через пробел:',
+      repoPromptPattern: 'Введите репозитории или шаблоны (org/repo, org/*, org/prefix-*):',
+      addMoreRepos: 'Хотите добавить ещё репозитории?',
+      bulkDetected: 'Обнаружен шаблон для',
+      bulkMatched: 'репозиториев найдено',
+      cloneJobStarted: 'Фоновая задача клонирования запущена',
     },
     es: {
       question: 'Que repositorios conectar?',
@@ -104,6 +121,11 @@ function getProjectSetupStrings(language: SupportedLanguage) {
       addLater: 'Agregar despues via specweave get',
       addLaterDesc: 'Crear workspace ahora, agregar repositorios despues',
       repoPrompt: 'Ingresa URLs de GitHub o org/repo separados por espacios:',
+      repoPromptPattern: 'Ingresa repos o patrones (org/repo, org/*, org/prefix-*):',
+      addMoreRepos: 'Deseas agregar mas repositorios?',
+      bulkDetected: 'Patron detectado para',
+      bulkMatched: 'repositorios encontrados',
+      cloneJobStarted: 'Tarea de clonacion en segundo plano iniciada',
     },
   };
   return strings[language] || strings.en;
@@ -136,6 +158,84 @@ export async function promptRepoUrls(language: SupportedLanguage): Promise<Parse
   });
 
   return parseRepoInput(rawInput);
+}
+
+export interface RepoUrlsLoopResult {
+  foregroundResults: RepoConnectResult[];
+  jobIds: string[];
+}
+
+/**
+ * Prompt for repo URLs with pattern support and an add-more loop.
+ *
+ * Accepts individual repos (org/repo, URLs, SSH) and glob patterns (org/*, org/prefix-*).
+ * Individual repos (≤3) clone in foreground; bulk patterns launch background jobs.
+ * After each batch, asks "Do you want to add more?" to support multi-org workflows.
+ */
+export async function promptRepoUrlsLoop(
+  projectPath: string,
+  language: SupportedLanguage,
+): Promise<RepoUrlsLoopResult> {
+  const strings = getProjectSetupStrings(language);
+  const allForegroundResults: RepoConnectResult[] = [];
+  const allJobIds: string[] = [];
+
+  let addMore = true;
+  while (addMore) {
+    const rawInput = await input({ message: strings.repoPromptPattern });
+    const tokens = rawInput.split(/[\s,]+/).map(t => t.trim()).filter(Boolean);
+
+    const individualTokens: string[] = [];
+
+    for (const token of tokens) {
+      const bulk = parseBulkSource(token, {});
+      if (bulk) {
+        console.log(chalk.gray(`   ${strings.bulkDetected} ${bulk.org}...`));
+        const authToken = await getAuthToken();
+        const bulkRepos = await buildBulkRepoList(bulk.org, authToken, bulk.pattern, {
+          noArchived: true,
+          noForks: true,
+        });
+        console.log(chalk.gray(`   ${bulkRepos.length} ${strings.bulkMatched}`));
+
+        if (bulkRepos.length > 0) {
+          const launchResult = await launchCloneJob({
+            projectPath,
+            repositories: bulkRepos,
+          });
+          allJobIds.push(launchResult.job.id);
+          console.log(chalk.gray(`   ${strings.cloneJobStarted}: ${launchResult.job.id}`));
+        }
+      } else {
+        individualTokens.push(token);
+      }
+    }
+
+    if (individualTokens.length > 0) {
+      const parsed = parseRepoInput(individualTokens.join(' '));
+      if (parsed.length > 0) {
+        const jobRepos = mapParsedReposToCloneOptions(parsed);
+        if (parsed.length <= FOREGROUND_CLONE_THRESHOLD) {
+          const result = await runForegroundClone(projectPath, jobRepos);
+          allForegroundResults.push(result);
+        } else {
+          const launchResult = await launchCloneJob({
+            projectPath,
+            repositories: jobRepos,
+          });
+          allJobIds.push(launchResult.job.id);
+          console.log(chalk.gray(`   ${strings.cloneJobStarted}: ${launchResult.job.id}`));
+        }
+      }
+    }
+
+    addMore = await confirm({
+      message: strings.addMoreRepos,
+      default: false,
+    });
+  }
+
+  return { foregroundResults: allForegroundResults, jobIds: allJobIds };
 }
 
 // ---------------------------------------------------------------------------
