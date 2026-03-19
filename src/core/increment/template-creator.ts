@@ -95,6 +95,10 @@ export interface CreateTemplateOptions {
   projectRoot?: string;
   /** External source metadata for imported issues (v1.0.272) */
   externalSource?: ExternalSourceInfo;
+  /** Auto-generate increment ID atomically */
+  autoId?: boolean;
+  /** Increment name suffix (used with autoId) */
+  name?: string;
 }
 
 /**
@@ -143,7 +147,7 @@ export async function createIncrementTemplates(
   options: CreateTemplateOptions
 ): Promise<TemplateCreationResult> {
   const {
-    incrementId,
+    incrementId: rawIncrementId,
     title,
     description,
     projectId,
@@ -154,18 +158,58 @@ export async function createIncrementTemplates(
     coverageTarget = 90,
     projectRoot = resolveEffectiveRoot(),
     externalSource,
+    autoId,
+    name,
   } = options;
 
   const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
-  const incrementPath = path.join(incrementsDir, incrementId);
+  let incrementId = rawIncrementId;
+  let incrementPath: string = path.join(incrementsDir, incrementId || '');
   const createdFiles: string[] = [];
 
   try {
-    // Validate increment ID
-    IncrementNumberManager.validateExplicitId(incrementId, projectRoot);
+    if (autoId && name) {
+      // Atomic ID reservation: generate ID + mkdir in a retry loop
+      const MAX_RETRIES = 10;
+      let created = false;
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        const nextNumber = IncrementNumberManager.getNextIncrementNumber(projectRoot);
+        incrementId = `${nextNumber}-${name}`;
+        incrementPath = path.join(incrementsDir, incrementId);
+        try {
+          fs.mkdirSync(incrementPath, { recursive: false });
+          created = true;
+          break;
+        } catch (err: any) {
+          if (err.code === 'EEXIST') {
+            // Another process claimed this ID — retry with fresh scan
+            continue;
+          }
+          // ENOENT means parent dir doesn't exist — create it and retry
+          if (err.code === 'ENOENT') {
+            fs.mkdirSync(incrementsDir, { recursive: true });
+            continue;
+          }
+          throw err;
+        }
+      }
+      if (!created) {
+        return {
+          success: false,
+          incrementPath: path.join(incrementsDir, incrementId),
+          createdFiles,
+          error: `Atomic ID reservation failed after ${MAX_RETRIES} retries. Could not claim a unique increment ID.`,
+          nextSteps: [],
+        };
+      }
+    } else {
+      incrementPath = path.join(incrementsDir, incrementId);
+      // Validate increment ID
+      IncrementNumberManager.validateExplicitId(incrementId, projectRoot);
 
-    // Create increment directory
-    fs.mkdirSync(incrementPath, { recursive: true });
+      // Create increment directory
+      fs.mkdirSync(incrementPath, { recursive: true });
+    }
 
     // 1. Create metadata.json FIRST (required before spec.md)
     const metadataPath = path.join(incrementPath, 'metadata.json');
@@ -286,6 +330,20 @@ export async function createIncrementTemplates(
       : generateTasksTemplate({ title, testMode });
     fs.writeFileSync(tasksPath, tasksContent);
     createdFiles.push('tasks.md');
+
+    // Check for name duplicates (non-blocking warning)
+    const nameSuffix = incrementId.replace(/^\d{3,4}[GJAE]?-/, '');
+    if (nameSuffix) {
+      const nameDuplicates = IncrementNumberManager.findNameDuplicates(nameSuffix, projectRoot);
+      // Filter out the increment we just created
+      const otherDuplicates = nameDuplicates.filter(d => d !== incrementId);
+      if (otherDuplicates.length > 0) {
+        console.warn(
+          `Warning: Increment name "${nameSuffix}" already exists in: ${otherDuplicates.join(', ')}. ` +
+          `Consider using a unique name to avoid confusion.`
+        );
+      }
+    }
 
     const nextSteps = externalSource
       ? [

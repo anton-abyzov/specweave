@@ -184,7 +184,7 @@ iTerm2 / tmux split panes:
 - **Startups** needing scalable architecture from day one
 - **Solo developers** building complex applications
 - **Regulated industries** (healthcare - HIPAA, finance - SOC 2)
-- **Teams with brownfield codebases** — use `specweave get` to bring existing repos into SpecWeave (single repo, bulk clone with glob patterns, or entire organizations) without refactoring
+- **Teams with brownfield codebases** — use `specweave get` to bring existing repos into SpecWeave (one repo, bulk clone with glob patterns, or entire organizations) without refactoring
 
 ### Use Cases
 

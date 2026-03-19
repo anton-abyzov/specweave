@@ -213,6 +213,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   installAllPlugins: mockInstallAllPlugins,
   promptLanguageSelection: mockPromptLanguageSelection,
   getDefaultLanguageSelection: mockGetDefaultLanguageSelection,
+  createMinimalConfig: vi.fn(),
   createDirectoryStructure: mockCreateDirectoryStructure,
   copyTemplates: mockCopyTemplates,
   createConfigFile: mockCreateConfigFile,

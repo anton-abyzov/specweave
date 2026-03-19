@@ -46,7 +46,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
     pluginWarning: string;
     syncSetup: string;
     firstIncrement: string;
-    multiRepo: string;
   }> = {
     en: {
       pluginsReady: 'All plugins ready',
@@ -54,7 +53,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'Plugins not installed — run: claude mcp add sw@specweave',
       syncSetup: 'Connect GitHub Issues, JIRA, or ADO',
       firstIncrement: 'Start your first feature',
-      multiRepo: 'Set up multi-repository workspace',
     },
     ru: {
       pluginsReady: 'Все плагины готовы',
@@ -62,7 +60,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'Плагины не установлены — выполните: claude mcp add sw@specweave',
       syncSetup: 'Подключить GitHub Issues, JIRA или ADO',
       firstIncrement: 'Начать первую фичу',
-      multiRepo: 'Настроить мульти-репозиторий',
     },
     es: {
       pluginsReady: 'Todos los plugins listos',
@@ -70,7 +67,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'Plugins no instalados — ejecuta: claude mcp add sw@specweave',
       syncSetup: 'Conectar GitHub Issues, JIRA o ADO',
       firstIncrement: 'Iniciar tu primera funcionalidad',
-      multiRepo: 'Configurar workspace multi-repositorio',
     },
     zh: {
       pluginsReady: '所有插件就绪',
@@ -78,7 +74,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: '插件未安装 — 运行: claude mcp add sw@specweave',
       syncSetup: '连接 GitHub Issues、JIRA 或 ADO',
       firstIncrement: '开始你的第一个功能',
-      multiRepo: '设置多仓库工作区',
     },
     de: {
       pluginsReady: 'Alle Plugins bereit',
@@ -86,7 +81,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'Plugins nicht installiert — ausführen: claude mcp add sw@specweave',
       syncSetup: 'GitHub Issues, JIRA oder ADO verbinden',
       firstIncrement: 'Erstes Feature starten',
-      multiRepo: 'Multi-Repository-Workspace einrichten',
     },
     fr: {
       pluginsReady: 'Tous les plugins prêts',
@@ -94,7 +88,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'Plugins non installés — exécuter: claude mcp add sw@specweave',
       syncSetup: 'Connecter GitHub Issues, JIRA ou ADO',
       firstIncrement: 'Démarrer votre première fonctionnalité',
-      multiRepo: 'Configurer un workspace multi-dépôt',
     },
     ja: {
       pluginsReady: 'すべてのプラグイン準備完了',
@@ -102,7 +95,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'プラグイン未インストール — 実行: claude mcp add sw@specweave',
       syncSetup: 'GitHub Issues、JIRA、ADO を接続',
       firstIncrement: '最初の機能を開始',
-      multiRepo: 'マルチリポジトリワークスペースを設定',
     },
     ko: {
       pluginsReady: '모든 플러그인 준비 완료',
@@ -110,7 +102,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: '플러그인 미설치 — 실행: claude mcp add sw@specweave',
       syncSetup: 'GitHub Issues, JIRA 또는 ADO 연결',
       firstIncrement: '첫 번째 기능 시작',
-      multiRepo: '멀티 리포지토리 워크스페이스 설정',
     },
     pt: {
       pluginsReady: 'Todos os plugins prontos',
@@ -118,7 +109,6 @@ function getNextStepsStrings(language: SupportedLanguage) {
       pluginWarning: 'Plugins não instalados — execute: claude mcp add sw@specweave',
       syncSetup: 'Conectar GitHub Issues, JIRA ou ADO',
       firstIncrement: 'Iniciar sua primeira funcionalidade',
-      multiRepo: 'Configurar workspace multi-repositório',
     },
   };
   return strings[language] || strings.en;
@@ -140,7 +130,7 @@ export type { NextStepsContext };
  * Show next steps after initialization.
  *
  * Displays plugin status (Claude only) followed by contextual guided follow-up commands.
- * migrate-to-umbrella is hidden when already in an umbrella structure.
+ * Always shows `specweave get` — every workspace uses repositories/ structure.
  */
 export function showNextSteps(
   projectName: string,
@@ -210,14 +200,9 @@ export function showNextSteps(
   console.log(`   ${stepNumber}. ${chalk.white('specweave sync-setup')}          ${chalk.gray(strings.syncSetup)}`);
   console.log(`   ${stepNumber + 1}. ${chalk.white('specweave increment "feature"')}  ${chalk.gray(strings.firstIncrement)}`);
 
-  // Multi-repo: show specweave get examples instead of migrate-to-umbrella
-  if (context.isMultiRepo) {
-    console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
-    console.log(`      ${chalk.white('specweave get "org/*"')}          ${chalk.gray('Add all repos from an org')}`);
-  } else if (!context.isUmbrella) {
-    // Only show migrate-to-umbrella for single-repo projects
-    console.log(`   ${stepNumber + 2}. ${chalk.white('specweave migrate-to-umbrella')} ${chalk.gray(strings.multiRepo)}`);
-  }
+  // Always show specweave get -- every workspace uses repositories/ structure
+  console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
+  console.log(`      ${chalk.white('specweave get "org/*"')}          ${chalk.gray('Add all repos from an org')}`);
 
   console.log('');
   console.log(chalk.green.bold(locale.t('cli', 'init.nextSteps.footer')));

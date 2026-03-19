@@ -430,7 +430,7 @@ my-workspace/                          ← specweave init my-workspace
 └── AGENTS.md
 ```
 
-Run `specweave init` once to create the workspace, then `specweave get` for each repo (or `specweave get --org my-org` to bulk-clone all repos in an organization).
+Run `specweave init` once to create the workspace, then `specweave get` for each repo (or `specweave get "my-org/*"` to bulk-clone all repos in an organization).
 
 **3. Small Project (No Living Docs)**:
 ```

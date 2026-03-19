@@ -19,9 +19,9 @@ import path from 'path';
 
 /**
  * Repository architecture types
- * v1.0.13: 'parent' is deprecated - kept for backward compatibility with old state files
+ * v0581: 'single' removed; 'parent' deprecated - kept for backward compatibility with old state files
  */
-export type SetupArchitecture = 'single' | 'multi-repo' | 'parent' | 'monorepo';
+export type SetupArchitecture = 'multi-repo' | 'parent' | 'monorepo';
 
 /**
  * Repository configuration
@@ -244,7 +244,7 @@ export class SetupStateManager {
       return false;
     }
 
-    const validArchitectures = ['single', 'multi-repo', 'parent', 'monorepo'];
+    const validArchitectures = ['single', 'multi-repo', 'parent', 'monorepo']; // 'single' kept for old state file tolerance
     if (!state.architecture || !validArchitectures.includes(state.architecture)) {
       return false;
     }

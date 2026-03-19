@@ -15,10 +15,6 @@ import {
   ValidationResult,
   ValidationError
 } from './types.js';
-import {
-  detectAndMigrateSingleProject,
-  type Config as MigrationConfig
-} from './single-project-migrator.js';
 import { consoleLogger, type Logger } from '../../utils/logger.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 
@@ -54,8 +50,6 @@ export class ConfigManager {
   /**
    * Read configuration from disk
    *
-   * Auto-migration: Detects and fixes single-project repos with multiProject.enabled=true
-   *
    * @returns Configuration object
    */
   async read(): Promise<SpecWeaveConfig> {
@@ -75,27 +69,6 @@ export class ConfigManager {
 
       // Merge with defaults (for backward compatibility)
       let config = this.mergeWithDefaults(parsed);
-
-      // Auto-migration: Single-project detection (v0.34.0+)
-      const migrationResult = await detectAndMigrateSingleProject(
-        config as MigrationConfig,
-        {
-          logger: this.logger,
-          projectRoot: this.projectRoot,
-          createBackup: true
-        }
-      );
-
-      // If migrated, save the updated config directly (bypass validation to preserve all fields)
-      if (migrationResult.result.migrated) {
-        this.logger.log('✅ Auto-migrated to single-project mode');
-
-        // Write directly to disk without validation (migration already validated)
-        const content = JSON.stringify(migrationResult.config, null, 2);
-        await fs.writeFile(this.configPath, content, 'utf-8');
-
-        config = migrationResult.config as SpecWeaveConfig;
-      }
 
       // Strip deprecated syncStrategy from umbrella config (removed in v1.0.366)
       if (config.umbrella && 'syncStrategy' in config.umbrella) {

@@ -91,7 +91,7 @@ Specialized commands for advanced workflows.
 
 ### Multi-Project Management
 
-Multi-project mode is enabled during `specweave init` (when connecting JIRA/ADO with multiple projects), via `specweave migrate-to-umbrella --reorganize-specs`, or by manually editing config.json. Project routing is per-increment via the `**Project**:` field in spec.md user stories.
+Multi-project mode is enabled during `specweave init` (when connecting JIRA/ADO with multiple projects) or by manually editing config.json. Project routing is per-increment via the `**Project**:` field in spec.md user stories.
 
 ### Archiving & Cleanup
 

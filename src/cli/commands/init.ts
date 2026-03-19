@@ -3,7 +3,7 @@
  *
  * Simplified (v1.0.415): Creates .specweave/ structure + config.json + instruction files.
  * External tool setup moved to `specweave sync-setup`.
- * Multi-repo setup moved to `specweave migrate-to-umbrella`.
+ * Every workspace uses repositories/ structure from day one.
  */
 
 import * as fs from '../../utils/fs-native.js';
@@ -35,6 +35,7 @@ import {
   installAllPlugins,
   promptLanguageSelection,
   getDefaultLanguageSelection,
+  createMinimalConfig,
   createDirectoryStructure,
   copyTemplates,
   createConfigFile,
@@ -317,6 +318,12 @@ export async function initCommand(
     // Only called when standard detection failed — the two cases are mutually exclusive
     const misplacedRepos = !umbrellaDiscovery ? scanMisplacedRepos(targetDir) : [];
 
+    // Write minimal config.json BEFORE creating directory structure so that
+    // findProjectRoot() can resolve this project during the init window (AD-3).
+    if (!continueExisting) {
+      createMinimalConfig(targetDir, finalProjectName);
+    }
+
     // Create directory structure
     if (!continueExisting) {
       await createDirectoryStructure(targetDir, toolName);
@@ -338,20 +345,20 @@ export async function initCommand(
       await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
     }
 
+    // Post-scaffold: Always create repositories/ directory (unified workspace model)
+    fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
+
     // Post-scaffold: Project setup question (BEFORE git init so !hasGit is true for greenfield)
-    // Ask how the user wants to set up code — skip if already has .git, repositories/, or CI mode
-    let isMultiRepo = false;
+    // Ask which repos to connect — skip if already has .git, repositories with content, or CI mode
     if (!isCI && !continueExisting) {
       const hasGit = fs.existsSync(path.join(targetDir, '.git'));
-      const hasRepos = fs.existsSync(path.join(targetDir, 'repositories'));
 
-      if (!hasGit && !hasRepos) {
+      if (!hasGit) {
         spinner.stop();
         try {
           const setupChoice = await promptProjectSetup(language);
 
           if (setupChoice === 'clone-repos') {
-            isMultiRepo = true;
             const repos = await promptRepoUrls(language);
             if (repos.length > 0) {
               const result = cloneReposIntoWorkspace(targetDir, repos);
@@ -363,11 +370,8 @@ export async function initCommand(
               // Re-scan for umbrella after cloning
               umbrellaDiscovery = scanUmbrellaRepos(targetDir);
             }
-          } else if (setupChoice === 'multi-repo-deferred') {
-            isMultiRepo = true;
-            // Create repositories/ directory for future use
-            fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
           }
+          // 'add-later' — repositories/ already created above, nothing more needed
         } catch { /* non-fatal — user can set up repos later */ }
         spinner.start('Configuring project...');
       }
@@ -425,11 +429,13 @@ export async function initCommand(
           config.translation.keepEnglishOriginals = true;
         }
 
-        // Auto-enable umbrella if repositories/ directory was discovered
-        if (umbrellaDiscovery && !config.umbrella?.enabled) {
+        // Always enable umbrella — every workspace uses repositories/ structure
+        if (umbrellaDiscovery) {
           const umbrellaFragment = buildUmbrellaConfig(umbrellaDiscovery, finalProjectName);
           config.umbrella = umbrellaFragment.umbrella;
           config.repository = { ...config.repository, ...umbrellaFragment.repository };
+        } else if (!config.umbrella?.enabled) {
+          config.umbrella = { enabled: true, projectName: finalProjectName, childRepos: [] };
         }
 
         // LSP auto-enable (Claude only)
@@ -441,29 +447,10 @@ export async function initCommand(
           };
         }
 
-        // Multi-repo: set multiProject.enabled (NOT umbrella.enabled — umbrella requires childRepos)
-        if (isMultiRepo) {
-          config.multiProject = { enabled: true };
-        }
-
         fs.writeJsonSync(configPath, config, { spaces: 2 });
       } catch (err) {
         console.log(chalk.yellow('   ⚠ Could not update config defaults (non-critical)'));
       }
-    }
-
-    // Optional sync-setup chain after multi-repo setup
-    if (isMultiRepo && !isCI) {
-      try {
-        const connectTools = await confirm({
-          message: 'Connect external tools now? (GitHub Issues, JIRA, ADO)',
-          default: false,
-        });
-        if (connectTools) {
-          const { syncSetupCommand } = await import('./sync-setup.js');
-          await syncSetupCommand();
-        }
-      } catch { /* non-fatal */ }
     }
 
     // Plugin install (Claude only)
@@ -553,7 +540,7 @@ export async function initCommand(
       language,
       usedDotNotation,
       toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined,
-      { isUmbrella: !!umbrellaDiscovery, isMultiRepo, misplacedRepos }
+      { misplacedRepos }
     );
   } catch (error) {
     spinner.fail('Failed to create project');
