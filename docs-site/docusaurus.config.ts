@@ -342,6 +342,11 @@ const config: Config = {
             from: '/docs/guides/getting-started/nvm-global-packages-fix',
             to: '/docs/getting-started/installation',
           },
+          // Numbered video prefix redirect (living docs use 005- prefix)
+          {
+            from: '/docs/academy/videos/005-opencode-web-calculator',
+            to: '/docs/academy/videos/opencode-web-calculator',
+          },
         ],
       },
     ],
