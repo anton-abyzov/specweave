@@ -70,7 +70,7 @@ class GitHubFeatureSync {
    * 4. Update frontmatter with GitHub issue links
    */
   async syncFeatureToGitHub(featureId, projectName) {
-    const RATE_LIMIT_THRESHOLD = 200;
+    const RATE_LIMIT_THRESHOLD = 250;
     try {
       const rateLimit = await this.client.checkRateLimit();
       if (rateLimit.remaining < RATE_LIMIT_THRESHOLD) {
@@ -87,7 +87,21 @@ class GitHubFeatureSync {
           rateLimitSkipped: true
         };
       }
-    } catch {
+    } catch (rateLimitError) {
+      const msg = rateLimitError instanceof Error ? rateLimitError.message : String(rateLimitError);
+      if (msg.includes("ENOTFOUND") || msg.includes("ETIMEDOUT") || msg.includes("ECONNREFUSED") || msg.includes("fetch failed")) {
+        console.log(`
+\u26A0\uFE0F  GitHub API unreachable: ${msg}`);
+        console.log(`   \u23ED\uFE0F  Skipping sync for ${featureId} \u2014 network appears down`);
+        return {
+          milestoneNumber: 0,
+          milestoneUrl: "",
+          issuesCreated: 0,
+          issuesUpdated: 0,
+          userStoriesProcessed: 0,
+          rateLimitSkipped: true
+        };
+      }
     }
     const owner = this.client.getOwner();
     const repo = this.client.getRepo();
@@ -773,6 +787,7 @@ Created: ${featureData.created}`;
     const issueData = await this.client.getIssue(issueNumber);
     const currentlyClosed = issueData.state === "closed";
     const lastComment = await this.client.getLastComment(issueNumber);
+    let mutatedIssue = false;
     if (completion.overallComplete) {
       if (!currentlyClosed) {
         const commentAlreadyPosted = lastComment?.body?.includes("\u2705 User Story Complete");
@@ -801,6 +816,7 @@ Created: ${featureData.created}`;
             `      \u2705 Verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
           );
         }
+        mutatedIssue = true;
       }
     } else {
       if (currentlyClosed) {
@@ -816,11 +832,17 @@ Created: ${featureData.created}`;
         console.log(
           `      \u26A0\uFE0F Reopened: ${completion.blockingAcs.length + completion.blockingTasks.length} items incomplete`
         );
+        mutatedIssue = true;
       } else {
         await this.postProgressCommentIfChanged(issueNumber, completion, lastComment);
       }
     }
-    await this.updateStatusLabels(issueNumber, completion, issueData, lastComment);
+    await this.updateStatusLabels(
+      issueNumber,
+      completion,
+      mutatedIssue ? void 0 : issueData,
+      mutatedIssue ? void 0 : lastComment
+    );
   }
   /**
    * Update status labels on GitHub issue based on completion state
