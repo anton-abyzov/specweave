@@ -22,8 +22,9 @@ import { execFileNoThrow } from '../../vendor/utils/execFileNoThrow.js';
 import { getGitHubAuthFromProject } from '../../vendor/utils/auth-helpers.js';
 import { LockManager } from '../../../../../src/utils/lock-manager.js';
 import { normalizeIssueBody } from './github-body-utils.js';
-import { ensureLabels } from './label-cache.js';
+import { ensureLabels, setLabelCacheDir } from './label-cache.js';
 import { MilestoneCache } from './milestone-cache.js';
+import { getIssueNumberFromMetadata } from './metadata-issue-lookup.js';
 
 interface FeatureFrontmatter {
   id: string;
@@ -197,6 +198,10 @@ export class GitHubFeatureSync {
     try {
     console.log(`\n🔄 Syncing Feature ${featureId} to GitHub...`);
 
+    // FS-621: Initialize persistent label cache
+    const stateDir = path.join(this.projectRoot, '.specweave', 'state');
+    setLabelCacheDir(stateDir);
+
     // 1. Load Feature FEATURE.md
     const featureFolder = await this.findFeatureFolder(featureId, projectName);
     if (!featureFolder) {
@@ -303,6 +308,23 @@ export class GitHubFeatureSync {
           // Issue deleted on GitHub, fall through to create new
           console.log(`      ⚠️  Issue #${userStory.existingIssue} deleted on GitHub, creating new`);
         }
+      }
+
+      // FS-621: Check metadata.json for already-linked issue (skip dup detection)
+      try {
+        const incrementsDir = path.join(this.projectRoot, '.specweave', 'increments');
+        const metadataIssueNumber = await getIssueNumberFromMetadata(incrementsDir, featureId, userStory.id);
+        if (metadataIssueNumber) {
+          console.log(`      ⚡ Issue #${metadataIssueNumber} found in metadata (skipping dup detection)`);
+          issueNumber = metadataIssueNumber;
+          // updateUserStoryIssue handles body update with diff optimization
+          await this.updateUserStoryIssue(metadataIssueNumber, issueContent, userStory.filePath);
+          issuesUpdated++;
+          continue;
+        }
+      } catch (metadataErr) {
+        // Metadata lookup or issue edit failed (e.g., deleted issue) — fall through to createWithProtection
+        console.warn(`      ⚠️  Metadata path failed: ${(metadataErr as Error).message}, falling back to dup detection`);
       }
 
       // Check 2 & 3: Use DuplicateDetector for robust duplicate prevention
