@@ -73,6 +73,12 @@ import {
 export type { SyncOptions, SyncResult, ParsedSpec, UserStoryData, AcceptanceCriterionData };
 
 export class LivingDocsSync {
+  // Reentrancy guard: prevents concurrent syncs for the same increment.
+  // Without this, metadata writes during sync (backfillExternalLinks) can
+  // trigger StatusChangeSyncTrigger which spawns another syncIncrement(),
+  // creating a loop that exhausts GitHub API rate limits.
+  private static activeSyncs = new Set<string>();
+
   private projectRoot: string;
   private featureIdManager: FeatureIDManager;
   private boardMatcher: BoardMatcher;
@@ -143,6 +149,12 @@ export class LivingDocsSync {
       filesUpdated: [],
       errors: []
     };
+
+    // Reentrancy guard: if this increment is already being synced, return early
+    if (LivingDocsSync.activeSyncs.has(incrementId)) {
+      return result;
+    }
+    LivingDocsSync.activeSyncs.add(incrementId);
 
     try {
       // P0-3: TOCTOU mitigation - check active folder BEFORE sync work.
@@ -614,6 +626,8 @@ export class LivingDocsSync {
       result.errors.push(`Sync failed: ${error}`);
       this.logger.error(`❌ Sync failed for ${incrementId}:`, error);
       return result;
+    } finally {
+      LivingDocsSync.activeSyncs.delete(incrementId);
     }
   }
 

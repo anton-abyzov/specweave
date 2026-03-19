@@ -627,7 +627,11 @@ export class AdoClient {
 
     if (!response.ok) {
       const error = await response.text();
-      moduleLogger.warn(`⚠️  Failed to link work items: ${error}`);
+      if (response.status === 409) {
+        moduleLogger.info(`ℹ️  Link already exists between #${childId} and #${parentId} (409)`);
+        return;
+      }
+      throw new Error(`Failed to link work item #${childId} to parent #${parentId}: ${response.status} ${error}`);
     } else {
       moduleLogger.info(`✅ Linked work item #${childId} to parent #${parentId}`);
     }

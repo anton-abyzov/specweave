@@ -310,6 +310,51 @@ describe('AdoAdapter', () => {
       expect(descOp.value).toContain('Story desc');
       expect(descOp.value).toContain('Auto-synced from SpecWeave');
     });
+
+    // -------------------------------------------------------------------
+    // Parent-child linking (FS-597)
+    // -------------------------------------------------------------------
+
+    it('includes Hierarchy-Reverse relation when feature has externalRef', async () => {
+      const workItem = { id: 77, rev: 1, url: '', fields: {}, _links: { html: { href: '' } } };
+      fetchSpy.mockResolvedValue(mockResponse(true, workItem));
+
+      await adapter.createIssue(
+        makeStory(),
+        makeFeature({ externalRef: { id: '1448', url: 'https://dev.azure.com/test-org/my-project/_workitems/edit/1448' } }),
+      );
+
+      const body = JSON.parse((fetchSpy.mock.calls[0]![1] as RequestInit).body as string);
+      const relationOp = body.find((op: { path: string }) => op.path === '/relations/-');
+      expect(relationOp).toBeDefined();
+      expect(relationOp.op).toBe('add');
+      expect(relationOp.value.rel).toBe('System.LinkTypes.Hierarchy-Reverse');
+    });
+
+    it('omits relation when feature has no externalRef', async () => {
+      const workItem = { id: 78, rev: 1, url: '', fields: {}, _links: { html: { href: '' } } };
+      fetchSpy.mockResolvedValue(mockResponse(true, workItem));
+
+      await adapter.createIssue(makeStory(), makeFeature());
+
+      const body = JSON.parse((fetchSpy.mock.calls[0]![1] as RequestInit).body as string);
+      const relationOp = body.find((op: { path: string }) => op.path === '/relations/-');
+      expect(relationOp).toBeUndefined();
+    });
+
+    it('uses correct ADO URL format for parent link', async () => {
+      const workItem = { id: 79, rev: 1, url: '', fields: {}, _links: { html: { href: '' } } };
+      fetchSpy.mockResolvedValue(mockResponse(true, workItem));
+
+      await adapter.createIssue(
+        makeStory(),
+        makeFeature({ externalRef: { id: '9999' } }),
+      );
+
+      const body = JSON.parse((fetchSpy.mock.calls[0]![1] as RequestInit).body as string);
+      const relationOp = body.find((op: { path: string }) => op.path === '/relations/-');
+      expect(relationOp.value.url).toBe('https://dev.azure.com/test-org/my-project/_apis/wit/workItems/9999');
+    });
   });
 
   // -----------------------------------------------------------------------

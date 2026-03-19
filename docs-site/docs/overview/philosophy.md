@@ -1,6 +1,6 @@
 # Philosophy
 
-SpecWeave is built on a set of core principles that guide every design decision. Understanding these principles will help you get the most out of the framework.
+SpecWeave is built on a set of core principles that guide every design decision. Understanding these principles will help you get the most out of SpecWeave.
 
 ## Core Principles
 

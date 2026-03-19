@@ -2,7 +2,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 # What is SpecWeave?
 
-**SpecWeave is a spec-first AI development framework** — a behavior layer that brings structure, persistence, and quality gates to any AI coding tool.
+**SpecWeave is a spec-first AI development tool** — a behavior layer that brings structure, persistence, and quality gates to any AI coding tool.
 
 Describe what you want to build. SpecWeave handles planning, architecture, testing, and documentation — across any AI coding tool.
 
