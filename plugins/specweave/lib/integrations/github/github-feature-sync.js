@@ -70,6 +70,25 @@ class GitHubFeatureSync {
    * 4. Update frontmatter with GitHub issue links
    */
   async syncFeatureToGitHub(featureId, projectName) {
+    const RATE_LIMIT_THRESHOLD = 200;
+    try {
+      const rateLimit = await this.client.checkRateLimit();
+      if (rateLimit.remaining < RATE_LIMIT_THRESHOLD) {
+        console.log(`
+\u26A0\uFE0F  GitHub API rate limit low: ${rateLimit.remaining}/${rateLimit.limit} remaining`);
+        console.log(`   \u23ED\uFE0F  Skipping sync for ${featureId} \u2014 will retry after ${rateLimit.reset.toISOString()}`);
+        console.log(`   \u{1F4A1} Run /sw:progress-sync to retry when rate limit resets`);
+        return {
+          milestoneNumber: 0,
+          milestoneUrl: "",
+          issuesCreated: 0,
+          issuesUpdated: 0,
+          userStoriesProcessed: 0,
+          rateLimitSkipped: true
+        };
+      }
+    } catch {
+    }
     const owner = this.client.getOwner();
     const repo = this.client.getRepo();
     const lockDir = path.join(this.projectRoot, ".specweave", "state", "locks", `github-sync-${owner}-${repo}`);
@@ -753,9 +772,9 @@ Created: ${featureData.created}`;
     const completion = await this.calculator.calculateCompletion(userStoryPath);
     const issueData = await this.client.getIssue(issueNumber);
     const currentlyClosed = issueData.state === "closed";
+    const lastComment = await this.client.getLastComment(issueNumber);
     if (completion.overallComplete) {
       if (!currentlyClosed) {
-        const lastComment = await this.client.getLastComment(issueNumber);
         const commentAlreadyPosted = lastComment?.body?.includes("\u2705 User Story Complete");
         if (commentAlreadyPosted) {
           await execFileNoThrow("gh", [
@@ -798,10 +817,10 @@ Created: ${featureData.created}`;
           `      \u26A0\uFE0F Reopened: ${completion.blockingAcs.length + completion.blockingTasks.length} items incomplete`
         );
       } else {
-        await this.postProgressCommentIfChanged(issueNumber, completion);
+        await this.postProgressCommentIfChanged(issueNumber, completion, lastComment);
       }
     }
-    await this.updateStatusLabels(issueNumber, completion);
+    await this.updateStatusLabels(issueNumber, completion, issueData, lastComment);
   }
   /**
    * Update status labels on GitHub issue based on completion state
@@ -811,9 +830,9 @@ Created: ${featureData.created}`;
    * - Preserves all other labels (priority, type, custom labels)
    * - Ensures exactly one status label is present
    */
-  async updateStatusLabels(issueNumber, completion) {
+  async updateStatusLabels(issueNumber, completion, cachedIssueData, cachedLastComment) {
     try {
-      const issueData = await this.client.getIssue(issueNumber);
+      const issueData = cachedIssueData || await this.client.getIssue(issueNumber);
       const currentLabels = issueData.labels || [];
       const statusLabels = currentLabels.filter((label) => label.startsWith("status:"));
       const otherLabels = currentLabels.filter((label) => !label.startsWith("status:"));
@@ -876,11 +895,11 @@ Created: ${featureData.created}`;
       }
       if (newStatusLabel === "status:complete" && issueData.state.toLowerCase() !== "closed") {
         try {
-          const freshIssueData = await this.client.getIssue(issueNumber);
-          if (freshIssueData.state.toLowerCase() === "closed") {
+          const freshState = issueData.state.toLowerCase();
+          if (freshState === "closed") {
             console.log(`      \u23ED\uFE0F  Issue #${issueNumber} already closed (skipping duplicate close)`);
           } else {
-            const lastComment = await this.client.getLastComment(issueNumber);
+            const lastComment = cachedLastComment || await this.client.getLastComment(issueNumber);
             if (lastComment?.body?.includes("\u2705 User Story Complete")) {
               await execFileNoThrow("gh", [
                 "issue",
@@ -927,23 +946,15 @@ Created: ${featureData.created}`;
    * @param issueNumber - GitHub issue number
    * @param completion - Completion status with AC/task metrics
    */
-  async postProgressCommentIfChanged(issueNumber, completion) {
+  async postProgressCommentIfChanged(issueNumber, completion, cachedLastComment) {
     try {
       const repoSlug = this.getRepoSlug();
-      const commentsResult = await execFileNoThrow("gh", [
-        "api",
-        `repos/${repoSlug}/issues/${issueNumber}/comments`,
-        "--jq",
-        ".[-1] | {body: .body, created_at: .created_at}"
-        // Get last comment only
-      ], { env: this.getGhEnv() });
       let lastCommentBody = "";
-      if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {
-        try {
-          const lastComment = JSON.parse(commentsResult.stdout);
-          lastCommentBody = lastComment.body || "";
-        } catch {
-        }
+      if (cachedLastComment) {
+        lastCommentBody = cachedLastComment.body || "";
+      } else {
+        const fetchedComment = await this.client.getLastComment(issueNumber);
+        lastCommentBody = fetchedComment?.body || "";
       }
       const newCommentBody = this.calculator.buildProgressComment(completion);
       const normalizeComment = (text) => {

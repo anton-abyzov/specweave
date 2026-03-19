@@ -11,6 +11,21 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+/**
+ * Validate and sanitize session ID to prevent path traversal.
+ * Rejects IDs containing path separators, '..' sequences, or null bytes.
+ * @throws Error if session ID is invalid
+ */
+export function validateSessionId(sessionId: string): string {
+  if (!sessionId || typeof sessionId !== 'string') {
+    throw new Error('Invalid session_id: must be a non-empty string');
+  }
+  if (/[/\\]|\.\.|\0/.test(sessionId)) {
+    throw new Error(`Invalid session_id: contains forbidden characters: ${sessionId}`);
+  }
+  return sessionId;
+}
+
 export interface SessionLock {
   pid: number;
   started_at: string;
@@ -29,7 +44,8 @@ export function getSessionsDir(projectRoot: string): string {
  * Get the directory for a specific session
  */
 export function getSessionDir(sessionId: string, projectRoot: string): string {
-  return path.join(getSessionsDir(projectRoot), sessionId);
+  const sanitized = validateSessionId(sessionId);
+  return path.join(getSessionsDir(projectRoot), sanitized);
 }
 
 /**
@@ -80,7 +96,9 @@ export function createSessionDir(sessionId: string, projectRoot: string): string
 export function bridgeSessionId(sessionId: string, envFile: string): void {
   if (!envFile || !sessionId) return;
   try {
-    fs.appendFileSync(envFile, `export CLAUDE_SESSION_ID='${sessionId}'\n`, 'utf-8');
+    // Sanitize session_id for shell safety: escape single quotes
+    const sanitized = sessionId.replace(/'/g, "'\\''");
+    fs.appendFileSync(envFile, `export CLAUDE_SESSION_ID='${sanitized}'\n`, 'utf-8');
   } catch {
     // Non-blocking: env bridge failure shouldn't abort session start
   }

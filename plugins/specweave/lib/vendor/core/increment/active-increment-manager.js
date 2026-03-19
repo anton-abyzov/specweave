@@ -17,6 +17,7 @@ import path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { FileLock } from '../../utils/file-lock.js';
 /**
  * Active Increment Manager
  *
@@ -245,7 +246,7 @@ export class ActiveIncrementManager {
         };
     }
     /**
-     * Write state file atomically (temp file → rename)
+     * Write state file atomically (temp file → rename) with file lock protection
      */
     writeState(state) {
         // Ensure state directory exists
@@ -253,10 +254,24 @@ export class ActiveIncrementManager {
         if (!fs.existsSync(stateDir)) {
             fs.mkdirSync(stateDir, { recursive: true });
         }
-        // Atomic write: temp file → rename
-        const tempFile = `${this.stateFile}.tmp`;
-        fs.writeFileSync(tempFile, JSON.stringify(state, null, 2), 'utf-8');
-        fs.renameSync(tempFile, this.stateFile);
+        // Protect shared state with file lock
+        const lock = new FileLock(this.stateFile);
+        const acquired = lock.acquire(5); // 5 second stale threshold
+        if (!acquired) {
+            // Log warning but proceed — atomic rename still provides partial safety
+            console.warn(`⚠️  Could not acquire lock for ${this.stateFile}, proceeding with unprotected write`);
+        }
+        try {
+            // Atomic write: temp file → rename
+            const tempFile = `${this.stateFile}.tmp`;
+            fs.writeFileSync(tempFile, JSON.stringify(state, null, 2), 'utf-8');
+            fs.renameSync(tempFile, this.stateFile);
+        }
+        finally {
+            if (acquired) {
+                lock.release();
+            }
+        }
     }
     /**
      * Get state file path (for testing)

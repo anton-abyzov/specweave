@@ -588,4 +588,106 @@ describe('Auto Command (Stop Hook Feedback Loop)', () => {
       );
     });
   });
+
+  describe('per-session auto-mode.json (CLAUDE_SESSION_ID)', () => {
+    let savedSessionId: string | undefined;
+
+    beforeEach(() => {
+      savedSessionId = process.env.CLAUDE_SESSION_ID;
+    });
+
+    afterEach(() => {
+      if (savedSessionId !== undefined) {
+        process.env.CLAUDE_SESSION_ID = savedSessionId;
+      } else {
+        delete process.env.CLAUDE_SESSION_ID;
+      }
+    });
+
+    it('should write auto-mode.json to per-session directory when CLAUDE_SESSION_ID is set', async () => {
+      process.env.CLAUDE_SESSION_ID = 'test-session-abc123';
+
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Per-session auto-mode.json should exist
+      const sessionFlagPath = path.join(stateDir, 'sessions', 'test-session-abc123', 'auto-mode.json');
+      expect(fs.existsSync(sessionFlagPath)).toBe(true);
+
+      // Global auto-mode.json should ALSO exist (fallback for /resume)
+      const globalFlagPath = path.join(stateDir, 'auto-mode.json');
+      expect(fs.existsSync(globalFlagPath)).toBe(true);
+
+      // Validate contents
+      const session = JSON.parse(fs.readFileSync(sessionFlagPath, 'utf-8'));
+      expect(session.active).toBe(true);
+      expect(session.sessionId).toBe('test-session-abc123');
+      expect(session.incrementIds).toContain('0001-test-feature');
+    });
+
+    it('should fall back to global auto-mode.json when CLAUDE_SESSION_ID is not set', async () => {
+      delete process.env.CLAUDE_SESSION_ID;
+
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Global auto-mode.json should exist
+      const globalFlagPath = path.join(stateDir, 'auto-mode.json');
+      expect(fs.existsSync(globalFlagPath)).toBe(true);
+
+      // No sessions directory should be created
+      const sessionsDir = path.join(stateDir, 'sessions');
+      expect(fs.existsSync(sessionsDir)).toBe(false);
+    });
+
+    it('should include sessionId in session marker when CLAUDE_SESSION_ID is set', async () => {
+      process.env.CLAUDE_SESSION_ID = 'session-xyz-789';
+
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      const sessionFlagPath = path.join(stateDir, 'sessions', 'session-xyz-789', 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(sessionFlagPath, 'utf-8'));
+      expect(session.sessionId).toBe('session-xyz-789');
+    });
+
+    it('should not include sessionId when CLAUDE_SESSION_ID is not set', async () => {
+      delete process.env.CLAUDE_SESSION_ID;
+
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      const globalFlagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(globalFlagPath, 'utf-8'));
+      expect(session.sessionId).toBeUndefined();
+    });
+  });
 });
