@@ -17,7 +17,7 @@ import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatche
 import { readConfig } from '../../core/config/config-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { initInterviewStateFile } from './interview.js';
-import { IncrementNumberManager } from '../../core/increment/increment-utils.js';
+
 
 export interface CreateIncrementOptions {
   id?: string;
@@ -62,14 +62,8 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   // Resolve effective root: umbrella root in multi-repo, local root in single-repo
   const projectRoot = rawProjectRoot || resolveEffectiveRoot(process.cwd());
 
-  // Resolve increment ID: explicit or auto-generated
-  let resolvedId: string;
-  if (autoId && name) {
-    const nextNumber = IncrementNumberManager.getNextIncrementNumber(projectRoot);
-    resolvedId = `${nextNumber}-${name}`;
-  } else {
-    resolvedId = id!;
-  }
+  // Resolve increment ID: explicit or placeholder (template-creator handles atomic ID when autoId=true)
+  const resolvedId = autoId ? '' : id!;
 
   // Read testing config to pass testMode and coverageTarget
   let testMode: string | undefined;

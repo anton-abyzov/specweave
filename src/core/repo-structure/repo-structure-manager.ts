@@ -272,7 +272,9 @@ export class RepoStructureManager {
 
     // Convert saved state back to config format
     // v0581: Map old 'parent' and 'single' to 'multi-repo'
-    const arch = state.architecture === 'parent' ? 'multi-repo' : state.architecture;
+    // Note: old state files may contain 'single' which is no longer in SetupArchitecture type
+    const rawArch = state.architecture as string;
+    const arch = (rawArch === 'parent' || rawArch === 'single') ? 'multi-repo' : state.architecture;
     const config: RepoStructureConfig = {
       architecture: arch as RepoArchitecture,
       urlType: 'ssh',  // Default to SSH for resumed setups

@@ -44,18 +44,15 @@ Each event includes:
 
 ## Dashboard Pages
 
+The dashboard provides 16 specialized pages. The core pages are described below; detailed documentation for each capability page is linked.
+
 ### Overview
 
 Shows increment progress, task completion rates, and acceptance criteria status at a glance. Live-updates via SSE as work progresses.
 
 ### Analytics
 
-Displays aggregated usage data:
-
-- **KPI cards** -- total events, success rate, top commands
-- **Daily breakdown** -- events per day over the last 30 days
-- **Top commands/skills/agents** -- ranked by invocation count
-- **Success/failure rates** -- per command and overall
+Displays aggregated usage data: KPI cards (total events, success rate, top commands), daily breakdown over 30 days, top commands/skills/agents ranked by invocation count, and success/failure rates.
 
 ### Increments
 
@@ -64,6 +61,21 @@ Browse all increments with filters by status and type. Click any row to see the 
 ### Costs
 
 Token usage and cost estimates broken down by increment and command.
+
+### Additional Dashboard Pages
+
+| Page | What It Shows |
+|------|--------------|
+| [Error Tracing](./dashboard/errors) | Error grouping, classification, investigation workflow |
+| [Sync Audit](./dashboard/sync) | GitHub/JIRA/ADO sync status and audit log |
+| [Activity Stream](./dashboard/activity) | Real-time SSE event feed with category filters |
+| [Config Editor](./dashboard/config) | Visual JSON editor for `.specweave/config.json` |
+| [Service Management](./dashboard/services) | Running services, port detection, start/stop controls |
+| [Notifications](./dashboard/notifications) | Notification feed with severity filters |
+| [Marketplace Scanner](./dashboard/marketplace) | Skill discovery pipeline, approve/reject workflow |
+| [Plugins](./dashboard/plugins) | Installed plugins, usage stats, health status |
+| [Agents](./dashboard/agents) | Agent lifecycle tracking and spawn history |
+| [Hooks](./dashboard/hooks) | Hook execution log and event type filters |
 
 ## Multi-Project Support
 

@@ -9,8 +9,8 @@ Comprehensive installation guide for all scenarios.
 Before installing SpecWeave, ensure you have:
 
 **Required:**
-- Node.js 18+ - Check with `node --version`
-- npm 9+ - Check with `npm --version`
+- Node.js 20.12.0+ - Check with `node --version`
+- npm 10+ - Check with `npm --version`
 
 **Recommended:**
 - Claude Code (best experience)
@@ -191,7 +191,7 @@ your-project/
 │   │   │   └── governance/   # Security, compliance
 │   │   └── public/           # Published docs
 │   ├── tests/                # Centralized test repository
-│   ├── config.yaml           # Configuration
+│   ├── config.json            # Configuration
 │   └── logs/                 # Execution logs
 │
 ├── CLAUDE.md                 # Complete development guide
@@ -321,8 +321,8 @@ After installation, verify everything is set up correctly:
 cd your-project
 
 # Verify SpecWeave structure
-ls -la .specweave/          # Should have increments/, docs/, config.yaml
-cat .specweave/config.yaml  # Should show configuration
+ls -la .specweave/          # Should have increments/, docs/, config.json
+cat .specweave/config.json  # Should show configuration
 cat CLAUDE.md               # Should exist
 cat .gitignore              # Should exist
 
@@ -341,7 +341,7 @@ cat AGENTS.md               # Should exist
 ### Verification Checklist
 
 - [ ] `.specweave/` directory exists
-- [ ] `.specweave/config.yaml` is present
+- [ ] `.specweave/config.json` is present
 - [ ] `CLAUDE.md` exists
 - [ ] `.gitignore` includes SpecWeave ignores
 - [ ] Git repository initialized (if git available)
@@ -372,35 +372,31 @@ This creates:
 
 ## Configuration
 
-After installation, optionally customize `.specweave/config.yaml`:
+After installation, optionally customize `.specweave/config.json`:
 
-```yaml
-project:
-  name: "your-project"
-  type: "greenfield"  # or "brownfield"
-
-hooks:
-  enabled: true
-  post_task_completion:
-    enabled: true
-    notification_sound: true  # macOS notification
-
-testing:
-  e2e_playwright_mandatory_for_ui: true
-  min_coverage: 80
-
-integrations:
-  jira:
-    enabled: false
-    url: ""
-    project_key: ""
-  github:
-    enabled: false
-    repository: ""
-  azure_devops:
-    enabled: false
-    organization: ""
-    project: ""
+```json
+{
+  "project": {
+    "name": "your-project",
+    "type": "greenfield"
+  },
+  "hooks": {
+    "enabled": true,
+    "post_task_completion": {
+      "enabled": true,
+      "notification_sound": true
+    }
+  },
+  "testing": {
+    "e2e_playwright_mandatory_for_ui": true,
+    "min_coverage": 80
+  },
+  "integrations": {
+    "jira": { "enabled": false, "url": "", "project_key": "" },
+    "github": { "enabled": false, "repository": "" },
+    "azure_devops": { "enabled": false, "organization": "", "project": "" }
+  }
+}
 ```
 
 **Configuration options:**

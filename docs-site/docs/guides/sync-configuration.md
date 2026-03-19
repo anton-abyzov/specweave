@@ -138,3 +138,7 @@ Controls status field updates in external tools.
 ## Reference
 
 See `.specweave/docs/internal/architecture/hld-permissions.md` for technical architecture details.
+
+---
+
+**Related**: [External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Sync Strategies](./sync-strategies.md) | [Bidirectional Spec Sync](./spec-bidirectional-sync.md)

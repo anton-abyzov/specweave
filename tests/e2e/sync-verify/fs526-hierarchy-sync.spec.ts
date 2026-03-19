@@ -114,14 +114,14 @@ test.describe('JIRA hierarchy — FS-526', () => {
 
   test('JIRA Epic page is reachable in browser', async ({ page }) => {
     await page.goto(`${JIRA_BASE}/browse/${JIRA_EPIC}`, { timeout: 30000 });
-    await page.screenshot({ path: `screenshots/jira-epic-${JIRA_EPIC}.png`, fullPage: false });
+    await page.screenshot({ path: `test-results/jira-epic-${JIRA_EPIC}.png`, fullPage: false });
     expect(page.url()).toContain('atlassian.net');
     console.log(`JIRA Epic URL confirmed: ${page.url()}`);
   });
 
   test('JIRA Story page is reachable in browser', async ({ page }) => {
     await page.goto(`${JIRA_BASE}/browse/${JIRA_STORY}`, { timeout: 30000 });
-    await page.screenshot({ path: `screenshots/jira-story-${JIRA_STORY}.png`, fullPage: false });
+    await page.screenshot({ path: `test-results/jira-story-${JIRA_STORY}.png`, fullPage: false });
     expect(page.url()).toContain('atlassian.net');
     console.log(`JIRA Story URL confirmed: ${page.url()}`);
   });
@@ -188,14 +188,14 @@ test.describe('ADO hierarchy — FS-526', () => {
 
   test('ADO Epic #1350 page is reachable in browser', async ({ page }) => {
     await page.goto(`${ADO_BASE}/_workitems/edit/${ADO_EPIC_ID}`, { timeout: 30000 });
-    await page.screenshot({ path: `screenshots/ado-epic-${ADO_EPIC_ID}.png`, fullPage: false });
+    await page.screenshot({ path: `test-results/ado-epic-${ADO_EPIC_ID}.png`, fullPage: false });
     expect(page.url()).toContain('dev.azure.com');
     console.log(`ADO Epic URL confirmed: ${page.url()}`);
   });
 
   test('ADO Issue #1355 page is reachable in browser', async ({ page }) => {
     await page.goto(`${ADO_BASE}/_workitems/edit/${ADO_ISSUE_ID}`, { timeout: 30000 });
-    await page.screenshot({ path: `screenshots/ado-issue-${ADO_ISSUE_ID}.png`, fullPage: false });
+    await page.screenshot({ path: `test-results/ado-issue-${ADO_ISSUE_ID}.png`, fullPage: false });
     expect(page.url()).toContain('dev.azure.com');
     console.log(`ADO Issue URL confirmed: ${page.url()}`);
   });

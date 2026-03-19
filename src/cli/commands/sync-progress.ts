@@ -21,6 +21,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveSyncTarget } from '../../sync/sync-target-resolver.js';
 import { parseEnvFile } from '../../utils/env-file.js';
+import { SyncThrottle } from '../../core/sync-throttle.js';
 import yaml from 'yaml';
 
 export interface SyncProgressArgs {
@@ -105,6 +106,14 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
   const isArchived = incrementPath.includes('_archive');
   if (isArchived) {
     logger.log(`📦 Status: ARCHIVED (will create/close external issues for historical tracking)`);
+  }
+
+  // Throttle: skip if another trigger path already fired for this increment recently
+  const throttle = new SyncThrottle(projectRoot);
+  if (throttle.shouldSkip(incrementId, parsedArgs.force)) {
+    logger.log(`⏭️  Sync throttled for ${incrementId} (recent sync in progress)`);
+    logger.log('   💡 Use --force to bypass throttle');
+    return;
   }
 
   if (parsedArgs.dryRun) {
@@ -523,6 +532,9 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
         logger.log(`   ⚠️  Milestone reconciliation failed: ${errorMsg}`);
       }
     }
+
+    // Record throttle after successful sync
+    throttle.record(incrementId);
 
     // Final report
     logger.log('');

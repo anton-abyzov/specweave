@@ -545,3 +545,7 @@ curl -u email:token https://mycompany.atlassian.net/rest/agile/1.0/board?project
 **Version**: 0.10.0
 **Last Updated**: 2025-11-09
 **Author**: SpecWeave Team
+
+---
+
+**Related**: [External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Sync Configuration](./sync-configuration.md) | [Umbrella Sync Routing](./umbrella-sync-routing.md)

@@ -379,7 +379,7 @@ program
 // Next ID command - Return the next available increment number
 program
   .command('next-id')
-  .description('Return the next available increment number (e.g., "0042")')
+  .description('Return the next available increment number. Prefer: create-increment --auto-id')
   .option('--project <project-id>', 'Project ID for per-project collision prevention')
   .option('--project-root <path>', 'Override project root directory')
   .option('--name <name>', 'Increment name to generate full ID (e.g., "my-feature" → "0042-my-feature")')

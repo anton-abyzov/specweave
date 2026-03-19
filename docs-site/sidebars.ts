@@ -4,6 +4,7 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
  * SpecWeave Documentation Sidebars
  *
  * Restructured with Diataxis hierarchy (increment 0567-verified-skill-docs-redesign).
+ * Expanded with orphan surface + Dashboard section (increment 0585-docs-site-redesign).
  * Skills and Reference folded into docsSidebar. Academy remains as "Learn" top-nav.
  * All existing doc URLs preserved — sidebar-only restructure.
  */
@@ -18,6 +19,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'overview/introduction', label: 'What is SpecWeave?'},
         {type: 'doc', id: 'overview/skills-as-structured-expertise', label: 'Skills Are Structured Expertise'},
         {type: 'doc', id: 'overview/why-specweave', label: 'Why SpecWeave?'},
+        {type: 'doc', id: 'overview/ai-revolution-context', label: 'The AI Revolution'},
         {type: 'doc', id: 'overview/no-docs-needed', label: 'Start Building in Minutes'},
         {type: 'doc', id: 'overview/claude-code-basics', label: 'Claude Code Basics'},
         {type: 'doc', id: 'overview/claude-code-architecture', label: 'Claude Code Architecture'},
@@ -44,6 +46,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'What is an Increment?'},
         {type: 'doc', id: 'guides/core-concepts/living-documentation', label: 'Living Documentation'},
+        {type: 'doc', id: 'guides/core-concepts/who-benefits-from-living-docs', label: 'Who Benefits from Living Docs?'},
         {type: 'doc', id: 'guides/core-concepts/skills-first-architecture', label: 'Skills-First Architecture'},
         {type: 'doc', id: 'guides/core-concepts/background-jobs', label: 'Background Jobs'},
       ],
@@ -59,6 +62,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'skills/installation', label: 'Installing Skills'},
         {type: 'doc', id: 'skills/skill-studio', label: 'Skill Studio'},
         {type: 'doc', id: 'skills/skill-discovery-evaluation', label: 'Skill Discovery'},
+        {type: 'doc', id: 'skills/skill-contradiction-resolution', label: 'Contradiction Resolution'},
         {
           type: 'category',
           label: 'Extensible Skills',
@@ -94,6 +98,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'workflows/overview', label: 'Complete Journey'},
         {type: 'doc', id: 'guides/brainstorming', label: 'Brainstorming'},
         {type: 'doc', id: 'workflows/planning', label: 'Planning'},
+        {type: 'doc', id: 'guides/deep-interview-mode', label: 'Deep Interview Mode'},
         {type: 'doc', id: 'workflows/implementation', label: 'Implementation'},
         {type: 'doc', id: 'workflows/validation', label: 'Validation'},
         {type: 'doc', id: 'workflows/deployment', label: 'Deployment'},
@@ -106,6 +111,24 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Dashboard & Observability',
+      collapsed: true,
+      items: [
+        {type: 'doc', id: 'guides/analytics-dashboard', label: 'Dashboard Overview'},
+        {type: 'doc', id: 'guides/dashboard/errors', label: 'Error Tracing'},
+        {type: 'doc', id: 'guides/dashboard/sync', label: 'Sync Audit'},
+        {type: 'doc', id: 'guides/dashboard/activity', label: 'Activity Stream'},
+        {type: 'doc', id: 'guides/dashboard/config', label: 'Config Editor'},
+        {type: 'doc', id: 'guides/dashboard/services', label: 'Service Management'},
+        {type: 'doc', id: 'guides/dashboard/notifications', label: 'Notifications'},
+        {type: 'doc', id: 'guides/dashboard/marketplace', label: 'Marketplace Scanner'},
+        {type: 'doc', id: 'guides/dashboard/plugins', label: 'Plugins'},
+        {type: 'doc', id: 'guides/dashboard/agents', label: 'Agents'},
+        {type: 'doc', id: 'guides/dashboard/hooks', label: 'Hooks'},
+      ],
+    },
+    {
+      type: 'category',
       label: 'Integrations',
       collapsed: true,
       items: [
@@ -113,6 +136,23 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/integrations/issue-trackers', label: 'Issue Trackers'},
         {type: 'doc', id: 'guides/github-integration', label: 'GitHub Integration'},
         {type: 'doc', id: 'guides/external-tool-sync', label: 'External Tool Sync'},
+        {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Other AI Tools'},
+        {
+          type: 'category',
+          label: 'Sync Deep Dives',
+          collapsed: true,
+          items: [
+            {type: 'doc', id: 'guides/sync-strategies', label: 'Sync Strategies'},
+            {type: 'doc', id: 'guides/sync-configuration', label: 'Sync Configuration'},
+            {type: 'doc', id: 'guides/spec-bidirectional-sync', label: 'Bidirectional Spec Sync'},
+            {type: 'doc', id: 'guides/spec-commit-sync', label: 'Commit Traceability Sync'},
+            {type: 'doc', id: 'guides/status-sync-guide', label: 'Status Sync'},
+            {type: 'doc', id: 'guides/status-sync-migration', label: 'Status Sync Migration'},
+            {type: 'doc', id: 'guides/multi-project-sync-architecture', label: 'Multi-Project Sync'},
+            {type: 'doc', id: 'guides/umbrella-sync-routing', label: 'Umbrella Sync Routing'},
+            {type: 'doc', id: 'guides/hierarchy-mapping', label: 'Hierarchy Mapping'},
+          ],
+        },
       ],
     },
     {
@@ -124,6 +164,7 @@ const sidebars: SidebarsConfig = {
         {type: 'link', label: 'Team-Lead Orchestration', href: '/docs/guides/agent-teams-and-swarms#team-lead-orchestration'},
         {type: 'doc', id: 'guides/autonomous-execution', label: 'Autonomous Execution'},
         {type: 'doc', id: 'guides/multi-project-setup', label: 'Multi-Project Setup'},
+        {type: 'doc', id: 'guides/openclaw-agent-setup', label: 'OpenClaw Agent Setup'},
         {type: 'doc', id: 'guides/agent-security-best-practices', label: 'Agent Security'},
       ],
     },
@@ -139,6 +180,47 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/strategic-init', label: 'Strategic Init'},
         {type: 'doc', id: 'guides/bidirectional-linking', label: 'Bidirectional Linking'},
         {type: 'doc', id: 'guides/lsp-integration', label: 'LSP Integration'},
+        {type: 'doc', id: 'guides/multilingual-guide', label: 'Multilingual Support'},
+        {
+          type: 'category',
+          label: 'Advanced Topics',
+          collapsed: true,
+          items: [
+            {type: 'doc', id: 'guides/plugin-management', label: 'Plugin Management'},
+            {type: 'doc', id: 'guides/lazy-plugin-loading', label: 'Lazy Plugin Loading'},
+            {type: 'doc', id: 'guides/repository-selection', label: 'Repository Selection'},
+            {type: 'doc', id: 'guides/scheduling-and-planning', label: 'Scheduling & Planning'},
+            {type: 'doc', id: 'guides/specs-organization-guide', label: 'Specs Organization'},
+            {type: 'doc', id: 'guides/increment-status-reference', label: 'Increment Status Reference'},
+            {type: 'doc', id: 'guides/project-specific-tasks', label: 'Project-Specific Tasks'},
+            {type: 'doc', id: 'guides/meta-capability', label: 'Meta-Capability'},
+            {type: 'doc', id: 'guides/github-action-setup', label: 'GitHub Actions CI/CD'},
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Learning & Comparison',
+          collapsed: true,
+          items: [
+            {type: 'doc', id: 'guides/specweave-learning-journey', label: 'Learning Journey'},
+            {type: 'doc', id: 'guides/specweave-vs-speckit', label: 'SpecWeave vs SpecKit'},
+            {type: 'doc', id: 'guides/ai-coding-benchmarks', label: 'AI Coding Benchmarks'},
+            {type: 'doc', id: 'guides/why-verified-skill-matters', label: 'Why Verification Matters'},
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Platform-Specific',
+          collapsed: true,
+          items: [
+            {type: 'doc', id: 'guides/mobile/react-native-setup-guide', label: 'React Native Setup'},
+            {type: 'doc', id: 'guides/ado-multi-project-migration', label: 'ADO Multi-Project Migration'},
+            {type: 'doc', id: 'guides/deployment-platforms', label: 'Deployment Platforms'},
+          ],
+        },
+        {type: 'doc', id: 'guides/agent-skills-extensibility-analysis', label: 'Agent-Skills Extensibility'},
+        {type: 'doc', id: 'guides/command-reference-by-priority', label: 'Commands by Priority'},
+        {type: 'doc', id: 'guides/life-automation', label: 'Life Automation'},
         {
           type: 'category',
           label: 'Troubleshooting',
@@ -171,6 +253,10 @@ const sidebars: SidebarsConfig = {
             {type: 'doc', id: 'commands/cancel-auto', label: '/sw:cancel-auto'},
             {type: 'doc', id: 'commands/save', label: '/sw:save'},
             {type: 'doc', id: 'commands/jobs', label: '/sw:jobs'},
+            {type: 'doc', id: 'commands/pause', label: '/sw:pause'},
+            {type: 'doc', id: 'commands/resume', label: '/sw:resume'},
+            {type: 'doc', id: 'commands/abandon', label: '/sw:abandon'},
+            {type: 'doc', id: 'commands/status', label: '/sw:status'},
             {type: 'doc', id: 'commands/status-management', label: 'Status Management'},
           ],
         },
@@ -179,9 +265,19 @@ const sidebars: SidebarsConfig = {
           label: 'Skills & Cost',
           collapsed: true,
           items: [
-            {type: 'doc', id: 'reference/skills', label: 'Skills Reference (~48)'},
+            {type: 'doc', id: 'reference/skills', label: 'Skills Reference (~100+)'},
             {type: 'doc', id: 'reference/use-case-guide', label: 'Use Case Guide'},
             {type: 'doc', id: 'reference/cost-tracking', label: 'Cost Tracking'},
+          ],
+        },
+        {type: 'doc', id: 'reference/changelog', label: 'Changelog'},
+        {
+          type: 'category',
+          label: 'Migration Guides',
+          collapsed: true,
+          items: [
+            {type: 'doc', id: 'guides/migration-v024', label: 'v0.23 to v0.24'},
+            {type: 'doc', id: 'guides/migration-v031-project-fields', label: 'v0.31 Project Fields'},
           ],
         },
         {
@@ -205,11 +301,23 @@ const sidebars: SidebarsConfig = {
       id: 'faq',
       label: 'FAQ',
     },
+    {
+      type: 'doc',
+      id: 'examples/index',
+      label: 'Examples',
+    },
   ],
 
   // Academy sidebar — "Learn" top-nav item
   academySidebar: [
     {type: 'doc', id: 'academy/index', label: 'Learning Center'},
+    {
+      type: 'category',
+      label: 'Video Tutorials',
+      collapsed: false,
+      link: {type: 'doc', id: 'academy/videos/index'},
+      items: [{type: 'autogenerated', dirName: 'academy/videos'}],
+    },
     {
       type: 'category',
       label: 'SpecWeave Essentials',
@@ -252,6 +360,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'enterprise/github-migration', label: 'GitHub Enterprise'},
         {type: 'doc', id: 'enterprise/jira-migration', label: 'JIRA Enterprise'},
         {type: 'doc', id: 'enterprise/azure-devops-migration', label: 'Azure DevOps'},
+        {type: 'doc', id: 'enterprise/knowledge-transfer-migration', label: 'Knowledge Transfer'},
         {type: 'doc', id: 'enterprise/case-study-migration', label: 'Case Study'},
       ],
     },

@@ -225,3 +225,4 @@ The selected values are automatically added to spec.md frontmatter.
 - [Multi-Project Setup Guide](/guides/multi-project-setup.md)
 - [ADR-0190: Spec Project/Board Requirement](/internal/architecture/adr/0190-spec-project-board-requirement.md)
 - [Intelligent Living Docs Sync](/guides/intelligent-living-docs-sync.md)
+- [Changelog](/docs/reference/changelog)

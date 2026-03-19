@@ -1,0 +1,91 @@
+---
+sidebar_position: 1
+title: "SpecWeave + OpenCode: Web Calculator in 4 Minutes"
+description: "Build a web calculator with Node.js backend using SpecWeave and OpenCode — non-cloud AI, spec-driven development in under 4 minutes"
+---
+
+import YouTubeEmbed from '@site/src/components/ui/YouTubeEmbed';
+
+# SpecWeave + OpenCode: Web Calculator in 4 Minutes
+
+<YouTubeEmbed
+  videoId="WVwyqsHS8dc"
+  title="SpecWeave + "
+  titleAccent="OpenCode"
+  subtitle="Build a web calculator with Node.js backend in 4 minutes. Non-cloud AI. No API keys. Full spec-driven lifecycle."
+  duration="3:52"
+  version="1.0.519"
+  chapters={[
+    { time: '0:00', seconds: 0, title: 'Introduction' },
+    { time: '0:11', seconds: 11, title: 'Setup & Init' },
+    { time: '0:41', seconds: 41, title: 'Feature Request' },
+    { time: '0:57', seconds: 57, title: 'PM Questionnaire' },
+    { time: '1:22', seconds: 82, title: 'Reviewing Specs' },
+    { time: '1:58', seconds: 118, title: 'Implementation' },
+    { time: '2:32', seconds: 152, title: 'Testing & Grill' },
+    { time: '2:49', seconds: 169, title: 'Completion' },
+    { time: '2:54', seconds: 174, title: 'Live Demo' },
+  ]}
+  transcript={[
+    { time: '0:00', text: 'Demonstrating SpecWeave development workflow with OpenCode, which is a non-cloud AI tool.' },
+    { time: '0:11', text: "Doing SpecWeave init, setting English, non-cloud tool, choosing OpenCode, and starting from scratch. We have our skills loaded, but they are not active by default here, so we have to reload and restart OpenCode. Now we can see that the increment skill is available." },
+    { time: '0:41', text: 'Create a web calculator with a backend. We could see that the whole skill definition is loaded into the main agent context. Then we could follow the next steps.' },
+    { time: '0:57', text: "This is a kind of questionnaire. What operations should the calculator support? Let's start with the basic. Next. What backend stack do you prefer? Node.js should be fine. Frontend style for the calculator UI. We're using MiniMax M2.5 free model." },
+    { time: '1:22', text: "Let's take a look at the .specweave folder. Here we go. This is the first increment that is already created. We have metadata.json, spec file defining our user stories. For now, it's still the template. You could see that this is in progress. Now we could see that the spec file is ready." },
+    { time: '1:58', text: 'Now let\'s implement the increment. We could call command /do, or just simply say something like "implement the first increment."' },
+    { time: '2:24', text: 'We could see that it goes through each task. This is the start of our implementation. Runs tests including end-to-end. Grills the implementation. Runs all tests again. And completes the increment.' },
+    { time: '2:49', text: 'All acceptance criteria are completed now.' },
+    { time: '2:54', text: "Let's run the server. Simple web calculator is implemented." },
+  ]}
+/>
+
+---
+
+## What You'll Learn
+
+1. How to initialize SpecWeave with a **non-cloud AI tool** (OpenCode)
+2. The **PM questionnaire flow** — how SpecWeave gathers requirements interactively
+3. How `/sw:do` **autonomously implements, tests, and grills** your code
+4. The full **spec-driven lifecycle**: spec.md, plan.md, tasks.md, working app
+
+---
+
+## Key Concepts
+
+### Non-Cloud AI Development
+
+This demo uses **OpenCode** with the **MiniMax M2.5 free model** — everything runs locally. No API keys, no cloud dependencies, no code leaving your machine. SpecWeave's skill system works identically regardless of which AI tool you use.
+
+### The Spec-Driven Lifecycle
+
+```
+specweave init → describe feature → PM Questionnaire → spec.md + plan.md + tasks.md
+                                                                ↓
+                      Working App ← /sw:do (implement + test + grill)
+```
+
+---
+
+## Commands Demonstrated
+
+```bash
+# 1. Initialize SpecWeave
+specweave init
+
+# 2. Create the feature (via natural language)
+"Create a web calculator with a backend"
+
+# 3. Implement all tasks
+/sw:do
+
+# 4. Run the result
+node server.js
+```
+
+---
+
+## Related
+
+- [Complete Masterclass](https://www.youtube.com/@antonabyzov) — 61-min deep dive into all SpecWeave features
+- [Getting Started](/docs/getting-started) — Installation and first increment
+- [SpecWeave Essentials](/docs/academy/specweave-essentials) — 16-lesson written course
