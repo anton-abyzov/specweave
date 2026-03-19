@@ -1044,7 +1044,7 @@ detect_vskill_recommendations() {
       if ! check_plugin_in_vskill_lock "mobile"; then
         if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-mobile" ]]; then
           touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-mobile" 2>/dev/null
-          suggestions="${suggestions}- **mobile** (App Store, TestFlight, mobile CI/CD): \`vskill install anton-abyzov/vskill --plugin mobile\`\n"
+          suggestions="${suggestions}- **mobile** (App Store, TestFlight, mobile CI/CD): \`vskill i anton-abyzov/vskill/appstore\`\n"
           match_count=$((match_count + 1))
         fi
       fi
@@ -1063,7 +1063,7 @@ detect_vskill_recommendations() {
       if ! check_plugin_in_vskill_lock "google-workspace"; then
         if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-google-workspace" ]]; then
           touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-google-workspace" 2>/dev/null
-          suggestions="${suggestions}- **google-workspace** (Gmail, Drive, Sheets, Docs, Calendar): \`vskill install anton-abyzov/vskill --plugin google-workspace\`\n"
+          suggestions="${suggestions}- **google-workspace** (Gmail, Drive, Sheets, Docs, Calendar): \`vskill i anton-abyzov/vskill/gws\`\n"
           match_count=$((match_count + 1))
         fi
       fi
@@ -1082,7 +1082,7 @@ detect_vskill_recommendations() {
       if ! check_plugin_in_vskill_lock "marketing"; then
         if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-marketing" ]]; then
           touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-marketing" 2>/dev/null
-          suggestions="${suggestions}- **marketing** (slack-messaging, social-media-posting): \`vskill install anton-abyzov/vskill --plugin marketing\`\n"
+          suggestions="${suggestions}- **marketing** (slack-messaging, social-media-posting): \`vskill i anton-abyzov/vskill/slack-messaging\`\n"
           match_count=$((match_count + 1))
         fi
       fi
@@ -1101,7 +1101,7 @@ detect_vskill_recommendations() {
       if ! check_plugin_in_vskill_lock "productivity"; then
         if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-productivity" ]]; then
           touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-productivity" 2>/dev/null
-          suggestions="${suggestions}- **productivity** (Notion, Todoist, Trello, Asana, Obsidian): \`vskill install anton-abyzov/vskill --plugin productivity\`\n"
+          suggestions="${suggestions}- **productivity** (Notion, Todoist, Trello, Asana, Obsidian): \`vskill i anton-abyzov/vskill/survey-passing\`\n"
           match_count=$((match_count + 1))
         fi
       fi
@@ -1120,7 +1120,7 @@ detect_vskill_recommendations() {
       if ! check_plugin_in_vskill_lock "skills"; then
         if [[ ! -f "${TMPDIR:-/tmp}/specweave-vskill-suggested-skills" ]]; then
           touch "${TMPDIR:-/tmp}/specweave-vskill-suggested-skills" 2>/dev/null
-          suggestions="${suggestions}- **skills** (skill discovery and installation): \`vskill install anton-abyzov/vskill --plugin skills\`\n"
+          suggestions="${suggestions}- **skills** (skill discovery and installation): \`vskill i anton-abyzov/vskill/scout\`\n"
           match_count=$((match_count + 1))
         fi
       fi
