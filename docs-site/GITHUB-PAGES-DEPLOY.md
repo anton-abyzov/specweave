@@ -1,4 +1,4 @@
-# GitHub Pages Deployment Guide - verified-skill.com
+# GitHub Pages Deployment Guide - spec-weave.com
 
 ## 🎉 NO SECRETS REQUIRED!
 
@@ -7,7 +7,7 @@ GitHub Pages uses automatic `GITHUB_TOKEN` - **completely secure for public repo
 ## Overview
 
 - **Hosting**: GitHub Pages (FREE for public repos)
-- **Domain**: verified-skill.com (custom domain)
+- **Domain**: spec-weave.com (custom domain)
 - **Source**: `.specweave/docs/public/` via `docs-site/`
 - **Deployment**: Automatic on push to `main` branch
 - **Build**: Docusaurus 3 → Static HTML/CSS/JS
@@ -26,13 +26,13 @@ docs-site/do/ directory
     ↓ (deploy)
 GitHub Pages
     ↓ (serve)
-https://verified-skill.com
+https://spec-weave.com
 \`\`\`
 
 ## Prerequisites
 
 1. ✅ **Public GitHub repository** (already done!)
-2. ✅ **Custom domain** (verified-skill.com)
+2. ✅ **Custom domain** (spec-weave.com)
 3. ✅ **DNS access** (to configure CNAME record)
 
 ## Step 1: Enable GitHub Pages
@@ -50,14 +50,14 @@ https://verified-skill.com
   (NOT "Deploy from a branch" - we're using the workflow)
 
 **Custom domain**:
-- Enter: `verified-skill.com`
+- Enter: `spec-weave.com`
 - Click **Save**
 
 GitHub will create a CNAME file automatically (we already have one in `docs-site/static/CNAME`).
 
 ## Step 2: Configure DNS (Your Domain Provider)
 
-You need to add DNS records at your domain registrar (where verified-skill.com is registered).
+You need to add DNS records at your domain registrar (where spec-weave.com is registered).
 
 ### Option A: CNAME Record (Recommended)
 
@@ -65,7 +65,7 @@ If using a subdomain or if registrar supports CNAME for apex domain:
 
 \`\`\`
 Type: CNAME
-Name: @ (or verified-skill.com)
+Name: @ (or spec-weave.com)
 Value: anton-abyzov.github.io
 TTL: 3600
 \`\`\`
@@ -76,22 +76,22 @@ If CNAME doesn't work, use A records pointing to GitHub Pages IPs:
 
 \`\`\`
 Type: A
-Name: @ (or verified-skill.com)
+Name: @ (or spec-weave.com)
 Value: 185.199.108.153
 TTL: 3600
 
 Type: A
-Name: @ (or verified-skill.com)
+Name: @ (or spec-weave.com)
 Value: 185.199.109.153
 TTL: 3600
 
 Type: A
-Name: @ (or verified-skill.com)
+Name: @ (or spec-weave.com)
 Value: 185.199.110.153
 TTL: 3600
 
 Type: A
-Name: @ (or verified-skill.com)
+Name: @ (or spec-weave.com)
 Value: 185.199.111.153
 TTL: 3600
 \`\`\`
@@ -123,7 +123,7 @@ git commit -m "feat: configure GitHub Pages deployment
 
 - Add MIT License (same as spec-kit and BMAD)
 - Add GitHub Pages workflow (no secrets!)
-- Configure custom domain (verified-skill.com)
+- Configure custom domain (spec-weave.com)
 - Add CNAME file for custom domain
 - Update deployment documentation"
 
@@ -158,7 +158,7 @@ First deployment will be available at:
 - https://anton-abyzov.github.io/specweave/
 
 Custom domain (after DNS propagates):
-- https://verified-skill.com
+- https://spec-weave.com
 
 ### DNS Verification
 
@@ -166,13 +166,13 @@ Check if DNS is propagated:
 
 \`\`\`bash
 # Check CNAME record
-dig verified-skill.com CNAME
+dig spec-weave.com CNAME
 
 # Check A records
-dig verified-skill.com A
+dig spec-weave.com A
 
 # Expected output:
-# verified-skill.com. IN CNAME anton-abyzov.github.io.
+# spec-weave.com. IN CNAME anton-abyzov.github.io.
 \`\`\`
 
 ### HTTPS Certificate
@@ -264,7 +264,7 @@ docs-site/static/CNAME
 
 Contents:
 \`\`\`
-verified-skill.com
+spec-weave.com
 \`\`\`
 
 This file is automatically copied to the root of the built site during build.
@@ -273,7 +273,7 @@ This file is automatically copied to the root of the built site during build.
 
 After deployment:
 1. Go to Settings → Pages
-2. Custom domain should show: **verified-skill.com**
+2. Custom domain should show: **spec-weave.com**
 3. **Enforce HTTPS** should be checked (automatic)
 4. DNS check status should show: ✅ **DNS check successful**
 
@@ -297,7 +297,7 @@ After deployment:
 ### DNS Not Working
 
 **Symptoms**:
-- verified-skill.com doesn't resolve
+- spec-weave.com doesn't resolve
 - Shows "404 Not Found"
 - HTTPS certificate error
 
@@ -308,12 +308,12 @@ After deployment:
 
 **Test DNS**:
 \`\`\`bash
-dig verified-skill.com
+dig spec-weave.com
 
 # Should return:
-# verified-skill.com. IN CNAME anton-abyzov.github.io.
+# spec-weave.com. IN CNAME anton-abyzov.github.io.
 # OR
-# verified-skill.com. IN A 185.199.108.153
+# spec-weave.com. IN A 185.199.108.153
 \`\`\`
 
 ### HTTPS Not Working
@@ -387,7 +387,7 @@ gh-pages -d build -t true
 
 After successful deployment:
 - **GitHub Pages**: https://anton-abyzov.github.io/specweave/
-- **Custom Domain**: https://verified-skill.com
+- **Custom Domain**: https://spec-weave.com
 
 ## Performance
 
@@ -466,7 +466,7 @@ git push
 
 1. **Check workflow logs** (Actions tab)
 2. **Test build locally**: `cd docs-site && npm run build`
-3. **Check DNS**: `dig verified-skill.com`
+3. **Check DNS**: `dig spec-weave.com`
 4. **Create GitHub Issue**: For SpecWeave-specific questions
 5. **GitHub Community**: For GitHub Pages questions
 
@@ -476,12 +476,12 @@ git push
 
 - [ ] Repository is public ✅ (already done)
 - [ ] Enable GitHub Pages (Settings → Pages → Source: GitHub Actions)
-- [ ] Add custom domain in GitHub Pages settings (verified-skill.com)
+- [ ] Add custom domain in GitHub Pages settings (spec-weave.com)
 - [ ] Configure DNS at domain registrar (CNAME or A records)
 - [ ] Push to main branch (`git push origin main`)
 - [ ] Wait for GitHub Actions to complete (~2-3 minutes)
 - [ ] Wait for DNS to propagate (5 minutes - 48 hours)
-- [ ] Visit https://verified-skill.com - Success! 🎉
+- [ ] Visit https://spec-weave.com - Success! 🎉
 
 ---
 

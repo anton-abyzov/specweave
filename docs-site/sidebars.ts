@@ -270,6 +270,7 @@ const sidebars: SidebarsConfig = {
             {type: 'doc', id: 'reference/cost-tracking', label: 'Cost Tracking'},
           ],
         },
+        {type: 'doc', id: 'reference/configuration', label: 'Configuration'},
         {type: 'doc', id: 'reference/changelog', label: 'Changelog'},
         {
           type: 'category',

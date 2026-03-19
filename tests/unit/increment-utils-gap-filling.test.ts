@@ -1,8 +1,8 @@
 /**
- * Tests for gap-filling increment ID generation (v0.33.1+)
+ * Tests for sequential increment ID generation (max+1 strategy)
  *
- * Validates that IncrementNumberManager fills gaps in increment numbering
- * instead of always using highest + 1.
+ * Validates that IncrementNumberManager uses highest existing number + 1
+ * instead of gap-filling. Gaps in numbering are preserved intentionally.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -11,13 +11,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-describe('IncrementNumberManager - Gap Filling', () => {
+describe('IncrementNumberManager - Sequential (max+1)', () => {
   let testDir: string;
   let incrementsDir: string;
 
   beforeEach(() => {
     // Create temp directory
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-gap-test-'));
+    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-seq-test-'));
     incrementsDir = path.join(testDir, '.specweave', 'increments');
     fs.mkdirSync(incrementsDir, { recursive: true });
   });
@@ -29,7 +29,7 @@ describe('IncrementNumberManager - Gap Filling', () => {
     }
   });
 
-  it('should fill single gap in sequence', () => {
+  it('should return max+1 even when gaps exist', () => {
     // Create increments: 0001, 0002, 0004, 0005 (missing 0003)
     fs.mkdirSync(path.join(incrementsDir, '0001-first'));
     fs.mkdirSync(path.join(incrementsDir, '0002-second'));
@@ -38,10 +38,10 @@ describe('IncrementNumberManager - Gap Filling', () => {
 
     const nextId = IncrementNumberManager.getNextIncrementNumber(testDir);
 
-    expect(nextId).toBe('0003'); // Should fill the gap!
+    expect(nextId).toBe('0006'); // max+1, NOT gap-filling to 0003
   });
 
-  it('should fill first gap when multiple gaps exist', () => {
+  it('should return max+1 when multiple gaps exist', () => {
     // Create increments: 0001, 0004, 0007 (missing 0002, 0003, 0005, 0006)
     fs.mkdirSync(path.join(incrementsDir, '0001-first'));
     fs.mkdirSync(path.join(incrementsDir, '0004-fourth'));
@@ -49,7 +49,7 @@ describe('IncrementNumberManager - Gap Filling', () => {
 
     const nextId = IncrementNumberManager.getNextIncrementNumber(testDir);
 
-    expect(nextId).toBe('0002'); // Should fill the first gap!
+    expect(nextId).toBe('0008'); // max+1, NOT gap-filling to 0002
   });
 
   it('should return sequential number when no gaps exist', () => {
@@ -70,21 +70,21 @@ describe('IncrementNumberManager - Gap Filling', () => {
     expect(nextId).toBe('0001'); // First increment
   });
 
-  it('should fill gaps across all directories (main, archive, paused, abandoned)', () => {
+  it('should use max across all directories (main, archive, paused, abandoned)', () => {
     // Create archive directory
     const archiveDir = path.join(incrementsDir, '_archive');
     const pausedDir = path.join(incrementsDir, '_paused');
     fs.mkdirSync(archiveDir, { recursive: true });
     fs.mkdirSync(pausedDir, { recursive: true });
 
-    // Increments: 0001 (main), 0003 (archive), 0005 (paused) - missing 0002, 0004
+    // Increments: 0001 (main), 0003 (archive), 0005 (paused)
     fs.mkdirSync(path.join(incrementsDir, '0001-active'));
     fs.mkdirSync(path.join(archiveDir, '0003-archived'));
     fs.mkdirSync(path.join(pausedDir, '0005-paused'));
 
     const nextId = IncrementNumberManager.getNextIncrementNumber(testDir);
 
-    expect(nextId).toBe('0002'); // Should fill first gap across all directories
+    expect(nextId).toBe('0006'); // max(1,3,5) + 1
   });
 
   it('should handle external increments (E suffix) correctly', () => {
@@ -95,7 +95,7 @@ describe('IncrementNumberManager - Gap Filling', () => {
 
     const nextId = IncrementNumberManager.getNextIncrementNumber(testDir);
 
-    expect(nextId).toBe('0003'); // Should fill gap, ignoring E suffix
+    expect(nextId).toBe('0005'); // max(1,2,4) + 1
   });
 
   it('should handle 3-digit increment IDs', () => {
@@ -106,21 +106,21 @@ describe('IncrementNumberManager - Gap Filling', () => {
 
     const nextId = IncrementNumberManager.getNextIncrementNumber(testDir);
 
-    expect(nextId).toBe('0003'); // Should fill gap with 4-digit format
+    expect(nextId).toBe('0005'); // max(1,2,4) + 1
   });
 
-  it('should handle large gap at beginning', () => {
+  it('should return max+1 when large gap at beginning', () => {
     // Create increments: 0050, 0051 (missing 0001-0049)
     fs.mkdirSync(path.join(incrementsDir, '0050-first'));
     fs.mkdirSync(path.join(incrementsDir, '0051-second'));
 
     const nextId = IncrementNumberManager.getNextIncrementNumber(testDir);
 
-    expect(nextId).toBe('0001'); // Should start from the beginning!
+    expect(nextId).toBe('0052'); // max+1, NOT gap-filling to 0001
   });
 
-  it('should generate multiple unique IDs filling gaps sequentially', () => {
-    // Create increments: 0001, 0005, 0010 (missing 0002-0004, 0006-0009)
+  it('should generate multiple unique IDs sequentially', () => {
+    // Create increments: 0001, 0005, 0010
     fs.mkdirSync(path.join(incrementsDir, '0001-first'));
     fs.mkdirSync(path.join(incrementsDir, '0005-fifth'));
     fs.mkdirSync(path.join(incrementsDir, '0010-tenth'));
@@ -134,22 +134,22 @@ describe('IncrementNumberManager - Gap Filling', () => {
 
     const id3 = IncrementNumberManager.generateUniqueIncrementId('fourth', { projectRoot: testDir });
 
-    expect(id1).toBe('0002-second'); // First gap
-    expect(id2).toBe('0003-third');  // Second gap
-    expect(id3).toBe('0004-fourth'); // Third gap
+    expect(id1).toBe('0011-second');  // max(1,5,10) + 1
+    expect(id2).toBe('0012-third');   // max(1,5,10,11) + 1
+    expect(id3).toBe('0013-fourth');  // max(1,5,10,11,12) + 1
   });
 
-  it('should maintain gap-filling behavior with generateIncrementId()', () => {
+  it('should maintain sequential behavior with generateIncrementId()', () => {
     // Create increments with gap
     fs.mkdirSync(path.join(incrementsDir, '0001-first'));
     fs.mkdirSync(path.join(incrementsDir, '0003-third'));
 
     const id = IncrementNumberManager.generateIncrementId('second', { projectRoot: testDir });
 
-    expect(id).toBe('0002-second'); // Should fill the gap
+    expect(id).toBe('0004-second'); // max(1,3) + 1, NOT gap-filling to 0002
   });
 
-  it('should maintain gap-filling behavior with external increments', () => {
+  it('should maintain sequential behavior with external increments', () => {
     // Create increments with gap
     fs.mkdirSync(path.join(incrementsDir, '0001E-first'));
     fs.mkdirSync(path.join(incrementsDir, '0003E-third'));
@@ -159,6 +159,14 @@ describe('IncrementNumberManager - Gap Filling', () => {
       isExternal: true
     });
 
-    expect(id).toBe('0002E-second'); // Should fill the gap with E suffix
+    expect(id).toBe('0004E-second'); // max(1,3) + 1, NOT gap-filling
+  });
+
+  it('should throw when reaching 9999', () => {
+    fs.mkdirSync(path.join(incrementsDir, '9999-last'));
+
+    expect(() => {
+      IncrementNumberManager.getNextIncrementNumber(testDir);
+    }).toThrow('Increment number overflow');
   });
 });

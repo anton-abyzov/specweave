@@ -96,7 +96,7 @@ codex "Read AGENTS.md and increment 0001. Fix auth bug. Run tests."
 
 - [OpenAI Codex](https://openai.com/codex/)
 - [ChatGPT Features](https://chatgpt.com/features/codex)
-- [SpecWeave Website](https://verified-skill.com)
+- [SpecWeave Website](https://spec-weave.com)
 
 ---
 

@@ -57,7 +57,7 @@ A proper robots.txt guides crawlers efficiently:
 User-agent: *
 Allow: /
 
-Sitemap: https://verified-skill.com/sitemap.xml
+Sitemap: https://spec-weave.com/sitemap.xml
 
 # Rate limiting for AI bots
 User-agent: GPTBot
@@ -118,4 +118,4 @@ SEO for developer docs isn't just about rankings—it's about making your conten
 
 ---
 
-**Want to learn more?** Explore the [SpecWeave Documentation](https://verified-skill.com/docs/overview/introduction) for comprehensive guides on spec-driven development and AI-powered workflows.
+**Want to learn more?** Explore the [SpecWeave Documentation](https://spec-weave.com/docs/overview/introduction) for comprehensive guides on spec-driven development and AI-powered workflows.
