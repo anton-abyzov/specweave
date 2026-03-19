@@ -133,7 +133,7 @@ export class GitHubFeatureSync {
     rateLimitSkipped?: boolean;
   }> {
     // FS-609: Rate limit pre-check — abort early if quota is low to prevent 403 errors
-    const RATE_LIMIT_THRESHOLD = 200;
+    const RATE_LIMIT_THRESHOLD = 250;
     try {
       const rateLimit = await this.client.checkRateLimit();
       if (rateLimit.remaining < RATE_LIMIT_THRESHOLD) {
@@ -149,8 +149,24 @@ export class GitHubFeatureSync {
           rateLimitSkipped: true,
         };
       }
-    } catch {
-      // Rate limit check failed — proceed with sync (fail-open)
+    } catch (rateLimitError) {
+      // FS-609 edge case fix: fail-closed on network errors.
+      // If we can't reach the API to check rate limit, subsequent gh calls will also fail.
+      // Abort early instead of cascading failures.
+      const msg = rateLimitError instanceof Error ? rateLimitError.message : String(rateLimitError);
+      if (msg.includes('ENOTFOUND') || msg.includes('ETIMEDOUT') || msg.includes('ECONNREFUSED') || msg.includes('fetch failed')) {
+        console.log(`\n⚠️  GitHub API unreachable: ${msg}`);
+        console.log(`   ⏭️  Skipping sync for ${featureId} — network appears down`);
+        return {
+          milestoneNumber: 0,
+          milestoneUrl: '',
+          issuesCreated: 0,
+          issuesUpdated: 0,
+          userStoriesProcessed: 0,
+          rateLimitSkipped: true,
+        };
+      }
+      // Non-network errors (e.g., JSON parse failure) — proceed with sync (fail-open)
     }
 
     // SYNC LOCK: Cross-process file lock prevents concurrent syncs of the same feature+repo
@@ -1082,6 +1098,10 @@ export class GitHubFeatureSync {
     // FS-609: Fetch last comment ONCE and reuse for idempotency checks + downstream
     const lastComment = await this.client.getLastComment(issueNumber);
 
+    // FS-609: Track whether this method mutated the issue (close/reopen/comment).
+    // If mutations happened, cached data is stale and must not be passed downstream.
+    let mutatedIssue = false;
+
     // DECISION LOGIC: Close/Reopen/Update based on VERIFIED completion
     if (completion.overallComplete) {
       // ✅ SAFE TO CLOSE - All ACs and tasks verified [x]
@@ -1114,6 +1134,7 @@ export class GitHubFeatureSync {
             `      ✅ Verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
           );
         }
+        mutatedIssue = true;
       }
     } else {
       // ⚠️ INCOMPLETE - Keep open or reopen if needed
@@ -1131,15 +1152,25 @@ export class GitHubFeatureSync {
         console.log(
           `      ⚠️ Reopened: ${completion.blockingAcs.length + completion.blockingTasks.length} items incomplete`
         );
+        mutatedIssue = true;
       } else {
         // Update progress comment (with deduplication)
         // FS-609: Pass cached lastComment to avoid re-fetching
         await this.postProgressCommentIfChanged(issueNumber, completion, lastComment);
+        // Note: postProgressCommentIfChanged may or may not post — if it did, cache is stale
+        // but updateStatusLabels only uses lastComment for completion check, and if we're
+        // in the incomplete+open branch, the completion comment check won't trigger anyway.
       }
     }
 
-    // FS-609: Pass cached issueData and lastComment to avoid redundant fetches
-    await this.updateStatusLabels(issueNumber, completion, issueData, lastComment);
+    // FS-609: Pass cached data ONLY if no mutations happened.
+    // If we closed/reopened/commented, the cached state is stale — let updateStatusLabels re-fetch.
+    await this.updateStatusLabels(
+      issueNumber,
+      completion,
+      mutatedIssue ? undefined : issueData,
+      mutatedIssue ? undefined : lastComment,
+    );
   }
 
   /**
