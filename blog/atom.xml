@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xsl" href="atom.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://verified-skill.com/blog</id>
+    <id>https://spec-weave.com/blog</id>
     <title>SpecWeave Blog</title>
     <updated>2026-02-21T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://verified-skill.com/blog"/>
+    <link rel="alternate" href="https://spec-weave.com/blog"/>
     <subtitle>SpecWeave Blog</subtitle>
-    <icon>https://verified-skill.com/favicon.ico</icon>
+    <icon>https://spec-weave.com/favicon.ico</icon>
     <entry>
         <title type="html"><![CDATA[36% of AI Agent Skills Have Security Flaws — Here's What You Can Do About It]]></title>
-        <id>https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification</id>
-        <link href="https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification"/>
+        <id>https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification</id>
+        <link href="https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification"/>
         <updated>2026-02-21T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Snyk's ToxicSkills study found 1,467 flawed skills out of 3,984 scanned. 76 contained confirmed malicious payloads. We tested SpecWeave's scanner against the worst of them.]]></summary>
         <content type="html"><![CDATA[<p>On February 5, 2026, Snyk Labs published the <a href="https://snyk.io/blog/toxicskills" target="_blank" rel="noopener noreferrer" class="">ToxicSkills study</a> — the first large-scale security audit of AI agent skills. They scanned <strong>3,984 publicly listed skills</strong> across every major registry. The results should concern every developer using AI agents.</p>
 <p><strong>1,467 skills (36.82%)</strong> contained at least one security flaw. Of those, <strong>76 contained confirmed malicious payloads</strong> — not accidental overpermissions, but deliberate credential theft, reverse shells, and data exfiltration.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-makes-skills-dangerous">What Makes Skills Dangerous<a href="https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#what-makes-skills-dangerous" class="hash-link" aria-label="Direct link to What Makes Skills Dangerous" title="Direct link to What Makes Skills Dangerous" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-makes-skills-dangerous">What Makes Skills Dangerous<a href="https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#what-makes-skills-dangerous" class="hash-link" aria-label="Direct link to What Makes Skills Dangerous" title="Direct link to What Makes Skills Dangerous" translate="no">​</a></h2>
 <p>AI agent skills are not sandboxed plugins. They are markdown files that execute with the <strong>full privileges of the host agent</strong> — filesystem access, terminal execution, network requests, and credential visibility. When you install a skill, you are handing an AI agent instructions that it will follow implicitly.</p>
 <p>The attack surface is wide:</p>
 <ul>
@@ -25,65 +25,35 @@
 <li class=""><strong>Social engineering</strong>: Natural-language instructions like "download and run this helper tool" that trick the agent into executing malware</li>
 </ul>
 <p>The Snyk study identified <strong>five named threat actors</strong> operating across multiple platforms simultaneously. This is not hypothetical — it is an active, coordinated campaign.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-platform-problem">The Platform Problem<a href="https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#the-platform-problem" class="hash-link" aria-label="Direct link to The Platform Problem" title="Direct link to The Platform Problem" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-platform-problem">The Platform Problem<a href="https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#the-platform-problem" class="hash-link" aria-label="Direct link to The Platform Problem" title="Direct link to The Platform Problem" translate="no">​</a></h2>
 <p>Most skill platforms offer no defense. Snyk found that the majority of registries — including some of the most popular — have <strong>zero automated security scanning</strong> at the point of publication.</p>
-<p>The ClawHub collapse illustrated the consequences. In early 2026, researchers discovered <a class="" href="https://verified-skill.com/docs/guides/why-verified-skill-matters">341+ malicious skills</a> on the platform. Five of the top seven most-downloaded skills were malware. The platform is now shut down.</p>
-<p>Skills.sh, the most popular community registry with listings reaching 234K+ installs, has no automated scanning. Smithery learned the hard way after a path traversal vulnerability exposed data for over 3,000 MCP servers. The full <a class="" href="https://verified-skill.com/docs/skills/verified/skills-ecosystem-security#platform-comparison">platform comparison</a> is sobering reading.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="we-tested-our-scanner-against-toxicskills">We Tested Our Scanner Against ToxicSkills<a href="https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#we-tested-our-scanner-against-toxicskills" class="hash-link" aria-label="Direct link to We Tested Our Scanner Against ToxicSkills" title="Direct link to We Tested Our Scanner Against ToxicSkills" translate="no">​</a></h2>
+<p>The ClawHub collapse illustrated the consequences. In early 2026, researchers discovered <a class="" href="https://spec-weave.com/docs/guides/why-verified-skill-matters">341+ malicious skills</a> on the platform. Five of the top seven most-downloaded skills were malware. The platform is now shut down.</p>
+<p>Skills.sh, the most popular community registry with listings reaching 234K+ installs, has no automated scanning. Smithery learned the hard way after a path traversal vulnerability exposed data for over 3,000 MCP servers. The full <a class="" href="https://spec-weave.com/docs/skills/verified/skills-ecosystem-security#platform-comparison">platform comparison</a> is sobering reading.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="we-tested-our-scanner-against-toxicskills">We Tested Our Scanner Against ToxicSkills<a href="https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#we-tested-our-scanner-against-toxicskills" class="hash-link" aria-label="Direct link to We Tested Our Scanner Against ToxicSkills" title="Direct link to We Tested Our Scanner Against ToxicSkills" translate="no">​</a></h2>
 <p>After the Snyk study dropped, we ran SpecWeave's security scanner against samples from the <a href="https://github.com/snyk-labs/toxicskills-goof" target="_blank" rel="noopener noreferrer" class="">snyk-labs/toxicskills-goof</a> repository — real malicious skills collected during the research.</p>
 <p><strong>Tier 1 (pattern scanning) results:</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>Sample</th><th>Verdict</th><th>Findings</th></tr></thead><tbody><tr><td>clawhub/skill.md</td><td>BLOCKED</td><td>2 critical — base64-obfuscated <code>curl | bash</code> payload</td></tr><tr><td>vercel/SKILL.md (.agents)</td><td>BLOCKED</td><td>2 high — <code>curl --data</code> exfiltration of host info</td></tr><tr><td>vercel/SKILL.md (.gemini)</td><td>BLOCKED</td><td>2 high — <code>curl --data</code> exfiltration of host info</td></tr><tr><td>google/SKILL.md</td><td>PASS</td><td>Social engineering in natural language (no shell syntax)</td></tr></tbody></table>
 <p>Tier 1 caught <strong>3 out of 4</strong> samples — 75% detection through pattern matching alone, running in under 500ms per skill.</p>
 <p>The fourth sample used pure social engineering: natural-language instructions directing users to download and run a binary from GitHub releases. No shell commands, no suspicious syntax — just "download this, extract with password, and run."</p>
 <p><strong>Tier 2 (LLM judge) caught it.</strong> When Tier 1 passes a skill, Tier 2 evaluates semantic intent. The LLM judge identified the social engineering pattern and flagged it as malicious.</p>
 <p><strong>Combined detection rate: 4/4 — 100% against the tested samples.</strong></p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="three-tiers-of-trust">Three Tiers of Trust<a href="https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#three-tiers-of-trust" class="hash-link" aria-label="Direct link to Three Tiers of Trust" title="Direct link to Three Tiers of Trust" translate="no">​</a></h2>
-<p>SpecWeave's <a class="" href="https://verified-skill.com/docs/skills/verified/verified-skills">Verified Skills Standard</a> defines three escalating levels of certification:</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="three-tiers-of-trust">Three Tiers of Trust<a href="https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#three-tiers-of-trust" class="hash-link" aria-label="Direct link to Three Tiers of Trust" title="Direct link to Three Tiers of Trust" translate="no">​</a></h2>
+<p>SpecWeave's <a class="" href="https://spec-weave.com/docs/skills/verified/verified-skills">Verified Skills Standard</a> defines three escalating levels of certification:</p>
 <ol>
 <li class=""><strong>Scanned</strong> — 52 pattern rules across 9 categories. Free. Under 500ms. Catches obfuscation, credential access, destructive commands, prompt injection, and more.</li>
 <li class=""><strong>Verified</strong> — LLM-based semantic analysis on top of pattern scanning. ~$0.03 per skill. Catches social engineering, scope inflation, and multi-step attacks.</li>
 <li class=""><strong>Certified</strong> — Human security review plus sandbox testing. $50-200. For high-trust, widely-used skills.</li>
 </ol>
 <p>Every skill published to <a href="https://verifiedskill.com/" target="_blank" rel="noopener noreferrer" class="">verifiedskill.com</a> passes at least Tier 1 before it reaches any developer. Skills that fail are rejected with detailed findings explaining exactly what was flagged and why.</p>
-<p>The scanning methodology is fully transparent. The <a class="" href="https://verified-skill.com/blog/docs/skills/secure-skill-factory-standard">52 patterns</a> are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-you-should-do">What You Should Do<a href="https://verified-skill.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#what-you-should-do" class="hash-link" aria-label="Direct link to What You Should Do" title="Direct link to What You Should Do" translate="no">​</a></h2>
+<p>The scanning methodology is fully transparent. The <a class="" href="https://spec-weave.com/blog/docs/skills/secure-skill-factory-standard">52 patterns</a> are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-you-should-do">What You Should Do<a href="https://spec-weave.com/blog/toxicskills-why-your-ai-agent-skills-need-verification#what-you-should-do" class="hash-link" aria-label="Direct link to What You Should Do" title="Direct link to What You Should Do" translate="no">​</a></h2>
 <p>If you are using AI agent skills today:</p>
 <ol>
 <li class=""><strong>Check your installed skills.</strong> Review the source of every skill you have installed. Look for shell commands, network requests, and file access patterns you did not expect.</li>
 <li class=""><strong>Prefer verified sources.</strong> Use skills from registries that scan submissions before publication, not after (or never).</li>
 <li class=""><strong>Run <code>vskill scan</code></strong> on any community skill before installing it. The Tier 1 scanner is free and takes under a second.</li>
 </ol>
-<p>The full <a class="" href="https://verified-skill.com/docs/skills/verified/skills-ecosystem-security">security landscape analysis</a> covers the threat taxonomy, platform comparison, and detailed recommendations.</p>
+<p>The full <a class="" href="https://spec-weave.com/docs/skills/verified/skills-ecosystem-security">security landscape analysis</a> covers the threat taxonomy, platform comparison, and detailed recommendations.</p>
 <p>The skill ecosystem is growing fast. Making sure it grows safely is not optional.</p>
 <hr>
 <p><em>The Snyk ToxicSkills study is available at <a href="https://snyk.io/blog/toxicskills" target="_blank" rel="noopener noreferrer" class="">snyk.io/blog/toxicskills</a>. SpecWeave's scanner test results are based on samples from <a href="https://github.com/snyk-labs/toxicskills-goof" target="_blank" rel="noopener noreferrer" class="">snyk-labs/toxicskills-goof</a>. The verified skills registry is at <a href="https://verifiedskill.com/" target="_blank" rel="noopener noreferrer" class="">verifiedskill.com</a>.</em></p>]]></content>
@@ -99,12 +69,12 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[SEO Best Practices for Developer Documentation Sites]]></title>
-        <id>https://verified-skill.com/blog/2026/01/04/seo-best-practices</id>
-        <link href="https://verified-skill.com/blog/2026/01/04/seo-best-practices"/>
+        <id>https://spec-weave.com/blog/2026/01/04/seo-best-practices</id>
+        <link href="https://spec-weave.com/blog/2026/01/04/seo-best-practices"/>
         <updated>2026-01-04T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Learn how to optimize your technical documentation for search engines with Schema.org, robots.txt, and performance improvements. Boost organic traffic by 20-40%.]]></summary>
         <content type="html"><![CDATA[<p>Optimizing technical documentation for search engines can significantly improve discoverability and organic traffic. Here's what we learned implementing comprehensive SEO enhancements for SpecWeave's documentation site.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-seo-matters-for-developer-docs">Why SEO Matters for Developer Docs<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#why-seo-matters-for-developer-docs" class="hash-link" aria-label="Direct link to Why SEO Matters for Developer Docs" title="Direct link to Why SEO Matters for Developer Docs" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-seo-matters-for-developer-docs">Why SEO Matters for Developer Docs<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#why-seo-matters-for-developer-docs" class="hash-link" aria-label="Direct link to Why SEO Matters for Developer Docs" title="Direct link to Why SEO Matters for Developer Docs" translate="no">​</a></h2>
 <p>Developer documentation is often the first touchpoint for potential users. When someone searches for "spec-driven development" or "autonomous AI agents," you want your docs to appear in the top results.</p>
 <p>Key benefits of SEO for docs:</p>
 <ul>
@@ -113,27 +83,27 @@
 <li class=""><strong>Better indexing</strong> ensures all valuable content is discoverable</li>
 <li class=""><strong>Competitive advantage</strong> over similar tools</li>
 </ul>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-implement-schemaorg-structured-data">1. Implement Schema.org Structured Data<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#1-implement-schemaorg-structured-data" class="hash-link" aria-label="Direct link to 1. Implement Schema.org Structured Data" title="Direct link to 1. Implement Schema.org Structured Data" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-implement-schemaorg-structured-data">1. Implement Schema.org Structured Data<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#1-implement-schemaorg-structured-data" class="hash-link" aria-label="Direct link to 1. Implement Schema.org Structured Data" title="Direct link to 1. Implement Schema.org Structured Data" translate="no">​</a></h2>
 <p>Search engines love structured data. We added Organization and SoftwareApplication schemas:</p>
 <div class="language-typescript codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-typescript codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">headTags</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    tagName</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'script'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    attributes</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> type</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'application/ld+json'</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    innerHTML</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token known-class-name class-name">JSON</span><span class="token punctuation" style="color:#393A34">.</span><span class="token method function property-access" style="color:#d73a49">stringify</span><span class="token punctuation" style="color:#393A34">(</span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token string-property property" style="color:#36acaa">'@context'</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'https://schema.org'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token string-property property" style="color:#36acaa">'@type'</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'SoftwareApplication'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      name</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'SpecWeave'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      applicationCategory</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'DeveloperApplication'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token comment" style="color:#999988;font-style:italic">// ... more fields</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">]</span><br></span></code></pre></div></div>
 <p>Result: Rich snippets in search results with ratings and pricing info.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-optimize-robotstxt">2. Optimize robots.txt<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#2-optimize-robotstxt" class="hash-link" aria-label="Direct link to 2. Optimize robots.txt" title="Direct link to 2. Optimize robots.txt" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-optimize-robotstxt">2. Optimize robots.txt<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#2-optimize-robotstxt" class="hash-link" aria-label="Direct link to 2. Optimize robots.txt" title="Direct link to 2. Optimize robots.txt" translate="no">​</a></h2>
 <p>A proper robots.txt guides crawlers efficiently:</p>
-<div class="language-txt codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-txt codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">User-agent: *</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Allow: /</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Sitemap: https://verified-skill.com/sitemap.xml</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"># Rate limiting for AI bots</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">User-agent: GPTBot</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Crawl-delay: 10</span><br></span></code></pre></div></div>
+<div class="language-txt codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-txt codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">User-agent: *</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Allow: /</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Sitemap: https://spec-weave.com/sitemap.xml</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"># Rate limiting for AI bots</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">User-agent: GPTBot</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Crawl-delay: 10</span><br></span></code></pre></div></div>
 <p>This prevents server overload from aggressive bots while ensuring all public content is crawled.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-convert-images-to-webp">3. Convert Images to WebP<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#3-convert-images-to-webp" class="hash-link" aria-label="Direct link to 3. Convert Images to WebP" title="Direct link to 3. Convert Images to WebP" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-convert-images-to-webp">3. Convert Images to WebP<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#3-convert-images-to-webp" class="hash-link" aria-label="Direct link to 3. Convert Images to WebP" title="Direct link to 3. Convert Images to WebP" translate="no">​</a></h2>
 <p>We reduced social card size by 46% (54KB → 29KB) without quality loss:</p>
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">cwebp </span><span class="token parameter variable" style="color:#36acaa">-q</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">85</span><span class="token plain"> social-card.jpg </span><span class="token parameter variable" style="color:#36acaa">-o</span><span class="token plain"> social-card.webp</span><br></span></code></pre></div></div>
 <p>Faster loading means better user experience and SEO scores.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-add-resource-hints">4. Add Resource Hints<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#4-add-resource-hints" class="hash-link" aria-label="Direct link to 4. Add Resource Hints" title="Direct link to 4. Add Resource Hints" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-add-resource-hints">4. Add Resource Hints<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#4-add-resource-hints" class="hash-link" aria-label="Direct link to 4. Add Resource Hints" title="Direct link to 4. Add Resource Hints" translate="no">​</a></h2>
 <p>Preconnect hints reduce DNS lookup time:</p>
 <div class="language-typescript codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-typescript codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  tagName</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'link'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  attributes</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    rel</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'preconnect'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    href</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">'https://fonts.googleapis.com'</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
 <p>External resources load 50-100ms faster.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="5-prevent-duplicate-content">5. Prevent Duplicate Content<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#5-prevent-duplicate-content" class="hash-link" aria-label="Direct link to 5. Prevent Duplicate Content" title="Direct link to 5. Prevent Duplicate Content" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="5-prevent-duplicate-content">5. Prevent Duplicate Content<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#5-prevent-duplicate-content" class="hash-link" aria-label="Direct link to 5. Prevent Duplicate Content" title="Direct link to 5. Prevent Duplicate Content" translate="no">​</a></h2>
 <p>Tag archive pages create duplicate content. We added noindex directives:</p>
 <div class="language-jsx codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-jsx codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token tag punctuation" style="color:#393A34">&lt;</span><span class="token tag class-name" style="color:#00009f">Head</span><span class="token tag punctuation" style="color:#393A34">&gt;</span><span class="token plain-text"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain-text">  </span><span class="token tag punctuation" style="color:#393A34">&lt;</span><span class="token tag" style="color:#00009f">meta</span><span class="token tag" style="color:#00009f"> </span><span class="token tag attr-name" style="color:#00a4db">name</span><span class="token tag attr-value punctuation attr-equals" style="color:#393A34">=</span><span class="token tag attr-value punctuation" style="color:#393A34">"</span><span class="token tag attr-value" style="color:#e3116c">robots</span><span class="token tag attr-value punctuation" style="color:#393A34">"</span><span class="token tag" style="color:#00009f"> </span><span class="token tag attr-name" style="color:#00a4db">content</span><span class="token tag attr-value punctuation attr-equals" style="color:#393A34">=</span><span class="token tag attr-value punctuation" style="color:#393A34">"</span><span class="token tag attr-value" style="color:#e3116c">noindex, follow</span><span class="token tag attr-value punctuation" style="color:#393A34">"</span><span class="token tag" style="color:#00009f"> </span><span class="token tag punctuation" style="color:#393A34">/&gt;</span><span class="token plain-text"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain-text"></span><span class="token tag punctuation" style="color:#393A34">&lt;/</span><span class="token tag class-name" style="color:#00009f">Head</span><span class="token tag punctuation" style="color:#393A34">&gt;</span><br></span></code></pre></div></div>
 <p>This ensures search engines index original posts, not tag pages.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="results">Results<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#results" class="hash-link" aria-label="Direct link to Results" title="Direct link to Results" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="results">Results<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#results" class="hash-link" aria-label="Direct link to Results" title="Direct link to Results" translate="no">​</a></h2>
 <p>After implementing these optimizations:</p>
 <ul>
 <li class="">✅ Lighthouse SEO score: 95+</li>
@@ -141,10 +111,10 @@
 <li class="">✅ Page load time improved by 30%</li>
 <li class="">✅ Zero broken links</li>
 </ul>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://verified-skill.com/blog/2026/01/04/seo-best-practices#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://spec-weave.com/blog/2026/01/04/seo-best-practices#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion" translate="no">​</a></h2>
 <p>SEO for developer docs isn't just about rankings—it's about making your content discoverable and accessible. These five improvements took ~20 hours but deliver long-term value.</p>
 <hr>
-<p><strong>Want to learn more?</strong> Explore the <a href="https://verified-skill.com/docs/overview/introduction" target="_blank" rel="noopener noreferrer" class="">SpecWeave Documentation</a> for comprehensive guides on spec-driven development and AI-powered workflows.</p>]]></content>
+<p><strong>Want to learn more?</strong> Explore the <a href="https://spec-weave.com/docs/overview/introduction" target="_blank" rel="noopener noreferrer" class="">SpecWeave Documentation</a> for comprehensive guides on spec-driven development and AI-powered workflows.</p>]]></content>
         <author>
             <name>SpecWeave Team</name>
             <uri>https://github.com/anton-abyzov/specweave</uri>
@@ -156,12 +126,12 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[Introducing SpecWeave - Spec-Driven Development for AI Era]]></title>
-        <id>https://verified-skill.com/blog/introducing-specweave</id>
-        <link href="https://verified-skill.com/blog/introducing-specweave"/>
+        <id>https://spec-weave.com/blog/introducing-specweave</id>
+        <link href="https://spec-weave.com/blog/introducing-specweave"/>
         <updated>2025-10-26T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[We're excited to introduce SpecWeave, a revolutionary framework that replaces vibe coding with Spec-Driven Development.]]></summary>
         <content type="html"><![CDATA[<p>We're excited to introduce <strong>SpecWeave</strong>, a revolutionary framework that replaces vibe coding with <strong>Spec-Driven Development</strong>.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-problem-vibe-coding-doesnt-scale">The Problem: Vibe Coding Doesn't Scale<a href="https://verified-skill.com/blog/introducing-specweave#the-problem-vibe-coding-doesnt-scale" class="hash-link" aria-label="Direct link to The Problem: Vibe Coding Doesn't Scale" title="Direct link to The Problem: Vibe Coding Doesn't Scale" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-problem-vibe-coding-doesnt-scale">The Problem: Vibe Coding Doesn't Scale<a href="https://spec-weave.com/blog/introducing-specweave#the-problem-vibe-coding-doesnt-scale" class="hash-link" aria-label="Direct link to The Problem: Vibe Coding Doesn't Scale" title="Direct link to The Problem: Vibe Coding Doesn't Scale" translate="no">​</a></h2>
 <p>Traditional development with AI assistants suffers from:</p>
 <ul>
 <li class="">❌ <strong>No source of truth</strong> - Specifications drift from implementation</li>
@@ -170,7 +140,7 @@
 <li class="">❌ <strong>Tech stack assumptions</strong> - Tools assume Next.js, ignore Python/Go</li>
 <li class="">❌ <strong>Documentation debt</strong> - Docs become outdated immediately</li>
 </ul>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-solution-specweave">The Solution: SpecWeave<a href="https://verified-skill.com/blog/introducing-specweave#the-solution-specweave" class="hash-link" aria-label="Direct link to The Solution: SpecWeave" title="Direct link to The Solution: SpecWeave" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-solution-specweave">The Solution: SpecWeave<a href="https://spec-weave.com/blog/introducing-specweave#the-solution-specweave" class="hash-link" aria-label="Direct link to The Solution: SpecWeave" title="Direct link to The Solution: SpecWeave" translate="no">​</a></h2>
 <p><strong>SpecWeave</strong> is a specification-first AI development framework where:</p>
 <p>✅ <strong>Specifications are SOURCE OF TRUTH</strong> - Code expresses specs in a language
 ✅ <strong>Context Precision</strong> - Load only what's needed (70%+ token reduction)
@@ -178,72 +148,32 @@
 ✅ <strong>Framework-Agnostic</strong> - Works with ANY tech stack (TypeScript, Python, Go, Rust, Java)
 ✅ <strong>Living Documentation</strong> - Auto-updates via Claude Code hooks
 ✅ <strong>Test-Validated</strong> - E2E tests ensure features work (closed-loop validation)</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-features">Key Features<a href="https://verified-skill.com/blog/introducing-specweave#key-features" class="hash-link" aria-label="Direct link to Key Features" title="Direct link to Key Features" translate="no">​</a></h2>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-framework-agnostic-commands">1. Framework-Agnostic Commands<a href="https://verified-skill.com/blog/introducing-specweave#1-framework-agnostic-commands" class="hash-link" aria-label="Direct link to 1. Framework-Agnostic Commands" title="Direct link to 1. Framework-Agnostic Commands" translate="no">​</a></h3>
-<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">specweave init </span><span class="token parameter variable" style="color:#36acaa">--type</span><span class="token plain"> python </span><span class="token parameter variable" style="color:#36acaa">--framework</span><span class="token plain"> fastapi</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">/sw:increment </span><span class="token string" style="color:#e3116c">"user authentication"</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">/sw:progress</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-features">Key Features<a href="https://spec-weave.com/blog/introducing-specweave#key-features" class="hash-link" aria-label="Direct link to Key Features" title="Direct link to Key Features" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-framework-agnostic-commands">1. Framework-Agnostic Commands<a href="https://spec-weave.com/blog/introducing-specweave#1-framework-agnostic-commands" class="hash-link" aria-label="Direct link to 1. Framework-Agnostic Commands" title="Direct link to 1. Framework-Agnostic Commands" translate="no">​</a></h3>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">specweave init </span><span class="token parameter variable" style="color:#36acaa">--type</span><span class="token plain"> python </span><span class="token parameter variable" style="color:#36acaa">--framework</span><span class="token plain"> fastapi</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">sw:increment </span><span class="token string" style="color:#e3116c">"user authentication"</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">sw:progress</span><br></span></code></pre></div></div>
 <p>Commands detect your tech stack and adapt automatically.</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-selective-agent-installation">2. Selective Agent Installation<a href="https://verified-skill.com/blog/introducing-specweave#2-selective-agent-installation" class="hash-link" aria-label="Direct link to 2. Selective Agent Installation" title="Direct link to 2. Selective Agent Installation" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-selective-agent-installation">2. Selective Agent Installation<a href="https://spec-weave.com/blog/introducing-specweave#2-selective-agent-installation" class="hash-link" aria-label="Direct link to 2. Selective Agent Installation" title="Direct link to 2. Selective Agent Installation" translate="no">​</a></h3>
 <p>Install ONLY the agents you need:</p>
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Python API project: 7 agents (1,050 tokens)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">npx specweave </span><span class="token function" style="color:#d73a49">install</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">--detect</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># vs Loading ALL 19 agents (2,600 tokens) ❌</span><br></span></code></pre></div></div>
 <p><strong>60% token reduction</strong> on agents!</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-progressive-disclosure">3. Progressive Disclosure<a href="https://verified-skill.com/blog/introducing-specweave#3-progressive-disclosure" class="hash-link" aria-label="Direct link to 3. Progressive Disclosure" title="Direct link to 3. Progressive Disclosure" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-progressive-disclosure">3. Progressive Disclosure<a href="https://spec-weave.com/blog/introducing-specweave#3-progressive-disclosure" class="hash-link" aria-label="Direct link to 3. Progressive Disclosure" title="Direct link to 3. Progressive Disclosure" translate="no">​</a></h3>
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Claude's native progressive disclosure - no infrastructure needed</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># SKILL.md metadata loads first (~75 tokens per skill)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Full content loads only when relevant</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Example: Search living docs for context</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">grep</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-ril</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">"auth"</span><span class="token plain"> .specweave/docs/internal/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># → Finds specs, ADRs, architecture docs</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># → Claude reads exactly what's needed</span><br></span></code></pre></div></div>
 <p>Load exactly what's needed - <strong>70%+ token savings</strong> with zero infrastructure.</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-increment-lifecycle">4. Increment Lifecycle<a href="https://verified-skill.com/blog/introducing-specweave#4-increment-lifecycle" class="hash-link" aria-label="Direct link to 4. Increment Lifecycle" title="Direct link to 4. Increment Lifecycle" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-increment-lifecycle">4. Increment Lifecycle<a href="https://spec-weave.com/blog/introducing-specweave#4-increment-lifecycle" class="hash-link" aria-label="Direct link to 4. Increment Lifecycle" title="Direct link to 4. Increment Lifecycle" translate="no">​</a></h3>
 <div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">backlog → planned → in-progress → completed → closed</span><br></span></code></pre></div></div>
 <p>Track features with WIP limits, transfer leftovers, maintain focus.</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="5-flexible-documentation">5. Flexible Documentation<a href="https://verified-skill.com/blog/introducing-specweave#5-flexible-documentation" class="hash-link" aria-label="Direct link to 5. Flexible Documentation" title="Direct link to 5. Flexible Documentation" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="5-flexible-documentation">5. Flexible Documentation<a href="https://spec-weave.com/blog/introducing-specweave#5-flexible-documentation" class="hash-link" aria-label="Direct link to 5. Flexible Documentation" title="Direct link to 5. Flexible Documentation" translate="no">​</a></h3>
 <p>Supports BOTH approaches:</p>
 <ul>
 <li class=""><strong>Enterprise</strong>: Comprehensive upfront (500-600+ pages)</li>
 <li class=""><strong>Startup</strong>: Incremental/evolutionary (build as you go)</li>
 </ul>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="tech-stack-support">Tech Stack Support<a href="https://verified-skill.com/blog/introducing-specweave#tech-stack-support" class="hash-link" aria-label="Direct link to Tech Stack Support" title="Direct link to Tech Stack Support" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="tech-stack-support">Tech Stack Support<a href="https://spec-weave.com/blog/introducing-specweave#tech-stack-support" class="hash-link" aria-label="Direct link to Tech Stack Support" title="Direct link to Tech Stack Support" translate="no">​</a></h2>
 <p>SpecWeave works with ANY language/framework:</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>Language</th><th>Frameworks</th><th>Agent</th></tr></thead><tbody><tr><td><strong>TypeScript</strong></td><td>Next.js, NestJS, Express</td><td><code>nextjs</code>, <code>nodejs-backend</code></td></tr><tr><td><strong>Python</strong></td><td>FastAPI, Django, Flask</td><td><code>python-backend</code></td></tr><tr><td><strong>Go</strong></td><td>Gin, Echo, Fiber</td><td>(coming soon)</td></tr><tr><td><strong>Rust</strong></td><td>Actix, Rocket</td><td>(coming soon)</td></tr><tr><td><strong>.NET</strong></td><td>ASP.NET Core</td><td><code>dotnet-backend</code></td></tr><tr><td><strong>Java</strong></td><td>Spring Boot</td><td>(coming soon)</td></tr></tbody></table>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="getting-started">Getting Started<a href="https://verified-skill.com/blog/introducing-specweave#getting-started" class="hash-link" aria-label="Direct link to Getting Started" title="Direct link to Getting Started" translate="no">​</a></h2>
-<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Install SpecWeave</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">npx specweave init</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Create your first project</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">specweave init </span><span class="token parameter variable" style="color:#36acaa">--type</span><span class="token plain"> python </span><span class="token parameter variable" style="color:#36acaa">--framework</span><span class="token plain"> fastapi</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Start building</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">/sw:increment </span><span class="token string" style="color:#e3116c">"user authentication"</span><br></span></code></pre></div></div>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="whats-next">What's Next?<a href="https://verified-skill.com/blog/introducing-specweave#whats-next" class="hash-link" aria-label="Direct link to What's Next?" title="Direct link to What's Next?" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="getting-started">Getting Started<a href="https://spec-weave.com/blog/introducing-specweave#getting-started" class="hash-link" aria-label="Direct link to Getting Started" title="Direct link to Getting Started" translate="no">​</a></h2>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Install SpecWeave</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">npx specweave init</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Create your first project</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">specweave init </span><span class="token parameter variable" style="color:#36acaa">--type</span><span class="token plain"> python </span><span class="token parameter variable" style="color:#36acaa">--framework</span><span class="token plain"> fastapi</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Start building</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">sw:increment </span><span class="token string" style="color:#e3116c">"user authentication"</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="whats-next">What's Next?<a href="https://spec-weave.com/blog/introducing-specweave#whats-next" class="hash-link" aria-label="Direct link to What's Next?" title="Direct link to What's Next?" translate="no">​</a></h2>
 <ul>
 <li class="">🔧 <strong>Integration Agents</strong> - JIRA, Azure DevOps, GitHub sync</li>
 <li class="">📊 <strong>Diagram Agents</strong> - C4 diagrams, sequence diagrams</li>
@@ -251,11 +181,11 @@
 <li class="">🧪 <strong>Test Import</strong> - Import existing tests to SpecWeave</li>
 <li class="">🚀 <strong>Deployment Intelligence</strong> - Cost optimization, Hetzner/AWS/Railway</li>
 </ul>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="learn-more">Learn More<a href="https://verified-skill.com/blog/introducing-specweave#learn-more" class="hash-link" aria-label="Direct link to Learn More" title="Direct link to Learn More" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="learn-more">Learn More<a href="https://spec-weave.com/blog/introducing-specweave#learn-more" class="hash-link" aria-label="Direct link to Learn More" title="Direct link to Learn More" translate="no">​</a></h2>
 <ul>
-<li class=""><a href="https://verified-skill.com/docs/overview/introduction" target="_blank" rel="noopener noreferrer" class="">Documentation</a></li>
+<li class=""><a href="https://spec-weave.com/docs/overview/introduction" target="_blank" rel="noopener noreferrer" class="">Documentation</a></li>
 <li class=""><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="">GitHub Repository</a></li>
-<li class=""><a href="https://verified-skill.com/docs/guides/getting-started/quickstart" target="_blank" rel="noopener noreferrer" class="">Quick Start Guide</a></li>
+<li class=""><a href="https://spec-weave.com/docs/guides/getting-started/quickstart" target="_blank" rel="noopener noreferrer" class="">Quick Start Guide</a></li>
 </ul>
 <hr>
 <p><strong>Join the revolution.</strong> Build production software with confidence, clarity, and continuous validation.</p>
