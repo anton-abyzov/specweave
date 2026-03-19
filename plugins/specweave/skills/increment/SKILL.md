@@ -67,7 +67,7 @@ increment folder exists, the guard cannot find the state file and blocks spec.md
 ```bash
 if ! specweave check-discipline; then
   echo "Cannot create new increment! Close existing work first."
-  echo "Run: /sw:done <id>"
+  echo "Run: sw:done <id>"
   exit 1
 fi
 ```
@@ -83,7 +83,7 @@ const limits = config.limits || { maxActiveIncrements: 1, hardCap: 3 };
 if (active.length >= limits.hardCap) {
   // BLOCK - ask user to complete/pause existing
   console.log("WIP LIMIT REACHED");
-  console.log("Options: /sw:done <id> | /sw:pause <id>");
+  console.log("Options: sw:done <id> | sw:pause <id>");
 }
 
 if (active.length >= limits.maxActiveIncrements) {
@@ -398,9 +398,9 @@ EXECUTION STRATEGY
 ================================================
 Tasks: [N] | Domains: [M] | Complexity: [Low/Medium/High]
 
-  /sw:do <id>         - Step-by-step, full control
-  /sw:auto <id>       - Autonomous sequential (unattended)
-  /sw:team-lead       - Parallel multi-agent (best quality for multi-domain, higher token cost)
+  sw:do <id>         - Step-by-step, full control
+  sw:auto <id>       - Autonomous sequential (unattended)
+  sw:team-lead       - Parallel multi-agent (best quality for multi-domain, higher token cost)
 ```
 
 See CLAUDE.md Execution Strategy section for the full decision matrix.
@@ -471,7 +471,7 @@ Created increment 0003-user-authentication
 
    Files: spec.md, plan.md, tasks.md, metadata.json
 
-   Next: /sw:do 0003 | /sw:auto 0003 | /sw:team-lead (see Execution Strategy)
+   Next: sw:do 0003 | sw:auto 0003 | sw:team-lead (see Execution Strategy)
 ```
 
 ## Error Handling
@@ -479,7 +479,7 @@ Created increment 0003-user-authentication
 - `.specweave/` not found: "Run specweave init first"
 - Vague description: Ask clarifying questions
 - TeamCreate fails: Fall back to standalone Agent() calls without team_name (loses tmux panes but still works)
-- Agent fails: Fall back to invoking `/sw:pm` or `/sw:architect` skills directly (skills still work standalone)
+- Agent fails: Fall back to invoking `sw:pm` or `sw:architect` skills directly (skills still work standalone)
 
 ---
 

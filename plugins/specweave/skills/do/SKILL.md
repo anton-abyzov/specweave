@@ -1,5 +1,5 @@
 ---
-description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment". IMPORTANT - Before starting, check task count and domain count. If 3+ domains or 15+ tasks, recommend /sw:team-lead instead (ask user for confirmation, or auto-invoke in auto mode).
+description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment". IMPORTANT - Before starting, check task count and domain count. If 3+ domains or 15+ tasks, recommend sw:team-lead instead (ask user for confirmation, or auto-invoke in auto mode).
 argument-hint: "<increment-id>"
 hooks:
   PostToolUse:
@@ -28,9 +28,9 @@ Execute a SpecWeave increment by running tasks from tasks.md with automatic AC-s
 ## Usage
 
 ```
-/sw:do <increment-id>    # Execute specific increment
-/sw:do                   # Auto-select best candidate
-/sw:do <id> --model haiku|sonnet|opus  # Override model for all tasks
+sw:do <increment-id>    # Execute specific increment
+sw:do                   # Auto-select best candidate
+sw:do <id> --model haiku|sonnet|opus  # Override model for all tasks
 ```
 
 - `<increment-id>`: Optional. Supports "001", "0001", "1", "0042", or "0153-feature-name" formats.
@@ -53,8 +53,8 @@ When no ID provided, auto-select (NEVER ask user for ID):
 
 When running inside an active auto session (`.specweave/state/auto-mode.json` has `active: true`):
 
-1. **Explicit ID takes priority**: If an explicit increment ID was passed (e.g., `/sw:do 0252`), use it directly — skip this step
-2. **Stop hook guidance**: If the stop hook feedback in the current conversation mentions a specific increment ID (e.g., "Continue: /sw:do 0252"), use that ID
+1. **Explicit ID takes priority**: If an explicit increment ID was passed (e.g., `sw:do 0252`), use it directly — skip this step
+2. **Stop hook guidance**: If the stop hook feedback in the current conversation mentions a specific increment ID (e.g., "Continue: sw:do 0252"), use that ID
 3. **Read incrementIds**: If no ID from above, read `incrementIds` array from `auto-mode.json` and use the **first entry** — this is the increment prioritized by scoring at session start
 4. **Skip filesystem scanning**: When auto-mode context provides an increment ID via steps 2 or 3, skip Step 1's filesystem scanning entirely — auto-mode context takes priority
 
@@ -66,7 +66,7 @@ This ensures the execution loop stays focused on the contextually correct increm
 2. **Load files**: Read `spec.md`, `plan.md`, `tasks.md`, `tests.md`
 3. **Load living docs**: Check ADRs and specs in `.specweave/docs/internal/` for related context
 4. **Verify readiness**: Status is planned/in-progress, no blocking deps, tasks exist
-5. **Task count validation**: If >25 tasks, warn and offer to split, phase, or use `/sw:auto`/`/sw:team-lead`
+5. **Task count validation**: If >25 tasks, warn and offer to split, phase, or use `sw:auto`/`sw:team-lead`
 6. **Validate AC presence** (MANDATORY):
    ```bash
    bash "${CLAUDE_PLUGIN_ROOT}/hooks/pre-increment-start.sh" <increment-path>
@@ -97,7 +97,7 @@ PUSH_STRATEGY=$(jq -r '.cicd.pushStrategy // "direct"' .specweave/config.json 2>
 
 ### Step 2.7: Execution Strategy Check
 
-**Skip this step if already running inside `/sw:auto` or `/sw:team-lead`.** Check `.specweave/state/auto-mode.json` — if `active: true`, skip.
+**Skip this step if already running inside `sw:auto` or `sw:team-lead`.** Check `.specweave/state/auto-mode.json` — if `active: true`, skip.
 
 Assess increment complexity to recommend the best execution mode:
 
@@ -109,21 +109,21 @@ Assess increment complexity to recommend the best execution mode:
 
 | Tasks | Domains | Action |
 |-------|---------|--------|
-| ≤8 | 1 | Proceed with `/sw:do` silently |
-| 9-15 | 1-2 | Suggest `/sw:auto` for unattended execution |
-| >15 | 1-2 | Recommend `/sw:auto` (many tasks benefit from autonomous loop) |
-| any | 3+ | Recommend `/sw:team-lead` for parallel multi-agent execution |
+| ≤8 | 1 | Proceed with `sw:do` silently |
+| 9-15 | 1-2 | Suggest `sw:auto` for unattended execution |
+| >15 | 1-2 | Recommend `sw:auto` (many tasks benefit from autonomous loop) |
+| any | 3+ | Recommend `sw:team-lead` for parallel multi-agent execution |
 
 **When recommending (non-auto mode)**, use `AskUserQuestion` with these options:
-- `/sw:do` — Continue manual step-by-step (current mode)
-- `/sw:auto` — Autonomous sequential execution (unattended, stop-hook loop)
-- `/sw:team-lead` — Parallel multi-agent execution (higher quality for multi-domain, uses more tokens)
+- `sw:do` — Continue manual step-by-step (current mode)
+- `sw:auto` — Autonomous sequential execution (unattended, stop-hook loop)
+- `sw:team-lead` — Parallel multi-agent execution (higher quality for multi-domain, uses more tokens)
 
 Include trade-off note: "Team-lead and auto modes consume more tokens but deliver higher precision and quality for complex work."
 
-If user chooses auto or team-lead, invoke the chosen skill with the increment ID and **stop /sw:do execution**.
+If user chooses auto or team-lead, invoke the chosen skill with the increment ID and **stop sw:do execution**.
 
-**In auto mode (`.specweave/state/auto-mode.json` active)**: If 3+ domains detected, automatically invoke `/sw:team-lead` instead of proceeding sequentially.
+**In auto mode (`.specweave/state/auto-mode.json` active)**: If 3+ domains detected, automatically invoke `sw:team-lead` instead of proceeding sequentially.
 
 ### Step 3: TDD Setup
 
@@ -136,7 +136,7 @@ If TDD mode active:
 - Show TDD reminder banner (RED > GREEN > REFACTOR)
 - Detect phase from task title markers: `[RED]`, `[GREEN]`, `[REFACTOR]`
 - **Validate TDD markers exist** in tasks.md. If missing:
-  - `strict` enforcement: BLOCK, require regeneration via `/sw:increment`
+  - `strict` enforcement: BLOCK, require regeneration via `sw:increment`
   - `warn` (default): warn and proceed
   - `off`: silent pass
 - **Enforce order**: GREEN requires RED complete; REFACTOR requires GREEN complete
@@ -190,7 +190,7 @@ PER_TASK_REVIEW=$(jq -r '.quality.perTaskReview // false' .specweave/config.json
 
 **Skip this gate entirely if**:
 - `quality.perTaskReview` is absent or `false` (default — backward compatible)
-- Running inside `/sw:team-lead` (team-lead has its own review flow). Detect via: `ls ~/.claude/teams/ 2>/dev/null | head -1` — if any entries exist, skip.
+- Running inside `sw:team-lead` (team-lead has its own review flow). Detect via: `ls ~/.claude/teams/ 2>/dev/null | head -1` — if any entries exist, skip.
 
 **When the gate is active** (`perTaskReview: true`), after each task passes verification (Step 6) but before moving to the next task:
 
@@ -226,10 +226,10 @@ After testable tasks: run relevant tests, fix failures immediately, only continu
 
 ### Step 9: Completion (MANDATORY AUTO-CHAIN — NEVER STOP HERE)
 
-**CRITICAL**: When all tasks are done, IMMEDIATELY chain to closure. Do NOT stop to ask for review, do NOT report "all tasks complete" and wait. The quality gates inside `/sw:done` (grill, judge-llm, PM validation) ARE the review. If the user wants to re-open, they can.
+**CRITICAL**: When all tasks are done, IMMEDIATELY chain to closure. Do NOT stop to ask for review, do NOT report "all tasks complete" and wait. The quality gates inside `sw:done` (grill, judge-llm, PM validation) ARE the review. If the user wants to re-open, they can.
 
 When all tasks done:
-1. Run `/sw:sync-docs update` to sync living docs
+1. Run `sw:sync-docs update` to sync living docs
 2. Run tests: `npx vitest run` (if test framework detected)
 3. Invoke `Skill({ skill: "sw:grill" })` with increment ID — writes required `grill-report.json`
 4. Invoke `Skill({ skill: "sw:done" })` with increment ID — runs judge-llm, PM gates, closes, and syncs to GitHub/Jira/ADO
@@ -248,7 +248,7 @@ If found: execute directly. If missing: ask user for credential.
 
 ---
 
-Run `/sw:validate` after execution to ensure quality before closing with `/sw:done`.
+Run `sw:validate` after execution to ensure quality before closing with `sw:done`.
 
 ## Resources
 

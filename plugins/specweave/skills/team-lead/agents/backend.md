@@ -43,9 +43,9 @@ WORKFLOW:
        content: "PLAN_READY: Created [increment path]\nTasks: [count]\nACs covered: [AC-IDs]\nKey decisions: [summary]\nFiles: [file list]\nArchitecture: [approach]",
        summary: "Backend plan ready — proceeding to implementation" })
   10. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
-  11. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  11. Execute tasks autonomously: sw:auto --simple (minimal context mode to prevent context overflow)
       Tasks should include: API endpoints, services, middleware, and OpenAPI spec generation if routes change
-  12. During /sw:auto execution, after EACH task completion send heartbeat:
+  12. During sw:auto execution, after EACH task completion send heartbeat:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
        summary: "Backend agent: task {N} of {total} done" })
@@ -55,7 +55,7 @@ WORKFLOW:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "COMPLETION: [increment path]\nTasks: {completed}/{total}\nTests: [pass/fail/skip]\nACs satisfied: [AC-IDs]\nFiles changed: [list]",
        summary: "Backend agent: all tasks complete, tests passing" })
-  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  16. Do NOT run sw:done or sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

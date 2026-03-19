@@ -374,8 +374,8 @@ Report saved to: [REPORT_PATH]
 
 Next steps:
   - Fix critical issues before merging
-  - /sw:do to implement fixes (if increment exists)
-  - /sw:code-reviewer --changes to re-review after fixes
+  - sw:do to implement fixes (if increment exists)
+  - sw:code-reviewer --changes to re-review after fixes
 ```
 
 ---
@@ -396,6 +396,6 @@ Next steps:
 
 | Skill | Relationship |
 |-------|-------------|
-| `/sw:grill` | Grill is increment-scoped, runs during closure. Code-reviewer is general-purpose, runs anytime. |
-| `/sw:team-lead --mode review` | Team-lead delegates review mode to this skill |
-| `/sw:validate` | Rule-based validation (130+ checks). Code-reviewer is AI-powered analysis. |
+| `sw:grill` | Grill is increment-scoped, runs during closure. Code-reviewer is general-purpose, runs anytime. |
+| `sw:team-lead --mode review` | Team-lead delegates review mode to this skill |
+| `sw:validate` | Rule-based validation (130+ checks). Code-reviewer is AI-powered analysis. |

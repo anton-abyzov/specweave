@@ -16,12 +16,12 @@ Import issues from external trackers (GitHub, JIRA, Azure DevOps) and create Spe
 1. Read `.specweave/config.json` — check `sync` section
 2. Identify which platforms are configured (`sync.github`, `sync.jira`, `sync.ado`)
 3. If NO platforms configured:
-   - Tell user: "No external tools configured. Run `/sw:sync-setup` to connect GitHub, JIRA, or ADO."
+   - Tell user: "No external tools configured. Run `sw:sync-setup` to connect GitHub, JIRA, or ADO."
    - **STOP**
 
 ### STEP 2: Platform Selection
 
-1. If user specified a platform in the command argument (e.g., `/sw:import github`), use that
+1. If user specified a platform in the command argument (e.g., `sw:import github`), use that
 2. If multiple platforms configured and none specified, ask user which to import from:
    - Use AskUserQuestion with configured platforms as options
 3. Validate the selected platform is configured and has credentials
@@ -123,8 +123,8 @@ Skipped (duplicates):
 Errors: none
 
 Next steps:
-  - /sw:do 0271G  — Start working on first import
-  - /sw:auto 0271G — Run autonomously
+  - sw:do 0271G  — Start working on first import
+  - sw:auto 0271G — Run autonomously
 ```
 
 ---
@@ -146,7 +146,7 @@ Next steps:
 Tell user "No matching issues found. Try adjusting filters." Suggest broader search.
 
 ### External tool API error
-Report the error clearly. Suggest checking credentials: "Run `/sw:sync-setup` to verify credentials."
+Report the error clearly. Suggest checking credentials: "Run `sw:sync-setup` to verify credentials."
 
 ### Issue has no description
 Create spec with title only and mark as needs-review.

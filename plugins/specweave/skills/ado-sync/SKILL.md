@@ -1,5 +1,5 @@
 ---
-description: Help and guidance for Azure DevOps synchronization with SpecWeave increments. Use when asking how to set up ADO sync, configure credentials, or troubleshoot integration issues. For actual syncing, use /sw-ado:sync command.
+description: Help and guidance for Azure DevOps synchronization with SpecWeave increments. Use when asking how to set up ADO sync, configure credentials, or troubleshoot integration issues. For actual syncing, use sw-ado:sync command.
 user-invokable: false
 ---
 
@@ -9,7 +9,7 @@ user-invokable: false
 
 **Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
 
-**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about Azure DevOps sync. For actual syncing, users should use the `/sw-ado:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about Azure DevOps sync. For actual syncing, users should use the `sw-ado:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 **Capabilities**:
 - Bidirectional sync: SpecWeave ↔ ADO (default)
@@ -31,7 +31,7 @@ user-invokable: false
 - User needs help configuring Azure DevOps integration
 
 ❌ **Do NOT activate when**:
-- User invokes `/sw-ado:sync` command (command handles it)
+- User invokes `sw-ado:sync` command (command handles it)
 - Command is already running (avoid duplicate invocation)
 - Task completion hook is syncing (automatic process)
 - "Close ADO work item when done"
@@ -99,13 +99,13 @@ AZURE_DEVOPS_PAT=your-token-here
 
 ## Commands Available
 
-### `/sw-ado:create-workitem <increment-id>`
+### `sw-ado:create-workitem <increment-id>`
 
 **Purpose**: Create ADO work item from increment
 
 **Example**:
 ```bash
-/sw-ado:create-workitem 0005
+sw-ado:create-workitem 0005
 ```
 
 **Result**:
@@ -116,13 +116,13 @@ AZURE_DEVOPS_PAT=your-token-here
 
 ---
 
-### `/sw-ado:sync <increment-id>`
+### `sw-ado:sync <increment-id>`
 
 **Purpose**: Sync increment progress with ADO work item
 
 **Example**:
 ```bash
-/sw-ado:sync 0005
+sw-ado:sync 0005
 ```
 
 **Result**:
@@ -133,13 +133,13 @@ AZURE_DEVOPS_PAT=your-token-here
 
 ---
 
-### `/sw-ado:close-workitem <increment-id>`
+### `sw-ado:close-workitem <increment-id>`
 
 **Purpose**: Close ADO work item when increment complete
 
 **Example**:
 ```bash
-/sw-ado:close-workitem 0005
+sw-ado:close-workitem 0005
 ```
 
 **Result**:
@@ -149,13 +149,13 @@ AZURE_DEVOPS_PAT=your-token-here
 
 ---
 
-### `/sw-ado:status <increment-id>`
+### `sw-ado:status <increment-id>`
 
 **Purpose**: Check ADO sync status for increment
 
 **Example**:
 ```bash
-/sw-ado:status 0005
+sw-ado:status 0005
 ```
 
 **Result**:
@@ -205,10 +205,10 @@ Sync Enabled: ✅
 
 ### When Increment Completes
 
-**Trigger**: `/sw:done` command
+**Trigger**: `sw:done` command
 
 **Flow**:
-1. User runs `/sw:done 0005`
+1. User runs `sw:done 0005`
 2. Validate all tasks complete
 3. Close ADO work item automatically
 4. Add completion comment with summary
@@ -380,10 +380,10 @@ AZURE_DEVOPS_PAT=your-token-here
 
 ## Related Commands
 
-- `/sw:inc` - Create increment (auto-creates ADO work item if enabled)
-- `/sw:do` - Execute tasks (auto-syncs progress to ADO)
-- `/sw:done` - Complete increment (auto-closes ADO work item)
-- `/sw:status` - Show increment status (includes ADO sync status)
+- `sw:inc` - Create increment (auto-creates ADO work item if enabled)
+- `sw:do` - Execute tasks (auto-syncs progress to ADO)
+- `sw:done` - Complete increment (auto-closes ADO work item)
+- `sw:status` - Show increment status (includes ADO sync status)
 
 ---
 
@@ -408,7 +408,7 @@ AZURE_DEVOPS_PAT=your-token-here
 # User completed 3 tasks manually
 # Now sync to ADO
 
-/sw-ado:sync 0005
+sw-ado:sync 0005
 
 # Result: ADO Epic #12345 updated with 30% progress
 ```
@@ -416,7 +416,7 @@ AZURE_DEVOPS_PAT=your-token-here
 ### Example 3: Check Sync Status
 
 ```bash
-/sw-ado:status 0005
+sw-ado:status 0005
 
 # Output:
 # Work Item: #12345

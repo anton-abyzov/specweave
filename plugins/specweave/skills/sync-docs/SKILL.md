@@ -14,8 +14,8 @@ Sync living documentation for an increment. This generates or updates feature sp
 ## Usage
 
 ```
-/sw:sync-docs <increment-id>           # Sync living docs for increment
-/sw:sync-docs <increment-id> --review  # Dry-run: validate sync without modifying files
+sw:sync-docs <increment-id>           # Sync living docs for increment
+sw:sync-docs <increment-id> --review  # Dry-run: validate sync without modifying files
 ```
 
 ## Workflow
@@ -64,7 +64,7 @@ In review mode, prefix with: `[DRY RUN] No files were modified.`
 If sync fails:
 - Display the error message
 - Suggest: "Check that spec.md has valid frontmatter and user stories are properly formatted"
-- Suggest: "Run `/sw:progress-sync` for full external tool sync"
+- Suggest: "Run `sw:progress-sync` for full external tool sync"
 
 ## Resources
 
