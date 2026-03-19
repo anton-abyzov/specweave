@@ -1,9 +1,11 @@
 import { execFileNoThrow } from "../../vendor/utils/execFileNoThrow.js";
+import { checkAndDecrement } from "../../../../../src/sync/github-rate-limit-budget.js";
+import { findProjectRoot } from "../../../../../src/utils/find-project-root.js";
 const _GitHubClientV2 = class _GitHubClientV2 {
   /**
    * Create GitHub client from sync profile
    */
-  constructor(profile) {
+  constructor(profile, projectRoot) {
     if (profile.provider !== "github") {
       throw new Error(`Expected GitHub profile, got ${profile.provider}`);
     }
@@ -15,6 +17,7 @@ const _GitHubClientV2 = class _GitHubClientV2 {
     this.repo = config.repo;
     this.fullRepo = `${this.owner}/${this.repo}`;
     this.token = config.token;
+    this.projectRoot = projectRoot;
   }
   /**
    * Get environment object with GH_TOKEN for gh CLI commands.
@@ -27,6 +30,28 @@ const _GitHubClientV2 = class _GitHubClientV2 {
     return this.token ? { ...process.env, GH_TOKEN: this.token } : process.env;
   }
   /**
+   * Set the project root for rate-limit budget tracking.
+   * When set, all API calls check the shared budget before executing.
+   */
+  setProjectRoot(root) {
+    this.projectRoot = root;
+  }
+  /**
+   * Budget-gated wrapper around execFileNoThrow.
+   * Checks shared rate-limit budget before making API calls.
+   * Skips the call with a warning if budget is exhausted.
+   */
+  async execWithBudget(command, args, options) {
+    if (this.projectRoot) {
+      const allowed = await checkAndDecrement(this.projectRoot);
+      if (!allowed) {
+        console.warn(`\u26A0\uFE0F  GitHub API call skipped \u2014 rate limit budget exhausted (remaining < 200)`);
+        return { stdout: "", stderr: "Rate limit budget exhausted", exitCode: 1, success: false };
+      }
+    }
+    return execFileNoThrow(command, args, options);
+  }
+  /**
    * Create client from owner/repo directly
    */
   static fromRepo(owner, repo) {
@@ -36,7 +61,8 @@ const _GitHubClientV2 = class _GitHubClientV2 {
       config: { owner, repo },
       timeRange: { default: "1M", max: "6M" }
     };
-    return new _GitHubClientV2(profile);
+    const projectRoot = findProjectRoot() ?? void 0;
+    return new _GitHubClientV2(profile, projectRoot);
   }
   /**
    * Get repository owner
@@ -125,7 +151,7 @@ const _GitHubClientV2 = class _GitHubClientV2 {
     if (description) {
       args.splice(4, 0, "-f", `description=${description}`);
     }
-    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
+    const result = await this.execWithBudget("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
     }
@@ -135,7 +161,7 @@ const _GitHubClientV2 = class _GitHubClientV2 {
    * Get milestone by title
    */
   async getMilestoneByTitle(title) {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "api",
       `repos/${this.fullRepo}/milestones?per_page=100&state=all`,
       "--jq",
@@ -283,7 +309,7 @@ FIX:
     }
     if (milestone !== void 0) {
       if (typeof milestone === "number") {
-        const msResult = await execFileNoThrow("gh", [
+        const msResult = await this.execWithBudget("gh", [
           "api",
           `repos/${this.fullRepo}/milestones/${milestone}`,
           "--jq",
@@ -296,7 +322,7 @@ FIX:
         args.push("--milestone", milestone);
       }
     }
-    const createResult = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
+    const createResult = await this.execWithBudget("gh", args, { env: this.getGhEnv() });
     if (createResult.exitCode !== 0) {
       throw new Error(
         `Failed to create epic issue: ${createResult.stderr || createResult.stdout}`
@@ -327,7 +353,7 @@ ${body}`;
     if (cached && Date.now() - cached.fetchedAt < _GitHubClientV2.CACHE_TTL_MS) {
       return cached.data;
     }
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "issue",
       "view",
       String(issueNumber),
@@ -379,7 +405,7 @@ ${body}`;
     if (includeClosedIssues) {
       args.push("--state", "all");
     }
-    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
+    const result = await this.execWithBudget("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       return null;
     }
@@ -399,10 +425,31 @@ ${body}`;
     };
   }
   /**
+   * Edit issue body directly without fetching current state first.
+   * Use this for already-linked issues where we know the issue exists.
+   * Saves 1 API call compared to the fetch-then-edit pattern.
+   */
+  async editIssueBody(issueNumber, newBody) {
+    const result = await this.execWithBudget("gh", [
+      "issue",
+      "edit",
+      String(issueNumber),
+      "--repo",
+      this.fullRepo,
+      "--body",
+      newBody
+    ], { env: this.getGhEnv() });
+    if (result.exitCode !== 0) {
+      throw new Error(
+        `Failed to edit issue #${issueNumber}: ${result.stderr || result.stdout}`
+      );
+    }
+  }
+  /**
    * Update issue body
    */
   async updateIssueBody(issueNumber, newBody) {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "issue",
       "edit",
       String(issueNumber),
@@ -424,7 +471,7 @@ ${body}`;
     if (comment) {
       await this.addComment(issueNumber, comment);
     }
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "issue",
       "close",
       String(issueNumber),
@@ -447,7 +494,7 @@ ${body}`;
     if (comment) {
       await this.addComment(issueNumber, comment);
     }
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "issue",
       "reopen",
       String(issueNumber),
@@ -464,7 +511,7 @@ ${body}`;
    * Add comment to issue
    */
   async addComment(issueNumber, comment) {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "issue",
       "comment",
       String(issueNumber),
@@ -485,7 +532,7 @@ ${body}`;
    * Returns the most recent comment body, or null if no comments exist
    */
   async getLastComment(issueNumber) {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "api",
       `repos/${this.fullRepo}/issues/${issueNumber}/comments?sort=created&direction=desc&per_page=1`,
       "--jq",
@@ -515,7 +562,7 @@ ${body}`;
   async getIssueWithLastComment(issueNumber) {
     const query = `query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){number title body url state labels(first:10){nodes{name}}comments(last:1){nodes{body author{login}}}}}}`;
     try {
-      const result = await execFileNoThrow("gh", [
+      const result = await this.execWithBudget("gh", [
         "api",
         "graphql",
         "-f",
@@ -566,7 +613,7 @@ ${body}`;
     for (const label of labels) {
       args.push("--add-label", label);
     }
-    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
+    const result = await this.execWithBudget("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to add labels to issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -581,7 +628,7 @@ ${body}`;
    * @param limit Max results — 100 for default mode, 1000 for --full
    */
   async bulkFetchIssueStates(limit = 100) {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "search",
       "issues",
       `repo:${this.fullRepo} [FS- in:title`,
@@ -616,7 +663,7 @@ ${body}`;
       return cached.data;
     }
     const pattern = userStoryId ? `[${featureId}][${userStoryId}]` : `[${featureId}]`;
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "issue",
       "list",
       "--repo",
@@ -651,7 +698,7 @@ ${body}`;
   async listIssuesInTimeRange(timeRange, customStart, customEnd) {
     const { since, until } = this.calculateTimeRange(timeRange, customStart, customEnd);
     const query = `repo:${this.fullRepo} is:issue created:${since}..${until}`;
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "search",
       "issues",
       query,
@@ -723,7 +770,7 @@ ${body}`;
    * Check rate limit status
    */
   async checkRateLimit() {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "api",
       "rate_limit",
       "--jq",
@@ -802,7 +849,7 @@ ${body}`;
   async fetchRecentChanges(since, linkedIssueNumbers) {
     const sinceISO = since.toISOString();
     const jqFilter = linkedIssueNumbers && linkedIssueNumbers.length > 0 ? `.[] | select(.number | IN(${linkedIssueNumbers.join(",")})) | {number, title, state, updated_at, user: .user.login, assignee: .assignee.login, labels: [.labels[].name]}` : `.[] | {number, title, state, updated_at, user: .user.login, assignee: .assignee.login, labels: [.labels[].name]}`;
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "api",
       `repos/${this.fullRepo}/issues`,
       "--method",
@@ -860,7 +907,7 @@ ${body}`;
    * @returns Array of events with action details
    */
   async getIssueEvents(issueNumber, perPage = 30) {
-    const result = await execFileNoThrow("gh", [
+    const result = await this.execWithBudget("gh", [
       "api",
       `repos/${this.fullRepo}/issues/${issueNumber}/events`,
       "-f",
