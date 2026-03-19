@@ -166,8 +166,8 @@
             },
             "external_tracker_sync": {
               "type": "boolean",
-              "description": "Sync to external tracker (GitHub Issues, Jira, ADO)",
-              "default": true
+              "description": "Sync to external tracker (GitHub Issues, Jira, ADO) on each task completion. Disable to reduce API calls; sync happens on increment open/close instead.",
+              "default": false
             }
           },
           "additionalProperties": false
