@@ -41,7 +41,7 @@ function saveToDisk() {
     for (const [repo, labels] of labelCache) {
       data[repo] = {
         labels: [...labels],
-        cachedAt: new Date().toISOString()
+        cachedAt: (/* @__PURE__ */ new Date()).toISOString()
       };
     }
     writeFileSync(diskCachePath, JSON.stringify(data, null, 2), "utf-8");
