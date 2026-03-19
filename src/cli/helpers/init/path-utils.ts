@@ -156,8 +156,7 @@ export const SUSPICIOUS_PATH_SEGMENTS: readonly string[] = [
   'dist', 'build', '.next', '.nuxt', '.output', 'out', 'coverage',
   // VCS internals
   '.git', '.svn', '.hg',
-  // Temp
-  'tmp', 'temp',
+  // Note: 'tmp' and 'temp' removed — use isSystemTempDir() instead
   // Test dirs
   '__tests__', 'stories', 'storybook',
   // Platform-specific deep dirs
@@ -206,21 +205,50 @@ export function detectUmbrellaParent(targetDir: string): UmbrellaParentResult | 
 }
 
 /**
+ * Check if a path is inside the OS system temp directory.
+ *
+ * Uses os.tmpdir() to detect the real system temp dir, avoiding false positives
+ * on user-created folders named "temp" or "tmp".
+ *
+ * @param resolvedPath - Absolute path to check
+ * @returns true if the path is the system temp dir or a subdirectory of it
+ */
+export function isSystemTempDir(resolvedPath: string): boolean {
+  const sysTmp = path.resolve(os.tmpdir());
+  const normalized = path.resolve(resolvedPath);
+  return normalized === sysTmp || normalized.startsWith(sysTmp + path.sep);
+}
+
+/**
  * Detect if the target directory path contains suspicious segments
- * that indicate it's NOT a project root (e.g., node_modules, dist, .git).
+ * that indicate it's NOT a project root (e.g., node_modules, dist, .git),
+ * or if it's inside the system temp directory.
  *
  * @param targetDir - Directory where user wants to initialize
  * @returns SuspiciousPathResult if suspicious segment found, null otherwise
  */
 export function detectSuspiciousPath(targetDir: string): SuspiciousPathResult | null {
   const resolved = path.resolve(targetDir);
+
+  // Check if inside system temp directory
+  if (isSystemTempDir(resolved)) {
+    return { segment: 'system temp directory', suggestedRoot: path.dirname(path.resolve(os.tmpdir())) };
+  }
+
+  // Check path segments against suspicious list
   const segments = resolved.split(path.sep);
+  const homeDir = os.homedir();
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     if (SUSPICIOUS_PATH_SEGMENTS.includes(seg)) {
-      // suggestedRoot is the directory just before the suspicious segment
-      const suggestedRoot = segments.slice(0, i).join(path.sep) || path.sep;
+      let suggestedRoot = segments.slice(0, i).join(path.sep) || path.sep;
+
+      // Never suggest home directory or an ancestor of it
+      if (suggestedRoot === homeDir || homeDir.startsWith(suggestedRoot + path.sep) || suggestedRoot === path.sep) {
+        suggestedRoot = path.dirname(resolved);
+      }
+
       return { segment: seg, suggestedRoot };
     }
   }

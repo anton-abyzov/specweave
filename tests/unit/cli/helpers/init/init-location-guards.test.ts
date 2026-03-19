@@ -13,6 +13,7 @@ import os from 'os';
 import {
   detectUmbrellaParent,
   detectSuspiciousPath,
+  isSystemTempDir,
   SUSPICIOUS_PATH_SEGMENTS,
 } from '../../../../../src/cli/helpers/init/path-utils.js';
 
@@ -209,6 +210,60 @@ describe('init location guards', () => {
       const result = detectSuspiciousPath('/home/user/project/build/static');
       expect(result).not.toBeNull();
       expect(result!.segment).toBe('build');
+    });
+
+    it('does NOT flag user folder named "temp"', () => {
+      const result = detectSuspiciousPath(path.join(os.homedir(), 'temp', 'my-project'));
+      expect(result).toBeNull();
+    });
+
+    it('does NOT flag user folder named "tmp"', () => {
+      const result = detectSuspiciousPath(path.join(os.homedir(), 'tmp', 'my-project'));
+      expect(result).toBeNull();
+    });
+
+    it('SUSPICIOUS_PATH_SEGMENTS does not contain tmp or temp', () => {
+      expect(SUSPICIOUS_PATH_SEGMENTS).not.toContain('tmp');
+      expect(SUSPICIOUS_PATH_SEGMENTS).not.toContain('temp');
+    });
+
+    it('detects actual system temp directory', () => {
+      const result = detectSuspiciousPath(path.join(os.tmpdir(), 'some-project'));
+      expect(result).not.toBeNull();
+      expect(result!.segment).toBe('system temp directory');
+    });
+
+    it('suggestedRoot is never the home directory', () => {
+      // .cache at depth producing homedir as suggestedRoot
+      const fakePath = path.join(os.homedir(), '.cache', 'some-project');
+      const result = detectSuspiciousPath(fakePath);
+      if (result) {
+        expect(result.suggestedRoot).not.toBe(os.homedir());
+      }
+    });
+  });
+
+  // ─── isSystemTempDir ──────────────────────────────────────
+
+  describe('isSystemTempDir', () => {
+    it('returns true for os.tmpdir()', () => {
+      expect(isSystemTempDir(os.tmpdir())).toBe(true);
+    });
+
+    it('returns true for subdirectory of os.tmpdir()', () => {
+      expect(isSystemTempDir(path.join(os.tmpdir(), 'some-project'))).toBe(true);
+    });
+
+    it('returns false for home directory', () => {
+      expect(isSystemTempDir(os.homedir())).toBe(false);
+    });
+
+    it('returns false for user folder named temp', () => {
+      expect(isSystemTempDir(path.join(os.homedir(), 'temp'))).toBe(false);
+    });
+
+    it('returns false for regular project path', () => {
+      expect(isSystemTempDir('/home/user/projects/my-app')).toBe(false);
     });
   });
 });
