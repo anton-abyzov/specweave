@@ -4,7 +4,7 @@ description: Push local progress to GitHub Issues (like git push). Updates issue
 
 # GitHub Push Command
 
-**Usage**: `/sw-github:push [increment-id]`
+**Usage**: `sw-github:push [increment-id]`
 
 **Purpose**: Push local progress to GitHub Issues (like `git push`)
 
@@ -14,10 +14,10 @@ description: Push local progress to GitHub Issues (like git push). Updates issue
 
 ```bash
 # Push current/active increment
-/sw-github:push
+sw-github:push
 
 # Push specific increment
-/sw-github:push 0005
+sw-github:push 0005
 ```
 
 ---
@@ -49,7 +49,7 @@ Permission Denied: GitHub writes disabled
 
 To enable: Set sync.settings.canUpdateExternalItems = true
 
-Or use read-only: /sw-github:pull ${incrementId}
+Or use read-only: sw-github:pull ${incrementId}
 `);
   return;
 }
@@ -108,7 +108,7 @@ URL: https://github.com/owner/repo/issues/123
 ### Example 1: Simple Push
 
 ```
-User: /sw-github:push
+User: sw-github:push
 
 Claude:
 Pushing to GitHub...
@@ -124,7 +124,7 @@ Push complete!
 ### Example 2: 100% Complete
 
 ```
-User: /sw-github:push 0005
+User: sw-github:push 0005
 
 Claude:
 Pushing to GitHub...
@@ -136,7 +136,7 @@ Updates:
   Comment: "All tasks complete!"
   Issue: CLOSED
 
-Ready for next: /sw:done 0005
+Ready for next: sw:done 0005
 ```
 
 ---
@@ -145,7 +145,7 @@ Ready for next: /sw:done 0005
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-github:pull` | Pull changes from GitHub |
-| `/sw-github:sync` | Two-way sync (pull + push) |
-| `/sw-github:status` | Check sync status |
-| `/sw-github:close` | Close issue with summary |
+| `sw-github:pull` | Pull changes from GitHub |
+| `sw-github:sync` | Two-way sync (pull + push) |
+| `sw-github:status` | Check sync status |
+| `sw-github:close` | Close issue with summary |

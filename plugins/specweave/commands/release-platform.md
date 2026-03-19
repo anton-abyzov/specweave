@@ -1,5 +1,5 @@
 ---
-description: "Coordinate multi-repo platform releases with synchronized versioning, RC workflow, and GitFlow integration. Usage: /sw-release:platform create|promote|status"
+description: "Coordinate multi-repo platform releases with synchronized versioning, RC workflow, and GitFlow integration. Usage: sw-release:platform create|promote|status"
 ---
 
 # Platform Release Coordination
@@ -15,12 +15,12 @@ description: "Coordinate multi-repo platform releases with synchronized versioni
 ### Create Platform RC
 
 ```bash
-/sw-release:platform create <platform-version>
+sw-release:platform create <platform-version>
 ```
 
 **Example**:
 ```bash
-/sw-release:platform create v3.0.0
+sw-release:platform create v3.0.0
 ```
 
 **What it does**:
@@ -66,8 +66,8 @@ Step 6: Updating version matrix...
 Next steps:
 1. Deploy to staging
 2. Run E2E tests
-3. If tests pass: /sw-release:platform promote v3.0.0-rc.1
-4. If tests fail: /sw-release:platform iterate v3.0.0-rc.1
+3. If tests pass: sw-release:platform promote v3.0.0-rc.1
+4. If tests fail: sw-release:platform iterate v3.0.0-rc.1
 ```
 
 ---
@@ -75,12 +75,12 @@ Next steps:
 ### Iterate Platform RC
 
 ```bash
-/sw-release:platform iterate <platform-rc-version>
+sw-release:platform iterate <platform-rc-version>
 ```
 
 **Example**:
 ```bash
-/sw-release:platform iterate v3.0.0-rc.1
+sw-release:platform iterate v3.0.0-rc.1
 ```
 
 **What it does**:
@@ -111,12 +111,12 @@ Creating RC.2 for changed repos:
 ### Promote Platform RC to Production
 
 ```bash
-/sw-release:platform promote <platform-rc-version>
+sw-release:platform promote <platform-rc-version>
 ```
 
 **Example**:
 ```bash
-/sw-release:platform promote v3.0.0-rc.3
+sw-release:platform promote v3.0.0-rc.3
 ```
 
 **What it does**:
@@ -191,12 +191,12 @@ Deployment URLs:
 ### Platform Release Status
 
 ```bash
-/sw-release:platform status [platform-version]
+sw-release:platform status [platform-version]
 ```
 
 **Example**:
 ```bash
-/sw-release:platform status v3.0.0
+sw-release:platform status v3.0.0
 ```
 
 **Output**:
@@ -224,9 +224,9 @@ Blockers:
 
 Next Steps:
   1. Fix api-gateway auth flow
-  2. Create RC.3: /sw-release:platform iterate v3.0.0-rc.2
+  2. Create RC.3: sw-release:platform iterate v3.0.0-rc.2
   3. Re-test
-  4. Promote: /sw-release:platform promote v3.0.0-rc.3
+  4. Promote: sw-release:platform promote v3.0.0-rc.3
 ```
 
 ---
@@ -407,21 +407,21 @@ Next Steps:
 # Solution: Resolve conflicts manually, then resume
 git add .
 git commit -m "Resolved conflicts"
-/sw-release:platform promote v3.0.0-rc.3 --resume
+sw-release:platform promote v3.0.0-rc.3 --resume
 ```
 
 **Issue**: One service fails tests
 ```bash
 # Solution: Fix the service, create new RC
 # (Don't bump other services that passed)
-/sw-release:platform iterate v3.0.0-rc.2
+sw-release:platform iterate v3.0.0-rc.2
 ```
 
 **Issue**: Need to rollback
 ```bash
 # Solution: Revert main to previous tag, create hotfix
 git revert <commit>
-/sw-release:platform create v3.0.1
+sw-release:platform create v3.0.1
 ```
 
 ---

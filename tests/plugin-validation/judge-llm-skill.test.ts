@@ -85,7 +85,7 @@ describe('Judge LLM: integration in sw:done', () => {
 
   it('should invoke judge-llm via Skill tool or sw:judge-llm', () => {
     const content = readFileSync(donePath, 'utf-8');
-    expect(content).toMatch(/sw:judge-llm|Skill\(.*judge-llm/i);
+    expect(content).toMatch(sw:judge-llm|Skill\(.*judge-llm/i);
   });
 
   it('should block closure on REJECTED verdict from judge-llm', () => {

@@ -30,10 +30,10 @@ specweave status --verbose
 
 ## Arguments
 
-- `/sw:progress` - Show all active increments
-- `/sw:progress 0042` - Show specific increment details (partial ID match supported)
+- `sw:progress` - Show all active increments
+- `sw:progress 0042` - Show specific increment details (partial ID match supported)
 
 ## Related Commands
 
-- `/sw:done <id>` - Close increment after review
-- `/sw:increment` - Start new work
+- `sw:done <id>` - Close increment after review
+- `sw:increment` - Start new work

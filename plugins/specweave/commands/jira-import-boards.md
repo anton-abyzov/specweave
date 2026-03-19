@@ -9,9 +9,9 @@ You are a JIRA integration expert. Help the user import boards from a JIRA proje
 ## Command Usage
 
 ```bash
-/sw-jira:import-boards                      # Interactive mode (prompts for project)
-/sw-jira:import-boards --project CORE       # Specific JIRA project
-/sw-jira:import-boards --dry-run            # Preview without creating directories
+sw-jira:import-boards                      # Interactive mode (prompts for project)
+sw-jira:import-boards --project CORE       # Specific JIRA project
+sw-jira:import-boards --dry-run            # Preview without creating directories
 ```
 
 ## Your Task
@@ -204,8 +204,8 @@ Boards imported:
     Keywords: ios, android, react-native
 
 💡 Next steps:
-  1. Use /sw:switch-project fe to switch active project
-  2. Create increment: /sw:increment "feature name"
+  1. Use sw:switch-project fe to switch active project
+  2. Create increment: sw:increment "feature name"
   3. User stories will auto-sync to the correct board based on keywords
 
 📖 Documentation: .specweave/docs/internal/architecture/adr/0143-jira-ado-multi-level-project-mapping.md
@@ -215,7 +215,7 @@ Boards imported:
 
 ### Example 1: Interactive Import
 ```
-User: /sw-jira:import-boards
+User: sw-jira:import-boards
 
 You:
 📋 JIRA Board Import
@@ -237,7 +237,7 @@ Mapping to SpecWeave projects:
 
 ### Example 2: Dry Run
 ```
-User: /sw-jira:import-boards --project CORE --dry-run
+User: sw-jira:import-boards --project CORE --dry-run
 
 You:
 📋 JIRA Board Import (DRY RUN)
@@ -256,7 +256,7 @@ No changes made (dry run).
 
 ### Example 3: Already Configured
 ```
-User: /sw-jira:import-boards
+User: sw-jira:import-boards
 
 You:
 ⚠️  Board mapping already exists for project CORE
@@ -306,7 +306,7 @@ Available projects you have access to:
   - INFRA (Infrastructure)
   - MOBILE (Mobile Team)
 
-Tip: Use /sw-jira:import-boards --project CORE
+Tip: Use sw-jira:import-boards --project CORE
 ```
 
 **No boards found:**
@@ -318,13 +318,13 @@ This could mean:
   2. You don't have access to boards in this project
 
 Suggestions:
-  - Use /sw-jira:import-projects for project-based sync
+  - Use sw-jira:import-projects for project-based sync
   - Ask your JIRA admin about board access
 ```
 
 ## Related Commands
 
-- `/sw-jira:import-projects` - Import multiple JIRA projects (not boards)
-- `/sw-jira:sync` - Sync increments with JIRA
-- `/sw:switch-project` - Switch active SpecWeave project
-- `/sw:init-multiproject` - Initialize multi-project mode
+- `sw-jira:import-projects` - Import multiple JIRA projects (not boards)
+- `sw-jira:sync` - Sync increments with JIRA
+- `sw:switch-project` - Switch active SpecWeave project
+- `sw:init-multiproject` - Initialize multi-project mode

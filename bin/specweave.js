@@ -1480,7 +1480,7 @@ async function checkForDuplicates() {
         }
       }
 
-      console.log(chalk.dim('\n  Run /sw:fix-duplicates to resolve\n'));
+      console.log(chalk.dim('\n  Run sw:fix-duplicates to resolve\n'));
     }
   } catch (error) {
     // Silently ignore errors (don't block CLI startup)

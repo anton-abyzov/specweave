@@ -1,15 +1,15 @@
 ---
-description: "[DEPRECATED] Use /sw-github:sync-spec instead. Legacy increment-based GitHub sync."
+description: "[DEPRECATED] Use sw-github:sync-spec instead. Legacy increment-based GitHub sync."
 ---
 
-# DEPRECATED: Use `/sw-github:sync-spec` Instead
+# DEPRECATED: Use `sw-github:sync-spec` Instead
 
 > **This command is deprecated as of v1.0.235.** The increment-based sync has been replaced by spec-based sync.
 >
 > **Migration:**
-> - For spec-to-GitHub Issue sync: `/sw-github:sync-spec <spec-id>`
-> - For batch sync: `/sw-github:sync-spec --all`
-> - For pull direction: `/sw-github:sync-spec <spec-id> --direction from-github`
+> - For spec-to-GitHub Issue sync: `sw-github:sync-spec <spec-id>`
+> - For batch sync: `sw-github:sync-spec --all`
+> - For pull direction: `sw-github:sync-spec <spec-id> --direction from-github`
 >
 > The old increment-based sync created issues per-task. The new spec-based sync creates issues per-User-Story,
 > which is the correct granularity for GitHub project management.
@@ -24,22 +24,22 @@ description: "[DEPRECATED] Use /sw-github:sync-spec instead. Legacy increment-ba
 
 **GitHub sync reads FROM living docs.** If living docs are stale, GitHub issues will have outdated content.
 
-**You MUST run `/sw:sync-specs` (or ensure it ran) BEFORE this command:**
+**You MUST run `sw:sync-specs` (or ensure it ran) BEFORE this command:**
 
 ```bash
 # STEP 1: Ensure living docs are current (MANDATORY)
-/sw:sync-specs <increment-id>
+sw:sync-specs <increment-id>
 
 # STEP 2: Then sync to GitHub
-/sw-github:sync <increment-id>
+sw-github:sync <increment-id>
 ```
 
 **Why?**
 - GitHub issues are generated FROM `.specweave/docs/internal/specs/FS-XXX/`
 - If you skip sync-specs, GitHub will show stale user stories/ACs
-- `/sw:sync-progress` calls sync-specs automatically, but `/sw-github:sync` does NOT
+- `sw:sync-progress` calls sync-specs automatically, but `sw-github:sync` does NOT
 
-**If you're calling this directly (not via /sw:sync-progress), run sync-specs first!**
+**If you're calling this directly (not via sw:sync-progress), run sync-specs first!**
 
 ---
 
@@ -80,7 +80,7 @@ Synchronize the current state of a SpecWeave increment with its GitHub issue acr
 ## Usage
 
 ```bash
-/sw-github:sync <increment-id> [options]
+sw-github:sync <increment-id> [options]
 ```
 
 ## Arguments
@@ -125,36 +125,36 @@ SpecWeave syncs changes in **both directions** by default:
 **Override if needed:**
 ```bash
 # Push only (one-way to GitHub)
-/sw-github:sync 0004 --direction to-github
+sw-github:sync 0004 --direction to-github
 
 # Pull only (one-way from GitHub)
-/sw-github:sync 0004 --direction from-github
+sw-github:sync 0004 --direction from-github
 ```
 
 ## Examples
 
 ```bash
 # Interactive two-way sync (default - both directions)
-/sw-github:sync 0004
+sw-github:sync 0004
 
 # Use specific profile (still two-way by default)
-/sw-github:sync 0004 --profile specweave-dev
+sw-github:sync 0004 --profile specweave-dev
 
 # Specify time range (two-way)
-/sw-github:sync 0004 --time-range 1M
+sw-github:sync 0004 --time-range 1M
 
 # Full two-way sync with all options
-/sw-github:sync 0004 --profile main --time-range 1M --tasks --labels
+sw-github:sync 0004 --profile main --time-range 1M --tasks --labels
 
 # One-way sync examples (override default)
-/sw-github:sync 0004 --direction to-github     # Push only
-/sw-github:sync 0004 --direction from-github   # Pull only
+sw-github:sync 0004 --direction to-github     # Push only
+sw-github:sync 0004 --direction from-github   # Pull only
 
 # Dry run to preview changes
-/sw-github:sync 0004 --dry-run
+sw-github:sync 0004 --dry-run
 
 # Force sync all increments (two-way)
-/sw-github:sync --all --force
+sw-github:sync --all --force
 ```
 
 ## Interactive Workflow
@@ -444,8 +444,8 @@ Available profiles:
   • specweave-dev (GitHub: anton-abyzov/specweave)
   • another-repo (GitHub: myorg/another-project)
 
-Create profile: /sw:sync-profile create
-List profiles: /sw:sync-profile list
+Create profile: sw:sync-profile create
+List profiles: sw:sync-profile list
 ```
 
 ### No Profiles Configured
@@ -454,7 +454,7 @@ List profiles: /sw:sync-profile list
 ❌ Error: No GitHub sync profiles configured
 
 Create your first profile:
-  /sw:sync-profile create
+  sw:sync-profile create
 
 Or migrate from old configuration:
   specweave migrate-to-profiles
@@ -472,7 +472,7 @@ Rate limit resets: 2025-11-04 15:00:00 (12 minutes)
 What would you like to do?
 
   1. Wait and resume (auto-resume in 12 min)
-  2. Resume manually later (/sw-github:sync 0004 --resume)
+  2. Resume manually later (sw-github:sync 0004 --resume)
   3. Cancel sync (partial data saved)
 
 Your choice: [1]
@@ -531,8 +531,8 @@ Output:
 ✅ Migration completed successfully!
 
 Next steps:
-  1. Review profiles: /sw:sync-profile list
-  2. Test sync: /sw-github:sync 0004
+  1. Review profiles: sw:sync-profile list
+  2. Test sync: sw-github:sync 0004
   3. Keep backup: .specweave/config.json.backup (until confirmed working)
 ```
 
@@ -542,7 +542,7 @@ If automatic profile creation fails:
 
 1. Create profile manually:
    ```bash
-   /sw:sync-profile create
+   sw:sync-profile create
    ```
 
 2. Update increment metadata:
@@ -557,7 +557,7 @@ If automatic profile creation fails:
 
 3. Test sync:
    ```bash
-   /sw-github:sync 0004
+   sw-github:sync 0004
    ```
 
 ## Simpler Alternatives
@@ -566,21 +566,21 @@ For most use cases, use the git-style commands:
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-github:pull` | Pull changes from GitHub (read-only) |
-| `/sw-github:push` | Push progress to GitHub |
+| `sw-github:pull` | Pull changes from GitHub (read-only) |
+| `sw-github:push` | Push progress to GitHub |
 
-Use `/sw-github:sync` for advanced operations with time ranges and rate limit control.
+Use `sw-github:sync` for advanced operations with time ranges and rate limit control.
 
 ## Related Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-github:pull` | Pull from GitHub (git-style) |
-| `/sw-github:push` | Push to GitHub (git-style) |
-| `/sw-github:create` | Create GitHub issue |
-| `/sw-github:close` | Close GitHub issue |
-| `/sw-github:status` | Check sync status |
-| `/sw:sync-profile create` | Create new sync profile |
+| `sw-github:pull` | Pull from GitHub (git-style) |
+| `sw-github:push` | Push to GitHub (git-style) |
+| `sw-github:create` | Create GitHub issue |
+| `sw-github:close` | Close GitHub issue |
+| `sw-github:status` | Check sync status |
+| `sw:sync-profile create` | Create new sync profile |
 
 ## Tips & Best Practices
 
@@ -645,7 +645,7 @@ For active development:
 
 Before large syncs:
 ```bash
-/sw-github:sync 0004 --dry-run --time-range 6M
+sw-github:sync 0004 --dry-run --time-range 6M
 ```
 
 This shows what would happen without actually executing.
@@ -656,10 +656,10 @@ This shows what would happen without actually executing.
 
 ```bash
 # Sync all active increments (respects rate limits)
-/sw-github:sync --all --time-range 1M
+sw-github:sync --all --time-range 1M
 
 # Sync specific increments
-/sw-github:sync 0001,0002,0003 --time-range 2W
+sw-github:sync 0001,0002,0003 --time-range 2W
 ```
 
 ### Custom Rate Limit Thresholds
@@ -684,7 +684,7 @@ Override default thresholds:
 
 If sync fails mid-operation:
 ```bash
-/sw-github:sync 0004 --resume
+sw-github:sync 0004 --resume
 ```
 
 System will:
@@ -694,7 +694,7 @@ System will:
 
 ---
 
-**Command**: `/sw-github:sync`
+**Command**: `sw-github:sync`
 **Plugin**: specweave-github
 **Version**: 1.0.0 (Multi-Project)
 **Last Updated**: 2025-11-05

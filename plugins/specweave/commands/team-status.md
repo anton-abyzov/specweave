@@ -9,9 +9,9 @@ description: Show status of parallel development agents launched by team-lead. A
 ## Usage
 
 ```bash
-/sw:team-status
-/sw:team-status --watch          # Auto-refresh every 2s
-/sw:team-status --json           # Machine-readable output
+sw:team-status
+sw:team-status --watch          # Auto-refresh every 2s
+sw:team-status --json           # Machine-readable output
 ```
 
 ## What This Skill Does
@@ -57,7 +57,7 @@ Active Skills: frontend:architect, sw:architect, sw:architect
 
 ## Error Handling
 
-- If no active agent team found, report "No active agent team — try /sw:team-lead first"
+- If no active agent team found, report "No active agent team — try sw:team-lead first"
 - If an agent's increment is missing, report "increment not found"
 - If a task file can't be parsed, show "?" for progress
 
