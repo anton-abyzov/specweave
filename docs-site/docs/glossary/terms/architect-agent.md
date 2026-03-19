@@ -96,12 +96,12 @@ graph LR
 
 <CommandTabs
   natural="Let's build user authentication"
-  claude='/sw:increment "User authentication"'
+  claude='sw:increment "User authentication"'
   other='increment "User authentication"'
 />
 
 - Architecture questions -- when user says "design the system" or asks about design decisions
-- Documentation reviews -- say "review architecture docs", use `/sw:sync-docs review` in Claude Code, or type `sync-docs review` in other AI tools
+- Documentation reviews -- say "review architecture docs", use `sw:sync-docs review` in Claude Code, or type `sync-docs review` in other AI tools
 
 ## Related
 

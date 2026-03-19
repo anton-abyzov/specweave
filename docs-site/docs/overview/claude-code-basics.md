@@ -50,7 +50,7 @@ Claude Code supports multiple AI models with different strengths:
 | **Sonnet 4.6** | Balanced daily coding, reviews, refactoring | Medium | Medium |
 | **Haiku 4.5** | Quick lookups, simple edits, documentation | Fast | Low |
 
-**Recommendation**: Use **Opus 4.6** for SpecWeave workflows (especially `/sw:auto`). Its reasoning depth is critical for multi-step planning and implementation.
+**Recommendation**: Use **Opus 4.6** for SpecWeave workflows (especially `sw:auto`). Its reasoning depth is critical for multi-step planning and implementation.
 
 ### Plugins
 
@@ -86,11 +86,11 @@ sw:architect skill activates → System design expertise loads
 
 <CommandTabs
   natural="Design the authentication architecture"
-  claude="/sw:architect"
+  claude="sw:architect"
   other="architect"
 />
 
-Other examples: `/sw:pm` (product management), `/sw:security` (security audit).
+Other examples: `sw:pm` (product management), `sw:security` (security audit).
 
 Most users never need slash commands. Describing what you want is enough -- SpecWeave routes to the right skill automatically.
 
@@ -131,7 +131,7 @@ Hooks run automatically. You don't invoke them - they enforce quality standards 
 | Method | How It Works | Example |
 |--------|-------------|---------|
 | **Natural language** | Describe what you want -- SpecWeave detects intent | "I want to add dark mode" |
-| **Slash commands** | Explicit Claude Code commands with `/sw:` prefix | `/sw:increment "dark mode"` |
+| **Slash commands** | Explicit Claude Code commands with `sw:` prefix | `sw:increment "dark mode"` |
 | **Keywords** | Same command names without prefix (other AI tools) | `increment "dark mode"` |
 
 All three trigger the same underlying skills and produce identical results.
@@ -140,12 +140,12 @@ All three trigger the same underlying skills and produce identical results.
 
 | What You Want | Natural Language | Slash Command |
 |--------------|-----------------|---------------|
-| Plan a feature | "Let's build [feature]" | `/sw:increment` |
-| Start building | "Start implementing" | `/sw:do` |
-| Check progress | "What's the status?" | `/sw:progress` |
-| Go autonomous | "Ship while I sleep" | `/sw:auto` |
-| Finish up | "We're done" | `/sw:done` |
-| Brainstorm | "Let's brainstorm ideas" | `/sw:brainstorm` |
+| Plan a feature | "Let's build [feature]" | `sw:increment` |
+| Start building | "Start implementing" | `sw:do` |
+| Check progress | "What's the status?" | `sw:progress` |
+| Go autonomous | "Ship while I sleep" | `sw:auto` |
+| Finish up | "We're done" | `sw:done` |
+| Brainstorm | "Let's brainstorm ideas" | `sw:brainstorm` |
 
 ---
 

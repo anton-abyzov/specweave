@@ -4,7 +4,7 @@
  * Tests the NEW simplified hook behavior per ADR-0225:
  * - Hook is a simple gate (~175 lines): is auto active? is there pending work?
  * - No test running (broken in v4), no LLM eval, no auto-close, no retry counter
- * - Quality gates belong in /sw:done, not the hook
+ * - Quality gates belong in sw:done, not the hook
  * - Dedup uses write-first pattern to prevent race condition
  * - Block messages are concise (<500 chars), not 40+ line walls
  *
@@ -277,7 +277,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       expect(result.json.decision).toBe('block');
       expect(result.json.reasonCode).toBe('all_complete_needs_closure');
       const msg = result.json.systemMessage as string;
-      expect(msg).toContain('/sw:done --auto');
+      expect(msg).toContain('sw:done --auto');
       expect(msg).toContain('0100-feature');
     });
 
@@ -580,7 +580,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       expect(msg).toMatch(/1\/4\s*tasks/i);
     });
 
-    it('should include actionable guidance (/sw:do or /sw:done)', async () => {
+    it('should include actionable guidance (sw:do or sw:done)', async () => {
       await setupProject(tempDir);
       await writeConfig(tempDir);
       await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
@@ -593,7 +593,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       const result = await runHook(tempDir, hookPath);
       const msg = result.json.systemMessage as string;
       // Should contain at least one actionable command
-      expect(msg).toMatch(/\/sw:(do|done)/);
+      expect(msg).toMatch(/sw:(do|done)/);
     });
 
     it('should include turn counter info in block message', async () => {
@@ -713,7 +713,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       expect(retryExists).toBe(false);
     });
 
-    it('should NOT auto-close increments (blocks for /sw:done instead)', async () => {
+    it('should NOT auto-close increments (blocks for sw:done instead)', async () => {
       await setupProject(tempDir);
       await writeConfig(tempDir);
       await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
@@ -732,10 +732,10 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
 
       const result = await runHook(tempDir, hookPath);
 
-      // Should block (not approve) so Claude runs /sw:done
+      // Should block (not approve) so Claude runs sw:done
       expect(result.json.decision).toBe('block');
       const msg = result.json.systemMessage as string;
-      expect(msg).toContain('/sw:done --auto');
+      expect(msg).toContain('sw:done --auto');
 
       // Increment should still be "active" (not "completed") — hook does not modify metadata
       const metadataRaw = await fs.readFile(
@@ -807,7 +807,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       await writeConfig(tempDir);
       await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
 
-      // Increment with completed status (already closed by /sw:done)
+      // Increment with completed status (already closed by sw:done)
       await createIncrement(tempDir, '0100-feature', { status: 'completed' });
 
       const result = await runHook(tempDir, hookPath);

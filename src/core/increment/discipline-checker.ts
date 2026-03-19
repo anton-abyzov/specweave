@@ -160,7 +160,7 @@ export class DisciplineChecker {
       violations.push({
         type: 'hard_cap_exceeded',
         message: `Hard cap exceeded: ${activeCount} active increments (maximum: ${this.limits.hardCap})`,
-        suggestion: `Complete or pause at least ${activeCount - this.limits.hardCap} increment(s). Use /sw:done <id> or /sw:pause <id>`,
+        suggestion: `Complete or pause at least ${activeCount - this.limits.hardCap} increment(s). Use sw:done <id> or sw:pause <id>`,
         severity: 'warning',
         context: {
           activeCount,

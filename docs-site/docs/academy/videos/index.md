@@ -10,7 +10,7 @@ Short, focused demos showing SpecWeave working with different AI coding tools.
 
 | Video | Tool | Duration | Topics |
 |-------|------|----------|--------|
-| [Web Calculator](./opencode-web-calculator.mdx) | OpenCode | 4 min | Init, PM questionnaire, /sw:do, live demo |
+| [Web Calculator](./opencode-web-calculator.mdx) | OpenCode | 4 min | Init, PM questionnaire, sw:do, live demo |
 | Cursor Integration | Cursor | Coming soon | |
 | GitHub Copilot | Copilot | Coming soon | |
 

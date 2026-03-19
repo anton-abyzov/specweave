@@ -61,10 +61,10 @@ behavior   test works    implement    it works    quality
 ## SpecWeave TDD Commands
 
 ```bash
-/sw:tdd-cycle     # Full orchestration
-/sw:tdd-red       # Write failing tests
-/sw:tdd-green     # Implement to pass
-/sw:tdd-refactor  # Clean up code
+sw:tdd-cycle     # Full orchestration
+sw:tdd-red       # Write failing tests
+sw:tdd-green     # Implement to pass
+sw:tdd-refactor  # Clean up code
 ```
 
 ---
@@ -77,14 +77,14 @@ Let's build a calculator using TDD.
 
 <CommandTabs
   natural="I want to create a calculator with basic operations"
-  claude='/sw:increment "Calculator with basic operations"'
+  claude='sw:increment "Calculator with basic operations"'
   other='increment "Calculator with basic operations"'
 />
 
 ### Step 2: Start TDD
 
 ```bash
-/sw:tdd-cycle
+sw:tdd-cycle
 ```
 
 ### Phase 1: RED (Write Failing Tests)
@@ -256,9 +256,9 @@ Build a string calculator using TDD:
 ```bash
 # Natural language: "I want to build a string calculator using TDD"
 # Or slash commands:
-/sw:increment "String calculator with TDD"
-/sw:tdd-cycle
-/sw:next
+sw:increment "String calculator with TDD"
+sw:tdd-cycle
+sw:next
 ```
 
 ---
@@ -276,10 +276,10 @@ Build a string calculator using TDD:
 
 | Command | Phase | Purpose |
 |---------|-------|---------|
-| `/sw:tdd-cycle` | All | Full orchestration |
-| `/sw:tdd-red` | RED | Write failing tests |
-| `/sw:tdd-green` | GREEN | Implement to pass |
-| `/sw:tdd-refactor` | REFACTOR | Improve code |
+| `sw:tdd-cycle` | All | Full orchestration |
+| `sw:tdd-red` | RED | Write failing tests |
+| `sw:tdd-green` | GREEN | Implement to pass |
+| `sw:tdd-refactor` | REFACTOR | Improve code |
 
 **The TDD mantra**:
 1. **Red**: Write a failing test

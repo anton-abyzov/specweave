@@ -197,7 +197,7 @@ Gate 3 checks checkboxes in spec.md:
 
 <CommandTabs
   natural="Sync the acceptance criteria"
-  claude="/sw:sync-acs"
+  claude="sw:sync-acs"
   other="sync-acs"
 />
 
@@ -256,7 +256,7 @@ quality:
 
 <CommandTabs
   natural="Force close increment 0001, production hotfix for CVE-2025-1234"
-  claude='/sw:done 0001 --force --reason "Production hotfix for CVE-2025-1234"'
+  claude='sw:done 0001 --force --reason "Production hotfix for CVE-2025-1234"'
   other='done 0001 --force --reason "Production hotfix for CVE-2025-1234"'
 />
 

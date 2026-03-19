@@ -15,7 +15,7 @@
     "projectSuccess": "Projeto SpecWeave criado com sucesso!",
     "readyToBuild": "🚀 Pronto para construir com SpecWeave!",
     "nestedCdCommand": "cd {{path}}",
-    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "nestedIncCommand": "sw:increment \"your-feature\"",
     "pluginEnableLater": "Você pode habilitar plugins mais tarde com: specweave plugin enable <name>",
     "genericError": "Erro:",
     "errors": {
@@ -140,7 +140,7 @@
         "installGitHub": "/plugin install sw-github@specweave",
         "installFrontend": "/plugin install frontend-design@claude-plugins-official",
         "step4": "Comece a construir:",
-        "example": "\"/sw:increment 'user authentication'\"",
+        "example": "\"sw:increment 'user authentication'\"",
         "autoActivate": "Skills e agentes são ativados automaticamente com base no contexto"
       },
       "cursor": {
@@ -273,7 +273,7 @@
   "increment": {
     "creating": "📝 Criando increment: {name}",
     "created": "✅ Increment {id} criado com sucesso!",
-    "nextStepDo": "Próximo: Execute /sw:do para começar a implementação",
+    "nextStepDo": "Próximo: Execute sw:do para começar a implementação",
     "errors": {
       "incompleteFound": "Não é possível criar novo increment! Increments anteriores incompletos"
     }

@@ -21,9 +21,9 @@ The same properties that make SpecWeave powerful for software development apply 
 
 **Traceability.** When you reorganize 500 Obsidian notes, you want to know *why* each note ended up where it did. SpecWeave's acceptance criteria and task history provide that audit trail.
 
-**Quality gates.** The `/sw:grill` command reviews your work against the spec before you declare it done. This works whether you're shipping code or publishing a YouTube video.
+**Quality gates.** The `sw:grill` command reviews your work against the spec before you declare it done. This works whether you're shipping code or publishing a YouTube video.
 
-**Autonomous execution.** `/sw:auto` lets the AI work through tasks while you sleep, eat, or do something else entirely. Wake up to a completed research report or a deployed landing page.
+**Autonomous execution.** `sw:auto` lets the AI work through tasks while you sleep, eat, or do something else entirely. Wake up to a completed research report or a deployed landing page.
 
 ---
 
@@ -43,7 +43,7 @@ Your spec might include criteria like: "All notes tagged with #project belong un
 
 **The problem.** You need a working tool — a personal finance tracker, an event RSVP page, a habit tracker — and you need it now. Not next sprint. Now.
 
-**The SpecWeave approach.** `/sw:increment "Personal finance tracker with Cloudflare Workers"` kicks off the planning. The PM skill writes user stories, the architect designs the stack, and `/sw:auto` builds and deploys it. Modern models can produce a fully functional web application with authentication, database, and deployment in a single session.
+**The SpecWeave approach.** `sw:increment "Personal finance tracker with Cloudflare Workers"` kicks off the planning. The PM skill writes user stories, the architect designs the stack, and `sw:auto` builds and deploys it. Modern models can produce a fully functional web application with authentication, database, and deployment in a single session.
 
 The key insight: even throwaway tools benefit from specs. You *will* want to iterate. When you do, the original spec tells you what the app was supposed to do, the plan explains the architecture, and the tasks show what was built. No "what was I thinking?" moments when you revisit it a month later.
 
@@ -67,7 +67,7 @@ Tasks break down into: define sources, gather data, cross-reference, synthesize 
 
 **The problem.** You see an opportunity — a landing page for your idea, an internal tool for your team, a webhook endpoint that connects two services. You want it live in minutes, not days.
 
-**The SpecWeave approach.** SpecWeave + Cloudflare's free tier = idea to production in one session. The spec defines what the solution needs to do. `/sw:auto` builds it, writes tests, and deploys it. You share the URL, get feedback, and iterate.
+**The SpecWeave approach.** SpecWeave + Cloudflare's free tier = idea to production in one session. The spec defines what the solution needs to do. `sw:auto` builds it, writes tests, and deploys it. You share the URL, get feedback, and iterate.
 
 Modern AI models can build your website in several minutes — complete with responsive design, authentication, and database — even handling deployment. The feedback loop becomes incredibly tight: spec it, build it, deploy it, share it, get feedback, update the spec, iterate.
 
@@ -126,7 +126,7 @@ SpecWeave sets up the `.specweave/` directory with your project structure.
 
 <CommandTabs
   natural="I want to research World Cup 2026 host cities"
-  claude='/sw:increment "Research World Cup 2026 host cities"'
+  claude='sw:increment "Research World Cup 2026 host cities"'
   other='increment "Research World Cup 2026 host cities"'
 />
 
@@ -141,7 +141,7 @@ SpecWeave generates:
 
 <CommandTabs
   natural="Run autonomously"
-  claude="/sw:auto"
+  claude="sw:auto"
   other="auto"
 />
 
@@ -154,14 +154,14 @@ The AI works through each task autonomously:
 - T-006: Identify top attractions near each venue
 - T-007: Synthesize findings into a ranked recommendation
 
-Each task produces documented output. The AI marks tasks complete as it goes, and you can check progress anytime with `/sw:progress`.
+Each task produces documented output. The AI marks tasks complete as it goes, and you can check progress anytime with `sw:progress`.
 
 ### Step 4: Review and Close
 
 ```
-/sw:progress    # Check what's done
-/sw:validate    # Run quality checks against acceptance criteria
-/sw:done 0001   # Close the increment
+sw:progress    # Check what's done
+sw:validate    # Run quality checks against acceptance criteria
+sw:done 0001   # Close the increment
 ```
 
 The grill reviews your research against the original spec. Missing a city? Incomplete transit data? It catches gaps before you declare done.
@@ -174,7 +174,7 @@ Your `.specweave/` directory now contains:
 - Living docs with the synthesized research
 - Full traceability from question to answer
 
-Three months later, when you want to update the [WC26](https://wc-26.net/) hotel pricing, you don't start from scratch. `/sw:increment "Update WC26 hotel pricing for Q2 2026"` builds on the existing research. The original spec is right there as context.
+Three months later, when you want to update the [WC26](https://wc-26.net/) hotel pricing, you don't start from scratch. `sw:increment "Update WC26 hotel pricing for Q2 2026"` builds on the existing research. The original spec is right there as context.
 
 ---
 

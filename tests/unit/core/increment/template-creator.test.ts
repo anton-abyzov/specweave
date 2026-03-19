@@ -224,7 +224,7 @@ describe('template-creator', () => {
     /**
      * TDD is an EXECUTION practice, not a PLANNING practice.
      * Planning ALWAYS generates standard templates.
-     * TDD discipline is enforced at execution time via /sw:tdd-* commands.
+     * TDD discipline is enforced at execution time via sw:tdd-* commands.
      */
     it('should store TDD testMode in metadata but use standard tasks template', async () => {
       await createIncrementTemplates({
@@ -298,7 +298,7 @@ describe('template-creator', () => {
       const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
 
       // testMode should be preserved in metadata for execution commands
-      // (e.g., /sw:do --tdd reads this to enforce TDD discipline)
+      // (e.g., sw:do --tdd reads this to enforce TDD discipline)
       expect(metadata.testMode).toBe('TDD');
     });
   });

@@ -194,7 +194,7 @@ describe('SuggestionEngine', () => {
       expect(consoleSpy).toHaveBeenCalledTimes(1);
       const msg = consoleSpy.mock.calls[0][0] as string;
       expect(msg).toContain('high-pattern');
-      expect(msg).toContain('/sw:skill-gen');
+      expect(msg).toContain('sw:skill-gen');
     });
   });
 

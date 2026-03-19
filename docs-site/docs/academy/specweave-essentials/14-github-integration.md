@@ -139,7 +139,7 @@ cat .specweave/config.json
 ### Test Connection
 
 ```bash
-/sw-github:status
+sw-github:status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -269,7 +269,7 @@ When `autoCreateIssues: true`:
 
 <CommandTabs
   natural="Let's build user authentication"
-  claude='/sw:increment "User authentication"'
+  claude='sw:increment "User authentication"'
   other='increment "User authentication"'
 />
 
@@ -287,7 +287,7 @@ Creating increment: 0042-user-authentication
 If auto-create is disabled:
 
 ```bash
-/sw-github:create-issue 0042
+sw-github:create-issue 0042
 
 # Output:
 Creating GitHub issue for 0042-user-authentication...
@@ -333,7 +333,7 @@ Implementation of user authentication feature.
 ### Manual Sync
 
 ```bash
-/sw-github:sync 0042
+sw-github:sync 0042
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -356,7 +356,7 @@ Sync complete!
 When configured, sync happens automatically:
 
 ```bash
-# After each task completion during /sw:do
+# After each task completion during sw:do
 T-003: Add login endpoint
 ├── Creating src/auth/login.ts
 ├── Tests: ✓ 4/4 passing
@@ -369,7 +369,7 @@ T-003: Add login endpoint
 If someone checks a box directly on GitHub:
 
 ```bash
-/sw-github:sync 0042 --from-external
+sw-github:sync 0042 --from-external
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -437,7 +437,7 @@ manual:
 When increment completes:
 
 ```bash
-/sw:done 0042
+sw:done 0042
 
 # Output includes:
 ...
@@ -456,10 +456,10 @@ When increment completes:
 ### Manual Close
 
 ```bash
-/sw-github:close-issue 0042
+sw-github:close-issue 0042
 
 # Or close without completion (abandoned):
-/sw-github:close-issue 0042 --reason "Feature cancelled"
+sw-github:close-issue 0042 --reason "Feature cancelled"
 ```
 
 ---
@@ -519,7 +519,7 @@ Configure in config.json:
 
 ```bash
 # Check token validity
-/sw-github:status
+sw-github:status
 
 # If expired, regenerate:
 # https://github.com/settings/tokens
@@ -532,7 +532,7 @@ export GITHUB_TOKEN=ghp_new_token
 ### "Rate limit exceeded"
 
 ```bash
-/sw-github:status
+sw-github:status
 
 # Output:
 ⚠️ Rate limit: 0/5000 (resets in 23 min)
@@ -548,17 +548,17 @@ export GITHUB_TOKEN=ghp_new_token
 gh issue view 142
 
 # Re-link increment to issue:
-/sw-github:link 0042 --issue 142
+sw-github:link 0042 --issue 142
 ```
 
 ### "Sync conflict"
 
 ```bash
 # Force from SpecWeave (overwrite GitHub)
-/sw-github:sync 0042 --force
+sw-github:sync 0042 --force
 
 # Force from GitHub (overwrite SpecWeave)
-/sw-github:sync 0042 --from-external --force
+sw-github:sync 0042 --from-external --force
 ```
 
 ### "Checkboxes not updating"
@@ -570,7 +570,7 @@ gh issue view 142
 # - [x] T-002: Completed task
 
 # If format is different, re-create issue:
-/sw-github:create-issue 0042 --overwrite
+sw-github:create-issue 0042 --overwrite
 ```
 
 ---
@@ -643,7 +643,7 @@ jobs:
 
 <CommandTabs
   natural="Let's build a user profile page"
-  claude='/sw:increment "Add user profile page"'
+  claude='sw:increment "Add user profile page"'
   other='increment "Add user profile page"'
 />
 
@@ -653,13 +653,13 @@ jobs:
 ✓ GitHub Issue #200 created
 
 # 2. Implement tasks
-/sw:do
+sw:do
 
 # Each task completion syncs to GitHub automatically
 # Checkboxes get checked, progress comments added
 
 # 3. Check sync status
-/sw-github:status 0050
+sw-github:status 0050
 
 # Output:
 Issue #200: In sync ✓
@@ -667,7 +667,7 @@ Issue #200: In sync ✓
   GitHub tasks: 8/12 complete
 
 # 4. Complete increment
-/sw:done 0050
+sw:done 0050
 
 # Output:
 ✓ Quality gates passed
@@ -690,14 +690,14 @@ export GITHUB_TOKEN=your_token
 specweave init . --reconfigure
 
 # 4. Test connection
-/sw-github:status
+sw-github:status
 
 # 5. Create test increment
 ```
 
 <CommandTabs
   natural="Let's build a test for GitHub sync"
-  claude='/sw:increment "Test GitHub sync"'
+  claude='sw:increment "Test GitHub sync"'
   other='increment "Test GitHub sync"'
 />
 

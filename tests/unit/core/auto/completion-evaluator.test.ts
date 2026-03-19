@@ -184,7 +184,7 @@ describe('CompletionEvaluator', () => {
 
       expect(result.complete).toBe(false);
       expect(result.nextSteps.length).toBeGreaterThan(0);
-      expect(result.nextSteps.some((s) => s.includes('/sw:do'))).toBe(true);
+      expect(result.nextSteps.some((s) => s.includes('sw:do'))).toBe(true);
     });
 
     it('should use default criteria when none specified', async () => {

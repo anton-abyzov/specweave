@@ -203,7 +203,7 @@ export async function quickSetup(projectRoot: string, scope: DocScope = 'interna
           'Create public docs in .specweave/docs/public/'
         : 'No documentation found.\n' +
           'Create documentation by completing your first increment:\n' +
-          '  /sw:increment "your feature"'
+          '  sw:increment "your feature"'
     );
   }
 
@@ -252,7 +252,7 @@ export async function launchPreview(
           'Create public docs in .specweave/docs/public/'
         : 'No documentation found.\n' +
           'Create documentation by completing your first increment:\n' +
-          '  /sw:increment "your feature"'
+          '  sw:increment "your feature"'
     );
   }
 
@@ -307,7 +307,7 @@ export async function buildStaticSite(projectRoot: string, scope: DocScope = 'in
   if (!await isDocusaurusInstalled(targetDir)) {
     throw new Error(
       'Docusaurus not installed.\n' +
-        'Run: /sw:docs preview (this will install it)'
+        'Run: sw:docs preview (this will install it)'
     );
   }
 

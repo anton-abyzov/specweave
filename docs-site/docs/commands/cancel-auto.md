@@ -12,7 +12,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 <CommandTabs
   natural='Stop auto'
-  claude='/sw:cancel-auto'
+  claude='sw:cancel-auto'
   other='cancel-auto'
 />
 
@@ -28,10 +28,10 @@ import CommandTabs from '@site/src/components/CommandTabs';
 Additional options:
 ```bash
 # Force cancel without confirmation
-/sw:cancel-auto --force
+sw:cancel-auto --force
 
 # With reason
-/sw:cancel-auto --reason "Need to switch to urgent bug fix"
+sw:cancel-auto --reason "Need to switch to urgent bug fix"
 ```
 
 ---
@@ -65,7 +65,7 @@ Session cancelled
 
 Summary: .specweave/logs/auto-2025-12-29-abc123-summary.md
 
-To resume work later, say "continue working" or type /sw:do
+To resume work later, say "continue working" or type sw:do
 ```
 
 ---
@@ -103,7 +103,7 @@ Iterations: 47
 
 - Cancelling doesn't undo completed work
 - `tasks.md` progress is preserved
-- You can resume anytime by saying "continue working" or typing `/sw:do`
+- You can resume anytime by saying "continue working" or typing `sw:do`
 - Use Claude Code's `/resume` to restore full conversation context
 
 ---
@@ -112,9 +112,9 @@ Iterations: 47
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Run autonomously" | `/sw:auto` | `auto` | Start auto session |
-| "Check auto status" | `/sw:auto-status` | `auto-status` | Check session status |
-| "Start implementing" | `/sw:do` | `do` | Resume work on tasks |
+| "Run autonomously" | `sw:auto` | `auto` | Start auto session |
+| "Check auto status" | `sw:auto-status` | `auto-status` | Check session status |
+| "Start implementing" | `sw:do` | `do` | Resume work on tasks |
 
 ---
 

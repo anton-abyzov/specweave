@@ -26,13 +26,13 @@ SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, 
 
 ## Skills
 
-**Skills** are markdown instructions that AI assistants follow. They can be invoked three ways: natural language (auto-activation on keywords), slash commands (`/sw:name`) in Claude Code, or CLI keywords (`name`) in other AI tools. Skills can also be preloaded by subagents.
+**Skills** are markdown instructions that AI assistants follow. They can be invoked three ways: natural language (auto-activation on keywords), slash commands (`sw:name`) in Claude Code, or CLI keywords (`name`) in other AI tools. Skills can also be preloaded by subagents.
 
 ### How They Work
 
 ```mermaid
 graph LR
-    A["User: /sw:pm"] --> B[PM Skill loaded]
+    A["User: sw:pm"] --> B[PM Skill loaded]
     B --> C[Instructions injected into context]
     C --> D[AI follows skill instructions]
     D --> E["Output: spec.md"]
@@ -102,7 +102,7 @@ graph LR
 ### Subagent File Structure
 
 ```markdown
-# agents/sw-pm.md
+# agentssw-pm.md
 ---
 name: sw-pm
 description: Product Manager for writing spec.md
@@ -168,7 +168,7 @@ Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks..." })
 
 - **Reference knowledge** — conventions, patterns, style guides that enrich the main conversation
 - **Standalone tasks** — one-shot work like code review (`sw:grill`), brainstorming, validation
-- **User-invocable commands** — `/sw:pm`, `/sw:grill`, `/sw:brainstorm`
+- **User-invocable commands** — `sw:pm`, `sw:grill`, `sw:brainstorm`
 - **Repetitive instructions** — the DRY principle for AI instructions
 
 ### Use Custom Subagents When:

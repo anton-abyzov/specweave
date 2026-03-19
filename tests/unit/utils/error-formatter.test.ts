@@ -90,9 +90,9 @@ describe('error-formatter', () => {
     });
 
     describe('WRONG_COMMAND_FOR_NEW_INCREMENT', () => {
-      it('should return a FormattedError with title referencing /sw:plan', () => {
+      it('should return a FormattedError with title referencing sw:plan', () => {
         const result = ERROR_MESSAGES.WRONG_COMMAND_FOR_NEW_INCREMENT();
-        expect(result.title).toContain('/sw:plan');
+        expect(result.title).toContain('sw:plan');
       });
 
       it('should have a description', () => {
@@ -109,7 +109,7 @@ describe('error-formatter', () => {
       it('should have an example', () => {
         const result = ERROR_MESSAGES.WRONG_COMMAND_FOR_NEW_INCREMENT();
         expect(result.example).toBeDefined();
-        expect(result.example).toContain('/sw:increment');
+        expect(result.example).toContain('sw:increment');
       });
 
       it('should have relatedCommands', () => {
@@ -124,17 +124,17 @@ describe('error-formatter', () => {
         expect(result.description).toContain('0010');
       });
 
-      it('should have title referencing /sw:increment', () => {
+      it('should have title referencing sw:increment', () => {
         const result = ERROR_MESSAGES.WRONG_COMMAND_FOR_EXISTING_INCREMENT('0010');
-        expect(result.title).toContain('/sw:increment');
+        expect(result.title).toContain('sw:increment');
       });
 
-      it('should have suggestions referencing /sw:plan and /sw:do', () => {
+      it('should have suggestions referencing sw:plan and sw:do', () => {
         const result = ERROR_MESSAGES.WRONG_COMMAND_FOR_EXISTING_INCREMENT('0010');
         expect(result.suggestions).toBeDefined();
         const suggestionsJoined = result.suggestions!.join(' ');
-        expect(suggestionsJoined).toContain('/sw:plan');
-        expect(suggestionsJoined).toContain('/sw:do');
+        expect(suggestionsJoined).toContain('sw:plan');
+        expect(suggestionsJoined).toContain('sw:do');
       });
 
       it('should have relatedCommands', () => {
@@ -145,21 +145,21 @@ describe('error-formatter', () => {
 
     describe('INTERNAL_SKILL_DIRECT_CALL', () => {
       it('should return a FormattedError with the skillName in the title', () => {
-        const result = ERROR_MESSAGES.INTERNAL_SKILL_DIRECT_CALL('_internal-plan', ['/sw:increment']);
+        const result = ERROR_MESSAGES.INTERNAL_SKILL_DIRECT_CALL('_internal-plan', ['sw:increment']);
         expect(result.title).toContain('_internal-plan');
       });
 
       it('should include allowed callers in suggestions', () => {
-        const callers = ['/sw:increment', '/sw:plan'];
+        const callers = ['sw:increment', 'sw:plan'];
         const result = ERROR_MESSAGES.INTERNAL_SKILL_DIRECT_CALL('_internal-plan', callers);
         expect(result.suggestions).toBeDefined();
         const suggestionsJoined = result.suggestions!.join(' ');
-        expect(suggestionsJoined).toContain('/sw:increment');
-        expect(suggestionsJoined).toContain('/sw:plan');
+        expect(suggestionsJoined).toContain('sw:increment');
+        expect(suggestionsJoined).toContain('sw:plan');
       });
 
       it('should set relatedCommands to the allowedCallers', () => {
-        const callers = ['/sw:increment', '/sw:plan'];
+        const callers = ['sw:increment', 'sw:plan'];
         const result = ERROR_MESSAGES.INTERNAL_SKILL_DIRECT_CALL('_internal-plan', callers);
         expect(result.relatedCommands).toEqual(callers);
       });
@@ -199,7 +199,7 @@ describe('error-formatter', () => {
       it('should have relatedCommands', () => {
         const result = ERROR_MESSAGES.DUPLICATE_INCREMENT('0005');
         expect(result.relatedCommands).toBeDefined();
-        expect(result.relatedCommands).toContain('/sw:status');
+        expect(result.relatedCommands).toContain('sw:status');
       });
     });
 
@@ -249,19 +249,19 @@ describe('error-formatter', () => {
 
     describe('MISSING_REQUIRED_ARG', () => {
       it('should return a FormattedError with the argName in the title', () => {
-        const result = ERROR_MESSAGES.MISSING_REQUIRED_ARG('incrementId', '/sw:do');
+        const result = ERROR_MESSAGES.MISSING_REQUIRED_ARG('incrementId', 'sw:do');
         expect(result.title).toContain('incrementId');
       });
 
       it('should have suggestions referencing the command', () => {
-        const result = ERROR_MESSAGES.MISSING_REQUIRED_ARG('incrementId', '/sw:do');
+        const result = ERROR_MESSAGES.MISSING_REQUIRED_ARG('incrementId', 'sw:do');
         expect(result.suggestions).toBeDefined();
         const suggestionsJoined = result.suggestions!.join(' ');
-        expect(suggestionsJoined).toContain('/sw:do');
+        expect(suggestionsJoined).toContain('sw:do');
       });
 
       it('should not have relatedCommands', () => {
-        const result = ERROR_MESSAGES.MISSING_REQUIRED_ARG('incrementId', '/sw:do');
+        const result = ERROR_MESSAGES.MISSING_REQUIRED_ARG('incrementId', 'sw:do');
         expect(result.relatedCommands).toBeUndefined();
       });
     });
@@ -279,8 +279,8 @@ describe('error-formatter', () => {
       title: 'Full error',
       description: 'Full description.',
       suggestions: ['Try this', 'Or that'],
-      relatedCommands: ['/sw:status', '/sw:do'],
-      example: '/sw:do 0001',
+      relatedCommands: ['sw:status', 'sw:do'],
+      example: 'sw:do 0001',
     };
 
     describe('severity routing', () => {
@@ -379,8 +379,8 @@ describe('error-formatter', () => {
         formatError(fullError, 'error');
         const allCalls = mockError.mock.calls.map((c: any[]) => c[0]);
         const allText = allCalls.join('\n');
-        expect(allText).toContain('/sw:status');
-        expect(allText).toContain('/sw:do');
+        expect(allText).toContain('sw:status');
+        expect(allText).toContain('sw:do');
       });
 
       it('should not log relatedCommands section when absent', () => {
@@ -407,7 +407,7 @@ describe('error-formatter', () => {
         formatError(fullError, 'error');
         const allCalls = mockError.mock.calls.map((c: any[]) => c[0]);
         const allText = allCalls.join('\n');
-        expect(allText).toContain('/sw:do 0001');
+        expect(allText).toContain('sw:do 0001');
       });
 
       it('should not log example section when absent', () => {

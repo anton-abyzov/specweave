@@ -33,7 +33,7 @@ Build "BizZone" - a mobile app that scans business cards using the camera, extra
 
 <CommandTabs
   natural="Let's build a business card scanner with OCR and offline storage"
-  claude='/sw:increment "Business card scanner with OCR and offline storage"'
+  claude='sw:increment "Business card scanner with OCR and offline storage"'
   other='increment "Business card scanner with OCR and offline storage"'
 />
 
@@ -56,7 +56,7 @@ Build "BizZone" - a mobile app that scans business cards using the camera, extra
 #### Autonomous Execution
 
 ```bash
-/sw:auto
+sw:auto
 ```
 
 **What happened** (over 2.5 hours):
@@ -109,7 +109,7 @@ Add Stripe payment webhooks that require changes across:
 
 ```bash
 # In umbrella project root
-/sw:increment "Add Stripe payment webhooks across all services"
+sw:increment "Add Stripe payment webhooks across all services"
 ```
 
 **Multi-repo structure**:
@@ -136,7 +136,7 @@ my-project/
 #### Autonomous Execution
 
 ```bash
-/sw:auto
+sw:auto
 ```
 
 **What happened**:
@@ -206,7 +206,7 @@ Inherit a decade-old PHP monolith with:
 
 **Phase 1: Discovery** (Manual - 1 hour)
 ```bash
-/sw:living-docs --brownfield --discovery-mode
+sw:living-docs --brownfield --discovery-mode
 ```
 
 SpecWeave scanned the codebase and generated:
@@ -218,8 +218,8 @@ SpecWeave scanned the codebase and generated:
 
 Created 12 increments (one per domain):
 ```bash
-/sw:increment "Document Authentication Module"
-/sw:increment "Document Orders Module"
+sw:increment "Document Authentication Module"
+sw:increment "Document Orders Module"
 # ... 10 more
 ```
 
@@ -230,7 +230,7 @@ Each increment generated:
 
 **Executed autonomously**:
 ```bash
-/sw:auto --queue-all
+sw:auto --queue-all
 ```
 
 #### What Happened
@@ -345,7 +345,7 @@ jobs:
 
 ```bash
 # Developer completes increment
-/sw:done 0089
+sw:done 0089
 
 # SpecWeave automatically:
 # 1. Validates all quality gates
@@ -360,7 +360,7 @@ jobs:
 # 8. Creates GitHub Release with notes
 ```
 
-**Result**: Zero-touch releases. From `/sw:done` to npm in 2 minutes.
+**Result**: Zero-touch releases. From `sw:done` to npm in 2 minutes.
 
 ---
 
@@ -383,7 +383,7 @@ Refactor authentication system from session-based to JWT:
 #### The SpecWeave Approach
 
 ```bash
-/sw:increment "Migrate auth from sessions to JWT"
+sw:increment "Migrate auth from sessions to JWT"
 ```
 
 **TDD Strict Mode enabled**:
@@ -409,7 +409,7 @@ Refactor authentication system from session-based to JWT:
 #### Autonomous Execution with TDD Discipline
 
 ```bash
-/sw:auto
+sw:auto
 ```
 
 **What happened**:
@@ -465,25 +465,25 @@ Auto mode **blocked 3 times** when tests failed:
 **Easy** (30 minutes):
 <CommandTabs
   natural="Let's add a dark mode toggle to the website"
-  claude='/sw:increment "Add dark mode toggle to website"'
+  claude='sw:increment "Add dark mode toggle to website"'
   other='increment "Add dark mode toggle to website"'
 />
 
 **Medium** (1-2 hours):
 ```bash
-/sw:increment "Build REST API with CRUD operations and tests"
+sw:increment "Build REST API with CRUD operations and tests"
 ```
 
 **Advanced** (2-4 hours):
 ```bash
-/sw:increment "Create React Native todo app with offline sync"
+sw:increment "Create React Native todo app with offline sync"
 ```
 
 ### Learning Path
 
 1. **Start small** - Single-repo, 5-10 tasks
 2. **Add complexity** - Multi-file changes, more tests
-3. **Go autonomous** - Let `/sw:auto` run for hours
+3. **Go autonomous** - Let `sw:auto` run for hours
 4. **Scale up** - Multi-repo, complex integrations
 
 ---

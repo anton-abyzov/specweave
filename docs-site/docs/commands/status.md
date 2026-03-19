@@ -12,7 +12,7 @@ Show comprehensive increment status overview with progress tracking and suggesti
 
 <CommandTabs
   natural='What&apos;s the status?'
-  claude='/sw:status'
+  claude='sw:status'
   other='status'
 />
 

@@ -91,7 +91,7 @@ Force a specific model when needed:
 
 <CommandTabs
   natural="Start implementing with Opus"
-  claude="/sw:do --model opus"
+  claude="sw:do --model opus"
   other="do --model opus"
 />
 

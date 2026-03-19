@@ -151,22 +151,22 @@ Local Dev → Dev → QA → Staging → UAT → Preview → Prod
 
 <CommandTabs
   natural="Let's implement OAuth with Google"
-  claude='/sw:increment "Implement OAuth with Google"'
+  claude='sw:increment "Implement OAuth with Google"'
   other='increment "Implement OAuth with Google"'
 />
 
 ```bash
 # 2. Implement feature (say "start implementing" or use the command)
-/sw:do
+sw:do
 
 # 3. Complete increment (say "we're done" or use the command)
-/sw:done 0018
+sw:done 0018
 
 # 4. Deploy to dev (manual or CI/CD)
 git push origin main  # Triggers dev deployment
 
 # 5. Sync to dev environment
-/sw-github:sync 0018 --profile github-dev --deployed
+sw-github:sync 0018 --profile github-dev --deployed
 
 # Result: GitHub issue #123 created in dev repo
 # Status: ✅ Deployed to Dev (https://dev.myapp.com)
@@ -181,7 +181,7 @@ git push origin main  # Triggers dev deployment
 # Triggered by: Git tag, manual approval, etc.
 
 # 2. Sync to QA environment
-/sw-github:sync 0018 --profile github-qa --deployed
+sw-github:sync 0018 --profile github-qa --deployed
 
 # Result: GitHub issue #456 created in QA repo
 # Status: ✅ Deployed to QA (https://qa.myapp.com)
@@ -193,16 +193,16 @@ git push origin main  # Triggers dev deployment
 
 ```bash
 # Staging
-/sw-github:sync 0018 --profile github-staging --deployed
+sw-github:sync 0018 --profile github-staging --deployed
 
 # UAT
-/sw-ado:sync 0018 --profile ado-uat --deployed
+sw-ado:sync 0018 --profile ado-uat --deployed
 
 # Preview (if exists)
-/sw-github:sync 0018 --profile github-preview --deployed
+sw-github:sync 0018 --profile github-preview --deployed
 
 # Production (final)
-/sw-jira:sync 0018 --profile jira-prod --deployed
+sw-jira:sync 0018 --profile jira-prod --deployed
 ```
 
 ---
@@ -210,7 +210,7 @@ git push origin main  # Triggers dev deployment
 ### Step 5: View Deployment Status
 
 ```bash
-/sw:status 0018 --deployments
+sw:status 0018 --deployments
 
 # Output:
 📦 Deployment Status: Increment 0018
@@ -299,23 +299,23 @@ Production Environment:
 
 ```bash
 # 1. Deploy to green slot
-/sw:deploy 0018 --environment prod-green
+sw:deploy 0018 --environment prod-green
 
 # 2. Verify green slot
 curl https://green.myapp.com/health
 # ✅ Status: 200 OK
 
 # 3. Run smoke tests
-/sw:test 0018 --environment prod-green --suite smoke
+sw:test 0018 --environment prod-green --suite smoke
 
 # 4. Swap slots (blue ← green)
-/sw:swap-slots --environment prod
+sw:swap-slots --environment prod
 
 # 5. Monitor for issues
-/sw:monitor 0018 --environment prod --duration 15m
+sw:monitor 0018 --environment prod --duration 15m
 
 # 6. Rollback if needed
-/sw:rollback 0018 --environment prod  # Swaps back to blue
+sw:rollback 0018 --environment prod  # Swaps back to blue
 ```
 
 **Benefits**:
@@ -341,10 +341,10 @@ Production Environment:
 
 ```bash
 # 1. Deploy canary (10% traffic)
-/sw:deploy 0018 --environment prod --canary 10
+sw:deploy 0018 --environment prod --canary 10
 
 # 2. Monitor canary metrics
-/sw:monitor 0018 --environment prod --canary
+sw:monitor 0018 --environment prod --canary
 
 # Output:
 🐤 Canary Deployment Monitoring
@@ -374,14 +374,14 @@ Comparison:
 Recommendation: ✅ SAFE TO INCREASE CANARY
 
 # 3. Increase canary gradually
-/sw:deploy 0018 --environment prod --canary 25  # 25% traffic
+sw:deploy 0018 --environment prod --canary 25  # 25% traffic
 # Wait 30 minutes, monitor...
-/sw:deploy 0018 --environment prod --canary 50  # 50% traffic
+sw:deploy 0018 --environment prod --canary 50  # 50% traffic
 # Wait 30 minutes, monitor...
-/sw:deploy 0018 --environment prod --canary 100 # 100% traffic (full rollout)
+sw:deploy 0018 --environment prod --canary 100 # 100% traffic (full rollout)
 
 # 4. If issues detected, rollback
-/sw:rollback 0018 --environment prod --canary  # Back to 0% canary
+sw:rollback 0018 --environment prod --canary  # Back to 0% canary
 ```
 
 ---
@@ -430,28 +430,28 @@ Recommendation: ✅ SAFE TO INCREASE CANARY
 
 ```bash
 # 1. Deploy to all environments (code is same)
-/sw:deploy 0018 --all-environments
+sw:deploy 0018 --all-environments
 
 # 2. Enable feature flag in dev
-/sw:feature-flag enable oauth_google --environment dev
+sw:feature-flag enable oauth_google --environment dev
 
 # 3. Test in dev
 # ... (manual testing)
 
 # 4. Enable in QA
-/sw:feature-flag enable oauth_google --environment qa
+sw:feature-flag enable oauth_google --environment qa
 
 # 5. Run automated tests
-/sw:test 0018 --environment qa --suite full
+sw:test 0018 --environment qa --suite full
 
 # 6. Enable in staging
-/sw:feature-flag enable oauth_google --environment staging
+sw:feature-flag enable oauth_google --environment staging
 
 # 7. Enable in UAT (business validation)
-/sw:feature-flag enable oauth_google --environment uat
+sw:feature-flag enable oauth_google --environment uat
 
 # 8. Finally, enable in prod
-/sw:feature-flag enable oauth_google --environment prod
+sw:feature-flag enable oauth_google --environment prod
 
 # Result: Same increment, same code, but feature rolled out gradually!
 ```

@@ -27,7 +27,7 @@ Developer C: 0003-notification-system
 **Coordination**:
 ```bash
 # View team status
-/sw:status --all
+sw:status --all
 
 # Output:
 0001-authentication        ████████░░  65%  (Dev A)
@@ -77,14 +77,14 @@ my-app/
 **Orchestration**:
 ```bash
 # Start infra first
-cd infrastructure && /sw:do
+cd infrastructure && sw:do
 
 # Then backend (parallel)
-cd backend-auth && /sw:do &
-cd backend-api && /sw:do &
+cd backend-auth && sw:do &
+cd backend-api && sw:do &
 
 # Finally frontend
-cd frontend && /sw:do
+cd frontend && sw:do
 ```
 
 ---
@@ -96,13 +96,13 @@ cd frontend && /sw:do
 ```bash
 # Create hotfix (bypasses WIP)
 # Say: "Critical hotfix needed: Fix CVE-2025-1234"
-/sw:increment "Critical: Fix CVE-2025-1234" --type hotfix
+sw:increment "Critical: Fix CVE-2025-1234" --type hotfix
 
 # Fast-track execution
-/sw:do
+sw:do
 
 # Expedited close
-/sw:done 0001 --expedite
+sw:done 0001 --expedite
 ```
 
 **Hotfix spec template**:
@@ -134,7 +134,7 @@ Parameterize query in SearchService.ts
 **When**: Technical unknown to investigate
 
 ```bash
-/sw:increment "Spike: Evaluate GraphQL migration" --type spike
+sw:increment "Spike: Evaluate GraphQL migration" --type spike
 ```
 
 **Spike structure**:
@@ -178,13 +178,13 @@ Proceed with 0011-graphql-phase-1
 specweave init . --brownfield
 
 # Import existing issues
-/sw-github:sync --import-only --since "2025-01-01"
+sw-github:sync --import-only --since "2025-01-01"
 
 # Create new increment
-/sw:increment "New feature X"
+sw:increment "New feature X"
 
 # Link to existing issue
-/sw-github:create-issue 0001 --link-existing 42
+sw-github:create-issue 0001 --link-existing 42
 ```
 
 ---
@@ -208,7 +208,7 @@ Multi-project mode is enabled during `specweave init` (with JIRA/ADO) or manuall
 
 **Per-increment project routing** (no switching needed):
 ```bash
-/sw:increment "New UI component for the frontend"
+sw:increment "New UI component for the frontend"
 # PM adds **Project**: frontend to user stories automatically
 ```
 
@@ -229,7 +229,7 @@ Q1 2026 Release Train:
 
 **Release command**:
 ```bash
-/sw-release:npm
+sw-release:npm
 # Creates version bump, git tag, changelog
 ```
 
@@ -240,7 +240,7 @@ Q1 2026 Release Train:
 **When**: Pre-commit quality check
 
 ```bash
-/sw:qa 0001 --review-only
+sw:qa 0001 --review-only
 ```
 
 ```
@@ -290,9 +290,9 @@ Here's a comprehensive reference of commands organized by when you'll use them:
 ```bash
 # Create new work
 # Say: "Let's build a new feature" or:
-/sw:increment "feature"      # New feature increment
-/sw:increment "fix" --type bug       # Bug fix
-/sw:increment "spike" --type spike   # Exploration
+sw:increment "feature"      # New feature increment
+sw:increment "fix" --type bug       # Bug fix
+sw:increment "spike" --type spike   # Exploration
 
 # Review specs
 cat .specweave/increments/0001-feature/spec.md
@@ -305,27 +305,27 @@ cat .specweave/increments/0001-feature/tasks.md
 ```bash
 # Execute work
 # Say: "Start implementing" or:
-/sw:do                        # Auto-resume active increment
-/sw:do 0001                   # Specific increment
+sw:do                        # Auto-resume active increment
+sw:do 0001                   # Specific increment
 
 # Check progress
 # Say: "What's the status?" or:
-/sw:progress                  # All increments
-/sw:progress 0001             # Specific increment
+sw:progress                  # All increments
+sw:progress 0001             # Specific increment
 
 # Workflow guidance
-/sw:workflow                  # Smart suggestions
-/sw:next                      # What to do next
+sw:workflow                  # Smart suggestions
+sw:next                      # What to do next
 ```
 
 ### Quality Phase
 
 ```bash
 # Validation
-/sw:validate 0001             # Rule-based checks (120+ rules)
-/sw:qa 0001                   # AI quality assessment
-/sw:qa 0001 --pre             # Before starting work
-/sw:qa 0001 --gate            # Before closing
+sw:validate 0001             # Rule-based checks (120+ rules)
+sw:qa 0001                   # AI quality assessment
+sw:qa 0001 --pre             # Before starting work
+sw:qa 0001 --gate            # Before closing
 
 # Testing
 npx vitest run 0001          # Test coverage check
@@ -335,52 +335,52 @@ npx vitest run 0001          # Test coverage check
 
 ```bash
 # Close increment
-/sw:done 0001                 # Normal close (validates gates)
-/sw:done 0001 --expedite      # Emergency close (skip gates)
+sw:done 0001                 # Normal close (validates gates)
+sw:done 0001 --expedite      # Emergency close (skip gates)
 
 # Sync documentation
-/sw:sync-docs update          # Update living docs
-/sw:sync-progress             # Full sync to all systems
+sw:sync-docs update          # Update living docs
+sw:sync-progress             # Full sync to all systems
 ```
 
 ### Lifecycle Management
 
 ```bash
 # Status transitions
-/sw:pause 0001                # Pause (blocked, deprioritized)
-/sw:resume 0001               # Resume paused work
-/sw:status 0001              # Move to backlog
-/sw:abandon 0001              # Cancel (obsolete, requirements changed)
+sw:pause 0001                # Pause (blocked, deprioritized)
+sw:resume 0001               # Resume paused work
+sw:status 0001              # Move to backlog
+sw:abandon 0001              # Cancel (obsolete, requirements changed)
 
 # Workspace cleanup
-/sw:archive 0001              # Archive completed increment
-/sw:archive --completed       # Archive all completed
-/sw:restore 0001              # Restore archived increment
+sw:archive 0001              # Archive completed increment
+sw:archive --completed       # Archive all completed
+sw:restore 0001              # Restore archived increment
 
 # Status overview
-/sw:status                    # All increments
-/sw:status --all              # Include completed
-/sw:sync-status               # Fix status desync
+sw:status                    # All increments
+sw:status --all              # Include completed
+sw:sync-status               # Fix status desync
 ```
 
 ### External Tool Sync
 
 ```bash
 # GitHub
-/sw-github:status             # Check connection
-/sw-github:create-issue 0001  # Create issue
-/sw-github:sync 0001          # Sync progress
-/sw-github:close-issue 0001   # Close issue
+sw-github:status             # Check connection
+sw-github:create-issue 0001  # Create issue
+sw-github:sync 0001          # Sync progress
+sw-github:close-issue 0001   # Close issue
 
 # JIRA
-/sw-jira:status               # Check connection
-/sw-jira:sync 0001            # Sync to JIRA
-/sw-jira:sync 0001 --create   # Create Epic hierarchy
+sw-jira:status               # Check connection
+sw-jira:sync 0001            # Sync to JIRA
+sw-jira:sync 0001 --create   # Create Epic hierarchy
 
 # Azure DevOps
-/sw-ado:status                # Check connection
-/sw-ado:sync 0001             # Sync to ADO
-/sw-ado:create-workitem 0001  # Create work item
+sw-ado:status                # Check connection
+sw-ado:sync 0001             # Sync to ADO
+sw-ado:create-workitem 0001  # Create work item
 ```
 
 ---

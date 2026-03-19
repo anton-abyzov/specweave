@@ -1211,7 +1211,7 @@ describe('generateUnifiedSummary', () => {
   it('should include re-run instruction at the end', () => {
     const result = generateUnifiedSummary([], []);
     expect(result).toContain('`npx specweave analyze-standards`');
-    expect(result).toContain('`/sw:analyze-standards`');
+    expect(result).toContain('`sw:analyze-standards`');
   });
 });
 

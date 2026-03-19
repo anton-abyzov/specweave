@@ -483,7 +483,7 @@ Create your first increment:
 
 <CommandTabs
   natural="Let's add user registration"
-  claude='/sw:increment "Add user registration"'
+  claude='sw:increment "Add user registration"'
   other='increment "Add user registration"'
 />
 
@@ -537,7 +537,7 @@ specweave init
 # Don't duplicate - link to existing documentation!
 
 # Step 3: Create increments for NEW work
-/sw:increment "Enhance authentication"
+sw:increment "Enhance authentication"
 
 # Your existing docs remain unchanged
 # SpecWeave overlays on top

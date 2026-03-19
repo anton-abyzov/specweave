@@ -21,13 +21,13 @@ Then just describe what you want:
 
 <CommandTabs
   natural="Add dark mode with system preference detection"
-  claude='/sw:increment "Add dark mode with system preference detection"'
+  claude='sw:increment "Add dark mode with system preference detection"'
   other='increment "Add dark mode with system preference detection"'
 />
 
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 

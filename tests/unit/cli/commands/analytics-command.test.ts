@@ -55,8 +55,8 @@ describe('analyticsCommand', () => {
     it('should show summary with events', async () => {
       // Create some test events
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do', { plugin: 'specweave' });
-      collector.trackCommand('/sw:progress');
+      collector.trackCommand('sw:do', { plugin: 'specweave' });
+      collector.trackCommand('sw:progress');
       collector.trackSkill('increment-planner', { plugin: 'specweave' });
       collector.trackAgent('frontend-architect');
 
@@ -73,7 +73,7 @@ describe('analyticsCommand', () => {
     it('should export as JSON when format is json', async () => {
       // Create test events
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
       collector.trackSkill('planner');
 
       const result = await analyticsCommand({
@@ -89,7 +89,7 @@ describe('analyticsCommand', () => {
     it('should export as CSV when format is csv', async () => {
       // Create test events
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
 
       const result = await analyticsCommand({
         projectRoot: testDir,
@@ -106,8 +106,8 @@ describe('analyticsCommand', () => {
     it('should filter events by date', async () => {
       // Create test events
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
-      collector.trackCommand('/sw:progress');
+      collector.trackCommand('sw:do');
+      collector.trackCommand('sw:progress');
 
       // Filter to last 7 days
       const result = await analyticsCommand({
@@ -120,7 +120,7 @@ describe('analyticsCommand', () => {
 
     it('should support various time formats', async () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
 
       // Should not throw for valid formats
       await expect(analyticsCommand({ projectRoot: testDir, since: '24h' })).resolves.toBeDefined();
@@ -133,7 +133,7 @@ describe('analyticsCommand', () => {
     it('should filter by event type', async () => {
       // Create mixed events
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
       collector.trackSkill('planner');
       collector.trackAgent('architect');
 
@@ -150,7 +150,7 @@ describe('analyticsCommand', () => {
   describe('--json option', () => {
     it('should output raw JSON for scripting', async () => {
       const collector = AnalyticsCollector.getInstance(testDir);
-      collector.trackCommand('/sw:do');
+      collector.trackCommand('sw:do');
 
       const result = await analyticsCommand({
         projectRoot: testDir,

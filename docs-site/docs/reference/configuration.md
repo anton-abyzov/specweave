@@ -139,7 +139,7 @@ Quality gate requiring a grill report before increment closure.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `required` | `boolean` | `true` | Require grill report before `/sw:done` |
+| `required` | `boolean` | `true` | Require grill report before `sw:done` |
 
 ```json
 {
@@ -178,7 +178,7 @@ Controls the deep interview feature during increment planning.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `deepInterview.enabled` | `boolean` | `false` | Enable deep interview during `/sw:increment` |
+| `deepInterview.enabled` | `boolean` | `false` | Enable deep interview during `sw:increment` |
 | `deepInterview.enforcement` | `string` | — | Enforcement level. Values: `strict`, `warn`, `off` |
 | `deepInterview.minQuestions` | `number` | `5` | Minimum questions to ask |
 | `deepInterview.categories` | `string[]` | _(all 6)_ | Question categories: `architecture`, `integrations`, `ui-ux`, `performance`, `security`, `edge-cases` |
@@ -330,7 +330,7 @@ External tool synchronization (GitHub, JIRA, Azure DevOps).
 }
 ```
 
-:::tip Use `/sw:sync-setup` to configure sync interactively instead of editing config.json manually.
+:::tip Use `sw:sync-setup` to configure sync interactively instead of editing config.json manually.
 :::
 
 ### hooks
@@ -434,7 +434,7 @@ CI/CD pipeline and Git branching configuration.
 
 ### auto
 
-Autonomous execution mode (`/sw:auto`) configuration.
+Autonomous execution mode (`sw:auto`) configuration.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -444,8 +444,8 @@ Autonomous execution mode (`/sw:auto`) configuration.
 | `maxIterations` | `number` | `2500` | Safety limit for iterations |
 | `maxHours` | `number` | — | Max session hours |
 | `requireTests` | `boolean` | `false` | Require tests pass before closure |
-| `requireValidation` | `boolean` | `true` | Require `/sw:validate` |
-| `requireJudgeLLM` | `boolean` | `false` | Require `/sw:judge-llm` |
+| `requireValidation` | `boolean` | `true` | Require `sw:validate` |
+| `requireJudgeLLM` | `boolean` | `false` | Require `sw:judge-llm` |
 | `skipQualityGates` | `boolean` | `false` | Skip all quality gates |
 | `testCommand` | `string` | — | Custom test command |
 | `coverageThreshold` | `number` | — | Coverage requirement (%) |
@@ -740,7 +740,7 @@ These fields are set automatically as the increment moves through its lifecycle.
 | `abandonedReason` | `string` | Why abandoned |
 | `abandonedAt` | `string` | ISO 8601 when abandoned |
 | `readyForReviewAt` | `string` | ISO 8601 when all tasks completed |
-| `approvedAt` | `string` | ISO 8601 when approved via `/sw:done` |
+| `approvedAt` | `string` | ISO 8601 when approved via `sw:done` |
 
 ### External Integration Fields
 
@@ -804,7 +804,7 @@ stateDiagram-v2
 ```
 
 :::warning
-`active` cannot transition directly to `completed`. An increment must pass through `ready_for_review` first (triggered by `/sw:done`).
+`active` cannot transition directly to `completed`. An increment must pass through `ready_for_review` first (triggered by `sw:done`).
 :::
 
 ---
@@ -866,5 +866,5 @@ Environment variables provide runtime overrides and credential configuration. Se
 | `CICD_AUTO_NOTIFY` | Auto-notify on workflow completion | `CICD_AUTO_NOTIFY=true` |
 
 :::tip Credential Management
-SpecWeave reads credentials from environment variables. Set them in your `.env` file or use `/sw:sync-setup` for interactive configuration. Never commit credentials to version control.
+SpecWeave reads credentials from environment variables. Set them in your `.env` file or use `sw:sync-setup` for interactive configuration. Never commit credentials to version control.
 :::

@@ -22,7 +22,7 @@ describe('DocumentationConfig (0208)', () => {
 
   it('should default directories to undefined in DEFAULT_CONFIG (skill handles fallback)', () => {
     // DEFAULT_CONFIG.documentation may not have directories set
-    // The /sw:docs skill defaults to [".specweave/docs"] via jq fallback
+    // The sw:docs skill defaults to [".specweave/docs"] via jq fallback
     expect(DEFAULT_CONFIG.documentation?.directories).toBeUndefined();
   });
 });

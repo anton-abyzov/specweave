@@ -180,7 +180,7 @@ After creating your increment spec and tasks:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 
@@ -202,7 +202,7 @@ Create GitHub issues with checkable task lists:
 
 <CommandTabs
   natural="Push to GitHub"
-  claude="/sw-github:sync-spec specweave/FS-031"
+  claude="sw-github:sync-spec specweave/FS-031"
   other="sw-github:sync-spec specweave/FS-031"
 />
 
@@ -324,7 +324,7 @@ Re-run living docs sync to add `## Tasks` sections:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 
@@ -341,7 +341,7 @@ Tasks are automatically included:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 
@@ -391,7 +391,7 @@ Tasks are automatically included:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 - Update to the latest version
@@ -453,7 +453,7 @@ Tasks are automatically included:
 
 <CommandTabs
   natural="Update the docs"
-  claude="/sw:sync-docs update"
+  claude="sw:sync-docs update"
   other="sync-docs update"
 />
 

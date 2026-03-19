@@ -31,14 +31,14 @@ SpecWeave understands what you want. Pick the style that feels right:
 | Style | How It Works | Best For |
 |-------|-------------|----------|
 | **Natural language** | Just describe what you want — SpecWeave detects your intent and activates the right skill | Everyone, especially new users |
-| **Slash commands** | Type `/sw:increment`, `/sw:do`, `/sw:done` for precise control | Power users on Claude Code |
-| **CLI keywords** | Type `increment`, `do`, `done` without the `/sw:` prefix | Cursor, Copilot, and other AI tools |
+| **Slash commands** | Type `sw:increment`, `sw:do`, `sw:done` for precise control | Power users on Claude Code |
+| **CLI keywords** | Type `increment`, `do`, `done` without the `sw:` prefix | Cursor, Copilot, and other AI tools |
 
 All three methods trigger the same workflow. Here is what it looks like:
 
 <CommandTabs
   natural="I want to add user authentication with OAuth support"
-  claude='/sw:increment "Add user authentication with OAuth"'
+  claude='sw:increment "Add user authentication with OAuth"'
   other='increment "Add user authentication with OAuth"'
 />
 
@@ -101,7 +101,7 @@ Describe what you want to build:
 
 <CommandTabs
   natural="Build a user authentication system with OAuth and social login"
-  claude='/sw:increment "Add user authentication with OAuth"'
+  claude='sw:increment "Add user authentication with OAuth"'
   other='increment "Add user authentication with OAuth"'
 />
 
@@ -116,7 +116,7 @@ SpecWeave creates three permanent files:
 
 <CommandTabs
   natural="Ship it while I sleep"
-  claude="/sw:auto"
+  claude="sw:auto"
   other="auto"
 />
 
@@ -124,7 +124,7 @@ SpecWeave creates three permanent files:
 
 <CommandTabs
   natural="Start implementing the tasks"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -132,7 +132,7 @@ Check progress and close when ready:
 
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 
@@ -142,7 +142,7 @@ For features spanning multiple domains, SpecWeave can split work across parallel
 
 <CommandTabs
   natural="Build user auth with login, signup, and OAuth — use parallel agents"
-  claude='/sw:team-lead "Build user auth with login, signup, and OAuth"'
+  claude='sw:team-lead "Build user auth with login, signup, and OAuth"'
   other='team-lead "Build user auth with login, signup, and OAuth"'
 />
 

@@ -2,7 +2,7 @@
  * Coverage Validator Tests
  *
  * Tests for the coverage validation module that enforces coverage targets
- * during /sw:done command execution.
+ * during sw:done command execution.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';

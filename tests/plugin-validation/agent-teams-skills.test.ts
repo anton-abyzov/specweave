@@ -266,14 +266,14 @@ describe('T-012: Agent spawn prompt templates', () => {
     expect(content).toMatch(/file ownership|YOUR FILES|files you own|WRITE only/i);
   });
 
-  it('should include workflow instructions (/sw:do or /sw:auto)', () => {
+  it('should include workflow instructions (sw:do or sw:auto)', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/\/sw:do|\/sw:auto/);
+    expect(content).toMatch(/sw:do|sw:auto/);
   });
 
-  it('should include quality gate (/sw:grill) in spawn prompts', () => {
+  it('should include quality gate (sw:grill) in spawn prompts', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/\/sw:grill|quality gate|before.*complet/i);
+    expect(content).toMatch(/sw:grill|quality gate|before.*complet/i);
   });
 });
 
@@ -328,9 +328,9 @@ describe('T-016: team-merge SKILL.md', () => {
     expect(frontmatter.name).toBeUndefined();
   });
 
-  it('should reference /sw:done per increment after merge', () => {
+  it('should reference sw:done per increment after merge', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toMatch(/\/sw:done|done.*per.*increment|close.*increment/i);
+    expect(content).toMatch(/sw:done|done.*per.*increment|close.*increment/i);
   });
 
   it('should reference sync triggers (GitHub/JIRA)', () => {
@@ -518,21 +518,21 @@ describe('ISSUE-7: Authentication and service setup guidance', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// ISSUE-8: Agents should use /sw:auto for autonomous work
+// ISSUE-8: Agents should use sw:auto for autonomous work
 // ─────────────────────────────────────────────────────────────────────
 describe('ISSUE-8: Agents prefer auto mode for autonomous work', () => {
   const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
-  it('should instruct agents to prefer /sw:auto for autonomous execution', () => {
+  it('should instruct agents to prefer sw:auto for autonomous execution', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    // Section 8 Per-Agent Quality Gate: "Execute all assigned tasks via /sw:auto"
-    expect(content).toMatch(/\/sw:auto/);
+    // Section 8 Per-Agent Quality Gate: "Execute all assigned tasks via sw:auto"
+    expect(content).toMatch(/sw:auto/);
   });
 
-  it('should instruct team-lead to handle closure via /sw:done centrally', () => {
+  it('should instruct team-lead to handle closure via sw:done centrally', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    // Agents do NOT run /sw:done — team-lead handles closure centrally (Section 8)
-    expect(content).toMatch(/\/sw:done/);
-    expect(content).toMatch(/team.lead.*handles.*closure|closure.*central|Do NOT run.*\/sw:grill.*\/sw:done/i);
+    // Agents do NOT run sw:done — team-lead handles closure centrally (Section 8)
+    expect(content).toMatch(/sw:done/);
+    expect(content).toMatch(/team.lead.*handles.*closure|closure.*central|Do NOT run.*sw:grill.*sw:done/i);
   });
 });

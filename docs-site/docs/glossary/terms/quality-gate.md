@@ -12,7 +12,7 @@ A **quality gate** is a checkpoint in the SpecWeave workflow that validates work
 
 ### 1. Pre-Implementation Gate
 
-Validates specifications before starting implementation. Say "assess quality before we start", use `/sw:qa 0001 --pre` in Claude Code, or type `qa 0001 --pre` in other AI tools.
+Validates specifications before starting implementation. Say "assess quality before we start", use `sw:qa 0001 --pre` in Claude Code, or type `qa 0001 --pre` in other AI tools.
 
 **Checks**:
 - ✅ Clarity - Requirements are clear and unambiguous
@@ -22,7 +22,7 @@ Validates specifications before starting implementation. Say "assess quality bef
 
 ### 2. Completion Gate
 
-Validates work before closing an [increment](/docs/glossary/terms/increments). Say "we're done", use `/sw:done 0001` in Claude Code, or type `done 0001` in other AI tools.
+Validates work before closing an [increment](/docs/glossary/terms/increments). Say "we're done", use `sw:done 0001` in Claude Code, or type `done 0001` in other AI tools.
 
 **Three validation gates**:
 1. **Tasks Complete** - All tasks in [tasks.md](/docs/glossary/terms/tasks-md) marked done
@@ -31,7 +31,7 @@ Validates work before closing an [increment](/docs/glossary/terms/increments). S
 
 ### 3. Quality Assessment Gate
 
-Comprehensive quality check before release. Say "full quality assessment", use `/sw:qa 0001 --gate` in Claude Code, or type `qa 0001 --gate` in other AI tools.
+Comprehensive quality check before release. Say "full quality assessment", use `sw:qa 0001 --gate` in Claude Code, or type `qa 0001 --gate` in other AI tools.
 
 **7 Quality Dimensions** (weighted scoring):
 1. Clarity (18%)
@@ -61,7 +61,7 @@ Quality gates include risk assessment using **Probability × Impact** method:
 ## Example Output
 
 ```bash
-$ /sw:qa 0001 --gate
+$ sw:qa 0001 --gate
 
 📊 Quality Assessment: 0001-user-authentication
 

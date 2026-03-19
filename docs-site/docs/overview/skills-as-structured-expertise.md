@@ -16,7 +16,7 @@ Most AI coding tools give you prompts. SpecWeave gives you **structured expertis
 
 | | Prompt | SpecWeave Skill |
 |---|---|---|
-| **Reusable** | Copy-paste across sessions | Invoke by name: `/sw:grill` |
+| **Reusable** | Copy-paste across sessions | Invoke by name: `sw:grill` |
 | **Extensible** | Edit the original text | Defined in `SKILL.md` — override via `skill-memories/` without touching the source |
 | **Composable** | Manual chaining | Skills invoke other skills: PM → Architect → Frontend |
 | **Stateful** | Forgets everything | Learns from corrections permanently |
@@ -74,14 +74,14 @@ Want to customize a skill **without editing the original**? Use skill memories �
 
 SpecWeave ships with 44 core skills for planning, execution, quality, and sync:
 
-- **PM** (`/sw:pm`) — writes user stories with acceptance criteria
-- **Architect** (`/sw:architect`) — designs systems, writes ADRs
-- **Code Review** (`/sw:code-reviewer`) — parallel multi-agent review with confidence scoring
-- **Testing** (`/sw:e2e`, `/sw:tdd-cycle`) — E2E automation, TDD red-green-refactor
-- **Quality** (`/sw:grill`, `/sw:judge-llm`) — critical code review and LLM-as-Judge validation
-- **Debug** (`/sw:debug`) — systematic 4-phase debugging with escalation
-- **Team Lead** (`/sw:team-lead`) — parallel multi-agent orchestration
-- **Release** (`/sw:release-expert`, `/sw:npm`) — multi-repo release coordination
+- **PM** (`sw:pm`) — writes user stories with acceptance criteria
+- **Architect** (`sw:architect`) — designs systems, writes ADRs
+- **Code Review** (`sw:code-reviewer`) — parallel multi-agent review with confidence scoring
+- **Testing** (`sw:e2e`, `sw:tdd-cycle`) — E2E automation, TDD red-green-refactor
+- **Quality** (`sw:grill`, `sw:judge-llm`) — critical code review and LLM-as-Judge validation
+- **Debug** (`sw:debug`) — systematic 4-phase debugging with escalation
+- **Team Lead** (`sw:team-lead`) — parallel multi-agent orchestration
+- **Release** (`sw:release-expert`, `sw:npm`) — multi-repo release coordination
 
 Need domain-specific skills like frontend frameworks, backend languages, or security? Install them from the [vskill marketplace](https://verified-skill.com) — they plug into SpecWeave's core workflow without modification.
 
@@ -105,7 +105,7 @@ specweave init .
 
 <CommandTabs
   natural="Let's add user authentication"
-  claude='/sw:increment "Add user authentication"'
+  claude='sw:increment "Add user authentication"'
   other='increment "Add user authentication"'
 />
 

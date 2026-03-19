@@ -22,23 +22,23 @@ The save command simplifies git operations across multiple repositories:
 
 <CommandTabs
   natural='Save progress'
-  claude='/sw:save "feat: Add menu builder feature"'
+  claude='sw:save "feat: Add menu builder feature"'
   other='save "feat: Add menu builder feature"'
 />
 
 Additional options:
 ```bash
 # Interactive (prompts for commit message)
-/sw:save
+sw:save
 
 # Dry run (show what would happen, don't execute)
-/sw:save --dry-run
+sw:save --dry-run
 
 # Save specific repos only (umbrella mode)
-/sw:save "fix: Bug fixes" --repos frontend,backend
+sw:save "fix: Bug fixes" --repos frontend,backend
 
 # Skip repos without remote (don't prompt)
-/sw:save "chore: Updates" --skip-no-remote
+sw:save "chore: Updates" --skip-no-remote
 ```
 
 ## Workflow Example
@@ -46,7 +46,7 @@ Additional options:
 ### Multi-Repo (Umbrella Mode)
 
 ```
-/sw:save "feat: Complete user registration flow"
+sw:save "feat: Complete user registration flow"
 
 Scanning for repositories...
 Mode: Umbrella (3 child repos)
@@ -84,7 +84,7 @@ Summary:
 ### Workspace Mode (Single Repository)
 
 ```
-/sw:save "chore: Update dependencies"
+sw:save "chore: Update dependencies"
 
 Scanning for repositories...
 Mode: Workspace (1 repository)
@@ -202,9 +202,9 @@ backend:
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Align versions" | `/sw-release:align` | `release align` | Align versions across repos (for releases) |
-| "Sync progress" | `/sw:sync-progress` | `sync-progress` | Sync task progress to external tools |
-| "Sync to GitHub" | `/sw-github:sync` | `github-sync` | Sync increments to GitHub issues |
+| "Align versions" | `sw-release:align` | `release align` | Align versions across repos (for releases) |
+| "Sync progress" | `sw:sync-progress` | `sync-progress` | Sync task progress to external tools |
+| "Sync to GitHub" | `sw-github:sync` | `github-sync` | Sync increments to GitHub issues |
 
 ## See Also
 

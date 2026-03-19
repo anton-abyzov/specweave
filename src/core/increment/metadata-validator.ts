@@ -111,7 +111,7 @@ export class MetadataValidator {
         type: 'status_mismatch',
         message: 'All tasks complete but status is still "active"',
         severity: 'warning',
-        suggestion: 'Update status to "completed" or close increment via /sw:done'
+        suggestion: 'Update status to "completed" or close increment via sw:done'
       });
     }
 

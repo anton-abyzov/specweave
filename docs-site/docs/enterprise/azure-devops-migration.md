@@ -122,7 +122,7 @@ specweave validate-ado
 
 <CommandTabs
   natural="Let's build user auth with Azure AD B2C"
-  claude='/sw:increment "User authentication with Azure AD B2C"'
+  claude='sw:increment "User authentication with Azure AD B2C"'
   other='increment "User authentication with Azure AD B2C"'
 />
 
@@ -375,13 +375,13 @@ Organization: MegaCorp
 
 ```bash
 # Git-style sync (recommended)
-/sw-ado:pull --project InternalPortal
-/sw-ado:push 0018
+sw-ado:pull --project InternalPortal
+sw-ado:push 0018
 
 # Or use legacy sync command with profiles
-/sw-ado:sync 0018 --profile ado-internal
-/sw-ado:sync 0019 --profile ado-customer
-/sw-ado:sync 0020 --profile ado-partner
+sw-ado:sync 0018 --profile ado-internal
+sw-ado:sync 0019 --profile ado-customer
+sw-ado:sync 0020 --profile ado-partner
 ```
 
 ---
@@ -394,38 +394,38 @@ SpecWeave provides intuitive **git-style commands** for ADO synchronization:
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-ado:pull` | Pull changes from ADO (like `git pull`) |
-| `/sw-ado:push` | Push progress to ADO (like `git push`) |
-| `/sw-ado:sync` | Two-way sync (pull + push) |
-| `/sw-ado:status` | Check sync status |
+| `sw-ado:pull` | Pull changes from ADO (like `git pull`) |
+| `sw-ado:push` | Push progress to ADO (like `git push`) |
+| `sw-ado:sync` | Two-way sync (pull + push) |
+| `sw-ado:status` | Check sync status |
 
 ### Basic Usage
 
 ```bash
 # Pull latest changes from ADO
-/sw-ado:pull
+sw-ado:pull
 
 # Push your progress to ADO
-/sw-ado:push
+sw-ado:push
 
 # Two-way sync (both directions)
-/sw-ado:sync 0005
+sw-ado:sync 0005
 ```
 
 ### Multi-Project Sync
 
 ```bash
 # Pull ALL specs across ALL projects (living docs sync)
-/sw-ado:pull --all
+sw-ado:pull --all
 
 # Pull specific project only
-/sw-ado:pull --project clinical-insights
+sw-ado:pull --project clinical-insights
 
 # Pull specific feature hierarchy (Epic → Feature → User Stories)
-/sw-ado:pull --feature FS-042
+sw-ado:pull --feature FS-042
 
 # Push all local changes to ADO
-/sw-ado:push --all
+sw-ado:push --all
 ```
 
 ### Sync Brief Output
@@ -466,14 +466,14 @@ az boards iteration project create \
   --finish-date "2025-11-27"
 
 # 2. Plan increments for sprint
-/sw:increment "OAuth integration"
-/sw:increment "User profile page"
+sw:increment "OAuth integration"
+sw:increment "User profile page"
 
 # 3. Link to sprint (automatic)
 # SpecWeave detects active sprint and assigns work items
 
 # 4. Start sprint work
-/sw:do
+sw:do
 
 # 5. Daily standups: Check ADO board
 # All task updates appear automatically!
@@ -485,7 +485,7 @@ az boards iteration project create \
 # Velocity chart, burndown, work item status
 
 # 8. Sprint retrospective: Export metrics
-/sw:metrics --sprint 24 --ado
+sw:metrics --sprint 24 --ado
 
 # Output:
 📊 Sprint 24 Metrics (Azure DevOps)
@@ -592,19 +592,19 @@ Azure DevOps Organization: Contoso
 
 ```bash
 # 1. Pull latest from dev ADO (git-style)
-/sw-ado:pull --profile ado-dev
+sw-ado:pull --profile ado-dev
 
 # 2. Push progress to dev ADO
-/sw-ado:push 0018 --profile ado-dev
+sw-ado:push 0018 --profile ado-dev
 
 # 3. Dev complete → Promote to QA
-/sw-ado:promote 0018 --from ado-dev --to ado-qa
+sw-ado:promote 0018 --from ado-dev --to ado-qa
 
 # 4. QA approved → Promote to UAT
-/sw-ado:promote 0018 --from ado-qa --to ado-uat
+sw-ado:promote 0018 --from ado-qa --to ado-uat
 
 # 5. UAT approved → Promote to prod
-/sw-ado:promote 0018 --from ado-uat --to ado-prod
+sw-ado:promote 0018 --from ado-uat --to ado-prod
 
 # Result: Same increment tracked across all 4 environments!
 ```

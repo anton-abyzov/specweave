@@ -127,7 +127,7 @@ graph LR
 
 <CommandTabs
   natural="Let's build a payment system with Stripe"
-  claude='/sw:increment "payment system with Stripe"'
+  claude='sw:increment "payment system with Stripe"'
   other='increment "payment system with Stripe"'
 />
 
@@ -161,7 +161,7 @@ graph LR
 - Updated documentation
 - Completed tasks
 
-**Command**: `/sw:do` -- or just say: "Start implementing"
+**Command**: `sw:do` -- or just say: "Start implementing"
 
 **[→ Full Implementation Workflow](/docs/workflows/implementation)**
 
@@ -193,7 +193,7 @@ graph LR
 - Completion summary
 - Deployment readiness
 
-**Command**: `/sw:validate` -- or just say: "Check if everything looks good"
+**Command**: `sw:validate` -- or just say: "Check if everything looks good"
 
 **[→ Full Validation Workflow](/docs/workflows/validation)**
 
@@ -235,12 +235,12 @@ Every command can also be triggered with natural language -- just describe what 
 
 | Phase | Natural Language | Slash Command | What It Does |
 |-------|-----------------|--------------|--------------|
-| **Planning** | "Let's build a payment system" | `/sw:increment "feature"` | Creates spec, plan, tasks |
-| **Implementation** | "Start implementing" | `/sw:do` | Executes tasks, auto-resumes |
-| **Autonomous** | "Ship it while I sleep" | `/sw:auto` | Hands-free execution |
-| **Progress Check** | "What's the status?" | `/sw:progress` | Shows status, next task |
-| **Validation** | "Check if everything looks good" | `/sw:validate` | Quality checks |
-| **Completion** | "We're done" | `/sw:done` | Closes increment |
+| **Planning** | "Let's build a payment system" | `sw:increment "feature"` | Creates spec, plan, tasks |
+| **Implementation** | "Start implementing" | `sw:do` | Executes tasks, auto-resumes |
+| **Autonomous** | "Ship it while I sleep" | `sw:auto` | Hands-free execution |
+| **Progress Check** | "What's the status?" | `sw:progress` | Shows status, next task |
+| **Validation** | "Check if everything looks good" | `sw:validate` | Quality checks |
+| **Completion** | "We're done" | `sw:done` | Closes increment |
 
 ## Workflow Patterns
 
@@ -445,7 +445,7 @@ Solution: Define test strategy in plan.md
 ```
 Problem: Mark tasks done without checking
 Result: Incomplete features, failing tests
-Solution: Run /sw:validate before /sw:done
+Solution: Run sw:validate before sw:done
 ```
 
 ## Real-World Workflow Example
@@ -463,7 +463,7 @@ Solution: Run /sw:validate before /sw:done
 ### Week 2: Planning
 ```bash
 # Say: "Let's build payment processing with Stripe"
-/sw:increment "0015-payment-processing"
+sw:increment "0015-payment-processing"
 # PM agent creates:
 # ✅ spec.md (5 user stories, 15 AC-IDs)
 # ✅ plan.md (Stripe architecture, test strategy)
@@ -472,7 +472,7 @@ Solution: Run /sw:validate before /sw:done
 
 ### Week 3-4: Implementation
 ```bash
-/sw:do
+sw:do
 # Implement task by task:
 # T-001: Stripe client ✅
 # T-002: Payment endpoint ✅
@@ -480,13 +480,13 @@ Solution: Run /sw:validate before /sw:done
 # ...
 # T-018: E2E payment flow ✅
 
-/sw:progress
+sw:progress
 # Shows: 18/18 tasks (100%)
 ```
 
 ### Week 5: Validation & Deploy
 ```bash
-/sw:validate 0015
+sw:validate 0015
 # ✅ All AC-IDs validated
 # ✅ Test coverage: 92%
 # ✅ Quality checks passed
