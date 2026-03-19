@@ -99,7 +99,7 @@ const {
   mockDetectProvider: vi.fn().mockReturnValue(null),
   mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
   mockScanMisplacedRepos: vi.fn().mockReturnValue([]),
-  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ umbrella: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
+  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ workspace: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
   mockPromptLanguageSelection: vi.fn().mockResolvedValue({ language: 'en', keepEnglishOriginals: false }),
@@ -216,8 +216,10 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
+  scanWorkspaceRepos: mockScanUmbrellaRepos,
   scanMisplacedRepos: mockScanMisplacedRepos,
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
+  buildWorkspaceConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
   promptLanguageSelection: mockPromptLanguageSelection,
@@ -484,9 +486,9 @@ describe('AC-US1-03: umbrella config unconditional', () => {
 
     await initCommand('.', { adapter: 'claude' });
 
-    // umbrella.enabled is always set
-    expect(writtenConfig.umbrella?.enabled).toBe(true);
-    expect(writtenConfig.umbrella?.childRepos).toEqual([]);
+    // workspace.enabled is always set
+    expect(writtenConfig.workspace?.enabled).toBe(true);
+    expect(writtenConfig.workspace?.childRepos).toEqual([]);
     // multiProject.enabled is never written
     expect(writtenConfig.multiProject).toBeUndefined();
   });
@@ -523,7 +525,7 @@ describe('AC-US1-03: umbrella config unconditional', () => {
     await initCommand('.', { adapter: 'claude' });
 
     expect(mockBuildUmbrellaConfig).toHaveBeenCalled();
-    expect(writtenConfig.umbrella?.enabled).toBe(true);
+    expect(writtenConfig.workspace?.enabled).toBe(true);
   });
 
   it('config never contains multiProject.enabled', async () => {

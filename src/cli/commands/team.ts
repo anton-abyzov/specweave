@@ -12,6 +12,7 @@
  */
 
 import { spawn } from 'child_process';
+import * as os from 'os';
 import chalk from 'chalk';
 import { isSpecWeaveInitialized } from '../../utils/fs-native.js';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
@@ -86,8 +87,9 @@ export async function handleTeamCommand(
     return;
   }
 
-  // Auto-fix settings.json env var
+  // Auto-fix settings.json env var (project-level + global)
   enableAgentTeamsEnvVar(projectPath);
+  enableAgentTeamsEnvVar(os.homedir());
 
   // Determine mode
   const mode = resolveTeammateMode(options.mode);

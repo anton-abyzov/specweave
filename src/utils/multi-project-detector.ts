@@ -39,7 +39,10 @@ export interface MultiProjectDetectionResult {
   /** Detected projects (empty if single-project) */
   projects: DetectedProject[];
 
-  /** Whether umbrella mode is enabled */
+  /**
+   * @deprecated Always false. Use `hasWorkspace` instead.
+   * Legacy umbrella.enabled/multiProject.enabled checks have been removed.
+   */
   umbrellaEnabled: boolean;
 
   /** Whether board/area path mapping is configured */
@@ -47,6 +50,9 @@ export interface MultiProjectDetectionResult {
 
   /** Primary project prefix for cross-cutting stories (e.g., 'AUTH' for auth) */
   crossCuttingPrefix?: string;
+
+  /** Whether workspace config is present in config.json */
+  hasWorkspace: boolean;
 }
 
 /**
@@ -263,43 +269,25 @@ export function detectMultiProjectMode(projectRoot: string = process.cwd()): Mul
     }
   }
 
-  // Check 1: umbrella.enabled with 2+ child repos
-  if (config.umbrella?.enabled === true) {
-    const projects = config.umbrella?.childRepos
-      ? parseChildRepos(config.umbrella.childRepos)
-      : [];
+  const hasWorkspace = !!config.workspace;
 
-    // Multi-project requires 2+ projects (1 project = single-project mode)
+  // Check 1: workspace.repos with 2+ entries (PRIMARY — replaces umbrella/multiProject checks)
+  if (Array.isArray(config.workspace?.repos) && config.workspace.repos.length > 1) {
+    const projects = parseChildRepos(config.workspace.repos);
+
     if (projects.length > 1) {
       return {
         isMultiProject: true,
-        detectionReason: 'umbrella.enabled with childRepos',
-        projects,
-        umbrellaEnabled: true,
-        hasBoardMapping: false
-      };
-    }
-  }
-
-  // Check 2: multiProject.enabled with 2+ projects
-  if (config.multiProject?.enabled === true) {
-    const projects = config.multiProject?.projects
-      ? parseMultiProjectConfig(config.multiProject.projects)
-      : [];
-
-    // Multi-project requires 2+ projects (1 project = single-project mode)
-    if (projects.length > 1) {
-      return {
-        isMultiProject: true,
-        detectionReason: 'multiProject.enabled with projects config',
+        detectionReason: 'workspace.repos with 2+ repos',
         projects,
         umbrellaEnabled: false,
-        hasBoardMapping: false
+        hasBoardMapping: false,
+        hasWorkspace,
       };
     }
   }
 
-  // Check 3: Sync profile with board/area path mapping
+  // Check 2: Sync profile with board/area path mapping (secondary fallback)
   if (config.sync?.profiles) {
     const syncProjects = parseProjectsFromSyncProfiles(config.sync);
     const hasBoardMapping = Object.values(config.sync.profiles).some((p: any) =>
@@ -312,12 +300,13 @@ export function detectMultiProjectMode(projectRoot: string = process.cwd()): Mul
         detectionReason: 'sync profiles with multiple projects',
         projects: syncProjects,
         umbrellaEnabled: false,
-        hasBoardMapping
+        hasBoardMapping,
+        hasWorkspace,
       };
     }
   }
 
-  // Check 4: Multiple project folders in specs/
+  // Check 3: Multiple project folders in specs/ (tertiary fallback)
   const folderProjects = detectProjectsFromFolders(specsPath);
   if (folderProjects.length > 1) {
     return {
@@ -325,7 +314,8 @@ export function detectMultiProjectMode(projectRoot: string = process.cwd()): Mul
       detectionReason: 'multiple project folders in specs/',
       projects: folderProjects,
       umbrellaEnabled: false,
-      hasBoardMapping: false
+      hasBoardMapping: false,
+      hasWorkspace,
     };
   }
 
@@ -335,7 +325,8 @@ export function detectMultiProjectMode(projectRoot: string = process.cwd()): Mul
     detectionReason: 'no multi-project configuration detected',
     projects: [],
     umbrellaEnabled: false,
-    hasBoardMapping: false
+    hasBoardMapping: false,
+    hasWorkspace,
   };
 }
 

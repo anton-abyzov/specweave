@@ -267,8 +267,8 @@ describe('multi-project-detector', () => {
       });
     });
 
-    describe('umbrella.enabled with childRepos', () => {
-      it('should detect multi-project with 2+ child repos', () => {
+    describe('legacy umbrella/multiProject (no longer triggers detection)', () => {
+      it('should NOT detect from umbrella.enabled alone — use workspace.repos', () => {
         createConfig({
           umbrella: {
             enabled: true,
@@ -280,132 +280,12 @@ describe('multi-project-detector', () => {
         });
 
         const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(true);
-        expect(result.detectionReason).toBe('umbrella.enabled with childRepos');
-        expect(result.umbrellaEnabled).toBe(true);
-        expect(result.projects).toHaveLength(2);
-        expect(result.projects[0]).toEqual({
-          id: 'my-fe',
-          prefix: 'FE',
-          name: 'Frontend',
-          path: 'packages/fe',
-        });
-        expect(result.projects[1]).toEqual({
-          id: 'my-be',
-          prefix: 'BE',
-          name: 'Backend',
-          path: 'packages/be',
-        });
-      });
-
-      it('should use explicit prefix from childRepo config', () => {
-        createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [
-              { id: 'proj-a', prefix: 'ALPHA' },
-              { id: 'proj-b', prefix: 'BETA' },
-            ],
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(true);
-        expect(result.projects[0].prefix).toBe('ALPHA');
-        expect(result.projects[1].prefix).toBe('BETA');
-      });
-
-      it('should return single project when umbrella has only 1 child repo', () => {
-        createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [{ id: 'only-one' }],
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
+        // umbrella.enabled check is removed — config should be migrated first
         expect(result.isMultiProject).toBe(false);
+        expect(result.umbrellaEnabled).toBe(false);
       });
 
-      it('should return single project when umbrella.enabled is false', () => {
-        createConfig({
-          umbrella: {
-            enabled: false,
-            childRepos: [
-              { id: 'fe' },
-              { id: 'be' },
-            ],
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(false);
-      });
-
-      it('should return single project when umbrella has no childRepos', () => {
-        createConfig({
-          umbrella: {
-            enabled: true,
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(false);
-      });
-
-      it('should skip child repos without id', () => {
-        createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [
-              { displayName: 'No ID' },
-              { id: 'fe' },
-              { id: 'be' },
-            ],
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(true);
-        expect(result.projects).toHaveLength(2);
-      });
-
-      it('should use id as name when name is absent', () => {
-        createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [
-              { id: 'frontend' },
-              { id: 'backend' },
-            ],
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.projects[0].name).toBe('frontend');
-        expect(result.projects[1].name).toBe('backend');
-      });
-
-      it('should read name field (not displayName) from childRepos (AC-US3-03)', () => {
-        createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [
-              { id: 'specweave', name: 'SpecWeave', path: 'repositories/org/specweave', prefix: 'SW' },
-              { id: 'vskill', name: 'VSkill', path: 'repositories/org/vskill', prefix: 'VS' },
-            ],
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(true);
-        expect(result.projects[0].name).toBe('SpecWeave');
-        expect(result.projects[1].name).toBe('VSkill');
-      });
-    });
-
-    describe('multiProject.enabled with projects', () => {
-      it('should detect multi-project from multiProject config', () => {
+      it('should NOT detect from multiProject.enabled alone — use workspace.repos', () => {
         createConfig({
           multiProject: {
             enabled: true,
@@ -417,136 +297,8 @@ describe('multi-project-detector', () => {
         });
 
         const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(true);
-        expect(result.detectionReason).toBe('multiProject.enabled with projects config');
-        expect(result.umbrellaEnabled).toBe(false);
-        expect(result.projects).toHaveLength(2);
-      });
-
-      it('should use project key as id', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              'my-fe': { name: 'Frontend' },
-              'my-be': { name: 'Backend' },
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.projects[0].id).toBe('my-fe');
-        expect(result.projects[1].id).toBe('my-be');
-      });
-
-      it('should use explicit prefix from project config', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              'proj-1': { prefix: 'P1', name: 'Project 1' },
-              'proj-2': { prefix: 'P2', name: 'Project 2' },
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.projects[0].prefix).toBe('P1');
-        expect(result.projects[1].prefix).toBe('P2');
-      });
-
-      it('should infer prefix when not explicitly set', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              'frontend': { name: 'Frontend' },
-              'backend': { name: 'Backend' },
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.projects[0].prefix).toBe('FE');
-        expect(result.projects[1].prefix).toBe('BE');
-      });
-
-      it('should return single project when multiProject has only 1 project', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              'only-one': { name: 'Only One' },
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
+        // multiProject.enabled check is removed — config should be migrated first
         expect(result.isMultiProject).toBe(false);
-      });
-
-      it('should return single project when multiProject.enabled is false', () => {
-        createConfig({
-          multiProject: {
-            enabled: false,
-            projects: {
-              fe: { name: 'Frontend' },
-              be: { name: 'Backend' },
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(false);
-      });
-
-      it('should skip non-object project entries', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              fe: { name: 'Frontend' },
-              be: { name: 'Backend' },
-              broken: 'not-an-object',
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.isMultiProject).toBe(true);
-        expect(result.projects).toHaveLength(2);
-      });
-
-      it('should use displayName when name is absent', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              fe: { displayName: 'Web Frontend' },
-              be: { displayName: 'API Backend' },
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.projects[0].name).toBe('Web Frontend');
-        expect(result.projects[1].name).toBe('API Backend');
-      });
-
-      it('should use id as name when neither name nor displayName is set', () => {
-        createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              frontend: {},
-              backend: {},
-            },
-          },
-        });
-
-        const result = detectMultiProjectMode(tempDir);
-        expect(result.projects[0].name).toBe('frontend');
-        expect(result.projects[1].name).toBe('backend');
       });
     });
 
@@ -792,39 +544,214 @@ describe('multi-project-detector', () => {
       });
     });
 
-    describe('detection priority', () => {
-      it('should prefer umbrella config over multiProject config', () => {
+    // -------------------------------------------------------------------------
+    // workspace.repos based detection (T-011, T-012, T-013, T-014)
+    // -------------------------------------------------------------------------
+
+    describe('workspace.repos based detection', () => {
+      it('should detect multi-project when workspace.repos has 2+ entries (T-011)', () => {
         createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [
-              { id: 'umbrella-fe' },
-              { id: 'umbrella-be' },
+          workspace: {
+            name: 'my-workspace',
+            repos: [
+              { id: 'frontend', path: 'repos/org/fe', prefix: 'FE' },
+              { id: 'backend', path: 'repos/org/be', prefix: 'BE' },
             ],
-          },
-          multiProject: {
-            enabled: true,
-            projects: {
-              'multi-fe': { name: 'FE' },
-              'multi-be': { name: 'BE' },
-            },
           },
         });
 
         const result = detectMultiProjectMode(tempDir);
-        expect(result.detectionReason).toBe('umbrella.enabled with childRepos');
-        expect(result.umbrellaEnabled).toBe(true);
-        expect(result.projects[0].id).toBe('umbrella-fe');
+        expect(result.isMultiProject).toBe(true);
+        expect(result.detectionReason).toContain('workspace');
+        expect(result.projects).toHaveLength(2);
+        expect(result.hasWorkspace).toBe(true);
       });
 
-      it('should prefer multiProject config over sync profiles', () => {
+      it('should return single project when workspace.repos has 0 entries', () => {
         createConfig({
-          multiProject: {
-            enabled: true,
-            projects: {
-              'mp-fe': { name: 'FE' },
-              'mp-be': { name: 'BE' },
+          workspace: { name: 'solo', repos: [] },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.isMultiProject).toBe(false);
+        expect(result.hasWorkspace).toBe(true);
+      });
+
+      it('should return single project when workspace.repos has 1 entry', () => {
+        createConfig({
+          workspace: {
+            name: 'solo',
+            repos: [{ id: 'only-one', path: '.', prefix: 'MAIN' }],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.isMultiProject).toBe(false);
+        expect(result.hasWorkspace).toBe(true);
+      });
+
+      it('should parse WorkspaceRepo fields correctly (T-012)', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'fe-app', path: 'repositories/org/fe', prefix: 'FE', name: 'Frontend App' },
+              { id: 'be-api', path: 'repositories/org/be', prefix: 'BE', name: 'Backend API' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.projects[0]).toEqual({
+          id: 'fe-app',
+          prefix: 'FE',
+          name: 'Frontend App',
+          path: 'repositories/org/fe',
+        });
+        expect(result.projects[1]).toEqual({
+          id: 'be-api',
+          prefix: 'BE',
+          name: 'Backend API',
+          path: 'repositories/org/be',
+        });
+      });
+
+      it('should use id as name when name is absent in workspace.repos', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'frontend', path: '.', prefix: 'FE' },
+              { id: 'backend', path: '.', prefix: 'BE' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.projects[0].name).toBe('frontend');
+        expect(result.projects[1].name).toBe('backend');
+      });
+
+      it('should infer prefix when not set in workspace.repos', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'frontend', path: '.' },
+              { id: 'backend', path: '.' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.projects[0].prefix).toBe('FE');
+        expect(result.projects[1].prefix).toBe('BE');
+      });
+
+      it('should skip repos without id in workspace.repos', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { path: '.', prefix: 'NO_ID' },
+              { id: 'fe', path: '.', prefix: 'FE' },
+              { id: 'be', path: '.', prefix: 'BE' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.isMultiProject).toBe(true);
+        expect(result.projects).toHaveLength(2);
+      });
+
+      it('should have umbrellaEnabled always false (T-014)', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'fe', path: '.', prefix: 'FE' },
+              { id: 'be', path: '.', prefix: 'BE' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.umbrellaEnabled).toBe(false);
+      });
+
+      it('should fall back to folder scan when no workspace.repos (T-013)', () => {
+        createConfig({});
+        createSpecFolders(['frontend', 'backend']);
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.isMultiProject).toBe(true);
+        expect(result.detectionReason).toBe('multiple project folders in specs/');
+        expect(result.hasWorkspace).toBe(false);
+      });
+
+      it('should prefer workspace.repos over sync profiles and folders (T-013)', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'ws-fe', path: '.', prefix: 'FE' },
+              { id: 'ws-be', path: '.', prefix: 'BE' },
+            ],
+          },
+          sync: {
+            profiles: {
+              jira: {
+                config: {
+                  boardMapping: {
+                    'FE Board': 'sync-fe',
+                    'BE Board': 'sync-be',
+                  },
+                },
+              },
             },
+          },
+        });
+        createSpecFolders(['folder-fe', 'folder-be']);
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.detectionReason).toContain('workspace');
+        expect(result.projects[0].id).toBe('ws-fe');
+      });
+
+      it('should set hasWorkspace=false when no workspace section', () => {
+        createConfig({});
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.hasWorkspace).toBe(false);
+      });
+
+      it('should handle 3+ repos correctly', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'fe', path: '.', prefix: 'FE' },
+              { id: 'be', path: '.', prefix: 'BE' },
+              { id: 'shared', path: '.', prefix: 'SHARED' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.isMultiProject).toBe(true);
+        expect(result.projects).toHaveLength(3);
+      });
+    });
+
+    describe('detection priority', () => {
+      it('should prefer workspace.repos over sync profiles', () => {
+        createConfig({
+          workspace: {
+            name: 'ws',
+            repos: [
+              { id: 'ws-fe', path: '.', prefix: 'FE' },
+              { id: 'ws-be', path: '.', prefix: 'BE' },
+            ],
           },
           sync: {
             profiles: {
@@ -841,8 +768,8 @@ describe('multi-project-detector', () => {
         });
 
         const result = detectMultiProjectMode(tempDir);
-        expect(result.detectionReason).toBe('multiProject.enabled with projects config');
-        expect(result.projects[0].id).toBe('mp-fe');
+        expect(result.detectionReason).toContain('workspace');
+        expect(result.projects[0].id).toBe('ws-fe');
       });
 
       it('should prefer sync profiles over folder detection', () => {
@@ -867,11 +794,11 @@ describe('multi-project-detector', () => {
         expect(result.projects[0].id).toBe('sync-fe');
       });
 
-      it('should fall through to folders when umbrella has <2 repos', () => {
+      it('should fall through to folders when workspace.repos has <2 entries', () => {
         createConfig({
-          umbrella: {
-            enabled: true,
-            childRepos: [{ id: 'only-one' }],
+          workspace: {
+            name: 'ws',
+            repos: [{ id: 'only-one', path: '.', prefix: 'MAIN' }],
           },
         });
         createSpecFolders(['frontend', 'backend']);
@@ -889,12 +816,12 @@ describe('multi-project-detector', () => {
   describe('getProjectPrefixes', () => {
     it('should return prefix array for multi-project', () => {
       createConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [
-            { id: 'fe', prefix: 'FE' },
-            { id: 'be', prefix: 'BE' },
-            { id: 'shared', prefix: 'SHARED' },
+        workspace: {
+          name: 'ws',
+          repos: [
+            { id: 'fe', path: '.', prefix: 'FE' },
+            { id: 'be', path: '.', prefix: 'BE' },
+            { id: 'shared', path: '.', prefix: 'SHARED' },
           ],
         },
       });
@@ -922,11 +849,11 @@ describe('multi-project-detector', () => {
   describe('getProjectByPrefix', () => {
     it('should find project by exact prefix match', () => {
       createConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [
-            { id: 'my-fe', prefix: 'FE', name: 'Frontend' },
-            { id: 'my-be', prefix: 'BE', name: 'Backend' },
+        workspace: {
+          name: 'ws',
+          repos: [
+            { id: 'my-fe', path: '.', prefix: 'FE', name: 'Frontend' },
+            { id: 'my-be', path: '.', prefix: 'BE', name: 'Backend' },
           ],
         },
       });
@@ -939,11 +866,11 @@ describe('multi-project-detector', () => {
 
     it('should find project case-insensitively', () => {
       createConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [
-            { id: 'my-fe', prefix: 'FE' },
-            { id: 'my-be', prefix: 'BE' },
+        workspace: {
+          name: 'ws',
+          repos: [
+            { id: 'my-fe', path: '.', prefix: 'FE' },
+            { id: 'my-be', path: '.', prefix: 'BE' },
           ],
         },
       });
@@ -955,11 +882,11 @@ describe('multi-project-detector', () => {
 
     it('should handle mixed case lookup', () => {
       createConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [
-            { id: 'my-shared', prefix: 'SHARED' },
-            { id: 'my-be', prefix: 'BE' },
+        workspace: {
+          name: 'ws',
+          repos: [
+            { id: 'my-shared', path: '.', prefix: 'SHARED' },
+            { id: 'my-be', path: '.', prefix: 'BE' },
           ],
         },
       });
@@ -971,11 +898,11 @@ describe('multi-project-detector', () => {
 
     it('should return undefined for non-existent prefix', () => {
       createConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [
-            { id: 'my-fe', prefix: 'FE' },
-            { id: 'my-be', prefix: 'BE' },
+        workspace: {
+          name: 'ws',
+          repos: [
+            { id: 'my-fe', path: '.', prefix: 'FE' },
+            { id: 'my-be', path: '.', prefix: 'BE' },
           ],
         },
       });
@@ -1034,11 +961,11 @@ describe('multi-project-detector', () => {
 
     it('should return US-NNN without prefix in multi-project when no prefix provided', () => {
       createConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [
-            { id: 'fe' },
-            { id: 'be' },
+        workspace: {
+          name: 'ws',
+          repos: [
+            { id: 'fe', path: '.', prefix: 'FE' },
+            { id: 'be', path: '.', prefix: 'BE' },
           ],
         },
       });
@@ -1099,6 +1026,7 @@ describe('multi-project-detector', () => {
         projects: [],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1113,8 +1041,9 @@ describe('multi-project-detector', () => {
           { id: 'my-fe', prefix: 'FE', name: 'Frontend' },
           { id: 'my-be', prefix: 'BE', name: 'Backend' },
         ],
-        umbrellaEnabled: true,
+        umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: true,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1131,6 +1060,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1152,6 +1082,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1168,6 +1099,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1184,6 +1116,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1200,6 +1133,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1216,6 +1150,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1235,6 +1170,7 @@ describe('multi-project-detector', () => {
         projects: [],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);
@@ -1251,6 +1187,7 @@ describe('multi-project-detector', () => {
         ],
         umbrellaEnabled: false,
         hasBoardMapping: false,
+        hasWorkspace: false,
       };
 
       const vars = generateMultiProjectTemplateVars(detection);

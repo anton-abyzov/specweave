@@ -28,9 +28,9 @@ import {
   detectUmbrellaParent,
   detectSuspiciousPath,
   detectProvider,
-  scanUmbrellaRepos,
+  scanWorkspaceRepos,
   scanMisplacedRepos,
-  buildUmbrellaConfig,
+  buildWorkspaceConfig,
   promptSmartReinit,
   installAllPlugins,
   promptLanguageSelection,
@@ -314,7 +314,7 @@ export async function initCommand(
 
     // Umbrella auto-detection: scan repositories/ subdirectory
     // Mutable — may be updated after repo cloning in post-scaffold step
-    let umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+    let umbrellaDiscovery = scanWorkspaceRepos(targetDir);
 
     // Detect repos in non-standard layout (repositories/{repo}/.git instead of {org}/{repo}/.git)
     // Only called when standard detection failed — the two cases are mutually exclusive
@@ -365,7 +365,7 @@ export async function initCommand(
             const totalCloned = foregroundResults.reduce((sum, r) => sum + r.totalCloned, 0);
             if (totalCloned > 0) {
               console.log(chalk.green(`\n   ✓ Cloned ${totalCloned} repo(s)`));
-              umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+              umbrellaDiscovery = scanWorkspaceRepos(targetDir);
             }
             if (jobIds.length > 0) {
               console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
@@ -436,13 +436,44 @@ export async function initCommand(
           config.translation.keepEnglishOriginals = true;
         }
 
-        // Always enable umbrella — every workspace uses repositories/ structure
+        // Always write workspace section — every workspace uses repositories/ structure
         if (umbrellaDiscovery) {
-          const umbrellaFragment = buildUmbrellaConfig(umbrellaDiscovery, finalProjectName);
-          config.umbrella = umbrellaFragment.umbrella;
-          config.repository = { ...config.repository, ...umbrellaFragment.repository };
-        } else if (!config.umbrella?.enabled) {
-          config.umbrella = { enabled: true, projectName: finalProjectName, childRepos: [] };
+          const wsFragment = buildWorkspaceConfig(umbrellaDiscovery, finalProjectName);
+          config.workspace = wsFragment.workspace;
+          config.repository = { ...config.repository, ...wsFragment.repository };
+        } else if (!config.workspace) {
+          config.workspace = { name: finalProjectName, repos: [] };
+        }
+        // Clean up legacy keys — workspace replaces umbrella/multiProject/projectMappings
+        delete config.umbrella;
+        delete config.multiProject;
+        delete config.projectMappings;
+
+        // Interactive: offer to connect root workspace to a GitHub repo (T-025)
+        if (!isCI && !continueExisting && config.workspace) {
+          spinner.stop();
+          try {
+            const connectGitHub = await confirm({
+              message: 'Connect this workspace root to a GitHub repo? (optional)',
+              default: false,
+            });
+            if (connectGitHub) {
+              const owner = await input({
+                message: 'GitHub owner (org or username):',
+                validate: (val: string) => val.trim().length > 0 || 'Owner is required',
+              });
+              const repo = await input({
+                message: 'GitHub repository name:',
+                validate: (val: string) => val.trim().length > 0 || 'Repo name is required',
+              });
+              config.workspace.rootRepo = {
+                github: { owner: owner.trim(), repo: repo.trim() },
+              };
+            }
+          } catch {
+            // Prompt cancellation — skip silently
+          }
+          spinner.start('Configuring project...');
         }
 
         // LSP auto-enable (Claude only)
@@ -485,10 +516,12 @@ export async function initCommand(
         ensureSkillCreator(targetDir).catch(() => {});
       }
 
-      // Enable agent teams env var
+      // Enable agent teams env var (project-level + global)
       try {
+        const os = await import('os');
         const { enableAgentTeamsEnvVar } = await import('../helpers/init/claude-settings-env.js');
         enableAgentTeamsEnvVar(targetDir);
+        enableAgentTeamsEnvVar(os.homedir());
       } catch {
         console.log(chalk.yellow('   ⚠ Could not enable agent teams env var (non-critical)'));
       }

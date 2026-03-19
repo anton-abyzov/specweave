@@ -12,6 +12,7 @@ import type {
   PluginInfo,
 } from '../../types.js';
 import type { CostsSummaryPayload } from './cost-aggregator.js';
+import { hasSpecweaveIncrements } from '../../../utils/find-project-root.js';
 
 interface AnalyticsAggregation {
   totalEvents: number;
@@ -164,8 +165,7 @@ export class DashboardDataAggregator {
 
     for (const child of childRepos) {
       const childAbsPath = path.join(this.projectRoot, child.path);
-      const childSpecweaveDir = path.join(childAbsPath, '.specweave');
-      const hasSpecweave = fs.existsSync(childSpecweaveDir);
+      const hasSpecweave = hasSpecweaveIncrements(childAbsPath);
 
       // Read sync metadata: child's own file takes priority, else umbrella's repos[id]
       let repoMeta: any = {};

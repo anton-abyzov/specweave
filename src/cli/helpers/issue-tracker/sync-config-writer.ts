@@ -49,7 +49,7 @@ export async function writeSyncConfig(
   config.hooks = {
     post_task_completion: {
       sync_tasks_md: true,
-      external_tracker_sync: false
+      external_tracker_sync: true
     },
     post_increment_planning: {
       auto_create_github_issue: tracker === 'github', // Only for GitHub

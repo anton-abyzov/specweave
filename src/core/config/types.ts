@@ -591,6 +591,53 @@ export interface TranslationConfiguration {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Workspace Configuration (v3.0 — replaces umbrella + multiProject)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Per-repo sync targets for workspace repos
+ * Structurally equivalent to ChildRepoSyncConfig but without legacy field names
+ */
+export interface WorkspaceRepoSync {
+  github?: { owner: string; repo: string; direction?: string };
+  jira?: { projectKey: string; domain?: string };
+  ado?: { organization?: string; project: string };
+}
+
+/**
+ * A repository within a workspace
+ */
+export interface WorkspaceRepo {
+  /** Repo identifier — MUST match canonical source name */
+  id: string;
+  /** Path to repo (relative or absolute) */
+  path: string;
+  /** User story prefix for US-{PREFIX}-001 format */
+  prefix: string;
+  /** Display name (defaults to id if not set) */
+  name?: string;
+  /** Tech stack keywords for story routing */
+  techStack?: string[];
+  /** Repository role (frontend, backend, mobile, infra, shared, other) */
+  role?: string;
+  /** Sync targets for this repo */
+  sync?: WorkspaceRepoSync;
+}
+
+/**
+ * Unified workspace configuration
+ * Replaces umbrella, multiProject, and projectMappings
+ */
+export interface WorkspaceConfig {
+  /** Workspace display name */
+  name: string;
+  /** Sync targets for the root/umbrella repo itself */
+  rootRepo?: WorkspaceRepoSync;
+  /** All repos in this workspace */
+  repos: WorkspaceRepo[];
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Interfaces consolidated from src/core/types/config.ts (0188)
 // ═══════════════════════════════════════════════════════════════════
 
@@ -606,11 +653,19 @@ export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
 export type TDDEnforcement = 'strict' | 'warn' | 'off';
 
 /**
- * Coverage target configuration
+ * Coverage target configuration.
+ *
+ * unit/integration: Istanbul/c8 line coverage percentage (0–100).
+ * e2e: percentage of written e2e tests that must pass (not line coverage —
+ *      Playwright does not produce Istanbul reports). 100 = all written
+ *      e2e tests must pass; lower values are not meaningful in practice.
  */
 export interface CoverageTargets {
+  /** Istanbul/c8 line coverage % for unit tests */
   unit: number;
+  /** Istanbul/c8 line coverage % for integration tests */
   integration: number;
+  /** Pass-rate % for written e2e tests (not line coverage) */
   e2e: number;
 }
 
@@ -952,27 +1007,20 @@ export interface SpecWeaveConfig {
   statusLine?: StatusLineConfiguration;
 
   /**
+   * Unified workspace configuration (v3.0+)
+   * Replaces umbrella, multiProject, and projectMappings
+   */
+  workspace?: WorkspaceConfig;
+
+  /**
    * Umbrella/multi-repo configuration (optional)
+   * @deprecated Use `workspace` instead. Will be auto-migrated on load.
    */
   umbrella?: UmbrellaConfig;
 
   /**
    * Project mappings for cross-project targeting (v0.34.0+)
-   *
-   * Maps SpecWeave project IDs to external tool targets.
-   * Allows per-US sync to different repos/projects.
-   *
-   * @example
-   * ```json
-   * {
-   *   "frontend-app": {
-   *     "github": { "owner": "myorg", "repo": "frontend-app" }
-   *   },
-   *   "backend-api": {
-   *     "jira": { "project": "BE", "board": "api-team" }
-   *   }
-   * }
-   * ```
+   * @deprecated Use `workspace.repos[].sync` instead. Will be auto-migrated on load.
    */
   projectMappings?: ProjectMappings;
 
@@ -981,7 +1029,10 @@ export interface SpecWeaveConfig {
   /** Plugin configuration */
   plugins?: PluginConfig;
 
-  /** Multi-project configuration (v1.0.0+) */
+  /**
+   * Multi-project configuration (v1.0.0+)
+   * @deprecated Use `workspace` instead. Will be auto-migrated on load.
+   */
   multiProject?: MultiProjectConfig;
 
   /** Testing configuration */
