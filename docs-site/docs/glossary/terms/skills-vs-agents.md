@@ -4,6 +4,8 @@ title: Skills vs Agents
 sidebar_label: Skills vs Agents
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Skills vs Agents
 
 SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, and others) with two core AI components: **Skills** (portable instructions) and **Custom Subagents** (isolated workers with memory). Understanding the difference — and how they compose — is key to building effective AI-assisted workflows.
@@ -64,8 +66,17 @@ model: opus
 
 ### Example Skills
 
+The most common entry point — starting a new feature:
+
+<CommandTabs
+  natural="Let's build user authentication with OAuth"
+  claude='sw:increment "Add user authentication with OAuth"'
+  other='increment "Add user authentication with OAuth"'
+/>
+
+Other frequently used skills:
+
 ```
-sw:increment          # Orchestrator — spawns PM, Architect, Planner subagents
 sw:pm                 # Product management domain logic (preloaded by sw-pm subagent)
 sw:architect          # Architecture domain logic (preloaded by sw-architect subagent)
 sw:grill              # Code review (standalone, context: fork)

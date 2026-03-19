@@ -1,3 +1,5 @@
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Cost Tracking Reference
 
 **Technical reference for SpecWeave cost tracking system**
@@ -7,6 +9,14 @@
 ## sw:costs Command
 
 ### Syntax
+
+<CommandTabs
+  natural="How much did this increment cost?"
+  claude='sw:costs'
+  other='costs'
+/>
+
+With options:
 
 ```bash
 sw:costs [incrementId] [--export json|csv|both]

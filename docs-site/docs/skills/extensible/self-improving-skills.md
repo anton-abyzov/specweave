@@ -4,6 +4,8 @@ title: Self-Improving Skills (Reflect)
 description: Learn once, never repeat. Enable Claude to learn from corrections and patterns across sessions with the Reflect system.
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Self-Improving Skills (Reflect)
 
 **Correct once, never again.** The Reflect system enables Claude to learn from your corrections and patterns, persisting knowledge across sessions.
@@ -54,9 +56,11 @@ flowchart LR
 
 ### Enable Auto-Learning
 
-```bash
-sw:reflect-on
-```
+<CommandTabs
+  natural="Start learning from my corrections"
+  claude='sw:reflect-on'
+  other='reflect-on'
+/>
 
 Now the stop hook will automatically analyze sessions and extract learnings.
 
@@ -64,15 +68,19 @@ Now the stop hook will automatically analyze sessions and extract learnings.
 
 After any session, trigger reflection manually:
 
-```bash
-sw:reflect
-```
+<CommandTabs
+  natural="Reflect on what we learned this session"
+  claude='sw:reflect'
+  other='reflect'
+/>
 
 ### Check Status
 
-```bash
-sw:reflect-status
-```
+<CommandTabs
+  natural="What has the AI learned so far?"
+  claude='sw:reflect-status'
+  other='reflect-status'
+/>
 
 ---
 
