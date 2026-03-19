@@ -566,6 +566,8 @@ export class ExternalIssueAutoCreator {
       }
 
       // FIX (v1.0.302 / 0271): Also check externalLinks format (written by SyncCoordinator v1.0.240+)
+      // FIX (0610): Field names must match what backfillExternalLinks() in living-docs-sync.ts writes.
+      // JIRA: epicKey (backfill) + issueKey (legacy). ADO: featureId (backfill) + workItemId (legacy).
       switch (provider) {
         case 'github':
           if (metadata.externalLinks?.github?.issueNumber) {
@@ -580,11 +582,17 @@ export class ExternalIssueAutoCreator {
           }
           break;
         case 'jira':
+          if (metadata.externalLinks?.jira?.epicKey) {
+            return metadata.externalLinks.jira.epicKey;
+          }
           if (metadata.externalLinks?.jira?.issueKey) {
             return metadata.externalLinks.jira.issueKey;
           }
           break;
         case 'ado':
+          if (metadata.externalLinks?.ado?.featureId) {
+            return `#${metadata.externalLinks.ado.featureId}`;
+          }
           if (metadata.externalLinks?.ado?.workItemId) {
             return `#${metadata.externalLinks.ado.workItemId}`;
           }
