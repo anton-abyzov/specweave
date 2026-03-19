@@ -112,7 +112,10 @@ export {
   parseRepoInput,
   promptProjectSetup,
   promptRepoUrls,
-  cloneReposIntoWorkspace,
+  mapParsedReposToCloneOptions,
+  runForegroundClone,
+  FOREGROUND_CLONE_THRESHOLD,
+  cloneReposIntoWorkspace, // @deprecated — kept for backward compat
   type ProjectSetupChoice,
   type ParsedRepo,
   type RepoConnectResult,
