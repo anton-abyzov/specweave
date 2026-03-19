@@ -767,17 +767,12 @@ This issue was closed because increment \`${incrementId}\` was abandoned.
 
       let metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
 
-      // Auto-recovery: if no sync data at all, run full sync before closure
+      // If no GitHub sync data exists, there are no issues to close.
+      // The lifecycle hook (LifecycleHookDispatcher.onIncrementDone) handles
+      // the full sync and populates metadata before this point.
+      // We no longer trigger a redundant sync here to avoid exhausting API rate limits.
       if (!hasAnyGitHubSyncData(metadata)) {
-        try {
-          const { LivingDocsSync } = await import('../core/living-docs/living-docs-sync.js');
-          const sync = new LivingDocsSync(projectRoot);
-          await sync.syncIncrement(incrementId);
-          // Re-read metadata after sync
-          metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
-        } catch {
-          // Non-critical: sync may fail if no living docs exist yet
-        }
+        return result;
       }
 
       // Collect issues grouped by owner/repo for cross-repo closure

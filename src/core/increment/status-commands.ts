@@ -336,10 +336,9 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       process.stderr.write(`[completeIncrement] Post-closure hook error: ${msg}\n`);
     }
 
-    // Direct GitHub issue closure from metadata (fallback).
-    // The hook chain above may silently skip GitHub closure when living docs
-    // files don't exist. This fallback reads issue numbers directly from
-    // metadata.json and closes any that are still open. Idempotent.
+    // Direct GitHub issue closure from metadata.
+    // Reads issue numbers from metadata.json (populated by the lifecycle hook above)
+    // and closes any that are still open. Does NOT re-trigger sync — just closes.
     let ghClosed = 0;
     let ghMilestoneClosed = false;
     const ghErrors: string[] = [];
