@@ -30,6 +30,7 @@ export {
   scanUmbrellaRepos,
   scanMisplacedRepos,
   buildUmbrellaConfig,
+  isSystemTempDir,
   SUSPICIOUS_PATH_SEGMENTS,
 } from './path-utils.js';
 
