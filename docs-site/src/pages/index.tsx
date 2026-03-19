@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react';
 import Layout from '@theme/Layout';
-import HeroSection from './sections/HeroSection';
-import TrustedBySection from './sections/TrustedBySection';
-import DemoVideoSection from './sections/DemoVideoSection';
-import HowItWorksSection from './sections/HowItWorksSection';
-import CapabilitiesSection from './sections/CapabilitiesSection';
-import AcademyPromoSection from './sections/AcademyPromoSection';
-import StatsSection from './sections/StatsSection';
-import IntegrationsSection from './sections/IntegrationsSection';
-import VerifiedSkillsSection from './sections/VerifiedSkillsSection';
-import SkillStudioSection from './sections/SkillStudioSection';
-import CTASection from './sections/CTASection';
+import HeroSection from '../components/sections/HeroSection';
+import TrustedBySection from '../components/sections/TrustedBySection';
+import DemoVideoSection from '../components/sections/DemoVideoSection';
+import HowItWorksSection from '../components/sections/HowItWorksSection';
+import CapabilitiesSection from '../components/sections/CapabilitiesSection';
+import AcademyPromoSection from '../components/sections/AcademyPromoSection';
+import StatsSection from '../components/sections/StatsSection';
+import IntegrationsSection from '../components/sections/IntegrationsSection';
+import VerifiedSkillsSection from '../components/sections/VerifiedSkillsSection';
+import SkillStudioSection from '../components/sections/SkillStudioSection';
+import CTASection from '../components/sections/CTASection';
 
 export default function Home(): ReactNode {
   return (

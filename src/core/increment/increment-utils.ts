@@ -72,10 +72,10 @@ export class IncrementNumberManager {
   /**
    * Get the next available increment number across all directories.
    *
-   * GAP-FILLING STRATEGY (v0.33.1+):
-   * - Finds the first available number starting from 0001
-   * - Prevents gaps in increment numbering sequence
-   * - If no gaps exist, returns highest + 1
+   * SEQUENTIAL STRATEGY (v1.0.x+):
+   * - Returns highest existing number + 1
+   * - Gaps in numbering are preserved (not backfilled)
+   * - Simpler and more predictable than gap-filling
    *
    * ALWAYS performs fresh filesystem scan to guarantee unique IDs.
    * No caching - simplicity over premature optimization.
@@ -88,11 +88,11 @@ export class IncrementNumberManager {
    * ```typescript
    * // If increments [0001, 0002, 0004, 0005] exist:
    * const nextId = IncrementNumberManager.getNextIncrementNumber();
-   * // "0003" - fills the gap!
+   * // "0006" - sequential, skips gap
    *
    * // If increments [0001, 0002, 0003] exist:
    * const nextId = IncrementNumberManager.getNextIncrementNumber();
-   * // "0004" - sequential if no gaps
+   * // "0004" - sequential
    * ```
    */
   static getNextIncrementNumber(
@@ -104,20 +104,28 @@ export class IncrementNumberManager {
     // ALWAYS scan fresh - no caching to prevent duplicate ID bugs
     const existingNumbers = this.getAllIncrementNumbers(incrementsDir);
 
-    // Gap-filling: Find first available number starting from 1
-    let candidate = 1;
-    while (existingNumbers.has(candidate)) {
-      candidate++;
+    // Sequential: Always use highest existing + 1 (no gap-filling)
+    // Uses iterative max instead of Math.max(...set) to avoid stack overflow on large sets
+    let maxNumber = 0;
+    for (const n of existingNumbers) {
+      if (n > maxNumber) maxNumber = n;
     }
 
-    return String(candidate).padStart(4, '0');
+    if (maxNumber >= 9999) {
+      throw new Error(
+        'Increment number overflow: maximum 4-digit ID (9999) reached. ' +
+        'Archive or clean up old increments before creating new ones.'
+      );
+    }
+
+    return String(maxNumber + 1).padStart(4, '0');
   }
 
   /**
    * Get the next available increment number that won't collide in the target project's feature ID space.
    *
    * PER-PROJECT COLLISION PREVENTION (v1.0.19+):
-   * - First gets candidate from global increment pool (gap-filling)
+   * - First gets candidate from global increment pool (sequential max+1)
    * - Then checks if that number would collide with existing FS-IDs in the target project
    * - If collision (FS-XXX or FS-XXXE exists), finds next available number
    *
@@ -149,7 +157,7 @@ export class IncrementNumberManager {
     projectId: string,
     options: { isExternal?: boolean } = {}
   ): string {
-    // 1. Get candidate from global increment pool (existing gap-filling logic)
+    // 1. Get candidate from global increment pool (sequential max+1)
     const candidate = parseInt(this.getNextIncrementNumber(projectRoot), 10);
 
     // 2. Check per-project feature ID collision across ALL locations

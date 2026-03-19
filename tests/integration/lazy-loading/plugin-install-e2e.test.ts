@@ -34,11 +34,33 @@ import { clearCliCache } from '../../../src/core/lazy-loading/llm-plugin-detecto
 import { execFileNoThrowSync } from '../../../src/utils/execFileNoThrow.js';
 
 // Test configuration
-// NOTE: Use plugin name for plugin operations, matching marketplace.json
-const TEST_PLUGIN = 'frontend'; // Plugin to test install/uninstall
+// NOTE: Only sw@specweave exists in the marketplace. Domain plugins
+// (frontend, backend, etc.) and the vskill marketplace were removed.
 const CLAUDE_REGISTRY_PATH = path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
 const CLAUDE_SETTINGS_PATH = path.join(os.homedir(), '.claude', 'settings.json');
 const CLAUDE_SKILLS_PATH = path.join(os.homedir(), '.claude', 'skills');
+
+/**
+ * Safety net: Remove any stale @vskill entries from settings.json after all tests.
+ * The vskill marketplace no longer exists — any @vskill entries are phantom pollution
+ * that cause "Plugin not found in marketplace 'vskill'" errors in Claude Code.
+ */
+afterAll(() => {
+  try {
+    if (!fs.existsSync(CLAUDE_SETTINGS_PATH)) return;
+    const settings = JSON.parse(fs.readFileSync(CLAUDE_SETTINGS_PATH, 'utf-8'));
+    if (!settings.enabledPlugins) return;
+    const vskillKeys = Object.keys(settings.enabledPlugins).filter(k => k.endsWith('@vskill'));
+    if (vskillKeys.length === 0) return;
+    for (const key of vskillKeys) {
+      delete settings.enabledPlugins[key];
+    }
+    fs.writeFileSync(CLAUDE_SETTINGS_PATH, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+    console.log(`\n🧹 Safety cleanup: removed ${vskillKeys.length} stale @vskill entries from settings.json: ${vskillKeys.join(', ')}`);
+  } catch {
+    // Non-blocking cleanup
+  }
+});
 
 /**
  * Check if Claude CLI is available
@@ -104,8 +126,8 @@ if (!CLI_AVAILABLE_AT_LOAD) {
  * The marketplace UI "installed" count = enabled plugins only.
  *
  * IMPORTANT: Claude CLI may register plugins with EITHER:
- * - Short name: frontend@vskill (domain plugins) or sw-github@specweave (integration plugins)
- * - Long name: specweave-frontend@specweave (legacy source folder name)
+ * - Short name: sw@specweave (plugin name from marketplace.json)
+ * - Long name: specweave@specweave (legacy source folder name)
  * This function checks BOTH naming conventions.
  */
 function isPluginInstalled(pluginName: string): boolean {
@@ -182,8 +204,8 @@ function isPluginInSkillsDir(pluginName: string): boolean {
 /**
  * Map plugin FOLDER names to SHORT names (for Claude CLI)
  *
- * Domain plugins use vskill marketplace (no sw- prefix).
- * Integration plugins remain in specweave marketplace (sw- prefix).
+ * All plugins are in the specweave marketplace.
+ * Domain plugins (frontend, backend, etc.) no longer exist.
  */
 const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
   specweave: 'sw',
@@ -200,19 +222,18 @@ const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
   'specweave-payments': 'payments',
 };
 
-/** Domain plugins live in the vskill marketplace (no sw- prefix) */
-const DOMAIN_PLUGINS = new Set([
-  'frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s',
-  'ml', 'payments', 'confluent', 'kafka', 'docs', 'cost', 'security', 'skills', 'blockchain',
-]);
-
-function isDomainPlugin(shortName: string): boolean {
-  return DOMAIN_PLUGINS.has(shortName);
+/**
+ * All plugins now live in the specweave marketplace.
+ * The vskill marketplace was removed — domain plugins (frontend, backend, etc.)
+ * no longer exist in any marketplace. Only 'sw' remains in specweave.
+ */
+function isDomainPlugin(_shortName: string): boolean {
+  return false; // No domain plugins exist in any marketplace
 }
 
 /** Get the marketplace name for a plugin */
-function getMarketplace(shortName: string): string {
-  return isDomainPlugin(shortName) ? 'vskill' : 'specweave';
+function getMarketplace(_shortName: string): string {
+  return 'specweave'; // All plugins are in specweave marketplace
 }
 
 /**
@@ -229,8 +250,7 @@ function enablePluginViaClaude(pluginName: string): { success: boolean; output: 
   try {
     // Convert to short name if needed
     const shortName = PLUGIN_FOLDER_TO_SHORT[pluginName] || pluginName;
-    const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
-    const pluginKey = `${shortName}@${marketplace}`;
+    const pluginKey = `${shortName}@specweave`;
 
     // First try to enable (faster, works for already-installed plugins)
     const enableResult = execFileNoThrowSync('claude', ['plugin', 'enable', pluginKey], {
@@ -271,8 +291,7 @@ function installPluginViaClaude(pluginName: string): { success: boolean; output:
   try {
     // Convert to short name if needed (accepts either format)
     const shortName = PLUGIN_FOLDER_TO_SHORT[pluginName] || pluginName;
-    const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
-    const pluginKey = `${shortName}@${marketplace}`;
+    const pluginKey = `${shortName}@specweave`;
 
     const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
       timeout: 60000,
@@ -344,13 +363,12 @@ async function runDetectIntent(
  * - Any OS (Windows/macOS/Linux - shell:true handles functions/aliases)
  *
  * PLUGIN NAMING:
- * - Install uses names from marketplace.json: `testing@vskill` (domain) or `sw-github@specweave` (integration)
+ * - Install uses names from marketplace.json: `sw@specweave` (core plugin)
  * - After install, registry stores with the same name
- * - Some legacy plugins may have long names like `specweave-testing@specweave`
  *
  * COMMANDS:
  * - `claude plugin list` - shows all installed plugins
- * - `claude plugin install testing@vskill` - installs domain plugin
+ * - `claude plugin install sw@specweave` - installs core plugin
  * - `claude plugin enable/disable <name>@<marketplace>` - toggle existing plugin
  * - `claude plugin uninstall <name>@<marketplace>` - removes plugin
  *
@@ -435,164 +453,30 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   🧹 Plugin disabled (cleanup complete)\n');
   }, 90000);
 
-  it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin from official Claude marketplace', () => {
-    // Test with a plugin from the SpecWeave marketplace (reliable for CI/CD)
-    // Skip if external marketplace is unavailable
-    const pluginKey = 'testing@vskill';
+  it.skipIf(!PLUGIN_CMD_WORKS)('should verify core plugin from specweave marketplace', () => {
+    // Only sw@specweave exists in the marketplace — domain plugins (testing, frontend, etc.)
+    // were removed along with the vskill marketplace.
+    const pluginKey = 'sw@specweave';
 
-    console.log('\n📦 Testing: claude plugin install ' + pluginKey);
+    console.log('\n📦 Testing: claude plugin list for ' + pluginKey);
 
-    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
-      timeout: 60000,
+    const result = execFileNoThrowSync('claude', ['plugin', 'list'], {
+      timeout: 15000,
       shell: true,
     });
 
     console.log('   Exit code:', result.exitCode);
-    console.log('   Output:', (result.stdout || result.stderr || '').substring(0, 300));
+    expect(result.success).toBe(true);
+    expect(result.stdout).toContain('specweave');
+    console.log('   ✅ Core plugin verified in marketplace!\n');
+  }, 30000);
 
-    // Should succeed (either installed fresh or already installed)
-    const output = (result.stdout || '') + (result.stderr || '');
-    const success = result.success ||
-      output.includes('installed') ||
-      output.includes('already') ||
-      output.includes('enabled') ||
-      output.includes('Plugin installed'); // Additional success indicator
-
-    // Allow graceful failure for external dependency or marketplace issues
-    if (!success && (output.includes('network') || output.includes('timeout') || output.includes('ENOTFOUND'))) {
-      console.log('   ⚠️ Network issue - skipping external marketplace test');
-      return; // Skip without failing in CI when network issues occur
-    }
-    if (!success && (output.includes('not found in marketplace') || output.includes('not found'))) {
-      console.log('   ⚠️ Plugin not found in marketplace - skipping (marketplace may have changed)');
-      return; // Skip when plugin is no longer available in marketplace
-    }
-
-    expect(success).toBe(true);
-    console.log('   ✅ Marketplace plugin install worked!\n');
-  }, 90000);
-
-  it.skipIf(!PLUGIN_CMD_WORKS)('should install and uninstall SpecWeave plugin using SHORT name', () => {
-    // Test the CORRECT way to install SpecWeave plugins:
-    // Use name from marketplace.json (testing), NOT folder name (specweave-testing)
-    //
-    // IMPORTANT: Claude CLI may register plugins with EITHER:
-    // - Short name: testing@vskill (from marketplace.json "name" field)
-    // - Long name: specweave-testing@specweave (legacy source folder name)
-    // We need to check for BOTH in assertions
-    const pluginKey = 'testing@vskill';
-    const pluginShortName = 'testing'; // Name from marketplace
-    const pluginLongName = 'specweave-testing'; // Folder name (may also appear in registry)
-
-    console.log('\n📦 Testing: Full install/uninstall cycle for ' + pluginKey);
-
-    // Step 1: Uninstall first (cleanup any previous state)
-    console.log('   Step 1: Cleanup - uninstall if exists');
-    execFileNoThrowSync('claude', ['plugin', 'uninstall', pluginKey], {
-      timeout: 30000,
-      shell: true,
-    });
-
-    // Step 2: Install the plugin using SHORT name
-    console.log('   Step 2: Install plugin');
-    const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
-      timeout: 60000,
-      shell: true,
-    });
-
-    console.log('   Install exit code:', installResult.exitCode);
-    const installOutput = (installResult.stdout || '') + (installResult.stderr || '');
-    console.log('   Install output:', installOutput.substring(0, 300));
-
-    // Check if install succeeded or if there are environment-specific issues
-    if (installOutput.includes('Source path does not exist')) {
-      console.log('   ⚠️  Marketplace needs plugins folder checkout. Skipping test.');
-      console.log('   Fix: cd ~/.claude/plugins/marketplaces/specweave && git checkout HEAD -- plugins');
-      return; // Skip rest of test
-    }
-
-    // Handle cases where plugin install fails due to marketplace/network issues
-    if (installResult.exitCode !== 0 && !installOutput.includes('Successfully installed')) {
-      if (installOutput.includes('not found') || installOutput.includes('error')) {
-        console.log('   ⏭️  Skipping: Plugin install failed (marketplace may not be available in this environment)');
-        console.log('   Error:', installOutput.substring(0, 200));
-        return; // Skip rest of test in CI/environments without marketplace access
-      }
-    }
-
-    expect(installResult.exitCode).toBe(0);
-    expect(installOutput).toContain('Successfully installed');
-
-    // Step 3: Wait for Claude to register the plugin, then verify in list
-    console.log('   Step 3: Waiting 2s for plugin registration...');
-    const waitStart = Date.now();
-    while (Date.now() - waitStart < 2000) {
-      // Busy wait (sync test can't use setTimeout)
-    }
-
-    console.log('   Step 3b: Verify in plugin list');
-    const listResult = execFileNoThrowSync('claude', ['plugin', 'list'], {
-      timeout: 15000,
-      shell: true,
-    });
-
-    console.log('   Plugin list output:', listResult.stdout?.substring(0, 500));
-
-    // Claude CLI may register with SHORT name (testing) or LONG name (specweave-testing)
-    // Check for EITHER format - both are valid
-    const hasShortName = listResult.stdout?.includes(pluginShortName + '@vskill');
-    const hasLongName = listResult.stdout?.includes(pluginLongName + '@specweave');
-    console.log(`   Found short name (${pluginShortName}): ${hasShortName}`);
-    console.log(`   Found long name (${pluginLongName}): ${hasLongName}`);
-    expect(hasShortName || hasLongName).toBe(true);
-    console.log('   ✅ Plugin appears in list');
-
-    // Step 4: Uninstall (cleanup) - try both names to ensure cleanup
-    console.log('   Step 4: Uninstall plugin (cleanup)');
-    // Uninstall whichever name is present
-    const uninstallKey = hasShortName ? pluginKey : `${pluginLongName}@specweave`;
-    const uninstallResult = execFileNoThrowSync('claude', ['plugin', 'uninstall', uninstallKey], {
-      timeout: 30000,
-      shell: true,
-    });
-
-    console.log('   Uninstall exit code:', uninstallResult.exitCode);
-    const uninstallOutput = (uninstallResult.stdout || '') + (uninstallResult.stderr || '');
-    console.log('   Uninstall output:', uninstallOutput.substring(0, 200));
-
-    // Accept various success indicators (Claude CLI behavior may vary)
-    const uninstallSuccess = uninstallResult.exitCode === 0 ||
-      uninstallOutput.includes('Successfully uninstalled') ||
-      uninstallOutput.includes('not installed') ||
-      uninstallOutput.includes('uninstalled') ||
-      uninstallOutput.includes('removed');
-    if (!uninstallSuccess) {
-      // Don't fail the test - uninstall behavior varies across Claude CLI versions
-      console.log('   ⚠️  Uninstall returned unexpected result (non-fatal - known CLI variation)');
-      console.log('   Exit code:', uninstallResult.exitCode);
-      console.log('   Output:', uninstallOutput.substring(0, 300));
-    }
-
-    // Step 5: Verify plugin is actually gone from list
-    console.log('   Step 5: Verify plugin removed from list');
-    const verifyResult = execFileNoThrowSync('claude', ['plugin', 'list'], {
-      timeout: 15000,
-      shell: true,
-    });
-    // Plugin should NOT appear in list after uninstall (check BOTH names)
-    // Note: Claude CLI may not always uninstall cleanly - plugin might remain until restart
-    const goneShort = !verifyResult.stdout?.includes(pluginShortName + '@vskill');
-    const goneLong = !verifyResult.stdout?.includes(pluginLongName + '@specweave');
-    if (goneShort && goneLong) {
-      console.log('   ✅ Plugin confirmed removed from list');
-    } else {
-      console.log('   ⚠️  Plugin may still appear in list (Claude CLI behavior - requires restart)');
-      console.log('   This is expected behavior for Claude CLI plugin management');
-    }
-    // Don't fail the test if uninstall didn't fully remove - it's a known Claude CLI limitation
-
-    console.log('   ✅ Full install/uninstall cycle completed!\n');
-  }, 120000);
+  it.skip('should install and uninstall SpecWeave plugin using SHORT name', () => {
+    // SKIPPED: Domain plugins (testing@vskill, frontend@vskill, etc.) no longer exist.
+    // The vskill marketplace was removed. Only sw@specweave remains.
+    // This test polluted ~/.claude/settings.json with phantom @vskill entries
+    // that caused "Plugin not found in marketplace 'vskill'" errors.
+  });
 
   it.skipIf(!PLUGIN_CMD_WORKS)('should list installed plugins via claude plugin list', () => {
     console.log('\n📋 Testing: claude plugin list');
@@ -799,8 +683,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
 
       for (const pluginFolderName of pluginsInstalledByTest) {
         const shortName = getShortPluginName(pluginFolderName);
-        const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
-        const shortKey = `${shortName}@${marketplace}`;
+        const shortKey = `${shortName}@specweave`;
         const longKey = `${pluginFolderName}@specweave`;
 
         console.log(`   Cleaning up: ${pluginFolderName}`);
@@ -842,8 +725,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
         // Get the FIRST detected plugin - this is what we'll track and clean up
         const detectedPlugin = detection.result.plugins[0];
         const shortName = getShortPluginName(detectedPlugin);
-        const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
-        const shortKey = `${shortName}@${marketplace}`;
+        const shortKey = `${shortName}@specweave`;
         const longKey = `${detectedPlugin}@specweave`;
 
         console.log(`\n🎯 Primary detected plugin: ${detectedPlugin}`);
@@ -927,73 +809,20 @@ describe('Plugin Auto-Load E2E Integration', () => {
   });
 
   describe('Direct Plugin Installation via Claude CLI', () => {
-    it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin via claude plugin install', async () => {
-      // Use Claude's native CLI: `claude plugin install frontend@vskill`
-      const result = installPluginViaClaude(TEST_PLUGIN);
+    // NOTE: Domain plugins (frontend, backend, etc.) no longer exist in any marketplace.
+    // The vskill marketplace was removed. Only sw@specweave exists.
+    // Install/uninstall tests for non-existent plugins are skipped.
 
-      console.log(`📦 ${TEST_PLUGIN} install attempt:`);
-      console.log(`   - Success: ${result.success}`);
-      console.log(`   - Output: ${result.output.substring(0, 200)}`);
-
-      // Skip gracefully if marketplace isn't populated
-      if (result.output.includes('Source path does not exist')) {
-        console.log('   ⚠️  Marketplace plugins folder not found. Skipping test.');
-        console.log('   Fix: specweave refresh-plugins');
-        return; // Skip - marketplace not set up
-      }
-
-      // Skip gracefully if CLI failed (parallel test contention, CLI busy)
-      if (!result.success) {
-        console.log(`   ⚠️  CLI install failed (possibly busy from parallel tests) - skipping`);
-        return; // Skip - CLI contention
-      }
-
-      expect(result.success).toBe(true);
-
-      // Wait for registration to complete
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Verify plugin is registered (may already be from earlier tests)
-      const registered = isPluginInRegistry(TEST_PLUGIN);
-      const longName = Object.entries(PLUGIN_FOLDER_TO_SHORT).find(([, short]) => short === TEST_PLUGIN)?.[0];
-      const exists = isPluginInSkillsDir(TEST_PLUGIN) || (longName && isPluginInSkillsDir(longName));
-
-      console.log(`📦 ${TEST_PLUGIN} install result: Registry=${registered}, Skills=${exists}`);
-      expect(registered || exists).toBe(true);
-    }, 90000); // Extend timeout for marketplace operations
-
-    it.skipIf(!PLUGIN_CMD_WORKS)('should report plugin already installed on repeat install', () => {
-      // Claude CLI gracefully handles already-installed plugins
-      const result = installPluginViaClaude(TEST_PLUGIN);
-
-      console.log(`📦 Repeat install attempt:`);
-      console.log(`   - Success: ${result.success}`);
-      console.log(`   - Output: ${result.output.substring(0, 200)}`);
-
-      // Skip gracefully if marketplace isn't populated
-      if (result.output.includes('Source path does not exist')) {
-        console.log('   ⚠️  Marketplace plugins folder not found. Skipping test.');
-        return; // Skip - marketplace not set up
-      }
-
-      // Skip gracefully if CLI failed (parallel test contention, CLI busy)
-      if (!result.success) {
-        console.log(`   ⚠️  CLI install failed (possibly busy from parallel tests) - skipping`);
-        return; // Skip - CLI contention
-      }
-
-      // Should succeed (either installed or already registered)
-      expect(result.success).toBe(true);
-
-      // Output should indicate already installed
-      if (result.output.includes('already')) {
-        console.log(`✓ Plugin correctly reported as already installed`);
-      }
-    }, 60000); // Extend timeout for marketplace operations
+    it.skipIf(!PLUGIN_CMD_WORKS)('should verify core plugin is installed', () => {
+      // sw@specweave is the only plugin — verify it's registered
+      const registered = isPluginInRegistry('sw');
+      console.log(`📦 sw@specweave in registry: ${registered}`);
+      expect(registered).toBe(true);
+    });
 
     it.skip('uninstall removes plugin from registry', () => {
-      // Use `claude plugin uninstall testing@vskill` to remove
-      // Plugins remain loaded until Claude Code restarts
+      // Core plugin (sw) should not be uninstalled
+      // Domain plugins no longer exist in any marketplace
     });
   });
 
@@ -1001,22 +830,17 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // Tests that use Claude CLI directly (not through specweave)
     // Claude CLI has: enable, disable, install, uninstall, list
 
-    it.skipIf(!PLUGIN_CMD_WORKS)('should enable plugin via claude plugin enable', () => {
-      // Use Claude CLI directly to enable a plugin
-      const result = enablePluginViaClaude(TEST_PLUGIN);
+    it.skipIf(!PLUGIN_CMD_WORKS)('should enable core plugin via claude plugin enable', () => {
+      // Use sw@specweave (the only existing plugin) for enable test
+      const pluginKey = 'sw@specweave';
+      const result = enablePluginViaClaude('sw');
 
       console.log(`📦 Claude CLI enable result: ${result.success}`);
       console.log(`📦 Output: ${result.output}`);
 
       expect(result.success).toBe(true);
 
-      // Verify plugin is now enabled in settings.json
-      // NOTE: enablePluginViaClaude modifies settings.json enabledPlugins but does NOT
-      // add to installed_plugins.json registry. isPluginInstalled requires BOTH.
-      // Check settings.json directly for the enabled state.
-      const shortName = PLUGIN_FOLDER_TO_SHORT[TEST_PLUGIN] || TEST_PLUGIN;
-      const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
-      const pluginKey = `${shortName}@${marketplace}`;
+      // Verify plugin is enabled in settings.json
       if (fs.existsSync(CLAUDE_SETTINGS_PATH)) {
         const settings = JSON.parse(fs.readFileSync(CLAUDE_SETTINGS_PATH, 'utf8'));
         const enabledInSettings = settings.enabledPlugins?.[pluginKey] === true;
@@ -1046,11 +870,9 @@ describe('Plugin Auto-Load E2E Integration', () => {
       const settings = JSON.parse(fs.readFileSync(CLAUDE_SETTINGS_PATH, 'utf8'));
       const enabledPlugins = settings.enabledPlugins || {};
 
-      // Count enabled SpecWeave plugins (either @specweave or @vskill marketplaces)
-      // Domain plugins (frontend, backend, etc.) use @vskill marketplace
-      // Integration plugins (sw-github, sw-jira) use @specweave marketplace
+      // Count enabled SpecWeave plugins (specweave marketplace only — vskill marketplace removed)
       const enabledSpecweavePlugins = Object.entries(enabledPlugins)
-        .filter(([key, enabled]) => (key.includes('@specweave') || key.includes('@vskill')) && enabled === true)
+        .filter(([key, enabled]) => key.includes('@specweave') && enabled === true)
         .map(([key]) => key);
 
       console.log(`📦 Enabled SpecWeave plugins: ${enabledSpecweavePlugins.length}`);

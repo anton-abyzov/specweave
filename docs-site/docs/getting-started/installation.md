@@ -736,7 +736,7 @@ Need help? We've got you covered:
 - **Quick Start:** [Quickstart Guide](quickstart)
 - **Issues:** [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
-- **Documentation:** [verified-skill.com](https://verified-skill.com)
+- **Documentation:** [spec-weave.com](https://spec-weave.com)
 - **npm Package:** [npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
 
 ---

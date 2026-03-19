@@ -61,12 +61,6 @@ const config: Config = {
           price: '0',
           priceCurrency: 'USD',
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.8',
-          bestRating: '5',
-          ratingCount: '100',
-        },
       }),
     },
     {
@@ -361,12 +355,8 @@ const config: Config = {
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:site', content: '@aabyzov' },
       { name: 'twitter:creator', content: '@aabyzov' },
-      { name: 'twitter:title', content: 'SpecWeave - Program Your AI in English' },
-      { name: 'twitter:description', content: 'Skills extend what AI coding agents can do. Describe what you want, AI asks the right questions, builds it while you sleep. 100+ reusable skills for Claude Code.' },
       { name: 'twitter:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:title', content: 'SpecWeave - Program Your AI in English' },
-      { property: 'og:description', content: 'Skills extend what AI coding agents can do. Describe what you want, AI asks the right questions, builds it while you sleep. 100+ reusable skills for Claude Code.' },
       { property: 'og:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
     ],
 

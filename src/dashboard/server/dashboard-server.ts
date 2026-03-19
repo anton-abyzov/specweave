@@ -943,7 +943,7 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: true, data: [] });
       const config = await project.aggregator.getConfig() as any;
       const links: Array<{ name: string; url: string; type: string }> = [
-        { name: 'Public Docs', url: 'https://verified-skill.com', type: 'docs' },
+        { name: 'Public Docs', url: 'https://spec-weave.com', type: 'docs' },
       ];
       if (config?.sync?.github?.owner && config?.sync?.github?.repo) {
         links.push({

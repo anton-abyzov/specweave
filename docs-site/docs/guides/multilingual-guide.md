@@ -694,7 +694,7 @@ For better organization, use separate commits for source changes vs. translation
 ## Support
 
 **Documentation**:
-- [SpecWeave Website](https://verified-skill.com)
+- [SpecWeave Website](https://spec-weave.com)
 - [CLAUDE.md](../../CLAUDE) (contributor guide)
 - [README.md](../../../../README) (project overview)
 

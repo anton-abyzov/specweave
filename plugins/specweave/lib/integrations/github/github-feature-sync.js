@@ -7,8 +7,9 @@ import { CompletionCalculator } from "./completion-calculator.js";
 import { DuplicateDetector } from "./duplicate-detector.js";
 import { execFileNoThrow } from "../../vendor/utils/execFileNoThrow.js";
 import { getGitHubAuthFromProject } from "../../vendor/utils/auth-helpers.js";
-const _GitHubFeatureSync = class _GitHubFeatureSync {
-  // 30 seconds
+import { LockManager } from "../../../../../src/utils/lock-manager.js";
+import { normalizeIssueBody } from "./github-body-utils.js";
+class GitHubFeatureSync {
   constructor(client, specsDir, projectRoot) {
     // Cached default branch for the sync session (one API call per session)
     this.defaultBranch = null;
@@ -69,14 +70,14 @@ const _GitHubFeatureSync = class _GitHubFeatureSync {
    * 4. Update frontmatter with GitHub issue links
    */
   async syncFeatureToGitHub(featureId, projectName) {
-    const lockKey = `${this.client.getOwner()}/${this.client.getRepo()}:${featureId}`;
-    const now = Date.now();
-    const lastSync = _GitHubFeatureSync.syncLocks.get(lockKey);
-    if (lastSync && now - lastSync < _GitHubFeatureSync.LOCK_DURATION_MS) {
-      const secondsRemaining = Math.ceil((_GitHubFeatureSync.LOCK_DURATION_MS - (now - lastSync)) / 1e3);
+    const owner = this.client.getOwner();
+    const repo = this.client.getRepo();
+    const lockDir = path.join(this.projectRoot, ".specweave", "state", "locks", `github-sync-${owner}-${repo}`);
+    const lock = new LockManager(lockDir, 120);
+    const acquired = await lock.acquire();
+    if (!acquired) {
       console.log(`
-\u23ED\uFE0F  Sync already in progress for ${featureId} (or completed ${Math.floor((now - lastSync) / 1e3)}s ago)`);
-      console.log(`   \u2139\uFE0F  Sync will be available in ${secondsRemaining}s to prevent duplicates`);
+\u23ED\uFE0F  Sync already in progress for ${featureId} (lock held by another process)`);
       console.log(`   \u{1F4A1} This prevents race conditions between task completion and status change syncs`);
       return {
         milestoneNumber: 0,
@@ -86,123 +87,126 @@ const _GitHubFeatureSync = class _GitHubFeatureSync {
         userStoriesProcessed: 0
       };
     }
-    _GitHubFeatureSync.syncLocks.set(lockKey, now);
-    console.log(`
-\u{1F504} Syncing Feature ${featureId} to GitHub...`);
-    const featureFolder = await this.findFeatureFolder(featureId, projectName);
-    if (!featureFolder) {
-      console.log(`   \u26A0\uFE0F  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
-      console.log(`   \u{1F4A1} Run /sw:sync-docs or /sw:living-docs to generate living docs first`);
-      return {
-        milestoneNumber: 0,
-        milestoneUrl: "",
-        issuesCreated: 0,
-        issuesUpdated: 0,
-        userStoriesProcessed: 0
-      };
-    }
-    const featurePath = path.join(featureFolder, "FEATURE.md");
-    const featureData = await this.parseFeatureMd(featurePath);
-    console.log(`   \u{1F4E6} Feature: ${featureData.title}`);
-    console.log(`   \u{1F4CA} Status: ${featureData.status}`);
-    let milestoneNumber = featureData.external_tools?.github?.id;
-    let milestoneUrl = featureData.external_tools?.github?.url;
-    if (!milestoneNumber) {
-      console.log(`   \u{1F680} Creating GitHub Milestone...`);
-      const milestone = await this.createMilestone(featureData);
-      milestoneNumber = milestone.number;
-      milestoneUrl = milestone.url;
-      console.log(`   \u2705 Created Milestone #${milestoneNumber}`);
-      await this.updateFeatureMd(featurePath, {
-        type: "milestone",
-        id: milestoneNumber,
-        url: milestoneUrl
-      });
-    } else {
-      console.log(`   \u267B\uFE0F  Using existing Milestone #${milestoneNumber}`);
-      milestoneUrl = featureData.external_tools?.github?.url || milestoneUrl;
-    }
-    const userStories = await this.findUserStories(featureId, projectName);
-    console.log(`
-   \u{1F4DD} Found ${userStories.length} User Stories to sync...`);
-    let issuesCreated = 0;
-    let issuesUpdated = 0;
-    const detectedBranch = await this.detectDefaultBranch();
-    console.log(`   \u{1F33F} Default branch: ${detectedBranch}`);
-    for (const userStory of userStories) {
+    try {
       console.log(`
+\u{1F504} Syncing Feature ${featureId} to GitHub...`);
+      const featureFolder = await this.findFeatureFolder(featureId, projectName);
+      if (!featureFolder) {
+        console.log(`   \u26A0\uFE0F  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
+        console.log(`   \u{1F4A1} Run /sw:sync-docs or /sw:living-docs to generate living docs first`);
+        return {
+          milestoneNumber: 0,
+          milestoneUrl: "",
+          issuesCreated: 0,
+          issuesUpdated: 0,
+          userStoriesProcessed: 0
+        };
+      }
+      const featurePath = path.join(featureFolder, "FEATURE.md");
+      const featureData = await this.parseFeatureMd(featurePath);
+      console.log(`   \u{1F4E6} Feature: ${featureData.title}`);
+      console.log(`   \u{1F4CA} Status: ${featureData.status}`);
+      let milestoneNumber = featureData.external_tools?.github?.id;
+      let milestoneUrl = featureData.external_tools?.github?.url;
+      if (!milestoneNumber) {
+        console.log(`   \u{1F680} Creating GitHub Milestone...`);
+        const milestone = await this.createMilestone(featureData);
+        milestoneNumber = milestone.number;
+        milestoneUrl = milestone.url;
+        console.log(`   \u2705 Created Milestone #${milestoneNumber}`);
+        await this.updateFeatureMd(featurePath, {
+          type: "milestone",
+          id: milestoneNumber,
+          url: milestoneUrl
+        });
+      } else {
+        console.log(`   \u267B\uFE0F  Using existing Milestone #${milestoneNumber}`);
+        milestoneUrl = featureData.external_tools?.github?.url || milestoneUrl;
+      }
+      const userStories = await this.findUserStories(featureId, projectName);
+      console.log(`
+   \u{1F4DD} Found ${userStories.length} User Stories to sync...`);
+      let issuesCreated = 0;
+      let issuesUpdated = 0;
+      const detectedBranch = await this.detectDefaultBranch();
+      console.log(`   \u{1F33F} Default branch: ${detectedBranch}`);
+      for (const userStory of userStories) {
+        console.log(`
    \u{1F539} Processing ${userStory.id}: ${userStory.title}`);
-      const repoInfo = {
-        owner: this.client.getOwner(),
-        repo: this.client.getRepo(),
-        branch: detectedBranch
-      };
-      const builder = new UserStoryIssueBuilder(
-        userStory.filePath,
-        this.projectRoot,
-        featureId,
-        repoInfo
-      );
-      const issueContent = await builder.buildIssueBody();
-      issueContent.status = userStory.status;
-      let issueNumber;
-      let wasUpdated = false;
-      if (userStory.existingIssue) {
-        console.log(`      \u267B\uFE0F  Issue #${userStory.existingIssue} exists in frontmatter`);
-        try {
-          await this.client.getIssue(userStory.existingIssue);
-          await this.updateUserStoryIssue(userStory.existingIssue, issueContent, userStory.filePath);
+        const repoInfo = {
+          owner: this.client.getOwner(),
+          repo: this.client.getRepo(),
+          branch: detectedBranch
+        };
+        const builder = new UserStoryIssueBuilder(
+          userStory.filePath,
+          this.projectRoot,
+          featureId,
+          repoInfo
+        );
+        const issueContent = await builder.buildIssueBody();
+        issueContent.status = userStory.status;
+        let issueNumber;
+        let wasUpdated = false;
+        if (userStory.existingIssue) {
+          console.log(`      \u267B\uFE0F  Issue #${userStory.existingIssue} exists in frontmatter`);
+          try {
+            await this.client.getIssue(userStory.existingIssue);
+            await this.updateUserStoryIssue(userStory.existingIssue, issueContent, userStory.filePath);
+            issuesUpdated++;
+            console.log(`      \u2705 Updated Issue #${userStory.existingIssue}`);
+            continue;
+          } catch (err) {
+            console.log(`      \u26A0\uFE0F  Issue #${userStory.existingIssue} deleted on GitHub, creating new`);
+          }
+        }
+        const titlePattern = `[${featureId}][${userStory.id}]`;
+        const milestoneTitle = `${featureData.id}: ${featureData.title}`;
+        console.log(`      \u{1F6E1}\uFE0F  Using DuplicateDetector (pattern: ${titlePattern})`);
+        const result = await DuplicateDetector.createWithProtection({
+          title: issueContent.title,
+          body: issueContent.body,
+          titlePattern,
+          incrementId: userStory.id,
+          labels: issueContent.labels,
+          milestone: milestoneTitle,
+          repo: `${this.client.getOwner()}/${this.client.getRepo()}`
+        });
+        issueNumber = result.issue.number;
+        if (result.wasReused) {
+          console.log(`      \u267B\uFE0F  Reused existing issue #${issueNumber} (duplicate prevented!)`);
+          wasUpdated = true;
+        } else {
+          console.log(`      \u2705 Created issue #${issueNumber}`);
+        }
+        if (result.duplicatesFound > 0) {
+          console.log(`      \u{1F6E1}\uFE0F  Duplicates detected: ${result.duplicatesFound}, auto-closed: ${result.duplicatesClosed}`);
+        }
+        await this.updateUserStoryFrontmatter(userStory.filePath, issueNumber);
+        await this.backfillIncrementMetadata(featureId, userStory.id, issueNumber, milestoneNumber);
+        await this.updateUserStoryIssue(issueNumber, issueContent, userStory.filePath);
+        if (result.wasReused) {
           issuesUpdated++;
-          console.log(`      \u2705 Updated Issue #${userStory.existingIssue}`);
-          continue;
-        } catch (err) {
-          console.log(`      \u26A0\uFE0F  Issue #${userStory.existingIssue} deleted on GitHub, creating new`);
+        } else {
+          issuesCreated++;
         }
       }
-      const titlePattern = `[${featureId}][${userStory.id}]`;
-      const milestoneTitle = `${featureData.id}: ${featureData.title}`;
-      console.log(`      \u{1F6E1}\uFE0F  Using DuplicateDetector (pattern: ${titlePattern})`);
-      const result = await DuplicateDetector.createWithProtection({
-        title: issueContent.title,
-        body: issueContent.body,
-        titlePattern,
-        incrementId: userStory.id,
-        labels: issueContent.labels,
-        milestone: milestoneTitle,
-        repo: `${this.client.getOwner()}/${this.client.getRepo()}`
-      });
-      issueNumber = result.issue.number;
-      if (result.wasReused) {
-        console.log(`      \u267B\uFE0F  Reused existing issue #${issueNumber} (duplicate prevented!)`);
-        wasUpdated = true;
-      } else {
-        console.log(`      \u2705 Created issue #${issueNumber}`);
-      }
-      if (result.duplicatesFound > 0) {
-        console.log(`      \u{1F6E1}\uFE0F  Duplicates detected: ${result.duplicatesFound}, auto-closed: ${result.duplicatesClosed}`);
-      }
-      await this.updateUserStoryFrontmatter(userStory.filePath, issueNumber);
-      await this.backfillIncrementMetadata(featureId, userStory.id, issueNumber, milestoneNumber);
-      await this.updateUserStoryIssue(issueNumber, issueContent, userStory.filePath);
-      if (result.wasReused) {
-        issuesUpdated++;
-      } else {
-        issuesCreated++;
-      }
-    }
-    console.log(`
+      console.log(`
 \u2705 Feature sync complete!`);
-    console.log(`   Milestone: ${milestoneUrl}`);
-    console.log(`   User Stories: ${userStories.length}`);
-    console.log(`   Issues created: ${issuesCreated}`);
-    console.log(`   Issues updated: ${issuesUpdated}`);
-    return {
-      milestoneNumber,
-      milestoneUrl,
-      issuesCreated,
-      issuesUpdated,
-      userStoriesProcessed: userStories.length
-    };
+      console.log(`   Milestone: ${milestoneUrl}`);
+      console.log(`   User Stories: ${userStories.length}`);
+      console.log(`   Issues created: ${issuesCreated}`);
+      console.log(`   Issues updated: ${issuesUpdated}`);
+      return {
+        milestoneNumber,
+        milestoneUrl,
+        issuesCreated,
+        issuesUpdated,
+        userStoriesProcessed: userStories.length
+      };
+    } finally {
+      await lock.release();
+    }
   }
   /**
    * Find Feature folder in specs directory.
@@ -710,17 +714,42 @@ Created: ${featureData.created}`;
    */
   async updateUserStoryIssue(issueNumber, issueContent, userStoryPath) {
     const repoSlug = this.getRepoSlug();
-    await execFileNoThrow("gh", [
-      "issue",
-      "edit",
-      issueNumber.toString(),
-      "--title",
-      issueContent.title,
-      "--body",
-      issueContent.body,
-      "-R",
-      repoSlug
-    ], { env: this.getGhEnv() });
+    let shouldEdit = true;
+    try {
+      const viewResult = await execFileNoThrow("gh", [
+        "issue",
+        "view",
+        issueNumber.toString(),
+        "--json",
+        "body",
+        "--jq",
+        ".body",
+        "-R",
+        repoSlug
+      ], { env: this.getGhEnv() });
+      if (viewResult.exitCode === 0 && viewResult.stdout) {
+        const currentNormalized = normalizeIssueBody(viewResult.stdout);
+        const newNormalized = normalizeIssueBody(issueContent.body);
+        if (currentNormalized === newNormalized) {
+          shouldEdit = false;
+          console.log(`      \u23ED\uFE0F  Body unchanged, skipping gh issue edit for #${issueNumber}`);
+        }
+      }
+    } catch {
+    }
+    if (shouldEdit) {
+      await execFileNoThrow("gh", [
+        "issue",
+        "edit",
+        issueNumber.toString(),
+        "--title",
+        issueContent.title,
+        "--body",
+        issueContent.body,
+        "-R",
+        repoSlug
+      ], { env: this.getGhEnv() });
+    }
     const completion = await this.calculator.calculateCompletion(userStoryPath);
     const issueData = await this.client.getIssue(issueNumber);
     const currentlyClosed = issueData.state === "closed";
@@ -996,12 +1025,7 @@ ${newFrontmatter}---${bodyContent}`;
 ${newFrontmatter}---${bodyContent}`;
     await writeFile(userStoryPath, newContent, "utf-8");
   }
-};
-// SYNC LOCK: Prevent concurrent syncs of the same feature
-// Maps featureId → last sync timestamp
-_GitHubFeatureSync.syncLocks = /* @__PURE__ */ new Map();
-_GitHubFeatureSync.LOCK_DURATION_MS = 3e4;
-let GitHubFeatureSync = _GitHubFeatureSync;
+}
 export {
   GitHubFeatureSync
 };

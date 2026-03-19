@@ -187,7 +187,7 @@ function generateNextSteps(state: SetupState): string {
   lines.push('');
 
   lines.push('   3. Read documentation:');
-  lines.push('      https://verified-skill.com/docs/guides/multi-repo-setup');
+  lines.push('      https://spec-weave.com/docs/guides/multi-repo-setup');
 
   lines.push('');
 

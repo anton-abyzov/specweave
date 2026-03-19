@@ -123,9 +123,9 @@ specweave init --type python --framework fastapi
 
 ## Learn More
 
-- [Documentation](https://verified-skill.com/docs/overview/introduction)
+- [Documentation](https://spec-weave.com/docs/overview/introduction)
 - [GitHub Repository](https://github.com/anton-abyzov/specweave)
-- [Quick Start Guide](https://verified-skill.com/docs/guides/getting-started/quickstart)
+- [Quick Start Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)
 
 ---
 

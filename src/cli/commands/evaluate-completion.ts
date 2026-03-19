@@ -14,14 +14,14 @@
  * @module cli/commands/evaluate-completion
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
 import {
   evaluateCompletion,
   formatEvaluationResult,
   type EvaluationOptions,
 } from '../../core/auto/completion-evaluator.js';
 import type { CompletionEvaluationResult } from '../../core/auto/types.js';
+import { findProjectRoot } from '../../utils/find-project-root.js';
+import { resolveIncrementId as resolveId } from '../../utils/resolve-increment-id.js';
 
 export interface EvaluateCompletionOptions {
   /** Model to use for LLM evaluation (default: opus) */
@@ -34,45 +34,6 @@ export interface EvaluateCompletionOptions {
   silent?: boolean;
   /** Verbose output */
   verbose?: boolean;
-}
-
-/**
- * Find project root by looking for .specweave directory
- */
-function findProjectRoot(): string | null {
-  let current = process.cwd();
-  const root = path.parse(current).root;
-
-  while (current !== root) {
-    if (fs.existsSync(path.join(current, '.specweave'))) {
-      return current;
-    }
-    current = path.dirname(current);
-  }
-  return null;
-}
-
-/**
- * Resolve increment ID to full path
- * Handles both full names (0173-auto-completion-evaluation) and prefixes (0173)
- */
-function resolveIncrementId(projectRoot: string, incrementId: string): string | null {
-  const incrementsDir = path.join(projectRoot, '.specweave/increments');
-
-  if (!fs.existsSync(incrementsDir)) {
-    return null;
-  }
-
-  // Check for exact match first
-  const exactPath = path.join(incrementsDir, incrementId);
-  if (fs.existsSync(exactPath)) {
-    return incrementId;
-  }
-
-  // Try prefix match
-  const entries = fs.readdirSync(incrementsDir);
-  const match = entries.find((e) => e.startsWith(incrementId));
-  return match || null;
 }
 
 /**
@@ -101,17 +62,20 @@ export async function evaluateCompletionCommand(
   }
 
   // Resolve increment ID (handle prefixes like "0173")
-  const resolvedId = resolveIncrementId(projectRoot, incrementId);
-  if (!resolvedId) {
+  const resolved = resolveId(incrementId, projectRoot);
+  if (!resolved || Array.isArray(resolved)) {
     return {
       complete: false,
-      overallReason: `Increment not found: ${incrementId}`,
+      overallReason: Array.isArray(resolved)
+        ? `Ambiguous increment ID: ${incrementId} matches ${resolved.join(', ')}`
+        : `Increment not found: ${incrementId}`,
       confidence: 0,
       results: [],
       nextSteps: [`Check increment ID: ${incrementId}`],
       durationMs: performance.now() - startTime,
     };
   }
+  const resolvedId = resolved;
 
   // Map CLI options to core evaluator options
   const evaluatorOptions: EvaluationOptions = {

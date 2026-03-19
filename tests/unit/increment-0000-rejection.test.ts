@@ -48,14 +48,14 @@ describe('IncrementNumberManager - 0000 Rejection (v1.0.104)', () => {
       expect(result).toBe('0001');
     });
 
-    it('should never count 0000 in gap-filling logic', () => {
+    it('should never count 0000 in sequential logic', () => {
       // Create 0000-adhoc (invalid) and 0002-valid
       fs.mkdirSync(path.join(incrementsDir, '0000-adhoc'));
       fs.mkdirSync(path.join(incrementsDir, '0002-valid'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
-      // Gap-filling: 0000 ignored, 0002 exists → first gap is 0001
-      expect(result).toBe('0001');
+      // Sequential: 0000 ignored, max(2) + 1
+      expect(result).toBe('0003');
     });
   });
 
