@@ -44,8 +44,11 @@ import {
   ensureSkillCreator,
   promptProjectSetup,
   promptRepoUrls,
-  cloneReposIntoWorkspace,
+  mapParsedReposToCloneOptions,
+  runForegroundClone,
+  FOREGROUND_CLONE_THRESHOLD,
 } from '../helpers/init/index.js';
+import { launchCloneJob } from '../../core/background/job-launcher.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
@@ -362,18 +365,42 @@ export async function initCommand(
           if (setupChoice === 'clone-repos') {
             const repos = await promptRepoUrls(language);
             if (repos.length > 0) {
-              const result = cloneReposIntoWorkspace(targetDir, repos);
-              console.log(chalk.green(`\n   ✓ Cloned ${result.totalCloned} repo(s)`));
-              if (result.totalFailed > 0) {
-                console.log(chalk.yellow(`   ⚠ ${result.totalFailed} repo(s) failed to clone`));
-              }
+              const jobRepos = mapParsedReposToCloneOptions(repos);
 
-              // Re-scan for umbrella after cloning
-              umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+              if (repos.length <= FOREGROUND_CLONE_THRESHOLD) {
+                // Small batch: clone foreground (blocking) with inline progress
+                const result = await runForegroundClone(targetDir, jobRepos);
+                console.log(chalk.green(`\n   ✓ Cloned ${result.totalCloned} repo(s)`));
+                if (result.totalFailed > 0) {
+                  console.log(chalk.yellow(`   ⚠ ${result.totalFailed} repo(s) failed to clone:`));
+                  for (const r of result.repos) {
+                    if (!r.success) {
+                      console.log(chalk.yellow(`     ✗ ${r.org}/${r.name}: ${r.error || 'Unknown error'}`));
+                    }
+                  }
+                }
+                // Build umbrella discovery from clone results (no re-scan needed)
+                umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+              } else {
+                // Large batch: launch background job (non-blocking)
+                const launchResult = await launchCloneJob({
+                  projectPath: targetDir,
+                  repositories: jobRepos,
+                });
+                console.log(chalk.green(`\n   ✓ Clone job started: ${launchResult.job.id}`));
+                console.log(chalk.gray(`     Monitor: specweave jobs`));
+                console.log(chalk.gray(`     Repos will appear in repositories/ as they complete.\n`));
+              }
             }
           }
           // 'add-later' — repositories/ already created above, nothing more needed
-        } catch { /* non-fatal — user can set up repos later */ }
+        } catch (err) {
+          // Prompt cancellation (Ctrl+C) is expected — swallow silently
+          // Unexpected errors (job launcher crash, disk full) — warn so user knows cloning was skipped
+          if (err && typeof err === 'object' && 'name' in err && (err as Error).name !== 'ExitPromptError') {
+            console.log(chalk.yellow(`   ⚠ Repo setup skipped: ${(err as Error).message || 'Unknown error'}`));
+          }
+        }
         spinner.start('Configuring project...');
       }
     }
