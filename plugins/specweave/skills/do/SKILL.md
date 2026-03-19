@@ -231,8 +231,30 @@ After testable tasks: run relevant tests, fix failures immediately, only continu
 When all tasks done:
 1. Run `sw:sync-docs update` to sync living docs
 2. Run tests: `npx vitest run` (if test framework detected)
-3. Invoke `Skill({ skill: "sw:grill" })` with increment ID — writes required `grill-report.json`
-4. Invoke `Skill({ skill: "sw:done" })` with increment ID — runs judge-llm, PM gates, closes, and syncs to GitHub/Jira/ADO
+
+#### Step 9a: Closure via Subagent (Claude Code — preferred)
+
+If the `Agent` tool is available, spawn a closure subagent for a fresh context:
+
+```typescript
+Agent({
+  subagent_type: "sw:sw-closer",
+  prompt: "Close increment <ID>. Increment path: .specweave/increments/<ID>/",
+  description: "Close increment <ID>"
+})
+```
+
+The sw-closer runs grill, judge-llm, PM gates, and `specweave complete` in an isolated context.
+Do NOT invoke `sw:grill` or `sw:done` inline when using the subagent path.
+
+#### Step 9b: Direct Closure (Non-cloud tools / fallback)
+
+If the `Agent` tool is NOT available (Cursor, Copilot, Aider, OpenCode), invoke closure directly:
+
+1. Invoke `Skill({ skill: "sw:grill" })` with increment ID — writes required `grill-report.json`
+2. Invoke `Skill({ skill: "sw:done" })` with increment ID — runs judge-llm, PM gates, closes, and syncs to GitHub/Jira/ADO
+
+Non-cloud tools typically have fresh context per skill invocation, so inline closure works without overflow.
 
 **Anti-pattern** (NEVER do this): "All tasks are complete. Would you like me to close the increment?" — Just close it.
 

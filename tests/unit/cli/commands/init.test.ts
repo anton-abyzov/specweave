@@ -263,6 +263,9 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   promptProjectSetup: mockPromptProjectSetup,
   promptRepoUrls: mockPromptRepoUrls,
   cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
+  mapParsedReposToCloneOptions: vi.fn().mockImplementation((repos: any[]) => repos.map((r: any) => ({ owner: r.org, name: r.name, path: `repositories/${r.org}/${r.name}`, cloneUrl: r.cloneUrl }))),
+  runForegroundClone: vi.fn().mockResolvedValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
+  FOREGROUND_CLONE_THRESHOLD: 3,
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({
@@ -300,6 +303,13 @@ vi.mock('../../../../src/cli/helpers/init/repo-connect.js', () => ({
   promptProjectSetup: mockPromptProjectSetup,
   promptRepoUrls: mockPromptRepoUrls,
   cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
+  mapParsedReposToCloneOptions: vi.fn().mockImplementation((repos: any[]) => repos.map((r: any) => ({ owner: r.org, name: r.name, path: `repositories/${r.org}/${r.name}`, cloneUrl: r.cloneUrl }))),
+  runForegroundClone: vi.fn().mockResolvedValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
+  FOREGROUND_CLONE_THRESHOLD: 3,
+}));
+
+vi.mock('../../../../src/core/background/job-launcher.js', () => ({
+  launchCloneJob: vi.fn().mockResolvedValue({ job: { id: 'test-job' }, isBackground: true }),
 }));
 
 // ============================================================================

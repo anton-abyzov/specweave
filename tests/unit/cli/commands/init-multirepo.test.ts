@@ -124,10 +124,15 @@ const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
   mockDisplaySummaryBanner: vi.fn(),
 }));
 
-const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace } = vi.hoisted(() => ({
+const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace, mockRunForegroundClone } = vi.hoisted(() => ({
   mockPromptProjectSetup: vi.fn().mockResolvedValue('add-later' as const),
   mockPromptRepoUrls: vi.fn().mockResolvedValue([]),
   mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
+  mockRunForegroundClone: vi.fn().mockResolvedValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
+}));
+
+const { mockLaunchCloneJob } = vi.hoisted(() => ({
+  mockLaunchCloneJob: vi.fn().mockResolvedValue({ job: { id: 'test-job-123' }, isBackground: true }),
 }));
 
 const { mockEnableAgentTeamsEnvVar } = vi.hoisted(() => ({
@@ -227,6 +232,9 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   promptProjectSetup: mockPromptProjectSetup,
   promptRepoUrls: mockPromptRepoUrls,
   cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
+  mapParsedReposToCloneOptions: vi.fn().mockImplementation((repos: any[]) => repos.map((r: any) => ({ owner: r.org, name: r.name, path: `repositories/${r.org}/${r.name}`, cloneUrl: r.cloneUrl }))),
+  runForegroundClone: mockRunForegroundClone,
+  FOREGROUND_CLONE_THRESHOLD: 3,
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({
@@ -245,6 +253,13 @@ vi.mock('../../../../src/cli/helpers/init/repo-connect.js', () => ({
   promptProjectSetup: mockPromptProjectSetup,
   promptRepoUrls: mockPromptRepoUrls,
   cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
+  mapParsedReposToCloneOptions: vi.fn().mockImplementation((repos: any[]) => repos.map((r: any) => ({ owner: r.org, name: r.name, path: `repositories/${r.org}/${r.name}`, cloneUrl: r.cloneUrl }))),
+  runForegroundClone: mockRunForegroundClone,
+  FOREGROUND_CLONE_THRESHOLD: 3,
+}));
+
+vi.mock('../../../../src/core/background/job-launcher.js', () => ({
+  launchCloneJob: mockLaunchCloneJob,
 }));
 
 vi.mock('../../../../src/cli/commands/sync-setup.js', () => ({
@@ -540,7 +555,7 @@ describe('AC-US1-03: umbrella config unconditional', () => {
 // ============================================================================
 
 describe('Clone-repos flow', () => {
-  it('clone-repos path calls cloneReposIntoWorkspace and scanUmbrellaRepos', async () => {
+  it('clone-repos path calls runForegroundClone for ≤3 repos and scanUmbrellaRepos', async () => {
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.git')) return false;
       if (p.endsWith('.specweave')) return false;
@@ -553,7 +568,7 @@ describe('Clone-repos flow', () => {
     mockPromptRepoUrls.mockResolvedValue([
       { org: 'acme', name: 'app', cloneUrl: 'https://github.com/acme/app.git' },
     ]);
-    mockCloneReposIntoWorkspace.mockReturnValue({ repos: [{ org: 'acme', name: 'app', path: 'repositories/acme/app', success: true }], totalCloned: 1, totalFailed: 0 });
+    mockRunForegroundClone.mockResolvedValue({ repos: [{ org: 'acme', name: 'app', path: 'repositories/acme/app', success: true }], totalCloned: 1, totalFailed: 0 });
     mockScanUmbrellaRepos.mockReturnValue({
       isUmbrella: true,
       repos: [{ org: 'acme', name: 'app', path: 'repositories/acme/app', hasGit: true }],
@@ -564,11 +579,39 @@ describe('Clone-repos flow', () => {
 
     await initCommand('.', { adapter: 'claude' });
 
-    expect(mockCloneReposIntoWorkspace).toHaveBeenCalledWith(
+    expect(mockRunForegroundClone).toHaveBeenCalledWith(
       TEST_DIR,
-      expect.arrayContaining([expect.objectContaining({ org: 'acme', name: 'app' })]),
+      expect.arrayContaining([expect.objectContaining({ owner: 'acme', name: 'app' })]),
     );
     expect(mockScanUmbrellaRepos).toHaveBeenCalled();
+  });
+
+  it('clone-repos path calls launchCloneJob for 4+ repos (background)', async () => {
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith('.git')) return false;
+      if (p.endsWith('.specweave')) return false;
+      if (p.endsWith('repositories')) return false;
+      if (p.endsWith('config.json')) return true;
+      return false;
+    });
+
+    mockPromptProjectSetup.mockResolvedValue('clone-repos');
+    mockPromptRepoUrls.mockResolvedValue([
+      { org: 'a', name: 'r1', cloneUrl: 'https://github.com/a/r1.git' },
+      { org: 'a', name: 'r2', cloneUrl: 'https://github.com/a/r2.git' },
+      { org: 'a', name: 'r3', cloneUrl: 'https://github.com/a/r3.git' },
+      { org: 'a', name: 'r4', cloneUrl: 'https://github.com/a/r4.git' },
+    ]);
+
+    await initCommand('.', { adapter: 'claude' });
+
+    expect(mockLaunchCloneJob).toHaveBeenCalledWith(expect.objectContaining({
+      projectPath: TEST_DIR,
+      repositories: expect.arrayContaining([
+        expect.objectContaining({ owner: 'a', name: 'r1' }),
+      ]),
+    }));
+    expect(mockRunForegroundClone).not.toHaveBeenCalled();
   });
 
   it('clone failure is non-fatal — init continues', async () => {
@@ -584,7 +627,7 @@ describe('Clone-repos flow', () => {
     mockPromptRepoUrls.mockResolvedValue([
       { org: 'acme', name: 'broken', cloneUrl: 'https://github.com/acme/broken.git' },
     ]);
-    mockCloneReposIntoWorkspace.mockReturnValue({ repos: [{ org: 'acme', name: 'broken', path: 'repositories/acme/broken', success: false, error: 'clone failed' }], totalCloned: 0, totalFailed: 1 });
+    mockRunForegroundClone.mockResolvedValue({ repos: [{ org: 'acme', name: 'broken', path: 'repositories/acme/broken', success: false, error: 'clone failed' }], totalCloned: 0, totalFailed: 1 });
 
     await expect(initCommand('.', { adapter: 'claude' })).resolves.toBeUndefined();
   });

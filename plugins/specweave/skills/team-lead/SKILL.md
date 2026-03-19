@@ -864,7 +864,7 @@ Agent Workflow:
   7. Do NOT run sw:grill or sw:done — team-lead handles closure centrally
 ```
 
-**Why agents don't run sw:done**: The sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Centralizing closure on the team-lead (which has a cleaner context) avoids this.
+**Why agents don't run sw:done**: The sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Closure is delegated to `sw-closer` subagents that run in a fresh context, avoiding overflow for both agents and the team-lead orchestrator.
 
 ### Active Phase Rules (CRITICAL — While Agents Are Implementing)
 
@@ -896,24 +896,27 @@ ALLOWED but use with caution:
 
 **Closure begins ONLY after ALL agents have signaled COMPLETION (or been declared stuck).**
 
-**Do NOT manually run grill/done per increment — delegate to `sw:team-merge`.**
+**Do NOT manually run grill/done per increment — spawn `sw-closer` subagents instead.**
 
 ```
-AFTER ALL AGENTS COMPLETE (3 steps only):
+AFTER ALL AGENTS COMPLETE:
   1. Verify ALL agents signaled COMPLETION (no unresolved BLOCKING_ISSUE)
-  2. Invoke sw:team-merge — it handles:
-     - Status validation (activates "planned" increments)
-     - sw:done per increment in dependency order
-     - Sync to GitHub/JIRA/ADO
-     - Team state archival
-  3. Run Step 9 cleanup (TeamDelete + kill tmux panes)
+  2. Determine closure order from team topology (shared → backend → frontend)
+  3. For each increment in dependency order, spawn sw-closer subagent:
+     Agent({
+       subagent_type: "sw:sw-closer",
+       prompt: "Close increment <ID>. Increment path: .specweave/increments/<ID>/",
+       description: "Close increment <ID>"
+     })
+  4. Wait for each sw-closer to complete before spawning the next (dependency order)
+  5. If an sw-closer fails, log the failure and continue to the next increment
+  6. Run Step 9 cleanup (TeamDelete + kill tmux panes)
 ```
 
 **CRITICAL**: Do NOT attempt inline closure (grill → done → retry loops) yourself.
-The team-merge skill has its own retry logic and error handling.
-Attempting inline closure bloats the orchestrator's context and causes the "stuck after first agent" bug.
+Spawn `sw-closer` subagents instead — each runs in a fresh context with only the `sw:done` skill loaded, avoiding the context overflow that caused the "stuck after first agent" bug.
 
-**If sw:team-merge fails**, report the failure to the user with the error message. Do NOT retry inline.
+**If all sw-closer subagents fail**, report the failures to the user with the error messages. Do NOT retry inline.
 
 ### Grill Checklist per Domain
 
@@ -1014,7 +1017,7 @@ sw:team-lead "Build checkout flow"
   │
   │ ── CLOSURE PHASE (all agents done) ──
   │
-  ├── Step 7: Invoke sw:team-merge (handles all closure: done, sync, archival)
+  ├── Step 7: Spawn sw-closer subagents per increment (fresh context closure)
   ├── Step 8: Shutdown agents → TeamDelete() → orphaned pane safety net (Step 9 below)
   └── Done.
 ```
@@ -1024,7 +1027,7 @@ Direct invocation of `sw:team-lead` without an existing increment will trigger t
 
 ### Step 9: Post-Completion Cleanup (MANDATORY — NEVER SKIP)
 
-**After delivering results OR after sw:team-merge, clean up the team.**
+**After delivering results OR after all sw-closer subagents complete, clean up the team.**
 
 #### Phase 1: Graceful Agent Shutdown
 
@@ -1102,12 +1105,12 @@ To execute, run without --dry-run.
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
 | **Agent stuck in extended thinking** | Too many tasks (>15) causing context overflow | Enforce 15-task cap per agent; split large domains into 2 agents; agents use `--simple` mode |
-| **Agent hung on sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run sw:done — team-lead handles closure centrally |
+| **Agent hung on sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run sw:done — team-lead spawns `sw-closer` subagents (fresh context) for closure |
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
 | **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |
 | **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `sw:auto` on its increment |
 | **`specweave complete` exits silently** | metadata.json status is "planned" (not "active") | Agents don't manage lifecycle status. Team-lead MUST activate the increment before spawning agents (see Step 0). Fix: edit metadata.json to set `"status": "active"` before running `specweave complete` |
-| **Closure fails on multiple increments** | Quality gates fail (grill, desync, missing reports) | Fix each issue and retry `sw:done --auto` (max 2 retries per increment). See Section 8 closure failure table |
+| **Closure fails on multiple increments** | Quality gates fail (grill, desync, missing reports) | Each `sw-closer` subagent retries once automatically. If still failing, use `/sw:close-all` for batch retry |
 
 ---
 

@@ -599,6 +599,80 @@ export function installPlugin(
 export const copyPlugin = installPlugin;
 
 // ---------------------------------------------------------------------------
+// Frontmatter normalization for non-Claude targets
+// ---------------------------------------------------------------------------
+
+/** Claude-specific frontmatter fields to strip for non-Claude tools */
+const CLAUDE_FIELDS = [
+  /^user-invoc?k?able\s*:.*\n?/gm,
+  /^allowed-tools\s*:.*\n?/gm,
+  /^model\s*:.*\n?/gm,
+  /^argument-hint\s*:.*\n?/gm,
+  /^context\s*:.*\n?/gm,
+];
+
+/** Match a multi-line hooks: block (hooks: line + all indented continuation lines) */
+const HOOKS_BLOCK_RE = /^hooks\s*:.*\n(?:[ \t]+.*\n)*/gm;
+
+/**
+ * Normalize SKILL.md frontmatter for non-Claude tools:
+ * - Ensure `name:` field (derived from skill directory name)
+ * - Ensure `description:` field (extracted from body if missing)
+ * - Strip Claude-specific fields (user-invocable, allowed-tools, model, hooks, etc.)
+ */
+function normalizeSkillFrontmatter(content: string, skillName: string): string {
+  const normalized = content.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
+
+  if (!normalized.startsWith('---')) {
+    const desc = extractFirstContentLine(normalized, skillName);
+    return `---\nname: ${skillName}\ndescription: ${desc}\n---\n\n${normalized}`;
+  }
+
+  const endIdx = normalized.indexOf('---', 3);
+  if (endIdx === -1) return normalized;
+
+  let fmBlock = normalized.substring(3, endIdx);
+  const body = normalized.substring(endIdx + 3);
+
+  // Strip Claude-specific single-line fields
+  for (const pattern of CLAUDE_FIELDS) {
+    fmBlock = fmBlock.replace(new RegExp(pattern.source, pattern.flags), '');
+  }
+  // Strip multi-line hooks: block
+  fmBlock = fmBlock.replace(HOOKS_BLOCK_RE, '');
+
+  // Ensure name:
+  if (!/^name\s*:/m.test(fmBlock)) {
+    fmBlock = `name: ${skillName}\n${fmBlock}`;
+  }
+
+  // Ensure description:
+  if (!/^description\s*:/m.test(fmBlock)) {
+    const desc = extractFirstContentLine(body, skillName);
+    fmBlock = `${fmBlock}description: ${desc}\n`;
+  }
+
+  return `---\n${fmBlock.replace(/^\n+/, '').replace(/\n{3,}/g, '\n\n')}---${body}`;
+}
+
+/**
+ * Extract first non-blank, non-heading line from body for description fallback.
+ */
+function extractFirstContentLine(body: string, fallback: string): string {
+  for (const line of body.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed === '' || trimmed.startsWith('#')) continue;
+    const clean = trimmed.length > 200 ? trimmed.slice(0, 200) : trimmed;
+    // Quote if contains YAML-special chars
+    if (/[:#\[\]{}'*&!>|"\\]/.test(clean)) {
+      return `"${clean.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+    }
+    return clean;
+  }
+  return fallback.replace(/-/g, ' ');
+}
+
+// ---------------------------------------------------------------------------
 // Core: copyPluginSkillsToProject (v1.0.535 — direct file copy, no CLI)
 // ---------------------------------------------------------------------------
 
@@ -659,6 +733,7 @@ export function copyPluginSkillsToProject(
   //    so that SKILL.md references to subdirectories resolve correctly.
   const skillsDirRelative = options.targetSkillsDir || join('.claude', 'skills');
   const targetSkillsBase = join(projectRoot, skillsDirRelative);
+  const isClaudeTarget = !options.targetSkillsDir || normalize(options.targetSkillsDir) === normalize(join('.claude', 'skills'));
   let copiedCount = 0;
 
   try {
@@ -677,7 +752,9 @@ export function copyPluginSkillsToProject(
       const skillMdPath = join(skillSourceDir, 'SKILL.md');
       if (!existsSync(skillMdPath)) continue;
 
-      // Recursively copy all files in this skill directory
+      // Recursively copy all files in this skill directory.
+      // For non-Claude targets, normalize SKILL.md frontmatter (ensure name + description,
+      // strip Claude-specific fields) so that non-Claude tools can discover the skill.
       const targetDir = join(targetSkillsBase, skillName);
       const allFiles = readdirSync(skillSourceDir, { recursive: true, encoding: 'utf-8' });
       for (const file of allFiles) {
@@ -687,7 +764,12 @@ export function copyPluginSkillsToProject(
           if (!st.isFile()) continue; // skip directories and symlinks
           const destPath = join(targetDir, file);
           mkdirSync(dirname(destPath), { recursive: true });
-          copyFileSync(srcPath, destPath);
+          if (!isClaudeTarget && file === 'SKILL.md') {
+            const content = readFileSync(srcPath, 'utf-8');
+            writeFileSync(destPath, normalizeSkillFrontmatter(content, skillName), 'utf-8');
+          } else {
+            copyFileSync(srcPath, destPath);
+          }
         } catch {
           // Non-fatal: skip unreadable files
         }
@@ -701,7 +783,6 @@ export function copyPluginSkillsToProject(
   // 6. Recursively copy hooks to .claude/hooks/ if present (Claude-only).
   //    Includes subdirectories (lib/, v2/, universal/) that top-level hooks reference.
   //    Hooks are Claude-specific infrastructure — skip for non-Claude adapters.
-  const isClaudeTarget = !options.targetSkillsDir || normalize(options.targetSkillsDir) === normalize(join('.claude', 'skills'));
   const hooksDir = join(sourceDir, 'hooks');
   if (isClaudeTarget && existsSync(hooksDir)) {
     const targetHooksDir = join(projectRoot, '.claude', 'hooks');

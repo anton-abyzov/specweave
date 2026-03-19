@@ -202,9 +202,19 @@ Then return to Step 1c-1d to set up the session, then Step 1.5 for the banner.
 2. Mark tasks complete in tasks.md, update spec.md ACs
 3. Run tests after each task
 4. Before `sw:done`: verify all quality gates from `successCriteria`
-5. **Closure**: When all tasks are complete (stop hook blocks with `all_complete_needs_closure`), run `sw:done --auto <id>` for each increment in the session
-6. **On success**: If `sw:done` succeeds, clean up session state (`rm -f` auto-mode.json, turn counter, dedup files) and output `<!-- auto-complete:DONE -->`
-7. **On failure**: If `sw:done` fails (gate failure), report the failure and do NOT clean up session state. The stop hook will block again on the next turn for a retry.
+5. **Closure**: When all tasks are complete (stop hook blocks with `all_complete_needs_closure`):
+   - **5a. Claude Code (Agent tool available)**: Spawn `sw-closer` subagent per increment:
+     ```typescript
+     Agent({
+       subagent_type: "sw:sw-closer",
+       prompt: "Close increment <ID>. Increment path: .specweave/increments/<ID>/",
+       description: "Close increment <ID>"
+     })
+     ```
+     The sw-closer runs grill, judge-llm, PM gates, and `specweave complete` in a fresh context.
+   - **5b. Non-cloud fallback**: Run `sw:done --auto <id>` for each increment directly.
+6. **On success**: If sw-closer (or `sw:done`) succeeds, clean up session state (`rm -f` auto-mode.json, turn counter, dedup files) and output `<!-- auto-complete:DONE -->`
+7. **On failure**: If sw-closer (or `sw:done`) fails (gate failure), report the failure and do NOT clean up session state. The stop hook will block again on the next turn for a retry.
 
 ## Credential Auto-Execution
 
