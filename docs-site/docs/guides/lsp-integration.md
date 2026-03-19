@@ -120,11 +120,11 @@ WITHOUT LSP:                          WITH LSP:
 
 | Phase | What Happens | LSP Involvement |
 |-------|--------------|-----------------|
-| **Planning** (`/sw:pm`, `/sw:architect`) | Analyzing existing codebase | LSP maps dependencies, types |
-| **Implementation** (`/sw:do`) | Writing code | LSP provides diagnostics automatically |
+| **Planning** (`sw:pm`, `sw:architect`) | Analyzing existing codebase | LSP maps dependencies, types |
+| **Implementation** (`sw:do`) | Writing code | LSP provides diagnostics automatically |
 | **Refactoring** | Changing existing code | `findReferences` before ANY change |
 | **Code Review** | Verifying changes | `getDiagnostics` to catch errors |
-| **Living Docs** (`/sw:living-docs`) | Generating documentation | LSP extracts accurate API signatures |
+| **Living Docs** (`sw:living-docs`) | Generating documentation | LSP extracts accurate API signatures |
 
 ### Scenario 1: Renaming a Function
 
@@ -272,7 +272,7 @@ LSP runs automatically for all living docs operations:
 
 <CommandTabs
   natural="Update the docs with a full scan"
-  claude="/sw:living-docs --full-scan"
+  claude="sw:living-docs --full-scan"
   other="living-docs --full-scan"
 />
 
@@ -286,7 +286,7 @@ LSP provides automatically: accurate API surface extraction, semantic dependency
 
 Disable only if language servers unavailable (not recommended):
 ```bash
-/sw:living-docs --full-scan --no-lsp
+sw:living-docs --full-scan --no-lsp
 ```
 
 ### Codebase Exploration
@@ -335,7 +335,7 @@ Pre-built LSP plugins are available for:
 
 ### For Enterprise Documentation
 
-1. **Install language servers** before running `specweave init` or `/sw:living-docs`
+1. **Install language servers** before running `specweave init` or `sw:living-docs`
 2. **LSP runs automatically** - no flags needed (use `--no-lsp` only if unavailable)
 3. **Use LSP hover** to extract accurate type signatures for API docs
 4. **Combine with Explore agent** for comprehensive codebase understanding

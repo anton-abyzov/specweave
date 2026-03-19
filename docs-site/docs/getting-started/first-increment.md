@@ -43,7 +43,7 @@ Describe what you want to build:
 
 <CommandTabs
   natural="I want to add a greeting message component"
-  claude='/sw:increment "Add greeting message component"'
+  claude='sw:increment "Add greeting message component"'
   other='increment "Add greeting message component"'
 />
 
@@ -91,7 +91,7 @@ Open `spec.md` and review the generated content:
 
 <CommandTabs
   natural="Ship it while I sleep"
-  claude="/sw:auto"
+  claude="sw:auto"
   other="auto"
 />
 
@@ -115,7 +115,7 @@ Tests: 4 passed, 0 failed
 
 <CommandTabs
   natural="Start implementing the tasks"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -123,7 +123,7 @@ Executes one task at a time. Check progress:
 
 <CommandTabs
   natural="What's the status?"
-  claude="/sw:progress"
+  claude="sw:progress"
   other="progress"
 />
 
@@ -144,7 +144,7 @@ Before closing, run validation:
 
 <CommandTabs
   natural="Check quality on increment 0001"
-  claude="/sw:validate 0001"
+  claude="sw:validate 0001"
   other="validate 0001"
 />
 
@@ -164,7 +164,7 @@ When all checks pass:
 
 <CommandTabs
   natural="We're done with increment 0001"
-  claude="/sw:done 0001"
+  claude="sw:done 0001"
   other="done 0001"
 />
 
@@ -249,8 +249,8 @@ Implementation tasks with embedded tests.
 
 | Goal | How |
 |------|-----|
-| **Start next feature** | Say "Let's build [next feature]" or `/sw:increment "next feature"` |
-| **Check all progress** | Say "What's the status?" or `/sw:status` |
+| **Start next feature** | Say "Let's build [next feature]" or `sw:increment "next feature"` |
+| **Check all progress** | Say "What's the status?" or `sw:status` |
 | **Learn TDD workflow** | [Lesson 6: TDD](/docs/academy/specweave-essentials/06-tdd-workflow) |
 | **Connect GitHub** | [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) |
 | **Full curriculum** | [SpecWeave Essentials](/docs/academy/specweave-essentials/) |
@@ -265,7 +265,7 @@ Edit `spec.md` directly. SpecWeave tracks changes and adapts tasks accordingly.
 
 ### What if tests fail?
 
-In autonomous mode (`/sw:auto` or "ship while I sleep"), SpecWeave automatically tries to fix failing tests (up to 3 attempts). In step-by-step mode (`/sw:do` or "start implementing"), you'll be prompted to fix them.
+In autonomous mode (`sw:auto` or "ship while I sleep"), SpecWeave automatically tries to fix failing tests (up to 3 attempts). In step-by-step mode (`sw:do` or "start implementing"), you'll be prompted to fix them.
 
 ### Can I skip tasks?
 

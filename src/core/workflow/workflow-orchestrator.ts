@@ -1,5 +1,5 @@
 /**
- * Workflow Orchestrator - Core orchestration logic for /sw:next
+ * Workflow Orchestrator - Core orchestration logic for sw:next
  *
  * Coordinates workflow execution by detecting current phase and
  * invoking appropriate commands.
@@ -173,7 +173,7 @@ export class WorkflowOrchestrator {
     const activeIds = this.activeIncrementManager.getActive();
 
     if (activeIds.length === 0) {
-      throw new Error('No active increments found. Use /sw:increment to create one.');
+      throw new Error('No active increments found. Use sw:increment to create one.');
     }
 
     if (activeIds.length === 1) {
@@ -203,14 +203,14 @@ export class WorkflowOrchestrator {
     }
 
     const PHASE_ACTIONS: Record<WorkflowPhase, { description: string; command: string }> = {
-      [WorkflowPhase.PLAN_GENERATION]: { description: 'Generate implementation plan', command: '/sw:plan' },
-      [WorkflowPhase.IMPLEMENTATION]: { description: 'Execute tasks', command: '/sw:do' },
+      [WorkflowPhase.PLAN_GENERATION]: { description: 'Generate implementation plan', command: 'sw:plan' },
+      [WorkflowPhase.IMPLEMENTATION]: { description: 'Execute tasks', command: 'sw:do' },
       [WorkflowPhase.TESTING]: { description: 'Run tests', command: 'npm test' },
-      [WorkflowPhase.REVIEW]: { description: 'Run quality assessment', command: '/sw:qa' },
-      [WorkflowPhase.COMPLETION]: { description: 'Close increment', command: '/sw:done' },
-      [WorkflowPhase.SPEC_WRITING]: { description: 'Complete spec.md and generate plan', command: '/sw:plan' },
-      [WorkflowPhase.TASK_BREAKDOWN]: { description: 'Create tasks and start implementation', command: '/sw:do' },
-      [WorkflowPhase.DOCUMENTATION]: { description: 'Update living documentation', command: '/sw:sync-docs update' },
+      [WorkflowPhase.REVIEW]: { description: 'Run quality assessment', command: 'sw:qa' },
+      [WorkflowPhase.COMPLETION]: { description: 'Close increment', command: 'sw:done' },
+      [WorkflowPhase.SPEC_WRITING]: { description: 'Complete spec.md and generate plan', command: 'sw:plan' },
+      [WorkflowPhase.TASK_BREAKDOWN]: { description: 'Create tasks and start implementation', command: 'sw:do' },
+      [WorkflowPhase.DOCUMENTATION]: { description: 'Update living documentation', command: 'sw:sync-docs update' },
       [WorkflowPhase.UNKNOWN]: { description: 'Phase detection unclear - please specify action manually', command: '' }
     };
 

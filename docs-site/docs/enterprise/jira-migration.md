@@ -115,7 +115,7 @@ specweave validate-jira
 
 <CommandTabs
   natural="Let's build user auth with OAuth"
-  claude='/sw:increment "User authentication with OAuth"'
+  claude='sw:increment "User authentication with OAuth"'
   other='increment "User authentication with OAuth"'
 />
 
@@ -388,17 +388,17 @@ Resolution: Done
 Sprint 24: Nov 13 - Nov 27 (2 weeks)
 
 # 2. Plan increments for sprint
-/sw:increment "OAuth integration"
-/sw:increment "User profile page"
-/sw:increment "Email notifications"
+sw:increment "OAuth integration"
+sw:increment "User profile page"
+sw:increment "Email notifications"
 
 # 3. Link to sprint (automatic or manual)
-/sw-jira:link-sprint 0018 --sprint 24
-/sw-jira:link-sprint 0019 --sprint 24
-/sw-jira:link-sprint 0020 --sprint 24
+sw-jira:link-sprint 0018 --sprint 24
+sw-jira:link-sprint 0019 --sprint 24
+sw-jira:link-sprint 0020 --sprint 24
 
 # 4. Start sprint work
-/sw:do
+sw:do
 
 # 5. Daily standups: Check JIRA board
 # All task updates appear automatically!
@@ -407,7 +407,7 @@ Sprint 24: Nov 13 - Nov 27 (2 weeks)
 # Stakeholders see completed stories without asking devs
 
 # 7. Sprint retrospective: Export metrics
-/sw:metrics --sprint 24
+sw:metrics --sprint 24
 
 # Output:
 📊 Sprint 24 Metrics
@@ -445,37 +445,37 @@ SpecWeave provides intuitive **git-style commands** for JIRA synchronization:
 
 | Command | Purpose |
 |---------|---------|
-| `/sw-jira:pull` | Pull changes from JIRA (like `git pull`) |
-| `/sw-jira:push` | Push progress to JIRA (like `git push`) |
-| `/sw-jira:sync` | Two-way sync (pull + push) |
+| `sw-jira:pull` | Pull changes from JIRA (like `git pull`) |
+| `sw-jira:push` | Push progress to JIRA (like `git push`) |
+| `sw-jira:sync` | Two-way sync (pull + push) |
 
 ### Basic Usage
 
 ```bash
 # Pull latest changes from JIRA
-/sw-jira:pull
+sw-jira:pull
 
 # Push your progress to JIRA
-/sw-jira:push
+sw-jira:push
 
 # Two-way sync (both directions)
-/sw-jira:sync 0018
+sw-jira:sync 0018
 ```
 
 ### Multi-Project Sync
 
 ```bash
 # Pull ALL specs across ALL projects (living docs sync)
-/sw-jira:pull --all
+sw-jira:pull --all
 
 # Pull specific project only
-/sw-jira:pull --project BACKEND
+sw-jira:pull --project BACKEND
 
 # Pull specific feature/epic hierarchy
-/sw-jira:pull --feature FS-042
+sw-jira:pull --feature FS-042
 
 # Push all local changes to JIRA
-/sw-jira:push --all
+sw-jira:push --all
 ```
 
 ### Sync Brief Output
@@ -508,7 +508,7 @@ After every sync operation, you'll see a compact summary:
 
 ```bash
 # Developer completes task locally
-/sw:do
+sw:do
 # (completes T-003: Write OAuth tests)
 
 # SpecWeave auto-syncs to JIRA:
@@ -605,16 +605,16 @@ Production JIRA: jira.company.com
 
 ```bash
 # 1. Pull latest from dev JIRA (git-style)
-/sw-jira:pull --profile jira-dev
+sw-jira:pull --profile jira-dev
 
 # 2. Push progress to dev JIRA
-/sw-jira:push 0018 --profile jira-dev
+sw-jira:push 0018 --profile jira-dev
 
 # 3. Test in dev, then promote to staging
-/sw-jira:promote 0018 --from jira-dev --to jira-staging
+sw-jira:promote 0018 --from jira-dev --to jira-staging
 
 # 4. QA approval, then promote to prod
-/sw-jira:promote 0018 --from jira-staging --to jira-prod
+sw-jira:promote 0018 --from jira-staging --to jira-prod
 
 # Result: Same increment tracked across all 3 JIRA instances!
 ```
@@ -645,7 +645,7 @@ Production JIRA: jira.company.com
 **SpecWeave provides full audit trails**:
 
 ```bash
-/sw:audit 0018 --jira
+sw:audit 0018 --jira
 
 # Output:
 📊 JIRA Sync Audit Trail: Increment 0018
@@ -793,8 +793,8 @@ curl -u you@company.com:YOUR_API_TOKEN \
 **Fix**:
 ```bash
 # Use time range filtering (git-style)
-/sw-jira:pull --time-range 1M
-/sw-jira:sync 0020 --time-range 1M
+sw-jira:pull --time-range 1M
+sw-jira:sync 0020 --time-range 1M
 
 # Or enable rate limiting in config
 {

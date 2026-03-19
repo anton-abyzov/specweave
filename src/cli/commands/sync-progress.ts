@@ -571,8 +571,8 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
     }
 
     logger.log('Next steps:');
-    logger.log(`   • Run /sw:validate ${incrementId} to validate quality`);
-    logger.log(`   • Run /sw:done ${incrementId} when ready to close`);
+    logger.log(`   • Run sw:validate ${incrementId} to validate quality`);
+    logger.log(`   • Run sw:done ${incrementId} when ready to close`);
     logger.log('');
 
   } catch (error) {

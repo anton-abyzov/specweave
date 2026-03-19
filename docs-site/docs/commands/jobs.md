@@ -12,7 +12,7 @@ Monitor and manage long-running background operations.
 
 <CommandTabs
   natural='Show background jobs'
-  claude='/sw:jobs'
+  claude='sw:jobs'
   other='jobs'
 />
 
@@ -59,7 +59,7 @@ Paused (1):
   [ghi11111] import-issues (GitHub)
      Progress: 1,234/10,000 (12%)
      Reason: Rate limited (resumes in 45s)
-     Resume: /sw:jobs --resume ghi11111 (or say "resume job")
+     Resume: sw:jobs --resume ghi11111 (or say "resume job")
 ```
 
 ### Failed Jobs
@@ -69,7 +69,7 @@ Failed (1):
   [jkl22222] import-issues
      Error: Authentication failed - token expired
      Failed at: item 5,000 of 10,000
-     Retry: Update token, then /sw:jobs --resume jkl22222
+     Retry: Update token, then sw:jobs --resume jkl22222
 ```
 
 ## Examples
@@ -77,7 +77,7 @@ Failed (1):
 ### Check All Active Jobs
 
 ```bash
-/sw:jobs
+sw:jobs
 ```
 
 Returns grouped view of all running, paused, and pending jobs.
@@ -85,7 +85,7 @@ Returns grouped view of all running, paused, and pending jobs.
 ### View Specific Job Details
 
 ```bash
-/sw:jobs --id ae362dfe
+sw:jobs --id ae362dfe
 ```
 
 Output:
@@ -116,7 +116,7 @@ Files:
 ### Follow Progress Live
 
 ```bash
-/sw:jobs --follow ae362dfe
+sw:jobs --follow ae362dfe
 ```
 
 Output (updates every second):
@@ -132,7 +132,7 @@ Following job ae362dfe (Ctrl+C to stop)
 ### View Worker Logs
 
 ```bash
-/sw:jobs --logs ae362dfe
+sw:jobs --logs ae362dfe
 ```
 
 Output:
@@ -153,7 +153,7 @@ Worker Logs for ae362dfe (last 50 lines):
 ### Kill Running Job
 
 ```bash
-/sw:jobs --kill ae362dfe
+sw:jobs --kill ae362dfe
 ```
 
 Output:
@@ -165,13 +165,13 @@ PID: 45678
 Progress: 154/245 (63%)
 
 Job killed. Status changed to 'paused'.
-Resume later: /sw:jobs --resume ae362dfe
+Resume later: sw:jobs --resume ae362dfe
 ```
 
 ### Resume Paused Job
 
 ```bash
-/sw:jobs --resume ae362dfe
+sw:jobs --resume ae362dfe
 ```
 
 Output:
@@ -185,13 +185,13 @@ Spawning background worker...
 New PID: 45679
 
 Job resumed in background.
-Check progress: /sw:jobs --follow ae362dfe (or say "check jobs")
+Check progress: sw:jobs --follow ae362dfe (or say "check jobs")
 ```
 
 ### Show All Jobs Including Completed
 
 ```bash
-/sw:jobs --all
+sw:jobs --all
 ```
 
 Includes the last 10 completed jobs in the output.
@@ -201,7 +201,7 @@ Includes the last 10 completed jobs in the output.
 | Type | Trigger | Duration |
 |------|---------|----------|
 | `clone-repos` | `specweave init` with repos | 5-30 min |
-| `import-issues` | `/sw:import-external` | 10-60 min |
+| `import-issues` | `sw:import-external` | 10-60 min |
 | `sync-external` | `/specweave-*:sync` | 1-10 min |
 
 ## Integration Points
@@ -210,16 +210,16 @@ Jobs are automatically created by:
 
 1. **Repository Cloning**
    - `specweave init` when connecting repositories
-   - `/sw-ado:clone-repos`
+   - `sw-ado:clone-repos`
 
 2. **Issue Import**
    - `specweave init` + import flow (>50 items)
-   - `/sw:import-external`
+   - `sw:import-external`
 
 3. **External Sync**
-   - `/sw-github:sync` for large syncs
-   - `/sw-jira:sync` for large syncs
-   - `/sw-ado:sync` for large syncs
+   - `sw-github:sync` for large syncs
+   - `sw-jira:sync` for large syncs
+   - `sw-ado:sync` for large syncs
 
 ## Rate Limit Handling
 
@@ -229,7 +229,7 @@ When GitHub/JIRA/ADO rate limits are hit:
 2. Job auto-transitions to `paused` status
 3. Worker exits gracefully, saving checkpoint
 4. Notification shown: "Rate limited, wait N minutes"
-5. User resumes: say "resume job" or type `/sw:jobs --resume <id>`
+5. User resumes: say "resume job" or type `sw:jobs --resume <id>`
 
 **Typical rate limit windows**:
 - GitHub: 15-60 minutes
@@ -277,13 +277,13 @@ ps aux | grep <pid>
 Worker may have crashed:
 
 ```bash
-/sw:jobs --id <id>
+sw:jobs --id <id>
 ```
 
 If PID shows "dead", resume:
 
 ```bash
-/sw:jobs --resume <id>
+sw:jobs --resume <id>
 ```
 
 ### Can't resume - "config not found"
@@ -291,8 +291,8 @@ If PID shows "dead", resume:
 Config file may be corrupted. Start fresh:
 
 ```bash
-/sw:import-external    # For imports
-/sw-ado:clone-repos    # For cloning
+sw:import-external    # For imports
+sw-ado:clone-repos    # For cloning
 ```
 
 ### Too many completed jobs
@@ -331,11 +331,11 @@ npm run rebuild
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Import issues" | `/sw:import-external` | `import-external` | Import issues from external tools |
-| "Clone repos" | `/sw-ado:clone-repos` | `ado clone-repos` | Clone Azure DevOps repositories |
-| "Sync to GitHub" | `/sw-github:sync` | `github-sync` | Sync with GitHub |
-| "Sync to JIRA" | `/sw-jira:sync` | `jira-sync` | Sync with JIRA |
-| "Sync to ADO" | `/sw-ado:sync` | `ado-sync` | Sync with Azure DevOps |
+| "Import issues" | `sw:import-external` | `import-external` | Import issues from external tools |
+| "Clone repos" | `sw-ado:clone-repos` | `ado clone-repos` | Clone Azure DevOps repositories |
+| "Sync to GitHub" | `sw-github:sync` | `github-sync` | Sync with GitHub |
+| "Sync to JIRA" | `sw-jira:sync` | `jira-sync` | Sync with JIRA |
+| "Sync to ADO" | `sw-ado:sync` | `ado-sync` | Sync with Azure DevOps |
 
 ## Related Documentation
 

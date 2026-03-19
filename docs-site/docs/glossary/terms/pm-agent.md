@@ -16,7 +16,7 @@ The PM Agent is the first agent activated when you create a new [increment](/doc
 
 <CommandTabs
   natural="Let's add user authentication"
-  claude='/sw:increment "Add user authentication"'
+  claude='sw:increment "Add user authentication"'
   other='increment "Add user authentication"'
 />
 
@@ -86,8 +86,8 @@ graph LR
 
 ## When It Activates
 
-- Creating an increment -- say "let's build X", use `/sw:increment`, or type `increment` in other AI tools
-- Closing an increment -- say "we're done", use `/sw:done`, or type `done` (PM validates as quality gate)
+- Creating an increment -- say "let's build X", use `sw:increment`, or type `increment` in other AI tools
+- Closing an increment -- say "we're done", use `sw:done`, or type `done` (PM validates as quality gate)
 - Scope changes -- updating an increment's spec
 
 ## Related

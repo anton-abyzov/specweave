@@ -33,7 +33,7 @@ Just say "what should I do next?" or "let's move forward" -- or use the slash co
 
 <CommandTabs
   natural="What should I do next?"
-  claude="/sw:next"
+  claude="sw:next"
   other="next"
 />
 
@@ -50,7 +50,7 @@ That's it. The system:
 ## The Decision Tree
 
 ```
-                    /sw:next
+                    sw:next
                           │
            ┌──────────────┴──────────────┐
            │                              │
@@ -78,7 +78,7 @@ Suggest next
 **Situation**: Work complete, tests pass, docs updated.
 
 ```bash
-/sw:next
+sw:next
 ```
 
 ```
@@ -113,7 +113,7 @@ Found in backlog:
 
 Recommendation: Start 0002
 
-Next: /sw:do 0002
+Next: sw:do 0002
 ```
 
 ---
@@ -123,7 +123,7 @@ Next: /sw:do 0002
 **Situation**: Some tasks incomplete.
 
 ```bash
-/sw:next
+sw:next
 ```
 
 ```
@@ -153,7 +153,7 @@ B. Force close with deferrals
    → Move T-011, T-012 to next increment
 
 C. Continue working (no action)
-   → Run /sw:do to resume
+   → Run sw:do to resume
 
 What would you like to do? [A/B/C]
 ```
@@ -165,7 +165,7 @@ What would you like to do? [A/B/C]
 **Situation**: No [increment](/docs/glossary/terms/increments) in progress.
 
 ```bash
-/sw:next
+sw:next
 ```
 
 ```
@@ -186,9 +186,9 @@ Backlog items:
   2. 0004-dashboard (P2)
 
 Options:
-A. Start 0003 → /sw:do 0003
-B. Start 0004 → /sw:do 0004
-C. Create new → /sw:increment "description"
+A. Start 0003 → sw:do 0003
+B. Start 0004 → sw:do 0004
+C. Create new → sw:increment "description"
 ```
 
 ---
@@ -198,7 +198,7 @@ C. Create new → /sw:increment "description"
 **Situation**: Multiple increments in progress.
 
 ```bash
-/sw:next
+sw:next
 ```
 
 ```
@@ -230,9 +230,9 @@ C. Cancel (continue as-is)
 | "What should I work on?" | ✅ Yes |
 | "Let's move forward" | ✅ Yes |
 | "Just finished that task" | ✅ Yes |
-| "Need to check status" | Use `/sw:progress` or say "what's the status?" |
-| "Want to start specific feature" | Use `/sw:increment` or say "let's build X" |
-| "Need to pause work" | Use `/sw:pause` or say "pause this" |
+| "Need to check status" | Use `sw:progress` or say "what's the status?" |
+| "Want to start specific feature" | Use `sw:increment` or say "let's build X" |
+| "Need to pause work" | Use `sw:pause` or say "pause this" |
 
 ---
 
@@ -251,7 +251,7 @@ It will either:
 
 ```bash
 # Try :next on your current project
-/sw:next
+sw:next
 
 # Observe what happens based on your state
 ```

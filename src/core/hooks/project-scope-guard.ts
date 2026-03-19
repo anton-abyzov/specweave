@@ -54,7 +54,7 @@ export interface GuardResult {
  * Check if a prompt is invoking a SpecWeave skill
  *
  * Detects patterns like:
- * - /sw:increment "feature"
+ * - sw:increment "feature"
  * - /frontend:architect
  * - /SW:DO (case-insensitive)
  *
@@ -152,7 +152,7 @@ function isGuardDisabled(projectPath?: string): boolean {
 /**
  * Generate user-friendly prompt message for non-initialized projects
  *
- * @param skillInvocation - The skill that was invoked (e.g., "/sw:increment")
+ * @param skillInvocation - The skill that was invoked (e.g., "sw:increment")
  * @returns Formatted message for the user
  */
 function generateUserPromptMessage(skillInvocation: string): string {

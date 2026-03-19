@@ -474,7 +474,7 @@ export async function evaluateCompletion(
     const acsResult = results.find((r) => r.criterion.type === 'acs_satisfied');
 
     if (tasksResult && !tasksResult.satisfied) {
-      nextSteps.push('Complete pending tasks with /sw:do');
+      nextSteps.push('Complete pending tasks with sw:do');
     }
 
     if (acsResult && !acsResult.satisfied) {
@@ -485,7 +485,7 @@ export async function evaluateCompletion(
       nextSteps.push('Fix failing tests');
     }
 
-    nextSteps.push(`Then run /sw:done ${incrementId}`);
+    nextSteps.push(`Then run sw:done ${incrementId}`);
   }
 
   // Build overall result

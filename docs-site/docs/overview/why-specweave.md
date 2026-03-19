@@ -64,9 +64,9 @@ SpecWeave's approach isn't theoretical — it reflects an emerging industry cons
 
 | RPI Concept | SpecWeave Equivalent |
 |-------------|---------------------|
-| **Research** — investigate the codebase before touching code | Built-in: PM scans existing docs, ADRs, and project structure before writing anything. Deep Interview mode for complex features. `/sw:brainstorm` for multi-approach exploration |
+| **Research** — investigate the codebase before touching code | Built-in: PM scans existing docs, ADRs, and project structure before writing anything. Deep Interview mode for complex features. `sw:brainstorm` for multi-approach exploration |
 | **Plan** — detailed markdown specs with file locations and test strategy | `spec.md` + `plan.md` + `tasks.md` — the three-file structure |
-| **Implement** — execute the validated plan | `/sw:do` or `/sw:auto` — autonomous execution from the plan |
+| **Implement** — execute the validated plan | `sw:do` or `sw:auto` — autonomous execution from the plan |
 | **One step at a time** — incremental, focused work units | **Increments** — each feature is a self-contained unit of work |
 | **Human reviews the plan, not the code** | You review spec + plan at `ExitPlanMode`, AI handles implementation |
 | **"Overkill sometimes"** — scale workflow to match problem complexity | Complexity ceiling: simple features skip brainstorm, complex ones use full RPI with agent teams |
@@ -106,15 +106,15 @@ As Sean Grove puts it: **"Specs are the new code."**
 
 ### Where Human Review Matters Most
 
-SpecWeave places human review at the **plan level**, not the code level. You review `spec.md` and `plan.md` — the artifacts that matter most — while AI handles implementation. For complex or uncertain features, say "let's brainstorm this first" (or `/sw:brainstorm`) to add a research phase before planning, giving you a second review checkpoint:
+SpecWeave places human review at the **plan level**, not the code level. You review `spec.md` and `plan.md` — the artifacts that matter most — while AI handles implementation. For complex or uncertain features, say "let's brainstorm this first" (or `sw:brainstorm`) to add a research phase before planning, giving you a second review checkpoint:
 
 ```mermaid
 graph LR
-    A[Feature Idea] --> B["/sw:brainstorm<br/>(Research Phase)"]
+    A[Feature Idea] --> B["sw:brainstorm<br/>(Research Phase)"]
     B --> C{{"HUMAN REVIEW<br/>Approach OK?"}}
-    C -->|Yes| D["/sw:increment<br/>(spec + plan + tasks)"]
+    C -->|Yes| D["sw:increment<br/>(spec + plan + tasks)"]
     D --> E{{"HUMAN REVIEW<br/>Plan OK?"}}
-    E -->|Yes| F["/sw:do or /sw:auto<br/>(Implementation)"]
+    E -->|Yes| F["sw:do or sw:auto<br/>(Implementation)"]
     E -->|No| D
     C -->|No| B
 
@@ -170,7 +170,7 @@ SpecWeave doesn't just plan - it **executes autonomously for hours**:
 
 <CommandTabs
   natural="I want to add user authentication. Then ship it while I sleep."
-  claude='/sw:increment "User authentication" then /sw:auto'
+  claude='sw:increment "User authentication" then sw:auto'
   other='increment "User authentication" then auto'
 />
 
@@ -191,12 +191,12 @@ SpecWeave isn't one AI assistant - it's a **team of 68+ specialized agents** pow
 
 | Agent | Role | When It Activates |
 |-------|------|-------------------|
-| **PM** | Requirements, user stories, acceptance criteria | "Let's build [feature]" or `/sw:increment` |
+| **PM** | Requirements, user stories, acceptance criteria | "Let's build [feature]" or `sw:increment` |
 | **Architect** | System design, ADRs, tech stack decisions | Complex features |
-| **QA Lead** | Test strategy, quality gates, validation | "Check quality" or `/sw:validate` |
+| **QA Lead** | Test strategy, quality gates, validation | "Check quality" or `sw:validate` |
 | **Security** | OWASP review, vulnerability detection | Mention "security" |
 | **DevOps** | CI/CD, infrastructure, deployment | Infrastructure work |
-| **Tech Lead** | Code quality, patterns, refactoring | "Review the code" or `/sw:grill` |
+| **Tech Lead** | Code quality, patterns, refactoring | "Review the code" or `sw:grill` |
 | **Frontend** | React/Vue/Angular architecture | Frontend work |
 | **Backend** | .NET/Node.js/Python patterns | Backend work |
 
@@ -276,7 +276,7 @@ Then describe what you want:
 
 <CommandTabs
   natural="I want to add user authentication"
-  claude='/sw:increment "Add user authentication"'
+  claude='sw:increment "Add user authentication"'
   other='increment "Add user authentication"'
 />
 

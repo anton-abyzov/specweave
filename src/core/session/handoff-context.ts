@@ -22,7 +22,7 @@
  * A skill/command available from an installed plugin
  */
 export interface Skill {
-  /** Skill name (e.g., "/sw:increment") */
+  /** Skill name (e.g., "sw:increment") */
   name: string;
   /** Description of what the skill does */
   description: string;
@@ -110,27 +110,27 @@ const CONTINUATION_INSTRUCTIONS = [
 const PLUGIN_SKILLS: Record<string, Skill[]> = {
   'sw': [
     {
-      name: '/sw:increment',
+      name: 'sw:increment',
       description: 'Plan a new product increment',
       category: 'workflow',
     },
     {
-      name: '/sw:do',
+      name: 'sw:do',
       description: 'Execute tasks from the current increment',
       category: 'workflow',
     },
     {
-      name: '/sw:done',
+      name: 'sw:done',
       description: 'Close an increment after completion',
       category: 'workflow',
     },
     {
-      name: '/sw:status',
+      name: 'sw:status',
       description: 'View all increment statuses',
       category: 'workflow',
     },
     {
-      name: '/sw:progress',
+      name: 'sw:progress',
       description: 'Show progress for active increments',
       category: 'workflow',
     },
@@ -140,21 +140,21 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
   // The core sw:architect skill handles all domains by default.
   'sw-github': [
     {
-      name: '/sw-github:sync',
+      name: 'sw-github:sync',
       description: 'Sync increments with GitHub issues',
       category: 'sync',
     },
   ],
   'sw-jira': [
     {
-      name: '/sw-jira:sync',
+      name: 'sw-jira:sync',
       description: 'Sync increments with JIRA issues',
       category: 'sync',
     },
   ],
   'sw-ado': [
     {
-      name: '/sw-ado:sync',
+      name: 'sw-ado:sync',
       description: 'Sync increments with Azure DevOps',
       category: 'sync',
     },

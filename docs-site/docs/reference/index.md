@@ -14,11 +14,11 @@ Complete reference for all SpecWeave skills, commands, and capabilities.
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| **Skills** | Domain expertise and best practices | `/sw:architect`, `/mobile:appstore` |
-| **Commands** | Execute specific actions | `/sw:auto`, `/sw:done`, `/sw:validate` |
+| **Skills** | Domain expertise and best practices | `sw:architect`, `/mobile:appstore` |
+| **Commands** | Execute specific actions | `sw:auto`, `sw:done`, `sw:validate` |
 
 :::tip Both Are Slash Commands Now
-In Claude Code, skills and commands are invoked the same way - with `/sw:name`. Skills provide domain knowledge; commands perform actions.
+In Claude Code, skills and commands are invoked the same way - with `sw:name`. Skills provide domain knowledge; commands perform actions.
 :::
 
 ## Quick Navigation
@@ -38,11 +38,11 @@ In Claude Code, skills and commands are invoked the same way - with `/sw:name`. 
 ### [Commands Reference](./commands)
 
 **All slash commands** organized by purpose:
-- **Planning**: `/sw:increment`
-- **Execution**: `/sw:auto`, `/sw:do`, `/sw:auto-parallel`
-- **Quality**: `/sw:validate`, `/sw:qa`, `/sw:grill`
-- **Completion**: `/sw:next`, `/sw:done`
-- **Sync**: `/sw-github:sync`, `/sw-jira:sync`, `/sw-ado:sync`
+- **Planning**: `sw:increment`
+- **Execution**: `sw:auto`, `sw:do`, `sw:auto-parallel`
+- **Quality**: `sw:validate`, `sw:qa`, `sw:grill`
+- **Completion**: `sw:next`, `sw:done`
+- **Sync**: `sw-github:sync`, `sw-jira:sync`, `sw-ado:sync`
 
 ### [Configuration Reference](./configuration)
 
@@ -68,47 +68,47 @@ In Claude Code, skills and commands are invoked the same way - with `/sw:name`. 
 
 <CommandTabs
   natural="Let's build a new feature"
-  claude='/sw:increment "Feature description"'
+  claude='sw:increment "Feature description"'
   other='increment "Feature description"'
 />
 
 ```bash
-/sw:pm                                 # Product management
-/sw:architect                          # System design
+sw:pm                                 # Product management
+sw:architect                          # System design
 ```
 
 ### Execution
 
 <CommandTabs
   natural="Ship while I sleep"
-  claude="/sw:auto"
+  claude="sw:auto"
   other="auto"
 />
 
 ```bash
-/sw:do                                # Manual task-by-task
-/sw:progress                          # Check status
+sw:do                                # Manual task-by-task
+sw:progress                          # Check status
 ```
 
 ### Quality
 
 <CommandTabs
   natural="Check the quality of my work"
-  claude="/sw:validate"
+  claude="sw:validate"
   other="validate"
 />
 
-Additional: `/sw:qa --gate` (AI quality gate), `/sw:grill` (deep audit).
+Additional: `sw:qa --gate` (AI quality gate), `sw:grill` (deep audit).
 
 ### Completion
 
 <CommandTabs
   natural="What's next?"
-  claude="/sw:next"
+  claude="sw:next"
   other="next"
 />
 
-Additional: `/sw-github:sync 0007` (sync to GitHub).
+Additional: `sw-github:sync 0007` (sync to GitHub).
 
 ---
 

@@ -114,7 +114,7 @@ export class IncrementCompletionValidator {
           `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
           coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
           `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
-          `  Run: /sw:validate ${incrementId} for detailed coverage report.`
+          `  Run: sw:validate ${incrementId} for detailed coverage report.`
         );
       }
 
@@ -157,7 +157,7 @@ export class IncrementCompletionValidator {
             `⚠️  External tools severely out of sync (${Math.floor(hoursSince / 168)} weeks)!\n` +
             `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
             `  External tools (GitHub/JIRA/ADO) are stale but will be synced on completion.\n` +
-            `  To sync manually first: /sw:sync-progress ${incrementId}`
+            `  To sync manually first: sw:sync-progress ${incrementId}`
           );
         }
         // WARNING: Drift > 24h but < 7 days (non-blocking, but strongly recommended)
@@ -166,7 +166,7 @@ export class IncrementCompletionValidator {
           warnings.push(
             `⚠️  External tools not synced recently (${daysAgo} days ago)\n` +
             `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
-            `  Recommendation: Run /sw:sync-progress ${incrementId} before closing\n` +
+            `  Recommendation: Run sw:sync-progress ${incrementId} before closing\n` +
             `  This ensures GitHub/JIRA/ADO reflect latest progress.`
           );
         }
@@ -313,8 +313,8 @@ export class IncrementCompletionValidator {
       if (!(await fs.pathExists(grillReportPath))) {
         errors.push(
           'Quality gate: grill-report.json not found.\n' +
-          `    Run /sw:grill before closing, or set "grill": { "required": false } in config.json.\n` +
-          `    The grill report is written by /sw:grill to .specweave/increments/${incrementId}/reports/grill-report.json`
+          `    Run sw:grill before closing, or set "grill": { "required": false } in config.json.\n` +
+          `    The grill report is written by sw:grill to .specweave/increments/${incrementId}/reports/grill-report.json`
         );
       } else {
         try {
@@ -322,7 +322,7 @@ export class IncrementCompletionValidator {
           if (report.shipReadiness === 'NOT READY' || (report.summary?.critical ?? 0) > 0) {
             errors.push(
               `Quality gate: grill report verdict is NOT READY (${report.summary?.critical ?? 0} critical findings).\n` +
-              '    Fix critical issues and re-run /sw:grill.'
+              '    Fix critical issues and re-run sw:grill.'
             );
           } else if (report.shipReadiness === 'NEEDS REVIEW') {
             warnings.push(
@@ -346,7 +346,7 @@ export class IncrementCompletionValidator {
         if (report.verdict === 'REJECTED') {
           errors.push(
             'Quality gate: judge-llm verdict is REJECTED.\n' +
-            '    Fix critical issues identified by judge-llm and re-run /sw:judge-llm.'
+            '    Fix critical issues identified by judge-llm and re-run sw:judge-llm.'
           );
         } else if (report.verdict === 'CONCERNS') {
           warnings.push(
@@ -361,7 +361,7 @@ export class IncrementCompletionValidator {
     } else {
       warnings.push(
         'Quality gate: judge-llm-report.json not found.\n' +
-        '    Consider running /sw:judge-llm for independent validation.'
+        '    Consider running sw:judge-llm for independent validation.'
       );
     }
 

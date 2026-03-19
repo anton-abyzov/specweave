@@ -22,7 +22,7 @@ When you run AI agents — whether Claude Code, OpenClaw, Copilot, or Codex — 
 | **Prompt injection** | Malicious content in files or dependencies tricks the agent into harmful actions | Critical |
 | **Poisoned plugins/skills** | Third-party extensions execute malicious code when loaded | Critical |
 | **Credential exposure** | Agent accidentally logs, commits, or sends API keys/tokens | High |
-| **Unreviewed autonomous execution** | Agent makes destructive changes during `/sw:auto` without oversight | High |
+| **Unreviewed autonomous execution** | Agent makes destructive changes during `sw:auto` without oversight | High |
 | **Supply chain attacks** | Compromised npm/pip packages installed by the agent | High |
 | **Scope creep** | Agent modifies files outside its designated increment | Medium |
 
@@ -51,7 +51,7 @@ SpecWeave includes several layers of defense:
 Each agent works within a defined increment. The spec.md explicitly lists which files to modify. If an agent tries to modify files outside its scope, that's a red flag during code review.
 
 **2. Quality Gates Catch Anomalies**
-`/sw:grill` reviews all changes before completion. A senior-engineer-level review catches suspicious modifications — files that shouldn't have been touched, unexpected dependencies added, configuration changes.
+`sw:grill` reviews all changes before completion. A senior-engineer-level review catches suspicious modifications — files that shouldn't have been touched, unexpected dependencies added, configuration changes.
 
 **3. Hook Validation**
 Post-tool-use hooks can validate that file modifications stay within the increment's declared scope. If an agent edits `/etc/passwd` when it should be editing `src/auth/login.ts`, the hook flags it.
@@ -176,7 +176,7 @@ docker run -it -v $(pwd):/workspace node:22 bash
 
 ## 4. Autonomous Mode Security
 
-`/sw:auto` is powerful — it runs for hours without human intervention. That's also the window where things can go wrong undetected.
+`sw:auto` is powerful — it runs for hours without human intervention. That's also the window where things can go wrong undetected.
 
 ### SpecWeave's Built-in Safeguards
 
@@ -193,11 +193,11 @@ docker run -it -v $(pwd):/workspace node:22 bash
 
 ### Your Practices for Safe Autonomous Execution
 
-1. **Start with `/sw:do` (manual) before `/sw:auto`** — understand the agent's behavior on your codebase before giving it autonomy:
+1. **Start with `sw:do` (manual) before `sw:auto`** — understand the agent's behavior on your codebase before giving it autonomy:
 
 <CommandTabs
   natural="Start implementing"
-  claude="/sw:do"
+  claude="sw:do"
   other="do"
 />
 
@@ -205,12 +205,12 @@ Then when ready for autonomous mode:
 
 <CommandTabs
   natural="Ship while I sleep"
-  claude="/sw:auto"
+  claude="sw:auto"
   other="auto"
 />
 
 2. **Set reasonable iteration limits** — `auto.maxIterations: 100` for early runs, increase as trust builds
-3. **Check `/sw:auto-status` periodically** — don't go fully hands-off on day one
+3. **Check `sw:auto-status` periodically** — don't go fully hands-off on day one
 4. **Review diffs before pushing** — autonomous execution != autonomous deployment
 5. **Use branch protection** — agents should work on feature branches, never directly on main
 

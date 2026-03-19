@@ -12,7 +12,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 <CommandTabs
   natural='Check auto status'
-  claude='/sw:auto-status'
+  claude='sw:auto-status'
   other='auto-status'
 />
 
@@ -28,10 +28,10 @@ import CommandTabs from '@site/src/components/CommandTabs';
 Additional options:
 ```bash
 # Get JSON output
-/sw:auto-status --json
+sw:auto-status --json
 
 # Quick status check
-/sw:auto-status --simple
+sw:auto-status --simple
 ```
 
 ---
@@ -75,7 +75,7 @@ Current Increment: 0003-payment-integration
    Tasks: 12 / 18 (67%)
 
 Actions:
-   Cancel: /sw:cancel-auto (or say "stop auto")
+   Cancel: sw:cancel-auto (or say "stop auto")
    Let it run: Close this tab, work will continue
 ```
 
@@ -116,7 +116,7 @@ Actions:
 | **running** | Session actively executing tasks |
 | **completed** | All tasks finished successfully |
 | **paused** | Waiting for human review (low score, test failures) |
-| **cancelled** | User cancelled the session (or typed `/sw:cancel-auto` in Claude Code) |
+| **cancelled** | User cancelled the session (or typed `sw:cancel-auto` in Claude Code) |
 
 ---
 
@@ -133,9 +133,9 @@ Actions:
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Run autonomously" | `/sw:auto` | `auto` | Start auto session |
-| "Stop auto" | `/sw:cancel-auto` | `cancel-auto` | Cancel running session |
-| "What's the status?" | `/sw:progress` | `progress` | Show increment progress |
+| "Run autonomously" | `sw:auto` | `auto` | Start auto session |
+| "Stop auto" | `sw:cancel-auto` | `cancel-auto` | Cancel running session |
+| "What's the status?" | `sw:progress` | `progress` | Show increment progress |
 
 ---
 

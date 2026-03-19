@@ -258,7 +258,7 @@ async function main(): Promise<void> {
         error: r.error.split('\n')[0] // First line only
       })),
       // Hint for users
-      resumeHint: failed > 0 ? 'Run /sw-github:clone or /sw-ado:clone again to retry. Already-cloned repos will be skipped.' : null
+      resumeHint: failed > 0 ? 'Run sw-github:clone or sw-ado:clone again to retry. Already-cloned repos will be skipped.' : null
     }, null, 2));
 
     // Persist umbrella config to config.json

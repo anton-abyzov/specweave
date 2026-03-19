@@ -12,7 +12,7 @@ System command used by SpecWeave to pause increments when blocked.
 
 <CommandTabs
   natural='Pause this'
-  claude='/sw:pause 0007'
+  claude='sw:pause 0007'
   other='pause 0007'
 />
 

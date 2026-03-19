@@ -584,7 +584,7 @@ specweave update      # Full update: CLI + instructions + config + plugins
 npm install -g specweave
 ```
 
-Note: SpecWeave slash commands (`/sw:increment`, etc.) run through Claude Code, not as direct CLI commands.
+Note: SpecWeave slash commands (`sw:increment`, etc.) run through Claude Code, not as direct CLI commands.
 
 ### "No active increment found"
 
@@ -593,10 +593,10 @@ Note: SpecWeave slash commands (`/sw:increment`, etc.) run through Claude Code, 
 **Solution**:
 ```
 # Create new increment
-/sw:increment "feature name"
+sw:increment "feature name"
 
 # Or resume an existing one
-/sw:resume 0001
+sw:resume 0001
 ```
 
 ### "Increment validation failed"
@@ -606,13 +606,13 @@ Note: SpecWeave slash commands (`/sw:increment`, etc.) run through Claude Code, 
 **Solution**:
 ```
 # Check what failed
-/sw:validate 0001
+sw:validate 0001
 
 # Common fixes:
 # - Mark incomplete tasks as done
 # - Run and pass tests
 # - Sync documentation
-/sw:sync-docs
+sw:sync-docs
 ```
 
 ### "GitHub sync failed"
@@ -635,9 +635,9 @@ echo "GITHUB_TOKEN=ghp_xxxx" >> .env
 
 **Session stuck or not completing?**
 ```bash
-/sw:auto-status   # Check what's happening
-/sw:cancel-auto   # Cancel if needed
-/sw:auto          # Resume with fresh session
+sw:auto-status   # Check what's happening
+sw:cancel-auto   # Cancel if needed
+sw:auto          # Resume with fresh session
 ```
 
 **Tests not running in auto mode?**
@@ -710,7 +710,7 @@ mv ~/.claude/plugins/installed_plugins.json ~/.claude/plugins/installed_plugins.
 | Error | Quick Fix |
 |-------|-----------|
 | SpecWeave skills/commands broken | `specweave update` |
-| Auto mode stuck | `/sw:auto-status` then `/sw:cancel-auto` |
+| Auto mode stuck | `sw:auto-status` then `sw:cancel-auto` |
 | Plugin commands broken | `claude plugin uninstall/install` (NEVER edit installed_plugins.json) |
 | "command not found" | Install the tool |
 | "permission denied" | Use nvm or fix npm permissions |

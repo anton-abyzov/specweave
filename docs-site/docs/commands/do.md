@@ -14,18 +14,18 @@ This is the main command for doing work in SpecWeave. It smart-resumes from wher
 
 <CommandTabs
   natural='Start implementing'
-  claude='/sw:do'
+  claude='sw:do'
   other='do'
 />
 
 Additional options:
 ```bash
 # Resume a specific increment
-/sw:do 0007
+sw:do 0007
 
 # Override model selection (advanced)
-/sw:do 0007 --model haiku
-/sw:do 0007 --model opus
+sw:do 0007 --model haiku
+sw:do 0007 --model opus
 ```
 
 ## Arguments
@@ -137,8 +137,8 @@ Now syncing implementation learnings to living docs...
 
 Next steps:
 1. Run full test suite: npm test
-2. Validate increment (or type /sw:validate 0001 --quality in Claude Code)
-3. Close increment (or type /sw:done 0001 in Claude Code)
+2. Validate increment (or type sw:validate 0001 --quality in Claude Code)
+3. Close increment (or type sw:done 0001 in Claude Code)
 ```
 
 ---
@@ -200,7 +200,7 @@ gh auth status 2>/dev/null
 ### Example 1: Execute Complete Increment
 
 ```bash
-/sw:do 0001
+sw:do 0001
 ```
 
 Output:
@@ -218,7 +218,7 @@ Completed | Docs updated
 
 All tasks completed (42/42)
 
-Next: /sw:validate 0001 --quality
+Next: sw:validate 0001 --quality
 ```
 
 ### Example 2: Resume After Break
@@ -226,7 +226,7 @@ Next: /sw:validate 0001 --quality
 You can say "continue working" or type the command:
 
 ```bash
-/sw:do
+sw:do
 ```
 
 Output:
@@ -258,7 +258,7 @@ Available increments:
 Warning: No tasks found in tasks.md
 
 Options:
-  1. Re-plan increment (or type /sw:increment 0001 in Claude Code)
+  1. Re-plan increment (or type sw:increment 0001 in Claude Code)
   2. Add tasks manually: Edit tasks.md
 ```
 
@@ -268,20 +268,20 @@ Options:
 
 | Natural Language | Claude Code | Other AI Tools | Purpose |
 |-----------------|-------------|----------------|---------|
-| "Let's build X" | `/sw:increment` | `increment` | Plan increment (creates spec.md, plan.md, tasks.md) |
-| "What's the status?" | `/sw:progress` | `progress` | Check completion status |
-| "Check quality" | `/sw:validate` | `validate` | Validate quality before closing |
-| "We're done" | `/sw:done` | `done` | Close increment (PM validates) |
-| "Run autonomously" | `/sw:auto` | `auto` | Autonomous execution mode |
+| "Let's build X" | `sw:increment` | `increment` | Plan increment (creates spec.md, plan.md, tasks.md) |
+| "What's the status?" | `sw:progress` | `progress` | Check completion status |
+| "Check quality" | `sw:validate` | `validate` | Validate quality before closing |
+| "We're done" | `sw:done` | `done` | Close increment (PM validates) |
+| "Run autonomously" | `sw:auto` | `auto` | Autonomous execution mode |
 
 ---
 
 ## Best Practices
 
-1. **Validate quality after execution** -- run validation (or type `/sw:validate --quality` in Claude Code) to ensure quality
+1. **Validate quality after execution** -- run validation (or type `sw:validate --quality` in Claude Code) to ensure quality
 2. **Let hooks run** - They update docs and sync to GitHub automatically
 3. **Use model hints** - Add fast/deep markers to tasks for cost optimization
-4. **Check progress often** - Ask "what's the status?" or type `/sw:progress`
+4. **Check progress often** - Ask "what's the status?" or type `sw:progress`
 
 ---
 

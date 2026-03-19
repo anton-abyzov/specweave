@@ -65,7 +65,7 @@ graph LR
 
 <CommandTabs
   natural="Critical hotfix needed: fix auth token validation"
-  claude='/sw:increment "hotfix: fix auth token validation"'
+  claude='sw:increment "hotfix: fix auth token validation"'
   other='increment "hotfix: fix auth token validation"'
 />
 
@@ -299,7 +299,7 @@ Change was not tested with tokens containing dashes.
 npm run deploy:rollback
 
 # Hotfix
-/sw:increment "hotfix: ..."
+sw:increment "hotfix: ..."
 ```
 
 ---
@@ -310,10 +310,10 @@ After hotfix is stable:
 
 ```bash
 # Close the hotfix increment (say "we're done" or use the command)
-/sw:done 0015
+sw:done 0015
 
 # Sync progress
-/sw:sync-progress
+sw:sync-progress
 
 # The hotfix is now documented for future reference
 ```

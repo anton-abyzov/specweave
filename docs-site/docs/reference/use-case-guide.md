@@ -14,26 +14,26 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Start a new feature | "Let's build X" | `/sw:increment "X"` | `increment "X"` |
-| Get help writing specs | "Write specs" | `/sw:pm` | `pm` |
-| Design system architecture | "Design the system" | `/sw:architect` | `architect` |
-| Plan a product roadmap | "Plan the roadmap" | `/sw:roadmap-planner` | `roadmap-planner` |
-| Break down a complex feature | "Coordinate all agents" | `/sw:role-orchestrator` | `role-orchestrator` |
-| Create tasks with test plans | "Generate tasks" | `/sw:plan` | `plan` |
+| Start a new feature | "Let's build X" | `sw:increment "X"` | `increment "X"` |
+| Get help writing specs | "Write specs" | `sw:pm` | `pm` |
+| Design system architecture | "Design the system" | `sw:architect` | `architect` |
+| Plan a product roadmap | "Plan the roadmap" | `sw:roadmap-planner` | `roadmap-planner` |
+| Break down a complex feature | "Coordinate all agents" | `sw:role-orchestrator` | `role-orchestrator` |
+| Create tasks with test plans | "Generate tasks" | `sw:plan` | `plan` |
 
 ### Implementing Features
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Work autonomously (hours) | "Ship while I sleep" | `/sw:auto` | `auto` |
-| Work task-by-task manually | "Start implementing" | `/sw:do` | `do` |
-| Work with multiple agents | "Parallel agents" | `/sw:auto-parallel` | `auto-parallel` |
-| Orchestrate parallel teams | "Team work on X" | `/sw:team-lead "X"` | `team-lead "X"` |
-| Brainstorm with agents | "Brainstorm X" | `/sw:team-lead "brainstorm X"` | `team-lead "brainstorm X"` |
-| Plan with PM + Architect | "Plan X with a team" | `/sw:team-lead "plan X"` | `team-lead "plan X"` |
-| Research a topic with agents | "Research X" | `/sw:team-lead "research X"` | `team-lead "research X"` |
-| Check auto mode progress | "Check auto progress" | `/sw:auto-status` | `auto-status` |
-| Get frontend help | "Help with React" | `/sw:architect` | `architect` |
+| Work autonomously (hours) | "Ship while I sleep" | `sw:auto` | `auto` |
+| Work task-by-task manually | "Start implementing" | `sw:do` | `do` |
+| Work with multiple agents | "Parallel agents" | `sw:auto-parallel` | `auto-parallel` |
+| Orchestrate parallel teams | "Team work on X" | `sw:team-lead "X"` | `team-lead "X"` |
+| Brainstorm with agents | "Brainstorm X" | `sw:team-lead "brainstorm X"` | `team-lead "brainstorm X"` |
+| Plan with PM + Architect | "Plan X with a team" | `sw:team-lead "plan X"` | `team-lead "plan X"` |
+| Research a topic with agents | "Research X" | `sw:team-lead "research X"` | `team-lead "research X"` |
+| Check auto mode progress | "Check auto progress" | `sw:auto-status` | `auto-status` |
+| Get frontend help | "Help with React" | `sw:architect` | `architect` |
 | Get Node.js API help | "Node.js API" | `/backend:nodejs` | `nodejs` |
 | Optimize database queries | "Optimize queries" | `/backend:database-optimizer` | `database-optimizer` |
 | Set up Kubernetes | "K8s deployment" | `/k8s:deployment-generate` | `deployment-generate` |
@@ -43,51 +43,51 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Validate quickly (rules) | "Check quality" | `/sw:validate` | `validate` |
-| AI quality assessment | "Assess quality" | `/sw:qa --gate` | `qa --gate` |
-| Deep implementation audit | "Review my work" | `/sw:grill` | `grill` |
-| Follow TDD strictly | "Test-driven development" | `/sw:tdd-cycle` | `tdd-cycle` |
-| Write failing tests first | "Write failing tests" | `/sw:tdd-red` | `tdd-red` |
-| Write E2E tests | "E2E tests" | `/sw:e2e` | `e2e` |
-| Code review my changes | "Review code" | `/sw:code-reviewer` | `code-reviewer` |
-| Review a specific PR | "Review PR 42" | `/sw:code-reviewer --pr 42` | `code-reviewer --pr 42` |
+| Validate quickly (rules) | "Check quality" | `sw:validate` | `validate` |
+| AI quality assessment | "Assess quality" | `sw:qa --gate` | `qa --gate` |
+| Deep implementation audit | "Review my work" | `sw:grill` | `grill` |
+| Follow TDD strictly | "Test-driven development" | `sw:tdd-cycle` | `tdd-cycle` |
+| Write failing tests first | "Write failing tests" | `sw:tdd-red` | `tdd-red` |
+| Write E2E tests | "E2E tests" | `sw:e2e` | `e2e` |
+| Code review my changes | "Review code" | `sw:code-reviewer` | `code-reviewer` |
+| Review a specific PR | "Review PR 42" | `sw:code-reviewer --pr 42` | `code-reviewer --pr 42` |
 
 ### Completing & Managing Work
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Finish and get next task | "What's next?" | `/sw:next` | `next` |
-| Close specific increment | "We're done" | `/sw:done 0007` | `done 0007` |
-| Check progress | "How far along?" | `/sw:progress` | `progress` |
-| Pause for later | "Put this on hold" | `/sw:pause` | `pause` |
-| Resume paused work | "Continue working" | `/sw:resume` | `resume` |
-| Abandon increment | "Cancel this" | `/sw:abandon` | `abandon` |
+| Finish and get next task | "What's next?" | `sw:next` | `next` |
+| Close specific increment | "We're done" | `sw:done 0007` | `done 0007` |
+| Check progress | "How far along?" | `sw:progress` | `progress` |
+| Pause for later | "Put this on hold" | `sw:pause` | `pause` |
+| Resume paused work | "Continue working" | `sw:resume` | `resume` |
+| Abandon increment | "Cancel this" | `sw:abandon` | `abandon` |
 
 ### Syncing with External Tools
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Sync to GitHub Issues | "Sync to GitHub" | `/sw-github:sync` | `github-sync` |
-| Sync to JIRA | "Sync to JIRA" | `/sw-jira:sync` | `jira-sync` |
-| Sync to Azure DevOps | "Sync to ADO" | `/sw-ado:sync` | `ado-sync` |
-| Configure external sync | "Set up sync" | `/sw:external-sync-wizard` | `external-sync-wizard` |
+| Sync to GitHub Issues | "Sync to GitHub" | `sw-github:sync` | `github-sync` |
+| Sync to JIRA | "Sync to JIRA" | `sw-jira:sync` | `jira-sync` |
+| Sync to Azure DevOps | "Sync to ADO" | `sw-ado:sync` | `ado-sync` |
+| Configure external sync | "Set up sync" | `sw:external-sync-wizard` | `external-sync-wizard` |
 
 ### Documentation
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Write technical docs | "Write documentation" | `/sw:docs-writer` | `docs-writer` |
-| Update living docs | "Update the docs" | `/sw:sync-docs` | `sync-docs` |
-| Navigate project docs | "Show me the docs" | `/sw:living-docs-navigator` | `living-docs-navigator` |
+| Write technical docs | "Write documentation" | `sw:docs-writer` | `docs-writer` |
+| Update living docs | "Update the docs" | `sw:sync-docs` | `sync-docs` |
+| Navigate project docs | "Show me the docs" | `sw:living-docs-navigator` | `living-docs-navigator` |
 | Build Docusaurus site | "Docusaurus setup" | `/docs:docusaurus` | `docusaurus` |
 
 ### Security & Compliance
 
 | I want to... | Natural Language | Claude Code | Other AI |
 |--------------|-----------------|-------------|----------|
-| Security assessment | "Security review" | `/sw:security` | `security` |
-| Detect security patterns | "Check for vulnerabilities" | `/sw:security-patterns` | `security-patterns` |
-| SOC 2/HIPAA compliance | "Compliance check" | `/sw:compliance-architecture` | `compliance-architecture` |
+| Security assessment | "Security review" | `sw:security` | `security` |
+| Detect security patterns | "Check for vulnerabilities" | `sw:security-patterns` | `security-patterns` |
+| SOC 2/HIPAA compliance | "Compliance check" | `sw:compliance-architecture` | `compliance-architecture` |
 | PCI-DSS for payments | "PCI compliance" | `/payments:pci-compliance` | `pci-compliance` |
 
 ### Cost & Performance
@@ -96,7 +96,7 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 |--------------|-----------------|-------------|----------|
 | Optimize cloud costs | "Reduce cloud costs" | `/cost:cost-optimization` | `cost-optimization` |
 | Analyze AWS costs | "AWS cost analysis" | `/cost:aws-cost-expert` | `aws-cost-expert` |
-| Improve performance | "Optimize performance" | `/sw:performance` | `performance` |
+| Improve performance | "Optimize performance" | `sw:performance` | `performance` |
 
 ---
 
@@ -105,28 +105,28 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 ### I'm a Product Manager
 
 ```bash
-/sw:pm                    # Requirements, user stories, ACs
-/sw:roadmap-planner       # Quarterly planning, prioritization
-/sw:increment "feature"   # Start new work
-/sw:progress              # Track team progress
+sw:pm                    # Requirements, user stories, ACs
+sw:roadmap-planner       # Quarterly planning, prioritization
+sw:increment "feature"   # Start new work
+sw:progress              # Track team progress
 ```
 
 ### I'm an Architect
 
 ```bash
-/sw:architect             # System design, ADRs
-/sw:role-orchestrator     # Coordinate multiple agents
+sw:architect             # System design, ADRs
+sw:role-orchestrator     # Coordinate multiple agents
 /infra:devops             # CI/CD, deployment
-/sw:security              # Security review
+sw:security              # Security review
 ```
 
 ### I'm a Frontend Developer
 
 ```bash
-/sw:architect                # React/Vue patterns
-/sw:architect                   # Next.js specifics
-/sw:architect  # Component library
-/sw:auto                           # Autonomous implementation
+sw:architect                # React/Vue patterns
+sw:architect                   # Next.js specifics
+sw:architect  # Component library
+sw:auto                           # Autonomous implementation
 ```
 
 ### I'm a Backend Developer
@@ -135,7 +135,7 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 /backend:nodejs                     # Node.js APIs
 /backend:database-optimizer        # SQL optimization
 /kafka:architect                   # Event-driven design
-/sw:auto                           # Autonomous implementation
+sw:auto                           # Autonomous implementation
 ```
 
 ### I'm a DevOps Engineer
@@ -153,16 +153,16 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 /testing:qa                         # Test strategy
 /testing:e2e                       # Playwright E2E
 /testing:unit                      # Unit test patterns
-/sw:tdd-cycle               # TDD workflow
-/sw:grill                          # Implementation audit
+sw:tdd-cycle               # TDD workflow
+sw:grill                          # Implementation audit
 ```
 
 ### I'm a Security Engineer
 
 ```bash
-/sw:security                       # Vulnerability assessment
-/sw:security-patterns              # Real-time detection
-/sw:compliance-architecture        # Compliance frameworks
+sw:security                       # Vulnerability assessment
+sw:security-patterns              # Real-time detection
+sw:compliance-architecture        # Compliance frameworks
 /payments:pci-compliance            # PCI-DSS
 ```
 
@@ -175,47 +175,47 @@ Find the right SpecWeave skill or command for what you're trying to do. Every sk
 ```mermaid
 graph TD
     A[New Feature Request] --> B{Complex?}
-    B -->|Yes| C["/sw:role-orchestrator"]
-    B -->|No| D["/sw:increment"]
+    B -->|Yes| C["sw:role-orchestrator"]
+    B -->|No| D["sw:increment"]
     C --> E[PM + Architect + DevOps + QA]
-    D --> F["/sw:pm for spec refinement"]
+    D --> F["sw:pm for spec refinement"]
     E --> G[spec.md + plan.md + tasks.md]
     F --> G
 ```
 
 **Commands/Skills:**
-- `/sw:increment "feature"` - Create increment
-- `/sw:pm` - Product management
-- `/sw:architect` - Architecture design
-- `/sw:role-orchestrator` - Multi-agent coordination
+- `sw:increment "feature"` - Create increment
+- `sw:pm` - Product management
+- `sw:architect` - Architecture design
+- `sw:role-orchestrator` - Multi-agent coordination
 
 ### Phase 2: Implementation
 
 ```mermaid
 graph TD
     A[tasks.md ready] --> B{Execution Mode?}
-    B -->|Hands-free| C["/sw:auto"]
-    B -->|Controlled| D["/sw:do"]
-    B -->|Parallel| E["/sw:auto-parallel"]
+    B -->|Hands-free| C["sw:auto"]
+    B -->|Controlled| D["sw:do"]
+    B -->|Parallel| E["sw:auto-parallel"]
     C --> F[Autonomous loop]
     D --> G[Task-by-task]
     E --> H[Multi-agent worktrees]
 ```
 
 **Commands/Skills:**
-- `/sw:auto` - Autonomous execution
-- `/sw:do` - Manual execution
-- `/sw:*` - Frontend skills
+- `sw:auto` - Autonomous execution
+- `sw:do` - Manual execution
+- `sw:*` - Frontend skills
 - `/backend:*` - Backend skills
 
 ### Phase 3: Quality
 
 ```mermaid
 graph TD
-    A[Implementation Done] --> B["/sw:validate"]
+    A[Implementation Done] --> B["sw:validate"]
     B --> C{Passed?}
     C -->|No| D[Fix issues]
-    C -->|Yes| E["/sw:qa --gate"]
+    C -->|Yes| E["sw:qa --gate"]
     E --> F{PASS/CONCERNS/FAIL}
     F -->|FAIL| D
     F -->|CONCERNS| G[Address concerns]
@@ -225,25 +225,25 @@ graph TD
 ```
 
 **Commands/Skills:**
-- `/sw:validate` - Rule-based checks
-- `/sw:qa --gate` - AI quality gate
-- `/sw:grill` - Deep audit
-- `/sw:code-reviewer` - Code review
+- `sw:validate` - Rule-based checks
+- `sw:qa --gate` - AI quality gate
+- `sw:grill` - Deep audit
+- `sw:code-reviewer` - Code review
 
 ### Phase 4: Completion
 
 ```mermaid
 graph TD
-    A[Quality Passed] --> B["/sw:next"]
+    A[Quality Passed] --> B["sw:next"]
     B --> C[Close increment]
     C --> D[Archive to _archive/]
     D --> E[Suggest next work]
 ```
 
 **Commands/Skills:**
-- `/sw:next` - Complete and suggest next
-- `/sw:done` - Close increment
-- `/sw-github:sync` - Sync to GitHub
+- `sw:next` - Complete and suggest next
+- `sw:done` - Close increment
+- `sw-github:sync` - Sync to GitHub
 
 ---
 
@@ -253,78 +253,78 @@ graph TD
 
 ```bash
 # 1. Create increment
-/sw:increment "User authentication with JWT"
+sw:increment "User authentication with JWT"
 
 # 2. Let it run (go grab coffee, lunch, or sleep)
-/sw:auto
+sw:auto
 
 # 3. Check from another terminal (optional)
-/sw:auto-status
+sw:auto-status
 
 # 4. Complete when done
-/sw:next
+sw:next
 
 # 5. Sync to GitHub (optional)
-/sw-github:sync 0007
+sw-github:sync 0007
 ```
 
 ### TDD Workflow
 
 ```bash
 # 1. Create increment
-/sw:increment "Payment processing"
+sw:increment "Payment processing"
 
 # 2. TDD cycle
-/sw:tdd-cycle
+sw:tdd-cycle
 
 # OR step by step:
-/sw:tdd-red        # Write failing tests
-/sw:tdd-green      # Minimal implementation
-/sw:tdd-refactor   # Clean up
+sw:tdd-red        # Write failing tests
+sw:tdd-green      # Minimal implementation
+sw:tdd-refactor   # Clean up
 
 # 3. Quality gate
-/sw:qa --gate
+sw:qa --gate
 
 # 4. Complete
-/sw:next
+sw:next
 ```
 
 ### Quality-First Release
 
 ```bash
 # 1. Quick validation
-/sw:validate 0007
+sw:validate 0007
 
 # 2. Deep audit
-/sw:grill 0007 --full
+sw:grill 0007 --full
 
 # 3. AI quality gate
-/sw:qa 0007 --gate
+sw:qa 0007 --gate
 
 # 4. Code review
-/sw:code-reviewer
+sw:code-reviewer
 
 # 5. Security check
-/sw:security
+sw:security
 
 # 6. Complete
-/sw:done 0007
+sw:done 0007
 ```
 
 ### Multi-Repo Project
 
 ```bash
 # 1. Detect repo structure
-/sw:umbrella-repo-detector
+sw:umbrella-repo-detector
 
 # 2. Create coordinated increment
-/sw:increment "Feature spanning FE + BE"
+sw:increment "Feature spanning FE + BE"
 
 # 3. Parallel execution
-/sw:auto-parallel
+sw:auto-parallel
 
 # 4. Sync all to GitHub
-/sw-github:github-multi-project
+sw-github:github-multi-project
 ```
 
 ---
@@ -339,19 +339,19 @@ Start Implementation
         ▼
 ┌───────────────────┐
 │ Do I need to make │
-│ decisions during  │──Yes──▶ /sw:do (manual)
+│ decisions during  │──Yes──▶ sw:do (manual)
 │ implementation?   │
 └───────────────────┘
         │No
         ▼
 ┌───────────────────┐
 │ Are there isolated│
-│ parallel work     │──Yes──▶ /sw:auto-parallel
+│ parallel work     │──Yes──▶ sw:auto-parallel
 │ streams (FE/BE)?  │
 └───────────────────┘
         │No
         ▼
-    /sw:auto (autonomous)
+    sw:auto (autonomous)
 ```
 
 ### Which Quality Check?
@@ -362,18 +362,18 @@ Want Quality Check
         ▼
 ┌───────────────────┐
 │ Quick validation  │
-│ (rules only)?     │──Yes──▶ /sw:validate
+│ (rules only)?     │──Yes──▶ sw:validate
 └───────────────────┘
         │No
         ▼
 ┌───────────────────┐
 │ Deep code audit   │
-│ with parallel     │──Yes──▶ /sw:grill
+│ with parallel     │──Yes──▶ sw:grill
 │ analysis?         │
 └───────────────────┘
         │No
         ▼
-    /sw:qa --gate (AI quality)
+    sw:qa --gate (AI quality)
 ```
 
 ### Which Sync Command?
@@ -391,7 +391,7 @@ Sync to External Tool
  GitHub   JIRA    ADO
     │       │       │
     ▼       ▼       ▼
-/sw-github /sw-jira /sw-ado
+sw-github sw-jira sw-ado
   :sync     :sync    :sync
 ```
 
@@ -403,16 +403,16 @@ Skills activate automatically when you use these keywords in natural language. Y
 
 | Natural Language Keywords | Claude Code | Other AI |
 |--------------------------|-------------|----------|
-| "user story", "acceptance criteria", "requirements" | `/sw:pm` | `pm` |
-| "architecture", "ADR", "design decision" | `/sw:architect` | `architect` |
-| "React", "Vue", "Angular", "frontend" | `/sw:architect` | `architect` |
+| "user story", "acceptance criteria", "requirements" | `sw:pm` | `pm` |
+| "architecture", "ADR", "design decision" | `sw:architect` | `architect` |
+| "React", "Vue", "Angular", "frontend" | `sw:architect` | `architect` |
 | "Node.js", "Express", "API endpoint" | `/backend:nodejs` | `nodejs` |
 | "database", "SQL", "query optimization" | `/backend:database-optimizer` | `database-optimizer` |
 | "Kubernetes", "K8s", "pods", "deployment" | `/k8s:deployment-generate` | `deployment-generate` |
 | "Kafka", "events", "streaming" | `/kafka:architect` | `kafka-architect` |
-| "test", "TDD", "unit test", "E2E" | `/sw:tdd-cycle` | `tdd-cycle` |
-| "security", "OWASP", "vulnerability" | `/sw:security` | `security` |
-| "compliance", "SOC 2", "HIPAA", "GDPR" | `/sw:compliance-architecture` | `compliance-architecture` |
+| "test", "TDD", "unit test", "E2E" | `sw:tdd-cycle` | `tdd-cycle` |
+| "security", "OWASP", "vulnerability" | `sw:security` | `security` |
+| "compliance", "SOC 2", "HIPAA", "GDPR" | `sw:compliance-architecture` | `compliance-architecture` |
 
 ---
 

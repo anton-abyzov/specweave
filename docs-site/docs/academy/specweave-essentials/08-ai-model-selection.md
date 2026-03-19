@@ -43,12 +43,12 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 <CommandTabs
   natural="I want to create a new feature"
-  claude='/sw:increment "your feature"'
+  claude='sw:increment "your feature"'
   other='increment "your feature"'
 />
 
 ```bash
-/sw:qa 0001          # Uses Opus for analysis
+sw:qa 0001          # Uses Opus for analysis
 ```
 
 ### Haiku 4.5
@@ -73,10 +73,10 @@ import CommandTabs from '@site/src/components/CommandTabs';
 SpecWeave picks automatically:
 
 ```
-/sw:increment    → Opus (complex planning)
-/sw:do           → Sonnet (balanced execution)
-/sw:qa           → Opus (deep analysis)
-/sw:sync-progress → Haiku (fast sync)
+sw:increment    → Opus (complex planning)
+sw:do           → Sonnet (balanced execution)
+sw:qa           → Opus (deep analysis)
+sw:sync-progress → Haiku (fast sync)
 ```
 
 ---
@@ -117,10 +117,10 @@ Step 3: Opus architecture (if needed)
 
 ```bash
 # Cheap exploration with Haiku
-/sw:do --explore-only
+sw:do --explore-only
 
 # Then implement with Sonnet
-/sw:do --continue
+sw:do --continue
 ```
 
 ---

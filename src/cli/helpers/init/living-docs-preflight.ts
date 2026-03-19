@@ -91,7 +91,7 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       depthStandardDesc: 'Module analysis + dependencies + team detection + relationships + full diagrams',
       depthDeepNative: 'Deep - Background (Claude MAX)',
       depthDeepNativeDesc: 'AI-powered org synthesis + enterprise KB - NO EXTRA COST!',
-      depthDeepNativeNote: 'Runs across sessions. Large projects may take days/weeks. Monitor: /sw:jobs',
+      depthDeepNativeNote: 'Runs across sessions. Large projects may take days/weeks. Monitor: sw:jobs',
       depthDeepApi: 'Deep - Background (API key)',
       depthDeepApiDesc: 'For CI/CD or non-Claude tools (requires API key in .env)',
       depthDeepApiNote: 'Supports: Anthropic, OpenAI, Azure, Ollama, Bedrock, Vertex AI',
@@ -128,7 +128,7 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       depthStandardDesc: 'Анализ модулей + экспорты + зависимости',
       depthDeepNative: 'Глубокий - Фоновый (Claude MAX)',
       depthDeepNativeDesc: 'ИИ-анализ через вашу подписку MAX - БЕЗ ДОПЛАТЫ!',
-      depthDeepNativeNote: 'Использует claude --print в фоне. Следить: /sw:jobs',
+      depthDeepNativeNote: 'Использует claude --print в фоне. Следить: sw:jobs',
       depthDeepApi: 'Глубокий - Фоновый (API ключ)',
       depthDeepApiDesc: 'Для CI/CD или других инструментов (требуется API ключ в .env)',
       depthDeepApiNote: 'Поддержка: Anthropic, OpenAI, Azure, Ollama, Bedrock, Vertex AI',
@@ -252,7 +252,7 @@ export function estimateDuration(
   // Deep modes - AI-powered analysis
   // Show progress bar, not time estimates (can take hours for large codebases)
   if (depth === 'deep-native') {
-    return 'Background (FREE with MAX) - monitor: /sw:jobs';
+    return 'Background (FREE with MAX) - monitor: sw:jobs';
   }
 
   return 'Progress-based';
@@ -557,6 +557,6 @@ export function displayJobScheduled(
   console.log(chalk.green(`  ✓ ${strings.jobScheduled}`));
   console.log(chalk.gray(`    ${strings.jobId}: ${jobId}`));
   console.log(chalk.gray(`    ${strings.estimatedDuration}: ${estimatedDuration}`));
-  console.log(chalk.gray(`    ${strings.monitorWith}: /sw:jobs`));
+  console.log(chalk.gray(`    ${strings.monitorWith}: sw:jobs`));
   console.log(chalk.gray(`  💡 ${strings.continuousSyncNote}`));
 }

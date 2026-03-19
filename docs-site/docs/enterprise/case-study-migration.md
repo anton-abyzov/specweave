@@ -121,7 +121,7 @@ Used brownfield quick-start approach:
 
 ```bash
 # Import critical documentation only
-/sw:import --source=confluence --filter="payment*"
+sw:import --source=confluence --filter="payment*"
 
 # Result: Created minimal living docs structure
 .specweave/
@@ -143,7 +143,7 @@ Used brownfield quick-start approach:
 
 <CommandTabs
   natural="Let's add Apple Pay support"
-  claude='/sw:increment "Add Apple Pay support"'
+  claude='sw:increment "Add Apple Pay support"'
   other='increment "Add Apple Pay support"'
 />
 
@@ -161,16 +161,16 @@ Used brownfield quick-start approach:
 ### Team Workflow
 
 ```
-Morning standup (say "what's the status?" or use /sw:progress):
-/sw:progress
+Morning standup (say "what's the status?" or use sw:progress):
+sw:progress
 → Shows: "3/8 tasks complete (37%)"
 
-During development (say "start implementing" or use /sw:do):
-/sw:do
+During development (say "start implementing" or use sw:do):
+sw:do
 → Implements task with AI assistance
 
 End of day:
-/sw:sync-progress
+sw:sync-progress
 → Updates JIRA automatically
 ```
 

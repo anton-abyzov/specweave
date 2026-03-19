@@ -2,7 +2,7 @@
  * sync-setup command
  *
  * Interactive terminal wizard to connect GitHub Issues, JIRA, or Azure DevOps.
- * This is the CLI counterpart of the /sw:sync-setup Claude skill.
+ * This is the CLI counterpart of the sw:sync-setup Claude skill.
  *
  * Thin wrapper around the existing setupIssueTracker() helper which handles
  * all credential collection, validation, and config writing.

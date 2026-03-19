@@ -12,7 +12,7 @@ System command used by SpecWeave to resume paused increments when blockages are 
 
 <CommandTabs
   natural='Resume work'
-  claude='/sw:resume 0007'
+  claude='sw:resume 0007'
   other='resume 0007'
 />
 

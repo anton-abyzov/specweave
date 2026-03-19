@@ -388,11 +388,11 @@ graph TB
 
 ### Phase 1: Planning (PLANNING Status)
 
-**Invoke**: Say "let's build X", use `/sw:increment "X"` in Claude Code, or type `increment "X"` in other AI tools.
+**Invoke**: Say "let's build X", use `sw:increment "X"` in Claude Code, or type `increment "X"` in other AI tools.
 
 **What Happens**:
 1. PM agent generates spec.md (user stories, AC)
-2. Architect agent generates plan.md (architecture, tech decisions) — **optional**, use `/sw:plan` for complex features
+2. Architect agent generates plan.md (architecture, tech decisions) — **optional**, use `sw:plan` for complex features
 3. Test-aware planner generates tasks.md (task checklist with tests)
 4. Hooks fire (GitHub issue auto-created if configured)
 
@@ -402,7 +402,7 @@ graph TB
 
 ### Phase 2: Implementation (ACTIVE Status)
 
-**Invoke**: Say "start implementing", use `/sw:do` in Claude Code, or type `do` in other AI tools.
+**Invoke**: Say "start implementing", use `sw:do` in Claude Code, or type `do` in other AI tools.
 
 **What Happens**:
 1. Smart resume (continues from last incomplete task)
@@ -416,7 +416,7 @@ graph TB
 
 ### Phase 3: Validation
 
-**Invoke**: Say "check quality", use `/sw:validate 0008` or `/sw:qa 0008` in Claude Code, or type `validate 0008` in other AI tools.
+**Invoke**: Say "check quality", use `sw:validate 0008` or `sw:qa 0008` in Claude Code, or type `validate 0008` in other AI tools.
 
 **What Happens**:
 1. Rule-based validation:
@@ -432,7 +432,7 @@ graph TB
 
 ### Phase 4: Done
 
-**Invoke**: Say "we're done", use `/sw:done 0008` in Claude Code, or type `done 0008` in other AI tools.
+**Invoke**: Say "we're done", use `sw:done 0008` in Claude Code, or type `done 0008` in other AI tools.
 
 **What Happens**:
 1. PM validation (checks all gates)
@@ -496,7 +496,7 @@ graph LR
 
 <CommandTabs
   natural="Let's build user authentication"
-  claude='/sw:increment "user authentication"'
+  claude='sw:increment "user authentication"'
   other='increment "user authentication"'
 />
 
@@ -508,7 +508,7 @@ graph LR
 
 ```bash
 # 0008-user-authentication is active
-/sw:increment "dark mode"
+sw:increment "dark mode"
 # ⚠️  Warning: 1 increment already active (0008)
 # 💡 Recommendation: Complete 0008 first
 # ❓ Continue anyway? (y/N)
@@ -518,17 +518,17 @@ graph LR
 
 ```bash
 # 0008-user-authentication and 0009-dark-mode both active
-/sw:increment "payment integration"
+sw:increment "payment integration"
 # ❌ BLOCKED! Hard cap reached (2 active)
 # 💡 Must complete or pause one increment first
-# Options: /sw:done 0008 OR /sw:pause 0009
+# Options: sw:done 0008 OR sw:pause 0009
 ```
 
 **Exception: Emergency Interrupt**
 
 ```bash
 # 0008-user-authentication is active
-/sw:increment "SQL injection hotfix" --type hotfix
+sw:increment "SQL injection hotfix" --type hotfix
 # ✅ Allowed! Hotfix can interrupt (emergency)
 # ⚠️  Now 2 active (max reached)
 ```
@@ -543,28 +543,28 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 
 | Natural Language | Claude Code | Other AI | Purpose |
 |-----------------|-------------|----------|---------|
-| "Let's build X" | `/sw:increment "X"` | `increment "X"` | Plan new increment |
-| "Start implementing" | `/sw:do` | `do` | Execute tasks |
-| "We're done" | `/sw:done 0008` | `done 0008` | Close increment |
-| "Check quality" | `/sw:validate 0008` | `validate 0008` | Validate increment |
-| "Assess quality" | `/sw:qa 0008` | `qa 0008` | Quality assessment |
-| "What's the status?" | `/sw:progress` | `progress` | Check progress |
-| "List all increments" | `/sw:status` | `status` | Show all increments |
+| "Let's build X" | `sw:increment "X"` | `increment "X"` | Plan new increment |
+| "Start implementing" | `sw:do` | `do` | Execute tasks |
+| "We're done" | `sw:done 0008` | `done 0008` | Close increment |
+| "Check quality" | `sw:validate 0008` | `validate 0008` | Validate increment |
+| "Assess quality" | `sw:qa 0008` | `qa 0008` | Quality assessment |
+| "What's the status?" | `sw:progress` | `progress` | Check progress |
+| "List all increments" | `sw:status` | `status` | Show all increments |
 
 ### State Management
 
 | Natural Language | Claude Code | Other AI | Purpose |
 |-----------------|-------------|----------|---------|
-| "Pause this" | `/sw:pause 0008` | `pause 0008` | Pause active increment |
-| "Resume work" | `/sw:resume 0008` | `resume 0008` | Resume paused increment |
-| "Cancel this" | `/sw:abandon 0008` | `abandon 0008` | Abandon increment |
+| "Pause this" | `sw:pause 0008` | `pause 0008` | Pause active increment |
+| "Resume work" | `sw:resume 0008` | `resume 0008` | Resume paused increment |
+| "Cancel this" | `sw:abandon 0008` | `abandon 0008` | Abandon increment |
 
 ### Documentation
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/sw:sync-docs` | Sync living docs | `/sw:sync-docs update` |
-| `/sw:increment (to update spec)` | Log scope changes | `/sw:increment (to update spec) "Added dark mode"` |
+| `sw:sync-docs` | Sync living docs | `sw:sync-docs update` |
+| `sw:increment (to update spec)` | Log scope changes | `sw:increment (to update spec) "Added dark mode"` |
 | `npx vitest run` | Validate test coverage | `npx vitest run 0008` |
 
 ---
@@ -583,7 +583,7 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 [user-authentication] ███████░ 4/5 (80%) • T-005: Write documentation
 
 # Complete
-[user-authentication] ████████ 5/5 (100%) • Use /sw:done
+[user-authentication] ████████ 5/5 (100%) • Use sw:done
 ```
 
 **How It Works**:
@@ -594,7 +594,7 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 ### Status Overview
 
 ```bash
-/sw:status
+sw:status
 
 # Output:
 ✅ 0001-core-framework (100% complete)
@@ -654,7 +654,7 @@ Each increment has optional metadata file:
 - Scope creep (jumping between features without finishing)
 
 **The Solution**:
-- ✅ Hard block on `/sw:increment` if previous incomplete
+- ✅ Hard block on `sw:increment` if previous incomplete
 - ✅ Helper commands to close increments properly
 - ✅ Force discipline = force quality
 
@@ -663,7 +663,7 @@ Each increment has optional metadata file:
 **When you try to start a new increment**:
 
 ```bash
-/sw:increment "new feature"
+sw:increment "new feature"
 
 # If previous increments incomplete:
 ❌ Cannot create new increment!
@@ -678,8 +678,8 @@ Previous increments are incomplete:
 
 💡 What would you like to do?
 
-1️⃣  Close incomplete increments: /sw:close
-2️⃣  Check status: /sw:status
+1️⃣  Close incomplete increments: sw:close
+2️⃣  Check status: sw:status
 3️⃣  Force create (DANGEROUS): Add --force flag
 ```
 
@@ -688,15 +688,15 @@ Previous increments are incomplete:
 **Option 1: Complete the Work** (Recommended)
 
 ```bash
-/sw:do  # Continue working
+sw:do  # Continue working
 # Once all tasks done, it's automatically complete
-/sw:increment "new feature"  # ✅ Now works!
+sw:increment "new feature"  # ✅ Now works!
 ```
 
 **Option 2: Close Interactively**
 
 ```bash
-/sw:close
+sw:close
 
 # You'll be asked to choose:
 # - Force complete (mark all tasks done)
@@ -707,7 +707,7 @@ Previous increments are incomplete:
 **Option 3: Force Create** (Emergency Only!)
 
 ```bash
-/sw:increment "urgent-hotfix" --force
+sw:increment "urgent-hotfix" --force
 # This bypasses the check (USE SPARINGLY!)
 ```
 

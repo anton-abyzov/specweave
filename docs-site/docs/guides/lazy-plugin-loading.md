@@ -80,7 +80,7 @@ A **lazy loading architecture** that:
 The router skill detects SpecWeave intent using these keywords:
 
 **Commands:**
-- `/sw:`, `specweave`, `increment`
+- `sw:`, `specweave`, `increment`
 
 **Files:**
 - `spec.md`, `tasks.md`, `plan.md`, `metadata.json`

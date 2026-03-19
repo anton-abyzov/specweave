@@ -31,7 +31,7 @@ describe.skip('Agent SDK Integration', () => {
      */
     it('should return high confidence (0.9+) for SpecWeave-specific keywords', () => {
       const testCases = [
-        { prompt: 'Create a new /sw:increment for user authentication', expectedMin: 0.9 },
+        { prompt: 'Create a new sw:increment for user authentication', expectedMin: 0.9 },
         { prompt: 'Update the spec.md with new acceptance criteria', expectedMin: 0.9 },
         { prompt: 'Run specweave init in this directory', expectedMin: 0.9 },
         { prompt: 'Check the tasks.md for pending items', expectedMin: 0.9 },

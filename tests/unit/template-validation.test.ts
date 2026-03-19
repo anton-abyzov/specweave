@@ -86,9 +86,9 @@ describe('Template Validation Tests', () => {
     });
 
     test('should mention SpecWeave commands', () => {
-      expect(claudeContent).toContain('/sw:increment');
-      expect(claudeContent).toContain('/sw:do');
-      expect(claudeContent).toContain('/sw:done');
+      expect(claudeContent).toContain('sw:increment');
+      expect(claudeContent).toContain('sw:do');
+      expect(claudeContent).toContain('sw:done');
     });
 
     test('should contain Emergency rule', () => {
@@ -188,7 +188,7 @@ describe('Template Validation Tests', () => {
     });
 
     test('should mention SpecWeave commands', () => {
-      expect(agentsContent).toContain('/sw:');
+      expect(agentsContent).toContain('sw:');
     });
 
     test('should have context loading section', () => {

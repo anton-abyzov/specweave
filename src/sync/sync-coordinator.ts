@@ -453,7 +453,7 @@ export class SyncCoordinator {
       if (!autoSync) {
         this.logger.log('⚠️  Automatic external sync disabled (autoSyncOnCompletion=false)');
         this.logger.log('   GitHub issues will NOT be closed automatically');
-        this.logger.log('   Run /sw:github-sync to close issues manually');
+        this.logger.log('   Run sw:github-sync to close issues manually');
         result.syncMode = 'manual-only';
         result.success = true;
         return result;
@@ -597,7 +597,7 @@ export class SyncCoordinator {
         if (!autoSync) {
           this.logger.log('⚠️  Automatic external sync disabled (autoSyncOnCompletion=false)');
           this.logger.log('   Living docs will be updated, but external tools require manual sync');
-          this.logger.log('   Run /sw:github-sync or /sw:jira-sync to sync manually');
+          this.logger.log('   Run sw:github-sync or sw:jira-sync to sync manually');
           result.syncMode = 'manual-only';
           // Continue to sync living docs only (skip GitHub sync)
         } else {
@@ -807,7 +807,7 @@ export class SyncCoordinator {
       if (!this.adoProfile || !this.adoProfile.organization || !this.adoProfile.project) {
         this.logger.log('  ⚠️  No ADO profile resolved or incomplete configuration');
         this.logger.log('  💡 Set external_sync.ado.profile in increment metadata.json');
-        this.logger.log('  💡 Or run /sw:ado-sync to select a profile');
+        this.logger.log('  💡 Or run sw:ado-sync to select a profile');
         return;
       }
 
@@ -1033,7 +1033,7 @@ export class SyncCoordinator {
       // when living docs folder is missing (same approach as ExternalIssueAutoCreator)
       this.logger.warn(`  ⚠️ Living docs folder missing: ${this.projectId}/${featureId}/`);
       this.logger.warn(`     Falling back to parsing user stories from spec.md`);
-      this.logger.warn(`     Run /sw:progress-sync to create living docs`);
+      this.logger.warn(`     Run sw:progress-sync to create living docs`);
       return this.parseUserStoriesFromSpec(content, featureId);
     }
 

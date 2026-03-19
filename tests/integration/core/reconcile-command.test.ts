@@ -1,5 +1,5 @@
 /**
- * Integration Tests for /sw:reconcile command
+ * Integration Tests for sw:reconcile command
  *
  * Tests the post-merge increment ID collision resolution workflow including:
  * - Full workflow: Create collisions -> run reconcile -> verify renumbering
@@ -572,7 +572,7 @@ describe.skipIf(!modulesAvailable)('Reconcile Command Integration Tests', () => 
       const reportContent = await fs.readFile(result.reportPath!, 'utf-8');
 
       expect(reportContent).toContain('Increment ID Reconciliation Report');
-      expect(reportContent).toContain('/sw:reconcile');
+      expect(reportContent).toContain('sw:reconcile');
       expect(reportContent).toContain('Collisions found');
       // The report contains the renumbering operation which includes the old ID and new ID
       // The old ID (0030-duplicate) should be in the report, winner (0030-original) is not renumbered

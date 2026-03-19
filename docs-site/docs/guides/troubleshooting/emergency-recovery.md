@@ -101,13 +101,13 @@ When total exceeds ~280KB, Claude Code may freeze or crash silently.
 Tasks: 0/12 (0%)  # ← HIGH RISK: 12 tasks = large spec
 
 # Pause before editing external files
-/sw:pause 0058
+sw:pause 0058
 
 # Now safe to edit project files
 # Edit src/some-large-file.ts
 
 # Resume when done with external edits
-/sw:resume 0058
+sw:resume 0058
 ```
 
 **Why this works**: Pausing frees 40-80KB of context immediately.
@@ -145,13 +145,13 @@ Safe workflows:
 
 ```bash
 # Pattern A: Work ONLY on increment
-/sw:do 0058
+sw:do 0058
 # (Edits files defined in the increment spec)
 
 # Pattern B: Work ONLY on project files
-/sw:pause 0058
+sw:pause 0058
 # Edit project files freely
-/sw:resume 0058
+sw:resume 0058
 ```
 
 Dangerous workflow:
@@ -202,7 +202,7 @@ Option B: Use `/clear` command in Claude Code
 
 ```bash
 # If you were working on an increment
-/sw:resume XXXX
+sw:resume XXXX
 
 # If you were working on project files
 # Just continue - no increment context loaded
@@ -263,7 +263,7 @@ cat .specweave/config.json | grep github
 echo $GITHUB_TOKEN | head -c 10  # Should show first 10 chars
 
 # Manual sync
-/sw:sync-progress
+sw:sync-progress
 ```
 
 ### "Sync throttled" Message
@@ -272,14 +272,14 @@ SpecWeave throttles sync to prevent API rate limits. Wait 60 seconds or:
 
 ```bash
 # Force bypass throttle
-/sw:sync-progress
+sw:sync-progress
 ```
 
 ### Duplicate Issues Created
 
 ```bash
 # Clean up duplicates
-/sw-github:cleanup-duplicates
+sw-github:cleanup-duplicates
 ```
 
 ---
@@ -290,7 +290,7 @@ SpecWeave throttles sync to prevent API rate limits. Wait 60 seconds or:
 
 ```bash
 # Force update status cache
-/sw:update-status
+sw:update-status
 
 # Or validate and fix
 /specweave-validate-status
@@ -327,7 +327,7 @@ git restore --source=HEAD~1 .specweave/increments/XXXX-name/
 
 ```bash
 # Validate increment
-/sw:validate XXXX
+sw:validate XXXX
 
 # If corruption detected, restore from git
 git restore .specweave/increments/XXXX-name/spec.md
