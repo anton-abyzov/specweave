@@ -15,6 +15,7 @@ import { Logger } from '../utils/logger.js';
 export interface ReconcileOptions {
     projectRoot: string;
     dryRun?: boolean;
+    full?: boolean;
     logger?: Logger;
 }
 export interface IncrementGitHubState {
@@ -47,6 +48,7 @@ export interface ReconcileResult {
 export declare class GitHubReconciler {
     private projectRoot;
     private dryRun;
+    private full;
     private logger;
     private client;
     private configCache;
@@ -153,7 +155,7 @@ export declare class GitHubReconciler {
      * @param dryRun - If true, only report what would happen
      * @param logger - Logger instance
      */
-    static reconcileMilestones(projectRoot: string, dryRun?: boolean, logger?: Logger): Promise<{
+    static reconcileMilestones(projectRoot: string, dryRun?: boolean, logger?: Logger, full?: boolean): Promise<{
         staleClosed: number;
         duplicatesClosed: number;
         errors: string[];
