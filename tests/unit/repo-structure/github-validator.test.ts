@@ -242,6 +242,36 @@ describe('validateOwner', () => {
     expect(result.error).toContain('Connection timeout');
   });
 
+  it('should return 401 error when token is invalid', async () => {
+    // Given: invalid token, both endpoints return 401
+    mockedFetch
+      .mockResolvedValueOnce({ ok: false, status: 401, statusText: 'Unauthorized' } as Response)
+      .mockResolvedValueOnce({ ok: false, status: 401, statusText: 'Unauthorized' } as Response);
+
+    // When: validateOwner is called
+    const result = await validateOwner('someowner', 'bad-token');
+
+    // Then: error contains "Authentication Failed", not "404 Not Found"
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Authentication Failed');
+    expect(result.error).not.toContain('Not Found');
+  });
+
+  it('should return 403 error when rate limited or forbidden', async () => {
+    // Given: rate limited, both endpoints return 403
+    mockedFetch
+      .mockResolvedValueOnce({ ok: false, status: 403, statusText: 'Forbidden' } as Response)
+      .mockResolvedValueOnce({ ok: false, status: 403, statusText: 'Forbidden' } as Response);
+
+    // When: validateOwner is called
+    const result = await validateOwner('someowner', 'token');
+
+    // Then: error contains "Permission Denied", not "404 Not Found"
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Permission Denied');
+    expect(result.error).not.toContain('Not Found');
+  });
+
   it('should work without token (public API)', async () => {
     // Given: no token, API returns 200
     mockedFetch.mockResolvedValueOnce({

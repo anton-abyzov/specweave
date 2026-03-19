@@ -209,6 +209,50 @@ describe('GitHubProvider', () => {
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Not Found');
     });
+
+    it('should return 401 error when token is invalid', async () => {
+      (global.fetch as any).mockResolvedValueOnce({ status: 401, ok: false, statusText: 'Unauthorized' });
+      (global.fetch as any).mockResolvedValueOnce({ status: 401, ok: false, statusText: 'Unauthorized' });
+
+      const result = await provider.validateOwner('someowner', 'bad-token');
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Authentication Failed');
+      expect(result.error).not.toContain('Not Found');
+    });
+
+    it('should return 403 error when both endpoints return 403', async () => {
+      (global.fetch as any).mockResolvedValueOnce({ status: 403, ok: false, statusText: 'Forbidden' });
+      (global.fetch as any).mockResolvedValueOnce({ status: 403, ok: false, statusText: 'Forbidden' });
+
+      const result = await provider.validateOwner('someowner', 'token');
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Permission Denied');
+      expect(result.error).not.toContain('Not Found');
+    });
+
+    it('should prefer 403 over 404 when user returns 403 and org returns 404', async () => {
+      (global.fetch as any).mockResolvedValueOnce({ status: 403, ok: false, statusText: 'Forbidden' });
+      (global.fetch as any).mockResolvedValueOnce({ status: 404, ok: false, statusText: 'Not Found' });
+
+      const result = await provider.validateOwner('someowner', 'token');
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Permission Denied');
+      expect(result.error).not.toContain('Not Found (404)');
+    });
+
+    it('should preserve 404 behavior when both endpoints return 404', async () => {
+      (global.fetch as any).mockResolvedValueOnce({ status: 404, ok: false, statusText: 'Not Found' });
+      (global.fetch as any).mockResolvedValueOnce({ status: 404, ok: false, statusText: 'Not Found' });
+
+      const result = await provider.validateOwner('nonexistent', 'token');
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Not Found');
+      expect(result.error).toContain('404');
+    });
   });
 
   describe('createRepository', () => {
