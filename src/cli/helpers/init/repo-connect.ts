@@ -12,7 +12,7 @@ import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 
-export type ProjectSetupChoice = 'existing' | 'clone-repos' | 'multi-repo-deferred' | 'scratch';
+export type ProjectSetupChoice = 'clone-repos' | 'add-later';
 
 export interface ParsedRepo {
   org: string;
@@ -75,50 +75,34 @@ export function parseRepoInput(rawInput: string): ParsedRepo[] {
 function getProjectSetupStrings(language: SupportedLanguage) {
   const strings: Record<string, {
     question: string;
-    existing: string;
-    existingDesc: string;
     cloneRepos: string;
     cloneReposDesc: string;
-    multiRepoDeferred: string;
-    multiRepoDeferredDesc: string;
-    scratch: string;
-    scratchDesc: string;
+    addLater: string;
+    addLaterDesc: string;
     repoPrompt: string;
   }> = {
     en: {
-      question: 'How would you like to set up your code?',
-      existing: 'I have existing code here',
-      existingDesc: 'Already have code or will add it manually',
-      cloneRepos: 'Clone GitHub repositories',
+      question: 'Which repositories to connect?',
+      cloneRepos: 'Connect repositories',
       cloneReposDesc: 'Enter org/repo or URLs to clone into this workspace',
-      multiRepoDeferred: 'Multiple repos (set up later with `specweave get`)',
-      multiRepoDeferredDesc: 'Mark as multi-repo workspace, add repos later',
-      scratch: 'Starting from scratch',
-      scratchDesc: 'No code yet — first increment creates code',
+      addLater: 'Add later via specweave get',
+      addLaterDesc: 'Create workspace now, add repositories later',
       repoPrompt: 'Enter GitHub repo URLs or org/repo shorthand (space-separated):',
     },
     ru: {
-      question: 'Как вы хотите настроить код?',
-      existing: 'У меня уже есть код',
-      existingDesc: 'Код уже есть или будет добавлен вручную',
-      cloneRepos: 'Клонировать репозитории GitHub',
+      question: 'Какие репозитории подключить?',
+      cloneRepos: 'Подключить репозитории',
       cloneReposDesc: 'Введите org/repo или URL для клонирования',
-      multiRepoDeferred: 'Несколько репозиториев (настроить позже через `specweave get`)',
-      multiRepoDeferredDesc: 'Пометить как мульти-репо, добавить репозитории позже',
-      scratch: 'Начать с нуля',
-      scratchDesc: 'Кода пока нет — первый инкремент создаст его',
+      addLater: 'Добавить позже через specweave get',
+      addLaterDesc: 'Создать рабочее пространство, добавить репозитории позже',
       repoPrompt: 'Введите GitHub URL или org/repo через пробел:',
     },
     es: {
-      question: '¿Cómo quieres configurar tu código?',
-      existing: 'Ya tengo código aquí',
-      existingDesc: 'Ya tienes código o lo agregarás manualmente',
-      cloneRepos: 'Clonar repositorios de GitHub',
+      question: 'Que repositorios conectar?',
+      cloneRepos: 'Conectar repositorios',
       cloneReposDesc: 'Ingresa org/repo o URLs para clonar',
-      multiRepoDeferred: 'Múltiples repos (configurar después con `specweave get`)',
-      multiRepoDeferredDesc: 'Marcar como workspace multi-repo, agregar repos después',
-      scratch: 'Empezar desde cero',
-      scratchDesc: 'Sin código aún — el primer incremento lo creará',
+      addLater: 'Agregar despues via specweave get',
+      addLaterDesc: 'Crear workspace ahora, agregar repositorios despues',
       repoPrompt: 'Ingresa URLs de GitHub o org/repo separados por espacios:',
     },
   };
@@ -134,12 +118,10 @@ export async function promptProjectSetup(language: SupportedLanguage): Promise<P
   return select({
     message: strings.question,
     choices: [
-      { name: strings.existing, value: 'existing' as const, description: strings.existingDesc },
       { name: strings.cloneRepos, value: 'clone-repos' as const, description: strings.cloneReposDesc },
-      { name: strings.multiRepoDeferred, value: 'multi-repo-deferred' as const, description: strings.multiRepoDeferredDesc },
-      { name: strings.scratch, value: 'scratch' as const, description: strings.scratchDesc },
+      { name: strings.addLater, value: 'add-later' as const, description: strings.addLaterDesc },
     ],
-    default: 'existing',
+    default: 'clone-repos',
   });
 }
 

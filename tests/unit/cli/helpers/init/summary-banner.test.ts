@@ -178,13 +178,14 @@ describe('summary-banner', () => {
 
     // ─── Project structure ──────────────────────────────────────
 
-    it('should show "Single repository" when no umbrella discovery', () => {
+    it('should show "Workspace (0 repositories)" when no umbrella discovery', () => {
       const output = strip(formatSummaryBanner(makeOptions()));
       expect(output).toContain('Structure:');
-      expect(output).toContain('Single repository');
+      expect(output).toContain('Workspace (0 repositories)');
+      expect(output).not.toContain('Single repository');
     });
 
-    it('should show "Umbrella" with repo count when umbrella discovered', () => {
+    it('should show "Workspace" with repo count when repos discovered', () => {
       const output = strip(formatSummaryBanner(makeOptions({
         umbrellaDiscovery: {
           isUmbrella: true,
@@ -198,7 +199,7 @@ describe('summary-banner', () => {
         },
       })));
       expect(output).toContain('Structure:');
-      expect(output).toContain('Umbrella (2 repositories)');
+      expect(output).toContain('Workspace (2 repositories)');
       expect(output).toContain('acme/api');
       expect(output).toContain('acme/web');
       expect(output).not.toContain('Single repository');
@@ -216,7 +217,25 @@ describe('summary-banner', () => {
           totalRepoCount: 1,
         },
       })));
-      expect(output).toContain('Umbrella (1 repository)');
+      expect(output).toContain('Workspace (1 repository)');
+    });
+
+    it('should never show "Single repository" text', () => {
+      // With no discovery
+      const output1 = strip(formatSummaryBanner(makeOptions()));
+      expect(output1).not.toContain('Single repository');
+
+      // With discovery
+      const output2 = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos: [{ org: 'acme', name: 'api', path: 'repositories/acme/api', hasGit: true }],
+          totalRepoCount: 1,
+        },
+      })));
+      expect(output2).not.toContain('Single repository');
     });
 
     it('should cap repo display at 10 and show overflow message', () => {
@@ -235,7 +254,7 @@ describe('summary-banner', () => {
           totalRepoCount: 15,
         },
       })));
-      expect(output).toContain('Umbrella (15 repositories)');
+      expect(output).toContain('Workspace (15 repositories)');
       expect(output).toContain('acme/repo-0');
       expect(output).toContain('acme/repo-9');
       expect(output).not.toContain('acme/repo-10');

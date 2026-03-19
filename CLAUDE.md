@@ -78,7 +78,7 @@ Good: npm run build → node script.js → Success
 5. **Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
 6. **Plugin refresh**: Use `specweave refresh-plugins` CLI (not `scripts/refresh-marketplace.sh`)
 7. **Numbered folder collisions**: Before creating `docs/NN-*` folders, CHECK existing prefixes
-8. **Multi-repo**: ALL repos MUST be at `repositories/{org}/{repo-name}/` — NEVER directly under `repositories/`
+8. **Repository structure**: ALL repos MUST be at `repositories/{org}/{repo-name}/` — NEVER directly under `repositories/`. Every workspace uses this structure regardless of the number of repositories
 <!-- SW:END:rules -->
 
 <!-- SW:SECTION:workflow version="1.0.272" -->

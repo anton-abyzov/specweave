@@ -31,7 +31,7 @@ SpecWeave extends this foundation from a **single-increment generator** into a *
 |-----------|---------|-----------|
 | **Core Philosophy** | Specification snapshot for one feature | Living documentation for entire product lifecycle |
 | **Workflow Phases** | Specify → Plan → Tasks → Implement | Same + Hooks → Sync → Validate → Close |
-| **Project Scope** | Single project, single repo | Multi-project, multi-repo, umbrella setups |
+| **Project Scope** | Single project, single repo | Multi-project workspaces with any number of repositories |
 | **External Tools** | None | GitHub Issues, JIRA, Azure DevOps (bidirectional) |
 | **Documentation** | Static snapshots | Living docs (auto-update after every task) |
 | **Codebase Support** | Greenfield only | Greenfield + Brownfield |

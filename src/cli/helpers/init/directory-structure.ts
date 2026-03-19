@@ -349,7 +349,31 @@ export async function copyTemplates(
 }
 
 /**
+ * Write a minimal .specweave/config.json so that findProjectRoot() can
+ * resolve this directory as a SpecWeave project BEFORE createDirectoryStructure()
+ * creates the increments/ folder.  Without this, next-id may resolve to a
+ * sibling project during the init window (AD-3).
+ *
+ * If config.json already exists (e.g. re-init), this is a no-op.
+ */
+export function createMinimalConfig(targetDir: string, projectName: string): void {
+  const specweaveDir = path.join(targetDir, '.specweave');
+  const configPath = path.join(specweaveDir, 'config.json');
+
+  if (fs.existsSync(configPath)) return; // Don't overwrite existing config
+
+  fs.mkdirSync(specweaveDir, { recursive: true });
+  fs.writeJsonSync(configPath, {
+    version: '2.0',
+    project: { name: projectName },
+  }, { spaces: 2 });
+}
+
+/**
  * Create .specweave/config.json with project settings
+ *
+ * If a minimal config already exists (from createMinimalConfig), this
+ * overwrites it with the full configuration.
  */
 export function createConfigFile(
   targetDir: string,

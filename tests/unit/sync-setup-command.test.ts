@@ -84,7 +84,7 @@ describe('syncSetupCommand', () => {
     await syncSetupCommand({ provider: 'github' });
 
     expect(mockSetupIssueTracker).toHaveBeenCalledWith(
-      expect.objectContaining({ repositoryHosting: 'github-single' })
+      expect.objectContaining({ repositoryHosting: 'github' })
     );
   });
 
@@ -96,7 +96,7 @@ describe('syncSetupCommand', () => {
     await syncSetupCommand({ provider: 'ado' });
 
     expect(mockSetupIssueTracker).toHaveBeenCalledWith(
-      expect.objectContaining({ repositoryHosting: 'ado-single' })
+      expect.objectContaining({ repositoryHosting: 'ado' })
     );
   });
 

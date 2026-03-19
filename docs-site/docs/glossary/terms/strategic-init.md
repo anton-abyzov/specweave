@@ -31,7 +31,7 @@ graph LR
 | Compliance | 1-2 min | No (auto-detection) |
 | Budget | 1 min | Yes |
 | Methodology | 1 min | Yes (defaults to Agile) |
-| Repositories | 2-3 min | Yes (single repo default) |
+| Repositories | 2-3 min | Yes (add later is default) |
 
 ### Phase 1: Vision & Market Research
 
@@ -85,7 +85,7 @@ Auto-detects 30+ compliance standards:
 
 **Where does the code live?**
 
-- Single repo or multi-repo
+- Which repositories to connect
 - Platform selection (GitHub, GitLab, Bitbucket)
 - Profile configuration
 
