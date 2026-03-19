@@ -114,6 +114,7 @@ export async function initCommand(
   let usedDotNotation = false;
   let continueExisting = false;
 
+  // STEP 2a: Path resolution (set targetDir + finalProjectName — NO destructive actions)
   if (projectName === '.') {
     // Init in current directory
     usedDotNotation = true;
@@ -142,50 +143,13 @@ export async function initCommand(
     } else {
       finalProjectName = dirName;
     }
-
-    // Smart re-init
-    if (fs.existsSync(path.join(targetDir, '.specweave'))) {
-      const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-      if (result.action === 'cancel') process.exit(0);
-      continueExisting = result.continueExisting;
-    } else {
-      // Info: initializing in a non-empty directory
-      try {
-        const existingFiles = fs.readdirSync(targetDir).filter((f: string) => !f.startsWith('.'));
-        if (existingFiles.length > 0) {
-          console.log(chalk.gray(`\n   ℹ Directory contains ${existingFiles.length} file(s). Init is non-destructive — only adds .specweave/.\n`));
-        }
-      } catch { /* ignore read errors */ }
-    }
   } else {
     // Explicit project name → create subdirectory
     targetDir = path.resolve(process.cwd(), projectName);
     finalProjectName = path.basename(projectName);
-
-    if (fs.existsSync(targetDir)) {
-      const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
-      if (hasSpecweave) {
-        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-        if (result.action === 'cancel') process.exit(0);
-        continueExisting = result.continueExisting;
-      } else {
-        const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
-        if (existingFiles.length > 0) {
-          if (!isCI) {
-            const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
-            if (!initExisting) {
-              console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-              process.exit(0);
-            }
-          }
-        }
-      }
-    } else {
-      fs.mkdirSync(targetDir, { recursive: true });
-    }
   }
 
-  // STEP 3: Guard clauses
+  // STEP 2b: Guard clauses (BEFORE any destructive action like promptSmartReinit)
   const umbrellaResult = detectUmbrellaParent(targetDir);
   if (umbrellaResult) {
     if (options.force) {
@@ -236,7 +200,45 @@ export async function initCommand(
     }
   }
 
-  // STEP 4: Create project
+  // STEP 2c: Reinit / existence checks (safe now — guards already validated the path)
+  if (usedDotNotation) {
+    if (fs.existsSync(path.join(targetDir, '.specweave'))) {
+      const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
+      if (result.action === 'cancel') process.exit(0);
+      continueExisting = result.continueExisting;
+    } else {
+      try {
+        const existingFiles = fs.readdirSync(targetDir).filter((f: string) => !f.startsWith('.'));
+        if (existingFiles.length > 0) {
+          console.log(chalk.gray(`\n   ℹ Directory contains ${existingFiles.length} file(s). Init is non-destructive — only adds .specweave/.\n`));
+        }
+      } catch { /* ignore read errors */ }
+    }
+  } else {
+    if (fs.existsSync(targetDir)) {
+      const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
+      if (hasSpecweave) {
+        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
+        if (result.action === 'cancel') process.exit(0);
+        continueExisting = result.continueExisting;
+      } else {
+        const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
+        if (existingFiles.length > 0) {
+          if (!isCI) {
+            const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
+            if (!initExisting) {
+              console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+              process.exit(0);
+            }
+          }
+        }
+      }
+    } else {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+  }
+
+  // STEP 3: Create project
   const spinner = ora('Creating SpecWeave project...').start();
 
   try {
