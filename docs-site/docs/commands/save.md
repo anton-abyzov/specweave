@@ -6,7 +6,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 # Save Changes Across Repositories
 
-Save and push changes across all repositories in your project. Works for both single repos and umbrella multi-repo setups.
+Save and push changes across all repositories in your workspace.
 
 ## Overview
 
@@ -208,5 +208,5 @@ backend:
 
 ## See Also
 
-- [Multi-Project Setup Guide](/docs/guides/multi-project-setup) - Full guide to umbrella multi-repo setups
+- [Multi-Project Setup Guide](/docs/guides/multi-project-setup) - Full guide to workspace setup with multiple repositories
 - [GitHub Integration](/docs/integrations/issue-trackers) - Sync with GitHub Issues

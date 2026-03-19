@@ -1,7 +1,8 @@
 /**
  * Unit tests for repo-connect helpers
  *
- * Tests: parseRepoInput (pure), cloneReposIntoWorkspace (mocked git)
+ * Tests: parseRepoInput (pure), cloneReposIntoWorkspace (mocked git),
+ * promptProjectSetup (2-choice prompt)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -17,6 +18,11 @@ const { mockExecFileNoThrowSync } = vi.hoisted(() => ({
 const { mockExistsSync, mockMkdirSync } = vi.hoisted(() => ({
   mockExistsSync: vi.fn().mockReturnValue(false),
   mockMkdirSync: vi.fn(),
+}));
+
+const { mockSelect, mockInput } = vi.hoisted(() => ({
+  mockSelect: vi.fn().mockResolvedValue('clone-repos'),
+  mockInput: vi.fn(),
 }));
 
 // ============================================================================
@@ -45,15 +51,15 @@ vi.mock('chalk', () => {
 });
 
 vi.mock('@inquirer/prompts', () => ({
-  select: vi.fn(),
-  input: vi.fn(),
+  select: mockSelect,
+  input: mockInput,
 }));
 
 // ============================================================================
 // Import under test (after mocks)
 // ============================================================================
 
-import { parseRepoInput, cloneReposIntoWorkspace } from '../../../../../src/cli/helpers/init/repo-connect.js';
+import { parseRepoInput, cloneReposIntoWorkspace, promptProjectSetup } from '../../../../../src/cli/helpers/init/repo-connect.js';
 
 // ============================================================================
 // parseRepoInput
@@ -213,5 +219,82 @@ describe('cloneReposIntoWorkspace', () => {
     ]);
 
     expect(result.repos[0].path).toBe('repositories/my-org/my-repo');
+  });
+});
+
+// ============================================================================
+// promptProjectSetup — 2-choice prompt
+// ============================================================================
+
+describe('promptProjectSetup', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should call select with exactly 2 choices', async () => {
+    mockSelect.mockResolvedValue('clone-repos');
+
+    await promptProjectSetup('en');
+
+    expect(mockSelect).toHaveBeenCalledTimes(1);
+    const callArgs = mockSelect.mock.calls[0][0];
+    expect(callArgs.choices).toHaveLength(2);
+  });
+
+  it('should offer "clone-repos" and "add-later" as the only values', async () => {
+    mockSelect.mockResolvedValue('clone-repos');
+
+    await promptProjectSetup('en');
+
+    const callArgs = mockSelect.mock.calls[0][0];
+    const values = callArgs.choices.map((c: any) => c.value);
+    expect(values).toEqual(['clone-repos', 'add-later']);
+  });
+
+  it('should NOT offer "existing", "scratch", or "multi-repo-deferred" choices', async () => {
+    mockSelect.mockResolvedValue('clone-repos');
+
+    await promptProjectSetup('en');
+
+    const callArgs = mockSelect.mock.calls[0][0];
+    const values = callArgs.choices.map((c: any) => c.value);
+    expect(values).not.toContain('existing');
+    expect(values).not.toContain('scratch');
+    expect(values).not.toContain('multi-repo-deferred');
+  });
+
+  it('should not ask "How would you like to set up your code?"', async () => {
+    mockSelect.mockResolvedValue('clone-repos');
+
+    await promptProjectSetup('en');
+
+    const callArgs = mockSelect.mock.calls[0][0];
+    expect(callArgs.message).not.toContain('How would you like to set up your code?');
+  });
+
+  it('should ask "Which repositories to connect?"', async () => {
+    mockSelect.mockResolvedValue('clone-repos');
+
+    await promptProjectSetup('en');
+
+    const callArgs = mockSelect.mock.calls[0][0];
+    expect(callArgs.message).toContain('Which repositories to connect?');
+  });
+
+  it('should default to clone-repos', async () => {
+    mockSelect.mockResolvedValue('clone-repos');
+
+    await promptProjectSetup('en');
+
+    const callArgs = mockSelect.mock.calls[0][0];
+    expect(callArgs.default).toBe('clone-repos');
+  });
+
+  it('should return the selected value', async () => {
+    mockSelect.mockResolvedValue('add-later');
+
+    const result = await promptProjectSetup('en');
+
+    expect(result).toBe('add-later');
   });
 });

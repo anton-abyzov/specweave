@@ -210,7 +210,7 @@ export class ProjectResolutionService {
   private async resolveFromConfig(): Promise<ResolvedProject | null> {
     try {
       // Cast to any to access multiProject which may or may not exist
-      // (multiProject is a runtime field managed by single-project-migrator)
+      // (multiProject is a legacy runtime field, no longer written by init)
       const config = await this.configManager.read() as any;
 
       const isSingleProject = config.multiProject?.enabled !== true;

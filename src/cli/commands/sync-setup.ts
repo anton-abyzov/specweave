@@ -31,9 +31,9 @@ export interface SyncSetupOptions {
  */
 function providerToHostingHint(provider: SyncSetupProvider): RepositoryHosting {
   switch (provider) {
-    case 'github': return 'github-single';
-    case 'jira':   return 'other-single';
-    case 'ado':    return 'ado-single';
+    case 'github': return 'github';
+    case 'jira':   return 'other';
+    case 'ado':    return 'ado';
   }
 }
 

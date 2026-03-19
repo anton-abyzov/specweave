@@ -1,8 +1,9 @@
 /**
- * Unit tests for init multi-repo flow (increment 0571)
+ * Unit tests for init unified flow (increment 0581)
  *
- * Tests: execution order fix, deferred multi-repo config, clone wiring,
- * sync-setup chain, next-steps messaging, resolve-structure deprecation.
+ * Tests: 2-choice prompt (no 4-way), repositories/ always created,
+ * umbrella config unconditional, banner shows "Workspace", next-steps
+ * always show "specweave get", sync-setup chain removed.
  *
  * Uses vi.hoisted() + vi.mock() ESM mocking pattern.
  */
@@ -89,7 +90,6 @@ const {
   mockShowNextSteps,
   mockInstallGitHooks,
   mockEnsureSkillCreator,
-  mockEnsureVskillInit,
 } = vi.hoisted(() => ({
   mockFindSourceDir: vi.fn().mockReturnValue('/mock/templates'),
   mockFindPackageRoot: vi.fn().mockReturnValue('/mock/package-root'),
@@ -125,7 +125,7 @@ const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
 }));
 
 const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace } = vi.hoisted(() => ({
-  mockPromptProjectSetup: vi.fn().mockResolvedValue('existing' as const),
+  mockPromptProjectSetup: vi.fn().mockResolvedValue('add-later' as const),
   mockPromptRepoUrls: vi.fn().mockResolvedValue([]),
   mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));
@@ -217,6 +217,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   installAllPlugins: mockInstallAllPlugins,
   promptLanguageSelection: mockPromptLanguageSelection,
   getDefaultLanguageSelection: mockGetDefaultLanguageSelection,
+  createMinimalConfig: vi.fn(),
   createDirectoryStructure: mockCreateDirectoryStructure,
   copyTemplates: mockCopyTemplates,
   createConfigFile: mockCreateConfigFile,
@@ -298,7 +299,7 @@ beforeEach(() => {
   originalIsTTY = process.stdin.isTTY;
   Object.defineProperty(process.stdin, 'isTTY', { value: true, writable: true, configurable: true });
 
-  // Default: greenfield directory (no .specweave, no .git, no repositories/)
+  // Default: greenfield directory (no .specweave, no .git)
   mockExistsSync.mockImplementation((p: string) => {
     if (p.endsWith('.specweave')) return false;
     if (p.endsWith('.git')) return false;
@@ -318,12 +319,11 @@ afterEach(() => {
 });
 
 // ============================================================================
-// TC-003: Post-scaffold fires for greenfield projects
+// AC-US1-01: No 4-way promptProjectSetup prompt
 // ============================================================================
 
-describe('US-001: Fix post-scaffold execution order', () => {
-  it('TC-003: promptProjectSetup is called for greenfield projects (no .git)', async () => {
-    // Greenfield: no .git before init, .git exists after git init
+describe('AC-US1-01: No 4-way prompt — only 2-choice prompt', () => {
+  it('promptProjectSetup is called for greenfield projects (no .git)', async () => {
     let gitInitCalled = false;
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.git')) return gitInitCalled;
@@ -340,15 +340,14 @@ describe('US-001: Fix post-scaffold execution order', () => {
       return { success: true, stdout: '', stderr: '' };
     });
 
-    mockPromptProjectSetup.mockResolvedValue('scratch');
+    mockPromptProjectSetup.mockResolvedValue('add-later');
 
     await initCommand('.', { adapter: 'claude' });
 
     expect(mockPromptProjectSetup).toHaveBeenCalled();
   });
 
-  it('TC-004: promptProjectSetup is NOT called for existing projects (continueExisting)', async () => {
-    // Existing project: has .specweave
+  it('promptProjectSetup is NOT called for existing projects (continueExisting)', async () => {
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.specweave')) return true;
       if (p.endsWith('config.json')) return true;
@@ -364,8 +363,7 @@ describe('US-001: Fix post-scaffold execution order', () => {
     expect(mockPromptProjectSetup).not.toHaveBeenCalled();
   });
 
-  it('AC-US1-02: dead multi-repo confirm question is removed (no standalone confirm for multi-repo)', async () => {
-    // For greenfield, the only confirm calls should NOT be for "multiple repositories"
+  it('no standalone confirm question about "multiple repositories"', async () => {
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.git')) return false;
       if (p.endsWith('.specweave')) return false;
@@ -374,94 +372,15 @@ describe('US-001: Fix post-scaffold execution order', () => {
       return false;
     });
 
-    mockPromptProjectSetup.mockResolvedValue('scratch');
+    mockPromptProjectSetup.mockResolvedValue('add-later');
 
     await initCommand('.', { adapter: 'claude' });
 
-    // The old standalone confirm for "Will this project use multiple repositories?" should NOT appear
     const confirmCalls = mockConfirm.mock.calls;
     for (const call of confirmCalls) {
       const message = call[0]?.message || '';
       expect(message).not.toMatch(/multiple.*(repos|repositories)/i);
     }
-  });
-});
-
-// ============================================================================
-// TC-001/TC-002: Deferred multi-repo config
-// ============================================================================
-
-describe('US-002: Deferred multi-repo option', () => {
-  it('TC-001: selecting deferred multi-repo sets multiProject.enabled in config', async () => {
-    let writtenConfig: Record<string, any> = {};
-
-    mockExistsSync.mockImplementation((p: string) => {
-      if (p.endsWith('.git')) return false;
-      if (p.endsWith('.specweave')) return false;
-      if (p.endsWith('repositories')) return false;
-      if (p.endsWith('config.json')) return true;
-      return false;
-    });
-
-    mockReadJsonSync.mockReturnValue({});
-    mockWriteJsonSync.mockImplementation((_path: string, data: any) => {
-      writtenConfig = data;
-    });
-
-    // User selects "multi-repo-deferred" in promptProjectSetup
-    mockPromptProjectSetup.mockResolvedValue('multi-repo-deferred');
-    mockConfirm.mockResolvedValue(false); // decline sync-setup
-
-    await initCommand('.', { adapter: 'claude' });
-
-    expect(writtenConfig.multiProject).toEqual({ enabled: true });
-    expect(writtenConfig.umbrella?.enabled).toBeUndefined();
-    expect(writtenConfig.repository?.structure).toBeUndefined();
-  });
-
-  it('TC-002: selecting deferred multi-repo creates repositories/ directory', async () => {
-    mockExistsSync.mockImplementation((p: string) => {
-      if (p.endsWith('.git')) return false;
-      if (p.endsWith('.specweave')) return false;
-      if (p.endsWith('repositories')) return false;
-      if (p.endsWith('config.json')) return true;
-      return false;
-    });
-
-    mockPromptProjectSetup.mockResolvedValue('multi-repo-deferred');
-    mockConfirm.mockResolvedValue(false);
-
-    await initCommand('.', { adapter: 'claude' });
-
-    expect(mockMkdirSync).toHaveBeenCalledWith(
-      expect.stringContaining('repositories'),
-      expect.objectContaining({ recursive: true })
-    );
-  });
-
-  it('TC-002b: umbrella.enabled is NOT set for deferred multi-repo', async () => {
-    let writtenConfig: Record<string, any> = {};
-
-    mockExistsSync.mockImplementation((p: string) => {
-      if (p.endsWith('.git')) return false;
-      if (p.endsWith('.specweave')) return false;
-      if (p.endsWith('repositories')) return false;
-      if (p.endsWith('config.json')) return true;
-      return false;
-    });
-
-    mockReadJsonSync.mockReturnValue({});
-    mockWriteJsonSync.mockImplementation((_path: string, data: any) => {
-      writtenConfig = data;
-    });
-
-    mockPromptProjectSetup.mockResolvedValue('multi-repo-deferred');
-    mockConfirm.mockResolvedValue(false);
-
-    await initCommand('.', { adapter: 'claude' });
-
-    // umbrella.enabled should NOT be set
-    expect(writtenConfig.umbrella?.enabled).toBeUndefined();
   });
 
   it('CI/non-interactive: promptProjectSetup is NOT called', async () => {
@@ -472,11 +391,11 @@ describe('US-002: Deferred multi-repo option', () => {
 });
 
 // ============================================================================
-// TC-005/TC-006: Sync-setup chain
+// AC-US1-03: repositories/ always created
 // ============================================================================
 
-describe('US-003: Wire clone-repos to umbrella auto-setup', () => {
-  it('TC-005: sync-setup is offered after multi-repo setup (accepted)', async () => {
+describe('AC-US1-03: repositories/ always created', () => {
+  it('repositories/ created when user selects add-later', async () => {
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.git')) return false;
       if (p.endsWith('.specweave')) return false;
@@ -485,16 +404,17 @@ describe('US-003: Wire clone-repos to umbrella auto-setup', () => {
       return false;
     });
 
-    mockPromptProjectSetup.mockResolvedValue('multi-repo-deferred');
-    // First confirm call for sync-setup = true
-    mockConfirm.mockResolvedValue(true);
+    mockPromptProjectSetup.mockResolvedValue('add-later');
 
     await initCommand('.', { adapter: 'claude' });
 
-    expect(mockSyncSetupCommand).toHaveBeenCalled();
+    expect(mockMkdirSync).toHaveBeenCalledWith(
+      path.join(TEST_DIR, 'repositories'),
+      expect.objectContaining({ recursive: true })
+    );
   });
 
-  it('TC-006: sync-setup is NOT called when declined', async () => {
+  it('repositories/ created when user selects clone-repos', async () => {
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.git')) return false;
       if (p.endsWith('.specweave')) return false;
@@ -503,14 +423,123 @@ describe('US-003: Wire clone-repos to umbrella auto-setup', () => {
       return false;
     });
 
-    mockPromptProjectSetup.mockResolvedValue('multi-repo-deferred');
-    mockConfirm.mockResolvedValue(false); // decline sync-setup
+    mockPromptProjectSetup.mockResolvedValue('clone-repos');
+    mockPromptRepoUrls.mockResolvedValue([]);
 
     await initCommand('.', { adapter: 'claude' });
 
-    expect(mockSyncSetupCommand).not.toHaveBeenCalled();
+    expect(mockMkdirSync).toHaveBeenCalledWith(
+      path.join(TEST_DIR, 'repositories'),
+      expect.objectContaining({ recursive: true })
+    );
   });
 
+  it('repositories/ created in CI mode (no prompt)', async () => {
+    await initCommand('.', { adapter: 'claude', quick: true });
+
+    expect(mockMkdirSync).toHaveBeenCalledWith(
+      path.join(TEST_DIR, 'repositories'),
+      expect.objectContaining({ recursive: true })
+    );
+  });
+});
+
+// ============================================================================
+// AC-US1-03: umbrella config always written
+// ============================================================================
+
+describe('AC-US1-03: umbrella config unconditional', () => {
+  it('config has umbrella.enabled=true even with zero repos (add-later)', async () => {
+    let writtenConfig: Record<string, any> = {};
+
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith('.git')) return false;
+      if (p.endsWith('.specweave')) return false;
+      if (p.endsWith('repositories')) return false;
+      if (p.endsWith('config.json')) return true;
+      return false;
+    });
+
+    mockReadJsonSync.mockReturnValue({});
+    mockWriteJsonSync.mockImplementation((_path: string, data: any) => {
+      writtenConfig = data;
+    });
+
+    mockPromptProjectSetup.mockResolvedValue('add-later');
+
+    await initCommand('.', { adapter: 'claude' });
+
+    // umbrella.enabled is always set
+    expect(writtenConfig.umbrella?.enabled).toBe(true);
+    expect(writtenConfig.umbrella?.childRepos).toEqual([]);
+    // multiProject.enabled is never written
+    expect(writtenConfig.multiProject).toBeUndefined();
+  });
+
+  it('config uses buildUmbrellaConfig when repos are discovered', async () => {
+    let writtenConfig: Record<string, any> = {};
+
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith('.git')) return false;
+      if (p.endsWith('.specweave')) return false;
+      if (p.endsWith('repositories')) return false;
+      if (p.endsWith('config.json')) return true;
+      return false;
+    });
+
+    mockReadJsonSync.mockReturnValue({});
+    mockWriteJsonSync.mockImplementation((_path: string, data: any) => {
+      writtenConfig = data;
+    });
+
+    mockPromptProjectSetup.mockResolvedValue('clone-repos');
+    mockPromptRepoUrls.mockResolvedValue([
+      { org: 'acme', name: 'app', cloneUrl: 'https://github.com/acme/app.git' },
+    ]);
+    mockCloneReposIntoWorkspace.mockReturnValue({ repos: [{ org: 'acme', name: 'app', path: 'repositories/acme/app', success: true }], totalCloned: 1, totalFailed: 0 });
+    mockScanUmbrellaRepos.mockReturnValue({
+      isUmbrella: true,
+      repos: [{ org: 'acme', name: 'app', path: 'repositories/acme/app', hasGit: true }],
+      orgs: ['acme'],
+      totalRepoCount: 1,
+      repositoriesDir: 'repositories',
+    });
+
+    await initCommand('.', { adapter: 'claude' });
+
+    expect(mockBuildUmbrellaConfig).toHaveBeenCalled();
+    expect(writtenConfig.umbrella?.enabled).toBe(true);
+  });
+
+  it('config never contains multiProject.enabled', async () => {
+    let writtenConfig: Record<string, any> = {};
+
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith('.git')) return false;
+      if (p.endsWith('.specweave')) return false;
+      if (p.endsWith('repositories')) return false;
+      if (p.endsWith('config.json')) return true;
+      return false;
+    });
+
+    mockReadJsonSync.mockReturnValue({});
+    mockWriteJsonSync.mockImplementation((_path: string, data: any) => {
+      writtenConfig = data;
+    });
+
+    mockPromptProjectSetup.mockResolvedValue('add-later');
+
+    await initCommand('.', { adapter: 'claude' });
+
+    expect(writtenConfig.multiProject).toBeUndefined();
+  });
+});
+
+// ============================================================================
+// Clone-repos flow
+// ============================================================================
+
+describe('Clone-repos flow', () => {
   it('clone-repos path calls cloneReposIntoWorkspace and scanUmbrellaRepos', async () => {
     mockExistsSync.mockImplementation((p: string) => {
       if (p.endsWith('.git')) return false;
@@ -532,7 +561,6 @@ describe('US-003: Wire clone-repos to umbrella auto-setup', () => {
       totalRepoCount: 1,
       repositoriesDir: 'repositories',
     });
-    mockConfirm.mockResolvedValue(false);
 
     await initCommand('.', { adapter: 'claude' });
 
@@ -540,7 +568,6 @@ describe('US-003: Wire clone-repos to umbrella auto-setup', () => {
       TEST_DIR,
       expect.arrayContaining([expect.objectContaining({ org: 'acme', name: 'app' })]),
     );
-    // scanUmbrellaRepos is called at least once for re-scan after clone
     expect(mockScanUmbrellaRepos).toHaveBeenCalled();
   });
 
@@ -558,69 +585,90 @@ describe('US-003: Wire clone-repos to umbrella auto-setup', () => {
       { org: 'acme', name: 'broken', cloneUrl: 'https://github.com/acme/broken.git' },
     ]);
     mockCloneReposIntoWorkspace.mockReturnValue({ repos: [{ org: 'acme', name: 'broken', path: 'repositories/acme/broken', success: false, error: 'clone failed' }], totalCloned: 0, totalFailed: 1 });
-    mockConfirm.mockResolvedValue(false);
 
-    // Should not throw
     await expect(initCommand('.', { adapter: 'claude' })).resolves.toBeUndefined();
   });
 });
 
 // ============================================================================
-// TC-007: Next-steps messaging
+// Sync-setup chain removed
 // ============================================================================
 
-describe('US-004: Update next-steps messaging for multi-repo', () => {
-  it('TC-007: hides migrate-to-umbrella when isMultiRepo is true', () => {
-    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true }, { isMultiRepo: true, isUmbrella: false });
+describe('Sync-setup chain removed', () => {
+  it('sync-setup is never called after init (no chain)', async () => {
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith('.git')) return false;
+      if (p.endsWith('.specweave')) return false;
+      if (p.endsWith('repositories')) return false;
+      if (p.endsWith('config.json')) return true;
+      return false;
+    });
+
+    mockPromptProjectSetup.mockResolvedValue('add-later');
+    mockConfirm.mockResolvedValue(true);
+
+    await initCommand('.', { adapter: 'claude' });
+
+    expect(mockSyncSetupCommand).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// AC-US1-04: Banner shows "Workspace (N repositories)"
+// ============================================================================
+
+describe('AC-US1-04: Banner shows "Workspace"', () => {
+  it('displaySummaryBanner is called (banner renders)', async () => {
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith('.git')) return false;
+      if (p.endsWith('.specweave')) return false;
+      if (p.endsWith('repositories')) return false;
+      if (p.endsWith('config.json')) return true;
+      return false;
+    });
+
+    mockPromptProjectSetup.mockResolvedValue('add-later');
+
+    await initCommand('.', { adapter: 'claude' });
+
+    expect(mockDisplaySummaryBanner).toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// AC-US1-05: Next-steps messaging
+// ============================================================================
+
+describe('AC-US1-05: Next-steps always show specweave get, never migrate-to-umbrella', () => {
+  it('never shows migrate-to-umbrella', () => {
+    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true }, {});
 
     const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
     expect(output).not.toContain('migrate-to-umbrella');
   });
 
-  it('shows migrate-to-umbrella for single-repo (isMultiRepo=false, isUmbrella=false)', () => {
-    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true }, { isMultiRepo: false, isUmbrella: false });
-
-    const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
-    expect(output).toContain('migrate-to-umbrella');
-  });
-
-  it('hides migrate-to-umbrella when isUmbrella is true (existing behavior)', () => {
-    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true }, { isUmbrella: true });
-
-    const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
-    expect(output).not.toContain('migrate-to-umbrella');
-  });
-
-  it('shows specweave get examples when isMultiRepo is true', () => {
-    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true }, { isMultiRepo: true });
+  it('always shows specweave get', () => {
+    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true }, {});
 
     const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
     expect(output).toContain('specweave get');
   });
-});
 
-// ============================================================================
-// TC-008: resolve-structure deprecation
-// ============================================================================
+  it('shows specweave get with empty context', () => {
+    showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true });
 
-describe('US-005: resolve-structure deprecation stub', () => {
-  it('TC-008: resolveStructureCommand returns deprecation result', async () => {
-    const { resolveStructureCommand } = await import('../../../../src/cli/commands/resolve-structure.js');
-
-    const result = await resolveStructureCommand({ type: 'single' });
-
-    expect(result.success).toBe(false);
-    expect(result.message).toMatch(/deprecated/i);
-    expect(result.previouslyDeferred).toBe(false);
+    const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
+    expect(output).toContain('specweave get');
+    expect(output).not.toContain('migrate-to-umbrella');
   });
 });
 
 // ============================================================================
-// Dead config writes removed (AC-US1-03)
+// Dead config writes removed
 // ============================================================================
 
-describe('US-001: Dead config writes removed', () => {
-  it('AC-US1-03: config does not contain repository.structure or project.structureDeferred', async () => {
+describe('Dead config writes removed', () => {
+  it('config does not contain repository.structure or project.structureDeferred', async () => {
     let writtenConfig: Record<string, any> = {};
 
     mockExistsSync.mockImplementation((p: string) => {
@@ -636,11 +684,31 @@ describe('US-001: Dead config writes removed', () => {
       writtenConfig = data;
     });
 
-    mockPromptProjectSetup.mockResolvedValue('scratch');
+    mockPromptProjectSetup.mockResolvedValue('add-later');
 
     await initCommand('.', { adapter: 'claude' });
 
     expect(writtenConfig.repository?.structure).toBeUndefined();
     expect(writtenConfig.project?.structureDeferred).toBeUndefined();
+  });
+});
+
+// ============================================================================
+// showNextSteps context type — isUmbrella removed
+// ============================================================================
+
+describe('NextStepsContext type cleanup', () => {
+  it('showNextSteps works with empty context (no isUmbrella field)', () => {
+    // This verifies the type change — isUmbrella no longer exists
+    expect(() => {
+      showNextSteps('test', 'claude', 'en', true, { pluginAutoInstalled: true }, {});
+    }).not.toThrow();
+  });
+
+  it('showNextSteps warns about misplaced repos', () => {
+    showNextSteps('test', 'claude', 'en', true, { pluginAutoInstalled: true }, { misplacedRepos: ['orphan-repo'] });
+
+    const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
+    expect(output).toContain('orphan-repo');
   });
 });

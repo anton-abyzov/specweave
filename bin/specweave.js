@@ -351,15 +351,27 @@ program
 program
   .command('create-increment')
   .description('Create increment template files (metadata.json, spec.md, plan.md, tasks.md)')
-  .requiredOption('--id <increment-id>', 'Increment ID (e.g., "0042-my-feature")')
+  .option('--id <increment-id>', 'Increment ID (e.g., "0042-my-feature")')
+  .option('--auto-id', 'Auto-generate next available increment ID')
+  .option('--name <name>', 'Increment name suffix (used with --auto-id)')
   .requiredOption('--title <title>', 'Feature title')
   .requiredOption('--description <description>', 'Feature description')
   .requiredOption('--project <project-id>', 'Project ID (from .specweave/config.json)')
   .option('--board <board-id>', 'Board ID for 2-level structures')
   .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
+  .option('--project-root <path>', 'Override project root directory')
   .option('--json', 'Output result as JSON (for programmatic use)')
   .action(async (options) => {
+    if (options.projectRoot) {
+      const configPath = (await import('path')).join(options.projectRoot, '.specweave', 'config.json');
+      const fs = await import('fs');
+      if (!fs.existsSync(configPath)) {
+        console.error(`Error: ${options.projectRoot} is not a valid SpecWeave project (missing .specweave/config.json)`);
+        process.exit(1);
+      }
+      options.projectRoot = options.projectRoot;
+    }
     const { createIncrementCommand } = await import('../dist/src/cli/commands/create-increment.js');
     await createIncrementCommand(options);
   });
@@ -369,11 +381,24 @@ program
   .command('next-id')
   .description('Return the next available increment number (e.g., "0042")')
   .option('--project <project-id>', 'Project ID for per-project collision prevention')
+  .option('--project-root <path>', 'Override project root directory')
   .option('--name <name>', 'Increment name to generate full ID (e.g., "my-feature" → "0042-my-feature")')
   .action(async (options) => {
     const { IncrementNumberManager } = await import('../dist/src/core/increment/increment-utils.js');
     const { resolveEffectiveRoot } = await import('../dist/src/utils/find-project-root.js');
-    const projectRoot = resolveEffectiveRoot(process.cwd());
+
+    let projectRoot;
+    if (options.projectRoot) {
+      const configPath = (await import('path')).join(options.projectRoot, '.specweave', 'config.json');
+      const fs = await import('fs');
+      if (!fs.existsSync(configPath)) {
+        console.error(`Error: ${options.projectRoot} is not a valid SpecWeave project (missing .specweave/config.json)`);
+        process.exit(1);
+      }
+      projectRoot = options.projectRoot;
+    } else {
+      projectRoot = resolveEffectiveRoot(process.cwd());
+    }
 
     let number;
     if (options.project) {
@@ -1303,15 +1328,13 @@ program
     process.exit(result.types.length > 0 ? 0 : 1);
   });
 
-// Resolve structure command - Resolve deferred structure decision for greenfield projects
+// Resolve structure command - REMOVED (all workspaces use repositories/ structure)
 program
   .command('resolve-structure')
-  .description('Resolve deferred repository structure decision')
-  .requiredOption('--type <type>', 'Structure type: single or multiple')
-  .action(async (options) => {
-    const { resolveStructureCommand } = await import('../dist/src/cli/commands/resolve-structure.js');
-    const result = await resolveStructureCommand({ type: options.type });
-    process.exit(result.success ? 0 : 1);
+  .description('[REMOVED] All workspaces now use the repositories/ structure')
+  .action(() => {
+    console.log('This command has been removed. All workspaces now use the repositories/ structure.');
+    process.exit(0);
   });
 
 // Export skills command - Export to Agent Skills open standard
@@ -1519,30 +1542,13 @@ program
     await getCommand(source, opts);
   });
 
-// Migrate-to-umbrella command - Convert single-repo to umbrella workspace
+// Migrate-to-umbrella command - REMOVED (all workspaces use repositories/ structure)
 program
   .command('migrate-to-umbrella')
-  .description('Convert single-repo project to umbrella/multi-repo workspace. Per-repo sync routing is controlled by the **Project** field in specs.')
-  .option('--execute', 'Execute migration (default is dry-run)')
-  .option('--umbrella-path <path>', 'Custom umbrella directory path')
-  .option('--org <name>', 'GitHub organization name')
-  .option('--rollback', 'Rollback a previous migration')
-  .option('--add-repo <name>', 'Add a new repo to existing umbrella (name or org/name)')
-  .option('--reorganize-specs', 'Reorganize spec folders into per-project directories')
-  .option('--consolidate', 'Consolidate orphaned increments/docs from nested repos to umbrella root')
-  .option('--yes', 'Skip confirmation prompts')
-  .action(async (opts) => {
-    const { migrateToUmbrellaCommand } = await import('../dist/src/cli/commands/migrate-to-umbrella.js');
-    await migrateToUmbrellaCommand({
-      execute: opts.execute,
-      umbrellaPath: opts.umbrellaPath,
-      orgName: opts.org,
-      rollback: opts.rollback,
-      addRepo: opts.addRepo,
-      reorganizeSpecs: opts.reorganizeSpecs,
-      consolidate: opts.consolidate,
-      yes: opts.yes,
-    });
+  .description('[REMOVED] Use specweave get to add repositories')
+  .action(() => {
+    console.log('This command has been removed. Use `specweave get` to add repositories.');
+    process.exit(0);
   });
 
 // Run startup check, then parse arguments

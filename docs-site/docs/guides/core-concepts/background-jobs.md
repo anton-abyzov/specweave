@@ -117,7 +117,7 @@ When external APIs hit rate limits:
 
 Clones multiple repositories from GitHub, GitLab, or Azure DevOps.
 
-**Triggered by**: `specweave init` with umbrella/multi-repo setup
+**Triggered by**: `specweave init` when connecting repositories
 
 **Features**:
 - Skips already-cloned repos (checks `.git` folder)

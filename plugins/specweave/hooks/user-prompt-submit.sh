@@ -325,6 +325,54 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
     fi
   fi
 
+  # v1.0.583: Clean up stale plugins from non-specweave marketplaces (e.g., frontend@vskill).
+  # For each non-exempt marketplace in enabledPlugins, check if it has a valid manifest.
+  # If not, remove all its plugins from settings. Runs daily alongside scope guard.
+  if [[ -f "$USER_SETTINGS" ]]; then
+    STALE_CLEANED=""
+    # Get all unique marketplace names from enabledPlugins (exclude specweave and well-known externals)
+    STALE_MARKETPLACES=$(jq -r '
+      .enabledPlugins // {} | keys[]
+      | split("@")[1] // empty
+      | select(. != "specweave" and . != "claude-plugins-official" and . != "claude-code-lsps")
+    ' "$USER_SETTINGS" 2>/dev/null | sort -u)
+
+    for mkt in $STALE_MARKETPLACES; do
+      MKT_MANIFEST="$HOME/.claude/plugins/marketplaces/$mkt/.claude-plugin/marketplace.json"
+      if [[ ! -f "$MKT_MANIFEST" ]]; then
+        # No manifest — marketplace is dead. Remove ALL its plugins from settings.
+        STALE_KEYS=$(jq -r --arg mkt "$mkt" '
+          .enabledPlugins // {} | keys[] | select(endswith("@" + $mkt))
+        ' "$USER_SETTINGS" 2>/dev/null)
+        for stale_key in $STALE_KEYS; do
+          jq --arg k "$stale_key" 'del(.enabledPlugins[$k])' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
+            mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
+          [[ -n "$STALE_CLEANED" ]] && STALE_CLEANED="$STALE_CLEANED, "
+          STALE_CLEANED="${STALE_CLEANED}${stale_key}"
+        done
+      else
+        # Manifest exists — remove plugins not in the manifest
+        VALID_NAMES=$(jq -r '.plugins[].name' "$MKT_MANIFEST" 2>/dev/null)
+        ENABLED_KEYS=$(jq -r --arg mkt "$mkt" '
+          .enabledPlugins // {} | keys[] | select(endswith("@" + $mkt))
+        ' "$USER_SETTINGS" 2>/dev/null)
+        for key in $ENABLED_KEYS; do
+          plugin_name="${key%%@*}"
+          if ! echo "$VALID_NAMES" | grep -qx "$plugin_name"; then
+            jq --arg k "$key" 'del(.enabledPlugins[$k])' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
+              mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
+            [[ -n "$STALE_CLEANED" ]] && STALE_CLEANED="$STALE_CLEANED, "
+            STALE_CLEANED="${STALE_CLEANED}${key}"
+          fi
+        done
+      fi
+    done
+
+    if [[ -n "$STALE_CLEANED" ]]; then
+      echo "[$(date -Iseconds)] scope-guard | cleaned stale plugins: $STALE_CLEANED" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
+    fi
+  fi
+
   # Write today's marker
   mkdir -p "$(dirname "$SCOPE_GUARD_MARKER")" 2>/dev/null
   date +%Y-%m-%d > "$SCOPE_GUARD_MARKER" 2>/dev/null || true

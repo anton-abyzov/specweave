@@ -235,11 +235,12 @@ npx specweave init .
 **What happens:**
 1. Creates project directory (if needed)
 2. Detects your AI tool (Claude, Cursor, Copilot, etc.)
-3. Installs appropriate components
-4. Creates `.specweave/` structure
-5. Generates `CLAUDE.md` and `AGENTS.md`
-6. Sets up `.gitignore`
-7. Initializes git repository (if git is available)
+3. Asks which repositories to connect (or "add later via `specweave get`")
+4. Creates `.specweave/` structure and `repositories/` directory
+5. Installs appropriate components
+6. Generates `CLAUDE.md` and `AGENTS.md`
+7. Sets up `.gitignore`
+8. Initializes git repository (if git is available)
 
 ### Existing Project (Brownfield)
 
@@ -261,25 +262,25 @@ npx specweave init .
 - ✅ Keeps your git history intact
 - ✅ All SpecWeave work isolated in `.specweave/`
 
-### Multiple Projects (Umbrella Workspace)
+### Adding Repositories
 
-When working with multiple repositories, use the **umbrella workspace** pattern — initialize once, then clone repos with `specweave get`:
+Every workspace starts with a `repositories/` directory. During init you can connect repositories immediately or add them later with `specweave get`:
 
 ```bash
-# 1. Create the umbrella workspace
+# 1. Create the workspace
 specweave init my-workspace
 cd my-workspace
 
-# 2. Clone repositories into the workspace
+# 2. Add repositories (if you chose "add later" during init)
 specweave get my-org/user-service
 specweave get my-org/order-service
 specweave get my-org/notification-service
 
 # Bulk clone an entire GitHub org
-specweave get --org my-org
+specweave get "my-org/*"
 
 # Filter by pattern
-specweave get --org my-org --filter "service-*"
+specweave get "my-org/service-*"
 ```
 
 > **Using npx?** Replace `specweave get` with `npx specweave get` if you haven't installed globally.
@@ -303,13 +304,13 @@ my-workspace/
 └── AGENTS.md
 ```
 
-**Why umbrella?** Centralizing specs prevents fragmentation across repos. A single increment can span multiple repositories, and all planning, tracking, and living docs stay in one place.
+**Why this structure?** Centralizing specs prevents fragmentation across repos. A single increment can span multiple repositories, and all planning, tracking, and living docs stay in one place.
 
 **Key principles:**
 
-- ✅ One `specweave init` — the umbrella workspace owns all configuration
-- ✅ Increments centralized at umbrella root, tagged by project
-- ✅ Child repos do NOT get their own `.specweave/increments/`
+- One `specweave init` -- the workspace owns all configuration
+- Increments centralized at workspace root, tagged by project
+- Individual repos do NOT get their own `.specweave/increments/`
 - ✅ Cross-repo coordination via `/sw:team-lead` for parallel work across repos
 
 ## Verification

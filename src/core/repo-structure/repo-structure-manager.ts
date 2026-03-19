@@ -43,7 +43,7 @@ import {
 } from './repo-initializer.js';
 
 /** v1.0.13: 'parent' is deprecated - kept for backward compatibility */
-export type RepoArchitecture = 'single' | 'multi-repo' | 'monorepo' | 'parent';
+export type RepoArchitecture = 'multi-repo' | 'monorepo' | 'parent';
 
 export interface RepoStructureConfig {
   architecture: RepoArchitecture;
@@ -143,7 +143,7 @@ export class RepoStructureManager {
           name: `${opt.label}\n${chalk.gray(opt.description)}\n${chalk.dim(opt.example)}`,
           value: opt.value as ArchitectureChoice
         })),
-        default: 'single'
+        default: 'github-parent'
       });
     }
 
@@ -216,8 +216,6 @@ export class RepoStructureManager {
     const mappedArch = this.mapArchitectureChoice(architecture as ArchitectureChoice);
 
     switch (mappedArch) {
-      case 'single':
-        return this.configureSingleRepo(urlType, platform as GitPlatformType, provider);
       case 'multi-repo':
         // Multi-repo: all repos are equal, first is default
         return configureMultiRepo({
@@ -234,17 +232,15 @@ export class RepoStructureManager {
   }
 
   /**
-   * Map ArchitectureChoice to internal RepoArchitecture (2 options)
-   * v1.0.13: github-parent now maps to multi-repo (no parent concept)
+   * Map ArchitectureChoice to internal RepoArchitecture
+   * v0581: Always multi-repo (single removed)
    */
   private mapArchitectureChoice(choice: ArchitectureChoice): RepoArchitecture {
     switch (choice) {
-      case 'single':
-        return 'single';
       case 'github-parent':
-        return 'multi-repo'; // v1.0.13: No parent concept, all repos equal
+        return 'multi-repo';
       default:
-        return 'single';
+        return 'multi-repo';
     }
   }
 
@@ -256,8 +252,6 @@ export class RepoStructureManager {
    */
   private formatArchitectureForDisplay(choice: ArchitectureChoice): string {
     switch (choice) {
-      case 'single':
-        return 'Single repository';
       case 'github-parent':
         return 'Multiple repositories (equal, first is default)';
       default:
@@ -277,7 +271,7 @@ export class RepoStructureManager {
     }
 
     // Convert saved state back to config format
-    // v1.0.13: Map old 'parent' architecture to 'multi-repo'
+    // v0581: Map old 'parent' and 'single' to 'multi-repo'
     const arch = state.architecture === 'parent' ? 'multi-repo' : state.architecture;
     const config: RepoStructureConfig = {
       architecture: arch as RepoArchitecture,
@@ -362,7 +356,7 @@ export class RepoStructureManager {
             }
 
             return {
-              architecture: 'single',
+              architecture: 'multi-repo',
               urlType,
               platform,
               provider,
@@ -428,7 +422,7 @@ export class RepoStructureManager {
     }
 
     return {
-      architecture: 'single',
+      architecture: 'multi-repo',
       urlType,
       platform,
       provider,

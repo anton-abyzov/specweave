@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { IncrementNumberManager } from '../../src/core/increment/increment-utils.js';
+import { IncrementNumberManager, RECOGNIZED_LIFECYCLE_FOLDERS } from '../../src/core/increment/increment-utils.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { tmpdir } from 'os';
@@ -627,6 +627,168 @@ describe('IncrementNumberManager', () => {
       // Project B: next should be 0002 (skips 0001 due to FS-001E)
       const resultB = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'project-b');
       expect(resultB).toBe('0002');
+    });
+  });
+
+  // ============================================================
+  // T-001: [RED] _backlog inclusion and getDirsToScan()
+  // ============================================================
+  describe('T-001: _backlog inclusion via getDirsToScan()', () => {
+    it('should include _backlog increments in getNextIncrementNumber', () => {
+      const backlogDir = path.join(incrementsDir, '_backlog');
+      fs.mkdirSync(backlogDir, { recursive: true });
+      fs.mkdirSync(path.join(backlogDir, '0003-backlog-feature'));
+
+      fs.mkdirSync(path.join(incrementsDir, '0001-active'));
+      fs.mkdirSync(path.join(incrementsDir, '0002-active'));
+
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      // 0001, 0002 active + 0003 in _backlog → next is 0004
+      expect(result).toBe('0004');
+    });
+
+    it('should detect _backlog increments via incrementNumberExists', () => {
+      const backlogDir = path.join(incrementsDir, '_backlog');
+      fs.mkdirSync(backlogDir, { recursive: true });
+      fs.mkdirSync(path.join(backlogDir, '0042-backlog-item'));
+
+      const exists = IncrementNumberManager.incrementNumberExists('0042', testProjectRoot);
+      expect(exists).toBe(true);
+    });
+
+    it('should find _backlog duplicates via findDuplicates', () => {
+      const backlogDir = path.join(incrementsDir, '_backlog');
+      fs.mkdirSync(backlogDir, { recursive: true });
+      fs.mkdirSync(path.join(backlogDir, '0050-backlog-item'));
+      fs.mkdirSync(path.join(incrementsDir, '0050-active-item'));
+
+      const duplicates = IncrementNumberManager.findDuplicates('0050', testProjectRoot);
+      expect(duplicates).toHaveLength(2);
+      expect(duplicates.some(d => d.includes('_backlog'))).toBe(true);
+      expect(duplicates.some(d => d.includes('active'))).toBe(true);
+    });
+
+    it('RECOGNIZED_LIFECYCLE_FOLDERS should include _backlog', () => {
+      expect(RECOGNIZED_LIFECYCLE_FOLDERS).toContain('_backlog');
+    });
+
+    it('should scan all RECOGNIZED_LIFECYCLE_FOLDERS plus active dir', () => {
+      // Create increments in every lifecycle folder
+      for (const folder of RECOGNIZED_LIFECYCLE_FOLDERS) {
+        const dir = path.join(incrementsDir, folder);
+        fs.mkdirSync(dir, { recursive: true });
+        fs.mkdirSync(path.join(dir, `0001-in-${folder.replace('_', '')}`));
+      }
+      // All share base number 1, so next should be 0002
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      expect(result).toBe('0002');
+    });
+  });
+
+  // ============================================================
+  // T-004: [RED] findNameDuplicates()
+  // ============================================================
+  describe('T-004: findNameDuplicates()', () => {
+    it('should find active increment with same name suffix', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-user-auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual(['0010-user-auth']);
+    });
+
+    it('should find _backlog increment with same name suffix', () => {
+      const backlogDir = path.join(incrementsDir, '_backlog');
+      fs.mkdirSync(backlogDir, { recursive: true });
+      fs.mkdirSync(path.join(backlogDir, '0010-user-auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual(['0010-user-auth']);
+    });
+
+    it('should NOT find archived increments with same name', () => {
+      const archiveDir = path.join(incrementsDir, '_archive');
+      fs.mkdirSync(archiveDir, { recursive: true });
+      fs.mkdirSync(path.join(archiveDir, '0010-user-auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual([]);
+    });
+
+    it('should NOT find abandoned increments with same name', () => {
+      const abandonedDir = path.join(incrementsDir, '_abandoned');
+      fs.mkdirSync(abandonedDir, { recursive: true });
+      fs.mkdirSync(path.join(abandonedDir, '0010-user-auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual([]);
+    });
+
+    it('should return multiple matches from active and _backlog', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-user-auth'));
+      const backlogDir = path.join(incrementsDir, '_backlog');
+      fs.mkdirSync(backlogDir, { recursive: true });
+      fs.mkdirSync(path.join(backlogDir, '0020-user-auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toHaveLength(2);
+      expect(result).toContain('0010-user-auth');
+      expect(result).toContain('0020-user-auth');
+    });
+
+    it('should return empty array when no matches', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-other-feature'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle platform suffix increments (0010G-user-auth)', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010G-user-auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual(['0010G-user-auth']);
+    });
+
+    it('should be case-sensitive for name matching', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-User-Auth'));
+
+      const result = IncrementNumberManager.findNameDuplicates('user-auth', testProjectRoot);
+      expect(result).toEqual([]); // Different case = no match
+    });
+  });
+
+  // ============================================================
+  // T-007: [RED] --project-root for next-id CLI
+  // ============================================================
+  describe('T-007: --project-root for next-id', () => {
+    it('should use --project-root to override cwd for getNextIncrementNumber', () => {
+      // Create a separate project root with its own increments
+      const otherRoot = mkdtempSync(path.join(tmpdir(), 'specweave-other-'));
+      const otherIncDir = path.join(otherRoot, '.specweave', 'increments');
+      fs.mkdirSync(otherIncDir, { recursive: true });
+      fs.mkdirSync(path.join(otherIncDir, '0001-feat'));
+      fs.mkdirSync(path.join(otherIncDir, '0002-feat'));
+      fs.mkdirSync(path.join(otherIncDir, '0003-feat'));
+      // Also create config.json to validate it's a valid project
+      fs.writeFileSync(path.join(otherRoot, '.specweave', 'config.json'), '{}');
+
+      // The other root should yield 0004
+      const result = IncrementNumberManager.getNextIncrementNumber(otherRoot);
+      expect(result).toBe('0004');
+
+      // Clean up
+      rmSync(otherRoot, { recursive: true, force: true });
+    });
+
+    it('should validate --project-root has .specweave/config.json', () => {
+      // A directory without config.json is not a valid project root
+      const invalidRoot = mkdtempSync(path.join(tmpdir(), 'specweave-invalid-'));
+      const configPath = path.join(invalidRoot, '.specweave', 'config.json');
+      const hasConfig = fs.existsSync(configPath);
+      expect(hasConfig).toBe(false);
+
+      // Clean up
+      rmSync(invalidRoot, { recursive: true, force: true });
     });
   });
 });

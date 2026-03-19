@@ -202,24 +202,28 @@ fi
 - Each repository has its OWN `.specweave/increments/` directory
 - Run `specweave init` in each repo if `.specweave/` doesn't exist
 
-### 3b. Get Unique ID
+### 3b. Create Increment (Preferred — Atomic)
 
 ```bash
-# Get the next available increment ID (deterministic, scans all dirs including archive/abandoned/paused)
+specweave create-increment --auto-id --name "your-feature-name" --title "Feature Title" --description "Brief description" --project "my-app"
+```
+
+This atomically reserves the next available ID and creates the increment directory in a single operation, preventing race conditions when multiple agents create increments concurrently.
+
+**Optional flags**: `--type hotfix` | `--priority P1` | `--board "team-name"` | `--json`
+
+### 3c. Legacy two-step creation (when explicit ID is needed)
+
+```bash
+# Step 1: Get the next available increment ID
 NEXT_ID=$(specweave next-id --name "your-feature-name")
 # Returns e.g. "0579-your-feature-name"
 
-# Or get just the number:
-# specweave next-id → "0579"
+# Step 2: Create with explicit ID
+specweave create-increment --id "$NEXT_ID" --title "Feature Title" --description "Brief description" --project "my-app"
 ```
 
-### 3c. Create via CLI (preferred)
-
-```bash
-specweave create-increment --id "XXXX-name" --title "Feature Title" --description "Brief description" --project "my-app"
-```
-
-**Optional flags**: `--type hotfix` | `--priority P1` | `--board "team-name"` | `--json`
+**Note**: The two-step approach has a TOCTOU race — another process can claim the ID between steps. Prefer `--auto-id` for concurrent environments.
 
 ### 3d. Create manually (if CLI unavailable)
 
@@ -269,16 +273,30 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
 ## Critical Rules
 
-1. **NEVER write spec.md/plan.md/tasks.md directly** — ALWAYS delegate via TeamCreate + team-scoped Agent() calls
+1. **NEVER write spec.md/plan.md/tasks.md directly** — when TeamCreate is available, ALWAYS delegate via TeamCreate + team-scoped Agent() calls (see Adapter Compatibility for fallback)
 2. **Project field is MANDATORY** — Every US MUST have `**Project**:` field
-3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
-4. **Team-based delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — create a team via TeamCreate(), then spawn `sw:sw-pm`, `sw:sw-architect`, `sw:sw-planner` agents with team_name
+3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --auto-id --name "name" --title "Title" --description "Desc" --project "my-app"`
+4. **Team-based delegation is the ONLY way** to produce spec.md/plan.md/tasks.md when TeamCreate is available — create a team via TeamCreate(), then spawn `sw:sw-pm`, `sw:sw-architect`, `sw:sw-planner` agents with team_name
 5. **Increment naming** — Format: `####-descriptive-kebab-case`
 6. **Umbrella mode** — When `umbrella.enabled: true`, ALL increments go in the umbrella root `.specweave/increments/`. The `**Project**:` field per user story routes sync to child repos. Do NOT create increments in child repos.
 
+## Adapter Compatibility
+
+The team-based delegation below uses Claude Code tools (TeamCreate, Agent, SendMessage).
+If these tools are unavailable (OpenCode, Cursor, other adapters):
+
+**Fallback: Direct spec writing**
+1. Create the increment: `specweave create-increment --auto-id --name "feature-name" --title "Title" --description "Desc" --project "my-app"`
+2. Write spec.md directly with user stories and ACs
+3. Write plan.md with architecture decisions
+4. Write tasks.md with BDD test plans for each AC
+5. Run: `specweave sync-living-docs {increment-id}`
+
+Skip to Step 5 after writing all files.
+
 ## CRITICAL: Mandatory Team-Based Delegation
 
-**This skill MUST NOT write spec.md, plan.md, or tasks.md directly.**
+**This skill MUST NOT write spec.md, plan.md, or tasks.md directly** (when TeamCreate is available).
 Delegate via TeamCreate + team-scoped Agent() calls. Each agent gets its own tmux pane for user visibility.
 
 **Team lifecycle:**

@@ -184,9 +184,9 @@ describe('github-multi-repo', () => {
     });
 
     describe('repositoryHosting mapping (pre-selected architecture)', () => {
-      it('should map github-single to single architecture via RepoStructureManager', async () => {
+      it('should map github to github-parent architecture via RepoStructureManager (0581)', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'my-repo', owner: 'myorg', description: 'Main', createOnGitHub: false },
           ],
@@ -197,30 +197,14 @@ describe('github-multi-repo', () => {
         mockInitializeLocalRepos.mockResolvedValueOnce(undefined);
         mockCreateSpecWeaveStructure.mockResolvedValueOnce(undefined);
 
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github-single');
-        expect(result.setupType).toBe('single');
+        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github');
+        expect(result.setupType).toBe('multiple');
         expect(result.profiles).toHaveLength(1);
         expect(result.profiles![0].owner).toBe('myorg');
         expect(result.profiles![0].isDefault).toBe(true);
       });
 
-      it('should map github to single architecture', async () => {
-        const config = {
-          architecture: 'single' as const,
-          repositories: [
-            { id: 'main', name: 'app', owner: 'org', description: 'App', createOnGitHub: false },
-          ],
-          provider: { config: { name: 'GitHub' } },
-        };
-        mockPromptStructure.mockResolvedValueOnce(config);
-        mockInitializeLocalRepos.mockResolvedValueOnce(undefined);
-        mockCreateSpecWeaveStructure.mockResolvedValueOnce(undefined);
-
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github');
-        expect(result.setupType).toBe('single');
-      });
-
-      it('should map github-multirepo to github-parent architecture', async () => {
+      it('should map github with multiple repos to multiple architecture (0581)', async () => {
         const config = {
           architecture: 'multi-repo' as const,
           repositories: [
@@ -233,7 +217,7 @@ describe('github-multi-repo', () => {
         mockInitializeLocalRepos.mockResolvedValueOnce(undefined);
         mockCreateSpecWeaveStructure.mockResolvedValueOnce(undefined);
 
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github-multirepo');
+        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github');
         expect(result.setupType).toBe('multiple');
         expect(result.profiles).toHaveLength(2);
         expect(result.profiles![0].isDefault).toBe(true);
@@ -304,17 +288,10 @@ describe('github-multi-repo', () => {
         expect(mockCreateRepositories).not.toHaveBeenCalled();
       });
 
-      it('should fall back when promptStructure throws and repositoryHosting=github-single', async () => {
+      it('should fall back when promptStructure throws and repositoryHosting=github (0581)', async () => {
         mockPromptStructure.mockRejectedValueOnce(new Error('network error'));
 
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github-single');
-        expect(result).toEqual({ setupType: 'single' });
-      });
-
-      it('should fall back when promptStructure throws and repositoryHosting=github-multirepo', async () => {
-        mockPromptStructure.mockRejectedValueOnce(new Error('network error'));
-
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github-multirepo');
+        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github');
         expect(result).toEqual({ setupType: 'multiple' });
       });
 
@@ -336,9 +313,9 @@ describe('github-multi-repo', () => {
         expect(result).toEqual({ setupType: 'monorepo' });
       });
 
-      it('should handle initializeLocalRepos failure with repositoryHosting=github-single', async () => {
+      it('should handle initializeLocalRepos failure with repositoryHosting=github (0581)', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'repo', owner: 'org', description: 'Repo', createOnGitHub: false },
           ],
@@ -347,22 +324,7 @@ describe('github-multi-repo', () => {
         mockPromptStructure.mockResolvedValueOnce(config);
         mockInitializeLocalRepos.mockRejectedValueOnce(new Error('permission denied'));
 
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github-single');
-        expect(result).toEqual({ setupType: 'single' });
-      });
-
-      it('should handle initializeLocalRepos failure with repositoryHosting=github-multirepo', async () => {
-        const config = {
-          architecture: 'multi-repo' as const,
-          repositories: [
-            { id: 'fe', name: 'fe', owner: 'org', description: 'FE', createOnGitHub: false },
-          ],
-          provider: { config: { name: 'GitHub' } },
-        };
-        mockPromptStructure.mockResolvedValueOnce(config);
-        mockInitializeLocalRepos.mockRejectedValueOnce(new Error('fail'));
-
-        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github-multirepo');
+        const result = await promptGitHubSetupType('/project', 'ghp_token', 'github');
         expect(result).toEqual({ setupType: 'multiple' });
       });
 
@@ -466,14 +428,9 @@ describe('github-multi-repo', () => {
       });
     });
 
-    describe('repositoryHosting without projectPath/token', () => {
-      it('should return single directly when github-single and no projectPath', async () => {
-        const result = await promptGitHubSetupType(undefined, undefined, 'github-single');
-        expect(result).toEqual({ setupType: 'single' });
-      });
-
-      it('should return multiple directly when github-multirepo and no projectPath', async () => {
-        const result = await promptGitHubSetupType(undefined, undefined, 'github-multirepo');
+    describe('repositoryHosting without projectPath/token (0581)', () => {
+      it('should return multiple directly when github and no projectPath', async () => {
+        const result = await promptGitHubSetupType(undefined, undefined, 'github');
         expect(result).toEqual({ setupType: 'multiple' });
       });
     });
@@ -486,7 +443,7 @@ describe('github-multi-repo', () => {
         error.stack = 'Error: debug-test\n    at test.ts:1';
         mockPromptStructure.mockRejectedValueOnce(error);
 
-        await promptGitHubSetupType('/project', 'ghp_token', 'github-single');
+        await promptGitHubSetupType('/project', 'ghp_token', 'github');
 
         expect(console.error).toHaveBeenCalled();
         process.env.DEBUG = origDebug;
@@ -497,17 +454,17 @@ describe('github-multi-repo', () => {
         process.env.SPECWEAVE_DEBUG = '1';
         mockPromptStructure.mockRejectedValueOnce(new Error('sw-debug'));
 
-        await promptGitHubSetupType('/project', 'ghp_token', 'github-single');
+        await promptGitHubSetupType('/project', 'ghp_token', 'github');
 
         expect(console.error).toHaveBeenCalled();
         process.env.SPECWEAVE_DEBUG = origDebug;
       });
     });
 
-    describe('gitUrlFormat passthrough', () => {
+    describe('gitUrlFormat passthrough (0581)', () => {
       it('should pass gitUrlFormat to manager.promptStructure', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'repo', owner: 'org', description: 'Repo', createOnGitHub: false },
           ],
@@ -517,13 +474,13 @@ describe('github-multi-repo', () => {
         mockInitializeLocalRepos.mockResolvedValueOnce(undefined);
         mockCreateSpecWeaveStructure.mockResolvedValueOnce(undefined);
 
-        await promptGitHubSetupType('/project', 'ghp_token', 'github-single', 0, 'ssh');
-        expect(mockPromptStructure).toHaveBeenCalledWith('single', 'github', 'ssh');
+        await promptGitHubSetupType('/project', 'ghp_token', 'github', 0, 'ssh');
+        expect(mockPromptStructure).toHaveBeenCalledWith('github-parent', 'github', 'ssh');
       });
 
       it('should pass https gitUrlFormat', async () => {
         const config = {
-          architecture: 'single' as const,
+          architecture: 'multi-repo' as const,
           repositories: [
             { id: 'main', name: 'repo', owner: 'org', description: 'Repo', createOnGitHub: false },
           ],
@@ -534,7 +491,7 @@ describe('github-multi-repo', () => {
         mockCreateSpecWeaveStructure.mockResolvedValueOnce(undefined);
 
         await promptGitHubSetupType('/project', 'ghp_token', 'github', 0, 'https');
-        expect(mockPromptStructure).toHaveBeenCalledWith('single', 'github', 'https');
+        expect(mockPromptStructure).toHaveBeenCalledWith('github-parent', 'github', 'https');
       });
     });
   });

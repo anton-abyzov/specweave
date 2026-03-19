@@ -193,7 +193,7 @@ specweave init . --brownfield
 
 **When**: Separate specs per team
 
-Multi-project mode is enabled during `specweave init` (with JIRA/ADO), via `specweave migrate-to-umbrella --reorganize-specs`, or manually in config.json.
+Multi-project mode is enabled during `specweave init` (with JIRA/ADO) or manually in config.json.
 
 ```
 # Structure:

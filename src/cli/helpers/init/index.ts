@@ -77,6 +77,7 @@ export {
 
 // Directory structure
 export {
+  createMinimalConfig,
   createDirectoryStructure,
   copyTemplates,
   createConfigFile,

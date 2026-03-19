@@ -57,19 +57,19 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
     lines.push(chalk.cyan('  Provider:  ') + `${options.provider.name} ${providerDetail}`.trim());
   }
 
-  // Project structure
-  if (options.umbrellaDiscovery) {
-    const d = options.umbrellaDiscovery;
-    lines.push(chalk.cyan('  Structure: ') + `Umbrella (${d.totalRepoCount} ${d.totalRepoCount === 1 ? 'repository' : 'repositories'})`);
-    const displayRepos = d.repos.slice(0, 10);
-    for (const repo of displayRepos) {
-      lines.push(chalk.gray(`    - ${repo.org}/${repo.name}`));
+  // Project structure — always "Workspace (N repositories)"
+  {
+    const repoCount = options.umbrellaDiscovery?.totalRepoCount ?? 0;
+    lines.push(chalk.cyan('  Structure: ') + `Workspace (${repoCount} ${repoCount === 1 ? 'repository' : 'repositories'})`);
+    if (options.umbrellaDiscovery) {
+      const displayRepos = options.umbrellaDiscovery.repos.slice(0, 10);
+      for (const repo of displayRepos) {
+        lines.push(chalk.gray(`    - ${repo.org}/${repo.name}`));
+      }
+      if (repoCount > 10) {
+        lines.push(chalk.gray(`    ... and ${repoCount - 10} more`));
+      }
     }
-    if (d.totalRepoCount > 10) {
-      lines.push(chalk.gray(`    ... and ${d.totalRepoCount - 10} more`));
-    }
-  } else {
-    lines.push(chalk.cyan('  Structure: ') + 'Single repository');
   }
 
   // Adapter info

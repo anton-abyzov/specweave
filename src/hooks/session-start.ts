@@ -24,6 +24,7 @@ import {
   appendLog,
 } from './platform.js';
 import { cleanOrphanedStateFiles } from '../utils/state-cleanup.js';
+import { cleanupStalePlugins } from '../utils/cleanup-stale-plugins.js';
 
 // Proper cross-platform URL-to-path conversion
 const __filename = fileURLToPath(import.meta.url);
@@ -63,6 +64,24 @@ async function main(): Promise<void> {
   const cleaned = cleanOrphanedStateFiles(stateDir);
   if (cleaned > 0) {
     appendLog(logFile, `Cleaned ${cleaned} orphaned state files`);
+  }
+
+  // v1.0.583: Clean up stale plugin references from settings on every session start.
+  // Prevents "Plugin not found in marketplace" errors for phantom entries
+  // (e.g., frontend@vskill) that linger in ~/.claude/settings.json after
+  // plugins are removed from a marketplace.
+  try {
+    const marketplacePath = path.join(projectRoot, 'node_modules', 'specweave', '.claude-plugin', 'marketplace.json');
+    const devMarketplacePath = path.join(__dirname, '..', '..', '.claude-plugin', 'marketplace.json');
+    const resolvedPath = fs.existsSync(marketplacePath) ? marketplacePath : devMarketplacePath;
+    if (fs.existsSync(resolvedPath)) {
+      const cleanupResult = await cleanupStalePlugins(resolvedPath, false);
+      if (cleanupResult.removedCount > 0) {
+        appendLog(logFile, `Cleaned ${cleanupResult.removedCount} stale plugin(s): ${cleanupResult.removedPlugins.join(', ')}`);
+      }
+    }
+  } catch {
+    // Non-blocking: cleanup errors don't abort session start
   }
 
   const distHooksDir = path.join(projectRoot, 'node_modules', 'specweave', 'dist', 'hooks');

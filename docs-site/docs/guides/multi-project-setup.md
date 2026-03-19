@@ -9,7 +9,7 @@ Complete guide to setting up and using SpecWeave's multi-project mode for enterp
 ## Table of Contents
 
 - [Overview](#overview)
-- [When to Use Multi-Project](#when-to-use-multi-project)
+- [Workspace Model](#workspace-model)
 - [Getting Started](#getting-started)
 - [How Project Routing Works](#how-project-routing-works)
 - [Project Structure](#project-structure)
@@ -22,7 +22,7 @@ Complete guide to setting up and using SpecWeave's multi-project mode for enterp
 
 ## Overview
 
-Multi-project mode allows you to organize SpecWeave documentation by project or team:
+Every SpecWeave workspace uses the `repositories/` structure, whether you have one repository or dozens. Multi-project mode allows you to organize documentation by project or team within this unified workspace:
 
 - **Specs** - Feature specifications per project
 - **Modules** - Module-level documentation per project
@@ -34,9 +34,9 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 ---
 
-## When to Use Multi-Project
+## Workspace Model
 
-### Single Project Mode (Default)
+### Default (Single Project)
 
 **Use when**:
 - Small projects or startups
@@ -54,7 +54,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 **Behavior**: Uses `projects/default/` automatically (transparent to you).
 
-### Multi-Project Mode
+### Multi-Project
 
 **Use when**:
 - Multiple teams or repos
@@ -77,7 +77,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 ## Getting Started
 
-Multi-project mode can be enabled in three ways:
+Multi-project mode can be enabled in two ways:
 
 ### Option 1: During `specweave init` with an Issue Tracker
 
@@ -88,21 +88,17 @@ specweave init my-project
 ```
 
 During the interactive setup, when you configure JIRA/ADO with multiple projects, SpecWeave:
-1. Sets `multiProject.enabled: true` in config.json
-2. Creates project folders under `.specweave/docs/internal/specs/`
-3. Maps each external project to a SpecWeave project
+1. Creates project folders under `.specweave/docs/internal/specs/`
+2. Maps each external project to a SpecWeave project
 
-### Option 2: Migrate an Existing Project
-
-If you already have a single-project setup and want to reorganize by project:
+After init, add repositories to your workspace with `specweave get`:
 
 ```bash
-specweave migrate-to-umbrella --reorganize-specs
+specweave get my-org/frontend
+specweave get my-org/backend
 ```
 
-This scans existing increments for `**Project**:` fields, builds a feature-to-project map, and moves spec folders into per-project directories. It also sets `multiProject.enabled = true` in config.
-
-### Option 3: Manual Configuration
+### Option 2: Manual Configuration
 
 Edit `.specweave/config.json` directly:
 
@@ -159,7 +155,7 @@ When you create an increment with `/sw:increment`, the PM skill adds a `**Projec
 SpecWeave resolves the target project using this priority chain:
 
 1. **Per-US `**Project**:` fields** in spec.md (highest priority)
-2. **`config.project.name`** in single-project mode
+2. **`config.project.name`** for single-project workspaces
 3. **Keyword matching** against registered projects
 4. **Fallback to "default"**
 
@@ -195,7 +191,7 @@ Living docs sync then places each spec in the correct project folder automatical
 │
 └── specs/                 # Per-project living docs
     │
-    ├── default/           # Default project (single-project mode)
+    ├── default/           # Default project
     │   ├── specs/         # Living docs specs
     │   │   ├── spec-001-user-auth.md
     │   │   └── spec-002-payments.md
@@ -319,7 +315,7 @@ The PM skill adds `**Project**:` to each user story during `/sw:increment`:
 
 ### 2-Level Structure (Projects + Boards)
 
-**When**: ADO area paths, JIRA boards, or umbrella with teams
+**When**: ADO area paths, JIRA boards, or workspace with teams
 
 The spec.md includes both project and board context:
 
@@ -544,10 +540,7 @@ specs/mobile-app/
 # Option A: Re-run init with issue tracker setup
 specweave init
 
-# Option B: Reorganize existing specs
-specweave migrate-to-umbrella --reorganize-specs
-
-# Option C: Edit config.json manually
+# Option B: Edit config.json manually
 # Set multiProject.enabled: true and define your projects
 ```
 
@@ -584,20 +577,6 @@ specweave migrate-to-umbrella --reorganize-specs
 
 ---
 
-## Migration from Single to Multi-Project
-
-```bash
-# Scan existing specs and reorganize by project
-specweave migrate-to-umbrella --reorganize-specs
-
-# This will:
-# 1. Scan all increments for **Project**: fields
-# 2. Move specs into per-project folders
-# 3. Set multiProject.enabled: true in config
-```
-
----
-
 ## See Also
 
 <CommandTabs
@@ -618,4 +597,4 @@ specweave migrate-to-umbrella --reorganize-specs
   other="sync-docs"
 />
 
-- `specweave migrate-to-umbrella` - CLI command for multi-repo setup
+- [Repository Selection Guide](./repository-selection) - Configure repository connections during init
