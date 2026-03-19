@@ -108,6 +108,12 @@ vi.mock('../../../src/sync/status-mapper.js', () => ({
   isProviderEnabled: mockIsProviderEnabled,
 }));
 
+// Mock reconciler lock
+vi.mock('../../../src/sync/reconciler-lock.js', () => ({
+  acquireLock: vi.fn().mockResolvedValue(true),
+  releaseLock: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock logger
 vi.mock('../../../src/utils/logger.js', () => ({
   consoleLogger: {
