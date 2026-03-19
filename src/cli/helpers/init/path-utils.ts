@@ -207,7 +207,7 @@ export function detectUmbrellaParent(targetDir: string): UmbrellaParentResult | 
     if (fs.existsSync(configPath)) {
       try {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        if (config?.repository?.umbrellaRepo) {
+        if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo) {
           return { umbrellaRoot: currentDir, reason: 'config-umbrella-repo' };
         }
       } catch {

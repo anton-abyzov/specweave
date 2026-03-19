@@ -12,6 +12,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { findAvailablePort } from '../../utils/docs-preview/server-manager.js';
 import type { DashboardLockFile } from '../../dashboard/types.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 const LOCK_FILE = path.join(process.env.HOME || '', '.specweave-dashboard.json');
 
@@ -21,7 +22,7 @@ export interface DashboardOptions {
 }
 
 export async function dashboardCommand(options: DashboardOptions = {}): Promise<void> {
-  const projectRoot = process.cwd();
+  const projectRoot = resolveEffectiveRoot();
   const specweavePath = path.join(projectRoot, '.specweave');
 
   if (!fs.existsSync(specweavePath)) {
