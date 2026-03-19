@@ -130,6 +130,12 @@ async function main() {
     console.log(`
 \u{1F504} Syncing ${featureId} to GitHub...`);
     const result = await sync.syncFeatureToGitHub(featureId);
+    if (result.rateLimitSkipped) {
+      console.log(`
+\u26A0\uFE0F  Sync skipped \u2014 GitHub API rate limit too low`);
+      console.log(`   \u{1F4A1} Run /sw:progress-sync to retry when rate limit resets`);
+      process.exit(2);
+    }
     console.log(`
 \u2705 Sync complete!`);
     console.log(`   \u{1F3AF} Milestone: #${result.milestoneNumber}`);
