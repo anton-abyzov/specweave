@@ -208,39 +208,6 @@ describe('LockManager', () => {
       expect(fs.existsSync(lockDir)).toBe(false);
     });
 
-    it('should skip when VSCODE_PID is set', async () => {
-      process.env.VSCODE_PID = '12345';
-      const logger = createSilentLogger();
-      const lm = new LockManager(lockDir, 300, { logger });
-
-      const acquired = await lm.acquire();
-
-      expect(acquired).toBe(true);
-      expect(fs.existsSync(lockDir)).toBe(false);
-    });
-
-    it('should skip when TERM_PROGRAM=vscode', async () => {
-      process.env.TERM_PROGRAM = 'vscode';
-      const logger = createSilentLogger();
-      const lm = new LockManager(lockDir, 300, { logger });
-
-      const acquired = await lm.acquire();
-
-      expect(acquired).toBe(true);
-      expect(fs.existsSync(lockDir)).toBe(false);
-    });
-
-    it('should skip when VSCODE_IPC_HOOK is set', async () => {
-      process.env.VSCODE_IPC_HOOK = '/tmp/some-ipc-hook';
-      const logger = createSilentLogger();
-      const lm = new LockManager(lockDir, 300, { logger });
-
-      const acquired = await lm.acquire();
-
-      expect(acquired).toBe(true);
-      expect(fs.existsSync(lockDir)).toBe(false);
-    });
-
     it('release should be a no-op when locks are skipped', async () => {
       process.env.CI = 'true';
       const logger = createSilentLogger();
@@ -260,8 +227,47 @@ describe('LockManager', () => {
       new LockManager(lockDir, 300, { logger });
 
       expect(logger.debug).toHaveBeenCalledWith(
-        'Lock manager disabled (VSCode/CI context)',
+        'Lock manager disabled (CI context)',
       );
+    });
+  });
+
+  describe('VSCode environment (locks NOT skipped)', () => {
+    it('should NOT skip locks when VSCODE_PID is set', async () => {
+      process.env.VSCODE_PID = '12345';
+      const logger = createSilentLogger();
+      const lm = new LockManager(lockDir, 300, { logger });
+
+      const result = await lm.acquire();
+      expect(result).toBe(true);
+      // Lock should be acquired (not skipped)
+      expect(fs.existsSync(lockDir)).toBe(true);
+
+      await lm.release();
+    });
+
+    it('should NOT skip locks when TERM_PROGRAM is vscode', async () => {
+      process.env.TERM_PROGRAM = 'vscode';
+      const logger = createSilentLogger();
+      const lm = new LockManager(lockDir, 300, { logger });
+
+      const result = await lm.acquire();
+      expect(result).toBe(true);
+      expect(fs.existsSync(lockDir)).toBe(true);
+
+      await lm.release();
+    });
+
+    it('should NOT skip locks when VSCODE_IPC_HOOK is set', async () => {
+      process.env.VSCODE_IPC_HOOK = '/tmp/some-ipc-hook';
+      const logger = createSilentLogger();
+      const lm = new LockManager(lockDir, 300, { logger });
+
+      const result = await lm.acquire();
+      expect(result).toBe(true);
+      expect(fs.existsSync(lockDir)).toBe(true);
+
+      await lm.release();
     });
   });
 
@@ -307,7 +313,7 @@ describe('LockManager', () => {
       await lm.release();
     });
 
-    it('should override VSCODE_PID skip', async () => {
+    it('should force locks even with VSCODE_PID set (already not skipped)', async () => {
       process.env.VSCODE_PID = '99999';
       process.env.SPECWEAVE_FORCE_LOCKS = '1';
       const logger = createSilentLogger();
@@ -328,7 +334,7 @@ describe('LockManager', () => {
       new LockManager(lockDir, 300, { logger });
 
       expect(logger.debug).not.toHaveBeenCalledWith(
-        'Lock manager disabled (VSCode/CI context)',
+        'Lock manager disabled (CI context)',
       );
     });
   });

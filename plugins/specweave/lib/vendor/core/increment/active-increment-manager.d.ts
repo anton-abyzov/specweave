@@ -106,7 +106,7 @@ export declare class ActiveIncrementManager {
         details: string[];
     };
     /**
-     * Write state file atomically (temp file → rename)
+     * Write state file atomically (temp file → rename) with file lock protection
      */
     private writeState;
     /**

@@ -374,7 +374,19 @@ async function printStartMessage(
   // Create auto-mode.json session marker (CRITICAL for stop hook to fire)
   const derivedProjectPath = projectPath || path.dirname(path.dirname(configPath));
   const stateDir = path.join(derivedProjectPath, '.specweave/state');
-  const autoModeFile = path.join(stateDir, 'auto-mode.json');
+
+  // Per-session auto-mode.json when CLAUDE_SESSION_ID is available
+  const sessionId = process.env.CLAUDE_SESSION_ID;
+  let autoModeFile: string;
+  if (sessionId) {
+    const sessionDir = path.join(stateDir, 'sessions', sessionId);
+    if (!fs.existsSync(sessionDir)) {
+      fs.mkdirSync(sessionDir, { recursive: true });
+    }
+    autoModeFile = path.join(sessionDir, 'auto-mode.json');
+  } else {
+    autoModeFile = path.join(stateDir, 'auto-mode.json');
+  }
 
   try {
     if (!fs.existsSync(stateDir)) {
@@ -390,9 +402,16 @@ async function printStartMessage(
       userGoal: null as string | null,
       successCriteria: successCriteria,
       successSummary: successSummary,
+      sessionId: sessionId || undefined,
     };
 
     fs.writeFileSync(autoModeFile, JSON.stringify(sessionMarker, null, 2));
+
+    // Also write to global path as fallback (survives /resume which creates new session_id)
+    if (sessionId) {
+      const globalAutoModeFile = path.join(stateDir, 'auto-mode.json');
+      fs.writeFileSync(globalAutoModeFile, JSON.stringify(sessionMarker, null, 2));
+    }
   } catch (err) {
     // Non-fatal - continue even if we can't write the marker
     console.log(chalk.yellow('⚠️  Could not create session marker: ' + (err instanceof Error ? err.message : String(err))));

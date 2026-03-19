@@ -20,11 +20,13 @@ import {
   findProjectRoot,
   spawnNodeBackground,
   outputHookResult,
-  parseHookInput,
+  consumeStdin,
   appendLog,
 } from './platform.js';
+import type { HookInput } from './platform.js';
 import { cleanOrphanedStateFiles } from '../utils/state-cleanup.js';
 import { cleanupStalePlugins } from '../utils/cleanup-stale-plugins.js';
+import { createSessionDir, bridgeSessionId, gcDeadSessions } from '../core/session/session-state-manager.js';
 
 // Proper cross-platform URL-to-path conversion
 const __filename = fileURLToPath(import.meta.url);
@@ -55,7 +57,11 @@ async function main(): Promise<void> {
   }
 
   // Consume stdin (required by hook protocol)
-  const hookInput = await parseHookInput();
+  const rawStdin = await consumeStdin();
+  let hookInput: HookInput = {};
+  if (rawStdin && rawStdin.trim()) {
+    try { hookInput = JSON.parse(rawStdin) as HookInput; } catch { /* ignore */ }
+  }
 
   const logFile = path.join(projectRoot, '.specweave', 'logs', 'session-start.log');
 
@@ -69,7 +75,6 @@ async function main(): Promise<void> {
   // v0.608: Per-session state isolation
   if (hookInput.session_id) {
     try {
-      const { createSessionDir, bridgeSessionId, gcDeadSessions } = await import('../core/session/session-state-manager.js');
       createSessionDir(hookInput.session_id, projectRoot);
       if (hookInput.env_file) {
         bridgeSessionId(hookInput.session_id, hookInput.env_file);
