@@ -12,6 +12,7 @@ import {
   detectUmbrellaStructure,
   loadFromCloneJob,
   loadFromUmbrellaConfig,
+  loadFromWorkspaceConfig,
   scanForChildRepos,
   persistUmbrellaConfig,
   type UmbrellaConfig,
@@ -188,6 +189,90 @@ describe('umbrella-detector', () => {
       const result = await loadFromUmbrellaConfig(testDir);
 
       expect(result.isUmbrella).toBe(false);
+    });
+  });
+
+  describe('loadFromWorkspaceConfig', () => {
+    it('should load repos from config.json workspace.repos', async () => {
+      const config = {
+        workspace: {
+          name: 'test-workspace',
+          repos: [
+            { id: 'repo-one', path: 'repositories/org/repo-one', name: 'repo-one', prefix: 'R1' },
+            { id: 'repo-two', path: 'repositories/org/repo-two', name: 'repo-two', prefix: 'R2' },
+          ],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testDir, '.specweave', 'config.json'),
+        JSON.stringify(config)
+      );
+
+      // Create the repos on disk
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'repo-one'), { recursive: true });
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'repo-two'), { recursive: true });
+
+      const result = await loadFromWorkspaceConfig(testDir);
+
+      expect(result.isUmbrella).toBe(true);
+      expect(result.source).toBe('config');
+      expect(result.modules.length).toBe(2);
+      expect(result.config?.childRepos.length).toBe(2);
+    });
+
+    it('should return empty for missing workspace section', async () => {
+      const config = { project: { name: 'test' } };
+      fs.writeFileSync(
+        path.join(testDir, '.specweave', 'config.json'),
+        JSON.stringify(config)
+      );
+
+      const result = await loadFromWorkspaceConfig(testDir);
+
+      expect(result.isUmbrella).toBe(false);
+    });
+
+    it('should return empty for empty workspace.repos array', async () => {
+      const config = { workspace: { name: 'test', repos: [] } };
+      fs.writeFileSync(
+        path.join(testDir, '.specweave', 'config.json'),
+        JSON.stringify(config)
+      );
+
+      const result = await loadFromWorkspaceConfig(testDir);
+
+      expect(result.isUmbrella).toBe(false);
+    });
+
+    it('should prioritize workspace over legacy umbrella in detection chain', async () => {
+      const config = {
+        workspace: {
+          name: 'test-workspace',
+          repos: [
+            { id: 'ws-repo', path: 'repositories/org/ws-repo', name: 'ws-repo', prefix: 'WS' },
+          ],
+        },
+        umbrella: {
+          enabled: true,
+          childRepos: [
+            { id: 'umb-repo', path: 'repositories/org/umb-repo', name: 'umb-repo' },
+          ],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testDir, '.specweave', 'config.json'),
+        JSON.stringify(config)
+      );
+
+      // Create only workspace repo on disk
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'ws-repo'), { recursive: true });
+
+      const result = await detectUmbrellaStructure(testDir);
+
+      expect(result.isUmbrella).toBe(true);
+      expect(result.source).toBe('config');
+      // Should find workspace repo, not umbrella repo
+      expect(result.config?.childRepos.some(r => r.id === 'ws-repo')).toBe(true);
     });
   });
 

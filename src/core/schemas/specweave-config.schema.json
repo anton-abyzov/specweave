@@ -323,7 +323,7 @@
     },
     "multiProject": {
       "type": "object",
-      "description": "Multi-project configuration for internal docs organization",
+      "description": "DEPRECATED: Use workspace instead. Multi-project configuration for internal docs organization.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -636,21 +636,21 @@
           "properties": {
             "unit": {
               "type": "number",
-              "description": "Unit test coverage target",
+              "description": "Unit test line coverage target (Istanbul/c8 percentage)",
               "minimum": 0,
               "maximum": 100,
               "default": 80
             },
             "integration": {
               "type": "number",
-              "description": "Integration test coverage target",
+              "description": "Integration test line coverage target (Istanbul/c8 percentage)",
               "minimum": 0,
               "maximum": 100,
-              "default": 60
+              "default": 70
             },
             "e2e": {
               "type": "number",
-              "description": "E2E test coverage target (critical paths)",
+              "description": "E2E test pass-rate target (percentage of written Playwright tests that must pass, not line coverage)",
               "minimum": 0,
               "maximum": 100,
               "default": 100
@@ -1149,9 +1149,137 @@
       },
       "additionalProperties": false
     },
+    "workspace": {
+      "type": "object",
+      "description": "Unified workspace configuration (v3.0). Replaces umbrella, multiProject, and projectMappings.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Workspace display name",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "rootRepo": {
+          "type": "object",
+          "description": "Sync targets for the root/umbrella repo itself",
+          "properties": {
+            "github": {
+              "type": "object",
+              "properties": {
+                "owner": { "type": "string", "minLength": 1 },
+                "repo": { "type": "string", "minLength": 1 },
+                "direction": { "type": "string", "enum": ["import", "export", "bidirectional"] }
+              },
+              "required": ["owner", "repo"],
+              "additionalProperties": false
+            },
+            "jira": {
+              "type": "object",
+              "properties": {
+                "projectKey": { "type": "string", "minLength": 1 },
+                "domain": { "type": "string" }
+              },
+              "required": ["projectKey"],
+              "additionalProperties": false
+            },
+            "ado": {
+              "type": "object",
+              "properties": {
+                "organization": { "type": "string" },
+                "project": { "type": "string", "minLength": 1 }
+              },
+              "required": ["project"],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "repos": {
+          "type": "array",
+          "description": "All repos in this workspace",
+          "items": {
+            "type": "object",
+            "description": "A repository within the workspace",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Repo identifier — MUST match canonical source name",
+                "pattern": "^[a-z0-9-]+$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "path": {
+                "type": "string",
+                "description": "Path to repo (relative or absolute)"
+              },
+              "prefix": {
+                "type": "string",
+                "description": "User story prefix for US-{PREFIX}-001 format",
+                "minLength": 1,
+                "maxLength": 10
+              },
+              "name": {
+                "type": "string",
+                "description": "Display name (defaults to id)",
+                "maxLength": 128
+              },
+              "techStack": {
+                "type": "array",
+                "description": "Tech stack keywords",
+                "items": { "type": "string" }
+              },
+              "role": {
+                "type": "string",
+                "description": "Repository role",
+                "enum": ["frontend", "backend", "mobile", "infra", "shared", "other"]
+              },
+              "sync": {
+                "type": "object",
+                "description": "Sync targets for this repo",
+                "properties": {
+                  "github": {
+                    "type": "object",
+                    "properties": {
+                      "owner": { "type": "string", "minLength": 1 },
+                      "repo": { "type": "string", "minLength": 1 },
+                      "direction": { "type": "string", "enum": ["import", "export", "bidirectional"] }
+                    },
+                    "required": ["owner", "repo"],
+                    "additionalProperties": false
+                  },
+                  "jira": {
+                    "type": "object",
+                    "properties": {
+                      "projectKey": { "type": "string", "minLength": 1 },
+                      "domain": { "type": "string" }
+                    },
+                    "required": ["projectKey"],
+                    "additionalProperties": false
+                  },
+                  "ado": {
+                    "type": "object",
+                    "properties": {
+                      "organization": { "type": "string" },
+                      "project": { "type": "string", "minLength": 1 }
+                    },
+                    "required": ["project"],
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["id", "path", "prefix"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["name", "repos"],
+      "additionalProperties": false
+    },
     "projectMappings": {
       "type": "object",
-      "description": "Cross-project targeting: Map project IDs to external tool targets (v0.33.0+). Allows per-US sync to different repos/projects.",
+      "description": "DEPRECATED: Use workspace.repos[].sync instead. Cross-project targeting (v0.33.0+).",
       "patternProperties": {
         "^[a-z0-9-]+$": {
           "type": "object",

@@ -19,6 +19,7 @@ import {
   createIncrementTemplates,
   isTemplateFile,
   validateSpecCompletion,
+  detectProjectFromCwd,
   TEMPLATE_MARKERS,
 } from '../../../../src/core/increment/template-creator.js';
 
@@ -537,6 +538,162 @@ Some requirements.
       expect(TEMPLATE_MARKERS.BRACKET_PLACEHOLDER.test('[Story Title]')).toBe(true);
       expect(TEMPLATE_MARKERS.BRACKET_PLACEHOLDER.test('[user type]')).toBe(true);
       expect(TEMPLATE_MARKERS.BRACKET_PLACEHOLDER.test('no brackets')).toBe(false);
+    });
+  });
+
+  describe('detectProjectFromCwd (workspace-aware, T-045)', () => {
+    it('should match CWD to workspace.repos[].path and return repo id', () => {
+      const config = {
+        workspace: {
+          name: 'my-workspace',
+          repos: [
+            { id: 'frontend', path: 'repositories/org/frontend' },
+            { id: 'backend', path: 'repositories/org/backend' },
+          ],
+        },
+      };
+      const projectRoot = '/projects/umbrella';
+      const cwd = '/projects/umbrella/repositories/org/frontend/src';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('frontend');
+    });
+
+    it('should return workspace.name when CWD does not match any repo', () => {
+      const config = {
+        workspace: {
+          name: 'my-workspace',
+          repos: [
+            { id: 'frontend', path: 'repositories/org/frontend' },
+          ],
+        },
+      };
+      const projectRoot = '/projects/umbrella';
+      const cwd = '/projects/umbrella/some-other-dir';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('my-workspace');
+    });
+
+    it('should return workspace.name for single-project workspace (0 repos)', () => {
+      const config = {
+        workspace: {
+          name: 'solo-app',
+          repos: [],
+        },
+      };
+      const projectRoot = '/projects/solo';
+      const cwd = '/projects/solo/src';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('solo-app');
+    });
+
+    it('should return workspace.name for single-project workspace (1 repo)', () => {
+      const config = {
+        workspace: {
+          name: 'solo-app',
+          repos: [
+            { id: 'main', path: 'repositories/org/main' },
+          ],
+        },
+      };
+      const projectRoot = '/projects/solo';
+      const cwd = '/projects/solo';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('solo-app');
+    });
+
+    it('should use longest prefix match for overlapping repo paths', () => {
+      const config = {
+        workspace: {
+          name: 'my-workspace',
+          repos: [
+            { id: 'mono', path: 'repositories/org/mono' },
+            { id: 'mono-api', path: 'repositories/org/mono/packages/api' },
+          ],
+        },
+      };
+      const projectRoot = '/projects/umbrella';
+      const cwd = '/projects/umbrella/repositories/org/mono/packages/api/src';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('mono-api');
+    });
+
+    it('should return workspace.name when config has no workspace section', () => {
+      const config = {};
+      const projectRoot = '/projects/solo';
+      const cwd = '/projects/solo/src';
+
+      // No workspace → return undefined (no workspace.name to use)
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBeUndefined();
+    });
+
+    it('should NOT require umbrella.enabled gate', () => {
+      // This test verifies the old umbrella.enabled guard is removed
+      const config = {
+        workspace: {
+          name: 'my-workspace',
+          repos: [
+            { id: 'frontend', path: 'repositories/org/frontend' },
+          ],
+        },
+        // No umbrella.enabled — should still work
+      };
+      const projectRoot = '/projects/umbrella';
+      const cwd = '/projects/umbrella/repositories/org/frontend';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('frontend');
+    });
+
+    it('should match CWD exactly at repo root', () => {
+      const config = {
+        workspace: {
+          name: 'my-workspace',
+          repos: [
+            { id: 'frontend', path: 'repositories/org/frontend' },
+          ],
+        },
+      };
+      const projectRoot = '/projects/umbrella';
+      const cwd = '/projects/umbrella/repositories/org/frontend';
+
+      const result = detectProjectFromCwd(config, cwd, projectRoot);
+      expect(result).toBe('frontend');
+    });
+  });
+
+  describe('createIncrementTemplates always populates metadata.project (T-041)', () => {
+    it('should set metadata.project from workspace config without umbrella.enabled', async () => {
+      // Write a config.json with workspace section (no umbrella.enabled)
+      const configDir = path.join(tempDir, '.specweave');
+      fs.writeFileSync(
+        path.join(configDir, 'config.json'),
+        JSON.stringify({
+          workspace: {
+            name: 'test-workspace',
+            repos: [],
+          },
+        }),
+      );
+
+      const result = await createIncrementTemplates({
+        incrementId: '0001-test-feature',
+        title: 'Test Feature',
+        description: 'A test feature',
+        projectId: 'test-project',
+        projectRoot: tempDir,
+      });
+
+      expect(result.success).toBe(true);
+      const metadataPath = path.join(incrementsPath, '0001-test-feature', 'metadata.json');
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      // Should auto-populate project from workspace.name
+      expect(metadata.project).toBe('test-workspace');
     });
   });
 

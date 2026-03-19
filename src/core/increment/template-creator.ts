@@ -285,16 +285,14 @@ export async function createIncrementTemplates(
       };
     }
 
-    // Auto-populate project field for umbrella sync routing
+    // Auto-populate project field for sync routing — always attempt, no flag gate
     try {
       const configPath = path.join(projectRoot, '.specweave', 'config.json');
       if (fs.existsSync(configPath)) {
         const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        if (rawConfig.umbrella?.enabled) {
-          const detectedProject = detectProjectFromCwd(rawConfig.umbrella, process.cwd(), projectRoot);
-          if (detectedProject) {
-            metadata.project = detectedProject;
-          }
+        const detectedProject = detectProjectFromCwd(rawConfig, process.cwd(), projectRoot);
+        if (detectedProject) {
+          metadata.project = detectedProject;
         }
       }
     } catch {
@@ -391,31 +389,31 @@ export async function createIncrementTemplates(
 }
 
 /**
- * Detect project from current working directory in umbrella mode.
+ * Detect project from current working directory using workspace config.
  *
- * Uses childRepos[].path matching to determine which child repo
- * the cwd belongs to, enabling sync routing Phase 1 activation.
+ * Always attempts to match CWD against workspace.repos[].path.
+ * No boolean flag gate — the repos array IS the config.
  *
- * @param umbrellaConfig - The umbrella section of config.json
+ * @param config - Config object with optional workspace section
  * @param cwd - Current working directory
- * @param umbrellaRoot - Umbrella project root path
- * @returns Child repo ID, umbrella projectName, or undefined
+ * @param projectRoot - Project root path
+ * @returns Matching repo ID, workspace.name as default, or undefined
  */
 export function detectProjectFromCwd(
-  umbrellaConfig: { enabled?: boolean; projectName?: string; childRepos?: Array<{ id: string; path: string; disabled?: boolean }> } | undefined,
+  config: { workspace?: { name?: string; repos?: Array<{ id: string; path: string }> } } | undefined,
   cwd: string,
-  umbrellaRoot: string,
+  projectRoot: string,
 ): string | undefined {
-  if (!umbrellaConfig?.enabled) return undefined;
+  if (!config?.workspace) return undefined;
 
   const resolvedCwd = path.resolve(cwd);
-  const childRepos = umbrellaConfig.childRepos ?? [];
+  const repos = config.workspace.repos ?? [];
 
   // Longest prefix match for overlapping repo paths
   let bestMatch: { id: string; pathLength: number } | undefined;
 
-  for (const repo of childRepos) {
-    const repoAbsPath = path.resolve(umbrellaRoot, repo.path);
+  for (const repo of repos) {
+    const repoAbsPath = path.resolve(projectRoot, repo.path);
     if (resolvedCwd === repoAbsPath || resolvedCwd.startsWith(repoAbsPath + path.sep)) {
       if (!bestMatch || repoAbsPath.length > bestMatch.pathLength) {
         bestMatch = { id: repo.id, pathLength: repoAbsPath.length };
@@ -425,8 +423,8 @@ export function detectProjectFromCwd(
 
   if (bestMatch) return bestMatch.id;
 
-  // cwd at umbrella root or outside any child repo
-  return umbrellaConfig.projectName;
+  // CWD at project root or outside any repo — return workspace name
+  return config.workspace.name;
 }
 
 /**
