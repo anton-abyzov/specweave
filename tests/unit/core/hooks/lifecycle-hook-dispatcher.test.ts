@@ -140,6 +140,7 @@ describe('LifecycleHookDispatcher', () => {
             sync_tasks_md: true,
           },
         },
+        sync: { mode: 'immediate' },
       });
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
 
@@ -155,6 +156,7 @@ describe('LifecycleHookDispatcher', () => {
             external_tracker_sync: true,
           },
         },
+        sync: { mode: 'immediate' },
       });
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
 
@@ -191,6 +193,7 @@ describe('LifecycleHookDispatcher', () => {
             sync_living_docs: true,
           },
         },
+        sync: { mode: 'immediate' },
       });
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
 
@@ -206,6 +209,7 @@ describe('LifecycleHookDispatcher', () => {
             close_github_issue: true,
           },
         },
+        sync: { mode: 'immediate' },
       });
       mocks.mockSyncIncrementClosure.mockResolvedValue({
         success: true,
@@ -225,6 +229,7 @@ describe('LifecycleHookDispatcher', () => {
             sync_living_docs: true,
           },
         },
+        sync: { mode: 'immediate' },
       });
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
 
@@ -246,6 +251,7 @@ describe('LifecycleHookDispatcher', () => {
             update_living_docs_first: true,
           },
         },
+        sync: { mode: 'immediate' },
       });
 
       mocks.mockSyncIncrement.mockImplementation(async () => {
