@@ -121,7 +121,7 @@ const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
 }));
 
 const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace } = vi.hoisted(() => ({
-  mockPromptProjectSetup: vi.fn().mockResolvedValue('existing' as const),
+  mockPromptProjectSetup: vi.fn().mockResolvedValue('add-later' as const),
   mockPromptRepoUrls: vi.fn().mockResolvedValue([]),
   mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));
@@ -331,7 +331,7 @@ describe('AC-US6-03: init config never contains multiProject.enabled', () => {
       repositoriesDir: 'repositories',
     });
 
-    mockPromptProjectSetup.mockResolvedValue('scratch');
+    mockPromptProjectSetup.mockResolvedValue('add-later');
 
     await initCommand('.', { adapter: 'claude' });
 
@@ -379,7 +379,7 @@ describe('AC-US6-03: init config never contains multiProject.enabled', () => {
       writtenConfig = data;
     });
 
-    mockPromptProjectSetup.mockResolvedValue('multi-repo-deferred');
+    mockPromptProjectSetup.mockResolvedValue('add-later');
 
     await initCommand('.', { adapter: 'claude' });
 

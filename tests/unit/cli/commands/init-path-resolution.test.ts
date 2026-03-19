@@ -185,7 +185,7 @@ vi.mock('../../../../src/utils/logger.js', () => ({
 vi.mock('@inquirer/prompts', () => ({
   input: mockInput,
   confirm: mockConfirm,
-  select: vi.fn().mockResolvedValue('existing'),
+  select: vi.fn().mockResolvedValue('add-later'),
 }));
 
 vi.mock('chalk', () => {
@@ -254,7 +254,7 @@ vi.mock('../../../../src/cli/helpers/init/summary-banner.js', () => ({
 }));
 
 vi.mock('../../../../src/cli/helpers/init/repo-connect.js', () => ({
-  promptProjectSetup: vi.fn().mockResolvedValue('existing'),
+  promptProjectSetup: vi.fn().mockResolvedValue('add-later'),
   promptRepoUrls: vi.fn().mockResolvedValue([]),
   cloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));

@@ -165,45 +165,18 @@ How will you organize work?
 
 ---
 
-### Phase 6: Repository Selection (Multi-Repo Only)
-
-**Triggers when**: You have 3+ repositories
+### Phase 6: Repository Connection
 
 **Questions**:
 ```
-How many repositories are in this project?
-  ○ Single repository (monorepo)
-  ○ 2-5 repositories
-  ● 10+ repositories                     ← Selected
-
-How would you like to select repositories?
-  ● Pattern-based (prefix, keyword, org)  ← RECOMMENDED for 10+ repos
-  ○ All repositories from my GitHub account
-  ○ Manual selection (enter each URL)
-
-What's the repository naming pattern?
-  Examples:
-  - Prefix: "myapp-" (myapp-frontend, myapp-backend, myapp-api)
-  - Owner: "my-company" (all repos from GitHub org)
-  - Keyword: "service" (all repos containing "service")
-
-  Your pattern: myapp-
-
-Preview: Found 12 repositories matching "myapp-*"
-  • myapp-frontend (TypeScript, 145 stars, updated 2 days ago)
-  • myapp-backend (Node.js, 89 stars, updated 1 week ago)
-  • myapp-api (TypeScript, 67 stars, updated 3 days ago)
-  ... (9 more)
-
-Exclude any repositories? (optional)
-  Examples: deprecated, archived, old, legacy
-
-  Your exclusions: deprecated, archived
-
-Final selection: 10 repositories (excluded 2)
+How would you like to connect repositories?
+  ● Connect repositories (clone from GitHub, Bitbucket, or Azure DevOps)
+  ○ Add later (start without repositories)
 ```
 
-**Time Saved**: ~5 minutes (vs manual entry of 10 URLs)
+If you choose **Connect repositories**, you'll be prompted for repository URLs or organization details. SpecWeave clones them into the `repositories/` directory and configures the workspace automatically.
+
+If you choose **Add later**, SpecWeave creates a minimal workspace and you can connect repositories at any time using `specweave init` or `/sw:sync-setup`.
 
 ---
 

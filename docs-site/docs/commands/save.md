@@ -81,13 +81,13 @@ Summary:
   Skipped: 1 (no changes)
 ```
 
-### Single Repo Mode
+### Workspace Mode (Single Repository)
 
 ```
 /sw:save "chore: Update dependencies"
 
 Scanning for repositories...
-Mode: Single repository
+Mode: Workspace (1 repository)
 Repository: my-project (.)
 
 my-project:
