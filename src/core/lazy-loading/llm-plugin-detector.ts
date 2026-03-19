@@ -185,31 +185,31 @@ export const VSKILL_PLUGIN_REGISTRY: Record<string, VskillPluginEntry> = {
     keywords: ['testflight', 'app store', 'play store', 'react native', 'react-native', 'expo', 'mobile app', 'flutter', 'xcode', 'cocoapods', 'fastlane', 'app-store-connect', 'app deployment'],
     shortKeywords: ['ios', 'apk'],
     description: 'App Store, TestFlight, mobile CI/CD',
-    installCommand: 'vskill install anton-abyzov/vskill --plugin mobile',
+    installCommand: 'vskill i anton-abyzov/vskill/appstore',
   },
   'google-workspace': {
     keywords: ['google sheets', 'google docs', 'google drive', 'google slides', 'google calendar', 'google workspace', 'gmail api', 'sheets api'],
     shortKeywords: [],
     description: 'Gmail, Drive, Sheets, Docs, Calendar',
-    installCommand: 'vskill install anton-abyzov/vskill --plugin google-workspace',
+    installCommand: 'vskill i anton-abyzov/vskill/gws',
   },
   marketing: {
     keywords: ['linkedin', 'instagram', 'social media', 'twitter', 'facebook', 'tiktok', 'content marketing', 'social post', 'blog post', 'newsletter', 'slack messaging'],
     shortKeywords: [],
     description: 'Social media posting, Slack messaging',
-    installCommand: 'vskill install anton-abyzov/vskill --plugin marketing',
+    installCommand: 'vskill i anton-abyzov/vskill/slack-messaging',
   },
   productivity: {
     keywords: ['notion', 'todoist', 'trello', 'asana', 'monday.com', 'obsidian', 'time tracking', 'project management', 'task management'],
     shortKeywords: [],
     description: 'Notion, Todoist, Trello, Asana, Obsidian',
-    installCommand: 'vskill install anton-abyzov/vskill --plugin productivity',
+    installCommand: 'vskill i anton-abyzov/vskill/survey-passing',
   },
   skills: {
     keywords: ['find plugin', 'search plugin', 'discover skill', 'browse marketplace', 'vskill search', 'plugin search'],
     shortKeywords: [],
     description: 'Skill discovery and installation',
-    installCommand: 'vskill install anton-abyzov/vskill --plugin skills',
+    installCommand: 'vskill i anton-abyzov/vskill/scout',
   },
 };
 
