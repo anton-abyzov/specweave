@@ -4,9 +4,17 @@ title: Use Case Guide
 description: Find the right skill or command for your task
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Use Case Guide
 
-Find the right SpecWeave skill or command for what you're trying to do. Every skill supports three invocation methods -- natural language, slash commands, and CLI keywords.
+Find the right SpecWeave skill or command for what you're trying to do. Every skill supports three invocation methods:
+
+<CommandTabs
+  natural="Let's build a checkout flow"
+  claude='sw:increment "Build checkout flow"'
+  other='increment "Build checkout flow"'
+/>
 
 ## "I want to..." Quick Lookup
 

@@ -4,6 +4,8 @@ description: "The definitive guide to Claude Code skills, plugins, and marketpla
 keywords: [skills, plugins, marketplace, SKILL.md, plugin.json, marketplace.json, claude code, fundamentals]
 ---
 
+import CommandTabs from '@site/src/components/CommandTabs';
+
 # Skills, Plugins & Marketplaces Explained
 
 There's a lot of confusion around skills, plugins, and marketplaces in Claude Code. This guide clears it up with a practical lens — including how SpecWeave uses all three at scale.
@@ -104,27 +106,15 @@ Deploy $ARGUMENTS to production:
 
 Skills can be triggered three ways:
 
-**1. Natural language** (easiest) -- just describe what you want:
+**1. Natural language** (easiest) — just describe what you want and Claude matches the right skill.
+**2. Slash command** (precise) — type `/skill-name` in Claude Code.
+**3. CLI keyword** (cross-tool) — type the skill name in Cursor, Copilot, and other AI tools.
 
-```
-"Let's design the authentication architecture"
-         ↓
-Claude matches "architecture" → sw:architect skill activates
-```
-
-**2. Slash command** (precise) -- type `/skill-name` in Claude Code:
-
-```
-sw:architect
-/deploy staging
-```
-
-**3. CLI keyword** (cross-tool) -- type the skill name in Cursor, Copilot, and other AI tools:
-
-```
-architect
-deploy staging
-```
+<CommandTabs
+  natural="Let's design the authentication architecture"
+  claude='sw:architect'
+  other='architect'
+/>
 
 ### Controlling Who Can Invoke
 
