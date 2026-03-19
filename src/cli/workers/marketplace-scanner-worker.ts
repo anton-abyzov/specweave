@@ -32,6 +32,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { checkBudget } from '../../sync/github-rate-limit-budget.js';
+
+const BUDGET_STATE_FILENAME = 'github-rate-limit.json';
 
 /** Default marketplace scanner config */
 const DEFAULT_SCANNER_CONFIG = {
@@ -117,7 +120,30 @@ export async function scanGitHub(
   }>;
   rateLimit: RateLimitInfo;
   nextCursor: string;
+  budgetSkipped?: boolean;
 }> {
+  // Check rate limit budget before making any API calls.
+  // Fail-OPEN: only gate on budget if state file exists (scanner has its own reactive 403 handling).
+  if (config.projectPath) {
+    const budgetFile = path.join(config.projectPath, '.specweave', 'state', BUDGET_STATE_FILENAME);
+    try {
+      if (fs.existsSync(budgetFile)) {
+        const hasBudget = await checkBudget(config.projectPath);
+        if (!hasBudget) {
+          log('Rate limit budget exhausted, skipping scan cycle');
+          return {
+            repos: [],
+            rateLimit: { remaining: 0, reset: 0 },
+            nextCursor: config.checkpoint?.lastCursor || '1',
+            budgetSkipped: true,
+          };
+        }
+      }
+    } catch {
+      // Budget check failed — proceed with reactive rate limit handling
+    }
+  }
+
   const headers: Record<string, string> = {
     'Accept': 'application/vnd.github.v3+json',
     'User-Agent': 'specweave-marketplace-scanner',

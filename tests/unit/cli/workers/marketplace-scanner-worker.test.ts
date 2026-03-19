@@ -299,5 +299,53 @@ describe('marketplace-scanner-worker', () => {
       expect(result.rateLimit.remaining).toBe(25);
       expect(result.rateLimit.reset).toBe(1700000000);
     });
+
+    it('skips scan when rate limit budget is exhausted', async () => {
+      // Write a budget state file with low remaining
+      const budgetDir = path.join(testDir, '.specweave', 'state');
+      fs.mkdirSync(budgetDir, { recursive: true });
+      fs.writeFileSync(path.join(budgetDir, 'github-rate-limit.json'), JSON.stringify({
+        remaining: 50,
+        limit: 5000,
+        resetAt: new Date(Date.now() + 3600_000).toISOString(),
+        lastChecked: new Date().toISOString(),
+        callsSinceValidation: 0,
+      }));
+
+      const responseData = makeGitHubResponse([{ full_name: 'user/should-not-reach' }]);
+      mockFetchSuccess(responseData);
+
+      const config = makeJobConfig({ projectPath: testDir });
+      const result = await scanGitHub(config as any, 'test-token', mockLog);
+
+      // Should return empty repos and a budgetSkipped flag
+      expect(result.repos).toHaveLength(0);
+      expect(result.budgetSkipped).toBe(true);
+      // fetch should NOT have been called (budget check prevented it)
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+    });
+
+    it('proceeds with scan when rate limit budget is available', async () => {
+      // Write a budget state file with sufficient remaining
+      const budgetDir = path.join(testDir, '.specweave', 'state');
+      fs.mkdirSync(budgetDir, { recursive: true });
+      fs.writeFileSync(path.join(budgetDir, 'github-rate-limit.json'), JSON.stringify({
+        remaining: 4500,
+        limit: 5000,
+        resetAt: new Date(Date.now() + 3600_000).toISOString(),
+        lastChecked: new Date().toISOString(),
+        callsSinceValidation: 0,
+      }));
+
+      const responseData = makeGitHubResponse([{ full_name: 'user/test-repo' }]);
+      mockFetchSuccess(responseData);
+
+      const config = makeJobConfig({ projectPath: testDir });
+      const result = await scanGitHub(config as any, 'test-token', mockLog);
+
+      // Should proceed normally
+      expect(result.repos.length).toBeGreaterThan(0);
+      expect(result.budgetSkipped).toBeUndefined();
+    });
   });
 });
