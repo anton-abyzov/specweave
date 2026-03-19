@@ -130,7 +130,7 @@
       "header": "🎯 다음 단계:",
       "cd": "cd {{projectName}}",
       "footer": "🚀 SpecWeave 로 빌드할 준비가 되었습니다!",
-      "docsLink": "문서: https://verified-skill.com",
+      "docsLink": "문서: https://spec-weave.com",
       "githubLink": "GitHub: https://github.com/anton-abyzov/specweave",
       "claude": {
         "step1": "이 디렉터리에서 Claude Code 를 열어 주십시오",

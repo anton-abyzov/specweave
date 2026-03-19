@@ -412,7 +412,7 @@ npm run rebuild
 
 If these solutions don't work:
 
-1. **Check GitHub Issues**: [github.com/spec-weave/specweave/issues](https://github.com/spec-weave/specweave/issues)
+1. **Check GitHub Issues**: [github.com/anton-abyzov/specweave/issues](https://github.com/anton-abyzov/specweave/issues)
 2. **Report New Issue**: Include:
    - SpecWeave version (`specweave --version`)
    - Node.js version (`node --version`)

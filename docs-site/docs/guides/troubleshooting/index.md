@@ -56,7 +56,7 @@ SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or force sy
 ## Getting Help
 
 1. Check this documentation
-2. Search [GitHub Issues](https://github.com/spec-weave/specweave/issues)
+2. Search [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
 3. Report new issues with:
    - SpecWeave version
    - Node.js version

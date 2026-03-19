@@ -132,7 +132,7 @@ if (!isVersionSatisfied(CURRENT_NODE_VERSION, MIN_NODE_VERSION)) {
   console.error(getUpgradeInstructions());
   console.error('');
   console.error(`${BOLD}Full guide:${RESET}`);
-  console.error(`  ${CYAN}${UNDERLINE}https://verified-skill.com/docs/guides/troubleshooting/common-errors#node-version-error${RESET}`);
+  console.error(`  ${CYAN}${UNDERLINE}https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error${RESET}`);
   console.error('');
   console.error(`${DIM}After upgrading, verify with: node --version${RESET}`);
   console.error('');
@@ -334,17 +334,17 @@ program
     await abandonCommand(incrementId, options);
   });
 
-// Complete command - Mark increment as complete (triggers external sync)
+// Complete command - Mark increment(s) as complete (triggers external sync)
 program
-  .command('complete <increment-id>')
+  .command('complete <increment-id> [more-ids...]')
   .alias('done')
-  .description('Complete an increment (triggers GitHub/JIRA/ADO sync)')
+  .description('Complete one or more increments (triggers GitHub/JIRA/ADO sync)')
   .option('-s, --silent', 'Silent mode (for auto mode stop hook)')
   .option('-y, --yes', 'Assume yes (silent confirmation)')
   .option('--skip-validation', 'Skip quality gate validation (DANGEROUS)')
-  .action(async (incrementId, options) => {
+  .action(async (incrementId, moreIds, options) => {
     const { completeCommand } = await import('../dist/src/cli/commands/complete.js');
-    await completeCommand(incrementId, options);
+    await completeCommand(incrementId, moreIds, options);
   });
 
 // Create Increment command - Create template files for a new increment
@@ -1444,7 +1444,7 @@ program.on('--help', () => {
   console.log('  - GitHub Copilot (basic) - Workspace instructions');
   console.log('  - Generic (manual) - Works with ANY AI (ChatGPT, Gemini, etc.)');
   console.log('');
-  console.log('For more information, visit: https://verified-skill.com');
+  console.log('For more information, visit: https://spec-weave.com');
 });
 
 // Startup duplicate check (runs before any command)

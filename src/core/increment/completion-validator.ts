@@ -391,13 +391,12 @@ export class IncrementCompletionValidator {
     orphanTasks: string[];
   }> {
     const specContent = await fs.readFile(specPath, 'utf-8');
-    const tasksContent = await fs.readFile(tasksPath, 'utf-8');
 
     // Parse all ACs from spec.md
     const allACs = this.parseAllACsWithPriority(specContent);
 
-    // Parse tasks to find AC references
-    const tasksByUS = parseTasksWithUSLinks(tasksContent);
+    // Parse tasks to find AC references (pass file path, not content)
+    const tasksByUS = parseTasksWithUSLinks(tasksPath);
 
     // Flatten tasks from TasksByUserStory to simple array
     const allTasks = Object.values(tasksByUS).flat();

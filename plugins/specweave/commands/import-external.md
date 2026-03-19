@@ -451,10 +451,10 @@ No tasks defined.
 ## See Also
 
 - `specweave init` - Initial project setup with external tool import
-- [External Import Guide](https://docs.verified-skill.com/guides/external-import)
-- [GitHub Integration](https://docs.verified-skill.com/integrations/github)
-- [JIRA Integration](https://docs.verified-skill.com/integrations/jira)
-- [Azure DevOps Integration](https://docs.verified-skill.com/integrations/ado)
+- [External Import Guide](https://spec-weave.com/docs/guides/external-import)
+- [GitHub Integration](https://spec-weave.com/docs/integrations/github)
+- [JIRA Integration](https://spec-weave.com/docs/integrations/jira)
+- [Azure DevOps Integration](https://spec-weave.com/docs/integrations/ado)
 
 ---
 

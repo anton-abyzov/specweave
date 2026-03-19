@@ -851,7 +851,7 @@ curl -X POST https://your-server.com/api/specweave/webhook/jira \
 
 ## 🆘 Getting Help
 
-- **Documentation**: https://verified-skill.com
+- **Documentation**: https://spec-weave.com
 - **GitHub Issues**: https://github.com/anton-abyzov/specweave/issues
 - **Discussions**: https://github.com/anton-abyzov/specweave/discussions
 - **JIRA-specific help**: https://community.atlassian.com

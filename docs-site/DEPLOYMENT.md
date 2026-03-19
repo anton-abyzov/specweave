@@ -1,12 +1,12 @@
 # SpecWeave Documentation Deployment Guide
 
-This guide explains how to deploy the SpecWeave documentation to **verified-skill.com** using **Cloudflare Pages**.
+This guide explains how to deploy the SpecWeave documentation to **spec-weave.com** using **Cloudflare Pages**.
 
 ## Overview
 
 - **Framework**: Docusaurus 3 (React-based)
 - **Hosting**: Cloudflare Pages
-- **Domain**: verified-skill.com (managed via Cloudflare)
+- **Domain**: spec-weave.com (managed via Cloudflare)
 - **Source**: `.specweave/docs/public/` (via docs-site/)
 - **Deployment**: Git-based (automatic on push to main)
 
@@ -21,12 +21,12 @@ npm run build
     ↓ (output)
 docs-site/do/
     ↓ (deploy)
-https://verified-skill.com
+https://spec-weave.com
 \`\`\`
 
 ## Prerequisites
 
-1. **Cloudflare account** with access to verified-skill.com domain
+1. **Cloudflare account** with access to spec-weave.com domain
 2. **GitHub repository** (anton-abyzov/specweave)
 3. **Node.js 18+** installed locally for testing
 
@@ -63,14 +63,14 @@ After first deployment:
 
 1. Go to **Pages** → **specweave-docs** → **Custom domains**
 2. Click **Set up a custom domain**
-3. Enter: `verified-skill.com`
+3. Enter: `spec-weave.com`
 4. Cloudflare will automatically configure DNS (since domain is managed by Cloudflare)
-5. Add `www.verified-skill.com` as alias (optional)
+5. Add `www.spec-weave.com` as alias (optional)
 
 **DNS Records** (auto-configured):
 \`\`\`
 Type: CNAME
-Name: verified-skill.com
+Name: spec-weave.com
 Value: specweave-docs.pages.dev
 Proxy: Enabled (orange cloud)
 \`\`\`
@@ -197,7 +197,7 @@ npm run lint
 2. Cloudflare Pages detects push via webhook
 3. Cloudflare runs build command
 4. Builds to `docs-site/do/`
-5. Deploys to https://verified-skill.com
+5. Deploys to https://spec-weave.com
 6. Deployment completes in ~2 minutes
 
 **Preview Deployments**:
