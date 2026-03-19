@@ -163,4 +163,14 @@ export interface IAdapter {
    * @returns Promise<string[]> Array of installed plugin names
    */
   getInstalledPlugins(): Promise<string[]>;
+
+  /**
+   * Get the tool-specific skills directory path (relative to project root).
+   *
+   * Used by refresh-plugins to determine where to copy skill files
+   * for this adapter's AI tool.
+   *
+   * @returns string Relative path like '.cursor/skills' or '.opencode/skills'
+   */
+  getSkillsDirectory(): string;
 }

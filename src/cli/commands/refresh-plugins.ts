@@ -30,6 +30,7 @@ import { cleanupStalePlugins, migrateUserLevelPlugins } from '../../utils/cleanu
 import { getProjectRoot } from '../../utils/find-project-root.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { enablePluginsInSettings } from '../helpers/init/claude-plugin-enabler.js';
+import { AdapterLoader } from '../../adapters/adapter-loader.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -56,6 +57,74 @@ interface MarketplacePlugin {
   source: string;
   version: string;
   description?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Adapter resolution
+// ---------------------------------------------------------------------------
+
+export interface ResolvedAdapter {
+  name: string;
+  method: 'native-cli' | 'file-copy';
+  skillsDir: string;
+}
+
+/**
+ * Determine the active adapter for plugin installation.
+ *
+ * Resolution order:
+ * 1. Read config.adapters.default from .specweave/config.json
+ * 2. If non-Claude adapter with known mapping → file-copy to adapter's skills dir
+ * 3. If unknown adapter → warn and fall through to Claude detection
+ * 4. If Claude or unset → detectClaudeCli() for native-cli or file-copy fallback
+ */
+export function resolveActiveAdapter(projectRoot: string): ResolvedAdapter {
+  // 1. Read config
+  let adapterName: string | undefined;
+  try {
+    const configPath = path.join(projectRoot, '.specweave', 'config.json');
+    const configRaw = fs.readFileSync(configPath, 'utf-8');
+    const config = JSON.parse(configRaw);
+    adapterName = config?.adapters?.default;
+  } catch {
+    // Config missing or unreadable — fall through to Claude detection
+  }
+
+  // 2. Non-Claude adapter with known mapping
+  if (typeof adapterName === 'string' && adapterName && adapterName !== 'claude') {
+    try {
+      const loader = new AdapterLoader();
+      const adapter = loader.getAdapter(adapterName);
+      if (adapter) {
+        const skillsDir = adapter.getSkillsDirectory();
+        if (skillsDir) {
+          return {
+            name: adapterName,
+            method: 'file-copy',
+            skillsDir,
+          };
+        }
+        logger.debug(`Adapter "${adapterName}" returned empty skillsDir, falling back to Claude detection`);
+      } else {
+        // 3. Unknown adapter — warn and fall through
+        logger.debug(`Unknown adapter "${adapterName}" in config, falling back to Claude detection`);
+      }
+    } catch (err) {
+      logger.debug(`AdapterLoader error for "${adapterName}": ${err}; falling back to Claude detection`);
+    }
+  }
+
+  // 4. Claude or unset — detect CLI
+  try {
+    const cliStatus = detectClaudeCli();
+    if (cliStatus.available && cliStatus.pluginCommandsWork) {
+      return { name: 'claude', method: 'native-cli', skillsDir: '' };
+    }
+  } catch {
+    logger.debug('Claude CLI detection failed');
+  }
+
+  return { name: 'claude', method: 'file-copy', skillsDir: '.claude/skills' };
 }
 
 // ---------------------------------------------------------------------------
@@ -115,56 +184,55 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   const quiet = !!options.quiet;
   const log = quiet ? (..._args: unknown[]) => {} : console.log;
 
-  // Step 0: Detect Claude CLI for native install support.
-  let useNativeCli = false;
-  try {
-    const cliStatus = detectClaudeCli();
-    useNativeCli = cliStatus.available && cliStatus.pluginCommandsWork;
-  } catch {
-    logger.debug('Claude CLI detection failed, falling back to direct copy');
-  }
+  // Step 0: Resolve which adapter/tool this project uses.
+  const projectRoot = getProjectRoot();
+  const resolved = resolveActiveAdapter(projectRoot);
+  const useNativeCli = resolved.method === 'native-cli';
+  const isClaude = resolved.name === 'claude';
 
-  // Step 0.5: Clean stale lockfiles
-  try {
-    const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import('../../utils/cleanup-stale-plugins.js');
-    const projectRoot = getProjectRoot();
+  // Steps 0.5-0.7: Claude-specific lockfile cleanup and migrations
+  if (isClaude) {
+    // Step 0.5: Clean stale lockfiles
+    try {
+      const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import('../../utils/cleanup-stale-plugins.js');
 
-    const legacyResult = cleanupLegacyLockfiles(projectRoot, { verbose: options.verbose });
-    const orphanResult = cleanupOrphanedChildLocks(projectRoot, { verbose: options.verbose });
+      const legacyResult = cleanupLegacyLockfiles(projectRoot, { verbose: options.verbose });
+      const orphanResult = cleanupOrphanedChildLocks(projectRoot, { verbose: options.verbose });
 
-    if (options.verbose) {
-      if (legacyResult.removedCount > 0) {
-        legacyResult.removedPaths.forEach(p => console.log(`  Removed legacy lockfile: ${p}`));
+      if (options.verbose) {
+        if (legacyResult.removedCount > 0) {
+          legacyResult.removedPaths.forEach(p => console.log(`  Removed legacy lockfile: ${p}`));
+        }
+        if (orphanResult.removedCount > 0) {
+          orphanResult.removedPaths.forEach(p => console.log(`  Removed orphaned lockfile: ${p}`));
+        }
       }
-      if (orphanResult.removedCount > 0) {
-        orphanResult.removedPaths.forEach(p => console.log(`  Removed orphaned lockfile: ${p}`));
-      }
+    } catch {
+      // Non-blocking: cleanup errors don't abort plugin refresh
     }
-  } catch {
-    // Non-blocking: cleanup errors don't abort plugin refresh
-  }
 
-  // Step 0.6: Migrate bundled entries from project vskill.lock to global plugins-lock.json
-  try {
-    const migProjectRoot = getProjectRoot();
-    migrateBundledToGlobalLock(migProjectRoot);
-  } catch {
-    // Non-blocking: migration errors don't abort plugin refresh
-  }
+    // Step 0.6: Migrate bundled entries from project vskill.lock to global plugins-lock.json
+    try {
+      migrateBundledToGlobalLock(projectRoot);
+    } catch {
+      // Non-blocking: migration errors don't abort plugin refresh
+    }
 
-  // Step 0.7: Remove satellite plugin entries from lockfiles (post-consolidation cleanup)
-  try {
-    const migProjectRoot = getProjectRoot();
-    migrateSatelliteToUnifiedLock(migProjectRoot);
-  } catch {
-    // Non-blocking: satellite migration errors don't abort plugin refresh
+    // Step 0.7: Remove satellite plugin entries from lockfiles (post-consolidation cleanup)
+    try {
+      migrateSatelliteToUnifiedLock(projectRoot);
+    } catch {
+      // Non-blocking: satellite migration errors don't abort plugin refresh
+    }
   }
 
   log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));
   if (useNativeCli) {
     log(chalk.blue.bold(`  Mode: native Claude CLI (claude plugin install)\n`));
-  } else {
+  } else if (isClaude) {
     log(chalk.blue.bold(`  Mode: direct copy to .claude/skills/\n`));
+  } else {
+    log(chalk.blue.bold(`  Mode: ${resolved.name} adapter (${resolved.skillsDir})\n`));
   }
 
   // Step 1: Find specweave root
@@ -210,8 +278,7 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
 
   log(chalk.gray(`  Installing ${pluginsToInstall.length} of ${allPlugins.length} plugins`));
 
-  // Step 3: Determine project root
-  const projectRoot = getProjectRoot();
+  // Step 3: Project root already resolved in Step 0 via resolveActiveAdapter()
 
   // Step 4: Process selected plugins
   let installed = 0;
@@ -229,7 +296,11 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
       }
     } else {
-      result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
+      const copyOptions: { force?: boolean; targetSkillsDir?: string } = { force: options.force };
+      if (!isClaude && resolved.skillsDir) {
+        copyOptions.targetSkillsDir = resolved.skillsDir;
+      }
+      result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, copyOptions);
     }
 
     if (result.success && result.skipped) {
@@ -249,34 +320,35 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     }
   }
 
-  // Step 4b: Enable plugins in Claude Code settings (all modes)
-  if (installedPluginNames.length > 0) {
-    const enabled = enablePluginsInSettings(installedPluginNames);
-    if (!enabled) {
-      log(chalk.yellow('  ⚠ Could not enable plugins in ~/.claude/settings.json'));
+  // Step 4b-4d: Claude-only operations (settings enablement, stale cleanup, migration)
+  if (isClaude) {
+    // Step 4b: Enable plugins in Claude Code settings
+    if (installedPluginNames.length > 0) {
+      const enabled = enablePluginsInSettings(installedPluginNames);
+      if (!enabled) {
+        log(chalk.yellow('  ⚠ Could not enable plugins in ~/.claude/settings.json'));
+      }
     }
-  }
 
-  // Step 4c: Clean up stale plugin references from settings
-  try {
-    const cleanupResult = await cleanupStalePlugins(marketplacePath, options.verbose);
-    if (cleanupResult.removedCount > 0) {
-      log(chalk.green(`  ✓ Cleaned ${cleanupResult.removedCount} stale plugin(s): ${cleanupResult.removedPlugins.join(', ')}`));
+    // Step 4c: Clean up stale plugin references from settings
+    try {
+      const cleanupResult = await cleanupStalePlugins(marketplacePath, options.verbose);
+      if (cleanupResult.removedCount > 0) {
+        log(chalk.green(`  ✓ Cleaned ${cleanupResult.removedCount} stale plugin(s): ${cleanupResult.removedPlugins.join(', ')}`));
+      }
+    } catch {
+      // Non-blocking: cleanup errors don't abort plugin refresh
     }
-  } catch {
-    // Non-blocking: cleanup errors don't abort plugin refresh
-  }
 
-  // Step 4d: Migrate user-level domain plugins to project scope + restore sw@specweave
-  // migrateUserLevelPlugins has defensive code that restores sw@specweave after
-  // claude plugin uninstall corrupts the enabledPlugins object as a side effect.
-  try {
-    const migrationResult = await migrateUserLevelPlugins(process.cwd(), options.verbose);
-    if (migrationResult.migratedCount > 0) {
-      log(chalk.green(`  ✓ Migrated ${migrationResult.migratedCount} plugin(s) to project scope: ${migrationResult.migratedPlugins.join(', ')}`));
+    // Step 4d: Migrate user-level domain plugins to project scope + restore sw@specweave
+    try {
+      const migrationResult = await migrateUserLevelPlugins(process.cwd(), options.verbose);
+      if (migrationResult.migratedCount > 0) {
+        log(chalk.green(`  ✓ Migrated ${migrationResult.migratedCount} plugin(s) to project scope: ${migrationResult.migratedPlugins.join(', ')}`));
+      }
+    } catch {
+      // Non-blocking: migration errors don't abort plugin refresh
     }
-  } catch {
-    // Non-blocking: migration errors don't abort plugin refresh
   }
 
   // Step 5: Summary
@@ -290,8 +362,10 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   }
   if (useNativeCli) {
     log(chalk.gray(`  Location: ~/.claude/plugins/cache/ (native)`));
-  } else {
+  } else if (isClaude) {
     log(chalk.gray(`  Location: .claude/skills/ (project-local)`));
+  } else {
+    log(chalk.gray(`  Location: ${resolved.skillsDir} (${resolved.name} adapter)`));
   }
   log('');
 }

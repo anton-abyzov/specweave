@@ -136,6 +136,10 @@ Docs: AGENTS.md, .cursor/README.md
     return true;
   }
 
+  getSkillsDirectory(): string {
+    return '.cursor/skills';
+  }
+
   /**
    * Compile and install a plugin for Cursor.
    * Writes each SKILL.md as a separate file in `.cursor/skills/`.
