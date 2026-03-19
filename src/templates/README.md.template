@@ -10,23 +10,25 @@ Your project is initialized! Now describe what you want to build.
 
 1. **Open your AI assistant** (Claude Code, Cursor, Windsurf, or any AI-powered IDE)
 
-2. **Use SpecWeave slash commands** to start building:
+2. **Use SpecWeave commands** to start building:
 
-```bash
+```
 # Plan a new feature
-/sw:increment "user authentication with JWT"
+sw:increment "user authentication with JWT"
 
 # Execute the implementation
-/sw:do
+sw:do
 
 # Check progress
-/sw:progress
+sw:progress
 
 # Close when done
-/sw:done 0001
+sw:done 0001
 ```
 
-3. **Or describe your project** in natural language (works with slash command workflows):
+> **Invocation varies by tool**: Claude Code uses `/sw:do`, Cursor/Copilot users type `sw:do` or describe the action. See AGENTS.md for details.
+
+3. **Or describe your project** in natural language (works with command workflows):
 
 ```
 "Build a real estate listing platform with search, images, and admin dashboard"
@@ -42,7 +44,7 @@ Your project is initialized! Now describe what you want to build.
    - Guide implementation
    - Generate tests
 
-That's it! All components ready - just use `/sw:increment` to start!
+That's it! All components ready - just use `sw:increment` to start!
 
 ---
 
@@ -52,7 +54,7 @@ That's it! All components ready - just use `/sw:increment` to start!
 {{PROJECT_NAME}}/
 ├── .specweave/             # SpecWeave framework
 │   ├── config.json         # Project configuration
-│   ├── increments/         # Features (created via /sw:increment)
+│   ├── increments/         # Features (created via sw:increment)
 │   │   └── 0001-feature/
 │   │       ├── spec.md     # WHAT & WHY
 │   │       ├── plan.md     # HOW
@@ -71,7 +73,7 @@ That's it! All components ready - just use `/sw:increment` to start!
 
 SpecWeave is a specification-first development framework where:
 - **Specifications are the source of truth** (code follows specs, not reverse)
-- **Slash commands drive workflow** (`/sw:increment` → `/sw:do` → `/sw:done`)
+- **Commands drive workflow** (`sw:increment` → `sw:do` → `sw:done`)
 - **AI agents work autonomously** (PM, Architect, Security, QA, DevOps)
 - **Works with ANY tech stack** (TypeScript, Python, Go, Rust, Java, .NET, etc.)
 - **Works with multiple AI assistants** (Claude Code, Cursor, Windsurf, etc.)
@@ -81,20 +83,20 @@ SpecWeave is a specification-first development framework where:
 ## Core Workflow
 
 ```
-/sw:increment "feature" → /sw:do → /sw:progress → /sw:done → repeat
+sw:increment "feature" → sw:do → sw:progress → sw:done → repeat
 ```
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/sw:increment "feature"` | Plan new increment | Starting new feature |
-| `/sw:do` | Execute tasks | Ready to implement |
-| `/sw:progress` | Check status | Want to see progress |
-| `/sw:validate 0001` | Validate quality | Before completion |
-| `/sw:done 0001` | Close increment | Feature finished |
-| `/sw:team-lead "feature"` | Parallel agents | Complex multi-domain features |
-| `/sw:progress-sync` | Sync to external tools | Export to GitHub/JIRA/ADO |
+| `sw:increment "feature"` | Plan new increment | Starting new feature |
+| `sw:do` | Execute tasks | Ready to implement |
+| `sw:progress` | Check status | Want to see progress |
+| `sw:validate 0001` | Validate quality | Before completion |
+| `sw:done 0001` | Close increment | Feature finished |
+| `sw:team-lead "feature"` | Parallel agents | Complex multi-domain features |
+| `sw:progress-sync` | Sync to external tools | Export to GitHub/JIRA/ADO |
 
-For complex features spanning frontend, backend, and database — `/sw:team-lead` splits work across parallel agents for faster delivery. [Learn more](https://verified-skill.com/docs/guides/agent-teams-and-swarms).
+For complex features spanning frontend, backend, and database — `sw:team-lead` splits work across parallel agents for faster delivery. [Learn more](https://verified-skill.com/docs/guides/agent-teams-and-swarms).
 
 See `CLAUDE.md` for complete workflow guide.
 
@@ -121,10 +123,10 @@ project-root/
 ## AI Assistant Compatibility
 
 SpecWeave works with:
-- **Claude Code** (recommended) - Full slash command support
-- **Cursor** - Slash commands via composer
+- **Claude Code** (recommended) - Full command support with auto-activation
+- **Cursor** - Commands via composer
 - **Windsurf** - Cascade mode compatible
-- **Any AI IDE** - As long as it supports slash commands or custom prompts
+- **Any AI IDE** - Supports commands via prompts or native integrations
 
 **Setup**: See `CLAUDE.md` for AI assistant instructions.
 
@@ -142,7 +144,7 @@ SpecWeave works with:
 
 **Start with your first feature**:
 ```bash
-/sw:increment "describe your feature here"
+sw:increment "describe your feature here"
 ```
 
 Or just describe what you want to build, and SpecWeave will guide you through the process!

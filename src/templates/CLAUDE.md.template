@@ -320,4 +320,6 @@ Pattern: IMPLEMENT → TEST → FAIL? → FIX → PASS → NEXT. STOP & ASK if s
 ## Using SpecWeave with Other AI Tools
 
 See **AGENTS.md** for Cursor, Copilot, Windsurf, Aider instructions.
+
+**Command format note**: This file uses `/sw:do` (Claude Code slash-command format). AGENTS.md uses `sw:do` (tool-agnostic format). Both refer to the same commands.
 <!-- /SECTION -->

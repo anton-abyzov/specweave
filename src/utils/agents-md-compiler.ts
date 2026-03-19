@@ -447,7 +447,7 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 ### 1. Plan New Increment
 
 \`\`\`bash
-/specweave.inc "user authentication with OAuth"
+sw:increment "user authentication with OAuth"
 \`\`\`
 
 Creates:
@@ -459,7 +459,7 @@ Creates:
 ### 2. Execute Tasks
 
 \`\`\`bash
-/specweave.do
+sw:do
 \`\`\`
 
 - Executes tasks sequentially
@@ -469,7 +469,7 @@ Creates:
 ### 3. Check Progress
 
 \`\`\`bash
-/specweave.progress
+sw:progress
 \`\`\`
 
 Shows completion percentage and next action.
@@ -477,7 +477,7 @@ Shows completion percentage and next action.
 ### 4. Close Increment
 
 \`\`\`bash
-/specweave.done 0001
+sw:done 0001
 \`\`\`
 
 PM validation, updates status.
@@ -487,10 +487,10 @@ PM validation, updates status.
 ## Best Practices
 
 ### DO:
-- ✅ Always start with \`/specweave.inc\` for new features
+- ✅ Always start with \`sw:increment\` for new features
 - ✅ Review specs before implementation
-- ✅ Execute tasks via \`/specweave.do\` (hooks fire automatically)
-- ✅ Validate before closing: \`/specweave.validate\`
+- ✅ Execute tasks via \`sw:do\` (hooks fire automatically)
+- ✅ Validate before closing: \`sw:validate\`
 
 ### DON'T:
 - ❌ Skip spec creation (no "cowboy coding")
