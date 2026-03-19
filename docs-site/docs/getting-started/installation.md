@@ -413,35 +413,52 @@ integrations:
 
 ## Upgrading
 
-### Global Installation
+### Recommended: `specweave update`
+
+The best way to upgrade is to run `specweave update` inside your project:
+
+<CommandTabs command="specweave update" />
+
+This single command handles the **full upgrade lifecycle**:
+
+1. **Updates the CLI binary** — checks npm for the latest version and self-updates
+2. **Migrates project configuration** — updates `CLAUDE.md`, `AGENTS.md`, and `config.json` to match the new version
+3. **Cleans up stale state** — removes old lock files, orphaned folders, and expired auto-session state
+4. **Prunes skill memories** — removes learnings older than 90 days to keep AI context fresh
+5. **Refreshes marketplace plugins** — installs latest agents, skills, commands, and hooks
+6. **Validates project health** — detects and fixes installation issues automatically
 
 ```bash
-# Check current version
-specweave --version
-
-# npm
-npm update -g specweave
-
-# bun
-bun update -g specweave
-
-# pnpm
-pnpm update -g specweave
-
-# yarn
-yarn global upgrade specweave
-
-# Verify new version
-specweave --version
+# Common flags
+specweave update              # Full update (recommended)
+specweave update --check      # Dry run — shows what would change without modifying anything
+specweave update --no-plugins # Update CLI and config only, skip plugin refresh
+specweave update --all        # Refresh ALL marketplace plugins (not just core)
+specweave update --no-self    # Skip CLI binary update, only update project files
+specweave update --verbose    # Show detailed output for each step
 ```
+
+### Why not just `npm update -g specweave`?
+
+Running `npm update -g specweave` (or `pnpm`, `bun`, `yarn` equivalents) **only updates the CLI binary**. It does NOT touch your projects. This means:
+
+- Your `CLAUDE.md` and `AGENTS.md` still contain old framework instructions
+- Your `config.json` may be missing fields required by the new version
+- Stale state files and orphaned folders accumulate over time
+- Marketplace plugins (agents, skills, commands, hooks) remain outdated
+- Legacy formats are never migrated to current conventions
+
+In short: you're running a new CLI against old project scaffolding, which can cause subtle issues — missing skills, broken hooks, or stale guidance in AI prompts.
+
+**Use `npm update -g specweave` only when** you need to update the binary on a machine where no SpecWeave project is open (e.g., a fresh CI runner). For all other cases, prefer `specweave update`.
 
 ### Package Runner (Always Latest)
 
-`npx`, `bunx`, `pnpx`, and `yarn dlx` automatically use the latest version, no upgrade needed.
+`npx`, `bunx`, `pnpx`, and `yarn dlx` automatically use the latest version of the CLI binary, but the same caveat applies — they do not update your project files. Run `npx specweave update` (or equivalent) inside your project to get the full upgrade.
 
 ### Reinstall Project
 
-If you need to reinstall SpecWeave in a project:
+If you need a clean reinstall (e.g., corrupted state or major version jump):
 
 ```bash
 cd your-project
@@ -452,7 +469,7 @@ cp -r .specweave .specweave.backup
 # Reinstall (will prompt for confirmation)
 specweave init . --force
 
-# Or with npm
+# Or with npx
 npx specweave init . --force
 ```
 
@@ -625,8 +642,6 @@ Each Node version managed by nvm has its own separate `node_modules` directory:
 ├── v20.11.0/lib/node_modules/  ← Node 20 globals (empty!)
 └── v22.0.0/lib/node_modules/   ← Node 22 globals (empty!)
 ```
-
-**See detailed guide:** [Node Version Management Runbook](../../internal/operations/runbook-node-version-management.md)
 
 ### npm version too old
 
