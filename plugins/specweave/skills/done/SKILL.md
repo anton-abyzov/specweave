@@ -13,6 +13,12 @@ argument-hint: "<increment-id> [--auto]"
 
 **AUTO-CLOSURE DEFAULT**: After `sw:do` completes all tasks, `sw:done` runs automatically — no user confirmation needed. Quality gates (grill, judge-llm, PM validation) provide the safety net. If something is wrong, the user can re-open the increment.
 
+## Context Overflow Prevention
+
+For large multi-agent sessions (via `sw:team-lead`), running `sw:done` directly may cause context overflow due to loading 4+ skill definitions into an already-full context. Instead, `sw:team-merge` spawns `sw:sw-closer` subagents that run the full closure pipeline in isolated fresh contexts -- one per increment. The `sw-closer` agent definition is at `plugins/specweave/agents/sw-closer.md`.
+
+If you are closing an increment from a normal (non-team) session, use `sw:done` directly as documented below.
+
 ## Usage
 
 ```

@@ -220,6 +220,10 @@ sw:done 0042
 5. **External sync**: Closes GitHub issue, updates JIRA status
 6. **Status change**: `ACTIVE` → `COMPLETED`
 
+### Closure in Multi-Agent Sessions
+
+When closing increments after `sw:team-lead` orchestration, SpecWeave spawns `sw-closer` subagents instead of running `sw:done` inline. Each closer operates in a fresh context to prevent overflow from loading multiple skill definitions into an already-full session. See [Agent Teams & Swarms](../../../guides/agent-teams-and-swarms#closure-context-overflow-prevention) for details.
+
 ### If Quality Gate Fails
 
 ```
