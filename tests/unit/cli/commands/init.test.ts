@@ -112,7 +112,7 @@ const {
   mockDetectProvider: vi.fn().mockReturnValue(null),
   mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
   mockScanMisplacedRepos: vi.fn().mockReturnValue([]),
-  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ umbrella: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
+  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ workspace: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
   mockPromptLanguageSelection: vi.fn().mockResolvedValue({ language: 'en', keepEnglishOriginals: false }),
@@ -247,8 +247,10 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
+  scanWorkspaceRepos: mockScanUmbrellaRepos,
   scanMisplacedRepos: mockScanMisplacedRepos,
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
+  buildWorkspaceConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
   promptLanguageSelection: mockPromptLanguageSelection,
@@ -1232,6 +1234,18 @@ describe('init command', () => {
       await initCommand('agent-teams', { quick: true });
 
       expect(mockEnableAgentTeamsEnvVar).toHaveBeenCalled();
+    });
+
+    it('should also enable agent teams env var in global ~/.claude/settings.json', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectTool.mockResolvedValue('claude');
+
+      await initCommand('agent-teams-global', { quick: true });
+
+      // Should be called with both project dir AND homedir
+      const calls = mockEnableAgentTeamsEnvVar.mock.calls.map((c: unknown[][]) => c[0]);
+      const homeDir = (await import('os')).homedir();
+      expect(calls).toContainEqual(homeDir);
     });
   });
 

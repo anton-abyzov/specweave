@@ -35,6 +35,7 @@ export enum ValidationErrorCode {
   SPEC_CONTAINS_TASK_IDS = 'SPEC_CONTAINS_TASK_IDS',
   SPEC_CONTAINS_TECHNICAL_DETAILS = 'SPEC_CONTAINS_TECHNICAL_DETAILS',
   SPEC_MISSING_AC = 'SPEC_MISSING_AC',
+  SPEC_MISSING_PROJECT = 'SPEC_MISSING_PROJECT',
 
   // plan.md violations
   PLAN_CONTAINS_AC = 'PLAN_CONTAINS_AC',
@@ -165,7 +166,30 @@ export class ThreeFileValidator {
       }
     });
 
-    // Rule 3: spec.md should contain Acceptance Criteria section
+    // Rule 3: Every ### US-NNN block must have a **Project**: field
+    const usHeaders = lines
+      .map((line, index) => ({ line, index }))
+      .filter(({ line }) => /^###\s+US-(?:[A-Z]+-)*\d+:/.test(line));
+
+    for (const { line: usLine, index: usIndex } of usHeaders) {
+      // Find the next US header or end of file
+      const nextUsIndex = usHeaders.find(h => h.index > usIndex)?.index ?? lines.length;
+      const usBlock = lines.slice(usIndex, nextUsIndex).join('\n');
+
+      if (!usBlock.includes('**Project**:')) {
+        const usId = usLine.match(/US-(?:[A-Z]+-)*\d+/)?.[0] ?? 'unknown';
+        issues.push({
+          code: ValidationErrorCode.SPEC_MISSING_PROJECT,
+          severity: ValidationSeverity.ERROR,
+          file: 'spec.md',
+          line: usIndex + 1,
+          message: `Missing **Project**: field in ${usId}. Every user story must specify a project.`,
+          fix: `Add **Project**: <project-name> after the ### ${usId} heading`
+        });
+      }
+    }
+
+    // Rule 4: spec.md should contain Acceptance Criteria section
     if (!content.includes('## Acceptance Criteria') && !content.includes('### Acceptance Criteria')) {
       issues.push({
         code: ValidationErrorCode.SPEC_MISSING_AC,
@@ -334,7 +358,7 @@ export class ThreeFileValidator {
   }
 
   /**
-   * Validate metadata.json project field for umbrella routing
+   * Validate metadata.json project field for sync routing
    */
   private validateMetadataProject(incrementDir: string, projectRoot?: string): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
@@ -350,8 +374,6 @@ export class ThreeFileValidator {
       return issues;
     }
 
-    if (!config.umbrella?.enabled) return issues;
-
     // Load metadata
     const metadataPath = path.join(incrementDir, 'metadata.json');
     let metadata: any;
@@ -362,10 +384,12 @@ export class ThreeFileValidator {
       return issues;
     }
 
-    const childRepos = config.umbrella.childRepos ?? [];
+    // Use workspace.repos (new) or fall back to umbrella.childRepos (legacy)
+    const repos = config.workspace?.repos ?? config.umbrella?.childRepos ?? [];
+    const workspaceName = config.workspace?.name ?? config.umbrella?.projectName;
 
-    // Rule: Missing project in umbrella with multiple child repos
-    if (childRepos.length > 1 && !metadata.project) {
+    // Rule: Missing project with multiple repos
+    if (repos.length > 1 && !metadata.project) {
       issues.push({
         code: ValidationErrorCode.METADATA_MISSING_PROJECT,
         severity: ValidationSeverity.WARNING,
@@ -376,14 +400,13 @@ export class ThreeFileValidator {
 
     // Rule: Unknown project name
     if (metadata.project) {
-      const knownIds = childRepos.map((r: any) => r.id);
-      const umbrellaName = config.umbrella.projectName;
-      if (!knownIds.includes(metadata.project) && metadata.project !== umbrellaName) {
+      const knownIds = repos.map((r: any) => r.id);
+      if (!knownIds.includes(metadata.project) && metadata.project !== workspaceName) {
         issues.push({
           code: ValidationErrorCode.METADATA_UNKNOWN_PROJECT,
           severity: ValidationSeverity.WARNING,
           file: 'metadata.json',
-          message: `Project '${metadata.project}' not found in config.json childRepos or umbrella.projectName`,
+          message: `Project '${metadata.project}' not found in workspace.repos or workspace.name`,
         });
       }
     }

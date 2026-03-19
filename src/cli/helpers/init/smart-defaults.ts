@@ -23,10 +23,12 @@ export function applySmartDefaults(
   options: SmartDefaultsOptions
 ): Record<string, any> {
   // Testing: default to TDD
+  // Coverage semantics: unit/integration = Istanbul line coverage %;
+  // e2e = % of written e2e tests that must pass (not line coverage — Playwright has no Istanbul reporter)
   config.testing = {
     defaultTestMode: 'TDD',
     defaultCoverageTarget: 80,
-    coverageTargets: { unit: 80, integration: 60, e2e: 40 },
+    coverageTargets: { unit: 80, integration: 70, e2e: 100 },
     ...config.testing,
   };
 

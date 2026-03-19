@@ -123,11 +123,31 @@ export class ExternalToolResolver {
   }
 
   /**
-   * Get project mappings
+   * Get workspace configuration
    */
-  private async getProjectMappings(): Promise<ProjectMappings> {
+  private async getWorkspaceConfig(): Promise<{ name?: string; rootRepo?: any; repos?: any[] } | null> {
     const config = await this.loadConfig();
-    return config.projectMappings || {};
+    return config.workspace || null;
+  }
+
+  /**
+   * Convert WorkspaceRepoSync to ProjectMapping-compatible format for profile matching
+   */
+  private convertWorkspaceSyncToMapping(sync: any): ProjectMapping {
+    const mapping: any = {};
+    if (sync.github) {
+      mapping.github = { owner: sync.github.owner, repo: sync.github.repo };
+    }
+    if (sync.jira) {
+      mapping.jira = { project: sync.jira.projectKey };
+    }
+    if (sync.ado) {
+      mapping.ado = { project: sync.ado.project };
+      if (sync.ado.organization) {
+        mapping.ado.organization = sync.ado.organization;
+      }
+    }
+    return mapping;
   }
 
   // ==========================================================================
@@ -176,14 +196,14 @@ export class ExternalToolResolver {
     if (projectId) {
       const projectResult = await this.resolveForProject(projectId);
       if (projectResult.syncTarget) {
-        resolutionPath.push(`projectMappings['${projectId}'] → ${projectResult.syncTarget.profileId}`);
+        resolutionPath.push(`workspace.repos['${projectId}'] → ${projectResult.syncTarget.profileId}`);
         return {
           ...projectResult,
           resolutionPath: [...resolutionPath, ...projectResult.resolutionPath],
           warnings: [...warnings, ...projectResult.warnings],
         };
       }
-      resolutionPath.push(`projectMappings['${projectId}'] not found`);
+      resolutionPath.push(`workspace.repos['${projectId}'] not found`);
     }
 
     // Step 3: Fall back to default profile
@@ -248,7 +268,8 @@ export class ExternalToolResolver {
   /**
    * Resolve external tool for a specific project ID
    *
-   * Looks up project in config.projectMappings and resolves to a profile.
+   * Looks up project in workspace.repos and resolves to a profile.
+   * Falls back to workspace.rootRepo when projectId matches workspace.name.
    *
    * @param projectId - SpecWeave project ID (e.g., "frontend-app")
    * @returns Resolution result
@@ -257,48 +278,37 @@ export class ExternalToolResolver {
     const resolutionPath: string[] = [];
     const warnings: string[] = [];
 
-    const mappings = await this.getProjectMappings();
-    const mapping = mappings[projectId];
+    const workspace = await this.getWorkspaceConfig();
 
-    if (!mapping) {
+    // Look up workspace repo by ID
+    let sync: any = null;
+    const repo = workspace?.repos?.find((r: any) => r.id === projectId);
+
+    if (repo?.sync) {
+      sync = repo.sync;
+    } else if (workspace && projectId === workspace.name && workspace.rootRepo) {
+      // rootRepo fallback when projectId matches workspace name (AC-US8-02)
+      sync = workspace.rootRepo;
+    }
+
+    if (!sync) {
       return {
         syncTarget: null,
         profile: null,
-        resolutionPath: [`projectMappings['${projectId}'] not found`],
+        resolutionPath: [`workspace.repos['${projectId}'] not found`],
         warnings,
       };
     }
 
-    // Check for explicit profileId in mapping
+    // Convert workspace sync to mapping format and find matching profile
+    const mapping = this.convertWorkspaceSyncToMapping(sync);
+
     const providers: SyncProvider[] = ['github', 'jira', 'ado'];
     for (const provider of providers) {
       const providerMapping = mapping[provider];
       if (providerMapping) {
-        resolutionPath.push(`projectMappings['${projectId}'].${provider}`);
+        resolutionPath.push(`workspace.repos['${projectId}'].sync.${provider}`);
 
-        // If explicit profileId specified, use that
-        if (providerMapping.profileId) {
-          const profile = await this.getProfileById(providerMapping.profileId);
-          if (profile) {
-            const syncTarget: SyncTarget = {
-              profileId: providerMapping.profileId,
-              provider,
-              derivedFrom: 'project-mapping',
-              setAt: new Date().toISOString(),
-              sourceProjectId: projectId,
-            };
-
-            return {
-              syncTarget,
-              profile,
-              resolutionPath,
-              warnings,
-            };
-          }
-          warnings.push(`Explicit profileId '${providerMapping.profileId}' not found`);
-        }
-
-        // Otherwise, find matching profile by config
         const matchingProfile = await this.findProfileByMapping(provider, providerMapping);
         if (matchingProfile) {
           const syncTarget: SyncTarget = {
@@ -317,7 +327,7 @@ export class ExternalToolResolver {
           };
         }
 
-        // Mapping exists but no matching profile
+        // Sync config exists but no matching profile
         warnings.push(`No profile matches ${provider} config for project '${projectId}'`);
       }
     }
@@ -344,25 +354,26 @@ export class ExternalToolResolver {
     const resolutionPath: string[] = [];
     const warnings: string[] = [];
 
-    // If projectId provided, try project mapping first
+    // If projectId provided, try workspace repo sync first
     if (projectId) {
-      const mappings = await this.getProjectMappings();
-      const mapping = mappings[projectId]?.[provider];
-      if (mapping) {
-        const profileId = mapping.profileId;
-        if (profileId) {
-          const profile = await this.getProfileById(profileId);
-          if (profile && profile.provider === provider) {
-            resolutionPath.push(`projectMappings['${projectId}'].${provider}.profileId`);
+      const workspace = await this.getWorkspaceConfig();
+      const repo = workspace?.repos?.find((r: any) => r.id === projectId);
+      if (repo?.sync) {
+        const mapping = this.convertWorkspaceSyncToMapping(repo.sync);
+        const providerMapping = mapping[provider];
+        if (providerMapping) {
+          const matchingProfile = await this.findProfileByMapping(provider, providerMapping);
+          if (matchingProfile) {
+            resolutionPath.push(`workspace.repos['${projectId}'].sync.${provider}`);
             return {
               syncTarget: {
-                profileId,
+                profileId: matchingProfile.id,
                 provider,
                 derivedFrom: 'project-mapping',
                 setAt: new Date().toISOString(),
                 sourceProjectId: projectId,
               },
-              profile,
+              profile: matchingProfile.profile,
               resolutionPath,
               warnings,
             };
@@ -428,14 +439,14 @@ export class ExternalToolResolver {
     if (!resolution.syncTarget) {
       // Check what's missing
       const syncConfig = await this.getSyncConfig();
-      const mappings = await this.getProjectMappings();
+      const workspace = await this.getWorkspaceConfig();
 
       if (!syncConfig || Object.keys(syncConfig.profiles || {}).length === 0) {
         errors.push('No sync profiles configured');
         suggestions.push('Run `specweave init` to configure external tool integration');
-      } else if (projectId && !mappings[projectId]) {
-        errors.push(`No project mapping for '${projectId}'`);
-        suggestions.push(`Add project mapping in config.json: projectMappings.${projectId}`);
+      } else if (projectId && !workspace?.repos?.some((r: any) => r.id === projectId)) {
+        errors.push(`No workspace repo for '${projectId}'`);
+        suggestions.push(`Add repo in config.json: workspace.repos with id '${projectId}'`);
       } else if (!syncConfig.defaultProfile) {
         errors.push('No default sync profile configured');
         suggestions.push('Set config.sync.defaultProfile in config.json');
@@ -698,7 +709,7 @@ export class ExternalToolResolver {
     projectMappingCount: number;
   }> {
     const syncConfig = await this.getSyncConfig();
-    const mappings = await this.getProjectMappings();
+    const workspace = await this.getWorkspaceConfig();
     const profiles = Object.values(syncConfig?.profiles ?? {});
 
     return {
@@ -706,7 +717,7 @@ export class ExternalToolResolver {
       providers: [...new Set(profiles.map((p) => p.provider))],
       profileCount: profiles.length,
       defaultProfile: syncConfig?.defaultProfile,
-      projectMappingCount: Object.keys(mappings).length,
+      projectMappingCount: workspace?.repos?.length ?? 0,
     };
   }
 }

@@ -19,7 +19,9 @@ import { HookEventRouter } from './hooks/hook-event-router.js';
 import { preToolUseHandler } from './hooks/handlers/pre-tool-use.js';
 import { createSubagentStartHandler, createSubagentStopHandler } from './hooks/handlers/subagent-lifecycle.js';
 import { passthroughHandler } from './hooks/handlers/passthrough.js';
+import { createWorkspaceRouteHandlers } from './routes/workspace-routes.js';
 import { isPortReachable } from '../../hooks/hooks-status.js';
+import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
 import { SCOPE_PORTS } from '../../utils/docs-preview/types.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';
 
@@ -243,7 +245,7 @@ export class DashboardServer {
     if (req.method === 'OPTIONS') {
       const origin = req.headers.origin || '';
       const headers: Record<string, string> = {
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Vary': 'Origin',
       };
@@ -544,7 +546,7 @@ export class DashboardServer {
 
           if (repoId) {
             // For child repos: write to child's own file if it has .specweave, else umbrella's repos section
-            if (childRepoPath && fs.existsSync(path.join(childRepoPath, '.specweave'))) {
+            if (childRepoPath && hasSpecweaveIncrements(childRepoPath)) {
               await updateSyncMetadata(childRepoPath, platform as 'github' | 'jira' | 'ado', successMeta);
             } else {
               await updateRepoSyncMetadata(project.root, repoId, platform as 'github' | 'jira' | 'ado', successMeta);
@@ -608,8 +610,8 @@ export class DashboardServer {
           return sendJson(res, { ok: false, error: `Child repo '${repoId}' not found` }, 400);
         }
         const childPath = path.resolve(project.root, child.path);
-        if (!fs.existsSync(path.join(childPath, '.specweave'))) {
-          return sendJson(res, { ok: false, error: `Child repo '${repoId}' has no .specweave directory. Initialize it with 'specweave init' first.` }, 400);
+        if (!hasSpecweaveIncrements(childPath)) {
+          return sendJson(res, { ok: false, error: `Child repo '${repoId}' is not initialized. Run 'specweave init' in it first.` }, 400);
         }
         cwd = childPath;
       }
@@ -918,6 +920,38 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: true, data: [] });
       const data = scanRepositories(project.root);
       sendJson(res, { ok: true, data });
+    });
+
+    // === Workspace CRUD ===
+
+    this.router.get('/api/workspace', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const handlers = createWorkspaceRouteHandlers(project.root);
+      await handlers.getWorkspace(req, res, {});
+    });
+
+    this.router.patch('/api/workspace/repos/:id', async (req, res, params) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const body = await readBody(req) as Record<string, unknown>;
+      const handlers = createWorkspaceRouteHandlers(project.root);
+      await handlers.patchRepo(req, res, params, body);
+    });
+
+    this.router.post('/api/workspace/repos', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const body = await readBody(req) as Record<string, unknown>;
+      const handlers = createWorkspaceRouteHandlers(project.root);
+      await handlers.postRepo(req, res, {}, body);
+    });
+
+    this.router.delete('/api/workspace/repos/:id', async (req, res, params) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const handlers = createWorkspaceRouteHandlers(project.root);
+      await handlers.deleteRepo(req, res, params);
     });
 
     // === Phase 4: Services ===
@@ -1363,7 +1397,7 @@ export function scanRepositories(projectRoot: string): Array<{
         for (const repo of repoEntries) {
           if (!repo.isDirectory()) continue;
           const repoPath = path.join(orgDir, repo.name);
-          const hasSpecweave = fs.existsSync(path.join(repoPath, '.specweave'));
+          const hasSpecweave = hasSpecweaveIncrements(repoPath);
           let lastModified = '';
           try {
             const stat = fs.statSync(repoPath);
@@ -1428,7 +1462,7 @@ export function scanRepositories(projectRoot: string): Array<{
         path: projectRoot,
         remote,
         branch,
-        hasSpecweave: fs.existsSync(path.join(projectRoot, '.specweave')),
+        hasSpecweave: hasSpecweaveIncrements(projectRoot),
         isCurrent: true,
       });
     } catch { /* */ }

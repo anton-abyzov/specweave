@@ -122,7 +122,9 @@ describe('Type simplification (0581)', () => {
     it('should not write multiProject.enabled', () => {
       const filePath = path.join(SRC_ROOT, 'cli/commands/init.ts');
       const content = fs.readFileSync(filePath, 'utf-8');
-      expect(content).not.toContain('multiProject');
+      // delete config.multiProject is fine (cleanup), but should not SET multiProject
+      expect(content).not.toMatch(/config\.multiProject\s*=/);
+      expect(content).not.toContain('multiProject.enabled');
     });
   });
 });

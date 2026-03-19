@@ -90,6 +90,26 @@ export function isInsideSpecWeaveProject(startDir: string = process.cwd()): bool
 }
 
 /**
+ * Check if a directory has an initialized SpecWeave project with actual increments.
+ *
+ * A repo is considered "initialized" only when `.specweave/increments/` exists
+ * and contains at least one non-hidden entry. A `.specweave/` folder with just
+ * logs, state, or config is NOT considered initialized.
+ *
+ * @param dir - Directory to check (the repo root, not .specweave/ itself)
+ * @returns true if the directory has .specweave/increments/ with content
+ */
+export function hasSpecweaveIncrements(dir: string): boolean {
+  const incDir = path.join(dir, '.specweave', 'increments');
+  if (!fs.existsSync(incDir)) return false;
+  try {
+    return fs.readdirSync(incDir).filter(f => !f.startsWith('.')).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Find the umbrella root by walking up from the nearest project root.
  *
  * In a multi-repo umbrella project, nested repos each have their own

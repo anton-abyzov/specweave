@@ -47,6 +47,7 @@ The most common configuration need is turning features on or off. This table sho
 | Context budget auto-adapt | `contextBudget.autoAdapt` | `false` | `true` |
 | CI/CD auto-fix | `cicd.autoFix.enabled` | `false` | `true` |
 | Deduplication | `deduplication.enabled` | `false` | `true` |
+| Multi-repo workspace | `workspace.repos` | `[]` (empty array = single-project) | — |
 | All hooks at once | env: `SPECWEAVE_DISABLE_HOOKS` | `1` | _(not set)_ |
 
 :::tip Living Docs Trade-off
@@ -537,39 +538,89 @@ Multi-language translation configuration.
 }
 ```
 
-### umbrella
+### workspace
 
-Multi-repository umbrella configuration.
+Unified workspace configuration for single and multi-repository projects. Replaces the deprecated `umbrella`, `multiProject`, and `projectMappings` settings (v3.0+).
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `enabled` | `boolean` | `false` | Enable umbrella mode |
-| `projectName` | `string` | — | Umbrella project display name |
-| `parentRepo` | `string` | — | Parent repo name |
-| `childRepos` | `array` | — | Child repository configurations |
-| `childRepos[].id` | `string` | — | Repo identifier |
-| `childRepos[].path` | `string` | — | Relative path to repo |
-| `childRepos[].name` | `string` | — | Display name |
-| `childRepos[].prefix` | `string` | — | User story prefix (e.g., `FE`, `BE`) |
-| `childRepos[].techStack` | `string[]` | — | Tech keywords for routing |
-| `childRepos[].role` | `string` | — | Repo role: `frontend`, `backend`, `mobile`, `infra`, `shared`, `other` |
-| `childRepos[].disabled` | `boolean` | — | Disable this repo |
-| `childRepos[].disabledReason` | `string` | — | Why disabled |
-| `storyRouting.enabled` | `boolean` | — | Enable auto-routing of stories to repos |
-| `storyRouting.defaultRepo` | `string` | — | Default repo for cross-cutting stories |
+| `name` | `string` | _(required)_ | Workspace display name |
+| `rootRepo` | `object` | — | Sync targets for the umbrella/root repo itself |
+| `rootRepo.github.owner` | `string` | — | GitHub org/user for the root repo |
+| `rootRepo.github.repo` | `string` | — | GitHub repo name for the root repo |
+| `rootRepo.github.direction` | `string` | — | Sync direction override |
+| `rootRepo.jira.projectKey` | `string` | — | JIRA project key for the root repo |
+| `rootRepo.jira.domain` | `string` | — | JIRA domain override |
+| `rootRepo.ado.organization` | `string` | — | ADO organization |
+| `rootRepo.ado.project` | `string` | — | ADO project name |
+| `repos` | `array` | _(required)_ | List of child repositories |
+| `repos[].id` | `string` | _(required)_ | Unique identifier; used as **Project** value in user stories |
+| `repos[].path` | `string` | _(required)_ | Relative path to the repo (e.g., `repositories/my-org/frontend`) |
+| `repos[].prefix` | `string` | _(required)_ | Short prefix for US/AC IDs (e.g., `FE`, `BE`) |
+| `repos[].name` | `string` | — | Display name (defaults to `id`) |
+| `repos[].techStack` | `string[]` | — | Tech keywords for story routing (e.g., `["typescript", "react"]`) |
+| `repos[].role` | `string` | — | Repo role: `frontend`, `backend`, `mobile`, `infra`, `shared`, `other` |
+| `repos[].sync` | `object` | — | Per-repo sync targets (same structure as `rootRepo`) |
+| `repos[].sync.github` | `object` | — | `{ owner, repo, direction? }` |
+| `repos[].sync.jira` | `object` | — | `{ projectKey, domain? }` |
+| `repos[].sync.ado` | `object` | — | `{ organization?, project }` |
+
+#### Complete example
 
 ```json
 {
-  "umbrella": {
-    "enabled": true,
-    "projectName": "my-platform",
-    "childRepos": [
-      { "id": "frontend", "path": "repositories/my-org/frontend", "prefix": "FE", "role": "frontend" },
-      { "id": "backend", "path": "repositories/my-org/backend", "prefix": "BE", "role": "backend" }
+  "workspace": {
+    "name": "my-platform",
+    "rootRepo": {
+      "github": { "owner": "my-org", "repo": "platform-umbrella" }
+    },
+    "repos": [
+      {
+        "id": "frontend-app",
+        "path": "repositories/my-org/frontend-app",
+        "prefix": "FE",
+        "name": "Frontend Application",
+        "techStack": ["typescript", "react", "nextjs"],
+        "role": "frontend",
+        "sync": {
+          "github": { "owner": "my-org", "repo": "frontend-app" },
+          "jira": { "projectKey": "FE" }
+        }
+      },
+      {
+        "id": "backend-api",
+        "path": "repositories/my-org/backend-api",
+        "prefix": "BE",
+        "name": "Backend API",
+        "techStack": ["typescript", "nodejs", "postgresql"],
+        "role": "backend",
+        "sync": {
+          "github": { "owner": "my-org", "repo": "backend-api" },
+          "jira": { "projectKey": "BE" }
+        }
+      }
     ]
   }
 }
 ```
+
+:::info Single-Project Workspaces
+Single-project workspaces have `workspace.repos: []` — the `workspace.name` IS the project. No additional flags are needed. The workspace section activates automatically when present; there is no `enabled` flag.
+:::
+
+#### ID strategy
+
+The `id` field should match the canonical name from your source of truth:
+
+| Scenario | ID Source | Example |
+|----------|----------|---------|
+| GitHub repo | Exact repo name | `sw-qr-menu-fe` |
+| JIRA project | Project key (lowercase) | `WEBAPP` → `webapp` |
+| ADO project | Project name (kebab-case) | `Frontend Team` → `frontend-team` |
+| ADO area path | Last segment (kebab-case) | `Product\Web` → `web` |
+| Monorepo package | Package name | `@acme/frontend` → `frontend` |
+
+IDs should be predictable from the source — no arbitrary abbreviations.
 
 ### archiving
 
@@ -662,42 +713,17 @@ Language Server Protocol integration for code intelligence.
 }
 ```
 
-### projectMappings
+### projectMappings _(removed)_
 
-Maps SpecWeave project IDs to external tool targets for multi-project routing.
+:::warning Migration Note
+`projectMappings` was removed in v3.0. Existing configs auto-migrate to the `workspace` format on first load. Per-project sync targets are now configured via `workspace.repos[].sync`. See the [workspace](#workspace) section above.
+:::
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `[projectId].github.owner` | `string` | — | GitHub org/user for this project |
-| `[projectId].github.repo` | `string` | — | GitHub repo for this project |
-| `[projectId].jira.project` | `string` | — | JIRA project key |
-| `[projectId].jira.board` | `string` | — | JIRA board name |
-| `[projectId].ado.project` | `string` | — | ADO project name |
-| `[projectId].ado.areaPath` | `string` | — | ADO area path |
+### multiProject _(removed)_
 
-```json
-{
-  "projectMappings": {
-    "frontend": { "github": { "owner": "my-org", "repo": "frontend" } },
-    "backend": { "jira": { "project": "BACK", "board": "Backend Sprint" } }
-  }
-}
-```
-
-### multiProject
-
-Enable multi-project mode for workspaces with multiple independent projects.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | — | Enable multi-project mode |
-| `projects` | `object` | — | Per-project configurations (keyed by project ID) |
-
-```json
-{
-  "multiProject": { "enabled": true }
-}
-```
+:::warning Migration Note
+`multiProject` was removed in v3.0. Existing configs auto-migrate to the `workspace` format on first load. Define your projects as entries in `workspace.repos[]` instead. See the [workspace](#workspace) section above.
+:::
 
 ### billing
 

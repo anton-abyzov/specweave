@@ -15,6 +15,7 @@ import {
   ValidationResult,
   ValidationError
 } from './types.js';
+import { migrateToWorkspace } from './workspace-migrator.js';
 import { consoleLogger, type Logger } from '../../utils/logger.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 
@@ -73,9 +74,13 @@ export class ConfigManager {
       // Strip deprecated syncStrategy from umbrella config (removed in v1.0.366)
       if (config.umbrella && 'syncStrategy' in config.umbrella) {
         delete (config.umbrella as Record<string, unknown>).syncStrategy;
-        const content = JSON.stringify(config, null, 2);
-        await fs.writeFile(this.configPath, content, 'utf-8');
       }
+
+      // Auto-migrate legacy umbrella/multiProject/projectMappings → workspace
+      config = migrateToWorkspace(config, {
+        info: (msg: string) => this.logger.info(msg),
+        warn: (msg: string) => this.logger.warn(msg),
+      });
 
       this.config = config;
       return this.config;
@@ -115,7 +120,15 @@ export class ConfigManager {
       }
 
       // Merge with defaults
-      this.config = this.mergeWithDefaults(parsed);
+      let config = this.mergeWithDefaults(parsed);
+
+      // Auto-migrate legacy → workspace
+      config = migrateToWorkspace(config, {
+        info: (msg: string) => this.logger.info(msg),
+        warn: (msg: string) => this.logger.warn(msg),
+      });
+
+      this.config = config;
       return this.config;
     } catch (error: unknown) {
       const err = error as { code?: string; message?: string };
@@ -138,8 +151,16 @@ export class ConfigManager {
    * @param config - Configuration to write
    */
   async write(config: SpecWeaveConfig): Promise<void> {
+    // Strip legacy keys before writing (workspace is the single source of truth)
+    const toWrite = { ...config };
+    if (toWrite.workspace) {
+      delete toWrite.umbrella;
+      delete toWrite.multiProject;
+      delete toWrite.projectMappings;
+    }
+
     // Validate before writing
-    const validation = this.validate(config);
+    const validation = this.validate(toWrite);
     if (!validation.valid) {
       const errorMessages = validation.errors.map(e => `${e.path}: ${e.message}`).join('\n');
       throw new Error(`Invalid configuration:\n${errorMessages}`);
@@ -151,7 +172,7 @@ export class ConfigManager {
       await fs.mkdir(dir, { recursive: true });
 
       // Write with pretty formatting
-      const content = JSON.stringify(config, null, 2);
+      const content = JSON.stringify(toWrite, null, 2);
       await fs.writeFile(this.configPath, content, 'utf-8');
 
       // Update cached config

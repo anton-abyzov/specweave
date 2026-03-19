@@ -95,19 +95,18 @@ jq '.coveredCategories.architecture = {"coveredAt": "'$(date -Iseconds)'", "summ
 `.specweave/state/interview-{increment-id}.json` before allowing spec.md writes. If this file
 is missing or incomplete, spec.md creation is BLOCKED in strict mode.
 
-## Umbrella Mode (Cross-Cutting Specs)
+## Project Field (Mandatory on Every User Story)
 
-When your invocation args include **UMBRELLA MODE**, the project uses an umbrella workspace with multiple child repos. This changes how you design specs:
+Every user story MUST have exactly one `**Project**:` field. This is unconditionally required regardless of workspace size.
 
-**Umbrella mode (`umbrella.enabled: true`):**
+**Multi-repo workspaces:**
 - Design **cross-cutting** user stories that span multiple repos
-- Each US gets `**Project**: <child-repo-name>` based on which repo owns that work
-- Think at a higher level: a "login feature" may need US for frontend (UI) AND backend (API)
-- A single increment can contain stories targeting different child repos
-- Use prefixed IDs when multi-project is detected: `US-FE-001`, `US-BE-001`
-- For umbrella-scoped work (CI, shared config), use the umbrella project name
+- Each US gets `**Project**: <repo-id>` based on which repo owns that work
+- A single increment can contain stories targeting different repos
+- Use prefixed IDs when multiple repos are involved: `US-FE-001`, `US-BE-001`
+- For workspace-scoped work (CI, shared config), use the workspace name
 
-**Example — umbrella increment with 2 child repos (frontend, backend):**
+**Example — workspace with 2 repos (frontend, backend):**
 ```markdown
 ### US-FE-001: Login Page UI
 **Project**: frontend
@@ -118,9 +117,8 @@ When your invocation args include **UMBRELLA MODE**, the project uses an umbrell
 **As a** user **I want** a /login endpoint **So that** the frontend can authenticate
 ```
 
-**Single-project mode (no umbrella context in args):**
-- All user stories get the same `**Project**: <project-name>` value
-- Standard single-project spec design
+**Single-project workspaces:**
+- All user stories get `**Project**: <workspace.name>` (auto-resolved)
 
 ## Core Principles
 

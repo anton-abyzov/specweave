@@ -237,7 +237,7 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
 ## Critical Rules
 
-1. **Prefer team-based delegation when TeamCreate is available**; write spec files directly otherwise
+1. **NEVER write spec.md/plan.md/tasks.md directly** when TeamCreate is available — delegate via TeamCreate + team-scoped Agent() calls; write spec files directly only as fallback
 2. **Project field is MANDATORY** — Every US MUST have `**Project**:` field
 3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --auto-id --name "name" --title "Title" --description "Desc" --project "my-app"`
 4. **Team-based delegation is the preferred path** when TeamCreate is available — but direct spec writing is the universal default that works with ALL AI tools

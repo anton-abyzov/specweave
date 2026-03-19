@@ -593,7 +593,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       const result = await runHook(tempDir, hookPath);
       const msg = result.json.systemMessage as string;
       // Should contain at least one actionable command
-      expect(msg).toMatch(sw:(do|done)/);
+      expect(msg).toMatch(/sw:(do|done)/);
     });
 
     it('should include turn counter info in block message', async () => {

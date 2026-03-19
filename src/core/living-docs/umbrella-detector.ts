@@ -153,7 +153,14 @@ export async function detectUmbrellaStructure(
     return recentJobResult;
   }
 
-  // Strategy 2: Load from config.json
+  // Strategy 2a: Load from config.json workspace.repos (primary)
+  const fromWorkspace = await loadFromWorkspaceConfig(projectPath);
+  if (fromWorkspace.isUmbrella) {
+    fromWorkspace.stats.detectionTimeMs = Date.now() - startTime;
+    return fromWorkspace;
+  }
+
+  // Strategy 2b: Load from config.json umbrella section (legacy)
   const fromConfig = await loadFromUmbrellaConfig(projectPath);
   if (fromConfig.isUmbrella) {
     fromConfig.stats.detectionTimeMs = Date.now() - startTime;
@@ -302,7 +309,69 @@ async function loadFromMostRecentCloneJob(
 }
 
 /**
- * Load umbrella structure from config.json
+ * Load umbrella structure from config.json workspace.repos
+ *
+ * Primary config strategy — reads from the unified workspace format (v3.0).
+ * workspace.repos replaces the legacy umbrella.childRepos section.
+ */
+export async function loadFromWorkspaceConfig(
+  projectPath: string
+): Promise<UmbrellaDetectionResult> {
+  const configPath = path.join(projectPath, '.specweave', 'config.json');
+
+  const emptyResult: UmbrellaDetectionResult = {
+    isUmbrella: false,
+    config: null,
+    modules: [],
+    source: 'none',
+    stats: { totalRepos: 0, clonedRepos: 0, failedRepos: 0, detectionTimeMs: 0 },
+  };
+
+  if (!fs.existsSync(configPath)) {
+    return emptyResult;
+  }
+
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    if (!Array.isArray(config.workspace?.repos) || config.workspace.repos.length === 0) {
+      return emptyResult;
+    }
+
+    // Convert workspace.repos to ChildRepoConfig format
+    const childRepos: ChildRepoConfig[] = config.workspace.repos.map((repo: any) => ({
+      id: repo.id,
+      path: repo.path || '',
+      name: repo.name || repo.id,
+      status: 'cloned' as const,
+    }));
+
+    const modules = await convertReposToModules(projectPath, childRepos);
+
+    return {
+      isUmbrella: true,
+      config: {
+        enabled: true,
+        childRepos,
+        detectedFrom: 'config',
+        detectedAt: new Date().toISOString(),
+      },
+      modules,
+      source: 'config',
+      stats: {
+        totalRepos: childRepos.length,
+        clonedRepos: modules.length,
+        failedRepos: childRepos.length - modules.length,
+        detectionTimeMs: 0,
+      },
+    };
+  } catch {
+    return emptyResult;
+  }
+}
+
+/**
+ * Load umbrella structure from config.json (legacy umbrella section)
  */
 export async function loadFromUmbrellaConfig(
   projectPath: string

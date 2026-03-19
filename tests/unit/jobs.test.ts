@@ -32,6 +32,13 @@ describe('sw:jobs command', () => {
     // Create directory structure
     fs.mkdirSync(stateDir, { recursive: true });
 
+    // Scripts walk up looking for .specweave/config.json — provide a minimal one
+    // so the project root is resolved to tempDir (not an ancestor directory).
+    fs.writeFileSync(
+      path.join(specweaveDir, 'config.json'),
+      JSON.stringify({ version: '2.0', project: { name: 'test-project' } }, null, 2)
+    );
+
     // Initialize with empty jobs
     fs.writeFileSync(jobsFile, JSON.stringify({ jobs: [] }, null, 2));
 
@@ -420,7 +427,7 @@ describe('sw:jobs command', () => {
       });
 
       expect(result).toContain('No increment data available');
-      expect(result).toContain('Run sw:status to rebuild cache');
+      expect(result).toMatch(/Run \/?sw:status to rebuild cache/);
     });
   });
 

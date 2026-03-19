@@ -46,6 +46,7 @@ The system should allow users to manage their profiles.
 ## User Stories
 
 ### US-001: Profile management
+**Project**: my-app
 As a user, I want to update my profile so that my information stays current.
 
 ## Acceptance Criteria
@@ -1148,6 +1149,120 @@ Something without AC section.
       const report = validator.formatValidationReport(result);
 
       expect(report).toContain('Info (Nice to Have)');
+    });
+  });
+
+  // ── spec.md **Project**: validation (T-044) ──────────────────────
+
+  describe('spec.md Project field validation (T-044)', () => {
+    beforeEach(() => {
+      writeValidPlan();
+      writeValidTasks();
+    });
+
+    it('should report ERROR when a US block is missing **Project**: field', () => {
+      writeSpec(`# Spec
+
+## User Stories
+
+### US-001: Login Feature
+**As a** user
+**I want** to log in
+**So that** I can access the app
+
+## Acceptance Criteria
+- [ ] AC-US1-01: Login works
+`);
+
+      const result = validator.validateIncrement(tempDir);
+
+      const issue = result.issues.find(
+        i => i.code === ValidationErrorCode.SPEC_MISSING_PROJECT
+      );
+      expect(issue).toBeDefined();
+      expect(issue!.severity).toBe(ValidationSeverity.ERROR);
+      expect(issue!.message).toContain('US-001');
+      expect(issue!.message).toContain('Project');
+    });
+
+    it('should report ERROR for each US block missing **Project**:', () => {
+      writeSpec(`# Spec
+
+## User Stories
+
+### US-001: Login Feature
+**As a** user
+**I want** to log in
+**So that** I can access the app
+
+### US-002: Registration
+**As a** user
+**I want** to register
+**So that** I can create an account
+
+## Acceptance Criteria
+- [ ] AC-US1-01: Login works
+- [ ] AC-US2-01: Registration works
+`);
+
+      const result = validator.validateIncrement(tempDir);
+
+      const projectIssues = result.issues.filter(
+        i => i.code === ValidationErrorCode.SPEC_MISSING_PROJECT
+      );
+      expect(projectIssues).toHaveLength(2);
+      expect(projectIssues[0].message).toContain('US-001');
+      expect(projectIssues[1].message).toContain('US-002');
+    });
+
+    it('should NOT report error when all US blocks have **Project**: field', () => {
+      writeSpec(`# Spec
+
+## User Stories
+
+### US-001: Login Feature
+**Project**: my-app
+**As a** user
+**I want** to log in
+**So that** I can access the app
+
+### US-002: Registration
+**Project**: my-app
+**As a** user
+**I want** to register
+**So that** I can create an account
+
+## Acceptance Criteria
+- [ ] AC-US1-01: Login works
+- [ ] AC-US2-01: Registration works
+`);
+
+      const result = validator.validateIncrement(tempDir);
+
+      const projectIssues = result.issues.filter(
+        i => i.code === ValidationErrorCode.SPEC_MISSING_PROJECT
+      );
+      expect(projectIssues).toHaveLength(0);
+    });
+
+    it('should cause validator to return valid=false (non-zero exit)', () => {
+      writeSpec(`# Spec
+
+## User Stories
+
+### US-001: Login Feature
+**As a** user
+**I want** to log in
+
+## Acceptance Criteria
+- [ ] AC-US1-01: Login works
+`);
+
+      const result = validator.validateIncrement(tempDir);
+
+      // Missing Project is ERROR, so valid should be false
+      expect(result.valid).toBe(false);
+      expect(result.summary.errors).toBeGreaterThan(0);
     });
   });
 

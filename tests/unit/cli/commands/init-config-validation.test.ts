@@ -95,7 +95,7 @@ const {
   mockDetectProvider: vi.fn().mockReturnValue(null),
   mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
   mockScanMisplacedRepos: vi.fn().mockReturnValue([]),
-  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ umbrella: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
+  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ workspace: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
   mockPromptLanguageSelection: vi.fn().mockResolvedValue({ language: 'en', keepEnglishOriginals: false }),
@@ -207,8 +207,10 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
+  scanWorkspaceRepos: mockScanUmbrellaRepos,
   scanMisplacedRepos: mockScanMisplacedRepos,
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
+  buildWorkspaceConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
   promptLanguageSelection: mockPromptLanguageSelection,
@@ -347,9 +349,9 @@ describe('AC-US6-03: init config never contains multiProject.enabled', () => {
 
     // multiProject must never appear
     expect(writtenConfig).not.toHaveProperty('multiProject');
-    // When umbrella discovery fires, umbrella.enabled must be true
-    if (writtenConfig.umbrella) {
-      expect(writtenConfig.umbrella.enabled).toBe(true);
+    // When workspace discovery fires, workspace.enabled must be true
+    if (writtenConfig.workspace) {
+      expect(writtenConfig.workspace.enabled).toBe(true);
     }
   });
 

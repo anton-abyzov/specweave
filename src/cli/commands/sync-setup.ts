@@ -15,6 +15,8 @@ import type { SupportedLanguage } from '../../core/i18n/types.js';
 import { setupIssueTracker } from '../helpers/issue-tracker/index.js';
 import type { RepositoryHosting } from '../helpers/issue-tracker/types.js';
 import { runHealthChecksForConfig, formatHealthCheckResults } from './sync-health.js';
+import { runProjectMappingWizard, applyMappingsToWorkspace, type MappingProvider } from '../helpers/issue-tracker/project-mapping-wizard.js';
+import type { WorkspaceConfig } from '../../core/config/types.js';
 
 export type SyncSetupProvider = 'github' | 'jira' | 'ado';
 
@@ -116,6 +118,30 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
   });
 
   if (success) {
+    // After credentials validated, run repo-mapping step if workspace has repos (T-026)
+    try {
+      const updatedRaw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const workspace: WorkspaceConfig | undefined = updatedRaw.workspace;
+
+      if (workspace && workspace.repos.length > 0) {
+        const provider = (updatedRaw.sync?.provider || options.provider || 'github') as MappingProvider;
+        const wizardResult = await runProjectMappingWizard({
+          provider,
+          workspace,
+        });
+
+        // Apply mappings to workspace config and write back (T-027)
+        if (wizardResult.mappings.length > 0) {
+          updatedRaw.workspace = applyMappingsToWorkspace(workspace, wizardResult);
+          fs.writeFileSync(configPath, JSON.stringify(updatedRaw, null, 2));
+          console.log(chalk.green('   ✓ Repo mappings saved to workspace config'));
+        }
+      }
+    } catch {
+      // Mapping wizard failure is non-critical — credentials are already saved
+      console.log(chalk.gray('   ⚠ Could not run repo mapping wizard. Edit config.json manually.'));
+    }
+
     console.log('');
     console.log(chalk.green.bold('✅ Sync setup complete!'));
     console.log('');

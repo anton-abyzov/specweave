@@ -33,6 +33,13 @@ describe('Dashboard Cache Scripts', () => {
 
     fs.mkdirSync(incrementsDir, { recursive: true });
     fs.mkdirSync(stateDir, { recursive: true });
+
+    // Scripts walk up looking for .specweave/config.json — provide a minimal one
+    // so the project root is resolved to testDir (not an ancestor directory).
+    fs.writeFileSync(
+      path.join(specweaveDir, 'config.json'),
+      JSON.stringify({ version: '2.0', project: { name: 'test-project' } }, null, 2)
+    );
   });
 
   afterEach(() => {

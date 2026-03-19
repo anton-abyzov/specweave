@@ -23,6 +23,10 @@ export class Router {
     this.addRoute('PUT', path, handler);
   }
 
+  patch(path: string, handler: RouteHandler): void {
+    this.addRoute('PATCH', path, handler);
+  }
+
   delete(path: string, handler: RouteHandler): void {
     this.addRoute('DELETE', path, handler);
   }

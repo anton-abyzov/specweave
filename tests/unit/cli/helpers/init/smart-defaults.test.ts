@@ -35,7 +35,7 @@ describe('smart-defaults', () => {
 
     it('should set testing.coverageTargets', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.testing.coverageTargets).toEqual({ unit: 80, integration: 60, e2e: 40 });
+      expect(config.testing.coverageTargets).toEqual({ unit: 80, integration: 70, e2e: 100 });
     });
 
     it('should preserve existing testing config', () => {

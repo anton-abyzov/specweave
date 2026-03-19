@@ -13,6 +13,7 @@ import { ADOImporter } from './ado-importer.js';
 import { updateSyncMetadata, type PlatformSyncMetadata } from '../sync/sync-metadata.js';
 import { RateLimiter, type RateLimitInfo } from './rate-limiter.js';
 import { getGitHubAuthFromProject } from '../utils/auth-helpers.js';
+import type { WorkspaceConfig } from '../core/config/types.js';
 
 /**
  * Repository configuration for multi-repo imports
@@ -895,4 +896,49 @@ export class ImportCoordinator {
   private extractKeysWithPrefix(map: Map<string, any>, prefix: string): string[] {
     return Array.from(map.keys()).map(key => key.replace(prefix, ''));
   }
+}
+
+/**
+ * Resolve which workspace repo an external import source maps to.
+ *
+ * Matches by:
+ * - GitHub: owner/repo against workspace.repos[].sync.github
+ * - JIRA: project key against workspace.repos[].sync.jira.projectKey
+ * - ADO: project name against workspace.repos[].sync.ado.project
+ *
+ * Returns workspace.name when no match found (with a warning logged).
+ *
+ * @param workspace - WorkspaceConfig from config.json
+ * @param platform - Import source platform
+ * @param sourceId - Source identifier (e.g., "acme/fe" for GitHub, "BE" for JIRA)
+ * @returns The matching workspace repo id, or workspace.name as fallback
+ */
+export function resolveProjectFromWorkspace(
+  workspace: WorkspaceConfig | undefined,
+  platform: 'github' | 'jira' | 'ado',
+  sourceId: string
+): string {
+  if (!workspace) return 'unknown';
+
+  for (const repo of workspace.repos) {
+    const sync = repo.sync;
+    if (!sync) continue;
+
+    if (platform === 'github' && sync.github) {
+      const ghKey = `${sync.github.owner}/${sync.github.repo}`;
+      if (ghKey === sourceId) return repo.id;
+    }
+
+    if (platform === 'jira' && sync.jira) {
+      if (sync.jira.projectKey === sourceId) return repo.id;
+    }
+
+    if (platform === 'ado' && sync.ado) {
+      if (sync.ado.project === sourceId) return repo.id;
+    }
+  }
+
+  // No match — use workspace name as fallback
+  logger.warn(`No workspace repo matches import source "${sourceId}" (${platform}). Using workspace.name "${workspace.name}" as projectId.`);
+  return workspace.name;
 }

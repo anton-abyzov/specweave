@@ -26,6 +26,7 @@ import { parseBulkSource, getAuthToken, buildBulkRepoList } from '../helpers/get
 import { launchCloneJob } from '../../core/background/job-launcher.js';
 import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
 import { detectRepository } from '../../utils/git-utils.js';
+import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
 
 export interface GetOptions {
   branch?: string;
@@ -242,8 +243,8 @@ async function _registerAndInit(
 }
 
 async function _runInit(repoDir: string): Promise<void> {
-  if (fs.existsSync(path.join(repoDir, '.specweave'))) {
-    console.log(chalk.dim('   Already has .specweave/, skipping init'));
+  if (hasSpecweaveIncrements(repoDir)) {
+    console.log(chalk.dim('   Already initialized with increments, skipping init'));
     return;
   }
   console.log(chalk.dim('   Running specweave init...'));

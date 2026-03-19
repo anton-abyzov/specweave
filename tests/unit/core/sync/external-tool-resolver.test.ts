@@ -229,15 +229,16 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.profileId).toBe('gh-main');
     });
 
-    it('should resolve from project mapping (priority 2)', async () => {
+    it('should resolve from workspace repo sync (priority 2)', async () => {
       const profile = makeGitHubProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-fe': profile } },
-          projectMappings: {
-            'frontend-app': {
-              github: { owner: 'myorg', repo: 'myrepo', profileId: 'gh-fe' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend-app', path: '', prefix: 'FE', sync: { github: { owner: 'myorg', repo: 'myrepo' } } },
+            ],
           },
         }),
         // No metadata with syncTarget
@@ -410,7 +411,7 @@ describe('ExternalToolResolver', () => {
             defaultProfile: 'gh-main',
             profiles: { 'gh-main': makeGitHubProfile() },
           },
-          projectMappings: {},
+          workspace: { name: 'test', repos: [] },
         }),
         [path.join(PROJECT_ROOT, '.specweave', 'increments', '0001-feature', 'metadata.json')]:
           JSON.stringify(metadata),
@@ -428,28 +429,29 @@ describe('ExternalToolResolver', () => {
   // ========================================================================
 
   describe('resolveForProject()', () => {
-    it('should return null when project not in mappings', async () => {
+    it('should return null when project not in workspace repos', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
-          projectMappings: {},
+          workspace: { name: 'test', repos: [] },
         }),
       });
 
       const result = await resolver.resolveForProject('unknown');
 
       expect(result.syncTarget).toBeNull();
-      expect(result.resolutionPath).toContain("projectMappings['unknown'] not found");
+      expect(result.resolutionPath).toContain("workspace.repos['unknown'] not found");
     });
 
-    it('should resolve with explicit profileId from GitHub mapping', async () => {
+    it('should resolve from workspace repo GitHub sync', async () => {
       const profile = makeGitHubProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-fe': profile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe', profileId: 'gh-fe' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'myorg', repo: 'myrepo' } } },
+            ],
           },
         }),
       });
@@ -462,15 +464,16 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.sourceProjectId).toBe('frontend');
     });
 
-    it('should resolve with explicit profileId from JIRA mapping', async () => {
+    it('should resolve from workspace repo JIRA sync', async () => {
       const profile = makeJiraProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'jira-be': profile } },
-          projectMappings: {
-            'backend': {
-              jira: { project: 'BE', profileId: 'jira-be' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'backend', path: '', prefix: 'BE', sync: { jira: { projectKey: 'PROJ' } } },
+            ],
           },
         }),
       });
@@ -481,15 +484,16 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.provider).toBe('jira');
     });
 
-    it('should resolve with explicit profileId from ADO mapping', async () => {
+    it('should resolve from workspace repo ADO sync', async () => {
       const profile = makeAdoProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'ado-main': profile } },
-          projectMappings: {
-            'infra': {
-              ado: { project: 'Infra', profileId: 'ado-main' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'infra', path: '', prefix: 'INFRA', sync: { ado: { project: 'MyProject' } } },
+            ],
           },
         }),
       });
@@ -500,34 +504,36 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.provider).toBe('ado');
     });
 
-    it('should warn when explicit profileId is not found', async () => {
+    it('should warn when workspace repo sync has no matching profile', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: {} },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe', profileId: 'missing' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
 
       const result = await resolver.resolveForProject('frontend');
 
-      expect(result.warnings).toContain("Explicit profileId 'missing' not found");
+      expect(result.warnings.some(w => w.includes("No profile matches github config"))).toBe(true);
     });
 
-    it('should find matching profile by GitHub config when no profileId', async () => {
+    it('should find matching profile by GitHub config', async () => {
       const profile = makeGitHubProfile({
         config: { owner: 'myorg', repo: 'frontend-web' },
       });
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-fe': profile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'myorg', repo: 'frontend-web' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'myorg', repo: 'frontend-web' } } },
+            ],
           },
         }),
       });
@@ -545,10 +551,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-multi': profile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'myorg', repo: 'frontend-web' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'myorg', repo: 'frontend-web' } } },
+            ],
           },
         }),
       });
@@ -565,10 +572,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'jira-be': profile } },
-          projectMappings: {
-            'backend': {
-              jira: { project: 'BE' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'backend', path: '', prefix: 'BE', sync: { jira: { projectKey: 'BE' } } },
+            ],
           },
         }),
       });
@@ -585,10 +593,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'jira-multi': profile } },
-          projectMappings: {
-            'backend': {
-              jira: { project: 'BE' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'backend', path: '', prefix: 'BE', sync: { jira: { projectKey: 'BE' } } },
+            ],
           },
         }),
       });
@@ -605,10 +614,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'ado-infra': profile } },
-          projectMappings: {
-            'infra': {
-              ado: { project: 'Infra' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'infra', path: '', prefix: 'INFRA', sync: { ado: { project: 'Infra' } } },
+            ],
           },
         }),
       });
@@ -625,10 +635,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'ado-multi': profile } },
-          projectMappings: {
-            'infra': {
-              ado: { project: 'Infra' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'infra', path: '', prefix: 'INFRA', sync: { ado: { project: 'Infra' } } },
+            ],
           },
         }),
       });
@@ -638,7 +649,7 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.profileId).toBe('ado-multi');
     });
 
-    it('should warn when mapping exists but no matching profile', async () => {
+    it('should warn when sync exists but no matching profile', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: {
@@ -646,10 +657,11 @@ describe('ExternalToolResolver', () => {
               'gh-other': makeGitHubProfile({ config: { owner: 'other', repo: 'other' } }),
             },
           },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'myorg', repo: 'frontend-web' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'myorg', repo: 'frontend-web' } } },
+            ],
           },
         }),
       });
@@ -665,11 +677,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh': ghProfile } },
-          projectMappings: {
-            'multi': {
-              github: { owner: 'org', repo: 'repo' },
-              jira: { project: 'PROJ' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'multi', path: '', prefix: 'M', sync: { github: { owner: 'org', repo: 'repo' }, jira: { projectKey: 'PROJ' } } },
+            ],
           },
         }),
       });
@@ -684,10 +696,11 @@ describe('ExternalToolResolver', () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: {} },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
@@ -697,6 +710,26 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget).toBeNull();
       expect(result.profile).toBeNull();
     });
+
+    it('should resolve via rootRepo when projectId matches workspace name', async () => {
+      const profile = makeGitHubProfile();
+      setupFileSystem({
+        [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
+          sync: { profiles: { 'gh-root': profile } },
+          workspace: {
+            name: 'my-workspace',
+            rootRepo: { github: { owner: 'myorg', repo: 'myrepo' } },
+            repos: [],
+          },
+        }),
+      });
+
+      const result = await resolver.resolveForProject('my-workspace');
+
+      expect(result.syncTarget!.profileId).toBe('gh-root');
+      expect(result.syncTarget!.provider).toBe('github');
+      expect(result.syncTarget!.derivedFrom).toBe('project-mapping');
+    });
   });
 
   // ========================================================================
@@ -704,15 +737,16 @@ describe('ExternalToolResolver', () => {
   // ========================================================================
 
   describe('resolveForProvider()', () => {
-    it('should resolve from project mapping with explicit profileId', async () => {
+    it('should resolve from workspace repo sync', async () => {
       const profile = makeGitHubProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-fe': profile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe', profileId: 'gh-fe' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'myorg', repo: 'myrepo' } } },
+            ],
           },
         }),
       });
@@ -724,23 +758,23 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.sourceProjectId).toBe('frontend');
     });
 
-    it('should skip project mapping when provider does not match profile', async () => {
+    it('should skip workspace repo when provider does not match any profile', async () => {
       const jiraProfile = makeJiraProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'jira-main': jiraProfile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe', profileId: 'jira-main' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
 
       const result = await resolver.resolveForProvider('github', 'frontend');
 
-      // Profile is jira, not github, so it should not match
-      // Falls through to finding any github profile (none exist)
+      // Only jira profile exists, no github profile → falls through to null
       expect(result.syncTarget).toBeNull();
     });
 
@@ -790,15 +824,16 @@ describe('ExternalToolResolver', () => {
       expect(result.resolutionPath).toContain('no ado profile configured');
     });
 
-    it('should skip project mapping when projectId is not provided', async () => {
+    it('should skip workspace repo lookup when projectId is not provided', async () => {
       const ghProfile = makeGitHubProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-main': ghProfile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe', profileId: 'gh-main' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
@@ -809,22 +844,23 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.derivedFrom).toBe('default-profile');
     });
 
-    it('should skip project mapping when mapping does not have profileId', async () => {
+    it('should fall through to first profile when workspace sync does not match', async () => {
       const ghProfile = makeGitHubProfile();
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: { 'gh-main': ghProfile } },
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe' }, // no profileId
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
 
       const result = await resolver.resolveForProvider('github', 'frontend');
 
-      // Should fall through to first github profile
+      // Sync config owner/repo don't match profile config → falls through to first github profile
       expect(result.syncTarget!.profileId).toBe('gh-main');
       expect(result.syncTarget!.derivedFrom).toBe('default-profile');
     });
@@ -865,23 +901,13 @@ describe('ExternalToolResolver', () => {
       expect(result.suggestions!.some(s => s.includes('specweave init'))).toBe(true);
     });
 
-    it('should return invalid when project mapping is missing', async () => {
-      setupFileSystem({
-        [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
-          sync: { profiles: { 'gh': makeGitHubProfile() } },
-          projectMappings: {},
-        }),
-      });
-
-      // Create a resolver that won't resolve (no metadata, no project mapping, no default)
-      // Actually, with profiles and no defaultProfile, it will fallback to first profile.
-      // We need empty profiles + a projectId that's missing
+    it('should return invalid when no sync profiles and workspace repo missing', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: {
             profiles: {},
           },
-          projectMappings: {},
+          workspace: { name: 'test', repos: [] },
         }),
       });
 
@@ -892,25 +918,22 @@ describe('ExternalToolResolver', () => {
     });
 
     it('should suggest setting defaultProfile when profiles exist but no default', async () => {
-      // Need: profiles exist, projectId provided but no mapping, no default profile
-      // But with profiles and no default, resolveForIncrement falls back to first profile.
-      // So this specific error path requires: syncConfig exists, profiles are empty, no projectMapping
-      // Actually, the code checks for no syncTarget → then checks conditions.
-      // If syncConfig exists but profiles are empty and projectId doesn't match:
+      // With profiles and no default, resolveForIncrement falls back to first profile.
+      // So this always resolves as valid when any profile exists.
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: {
             profiles: { 'gh': makeGitHubProfile() },
           },
-          projectMappings: {
-            'frontend': { github: { owner: 'org', repo: 'fe' } },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
 
-      // This will actually resolve to first profile fallback, making it valid.
-      // The "no default sync profile" error only triggers when resolution returns null syncTarget.
-      // That can only happen if profiles is empty.
       const result = await resolver.validateIncrementConfig('0001-feature');
       expect(result.valid).toBe(true);
     });
@@ -1371,9 +1394,12 @@ describe('ExternalToolResolver', () => {
               'jira-main': makeJiraProfile(),
             },
           },
-          projectMappings: {
-            'frontend': { github: { owner: 'org', repo: 'fe' } },
-            'backend': { jira: { project: 'BE' } },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+              { id: 'backend', path: '', prefix: 'BE', sync: { jira: { projectKey: 'BE' } } },
+            ],
           },
         }),
       });
@@ -1498,13 +1524,14 @@ describe('ExternalToolResolver', () => {
       expect(result).toBe(false);
     });
 
-    it('should handle config with projectMappings but no sync section', async () => {
+    it('should handle workspace repos but no sync section', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
-          projectMappings: {
-            'frontend': {
-              github: { owner: 'org', repo: 'fe' },
-            },
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE', sync: { github: { owner: 'org', repo: 'fe' } } },
+            ],
           },
         }),
       });
@@ -1543,10 +1570,10 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget!.derivedFrom).toBe('default-profile');
     });
 
-    it('should handle empty projectMappings object', async () => {
+    it('should handle empty workspace repos array', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
-          projectMappings: {},
+          workspace: { name: 'test', repos: [] },
           sync: {
             defaultProfile: 'gh',
             profiles: { 'gh': makeGitHubProfile() },
@@ -1559,12 +1586,15 @@ describe('ExternalToolResolver', () => {
       expect(result.syncTarget).toBeNull();
     });
 
-    it('should handle project mapping with no provider entries', async () => {
+    it('should handle workspace repo with no sync config', async () => {
       setupFileSystem({
         [path.join(PROJECT_ROOT, '.specweave', 'config.json')]: JSON.stringify({
           sync: { profiles: {} },
-          projectMappings: {
-            'frontend': {},
+          workspace: {
+            name: 'test',
+            repos: [
+              { id: 'frontend', path: '', prefix: 'FE' },
+            ],
           },
         }),
       });

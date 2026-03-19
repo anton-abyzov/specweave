@@ -4,9 +4,11 @@
  */
 
 import * as fs from '../../../utils/fs-native.js';
+import * as nativeFs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import type { ParentSpecweaveFolder, UmbrellaParentResult, SuspiciousPathResult, DiscoveredRepo, UmbrellaDiscoveryResult } from './types.js';
+import type { WorkspaceRepo, WorkspaceConfig } from '../../../core/config/types.js';
 
 /**
  * Find the package root by walking up the directory tree looking for package.json
@@ -102,14 +104,28 @@ export function findSourceDir(relativePath: string, dirname: string): string {
 export function detectNestedSpecweave(targetDir: string): ParentSpecweaveFolder[] | null {
   const foundFolders: ParentSpecweaveFolder[] = [];
   const homeDir = os.homedir();
+  // Resolve symlinks so macOS /var/… → /private/var/… comparison works correctly
+  const sysTmp = (() => { try { return nativeFs.realpathSync(os.tmpdir()); } catch { return path.resolve(os.tmpdir()); } })();
 
-  // Start from parent of target directory
+  // Start from parent of target directory (use path.resolve, not realpath, to preserve
+  // the path form the caller used — consumers compare f.path against their own tmpdir values)
   let currentDir = path.dirname(path.resolve(targetDir));
   const root = path.parse(currentDir).root;
   let depth = 1;
 
   // Walk up the directory tree and find ALL .specweave/ folders
   while (currentDir !== root) {
+    // Stop walking when we reach os.tmpdir() itself (or any ancestor of it).
+    // Parent directories of the temp root (e.g. /var/folders/js/… on macOS) may
+    // contain stale/rogue .specweave/ folders left by test runs — they must never
+    // block initialization of real projects living inside the temp tree.
+    // We keep scanning within /tmp/… itself (subdirs are valid project locations).
+    // Resolve symlinks for the comparison so /var/… matches /private/var/… on macOS.
+    const realCurrentDir = (() => { try { return nativeFs.realpathSync(currentDir); } catch { return currentDir; } })();
+    if (sysTmp.startsWith(realCurrentDir + path.sep) || realCurrentDir === sysTmp) {
+      break;
+    }
+
     const specweavePath = path.join(currentDir, '.specweave');
 
     // Check if .specweave/ exists at this level
@@ -173,10 +189,19 @@ export const SUSPICIOUS_PATH_SEGMENTS: readonly string[] = [
  * @returns UmbrellaParentResult if inside an umbrella, null otherwise
  */
 export function detectUmbrellaParent(targetDir: string): UmbrellaParentResult | null {
+  // Resolve symlinks so macOS /var/… → /private/var/… comparison works correctly
+  const sysTmp = (() => { try { return nativeFs.realpathSync(os.tmpdir()); } catch { return path.resolve(os.tmpdir()); } })();
   let currentDir = path.dirname(path.resolve(targetDir));
   const root = path.parse(currentDir).root;
 
   while (currentDir !== root) {
+    // Stop walking when we reach os.tmpdir() itself (or any ancestor of it).
+    // Resolve symlinks for the comparison so /var/… matches /private/var/… on macOS.
+    const realCurrentDir = (() => { try { return nativeFs.realpathSync(currentDir); } catch { return currentDir; } })();
+    if (sysTmp.startsWith(realCurrentDir + path.sep) || realCurrentDir === sysTmp) {
+      break;
+    }
+
     const configPath = path.join(currentDir, '.specweave', 'config.json');
 
     if (fs.existsSync(configPath)) {
@@ -319,6 +344,15 @@ export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | 
 }
 
 /**
+ * Scan the repositories/ subdirectory to discover workspace repos.
+ * Alias for scanUmbrellaRepos — new canonical name per workspace config rework.
+ *
+ * @param targetDir - The project root directory to scan
+ * @returns UmbrellaDiscoveryResult if repos found, null otherwise
+ */
+export const scanWorkspaceRepos = scanUmbrellaRepos;
+
+/**
  * Scan for repositories placed directly under repositories/ without an org subfolder.
  *
  * The standard umbrella layout is repositories/{org}/{repo}/.git (2 levels).
@@ -390,6 +424,40 @@ export function buildUmbrellaConfig(
 
   return {
     umbrella: { enabled: true, projectName, childRepos },
+    repository: { umbrellaRepo: true },
+  };
+}
+
+/**
+ * Build workspace config fragment from discovered repos.
+ * Returns { workspace: WorkspaceConfig } instead of the legacy { umbrella: UmbrellaConfig }.
+ * Each repo gets an empty sync: {} default.
+ *
+ * @param discovery - Result of scanWorkspaceRepos()
+ * @param projectName - Name of the workspace project
+ * @returns Config fragment with workspace field
+ */
+export function buildWorkspaceConfig(
+  discovery: UmbrellaDiscoveryResult,
+  projectName: string
+): {
+  workspace: WorkspaceConfig;
+  repository: { umbrellaRepo: true };
+} {
+  const usedPrefixes = new Set<string>();
+  const repos: WorkspaceRepo[] = discovery.repos.map(r => {
+    let prefix = r.name.substring(0, 3).toUpperCase();
+    if (usedPrefixes.has(prefix)) {
+      let suffix = 2;
+      while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
+      prefix = prefix.substring(0, 2) + suffix;
+    }
+    usedPrefixes.add(prefix);
+    return { id: r.name, path: r.path, name: r.name, prefix, sync: {} };
+  });
+
+  return {
+    workspace: { name: projectName, repos },
     repository: { umbrellaRepo: true },
   };
 }

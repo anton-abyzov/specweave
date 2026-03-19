@@ -32,6 +32,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     // Initialize .specweave structure
     await fs.mkdir(path.join(testDir, '.specweave/increments'), { recursive: true });
     await fs.mkdir(path.join(testDir, '.specweave/state'), { recursive: true });
+    await fs.mkdir(path.join(testDir, '.specweave/logs'), { recursive: true });
     await fs.mkdir(path.join(testDir, '.specweave/docs/internal/specs/default'), { recursive: true });
 
     // Create minimal config

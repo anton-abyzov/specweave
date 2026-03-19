@@ -16,6 +16,9 @@ import {
   isInsideSpecWeaveProject,
   getSpecWeaveDir,
   resolveFromProjectRoot,
+  findUmbrellaRoot,
+  resolveEffectiveRoot,
+  hasSpecweaveIncrements,
 } from '../../../src/utils/find-project-root.js';
 
 /** Collect temp dirs for cleanup */
@@ -65,6 +68,46 @@ async function createBareDirTree(): Promise<{ tmpBase: string; bareRoot: string;
   await fsPromises.mkdir(nestedDir, { recursive: true });
 
   return { tmpBase, bareRoot, nestedDir };
+}
+
+/**
+ * Create an umbrella workspace tree for testing:
+ *
+ *   <tmpBase>/
+ *     umbrella/
+ *       .specweave/
+ *         config.json  (umbrella.enabled: true)
+ *       repositories/
+ *         org/
+ *           child-repo/
+ *             .git/
+ *             src/
+ *               deep/
+ */
+async function createUmbrellaTree(configOverride?: Record<string, unknown>): Promise<{
+  tmpBase: string;
+  umbrellaRoot: string;
+  childRepo: string;
+  childRepoNested: string;
+}> {
+  const tmpBase = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'sw-umb-'));
+  tempDirs.push(tmpBase);
+
+  const umbrellaRoot = path.join(tmpBase, 'umbrella');
+  const specweaveDir = path.join(umbrellaRoot, '.specweave');
+  const reposDir = path.join(umbrellaRoot, 'repositories', 'org');
+  const childRepo = path.join(reposDir, 'child-repo');
+
+  await fsPromises.mkdir(specweaveDir, { recursive: true });
+  await fsPromises.writeFile(
+    path.join(specweaveDir, 'config.json'),
+    JSON.stringify(configOverride ?? { umbrella: { enabled: true } })
+  );
+  await fsPromises.mkdir(path.join(specweaveDir, 'increments', '0001-test'), { recursive: true });
+  await fsPromises.mkdir(path.join(childRepo, '.git'), { recursive: true });
+  await fsPromises.mkdir(path.join(childRepo, 'src', 'deep'), { recursive: true });
+
+  return { tmpBase, umbrellaRoot, childRepo, childRepoNested: path.join(childRepo, 'src', 'deep') };
 }
 
 afterEach(async () => {

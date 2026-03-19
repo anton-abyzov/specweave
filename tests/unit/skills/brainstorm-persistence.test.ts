@@ -98,7 +98,7 @@ describe('Brainstorm SKILL.md — Persistence & Handoff (US-003 partial)', () =>
 
   describe('AC-US3-03: Increment handoff protocol', () => {
     it('references sw:increment invocation', () => {
-      expect(content).toMatch(sw:increment/);
+      expect(content).toMatch(/sw:increment/);
     });
 
     it('contains handoff trigger phrases', () => {
