@@ -393,7 +393,7 @@ specweave sync-progress
 1. **Keep specs up-to-date**: Treat `.specweave/docs/internal/specs/` as source of truth for requirements
 2. **Let external tools manage workflow**: Close issues in GitHub/JIRA/ADO, not SpecWeave
 3. **Review sync results**: Check comments in external tools after task completion
-4. **Use AC-IDs for traceability**: Link tasks to user stories via AC-US{story}-{number}
+4. **Use AC-IDs for traceability**: Link tasks to user stories via `AC-US{story}-{number}`
 
 ### DON'T ❌
 

@@ -11,9 +11,9 @@
 **Components**:
 - **AC** = Acceptance Criteria prefix
 - **US** = User Story
-- **{story}** = User story number (1, 2, 3, ..., no zero-padding for brevity)
+- **`{story}`** = User story number (1, 2, 3, ..., no zero-padding for brevity)
 - **-** = Separator
-- **{number}** = Sequential AC number within story (01, 02, 03, ..., zero-padded for sorting)
+- **`{number}`** = Sequential AC number within story (01, 02, 03, ..., zero-padded for sorting)
 
 **Examples**:
 - ✅ `AC-US1-01` (First AC for User Story 1)
