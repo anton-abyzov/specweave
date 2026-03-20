@@ -140,6 +140,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
   it('should post comment and update issue body when ACs are partially complete', async () => {
     // Comment poster reads spec + metadata
     setupReadFileMock(SPEC_PARTIAL);
+    // gh api fingerprint check (no prior comment → shouldPost=true)
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
     // gh issue comment succeeds
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
@@ -156,11 +158,12 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     expect(commentResult.posted[0].issueNumber).toBe(42);
     expect(commentResult.errors).toHaveLength(0);
 
-    // Verify gh calls: comment + patchIssueBodyCheckboxes view
+    // Verify gh calls: fingerprint check + comment + patchIssueBodyCheckboxes view
     const ghCalls = mockExecFileNoThrow.mock.calls;
-    expect(ghCalls).toHaveLength(2);
-    expect((ghCalls[0][1] as string[])[1]).toBe('comment');
-    expect((ghCalls[1][1] as string[])[1]).toBe('view');
+    expect(ghCalls).toHaveLength(3);
+    expect((ghCalls[0][1] as string[])[0]).toBe('api'); // fingerprint check
+    expect((ghCalls[1][1] as string[])[1]).toBe('comment');
+    expect((ghCalls[2][1] as string[])[1]).toBe('view');
   });
 
   // -------------------------------------------------------------------------
@@ -232,6 +235,7 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
   it('should record errors without throwing when GitHub is down', async () => {
     // --- Comment poster: GitHub down ---
     setupReadFileMock(SPEC_PARTIAL);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check succeeds
     mockExecFileNoThrow.mockResolvedValueOnce(execFailure('connect ECONNREFUSED')); // comment fails
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
@@ -282,6 +286,7 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
   it('should include correct progress percentages in comment bodies', async () => {
     // Partial progress comment
     setupReadFileMock(SPEC_PARTIAL);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
@@ -292,8 +297,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
       baseOptions,
     );
 
-    // Check progress comment body (partial)
-    const progressBody: string = (mockExecFileNoThrow.mock.calls[0][1] as string[])[4];
+    // Check progress comment body (partial) — calls[1] because calls[0] is fingerprint check
+    const progressBody: string = (mockExecFileNoThrow.mock.calls[1][1] as string[])[4];
     expect(progressBody).toContain('3/5');
     expect(progressBody).toContain('60%');
     expect(progressBody).toContain('AC-US1-01');
