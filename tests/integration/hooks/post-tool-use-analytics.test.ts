@@ -36,6 +36,8 @@ describe('PostToolUse Analytics Hook', () => {
 
     await fs.ensureDir(path.join(testRoot, '.specweave', 'state', 'analytics'));
     eventsPath = path.join(testRoot, '.specweave', 'state', 'analytics', 'events.jsonl');
+    // Script checks for config.json existence to detect SpecWeave projects
+    await fs.writeFile(path.join(testRoot, '.specweave', 'config.json'), '{}');
   });
 
   afterEach(() => {
