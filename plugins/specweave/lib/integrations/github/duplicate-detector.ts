@@ -472,18 +472,17 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       }
     }
 
-    // PHASE 3: Verification — DISABLED BY DEFAULT (FS-612)
+    // PHASE 3: Verification — ENABLED BY DEFAULT (T-006)
     // Phase 1 already searches before create. Phase 3 catches race conditions
-    // from parallel sync sessions but costs 1+ extra API calls per issue.
-    // Opt-in with SPECWEAVE_VERIFY_DUPLICATES=1 if you need extra safety.
+    // from parallel sync sessions. Disable with SPECWEAVE_SKIP_VERIFY_DUPLICATES=1.
     //
     // FS-609: Skip Phase 3 when reusing an existing issue (wasReused=true).
     // Phase 3 exists to catch race conditions during CREATION — if no new issue
     // was created, there's nothing to verify.
     let duplicatesClosed = 0;
 
-    if (!wasReused && process.env.SPECWEAVE_VERIFY_DUPLICATES === '1') {
-    console.log(`\n━━━ PHASE 3: VERIFICATION (opt-in) ━━━`);
+    if (!wasReused && process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== '1') {
+    console.log(`\n━━━ PHASE 3: VERIFICATION ━━━`);
     const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
 
     if (!verification.success && verification.duplicates.length > 0) {
@@ -506,7 +505,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
     } else if (verification.success) {
       console.log(`   ✅ No duplicates detected!`);
     }
-    } // end SPECWEAVE_VERIFY_DUPLICATES guard
+    } // end Phase 3 guard
 
     // Final Summary
     console.log(`\n✅ Issue creation complete!`);

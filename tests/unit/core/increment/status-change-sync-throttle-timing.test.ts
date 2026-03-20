@@ -63,6 +63,15 @@ vi.mock('../../../../src/utils/find-project-root.js', () => ({
   resolveEffectiveRoot: () => '/fake/project',
 }));
 
+// ─── Mock ConfigManager (force immediate sync mode for these tests) ─
+vi.mock('../../../../src/core/config/config-manager.js', () => ({
+  ConfigManager: class {
+    async read() {
+      return { sync: { mode: 'immediate' } };
+    }
+  },
+}));
+
 // ─── Mock external-issue-auto-creator (dynamic import in spawnAsyncSync) ──
 vi.mock('../../../../src/sync/external-issue-auto-creator.js', () => ({
   autoCreateExternalIssue: vi.fn().mockResolvedValue({ success: true, skipped: true }),

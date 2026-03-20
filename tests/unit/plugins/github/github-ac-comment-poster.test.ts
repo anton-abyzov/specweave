@@ -225,6 +225,7 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should post progress comment to the correct GitHub issue', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check (no last comment)
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty body → return)
 
@@ -257,7 +258,9 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should read issue links from NEW metadata format', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_NEW_FORMAT);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patch view (empty → return)
 
     const result = await postACProgressComments(
       '0193',
@@ -278,9 +281,11 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should post comments to multiple affected user story issues', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    // For each US: comment + patchIssueBodyCheckboxes view
+    // For each US: fingerprint-check + comment + patchIssueBodyCheckboxes view
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 patch view (empty → return)
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 patch view (empty → return)
 
@@ -298,8 +303,8 @@ describe('postACProgressComments', () => {
     expect(result.posted[1].issueNumber).toBe(43);
     expect(result.errors).toHaveLength(0);
 
-    // Four gh calls: comment + patch-view per US
-    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(4);
+    // Six gh calls: fingerprint-check + comment + patch-view per US
+    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(6);
   });
 
   // -------------------------------------------------------------------------
@@ -326,6 +331,7 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should return error when GitHub API fails, not throw', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(
       execFailure('API rate limit exceeded'),
     ); // comment fails
@@ -349,7 +355,9 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should include progress percentage and AC names in comment body', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patch view (empty → return)
 
     await postACProgressComments(
       '0193',
@@ -358,8 +366,8 @@ describe('postACProgressComments', () => {
       makeOptions(),
     );
 
-    // Get the body argument from the gh call
-    const ghCall = mockExecFileNoThrow.mock.calls[0];
+    // Get the body argument from the comment call (index 1, after fingerprint check)
+    const ghCall = mockExecFileNoThrow.mock.calls[1];
     const bodyArgIndex = ghCall[1].indexOf('--body') + 1;
     const commentBody: string = ghCall[1][bodyArgIndex];
 
@@ -379,6 +387,7 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should never throw, even when GitHub is completely down', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(
       execFailure('connect ECONNREFUSED'),
     ); // comment fails
@@ -402,9 +411,11 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should handle mixed success/failure across user stories', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    // For each US: comment + patchIssueBodyCheckboxes view
+    // For each US: fingerprint-check + comment + patchIssueBodyCheckboxes view
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 comment → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 patch view (empty → return)
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(
       execFailure('Not Found'),
     ); // US-002 comment → failure
@@ -527,7 +538,9 @@ describe('postACProgressComments', () => {
     });
 
     setupMocks(SPEC_CONTENT_PARTIAL, metadataBothFormats);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patch view (empty → return)
 
     const result = await postACProgressComments(
       '0193',
@@ -556,6 +569,7 @@ describe('postACProgressComments -- issue body patching', () => {
   // -------------------------------------------------------------------------
   it('should patch issue body checkboxes after posting comment', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
     const issueBody = [
       '- [ ] **AC-US1-01**: First criterion done',
@@ -574,12 +588,12 @@ describe('postACProgressComments -- issue body patching', () => {
       makeOptions(),
     );
 
-    // 3 calls: comment + view + edit
-    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(3);
+    // 4 calls: fingerprint-check + comment + view + edit
+    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(4);
     const calls = mockExecFileNoThrow.mock.calls;
-    expect((calls[0][1] as string[])[1]).toBe('comment');
-    expect((calls[1][1] as string[])[1]).toBe('view');
-    expect((calls[2][1] as string[])[1]).toBe('edit');
+    expect((calls[1][1] as string[])[1]).toBe('comment');
+    expect((calls[2][1] as string[])[1]).toBe('view');
+    expect((calls[3][1] as string[])[1]).toBe('edit');
   });
 
   // -------------------------------------------------------------------------
@@ -587,6 +601,7 @@ describe('postACProgressComments -- issue body patching', () => {
   // -------------------------------------------------------------------------
   it('should patch correct AC checkbox states in issue body', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // fingerprint check
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
     const issueBody = [
       '- [ ] **AC-US1-01**: First criterion done',
@@ -605,8 +620,8 @@ describe('postACProgressComments -- issue body patching', () => {
       makeOptions(),
     );
 
-    // The edit call's --body should have correct checkbox states
-    const editArgs = mockExecFileNoThrow.mock.calls[2][1] as string[];
+    // The edit call's --body should have correct checkbox states (calls[3] = edit)
+    const editArgs = mockExecFileNoThrow.mock.calls[3][1] as string[];
     const bodyIndex = editArgs.indexOf('--body') + 1;
     const patchedBody = editArgs[bodyIndex];
 
