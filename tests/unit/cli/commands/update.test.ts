@@ -30,6 +30,7 @@ const {
   mockListSkillMemoryFiles,
   mockExecSync,
   mockOraInstance,
+  mockAccessSync,
 } = vi.hoisted(() => ({
   mockUpdateInstructionsCommand: vi.fn().mockResolvedValue(undefined),
   mockRefreshPluginsCommand: vi.fn().mockResolvedValue(undefined),
@@ -49,6 +50,7 @@ const {
     warn: vi.fn().mockReturnThis(),
     info: vi.fn().mockReturnThis(),
   },
+  mockAccessSync: vi.fn(),
 }));
 
 // ============================================================================
@@ -77,6 +79,14 @@ vi.mock('child_process', async (importOriginal) => {
   return {
     ...actual,
     execSync: mockExecSync,
+  };
+});
+
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  return {
+    ...actual,
+    accessSync: mockAccessSync,
   };
 });
 
@@ -417,7 +427,7 @@ describe('update command', () => {
           if (cmd.includes('specweave update --no-self')) return '';
           return '';
         });
-        const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {});
+        mockAccessSync.mockImplementation(() => {});
 
         await updateCommand({ noPlugins: true });
 
@@ -426,7 +436,7 @@ describe('update command', () => {
           expect.stringContaining('specweave update --no-self --no-plugins'),
           expect.objectContaining({ stdio: 'inherit' })
         );
-        accessSpy.mockRestore();
+        mockAccessSync.mockReset();
       });
 
       it('should pass flags through to spawned CLI after self-update', async () => {
@@ -439,7 +449,7 @@ describe('update command', () => {
           if (cmd.includes('specweave update')) return '';
           return '';
         });
-        const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {});
+        mockAccessSync.mockImplementation(() => {});
 
         await updateCommand({
           all: true,
@@ -457,7 +467,7 @@ describe('update command', () => {
         expect(cmd).toContain('--all');
         expect(cmd).toContain('--verbose');
         expect(cmd).toContain('--force');
-        accessSpy.mockRestore();
+        mockAccessSync.mockReset();
       });
 
       it('should handle self-update npm failure with EACCES', async () => {
@@ -534,15 +544,19 @@ describe('update command', () => {
 
       it('should handle spawned process exit code', async () => {
         setupSpecWeaveProject();
-        mockExecSync
-          .mockReturnValueOnce('1.0.200\n')
-          .mockReturnValueOnce('')
-          .mockReturnValueOnce('specweave/1.0.200\n')
-          .mockImplementationOnce(() => {
+        mockExecSync.mockImplementation((cmd: string) => {
+          if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+          if (cmd.includes('npm prefix -g')) return '/home/user/.npm\n';
+          if (cmd.includes('npm install -g specweave@')) return '';
+          if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+          if (cmd.includes('specweave update')) {
             const err = new Error('process failed') as any;
             err.status = 2;
             throw err;
-          });
+          }
+          return '';
+        });
+        mockAccessSync.mockImplementation(() => {});
 
         const mockExit = vi
           .spyOn(process, 'exit')
@@ -553,62 +567,79 @@ describe('update command', () => {
 
         expect(mockExit).toHaveBeenCalledWith(2);
         mockExit.mockRestore();
+        mockAccessSync.mockReset();
       });
 
       it('should re-throw non-status errors from spawned process', async () => {
         setupSpecWeaveProject();
-        mockExecSync
-          .mockReturnValueOnce('1.0.200\n')
-          .mockReturnValueOnce('')
-          .mockReturnValueOnce('specweave/1.0.200\n')
-          .mockImplementationOnce(() => {
+        mockExecSync.mockImplementation((cmd: string) => {
+          if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+          if (cmd.includes('npm prefix -g')) return '/home/user/.npm\n';
+          if (cmd.includes('npm install -g specweave@')) return '';
+          if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+          if (cmd.includes('specweave update')) {
             throw new Error('unknown spawn error');
-          });
+          }
+          return '';
+        });
+        mockAccessSync.mockImplementation(() => {});
 
         await expect(updateCommand({})).rejects.toThrow(
           'unknown spawn error'
         );
+        mockAccessSync.mockReset();
       });
 
       it('should handle version mismatch after install', async () => {
         setupSpecWeaveProject();
-        mockExecSync
-          .mockReturnValueOnce('1.0.200\n') // npm view
-          .mockReturnValueOnce('') // npm install
-          .mockReturnValueOnce('specweave/1.0.199\n'); // version mismatch
+        mockExecSync.mockImplementation((cmd: string) => {
+          if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+          if (cmd.includes('npm prefix -g')) return '/home/user/.npm\n';
+          if (cmd.includes('npm install -g specweave@')) return '';
+          if (cmd === 'specweave --version') return 'specweave/1.0.199\n'; // mismatch
+          return '';
+        });
+        mockAccessSync.mockImplementation(() => {});
 
         await updateCommand({ noPlugins: true });
 
         // Version mismatch returns updated=false, so no spawn happens
-        // Verify the version check was attempted
         expect(mockExecSync).toHaveBeenCalledWith(
           'specweave --version',
           expect.any(Object)
         );
-        // Should NOT spawn new CLI since updated=false
         expect(mockExecSync).not.toHaveBeenCalledWith(
           expect.stringContaining('specweave update --no-self'),
           expect.any(Object)
         );
+        mockAccessSync.mockReset();
       });
 
       it('should handle --version verification failure gracefully', async () => {
         setupSpecWeaveProject();
-        mockExecSync
-          .mockReturnValueOnce('1.0.200\n') // npm view
-          .mockReturnValueOnce('') // npm install
-          .mockImplementationOnce(() => {
+        let versionChecked = false;
+        mockExecSync.mockImplementation((cmd: string) => {
+          if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+          if (cmd.includes('npm prefix -g')) return '/home/user/.npm\n';
+          if (cmd.includes('npm install -g specweave@')) return '';
+          if (cmd === 'specweave --version') {
+            versionChecked = true;
             throw new Error('binary not found');
-          }) // specweave --version fails
-          .mockReturnValueOnce(''); // spawned update still runs
+          }
+          if (cmd.includes('specweave update')) return '';
+          return '';
+        });
+        mockAccessSync.mockImplementation(() => {});
 
         await updateCommand({ noPlugins: true });
 
+        expect(versionChecked).toBe(true);
         // Verification failure still sets updated=true, so spawn should happen
         expect(mockExecSync).toHaveBeenCalledWith(
           expect.stringContaining('specweave update --no-self'),
           expect.any(Object)
         );
+        mockAccessSync.mockReset();
       });
 
       it('should always use --registry flag to prevent E401 from stale npmrc tokens', async () => {
@@ -1460,7 +1491,7 @@ describe('update command', () => {
         if (cmd.includes('specweave update --no-self')) return '';
         return '';
       });
-      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+      mockAccessSync.mockImplementation(() => {
         throw new Error('EACCES');
       });
 
@@ -1472,7 +1503,7 @@ describe('update command', () => {
       );
       expect(prefixCall).toBeDefined();
 
-      accessSpy.mockRestore();
+      mockAccessSync.mockReset();
     });
 
     // T-003: Windows skips writability check
@@ -1519,7 +1550,7 @@ describe('update command', () => {
         if (cmd.includes('specweave update --no-self')) return '';
         return '';
       });
-      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+      mockAccessSync.mockImplementation(() => {
         throw new Error('EACCES');
       });
 
@@ -1531,7 +1562,7 @@ describe('update command', () => {
       );
       expect(sudoCall).toBeDefined();
 
-      accessSpy.mockRestore();
+      mockAccessSync.mockReset();
     });
 
     // T-005: No sudo when writable
@@ -1545,7 +1576,7 @@ describe('update command', () => {
         if (cmd.includes('specweave update --no-self')) return '';
         return '';
       });
-      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+      mockAccessSync.mockImplementation(() => {
         // No error = writable
       });
 
@@ -1557,7 +1588,7 @@ describe('update command', () => {
       );
       expect(sudoCall).toBeUndefined();
 
-      accessSpy.mockRestore();
+      mockAccessSync.mockReset();
     });
 
     // T-005: stdio inherit for sudo password prompt
@@ -1579,7 +1610,7 @@ describe('update command', () => {
         if (cmd.includes('specweave update --no-self')) return '';
         return '';
       });
-      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+      mockAccessSync.mockImplementation(() => {
         throw new Error('EACCES');
       });
 
@@ -1588,7 +1619,7 @@ describe('update command', () => {
       expect(sudoOpts).toBeDefined();
       expect(sudoOpts.stdio).toBe('inherit');
 
-      accessSpy.mockRestore();
+      mockAccessSync.mockReset();
     });
 
     // T-004: No sudo on Windows
@@ -1629,7 +1660,7 @@ describe('update command', () => {
         }
         return '';
       });
-      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+      mockAccessSync.mockImplementation(() => {
         throw new Error('EACCES');
       });
 
@@ -1639,7 +1670,7 @@ describe('update command', () => {
       expect(output).toContain('sudo specweave update');
       expect(output).not.toContain('sudo npm install');
 
-      accessSpy.mockRestore();
+      mockAccessSync.mockReset();
     });
 
     // T-007: Windows error message suggests Administrator
