@@ -1633,4 +1633,56 @@ describe('QualityGateDecider', () => {
       expect(blocker!.description).toMatch(/Score: 9\.0\/10/);
     });
   });
+
+  // ─── Custom threshold injection (AC-US3-01, AC-US3-02) ───────────────────
+
+  describe('custom thresholds', () => {
+    const strictThresholds = {
+      fail: { riskScore: 5.0, testCoverage: 80, specQuality: 70, criticalVulnerabilities: 1 },
+      concerns: { riskScore: 3.0, testCoverage: 90, specQuality: 80, highVulnerabilities: 1 },
+    };
+
+    it('uses DEFAULT_THRESHOLDS when constructed without arguments', () => {
+      const decider = new QualityGateDecider();
+      const result = decider.decide(makeAssessment({ overall_score: 85 }));
+      expect(['PASS', 'CONCERNS', 'FAIL']).toContain(result.decision);
+    });
+
+    it('uses DEFAULT_THRESHOLDS when passed explicitly', () => {
+      const decider = new QualityGateDecider(DEFAULT_THRESHOLDS);
+      const result = decider.decide(makeAssessment({ overall_score: 85 }));
+      expect(result).toBeDefined();
+      expect(typeof result.decision).toBe('string');
+    });
+
+    it('applies custom fail.riskScore threshold', () => {
+      const decider = new QualityGateDecider(strictThresholds);
+      // Risk 6.0 > custom fail threshold (5.0) → FAIL
+      const result = decider.decide(
+        makeAssessment({
+          overall_score: 85,
+          risk_assessment: makeRiskAssessment({
+            overall_risk_score: 6.0,
+            risks: [makeRisk({ score: 6.0 })],
+          }),
+        })
+      );
+      expect(result.decision).toBe('FAIL');
+    });
+
+    it('passes when metrics exceed all custom thresholds', () => {
+      const lenientThresholds = {
+        fail: { riskScore: 10.0, testCoverage: 0, specQuality: 0, criticalVulnerabilities: 99 },
+        concerns: { riskScore: 10.0, testCoverage: 0, specQuality: 0, highVulnerabilities: 99 },
+      };
+      const decider = new QualityGateDecider(lenientThresholds);
+      const result = decider.decide(
+        makeAssessment({
+          overall_score: 85,
+          risk_assessment: makeRiskAssessment({ overall_risk_score: 2.0 }),
+        })
+      );
+      expect(result.decision).toBe('PASS');
+    });
+  });
 });

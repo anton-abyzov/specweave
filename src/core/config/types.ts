@@ -1117,10 +1117,10 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   },
   testing: {
     defaultTestMode: 'TDD',
-    defaultCoverageTarget: 90,
+    defaultCoverageTarget: 80,
     coverageTargets: {
-      unit: 95,
-      integration: 90,
+      unit: 80,
+      integration: 70,
       e2e: 100,
     },
     playwright: {

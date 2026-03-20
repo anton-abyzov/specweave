@@ -201,7 +201,22 @@ export class IncrementCompletionValidator {
         const metadata = JSON.parse(metadataContent);
 
         const testMode = (metadata.testMode || 'TDD') as TestMode;
-        const coverageTarget = metadata.coverageTarget ?? 0;
+
+        // Resolve coverage target: config.json > metadata.json fallback
+        let coverageTarget = metadata.coverageTarget ?? 0;
+        try {
+          const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
+          if (await fs.pathExists(configPath)) {
+            const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+            const configTarget = config?.testing?.coverageTargets?.unit
+              ?? config?.testing?.defaultCoverageTarget;
+            if (typeof configTarget === 'number') {
+              coverageTarget = configTarget;
+            }
+          }
+        } catch {
+          // Config read failed — fall back to metadata target
+        }
 
         // Only validate if coverage target is set and testMode is not 'none'
         if (coverageTarget > 0 && testMode !== 'none') {
@@ -214,17 +229,17 @@ export class IncrementCompletionValidator {
           if (coverageResult.skipped) {
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.passed) {
-            // Coverage below target - WARNING only, not blocking
+            // Coverage below target - BLOCKING error
             const details = coverageResult.details;
             let detailsStr = '';
             if (details) {
               detailsStr = `\n    Lines: ${details.lines.toFixed(1)}% | Functions: ${details.functions.toFixed(1)}% | Branches: ${details.branches.toFixed(1)}%`;
             }
-            warnings.push(
-              `⚠️  Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
+            errors.push(
+              `❌ Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
               `    ${coverageResult.reason}\n` +
               `    File: ${coverageResult.coverageFile || 'not found'}\n\n` +
-              `  Consider running tests with --coverage and improving coverage before closing.`
+              `  Run tests with --coverage and improve coverage before closing.`
             );
           } else {
             // Coverage passed - log success
