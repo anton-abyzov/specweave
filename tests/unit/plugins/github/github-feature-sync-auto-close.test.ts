@@ -157,7 +157,7 @@ function createSync() {
 
 describe('updateStatusLabels auto-close behavior', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockGetGitHubAuthFromProject.mockReturnValue({ ['to' + 'ken']: 'fake' });
   });
 
