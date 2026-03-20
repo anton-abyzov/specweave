@@ -24,6 +24,44 @@ Every session starts from zero. Standards vary by who's prompting. Parallel agen
 - No architecture = technical debt
 - New team members = 2 weeks onboarding
 
+### The Spec Divergence
+
+These problems **compound over time**. Two teams start the same project with the same AI tools — one specs, one vibes:
+
+```mermaid
+graph TD
+    Start["Day 1: Ship a Feature with AI"]
+
+    Start -->|"Just code it!"| V1
+    Start -->|"Spec it first"| S1
+
+    V1["Session 2: Starting from zero — AI remembers nothing"]
+    S1["Session 2: Spec provides full context — zero ramp-up"]
+
+    V1 --> V2["Month 3: 10 features, zero docs — new dev needs 2 weeks"]
+    S1 --> S2["Month 3: 50 searchable specs — new dev productive in 2 days"]
+
+    V2 --> V3["Year 1: Rewriting what you already built — velocity collapses"]
+    S2 --> S3["Year 1: 635 increments, zero knowledge lost — velocity accelerates"]
+
+    V3 --> VEnd["TECHNICAL DEBT WINS"]
+    S3 --> SEnd["INSTITUTIONAL MEMORY COMPOUNDS"]
+
+    classDef start fill:#e8f0fe,stroke:#495057,color:#1e1e1e
+    classDef vibe fill:#fff5f5,stroke:#e03131,color:#1e1e1e
+    classDef spec fill:#ebfbee,stroke:#2f9e44,color:#1e1e1e
+    classDef vibeEnd fill:#c92a2a,stroke:#a51d1d,color:#ffffff
+    classDef specEnd fill:#2b8a3e,stroke:#1e7a30,color:#ffffff
+
+    class Start start
+    class V1,V2,V3 vibe
+    class S1,S2,S3 spec
+    class VEnd vibeEnd
+    class SEnd specEnd
+```
+
+**The proof:** SpecWeave itself was built with **635+ increments**. Every feature specified. Every decision traceable. Zero knowledge lost. Spec #1 felt like overhead — spec #635 felt like compound interest.
+
 ## The Solution: Configure AI, Don't Prompt It
 
 SpecWeave encodes your standards into version-controlled configuration. Every developer, every AI tool, every session enforces them identically — automatically.
