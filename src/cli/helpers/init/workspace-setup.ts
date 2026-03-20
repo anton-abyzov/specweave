@@ -6,7 +6,7 @@
  */
 
 import * as fs from '../../../utils/fs-native.js';
-import { lstatSync } from 'fs';
+import { lstatSync, type Dirent } from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import { select, input } from '@inquirer/prompts';
@@ -118,7 +118,7 @@ export function scanWorkspaceContent(targetDir: string): WorkspaceContentScan {
   let fileCount = 0;
   const languages = new Set<string>();
 
-  let dirents: fs.Dirent[];
+  let dirents: Dirent[];
   try {
     dirents = fs.readdirSync(targetDir, { withFileTypes: true });
   } catch {
