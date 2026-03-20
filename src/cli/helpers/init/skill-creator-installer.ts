@@ -15,6 +15,7 @@
 
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
+import * as os from 'os';
 import { execFileNoThrow, isCommandAvailable } from '../../../utils/execFileNoThrow.js';
 
 const SKILL_CREATOR_LOCAL = '.claude/skills/skill-creator/SKILL.md';
@@ -78,10 +79,12 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
     }
 
     // 3. Try npx with explicit public registry (bypasses .npmrc redirects)
+    //    Also use a temp cache dir to bypass corrupted ~/.npm/_cacache/ (EACCES/EEXIST)
     const npxAvailable = await isCommandAvailable('npx');
     if (npxAvailable) {
+      const tmpCache = path.join(os.tmpdir(), `specweave-npm-cache-${process.pid}`);
       const result = await execFileNoThrow('npx', [
-        '--yes', '--registry', NPM_PUBLIC_REGISTRY, '--userconfig', '/dev/null', '--ignore-scripts', '--package', `vskill@${VSKILL_VERSION_RANGE}`,
+        '--yes', '--registry', NPM_PUBLIC_REGISTRY, '--userconfig', '/dev/null', '--cache', tmpCache, '--ignore-scripts', '--package', `vskill@${VSKILL_VERSION_RANGE}`,
         'vskill', ...VSKILL_INSTALL_ARGS,
       ], {
         cwd: projectRoot,
@@ -100,6 +103,9 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
       if (!result.success) {
         console.warn(`[skill-gen] npx vskill install failed: ${npxErr} -- trying claude CLI fallback`);
       }
+
+      // Clean up temp cache (best-effort)
+      try { fs.rmSync(tmpCache, { recursive: true, force: true }); } catch { /* non-fatal */ }
     }
 
     // 4. Fall back to claude install-skill

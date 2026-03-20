@@ -138,6 +138,36 @@ describe('plugin-copier', () => {
       const hash = computePluginHash(path.join(tmpDir, 'does-not-exist'));
       expect(hash).toBe('');
     });
+
+    it('should skip subdirectories without EISDIR errors', () => {
+      const dir = path.join(tmpDir, 'hash-with-subdirs');
+      fs.mkdirSync(path.join(dir, 'skills', 'team-lead', 'agents'), { recursive: true });
+      fs.mkdirSync(path.join(dir, 'skills', 'team-lead', 'phases'), { recursive: true });
+      fs.writeFileSync(path.join(dir, 'skills', 'team-lead', 'SKILL.md'), '# Team Lead');
+      fs.writeFileSync(path.join(dir, 'skills', 'team-lead', 'agents', 'pm.md'), '# PM Agent');
+
+      // Should not throw or log EISDIR warnings — directories are silently skipped
+      const hash = computePluginHash(dir);
+
+      expect(hash).toHaveLength(12);
+      expect(hash).toMatch(/^[a-f0-9]{12}$/);
+    });
+
+    it('should produce stable hash with mixed files and directories', () => {
+      const dir = path.join(tmpDir, 'hash-mixed');
+      fs.mkdirSync(path.join(dir, 'sub1', 'nested'), { recursive: true });
+      fs.mkdirSync(path.join(dir, 'sub2'), { recursive: true });
+      fs.writeFileSync(path.join(dir, 'root.txt'), 'root');
+      fs.writeFileSync(path.join(dir, 'sub1', 'a.txt'), 'a');
+      fs.writeFileSync(path.join(dir, 'sub1', 'nested', 'b.txt'), 'b');
+      // sub2 is an empty directory — should be skipped without affecting hash stability
+
+      const hash1 = computePluginHash(dir);
+      const hash2 = computePluginHash(dir);
+
+      expect(hash1).toBe(hash2);
+      expect(hash1).toHaveLength(12);
+    });
   });
 
   // =========================================================================
