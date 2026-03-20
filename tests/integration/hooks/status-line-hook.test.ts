@@ -27,6 +27,8 @@ describe('Status Line Hook Integration', () => {
 
     await fs.ensureDir(testRoot);
     await fs.ensureDir(path.join(testRoot, '.specweave/state'));
+    // Script checks for config.json existence to detect SpecWeave projects
+    await fs.writeJson(path.join(testRoot, '.specweave/config.json'), {});
 
     // ✅ SAFE: projectRoot is determined from test file location, not process.cwd()
     const hookPath = path.join(

@@ -1,0 +1,118 @@
+.apps {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sw-space-6);
+  margin-top: var(--sw-space-12);
+  max-width: var(--sw-content-3xl);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.appCard {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-5);
+  padding: var(--sw-space-6);
+  border-radius: var(--sw-radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s ease;
+}
+
+.appCard:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.appIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-gradient-text);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--sw-font-size-2xl);
+  font-weight: var(--sw-font-weight-bold);
+  flex-shrink: 0;
+}
+
+.appInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.appName {
+  font-size: var(--sw-font-size-lg);
+  font-weight: var(--sw-font-weight-semibold);
+  margin: 0 0 var(--sw-space-1);
+  color: inherit;
+}
+
+.appDesc {
+  font-size: var(--sw-font-size-sm);
+  color: inherit;
+  opacity: 0.7;
+  margin: 0 0 var(--sw-space-2);
+}
+
+.appBadge {
+  font-size: var(--sw-font-size-xs);
+  color: inherit;
+  opacity: 0.5;
+  font-weight: var(--sw-font-weight-medium);
+}
+
+.selfRef {
+  text-align: center;
+  margin: var(--sw-space-10) auto;
+  font-size: var(--sw-font-size-base);
+  color: inherit;
+  opacity: 0.8;
+  max-width: var(--sw-content-3xl);
+}
+
+.browseLink {
+  color: var(--sw-color-primary-300);
+  text-decoration: none;
+  font-weight: var(--sw-font-weight-medium);
+}
+
+.browseLink:hover {
+  text-decoration: underline;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sw-space-6);
+  margin-top: var(--sw-space-8);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--sw-font-size-4xl);
+  font-weight: var(--sw-font-weight-bold);
+  color: inherit;
+}
+
+.statLabel {
+  font-size: var(--sw-font-size-sm);
+  color: inherit;
+  opacity: 0.6;
+  font-weight: var(--sw-font-weight-medium);
+}
+
+@media (max-width: 640px) {
+  .apps {
+    grid-template-columns: 1fr;
+  }
+
+  .statsRow {
+    grid-template-columns: 1fr;
+    gap: var(--sw-space-4);
+  }
+}

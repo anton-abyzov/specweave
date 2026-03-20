@@ -24,6 +24,8 @@ describe('LSP Environment Check (lsp-check.sh)', () => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lsp-check-test-'));
     fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     fs.mkdirSync(path.join(testDir, '.specweave', 'state'), { recursive: true });
+    // Script checks for config.json existence to detect SpecWeave projects
+    fs.writeFileSync(path.join(testDir, '.specweave', 'config.json'), JSON.stringify({ lsp: { enabled: true } }));
 
     // Path to the actual lsp-check.sh script
     scriptPath = path.join(process.cwd(), 'plugins', 'specweave', 'scripts', 'lsp-check.sh');
