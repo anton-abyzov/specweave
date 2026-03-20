@@ -342,8 +342,8 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       if (cleanupResult.removedCount > 0) {
         log(chalk.green(`  ✓ Cleaned ${cleanupResult.removedCount} stale plugin(s): ${cleanupResult.removedPlugins.join(', ')}`));
       }
-    } catch {
-      // Non-blocking: cleanup errors don't abort plugin refresh
+    } catch (err) {
+      logger.debug(`Step 4c: stale plugin cleanup failed: ${err}`);
     }
 
     // Step 4d: Migrate user-level domain plugins to project scope + restore sw@specweave
@@ -352,8 +352,8 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       if (migrationResult.migratedCount > 0) {
         log(chalk.green(`  ✓ Migrated ${migrationResult.migratedCount} plugin(s) to project scope: ${migrationResult.migratedPlugins.join(', ')}`));
       }
-    } catch {
-      // Non-blocking: migration errors don't abort plugin refresh
+    } catch (err) {
+      logger.debug(`Step 4d: user-level plugin migration failed: ${err}`);
     }
   }
 

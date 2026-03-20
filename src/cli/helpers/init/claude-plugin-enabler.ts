@@ -35,20 +35,19 @@ export function enablePluginsInSettings(
     // Read existing settings or create new
     let settings: Record<string, unknown> = {};
     if (fs.existsSync(settingsPath)) {
+      const content = fs.readFileSync(settingsPath, 'utf-8');
       try {
-        const content = fs.readFileSync(settingsPath, 'utf-8');
         settings = JSON.parse(content);
       } catch {
-        // Backup corrupt file before replacing
-        try {
-          const existingContent = fs.readFileSync(settingsPath, 'utf-8');
-          if (existingContent.trim().length > 0) {
-            const bakPath = settingsPath + '.bak';
-            fs.writeFileSync(bakPath, existingContent, 'utf-8');
+        // Backup corrupt file before replacing — reuse already-read content
+        if (content.trim().length > 0) {
+          try {
+            const bakPath = settingsPath + `.bak.${Date.now()}`;
+            fs.writeFileSync(bakPath, content, 'utf-8');
             console.warn(`Warning: settings.json was corrupt, backed up to ${bakPath}`);
+          } catch (err) {
+            console.warn(`Warning: settings.json corrupt and backup failed: ${err}`);
           }
-        } catch {
-          // Can't read or backup — proceed with fresh settings
         }
         settings = {};
       }
