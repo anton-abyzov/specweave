@@ -511,10 +511,9 @@ increment: ${incrementId}
       // Act
       const result = await IncrementCompletionValidator.validateCompletion(incrementId);
 
-      // Assert: Should pass (coverage is warning-only) but have warning
-      expect(result.isValid).toBe(true);
-      expect(result.warnings).toBeDefined();
-      expect(result.warnings!.some(w => w.includes('coverage below target'))).toBe(true);
+      // Assert: Coverage below target is a BLOCKING error (not warning-only)
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e: string) => e.includes('coverage below target'))).toBe(true);
     });
 
     it('should not warn when coverage meets target', async () => {

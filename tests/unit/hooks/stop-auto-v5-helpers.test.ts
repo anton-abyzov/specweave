@@ -56,6 +56,8 @@ describe('stop-auto-v5.sh helper functions', () => {
     fs.mkdirSync(path.join(tempDir, '.specweave', 'increments'), { recursive: true });
     fs.mkdirSync(path.join(tempDir, '.specweave', 'state'), { recursive: true });
     fs.mkdirSync(path.join(tempDir, '.specweave', 'logs'), { recursive: true });
+    // Script now checks for config.json (not just the .specweave directory)
+    fs.writeFileSync(path.join(tempDir, '.specweave', 'config.json'), JSON.stringify({ testing: {} }));
   });
 
   afterEach(() => {
