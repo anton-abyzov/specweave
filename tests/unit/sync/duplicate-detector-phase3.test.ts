@@ -12,12 +12,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Hoist mocks before any imports
 const mockExecFileSync = vi.hoisted(() => vi.fn());
+const mockExecFile = vi.hoisted(() => vi.fn());
 const mockGetGitHubAuthFromProject = vi.hoisted(() =>
   vi.fn().mockReturnValue({ token: 'test-token' })
 );
 
 vi.mock('child_process', () => ({
   execFileSync: mockExecFileSync,
+  execFile: mockExecFile,
 }));
 
 vi.mock('../../../src/utils/auth-helpers.js', () => ({

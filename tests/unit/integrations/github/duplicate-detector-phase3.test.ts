@@ -1,8 +1,8 @@
 /**
- * Unit tests for DuplicateDetector Phase 3 guard inversion (T-003)
+ * Unit tests for DuplicateDetector Phase 3 guard (T-006 behavior)
  *
- * Verifies that Phase 3 verification is opt-in via SPECWEAVE_VERIFY_DUPLICATES=1
- * instead of opt-out via SPECWEAVE_SKIP_VERIFY_DUPLICATES=1.
+ * Verifies that Phase 3 verification is opt-OUT via SPECWEAVE_SKIP_VERIFY_DUPLICATES=1
+ * (enabled by default).
  *
  * Note: DuplicateDetector internally uses child_process.execFileSync (not exec).
  * We mock it here for test isolation only. The production code is safe.
@@ -10,13 +10,15 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const { mockExecFileSync } = vi.hoisted(() => {
+const { mockExecFileSync, mockExecFile } = vi.hoisted(() => {
   const mockExecFileSync = vi.fn();
-  return { mockExecFileSync };
+  const mockExecFile = vi.fn();
+  return { mockExecFileSync, mockExecFile };
 });
 
 vi.mock('child_process', () => ({
   execFileSync: mockExecFileSync,
+  execFile: mockExecFile,
 }));
 
 vi.mock('../../../../src/utils/auth-helpers.js', () => ({
@@ -68,7 +70,7 @@ describe('DuplicateDetector Phase 3 guard', () => {
     });
   }
 
-  it('should SKIP Phase 3 by default (no env var set)', async () => {
+  it('should RUN Phase 3 by default (no env var set)', async () => {
     setupNewIssueMock(1);
 
     const result = await DuplicateDetector.createWithProtection({
@@ -82,12 +84,12 @@ describe('DuplicateDetector Phase 3 guard', () => {
     const searchCalls = mockExecFileSync.mock.calls.filter(
       (call: any[]) => call[1][0] === 'issue' && call[1][1] === 'list'
     );
-    // Only 1 search call (Phase 1), Phase 3 should be skipped
-    expect(searchCalls.length).toBe(1);
+    // 2 search calls: Phase 1 + Phase 3 verification (Phase 3 runs by default)
+    expect(searchCalls.length).toBe(2);
   });
 
-  it('should RUN Phase 3 when SPECWEAVE_VERIFY_DUPLICATES=1', async () => {
-    process.env.SPECWEAVE_VERIFY_DUPLICATES = '1';
+  it('should SKIP Phase 3 when SPECWEAVE_SKIP_VERIFY_DUPLICATES=1', async () => {
+    process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES = '1';
     setupNewIssueMock(2);
 
     const result = await DuplicateDetector.createWithProtection({
@@ -101,12 +103,11 @@ describe('DuplicateDetector Phase 3 guard', () => {
     const searchCalls = mockExecFileSync.mock.calls.filter(
       (call: any[]) => call[1][0] === 'issue' && call[1][1] === 'list'
     );
-    // 2 search calls: Phase 1 + Phase 3 verification
-    expect(searchCalls.length).toBe(2);
+    // Only 1 search call (Phase 1), Phase 3 skipped via opt-out env var
+    expect(searchCalls.length).toBe(1);
   });
 
   it('should SKIP Phase 3 when wasReused=true regardless of env', async () => {
-    process.env.SPECWEAVE_VERIFY_DUPLICATES = '1';
 
     mockExecFileSync.mockImplementation((_cmd: string, args: string[]) => {
       if (args[0] === 'issue' && args[1] === 'list') {

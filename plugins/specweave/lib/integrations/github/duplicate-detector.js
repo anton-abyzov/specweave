@@ -311,9 +311,9 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       }
     }
     let duplicatesClosed = 0;
-    if (!wasReused && process.env.SPECWEAVE_VERIFY_DUPLICATES === "1") {
+    if (!wasReused && process.env.SPECWEAVE_SKIP_VERIFY_DUPLICATES !== "1") {
       console.log(`
-\u2501\u2501\u2501 PHASE 3: VERIFICATION (opt-in) \u2501\u2501\u2501`);
+\u2501\u2501\u2501 PHASE 3: VERIFICATION \u2501\u2501\u2501`);
       const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
       if (!verification.success && verification.duplicates.length > 0) {
         console.log(`

@@ -491,6 +491,10 @@ export async function initCommand(
       }
     }
 
+    // Stop the init spinner before plugin installation — installAllPlugins()
+    // creates its own ora spinner and concurrent spinners cause visual corruption.
+    spinner.stop();
+
     // Plugin install (Claude only)
     // CRITICAL FIX (v0.34.6): Skip plugin installation when continuing existing config.
     // Previously, re-running `specweave init .` would deregister all marketplace plugins.
