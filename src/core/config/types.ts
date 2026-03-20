@@ -1117,10 +1117,10 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   },
   testing: {
     defaultTestMode: 'TDD',
-    defaultCoverageTarget: 80,
+    defaultCoverageTarget: 90,
     coverageTargets: {
-      unit: 80,
-      integration: 70,
+      unit: 95,
+      integration: 90,
       e2e: 100,
     },
     playwright: {
@@ -1188,7 +1188,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   hooks: {
     post_task_completion: {
       sync_tasks_md: true,
-      external_tracker_sync: false,
+      external_tracker_sync: true,
     },
     post_increment_planning: {
       auto_create_github_issue: true,
