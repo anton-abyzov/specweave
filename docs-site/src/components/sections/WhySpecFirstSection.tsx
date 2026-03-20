@@ -4,22 +4,22 @@ import SectionHeader from '@site/src/components/layout/SectionHeader';
 import AnimateOnScroll from '@site/src/components/animation/AnimateOnScroll';
 import styles from './WhySpecFirstSection.module.css';
 
-const CAPABILITIES = [
-  'Structured Specs',
-  'Quality Gates',
-  'Autonomous Execution',
-  'Agent Teams',
-  'External Sync',
-  'TDD Enforcement',
+const BEFORE = [
+  'Specs live in chat history — lost next session',
+  'Tests? Maybe later. Coverage? Who knows.',
+  'Architecture decisions in Slack threads',
+  'Manual JIRA/GitHub updates after the fact',
+  '"Ask John, he knows how this works"',
+  'Onboarding a new developer: 2 weeks',
 ] as const;
 
-const COMPETITORS = [
-  { name: 'Cursor Rules', caps: [false, false, false, false, false, false] },
-  { name: 'Copilot Instructions', caps: [false, false, false, false, false, false] },
-  { name: 'Windsurf Rules', caps: [false, false, false, false, false, false] },
-  { name: 'CLAUDE.md (raw)', caps: [false, false, false, false, false, false] },
-  { name: 'Vibe Coding', caps: [false, false, false, false, false, false] },
-  { name: 'SpecWeave', caps: [true, true, true, true, true, true] },
+const AFTER = [
+  'Permanent, searchable spec.md + plan.md + tasks.md',
+  'TDD enforced — tests embedded in every task',
+  'ADRs captured automatically in every increment',
+  'Auto-sync to GitHub, JIRA, Azure DevOps on close',
+  'Living docs, always current, never drifts',
+  'Onboarding: 1 day — read the specs, start building',
 ] as const;
 
 export default function WhySpecFirstSection() {
@@ -27,73 +27,47 @@ export default function WhySpecFirstSection() {
     <Section>
       <SectionHeader
         label="Why Spec-First"
-        title="Beyond Instruction Files"
-        subtitle="Every competitor is an instruction layer. SpecWeave is a full development lifecycle."
+        title="Structure Is the Multiplier"
+        subtitle="170 out of 1,645 vibe-coded apps had security vulnerabilities. SpecWeave takes the opposite approach."
       />
 
-      <AnimateOnScroll animation="fade-up" delay={100}>
-        <div className={styles.explainer}>
-          <p>
-            In May 2025, researchers found that 170 out of 1,645 apps built with vibe coding
-            had security vulnerabilities exposing user data. No specs. No tests. No review.
-          </p>
-          <p>
-            SpecWeave takes the opposite approach. Every feature starts as a specification —
-            user stories, acceptance criteria, architecture decisions — before a single line
-            of code is written. The AI builds autonomously against that spec for hours.
-            TDD enforces correctness. Quality gates catch what tests miss.
-          </p>
-          <p className={styles.proof}>
-            This isn't theory. SpecWeave was built with SpecWeave — 636+ structured increments.
-            SketchMate and Lulla shipped to the App Store. Structure isn't overhead.
-            It's the multiplier that makes autonomous AI development actually work.
-          </p>
-        </div>
-      </AnimateOnScroll>
-
-      <AnimateOnScroll animation="fade-up" delay={200}>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className={styles.capHeader}>Capability</th>
-                {COMPETITORS.map((c) => (
-                  <th
-                    key={c.name}
-                    className={
-                      c.name === 'SpecWeave'
-                        ? styles.headerHighlight
-                        : styles.header
-                    }
-                  >
-                    {c.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {CAPABILITIES.map((cap, i) => (
-                <tr key={cap}>
-                  <td className={styles.capCell}>{cap}</td>
-                  {COMPETITORS.map((c) => (
-                    <td
-                      key={c.name}
-                      className={
-                        c.name === 'SpecWeave' ? styles.cellHighlight : styles.cell
-                      }
-                    >
-                      {c.caps[i] ? (
-                        <span className={styles.check}>&#10003;</span>
-                      ) : (
-                        <span className={styles.dash}>—</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
+      <div className={styles.columns}>
+        <AnimateOnScroll animation="fade-up" delay={100}>
+          <div className={styles.column}>
+            <h3 className={styles.columnTitle}>
+              <span className={styles.beforeDot} />
+              Without structure
+            </h3>
+            <ul className={styles.list}>
+              {BEFORE.map((item) => (
+                <li key={item} className={styles.beforeItem}>{item}</li>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </ul>
+          </div>
+        </AnimateOnScroll>
+
+        <AnimateOnScroll animation="fade-up" delay={200}>
+          <div className={`${styles.column} ${styles.columnAfter}`}>
+            <h3 className={styles.columnTitle}>
+              <span className={styles.afterDot} />
+              With SpecWeave
+            </h3>
+            <ul className={styles.list}>
+              {AFTER.map((item) => (
+                <li key={item} className={styles.afterItem}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </AnimateOnScroll>
+      </div>
+
+      <AnimateOnScroll animation="fade-up" delay={300}>
+        <p className={styles.proof}>
+          This isn't theory. SpecWeave was built with SpecWeave — 600+ structured
+          increments over 4 months. 5 apps shipped to the App Store. 12 production
+          projects total. Structure isn't overhead — it's the multiplier that makes
+          autonomous AI development actually work.
+        </p>
       </AnimateOnScroll>
     </Section>
   );

@@ -409,15 +409,15 @@ describe('update command', () => {
 
       it('should spawn new CLI process after self-update', async () => {
         setupSpecWeaveProject();
-        // First call: npm view returns newer version
-        // Second call: npm install succeeds
-        // Third call: specweave --version returns new version
-        // Fourth call: specweave update --no-self ...
-        mockExecSync
-          .mockReturnValueOnce('1.0.200\n') // npm view
-          .mockReturnValueOnce('') // npm install
-          .mockReturnValueOnce('specweave/1.0.200\n') // specweave --version
-          .mockReturnValueOnce(''); // specweave update --no-self
+        mockExecSync.mockImplementation((cmd: string) => {
+          if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+          if (cmd.includes('npm prefix -g')) return '/home/user/.npm\n';
+          if (cmd.includes('npm install -g specweave@')) return '';
+          if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+          if (cmd.includes('specweave update --no-self')) return '';
+          return '';
+        });
+        const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {});
 
         await updateCommand({ noPlugins: true });
 
@@ -426,15 +426,20 @@ describe('update command', () => {
           expect.stringContaining('specweave update --no-self --no-plugins'),
           expect.objectContaining({ stdio: 'inherit' })
         );
+        accessSpy.mockRestore();
       });
 
       it('should pass flags through to spawned CLI after self-update', async () => {
         setupSpecWeaveProject();
-        mockExecSync
-          .mockReturnValueOnce('1.0.200\n')
-          .mockReturnValueOnce('')
-          .mockReturnValueOnce('specweave/1.0.200\n')
-          .mockReturnValueOnce('');
+        mockExecSync.mockImplementation((cmd: string) => {
+          if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+          if (cmd.includes('npm prefix -g')) return '/home/user/.npm\n';
+          if (cmd.includes('npm install -g specweave@')) return '';
+          if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+          if (cmd.includes('specweave update')) return '';
+          return '';
+        });
+        const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {});
 
         await updateCommand({
           all: true,
@@ -452,6 +457,7 @@ describe('update command', () => {
         expect(cmd).toContain('--all');
         expect(cmd).toContain('--verbose');
         expect(cmd).toContain('--force');
+        accessSpy.mockRestore();
       });
 
       it('should handle self-update npm failure with EACCES', async () => {
@@ -1434,6 +1440,228 @@ describe('update command', () => {
       expect(optionNames).toContain('--check');
       expect(optionNames).toContain('--verbose');
       expect(optionNames).toContain('--force');
+    });
+  });
+
+  // ==========================================================================
+  // Sudo-aware self-update (T-003, T-004, T-005, T-007)
+  // ==========================================================================
+  describe('sudo-aware self-update', () => {
+
+    // T-003: isGlobalNpmWritable — test via updateCommand behavior
+    it('should call npm prefix -g to detect writability before install', async () => {
+      setupSpecWeaveProject();
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm prefix -g')) return '/usr/local\n';
+        if (cmd.includes('which sudo')) return '/usr/bin/sudo\n';
+        if (cmd.startsWith('sudo npm install -g specweave@')) return '';
+        if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+        if (cmd.includes('specweave update --no-self')) return '';
+        return '';
+      });
+      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+        throw new Error('EACCES');
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      // Should have called npm prefix -g to detect writability
+      const prefixCall = mockExecSync.mock.calls.find(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('npm prefix -g')
+      );
+      expect(prefixCall).toBeDefined();
+
+      accessSpy.mockRestore();
+    });
+
+    // T-003: Windows skips writability check
+    it('should skip npm prefix -g check on Windows', async () => {
+      setupSpecWeaveProject();
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm install -g specweave@')) return '';
+        if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+        if (cmd.includes('specweave update --no-self')) return '';
+        return '';
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      // Should NOT have called npm prefix -g on Windows
+      const prefixCall = mockExecSync.mock.calls.find(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('npm prefix -g')
+      );
+      expect(prefixCall).toBeUndefined();
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    // T-005: Sudo retry when npm global not writable
+    it('should prepend sudo when global npm dir is not writable', async () => {
+      setupSpecWeaveProject();
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm prefix -g')) return '/usr/local\n';
+        if (cmd.includes('which sudo')) return '/usr/bin/sudo\n';
+        // Non-sudo install fails with EACCES
+        if (cmd.match(/^npm install -g specweave@/)) {
+          const err = new Error('EACCES permission denied');
+          (err as any).stderr = 'EACCES permission denied';
+          throw err;
+        }
+        // Sudo install succeeds
+        if (cmd.startsWith('sudo npm install -g specweave@')) return '';
+        if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+        if (cmd.includes('specweave update --no-self')) return '';
+        return '';
+      });
+      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+        throw new Error('EACCES');
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      // Verify sudo was used in install
+      const sudoCall = mockExecSync.mock.calls.find(
+        (call: any[]) => typeof call[0] === 'string' && call[0].startsWith('sudo npm install -g specweave@')
+      );
+      expect(sudoCall).toBeDefined();
+
+      accessSpy.mockRestore();
+    });
+
+    // T-005: No sudo when writable
+    it('should not use sudo when global npm dir is writable', async () => {
+      setupSpecWeaveProject();
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm prefix -g')) return '/home/user/.npm-global\n';
+        if (cmd.includes('npm install -g specweave@')) return '';
+        if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+        if (cmd.includes('specweave update --no-self')) return '';
+        return '';
+      });
+      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+        // No error = writable
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      // No sudo calls
+      const sudoCall = mockExecSync.mock.calls.find(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('sudo')
+      );
+      expect(sudoCall).toBeUndefined();
+
+      accessSpy.mockRestore();
+    });
+
+    // T-005: stdio inherit for sudo password prompt
+    it('should use stdio inherit when sudo is needed for password prompt', async () => {
+      setupSpecWeaveProject();
+      let sudoOpts: any = null;
+      mockExecSync.mockImplementation((cmd: string, opts?: any) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm prefix -g')) return '/usr/local\n';
+        if (cmd.includes('which sudo')) return '/usr/bin/sudo\n';
+        if (cmd.match(/^npm install -g specweave@/)) {
+          throw new Error('EACCES permission denied');
+        }
+        if (cmd.startsWith('sudo npm install -g specweave@')) {
+          sudoOpts = opts;
+          return '';
+        }
+        if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+        if (cmd.includes('specweave update --no-self')) return '';
+        return '';
+      });
+      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+        throw new Error('EACCES');
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      expect(sudoOpts).toBeDefined();
+      expect(sudoOpts.stdio).toBe('inherit');
+
+      accessSpy.mockRestore();
+    });
+
+    // T-004: No sudo on Windows
+    it('should not attempt sudo on Windows even when EACCES', async () => {
+      setupSpecWeaveProject();
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm install -g specweave@')) {
+          throw new Error('EACCES permission denied');
+        }
+        return '';
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      // No sudo calls or which sudo calls on Windows
+      const sudoCall = mockExecSync.mock.calls.find(
+        (call: any[]) => typeof call[0] === 'string' &&
+          (call[0].includes('sudo') || call[0].includes('which sudo'))
+      );
+      expect(sudoCall).toBeUndefined();
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    // T-007: Updated EACCES error message
+    it('should suggest "sudo specweave update" in EACCES error message', async () => {
+      setupSpecWeaveProject();
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm prefix -g')) return '/usr/local\n';
+        if (cmd.includes('which sudo')) throw new Error('not found');
+        if (cmd.includes('npm install -g specweave@')) {
+          throw new Error('EACCES permission denied');
+        }
+        return '';
+      });
+      const accessSpy = vi.spyOn(fs, 'accessSync').mockImplementation(() => {
+        throw new Error('EACCES');
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      const output = consoleLogs.join('\n');
+      expect(output).toContain('sudo specweave update');
+      expect(output).not.toContain('sudo npm install');
+
+      accessSpy.mockRestore();
+    });
+
+    // T-007: Windows error message suggests Administrator
+    it('should suggest Administrator on Windows for EACCES', async () => {
+      setupSpecWeaveProject();
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd.includes('npm view specweave version')) return '1.0.200\n';
+        if (cmd.includes('npm install -g specweave@')) {
+          throw new Error('EACCES permission denied');
+        }
+        return '';
+      });
+
+      await updateCommand({ noPlugins: true });
+
+      const output = consoleLogs.join('\n');
+      expect(output).toContain('Administrator');
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
   });
 });

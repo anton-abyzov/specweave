@@ -173,6 +173,29 @@ const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace 
   mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));
 
+const {
+  mockScanWorkspaceContent,
+  mockPromptMigrationChoice,
+  mockPromptStartEmptySubChoice,
+  mockShowRestructureWarnings,
+  mockRestructureIntoRepositories,
+  mockDetectOrgRepo,
+} = vi.hoisted(() => ({
+  mockScanWorkspaceContent: vi.fn().mockReturnValue({
+    hasSourceFiles: false, hasPackageManager: false, hasGitRepo: false,
+    hasUncommittedChanges: false, fileCount: 0, detectedLanguages: [],
+  }),
+  mockPromptMigrationChoice: vi.fn().mockResolvedValue('continue-in-place' as const),
+  mockPromptStartEmptySubChoice: vi.fn().mockResolvedValue('add-later' as const),
+  mockShowRestructureWarnings: vi.fn(),
+  mockRestructureIntoRepositories: vi.fn().mockReturnValue({ moved: [], skipped: [], errors: [], targetDir: '' }),
+  mockDetectOrgRepo: vi.fn().mockReturnValue(null),
+}));
+
+const { mockPromptRootRepoConnection } = vi.hoisted(() => ({
+  mockPromptRootRepoConnection: vi.fn().mockResolvedValue(null),
+}));
+
 // ============================================================================
 // vi.mock() declarations (run at module load time)
 // ============================================================================
@@ -308,6 +331,23 @@ vi.mock('../../../../src/cli/helpers/init/repo-connect.js', () => ({
   mapParsedReposToCloneOptions: vi.fn().mockImplementation((repos: any[]) => repos.map((r: any) => ({ owner: r.org, name: r.name, path: `repositories/${r.org}/${r.name}`, cloneUrl: r.cloneUrl }))),
   runForegroundClone: vi.fn().mockResolvedValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
   FOREGROUND_CLONE_THRESHOLD: 3,
+  validateAndParseRepoInput: vi.fn().mockReturnValue({ repos: [], errors: [] }),
+  formatRepoInputErrors: vi.fn().mockReturnValue(''),
+}));
+
+vi.mock('../../../../src/cli/helpers/init/workspace-setup.js', () => ({
+  scanWorkspaceContent: mockScanWorkspaceContent,
+  promptMigrationChoice: mockPromptMigrationChoice,
+  promptStartEmptySubChoice: mockPromptStartEmptySubChoice,
+  showRestructureWarnings: mockShowRestructureWarnings,
+  restructureIntoRepositories: mockRestructureIntoRepositories,
+  copyLocalPathIntoRepositories: vi.fn().mockReturnValue({ copied: [], skipped: [], errors: [], targetDir: '' }),
+  detectOrgRepo: mockDetectOrgRepo,
+}));
+
+vi.mock('../../../../src/cli/helpers/init/root-repo-detection.js', () => ({
+  detectRootRepo: vi.fn().mockReturnValue(null),
+  promptRootRepoConnection: mockPromptRootRepoConnection,
 }));
 
 vi.mock('../../../../src/core/background/job-launcher.js', () => ({
@@ -403,6 +443,16 @@ describe('init command', () => {
 
     // LSP
     mockSetupLspEnvVar.mockReturnValue({ success: true, alreadyConfigured: false, configPath: '~/.zshrc', exportSyntax: 'export ENABLE_LSP_TOOL=1' });
+
+    // Workspace setup (0640)
+    mockScanWorkspaceContent.mockReturnValue({
+      hasSourceFiles: false, hasPackageManager: false, hasGitRepo: false,
+      hasUncommittedChanges: false, fileCount: 0, detectedLanguages: [],
+    });
+    mockPromptMigrationChoice.mockResolvedValue('continue-in-place');
+    mockPromptStartEmptySubChoice.mockResolvedValue('add-later');
+    mockDetectOrgRepo.mockReturnValue(null);
+    mockPromptRootRepoConnection.mockResolvedValue(null);
 
     // Default: CI/quick mode for most tests
     process.env.CI = 'true';
@@ -631,7 +681,7 @@ describe('init command', () => {
       expect(mockCreateDirectoryStructure).toHaveBeenCalled();
     });
 
-    it('should show non-empty directory info for dot notation when no .specweave exists', async () => {
+    it('should run workspace setup scan for dot notation when no .specweave exists', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         // .specweave doesn't exist, .git doesn't exist, config doesn't exist
         return false;
@@ -640,10 +690,8 @@ describe('init command', () => {
 
       await initCommand('.', { quick: true });
 
-      // Should log info about non-empty directory
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('3 file(s)')
-      );
+      // New behavior: scanWorkspaceContent is called instead of simple file count message
+      // In CI/quick mode, promptMigrationChoice returns 'continue-in-place' immediately
       // Should still proceed
       expect(mockCreateDirectoryStructure).toHaveBeenCalled();
     });

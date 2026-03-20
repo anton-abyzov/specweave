@@ -10,8 +10,8 @@ export default function HeroSection() {
       <div className={styles.content}>
         <div className={styles.pills}>
           <Badge variant="primary">Open Source</Badge>
-          <Badge variant="default">636+ Increments</Badge>
-          <Badge variant="default">10+ Production Apps</Badge>
+          <Badge variant="default">600+ Increments</Badge>
+          <Badge variant="default">12 Production Projects</Badge>
         </div>
 
         <h1 className={styles.headline}>
@@ -22,11 +22,11 @@ export default function HeroSection() {
 
         <p className={styles.subheading}>
           SpecWeave turns ad-hoc AI prompts into structured, testable,
-          autonomous development. 10+ production apps and counting.
+          autonomous development. 12 production projects shipped in 3 months.
         </p>
 
         <div className={styles.badgeBar}>
-          <span className={styles.metric}>636+ Increments</span>
+          <span className={styles.metric}>600+ Increments</span>
           <span className={styles.metricDot}>&middot;</span>
           <span className={styles.metric}>49 Agent Platforms</span>
           <span className={styles.metricDot}>&middot;</span>

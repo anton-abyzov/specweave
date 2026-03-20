@@ -113,6 +113,8 @@ export {
 // Repo connect (post-scaffold project setup)
 export {
   parseRepoInput,
+  validateAndParseRepoInput,
+  formatRepoInputErrors,
   promptProjectSetup,
   promptRepoUrls,
   mapParsedReposToCloneOptions,
@@ -124,7 +126,31 @@ export {
   type ParsedRepo,
   type RepoConnectResult,
   type RepoUrlsLoopResult,
+  type RepoInputValidation,
+  type RepoInputError,
 } from './repo-connect.js';
+
+// Workspace setup (non-empty folder detection — 0640)
+export {
+  scanWorkspaceContent,
+  promptMigrationChoice,
+  promptStartEmptySubChoice,
+  restructureIntoRepositories,
+  copyLocalPathIntoRepositories,
+  showRestructureWarnings,
+  detectOrgRepo,
+  promptOrgRepo,
+  type WorkspaceContentScan,
+  type MigrationChoice,
+  type RestructureResult,
+} from './workspace-setup.js';
+
+// Root repo detection (early GitHub connection — 0640)
+export {
+  detectRootRepo,
+  promptRootRepoConnection,
+  type RootRepoInfo,
+} from './root-repo-detection.js';
 
 // Skill-creator auto-installer (v1.0.548+)
 export {

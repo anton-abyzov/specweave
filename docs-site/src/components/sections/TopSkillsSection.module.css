@@ -6,16 +6,21 @@
 }
 
 .card {
+  display: block;
   padding: var(--sw-space-6);
   border-radius: var(--sw-radius-xl);
   border: 1px solid var(--sw-border-subtle);
   background: var(--sw-surface-card, var(--sw-gray-50));
-  transition: var(--sw-transition-shadow), border-color 0.2s ease;
+  transition: var(--sw-transition-shadow), border-color 0.2s ease, transform 0.15s ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .card:hover {
   border-color: var(--sw-color-primary-200);
   box-shadow: var(--sw-shadow-md);
+  transform: translateY(-2px);
 }
 
 [data-theme='dark'] .card {

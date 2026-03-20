@@ -71,6 +71,106 @@ export function parseRepoInput(rawInput: string): ParsedRepo[] {
 }
 
 // ---------------------------------------------------------------------------
+// Validation (additive — parseRepoInput unchanged for backward compat)
+// ---------------------------------------------------------------------------
+
+export type RepoInputErrorType = 'org-only' | 'invalid-chars' | 'malformed-url' | 'empty';
+
+export interface RepoInputError {
+  token: string;
+  type: RepoInputErrorType;
+  message: string;
+  suggestion?: string;
+}
+
+export interface RepoInputValidation {
+  repos: ParsedRepo[];
+  errors: RepoInputError[];
+}
+
+/** Looks like a valid org/user name but has no slash */
+const ORG_ONLY_RE = /^[a-zA-Z0-9._-]+$/;
+
+/** Characters allowed in org/repo tokens and URLs */
+const VALID_CHARS_RE = /^[a-zA-Z0-9._\-/:@*]+$/;
+
+/**
+ * Validate + parse with error reporting.
+ *
+ * Returns both successfully parsed repos AND typed errors for invalid tokens.
+ * Existing `parseRepoInput()` is unchanged for backward compatibility.
+ */
+export function validateAndParseRepoInput(rawInput: string): RepoInputValidation {
+  if (!rawInput || !rawInput.trim()) {
+    return {
+      repos: [],
+      errors: [{ token: '', type: 'empty', message: 'Input cannot be empty' }],
+    };
+  }
+
+  const tokens = rawInput
+    .split(/[\s,]+/)
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  const repos: ParsedRepo[] = [];
+  const errors: RepoInputError[] = [];
+
+  for (const token of tokens) {
+    let match: RegExpMatchArray | null;
+
+    if ((match = token.match(HTTPS_RE))) {
+      repos.push({ org: match[1], name: match[2], cloneUrl: `https://github.com/${match[1]}/${match[2]}.git` });
+    } else if ((match = token.match(SSH_RE))) {
+      repos.push({ org: match[1], name: match[2], cloneUrl: `https://github.com/${match[1]}/${match[2]}.git` });
+    } else if ((match = token.match(SHORTHAND_RE))) {
+      repos.push({ org: match[1], name: match[2], cloneUrl: `https://github.com/${match[1]}/${match[2]}.git` });
+    } else if (!token.includes('/') && ORG_ONLY_RE.test(token)) {
+      // Looks like an org name without repo
+      errors.push({
+        token,
+        type: 'org-only',
+        message: `'${token}' looks like an org name.`,
+        suggestion: `Use '${token}/repo-name' format, or '${token}/*' to clone all repos from this org`,
+      });
+    } else if (!VALID_CHARS_RE.test(token)) {
+      errors.push({
+        token,
+        type: 'invalid-chars',
+        message: `'${token}' contains invalid characters.`,
+      });
+    } else {
+      // Has a slash but doesn't match any known pattern
+      errors.push({
+        token,
+        type: 'malformed-url',
+        message: `Could not parse '${token}' — expected formats: org/repo, https://github.com/org/repo, or git@github.com:org/repo.git`,
+      });
+    }
+  }
+
+  return { repos, errors };
+}
+
+/**
+ * Format validation errors for console display.
+ */
+export function formatRepoInputErrors(errors: RepoInputError[]): string {
+  if (errors.length === 0) return '';
+
+  const lines: string[] = [];
+
+  for (const err of errors) {
+    lines.push(err.message);
+    if (err.suggestion) {
+      lines.push(`  ${err.suggestion}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
 // Prompting
 // ---------------------------------------------------------------------------
 
@@ -212,7 +312,10 @@ export async function promptRepoUrlsLoop(
     }
 
     if (individualTokens.length > 0) {
-      const parsed = parseRepoInput(individualTokens.join(' '));
+      const { repos: parsed, errors } = validateAndParseRepoInput(individualTokens.join(' '));
+      if (errors.length > 0) {
+        console.log(chalk.yellow('   ' + formatRepoInputErrors(errors)));
+      }
       if (parsed.length > 0) {
         const jobRepos = mapParsedReposToCloneOptions(parsed);
         if (parsed.length <= FOREGROUND_CLONE_THRESHOLD) {

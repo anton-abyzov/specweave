@@ -45,6 +45,16 @@ import {
   promptProjectSetup,
   promptRepoUrlsLoop,
 } from '../helpers/init/index.js';
+import {
+  scanWorkspaceContent,
+  promptMigrationChoice,
+  promptStartEmptySubChoice,
+  showRestructureWarnings,
+  restructureIntoRepositories,
+  copyLocalPathIntoRepositories,
+  promptOrgRepo,
+} from '../helpers/init/workspace-setup.js';
+import { promptRootRepoConnection, type RootRepoInfo } from '../helpers/init/root-repo-detection.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
@@ -207,12 +217,42 @@ export async function initCommand(
       if (result.action === 'cancel') process.exit(0);
       continueExisting = result.continueExisting;
     } else {
-      try {
-        const existingFiles = fs.readdirSync(targetDir).filter((f: string) => !f.startsWith('.'));
-        if (existingFiles.length > 0) {
-          console.log(chalk.gray(`\n   ℹ Directory contains ${existingFiles.length} file(s). Init is non-destructive — only adds .specweave/.\n`));
+      // STEP 2d: Non-empty folder detection (T-009 — 0640)
+      const scan = scanWorkspaceContent(targetDir);
+      if (scan.hasSourceFiles || scan.hasPackageManager || scan.fileCount > 0) {
+        const choice = await promptMigrationChoice(scan, language, isCI);
+
+        if (choice === 'start-empty') {
+          const subChoice = await promptStartEmptySubChoice(language);
+          if (subChoice === 'copy-local') {
+            const sourcePath = await input({
+              message: 'Path to existing repository (absolute or relative):',
+              validate: (v: string) => v.trim().length > 0 || 'Path is required',
+            });
+            const orgRepo = await promptOrgRepo(path.resolve(targetDir, sourcePath));
+            const result = copyLocalPathIntoRepositories(targetDir, sourcePath, orgRepo.org, orgRepo.repoName);
+            if (result.errors.length > 0) {
+              console.log(chalk.yellow(`   ⚠ Copy errors: ${result.errors.join(', ')}`));
+            } else {
+              console.log(chalk.green(`   ✓ Copied ${result.copied.length} item(s) to ${result.targetDir}`));
+            }
+          }
+          // 'clone-github' and 'add-later' fall through to existing promptProjectSetup flow
+        } else if (choice === 'restructure') {
+          showRestructureWarnings(scan);
+          const confirmed = await confirm({ message: 'Proceed with restructure?', default: false });
+          if (confirmed) {
+            const orgRepo = await promptOrgRepo(targetDir);
+            const result = restructureIntoRepositories(targetDir, orgRepo.org, orgRepo.repoName);
+            if (result.errors.length > 0) {
+              console.log(chalk.yellow(`   ⚠ Restructure errors: ${result.errors.join(', ')}`));
+            } else {
+              console.log(chalk.green(`   ✓ Moved ${result.moved.length} item(s) to ${result.targetDir}`));
+            }
+          }
         }
-      } catch { /* ignore read errors */ }
+        // choice === 'continue-in-place' → proceed as current behavior
+      }
     }
   } else {
     if (fs.existsSync(targetDir)) {
@@ -235,6 +275,16 @@ export async function initCommand(
       }
     } else {
       fs.mkdirSync(targetDir, { recursive: true });
+    }
+  }
+
+  // STEP 2e: Root repo GitHub connection — early position (T-013 — 0640)
+  let rootRepoInfo: RootRepoInfo | null = null;
+  if (!isCI && !continueExisting) {
+    try {
+      rootRepoInfo = await promptRootRepoConnection(targetDir, language, isCI);
+    } catch {
+      // Prompt cancellation — skip silently
     }
   }
 
@@ -449,31 +499,11 @@ export async function initCommand(
         delete config.multiProject;
         delete config.projectMappings;
 
-        // Interactive: offer to connect root workspace to a GitHub repo (T-025)
-        if (!isCI && !continueExisting && config.workspace) {
-          spinner.stop();
-          try {
-            const connectGitHub = await confirm({
-              message: 'Connect this workspace root to a GitHub repo? (optional)',
-              default: false,
-            });
-            if (connectGitHub) {
-              const owner = await input({
-                message: 'GitHub owner (org or username):',
-                validate: (val: string) => val.trim().length > 0 || 'Owner is required',
-              });
-              const repo = await input({
-                message: 'GitHub repository name:',
-                validate: (val: string) => val.trim().length > 0 || 'Repo name is required',
-              });
-              config.workspace.rootRepo = {
-                github: { owner: owner.trim(), repo: repo.trim() },
-              };
-            }
-          } catch {
-            // Prompt cancellation — skip silently
-          }
-          spinner.start('Configuring project...');
+        // Apply root repo info from early prompt (T-013 — 0640)
+        if (rootRepoInfo && config.workspace) {
+          config.workspace.rootRepo = {
+            github: { owner: rootRepoInfo.owner, repo: rootRepoInfo.repo },
+          };
         }
 
         // LSP auto-enable (Claude only)

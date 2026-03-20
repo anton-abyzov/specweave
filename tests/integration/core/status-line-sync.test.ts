@@ -36,6 +36,8 @@ describe('Status Line Synchronization', () => {
 
     await fs.ensureDir(incrementDir);
     await fs.ensureDir(stateDir);
+    // Script checks for config.json existence to detect SpecWeave projects
+    await fs.writeFile(path.join(testRoot, '.specweave', 'config.json'), '{}');
 
     // Create test spec.md
     await fs.writeFile(

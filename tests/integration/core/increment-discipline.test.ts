@@ -5,7 +5,10 @@
  * via user-prompt-submit hook and MetadataManager integration.
  */
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
+// These tests run user-prompt-submit.sh which calls specweave context projects — allow 20s per test
+vi.setConfig({ testTimeout: 20000 });
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
@@ -171,7 +174,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
 
   describe('Scenario 1: No Active Increments (0→1)', () => {
     it('should allow creating first increment', async () => {
-      const result = await simulateHook('sw:increment "Add user authentication"');
+      const result = await simulateHook('/sw:increment "Add user authentication"');
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toBeUndefined();
@@ -181,7 +184,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       const count = await countActiveIncrements();
       expect(count).toBe(0);
 
-      const result = await simulateHook('sw:increment "New feature"');
+      const result = await simulateHook('/sw:increment "New feature"');
       expect(result.decision).toBe('approve');
       // v1.0.106+: Hook may inject project context (not a warning)
       // The key assertion is that there's NO WIP limit warning
@@ -199,7 +202,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should show warning when starting 2nd increment', async () => {
-      const result = await simulateHook('sw:increment "Add payment system"');
+      const result = await simulateHook('/sw:increment "Add payment system"');
 
       expect(result.decision).toBe('approve'); // Allows but warns
       expect(result.systemMessage).toContain('WIP Notice');
@@ -207,20 +210,20 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should list active increment in warning', async () => {
-      const result = await simulateHook('sw:increment "Add feature"');
+      const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('0001-user-auth [feature]');
     });
 
     it('should suggest options in warning', async () => {
-      const result = await simulateHook('sw:increment "Add feature"');
+      const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('sw:done');
       expect(result.systemMessage).toContain('specweave pause');
     });
 
     it('should mention completing or pausing', async () => {
-      const result = await simulateHook('sw:increment "Add feature"');
+      const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('completing existing work');
       expect(result.systemMessage).toContain('pausing');
@@ -234,7 +237,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should WARN (approve with systemMessage) when trying to start 3rd increment', async () => {
-      const result = await simulateHook('sw:increment "Add notifications"');
+      const result = await simulateHook('/sw:increment "Add notifications"');
 
       // WIP limits are warnings, not hard blocks - user decides!
       expect(result.decision).toBe('approve');
@@ -243,14 +246,14 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should list both active increments in warning', async () => {
-      const result = await simulateHook('sw:increment "Add feature"');
+      const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('0001-user-auth');
       expect(result.systemMessage).toContain('0002-payments');
     });
 
     it('should suggest actions to resolve', async () => {
-      const result = await simulateHook('sw:increment "Add feature"');
+      const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('sw:done');
       expect(result.systemMessage).toContain('specweave pause');
@@ -264,7 +267,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should allow new increment when previous ones are completed', async () => {
-      const result = await simulateHook('sw:increment "Add notifications"');
+      const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toBeUndefined();
@@ -283,7 +286,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should allow new increment when previous ones are paused', async () => {
-      const result = await simulateHook('sw:increment "Add notifications"');
+      const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toBeUndefined();
@@ -308,7 +311,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should show warning for 2nd active (not count completed/paused)', async () => {
-      const result = await simulateHook('sw:increment "Add messaging"');
+      const result = await simulateHook('/sw:increment "Add messaging"');
 
       expect(result.decision).toBe('approve');
       expect(result.systemMessage).toContain('WIP Notice');
@@ -316,7 +319,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should list only active increment in warning', async () => {
-      const result = await simulateHook('sw:increment "Add feature"');
+      const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('0002-payments');
       expect(result.systemMessage).not.toContain('0001-user-auth'); // completed
@@ -331,7 +334,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should allow new increment when previous ones are abandoned', async () => {
-      const result = await simulateHook('sw:increment "Add notifications"');
+      const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('approve');
     });
@@ -348,7 +351,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should warn when starting 2nd active (even for hotfix)', async () => {
-      const result = await simulateHook('sw:increment "Critical security fix"');
+      const result = await simulateHook('/sw:increment "Critical security fix"');
 
       expect(result.decision).toBe('approve');
       expect(result.systemMessage).toContain('WIP Notice');
@@ -358,7 +361,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     it('should still warn for 3rd increment even if hotfix', async () => {
       await createIncrement('0002-security-fix', 'active', 'hotfix');
 
-      const result = await simulateHook('sw:increment "Another hotfix"');
+      const result = await simulateHook('/sw:increment "Another hotfix"');
 
       // Even at hard cap, user can proceed — just a warning
       expect(result.decision).toBe('approve');
@@ -376,7 +379,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     });
 
     it('should use fallback logic to detect incomplete increments', async () => {
-      const result = await simulateHook('sw:increment "Add notifications"');
+      const result = await simulateHook('/sw:increment "Add notifications"');
 
       // Hook counts 'active', 'planning', 'ready_for_review' as active (NOT backlog)
       // 2 increments (active + planning) = WIP Notice warning (not block)
@@ -393,11 +396,11 @@ describe('Increment Discipline Enforcement (E2E)', () => {
 
       // These commands should not be blocked
       const commands = [
-        'sw:do',
-        'sw:progress',
-        'sw:status',
-        'sw:done 0001',
-        'sw:pause 0001',
+        '/sw:do',
+        '/sw:progress',
+        '/sw:status',
+        '/sw:done 0001',
+        'specweave pause 0001',
       ];
 
       for (const command of commands) {
