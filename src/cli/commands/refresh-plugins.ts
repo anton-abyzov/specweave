@@ -186,7 +186,7 @@ function getAvailablePlugins(marketplacePath: string): MarketplacePlugin[] {
  * proper marketplace registration, scope management, and settings enablement.
  * Falls back to direct file copy when CLI is unavailable.
  */
-export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<{ failed: number; errors: string[] }> {
+export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<RefreshResult> {
   const quiet = !!options.quiet;
   const log = quiet ? (..._args: unknown[]) => {} : console.log;
   const errors: string[] = [];

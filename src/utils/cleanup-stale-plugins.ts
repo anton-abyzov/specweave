@@ -304,7 +304,7 @@ export async function cleanupStalePlugins(
 
                     const staleVersionPath = path.join(pluginCacheDir, vDir.name);
                     // Verify resolved path stays under cache base (symlink safety)
-                    const resolved = fs.realpathSync(staleVersionPath);
+                    const resolved = nodeFs.realpathSync(staleVersionPath);
                     if (!resolved.startsWith(cacheBase)) {
                       console.warn(`Phase 2.5: skipping ${staleVersionPath} — resolves outside cache`);
                       continue;

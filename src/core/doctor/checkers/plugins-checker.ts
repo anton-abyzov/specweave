@@ -213,8 +213,8 @@ export class PluginsChecker implements HealthChecker {
   }
 
   private checkStaleVersionDirs(): CheckResult {
-    const cacheDir = path.join(this.homeDir, '.claude', 'plugins', 'cache', 'specweave');
-    if (!fs.existsSync(cacheDir)) {
+    const cacheBase = path.join(this.homeDir, '.claude', 'plugins', 'cache');
+    if (!fs.existsSync(cacheBase)) {
       return { name: 'Plugin version cache', status: 'skip', message: 'no cache directory' };
     }
 
@@ -222,19 +222,31 @@ export class PluginsChecker implements HealthChecker {
     const details: string[] = [];
 
     try {
-      const plugins = fs.readdirSync(cacheDir, { withFileTypes: true });
-      for (const plugin of plugins) {
-        if (!plugin.isDirectory()) continue;
-        const pluginDir = path.join(cacheDir, plugin.name);
-        const versions = fs.readdirSync(pluginDir, { withFileTypes: true })
-          .filter(v => v.isDirectory())
-          .map(v => v.name);
-        if (versions.length > 1) {
-          totalStale += versions.length - 1;
-          details.push(`${plugin.name}: ${versions.length} versions (${versions.join(', ')})`);
+      // Iterate all marketplace subdirs (specweave, and any others)
+      const marketplaces = fs.readdirSync(cacheBase, { withFileTypes: true });
+      for (const mkt of marketplaces) {
+        if (!mkt.isDirectory()) continue;
+        const mktDir = path.join(cacheBase, mkt.name);
+        try {
+          const plugins = fs.readdirSync(mktDir, { withFileTypes: true });
+          for (const plugin of plugins) {
+            if (!plugin.isDirectory()) continue;
+            const pluginDir = path.join(mktDir, plugin.name);
+            const versions = fs.readdirSync(pluginDir, { withFileTypes: true })
+              .filter(v => v.isDirectory())
+              .map(v => v.name);
+            if (versions.length > 1) {
+              totalStale += versions.length - 1;
+              const prefix = mkt.name === 'specweave' ? '' : `${mkt.name}/`;
+              details.push(`${prefix}${plugin.name}: ${versions.length} versions (${versions.join(', ')})`);
+            }
+          }
+        } catch (err) {
+          console.debug?.(`checkStaleVersionDirs: marketplace ${mkt.name} unreadable: ${err}`);
         }
       }
-    } catch {
+    } catch (err) {
+      console.debug?.(`checkStaleVersionDirs: cache base unreadable: ${err}`);
       return { name: 'Plugin version cache', status: 'skip', message: 'could not read cache' };
     }
 
