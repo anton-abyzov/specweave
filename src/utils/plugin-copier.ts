@@ -112,6 +112,7 @@ export function computePluginHash(pluginDir: string): string {
     for (const file of files.sort()) {
       const fullPath = join(pluginDir, file);
       try {
+        if (!statSync(fullPath).isFile()) continue;
         const content = readFileSync(fullPath);
         // Normalize path separators for cross-platform hash consistency
         hash.update(file.replace(/\\/g, '/'));
