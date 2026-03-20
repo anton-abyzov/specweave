@@ -1,6 +1,24 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
 import os from 'os';
+import { readFileSync } from 'fs';
+
+function loadCoverageThresholds(): { lines: number; functions: number; branches: number; statements: number } {
+  const fallback = { lines: 38, functions: 46, branches: 33, statements: 38 };
+  try {
+    const raw = readFileSync('.specweave/config.json', 'utf-8');
+    const config = JSON.parse(raw);
+    const unit = config?.testing?.coverageTargets?.unit;
+    if (typeof unit === 'number') {
+      // branches coverage is harder to achieve than line/function coverage;
+      // apply a -10pt margin to avoid false build failures
+      return { lines: unit, functions: unit, branches: Math.max(unit - 10, 0), statements: unit };
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export default defineConfig({
   test: {
@@ -45,12 +63,9 @@ export default defineConfig({
         'src/**/*.spec.ts',
       ],
       thresholds: {
-        // Target: 80% — gates set just below actuals to prevent regression
-        // Actual (Feb 2026): stmts 38.8%, branches 34%, funcs 47%, lines 39%
-        lines: 38,
-        functions: 46,
-        branches: 33,
-        statements: 38,
+        // Thresholds loaded from .specweave/config.json (testing.coverageTargets.unit)
+        // Fallback: lines 38, functions 46, branches 33, statements 38
+        ...loadCoverageThresholds(),
       },
     },
 
