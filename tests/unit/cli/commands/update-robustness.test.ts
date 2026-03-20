@@ -25,10 +25,10 @@ describe('Update Robustness - Source Code Verification', () => {
       expect(content).toContain("npmPublicExec('npm view specweave version', 30000)");
     });
 
-    it('should have timeout on npm install command via npmPublicExec', () => {
+    it('should have timeout on npm install command via npmPublicInstall', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      // installWithFallback passes timeout through npmPublicExec
-      expect(content).toMatch(/npmPublicExec\(`npm install -g specweave@\$\{.*\}`, 120000\)/);
+      // installWithFallback passes timeout through npmPublicInstall
+      expect(content).toMatch(/npmPublicInstall\(`npm install -g specweave@\$\{.*\}`, 120000\)/);
     });
 
     it('should handle timeout errors in catch block', () => {
@@ -111,13 +111,13 @@ describe('Update Robustness - Source Code Verification', () => {
       expect(selfUpdateSection).toContain("npmPublicExec('npm view specweave version'");
     });
 
-    it('should use npmPublicExec for npm install in installWithFallback', () => {
+    it('should use npmPublicInstall for npm install in installWithFallback', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       const installSection = content.substring(
         content.indexOf('function installWithFallback'),
         content.indexOf('function installWithFallback') + 600
       );
-      expect(installSection).toContain('npmPublicExec');
+      expect(installSection).toContain('npmPublicInstall');
       expect(installSection).not.toMatch(/execSync\(`npm install/);
     });
   });
