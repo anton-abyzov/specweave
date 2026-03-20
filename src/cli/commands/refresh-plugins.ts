@@ -41,6 +41,11 @@ const __dirname = getDirname(import.meta.url);
 /** The core plugin that is always installed by default. */
 const CORE_PLUGIN = 'sw';
 
+export interface RefreshResult {
+  failed: number;
+  errors: string[];
+}
+
 export interface RefreshPluginsOptions {
   verbose?: boolean;
   force?: boolean;
@@ -185,9 +190,9 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   const quiet = !!options.quiet;
   const log = quiet ? (..._args: unknown[]) => {} : console.log;
   const errors: string[] = [];
-  const logError = (msg: string) => {
-    errors.push(msg);
-    if (!quiet) console.log(msg);
+  const logError = (plainMsg: string, formattedMsg?: string) => {
+    errors.push(plainMsg);
+    if (!quiet) console.log(formattedMsg ?? plainMsg);
   };
 
   // Step 0: Resolve which adapter/tool this project uses.
@@ -318,9 +323,9 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       installed++;
       installedPluginNames.push(plugin.name);
     } else {
-      logError(chalk.red(`  ✗ ${plugin.name}: failed`));
+      logError(`${plugin.name}: failed`, chalk.red(`  ✗ ${plugin.name}: failed`));
       if (result.error) {
-        logError(chalk.gray(`    ${result.error}`));
+        logError(result.error, chalk.gray(`    ${result.error}`));
       }
       failed++;
     }
