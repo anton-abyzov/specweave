@@ -58,6 +58,28 @@
   margin: 0;
 }
 
+.emphasis {
+  color: var(--sw-color-primary-400);
+}
+
+.videoLink {
+  text-align: center;
+  margin-top: var(--sw-space-10);
+}
+
+.videoAnchor {
+  color: var(--sw-color-primary-400);
+  text-decoration: none;
+  font-size: var(--sw-font-size-base);
+  font-weight: var(--sw-font-weight-medium);
+  transition: color 0.2s ease;
+}
+
+.videoAnchor:hover {
+  color: var(--sw-color-primary-300);
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .timeline {
     flex-direction: column;

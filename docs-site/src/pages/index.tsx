@@ -14,7 +14,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Stop Prompting. Start Specifying."
-      description="SpecWeave turns ad-hoc AI prompts into structured, testable, autonomous development. 636+ increments. 10+ production apps. 100+ skills."
+      description="SpecWeave turns ad-hoc AI prompts into structured, testable, autonomous development. 600+ increments. 12 production projects. 100+ skills."
     >
       <HeroSection />
       <main>

@@ -43,6 +43,9 @@ describe('Status Line Hook Integration', () => {
     await fs.mkdir(incrementsDir, { recursive: true });
     await fs.mkdir(stateDir, { recursive: true });
 
+    // Script checks for config.json existence to detect SpecWeave projects
+    await fs.writeFile(path.join(testDir, '.specweave', 'config.json'), '{}');
+
     // Symlink dist/ folder so hook can find count-tasks CLI
     const distDir = path.join(process.cwd(), 'dist');
     const testDistDir = path.join(testDir, 'dist');

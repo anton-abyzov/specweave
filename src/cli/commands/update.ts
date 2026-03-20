@@ -756,7 +756,7 @@ function versionToNumber(version: string): number {
  */
 function installWithFallback(targetVersion: string): { installedVersion: string } {
   try {
-    npmPublicExec(`npm install -g specweave@${targetVersion}`, 120000);
+    npmPublicInstall(`npm install -g specweave@${targetVersion}`, 120000);
     return { installedVersion: targetVersion };
   } catch (error: any) {
     const stderr = error.stderr?.toString() || error.message || '';
@@ -766,7 +766,7 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
       throw error;
     }
 
-    // Fallback: get all published versions, pick highest
+    // Fallback: get all published versions, pick highest (read-only, no sudo needed)
     let allVersions: string[];
     try {
       const versionsJson = npmPublicExec('npm view specweave versions --json', 30000);
@@ -790,7 +790,7 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
     const fallbackVersion = allVersions[allVersions.length - 1];
 
     try {
-      npmPublicExec(`npm install -g specweave@${fallbackVersion}`, 120000);
+      npmPublicInstall(`npm install -g specweave@${fallbackVersion}`, 120000);
       return { installedVersion: fallbackVersion };
     } catch {
       throw new Error(
@@ -847,6 +847,85 @@ function npmPublicExec(command: string, timeout: number): string {
     timeout,
     env: buildPublicRegistryEnv(),
   }).trim();
+}
+
+/**
+ * Check whether the current user can write to the global npm node_modules directory.
+ * Returns true on Windows (sudo not applicable), or when the directory is writable.
+ * Returns false when npm was installed with sudo and the global prefix is root-owned.
+ */
+function isGlobalNpmWritable(): boolean {
+  if (process.platform === 'win32') return true;
+  try {
+    const prefix = execSync('npm prefix -g', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 5000,
+      env: buildPublicRegistryEnv(),
+    }).trim();
+    const modulesDir = path.join(prefix, 'lib', 'node_modules');
+    fs.accessSync(modulesDir, fs.constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if sudo is available (not on Windows, not in some containers).
+ */
+function isSudoAvailable(): boolean {
+  if (process.platform === 'win32') return false;
+  try {
+    execSync('which sudo', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 3000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Run npm install for self-update, with automatic sudo elevation when needed.
+ *
+ * Unlike npmPublicExec (which captures output), this uses stdio: 'inherit'
+ * when sudo is required so the user can enter their password.
+ * Falls back to non-sudo if sudo is not available.
+ */
+function npmPublicInstall(installCommand: string, timeout: number): void {
+  const writable = isGlobalNpmWritable();
+
+  if (writable) {
+    // Normal install — no sudo needed
+    execSync(`${installCommand} ${npmRegistryFlag()}`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout,
+      env: buildPublicRegistryEnv(),
+    });
+    return;
+  }
+
+  // Not writable — try with sudo if available
+  if (isSudoAvailable()) {
+    execSync(`sudo ${installCommand} ${npmRegistryFlag()}`, {
+      stdio: 'inherit',
+      timeout,
+      env: buildPublicRegistryEnv(),
+    });
+    return;
+  }
+
+  // Not writable and no sudo — try anyway (will fail with EACCES, caught upstream)
+  execSync(`${installCommand} ${npmRegistryFlag()}`, {
+    encoding: 'utf-8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    timeout,
+    env: buildPublicRegistryEnv(),
+  });
 }
 
 /**
@@ -951,9 +1030,12 @@ async function selfUpdateSpecWeave(
 
     // Provide helpful error messages
     if (error.message?.includes('EACCES') || error.message?.includes('permission denied')) {
+      const suggestion = process.platform === 'win32'
+        ? 'Permission denied. Run your terminal as Administrator.'
+        : 'Permission denied. Try: sudo specweave update';
       return {
         updated: false,
-        error: 'Permission denied. Try: sudo npm install -g specweave@latest',
+        error: suggestion,
       };
     }
 
