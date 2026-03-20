@@ -22,6 +22,8 @@ describe('status-completion-guard', () => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-guard-test-'));
     fs.mkdirSync(path.join(testDir, '.specweave', 'increments', '0001-test'), { recursive: true });
     fs.mkdirSync(path.join(testDir, '.specweave', 'state'), { recursive: true });
+    // Script walks up from $PWD to find config.json — must exist for marker file path to resolve correctly
+    fs.writeFileSync(path.join(testDir, '.specweave', 'config.json'), '{}');
   });
 
   afterAll(() => {

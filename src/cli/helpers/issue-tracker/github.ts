@@ -367,6 +367,29 @@ export async function configureGitHubRepositories(
   githubCredentialsFromRepoSetup?: { org: string; pat: string; clonedRepos?: string[] },
   gitUrlFormat?: 'ssh' | 'https'
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
+  // Workspace model: if repos are already configured in config.json, skip architecture prompts.
+  // sync-setup connects external tool projects to repos — no architecture selection needed.
+  try {
+    const { getConfigManager } = await import('../../../core/config/index.js');
+    const configManager = getConfigManager(projectPath);
+    const config = await configManager.read();
+    const workspace = (config as any).workspace;
+    if (workspace?.repos?.length > 0) {
+      console.log(chalk.cyan('\n📂 Workspace repositories detected\n'));
+      console.log(chalk.green(`   ✓ ${workspace.repos.length} repository(ies) in workspace\n`));
+      const profiles = (workspace.repos as any[]).map((repo: any, index: number) => ({
+        id: repo.id,
+        displayName: repo.name || repo.id,
+        owner: repo.sync?.github?.owner || '',
+        repo: repo.sync?.github?.repo || repo.id,
+        isDefault: index === 0,
+      }));
+      return { profiles };
+    }
+  } catch {
+    // Config not readable — fall through to legacy flow
+  }
+
   // CRITICAL OPTIMIZATION (v1.0.5): If GitHub credentials provided from repository setup, reuse them!
   // This prevents asking the same questions twice (repos during init, then again for issue tracker)
   if (githubCredentialsFromRepoSetup) {
