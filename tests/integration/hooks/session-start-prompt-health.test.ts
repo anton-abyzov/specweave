@@ -41,6 +41,8 @@ describe('Session-Start Prompt Health Check', () => {
     tempDir = path.join(tmpdir(), `specweave-health-test-${Date.now()}`);
     fs.mkdirSync(path.join(tempDir, '.specweave', 'state'), { recursive: true });
     fs.mkdirSync(path.join(tempDir, '.specweave', 'logs'), { recursive: true });
+    // Script checks for config.json existence to detect SpecWeave projects
+    fs.writeFileSync(path.join(tempDir, '.specweave', 'config.json'), '{}');
   });
 
   afterEach(() => {

@@ -34,6 +34,8 @@ describe('PreCompact Hook - Context Pressure Signal', () => {
   beforeEach(() => {
     tempDir = path.join(tmpdir(), `specweave-precompact-test-${Date.now()}`);
     fs.mkdirSync(path.join(tempDir, '.specweave', 'state'), { recursive: true });
+    // Script checks for config.json existence to detect SpecWeave projects
+    fs.writeFileSync(path.join(tempDir, '.specweave', 'config.json'), '{}');
   });
 
   afterEach(() => {

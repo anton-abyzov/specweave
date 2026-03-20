@@ -118,7 +118,7 @@ exit 0
   }
 
   it('intercepts sw:jobs prompt', () => {
-    const { parsed, exitCode } = executeHook('sw:jobs');
+    const { parsed, exitCode } = executeHook('/sw:jobs');
 
     expect(exitCode).toBe(0);
     expect(parsed).toBeTruthy();
@@ -127,7 +127,7 @@ exit 0
   });
 
   it('returns output via additionalContext (not systemMessage)', () => {
-    const { parsed } = executeHook('sw:jobs');
+    const { parsed } = executeHook('/sw:jobs');
 
     const context = extractAdditionalContext(parsed);
     expect(context).toBeTruthy();
@@ -141,7 +141,7 @@ exit 0
     const stateFile = path.join(testRoot, '.specweave', 'state', 'background-jobs.json');
     fs.writeFileSync(stateFile, JSON.stringify({ jobs: [] }));
 
-    const { parsed } = executeHook('sw:jobs');
+    const { parsed } = executeHook('/sw:jobs');
     const context = extractAdditionalContext(parsed);
 
     // Should show something (even if "no jobs")
@@ -169,7 +169,7 @@ exit 0
       }]
     }));
 
-    const { parsed } = executeHook('sw:jobs');
+    const { parsed } = executeHook('/sw:jobs');
     const context = extractAdditionalContext(parsed);
 
     expect(context).toBeTruthy();
@@ -178,7 +178,7 @@ exit 0
   });
 
   it('passes arguments through to the script', () => {
-    const { parsed } = executeHook('sw:jobs --all');
+    const { parsed } = executeHook('/sw:jobs --all');
 
     expect(parsed).toBeTruthy();
     // Hook should still intercept and return
