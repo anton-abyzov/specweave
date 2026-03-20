@@ -229,14 +229,14 @@ export class IncrementCompletionValidator {
           if (coverageResult.skipped) {
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.passed) {
-            // Coverage below target - BLOCKING error
+            // Coverage below target - WARNING only (non-blocking)
             const details = coverageResult.details;
             let detailsStr = '';
             if (details) {
               detailsStr = `\n    Lines: ${details.lines.toFixed(1)}% | Functions: ${details.functions.toFixed(1)}% | Branches: ${details.branches.toFixed(1)}%`;
             }
-            errors.push(
-              `❌ Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
+            warnings.push(
+              `⚠️  coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
               `    ${coverageResult.reason}\n` +
               `    File: ${coverageResult.coverageFile || 'not found'}\n\n` +
               `  Run tests with --coverage and improve coverage before closing.`

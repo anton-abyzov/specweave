@@ -39,6 +39,17 @@ export function enablePluginsInSettings(
         const content = fs.readFileSync(settingsPath, 'utf-8');
         settings = JSON.parse(content);
       } catch {
+        // Backup corrupt file before replacing
+        try {
+          const existingContent = fs.readFileSync(settingsPath, 'utf-8');
+          if (existingContent.trim().length > 0) {
+            const bakPath = settingsPath + '.bak';
+            fs.writeFileSync(bakPath, existingContent, 'utf-8');
+            console.warn(`Warning: settings.json was corrupt, backed up to ${bakPath}`);
+          }
+        } catch {
+          // Can't read or backup — proceed with fresh settings
+        }
         settings = {};
       }
     }
@@ -63,9 +74,7 @@ export function enablePluginsInSettings(
 
     return true;
   } catch (error) {
-    if (process.env.DEBUG) {
-      console.error('Failed to enable plugins in settings:', error);
-    }
+    console.warn(`Failed to enable plugins in settings: ${error instanceof Error ? error.message : error}`);
     return false;
   }
 }
