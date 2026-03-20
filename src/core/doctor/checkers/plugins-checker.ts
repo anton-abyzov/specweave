@@ -49,6 +49,9 @@ export class PluginsChecker implements HealthChecker {
     // Check for core plugin
     checks.push(this.checkCorePlugin(fix));
 
+    // Check for stale version directories in plugin cache
+    checks.push(this.checkStaleVersionDirs());
+
     return {
       category: this.category,
       status: calculateOverallStatus(checks),
@@ -207,6 +210,45 @@ export class PluginsChecker implements HealthChecker {
       message: 'not registered in Claude Code',
       fixSuggestion: 'Run: specweave doctor --fix (or specweave update)',
     };
+  }
+
+  private checkStaleVersionDirs(): CheckResult {
+    const cacheDir = path.join(this.homeDir, '.claude', 'plugins', 'cache', 'specweave');
+    if (!fs.existsSync(cacheDir)) {
+      return { name: 'Plugin version cache', status: 'skip', message: 'no cache directory' };
+    }
+
+    let totalStale = 0;
+    const details: string[] = [];
+
+    try {
+      const plugins = fs.readdirSync(cacheDir, { withFileTypes: true });
+      for (const plugin of plugins) {
+        if (!plugin.isDirectory()) continue;
+        const pluginDir = path.join(cacheDir, plugin.name);
+        const versions = fs.readdirSync(pluginDir, { withFileTypes: true })
+          .filter(v => v.isDirectory())
+          .map(v => v.name);
+        if (versions.length > 1) {
+          totalStale += versions.length - 1;
+          details.push(`${plugin.name}: ${versions.length} versions (${versions.join(', ')})`);
+        }
+      }
+    } catch {
+      return { name: 'Plugin version cache', status: 'skip', message: 'could not read cache' };
+    }
+
+    if (totalStale > 0) {
+      return {
+        name: 'Plugin version cache',
+        status: 'warn',
+        message: `${totalStale} stale version dir(s) across ${details.length} plugin(s)`,
+        details,
+        fixSuggestion: 'Run: specweave refresh-plugins --force',
+      };
+    }
+
+    return { name: 'Plugin version cache', status: 'pass', message: 'clean (1 version per plugin)' };
   }
 
   private checkCorePlugin(fix: boolean): CheckResult {
