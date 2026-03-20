@@ -12,17 +12,37 @@ Where Claude Code, Cursor, Copilot, and Codex are stateless by default, SpecWeav
 
 ## The Problem
 
-AI coding tools are powerful. They're also stateless, unstructured, and uncoordinated by default.
+AI coding tools are powerful. They're also **stateless, unstructured, and uncoordinated** by default. That gap between "powerful" and "production-ready" is where projects fail.
 
-Every session starts from zero. Standards vary by who's prompting. Parallel agents have no coordination layer. Multi-repo brownfield codebases — dozens of repos, years of undocumented decisions, existing systems that must be extended — are where AI tools fall apart hardest.
+### Session Amnesia
 
-**The result:**
-- No documentation = regression risk
-- No specs = unclear requirements
-- Manual testing = inconsistent quality
-- Context bloat = expensive AI costs
-- No architecture = technical debt
-- New team members = 2 weeks onboarding
+Every AI session starts from zero. Session 47 has no idea what session 46 decided. You spend the first 10 minutes re-explaining your codebase, your constraints, your architecture — every single time. That context-building costs tokens, time, and mental energy. Multiply by every developer on your team, every day.
+
+**What you need:** Persistent specs that carry full context across sessions, tools, and team members — so AI picks up exactly where you left off.
+
+### The Standards Lottery
+
+Without enforcement, code quality is a lottery. One developer's AI writes comprehensive tests. Another's skips them. One follows your architecture patterns. Another invents new ones. The AI is only as good as the prompt — and prompts aren't version-controlled, reviewed, or shared.
+
+**What you need:** Verified skills that encode your team's standards into reusable, enforceable patterns — so every AI session follows the same rules, regardless of who's prompting.
+
+### Coordination Failure
+
+Running 3 AI agents in parallel sounds like 3x productivity. Without shared specs, it's 3 agents making conflicting decisions about the same codebase. More agents without coordination = more chaos, not more output.
+
+**What you need:** A coordination layer where parallel agents share specs, plans, and task boundaries — turning independent agents into a synchronized team.
+
+### Knowledge Evaporation
+
+Chat history is where decisions go to die. *"Why did we choose this approach?" "What was the original requirement?" "What did we try that didn't work?"* — all buried in conversation threads no one will search. When a developer leaves, their prompting patterns leave too. Six months later, you're rewriting features you already built — because no one documented they existed.
+
+**What you need:** Living documentation that evolves with your code, searchable specs that preserve every decision, and verified skills that capture institutional knowledge — so expertise survives team changes.
+
+### The Brownfield Wall
+
+AI tools shine on greenfield — blank canvases with no constraints. But real engineering is brownfield: dozens of repos, years of undocumented decisions, existing systems that must be extended without breaking. This is exactly where AI tools fail hardest — and where you need them most.
+
+**What you need:** Brownfield analysis that maps existing code to specs, detects discrepancies between documentation and reality, and plans safe incremental changes — not naive rewrites.
 
 ### The Spec Divergence
 
