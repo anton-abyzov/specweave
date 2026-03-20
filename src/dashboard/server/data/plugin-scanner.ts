@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { compareSemverDesc } from '../../../utils/semver-sort.js';
 import type { PluginInfo, SkillUsage, LspStatus } from '../../types.js';
 
 /**
@@ -23,7 +24,7 @@ export class PluginScanner {
         const versions = fs.readdirSync(pluginDir, { withFileTypes: true })
           .filter(v => v.isDirectory())
           .map(v => v.name);
-        const version = versions[0] || '0.0.0';
+        const version = [...versions].sort(compareSemverDesc)[0] || '0.0.0';
         const versionDir = path.join(pluginDir, version);
 
         let skillCount = 0;
@@ -41,7 +42,7 @@ export class PluginScanner {
 
         plugins.push({ name: entry.name, version, skillCount, commandCount });
       }
-    } catch { /* ignore */ }
+    } catch (err) { console.debug?.(`PluginScanner.getInstalledPlugins: ${err}`); }
 
     return plugins.sort((a, b) => a.name.localeCompare(b.name));
   }
@@ -99,7 +100,7 @@ export class PluginScanner {
     try {
       if (!fs.existsSync(fullPath)) return null;
       return JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
-    } catch { return null; }
+    } catch (err) { console.debug?.(`PluginScanner.readJson(${relativePath}): ${err}`); return null; }
   }
 }
 

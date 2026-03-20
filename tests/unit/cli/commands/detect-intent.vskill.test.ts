@@ -60,7 +60,7 @@ describe('detectVskillPlugins integration with detect-intent', () => {
     const matches = detectVskillPlugins('deploy ios app to testflight');
     expect(matches.length).toBeGreaterThanOrEqual(1);
     expect(matches.some(m => m.plugin === 'mobile')).toBe(true);
-    expect(matches[0].installCommand).toBe('vskill install anton-abyzov/vskill --plugin mobile');
+    expect(matches[0].installCommand).toBe('vskill i anton-abyzov/vskill/appstore');
   });
 
   it('TC-002: lockfile filter excludes already-installed plugins', async () => {

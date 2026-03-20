@@ -1398,7 +1398,7 @@ export function scanRepositories(projectRoot: string): Array<{
         for (const repo of repoEntries) {
           if (!repo.isDirectory()) continue;
           const repoPath = path.join(orgDir, repo.name);
-          const hasSpecweave = hasSpecweaveIncrements(repoPath);
+          const hasSpecweave = fs.existsSync(path.join(repoPath, '.specweave'));
           let lastModified = '';
           try {
             const stat = fs.statSync(repoPath);

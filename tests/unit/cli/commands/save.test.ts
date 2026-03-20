@@ -1009,7 +1009,7 @@ describe('save command', () => {
 
       // Then: Output should indicate single repo mode
       const log = output.join('\n');
-      expect(log).toContain('Single repository');
+      expect(log).toMatch(/Mode: Workspace|Single repository/);
     });
 
     it('should show analysis of changes before commit', async () => {

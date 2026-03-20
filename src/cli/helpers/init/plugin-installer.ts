@@ -153,12 +153,19 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     console.log(chalk.gray('   sw:docs preview - Documentation preview'));
     console.log(chalk.gray('   ...and more!'));
 
+    const corePluginFailed = failedPlugins.includes('sw');
+    if (corePluginFailed) {
+      console.log(chalk.red.bold('  CRITICAL: Core plugin "sw" failed to install'));
+      console.log(chalk.yellow('  SpecWeave will not function correctly without the sw plugin'));
+      console.log(chalk.gray('  Run: specweave refresh-plugins --plugin sw --force'));
+    }
+
     return {
-      success: successCount > 0,
+      success: successCount > 0 && !corePluginFailed,
       successCount,
       failCount,
       failedPlugins,
-      marketplaceOnly: false
+      marketplaceOnly: false,
     };
 
   } catch (error: unknown) {

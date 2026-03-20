@@ -53,6 +53,7 @@ describe('getCommand — bulk path', () => {
     );
     mockFs.readFileSync.mockReturnValue(umbrellaConfig);
     mockLaunchCloneJob.mockResolvedValue({ job: { id: 'job-123' }, isBackground: true });
+    mockExecFileNoThrow.mockResolvedValue({ stdout: '', stderr: '', exitCode: 0, success: true });
   });
 
   it('calls launchCloneJob when parseBulkSource returns a result', async () => {

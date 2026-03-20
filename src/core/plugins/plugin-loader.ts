@@ -41,7 +41,7 @@ export class PluginLoader {
    * @throws PluginNotFoundError if directory doesn't exist
    * @throws ManifestValidationError if plugin.json is invalid
    */
-  async loadFromDirectory(pluginPath: string): Promise<Plugin> {
+  async loadFromDirectory(pluginPath: string, options?: { strict?: boolean }): Promise<Plugin> {
     // Verify directory exists
     if (!(await fs.pathExists(pluginPath))) {
       throw new PluginNotFoundError(path.basename(pluginPath));
@@ -56,6 +56,13 @@ export class PluginLoader {
       this.discoverAgents(pluginPath),
       this.discoverCommands(pluginPath)
     ]);
+
+    if (options?.strict && skills.length === 0 && agents.length === 0 && commands.length === 0) {
+      throw new ManifestValidationError(
+        'Plugin has no skills, agents, or commands',
+        path.basename(pluginPath)
+      );
+    }
 
     return {
       manifest,

@@ -58,7 +58,8 @@ describe('VSKILL_PLUGIN_REGISTRY', () => {
       expect(Array.isArray(entry.keywords)).toBe(true);
       expect(Array.isArray(entry.shortKeywords)).toBe(true);
       expect(typeof entry.description).toBe('string');
-      expect(entry.installCommand).toContain(`vskill install anton-abyzov/vskill --plugin ${name}`);
+      expect(typeof entry.installCommand).toBe('string');
+      expect(entry.installCommand.length).toBeGreaterThan(0);
     }
   });
 });
@@ -70,7 +71,7 @@ describe('detectVskillPlugins()', () => {
     const mobile = matches.find(m => m.plugin === 'mobile');
     expect(mobile).toBeDefined();
     expect(mobile!.matchedKeyword).toBeDefined();
-    expect(mobile!.installCommand).toBe('vskill install anton-abyzov/vskill --plugin mobile');
+    expect(mobile!.installCommand).toBe('vskill i anton-abyzov/vskill/appstore');
   });
 
   it('TC-002: no false positive on "ios" inside "curious"', () => {

@@ -161,7 +161,8 @@ function getAvailablePlugins(marketplacePath: string): MarketplacePlugin[] {
       version: p.version || '0.0.0',
       ...(p.description ? { description: p.description } : {}),
     }));
-  } catch {
+  } catch (err) {
+    logger.debug(`getAvailablePlugins: failed to read marketplace.json: ${err}`);
     return [];
   }
 }
@@ -180,9 +181,14 @@ function getAvailablePlugins(marketplacePath: string): MarketplacePlugin[] {
  * proper marketplace registration, scope management, and settings enablement.
  * Falls back to direct file copy when CLI is unavailable.
  */
-export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<void> {
+export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<{ failed: number; errors: string[] }> {
   const quiet = !!options.quiet;
   const log = quiet ? (..._args: unknown[]) => {} : console.log;
+  const errors: string[] = [];
+  const logError = (msg: string) => {
+    errors.push(msg);
+    if (!quiet) console.log(msg);
+  };
 
   // Step 0: Resolve which adapter/tool this project uses.
   const projectRoot = getProjectRoot();
@@ -207,22 +213,22 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
           orphanResult.removedPaths.forEach(p => console.log(`  Removed orphaned lockfile: ${p}`));
         }
       }
-    } catch {
-      // Non-blocking: cleanup errors don't abort plugin refresh
+    } catch (err) {
+      logger.debug(`Step 0.5: lockfile cleanup failed: ${err}`);
     }
 
     // Step 0.6: Migrate bundled entries from project vskill.lock to global plugins-lock.json
     try {
       migrateBundledToGlobalLock(projectRoot);
-    } catch {
-      // Non-blocking: migration errors don't abort plugin refresh
+    } catch (err) {
+      logger.debug(`Step 0.6: bundled-to-global migration failed: ${err}`);
     }
 
     // Step 0.7: Remove satellite plugin entries from lockfiles (post-consolidation cleanup)
     try {
       migrateSatelliteToUnifiedLock(projectRoot);
-    } catch {
-      // Non-blocking: satellite migration errors don't abort plugin refresh
+    } catch (err) {
+      logger.debug(`Step 0.7: satellite migration failed: ${err}`);
     }
   }
 
@@ -240,7 +246,7 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   if (!specweaveRoot) {
     log(chalk.yellow('Could not find specweave installation'));
     log(chalk.gray('  Ensure specweave is installed globally or run from the specweave project.'));
-    return;
+    return { failed: 1, errors: ['Could not find specweave installation'] };
   }
 
   const marketplacePath = path.join(specweaveRoot, '.claude-plugin', 'marketplace.json');
@@ -250,7 +256,7 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   const allPlugins = getAvailablePlugins(marketplacePath);
   if (allPlugins.length === 0) {
     log(chalk.yellow('No plugins found in marketplace.json'));
-    return;
+    return { failed: 0, errors: [] };
   }
 
   // Step 2b: Select plugins to install based on options
@@ -268,7 +274,7 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         console.error(chalk.gray(`  Available plugins: ${available}`));
       }
       process.exitCode = 1;
-      return;
+      return { failed: 1, errors: [`Plugin '${pluginName}' not found in marketplace.json`] };
     }
   } else if (options.all) {
     pluginsToInstall = allPlugins;
@@ -292,7 +298,7 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     if (useNativeCli) {
       result = installPlugin(plugin.name, specweaveRoot, { force: options.force });
       if (!result.success) {
-        logger.debug(`Native install failed for ${plugin.name}, trying direct copy`);
+        logger.warn(`Native install failed for ${plugin.name}, falling back to direct copy`);
         result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
       }
     } else {
@@ -312,9 +318,9 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       installed++;
       installedPluginNames.push(plugin.name);
     } else {
-      log(chalk.red(`  ✗ ${plugin.name}: failed`));
+      logError(chalk.red(`  ✗ ${plugin.name}: failed`));
       if (result.error) {
-        log(chalk.gray(`    ${result.error}`));
+        logError(chalk.gray(`    ${result.error}`));
       }
       failed++;
     }
@@ -368,4 +374,10 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     log(chalk.gray(`  Location: ${resolved.skillsDir} (${resolved.name} adapter)`));
   }
   log('');
+
+  if (failed > 0) {
+    process.exitCode = 1;
+  }
+
+  return { failed, errors };
 }
