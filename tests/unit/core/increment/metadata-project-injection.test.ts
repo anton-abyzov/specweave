@@ -2,7 +2,9 @@
  * Tests for project field injection into metadata.json (T-003 / T-004)
  *
  * Validates that createIncrementTemplates auto-populates the project
- * field in metadata.json when umbrella mode is active.
+ * field in metadata.json using the workspace config.
+ *
+ * Updated to use new workspace config format (no umbrella.enabled flag).
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -34,20 +36,17 @@ describe('metadata.json project field injection (T-003 / T-004)', () => {
     return JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
   }
 
-  // AC-US1-01: umbrella enabled + cwd inside child repo → project set
-  it('should set project field when umbrella config has matching child repo', async () => {
+  // AC-US1-01: workspace config with repos → project set to workspace name (cwd not in any repo)
+  it('should set project field when workspace config is present', async () => {
     writeConfig({
-      umbrella: {
-        enabled: true,
-        projectName: 'my-umb',
-        childRepos: [
+      workspace: {
+        name: 'my-umb',
+        repos: [
           { id: 'specweave', path: 'repositories/org/specweave', prefix: 'SPE' },
         ],
       },
     });
 
-    // cwd won't match any child repo (tempDir is not under a child repo path)
-    // so it should fall back to umbrella.projectName
     const result = await createIncrementTemplates({
       incrementId: '0001-test',
       title: 'Test',
@@ -58,16 +57,16 @@ describe('metadata.json project field injection (T-003 / T-004)', () => {
 
     expect(result.success).toBe(true);
     const metadata = readMetadata('0001-test');
+    // cwd won't match any child repo path, so falls back to workspace.name
     expect(metadata.project).toBe('my-umb');
   });
 
-  // AC-US1-02: cwd at umbrella root → project = umbrella.projectName
-  it('should set project to umbrella.projectName when at umbrella root', async () => {
+  // AC-US1-02: workspace name is the default project when cwd is at workspace root
+  it('should set project to workspace.name when at workspace root', async () => {
     writeConfig({
-      umbrella: {
-        enabled: true,
-        projectName: 'workspace-root',
-        childRepos: [
+      workspace: {
+        name: 'workspace-root',
+        repos: [
           { id: 'app', path: 'repos/org/app' },
         ],
       },
@@ -86,14 +85,10 @@ describe('metadata.json project field injection (T-003 / T-004)', () => {
     expect(metadata.project).toBe('workspace-root');
   });
 
-  // AC-US1-03: umbrella not enabled → no project field
-  it('should NOT set project field when umbrella is not enabled', async () => {
+  // When workspace section is absent but other config exists → no project field
+  it('should NOT set project field when workspace section is absent', async () => {
     writeConfig({
-      umbrella: {
-        enabled: false,
-        projectName: 'ws',
-        childRepos: [],
-      },
+      project: { name: 'legacy-project' },
     });
 
     const result = await createIncrementTemplates({
@@ -123,14 +118,13 @@ describe('metadata.json project field injection (T-003 / T-004)', () => {
     expect(metadata.project).toBeUndefined();
   });
 
-  // AC-US1-04: disabled child repo → project still set
-  it('should set project even when all child repos are disabled', async () => {
+  // AC-US1-04: workspace with repos (even disabled) → project still set from workspace.name
+  it('should set project even when all repos are present but cwd is at workspace root', async () => {
     writeConfig({
-      umbrella: {
-        enabled: true,
-        projectName: 'ws',
-        childRepos: [
-          { id: 'app', path: 'repos/org/app', disabled: true },
+      workspace: {
+        name: 'ws',
+        repos: [
+          { id: 'app', path: 'repos/org/app' },
         ],
       },
     });
