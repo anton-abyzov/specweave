@@ -102,7 +102,7 @@ const EXT_TO_LANGUAGE: Record<string, string> = {
 const RESTRUCTURE_SKIP = new Set(['.git', '.specweave', 'node_modules', 'repositories']);
 
 /** Regex to extract org/repo from GitHub URLs */
-const GITHUB_URL_RE = /github\.com[:/]([^/]+)\/([^/.]+)/;
+const GITHUB_URL_RE = /github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/;
 
 // --- Functions ---
 
@@ -118,62 +118,51 @@ export function scanWorkspaceContent(targetDir: string): WorkspaceContentScan {
   let fileCount = 0;
   const languages = new Set<string>();
 
-  let entries: string[];
+  let dirents: fs.Dirent[];
   try {
-    entries = fs.readdirSync(targetDir);
+    dirents = fs.readdirSync(targetDir, { withFileTypes: true });
   } catch {
     return { hasSourceFiles, hasPackageManager, hasGitRepo, hasUncommittedChanges, fileCount, detectedLanguages: [] };
   }
 
-  for (const entry of entries) {
-    if (entry.startsWith('.')) continue;
-    if (SKIP_DIRS.has(entry)) continue;
+  for (const dirent of dirents) {
+    if (dirent.name.startsWith('.')) continue;
+    if (SKIP_DIRS.has(dirent.name)) continue;
 
-    const fullPath = path.join(targetDir, entry);
-    let stat: ReturnType<typeof fs.statSync>;
-    try {
-      stat = fs.statSync(fullPath);
-    } catch {
-      continue;
-    }
-
-    if (stat.isFile()) {
+    if (dirent.isFile()) {
       fileCount++;
-      const ext = path.extname(entry).toLowerCase();
+      const ext = path.extname(dirent.name).toLowerCase();
       if (SOURCE_EXTENSIONS.has(ext)) {
         hasSourceFiles = true;
         const lang = EXT_TO_LANGUAGE[ext];
         if (lang) languages.add(lang);
       }
-      if (PACKAGE_MANAGER_FILES.has(entry)) {
+      if (PACKAGE_MANAGER_FILES.has(dirent.name)) {
         hasPackageManager = true;
       }
-    } else if (stat.isDirectory()) {
+    } else if (dirent.isDirectory()) {
       // Scan depth 1
       try {
-        const subEntries = fs.readdirSync(fullPath);
-        for (const sub of subEntries) {
-          if (sub.startsWith('.')) continue;
-          if (SKIP_DIRS.has(sub)) continue;
-          const subPath = path.join(fullPath, sub);
-          try {
-            if (fs.statSync(subPath).isFile()) {
-              fileCount++;
-              const ext = path.extname(sub).toLowerCase();
-              if (SOURCE_EXTENSIONS.has(ext)) {
-                hasSourceFiles = true;
-                const lang = EXT_TO_LANGUAGE[ext];
-                if (lang) languages.add(lang);
-              }
+        const subDirents = fs.readdirSync(path.join(targetDir, dirent.name), { withFileTypes: true });
+        for (const sub of subDirents) {
+          if (sub.name.startsWith('.')) continue;
+          if (SKIP_DIRS.has(sub.name)) continue;
+          if (sub.isFile()) {
+            fileCount++;
+            const ext = path.extname(sub.name).toLowerCase();
+            if (SOURCE_EXTENSIONS.has(ext)) {
+              hasSourceFiles = true;
+              const lang = EXT_TO_LANGUAGE[ext];
+              if (lang) languages.add(lang);
             }
-          } catch { continue; }
+          }
         }
       } catch { /* unreadable dir */ }
     }
   }
 
   if (hasGitRepo) {
-    const result = execFileNoThrowSync('git', ['status', '--porcelain'], { cwd: targetDir });
+    const result = execFileNoThrowSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: targetDir });
     hasUncommittedChanges = result.success && result.stdout.trim().length > 0;
   }
 
@@ -344,7 +333,8 @@ export function detectOrgRepo(targetDir: string): OrgRepoDetection | null {
         }
       }
     } catch {
-      // Malformed package.json
+      // Malformed package.json — warn so users know auto-detection failed
+      console.log(chalk.gray('  Note: package.json could not be parsed — skipping auto-detection from it'));
     }
   }
 
@@ -360,16 +350,24 @@ export async function promptOrgRepo(
 ): Promise<{ org: string; repoName: string }> {
   const detected = detectOrgRepo(targetDir);
 
+  const validateName = (v: string): string | true => {
+    const trimmed = v.trim();
+    if (trimmed.length === 0) return 'Name is required';
+    if (/[/\\]/.test(trimmed)) return 'Name must not contain path separators (/ or \\)';
+    if (trimmed === '.' || trimmed === '..' || trimmed.includes('..')) return 'Name must not contain path traversal (..)';
+    return true;
+  };
+
   const org = await input({
     message: 'Organization / owner name:',
     default: detected?.org || path.basename(path.dirname(targetDir)) || undefined,
-    validate: (v: string) => v.trim().length > 0 || 'Organization name is required',
+    validate: validateName,
   });
 
   const repoName = await input({
     message: 'Repository name:',
     default: detected?.repoName || path.basename(targetDir) || undefined,
-    validate: (v: string) => v.trim().length > 0 || 'Repository name is required',
+    validate: validateName,
   });
 
   return { org: org.trim(), repoName: repoName.trim() };
@@ -387,6 +385,12 @@ export function copyLocalPathIntoRepositories(
 ): LocalCopyResult {
   const resolvedSource = path.resolve(sourcePath);
   const destDir = path.join(targetDir, 'repositories', org, repoName);
+  const repositoriesRoot = path.resolve(path.join(targetDir, 'repositories'));
+
+  // Path containment check — prevent traversal via crafted org/repoName
+  if (!path.resolve(destDir).startsWith(repositoriesRoot + path.sep)) {
+    return { copied: [], skipped: [], errors: ['Destination escapes repositories/ directory'], targetDir: destDir };
+  }
 
   if (resolvedSource === path.resolve(targetDir)) {
     return { copied: [], skipped: [], errors: ['Source and target are the same directory'], targetDir: destDir };
@@ -420,6 +424,18 @@ export function copyLocalPathIntoRepositories(
       continue;
     }
     const srcPath = path.join(resolvedSource, entry);
+
+    // Skip symlinks to prevent copying unintended targets
+    try {
+      if (lstatSync(srcPath).isSymbolicLink()) {
+        skipped.push(entry);
+        continue;
+      }
+    } catch {
+      skipped.push(entry);
+      continue;
+    }
+
     const destPath = path.join(destDir, entry);
     try {
       fs.copySync(srcPath, destPath);
@@ -444,6 +460,12 @@ export function restructureIntoRepositories(
   repoName: string,
 ): RestructureResult {
   const destDir = path.join(targetDir, 'repositories', org, repoName);
+  const repositoriesRoot = path.resolve(path.join(targetDir, 'repositories'));
+
+  // Path containment check — prevent traversal via crafted org/repoName
+  if (!path.resolve(destDir).startsWith(repositoriesRoot + path.sep)) {
+    return { moved: [], skipped: [], errors: ['Destination escapes repositories/ directory'], targetDir: destDir };
+  }
 
   if (fs.existsSync(destDir)) {
     return {

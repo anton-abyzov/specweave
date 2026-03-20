@@ -17,8 +17,8 @@ import * as path from 'path';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 
 // Reuse repo-connect regex for parsing package.json URLs
-const HTTPS_RE = /^https?:\/\/github\.com\/([^/]+)\/([^/.]+?)(?:\.git)?$/;
-const SSH_RE = /^git@github\.com:([^/]+)\/([^/.]+?)(?:\.git)?$/;
+const HTTPS_RE = /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/;
+const SSH_RE = /^git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/;
 
 export interface RootRepoInfo {
   owner: string;
@@ -72,7 +72,8 @@ export function detectRootRepo(targetDir: string): RootRepoInfo | null {
       }
     }
   } catch {
-    // Malformed package.json — skip
+    // Malformed package.json — warn so users know auto-detection failed
+    console.log(chalk.gray('  Note: package.json could not be parsed — skipping auto-detection from it'));
   }
 
   return null;
@@ -198,8 +199,11 @@ export async function promptRootRepoConnection(
 }
 
 async function promptManualInput(s: ReturnType<typeof getStrings>): Promise<RootRepoInfo> {
-  const owner = await input({ message: s.ownerPrompt });
-  const repo = await input({ message: s.repoPrompt });
+  const validateField = (v: string): string | true =>
+    v.trim().length > 0 ? true : 'This field is required';
 
-  return { owner, repo, source: 'user-input' };
+  const owner = await input({ message: s.ownerPrompt, validate: validateField });
+  const repo = await input({ message: s.repoPrompt, validate: validateField });
+
+  return { owner: owner.trim(), repo: repo.trim(), source: 'user-input' };
 }

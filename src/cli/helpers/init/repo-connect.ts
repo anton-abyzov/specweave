@@ -33,8 +33,8 @@ export interface RepoConnectResult {
 // ---------------------------------------------------------------------------
 
 const SHORTHAND_RE = /^([a-zA-Z0-9._-]+)\/([a-zA-Z0-9._-]+)$/;
-const HTTPS_RE = /^https?:\/\/github\.com\/([^/]+)\/([^/.]+?)(?:\.git)?$/;
-const SSH_RE = /^git@github\.com:([^/]+)\/([^/.]+?)(?:\.git)?$/;
+const HTTPS_RE = /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/;
+const SSH_RE = /^git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/;
 
 /**
  * Parse user input into structured repo descriptors.
