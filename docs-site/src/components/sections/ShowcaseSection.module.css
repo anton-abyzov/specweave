@@ -1,66 +1,76 @@
-.apps {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--sw-space-6);
+.group {
+  margin-top: var(--sw-space-10);
+}
+
+.group:first-of-type {
   margin-top: var(--sw-space-12);
-  max-width: var(--sw-content-3xl);
-  margin-left: auto;
-  margin-right: auto;
 }
 
-.appCard {
+.groupLabel {
+  font-size: var(--sw-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: inherit;
+  opacity: 0.4;
+  font-weight: var(--sw-font-weight-semibold);
+  margin: 0 0 var(--sw-space-4);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sw-space-3);
+}
+
+.tile {
   display: flex;
   align-items: center;
-  gap: var(--sw-space-5);
-  padding: var(--sw-space-6);
-  border-radius: var(--sw-radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  transition: border-color 0.2s ease;
-}
-
-.appCard:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.appIcon {
-  width: 56px;
-  height: 56px;
+  gap: var(--sw-space-3);
+  padding: var(--sw-space-4) var(--sw-space-5);
   border-radius: var(--sw-radius-lg);
-  background: var(--sw-gradient-text);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--sw-font-size-2xl);
-  font-weight: var(--sw-font-weight-bold);
-  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease, transform 0.15s ease, background 0.2s ease;
 }
 
-.appInfo {
-  flex: 1;
+.tile:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.tileFavicon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--sw-radius-md);
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tileText {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
-.appName {
-  font-size: var(--sw-font-size-lg);
-  font-weight: var(--sw-font-weight-semibold);
-  margin: 0 0 var(--sw-space-1);
-  color: inherit;
-}
-
-.appDesc {
+.tileName {
   font-size: var(--sw-font-size-sm);
+  font-weight: var(--sw-font-weight-semibold);
   color: inherit;
-  opacity: 0.7;
-  margin: 0 0 var(--sw-space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.appBadge {
+.tileTagline {
   font-size: var(--sw-font-size-xs);
   color: inherit;
   opacity: 0.5;
-  font-weight: var(--sw-font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .selfRef {
@@ -68,7 +78,7 @@
   margin: var(--sw-space-10) auto;
   font-size: var(--sw-font-size-base);
   color: inherit;
-  opacity: 0.8;
+  opacity: 0.7;
   max-width: var(--sw-content-3xl);
 }
 
@@ -86,7 +96,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sw-space-6);
-  margin-top: var(--sw-space-8);
+  margin-top: var(--sw-space-6);
 }
 
 .stat {
@@ -102,12 +112,12 @@
 .statLabel {
   font-size: var(--sw-font-size-sm);
   color: inherit;
-  opacity: 0.6;
+  opacity: 0.5;
   font-weight: var(--sw-font-weight-medium);
 }
 
 @media (max-width: 640px) {
-  .apps {
+  .tiles {
     grid-template-columns: 1fr;
   }
 

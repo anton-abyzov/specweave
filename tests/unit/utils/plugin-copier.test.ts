@@ -8,7 +8,7 @@
  * @updated 1.0.356 - Removed copy-to-commands tests, added migration tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -151,6 +151,30 @@ describe('plugin-copier', () => {
 
       expect(hash).toHaveLength(12);
       expect(hash).toMatch(/^[a-f0-9]{12}$/);
+    });
+
+    it('should not log debug warnings for broken symlinks', () => {
+      const dir = path.join(tmpDir, 'hash-broken-symlink');
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'real.txt'), 'content');
+      // Create a broken symlink — target does not exist
+      fs.symlinkSync(path.join(dir, 'nonexistent-target'), path.join(dir, 'broken-link'));
+
+      const logSpy = vi.spyOn(console, 'log');
+
+      const hash = computePluginHash(dir);
+
+      expect(hash).toHaveLength(12);
+      expect(hash).toMatch(/^[a-f0-9]{12}$/);
+
+      // With the fix, statSync({ throwIfNoEntry: false }) returns null for broken symlinks,
+      // so no catch block is entered and no "skipping unreadable entry" debug message is logged
+      const debugCalls = logSpy.mock.calls
+        .map((args: any[]) => args.join(' '))
+        .filter((msg: string) => msg.includes('skipping unreadable entry'));
+      expect(debugCalls).toHaveLength(0);
+
+      logSpy.mockRestore();
     });
 
     it('should produce stable hash with mixed files and directories', () => {

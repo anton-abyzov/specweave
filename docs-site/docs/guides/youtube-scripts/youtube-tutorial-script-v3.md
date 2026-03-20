@@ -97,11 +97,13 @@ draft: true
 - Terminal with `specweave init .`
 - spec.md being generated
 - `/sw:auto` running tests
-- Slack channel with agent updates
-- verified-skill.com homepage
-- App Store page ([Lulla](https://lulla-app.pages.dev/) or [WC26](https://wc-26.net/))
+- [verified-skill.com](https://verified-skill.com) homepage
+- App Store page — [Lulla](https://lulla-app.pages.dev/) (baby sleep, Apple Watch)
+- App Store page — [SketchMate](https://sketchmate.net/) (AI drawing game)
+- [EasyChamp](https://easychamp.com) dashboard (enterprise, 20+ microservices)
+- [WC26](https://wc-26.net/) World Cup companion
 
-> "Ten production apps. Three in the App Store. Nearly 4,000 commits. 700 releases. One developer, one system.
+> "Twelve production projects. Four in the App Store. 636 structured increments. 538 releases. 3,200 commits. One developer, one system.
 >
 > Let's go."
 
