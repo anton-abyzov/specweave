@@ -255,6 +255,90 @@ export async function cleanupStalePlugins(
       }
     }
 
+    // Phase 2.5: Prune stale VERSION subdirectories within valid plugins
+    const installedPluginsPath = path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
+    try {
+      const ipRaw = fs.readFileSync(installedPluginsPath, 'utf-8');
+      const ipData = JSON.parse(ipRaw);
+      const plugins = ipData.plugins ?? ipData;
+
+      if (typeof plugins === 'object' && plugins !== null && !Array.isArray(plugins)) {
+        // Build map of active versions: marketplace/pluginName -> version from installPath
+        const activeVersions = new Map<string, string>();
+        for (const [key, entries] of Object.entries(plugins)) {
+          const pluginName = key.split('@')[0];
+          const mktName = key.split('@')[1];
+          if (Array.isArray(entries) && entries.length > 0) {
+            // Extract version from installPath (last segment of path)
+            const firstEntry = entries[0];
+            const installPath = (typeof firstEntry === 'object' && firstEntry !== null && 'installPath' in firstEntry)
+              ? (firstEntry as Record<string, unknown>).installPath as string | undefined
+              : undefined;
+            if (installPath) {
+              const version = path.basename(installPath);
+              activeVersions.set(`${mktName}/${pluginName}`, version);
+            }
+          }
+        }
+
+        // Scan cache directories for stale versions
+        if (activeVersions.size > 0 && fs.existsSync(cacheBase)) {
+          for (const [mktName] of marketplacePluginMap) {
+            const mktCacheDir = path.join(cacheBase, mktName);
+            if (!fs.existsSync(mktCacheDir)) continue;
+
+            try {
+              const pluginEntries = fs.readdirSync(mktCacheDir, { withFileTypes: true });
+              for (const entry of pluginEntries) {
+                if (!entry.isDirectory()) continue;
+
+                const activeVersion = activeVersions.get(`${mktName}/${entry.name}`);
+                if (!activeVersion) continue;
+
+                const pluginCacheDir = path.join(mktCacheDir, entry.name);
+                try {
+                  const versionDirs = fs.readdirSync(pluginCacheDir, { withFileTypes: true });
+                  for (const vDir of versionDirs) {
+                    if (!vDir.isDirectory() || vDir.isSymbolicLink()) continue;
+                    if (vDir.name === activeVersion) continue;
+
+                    const staleVersionPath = path.join(pluginCacheDir, vDir.name);
+                    // Verify resolved path stays under cache base (symlink safety)
+                    const resolved = fs.realpathSync(staleVersionPath);
+                    if (!resolved.startsWith(cacheBase)) {
+                      console.warn(`Phase 2.5: skipping ${staleVersionPath} — resolves outside cache`);
+                      continue;
+                    }
+                    try {
+                      // Atomic rename-then-delete (consistent with Phase 2)
+                      const tempName = staleVersionPath + '.stale-' + Date.now();
+                      fs.renameSync(staleVersionPath, tempName);
+                      fs.rmSync(tempName, { recursive: true, force: true });
+                      result.removedCacheDirs.push(staleVersionPath);
+                      if (verbose) {
+                        console.log(chalk.gray(`  Removed stale version: ${entry.name}/${vDir.name} (active: ${activeVersion})`));
+                      }
+                    } catch (err) {
+                      console.debug?.(`Phase 2.5: could not remove stale version ${staleVersionPath}: ${err}`);
+                      if (verbose) {
+                        console.log(chalk.yellow(`  Could not remove stale version: ${staleVersionPath}`));
+                      }
+                    }
+                  }
+                } catch (err) {
+                  console.debug?.(`Phase 2.5: plugin dir unreadable ${pluginCacheDir}: ${err}`);
+                }
+              }
+            } catch (err) {
+              console.debug?.(`Phase 2.5: marketplace cache dir unreadable ${mktCacheDir}: ${err}`);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.debug?.(`Phase 2.5: installed_plugins.json unavailable, skipping version pruning: ${err}`);
+    }
+
     result.success = true;
     return result;
 
@@ -382,8 +466,8 @@ export async function migrateUserLevelPlugins(
           if (verbose) {
             console.log(chalk.gray(`  - ${pluginKey}: user → project`));
           }
-        } else if (verbose) {
-          console.log(chalk.yellow(`  ⚠ ${pluginKey}: uninstalled but reinstall failed`));
+        } else {
+          console.warn(chalk.yellow(`  ⚠ ${pluginKey}: uninstalled from user scope but reinstall to project scope failed. Run: claude plugin install ${pluginKey} --scope project`));
         }
       } else if (verbose) {
         console.log(chalk.yellow(`  ⚠ ${pluginKey}: could not uninstall from user scope`));
@@ -646,10 +730,64 @@ export async function detectStalePlugins(
       return [];
     }
 
-    const marketplace = JSON.parse(fs.readFileSync(marketplaceJsonPath, 'utf-8'));
-    const validPlugins = new Set(
-      (marketplace.plugins || []).map((p: { name: string }) => p.name)
+    // Build marketplace plugin map (same approach as cleanupStalePlugins)
+    const specweaveManifest = JSON.parse(fs.readFileSync(marketplaceJsonPath, 'utf-8'));
+    const specweaveValidPlugins = new Set<string>(
+      (specweaveManifest.plugins || []).map((p: { name: string }) => p.name)
     );
+
+    const cacheBase = path.join(os.homedir(), '.claude', 'plugins', 'cache');
+    const marketplacesBase = path.join(os.homedir(), '.claude', 'plugins', 'marketplaces');
+    const marketplacePluginMap = new Map<string, Set<string>>();
+    marketplacePluginMap.set('specweave', specweaveValidPlugins);
+
+    // Discover additional marketplaces from cache
+    if (fs.existsSync(cacheBase)) {
+      try {
+        const cacheDirs = fs.readdirSync(cacheBase, { withFileTypes: true });
+        for (const dir of cacheDirs) {
+          if (!dir.isDirectory() || dir.name === 'specweave') continue;
+          const mktManifestPath = path.join(marketplacesBase, dir.name, '.claude-plugin', 'marketplace.json');
+          if (fs.existsSync(mktManifestPath)) {
+            try {
+              const mktManifest = JSON.parse(fs.readFileSync(mktManifestPath, 'utf-8'));
+              marketplacePluginMap.set(dir.name, new Set<string>(
+                (mktManifest.plugins || []).map((p: { name: string }) => p.name)
+              ));
+            } catch {
+              marketplacePluginMap.set(dir.name, new Set());
+            }
+          } else {
+            marketplacePluginMap.set(dir.name, new Set());
+          }
+        }
+      } catch {
+        // Cache dir unreadable — proceed with specweave-only detection
+      }
+    }
+
+    // Discover marketplaces from settings that aren't in cache
+    if (settings.enabledPlugins) {
+      for (const pluginKey of Object.keys(settings.enabledPlugins)) {
+        const mktName = pluginKey.split('@')[1];
+        if (!mktName || marketplacePluginMap.has(mktName)) continue;
+        if (mktName === 'claude-plugins-official' || mktName === 'claude-code-lsps') continue;
+
+        const mktManifestPath = path.join(marketplacesBase, mktName, '.claude-plugin', 'marketplace.json');
+        if (fs.existsSync(mktManifestPath)) {
+          try {
+            const mktManifest = JSON.parse(fs.readFileSync(mktManifestPath, 'utf-8'));
+            marketplacePluginMap.set(mktName, new Set<string>(
+              (mktManifest.plugins || []).map((p: { name: string }) => p.name)
+            ));
+          } catch {
+            marketplacePluginMap.set(mktName, new Set());
+          }
+        } else {
+          marketplacePluginMap.set(mktName, new Set());
+        }
+      }
+    }
 
     const stalePlugins: string[] = [];
 
@@ -658,12 +796,12 @@ export async function detectStalePlugins(
         if (!enabled) continue;
 
         const pluginName = pluginKey.split('@')[0];
-        const marketplace = pluginKey.split('@')[1];
+        const mktName = pluginKey.split('@')[1];
 
-        if (
-          marketplace === 'specweave' &&
-          (!validPlugins.has(pluginName) || REMOVED_PLUGINS.has(pluginName))
-        ) {
+        const validSet = marketplacePluginMap.get(mktName);
+        if (!validSet) continue; // Unknown marketplace — don't touch
+
+        if (!validSet.has(pluginName) || (mktName === 'specweave' && REMOVED_PLUGINS.has(pluginName))) {
           stalePlugins.push(pluginKey);
         }
       }

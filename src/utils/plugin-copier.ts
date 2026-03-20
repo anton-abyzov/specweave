@@ -26,6 +26,8 @@ import { join, resolve, dirname, normalize } from 'node:path';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { execFileNoThrowSync } from './execFileNoThrow.js';
+import { consoleLogger } from './logger.js';
+import { compareSemverDesc } from './semver-sort.js';
 // getProjectRoot no longer used here — bundled plugins use global lock
 import { getPluginScope, getScopeArgs } from '../core/types/plugin-scope.js';
 
@@ -99,7 +101,10 @@ const PLUGIN_CACHE_DIR = join(homedir(), '.claude', 'plugins', 'cache');
  * Path separators are normalized to '/' for cross-platform consistency.
  */
 export function computePluginHash(pluginDir: string): string {
-  if (!existsSync(pluginDir)) return '';
+  if (!existsSync(pluginDir)) {
+    consoleLogger.debug(`computePluginHash: directory not found: ${pluginDir}`);
+    return '';
+  }
 
   const hash = createHash('sha256');
   try {
@@ -113,12 +118,12 @@ export function computePluginHash(pluginDir: string): string {
         hash.update('\0');
         hash.update(content);
         hash.update('\0');
-      } catch {
-        // Skip directories and unreadable files
+      } catch (err) {
+        consoleLogger.debug(`computePluginHash: skipping unreadable entry: ${err instanceof Error ? err.message : err}`);
       }
     }
-  } catch {
-    // Directory not readable
+  } catch (err) {
+    consoleLogger.debug(`computePluginHash: directory read failed: ${err instanceof Error ? err.message : err}`);
   }
 
   return hash.digest('hex').slice(0, 12);
@@ -139,8 +144,8 @@ export function fixHookPermissions(targetDir: string): void {
         chmodSync(join(targetDir, file), 0o755);
       }
     }
-  } catch {
-    // Ignore permission errors
+  } catch (err) {
+    consoleLogger.debug(`fixHookPermissions failed for ${targetDir}: ${err instanceof Error ? err.message : err}`);
   }
 }
 
@@ -163,7 +168,8 @@ export function migrateLegacyCommandsDir(pluginName: string): boolean {
   try {
     rmSync(legacyDir, { recursive: true, force: true });
     return true;
-  } catch {
+  } catch (err) {
+    consoleLogger.debug(`migrateLegacyCommandsDir: failed to remove ${legacyDir}: ${err}`);
     return false;
   }
 }
@@ -180,7 +186,8 @@ function parseMarketplace(marketplacePath: string): MarketplacePlugin[] {
     const content = readFileSync(marketplacePath, 'utf-8');
     const manifest = JSON.parse(content);
     return Array.isArray(manifest.plugins) ? manifest.plugins : [];
-  } catch {
+  } catch (err) {
+    consoleLogger.warn(`Failed to parse marketplace.json at ${marketplacePath}: ${err instanceof Error ? err.message : err}`);
     return [];
   }
 }
@@ -197,7 +204,8 @@ export function readLockfile(dir: string): VskillLock | null {
   if (!existsSync(p)) return null;
   try {
     return JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
-  } catch {
+  } catch (err) {
+    consoleLogger.debug(`Failed to parse lockfile at ${p}: ${err instanceof Error ? err.message : err}`);
     return null;
   }
 }
@@ -253,7 +261,8 @@ export function readGlobalLockfile(homeOverride?: string): VskillLock | null {
     const p = join(dir, GLOBAL_LOCKFILE_NAME);
     if (!existsSync(p)) return null;
     return JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
-  } catch {
+  } catch (err) {
+    consoleLogger.debug(`Failed to read global lockfile: ${err instanceof Error ? err.message : err}`);
     return null;
   }
 }
@@ -411,15 +420,15 @@ export function migrateSatelliteToUnifiedLock(
           if (remaining === 0) {
             try {
               rmSync(join(projectRoot, LOCKFILE_NAME), { force: true });
-            } catch { /* non-fatal */ }
+            } catch (err) { consoleLogger.debug(`migrateSatelliteToUnifiedLock: failed to remove project lockfile: ${err}`); }
           } else {
             writeLockfile(projectLock, projectRoot);
           }
         }
       }
     }
-  } catch {
-    // Failure is non-blocking — return what we have
+  } catch (err) {
+    consoleLogger.debug(`migrateSatelliteToUnifiedLock: non-blocking failure: ${err}`);
   }
 
   return { migratedCount };
@@ -445,8 +454,8 @@ export function findSpecweaveRoot(startDir: string): string | null {
         if (pkg.name === 'specweave' || pkg.name === '@specweave/core') {
           return dir;
         }
-      } catch {
-        // Invalid JSON, keep looking
+      } catch (err) {
+        consoleLogger.debug(`Invalid package.json at ${pkgPath}: ${err instanceof Error ? err.message : err}`);
       }
     }
 
@@ -456,6 +465,56 @@ export function findSpecweaveRoot(startDir: string): string | null {
   }
 
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Cache validation
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate that a plugin's cache directory contains the minimum required structure.
+ * Catches partial installs where `claude plugin install` exits 0 but cache is incomplete.
+ */
+function validatePluginCache(
+  cacheDir: string,
+  pluginName: string,
+): { valid: true } | { valid: false; error: string } {
+  if (!existsSync(cacheDir)) {
+    return { valid: false, error: `Plugin cache dir missing after install: ${cacheDir}` };
+  }
+
+  let versionDirs: string[];
+  try {
+    versionDirs = readdirSync(cacheDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+  } catch {
+    return { valid: false, error: `Cannot read plugin cache dir: ${cacheDir}` };
+  }
+
+  if (versionDirs.length === 0) {
+    return { valid: false, error: `Plugin "${pluginName}" cache is empty (no version directories)` };
+  }
+
+  // Pick latest version dir (semver descending)
+  const sorted = [...versionDirs].sort(compareSemverDesc);
+  const latestDir = join(cacheDir, sorted[0]);
+
+  // Check for plugin.json
+  if (!existsSync(join(latestDir, '.claude-plugin', 'plugin.json'))) {
+    return { valid: false, error: `Plugin "${pluginName}" cache missing .claude-plugin/plugin.json in ${sorted[0]}` };
+  }
+
+  // Check for at least one component directory
+  const hasSkills = existsSync(join(latestDir, 'skills'));
+  const hasHooks = existsSync(join(latestDir, 'hooks'));
+  const hasCommands = existsSync(join(latestDir, 'commands'));
+
+  if (!hasSkills && !hasHooks && !hasCommands) {
+    return { valid: false, error: `Plugin "${pluginName}" cache has no skills/, hooks/, or commands/ in ${sorted[0]}` };
+  }
+
+  return { valid: true };
 }
 
 // ---------------------------------------------------------------------------
@@ -504,7 +563,7 @@ export function installPlugin(
   try {
     const mkts = JSON.parse(readFileSync(knownMarketplacesPath, 'utf-8'));
     marketplaceRegistered = typeof mkts === 'object' && mkts !== null && 'specweave' in mkts;
-  } catch { /* file missing or invalid — treat as not registered */ }
+  } catch (err) { consoleLogger.debug(`installPlugin: known_marketplaces.json read failed: ${err}`); }
 
   if (!marketplaceRegistered) {
     execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
@@ -515,8 +574,8 @@ export function installPlugin(
   let lock: VskillLock;
   try {
     lock = ensureGlobalLockfile();
-  } catch {
-    // Permission denied or no home dir — create in-memory lock, skip persistence
+  } catch (err) {
+    consoleLogger.warn(`installPlugin: global lockfile unavailable, using in-memory lock: ${err}`);
     lock = { version: 1, agents: ['claude-code'], skills: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   }
 
@@ -531,7 +590,7 @@ export function installPlugin(
       const plugins = data.plugins ?? data;
       isActuallyInstalled = !Array.isArray(plugins) && typeof plugins === 'object'
         && plugins !== null && `${pluginName}@specweave` in plugins;
-    } catch { /* file missing — not installed */ }
+    } catch (err) { consoleLogger.debug(`installPlugin: installed_plugins.json check failed: ${err}`); }
 
     if (isActuallyInstalled) {
       return { success: true, sha, skipped: true };
@@ -561,13 +620,23 @@ export function installPlugin(
   if (existsSync(cacheDir)) {
     // Walk version dirs (e.g. 1.0.0/) and fix permissions in each
     try {
-      for (const versionDir of readdirSync(cacheDir)) {
+      const versionDirs = readdirSync(cacheDir);
+      if (versionDirs.length > 1) {
+        consoleLogger.debug(`Plugin "${pluginName}": ${versionDirs.length} version dirs in cache, consider cleanup`);
+      }
+      for (const versionDir of versionDirs) {
         const versionPath = join(cacheDir, versionDir);
         fixHookPermissions(versionPath);
       }
-    } catch {
-      // Non-fatal
+    } catch (err) {
+      consoleLogger.debug(`installPlugin: hook permission fix failed for ${pluginName}: ${err}`);
     }
+  }
+
+  // 6b. Validate cache integrity — catch partial installs
+  const validation = validatePluginCache(cacheDir, pluginName);
+  if (!validation.valid) {
+    return { success: false, sha, error: validation.error };
   }
 
   // 7. Migrate: remove legacy ~/.claude/commands/<name>/ if present
@@ -586,8 +655,8 @@ export function installPlugin(
   }
   try {
     writeGlobalLockfile(lock);
-  } catch {
-    // Non-fatal: lockfile write failure shouldn't block install
+  } catch (err) {
+    consoleLogger.warn(`Plugin installed but lockfile write failed: ${err instanceof Error ? err.message : err}`);
   }
 
   return { success: true, sha, targetDir: cacheDir };
@@ -745,7 +814,8 @@ export function copyPluginSkillsToProject(
       try {
         const st = lstatSync(skillSourceDir);
         if (!st.isDirectory()) continue;
-      } catch {
+      } catch (err) {
+        consoleLogger.debug(`copyPluginSkillsToProject: lstat failed for ${skillSourceDir}: ${err}`);
         continue;
       }
 
@@ -770,14 +840,18 @@ export function copyPluginSkillsToProject(
           } else {
             copyFileSync(srcPath, destPath);
           }
-        } catch {
-          // Non-fatal: skip unreadable files
+        } catch (err) {
+          consoleLogger.debug(`copyPluginSkillsToProject: skipping unreadable file ${srcPath}: ${err}`);
         }
       }
       copiedCount++;
     }
   } catch (err) {
     return { success: false, sha, error: `Failed to copy skills: ${err}` };
+  }
+
+  if (copiedCount === 0) {
+    consoleLogger.warn(`Plugin "${pluginName}": skills/ directory exists but no skills were copied`);
   }
 
   // 6. Recursively copy hooks to .claude/hooks/ if present (Claude-only).
@@ -799,12 +873,12 @@ export function copyPluginSkillsToProject(
           if (hookFile.endsWith('.sh')) {
             chmodSync(destPath, 0o755);
           }
-        } catch {
-          // Non-fatal
+        } catch (err) {
+          consoleLogger.debug(`Failed to copy hook file: ${err instanceof Error ? err.message : err}`);
         }
       }
-    } catch {
-      // Non-fatal
+    } catch (err) {
+      consoleLogger.warn(`Failed to copy hooks for plugin "${pluginName}": ${err instanceof Error ? err.message : err}`);
     }
   }
 
@@ -826,8 +900,8 @@ export function copyPluginSkillsToProject(
   }
   try {
     writeLockfile(lock, projectRoot);
-  } catch {
-    // Non-fatal: lockfile write failure shouldn't block install
+  } catch (err) {
+    consoleLogger.warn(`Plugin skills copied but lockfile write failed: ${err instanceof Error ? err.message : err}`);
   }
 
   return { success: true, sha, targetDir: targetSkillsBase };

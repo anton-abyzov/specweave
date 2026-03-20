@@ -53,7 +53,19 @@ describe('init-architecture (integration)', () => {
       writeFileSync(path.join(dir, '.env'), 'GITHUB_TOKEN=standalone-test\n');
       mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
 
-      const result = detectCredentials(dir, 'github');
+      // Clear env vars that would shadow the .env file read
+      const savedToken = process.env['GITHUB_TOKEN'];
+      const savedGhToken = process.env['GH_TOKEN'];
+      delete process.env['GITHUB_TOKEN'];
+      delete process.env['GH_TOKEN'];
+
+      let result: string | null;
+      try {
+        result = detectCredentials(dir, 'github');
+      } finally {
+        if (savedToken !== undefined) process.env['GITHUB_TOKEN'] = savedToken;
+        if (savedGhToken !== undefined) process.env['GH_TOKEN'] = savedGhToken;
+      }
       expect(result).toBe('standalone-test');
 
       fsPromises.rm(dir, { recursive: true, force: true }).catch(() => {});
