@@ -272,6 +272,7 @@ const sidebars: SidebarsConfig = {
           ],
         },
         {type: 'doc', id: 'reference/configuration', label: 'Configuration'},
+        {type: 'doc', id: 'reference/metadata-reference', label: 'Metadata Reference'},
         {type: 'doc', id: 'reference/changelog', label: 'Changelog'},
         {
           type: 'category',

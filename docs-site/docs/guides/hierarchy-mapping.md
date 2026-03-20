@@ -24,6 +24,93 @@ SpecWeave implements a **Universal Hierarchy** that maps consistently across all
 
 ---
 
+## Universal Mapping Diagram
+
+```mermaid
+graph LR
+    subgraph SW["SpecWeave"]
+        direction TB
+        FS["Feature (FS-*)"]
+        US["User Story (US-*)"]
+        TK["Task (T-*)"]
+        AC["Acceptance Criteria"]
+        FS --> US --> TK
+        US --> AC
+    end
+
+    subgraph GH["GitHub"]
+        direction TB
+        GH_M["Milestone"]
+        GH_I["Issue"]
+        GH_CB["Checkbox"]
+        GH_CL["Checklist"]
+        GH_M --> GH_I --> GH_CB
+        GH_I --> GH_CL
+    end
+
+    subgraph JR["JIRA"]
+        direction TB
+        JR_E["Epic"]
+        JR_S["Story"]
+        JR_ST["Sub-task"]
+        JR_AC["AC Field"]
+        JR_E --> JR_S --> JR_ST
+        JR_S --> JR_AC
+    end
+
+    subgraph AD["ADO"]
+        direction TB
+        AD_F["Feature"]
+        AD_US["User Story"]
+        AD_T["Task"]
+        AD_AC["AC Field"]
+        AD_F --> AD_US --> AD_T
+        AD_US --> AD_AC
+    end
+
+    FS -->|"Milestone"| GH_M
+    FS -->|"Epic"| JR_E
+    FS -->|"Feature"| AD_F
+    US -->|"Issue"| GH_I
+    US -->|"Story"| JR_S
+    US -->|"User Story"| AD_US
+    TK -->|"Checkbox"| GH_CB
+    TK -->|"Sub-task"| JR_ST
+    TK -->|"Task"| AD_T
+
+    style SW fill:#e1f5fe,stroke:#0288d1
+    style GH fill:#f3e5f5,stroke:#7b1fa2
+    style JR fill:#e8f5e9,stroke:#388e3c
+    style AD fill:#fff3e0,stroke:#f57c00
+```
+
+## Status Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> planning : sw:increment
+    planning --> active : Start work
+    planning --> backlog : Defer
+    planning --> abandoned : Cancel
+    active --> ready_for_review : All tasks complete
+    active --> paused : Block
+    active --> abandoned : Cancel
+    backlog --> active : Resume
+    backlog --> abandoned : Cancel
+    paused --> active : Unblock
+    paused --> abandoned : Cancel
+    ready_for_review --> completed : sw:done
+    ready_for_review --> active : Needs more work
+    completed --> active : Reopen
+    completed --> [*]
+    abandoned --> active : Un-abandon
+    abandoned --> [*]
+```
+
+**WIP-counted**: active, paused, ready_for_review
+
+---
+
 ## External Tool Mapping
 
 ### GitHub
