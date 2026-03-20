@@ -222,34 +222,42 @@ export async function initCommand(
       if (scan.hasSourceFiles || scan.hasPackageManager || scan.fileCount > 0) {
         const choice = await promptMigrationChoice(scan, language, isCI);
 
-        if (choice === 'start-empty') {
-          const subChoice = await promptStartEmptySubChoice(language);
-          if (subChoice === 'copy-local') {
-            const sourcePath = await input({
-              message: 'Path to existing repository (absolute or relative):',
-              validate: (v: string) => v.trim().length > 0 || 'Path is required',
-            });
-            const orgRepo = await promptOrgRepo(path.resolve(targetDir, sourcePath));
-            const result = copyLocalPathIntoRepositories(targetDir, sourcePath, orgRepo.org, orgRepo.repoName);
-            if (result.errors.length > 0) {
-              console.log(chalk.yellow(`   ⚠ Copy errors: ${result.errors.join(', ')}`));
-            } else {
-              console.log(chalk.green(`   ✓ Copied ${result.copied.length} item(s) to ${result.targetDir}`));
+        try {
+          if (choice === 'start-empty') {
+            const subChoice = await promptStartEmptySubChoice(language);
+            if (subChoice === 'copy-local') {
+              const sourcePath = await input({
+                message: 'Path to existing repository (absolute or relative):',
+                validate: (v: string) => v.trim().length > 0 || 'Path is required',
+              });
+              const orgRepo = await promptOrgRepo(path.resolve(targetDir, sourcePath));
+              const result = copyLocalPathIntoRepositories(targetDir, sourcePath, orgRepo.org, orgRepo.repoName);
+              if (result.copied.length > 0) {
+                console.log(chalk.green(`   ✓ Copied ${result.copied.length} item(s) to ${result.targetDir}`));
+              }
+              if (result.errors.length > 0) {
+                console.log(chalk.yellow(`   ⚠ Copy errors: ${result.errors.join(', ')}`));
+              }
+            }
+            // 'clone-github' and 'add-later' fall through to existing promptProjectSetup flow
+          } else if (choice === 'restructure') {
+            showRestructureWarnings(scan);
+            const confirmed = await confirm({ message: 'Proceed with restructure?', default: false });
+            if (confirmed) {
+              const orgRepo = await promptOrgRepo(targetDir);
+              const result = restructureIntoRepositories(targetDir, orgRepo.org, orgRepo.repoName);
+              if (result.moved.length > 0) {
+                console.log(chalk.green(`   ✓ Moved ${result.moved.length} item(s) to ${result.targetDir}`));
+              }
+              if (result.errors.length > 0) {
+                console.log(chalk.yellow(`   ⚠ Restructure errors: ${result.errors.join(', ')}`));
+              }
             }
           }
-          // 'clone-github' and 'add-later' fall through to existing promptProjectSetup flow
-        } else if (choice === 'restructure') {
-          showRestructureWarnings(scan);
-          const confirmed = await confirm({ message: 'Proceed with restructure?', default: false });
-          if (confirmed) {
-            const orgRepo = await promptOrgRepo(targetDir);
-            const result = restructureIntoRepositories(targetDir, orgRepo.org, orgRepo.repoName);
-            if (result.errors.length > 0) {
-              console.log(chalk.yellow(`   ⚠ Restructure errors: ${result.errors.join(', ')}`));
-            } else {
-              console.log(chalk.green(`   ✓ Moved ${result.moved.length} item(s) to ${result.targetDir}`));
-            }
-          }
+        } catch (err) {
+          if (err instanceof Error && err.name === 'ExitPromptError') throw err;
+          console.log(chalk.red(`   ✗ Workspace setup failed: ${err instanceof Error ? err.message : String(err)}`));
+          console.log(chalk.gray('   Continuing with standard init...'));
         }
         // choice === 'continue-in-place' → proceed as current behavior
       }
