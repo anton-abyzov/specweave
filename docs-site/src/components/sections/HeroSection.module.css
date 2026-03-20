@@ -70,6 +70,25 @@
   margin: 0 auto var(--sw-space-10);
 }
 
+.badgeBar {
+  display: flex;
+  gap: var(--sw-space-3);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--sw-space-10);
+  font-size: var(--sw-font-size-sm);
+}
+
+.metric {
+  color: var(--sw-gray-400);
+  font-weight: var(--sw-font-weight-medium);
+}
+
+.metricDot {
+  color: var(--sw-gray-600);
+}
+
 .ctas {
   display: flex;
   gap: var(--sw-space-4);
