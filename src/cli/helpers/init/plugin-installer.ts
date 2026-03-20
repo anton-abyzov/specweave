@@ -172,8 +172,9 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     } else if (errorMessage.includes('EACCES') || errorMessage.includes('permission')) {
       console.log(chalk.yellow('   Reason: Permission denied'));
       console.log(chalk.gray('   Check file permissions or run with appropriate access'));
-    } else if (process.env.DEBUG) {
-      console.log(chalk.gray(`   Error: ${errorMessage}`));
+    } else {
+      // Always show error reason so failures are diagnosable
+      console.log(chalk.yellow(`   Reason: ${errorMessage}`));
     }
 
     console.log('');
