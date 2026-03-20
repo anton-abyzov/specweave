@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/increments-636+-blue" alt="636+ increments" />
+  <img src="https://img.shields.io/badge/increments-600+-blue" alt="600+ increments" />
   <img src="https://img.shields.io/badge/production_apps-10+-green" alt="10+ production apps" />
   <img src="https://img.shields.io/badge/skills-100+-8B5CF6" alt="100+ skills" />
   <img src="https://img.shields.io/badge/agent_platforms-49-orange" alt="49 platforms" />
@@ -47,13 +47,22 @@ Every feature starts as a specification — user stories, acceptance criteria, a
 
 ## Built With SpecWeave
 
-SpecWeave was built with SpecWeave — 636+ structured increments, every one documented.
+12 production projects shipped in 3 months. 5 in the App Store.
 
-| App | Platform | Status |
-|-----|----------|--------|
-| **SketchMate** | App Store | Shipped Mar 2026 |
-| **Lulla** | App Store | Shipped Mar 2026 |
-| **SpecWeave** | npm | 538+ releases, 3,200+ commits |
+| App | Platform | What It Does |
+|-----|----------|-------------|
+| [**EasyChamp**](https://easychamp.com) | Web (GCP) | Enterprise sports league management. 20+ microservices, ML video analytics. 4 years in production. |
+| [**SketchMate**](https://apps.apple.com/app/sketchmate-ai-draw-game/id6760250072) | App Store | AI drawing game — multi-model evaluation judges player art semantically. |
+| [**Lulla**](https://apps.apple.com/app/lulla-calm-baby-anywhere/id6756977992) | App Store | Baby sleep app with Apple Watch. ML cry classification (tired/hungry/pain). |
+| [**Football 2026**](https://apps.apple.com/app/football-2026-travel/id6757258711) | App Store + Web | World Cup 2026 companion. AI travel planner, live tickets, team stats. |
+| [**SkillUp Football**](https://apps.apple.com/app/skillup-football/id6756978002) | App Store | Coaches monetize training via Stripe. Instagram-like feed, scheduling. |
+| [**BizZone**](https://apps.apple.com/app/business-zone/id6756091030) | App Store | Student & business events with AI-powered news generation. |
+| [**EduFeed**](https://edufeed-jet.vercel.app/) | Web | NotebookLM meets Zoom. Upload videos, get quizzes, flashcards, live rooms. |
+| [**JobWeave**](https://jobweave.ai) | Web | AI-powered job search. Smart matching, resume optimization. |
+| [**SpecWeave**](https://github.com/anton-abyzov/specweave) | npm | The framework itself. 600+ increments, 538+ releases. |
+| [**SpecWeave Umbrella**](https://github.com/anton-abyzov/specweave-umb) | GitHub | Multi-repo orchestration workspace for all repositories. |
+| [**vskill**](https://github.com/anton-abyzov/vskill) | npm | Package manager for AI skills. Security scanning, 49 platforms. |
+| [**verified-skill.com**](https://verified-skill.com) | Web | Skill marketplace & studio. 105K+ verified skills, eval system. |
 
 [Browse increments on GitHub](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments) — full transparency.
 
