@@ -10,12 +10,12 @@
  * 2. Migrates config.json (adds missing sections like 'auto')
  * 3. Updates instruction files (CLAUDE.md, AGENTS.md)
  * 4. Validates project health
- * 5. Refreshes marketplace plugins (DEFAULT - cleans non-core, installs router only)
+ * 5. Refreshes ALL marketplace plugins (DEFAULT - keeps all skills up to date)
  *
  * Usage:
  *   specweave update                  # Full update: CLI + instructions + config + plugins
  *   specweave update --no-plugins     # Skip marketplace plugins refresh
- *   specweave update --all            # Install ALL plugins (not just router)
+ *   specweave update --all            # Install ALL plugins (default, kept for compat)
  *   specweave update --minimal        # Clean /plugin output (removes marketplace)
  *   specweave update --no-self        # Skip CLI update, only project files
  *   specweave update --check          # Dry run - show what would change
@@ -39,7 +39,7 @@ import { npmRegistryFlag } from '../../utils/npm-constants.js';
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
   noPlugins?: boolean;
-  /** Install all plugins, not just core (sw). Without this, only sw is refreshed. */
+  /** Install all plugins (default: true). Kept for backward compat — update always refreshes all plugins. */
   all?: boolean;
   /** Minimal mode: remove marketplace for clean /plugin output */
   minimal?: boolean;
@@ -391,7 +391,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
     try {
       await refreshPluginsCommand({
-        all: options.all,
+        all: options.all ?? true,
         force: options.force,
         verbose: options.verbose,
       });
