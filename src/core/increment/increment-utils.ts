@@ -304,33 +304,15 @@ export class IncrementNumberManager {
           if (match) {
             const number = parseInt(match[1], 10);
 
-            // **VALIDATION**: Reject 0000 - increment numbers must be positive (0001+)
-            if (number === 0) {
-              console.warn(`⚠️  INVALID INCREMENT ID: ${entry.name} - Increment numbers must start from 0001, not 0000`);
-              continue; // Skip this invalid increment
-            }
+            // Skip 0000 - increment numbers must be positive (0001+)
+            // No console output here: this is a scan function, not a validator.
+            // Creation-time validation in validateIncrementNumber() blocks 0000.
+            if (number === 0) continue;
 
             numbers.add(number);
-          } else {
-            // **VALIDATION**: Warn about non-standard increment folder names
-            // Valid: XXXX-name, XXXX[GJAE]-name
-            // Invalid: .specweave, _templates, 0000-adhoc, reports, backup, etc.
-            if (!entry.name.startsWith('_')) { // Ignore system folders like _archive
-              // **NEW (v1.0.105)**: Check for reserved names
-              const folderName = entry.name.toLowerCase();
-              if (this.RESERVED_INCREMENT_NAMES.includes(folderName)) {
-                console.error(
-                  `🚨 RESERVED NAME VIOLATION: "${entry.name}" is a RESERVED name!\n` +
-                  `   Location: ${dirPath}\n` +
-                  `   This folder MUST be removed or renamed.\n` +
-                  `   Reserved names: ${this.RESERVED_INCREMENT_NAMES.join(', ')}\n` +
-                  `   FIX: Increments must follow XXXX-name format (e.g., 0001-my-feature)`
-                );
-              } else {
-                console.warn(`⚠️  NON-STANDARD INCREMENT FOLDER: ${entry.name} - Must follow XXXX-name format (4 digits + hyphen + name)`);
-              }
-            }
           }
+          // Non-matching folders (system dirs, reserved names) are silently skipped.
+          // Use `specweave doctor` or validateIncrementNumber() for diagnostics.
         }
       } catch (error) {
         // Permission denied or other error - log warning and continue
@@ -340,67 +322,6 @@ export class IncrementNumberManager {
     }
 
     return numbers;
-  }
-
-  /**
-   * Scan all increment directories and return highest number found.
-   *
-   * Scans these directories (in order):
-   * 1. .specweave/increments/ (main)
-   * 2. .specweave/increments/_archive/
-   * 3. .specweave/increments/_abandoned/
-   * 4. .specweave/increments/_paused/
-   *
-   * @param incrementsDir - Path to .specweave/increments directory
-   * @returns Highest increment number found (0 if none exist)
-   * @private
-   */
-  private static scanAllIncrementDirectories(incrementsDir: string): number {
-    let highestNumber = 0;
-    let scannedDirs = 0;
-    let totalIncrements = 0;
-
-    // Use getDirsToScan() for single source of truth
-    const dirsToScan = this.getDirsToScan(incrementsDir);
-
-    // Scan each directory
-    for (const { path: dirPath, label } of dirsToScan) {
-      if (!fs.existsSync(dirPath)) continue;
-
-      try {
-        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-        scannedDirs++;
-
-        for (const entry of entries) {
-          if (!entry.isDirectory()) continue;
-
-          // Match pattern: 0032-name, 032-name, or 0032E-name (external)
-          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
-          if (match) {
-            totalIncrements++;
-            const number = parseInt(match[1], 10);
-            if (number > highestNumber) {
-              highestNumber = number;
-            }
-          }
-        }
-      } catch (error) {
-        // Permission denied or other error - log warning and continue
-        console.warn(`Warning: Could not scan directory ${dirPath}:`, (error as Error).message);
-        continue;
-      }
-    }
-
-    // Validation: Detect scan anomalies
-    if (highestNumber === 0 && scannedDirs > 0 && totalIncrements > 0) {
-      // Found increments but highest is 0 - this should never happen
-      throw new Error(
-        `Scan anomaly detected: Found ${totalIncrements} increments but highest number is 0. ` +
-        `This indicates a critical bug in increment number scanning.`
-      );
-    }
-
-    return highestNumber;
   }
 
   /**
