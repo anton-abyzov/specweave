@@ -123,6 +123,7 @@ export async function initCommand(
   let finalProjectName: string = '';
   let usedDotNotation = false;
   let continueExisting = false;
+  let reposClonedInMigration = false;
 
   // STEP 2a: Path resolution (set targetDir + finalProjectName — NO destructive actions)
   if (projectName === '.') {
@@ -225,7 +226,18 @@ export async function initCommand(
         try {
           if (choice === 'start-empty') {
             const subChoice = await promptStartEmptySubChoice(language);
-            if (subChoice === 'copy-local') {
+            if (subChoice === 'clone-github') {
+              const { foregroundResults, jobIds } = await promptRepoUrlsLoop(targetDir, language);
+              const totalCloned = foregroundResults.reduce((sum: number, r: { totalCloned: number }) => sum + r.totalCloned, 0);
+              if (totalCloned > 0) {
+                console.log(chalk.green(`\n   ✓ Cloned ${totalCloned} repo(s)`));
+              }
+              if (jobIds.length > 0) {
+                console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
+                console.log(chalk.gray(`     Monitor: specweave jobs`));
+              }
+              reposClonedInMigration = true;
+            } else if (subChoice === 'copy-local') {
               const sourcePath = await input({
                 message: 'Path to existing repository (absolute or relative):',
                 validate: (v: string) => v.trim().length > 0 || 'Path is required',
@@ -238,8 +250,9 @@ export async function initCommand(
               if (result.errors.length > 0) {
                 console.log(chalk.yellow(`   ⚠ Copy errors: ${result.errors.join(', ')}`));
               }
+              reposClonedInMigration = true;
             }
-            // 'clone-github' and 'add-later' fall through to existing promptProjectSetup flow
+            // 'add-later' — no-op, falls through to post-scaffold prompt if repositories/ is empty
           } else if (choice === 'restructure') {
             showRestructureWarnings(scan);
             const confirmed = await confirm({ message: 'Proceed with restructure?', default: false });
@@ -408,12 +421,16 @@ export async function initCommand(
     // Post-scaffold: Always create repositories/ directory (unified workspace model)
     fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
 
-    // Post-scaffold: Project setup question (BEFORE git init so !hasGit is true for greenfield)
-    // Ask which repos to connect — skip if already has .git, repositories with content, or CI mode
-    if (!isCI && !continueExisting) {
-      const hasGit = fs.existsSync(path.join(targetDir, '.git'));
+    // Post-scaffold: Project setup question — ask which repos to connect
+    // Skip if: CI mode, reinit, or repos already cloned via migration sub-menu
+    if (!isCI && !continueExisting && !reposClonedInMigration) {
+      const reposDir = path.join(targetDir, 'repositories');
+      const reposDirEntries = fs.existsSync(reposDir)
+        ? (fs.readdirSync(reposDir) as string[]).filter((name: string) => !name.startsWith('.'))
+        : [];
+      const repositoriesEmpty = reposDirEntries.length === 0;
 
-      if (!hasGit) {
+      if (repositoriesEmpty) {
         spinner.stop();
         try {
           const setupChoice = await promptProjectSetup(language);
