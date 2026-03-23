@@ -296,14 +296,13 @@ describe('update command', () => {
       expect(process.exitCode).toBe(1);
     });
 
-    it('should refresh plugins by default', async () => {
+    it('should refresh all plugins by default', async () => {
       setupSpecWeaveProject();
 
       await updateCommand({ noSelf: true });
 
       expect(mockRefreshPluginsCommand).toHaveBeenCalledWith({
-        all: undefined,
-        minimal: undefined,
+        all: true,
         force: undefined,
         verbose: undefined,
       });
