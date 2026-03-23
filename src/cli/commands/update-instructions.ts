@@ -61,6 +61,9 @@ export async function updateInstructionsCommand(
     process.exit(1);
   }
 
+  // Read adapter from config to determine which files to update
+  const adapter = readAdapterFromConfig(projectPath);
+
   // Update CLAUDE.md
   const claudeResult = await updateFile(
     projectPath,
@@ -71,15 +74,18 @@ export async function updateInstructionsCommand(
     options
   );
 
-  // Update AGENTS.md
-  const agentsResult = await updateFile(
-    projectPath,
-    templatesDir,
-    'AGENTS.md',
-    'agents',
-    version,
-    options
-  );
+  // Update AGENTS.md only for non-Claude adapters
+  // Claude Code reads CLAUDE.md natively; AGENTS.md is for other AI tools
+  const agentsResult = adapter === 'claude'
+    ? { action: 'skipped', preserved: 0 }
+    : await updateFile(
+        projectPath,
+        templatesDir,
+        'AGENTS.md',
+        'agents',
+        version,
+        options
+      );
 
   // Summary
   console.log(chalk.blue('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
@@ -238,6 +244,23 @@ function formatAction(action: string): string {
  * - Preserves all existing configuration
  * - Can be run multiple times
  */
+/**
+ * Read adapter type from .specweave/config.json
+ * Defaults to 'claude' if not found or unreadable
+ */
+function readAdapterFromConfig(projectPath: string): string {
+  try {
+    const configPath = path.join(projectPath, '.specweave', 'config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return config?.adapters?.default || 'claude';
+    }
+  } catch {
+    // Fall through to default
+  }
+  return 'claude';
+}
+
 async function migrateConfig(
   projectPath: string,
   options: UpdateInstructionsOptions

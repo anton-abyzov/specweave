@@ -188,7 +188,8 @@ export async function copyTemplates(
   templatesDir: string,
   targetDir: string,
   projectName: string,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
+  adapter: string = 'claude'
 ): Promise<void> {
   const locale = getLocaleManager(language);
 
@@ -268,44 +269,47 @@ export async function copyTemplates(
     fs.writeFileSync(claudeMdPath, claudeMd);
   }
 
-  // Generate/Merge AGENTS.md with smart preservation of user content
-  const agentsMdPath = path.join(targetDir, 'AGENTS.md');
-  const agentsMdTemplatePath = path.normalize(path.join(templatesDir, 'AGENTS.md.template'));
+  // Generate/Merge AGENTS.md only for non-Claude adapters
+  // Claude Code reads CLAUDE.md natively; AGENTS.md is for other AI tools
+  if (adapter !== 'claude') {
+    const agentsMdPath = path.join(targetDir, 'AGENTS.md');
+    const agentsMdTemplatePath = path.normalize(path.join(templatesDir, 'AGENTS.md.template'));
 
-  if (fs.existsSync(agentsMdTemplatePath)) {
-    const templateContent = fs.readFileSync(agentsMdTemplatePath, 'utf-8');
-    const sections = parseTemplateSections(templateContent);
-    const existingContent = fs.existsSync(agentsMdPath)
-      ? fs.readFileSync(agentsMdPath, 'utf-8')
-      : null;
+    if (fs.existsSync(agentsMdTemplatePath)) {
+      const templateContent = fs.readFileSync(agentsMdTemplatePath, 'utf-8');
+      const sections = parseTemplateSections(templateContent);
+      const existingContent = fs.existsSync(agentsMdPath)
+        ? fs.readFileSync(agentsMdPath, 'utf-8')
+        : null;
 
-    const mergeResult = mergeInstructionFile(
-      existingContent,
-      sections,
-      'agents',
-      getPackageVersion(),
-      projectName
-    );
+      const mergeResult = mergeInstructionFile(
+        existingContent,
+        sections,
+        'agents',
+        getPackageVersion(),
+        projectName
+      );
 
-    fs.writeFileSync(agentsMdPath, mergeResult.content);
+      fs.writeFileSync(agentsMdPath, mergeResult.content);
 
-    if (mergeResult.action === 'merged') {
-      console.log(chalk.blue('   ✓ AGENTS.md merged (preserved ' + mergeResult.preserved + ' user sections)'));
-    } else if (mergeResult.action === 'created') {
-      console.log(chalk.green('   ✓ AGENTS.md created'));
+      if (mergeResult.action === 'merged') {
+        console.log(chalk.blue('   ✓ AGENTS.md merged (preserved ' + mergeResult.preserved + ' user sections)'));
+      } else if (mergeResult.action === 'created') {
+        console.log(chalk.green('   ✓ AGENTS.md created'));
+      }
+    } else {
+      // Fallback to old generator
+      const skillsDir = findSourceDir('skills', templatesDir);
+      const agentsDir = findSourceDir('agents', templatesDir);
+      const commandsDir = findSourceDir('commands', templatesDir);
+      const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
+      const agentsMd = await agentsGen.generate({
+        projectName,
+        projectPath: targetDir,
+        templatePath: undefined
+      });
+      fs.writeFileSync(agentsMdPath, agentsMd);
     }
-  } else {
-    // Fallback to old generator
-    const skillsDir = findSourceDir('skills', templatesDir);
-    const agentsDir = findSourceDir('agents', templatesDir);
-    const commandsDir = findSourceDir('commands', templatesDir);
-    const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
-    const agentsMd = await agentsGen.generate({
-      projectName,
-      projectPath: targetDir,
-      templatePath: undefined
-    });
-    fs.writeFileSync(agentsMdPath, agentsMd);
   }
 
   // Generate smart .gitignore based on detected tech stack (v1.0.130+)

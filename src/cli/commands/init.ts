@@ -393,7 +393,7 @@ export async function initCommand(
     // Copy templates
     const templatesDir = findSourceDir('templates', __dirname);
     if (!continueExisting) {
-      await copyTemplates(templatesDir, targetDir, finalProjectName, language);
+      await copyTemplates(templatesDir, targetDir, finalProjectName, language, toolName);
       spinner.text = 'Templates copied...';
     }
 
