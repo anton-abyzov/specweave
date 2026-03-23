@@ -950,7 +950,8 @@ describe('init command', () => {
         '/mock/templates',
         expect.stringContaining('fresh-project'),
         'fresh-project',
-        'en'
+        'en',
+        expect.any(String)
       );
     });
 
