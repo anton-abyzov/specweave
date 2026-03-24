@@ -12,7 +12,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { findSourceDir } from './path-utils.js';
-import { copyPluginSkillsToProject, findSpecweaveRoot, migrateSatelliteToUnifiedLock } from '../../../utils/plugin-copier.js';
+import { copyPluginSkillsToProject, findSpecweaveRoot, migrateSatelliteToUnifiedLock, migrateBundledToGlobalLock } from '../../../utils/plugin-copier.js';
 import { getDirname } from '../../../utils/esm-helpers.js';
 import { getProjectRoot } from '../../../utils/find-project-root.js';
 import { enablePluginsInSettings } from './claude-plugin-enabler.js';
@@ -130,6 +130,15 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
       const enabled = enablePluginsInSettings(successfulPluginNames);
       if (!enabled) {
         console.log(chalk.yellow('  Could not enable plugins in ~/.claude/settings.json'));
+      }
+    }
+
+    // Migrate bundled lock entries to global lock (removes project-level vskill.lock)
+    if (successCount > 0) {
+      try {
+        migrateBundledToGlobalLock(projectRoot);
+      } catch {
+        // Non-blocking — lock cleanup is best-effort
       }
     }
 

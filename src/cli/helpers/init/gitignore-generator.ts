@@ -422,6 +422,7 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.specweave/docs-site-internal/',
     '.claude-plugin/',
     'plugins/',
+    'vskill.lock',
   ],
 };
 
