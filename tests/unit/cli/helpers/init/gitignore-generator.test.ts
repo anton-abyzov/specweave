@@ -47,6 +47,16 @@ describe('gitignore-generator', () => {
       expect(result).toContain('.specweave/cache/');
     });
 
+    it('should include vskill.lock in SpecWeave entries (0644)', () => {
+      const detection: TechStackDetection = {
+        detected: [],
+        primary: null,
+        categories: new Map(),
+      };
+      const result = generateGitignore(detection);
+      expect(result).toContain('vskill.lock');
+    });
+
     it('should exclude common when includeCommon=false', () => {
       const detection: TechStackDetection = {
         detected: [],

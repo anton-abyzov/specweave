@@ -11,6 +11,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 const mockCopyPluginSkillsToProject = vi.hoisted(() => vi.fn());
 const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
+const mockMigrateBundledToGlobalLock = vi.hoisted(() => vi.fn());
+const mockMigrateSatelliteToUnifiedLock = vi.hoisted(() => vi.fn());
 const mockFindSourceDir = vi.hoisted(() => vi.fn());
 const mockGetProjectRoot = vi.hoisted(() => vi.fn());
 const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
@@ -61,6 +63,8 @@ vi.mock('chalk', () => {
 vi.mock('../../../../../src/utils/plugin-copier.js', () => ({
   copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
   findSpecweaveRoot: mockFindSpecweaveRoot,
+  migrateBundledToGlobalLock: mockMigrateBundledToGlobalLock,
+  migrateSatelliteToUnifiedLock: mockMigrateSatelliteToUnifiedLock,
 }));
 
 vi.mock('../../../../../src/utils/esm-helpers.js', () => ({
@@ -337,6 +341,40 @@ describe('plugin-installer', () => {
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(1);
+    });
+  });
+
+  // ============================================================
+  // 0644: vskill.lock migration after plugin install
+  // ============================================================
+  describe('vskill.lock migration (0644)', () => {
+    it('should call migrateBundledToGlobalLock after successful plugin install', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+
+      await installAllPlugins({ dirname: '/test' });
+
+      expect(mockMigrateBundledToGlobalLock).toHaveBeenCalledWith('/mock/project');
+    });
+
+    it('should continue without error if migrateBundledToGlobalLock throws', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+      mockMigrateBundledToGlobalLock.mockImplementation(() => {
+        throw new Error('Migration failed');
+      });
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(true);
+      expect(result.successCount).toBe(1);
+    });
+
+    it('should not call migrateBundledToGlobalLock when no plugins succeed', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'fail' });
+
+      await installAllPlugins({ dirname: '/test' });
+
+      expect(mockMigrateBundledToGlobalLock).not.toHaveBeenCalled();
     });
   });
 });
