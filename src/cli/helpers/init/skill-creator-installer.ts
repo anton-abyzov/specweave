@@ -28,7 +28,7 @@ const NPM_PUBLIC_REGISTRY = 'https://registry.npmjs.org';
 /** Pinned version range for npx --package */
 const VSKILL_VERSION_RANGE = '^0.5.0';
 
-const VSKILL_INSTALL_ARGS = ['install', SKILL_CREATOR_ID, '--yes', '--agent', 'claude-code'];
+const VSKILL_INSTALL_ARGS = ['install', SKILL_CREATOR_ID, '--yes', '--agent', 'claude-code', '--copy'];
 
 export interface EnsureSkillCreatorResult {
   installed: boolean;
