@@ -21,7 +21,7 @@ vi.mock('../../../src/utils/execFileNoThrow.js', () => ({
 // Import after mocks are set up
 const { ensureSkillCreator } = await import('../../../src/cli/helpers/init/skill-creator-installer.js');
 
-const VSKILL_ARGS = ['install', 'anthropics/skills/skill-creator', '--yes', '--agent', 'claude-code'];
+const VSKILL_ARGS = ['install', 'anthropics/skills/skill-creator', '--yes', '--agent', 'claude-code', '--copy'];
 const NPX_ARGS = ['--yes', '--registry', 'https://registry.npmjs.org', '--userconfig', '/dev/null', '--cache', expect.stringContaining('specweave-npm-cache-'), '--ignore-scripts', '--package', 'vskill@^0.5.0', 'vskill', ...VSKILL_ARGS];
 const CLAUDE_ARGS = ['install-skill', 'https://github.com/anthropics/skills/tree/main/skills/skill-creator'];
 
