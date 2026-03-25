@@ -127,9 +127,10 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
         const provider = (updatedRaw.sync?.provider || options.provider || 'github') as MappingProvider;
 
         // Extract authenticated owner from sync profiles for auto-detect
-        const profiles = updatedRaw.sync?.profiles || [];
-        const primaryProfile = profiles[0];
-        const authenticatedOwner = primaryProfile?.config?.owner || undefined;
+        // profiles is Record<string, any>, not an array — use Object.values()
+        const profilesObj = updatedRaw.sync?.profiles || {};
+        const firstProfile = Object.values(profilesObj)[0] as any;
+        const authenticatedOwner = firstProfile?.config?.owner || undefined;
 
         const wizardResult = await runProjectMappingWizard({
           provider,
@@ -141,6 +142,22 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
         // Apply mappings to workspace config and write back (T-027)
         if (wizardResult.mappings.length > 0) {
           updatedRaw.workspace = applyMappingsToWorkspace(workspace, wizardResult);
+
+          // Propagate mapping owner/repo back into sync profiles so they stay in sync
+          if (provider === 'github' && updatedRaw.sync?.profiles) {
+            for (const mapping of wizardResult.mappings) {
+              if (mapping.isRoot || !mapping.target.github) continue;
+              const profileKey = Object.keys(updatedRaw.sync.profiles).find(
+                k => updatedRaw.sync.profiles[k]?.config?.repo === mapping.repoId ||
+                     k === mapping.repoId
+              );
+              if (profileKey) {
+                updatedRaw.sync.profiles[profileKey].config.owner = mapping.target.github.owner;
+                updatedRaw.sync.profiles[profileKey].config.repo = mapping.target.github.repo;
+              }
+            }
+          }
+
           fs.writeFileSync(configPath, JSON.stringify(updatedRaw, null, 2));
           console.log(chalk.green('   ✓ Repo mappings saved to workspace config'));
         }
