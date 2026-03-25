@@ -99,13 +99,16 @@ export async function runProjectMappingWizard(
   console.log('');
 
   // Build list: root repo first, then all workspace repos
+  // Skip __root__ for single-repo workspaces — the root IS the repo, showing both is confusing
   const entries: Array<{ id: string; isRoot: boolean; name: string }> = [];
 
-  entries.push({
-    id: '__root__',
-    isRoot: true,
-    name: `Workspace root (${workspace.name})`,
-  });
+  if (workspace.repos.length > 1) {
+    entries.push({
+      id: '__root__',
+      isRoot: true,
+      name: `Workspace root (${workspace.name})`,
+    });
+  }
 
   for (const repo of workspace.repos) {
     entries.push({ id: repo.id, isRoot: false, name: repo.name || repo.id });
@@ -186,9 +189,13 @@ export async function runProjectMappingWizard(
 
     let valid = false;
     let target: MappingTarget = {};
+    // Use entry name as default repo name to avoid redundant question
+    const defaultRepoName = entry.isRoot
+      ? workspace.name
+      : (entry.name || entry.id);
 
     while (!valid) {
-      target = await promptMappingTarget(provider, providerLabel);
+      target = await promptMappingTarget(provider, providerLabel, defaultRepoName);
       valid = await validateMapping(target, provider, options);
       if (!valid) {
         console.log(chalk.red('   Validation failed. Please re-enter.'));
@@ -208,10 +215,12 @@ export async function runProjectMappingWizard(
 
 /**
  * Prompt user for a mapping target based on provider.
+ * @param defaultRepoName - Pre-fill repo name from the entry being mapped (avoids redundant question)
  */
 async function promptMappingTarget(
   provider: MappingProvider,
-  providerLabel: string
+  providerLabel: string,
+  defaultRepoName?: string
 ): Promise<MappingTarget> {
   if (provider === 'github') {
     const owner = await input({
@@ -220,6 +229,7 @@ async function promptMappingTarget(
     });
     const repo = await input({
       message: 'GitHub repository name:',
+      default: defaultRepoName,
       validate: (v: string) => v.trim().length > 0 || 'Required',
     });
     return { github: { owner: owner.trim(), repo: repo.trim() } };

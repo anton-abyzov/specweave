@@ -377,10 +377,30 @@ export async function configureGitHubRepositories(
     if (workspace?.repos?.length > 0) {
       console.log(chalk.cyan('\n📂 Workspace repositories detected\n'));
       console.log(chalk.green(`   ✓ ${workspace.repos.length} repository(ies) in workspace\n`));
+      // Try to detect owner from git remote if workspace repo sync isn't set yet
+      // (sync.github.owner is empty before the mapping wizard runs)
+      let detectedOwner = '';
+      for (const r of workspace.repos as any[]) {
+        if (r.sync?.github?.owner) { detectedOwner = r.sync.github.owner; break; }
+      }
+      if (!detectedOwner) {
+        try {
+          const { execSync } = await import('child_process');
+          const nodePath = await import('path');
+          const firstRepoPath = (workspace.repos as any[])[0]?.path;
+          if (firstRepoPath) {
+            const absPath = nodePath.resolve(projectPath, firstRepoPath);
+            const remote = execSync('git remote get-url origin', { cwd: absPath, encoding: 'utf-8', stdio: 'pipe' }).trim();
+            const m = remote.match(/github\.com[:/]([^/]+)\//);
+            if (m) detectedOwner = m[1];
+          }
+        } catch { /* no git remote — owner stays empty, mapping wizard will ask */ }
+      }
+
       const profiles = (workspace.repos as any[]).map((repo: any, index: number) => ({
         id: repo.id,
         displayName: repo.name || repo.id,
-        owner: repo.sync?.github?.owner || '',
+        owner: repo.sync?.github?.owner || detectedOwner,
         repo: repo.sync?.github?.repo || repo.id,
         isDefault: index === 0,
       }));
