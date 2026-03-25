@@ -125,9 +125,17 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
 
       if (workspace && workspace.repos.length > 0) {
         const provider = (updatedRaw.sync?.provider || options.provider || 'github') as MappingProvider;
+
+        // Extract authenticated owner from sync profiles for auto-detect
+        const profiles = updatedRaw.sync?.profiles || [];
+        const primaryProfile = profiles[0];
+        const authenticatedOwner = primaryProfile?.config?.owner || undefined;
+
         const wizardResult = await runProjectMappingWizard({
           provider,
           workspace,
+          authenticatedOwner,
+          projectPath,
         });
 
         // Apply mappings to workspace config and write back (T-027)
