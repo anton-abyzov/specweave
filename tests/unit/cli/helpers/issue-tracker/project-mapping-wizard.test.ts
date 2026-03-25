@@ -6,7 +6,7 @@
  * and is tested indirectly via integration tests.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import {
   applyMappingsToWorkspace,
   type MappingWizardResult,
@@ -130,6 +130,65 @@ describe('applyMappingsToWorkspace (T-027)', () => {
     // No crash, repos unchanged
     expect(updated.repos).toHaveLength(2);
     expect(updated.repos[0].sync).toEqual({});
+  });
+});
+
+// ============================================================
+// 0645: Auto-detect GitHub owner/repo
+// ============================================================
+
+describe('detectGitHubMapping (0645)', () => {
+  // Import the pure function (no prompts)
+  let detectGitHubMapping: typeof import('../../../../../src/cli/helpers/issue-tracker/project-mapping-wizard.js').detectGitHubMapping;
+
+  beforeAll(async () => {
+    const mod = await import('../../../../../src/cli/helpers/issue-tracker/project-mapping-wizard.js');
+    detectGitHubMapping = mod.detectGitHubMapping;
+  });
+
+  it('should detect owner/repo from HTTPS git remote', () => {
+    const result = detectGitHubMapping({
+      repoName: 'my-app',
+      gitRemoteUrl: 'https://github.com/anton-abyzov/my-app.git',
+    });
+    expect(result).toEqual({ owner: 'anton-abyzov', repo: 'my-app' });
+  });
+
+  it('should detect owner/repo from SSH git remote', () => {
+    const result = detectGitHubMapping({
+      repoName: 'my-app',
+      gitRemoteUrl: 'git@github.com:anton-abyzov/my-app.git',
+    });
+    expect(result).toEqual({ owner: 'anton-abyzov', repo: 'my-app' });
+  });
+
+  it('should fall back to authenticatedOwner + repoName when no git remote', () => {
+    const result = detectGitHubMapping({
+      repoName: 'my-app',
+      authenticatedOwner: 'anton-abyzov',
+    });
+    expect(result).toEqual({ owner: 'anton-abyzov', repo: 'my-app' });
+  });
+
+  it('should return null when no git remote and no authenticatedOwner', () => {
+    const result = detectGitHubMapping({ repoName: 'my-app' });
+    expect(result).toBeNull();
+  });
+
+  it('should return null for non-GitHub git remote', () => {
+    const result = detectGitHubMapping({
+      repoName: 'my-app',
+      gitRemoteUrl: 'https://gitlab.com/org/my-app.git',
+    });
+    expect(result).toBeNull();
+  });
+
+  it('should strip .git suffix from repo name', () => {
+    const result = detectGitHubMapping({
+      repoName: 'my-app',
+      gitRemoteUrl: 'https://github.com/org/my-app.git',
+    });
+    expect(result!.repo).toBe('my-app');
   });
 });
 
