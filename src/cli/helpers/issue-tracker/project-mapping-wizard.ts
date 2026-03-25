@@ -14,6 +14,7 @@
 
 import chalk from 'chalk';
 import { select, input, confirm } from '@inquirer/prompts';
+import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
 import type { WorkspaceRepo, WorkspaceRepoSync, WorkspaceConfig } from '../../../core/config/types.js';
 
 export type MappingProvider = 'github' | 'jira' | 'ado';
@@ -34,12 +35,45 @@ export interface RepoMapping {
 export interface MappingWizardOptions {
   provider: MappingProvider;
   workspace: WorkspaceConfig;
+  /** Authenticated GitHub username (for auto-detect) */
+  authenticatedOwner?: string;
+  /** Project path for git remote detection */
+  projectPath?: string;
   /** Validate a GitHub repo exists. Return true if valid. */
   validateGitHub?: (owner: string, repo: string) => Promise<boolean>;
   /** Validate a JIRA project key. Return true if valid. */
   validateJira?: (projectKey: string) => Promise<boolean>;
   /** Validate an ADO project. Return true if valid. */
   validateAdo?: (project: string) => Promise<boolean>;
+}
+
+export interface DetectGitHubInput {
+  repoName: string;
+  gitRemoteUrl?: string;
+  authenticatedOwner?: string;
+}
+
+/**
+ * Auto-detect GitHub owner/repo from git remote URL or authenticated owner.
+ * Pure function — no side effects, no prompts.
+ */
+export function detectGitHubMapping(input: DetectGitHubInput): { owner: string; repo: string } | null {
+  // Try git remote first
+  if (input.gitRemoteUrl) {
+    const match = input.gitRemoteUrl.match(/github\.com[:/]([^/]+)\/(.+?)(?:\.git)?$/);
+    if (match) {
+      return { owner: match[1], repo: match[2] };
+    }
+    // Non-GitHub remote — can't auto-detect
+    return null;
+  }
+
+  // Fall back to authenticated owner + repo name
+  if (input.authenticatedOwner) {
+    return { owner: input.authenticatedOwner, repo: input.repoName };
+  }
+
+  return null;
 }
 
 export interface MappingWizardResult {
@@ -111,6 +145,37 @@ export async function runProjectMappingWizard(
 
   for (const entry of entries) {
     console.log(chalk.cyan(`\n   → ${entry.name}`));
+
+    // For GitHub: try auto-detect from git remote or authenticated owner
+    if (provider === 'github') {
+      const repoPath = entry.isRoot ? options.projectPath : getRepoPath(entry, options);
+      const gitRemoteUrl = repoPath ? getGitRemoteUrl(repoPath) : undefined;
+      const detected = detectGitHubMapping({
+        repoName: entry.name.replace(/^Workspace root \(|\)$/g, ''),
+        gitRemoteUrl: gitRemoteUrl || undefined,
+        authenticatedOwner: options.authenticatedOwner,
+      });
+
+      if (detected) {
+        const useDetected = await confirm({
+          message: `Map "${entry.name}" to ${detected.owner}/${detected.repo}?`,
+          default: true,
+        });
+
+        if (useDetected) {
+          const target: MappingTarget = { github: detected };
+          const valid = await validateMapping(target, provider, options);
+          if (valid) {
+            const mapping: RepoMapping = { repoId: entry.id, isRoot: entry.isRoot, target };
+            mappings.push(mapping);
+            if (entry.isRoot) rootRepoSync = target;
+            continue;
+          }
+          console.log(chalk.red('   Validation failed. Entering manually.'));
+        }
+        // User rejected or validation failed — fall through to manual
+      }
+    }
 
     const skip = await confirm({
       message: `Map "${entry.name}" to a ${providerLabel} project?`,
@@ -239,4 +304,30 @@ function mappingTargetToSync(target: MappingTarget): WorkspaceRepoSync {
   if (target.jira) sync.jira = { projectKey: target.jira.projectKey };
   if (target.ado) sync.ado = { project: target.ado.project, organization: target.ado.organization };
   return sync;
+}
+
+/**
+ * Get git remote URL for a repo path. Returns empty string if not available.
+ */
+function getGitRemoteUrl(repoPath: string): string {
+  try {
+    const result = execFileNoThrowSync('git', ['remote', 'get-url', 'origin'], { cwd: repoPath, shell: false });
+    return result.success ? result.stdout.trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Resolve the filesystem path for a workspace repo entry.
+ */
+function getRepoPath(
+  entry: { id: string; isRoot: boolean; name: string },
+  options: MappingWizardOptions
+): string | undefined {
+  if (!options.projectPath) return undefined;
+  const repo = options.workspace.repos.find(r => r.id === entry.id);
+  if (!repo?.path) return undefined;
+  const path = require('path');
+  return path.resolve(options.projectPath, repo.path);
 }
