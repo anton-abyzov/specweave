@@ -154,7 +154,7 @@ function buildGlobalTarget(config: SpecWeaveConfig): SyncTargetConfig {
       (p) => p?.provider === 'github' && p?.config?.owner && p?.config?.repo
     );
     if (firstGithubProfile) {
-      github = { owner: firstGithubProfile.config.owner, repo: firstGithubProfile.config.repo };
+      github = { owner: firstGithubProfile.config.owner!, repo: firstGithubProfile.config.repo! };
     }
   }
   return {
