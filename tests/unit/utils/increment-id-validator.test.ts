@@ -44,8 +44,8 @@ describe('increment-id-validator', () => {
         expect(isValidIncrementId('9999-last')).toBe(true);
       });
 
-      it('accepts zero prefix (0000-init)', () => {
-        expect(isValidIncrementId('0000-init')).toBe(true);
+      it('rejects 0000 prefix (0000-init)', () => {
+        expect(isValidIncrementId('0000-init')).toBe(false);
       });
 
       it('accepts mixed case name (0001-MyFeature)', () => {

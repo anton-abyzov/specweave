@@ -249,17 +249,22 @@ async function buildGitHubSyncConfig(
   } catch {
     // Fallback to current directory name
     repo = path.basename(projectPath);
-    owner = 'YOUR_GITHUB_USERNAME'; // User must update manually
   }
 
   // Handle multiple repository profiles
   if (repositoryProfiles && repositoryProfiles.length > 0) {
     for (const profile of repositoryProfiles) {
+      // Resolve empty owner from workspace config or nested repo git remote
+      const resolvedOwner = profile.owner || resolveProfileOwner(profile, config, projectPath);
+      if (!resolvedOwner) {
+        console.log(chalk.yellow(`   ⚠️  Profile "${profile.id}" has empty owner — GitHub sync will not work until owner is set`));
+        console.log(chalk.yellow(`      Run: specweave sync-setup to configure`));
+      }
       profiles[profile.id] = {
         provider: 'github',
         displayName: profile.displayName,
         config: {
-          owner: profile.owner,
+          owner: resolvedOwner,
           repo: profile.repo
         },
         timeRange: {
@@ -282,11 +287,20 @@ async function buildGitHubSyncConfig(
     }
 
     const defaultProfileObj = repositoryProfiles.find(p => p.isDefault) || repositoryProfiles[0];
+    const defaultProfile = profiles[defaultProfileObj?.id] || Object.values(profiles)[0];
+
     config.sync = {
       enabled: true,
       direction: 'bidirectional' as const,
       autoSync: false,
       provider: 'github',
+      // Top-level github config for Method 1 fallback in living-docs-sync.
+      // Ensures sync works even if profile resolution fails (e.g., umbrella repos
+      // with no git remote where specweave init cannot auto-detect owner).
+      github: {
+        owner: defaultProfile?.config?.owner || '',
+        repo: defaultProfile?.config?.repo || ''
+      },
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
       defaultProfile: defaultProfileObj?.id || 'main',
@@ -299,6 +313,16 @@ async function buildGitHubSyncConfig(
     };
   } else {
     // Fallback for legacy single-repo configuration
+    // Resolve owner from workspace config if git remote detection failed
+    if (!owner || owner === 'YOUR_GITHUB_USERNAME') {
+      const resolved = resolveOwnerFromWorkspace(config, repo);
+      if (resolved) {
+        owner = resolved;
+      } else if (!owner) {
+        owner = 'YOUR_GITHUB_USERNAME'; // Last resort — user must update manually
+      }
+    }
+
     profiles['github-default'] = {
       provider: 'github',
       displayName: 'GitHub Default',
@@ -321,6 +345,7 @@ async function buildGitHubSyncConfig(
       direction: 'bidirectional' as const,
       autoSync: false,
       provider: 'github',
+      github: { owner, repo },
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
       defaultProfile: 'github-default',
@@ -332,6 +357,79 @@ async function buildGitHubSyncConfig(
       profiles
     };
   }
+}
+
+/**
+ * Resolve a profile's GitHub owner when it's missing.
+ *
+ * Fallback chain:
+ * 1. workspace.repos[] matching by id or repo name → sync.github.owner
+ * 2. Nested repo git remote at repositories/{owner}/{repo}/
+ * 3. Returns empty string (caller warns)
+ */
+function resolveProfileOwner(
+  profile: { id: string; repo: string; owner?: string },
+  config: any,
+  projectPath: string
+): string {
+  // 1. Check workspace.repos for a matching entry
+  const fromWorkspace = resolveOwnerFromWorkspace(config, profile.repo, profile.id);
+  if (fromWorkspace) return fromWorkspace;
+
+  // 2. Try nested repo git remote — scan repositories/ for a matching repo
+  try {
+    const reposDir = path.join(projectPath, 'repositories');
+    if (fs.existsSync(reposDir)) {
+      for (const org of fs.readdirSync(reposDir)) {
+        const repoPath = path.join(reposDir, org, profile.repo);
+        if (fs.existsSync(path.join(repoPath, '.git'))) {
+          try {
+            const remote = execSync('git remote get-url origin', {
+              cwd: repoPath,
+              encoding: 'utf-8',
+              stdio: 'pipe'
+            }).trim();
+            const match = remote.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
+            if (match) return match[1];
+          } catch {
+            // This nested repo has no remote — continue scanning
+          }
+        }
+      }
+    }
+  } catch {
+    // Non-blocking — fall through
+  }
+
+  return '';
+}
+
+/**
+ * Resolve GitHub owner from workspace.repos config.
+ * Matches by repo name or repo id.
+ */
+function resolveOwnerFromWorkspace(
+  config: any,
+  repoName?: string,
+  repoId?: string
+): string {
+  const workspaceRepos = config.workspace?.repos;
+  if (!Array.isArray(workspaceRepos)) return '';
+
+  for (const wsRepo of workspaceRepos) {
+    const ghSync = wsRepo.sync?.github;
+    if (!ghSync?.owner) continue;
+
+    if (
+      (repoId && wsRepo.id === repoId) ||
+      (repoName && ghSync.repo === repoName) ||
+      (repoName && wsRepo.name === repoName)
+    ) {
+      return ghSync.owner;
+    }
+  }
+
+  return '';
 }
 
 /**

@@ -144,10 +144,21 @@ export function validateSyncTargets(config: SpecWeaveConfig): string[] {
 }
 
 function buildGlobalTarget(config: SpecWeaveConfig): SyncTargetConfig {
+  // Resolve GitHub config: try sync.github first, then fall back to first sync.profiles entry
+  let github: { owner: string; repo: string } | undefined;
+  if (config.sync?.github?.owner && config.sync?.github?.repo) {
+    github = { owner: config.sync.github.owner, repo: config.sync.github.repo };
+  } else if ((config.sync as any)?.profiles) {
+    const profiles = (config.sync as any).profiles;
+    const firstGithubProfile = Object.values(profiles).find(
+      (p: any) => p?.provider === 'github' && p?.config?.owner && p?.config?.repo
+    ) as any;
+    if (firstGithubProfile) {
+      github = { owner: firstGithubProfile.config.owner, repo: firstGithubProfile.config.repo };
+    }
+  }
   return {
-    github: config.sync?.github?.owner && config.sync?.github?.repo
-      ? { owner: config.sync.github.owner, repo: config.sync.github.repo }
-      : undefined,
+    github,
     jira: config.sync?.jira?.projectKey
       ? { projectKey: config.sync.jira.projectKey }
       : undefined,

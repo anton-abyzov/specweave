@@ -49,7 +49,13 @@ export function isValidIncrementId(id: string): boolean {
   // [a-zA-Z0-9]$ - Single character name is also valid
   //
   // Note: We don't allow dots, slashes, or other path-sensitive characters
-  return /^\d{4}[A-Za-z]?-[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(id);
+  if (!/^\d{4}[A-Za-z]?-[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(id)) {
+    return false;
+  }
+
+  // Reject 0000 — increment numbers must be 0001+
+  const num = parseInt(id.slice(0, 4), 10);
+  return num > 0;
 }
 
 /**
