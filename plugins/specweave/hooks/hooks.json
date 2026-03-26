@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/pre-tool-use"
+            "command": "specweave hook pre-tool-use"
           }
         ]
       },
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/guards/increment-existence-guard"
+            "command": "specweave hook pre-tool-use"
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/session-start continue"
+            "command": "specweave hook session-start"
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" user-prompt-submit approve"
+            "command": "specweave hook user-prompt-submit"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" pre-compact continue"
+            "command": "specweave hook pre-compact"
           }
         ]
       }
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/post-tool-use continue"
+            "command": "specweave hook post-tool-use"
           }
         ]
       },
@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" v2/dispatchers/post-tool-use-analytics continue"
+            "command": "specweave hook post-tool-use-analytics"
           }
         ]
       }
@@ -77,17 +77,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" stop-reflect approve",
+            "command": "specweave hook stop-reflect",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" stop-auto-v5 approve",
+            "command": "specweave hook stop-auto",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh\" stop-sync approve",
+            "command": "specweave hook stop-sync",
             "timeout": 15000
           }
         ]
