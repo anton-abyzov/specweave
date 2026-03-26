@@ -92,6 +92,41 @@ const LEGACY_COMMANDS_DIR = join(homedir(), '.claude', 'commands');
 const PLUGIN_CACHE_DIR = join(homedir(), '.claude', 'plugins', 'cache');
 
 // ---------------------------------------------------------------------------
+// Native plugin detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if the core SW plugin is installed and enabled natively in Claude Code.
+ *
+ * Runs `claude plugin list` and parses the output for `sw@specweave` with
+ * enabled status. This is cross-platform and does not rely on internal file
+ * formats that may change between Claude Code versions.
+ *
+ * @returns true if sw@specweave is present and enabled
+ */
+export function isSwPluginInstalledNatively(): boolean {
+  try {
+    const result = execFileNoThrowSync('claude', ['plugin', 'list'], { timeout: 10_000 });
+    if (!result.success || !result.stdout) return false;
+
+    const lines = result.stdout.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('sw@specweave')) {
+        // Check subsequent lines for Status field
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          if (lines[j].includes('Status:') && lines[j].includes('enabled')) return true;
+          if (lines[j].includes('Status:')) return false; // present but disabled
+          if (lines[j].trim().startsWith('❯')) break; // next plugin entry
+        }
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Hash
 // ---------------------------------------------------------------------------
 
@@ -205,7 +240,10 @@ export function readLockfile(dir: string): VskillLock | null {
   const p = join(dir, LOCKFILE_NAME);
   if (!existsSync(p)) return null;
   try {
-    return JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
+    const lock = JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
+    if (!Array.isArray(lock.agents)) lock.agents = ['claude-code'];
+    if (!lock.skills || typeof lock.skills !== 'object') lock.skills = {};
+    return lock;
   } catch (err) {
     consoleLogger.debug(`Failed to parse lockfile at ${p}: ${err instanceof Error ? err.message : err}`);
     return null;
@@ -262,7 +300,10 @@ export function readGlobalLockfile(homeOverride?: string): VskillLock | null {
     const dir = getGlobalLockDir(homeOverride);
     const p = join(dir, GLOBAL_LOCKFILE_NAME);
     if (!existsSync(p)) return null;
-    return JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
+    const lock = JSON.parse(readFileSync(p, 'utf-8')) as VskillLock;
+    if (!Array.isArray(lock.agents)) lock.agents = ['claude-code'];
+    if (!lock.skills || typeof lock.skills !== 'object') lock.skills = {};
+    return lock;
   } catch (err) {
     consoleLogger.debug(`Failed to read global lockfile: ${err instanceof Error ? err.message : err}`);
     return null;
@@ -784,9 +825,16 @@ export function copyPluginSkillsToProject(
     return { success: false, sha: '', error: `Source dir not found: ${sourceDir}` };
   }
 
-  // 3. Compute hash and check lockfile for skip
+  // 3. Compute hash and check global lockfile for skip
+  //    Bundled plugin state is global (same as installPlugin), not per-project.
   const sha = computePluginHash(sourceDir);
-  const lock = ensureLockfile(projectRoot);
+  let lock: VskillLock;
+  try {
+    lock = ensureGlobalLockfile();
+  } catch (err) {
+    consoleLogger.warn(`copyPluginSkillsToProject: global lockfile unavailable, using in-memory lock: ${err}`);
+    lock = { version: 1, agents: ['claude-code'], skills: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  }
 
   if (!options.force && lock.skills[pluginName]?.sha === sha) {
     return { success: true, sha, skipped: true };
@@ -901,7 +949,7 @@ export function copyPluginSkillsToProject(
     lock.agents.push('claude-code');
   }
   try {
-    writeLockfile(lock, projectRoot);
+    writeGlobalLockfile(lock);
   } catch (err) {
     consoleLogger.warn(`Plugin skills copied but lockfile write failed: ${err instanceof Error ? err.message : err}`);
   }

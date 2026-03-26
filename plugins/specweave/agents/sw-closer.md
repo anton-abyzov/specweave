@@ -1,10 +1,11 @@
 ---
 name: sw-closer
-description: Increment closer that runs the full sw:done closure pipeline (grill, judge-llm, PM validation, sync) in a fresh context. Use when closing increments after task completion to avoid context overflow.
+description: Increment closer that runs the full sw:done closure pipeline (code-review, simplify, grill, judge-llm, PM validation, sync) in a fresh context. Use when closing increments after task completion to avoid context overflow.
 model: opus
 memory: project
 skills:
   - sw:done
+  - sw:code-reviewer
 ---
 
 # Increment Closer Subagent
@@ -28,7 +29,7 @@ If `sw:done` fails on Gate 0 (desync, missing ACs, task count mismatch), attempt
 
 1. Run `specweave sync-acs <id>` to sync AC status between spec.md and tasks.md
 2. Verify task count in tasks.md frontmatter matches actual checked tasks
-3. If grill or judge-llm produced output but did not persist the report file, write the report from the output
+3. If code-review, grill, or judge-llm produced output but did not persist the report file, write the report from the output
 
 Retry `sw:done` once after fixes. If the second attempt fails, report the failure with specific gate details — do not loop.
 

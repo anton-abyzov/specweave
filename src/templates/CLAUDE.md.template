@@ -30,7 +30,7 @@
 **Skill chaining** — skills are NOT "one and done":
 1. **Planning**: `sw:pm` (specs) → `sw:architect` (design)
 2. **Implementation**: Use `sw:architect` for all domains. Optional domain plugins available via `vskill install` (mobile, marketing, etc.)
-3. **Closure**: `sw:grill` runs automatically via `/sw:done`
+3. **Closure**: `sw:code-reviewer` + `/simplify` + `sw:grill` run automatically via `/sw:done`
 
 **Complexity gate** — before chaining domain skills:
 1. **Tech stack specified?** → Chain ONLY the matching skill. If unspecified, ASK or default to minimal (vanilla JS/HTML, simple Express)
@@ -95,15 +95,16 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ### 3. Verification Before Done
 - Never mark a task complete without proving it works
 - Run tests after every task: `npx vitest run` + `npx playwright test`
-- Run `/simplify` before committing — catches duplication, readability issues, and inefficiencies via 3 parallel review agents
+- `sw:code-reviewer` writes `code-review-report.json` — CLI blocks closure if critical/high/medium findings remain
+- `/simplify` runs after code-review — catches duplication, readability issues, and inefficiencies via 3 parallel review agents
 - `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
 - `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Ask yourself: **"Would a staff engineer approve this?"**
 
 ### 5. Auto-Closure After Implementation (MANDATORY)
 - When `/sw:do` completes all tasks, IMMEDIATELY invoke `/sw:done` — do NOT stop to ask for review
-- The quality gates inside `/sw:done` (grill, judge-llm, PM validation) ARE the review — no user confirmation needed
-- `/sw:done` handles: grill report, judge-llm, PM gates, closure, sync to GitHub/Jira/ADO
+- The quality gates inside `/sw:done` (code-review, simplify, grill, judge-llm, PM validation) ARE the review — no user confirmation needed
+- `/sw:done` handles: code-review loop, simplify, grill report, judge-llm, PM gates, closure, sync to GitHub/Jira/ADO
 - If a gate fails, the increment stays open automatically — no risk of premature closure
 - If the user disagrees, they can re-open the increment
 - **Anti-pattern**: "All tasks complete. Should I close?" — NEVER ask this. Just close it.
@@ -231,6 +232,8 @@ Primary: `/sw:progress-sync`. Individual: `/sw-github:push`, `/sw-github:close`.
 - Never mark a task `[x]` until its tests pass
 
 ### Before Closing (`/sw:done`)
+- `sw:code-reviewer` writes `code-review-report.json` — blocks closure if critical/high/medium findings remain (fix loop, max 3 iterations)
+- `/simplify` runs after code-review passes — cleans up code before grill
 - `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
 - `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - `/sw:validate` — 130+ rule checks
