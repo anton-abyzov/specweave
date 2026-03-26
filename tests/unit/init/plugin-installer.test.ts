@@ -443,4 +443,46 @@ describe('Plugin Installer - All Plugin Installation on INIT', () => {
       }
     });
   });
+
+  // =========================================================================
+  // Native Plugin Skip — init.ts source validation
+  // =========================================================================
+  describe('Native Plugin Skip in init.ts', () => {
+    it('should check isSwPluginInstalledNatively before calling installAllPlugins', async () => {
+      const initFile = path.join(
+        process.cwd(),
+        'src/cli/commands/init.ts'
+      );
+
+      if (await fs.pathExists(initFile)) {
+        const content = await fs.readFile(initFile, 'utf-8');
+        expect(content).toContain('isSwPluginInstalledNatively');
+      }
+    });
+
+    it('should bypass native check when forceRefresh is set', async () => {
+      const initFile = path.join(
+        process.cwd(),
+        'src/cli/commands/init.ts'
+      );
+
+      if (await fs.pathExists(initFile)) {
+        const content = await fs.readFile(initFile, 'utf-8');
+        // forceRefresh must be checked before native plugin detection
+        expect(content).toContain('!options.forceRefresh && isSwPluginInstalledNatively');
+      }
+    });
+
+    it('should display skip message when native plugin is detected', async () => {
+      const initFile = path.join(
+        process.cwd(),
+        'src/cli/commands/init.ts'
+      );
+
+      if (await fs.pathExists(initFile)) {
+        const content = await fs.readFile(initFile, 'utf-8');
+        expect(content).toContain('already installed natively');
+      }
+    });
+  });
 });

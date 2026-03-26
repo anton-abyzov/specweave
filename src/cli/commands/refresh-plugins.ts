@@ -351,7 +351,17 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       logger.debug(`Step 4c: stale plugin cleanup failed: ${err}`);
     }
 
-    // Step 4d: Migrate user-level domain plugins to project scope + restore sw@specweave
+    // Step 4d-fix: Clean up any project-level vskill.lock with bundled entries
+    //   Older versions wrote bundled state to project lock. Run migration AFTER the
+    //   install loop so newly-created project lockfiles (from pre-fix fallback paths
+    //   or older specweave versions) are migrated to the global lock.
+    try {
+      migrateBundledToGlobalLock(projectRoot);
+    } catch (err) {
+      logger.debug(`Step 4d-fix: post-install bundled-to-global migration failed: ${err}`);
+    }
+
+    // Step 4e: Migrate user-level domain plugins to project scope + restore sw@specweave
     try {
       const migrationResult = await migrateUserLevelPlugins(process.cwd(), options.verbose);
       if (migrationResult.migratedCount > 0) {

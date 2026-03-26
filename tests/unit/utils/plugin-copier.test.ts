@@ -27,6 +27,7 @@ import {
   writeGlobalLockfile,
   ensureGlobalLockfile,
   migrateBundledToGlobalLock,
+  isSwPluginInstalledNatively,
 } from '../../../src/utils/plugin-copier.js';
 
 // ---------------------------------------------------------------------------
@@ -471,6 +472,30 @@ describe('plugin-copier', () => {
   });
 
   // =========================================================================
+  // T-005: copyPluginSkillsToProject uses global lock, not project lock
+  // =========================================================================
+  describe('copyPluginSkillsToProject uses global lock', () => {
+    it('should use ensureGlobalLockfile and writeGlobalLockfile, not project-level lockfile', () => {
+      const src = fs.readFileSync(
+        path.join(__dirname, '..', '..', '..', 'src', 'utils', 'plugin-copier.ts'),
+        'utf-8',
+      );
+      // Extract the copyPluginSkillsToProject function body
+      const startIdx = src.indexOf('export function copyPluginSkillsToProject(');
+      const nextExport = src.indexOf('\nexport ', startIdx + 1);
+      const body = src.slice(startIdx, nextExport > -1 ? nextExport : undefined);
+
+      // Must use global lockfile functions
+      expect(body).toContain('ensureGlobalLockfile');
+      expect(body).toContain('writeGlobalLockfile');
+
+      // Must NOT use project-level lockfile functions for hash check or write
+      expect(body).not.toContain('ensureLockfile(projectRoot)');
+      expect(body).not.toContain('writeLockfile(lock, projectRoot)');
+    });
+  });
+
+  // =========================================================================
   // T-004: Skip logic with global lock
   // =========================================================================
   describe('skip logic with global lock', () => {
@@ -649,6 +674,15 @@ describe('plugin-copier', () => {
       // but also should not write to '/'
       expect(() => writeGlobalLockfile(lock, '')).toThrow('No home directory');
       expect(fs.existsSync('/.specweave/plugins-lock.json')).toBe(false);
+    });
+  });
+
+  // =========================================================================
+  // isSwPluginInstalledNatively — export verification
+  // =========================================================================
+  describe('isSwPluginInstalledNatively', () => {
+    it('should be exported as a function', () => {
+      expect(typeof isSwPluginInstalledNatively).toBe('function');
     });
   });
 
