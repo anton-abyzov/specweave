@@ -480,6 +480,7 @@ export class InstallationHealthChecker implements HealthChecker {
             if (pkg.name === 'specweave') {
               const hookPath = join(dir, hookRelPath);
               if (existsSync(hookPath)) return hookPath;
+              return null; // Found the package root; hook doesn't exist here
             }
           } catch { /* continue */ }
         }
