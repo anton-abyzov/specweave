@@ -11,7 +11,7 @@ argument-hint: "<increment-id> [--auto]"
 
 **PM-Led Closure**: Validate tasks, tests, and docs before closing.
 
-**AUTO-CLOSURE DEFAULT**: After `sw:do` completes all tasks, `sw:done` runs automatically — no user confirmation needed. Quality gates (grill, judge-llm, PM validation) provide the safety net. If something is wrong, the user can re-open the increment.
+**AUTO-CLOSURE DEFAULT**: After `sw:do` completes all tasks, `sw:done` runs automatically — no user confirmation needed. Quality gates (code-review, simplify, grill, judge-llm, PM validation) provide the safety net. If something is wrong, the user can re-open the increment.
 
 ## Context Overflow Prevention
 
@@ -31,7 +31,7 @@ Argument: Required increment ID (e.g., "001", "0001", "0042", "0153-feature-name
 
 | Option | Description |
 |--------|-------------|
-| `--auto` | Legacy flag, now a no-op. Auto-closure is the default for all modes. All quality gates (grill, judge-llm, Gate 0, PM gates) always enforced. |
+| `--auto` | Legacy flag, now a no-op. Auto-closure is the default for all modes. All quality gates (code-review, simplify, grill, judge-llm, Gate 0, PM gates) always enforced. |
 
 ---
 
@@ -41,18 +41,53 @@ Argument: Required increment ID (e.g., "001", "0001", "0042", "0153-feature-name
 
 If closing a SpecWeave framework increment, show post-closure reminders: update CHANGELOG.md, CLAUDE.md, consider version bump, run `npm test && npm run rebuild`, check for breaking changes. Informational only, not blocking.
 
-### Step 2: Inline Grill Review (MANDATORY — STOP GATE)
+### Step 2: Code Review (MANDATORY — STOP GATE with Fix Loop)
+
+**The CLI blocks closure if `code-review-report.json` is missing (when required).** Do NOT skip this step.
+
+1. Check config: `jq -r '.codeReview.required // true' .specweave/config.json` — if `false`, skip to Step 3
+2. Read max iterations: `MAX_ITER=$(jq -r '.codeReview.maxFixIterations // 3' .specweave/config.json 2>/dev/null)`
+3. Read blocking severities: defaults are `critical`, `high`, `medium` (configurable via `codeReview.blockingSeverities`)
+4. **Iteration loop** (ITERATION=1):
+   a. Invoke `Skill({ skill: "sw:code-reviewer", args: "--increment <id>" })`
+   b. **Verify report written**: `Bash({ command: "test -f .specweave/increments/<id>/reports/code-review-report.json && echo OK || echo MISSING" })`
+   c. If report MISSING: write it manually from code-reviewer output using the Write tool
+   d. Read the report JSON: parse the `summary` object for severity counts
+   e. **Evaluate blocking findings**: Sum counts for `critical` + `high` + `medium` (or configured severities)
+   f. If no blocking findings → PASS, continue to Step 3
+   g. If blocking findings exist AND ITERATION < MAX_ITER:
+      - Display findings summary
+      - Implement fixes for all critical/high/medium issues from the report
+      - Increment ITERATION
+      - Delete the stale report: `rm -f .specweave/increments/<id>/reports/code-review-report.json`
+      - Go back to step 4a (re-run code-reviewer)
+   h. If blocking findings exist AND ITERATION >= MAX_ITER:
+      - **STOP closure** — display remaining findings
+      - Log: "Code review failed after {N} fix iterations. {X} findings remain."
+      - Increment stays in-progress
+
+### Step 3: Simplify (Non-Blocking Cleanup)
+
+Code review passed. Run simplify to clean up code before the grill examines it.
+
+1. Invoke `Skill({ skill: "simplify" })` — this is a built-in Claude Code skill, NOT a `sw:` skill
+2. `/simplify` spawns 3 parallel agents checking: duplication, readability, efficiency
+3. Apply any suggested improvements
+4. **Non-blocking**: Even if simplify finds issues, proceed to Step 4 (Grill)
+5. Purpose: Clean code before grill reduces grill findings and improves ship readiness
+
+### Step 4: Inline Grill Review (MANDATORY — STOP GATE)
 
 **The CLI blocks closure if `grill-report.json` is missing.** Do NOT skip this step.
 
-1. Check config: `jq -r '.grill.required // true' .specweave/config.json` — if `false`, skip to Step 3
+1. Check config: `jq -r '.grill.required // true' .specweave/config.json` — if `false`, skip to Step 5
 2. Invoke `Skill({ skill: "sw:grill" })` with incrementId
 3. **Verify report written**: `Bash({ command: "test -f .specweave/increments/<id>/reports/grill-report.json && echo OK || echo MISSING" })`
 4. If report MISSING: write it manually from grill output using the Write tool
 5. BLOCKERs or CRITICALs (shipReadiness: NOT READY) → STOP closure, ask user to fix
 6. Passes → continue
 
-### Step 3: Judge LLM Validation (MANDATORY — STOP GATE)
+### Step 5: Judge LLM Validation (MANDATORY — STOP GATE)
 
 **A report file MUST be written regardless of outcome (even WAIVED if consent denied).**
 
@@ -63,21 +98,21 @@ If closing a SpecWeave framework increment, show post-closure reminders: update 
 5. **APPROVED** → continue | **CONCERNS** → show, allow continuation | **REJECTED** → STOP closure
 6. No ANTHROPIC_API_KEY or consent denied → write WAIVED report, continue
 
-### Step 4: Status Validation
+### Step 6: Status Validation
 
 - `ready_for_review` -> Proceed
 - `active` -> Check all tasks done, transition to `ready_for_review` first
 - `completed` -> Already closed, warn user
 - `backlog` / `paused` / `abandoned` -> BLOCK with error
 
-**No confirmation needed**: Proceed directly to closure. Quality gates (grill, judge-llm, Gate 0, PM gates) are the safety net — NOT user confirmation prompts. NEVER stop to ask "should I close this?" — just close it. If a gate fails, the increment stays open automatically. If the user disagrees with closure, they can re-open.
+**No confirmation needed**: Proceed directly to closure. Quality gates (code-review, simplify, grill, judge-llm, Gate 0, PM gates) are the safety net — NOT user confirmation prompts. NEVER stop to ask "should I close this?" — just close it. If a gate fails, the increment stays open automatically. If the user disagrees with closure, they can re-open.
 
-### Step 5: Load Increment Context
+### Step 7: Load Increment Context
 
 1. Find increment directory: normalize ID to 4-digit, match `.specweave/increments/0001-*/`
 2. Load: `spec.md`, `plan.md`, `tasks.md`, `tests.md`
 
-### Step 6: Automated Completion Validation (Gate 0)
+### Step 8: Automated Completion Validation (Gate 0)
 
 MANDATORY, cannot be bypassed. Runs BEFORE PM validation.
 
@@ -94,7 +129,7 @@ MANDATORY, cannot be bypassed. Runs BEFORE PM validation.
 
 If validation fails -> increment stays in-progress, command exits.
 
-### Step 7: PM Validation (3 Gates)
+### Step 9: PM Validation (3 Gates)
 
 PM validation report goes in: `.specweave/increments/####-name/reports/PM-VALIDATION-REPORT.md`
 
@@ -106,11 +141,11 @@ PM validation report goes in: `.specweave/increments/####-name/reports/PM-VALIDA
 
 **Gate 3 - Documentation Updated**: CLAUDE.md, README.md, CHANGELOG.md updated as needed. Inline docs complete. No stale references.
 
-### Step 8: PM Decision
+### Step 10: PM Decision
 
 **All gates pass**:
 1. Create marker file: `mkdir -p .specweave/state && touch .specweave/state/.sw-done-in-progress`
-2. Run completion via CLI: `Bash({ command: "specweave complete <id> --yes" })` — the CLI re-verifies quality gate reports (grill-report.json, judge-llm-report.json) exist. It also triggers `LifecycleHookDispatcher.onIncrementDone()` for living docs sync, GitHub Project sync, and issue closure.
+2. Run completion via CLI: `Bash({ command: "specweave complete <id> --yes" })` — the CLI re-verifies quality gate reports (code-review-report.json, grill-report.json, judge-llm-report.json) exist. It also triggers `LifecycleHookDispatcher.onIncrementDone()` for living docs sync, GitHub Project sync, and issue closure.
 3. Remove marker file: `rm -f .specweave/state/.sw-done-in-progress`
 4. Generate completion report, update backlog
 
@@ -121,7 +156,7 @@ PM validation report goes in: `.specweave/increments/####-name/reports/PM-VALIDA
 - If GitHub issue exists, reopen it with failure details
 - Increment remains in-progress
 
-### Step 8.5: Pull Request Creation (pr-based only)
+### Step 10.5: Pull Request Creation (pr-based only)
 
 Check push strategy:
 ```bash
@@ -136,9 +171,9 @@ PUSH_STRATEGY=$(jq -r '.cicd.pushStrategy // "direct"' .specweave/config.json 2>
 
 **If `direct`:** Skip this step entirely (existing behavior unchanged).
 
-### Step 9: Post-Closure Sync (AUTOMATIC via CLI hooks)
+### Step 11: Post-Closure Sync (AUTOMATIC via CLI hooks)
 
-The `specweave complete` call in Step 8 triggers `LifecycleHookDispatcher.onIncrementDone()` which automatically handles:
+The `specweave complete` call in Step 10 triggers `LifecycleHookDispatcher.onIncrementDone()` which automatically handles:
 
 - **Living docs sync** (`sync_living_docs` flag): Updates feature specs and user story files
 - **GitHub Project sync** (`sync_to_github_project` flag): Pushes spec to GitHub Project
@@ -166,22 +201,22 @@ If any operation failed, display: "Run `sw:progress-sync` to retry failed sync o
 3. For EACH user story in spec.md, search: `gh issue list -R {owner}/{repo} --search "[{feature_id}][{us_id}]" --state open --json number`
 4. Close each: `gh issue close {number} -R {owner}/{repo} -c "Completed as part of increment {increment_id}"`
 
-### Step 10: Sync Living Docs (MANDATORY)
+### Step 12: Sync Living Docs (MANDATORY)
 
 Execute: `Skill({ skill: "sw:sync-docs" })` with the increment ID. Do NOT just mention it -- actually invoke it. This serves as a verification pass to confirm living docs are up to date after closure.
 
-### Step 10b: Update Links in Docs (MANDATORY)
+### Step 12b: Update Links in Docs (MANDATORY)
 
 After living docs sync, update cross-references and bidirectional links so existing docs reference the newly created feature specs. Do NOT skip this step:
 
-1. Read the feature spec files created by Step 10 (`.specweave/docs/internal/specs/{project}/FS-XXX/FEATURE.md` and `us-*.md`)
+1. Read the feature spec files created by Step 12 (`.specweave/docs/internal/specs/{project}/FS-XXX/FEATURE.md` and `us-*.md`)
 2. Update existing docs (FEATURE-CATALOG, module docs, etc.) with links to the new specs
 3. Verify bidirectional links between increment → feature spec → living docs
 4. Change `[DRAFT]` → `[COMPLETE]` on doc sections matching completed ACs
 
-Verify that `.specweave/docs/internal/specs/{project}/FS-XXX/` contains `FEATURE.md` and `us-*.md` files. If missing, re-run Step 10.
+Verify that `.specweave/docs/internal/specs/{project}/FS-XXX/` contains `FEATURE.md` and `us-*.md` files. If missing, re-run Step 12.
 
-### Step 11: Post-Closure Quality Assessment
+### Step 13: Post-Closure Quality Assessment
 
 Runs ONLY if closure succeeded. Invoke: `sw:qa ${incrementId}`
 
@@ -195,7 +230,7 @@ Report saved to: `.specweave/increments/####/reports/qa-post-closure.md`
 
 Quality assessment runs AFTER closure (not blocking delivery). Critical issues trigger follow-up increment creation.
 
-### Step 12: Handle Incomplete Work
+### Step 14: Handle Incomplete Work
 
 If scope creep detected, offer options:
 - A) Complete all tasks (estimate effort)

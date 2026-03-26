@@ -162,9 +162,11 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
           console.log(chalk.green('   ✓ Repo mappings saved to workspace config'));
         }
       }
-    } catch {
+    } catch (err) {
       // Mapping wizard failure is non-critical — credentials are already saved
-      console.log(chalk.gray('   ⚠ Could not run repo mapping wizard. Edit config.json manually.'));
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log(chalk.gray(`   ⚠ Could not run repo mapping wizard. Edit config.json manually.`));
+      console.log(chalk.gray(`     Reason: ${msg}`));
     }
 
     console.log('');
@@ -178,9 +180,11 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
       if (results.length > 0) {
         console.log(formatHealthCheckResults(results));
       }
-    } catch {
+    } catch (err) {
       // Health check failure should not block setup success
+      const msg = err instanceof Error ? err.message : String(err);
       console.log(chalk.gray('   ⚠ Could not run health checks. Run specweave sync-health manually.'));
+      console.log(chalk.gray(`     Reason: ${msg}`));
     }
 
     console.log(chalk.gray('   Run specweave sync-health to re-check integration health.'));

@@ -33,6 +33,11 @@ vi.mock('../../src/core/types/plugin-scope.js', () => ({
   getScopeArgs: vi.fn().mockReturnValue([]),
 }));
 
+const FAKE_HOME = vi.hoisted(() => '/fake-home');
+vi.mock('node:os', () => ({
+  homedir: () => FAKE_HOME,
+}));
+
 import { copyPluginSkillsToProject } from '../../src/utils/plugin-copier.js';
 
 const SPECWEAVE_ROOT = '/specweave';
@@ -51,6 +56,7 @@ function setupBasicMocks() {
     if (ps.endsWith(join('plugins', 'sw', 'hooks'))) return true;
     if (ps.includes('vskill.lock')) return false;
     if (ps.includes('plugins-lock.json')) return false;
+    if (ps.includes('.specweave') && ps.includes(FAKE_HOME)) return true;
     if (ps.includes('.claude/commands/sw')) return false;
     return false;
   });
@@ -158,5 +164,22 @@ describe('copyPluginSkillsToProject with targetSkillsDir', () => {
     const mkdirCalls = mocks.mkdirSync.mock.calls.map((c: string[][]) => c[0].toString());
     const hasHooksDir = mkdirCalls.some((p: string) => p.includes(join('.claude', 'hooks')));
     expect(hasHooksDir).toBe(true);
+  });
+
+  it('should NOT write vskill.lock to projectRoot — uses global plugins-lock.json', () => {
+    setupBasicMocks();
+
+    copyPluginSkillsToProject('sw', SPECWEAVE_ROOT, PROJECT_ROOT, {
+      force: true,
+    });
+
+    // No writeFileSync call should target vskill.lock
+    const writeCalls = mocks.writeFileSync.mock.calls.map((c: unknown[]) => String(c[0]));
+    const hasVskillLock = writeCalls.some((p: string) => p.includes('vskill.lock'));
+    expect(hasVskillLock).toBe(false);
+
+    // Should write to plugins-lock.json (global lockfile)
+    const hasGlobalLock = writeCalls.some((p: string) => p.includes('plugins-lock.json'));
+    expect(hasGlobalLock).toBe(true);
   });
 });

@@ -610,8 +610,8 @@ export interface WorkspaceRepoSync {
 export interface WorkspaceRepo {
   /** Repo identifier — MUST match canonical source name */
   id: string;
-  /** Path to repo (relative or absolute) */
-  path: string;
+  /** Path to repo (relative or absolute). May be absent in configs parsed from JSON. */
+  path?: string;
   /** User story prefix for US-{PREFIX}-001 format */
   prefix: string;
   /** Display name (defaults to id if not set) */
@@ -924,6 +924,21 @@ export interface GrillConfig {
 }
 
 /**
+ * Code review quality gate configuration
+ * Controls whether a code-review report is required before increment closure
+ * and configures the fix loop behavior within sw:done.
+ * @since v1.0.646
+ */
+export interface CodeReviewConfig {
+  /** Whether code-review report is required before closure. Default: true */
+  required?: boolean;
+  /** Maximum fix-and-rerun iterations in the sw:done pipeline. Default: 3 */
+  maxFixIterations?: number;
+  /** Severity levels that block closure. Default: ["critical", "high", "medium"] */
+  blockingSeverities?: string[];
+}
+
+/**
  * Skill generation configuration (v1.0.XXX+)
  *
  * Controls automatic detection of recurring patterns from living docs
@@ -1073,6 +1088,9 @@ export interface SpecWeaveConfig {
 
   /** Grill quality gate configuration (v1.0.337+) */
   grill?: GrillConfig;
+
+  /** Code review quality gate configuration (v1.0.646+) */
+  codeReview?: CodeReviewConfig;
 
   /** Skill generation configuration — pattern detection + on-demand skill creation (v1.0.XXX+) */
   skillGen?: SkillGenConfig;

@@ -7,9 +7,12 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import path from 'path';
 import {
   applyMappingsToWorkspace,
+  getRepoPath,
   type MappingWizardResult,
+  type MappingWizardOptions,
   type RepoMapping,
 } from '../../../../../src/cli/helpers/issue-tracker/project-mapping-wizard.js';
 import type { WorkspaceConfig } from '../../../../../src/core/config/types.js';
@@ -189,6 +192,91 @@ describe('detectGitHubMapping (0645)', () => {
       gitRemoteUrl: 'https://github.com/org/my-app.git',
     });
     expect(result!.repo).toBe('my-app');
+  });
+});
+
+describe('getRepoPath (cross-platform)', () => {
+  const workspace: WorkspaceConfig = {
+    name: 'ws',
+    repos: [
+      { id: 'fe', path: 'repositories/acme/frontend', prefix: 'FE', sync: {} },
+      { id: 'no-path', prefix: 'NP', sync: {} },
+    ],
+  };
+
+  const mkOpts = (projectPath?: string): MappingWizardOptions => ({
+    provider: 'github',
+    workspace,
+    projectPath,
+  });
+
+  it('should resolve repo path relative to projectPath', () => {
+    const result = getRepoPath(
+      { id: 'fe', isRoot: false, name: 'frontend' },
+      mkOpts('/projects/umbrella'),
+    );
+    expect(result).toBe(path.resolve('/projects/umbrella', 'repositories/acme/frontend'));
+  });
+
+  it('should handle forward-slash repo paths on any OS', () => {
+    // Config always stores paths with forward slashes; path.resolve normalises per-OS
+    const result = getRepoPath(
+      { id: 'fe', isRoot: false, name: 'frontend' },
+      mkOpts('/root'),
+    );
+    expect(result).toBe(path.resolve('/root', 'repositories/acme/frontend'));
+  });
+
+  it('should return undefined when projectPath is missing', () => {
+    const result = getRepoPath(
+      { id: 'fe', isRoot: false, name: 'frontend' },
+      mkOpts(undefined),
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it('should return undefined when repo has no path field', () => {
+    const result = getRepoPath(
+      { id: 'no-path', isRoot: false, name: 'no-path' },
+      mkOpts('/projects/umbrella'),
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it('should return undefined when repo id is not found', () => {
+    const result = getRepoPath(
+      { id: 'nonexistent', isRoot: false, name: 'ghost' },
+      mkOpts('/projects/umbrella'),
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it('should reject path traversal attempts that escape project root', () => {
+    const traversalWorkspace: WorkspaceConfig = {
+      name: 'ws',
+      repos: [{ id: 'evil', path: '../../etc/passwd', prefix: 'X', sync: {} }],
+    };
+    const opts: MappingWizardOptions = {
+      provider: 'github',
+      workspace: traversalWorkspace,
+      projectPath: '/projects/umbrella',
+    };
+    const result = getRepoPath({ id: 'evil', isRoot: false, name: 'evil' }, opts);
+    expect(result).toBeUndefined();
+  });
+
+  it('should reject absolute paths that escape project root', () => {
+    const absWorkspace: WorkspaceConfig = {
+      name: 'ws',
+      repos: [{ id: 'abs', path: '/tmp/somewhere-else', prefix: 'X', sync: {} }],
+    };
+    const opts: MappingWizardOptions = {
+      provider: 'github',
+      workspace: absWorkspace,
+      projectPath: '/projects/umbrella',
+    };
+    const result = getRepoPath({ id: 'abs', isRoot: false, name: 'abs' }, opts);
+    expect(result).toBeUndefined();
   });
 });
 
