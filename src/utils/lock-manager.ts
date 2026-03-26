@@ -94,6 +94,11 @@ export class LockManager {
 
       // Try to acquire lock
       try {
+        // Ensure parent directory exists (e.g., .specweave/state/.locks/)
+        const parentDir = path.dirname(this.lockDir);
+        if (!fs.existsSync(parentDir)) {
+          fs.mkdirSync(parentDir, { recursive: true });
+        }
         fs.mkdirSync(this.lockDir, { recursive: false });
 
         // Write metadata

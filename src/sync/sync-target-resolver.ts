@@ -148,11 +148,11 @@ function buildGlobalTarget(config: SpecWeaveConfig): SyncTargetConfig {
   let github: { owner: string; repo: string } | undefined;
   if (config.sync?.github?.owner && config.sync?.github?.repo) {
     github = { owner: config.sync.github.owner, repo: config.sync.github.repo };
-  } else if ((config.sync as any)?.profiles) {
-    const profiles = (config.sync as any).profiles;
+  } else if (config.sync?.profiles) {
+    const profiles = config.sync.profiles;
     const firstGithubProfile = Object.values(profiles).find(
-      (p: any) => p?.provider === 'github' && p?.config?.owner && p?.config?.repo
-    ) as any;
+      (p) => p?.provider === 'github' && p?.config?.owner && p?.config?.repo
+    );
     if (firstGithubProfile) {
       github = { owner: firstGithubProfile.config.owner, repo: firstGithubProfile.config.repo };
     }

@@ -904,33 +904,9 @@ export function copyPluginSkillsToProject(
     consoleLogger.warn(`Plugin "${pluginName}": skills/ directory exists but no skills were copied`);
   }
 
-  // 6. Recursively copy hooks to .claude/hooks/ if present (Claude-only).
-  //    Includes subdirectories (lib/, v2/, universal/) that top-level hooks reference.
-  //    Hooks are Claude-specific infrastructure — skip for non-Claude adapters.
-  const hooksDir = join(sourceDir, 'hooks');
-  if (isClaudeTarget && existsSync(hooksDir)) {
-    const targetHooksDir = join(projectRoot, '.claude', 'hooks');
-    try {
-      const hookFiles = readdirSync(hooksDir, { recursive: true, encoding: 'utf-8' });
-      for (const hookFile of hookFiles) {
-        const srcPath = join(hooksDir, hookFile);
-        try {
-          const st = lstatSync(srcPath);
-          if (!st.isFile()) continue; // skip directories and symlinks
-          const destPath = join(targetHooksDir, hookFile);
-          mkdirSync(dirname(destPath), { recursive: true });
-          copyFileSync(srcPath, destPath);
-          if (hookFile.endsWith('.sh')) {
-            chmodSync(destPath, 0o755);
-          }
-        } catch (err) {
-          consoleLogger.debug(`Failed to copy hook file: ${err instanceof Error ? err.message : err}`);
-        }
-      }
-    } catch (err) {
-      consoleLogger.warn(`Failed to copy hooks for plugin "${pluginName}": ${err instanceof Error ? err.message : err}`);
-    }
-  }
+  // 6. Hooks are now handled via CLI delegation (specweave hook <event>).
+  //    hooks.json in the plugin source is loaded by Claude Code directly via
+  //    the plugin cache — no need to copy hook scripts to .claude/hooks/.
 
   // 7. Migrate: remove legacy ~/.claude/commands/<name>/ if present (Claude-only)
   if (isClaudeTarget) {
