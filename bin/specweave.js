@@ -1244,6 +1244,28 @@ program
     }
   });
 
+// Hook command - CLI delegation entry point for Claude Code hooks (internal)
+program
+  .command('hook <event-type>')
+  .description('Handle Claude Code hook events (internal)')
+  .action(async (eventType) => {
+    try {
+      const { handleHook } = await import('../dist/src/cli/commands/hook.js');
+      await handleHook(eventType);
+    } catch {
+      // Never crash — output safe default
+      const defaults = {
+        'user-prompt-submit': '{"decision":"approve"}',
+        'pre-tool-use': '{"decision":"allow"}',
+        'stop-reflect': '{"decision":"approve"}',
+        'stop-auto': '{"decision":"approve"}',
+        'stop-sync': '{"decision":"approve"}',
+      };
+      process.stdout.write(defaults[eventType] || '{"continue":true}');
+    }
+    process.exit(0);
+  });
+
 // Detect intent command - Hook helper for automatic plugin loading (internal)
 program
   .command('detect-intent [prompt]')
@@ -1556,7 +1578,7 @@ program
   await checkForDuplicates();
 
   // Hide internal-only commands from --help (still callable by hooks)
-  for (const name of ['detect-intent', 'evaluate-completion', 'reflect-stop', 'detect-project']) {
+  for (const name of ['hook', 'detect-intent', 'evaluate-completion', 'reflect-stop', 'detect-project']) {
     const cmd = program.commands.find(c => c.name() === name);
     if (cmd) cmd._hidden = true;
   }
