@@ -390,9 +390,23 @@ export async function configureGitHubRepositories(
           const firstRepoPath = (workspace.repos as any[])[0]?.path;
           if (firstRepoPath) {
             const absPath = nodePath.resolve(projectPath, firstRepoPath);
-            const remote = execSync('git remote get-url origin', { cwd: absPath, encoding: 'utf-8', stdio: 'pipe' }).trim();
-            const m = remote.match(/github\.com[:/]([^/]+)\//);
-            if (m) detectedOwner = m[1];
+            try {
+              const remote = execSync('git remote get-url origin', { cwd: absPath, encoding: 'utf-8', stdio: 'pipe' }).trim();
+              const m = remote.match(/github\.com[:/]([^/]+)\//);
+              if (m) detectedOwner = m[1];
+            } catch {
+              // Nested repo has no remote — try extracting owner from repo path pattern repositories/{owner}/{repo}
+              const pathMatch = firstRepoPath.match(/repositories\/([^/]+)\//);
+              if (pathMatch) detectedOwner = pathMatch[1];
+            }
+            // Last resort: try the umbrella (root) repo's git remote
+            if (!detectedOwner) {
+              try {
+                const remote = execSync('git remote get-url origin', { cwd: projectPath, encoding: 'utf-8', stdio: 'pipe' }).trim();
+                const m = remote.match(/github\.com[:/]([^/]+)\//);
+                if (m) detectedOwner = m[1];
+              } catch { /* no umbrella remote either */ }
+            }
           }
         } catch { /* no git remote — owner stays empty, mapping wizard will ask */ }
       }

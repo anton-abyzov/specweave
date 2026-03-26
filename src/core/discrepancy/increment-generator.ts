@@ -9,6 +9,7 @@ import * as path from 'node:path';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { BrownfieldDiscrepancy } from './brownfield-types.js';
 import { BrownfieldDiscrepancyManager } from './brownfield-manager.js';
+import { IncrementNumberManager } from '../increment/increment-utils.js';
 
 /**
  * Options for generating an increment from discrepancies
@@ -187,25 +188,12 @@ export async function resolveDiscrepanciesOnCompletion(
 }
 
 /**
- * Get the next increment ID for documentation improvements
+ * Get the next increment ID for documentation improvements.
+ * Delegates to IncrementNumberManager to scan all lifecycle directories
+ * and prevent ID collisions.
  */
 export function getNextIncrementId(projectPath: string): string {
-  const incrementsDir = path.join(projectPath, '.specweave', 'increments');
-
-  if (!fs.existsSync(incrementsDir)) {
-    return '0001';
-  }
-
-  const ids = fs.readdirSync(incrementsDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && /^\d{3,4}E?-/.test(d.name))
-    .map(d => {
-      const match = d.name.match(/^(\d{3,4})E?-/);
-      return match ? parseInt(match[1], 10) : 0;
-    })
-    .filter(id => id > 0);
-
-  const maxId = ids.length > 0 ? Math.max(...ids) : 0;
-  return String(maxId + 1).padStart(4, '0');
+  return IncrementNumberManager.getNextIncrementNumber(projectPath);
 }
 
 /**

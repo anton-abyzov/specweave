@@ -1798,6 +1798,17 @@ export class LivingDocsSync {
             repo = config.sync.github.repo;
             this.logger.log(`   📝 Using GitHub config: ${owner}/${repo}`);
           }
+          // Method 1b: Read from sync.profiles (created by specweave init)
+          else if (config.sync?.profiles) {
+            const profiles = config.sync.profiles;
+            const profileKey = projectName || Object.keys(profiles)[0];
+            const profile = profiles[profileKey] || Object.values(profiles)[0];
+            if (profile?.provider === 'github' && profile?.config?.owner && profile?.config?.repo) {
+              owner = profile.config.owner;
+              repo = profile.config.repo;
+              this.logger.log(`   📝 Using GitHub config (profile: ${profileKey}): ${owner}/${repo}`);
+            }
+          }
           // Method 2: Read from multiProject.projects[activeProject].externalTools.github
           else if (config.multiProject?.enabled && config.multiProject?.activeProject) {
             const activeProject = config.multiProject.activeProject;

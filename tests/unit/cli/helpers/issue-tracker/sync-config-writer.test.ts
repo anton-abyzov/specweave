@@ -231,7 +231,7 @@ describe('sync-config-writer', () => {
       expect(writtenConfig.sync.profiles['github-default'].config.repo).toBe('repo-name');
     });
 
-    it('falls back when git remote fails', async () => {
+    it('falls back to YOUR_GITHUB_USERNAME when git remote fails and no workspace config', async () => {
       mockExecSync.mockImplementation(() => { throw new Error('no remote'); });
       const logger = makeLogger();
 
@@ -249,6 +249,33 @@ describe('sync-config-writer', () => {
       const writtenConfig = mockConfigWrite.mock.calls[0][0];
       expect(writtenConfig.sync.profiles['github-default'].config.repo).toBe('my-app');
       expect(writtenConfig.sync.profiles['github-default'].config.owner).toBe('YOUR_GITHUB_USERNAME');
+    });
+
+    it('resolves owner from workspace config when git remote fails (legacy path)', async () => {
+      mockExecSync.mockImplementation(() => { throw new Error('no remote'); });
+      mockConfigRead.mockResolvedValue({
+        workspace: {
+          repos: [
+            { id: 'my-app', name: 'my-app', sync: { github: { owner: 'real-org', repo: 'my-app' } } }
+          ]
+        }
+      });
+      const logger = makeLogger();
+
+      await writeSyncConfig(
+        '/project/my-app',
+        'github',
+        { token: 'ghp_xxx', instanceType: 'cloud' } as any,
+        makeSyncSettings(),
+        makeSyncPermissions(),
+        undefined,
+        undefined,
+        logger
+      );
+
+      const writtenConfig = mockConfigWrite.mock.calls[0][0];
+      expect(writtenConfig.sync.profiles['github-default'].config.owner).toBe('real-org');
+      expect(writtenConfig.sync.profiles['github-default'].config.repo).toBe('my-app');
     });
 
     it('writes multi-repo config with repository profiles', async () => {
@@ -273,6 +300,115 @@ describe('sync-config-writer', () => {
       expect(writtenConfig.sync.profiles['frontend']).toBeDefined();
       expect(writtenConfig.sync.profiles['backend']).toBeDefined();
       expect(writtenConfig.sync.defaultProfile).toBe('frontend');
+    });
+
+    it('writes top-level sync.github from default profile (multi-repo)', async () => {
+      const profiles = [
+        { id: 'main', displayName: 'Main', owner: 'my-org', repo: 'my-repo', isDefault: true },
+      ];
+      const logger = makeLogger();
+
+      await writeSyncConfig(
+        '/project',
+        'github',
+        { token: 'ghp_xxx', instanceType: 'cloud' } as any,
+        makeSyncSettings(),
+        makeSyncPermissions(),
+        profiles,
+        undefined,
+        logger
+      );
+
+      const writtenConfig = mockConfigWrite.mock.calls[0][0];
+      expect(writtenConfig.sync.github).toEqual({ owner: 'my-org', repo: 'my-repo' });
+    });
+
+    it('writes top-level sync.github from default profile (legacy path)', async () => {
+      mockExecSync.mockReturnValue('https://github.com/myorg/myrepo.git\n');
+      const logger = makeLogger();
+
+      await writeSyncConfig(
+        '/project',
+        'github',
+        { token: 'ghp_xxx', instanceType: 'cloud' } as any,
+        makeSyncSettings(),
+        makeSyncPermissions(),
+        undefined,
+        undefined,
+        logger
+      );
+
+      const writtenConfig = mockConfigWrite.mock.calls[0][0];
+      expect(writtenConfig.sync.github).toEqual({ owner: 'myorg', repo: 'myrepo' });
+    });
+
+    it('resolves empty profile owner from workspace.repos config', async () => {
+      mockConfigRead.mockResolvedValue({
+        workspace: {
+          repos: [
+            { id: 'my-calc', name: 'my-calc', sync: { github: { owner: 'resolved-org', repo: 'my-calc' } } }
+          ]
+        }
+      });
+      // Profile has empty owner (umbrella repo had no git remote during init)
+      const profiles = [
+        { id: 'my-calc', displayName: 'My Calc', owner: '', repo: 'my-calc', isDefault: true },
+      ];
+      const logger = makeLogger();
+
+      await writeSyncConfig(
+        '/project',
+        'github',
+        { token: 'ghp_xxx', instanceType: 'cloud' } as any,
+        makeSyncSettings(),
+        makeSyncPermissions(),
+        profiles,
+        undefined,
+        logger
+      );
+
+      const writtenConfig = mockConfigWrite.mock.calls[0][0];
+      expect(writtenConfig.sync.profiles['my-calc'].config.owner).toBe('resolved-org');
+      expect(writtenConfig.sync.github.owner).toBe('resolved-org');
+    });
+
+    it('resolves empty profile owner from nested repo git remote', async () => {
+      mockConfigRead.mockResolvedValue({});
+      // First call: umbrella git remote fails. Subsequent calls: nested repo remote
+      mockExecSync.mockImplementation((cmd: string, opts: any) => {
+        if (opts?.cwd === '/project/repositories/some-org/my-repo') {
+          return 'https://github.com/some-org/my-repo.git\n';
+        }
+        throw new Error('no remote');
+      });
+      mockExistsSync.mockImplementation((p: string) => {
+        if (p === '/project/repositories') return true;
+        if (p === '/project/repositories/some-org/my-repo/.git') return true;
+        return false;
+      });
+      mockReaddirSync.mockImplementation((p: string) => {
+        if (p === '/project/repositories') return ['some-org'];
+        return [];
+      });
+
+      const profiles = [
+        { id: 'my-repo', displayName: 'My Repo', owner: '', repo: 'my-repo', isDefault: true },
+      ];
+      const logger = makeLogger();
+
+      await writeSyncConfig(
+        '/project',
+        'github',
+        { token: 'ghp_xxx', instanceType: 'cloud' } as any,
+        makeSyncSettings(),
+        makeSyncPermissions(),
+        profiles,
+        undefined,
+        logger
+      );
+
+      const writtenConfig = mockConfigWrite.mock.calls[0][0];
+      expect(writtenConfig.sync.profiles['my-repo'].config.owner).toBe('some-org');
     });
 
     it('adds monorepo projects to main profile', async () => {

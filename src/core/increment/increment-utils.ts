@@ -304,15 +304,14 @@ export class IncrementNumberManager {
           if (match) {
             const number = parseInt(match[1], 10);
 
-            // Skip 0000 - increment numbers must be positive (0001+)
-            // No console output here: this is a scan function, not a validator.
-            // Creation-time validation in validateIncrementNumber() blocks 0000.
-            if (number === 0) continue;
+            // Reject 0000 - increment numbers must be positive (0001+)
+            if (number === 0) {
+              console.warn(`⚠️  INVALID INCREMENT ID: ${entry.name} — Increment numbers must start from 0001, not 0000. Remove this directory.`);
+              continue;
+            }
 
             numbers.add(number);
           }
-          // Non-matching folders (system dirs, reserved names) are silently skipped.
-          // Use `specweave doctor` or validateIncrementNumber() for diagnostics.
         }
       } catch (error) {
         // Permission denied or other error - log warning and continue
