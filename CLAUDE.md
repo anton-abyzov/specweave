@@ -53,7 +53,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 ### 5. Auto-Closure After Implementation (MANDATORY)
 - When `/sw:do` completes all tasks, IMMEDIATELY invoke `/sw:done` — do NOT stop to ask for review
-- Quality gates (grill, judge-llm, PM validation) ARE the review — no user confirmation needed
+- Quality gates (code-review, simplify, grill, judge-llm, PM validation) ARE the review — no user confirmation needed
 - If a gate fails, the increment stays open automatically. User can re-open if they disagree
 - **Anti-pattern**: "All tasks complete. Should I close?" — NEVER ask this. Just close it.
 

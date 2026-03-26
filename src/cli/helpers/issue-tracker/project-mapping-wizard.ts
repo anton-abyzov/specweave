@@ -12,6 +12,7 @@
  * @module cli/helpers/issue-tracker/project-mapping-wizard
  */
 
+import path from 'path';
 import chalk from 'chalk';
 import { select, input, confirm } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
@@ -330,14 +331,18 @@ function getGitRemoteUrl(repoPath: string): string {
 
 /**
  * Resolve the filesystem path for a workspace repo entry.
+ * Uses path.resolve() which normalises separators per-OS (/ on POSIX, \ on Windows).
  */
-function getRepoPath(
+export function getRepoPath(
   entry: { id: string; isRoot: boolean; name: string },
   options: MappingWizardOptions
 ): string | undefined {
   if (!options.projectPath) return undefined;
   const repo = options.workspace.repos.find(r => r.id === entry.id);
   if (!repo?.path) return undefined;
-  const path = require('path');
-  return path.resolve(options.projectPath, repo.path);
+  const resolved = path.resolve(options.projectPath, repo.path);
+  // Containment check: reject paths that escape the project root
+  const root = path.resolve(options.projectPath);
+  if (!resolved.startsWith(root + path.sep) && resolved !== root) return undefined;
+  return resolved;
 }

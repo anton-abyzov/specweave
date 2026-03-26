@@ -288,6 +288,7 @@ export class IncrementCompletionValidator {
     // Check if quality gates are globally disabled via auto config
     let skipAll = false;
     let grillRequired = true;
+    let codeReviewRequired = true;
     try {
       const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
       if (await fs.pathExists(configPath)) {
@@ -297,6 +298,9 @@ export class IncrementCompletionValidator {
         }
         if (config.grill?.required === false) {
           grillRequired = false;
+        }
+        if (config.codeReview?.required === false) {
+          codeReviewRequired = false;
         }
       }
     } catch {
@@ -378,6 +382,38 @@ export class IncrementCompletionValidator {
         'Quality gate: judge-llm-report.json not found.\n' +
         '    Consider running sw:judge-llm for independent validation.'
       );
+    }
+
+    // --- Code-review report validation (v1.0.646) ---
+    if (codeReviewRequired) {
+      const codeReviewReportPath = path.join(reportsDir, 'code-review-report.json');
+      if (!(await fs.pathExists(codeReviewReportPath))) {
+        errors.push(
+          'Quality gate: code-review-report.json not found.\n' +
+          `    Run sw:code-reviewer --increment ${incrementId} before closing, or set "codeReview": { "required": false } in config.json.\n` +
+          `    The report is written to .specweave/increments/${incrementId}/reports/code-review-report.json`
+        );
+      } else {
+        try {
+          const report = JSON.parse(await fs.readFile(codeReviewReportPath, 'utf-8'));
+          const summary = report.summary ?? {};
+          const blockingSeverities = ['critical', 'high', 'medium'];
+          const blockingCount = blockingSeverities.reduce(
+            (acc: number, sev: string) => acc + (summary[sev] ?? 0), 0
+          );
+          if (blockingCount > 0) {
+            errors.push(
+              `Quality gate: code-review report has ${blockingCount} blocking findings ` +
+              `(${summary.critical ?? 0} critical, ${summary.high ?? 0} high, ${summary.medium ?? 0} medium).\n` +
+              `    Fix issues and re-run sw:code-reviewer --increment ${incrementId}.`
+            );
+          }
+        } catch {
+          warnings.push('Quality gate: code-review-report.json exists but could not be parsed.');
+        }
+      }
+    } else {
+      logger.info('Quality gate reports: code-review report not required (codeReview.required=false)');
     }
 
     return { errors, warnings };

@@ -52,6 +52,15 @@ completed_tasks: 1
     await fs.writeFile(path.join(reportsDir, 'judge-llm-report.json'), JSON.stringify(report));
   }
 
+  async function writeCodeReviewReport(report: Record<string, unknown>) {
+    await fs.ensureDir(reportsDir);
+    await fs.writeFile(path.join(reportsDir, 'code-review-report.json'), JSON.stringify(report));
+  }
+
+  function cleanCodeReviewReport() {
+    return { version: '1.0', summary: { total: 0, critical: 0, high: 0, medium: 0, low: 0, info: 0 }, findings: [] };
+  }
+
   async function writeConfig(config: Record<string, unknown>) {
     const configDir = path.join(testRoot, '.specweave');
     await fs.ensureDir(configDir);
@@ -260,6 +269,135 @@ completed_tasks: 1
       expect(judgeErrors).toHaveLength(0);
       const judgeWarnings = (result.warnings ?? []).filter(w => w.includes('judge-llm'));
       expect(judgeWarnings.some(w => w.includes('CONCERNS'))).toBe(true);
+    });
+  });
+
+  describe('code-review report', () => {
+    it('should error when code-review-report.json is missing', async () => {
+      await createValidIncrement();
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      // No code-review report written
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      expect(result.errors.some(e => e.includes('code-review-report.json not found'))).toBe(true);
+    });
+
+    it('should pass when code-review report has no blocking findings', async () => {
+      await createValidIncrement();
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      await writeCodeReviewReport({
+        version: '1.0',
+        summary: { total: 2, critical: 0, high: 0, medium: 0, low: 1, info: 1 },
+      });
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      const crErrors = result.errors.filter(e => e.includes('code-review'));
+      expect(crErrors).toHaveLength(0);
+    });
+
+    it('should error when code-review report has critical findings', async () => {
+      await createValidIncrement();
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      await writeCodeReviewReport({
+        version: '1.0',
+        summary: { total: 1, critical: 1, high: 0, medium: 0, low: 0, info: 0 },
+      });
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      expect(result.errors.some(e => e.includes('code-review report has') && e.includes('blocking findings'))).toBe(true);
+    });
+
+    it('should error when code-review report has high findings', async () => {
+      await createValidIncrement();
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      await writeCodeReviewReport({
+        version: '1.0',
+        summary: { total: 2, critical: 0, high: 2, medium: 0, low: 0, info: 0 },
+      });
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      expect(result.errors.some(e => e.includes('code-review report has') && e.includes('2 high'))).toBe(true);
+    });
+
+    it('should error when code-review report has medium findings', async () => {
+      await createValidIncrement();
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      await writeCodeReviewReport({
+        version: '1.0',
+        summary: { total: 3, critical: 0, high: 0, medium: 3, low: 0, info: 0 },
+      });
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      expect(result.errors.some(e => e.includes('code-review report has') && e.includes('3 medium'))).toBe(true);
+    });
+
+    it('should skip code-review check when codeReview.required is false', async () => {
+      await createValidIncrement();
+      await writeConfig({ codeReview: { required: false } });
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      // No code-review report — should still pass
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      const crErrors = result.errors.filter(e => e.includes('code-review'));
+      expect(crErrors).toHaveLength(0);
+    });
+
+    it('should skip code-review check for hotfix increments', async () => {
+      await createValidIncrement();
+      await writeMetadata({ type: 'hotfix', status: 'active' });
+      // No code-review report — hotfix should skip all quality gates
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      const crErrors = result.errors.filter(e => e.includes('code-review'));
+      expect(crErrors).toHaveLength(0);
+    });
+
+    it('should warn on malformed code-review report JSON', async () => {
+      await createValidIncrement();
+      await writeGrillReport({
+        version: '1.0', verdict: 'PASS', shipReadiness: 'READY',
+        summary: { totalFindings: 0, critical: 0, high: 0, medium: 0 },
+      });
+      await writeJudgeReport({ version: '1.0', verdict: 'WAIVED', consentStatus: 'denied' });
+      await fs.ensureDir(reportsDir);
+      await fs.writeFile(path.join(reportsDir, 'code-review-report.json'), 'not-valid-json{');
+
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      const crWarnings = (result.warnings ?? []).filter(w => w.includes('code-review'));
+      expect(crWarnings.some(w => w.includes('could not be parsed'))).toBe(true);
     });
   });
 

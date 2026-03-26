@@ -58,6 +58,7 @@ import { promptRootRepoConnection, type RootRepoInfo } from '../helpers/init/roo
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
+import { isSwPluginInstalledNatively } from '../../utils/plugin-copier.js';
 import type { LivingDocsUserInputs } from '../../core/background/types.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -558,6 +559,9 @@ export async function initCommand(
     if (toolName === 'claude') {
       if (continueExisting) {
         console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
+        autoInstallSucceeded = true;
+      } else if (!options.forceRefresh && isSwPluginInstalledNatively()) {
+        console.log(chalk.green('   ✓ SW plugin already installed natively, skipping local skill copy'));
         autoInstallSucceeded = true;
       } else {
         const result = await installAllPlugins({

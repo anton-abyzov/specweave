@@ -360,7 +360,7 @@ Then write the report using the Write tool:
 
 ## Integration with sw:done
 
-`sw:done` calls `sw:grill` as Step 2 (blocking gate). The CLI re-verifies `grill-report.json` exists when running `specweave complete`.
+`sw:done` calls `sw:grill` as Step 4 (blocking gate), after code-review (Step 2) and simplify (Step 3). The CLI re-verifies `grill-report.json` exists when running `specweave complete`.
 
 You can also run `sw:grill` standalone at any time for early feedback.
 
