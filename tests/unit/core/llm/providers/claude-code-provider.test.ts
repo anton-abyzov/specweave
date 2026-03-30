@@ -409,6 +409,46 @@ describe('ClaudeCodeProvider', () => {
     });
   });
 
+  describe('--bare flag (0652)', () => {
+    it('should pass --bare as first argument in analyze() spawn args', async () => {
+      const output = makeClaudeOutput({ result: 'test' });
+      const proc = createMockProcess({ stdout: output });
+      mockSpawn.mockReturnValue(proc);
+
+      const provider = new ClaudeCodeProvider();
+      await provider.analyze('test prompt');
+
+      const args = mockSpawn.mock.calls[0][1];
+      expect(args[0]).toBe('--bare');
+    });
+
+    it('should pass --bare alongside --system-prompt', async () => {
+      const output = makeClaudeOutput({ result: 'test' });
+      const proc = createMockProcess({ stdout: output });
+      mockSpawn.mockReturnValue(proc);
+
+      const provider = new ClaudeCodeProvider();
+      await provider.analyze('test', { systemPrompt: 'You are helpful' });
+
+      const args = mockSpawn.mock.calls[0][1];
+      expect(args).toContain('--bare');
+      expect(args).toContain('--system-prompt');
+      expect(args).toContain('You are helpful');
+    });
+
+    it('should pass --bare in getStatus() health check', async () => {
+      const output = makeClaudeOutput({ is_error: false });
+      const proc = createMockProcess({ stdout: output });
+      mockSpawn.mockReturnValue(proc);
+
+      const provider = new ClaudeCodeProvider();
+      await provider.getStatus();
+
+      const args = mockSpawn.mock.calls[0][1];
+      expect(args).toContain('--bare');
+    });
+  });
+
   describe('estimateCost', () => {
     it('should always return 0 (MAX subscription)', () => {
       const provider = new ClaudeCodeProvider();

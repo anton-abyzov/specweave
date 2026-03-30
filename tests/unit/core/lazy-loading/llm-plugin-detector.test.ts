@@ -819,3 +819,70 @@ describe('LLM Detection Prompt - Investigation/Debugging Routing', () => {
     });
   });
 });
+
+// ============================================================
+// --bare flag tests (0652) - requires child_process mock
+// ============================================================
+describe('detectPluginsViaLLM --bare flag (0652)', async () => {
+  // Separate mock setup for CLI execution tests
+  const { mockSpawnSync } = vi.hoisted(() => ({
+    mockSpawnSync: vi.fn(),
+  }));
+
+  vi.mock('child_process', async () => {
+    const actual = await vi.importActual('child_process');
+    return { ...actual, spawnSync: mockSpawnSync };
+  });
+
+  const { detectPluginsViaLLM } = await import('../../../../src/core/lazy-loading/llm-plugin-detector.js');
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockDetectClaudeCli.mockReturnValue({
+      available: true,
+      commandPath: '/usr/bin/claude',
+      commandExists: true,
+      shellWorkaround: false,
+    });
+    mockGetCleanEnv.mockReturnValue({ PATH: '/usr/bin' });
+  });
+
+  it('should pass --bare as first argument to CLI', async () => {
+    mockSpawnSync.mockReturnValue({
+      status: 0,
+      stdout: JSON.stringify({
+        type: 'result',
+        subtype: 'success',
+        is_error: false,
+        result: JSON.stringify({ plugins: ['sw'], action: 'none', confidence: 0.9 }),
+        usage: { input_tokens: 10, output_tokens: 5 },
+      }),
+      stderr: '',
+    });
+
+    await detectPluginsViaLLM('build a todo app');
+
+    expect(mockSpawnSync).toHaveBeenCalled();
+    const args = mockSpawnSync.mock.calls[0][1];
+    expect(args[0]).toBe('--bare');
+  });
+
+  it('should NOT include --setting-sources in args (subsumed by --bare)', async () => {
+    mockSpawnSync.mockReturnValue({
+      status: 0,
+      stdout: JSON.stringify({
+        type: 'result',
+        subtype: 'success',
+        is_error: false,
+        result: JSON.stringify({ plugins: ['sw'], action: 'none', confidence: 0.9 }),
+        usage: { input_tokens: 10, output_tokens: 5 },
+      }),
+      stderr: '',
+    });
+
+    await detectPluginsViaLLM('build something');
+
+    const args = mockSpawnSync.mock.calls[0][1];
+    expect(args).not.toContain('--setting-sources');
+  });
+});

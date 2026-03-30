@@ -291,7 +291,7 @@ async function evaluateViaLLM(
   const startTime = performance.now();
   const prompt = buildEvaluationPrompt(context, criterion);
 
-  const result = executeClaudeCli(['-p', prompt, '--model', model], timeout);
+  const result = executeClaudeCli(['--bare', '-p', prompt, '--model', model], timeout);
 
   if (!result.success) {
     logger.warn(`LLM evaluation failed: ${result.stderr}`);
@@ -558,7 +558,7 @@ Return ONLY valid JSON:
   "confidence": 0.9
 }`;
 
-  const result = executeClaudeCli(['-p', prompt, '--model', 'haiku'], timeout);
+  const result = executeClaudeCli(['--bare', '-p', prompt, '--model', 'haiku'], timeout);
 
   if (!result.success) {
     return {
