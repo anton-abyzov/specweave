@@ -70,62 +70,60 @@ SpecWeave tracks its own DORA metrics in real-time:
 
 ## Real Projects Built With SpecWeave
 
-SpecWeave has been used across **80+ projects** — from CLI tools to mobile apps to games. Here are 10 highlights:
+SpecWeave has been used across **80+ projects** — from CLI tools to mobile apps to enterprise platforms. Here are 10 production highlights:
 
-### 1. SpecWeave (Built With Itself)
+### 1. [SpecWeave](https://github.com/anton-abyzov/specweave) (Built With Itself)
 - **255K+ lines** of TypeScript across **839 files**
 - **2,703 commits** over 145 days — **621 releases** with zero failures
 - **910 test files**, **550+ increments**, **66 CLI commands**
 - Self-documenting: every feature has a spec
 
-### 2. vskill CLI (Built With SpecWeave)
-- The AI skill marketplace CLI — scan, verify, and install skills across **49 agent platforms**
-- Node.js ESM, TypeScript, Vitest — version 0.5.31 with continuous releases
-- Every feature spec'd, planned, and implemented through SpecWeave increments
-- **vskill is 100% built with SpecWeave** — just like Claude Code is written by Claude Code
-
-### 3. vskill-platform (Built With SpecWeave)
-- The web platform powering [verified-skill.com](https://verified-skill.com) — Next.js 15, Cloudflare Workers, Prisma
+### 2. [VerifiedSkill](https://verified-skill.com) — AI Skill Registry & Marketplace
+- The web platform + CLI powering [verified-skill.com](https://verified-skill.com) — Next.js 15, Cloudflare Workers, Prisma
 - Skill discovery, publisher pages, trending algorithms, trust scoring — all spec-driven
-- Remotion video generation, SendGrid email, Cloudflare Workers AI integration
-- Every API endpoint, UI page, and database migration went through the increment workflow
+- vskill CLI: scan, verify, and install skills across **49 agent platforms**
+- **100% built with SpecWeave** — just like Claude Code is written by Claude Code
 
-### 4. EasyChamp — Sports Management Platform
-- Comprehensive sports analytics supporting **108+ event types** and **70+ stat keywords**
-- MUI v7, TanStack Query, Keycloak auth, AI chatbot with 70+ MCP tools
+### 3. [EasyChamp](https://easychamp.com) — Sports League Platform
+- **18+ microservices** with ArgoCD GitOps — 4 years in production
+- .NET, React, Python, Terraform — full enterprise stack
 - **9+ increments** tracking platform redesign, auth migration, and advanced statistics
-- Currently migrating from IdentityServer4 to Keycloak with FotMob/SofaScore-inspired redesign
+- AI chatbot with 70+ MCP tools, FotMob/SofaScore-inspired redesign
 
-### 5. Postiz — AI Social Media Scheduling
-- Open-source alternative to Buffer/Hypefury (AGPL-licensed)
-- Multi-service monorepo: frontend, backend, workers, cron, browser extension, SDK
-- Supports Twitter, LinkedIn, Instagram, TikTok with AI-powered scheduling
-- Comprehensive code quality refactoring managed through SpecWeave increments
+### 4. [WC26](https://wc-26.net/) — World Cup 2026 Travel Companion
+- Travel & ticket companion app — **5 services**, **35 increments**
+- React Router, React Native/Expo, Cloudflare Workers
+- Cross-platform: web + mobile with shared backend infrastructure
 
-### 6. Content Repurposer — Multi-Service SaaS
-- Takes YouTube/podcast URLs, generates Twitter threads, LinkedIn posts, blog summaries
-- Three-service architecture: Python FastAPI worker, NestJS API, Next.js frontend
-- Three-tier subscription ($0/10/30 per month) — complete from PRD to deployment
+### 5. [Lulla](https://lulla-app.pages.dev/) — Baby Cry Classifier
+- iOS + Apple Watch app with Core ML on-device inference — **28 increments**
+- Swift, Core ML, Cloudflare Workers backend
+- Real-time audio classification with offline support
 
-### 7. E-Commerce Whitelabel Platform
-- Multi-tenant architecture with **7 microservices**: catalog, ordering, fulfillment, mobile app
-- Each service as an independent repository with shared domain models
-- GitHub bidirectional sync for enterprise development workflow
+### 6. [JobWeave](https://jobweave.ai) — AI Career Platform
+- AI job search with resume builder, interview prep, Gmail smart reply
+- Next.js 15, Prisma, Supabase, Multi-AI provider architecture
+- Full-stack SaaS with auth, payments, and AI-powered workflows
 
-### 8. Voice Journal — Cross-Platform Monorepo
-- React Native/Expo mobile app + Hono API on Cloudflare Workers
-- pnpm monorepo with D1 database, R2 audio storage, async transcription queue
-- 3 increments completed: project setup, database/API layer, mobile app
+### 7. [SkillUp](https://skillup-football.com/) — Football Coaching Platform
+- Football coaching with Stripe monetization and subscription management
+- React Native, Cloudflare Workers
+- Mobile-first design with video content delivery
 
-### 9. Mini Doom — 3D WebGL Shooter
-- Complete browser-based FPS built with **Three.js** and TypeScript
-- First-person controls, projectile combat, enemy AI state machines, full game loop
-- Proves spec-driven development works for **any domain** — even games
+### 8. [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030) — Business Events
+- Student & business events platform with AI news generation
+- React Native, AI-powered content curation
+- Published on the App Store
 
-### 10. QR Menu — Restaurant Tech Platform
-- Contactless digital menu platform for restaurants with QR-based access
-- Three-repo architecture: Next.js frontend, Node.js API, shared TypeScript library
-- Targeting post-COVID restaurant modernization with $29-99/mo subscription model
+### 9. [SketchMate](https://sketchmate.net/) — AI Drawing Party Game
+- Multiplayer drawing game with AI vision judging
+- Web-based with real-time gameplay
+- AI evaluates drawings for accuracy and creativity
+
+### 10. [EduFeed](https://edufeed-jet.vercel.app/) — AI Learning Platform
+- NotebookLM-style AI learning platform
+- Next.js, Supabase, LLM integration
+- Personalized learning feeds with AI-generated content
 
 > **Beyond these 10**, SpecWeave has been used across 80+ projects spanning AI/ML, fintech, fitness, recipe planning, expense tracking, mood tracking, and more — from single-file utilities to multi-repo enterprise architectures.
 
@@ -178,7 +176,7 @@ Every crash, every bug, every friction point — we experienced it ourselves:
 
 **We didn't just build a Skill Fabric. We used it to build itself.**
 
-The same goes for every product in the ecosystem: **vskill** (the skill marketplace CLI) and **vskill-platform** (the web marketplace) are both 100% built with SpecWeave. Not retrofitted, not partially — every feature, every bug fix, every deploy went through the spec-driven workflow. Boris Cherny said "Claude Code is 100% written by Claude Code." The same is true here: SpecWeave builds SpecWeave, SpecWeave builds vskill, SpecWeave builds the platform, and SpecWeave builds everything from sports platforms to 3D shooters to restaurant tech. It's turtles all the way down.
+The same goes for every product in the ecosystem: **VerifiedSkill** (the skill marketplace) is 100% built with SpecWeave. Not retrofitted, not partially — every feature, every bug fix, every deploy went through the spec-driven workflow. Boris Cherny said "Claude Code is 100% written by Claude Code." The same is true here: SpecWeave builds SpecWeave, SpecWeave builds the marketplace, and SpecWeave builds everything from sports platforms to mobile apps to AI career tools. It's turtles all the way down.
 
 ### Real Lessons Learned
 
@@ -256,4 +254,4 @@ specweave init .
 | "Works at scale" | 255,000+ lines of code |
 | "Real production use" | 80+ projects across 10+ domains |
 
-**SpecWeave isn't theoretical. It's proven in production — on itself, on vskill, on the platform, on sports analytics, on social media tools, on e-commerce, on games, and on 80+ more projects.**
+**SpecWeave isn't theoretical. It's proven in production — on itself, on the marketplace, on sports platforms, on mobile apps, on AI tools, on career platforms, and on 80+ more projects.**

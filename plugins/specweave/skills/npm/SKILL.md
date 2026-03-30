@@ -66,8 +66,8 @@ fi
 
 | Command | Flow | Use Case |
 |---------|------|----------|
-| `sw:npm` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish** -> Push tag -> **GH Release** | **DEFAULT: FULL RELEASE** |
-| `sw:npm --quick` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish locally** -> NO GH release | **QUICK: Save + Local Release** |
+| `sw:npm` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish** -> Push tag -> **GH Release** -> **Deploy all** | **DEFAULT: FULL RELEASE + Deploy** |
+| `sw:npm --quick` | Auto-commit -> **PUSH** -> Bump -> Build -> **Publish locally** -> **Deploy all** -> NO GH release | **QUICK: Save + Release + Deploy** |
 | `sw:npm --ci` | Bump -> Push -> **CI publishes + GH Release** | Let GitHub Actions handle everything |
 | `sw:npm --only` | Bump -> Build -> **Publish locally** -> NO push | Quick local release, push later |
 | `sw:npm --only --local` | **Bump ONLY** -> NO build, NO publish, NO git | FASTEST: Local testing only |
@@ -455,6 +455,7 @@ gh release view "v$NEW_VERSION" --json tagName,url
 - Version commit + tag pushed to GitHub
 - **GitHub Release created with release notes**
 - **Umbrella sync**: all sibling repos committed+pushed, umbrella repo committed+pushed
+- **Deployment**: all deployable repos deployed (docs sites, platforms)
 
 ---
 
@@ -576,6 +577,7 @@ git push origin $BRANCH
 - Version commit pushed to GitHub
 - Tag NOT pushed (no GitHub Actions)
 - **Umbrella sync**: all sibling repos committed+pushed, umbrella repo committed+pushed
+- **Deployment**: all deployable repos deployed (docs sites, platforms)
 
 ---
 
@@ -905,6 +907,145 @@ Skip this step entirely — there's only one repo and it was already pushed.
 
 ---
 
+## DEPLOYMENT STEP (Post-Release) — RUNS AFTER UMBRELLA SYNC
+
+**Skip this step for `--only --local` and `--only` modes.** For DEFAULT, QUICK, and CI modes, this runs after umbrella sync to deploy all services and docs that received changes.
+
+**Why**: A release should ship everything — not just npm. If docs changed, deploy the docs site. If the platform changed, deploy it. One command = fully shipped.
+
+### Deployment Detection
+
+During umbrella sync, track which repos were pushed (had dirty files or unpushed commits). Only deploy repos that had actual changes pushed.
+
+```bash
+# PUSHED_REPOS array was populated during umbrella sync
+# Each entry: "repo_dir|repo_name"
+```
+
+### SpecWeave Public Docs (spec-weave.com)
+
+Docs deploy via GitHub Actions on push to `develop`, or via `workflow_dispatch` on any branch.
+
+```bash
+SPECWEAVE_DIR="$UMBRELLA_ROOT/repositories/anton-abyzov/specweave"
+if [ -d "$SPECWEAVE_DIR" ]; then
+  cd "$SPECWEAVE_DIR"
+  SW_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+  # Check if docs-related files changed in recent commits
+  DOCS_CHANGED=$(git diff HEAD~5 --name-only 2>/dev/null | grep -E '^(docs-site/|\.specweave/docs/public/|README\.md|CHANGELOG\.md)' || true)
+
+  if [ -n "$DOCS_CHANGED" ]; then
+    if [ "$SW_BRANCH" = "develop" ]; then
+      echo "Docs changes pushed to develop — GitHub Actions will auto-deploy to spec-weave.com"
+    else
+      # Trigger workflow_dispatch for docs deployment from non-develop branch
+      SW_GH_REPO=$(node -p "try { const r = require('./package.json').repository; typeof r === 'string' ? r : r?.url?.replace(/\\.git$/, '') || '' } catch(e) { '' }" | sed 's|https://github.com/||')
+      if [ -n "$SW_GH_REPO" ]; then
+        echo "Triggering docs deployment via workflow_dispatch..."
+        gh workflow run deploy-docs.yml --repo "$SW_GH_REPO" --ref "$SW_BRANCH" 2>/dev/null && \
+          echo "Docs deployment triggered for spec-weave.com" || \
+          echo "WARNING: Could not trigger docs deploy — may need manual trigger from GitHub Actions tab"
+      fi
+    fi
+  else
+    echo "No docs changes detected — skipping spec-weave.com deploy"
+  fi
+  cd "$UMBRELLA_ROOT"
+fi
+```
+
+### Verified-Skill Platform (verified-skill.com)
+
+The vskill-platform deploys to Cloudflare Workers. Only deploy from `main` branch.
+
+```bash
+VSKILL_DIR="$UMBRELLA_ROOT/repositories/anton-abyzov/vskill-platform"
+if [ -d "$VSKILL_DIR" ]; then
+  cd "$VSKILL_DIR"
+  VS_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+  if [ "$VS_BRANCH" = "main" ]; then
+    # Check if this repo had changes (was pushed during umbrella sync or had recent changes)
+    VS_DIRTY=$(git diff HEAD~3 --name-only 2>/dev/null | grep -E '^(src/|app/|pages/|lib/|prisma/|public/)' || true)
+    VS_AHEAD_OF_DEPLOY=$(git log --oneline -3 --no-merges 2>/dev/null | head -3)
+
+    if [ -n "$VS_DIRTY" ] || [ -n "$VS_AHEAD_OF_DEPLOY" ]; then
+      echo "Deploying vskill-platform to Cloudflare Workers..."
+      npm run db:generate
+      npm run db:migrate
+      npm run build
+      npm run build:worker
+      npm run deploy
+
+      echo "Deploy complete. Warming caches..."
+      sleep 3
+
+      # Cache warming
+      INTERNAL_KEY=""
+      if [ -f ".dev.vars" ]; then
+        INTERNAL_KEY=$(grep 'INTERNAL_BROADCAST_KEY=' .dev.vars 2>/dev/null | cut -d'=' -f2 || true)
+      fi
+
+      if [ -n "$INTERNAL_KEY" ]; then
+        curl -s -X POST https://verified-skill.com/api/v1/internal/cache-warm \
+          -H "X-Internal-Key: $INTERNAL_KEY" \
+          -H "Content-Type: application/json" || true
+        echo "Cache warmed via internal API"
+      else
+        curl -s https://verified-skill.com/api/v1/stats > /dev/null || true
+        echo "Cache warmed via stats endpoint"
+      fi
+
+      echo "vskill-platform deployed to verified-skill.com"
+    else
+      echo "No platform changes detected — skipping verified-skill.com deploy"
+    fi
+  else
+    echo "vskill-platform not on main ($VS_BRANCH) — skipping deploy"
+  fi
+  cd "$UMBRELLA_ROOT"
+fi
+```
+
+### Generic Deployment Detection
+
+For other repos with deployment scripts, auto-detect and run:
+
+```bash
+for repo_dir in repositories/*/*/; do
+  [ -d "$repo_dir/.git" ] || continue
+
+  # Skip already-handled repos
+  case "$(cd "$repo_dir" && pwd)" in
+    *specweave|*vskill-platform) continue ;;
+  esac
+
+  # Check for push-deploy.sh script
+  if [ -f "$repo_dir/scripts/push-deploy.sh" ]; then
+    cd "$repo_dir"
+    REPO_NAME=$(basename "$repo_dir")
+    REPO_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    echo "Found deploy script in $REPO_NAME — running..."
+    bash scripts/push-deploy.sh origin "$REPO_BRANCH" || echo "WARNING: Deploy failed for $REPO_NAME"
+    cd "$UMBRELLA_ROOT"
+  fi
+done
+```
+
+### Report Deployment Results
+
+Append to the release report:
+
+```markdown
+**Deployments**:
+- spec-weave.com: [deployed via GH Actions | triggered workflow_dispatch | no docs changes | skipped]
+- verified-skill.com: [deployed to Cloudflare Workers | no changes | skipped (not on main)]
+- [other-repo]: [deployed via push-deploy.sh | skipped]
+```
+
+---
+
 ## Quick Reference
 
 ```bash
@@ -927,14 +1068,14 @@ sw:npm --only --local
 sw:npm --stable
 ```
 
-| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed | GH Release | Umbrella Sync |
-|----------|---------|---------------------|------------|------------|------------|---------------|
-| **FULL RELEASE** | (no flags) | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes | Yes |
-| **QUICK RELEASE** | `--quick` | `rc.1`->`rc.2` (smart) | Yes | No | No | Yes |
-| CI release | `--ci` | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes (via CI) | Yes |
-| Local publish | `--only` | `rc.1`->`rc.2` (smart) | No | No | No | Yes |
-| Local bump | `--only --local` | `rc.1`->`rc.2` (smart) | No | No | No | No |
-| **PROMOTE** | `--stable` | `rc.X`->`X.Y.Z+1` | Yes | Yes | Yes | Yes |
+| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed | GH Release | Umbrella Sync | Deployed |
+|----------|---------|---------------------|------------|------------|------------|---------------|----------|
+| **FULL RELEASE** | (no flags) | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes | Yes | Yes |
+| **QUICK RELEASE** | `--quick` | `rc.1`->`rc.2` (smart) | Yes | No | No | Yes | Yes |
+| CI release | `--ci` | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes (via CI) | Yes | Yes |
+| Local publish | `--only` | `rc.1`->`rc.2` (smart) | No | No | No | Yes | No |
+| Local bump | `--only --local` | `rc.1`->`rc.2` (smart) | No | No | No | No | No |
+| **PROMOTE** | `--stable` | `rc.X`->`X.Y.Z+1` | Yes | Yes | Yes | Yes | Yes |
 
 ## Resources
 
