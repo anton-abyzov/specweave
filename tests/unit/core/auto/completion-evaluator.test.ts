@@ -99,6 +99,74 @@ describe('CompletionEvaluator', () => {
     });
   });
 
+  describe('--bare flag in CLI args (0652)', () => {
+    it('should pass --bare in LLM evaluation calls', async () => {
+      // Create tasks.md with all complete
+      const tasksContent = `# Tasks\n\n### T-001: Task\n**Status**: [x] completed\n`;
+      fs.writeFileSync(path.join(incrementPath, 'tasks.md'), tasksContent);
+
+      // Create spec.md with all ACs closed
+      const specContent = `# Spec\n\n### US-001: Story\n\n- [x] **AC-US1-01**: Criterion\n`;
+      fs.writeFileSync(path.join(incrementPath, 'spec.md'), specContent);
+
+      // Create auto-mode.json with llm_evaluate criterion to trigger CLI call
+      const autoModeFile = path.join(testRoot, '.specweave', 'state', 'auto-mode.json');
+      fs.writeFileSync(autoModeFile, JSON.stringify({
+        successCriteria: [
+          { type: 'tasks_complete', description: 'All tasks complete', required: true },
+          { type: 'llm_evaluate', description: 'Code quality is good', required: false },
+        ],
+        userGoal: 'test goal',
+      }));
+
+      // Mock spawnSync to capture args
+      mockSpawnSync.mockReturnValue({
+        status: 0,
+        stdout: JSON.stringify({ satisfied: true, reason: 'Good', confidence: 0.9 }),
+        stderr: '',
+      });
+
+      await evaluateCompletion(testRoot, incrementId, { skipLLM: false });
+
+      // Find the CLI call (not the command runner calls)
+      const claudeCall = mockSpawnSync.mock.calls.find(
+        (call: any[]) => {
+          const args = call[1] || call[0];
+          return Array.isArray(args) && args.includes('-p');
+        }
+      );
+      expect(claudeCall).toBeDefined();
+      const args = claudeCall![1] || claudeCall![0];
+      expect(args[0]).toBe('--bare');
+    });
+
+    it('should pass --bare in extractSuccessCriteria()', async () => {
+      mockSpawnSync.mockReturnValue({
+        status: 0,
+        stdout: JSON.stringify({
+          criteria: [{ type: 'tasks_complete', description: 'All tasks', required: true }],
+          summary: 'Complete all',
+          confidence: 0.9,
+        }),
+        stderr: '',
+      });
+
+      // Import extractSuccessCriteria
+      const { extractSuccessCriteria } = await import('../../../../src/core/auto/completion-evaluator.js');
+      await extractSuccessCriteria('run until tests pass');
+
+      const claudeCall = mockSpawnSync.mock.calls.find(
+        (call: any[]) => {
+          const args = call[1] || call[0];
+          return Array.isArray(args) && args.includes('-p');
+        }
+      );
+      expect(claudeCall).toBeDefined();
+      const args = claudeCall![1] || claudeCall![0];
+      expect(args[0]).toBe('--bare');
+    });
+  });
+
   describe('evaluateCompletion', () => {
     it('should return complete=false when tasks are pending', async () => {
       // Create tasks.md with pending tasks

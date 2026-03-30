@@ -126,7 +126,8 @@ export class ClaudeCodeProvider implements LLMProvider {
     const timeout = options.timeout || this.timeout;
 
     // Build command arguments
-    const args: string[] = [];
+    // --bare skips loading hooks, plugins, CLAUDE.md, MCP servers (~14% faster startup)
+    const args: string[] = ['--bare'];
 
     // CRITICAL: Add --dangerously-skip-permissions FIRST for non-interactive background use
     // Without this flag, claude may hang waiting for permission prompts
