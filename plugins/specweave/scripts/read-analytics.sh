@@ -115,7 +115,9 @@ TOTAL_EVENTS=$(echo -e "$EVENTS" | grep -c '"type"' 2>/dev/null || echo "0")
 COMMAND_COUNT=$(echo -e "$EVENTS" | grep -c '"type":"command"' 2>/dev/null || echo "0")
 SKILL_COUNT=$(echo -e "$EVENTS" | grep -c '"type":"skill"' 2>/dev/null || echo "0")
 AGENT_COUNT=$(echo -e "$EVENTS" | grep -c '"type":"agent"' 2>/dev/null || echo "0")
-SUCCESS_COUNT=$(echo -e "$EVENTS" | grep -c '"success":true' 2>/dev/null || echo "0")
+# Count explicit failures; events without success field default to success
+FAILURE_COUNT=$(echo -e "$EVENTS" | grep -c '"success":false' 2>/dev/null || echo "0")
+SUCCESS_COUNT=$((TOTAL_EVENTS - FAILURE_COUNT))
 
 # Calculate success rate
 if [[ "$TOTAL_EVENTS" -gt 0 ]]; then

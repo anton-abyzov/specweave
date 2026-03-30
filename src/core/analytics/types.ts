@@ -10,6 +10,35 @@
  */
 export type AnalyticsEventType = 'command' | 'skill' | 'agent';
 
+const VALID_EVENT_TYPES: ReadonlySet<string> = new Set(['command', 'skill', 'agent']);
+
+/**
+ * Parse and validate raw JSON into an AnalyticsEvent.
+ * Returns null if required fields are missing or invalid.
+ * Defaults success to true for legacy events missing the field.
+ */
+export function parseAnalyticsEvent(raw: unknown): AnalyticsEvent | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const obj = raw as Record<string, unknown>;
+
+  if (typeof obj.timestamp !== 'string') return null;
+  if (typeof obj.name !== 'string') return null;
+  if (!VALID_EVENT_TYPES.has(obj.type as string)) return null;
+
+  return {
+    timestamp: obj.timestamp,
+    type: obj.type as AnalyticsEventType,
+    name: obj.name,
+    success: typeof obj.success === 'boolean' ? obj.success : true,
+    plugin: typeof obj.plugin === 'string' ? obj.plugin : undefined,
+    increment: typeof obj.increment === 'string' ? obj.increment : undefined,
+    duration: typeof obj.duration === 'number' ? obj.duration : undefined,
+    error: typeof obj.error === 'string' ? obj.error : undefined,
+    metadata: typeof obj.metadata === 'object' && obj.metadata !== null
+      ? obj.metadata as Record<string, unknown> : undefined,
+  };
+}
+
 /**
  * Individual analytics event
  */

@@ -135,6 +135,36 @@ describe('PostToolUse Analytics Hook', () => {
     });
   });
 
+  describe('JSON safety', () => {
+    it('should handle event names with special JSON characters', () => {
+      const scriptPath = path.join(
+        projectRoot,
+        'plugins/specweave/scripts/track-analytics.sh'
+      );
+
+      spawnSync('bash', [scriptPath, 'skill', 'name"with"quotes', '--plugin', 'test'], {
+        cwd: testRoot,
+        env: {
+          ...getCleanEnv(),
+          PWD: testRoot,
+          HOME: os.homedir(),
+          PATH: process.env.PATH,
+        },
+        timeout: 10000,
+      });
+
+      expect(nodeFs.existsSync(eventsPath)).toBe(true);
+      const content = nodeFs.readFileSync(eventsPath, 'utf-8').trim();
+      const lines = content.split('\n');
+      const lastLine = lines[lines.length - 1];
+
+      // JSON.parse must not throw on the written line
+      const event = JSON.parse(lastLine);
+      expect(event.name).toBe('name"with"quotes');
+      expect(event.type).toBe('skill');
+    });
+  });
+
   describe('error handling', () => {
     it('should exit 0 with empty input', () => {
       const result = spawnSync('bash', [hookPath], {
