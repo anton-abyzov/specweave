@@ -204,6 +204,12 @@ export function showNextSteps(
   console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
   console.log(`      ${chalk.white('specweave get "org/*"')}          ${chalk.gray('Add all repos from an org')}`);
 
+  // AutoVerify tip (Claude Code Desktop only)
+  if (adapterName === 'claude') {
+    console.log('');
+    console.log(`   ${chalk.cyan('Tip:')} ${chalk.white('AutoVerify is on by default in Claude Code Desktop — changes are verified automatically')}`);
+  }
+
   console.log('');
   console.log(chalk.green.bold(locale.t('cli', 'init.nextSteps.footer')));
   console.log('');
