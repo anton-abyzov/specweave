@@ -2,9 +2,9 @@
 # track-analytics.sh - Track SpecWeave command/skill/agent usage
 #
 # Usage:
-#   bash track-analytics.sh command <name> [--plugin <plugin>] [--success] [--error <msg>] [--duration <ms>]
-#   bash track-analytics.sh skill <name> [--plugin <plugin>] [--success] [--error <msg>]
-#   bash track-analytics.sh agent <name> [--plugin <plugin>] [--success] [--error <msg>]
+#   bash track-analytics.sh command <name> [--plugin <plugin>] [--success] [--failure] [--error <msg>] [--duration <ms>]
+#   bash track-analytics.sh skill <name> [--plugin <plugin>] [--success] [--failure] [--error <msg>]
+#   bash track-analytics.sh agent <name> [--plugin <plugin>] [--success] [--failure] [--error <msg>]
 #
 # This script appends events to .specweave/state/analytics/events.jsonl
 # It is designed to be fast (<10ms) and non-blocking.
@@ -50,6 +50,10 @@ while [[ $# -gt 0 ]]; do
       SUCCESS="true"
       shift
       ;;
+    --failure)
+      SUCCESS="false"
+      shift
+      ;;
     --error)
       SUCCESS="false"
       ERROR="$2"
@@ -77,6 +81,24 @@ if [[ -z "$INCREMENT" ]]; then
   fi
 fi
 
+# Escape string for safe JSON embedding
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"   # backslashes first
+  s="${s//\"/\\\"}"   # double quotes
+  s="${s//$'\n'/\\n}" # newlines
+  s="${s//$'\r'/\\r}" # carriage returns
+  s="${s//$'\t'/\\t}" # tabs
+  echo "$s"
+}
+
+# Escape all interpolated string variables before JSON construction
+EVENT_TYPE=$(json_escape "$EVENT_TYPE")
+EVENT_NAME=$(json_escape "$EVENT_NAME")
+[[ -n "$PLUGIN" ]] && PLUGIN=$(json_escape "$PLUGIN")
+[[ -n "$INCREMENT" ]] && INCREMENT=$(json_escape "$INCREMENT")
+[[ -n "$ERROR" ]] && ERROR=$(json_escape "$ERROR")
+
 # Generate timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -86,7 +108,7 @@ EVENT='{"timestamp":"'"$TIMESTAMP"'","type":"'"$EVENT_TYPE"'","name":"'"$EVENT_N
 [[ -n "$PLUGIN" ]] && EVENT="$EVENT"',"plugin":"'"$PLUGIN"'"'
 [[ -n "$INCREMENT" ]] && EVENT="$EVENT"',"increment":"'"$INCREMENT"'"'
 [[ -n "$DURATION" ]] && EVENT="$EVENT"',"duration":'"$DURATION"
-[[ -n "$ERROR" ]] && EVENT="$EVENT"',"error":"'"${ERROR//\"/\\\"}"'"'
+[[ -n "$ERROR" ]] && EVENT="$EVENT"',"error":"'"$ERROR"'"'
 
 EVENT="$EVENT"'}'
 

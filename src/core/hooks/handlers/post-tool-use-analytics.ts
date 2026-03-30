@@ -1,7 +1,7 @@
 /**
  * PostToolUse analytics handler — tracks Skill and Task (subagent) usage.
  *
- * Appends events to `.specweave/state/analytics/events.jsonl`.
+ * Appends events to `<stateDir>/analytics/events.jsonl`.
  * Non-blocking, never throws.
  *
  * @module core/hooks/handlers/post-tool-use-analytics
@@ -10,6 +10,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HandlerFn, HookInput } from './types.js';
+import type { AnalyticsEvent } from '../../analytics/types.js';
 
 const CONTINUE = { continue: true as const };
 
@@ -43,11 +44,12 @@ export const handle: HandlerFn = async (input, context) => {
     if (!skillName) return CONTINUE;
 
     const plugin = extractPlugin(skillName);
-    const event = {
+    const event: AnalyticsEvent = {
+      timestamp: context.timestamp,
       type: 'skill',
       name: skillName,
+      success: true,
       plugin,
-      timestamp: context.timestamp,
     };
 
     appendEvent(context.stateDir, event);
@@ -56,11 +58,12 @@ export const handle: HandlerFn = async (input, context) => {
 
   if (toolName === 'Task') {
     const agentType = ((ti.subagent_type ?? 'general') as string);
-    const event = {
+    const event: AnalyticsEvent = {
+      timestamp: context.timestamp,
       type: 'agent',
       name: agentType,
+      success: true,
       plugin: 'specweave',
-      timestamp: context.timestamp,
     };
 
     appendEvent(context.stateDir, event);
@@ -72,7 +75,7 @@ export const handle: HandlerFn = async (input, context) => {
 
 function appendEvent(
   stateDir: string,
-  event: Record<string, unknown>,
+  event: AnalyticsEvent,
 ): void {
   try {
     const analyticsDir = path.join(stateDir, 'analytics');

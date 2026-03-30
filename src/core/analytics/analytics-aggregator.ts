@@ -225,7 +225,7 @@ export class AnalyticsAggregator {
   getSummaryWithCache(options: AnalyticsQueryOptions = {}): AnalyticsSummary {
     // Only use cache for default queries (no filters)
     const hasFilters =
-      options.since || options.until || options.type || options.plugin;
+      options.since || options.until || options.type || options.plugin || options.limit;
 
     if (!hasFilters) {
       const cached = this.getCachedSummary();
