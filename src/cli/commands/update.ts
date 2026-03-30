@@ -128,15 +128,22 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       try {
         // Spawn NEW binary to run instructions/config/plugins update
         // Guard against infinite recursion with env variable
+        // 120s timeout prevents indefinite hang (e.g. plugin refresh outside a project dir)
         execSync(`specweave update ${flags.join(' ')}`, {
           stdio: 'inherit',
           cwd: projectPath,
+          timeout: 120_000,
           env: { ...process.env, SPECWEAVE_UPDATE_NO_SELF: '1' },
         });
       } catch (error: any) {
         // Non-zero exit from spawned process - already printed output
         if (error.status) {
           process.exit(error.status);
+        }
+        // Timeout — the child process hung (e.g. plugin refresh stalled)
+        if (error.signal === 'SIGTERM') {
+          console.log(chalk.yellow('\n⚠️  Post-update tasks timed out. Run `specweave update --no-self` from your project directory to retry.\n'));
+          return;
         }
         throw error;
       }
@@ -149,12 +156,12 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     console.log(chalk.yellow('⚠️  Not a SpecWeave project (no .specweave directory found)'));
     console.log(chalk.gray('   Run: specweave init\n'));
 
-    // Still allow plugins refresh for global updates (default behavior)
-    if (!options.noPlugins) {
-      console.log(chalk.blue('Proceeding with plugins refresh only...\n'));
-    } else {
-      return;
+    // Nothing to do outside a SpecWeave project — plugin refresh requires
+    // a project context and can hang when run from an arbitrary directory.
+    if (result.selfUpdated) {
+      console.log(chalk.green('✓ CLI updated successfully. Run `specweave update` from a project directory to refresh plugins.\n'));
     }
+    return;
   }
 
   // Step 1: Update instructions & migrate config

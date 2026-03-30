@@ -146,6 +146,22 @@ describe('AnalyticsAggregator', () => {
       expect(summary1.generatedAt).toBe(summary2.generatedAt);
     });
 
+    it('should not use cache when limit differs', () => {
+      const collector = AnalyticsCollector.getInstance(testDir);
+      // Track 10 distinct commands
+      for (let i = 0; i < 10; i++) {
+        collector.trackCommand(`cmd-${i}`, { plugin: 'specweave' });
+      }
+
+      const aggregator = new AnalyticsAggregator(testDir);
+
+      const result5 = aggregator.getSummaryWithCache({ limit: 5 });
+      expect(result5.topCommands).toHaveLength(5);
+
+      const result3 = aggregator.getSummaryWithCache({ limit: 3 });
+      expect(result3.topCommands).toHaveLength(3);
+    });
+
     it('should not cache when filters are applied', () => {
       collector.trackCommand('sw:do');
 

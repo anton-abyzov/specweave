@@ -12,13 +12,14 @@ import {
   AnalyticsEventType,
   AnalyticsConfig,
   DEFAULT_ANALYTICS_CONFIG,
+  parseAnalyticsEvent,
 } from './types.js';
 
 /**
  * Singleton analytics collector for tracking SpecWeave usage
  */
 export class AnalyticsCollector {
-  private static instance: AnalyticsCollector | null = null;
+  private static instances: Map<string, AnalyticsCollector> = new Map();
   private config: AnalyticsConfig;
   private analyticsDir: string;
   private eventsFile: string;
@@ -31,21 +32,23 @@ export class AnalyticsCollector {
   }
 
   /**
-   * Get or create the singleton instance
+   * Get or create an instance for the given project root
    */
-  static getInstance(projectRoot?: string): AnalyticsCollector {
-    if (!AnalyticsCollector.instance) {
-      const root = projectRoot || process.cwd();
-      AnalyticsCollector.instance = new AnalyticsCollector(root);
+  static getInstance(projectRoot?: string, config?: Partial<AnalyticsConfig>): AnalyticsCollector {
+    const root = path.resolve(projectRoot || process.cwd());
+    let instance = AnalyticsCollector.instances.get(root);
+    if (!instance) {
+      instance = new AnalyticsCollector(root, config);
+      AnalyticsCollector.instances.set(root, instance);
     }
-    return AnalyticsCollector.instance;
+    return instance;
   }
 
   /**
-   * Reset the singleton (for testing)
+   * Reset all instances (for testing)
    */
   static reset(): void {
-    AnalyticsCollector.instance = null;
+    AnalyticsCollector.instances.clear();
   }
 
   /**
@@ -61,7 +64,7 @@ export class AnalyticsCollector {
       this.initialized = true;
     } catch {
       // Silently fail - analytics should never break the main flow
-      this.config.enabled = false;
+      // Leave initialized = false so next track() retries
     }
   }
 
@@ -204,7 +207,8 @@ export class AnalyticsCollector {
 
       for (const line of lines) {
         try {
-          const event = JSON.parse(line) as AnalyticsEvent;
+          const event = parseAnalyticsEvent(JSON.parse(line));
+          if (!event) continue;
           (event.timestamp >= cutoffTimestamp ? recentLines : oldLines).push(line);
         } catch {
           // Skip malformed lines
@@ -224,7 +228,14 @@ export class AnalyticsCollector {
         fs.appendFileSync(archiveFile, oldLines.join('\n') + '\n', 'utf-8');
       }
 
-      fs.writeFileSync(this.eventsFile, recentLines.join('\n') + '\n', 'utf-8');
+      // Atomic write: temp file then rename to prevent data loss from concurrent writers
+      const tempFile = `${this.eventsFile}.tmp.${Date.now()}`;
+      try {
+        fs.writeFileSync(tempFile, recentLines.join('\n') + '\n', 'utf-8');
+        fs.renameSync(tempFile, this.eventsFile);
+      } catch {
+        try { fs.unlinkSync(tempFile); } catch { /* ignore cleanup failure */ }
+      }
     } catch {
       // Silently fail
     }
@@ -246,7 +257,8 @@ export class AnalyticsCollector {
       const events: AnalyticsEvent[] = [];
       for (const line of lines) {
         try {
-          events.push(JSON.parse(line) as AnalyticsEvent);
+          const event = parseAnalyticsEvent(JSON.parse(line));
+          if (event) events.push(event);
         } catch {
           // Skip malformed lines
         }
@@ -269,9 +281,15 @@ export class AnalyticsCollector {
   }): AnalyticsEvent[] {
     const events = this.readEvents();
 
+    // Normalize date-only strings for inclusive date range filtering
+    const since = options.since && !options.since.includes('T')
+      ? options.since + 'T00:00:00.000Z' : options.since;
+    const until = options.until && !options.until.includes('T')
+      ? options.until + 'T23:59:59.999Z' : options.until;
+
     return events.filter((event) => {
-      if (options.since && event.timestamp < options.since) return false;
-      if (options.until && event.timestamp > options.until) return false;
+      if (since && event.timestamp < since) return false;
+      if (until && event.timestamp > until) return false;
       if (options.type && event.type !== options.type) return false;
       if (options.plugin && event.plugin !== options.plugin) return false;
       return true;

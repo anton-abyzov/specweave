@@ -10,6 +10,7 @@ import {
   AnalyticsAggregator,
   AnalyticsSummary,
   AnalyticsEventType,
+  UsageCount,
 } from '../../core/analytics/index.js';
 
 export interface AnalyticsCommandOptions {
@@ -23,9 +24,9 @@ export interface AnalyticsCommandOptions {
 
 export interface AnalyticsCommandResult {
   totalEvents: number;
-  topCommands: Array<{ name: string; count: number }>;
-  topSkills: Array<{ name: string; count: number }>;
-  topAgents: Array<{ name: string; count: number }>;
+  topCommands: UsageCount[];
+  topSkills: UsageCount[];
+  topAgents: UsageCount[];
   successRate: number;
   exported?: boolean;
   format?: string;
