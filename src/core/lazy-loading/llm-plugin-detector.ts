@@ -896,10 +896,9 @@ Which plugins should be loaded?`;
 
   try {
     // Execute Claude CLI with haiku for fast detection
-    // v1.0.159: Use --setting-sources "" (empty) to skip ALL settings loading
-    // This reduces startup from ~50s to <1s by avoiding context cache loading
-    // The comprehensive prompt already contains all needed plugin knowledge
-    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku', '--output-format', 'json', '--setting-sources', ''], timeout);
+    // --bare skips all auto-discovery (hooks, plugins, CLAUDE.md, MCP servers)
+    // This subsumes the previous --setting-sources "" optimization
+    const result = executeClaudeCli(['--bare', '-p', fullPrompt, '--model', 'haiku', '--output-format', 'json'], timeout);
 
     // Handle spawn errors - return failure (v1.0.157 - no fallback)
     if (result.error) {
