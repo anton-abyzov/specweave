@@ -12,6 +12,7 @@ const APP_STORE_APPS = [
     url: 'https://apps.apple.com/app/sketchmate-ai-draw-game/id6760250072',
     web: 'https://sketchmate.net/',
     favicon: 'sketchmate.net',
+    logo: '/img/showcase/sketchmate.jpg',
   },
   {
     name: 'Lulla',
@@ -19,6 +20,7 @@ const APP_STORE_APPS = [
     url: 'https://apps.apple.com/app/lulla-calm-baby-anywhere/id6756977992',
     web: 'https://lulla-app.pages.dev/',
     favicon: 'lulla-app.pages.dev',
+    logo: '/img/showcase/lulla.jpg',
   },
   {
     name: 'Football 2026',
@@ -69,6 +71,7 @@ const DEV_TOOLS = [
     tagline: '600+ increments, built with itself',
     url: 'https://github.com/anton-abyzov/specweave',
     favicon: 'github.com',
+    logo: '/img/logo.svg',
   },
   {
     name: 'vskill',
@@ -90,7 +93,7 @@ const STATS = [
   { target: 12, suffix: '', label: 'Production Projects' },
 ] as const;
 
-type App = { name: string; tagline: string; url: string; favicon: string; web?: string };
+type App = { name: string; tagline: string; url: string; favicon: string; web?: string; logo?: string };
 
 function AppTile({ app, delay }: { app: App; delay: number }) {
   return (
@@ -102,7 +105,7 @@ function AppTile({ app, delay }: { app: App; delay: number }) {
         className={styles.tile}
       >
         <img
-          src={`https://www.google.com/s2/favicons?domain=${app.favicon}&sz=64`}
+          src={app.logo ?? `https://www.google.com/s2/favicons?domain=${app.favicon}&sz=64`}
           alt={app.name}
           className={styles.tileFavicon}
           width={32}
