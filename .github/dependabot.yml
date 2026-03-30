@@ -20,8 +20,11 @@ updates:
       - "dependencies"
       - "automated"
 
-    # Ignore stub type packages (packages that now include their own types)
+    # Ignore major version bumps — they break CI and need manual migration.
+    # Security updates bypass ignore rules, so critical fixes still come through.
     ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "@types/uuid"
         # uuid v9+ includes its own TypeScript types
       - dependency-name: "@types/glob"
