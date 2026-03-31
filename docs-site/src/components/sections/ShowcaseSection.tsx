@@ -41,6 +41,7 @@ const APP_STORE_APPS = [
     tagline: 'Business Events',
     url: 'https://apps.apple.com/app/business-zone/id6756091030',
     favicon: 'apps.apple.com',
+    logo: '/img/showcase/bizzone.jpg',
   },
 ] as const;
 
@@ -62,6 +63,7 @@ const WEB_APPS = [
     tagline: 'AI learning platform',
     url: 'https://edufeed-jet.vercel.app/',
     favicon: 'edufeed-jet.vercel.app',
+    logo: '/img/showcase/edufeed.png',
   },
 ] as const;
 
@@ -78,12 +80,14 @@ const DEV_TOOLS = [
     tagline: 'AI skills package manager',
     url: 'https://github.com/anton-abyzov/vskill',
     favicon: 'github.com',
+    logo: '/img/showcase/vskill.png',
   },
   {
     name: 'verified-skill.com',
     tagline: '105K+ verified skills marketplace',
     url: 'https://verified-skill.com',
     favicon: 'verified-skill.com',
+    logo: '/img/showcase/verified-skill.png',
   },
 ] as const;
 
