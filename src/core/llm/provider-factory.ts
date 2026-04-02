@@ -11,6 +11,8 @@ import type { LLMConfig, LLMProvider, LLMProviderType } from './types.js';
 import { isClaudeCodeAvailable, getClaudeCodeStatus } from './providers/claude-code-provider.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { isExternalProvider, checkConsent, ExternalApiConsentDeniedError } from './consent.js';
+import { SpendTrackingProvider } from '../cost/spend-tracking-provider.js';
+import { initSpendPipeline } from '../cost/spend-pipeline.js';
 
 // Re-export for convenience
 export { isClaudeCodeAvailable, getClaudeCodeStatus };
@@ -76,34 +78,55 @@ export async function createProvider(
     }
   }
 
+  let provider: LLMProvider;
+
   switch (config.provider) {
     case 'claude-code':
-      return createClaudeCodeProvider(config, logger);
+      provider = await createClaudeCodeProvider(config, logger);
+      break;
 
     case 'anthropic':
-      return createAnthropicProvider(config, logger);
+      provider = await createAnthropicProvider(config, logger);
+      break;
 
     case 'openai':
-      return createOpenAIProvider(config, logger);
+      provider = await createOpenAIProvider(config, logger);
+      break;
 
     case 'azure-openai':
-      return createAzureOpenAIProvider(config, logger);
+      provider = await createAzureOpenAIProvider(config, logger);
+      break;
 
     case 'ollama':
-      return createOllamaProvider(config, logger);
+      provider = await createOllamaProvider(config, logger);
+      break;
 
     case 'bedrock':
-      return createBedrockProvider(config, logger);
+      provider = await createBedrockProvider(config, logger);
+      break;
 
     case 'vertex-ai':
-      return createVertexAIProvider(config, logger);
+      provider = await createVertexAIProvider(config, logger);
+      break;
 
     case 'workers-ai':
-      return createWorkersAIProvider(config, logger);
+      provider = await createWorkersAIProvider(config, logger);
+      break;
 
     default:
       throw new Error(`Unsupported LLM provider: ${config.provider}`);
   }
+
+  // Initialize spend tracking pipeline (idempotent — only runs once)
+  if (config.costTracking !== false) {
+    const projectRoot = options.projectRoot ?? process.cwd();
+    const spendDir = path.join(projectRoot, '.specweave', 'state', 'spend');
+    initSpendPipeline({ spendDir });
+
+    provider = new SpendTrackingProvider(provider);
+  }
+
+  return provider;
 }
 
 /**
