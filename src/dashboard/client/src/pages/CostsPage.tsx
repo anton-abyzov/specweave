@@ -6,6 +6,9 @@ import { Badge } from '../components/ui/Badge.js';
 import { BarChart } from '../components/charts/BarChart.js';
 import { PageLoader } from '../components/ui/Spinner.js';
 import { ErrorAlert } from '../components/ui/ErrorAlert.js';
+import { TrendChart } from '../components/charts/TrendChart.js';
+import { ProviderBreakdown } from '../components/charts/ProviderBreakdown.js';
+import { BudgetIndicator } from '../components/charts/BudgetIndicator.js';
 
 interface CostsData {
   totalCost: number;
@@ -15,6 +18,24 @@ interface CostsData {
   billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
   sessions?: SessionCost[];
   modelBreakdown?: Record<string, { cost: number; tokens: number; sessions: number }>;
+  trends?: Array<{
+    date: string;
+    total_cost: number;
+    total_tokens: number;
+    sessions: number;
+    providers: Record<string, { cost: number; tokens: number; sessions: number }>;
+  }>;
+  providerBreakdown?: Record<string, {
+    total_cost: number;
+    total_tokens: number;
+    sessions: number;
+    models: Record<string, { cost: number; tokens: number; sessions: number }>;
+  }>;
+  budget?: {
+    currentSpend: number;
+    monthlyLimit: number;
+    percentUsed: number;
+  };
 }
 
 interface SessionCost {
@@ -30,7 +51,7 @@ interface SessionCost {
   duration?: number;
 }
 
-type Tab = 'overview' | 'sessions';
+type Tab = 'overview' | 'trends' | 'providers' | 'sessions';
 
 export function CostsPage() {
   const [tab, setTab] = useState<Tab>('overview');
@@ -114,19 +135,32 @@ export function CostsPage() {
         <KpiCard title="Sessions" value={data.sessionCount.toLocaleString()} color="cyan" />
       </div>
 
+      {/* Budget Indicator */}
+      {data.budget && data.budget.monthlyLimit > 0 && (
+        <BudgetIndicator currentSpend={data.budget.currentSpend} monthlyLimit={data.budget.monthlyLimit} />
+      )}
+
       {/* Tab Bar */}
       <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
-        {(['overview', 'sessions'] as Tab[]).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
-              tab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            {t === 'overview' ? 'Breakdown' : `Sessions (${sessions.length})`}
-          </button>
-        ))}
+        {(['overview', 'trends', 'providers', 'sessions'] as Tab[]).map(t => {
+          const labels: Record<Tab, string> = {
+            overview: 'Breakdown',
+            trends: 'Trends',
+            providers: 'Providers',
+            sessions: `Sessions (${sessions.length})`,
+          };
+          return (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
+                tab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              {labels[t]}
+            </button>
+          );
+        })}
       </div>
 
       {tab === 'overview' && (
@@ -196,6 +230,20 @@ export function CostsPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {tab === 'trends' && (
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-sm font-medium text-gray-300 mb-4">Daily Cost Trends</h3>
+          <TrendChart data={data.trends || []} showProviderLines={true} height={250} />
+        </div>
+      )}
+
+      {tab === 'providers' && (
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-sm font-medium text-gray-300 mb-4">Provider Breakdown</h3>
+          <ProviderBreakdown data={data.providerBreakdown} />
         </div>
       )}
 

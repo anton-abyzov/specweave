@@ -447,7 +447,62 @@ export class DashboardServer {
       const config = await project.aggregator.getConfig();
       const billingConfig = config.billing as { planType?: string; monthlyAmount?: number } | undefined;
       const data = await project.costAggregator.getTokenSummaries(limit, billingConfig);
-      sendJson(res, { ok: true, data });
+
+      // Enrich with multi-model spend data if available
+      const enriched: Record<string, unknown> = { ...data };
+      try {
+        const { SpendAggregator } = await import('../../core/cost/spend-aggregator.js');
+        const spendDir = path.join(project.root, '.specweave', 'state', 'spend');
+        const spendAgg = new SpendAggregator(spendDir);
+        enriched.trends = spendAgg.getDailyRollups();
+        enriched.providerBreakdown = spendAgg.getProviderBreakdown();
+        const billingBudgets = (config as Record<string, unknown>)?.billing;
+        const budgetConfig = billingBudgets && typeof billingBudgets === 'object'
+          ? (billingBudgets as Record<string, unknown>).budgets
+          : undefined;
+        const budget = spendAgg.getBudgetStatus(budgetConfig as any);
+        if (budget) enriched.budget = budget;
+      } catch {
+        // Spend tracking not yet initialized — no spend files exist
+      }
+
+      sendJson(res, { ok: true, data: enriched });
+    });
+
+    // Trends API (standalone endpoint)
+    this.router.get('/api/costs/trends', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      try {
+        const { SpendAggregator } = await import('../../core/cost/spend-aggregator.js');
+        const spendDir = path.join(project.root, '.specweave', 'state', 'spend');
+        const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+        const days = safeParseInt(url.searchParams.get('days'), 30, 1, 365);
+        const from = new Date();
+        from.setUTCDate(from.getUTCDate() - days);
+        const spendAgg = new SpendAggregator(spendDir);
+        const trends = spendAgg.getDailyRollups(from, new Date());
+        sendJson(res, { ok: true, data: trends });
+      } catch {
+        sendJson(res, { ok: true, data: [] });
+      }
+    });
+
+    // Budget API
+    this.router.get('/api/costs/budget', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      try {
+        const { SpendAggregator } = await import('../../core/cost/spend-aggregator.js');
+        const config = await project.aggregator.getConfig();
+        const budgetConfig = (config as any).billing?.budgets;
+        const spendDir = path.join(project.root, '.specweave', 'state', 'spend');
+        const spendAgg = new SpendAggregator(spendDir);
+        const budget = spendAgg.getBudgetStatus(budgetConfig);
+        sendJson(res, { ok: true, data: budget });
+      } catch {
+        sendJson(res, { ok: true, data: null });
+      }
     });
 
     // Sync
