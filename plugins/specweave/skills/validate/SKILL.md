@@ -1,11 +1,6 @@
 ---
 description: Validate increment with rule-based checks and AI quality assessment. Use when saying "validate", "check quality", or "verify increment".
 argument-hint: "[increment-id]"
-hooks:
-  Stop:
-    - hooks:
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/spec-validation-guard approve
 ---
 
 # Validate Increment

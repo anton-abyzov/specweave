@@ -2,19 +2,6 @@
 description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Use when starting new features, hotfixes, bugs, or any development work that needs specification and task breakdown. Creates spec.md, plan.md, tasks.md with proper AC-IDs and living docs integration.
 argument-hint: "<feature-description>"
 model: opus
-hooks:
-  PreToolUse:
-    - matcher: Write
-      hooks:
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/interview-enforcement-guard
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/spec-template-enforcement-guard
-  PostToolUse:
-    - matcher: Write
-      hooks:
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/increment-duplicate-guard
 ---
 
 # Plan Product Increment

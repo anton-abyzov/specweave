@@ -1,16 +1,6 @@
 ---
 description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment". IMPORTANT - Before starting, check task count and domain count. If 3+ domains or 15+ tasks, recommend sw:team-lead instead (ask user for confirmation, or auto-invoke in auto mode).
 argument-hint: "<increment-id>"
-hooks:
-  PostToolUse:
-    - matcher: Edit
-      hooks:
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/task-ac-sync-guard
-    - matcher: Write
-      hooks:
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/task-ac-sync-guard
 ---
 
 # Do Increment
@@ -68,10 +58,7 @@ This ensures the execution loop stays focused on the contextually correct increm
 4. **Verify readiness**: Status is planned/in-progress, no blocking deps, tasks exist
 5. **Task count validation**: If >25 tasks, warn and offer to split, phase, or use `sw:auto`/`sw:team-lead`
 6. **Validate AC presence** (MANDATORY):
-   ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/hooks/pre-increment-start.sh" <increment-path>
-   ```
-   If fails: manually add ACs to spec.md, then retry. Do NOT proceed without ACs in spec.md.
+   Check that spec.md contains AC-IDs (e.g., `AC-US1-01`). If missing: add ACs to spec.md before proceeding. Do NOT proceed without ACs in spec.md.
 
 ### Step 2.5: PR-Based Branch Setup (conditional)
 
