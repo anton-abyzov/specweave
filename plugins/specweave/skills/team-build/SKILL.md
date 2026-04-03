@@ -1,11 +1,5 @@
 ---
 description: "Preset-driven team building — spawn coordinated multi-agent teams from battle-tested presets for full-stack, review, brainstorm, testing, TDD, and migration workflows. Review and brainstorm presets work without an increment."
-hooks:
-  PreToolUse:
-    - matcher: TeamCreate
-      hooks:
-        - type: command
-          command: bash "${CLAUDE_PLUGIN_ROOT}/hooks/universal/run-hook.sh" v2/guards/increment-existence-guard
 ---
 
 # Team Build

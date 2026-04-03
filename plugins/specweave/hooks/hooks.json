@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook pre-tool-use"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"allow\\\"}\"; }'"
           }
         ]
       },
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook pre-tool-use"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"allow\\\"}\"; }'"
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook session-start"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook session-start || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook user-prompt-submit"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook user-prompt-submit || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook pre-compact"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-compact || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
           }
         ]
       }
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook post-tool-use"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook post-tool-use || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
           }
         ]
       },
@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook post-tool-use-analytics"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook post-tool-use-analytics || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
           }
         ]
       }
@@ -77,17 +77,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "specweave hook stop-reflect",
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-reflect || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "specweave hook stop-auto",
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-auto || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "specweave hook stop-sync",
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-sync || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
             "timeout": 15000
           }
         ]
