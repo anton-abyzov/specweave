@@ -8,7 +8,7 @@ context: fork
 
 Generate and edit images from text prompts using AI. Powered by **Nano Banana Pro** (Google Gemini image models — `gemini-3.1-flash-image-preview`, `gemini-2.5-flash-image`, `gemini-3-pro-image-preview`), with Pollinations.ai and Imagen 4 as fallbacks.
 
-> **Note**: This skill includes all Nano Banana Pro capabilities built-in. No separate install needed.
+> **Note**: If the `nanobanana` skill is available in your session, this skill delegates to it automatically. Otherwise, it uses its own built-in Nano Banana implementation as fallback.
 
 ## Provider Fallback Chain
 
@@ -52,6 +52,22 @@ Tier 4: Pollinations.ai (FREE) ────────────────�
 **Aspect ratios supported**: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 
 ## Workflow
+
+### Step 0: Delegate to Nano Banana Skill (if available)
+
+Before running the built-in fallback chain, check if the `nanobanana` skill is available in the current session. If it is, delegate the entire request to it — it provides a richer, dedicated Gemini image generation experience.
+
+**How to check**: Look for `nanobanana` in the available skills list (system-reminder). If present:
+
+1. Invoke `Skill({ skill: "nanobanana" })` with the user's original prompt
+2. **Done** — do not continue to Step 1. The `nanobanana` skill handles everything (generation, editing, batch, aspect ratios, 2K/4K).
+
+**When to skip and use built-in chain instead**:
+- `nanobanana` skill is NOT listed in available skills
+- User explicitly requests Pollinations or Imagen 4
+- User says "use fallback" or "don't use nanobanana"
+
+If `nanobanana` is not available, proceed with the built-in chain below.
 
 ### Step 1: Parse User Request
 

@@ -5,6 +5,7 @@
 
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
+import { createRequire } from 'module';
 
 export type TemplateType = 'claude' | 'agents';
 
@@ -306,6 +307,15 @@ export function parseTemplateSections(content: string): TemplateSection[] {
 }
 
 export function getPackageVersion(): string {
+  // Use createRequire to resolve specweave's package.json reliably,
+  // even with symlinked installs (nvm, pnpm, npm link)
+  try {
+    const require = createRequire(import.meta.url);
+    const pkgPath = require.resolve('specweave/package.json');
+    return JSON.parse(fs.readFileSync(pkgPath, 'utf-8')).version;
+  } catch {
+    // createRequire failed — fall back to directory walk
+  }
   try {
     let d = path.dirname(new URL(import.meta.url).pathname);
     for (let i = 0; i < 10; i++) {
