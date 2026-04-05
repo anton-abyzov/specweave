@@ -64,7 +64,7 @@ describe('Skill memory loading architecture', () => {
       expect(missing).toEqual([]);
     });
 
-    it('all DCI blocks should have the cascading lookup pattern', () => {
+    it('all DCI blocks should reference skill-memories.sh script', () => {
       const missing: string[] = [];
 
       for (const { skill, dir } of DCI_SKILLS) {
@@ -73,10 +73,8 @@ describe('Skill memory loading architecture', () => {
 
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Must have the DCI inline command with cascade
-        if (!content.includes('.specweave/skill-memories') ||
-            !content.includes('.claude/skill-memories') ||
-            !content.includes('$HOME/.claude/skill-memories')) {
+        // Must reference the skill-memories.sh script
+        if (!content.includes('skill-memories.sh')) {
           missing.push(skill);
         }
       }
@@ -84,7 +82,18 @@ describe('Skill memory loading architecture', () => {
       expect(missing).toEqual([]);
     });
 
-    it('DCI s= value should match the skill directory name', () => {
+    it('skill-memories.sh script should have cascading lookup pattern', () => {
+      const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/skill-memories.sh');
+      expect(fs.existsSync(scriptPath)).toBe(true);
+
+      const content = fs.readFileSync(scriptPath, 'utf-8');
+      expect(content).toContain('.specweave/skill-memories');
+      expect(content).toContain('.claude/skill-memories');
+      expect(content).toContain('$HOME/.claude/skill-memories');
+      expect(content).toContain('awk');
+    });
+
+    it('DCI skill name should match the skill directory name', () => {
       const mismatches: string[] = [];
 
       for (const { skill, dir } of DCI_SKILLS) {
@@ -93,20 +102,20 @@ describe('Skill memory loading architecture', () => {
 
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Extract the s= value from the DCI one-liner
-        const match = content.match(/s="([^"]+)"/);
+        // Extract the skill name from the script call
+        const match = content.match(/skill-memories\.sh\s+(\S+)/);
         if (!match) {
-          mismatches.push(`${skill} (no s= found)`);
+          mismatches.push(`${skill} (no skill-memories.sh call found)`);
         } else if (match[1] !== skill) {
-          mismatches.push(`${skill} (s="${match[1]}" != "${skill}")`);
+          mismatches.push(`${skill} (arg="${match[1]}" != "${skill}")`);
         }
       }
 
       expect(mismatches).toEqual([]);
     });
 
-    it('DCI blocks should use awk for cross-platform compatibility', () => {
-      const usingSed: string[] = [];
+    it('no DCI blocks should use legacy inline format', () => {
+      const legacyFormat: string[] = [];
 
       for (const { skill, dir } of DCI_SKILLS) {
         const filePath = path.join(dir, skill, 'SKILL.md');
@@ -114,14 +123,13 @@ describe('Skill memory loading architecture', () => {
 
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Extract the DCI line
-        const dciLine = content.split('\n').find(l => l.includes('!`s='));
-        if (dciLine && !dciLine.includes('awk')) {
-          usingSed.push(skill);
+        // Old format: !`s="skill"; for d in ...`
+        if (content.includes('!`s=')) {
+          legacyFormat.push(skill);
         }
       }
 
-      expect(usingSed).toEqual([]);
+      expect(legacyFormat).toEqual([]);
     });
   });
 

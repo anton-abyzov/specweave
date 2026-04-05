@@ -263,8 +263,8 @@ describe('Real SKILL.md DCI Blocks', () => {
       if (!fs.existsSync(skillPath)) continue;
 
       const content = fs.readFileSync(skillPath, 'utf-8');
-      // Only check skills that have DCI blocks
-      if (content.includes('## Project Overrides') && content.includes('!`s=')) {
+      // Only check skills that have DCI blocks (script-based format)
+      if (content.includes('## Project Overrides') && content.includes('skill-memories.sh')) {
         if (!content.includes('; true`')) {
           missing.push(dir);
         }
@@ -281,10 +281,7 @@ describe('Real SKILL.md DCI Blocks', () => {
     );
 
     expect(content).toContain('## Project Overrides');
-    expect(content).toContain('s="pm"');
-    expect(content).toContain('.specweave/skill-memories');
-    expect(content).toContain('.claude/skill-memories');
-    expect(content).toContain('awk');
+    expect(content).toContain('skill-memories.sh pm');
     expect(content).toContain('; true`');
   });
 
@@ -295,7 +292,7 @@ describe('Real SKILL.md DCI Blocks', () => {
     );
 
     expect(content).toContain('## Project Overrides');
-    expect(content).toContain('s="grill"');
+    expect(content).toContain('skill-memories.sh grill');
     expect(content).toContain('; true`');
   });
 });
@@ -306,6 +303,7 @@ describe('Real SKILL.md DCI Blocks', () => {
  */
 describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
+  const scriptsDir = path.join(process.cwd(), 'plugins/specweave/scripts');
   let tmpDir: string;
   let projectRoot: string;
 
@@ -313,6 +311,15 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dci-e2e-'));
     projectRoot = path.join(tmpDir, 'project');
     fs.mkdirSync(projectRoot, { recursive: true });
+
+    // Install skill-memories.sh into test project's .specweave/scripts/
+    const destScriptsDir = path.join(projectRoot, '.specweave', 'scripts');
+    fs.mkdirSync(destScriptsDir, { recursive: true });
+    const scriptSrc = path.join(scriptsDir, 'skill-memories.sh');
+    if (fs.existsSync(scriptSrc)) {
+      fs.copyFileSync(scriptSrc, path.join(destScriptsDir, 'skill-memories.sh'));
+      fs.chmodSync(path.join(destScriptsDir, 'skill-memories.sh'), 0o755);
+    }
   });
 
   afterEach(() => {
@@ -333,21 +340,19 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
   }
 
   /**
-   * Adapt a DCI command for testing: replace relative paths with absolute
-   * project root paths so the command runs against our temp directory.
+   * Extract skill name from a DCI command.
+   * Script format: .specweave/scripts/skill-memories.sh <name>
    */
-  function adaptCommandForTestRoot(cmd: string, root: string): string {
-    return cmd
-      .replace(/\.specweave\/skill-memories/g, `${root}/.specweave/skill-memories`)
-      .replace(/\.claude\/skill-memories/g, `${root}/.claude/skill-memories`);
+  function extractSkillName(cmd: string): string | null {
+    const match = cmd.match(/skill-memories\.sh\s+(\S+)/);
+    return match ? match[1] : null;
   }
 
   it('pm DCI command succeeds with exit 0 when no memory files exist', () => {
     const cmd = extractDciCommand('pm');
     expect(cmd).not.toBeNull();
 
-    const adapted = adaptCommandForTestRoot(cmd!, projectRoot);
-    const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+    const result = spawnSync('bash', ['-c', cmd!], { cwd: projectRoot, encoding: 'utf-8' });
 
     expect(result.status).toBe(0);
     expect((result.stdout || '').trim()).toBe('');
@@ -362,8 +367,7 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
       'pm', ['Always interview stakeholders before writing specs']
     );
 
-    const adapted = adaptCommandForTestRoot(cmd!, projectRoot);
-    const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+    const result = spawnSync('bash', ['-c', cmd!], { cwd: projectRoot, encoding: 'utf-8' });
 
     expect(result.status).toBe(0);
     expect((result.stdout || '').trim()).toContain('Always interview stakeholders');
@@ -373,8 +377,7 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
     const cmd = extractDciCommand('grill');
     expect(cmd).not.toBeNull();
 
-    const adapted = adaptCommandForTestRoot(cmd!, projectRoot);
-    const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+    const result = spawnSync('bash', ['-c', cmd!], { cwd: projectRoot, encoding: 'utf-8' });
 
     expect(result.status).toBe(0);
     expect((result.stdout || '').trim()).toBe('');
@@ -391,8 +394,7 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
       const cmd = extractDciCommand(dir);
       if (!cmd) continue;
 
-      const adapted = adaptCommandForTestRoot(cmd, projectRoot);
-      const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+      const result = spawnSync('bash', ['-c', cmd], { cwd: projectRoot, encoding: 'utf-8' });
 
       if (result.status !== 0) {
         failures.push(`${dir}: exit code ${result.status}`);
@@ -413,10 +415,9 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
       const cmd = extractDciCommand(dir);
       if (!cmd) continue;
 
-      // Extract skill name from the s="..." variable in the command
-      const nameMatch = cmd.match(/^s="([^"]+)"/);
-      if (!nameMatch) continue;
-      const skillName = nameMatch[1];
+      // Extract skill name from the script call
+      const skillName = extractSkillName(cmd);
+      if (!skillName) continue;
 
       // Create a memory file for this skill
       createMemoryFile(
@@ -424,8 +425,7 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
         skillName, [`E2E test learning for ${skillName}`]
       );
 
-      const adapted = adaptCommandForTestRoot(cmd, projectRoot);
-      const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+      const result = spawnSync('bash', ['-c', cmd], { cwd: projectRoot, encoding: 'utf-8' });
 
       if (result.status !== 0) {
         failures.push(`${dir}: exit code ${result.status}`);
@@ -433,8 +433,11 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
         failures.push(`${dir}: missing expected learning in output`);
       }
 
-      // Clean up for next skill
-      fs.rmSync(path.join(projectRoot, '.specweave'), { recursive: true, force: true });
+      // Clean up memory files for next skill (keep scripts dir)
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      if (fs.existsSync(memDir)) {
+        fs.rmSync(memDir, { recursive: true, force: true });
+      }
     }
 
     expect(failures).toEqual([]);
