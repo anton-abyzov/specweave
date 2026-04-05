@@ -10,7 +10,7 @@ model: sonnet
 
 ## Project Overrides
 
-!`s="e2e"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh e2e 2>/dev/null; true`
 
 Generate Playwright E2E tests from spec.md acceptance criteria, run them, and produce a structured report that maps pass/fail results to AC-IDs. Consumed by sw:done Gate 2a for automated closure gating.
 
