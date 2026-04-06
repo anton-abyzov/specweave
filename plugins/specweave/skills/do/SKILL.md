@@ -7,11 +7,11 @@ argument-hint: "<increment-id>"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh do 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh do 2>/dev/null`
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh do 2>/dev/null; true`
+!`.specweave/scripts/skill-context.sh do 2>/dev/null`
 
 Execute a SpecWeave increment by running tasks from tasks.md with automatic AC-sync after every task completion.
 

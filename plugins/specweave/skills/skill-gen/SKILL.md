@@ -9,7 +9,7 @@ model: opus
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh skill-gen 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh skill-gen 2>/dev/null`
 
 Generate project-local skills from recurring patterns detected across increment closures.
 
