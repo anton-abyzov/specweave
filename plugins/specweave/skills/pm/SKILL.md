@@ -9,7 +9,7 @@ model: opus
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh pm 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh pm 2>/dev/null`
 
 ## Overview
 

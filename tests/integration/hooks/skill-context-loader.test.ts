@@ -3,7 +3,7 @@
  *
  * Tests the shared context script that skills call via DCI blocks:
  *   ## Project Context
- *   !`.specweave/scripts/skill-context.sh <skill> 2>/dev/null; true`
+ *   !`.specweave/scripts/skill-context.sh <skill> 2>/dev/null`
  *
  * @module tests/integration/hooks/skill-context-loader
  */

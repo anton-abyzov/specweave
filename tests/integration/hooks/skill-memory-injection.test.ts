@@ -22,7 +22,7 @@ import * as os from 'os';
  */
 function buildDciCommand(skillName: string, projectRoot: string): string {
   // The DCI one-liner from SKILL.md, adapted for testing with explicit paths
-  return `s="${skillName}"; for d in "${projectRoot}/.specweave/skill-memories" "${projectRoot}/.claude/skill-memories" "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`;
+  return `s="${skillName}"; for d in "${projectRoot}/.specweave/skill-memories" "${projectRoot}/.claude/skill-memories" "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`;
 }
 
 /**
@@ -91,15 +91,17 @@ describe('DCI Skill Memory Cascade', () => {
       const cmd = buildDciCommand('pm', projectRoot);
       const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
-      expect(result.status).toBe(0);
+      // Inline cascade may return non-zero when no files match (the for loop's
+      // last [ -f ] fails). Production uses skill-memories.sh which exits 0.
+      // We only care that output is empty.
       expect((result.stdout || '').trim()).toBe('');
     });
 
-    it('does not throw when no memory files exist', () => {
+    it('produces no output when no memory files exist', () => {
       const cmd = buildDciCommand('nonexistent', projectRoot);
-      expect(() => {
-        execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' });
-      }).not.toThrow();
+      const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
+
+      expect((result.stdout || '').trim()).toBe('');
     });
   });
 
@@ -201,16 +203,17 @@ describe('DCI Skill Memory Cascade', () => {
   });
 
   describe('exit code safety', () => {
-    it('exits 0 when skill-memories directories do not exist', () => {
+    it('produces no output when skill-memories directories do not exist', () => {
       // projectRoot has no .specweave/ or .claude/ dirs at all
       const cmd = buildDciCommand('any-skill', projectRoot);
       const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
-      expect(result.status).toBe(0);
+      // Inline cascade may return non-zero when no files match.
+      // Production uses skill-memories.sh which always exits 0.
       expect((result.stdout || '').trim()).toBe('');
     });
 
-    it('exits 0 when directories exist but skill file is missing', () => {
+    it('produces no output when directories exist but skill file is missing', () => {
       // Create directories but no matching skill file
       fs.mkdirSync(path.join(projectRoot, '.specweave', 'skill-memories'), { recursive: true });
       fs.mkdirSync(path.join(projectRoot, '.claude', 'skill-memories'), { recursive: true });
@@ -218,7 +221,6 @@ describe('DCI Skill Memory Cascade', () => {
       const cmd = buildDciCommand('missing-skill', projectRoot);
       const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
-      expect(result.status).toBe(0);
       expect((result.stdout || '').trim()).toBe('');
     });
 
@@ -252,29 +254,26 @@ describe('DCI Skill Memory Cascade', () => {
 describe('Real SKILL.md DCI Blocks', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
 
-  it('all invocable SKILL.md files have ; true guard for exit code safety', () => {
+  it('no SKILL.md files have ; true in DCI hooks (causes permission errors)', () => {
     const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
       .filter(d => d.isDirectory())
       .map(d => d.name);
 
-    const missing: string[] = [];
+    const violations: string[] = [];
     for (const dir of skillDirs) {
       const skillPath = path.join(pluginsDir, dir, 'SKILL.md');
       if (!fs.existsSync(skillPath)) continue;
 
       const content = fs.readFileSync(skillPath, 'utf-8');
-      // Only check skills that have DCI blocks (script-based format)
-      if (content.includes('## Project Overrides') && content.includes('skill-memories.sh')) {
-        if (!content.includes('; true`')) {
-          missing.push(dir);
-        }
+      if (content.includes('## Project Overrides') && content.includes('; true`')) {
+        violations.push(dir);
       }
     }
 
-    expect(missing).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
-  it('pm SKILL.md has valid DCI block', () => {
+  it('pm SKILL.md has valid DCI block without ; true', () => {
     const content = fs.readFileSync(
       path.join(pluginsDir, 'pm', 'SKILL.md'),
       'utf-8'
@@ -282,10 +281,10 @@ describe('Real SKILL.md DCI Blocks', () => {
 
     expect(content).toContain('## Project Overrides');
     expect(content).toContain('skill-memories.sh pm');
-    expect(content).toContain('; true`');
+    expect(content).not.toContain('; true`');
   });
 
-  it('grill SKILL.md has valid DCI block', () => {
+  it('grill SKILL.md has valid DCI block without ; true', () => {
     const content = fs.readFileSync(
       path.join(pluginsDir, 'grill', 'SKILL.md'),
       'utf-8'
@@ -293,7 +292,7 @@ describe('Real SKILL.md DCI Blocks', () => {
 
     expect(content).toContain('## Project Overrides');
     expect(content).toContain('skill-memories.sh grill');
-    expect(content).toContain('; true`');
+    expect(content).not.toContain('; true`');
   });
 });
 
@@ -488,24 +487,23 @@ describe('Project Context DCI Blocks', () => {
     expect(missing).toEqual([]);
   });
 
-  it('Project Context DCI blocks have ; true exit guard', () => {
-    const missing: string[] = [];
+  it('Project Context DCI blocks do not have ; true (causes permission errors)', () => {
+    const violations: string[] = [];
 
     for (const skill of CONTEXT_SKILLS) {
       const filePath = path.join(pluginsDir, skill, 'SKILL.md');
       if (!fs.existsSync(filePath)) continue;
 
       const content = fs.readFileSync(filePath, 'utf-8');
-      // Find the context DCI line
       const contextLine = content.split('\n').find(l =>
         l.includes('skill-context.sh')
       );
-      if (contextLine && !contextLine.includes('; true`')) {
-        missing.push(skill);
+      if (contextLine && contextLine.includes('; true`')) {
+        violations.push(skill);
       }
     }
 
-    expect(missing).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
   it('Project Context DCI blocks pass the correct skill name', () => {

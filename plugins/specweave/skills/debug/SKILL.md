@@ -9,7 +9,7 @@ context: fork
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh debug 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh debug 2>/dev/null`
 
 ## Iron Law
 

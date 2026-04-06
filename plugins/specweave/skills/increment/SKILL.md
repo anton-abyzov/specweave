@@ -18,11 +18,11 @@ Increment planning produces specs, plans, and task breakdowns that require user 
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh increment 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh increment 2>/dev/null`
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh increment 2>/dev/null; true`
+!`.specweave/scripts/skill-context.sh increment 2>/dev/null`
 
 **Self-contained increment planning for ANY user project after `specweave init`.**
 
