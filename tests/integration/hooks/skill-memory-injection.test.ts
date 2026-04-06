@@ -406,11 +406,7 @@ describe('Instruction-Based Skill Memory Format (E2E from real SKILL.md)', () =>
   });
 });
 
-/**
- * Verify that priority skills have the ## Project Context DCI block
- * for loading project context via skill-context.sh.
- */
-describe('Project Context DCI Blocks', () => {
+describe('Project Context Instruction Blocks', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
 
   const CONTEXT_SKILLS = ['do', 'auto', 'increment', 'validate'];
@@ -434,23 +430,7 @@ describe('Project Context DCI Blocks', () => {
     expect(missing).toEqual([]);
   });
 
-  it('Project Context DCI blocks reference skill-context.sh', () => {
-    const missing: string[] = [];
-
-    for (const skill of CONTEXT_SKILLS) {
-      const filePath = path.join(pluginsDir, skill, 'SKILL.md');
-      if (!fs.existsSync(filePath)) continue;
-
-      const content = fs.readFileSync(filePath, 'utf-8');
-      if (!content.includes('.specweave/scripts/skill-context.sh')) {
-        missing.push(skill);
-      }
-    }
-
-    expect(missing).toEqual([]);
-  });
-
-  it('Project Context DCI blocks do not have ; true (causes permission errors)', () => {
+  it('Project Context uses instruction-based loading, not DCI', () => {
     const violations: string[] = [];
 
     for (const skill of CONTEXT_SKILLS) {
@@ -458,33 +438,32 @@ describe('Project Context DCI Blocks', () => {
       if (!fs.existsSync(filePath)) continue;
 
       const content = fs.readFileSync(filePath, 'utf-8');
-      const contextLine = content.split('\n').find(l =>
-        l.includes('skill-context.sh')
-      );
-      if (contextLine && contextLine.includes('; true`')) {
-        violations.push(skill);
+      if (content.includes('skill-context.sh')) {
+        violations.push(`${skill} still references skill-context.sh`);
       }
     }
 
     expect(violations).toEqual([]);
   });
 
-  it('Project Context DCI blocks pass the correct skill name', () => {
-    const mismatches: string[] = [];
+  it('Project Context instruction references config.json', () => {
+    const missing: string[] = [];
 
     for (const skill of CONTEXT_SKILLS) {
       const filePath = path.join(pluginsDir, skill, 'SKILL.md');
       if (!fs.existsSync(filePath)) continue;
 
       const content = fs.readFileSync(filePath, 'utf-8');
-      const contextLine = content.split('\n').find(l =>
-        l.includes('skill-context.sh')
-      );
-      if (contextLine && !contextLine.includes(`skill-context.sh ${skill}`)) {
-        mismatches.push(`${skill}: DCI block doesn't pass "${skill}" as argument`);
+      if (!content.includes('.specweave/config.json')) {
+        missing.push(skill);
       }
     }
 
-    expect(mismatches).toEqual([]);
+    expect(missing).toEqual([]);
+  });
+
+  it('skill-context.sh script should not exist (deleted)', () => {
+    const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/skill-context.sh');
+    expect(fs.existsSync(scriptPath)).toBe(false);
   });
 });
