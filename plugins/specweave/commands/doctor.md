@@ -11,7 +11,7 @@ argument-hint: "[--fix] [--verbose]"
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh doctor 2>/dev/null`
+!`.specweave/scripts/skill-context.sh doctor 2>/dev/null || true`
 
 Run SpecWeave installation health diagnostics to detect and fix common issues.
 

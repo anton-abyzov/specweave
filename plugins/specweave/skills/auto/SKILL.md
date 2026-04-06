@@ -8,11 +8,11 @@ argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh auto 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/auto.md` exists, read and apply its learnings.
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh auto 2>/dev/null`
+!`.specweave/scripts/skill-context.sh auto 2>/dev/null || true`
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
 

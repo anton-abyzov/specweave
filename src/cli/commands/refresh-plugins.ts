@@ -349,6 +349,14 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       log(chalk.yellow('  ⚠ Could not enable DCI permissions (non-critical)'));
     }
 
+    // Step 4b3: Copy DCI scripts to .specweave/scripts/
+    try {
+      const { installDciScripts } = await import('../helpers/init/dci-scripts-installer.js');
+      installDciScripts(projectRoot);
+    } catch {
+      // Non-critical — DCI blocks use || true for graceful degradation
+    }
+
     // Step 4c: Clean up stale plugin references from settings
     try {
       const cleanupResult = await cleanupStalePlugins(marketplacePath, options.verbose);
