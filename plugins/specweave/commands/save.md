@@ -8,7 +8,7 @@ argument-hint: "[message]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh save 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/save.md` exists, read and apply its learnings.
 
 ## Usage
 

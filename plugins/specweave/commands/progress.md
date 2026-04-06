@@ -7,7 +7,7 @@ argument-hint: "[incrementId]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh progress 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/progress.md` exists, read and apply its learnings.
 
 ## Hook Execution (Default)
 
