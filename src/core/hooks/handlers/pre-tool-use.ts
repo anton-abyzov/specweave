@@ -10,6 +10,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HandlerFn, HookContext, HookInput } from './types.js';
+import { logHook } from './utils.js';
 
 const ALLOW = { decision: 'allow' as const };
 
@@ -43,6 +44,11 @@ const NON_IMPL_PREFIXES = [
   'ideate-',
   'research-',
   'plan-',
+  'test-',
+  'debug-',
+  'investigate-',
+  'verify-',
+  'qa-',
 ];
 
 const NON_IMPL_KEYWORDS = [
@@ -67,6 +73,16 @@ const NON_IMPL_KEYWORDS = [
   'perspectives',
   "devil's advocate",
   'pros and cons',
+  'test',
+  'testing',
+  'verify',
+  'verification',
+  'debug',
+  'investigate',
+  'diagnose',
+  'troubleshoot',
+  'qa',
+  'quality',
 ];
 
 function getToolName(input: HookInput): string {
@@ -318,7 +334,22 @@ function checkIncrementExistenceGuard(
           for (const inc of incs) {
             if (inc.isDirectory()) {
               const specPath = path.join(repoIncDir, inc.name, 'spec.md');
-              if (hasValidSpec(specPath)) return ALLOW;
+              if (!hasValidSpec(specPath)) continue;
+              // Check metadata.json for qualifying status (consistent with single-repo scan)
+              const metaPath = path.join(repoIncDir, inc.name, 'metadata.json');
+              if (fs.existsSync(metaPath)) {
+                try {
+                  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+                  const status = meta?.status ?? '';
+                  const qualifying = ['active', 'in-progress', 'ready_for_review', 'planned'];
+                  if (qualifying.includes(status)) return ALLOW;
+                } catch {
+                  // Unreadable metadata — skip this increment
+                }
+              } else {
+                // No metadata.json but valid spec — allow (legacy increments)
+                return ALLOW;
+              }
             }
           }
         }
@@ -331,7 +362,7 @@ function checkIncrementExistenceGuard(
   return {
     decision: 'block',
     reason:
-      'Increment Required Before Team Creation. No qualifying increment with a valid spec.md found. Run /sw:increment first, or use a mode-prefixed team name (review-*, brainstorm-*, analysis-*, research-*) for non-implementation work.',
+      'Increment Required Before Team Creation. No qualifying increment with a valid spec.md found. Run /sw:increment first, or use a mode-prefixed team name (review-*, brainstorm-*, research-*, test-*, debug-*, verify-*, qa-*) for non-implementation work.',
   };
 }
 
@@ -360,8 +391,16 @@ export const handle: HandlerFn = async (input, context) => {
 
   // TeamCreate guard: increment existence
   if (toolName === 'TeamCreate') {
-    if (isNonImplTeam(input)) return ALLOW;
-    return checkIncrementExistenceGuard(input, context);
+    if (isNonImplTeam(input)) {
+      logHook(context, 'pre-tool-use', `TeamCreate allowed: non-impl team`);
+      return ALLOW;
+    }
+    const result = checkIncrementExistenceGuard(input, context);
+    if (result.decision === 'block') {
+      const ti = getToolInput(input);
+      logHook(context, 'pre-tool-use', `TeamCreate blocked: team_name="${ti.team_name}", description="${ti.description}"`);
+    }
+    return result;
   }
 
   return ALLOW;
