@@ -1,5 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
+import { mkdtempSync, rmSync } from 'fs';
+import * as path from 'path';
+import { tmpdir } from 'os';
 import type { HookContext, HookInput } from '../../../../../src/core/hooks/handlers/types.js';
 
 vi.mock('fs', async () => {
@@ -15,11 +18,13 @@ vi.mock('fs', async () => {
 
 const mockedFs = vi.mocked(fs);
 
+let testLogsDir: string;
+
 function makeContext(root = '/project'): HookContext {
   return {
     projectRoot: root,
     stateDir: `${root}/.specweave/state`,
-    logsDir: `${root}/.specweave/logs`,
+    logsDir: testLogsDir,
     configPath: `${root}/.specweave/config.json`,
     timestamp: '2026-03-27T00:00:00.000Z',
   };
@@ -29,6 +34,11 @@ describe('pre-tool-use handler', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.resetModules();
+    testLogsDir = mkdtempSync(path.join(tmpdir(), 'sw-test-logs-'));
+  });
+
+  afterEach(() => {
+    rmSync(testLogsDir, { recursive: true, force: true });
   });
 
   // ---- FAST PATH: non-increment files ----

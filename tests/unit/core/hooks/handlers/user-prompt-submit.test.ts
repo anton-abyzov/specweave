@@ -6,6 +6,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import * as path from 'path';
+import { tmpdir } from 'os';
 import type { HookInput, HookContext } from '../../../../../src/core/hooks/handlers/types.js';
 
 // Mock fs before importing handler
@@ -21,11 +23,13 @@ vi.mock('fs', () => mockFs);
 
 import { handle } from '../../../../../src/core/hooks/handlers/user-prompt-submit.js';
 
+let testLogsDir: string;
+
 function makeContext(overrides?: Partial<HookContext>): HookContext {
   return {
     projectRoot: '/fake/project',
     stateDir: '/fake/project/.specweave/state',
-    logsDir: '/fake/project/.specweave/logs',
+    logsDir: testLogsDir,
     configPath: '/fake/project/.specweave/config.json',
     timestamp: '2026-03-27T00:00:00.000Z',
     ...overrides,
@@ -39,6 +43,8 @@ function makeInput(prompt: string): HookInput {
 describe('user-prompt-submit handler', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Unique temp dir per test — fs is mocked so no real I/O, but paths are isolated
+    testLogsDir = path.join(tmpdir(), `sw-test-logs-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     // Default: project exists with valid config
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(JSON.stringify({ version: '1.0.0' }));
