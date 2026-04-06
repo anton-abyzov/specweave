@@ -5,8 +5,12 @@
  * Automatically creates a tmux session if not already in one,
  * so agents get their own split panes.
  *
+ * Cross-platform:
+ *   macOS/Linux: auto-launches tmux for split-pane agent views
+ *   Windows:     uses in-process mode (tmux unavailable natively)
+ *
  * Usage:
- *   specweave team                          # Auto-launches in tmux
+ *   specweave team                          # Auto-launches in tmux (macOS/Linux)
  *   specweave team "Build auth system"      # Launch with initial prompt
  *   specweave team --mode in-process        # Force in-process mode (no tmux)
  */
@@ -32,6 +36,20 @@ function isToolAvailable(tool: string): boolean {
   const which = process.platform === 'win32' ? 'where' : 'which';
   const result = execFileNoThrowSync(which, [tool]);
   return result.success;
+}
+
+/**
+ * Platform-appropriate install hint for tmux.
+ */
+function tmuxInstallHint(): string {
+  switch (process.platform) {
+    case 'darwin':
+      return 'brew install tmux';
+    case 'win32':
+      return 'Use WSL: wsl --install, then: sudo apt install tmux';
+    default:
+      return 'sudo apt install tmux  # or your package manager';
+  }
 }
 
 /**
@@ -146,7 +164,7 @@ function resolveMode(
     return 'tmux';
   }
 
-  // iTerm2 available — Claude auto-detects iTerm2 split panes
+  // iTerm2 available (macOS) — Claude auto-detects iTerm2 split panes
   if (isToolAvailable('it2')) {
     return 'tmux';
   }
@@ -182,10 +200,10 @@ function resolveMode(
     return null; // Signal: re-launched, don't continue
   }
 
-  // No tmux at all — in-process fallback with helpful note
+  // No tmux available — in-process fallback with platform-specific hint
   console.log(
     chalk.yellow('tmux not found. Agents will run in-process (same pane).')
   );
-  console.log(chalk.gray('Install tmux for split-pane agent views: brew install tmux'));
+  console.log(chalk.gray(`Install tmux for split-pane agent views: ${tmuxInstallHint()}`));
   return 'in-process';
 }
