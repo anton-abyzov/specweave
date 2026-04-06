@@ -6,7 +6,7 @@ description: Execute full TDD red-green-refactor cycle with validation gates. Us
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh tdd-cycle 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/tdd-cycle.md` exists, read and apply its learnings.
 
 Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-green-refactor discipline:
 

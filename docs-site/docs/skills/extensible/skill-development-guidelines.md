@@ -16,6 +16,8 @@ When creating SpecWeave skills, keep core logic stable while making customizatio
 ```markdown
 # Your Skill
 
+**Skill Memories**: If `.specweave/skill-memories/{skill-name}.md` exists, read and apply its learnings.
+
 ## Core Behavior
 1. Always do X
 2. Check for Y
@@ -27,8 +29,6 @@ Users can customize:
 - Validation rules
 - Output formatting
 - Error handling
-
-See `.specweave/skill-memories/{skill-name}.md` for customizations.
 ```
 
 `skill-memories/{skill-name}.md` (user customizations)
@@ -59,8 +59,15 @@ When validating forms:
 - Expose clear extension points in SKILL.md
 - Document what users can customize
 - Provide examples in skill-memories templates
-- Read skill-memories at runtime before executing logic
+- Include an instruction-based loading line in SKILL.md (see pattern below)
 - Use conditional logic: "If skill-memories defines X, use X; else default behavior"
+
+**Recommended pattern** for loading skill memories (instruction-based, cross-platform):
+```markdown
+**Skill Memories**: If `.specweave/skill-memories/{skill-name}.md` exists, read and apply its learnings.
+```
+
+This replaces the previous shell-based DCI approach (`!`backtick commands``) for skill memories. The instruction-based pattern works on all platforms without requiring shell execution.
 
 **DON'T:**
 - Hard-code preferences that vary by project
@@ -73,6 +80,8 @@ When validating forms:
 ```markdown
 # SKILL.md (core logic)
 
+**Skill Memories**: If `.specweave/skill-memories/frontend.md` exists, read and apply its learnings.
+
 ## Component Generation
 
 **Default behavior:**
@@ -80,7 +89,7 @@ When validating forms:
 2. TypeScript with Props interface
 3. Export as default
 
-**Extension points (check skill-memories/frontend.md):**
+**Extension points (customizable via skill-memories/frontend.md):**
 - component.framework (React | Vue | Angular)
 - component.exportStyle (default | named)
 - component.testFramework (Vitest | Jest | Testing Library)

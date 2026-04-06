@@ -1,6 +1,6 @@
 ---
 title: "Extensible Skills"
-description: "The customization layer for AI agent skills — dynamic context injection, skill memories, and self-improving AI"
+description: "The customization layer for AI agent skills — skill memories, dynamic context injection, and self-improving AI"
 keywords: [extensible-skills, skill-memories, dynamic-context-injection, customization, SKILL.md]
 ---
 
@@ -11,7 +11,11 @@ keywords: [extensible-skills, skill-memories, dynamic-context-injection, customi
 - Core instructions live in `SKILL.md`, stable and versioned
 - Your project-specific rules live in `skill-memories/*.md`
 
-Skills self-load their customizations using **dynamic context injection** (Claude Code's built-in `` !`command` `` syntax) — a shell one-liner that reads your preferences before the skill executes. Skill memories are loaded from project, personal, and global directories, with project-level overrides taking priority over global defaults.
+Skills self-load their customizations through **plain LLM instructions** embedded in SKILL.md — a cross-platform approach that tells the skill to read your preferences before executing. No shell execution is required. A typical instruction looks like:
+
+> **Skill Memories**: If `.specweave/skill-memories/{skill-name}.md` exists, read and apply its learnings.
+
+This replaces the previous shell-based dynamic context injection (DCI) approach for skill memories. DCI (Claude Code's `` !`command` `` syntax) is still used for other purposes like loading skill context or PR diffs, but skill memories now use instruction-based loading for better cross-platform compatibility.
 
 The result: you correct Claude once ("use React Hook Form, not useState for forms"), and that preference is applied automatically in every future session.
 
