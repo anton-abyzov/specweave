@@ -589,6 +589,14 @@ export async function initCommand(
         console.log(chalk.yellow('   ⚠ Could not enable agent teams env var (non-critical)'));
       }
 
+      // Add DCI script permissions (project-level)
+      try {
+        const { enableDciPermissions } = await import('../helpers/init/claude-settings-permissions.js');
+        enableDciPermissions(targetDir);
+      } catch {
+        console.log(chalk.yellow('   ⚠ Could not enable DCI permissions (non-critical)'));
+      }
+
       setupLspEnvVar();
     }
 

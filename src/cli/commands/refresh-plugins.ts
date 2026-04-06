@@ -30,6 +30,7 @@ import { cleanupStalePlugins, migrateUserLevelPlugins } from '../../utils/cleanu
 import { getProjectRoot } from '../../utils/find-project-root.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { enablePluginsInSettings } from '../helpers/init/claude-plugin-enabler.js';
+import { enableDciPermissions } from '../helpers/init/claude-settings-permissions.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -339,6 +340,13 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       if (!enabled) {
         log(chalk.yellow('  ⚠ Could not enable plugins in ~/.claude/settings.json'));
       }
+    }
+
+    // Step 4b2: Enable DCI script permissions (project-level)
+    try {
+      enableDciPermissions(projectRoot);
+    } catch {
+      log(chalk.yellow('  ⚠ Could not enable DCI permissions (non-critical)'));
     }
 
     // Step 4c: Clean up stale plugin references from settings
