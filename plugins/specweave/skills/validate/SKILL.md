@@ -7,11 +7,11 @@ argument-hint: "[increment-id]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh validate 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh validate 2>/dev/null`
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh validate 2>/dev/null; true`
+!`.specweave/scripts/skill-context.sh validate 2>/dev/null`
 
 You are helping the user validate a SpecWeave increment with optional AI-powered quality assessment.
 

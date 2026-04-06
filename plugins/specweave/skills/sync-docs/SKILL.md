@@ -7,7 +7,7 @@ argument-hint: "<increment-id> [--review]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh sync-docs 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh sync-docs 2>/dev/null`
 
 Sync living documentation for an increment. This generates or updates feature specs and user story files under `.specweave/docs/internal/specs/`.
 

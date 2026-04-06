@@ -6,7 +6,7 @@ description: Write minimal code to make failing tests pass. Use when saying "TDD
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh tdd-green 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh tdd-green 2>/dev/null`
 
 Implement minimal code to make failing tests pass in TDD green phase.
 

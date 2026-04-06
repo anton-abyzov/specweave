@@ -7,11 +7,11 @@ argument-hint: "[--fix] [--verbose]"
 
 ## Project Overrides
 
-!`s="doctor"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh doctor 2>/dev/null`
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh doctor 2>/dev/null; true`
+!`.specweave/scripts/skill-context.sh doctor 2>/dev/null`
 
 Run SpecWeave installation health diagnostics to detect and fix common issues.
 

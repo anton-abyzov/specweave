@@ -29,7 +29,7 @@ Replace `XXXX-name` with the actual increment ID. **This unblocks the guard for 
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh architect 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh architect 2>/dev/null`
 
 ## Design Approach
 

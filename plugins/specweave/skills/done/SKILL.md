@@ -7,7 +7,7 @@ argument-hint: "<increment-id> [--auto]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh done 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh done 2>/dev/null`
 
 **PM-Led Closure**: Validate tasks, tests, and docs before closing.
 
