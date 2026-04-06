@@ -156,6 +156,80 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **Background jobs**: Monitor with `specweave jobs` (clone-repos, import-issues, living-docs-builder, sync-external).
 <!-- SW:END:nonclaudetools -->
 
+## Hook Architecture
+
+SpecWeave uses a CLI-first architecture. Only 2 hook event types are registered with Claude Code:
+
+| Hook | Type | Purpose |
+|------|------|---------|
+| **PreToolUse** | Synchronous guard | Blocks illegal tool calls before execution (e.g., TDD enforcement, interview gates, shell injection prevention) |
+| **UserPromptSubmit** | Context injection | Injects context (active increment, prompt health alerts, skill routing) before prompt processing |
+
+All other events (SessionStart, PostToolUse, Stop, PreCompact) are **not registered as hooks**. They have been migrated to CLI commands (see Session Lifecycle below).
+
+**Why only these two?** PreToolUse and UserPromptSubmit are the only events that require synchronous interception -- they must run *before* Claude Code acts. Everything else is a fire-and-forget side effect that works better as an explicit CLI call.
+
+## Session Lifecycle
+
+These CLI commands replace the former hook-based event handlers. Run them explicitly in your workflow.
+
+### Session Start
+
+```bash
+specweave session start
+```
+
+Replaces the former SessionStart hook. Call at the beginning of each AI session. Performs:
+- Clears stale auto-mode files (>24h)
+- Resets context-pressure and prompt-health state
+- Runs baseline prompt health check
+- Cleans orphaned state files and stale plugin references
+
+Use `--session-id <id>` to create an isolated per-session state directory.
+
+### Session End
+
+```bash
+specweave session end
+```
+
+Replaces the former Stop hook (which had 3 sub-handlers: reflect, auto, sync). Call at the end of each AI session. Performs:
+- Checks reflect config and logs reflection intent (stop-reflect)
+- Scans pending auto-mode tasks and logs progress (stop-auto)
+- Deduplicates and flushes pending sync events (stop-sync)
+
+### Sync Flush
+
+```bash
+specweave sync flush
+```
+
+Replaces the former PostToolUse event queue hook. Call after modifying increment files (tasks.md, spec.md). Reads pending events from the queue, deduplicates by increment ID, and writes to the sync log.
+
+Use `--dry-run` to preview what would be flushed without clearing the queue.
+
+### Analytics Push
+
+```bash
+specweave analytics push --type <skill|agent> --name <name>
+```
+
+Replaces the former PostToolUse analytics hook. Call after skill or agent invocations to record usage events.
+
+Examples:
+```bash
+specweave analytics push --type skill --name sw:pm
+specweave analytics push --type agent --name general
+```
+
+### Session Compact
+
+```bash
+specweave session compact
+```
+
+Replaces the former PreCompact hook. Call when context compaction occurs to update context-pressure tracking.
+
 ## Available Subagent Types
 
 SpecWeave uses specialized subagents for different phases of the increment workflow. These run in isolated contexts to keep the main agent's context clean.

@@ -2,12 +2,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const HTTP_EVENTS = [
-  'PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop',
-  'TaskCompleted', 'UserPromptSubmit', 'PostToolUseFailure',
-  'PermissionRequest',
+  'PreToolUse', 'UserPromptSubmit',
 ] as const;
 
-const COMMAND_EVENTS = [
+/** Stale hook keys from previous versions that must be actively removed */
+const STALE_HOOK_KEYS = [
+  'PostToolUse', 'Stop', 'SubagentStop', 'TaskCompleted',
+  'PostToolUseFailure', 'PermissionRequest',
   'SessionStart', 'SessionEnd', 'Notification', 'SubagentStart',
   'ConfigChange', 'PreCompact', 'TeammateIdle',
 ] as const;
@@ -43,19 +44,11 @@ export function generateHooksSettings(options: GenerateSettingsOptions): Record<
 
   const hooks: Record<string, unknown[]> = {};
 
-  // HTTP events
+  // Only PreToolUse and UserPromptSubmit remain as HTTP hooks
   for (const event of HTTP_EVENTS) {
     hooks[event] = [{
       type: 'http',
       url: `http://localhost:${configPort}/api/hooks/${event}`,
-    }];
-  }
-
-  // Command events
-  for (const event of COMMAND_EVENTS) {
-    hooks[event] = [{
-      type: 'command',
-      command: `node ${bridgePath} ${event}`,
     }];
   }
 
@@ -82,6 +75,13 @@ export function writeSettings(projectRoot: string, port?: number): void {
   // Deep-merge hooks to preserve user-defined hook configurations
   const existingHooks = (existing.hooks ?? {}) as Record<string, unknown>;
   const newHooks = (settings.hooks ?? {}) as Record<string, unknown>;
-  const merged = { ...existing, hooks: { ...existingHooks, ...newHooks } };
+  const mergedHooks = { ...existingHooks, ...newHooks };
+
+  // Actively remove stale hook keys from previous versions
+  for (const staleKey of STALE_HOOK_KEYS) {
+    delete mergedHooks[staleKey];
+  }
+
+  const merged = { ...existing, hooks: mergedHooks };
   fs.writeFileSync(settingsPath, JSON.stringify(merged, null, 2) + '\n');
 }

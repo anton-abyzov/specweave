@@ -107,11 +107,14 @@ function extractIncrementId(filePath: string): string {
   return match ? match[1] : 'unknown';
 }
 
-function readJsonSafe(filePath: string): Record<string, unknown> {
+function readJsonSafe(filePath: string, context?: HookContext): Record<string, unknown> {
   try {
     if (!fs.existsSync(filePath)) return {};
     return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  } catch {
+  } catch (err) {
+    if (context) {
+      logHook(context, 'pre-tool-use', `readJsonSafe error (${filePath}): ${err instanceof Error ? err.message : String(err)}`);
+    }
     return {};
   }
 }
@@ -147,7 +150,7 @@ function checkStatusCompletionGuard(
   // Allow if auto-mode active with testsVerified
   const autoSession = path.join(context.stateDir, 'auto', 'session.json');
   if (fs.existsSync(autoSession)) {
-    const session = readJsonSafe(autoSession);
+    const session = readJsonSafe(autoSession, context);
     if (session.status === 'active' && session.testsVerified === true) {
       return ALLOW;
     }
@@ -185,7 +188,7 @@ function checkInterviewGuard(
   }
 
   // Read config to check if strict interview enabled
-  const config = readJsonSafe(context.configPath);
+  const config = readJsonSafe(context.configPath, context);
   const planning = (config.planning ?? {}) as Record<string, unknown>;
   const di = (planning.deepInterview ?? {}) as Record<string, unknown>;
 
@@ -210,7 +213,7 @@ function checkInterviewGuard(
   }
 
   // Check covered categories
-  const state = readJsonSafe(interviewState);
+  const state = readJsonSafe(interviewState, context);
   const covered = state.coveredCategories as Record<string, unknown> | undefined;
   const coveredKeys = covered ? Object.keys(covered) : [];
   const missing = categories.filter((c) => !coveredKeys.includes(c));
@@ -247,7 +250,7 @@ function isNonImplTeam(input: HookInput): boolean {
   return false;
 }
 
-function hasValidSpec(specPath: string): boolean {
+function hasValidSpec(specPath: string, context?: HookContext): boolean {
   try {
     if (!fs.existsSync(specPath)) return false;
     const content = fs.readFileSync(specPath, 'utf-8');
@@ -267,7 +270,10 @@ function hasValidSpec(specPath: string): boolean {
     if (!/AC-US\d+-\d+|AC-\d+/.test(content)) return false;
 
     return true;
-  } catch {
+  } catch (err) {
+    if (context) {
+      logHook(context, 'pre-tool-use', `hasValidSpec error (${specPath}): ${err instanceof Error ? err.message : String(err)}`);
+    }
     return false;
   }
 }
@@ -289,7 +295,7 @@ function checkIncrementExistenceGuard(
       for (const entry of entries) {
         if (entry.isDirectory()) {
           const specPath = path.join(incDir, entry.name, 'spec.md');
-          if (!hasValidSpec(specPath)) continue;
+          if (!hasValidSpec(specPath, context)) continue;
           // Check metadata.json for qualifying status
           const metaPath = path.join(incDir, entry.name, 'metadata.json');
           if (fs.existsSync(metaPath)) {
@@ -298,8 +304,8 @@ function checkIncrementExistenceGuard(
               const status = meta?.status ?? '';
               const qualifying = ['active', 'in-progress', 'ready_for_review', 'planned'];
               if (qualifying.includes(status)) return ALLOW;
-            } catch {
-              // Unreadable metadata — skip this increment
+            } catch (err) {
+              logHook(context, 'pre-tool-use', `metadata parse error (${metaPath}): ${err instanceof Error ? err.message : String(err)}`);
             }
           } else {
             // No metadata.json but valid spec — allow (legacy increments)
@@ -307,8 +313,8 @@ function checkIncrementExistenceGuard(
           }
         }
       }
-    } catch {
-      // scan failure — don't block
+    } catch (err) {
+      logHook(context, 'pre-tool-use', `increment scan error: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -334,7 +340,7 @@ function checkIncrementExistenceGuard(
           for (const inc of incs) {
             if (inc.isDirectory()) {
               const specPath = path.join(repoIncDir, inc.name, 'spec.md');
-              if (!hasValidSpec(specPath)) continue;
+              if (!hasValidSpec(specPath, context)) continue;
               // Check metadata.json for qualifying status (consistent with single-repo scan)
               const metaPath = path.join(repoIncDir, inc.name, 'metadata.json');
               if (fs.existsSync(metaPath)) {
@@ -343,8 +349,8 @@ function checkIncrementExistenceGuard(
                   const status = meta?.status ?? '';
                   const qualifying = ['active', 'in-progress', 'ready_for_review', 'planned'];
                   if (qualifying.includes(status)) return ALLOW;
-                } catch {
-                  // Unreadable metadata — skip this increment
+                } catch (err) {
+                  logHook(context, 'pre-tool-use', `metadata parse error (${metaPath}): ${err instanceof Error ? err.message : String(err)}`);
                 }
               } else {
                 // No metadata.json but valid spec — allow (legacy increments)
@@ -354,8 +360,8 @@ function checkIncrementExistenceGuard(
           }
         }
       }
-    } catch {
-      // scan failure — don't block
+    } catch (err) {
+      logHook(context, 'pre-tool-use', `multi-repo scan error: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
