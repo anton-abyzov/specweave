@@ -19,7 +19,7 @@ The Extensible Skills documentation has been split into two documents for clarit
 The **[Extensible Skills Specification](/docs/skills/extensible/extensible-skills-standard)** defines:
 
 - **Three extensibility categories** -- extensible, semi-extensible, not-extensible
-- **Dynamic context injection specification** -- Syntax, execution model, and graceful degradation
+- **Context loading specification** -- Instruction-based skill memories, DCI syntax for other contexts, and graceful degradation
 - **Detection algorithm** -- How categories are determined from SKILL.md content
 - **Conformance requirements** -- What registries must implement
 
@@ -30,7 +30,7 @@ The **[Extensible Skills Specification](/docs/skills/extensible/extensible-skill
 The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** covers:
 
 - **Getting started** -- For Claude Code users and SpecWeave users
-- **Architecture** -- Cascading lookup, injection blocks, and the Reflect system
+- **Architecture** -- Instruction-based loading, `.specweave/skill-memories/` lookup, and the Reflect system
 - **Real-world examples** -- How corrections become persistent preferences
 - **Skill memory format** -- Structured Markdown for customizations
 - **FAQ** -- Common questions and troubleshooting
@@ -41,8 +41,8 @@ The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** 
 
 | Category | Meaning | Detection |
 |---|---|---|
-| **Extensible** | Injection block with skill-memories. Standard, discoverable customization. | Injection block referencing `skill-memories` |
-| **Semi-Extensible** | Mentions customization but not through the standard system. | Keyword signals or injection block without skill-memories |
+| **Extensible** | Instruction or injection block referencing skill-memories. Standard, discoverable customization. | Instruction or injection block referencing `skill-memories` |
+| **Semi-Extensible** | Mentions customization but not through the standard system. | Keyword signals without skill-memories reference |
 | **Not Extensible** | No customization mechanism. Fork to change. | No signals detected |
 
 ---
