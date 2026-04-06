@@ -11,7 +11,7 @@ argument-hint: "<increment-id>"
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh do 2>/dev/null || true`
+**Project Context**: If `.specweave/config.json` exists, read it for testing mode, TDD enforcement, and multi-project settings. Check for active increments in `.specweave/increments/*/metadata.json`.
 
 Execute a SpecWeave increment by running tasks from tasks.md with automatic AC-sync after every task completion.
 
