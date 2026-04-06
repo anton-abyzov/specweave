@@ -2,8 +2,7 @@
  * Tests for Team CLI Command
  *
  * Verifies that `specweave team` correctly launches Claude Code
- * with agent teams flags (--teammate-mode, --dangerously-skip-permissions)
- * and CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 env var.
+ * with agent teams flags and auto-launches tmux when needed.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -43,7 +42,7 @@ vi.mock('../../../../src/cli/helpers/init/claude-settings-env.js', () => ({
   enableAgentTeamsEnvVar: mockEnableAgentTeamsEnvVar,
 }));
 
-import { handleTeamCommand, TeamCommandOptions } from '../../../../src/cli/commands/team.js';
+import { handleTeamCommand } from '../../../../src/cli/commands/team.js';
 
 describe('Team Command', () => {
   let tempDir: string;
@@ -51,6 +50,7 @@ describe('Team Command', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let exitSpy: ReturnType<typeof vi.spyOn>;
   let originalCwd: string;
+  let originalTmux: string | undefined;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'team-test-'));
@@ -67,7 +67,7 @@ describe('Team Command', () => {
       JSON.stringify({ enabledPlugins: {} })
     );
 
-    // Default: claude CLI is available, tmux is available
+    // Default: claude + tmux available, it2 not available
     mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
       if (cmd === 'which' && args[0] === 'claude') {
         return { success: true, stdout: '/usr/local/bin/claude', stderr: '', exitCode: 0 };
@@ -81,13 +81,16 @@ describe('Team Command', () => {
       return { success: false, stdout: '', stderr: 'not found', exitCode: 1 };
     });
 
-    // Mock spawn - don't simulate exit event (avoids async process.exit after test cleanup)
     mockSpawn.mockClear();
     mockOn.mockClear();
 
     consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    // Save and clear TMUX env — tests control it explicitly
+    originalTmux = process.env.TMUX;
+    delete process.env.TMUX;
 
     originalCwd = process.cwd();
     process.chdir(tempDir);
@@ -102,25 +105,38 @@ describe('Team Command', () => {
     mockOn.mockClear();
     mockExecFileNoThrowSync.mockReset();
     mockEnableAgentTeamsEnvVar.mockClear();
+
+    // Restore original TMUX env
+    if (originalTmux !== undefined) {
+      process.env.TMUX = originalTmux;
+    } else {
+      delete process.env.TMUX;
+    }
+
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
 
-  describe('spawning claude with correct flags', () => {
-    it('should spawn claude with --dangerously-skip-permissions', async () => {
+  describe('when inside a tmux session', () => {
+    beforeEach(() => {
+      process.env.TMUX = '/tmp/tmux-501/default,12345,0';
+    });
+
+    it('should spawn claude with --teammate-mode tmux', async () => {
       await handleTeamCommand(undefined, {});
 
       expect(mockSpawn).toHaveBeenCalledTimes(1);
       const [cmd, args] = mockSpawn.mock.calls[0];
       expect(cmd).toBe('claude');
       expect(args).toContain('--dangerously-skip-permissions');
+      expect(args).toContain('--teammate-mode');
+      expect(args).toContain('tmux');
     });
 
     it('should set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in spawn env', async () => {
       await handleTeamCommand(undefined, {});
 
-      expect(mockSpawn).toHaveBeenCalledTimes(1);
       const spawnOptions = mockSpawn.mock.calls[0][2];
       expect(spawnOptions.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS).toBe('1');
     });
@@ -131,82 +147,132 @@ describe('Team Command', () => {
       const spawnOptions = mockSpawn.mock.calls[0][2];
       expect(spawnOptions.stdio).toBe('inherit');
     });
-  });
 
-  describe('description passthrough', () => {
-    it('should NOT use -p flag (non-interactive) when description provided', async () => {
+    it('should pass description as positional arg', async () => {
       await handleTeamCommand('Build auth system', {});
 
-      expect(mockSpawn).toHaveBeenCalledTimes(1);
-      const [, args] = mockSpawn.mock.calls[0];
-      // -p makes it non-interactive — must NOT be used for team mode
-      expect(args).not.toContain('-p');
-      // Should launch interactively with base flags and teammate mode
-      expect(args).toContain('--dangerously-skip-permissions');
-      expect(args).toContain('--teammate-mode');
-    });
-
-    it('should print description as suggested prompt for the user', async () => {
-      await handleTeamCommand('Build auth system', {});
-
-      // Description is passed as a positional arg to claude CLI, not printed to console
-      // Verify it's passed as the last arg to spawn
       const [, args] = mockSpawn.mock.calls[0];
       expect(args).toContain('Build auth system');
+      expect(args).not.toContain('-p');
     });
 
     it('should not include prompt arg when no description', async () => {
       await handleTeamCommand(undefined, {});
 
       const [, args] = mockSpawn.mock.calls[0];
-      // Should have base flags plus teammate mode, no extra prompt args
       expect(args).toContain('--dangerously-skip-permissions');
       expect(args).toContain('--teammate-mode');
       expect(args).not.toContain('-p');
     });
   });
 
-  describe('mode selection', () => {
-    it('should pass --teammate-mode in-process when explicitly requested', async () => {
-      await handleTeamCommand(undefined, { mode: 'in-process' });
-
-      expect(mockSpawn).toHaveBeenCalledTimes(1);
-      const [, args] = mockSpawn.mock.calls[0];
-      expect(args).toContain('--teammate-mode');
-      expect(args).toContain('in-process');
-
-      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
-      expect(logCalls).toMatch(/in-process/i);
-    });
-
-    it('should pass --teammate-mode tmux when tmux is available', async () => {
+  describe('when NOT inside a tmux session (auto-launch)', () => {
+    it('should spawn tmux (not claude) to auto-launch a tmux session', async () => {
       await handleTeamCommand(undefined, {});
 
       expect(mockSpawn).toHaveBeenCalledTimes(1);
-      const [, args] = mockSpawn.mock.calls[0];
-      expect(args).toContain('--teammate-mode');
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('tmux');
+      expect(args[0]).toBe('new-session');
+      // Should re-launch specweave team inside tmux with --mode tmux
+      expect(args).toContain('specweave');
+      expect(args).toContain('team');
+      expect(args).toContain('--mode');
       expect(args).toContain('tmux');
     });
 
-    it('should fall back to in-process when tmux is unavailable and pass that mode', async () => {
+    it('should pass description through to the re-launched command', async () => {
+      await handleTeamCommand('Build auth system', {});
+
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('tmux');
+      expect(args).toContain('Build auth system');
+    });
+
+    it('should pass --no-increment through to the re-launched command', async () => {
+      await handleTeamCommand(undefined, { noIncrement: true });
+
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('tmux');
+      expect(args).toContain('--no-increment');
+    });
+
+    it('should set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in tmux spawn env', async () => {
+      await handleTeamCommand(undefined, {});
+
+      const spawnOptions = mockSpawn.mock.calls[0][2];
+      expect(spawnOptions.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS).toBe('1');
+    });
+
+    it('should use a unique tmux session name', async () => {
+      await handleTeamCommand(undefined, {});
+
+      const [, args] = mockSpawn.mock.calls[0];
+      const sessionNameIdx = args.indexOf('-s') + 1;
+      expect(args[sessionNameIdx]).toMatch(/^sw-team-\d+$/);
+    });
+  });
+
+  describe('explicit --mode flag', () => {
+    it('should use in-process when --mode in-process, even with tmux available', async () => {
+      await handleTeamCommand(undefined, { mode: 'in-process' });
+
+      expect(mockSpawn).toHaveBeenCalledTimes(1);
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('claude');
+      expect(args).toContain('--teammate-mode');
+      expect(args).toContain('in-process');
+    });
+
+    it('should use tmux when --mode tmux and inside tmux', async () => {
+      process.env.TMUX = '/tmp/tmux-501/default,12345,0';
+      await handleTeamCommand(undefined, { mode: 'tmux' });
+
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('claude');
+      expect(args).toContain('tmux');
+    });
+  });
+
+  describe('no tmux installed', () => {
+    it('should fall back to in-process with helpful message', async () => {
       mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
         if (cmd === 'which' && args[0] === 'claude') {
           return { success: true, stdout: '/usr/local/bin/claude', stderr: '', exitCode: 0 };
         }
-        // tmux and it2 not available
         return { success: false, stdout: '', stderr: 'not found', exitCode: 1 };
       });
 
       await handleTeamCommand(undefined, {});
 
       expect(mockSpawn).toHaveBeenCalledTimes(1);
-      const [, args] = mockSpawn.mock.calls[0];
-      expect(args).toContain('--teammate-mode');
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('claude');
       expect(args).toContain('in-process');
 
-      // Should warn the user about missing tmux
       const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
-      expect(logCalls).toMatch(/tmux|iTerm2|in-process/i);
+      expect(logCalls).toMatch(/tmux not found/i);
+      expect(logCalls).toMatch(/brew install tmux/i);
+    });
+  });
+
+  describe('iTerm2 detection', () => {
+    it('should use tmux mode when it2 CLI is available', async () => {
+      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
+        if (cmd === 'which' && args[0] === 'claude') {
+          return { success: true, stdout: '/usr/local/bin/claude', stderr: '', exitCode: 0 };
+        }
+        if (cmd === 'which' && args[0] === 'it2') {
+          return { success: true, stdout: '/usr/local/bin/it2', stderr: '', exitCode: 0 };
+        }
+        return { success: false, stdout: '', stderr: 'not found', exitCode: 1 };
+      });
+
+      await handleTeamCommand(undefined, {});
+
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('claude');
+      expect(args).toContain('tmux');
     });
   });
 
@@ -227,7 +293,6 @@ describe('Team Command', () => {
     });
 
     it('should error when project is not initialized', async () => {
-      // Remove .specweave dir
       fs.rmSync(path.join(tempDir, '.specweave'), { recursive: true, force: true });
 
       await handleTeamCommand(undefined, {});
@@ -237,6 +302,10 @@ describe('Team Command', () => {
   });
 
   describe('settings.json env var auto-fix', () => {
+    beforeEach(() => {
+      process.env.TMUX = '/tmp/tmux-501/default,12345,0';
+    });
+
     it('should call enableAgentTeamsEnvVar with project directory', async () => {
       await handleTeamCommand(undefined, {});
 

@@ -2,13 +2,13 @@
  * Team CLI Command
  *
  * Launches Claude Code with native agent teams enabled.
- * Sets CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 and passes
- * the initial prompt for team orchestration.
+ * Automatically creates a tmux session if not already in one,
+ * so agents get their own split panes.
  *
  * Usage:
- *   specweave team                          # Launch with tmux split panes
+ *   specweave team                          # Auto-launches in tmux
  *   specweave team "Build auth system"      # Launch with initial prompt
- *   specweave team --mode in-process        # Use in-process mode
+ *   specweave team --mode in-process        # Force in-process mode (no tmux)
  */
 
 import { spawn } from 'child_process';
@@ -35,34 +35,16 @@ function isToolAvailable(tool: string): boolean {
 }
 
 /**
- * Determine the best teammate mode based on available tools
+ * Reconstruct CLI args for re-launching inside tmux.
  */
-function resolveTeammateMode(requestedMode?: string): string {
-  if (requestedMode) {
-    if (!VALID_MODES.includes(requestedMode as typeof VALID_MODES[number])) {
-      console.log(chalk.yellow(`Unknown mode "${requestedMode}". Valid modes: ${VALID_MODES.join(', ')}`));
-      console.log(chalk.gray('Falling back to auto-detection.'));
-    } else {
-      return requestedMode;
-    }
-  }
-
-  // Check for tmux or iTerm2 (it2 CLI)
-  const hasTmux = isToolAvailable('tmux');
-  const hasIt2 = isToolAvailable('it2');
-
-  if (hasTmux || hasIt2) {
-    return 'tmux'; // Claude auto-detects iTerm2 vs tmux
-  }
-
-  // Fallback
-  console.log(
-    chalk.yellow(
-      'Neither tmux nor iTerm2 (it2) found. Using in-process mode (less convenient).'
-    )
-  );
-  console.log(chalk.gray('Install tmux: brew install tmux'));
-  return 'in-process';
+function buildRelaunchArgs(
+  description: string | undefined,
+  options: TeamCommandOptions
+): string[] {
+  const args: string[] = ['team', '--mode', 'tmux'];
+  if (options.noIncrement) args.push('--no-increment');
+  if (description) args.push(description);
+  return args;
 }
 
 /**
@@ -91,8 +73,9 @@ export async function handleTeamCommand(
   enableAgentTeamsEnvVar(projectPath);
   enableAgentTeamsEnvVar(os.homedir());
 
-  // Determine mode
-  const mode = resolveTeammateMode(options.mode);
+  // Determine mode — may re-launch inside tmux (returns only if continuing)
+  const mode = resolveMode(description, options);
+  if (mode === null) return; // re-launched inside tmux, parent exits via spawn handler
 
   // Build args — interactive mode with optional initial prompt as positional arg
   const args: string[] = ['--dangerously-skip-permissions', '--teammate-mode', mode];
@@ -135,4 +118,74 @@ export async function handleTeamCommand(
   child.on('exit', (code) => {
     process.exit(code ?? 0);
   });
+}
+
+/**
+ * Resolve teammate mode, auto-launching tmux if needed.
+ *
+ * Returns the mode string to use, or null if the process was
+ * re-launched inside tmux (caller should exit).
+ */
+function resolveMode(
+  description: string | undefined,
+  options: TeamCommandOptions
+): string | null {
+  // Explicit in-process — skip tmux entirely
+  if (options.mode === 'in-process') {
+    return 'in-process';
+  }
+
+  // Explicit tmux or invalid mode — validate
+  if (options.mode && options.mode !== 'tmux') {
+    console.log(chalk.yellow(`Unknown mode "${options.mode}". Valid modes: ${VALID_MODES.join(', ')}`));
+    console.log(chalk.gray('Falling back to auto-detection.'));
+  }
+
+  // Already inside tmux — use it directly
+  if (process.env.TMUX) {
+    return 'tmux';
+  }
+
+  // iTerm2 available — Claude auto-detects iTerm2 split panes
+  if (isToolAvailable('it2')) {
+    return 'tmux';
+  }
+
+  // tmux available but not in a session — auto-launch inside tmux
+  if (isToolAvailable('tmux')) {
+    console.log(chalk.cyan('Starting tmux session for agent split panes...'));
+
+    const sessionName = `sw-team-${Date.now()}`;
+    const relaunchArgs = buildRelaunchArgs(description, options);
+    const tmuxArgs = [
+      'new-session', '-s', sessionName, '--',
+      'specweave', ...relaunchArgs,
+    ];
+
+    const child = spawn('tmux', tmuxArgs, {
+      stdio: 'inherit',
+      env: {
+        ...process.env as Record<string, string>,
+        CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
+      },
+    });
+
+    child.on('error', (err) => {
+      console.error(chalk.red(`Failed to start tmux: ${err.message}`));
+      process.exit(1);
+    });
+
+    child.on('exit', (code) => {
+      process.exit(code ?? 0);
+    });
+
+    return null; // Signal: re-launched, don't continue
+  }
+
+  // No tmux at all — in-process fallback with helpful note
+  console.log(
+    chalk.yellow('tmux not found. Agents will run in-process (same pane).')
+  );
+  console.log(chalk.gray('Install tmux for split-pane agent views: brew install tmux'));
+  return 'in-process';
 }
