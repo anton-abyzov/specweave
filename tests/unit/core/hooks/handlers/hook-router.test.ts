@@ -1,15 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as path from 'path';
+import { tmpdir } from 'os';
+
+let testLogsDir: string;
 
 // Mock the handler modules so we don't load real handlers
 vi.mock('../../../../../src/core/hooks/handlers/utils.js', () => ({
   findProjectRoot: vi.fn().mockReturnValue(null),
-  createContext: vi.fn().mockReturnValue({
+  createContext: vi.fn().mockImplementation(() => ({
     projectRoot: '/test',
     stateDir: '/test/.specweave/state',
-    logsDir: '/test/.specweave/logs',
+    logsDir: testLogsDir ?? '/test/.specweave/logs',
     configPath: '/test/.specweave/config.json',
     timestamp: '2026-03-27T00:00:00.000Z',
-  }),
+  })),
   parseStdinJson: vi.fn().mockReturnValue({}),
   logHook: vi.fn(),
 }));
@@ -18,6 +22,7 @@ describe('hooks/handlers/hook-router', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     delete process.env.SPECWEAVE_DISABLE_HOOKS;
+    testLogsDir = path.join(tmpdir(), `sw-test-logs-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   });
 
   describe('hookRouter', () => {

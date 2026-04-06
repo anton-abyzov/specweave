@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { HandlerFn, HookResult } from './types.js';
+import type { HandlerFn, HookContext, HookResult } from './types.js';
 import { logHook } from './utils.js';
 
 /** Built-in Claude Code commands that should bypass all SpecWeave processing */
@@ -56,24 +56,28 @@ function isSwSkillInvocation(prompt: string): boolean {
 }
 
 /** Read and parse JSON config file, returns null on any error */
-function readJsonSafe(filePath: string): Record<string, any> | null {
+function readJsonSafe(filePath: string, context?: HookContext): Record<string, any> | null {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch {
+  } catch (err) {
+    if (context) {
+      logHook(context, 'user-prompt-submit', `readJsonSafe error (${filePath}): ${err instanceof Error ? err.message : String(err)}`);
+    }
     return null;
   }
 }
 
 /** Build context string from active increments */
-function buildIncrementContext(projectRoot: string): string {
-  const incDir = path.join(projectRoot, '.specweave', 'increments');
+function buildIncrementContext(context: HookContext): string {
+  const incDir = path.join(context.projectRoot, '.specweave', 'increments');
   if (!fs.existsSync(incDir)) return '';
 
   const parts: string[] = [];
   let dirs: string[];
   try {
     dirs = fs.readdirSync(incDir);
-  } catch {
+  } catch (err) {
+    logHook(context, 'user-prompt-submit', `readdirSync error (${incDir}): ${err instanceof Error ? err.message : String(err)}`);
     return '';
   }
 
@@ -81,7 +85,7 @@ function buildIncrementContext(projectRoot: string): string {
     const metaPath = path.join(incDir, dir, 'metadata.json');
     if (!fs.existsSync(metaPath)) continue;
 
-    const meta = readJsonSafe(metaPath);
+    const meta = readJsonSafe(metaPath, context);
     if (!meta) continue;
     if (meta.status !== 'active' && meta.status !== 'in-progress') continue;
 
@@ -92,8 +96,8 @@ function buildIncrementContext(projectRoot: string): string {
       const tasks = fs.readFileSync(tasksPath, 'utf8');
       pending = (tasks.match(/\[ \]/g) || []).length;
       completed = (tasks.match(/\[x\]/g) || []).length;
-    } catch {
-      // No tasks file
+    } catch (err) {
+      logHook(context, 'user-prompt-submit', `tasks.md read error (${tasksPath}): ${err instanceof Error ? err.message : String(err)}`);
     }
 
     parts.push(`Active increment: ${dir} (${completed}/${completed + pending} tasks done)`);
@@ -103,9 +107,8 @@ function buildIncrementContext(projectRoot: string): string {
 }
 
 /** Build TDD context string from config */
-function buildTddContext(projectRoot: string): string {
-  const configPath = path.join(projectRoot, '.specweave', 'config.json');
-  const config = readJsonSafe(configPath);
+function buildTddContext(context: HookContext): string {
+  const config = readJsonSafe(context.configPath, context);
   if (!config) return '';
 
   const testMode = config.testing?.defaultTestMode;
@@ -164,11 +167,11 @@ export const handle: HandlerFn = async (input, context) => {
     const contextParts: string[] = [];
 
     // Active increment context
-    const incCtx = buildIncrementContext(context.projectRoot);
+    const incCtx = buildIncrementContext(context);
     if (incCtx) contextParts.push(incCtx);
 
     // TDD mode context
-    const tddCtx = buildTddContext(context.projectRoot);
+    const tddCtx = buildTddContext(context);
     if (tddCtx) contextParts.push(tddCtx);
 
     const combined = contextParts.join('\n');
@@ -178,7 +181,10 @@ export const handle: HandlerFn = async (input, context) => {
 
     return approveWithContext(combined || undefined);
   } catch (err) {
-    // Never throw — return safe default
+    // Never throw — log and return safe default
+    try {
+      logHook(context, 'user-prompt-submit', `handler error: ${err instanceof Error ? err.message : String(err)}`);
+    } catch { /* logging failure — swallow */ }
     return { decision: 'approve' };
   }
 };

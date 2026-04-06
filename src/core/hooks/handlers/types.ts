@@ -65,26 +65,12 @@ export type HandlerFn = (
 /** Event types supported by the hook router */
 export type HookEventType =
   | 'user-prompt-submit'
-  | 'pre-tool-use'
-  | 'post-tool-use'
-  | 'post-tool-use-analytics'
-  | 'session-start'
-  | 'pre-compact'
-  | 'stop-reflect'
-  | 'stop-auto'
-  | 'stop-sync';
+  | 'pre-tool-use';
 
 /** Map of event types to their safe fallback responses */
 export const SAFE_DEFAULTS: Record<string, HookResult> = {
   'user-prompt-submit': { decision: 'approve' },
   'pre-tool-use': { decision: 'allow' },
-  'post-tool-use': { continue: true },
-  'post-tool-use-analytics': { continue: true },
-  'session-start': { continue: true },
-  'pre-compact': { continue: true },
-  'stop-reflect': { decision: 'approve' },
-  'stop-auto': { decision: 'approve' },
-  'stop-sync': { decision: 'approve' },
 };
 
 /** Get safe default response for an event type */
