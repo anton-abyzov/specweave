@@ -317,6 +317,27 @@ describe('pre-tool-use handler', () => {
     expect(result.decision).toBe('allow');
   });
 
+  it.each([
+    'test-hooks',
+    'debug-auth-issue',
+    'investigate-perf',
+    'verify-release',
+    'qa-regression',
+    'research-options',
+    'brainstorm-ideas',
+    'plan-migration',
+  ])('allows TeamCreate for non-impl prefix: %s', async (teamName) => {
+    const { handle } = await import(
+      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
+    );
+    const input: HookInput = {
+      tool_name: 'TeamCreate',
+      tool_input: { team_name: teamName, description: 'some work' },
+    };
+    const result = await handle(input, makeContext());
+    expect(result.decision).toBe('allow');
+  });
+
   it('allows TeamCreate for non-implementation teams (description keyword)', async () => {
     const { handle } = await import(
       '../../../../../src/core/hooks/handlers/pre-tool-use.js'
@@ -325,6 +346,27 @@ describe('pre-tool-use handler', () => {
     const input: HookInput = {
       tool_name: 'TeamCreate',
       tool_input: { team_name: 'my-team', description: 'brainstorm new ideas' },
+    };
+    const result = await handle(input, makeContext());
+    expect(result.decision).toBe('allow');
+  });
+
+  it.each([
+    'test the published version',
+    'testing hooks end-to-end',
+    'verify deployment works',
+    'debug the auth failure',
+    'investigate performance regression',
+    'diagnose timeout issue',
+    'troubleshoot CI failures',
+    'qa pass on release candidate',
+  ])('allows TeamCreate for non-impl keyword in description: %s', async (desc) => {
+    const { handle } = await import(
+      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
+    );
+    const input: HookInput = {
+      tool_name: 'TeamCreate',
+      tool_input: { team_name: 'my-team', description: desc },
     };
     const result = await handle(input, makeContext());
     expect(result.decision).toBe('allow');
