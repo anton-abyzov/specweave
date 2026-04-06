@@ -1,19 +1,20 @@
 /**
  * Integration tests for skill memory loading architecture
  *
- * ARCHITECTURE (DCI-based, v1.0.254+):
- * Skill memories are loaded via Dynamic Context Injection (DCI) in SKILL.md.
- * Each SKILL.md has a `## Project Overrides` section with a `!`command`` one-liner
- * that cascades through 3 directories (first-match-wins):
- *   1. .specweave/skill-memories/{skill}.md
- *   2. .claude/skill-memories/{skill}.md
- *   3. ~/.claude/skill-memories/{skill}.md
+ * ARCHITECTURE (instruction-based, post v1.0.254+):
+ * Skill memories are loaded via plain LLM instructions in SKILL.md.
+ * Each SKILL.md has a `## Project Overrides` section with an instruction:
+ *   **Skill Memories**: If `.specweave/skill-memories/{skill}.md` exists, read and apply its learnings.
+ *
+ * The skill-memories.sh script has been deleted. DCI shell commands (`!` backtick)
+ * are no longer used for skill memory loading.
  *
  * Tests that:
- * 1. All invocable SKILL.md files have DCI blocks
- * 2. DCI skill name matches the directory name
- * 3. Legacy cat instructions are absent
- * 4. CLAUDE.md Skill Memories section exists
+ * 1. All invocable SKILL.md files have instruction-based memory references
+ * 2. Instruction skill name matches the directory name
+ * 3. No SKILL.md files use DCI shell commands for skill-memories
+ * 4. Legacy cat instructions are absent
+ * 5. CLAUDE.md Skill Memories section exists
  */
 
 import { describe, it, expect } from 'vitest';
@@ -23,9 +24,8 @@ import { glob } from 'glob';
 
 describe('Skill memory loading architecture', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
-  // Skills that should have DCI blocks (user-invocable or referenced by other skills)
+  // Skills that should have instruction-based memory loading (user-invocable or referenced by other skills)
   // Note: code-simplifier, security, security-patterns migrated to vskill repo
-  // and no longer use the specweave DCI pattern
   // Note: cancel-auto, docs, docs-updater, framework, lsp, progress, save
   // were moved to other repos or renamed and no longer exist in this plugins dir.
   const DCI_SKILLS = [
@@ -39,7 +39,7 @@ describe('Skill memory loading architecture', () => {
     return glob.sync(pattern);
   };
 
-  describe('DCI-based skill memory loading', () => {
+  describe('instruction-based skill memory loading', () => {
     it('should find SKILL.md files in plugins directory', () => {
       const skillFiles = getSkillFiles();
       expect(skillFiles.length).toBeGreaterThan(0);
@@ -64,7 +64,7 @@ describe('Skill memory loading architecture', () => {
       expect(missing).toEqual([]);
     });
 
-    it('all DCI blocks should reference skill-memories.sh script', () => {
+    it('all invocable skills should have instruction-based skill memory reference', () => {
       const missing: string[] = [];
 
       for (const { skill, dir } of DCI_SKILLS) {
@@ -73,8 +73,8 @@ describe('Skill memory loading architecture', () => {
 
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Must reference the skill-memories.sh script
-        if (!content.includes('skill-memories.sh')) {
+        // Must have the instruction format: **Skill Memories**: ... read and apply ...
+        if (!content.match(/Skill Memories.*read and apply/)) {
           missing.push(skill);
         }
       }
@@ -82,18 +82,12 @@ describe('Skill memory loading architecture', () => {
       expect(missing).toEqual([]);
     });
 
-    it('skill-memories.sh script should have cascading lookup pattern', () => {
+    it('skill-memories.sh script should not exist (deleted)', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/skill-memories.sh');
-      expect(fs.existsSync(scriptPath)).toBe(true);
-
-      const content = fs.readFileSync(scriptPath, 'utf-8');
-      expect(content).toContain('.specweave/skill-memories');
-      expect(content).toContain('.claude/skill-memories');
-      expect(content).toContain('$HOME/.claude/skill-memories');
-      expect(content).toContain('awk');
+      expect(fs.existsSync(scriptPath)).toBe(false);
     });
 
-    it('DCI skill name should match the skill directory name', () => {
+    it('instruction skill name should match the skill directory name', () => {
       const mismatches: string[] = [];
 
       for (const { skill, dir } of DCI_SKILLS) {
@@ -102,16 +96,60 @@ describe('Skill memory loading architecture', () => {
 
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Extract the skill name from the script call
-        const match = content.match(/skill-memories\.sh\s+(\S+)/);
+        // Extract the skill name from the instruction: skill-memories/{name}.md
+        const match = content.match(/skill-memories\/(\S+)\.md/);
         if (!match) {
-          mismatches.push(`${skill} (no skill-memories.sh call found)`);
+          mismatches.push(`${skill} (no skill-memories reference found)`);
         } else if (match[1] !== skill) {
-          mismatches.push(`${skill} (arg="${match[1]}" != "${skill}")`);
+          mismatches.push(`${skill} (references "${match[1]}" instead of "${skill}")`);
         }
       }
 
       expect(mismatches).toEqual([]);
+    });
+
+    it('no SKILL.md files should use DCI for skill-memories', () => {
+      const skillFiles = getSkillFiles();
+      const violations: string[] = [];
+
+      for (const filePath of skillFiles) {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const skillName = path.basename(path.dirname(filePath));
+
+        // Check for old DCI formats: !`...skill-memories...` or skill-memories.sh
+        if (content.match(/^!\`.*skill-memories/m) || content.includes('skill-memories.sh')) {
+          violations.push(skillName);
+        }
+      }
+
+      expect(violations).toEqual([]);
+    });
+
+    it('all DCI blocks should use || true for graceful degradation', () => {
+      const skillFiles = getSkillFiles();
+      const commandsDir = path.join(process.cwd(), 'plugins/specweave/commands');
+      const commandFiles = fs.existsSync(commandsDir)
+        ? glob.sync(path.join(commandsDir, '*.md'))
+        : [];
+      const allFiles = [...skillFiles, ...commandFiles];
+      const violations: string[] = [];
+
+      for (const filePath of allFiles) {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const name = path.basename(filePath, '.md');
+
+        // Find DCI blocks referencing .specweave/scripts/
+        const dciMatches = content.match(/!`\.specweave\/scripts\/[^`]+`/g);
+        if (dciMatches) {
+          for (const dci of dciMatches) {
+            if (!dci.includes('|| true')) {
+              violations.push(`${name}: ${dci}`);
+            }
+          }
+        }
+      }
+
+      expect(violations).toEqual([]);
     });
 
     it('no DCI blocks should use legacy inline format', () => {
