@@ -7,7 +7,7 @@ description: EMERGENCY ONLY - Cancel running auto session and generate summary r
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh cancel-auto 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/cancel-auto.md` exists, read and apply its learnings.
 
 **⚠️ EMERGENCY USE ONLY - Manually cancel the running auto session.**
 
