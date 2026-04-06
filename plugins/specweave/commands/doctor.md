@@ -7,7 +7,7 @@ argument-hint: "[--fix] [--verbose]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh doctor 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/doctor.md` exists, read and apply its learnings.
 
 ## Project Context
 
