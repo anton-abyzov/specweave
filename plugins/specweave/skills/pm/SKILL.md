@@ -9,7 +9,7 @@ model: opus
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh pm 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/pm.md` exists, read and apply its learnings.
 
 ## Overview
 

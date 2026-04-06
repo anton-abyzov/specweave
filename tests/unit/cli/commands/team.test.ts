@@ -235,13 +235,29 @@ describe('Team Command', () => {
   });
 
   describe('no tmux installed', () => {
-    it('should fall back to in-process with helpful message', async () => {
+    let originalPlatform: PropertyDescriptor | undefined;
+
+    afterEach(() => {
+      // Restore process.platform
+      if (originalPlatform) {
+        Object.defineProperty(process, 'platform', originalPlatform);
+      }
+    });
+
+    function mockNoTmux() {
       mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (cmd === 'which' && args[0] === 'claude') {
+        const whichCmd = process.platform === 'win32' ? 'where' : 'which';
+        if (cmd === whichCmd && args[0] === 'claude') {
           return { success: true, stdout: '/usr/local/bin/claude', stderr: '', exitCode: 0 };
         }
         return { success: false, stdout: '', stderr: 'not found', exitCode: 1 };
       });
+    }
+
+    it('should fall back to in-process and show brew hint on macOS', async () => {
+      originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      mockNoTmux();
 
       await handleTeamCommand(undefined, {});
 
@@ -253,6 +269,36 @@ describe('Team Command', () => {
       const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
       expect(logCalls).toMatch(/tmux not found/i);
       expect(logCalls).toMatch(/brew install tmux/i);
+    });
+
+    it('should fall back to in-process and show apt hint on Linux', async () => {
+      originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+      mockNoTmux();
+
+      await handleTeamCommand(undefined, {});
+
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('claude');
+      expect(args).toContain('in-process');
+
+      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(logCalls).toMatch(/sudo apt install tmux/i);
+    });
+
+    it('should fall back to in-process and show WSL hint on Windows', async () => {
+      originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+      mockNoTmux();
+
+      await handleTeamCommand(undefined, {});
+
+      const [cmd, args] = mockSpawn.mock.calls[0];
+      expect(cmd).toBe('claude');
+      expect(args).toContain('in-process');
+
+      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(logCalls).toMatch(/WSL/i);
     });
   });
 
