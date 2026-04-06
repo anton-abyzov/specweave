@@ -6,7 +6,7 @@ description: Write failing tests that define expected behavior. Use when saying 
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh tdd-red 2>/dev/null; true`
+!`.specweave/scripts/skill-memories.sh tdd-red 2>/dev/null`
 
 Write comprehensive failing tests following TDD red phase principles.
 
