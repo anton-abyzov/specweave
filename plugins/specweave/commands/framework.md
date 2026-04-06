@@ -8,7 +8,7 @@ user-invocable: false
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh framework 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/framework.md` exists, read and apply its learnings.
 
 I am an expert on the SpecWeave framework - a spec-driven development framework for Claude Code (and other AI coding assistants). I have deep knowledge of its structure, rules, conventions, and best practices.
 

@@ -2,9 +2,12 @@
  * Claude Settings Permission Configuration
  *
  * Adds DCI script patterns to .claude/settings.json permissions.allow
- * so skill-memories.sh and skill-context.sh can execute without
- * interactive approval. Required for non-interactive environments
- * (anymodel, proxies) and users with restrictive permission settings.
+ * so skill-context.sh can execute without interactive approval.
+ * Required for non-interactive environments (anymodel, proxies) and
+ * users with restrictive permission settings.
+ *
+ * Note: skill-memories.sh was replaced with instruction-based loading
+ * (cross-platform, no shell needed). Only skill-context.sh remains as DCI.
  */
 
 import * as fs from '../../../utils/fs-native.js';
@@ -12,16 +15,20 @@ import * as path from 'path';
 
 /** Bash patterns that DCI hooks need auto-approved */
 const DCI_PATTERNS = [
-  'Bash(.specweave/scripts/skill-memories.sh *)',
   'Bash(.specweave/scripts/skill-context.sh *)',
+];
+
+/** Legacy pattern to clean up from existing settings */
+const LEGACY_PATTERNS = [
+  'Bash(.specweave/scripts/skill-memories.sh *)',
 ];
 
 /**
  * Add DCI script permissions to project-level .claude/settings.json
  *
- * Adds patterns for skill-memories.sh and skill-context.sh to the
- * permissions.allow array. Idempotent — skips patterns already present.
- * Also skips if the user has blanket "Bash" permission (all commands allowed).
+ * Adds patterns for skill-context.sh to the permissions.allow array.
+ * Idempotent — skips patterns already present. Also cleans up legacy
+ * skill-memories.sh patterns. Skips if user has blanket "Bash" permission.
  */
 export function enableDciPermissions(projectDir: string): void {
   const claudeDir = path.join(projectDir, '.claude');
@@ -47,9 +54,20 @@ export function enableDciPermissions(projectDir: string): void {
   }
 
   let changed = false;
+
+  // Add current DCI patterns
   for (const pattern of DCI_PATTERNS) {
     if (!allow.includes(pattern)) {
       allow.push(pattern);
+      changed = true;
+    }
+  }
+
+  // Remove legacy patterns (skill-memories.sh no longer used as DCI)
+  for (const legacy of LEGACY_PATTERNS) {
+    const idx = allow.indexOf(legacy);
+    if (idx !== -1) {
+      allow.splice(idx, 1);
       changed = true;
     }
   }

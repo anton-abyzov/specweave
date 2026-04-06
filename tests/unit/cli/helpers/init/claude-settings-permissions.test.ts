@@ -31,8 +31,9 @@ describe('enableDciPermissions', () => {
     expect(fs.existsSync(settingsPath)).toBe(true);
 
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-    expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-memories.sh *)');
     expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-context.sh *)');
+    // skill-memories.sh is instruction-based now, no bash pattern needed
+    expect(settings.permissions.allow).not.toContain('Bash(.specweave/scripts/skill-memories.sh *)');
   });
 
   it('should preserve existing permissions when adding DCI patterns', () => {
@@ -54,7 +55,6 @@ describe('enableDciPermissions', () => {
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
     expect(settings.permissions.allow).toContain('Read');
     expect(settings.permissions.allow).toContain('Write');
-    expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-memories.sh *)');
     expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-context.sh *)');
     expect(settings.permissions.defaultMode).toBe('default');
     expect(settings.enabledPlugins['sw@specweave']).toBe(true);
@@ -84,9 +84,29 @@ describe('enableDciPermissions', () => {
     const settingsPath = path.join(tempDir, '.claude', 'settings.json');
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
     const count = settings.permissions.allow.filter(
-      (p: string) => p.includes('skill-memories.sh')
+      (p: string) => p.includes('skill-context.sh')
     ).length;
     expect(count).toBe(1);
+  });
+
+  it('should remove legacy skill-memories.sh pattern', () => {
+    const settingsPath = path.join(tempDir, '.claude', 'settings.json');
+    fs.mkdirSync(path.join(tempDir, '.claude'), { recursive: true });
+    fs.writeFileSync(
+      settingsPath,
+      JSON.stringify({
+        permissions: {
+          allow: ['Read', 'Bash(.specweave/scripts/skill-memories.sh *)'],
+        },
+      })
+    );
+
+    enableDciPermissions(tempDir);
+
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    expect(settings.permissions.allow).not.toContain('Bash(.specweave/scripts/skill-memories.sh *)');
+    expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-context.sh *)');
+    expect(settings.permissions.allow).toContain('Read');
   });
 
   it('should create .claude directory if it does not exist', () => {
@@ -104,6 +124,6 @@ describe('enableDciPermissions', () => {
     enableDciPermissions(tempDir);
 
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-    expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-memories.sh *)');
+    expect(settings.permissions.allow).toContain('Bash(.specweave/scripts/skill-context.sh *)');
   });
 });

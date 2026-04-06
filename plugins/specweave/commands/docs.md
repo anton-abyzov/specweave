@@ -7,7 +7,7 @@ argument-hint: "[topic] [--serve] [--status] [--public] [--internal] [--adr] [--
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh docs 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/docs.md` exists, read and apply its learnings.
 
 Browse, search, load, and serve SpecWeave living documentation.
 

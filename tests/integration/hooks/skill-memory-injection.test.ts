@@ -1,11 +1,18 @@
 /**
- * Integration tests for DCI-based Skill Memory Cascade
+ * Integration tests for Skill Memory loading
  *
- * Tests the DCI one-liner that each SKILL.md uses to load memories.
- * Cascade priority (first-match-wins):
- *   1. .specweave/skill-memories/{skill}.md
- *   2. .claude/skill-memories/{skill}.md
- *   3. ~/.claude/skill-memories/{skill}.md
+ * Tests two mechanisms:
+ * 1. DCI cascade (used by skill-context.sh, tested via awk one-liner)
+ *    Cascade priority (first-match-wins):
+ *      a. .specweave/skill-memories/{skill}.md
+ *      b. .claude/skill-memories/{skill}.md
+ *      c. ~/.claude/skill-memories/{skill}.md
+ * 2. Instruction-based loading (used by SKILL.md for skill memories)
+ *    Each SKILL.md has a plain LLM instruction:
+ *    **Skill Memories**: If `.specweave/skill-memories/{skill}.md` exists, read and apply its learnings.
+ *
+ * The skill-memories.sh script has been deleted. Skill memories now use
+ * instruction-based loading instead of DCI shell commands.
  *
  * @module tests/integration/hooks/skill-memory-injection
  */
@@ -92,8 +99,7 @@ describe('DCI Skill Memory Cascade', () => {
       const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
       // Inline cascade may return non-zero when no files match (the for loop's
-      // last [ -f ] fails). Production uses skill-memories.sh which exits 0.
-      // We only care that output is empty.
+      // last [ -f ] fails). We only care that output is empty.
       expect((result.stdout || '').trim()).toBe('');
     });
 
@@ -209,7 +215,6 @@ describe('DCI Skill Memory Cascade', () => {
       const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
       // Inline cascade may return non-zero when no files match.
-      // Production uses skill-memories.sh which always exits 0.
       expect((result.stdout || '').trim()).toBe('');
     });
 
@@ -251,10 +256,10 @@ describe('DCI Skill Memory Cascade', () => {
   });
 });
 
-describe('Real SKILL.md DCI Blocks', () => {
+describe('Real SKILL.md Instruction-Based Skill Memories', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
 
-  it('no SKILL.md files have ; true in DCI hooks (causes permission errors)', () => {
+  it('no SKILL.md files reference deleted skill-memories.sh script', () => {
     const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
       .filter(d => d.isDirectory())
       .map(d => d.name);
@@ -265,7 +270,7 @@ describe('Real SKILL.md DCI Blocks', () => {
       if (!fs.existsSync(skillPath)) continue;
 
       const content = fs.readFileSync(skillPath, 'utf-8');
-      if (content.includes('## Project Overrides') && content.includes('; true`')) {
+      if (content.includes('skill-memories.sh')) {
         violations.push(dir);
       }
     }
@@ -273,173 +278,131 @@ describe('Real SKILL.md DCI Blocks', () => {
     expect(violations).toEqual([]);
   });
 
-  it('pm SKILL.md has valid DCI block without ; true', () => {
+  it('pm SKILL.md has instruction-based skill memory loading', () => {
     const content = fs.readFileSync(
       path.join(pluginsDir, 'pm', 'SKILL.md'),
       'utf-8'
     );
 
     expect(content).toContain('## Project Overrides');
-    expect(content).toContain('skill-memories.sh pm');
-    expect(content).not.toContain('; true`');
+    expect(content).toMatch(/Skill Memories.*read and apply/);
+    expect(content).toContain('skill-memories/pm.md');
   });
 
-  it('grill SKILL.md has valid DCI block without ; true', () => {
+  it('grill SKILL.md has instruction-based skill memory loading', () => {
     const content = fs.readFileSync(
       path.join(pluginsDir, 'grill', 'SKILL.md'),
       'utf-8'
     );
 
     expect(content).toContain('## Project Overrides');
-    expect(content).toContain('skill-memories.sh grill');
-    expect(content).not.toContain('; true`');
+    expect(content).toMatch(/Skill Memories.*read and apply/);
+    expect(content).toContain('skill-memories/grill.md');
   });
 });
 
 /**
- * Full-cycle E2E: extract the actual DCI command from real SKILL.md files
- * and execute it in a simulated project, verifying exit code and output.
+ * Verify that all SKILL.md files with skill memories use the instruction-based
+ * format (not DCI shell commands). The instruction tells the LLM to read the
+ * skill-memories file directly rather than executing a shell script.
  */
-describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
+describe('Instruction-Based Skill Memory Format (E2E from real SKILL.md)', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
-  const scriptsDir = path.join(process.cwd(), 'plugins/specweave/scripts');
-  let tmpDir: string;
-  let projectRoot: string;
-
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dci-e2e-'));
-    projectRoot = path.join(tmpDir, 'project');
-    fs.mkdirSync(projectRoot, { recursive: true });
-
-    // Install skill-memories.sh into test project's .specweave/scripts/
-    const destScriptsDir = path.join(projectRoot, '.specweave', 'scripts');
-    fs.mkdirSync(destScriptsDir, { recursive: true });
-    const scriptSrc = path.join(scriptsDir, 'skill-memories.sh');
-    if (fs.existsSync(scriptSrc)) {
-      fs.copyFileSync(scriptSrc, path.join(destScriptsDir, 'skill-memories.sh'));
-      fs.chmodSync(path.join(destScriptsDir, 'skill-memories.sh'), 0o755);
-    }
-  });
-
-  afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  });
 
   /**
-   * Extract the raw DCI bash command from a SKILL.md file.
-   * Finds the `!`...`` line and returns the command inside backticks.
+   * Extract the skill memory instruction from a SKILL.md file.
+   * Instruction format: **Skill Memories**: If `.specweave/skill-memories/{skill}.md` exists, read and apply its learnings.
    */
-  function extractDciCommand(skillDir: string): string | null {
+  function extractMemoryInstruction(skillDir: string): string | null {
     const skillPath = path.join(pluginsDir, skillDir, 'SKILL.md');
     if (!fs.existsSync(skillPath)) return null;
 
     const content = fs.readFileSync(skillPath, 'utf-8');
-    const match = content.match(/^!`(.+)`$/m);
-    return match ? match[1] : null;
+    const match = content.match(/\*\*Skill Memories\*\*:.*read and apply.*learnings/);
+    return match ? match[0] : null;
   }
 
   /**
-   * Extract skill name from a DCI command.
-   * Script format: .specweave/scripts/skill-memories.sh <name>
+   * Extract skill name from a memory instruction.
+   * Format: skill-memories/{name}.md
    */
-  function extractSkillName(cmd: string): string | null {
-    const match = cmd.match(/skill-memories\.sh\s+(\S+)/);
+  function extractSkillName(instruction: string): string | null {
+    const match = instruction.match(/skill-memories\/(\S+)\.md/);
     return match ? match[1] : null;
   }
 
-  it('pm DCI command succeeds with exit 0 when no memory files exist', () => {
-    const cmd = extractDciCommand('pm');
-    expect(cmd).not.toBeNull();
-
-    const result = spawnSync('bash', ['-c', cmd!], { cwd: projectRoot, encoding: 'utf-8' });
-
-    expect(result.status).toBe(0);
-    expect((result.stdout || '').trim()).toBe('');
+  it('pm SKILL.md contains instruction-based skill memory reference', () => {
+    const instruction = extractMemoryInstruction('pm');
+    expect(instruction).not.toBeNull();
+    expect(instruction).toContain('skill-memories/pm.md');
   });
 
-  it('pm DCI command loads learnings from .specweave/skill-memories/', () => {
-    const cmd = extractDciCommand('pm');
-    expect(cmd).not.toBeNull();
-
-    createMemoryFile(
-      path.join(projectRoot, '.specweave', 'skill-memories'),
-      'pm', ['Always interview stakeholders before writing specs']
-    );
-
-    const result = spawnSync('bash', ['-c', cmd!], { cwd: projectRoot, encoding: 'utf-8' });
-
-    expect(result.status).toBe(0);
-    expect((result.stdout || '').trim()).toContain('Always interview stakeholders');
+  it('grill SKILL.md contains instruction-based skill memory reference', () => {
+    const instruction = extractMemoryInstruction('grill');
+    expect(instruction).not.toBeNull();
+    expect(instruction).toContain('skill-memories/grill.md');
   });
 
-  it('grill DCI command succeeds with exit 0 when no memory files exist', () => {
-    const cmd = extractDciCommand('grill');
-    expect(cmd).not.toBeNull();
-
-    const result = spawnSync('bash', ['-c', cmd!], { cwd: projectRoot, encoding: 'utf-8' });
-
-    expect(result.status).toBe(0);
-    expect((result.stdout || '').trim()).toBe('');
-  });
-
-  it('every skill DCI command exits 0 with no memory files', () => {
+  it('no SKILL.md files use DCI shell commands for skill-memories', () => {
     const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
       .filter(d => d.isDirectory())
       .map(d => d.name);
 
-    const failures: string[] = [];
+    const violations: string[] = [];
 
     for (const dir of skillDirs) {
-      const cmd = extractDciCommand(dir);
-      if (!cmd) continue;
+      const skillPath = path.join(pluginsDir, dir, 'SKILL.md');
+      if (!fs.existsSync(skillPath)) continue;
 
-      const result = spawnSync('bash', ['-c', cmd], { cwd: projectRoot, encoding: 'utf-8' });
-
-      if (result.status !== 0) {
-        failures.push(`${dir}: exit code ${result.status}`);
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      // Check for old DCI format: !`...skill-memories...`
+      if (content.match(/^!\`.*skill-memories/m)) {
+        violations.push(dir);
       }
     }
 
-    expect(failures).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
-  it('every skill DCI command returns learnings when memory file exists', () => {
+  it('every skill with memory instruction references the correct skill name', () => {
     const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
       .filter(d => d.isDirectory())
       .map(d => d.name);
 
-    const failures: string[] = [];
+    const mismatches: string[] = [];
 
     for (const dir of skillDirs) {
-      const cmd = extractDciCommand(dir);
-      if (!cmd) continue;
+      const instruction = extractMemoryInstruction(dir);
+      if (!instruction) continue;
 
-      // Extract skill name from the script call
-      const skillName = extractSkillName(cmd);
-      if (!skillName) continue;
-
-      // Create a memory file for this skill
-      createMemoryFile(
-        path.join(projectRoot, '.specweave', 'skill-memories'),
-        skillName, [`E2E test learning for ${skillName}`]
-      );
-
-      const result = spawnSync('bash', ['-c', cmd], { cwd: projectRoot, encoding: 'utf-8' });
-
-      if (result.status !== 0) {
-        failures.push(`${dir}: exit code ${result.status}`);
-      } else if (!(result.stdout || '').includes(`E2E test learning for ${skillName}`)) {
-        failures.push(`${dir}: missing expected learning in output`);
-      }
-
-      // Clean up memory files for next skill (keep scripts dir)
-      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
-      if (fs.existsSync(memDir)) {
-        fs.rmSync(memDir, { recursive: true, force: true });
+      const skillName = extractSkillName(instruction);
+      if (!skillName) {
+        mismatches.push(`${dir}: no skill name found in instruction`);
+      } else if (skillName !== dir) {
+        mismatches.push(`${dir}: instruction references "${skillName}" instead of "${dir}"`);
       }
     }
 
-    expect(failures).toEqual([]);
+    expect(mismatches).toEqual([]);
+  });
+
+  it('every skill with memory instruction uses .specweave/skill-memories/ path', () => {
+    const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+
+    const violations: string[] = [];
+
+    for (const dir of skillDirs) {
+      const instruction = extractMemoryInstruction(dir);
+      if (!instruction) continue;
+
+      if (!instruction.includes('.specweave/skill-memories/')) {
+        violations.push(dir);
+      }
+    }
+
+    expect(violations).toEqual([]);
   });
 });
 

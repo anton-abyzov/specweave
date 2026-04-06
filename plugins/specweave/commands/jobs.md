@@ -7,7 +7,7 @@ argument-hint: "[--all] [--id job-id]"
 
 ## Project Overrides
 
-!`.specweave/scripts/skill-memories.sh jobs 2>/dev/null`
+**Skill Memories**: If `.specweave/skill-memories/jobs.md` exists, read and apply its learnings.
 
 Shows background job information including:
 - **Clone jobs** — repository cloning progress and status
