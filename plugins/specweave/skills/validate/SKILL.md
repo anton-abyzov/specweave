@@ -11,7 +11,7 @@ argument-hint: "[increment-id]"
 
 ## Project Context
 
-!`.specweave/scripts/skill-context.sh validate 2>/dev/null || true`
+**Project Context**: If `.specweave/config.json` exists, read it for testing mode, TDD enforcement, and multi-project settings. Check for active increments in `.specweave/increments/*/metadata.json`.
 
 You are helping the user validate a SpecWeave increment with optional AI-powered quality assessment.
 
