@@ -16,19 +16,12 @@ import { findProjectRoot, createContext, parseStdinJson, logHook } from './utils
 const HANDLERS: Record<string, () => Promise<{ handle: HandlerFn }>> = {
   'user-prompt-submit': () => import('./user-prompt-submit.js'),
   'pre-tool-use': () => import('./pre-tool-use.js'),
-  'post-tool-use': () => import('./post-tool-use.js'),
-  'post-tool-use-analytics': () => import('./post-tool-use-analytics.js'),
-  'session-start': () => import('./session-start.js'),
-  'pre-compact': () => import('./pre-compact.js'),
-  'stop-reflect': () => import('./stop-reflect.js'),
-  'stop-auto': () => import('./stop-auto.js'),
-  'stop-sync': () => import('./stop-sync.js'),
 };
 
 /**
  * Route a hook event to the correct handler.
  *
- * @param eventType - The hook event type (e.g. 'pre-compact', 'user-prompt-submit')
+ * @param eventType - The hook event type ('pre-tool-use' or 'user-prompt-submit')
  * @param rawStdin - Raw stdin string (JSON from Claude Code)
  * @returns HookResult — always valid JSON, never throws
  */
@@ -77,8 +70,9 @@ export async function hookRouter(
         const msg = error instanceof Error ? error.message : String(error);
         logHook(context, 'router', `Error in ${eventType}: ${msg}`);
       }
-    } catch {
-      // Even logging can fail — swallow everything
+    } catch (logErr) {
+      // Last-resort fallback when even logHook fails
+      try { process.stderr.write(`[specweave] hook-router: logging failed for ${eventType}: ${String(logErr)}\n`); } catch { /* truly nothing left */ }
     }
     return safeDefault;
   }

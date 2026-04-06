@@ -857,6 +857,28 @@ program
     });
   });
 
+// Analytics push command - Record analytics events (replaces PostToolUse analytics hook)
+program
+  .command('analytics-push')
+  .description('Record a skill or agent analytics event (replaces PostToolUse analytics hook)')
+  .requiredOption('--type <type>', 'Event type: skill or agent')
+  .requiredOption('--name <name>', 'Skill or agent name')
+  .option('--plugin <plugin>', 'Source plugin name')
+  .option('--json', 'Output as JSON')
+  .option('--silent', 'Suppress output')
+  .action(async (options) => {
+    const { analyticsPushCommand } = await import('../dist/src/cli/commands/analytics-push.js');
+    const result = await analyticsPushCommand({
+      projectRoot: process.cwd(),
+      type: options.type,
+      name: options.name,
+      plugin: options.plugin,
+      json: options.json,
+      silent: options.silent,
+    });
+    if (!result.success) process.exit(1);
+  });
+
 // LSP command - Code intelligence operations
 const lspCmd = program
   .command('lsp')
@@ -943,6 +965,30 @@ program
   .action(async () => {
     const { commitsCommand } = await import('../dist/src/cli/commands/commits.js');
     await commitsCommand();
+  });
+
+// Sync flush command - Flush or queue sync events (replaces PostToolUse/stop-sync hooks)
+const syncFlushCmd = program
+  .command('sync')
+  .description('Sync operations');
+
+syncFlushCmd
+  .command('flush')
+  .description('Flush pending sync events or queue new ones (replaces PostToolUse hook)')
+  .option('--queue <json>', 'Queue a new event instead of flushing')
+  .option('--dry-run', 'Report what would be flushed without clearing')
+  .option('--json', 'Output as JSON')
+  .option('--silent', 'Suppress output')
+  .action(async (options) => {
+    const { syncFlushCommand } = await import('../dist/src/cli/commands/sync-flush.js');
+    const result = await syncFlushCommand({
+      projectRoot: process.cwd(),
+      queue: options.queue,
+      dryRun: options.dryRun,
+      json: options.json,
+      silent: options.silent,
+    });
+    if (!result.success) process.exit(1);
   });
 
 // Sync-scheduled command - Execute due scheduled sync jobs (for cron/CI)
@@ -1242,6 +1288,43 @@ program
     if (report.status === 'unhealthy') {
       process.exit(1);
     }
+  });
+
+// Session command - Session lifecycle management (replaces SessionStart/Stop hooks)
+const sessionCmd = program
+  .command('session')
+  .description('Session lifecycle management (start, end)');
+
+sessionCmd
+  .command('start')
+  .description('Initialize session (replaces SessionStart hook)')
+  .option('--session-id <id>', 'Session identifier for isolated state')
+  .option('--json', 'Output as JSON')
+  .option('--silent', 'Suppress output')
+  .action(async (options) => {
+    const { sessionStartCommand } = await import('../dist/src/cli/commands/session.js');
+    const result = await sessionStartCommand({
+      projectRoot: process.cwd(),
+      sessionId: options.sessionId,
+      json: options.json,
+      silent: options.silent,
+    });
+    if (!result.success) process.exit(1);
+  });
+
+sessionCmd
+  .command('end')
+  .description('End session: reflect check, auto scan, sync flush (replaces Stop hooks)')
+  .option('--json', 'Output as JSON')
+  .option('--silent', 'Suppress output')
+  .action(async (options) => {
+    const { sessionEndCommand } = await import('../dist/src/cli/commands/session.js');
+    const result = await sessionEndCommand({
+      projectRoot: process.cwd(),
+      json: options.json,
+      silent: options.silent,
+    });
+    if (!result.success) process.exit(1);
   });
 
 // Hook command - CLI delegation entry point for Claude Code hooks (internal)
