@@ -48,6 +48,12 @@ I approach code like a demanding tech lead:
 
 ### Phase 0: Spec Compliance Interrogation (ALWAYS RUNS)
 
+**Rubric Integration**: If `rubric.md` exists in the increment directory:
+1. Load the file and find all criteria where `Evaluator: sw:grill`
+2. For each criterion, use your AC compliance analysis to determine PASS or FAIL
+3. Update the criterion's `Result` field: `[x] PASS` or `[!] FAIL — <brief reason>`
+4. If rubric.md does not exist, proceed with existing behavior (no error)
+
 **This phase runs before any code quality review. It is not opt-in — it always executes.**
 
 The implementer finished suspiciously quickly. Their report may be incomplete, inaccurate, or optimistic. You MUST verify everything independently.

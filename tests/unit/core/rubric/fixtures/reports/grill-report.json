@@ -1,0 +1,14 @@
+{
+  "shipReadiness": "READY",
+  "acCompliance": {
+    "totalACs": 2,
+    "passed": 2,
+    "failed": 0,
+    "results": [
+      { "acId": "AC-US1-01", "status": "pass" },
+      { "acId": "AC-US1-02", "status": "pass" }
+    ]
+  },
+  "summary": { "critical": 0, "high": 0, "medium": 0 },
+  "findings": []
+}

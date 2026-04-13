@@ -191,6 +191,77 @@ export class IncrementCompletionValidator {
       warnings.push('Quality gate report validation skipped due to error');
     }
 
+    // NEW (v1.0.663): Rubric-based quality contract validation
+    // Only runs if rubric.md exists in the increment directory.
+    // All [blocking] criteria must PASS for closure. Advisory failures are warnings.
+    // No rubric.md = zero behavior change (backward compatible).
+    try {
+      const rubricPath = path.join(incrementPath, 'rubric.md');
+      const hasRubric = await fs.pathExists(rubricPath);
+
+      // Skip if no rubric.md in increment, or if rubric opt-out in config
+      let rubricRequired = true;
+      try {
+        const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
+        if (await fs.pathExists(configPath)) {
+          const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+          rubricRequired = config?.rubric?.required !== false;
+        }
+      } catch { /* config read failed — default to required */ }
+
+      // Also skip if rubric.md is still a template placeholder
+      // Check frontmatter specifically (between --- markers) to avoid false matches in criterion text
+      let isTemplate = false;
+      if (hasRubric) {
+        try {
+          const rubricContent = await fs.readFile(rubricPath, 'utf-8');
+          const fmMatch = rubricContent.match(/^---\n([\s\S]*?)\n---/);
+          isTemplate = fmMatch ? fmMatch[1].includes('status: template') : false;
+        } catch { /* read failed */ }
+      }
+
+      if (hasRubric && rubricRequired && !isTemplate) {
+        const { mergeRubricLayers } = await import('../rubric/rubric-merger.js');
+        const { evaluateRubric, summarizeResults } = await import('../rubric/rubric-evaluator.js');
+
+        const projectRoot = resolveEffectiveRoot();
+        const reportsDir = path.join(incrementPath, 'reports');
+        const merged = await mergeRubricLayers(projectRoot, incrementId, incrementPath);
+
+        if (merged) {
+          const evaluated = await evaluateRubric(merged, reportsDir);
+          const summary = summarizeResults(evaluated);
+
+          // Report non-passing blocking criteria with distinct messages per status
+          const failedBlocking = evaluated.criteria.filter(
+            c => c.severity === 'blocking' && c.result?.status === 'fail',
+          );
+          if (failedBlocking.length > 0) {
+            const ids = failedBlocking.map(c => `${c.id} (${c.title})`).join(', ');
+            errors.push(`Rubric: ${failedBlocking.length} blocking criteria failed: ${ids}`);
+          }
+
+          const unevaluatedBlocking = evaluated.criteria.filter(
+            c => c.severity === 'blocking' && (!c.result || c.result.status === 'skip'),
+          );
+          if (unevaluatedBlocking.length > 0) {
+            const ids = unevaluatedBlocking.map(c => `${c.id} (${c.title})`).join(', ');
+            errors.push(`Rubric: ${unevaluatedBlocking.length} blocking criteria not yet evaluated: ${ids}`);
+          }
+
+          // Advisory failures → warnings
+          if (summary.advisory.failed > 0) {
+            warnings.push(`Rubric: ${summary.advisory.failed} advisory criteria failed (non-blocking)`);
+          }
+
+          logger.info(`Rubric validation: ${summary.verdict} (${summary.blocking.passed}/${summary.blocking.total} blocking passed)`);
+        }
+      }
+    } catch (error) {
+      logger.warn(`Rubric validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push('Rubric validation skipped due to error');
+    }
+
     // NEW (v1.0.105): Test coverage validation for TDD increments
     // Validates that coverage meets target when testMode != 'none' and coverageTarget > 0
     // See: ADR-0163 (TDD Enforcement Implementation)

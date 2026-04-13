@@ -3,6 +3,9 @@
  * T-008 [RED] → T-009 [GREEN]
  */
 
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { execSync } from 'node:child_process';
 import { describe, it, expect } from 'vitest';
 
 import {
@@ -127,27 +130,9 @@ describe('smart-defaults', () => {
       expect(config.translation.enabled).toBe(true);
     });
 
-    // ─── Increment interview defaults ────────────────────────
-
-    it('should set planning.incrementInterview.enabled to true by default', () => {
+    it('should NOT set incrementInterview (orphaned key removed)', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.planning.incrementInterview.enabled).toBe(true);
-    });
-
-    it('should set planning.incrementInterview.minQuestions to 3', () => {
-      const config = applySmartDefaults({}, makeOptions());
-      expect(config.planning.incrementInterview.minQuestions).toBe(3);
-    });
-
-    it('should preserve existing incrementInterview config', () => {
-      const existing = {
-        planning: {
-          incrementInterview: { enabled: false, minQuestions: 10 },
-        },
-      };
-      const config = applySmartDefaults(existing, makeOptions());
-      expect(config.planning.incrementInterview.enabled).toBe(false);
-      expect(config.planning.incrementInterview.minQuestions).toBe(10);
+      expect(config.planning.incrementInterview).toBeUndefined();
     });
 
     // ─── Sync/hooks defaults ──────────────────────────────────
@@ -197,6 +182,99 @@ describe('smart-defaults', () => {
       const config = applySmartDefaults(existing, makeOptions());
       expect(config.sync).toEqual({ enabled: true });
       expect(config.custom).toBe('value');
+    });
+  });
+
+  describe('orphaned config key guard', () => {
+    // Prevents config keys from being added to smart-defaults without
+    // corresponding usage in skills, hooks, or source code.
+    // See: incrementInterview removal — orphaned keys confuse LLMs
+    // that read config.json and interpret unknown enabled flags as instructions.
+
+    const REPO_ROOT = join(__dirname, '../../../../..');
+
+    function getConfigLeafKeys(): string[] {
+      const config = applySmartDefaults({}, {
+        adapter: 'claude',
+        language: 'de', // non-en to trigger translation branch
+        isGitRepo: true,
+      });
+      // Also test with a provider to trigger sync/hooks branch
+      const configWithProvider = applySmartDefaults(
+        { repository: { provider: 'github' } },
+        { adapter: 'claude', language: 'en', isGitRepo: true },
+      );
+      const keys = new Set<string>();
+      function walk(obj: Record<string, any>, prefix: string) {
+        for (const [k, v] of Object.entries(obj)) {
+          const path = prefix ? `${prefix}.${k}` : k;
+          if (v && typeof v === 'object' && !Array.isArray(v)) {
+            walk(v, path);
+          } else {
+            keys.add(path);
+          }
+        }
+      }
+      walk(config, '');
+      walk(configWithProvider, '');
+      return [...keys];
+    }
+
+    function isKeyReferenced(key: string): boolean {
+      // Extract the deepest config key name (e.g. "incrementInterview" from
+      // "planning.incrementInterview.enabled")
+      const segments = key.split('.');
+      // Search for the second-to-last segment if it's a nested object key
+      // (e.g., "deepInterview" from "planning.deepInterview.enabled")
+      // or the leaf itself for flat keys
+      const searchTerms = new Set<string>();
+      for (const seg of segments) {
+        if (seg.length > 3) searchTerms.add(seg); // skip short generic keys like "enabled"
+      }
+
+      const searchDirs = [
+        join(REPO_ROOT, 'plugins'),
+        join(REPO_ROOT, 'src'),
+      ];
+
+      for (const term of searchTerms) {
+        for (const dir of searchDirs) {
+          if (!existsSync(dir)) continue;
+          try {
+            // Search in .ts, .md, .sh files — skills use jq/grep on these key names
+            const result = execSync(
+              `grep -rl "${term}" "${dir}" --include="*.ts" --include="*.md" --include="*.sh" 2>/dev/null || true`,
+              { encoding: 'utf-8' },
+            ).trim();
+            // Exclude smart-defaults.ts itself and its test
+            const files = result.split('\n').filter(f =>
+              f && !f.includes('smart-defaults.ts') && !f.includes('smart-defaults.test.ts'),
+            );
+            if (files.length > 0) return true;
+          } catch {
+            // grep not found or other error — skip
+          }
+        }
+      }
+      return false;
+    }
+
+    it('every config key from smart-defaults should be referenced in plugins or src', () => {
+      const keys = getConfigLeafKeys();
+      const orphaned: string[] = [];
+
+      for (const key of keys) {
+        if (!isKeyReferenced(key)) {
+          orphaned.push(key);
+        }
+      }
+
+      expect(
+        orphaned,
+        `Orphaned config keys found in smart-defaults.ts that are never referenced ` +
+        `in plugins/ or src/. These confuse LLMs that read config.json. ` +
+        `Either wire them into a skill/hook or remove them:\n  ${orphaned.join('\n  ')}`,
+      ).toEqual([]);
     });
   });
 });

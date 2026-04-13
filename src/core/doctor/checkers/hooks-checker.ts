@@ -56,7 +56,7 @@ export class HooksChecker implements HealthChecker {
         name: 'Hooks summary',
         status: 'fail',
         message: `${failedHooks}/${totalHooks} hooks failing`,
-        fixSuggestion: 'Run: specweave check-hooks --fix',
+        fixSuggestion: 'Run: specweave hooks health',
       });
     } else if (totalHooks > 0) {
       checks.unshift({
@@ -200,7 +200,7 @@ export class HooksChecker implements HealthChecker {
         status: 'warn',
         message: 'execution test failed',
         durationMs: Date.now() - start,
-        fixSuggestion: 'Run: specweave check-hooks for detailed analysis',
+        fixSuggestion: 'Run: specweave hooks health for detailed analysis',
       };
     }
   }

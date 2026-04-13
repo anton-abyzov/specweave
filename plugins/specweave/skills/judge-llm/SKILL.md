@@ -140,6 +140,13 @@ VERDICT: [summary sentence]
 | **CONCERNS** | Issues found worth addressing | Review and fix recommended |
 | **REJECTED** | Critical issues found | MUST fix before proceeding |
 
+## Rubric Integration
+
+**Rubric Integration**: If `rubric.md` exists in the increment directory:
+1. Load the file and find all criteria where `Evaluator: sw:judge-llm`
+2. After determining your verdict, update matching criteria: `[x] PASS` if verdict is not REJECTED, `[!] FAIL — verdict: REJECTED` otherwise
+3. If rubric.md does not exist, proceed with existing behavior (no error)
+
 ## Persistent Report (MANDATORY)
 
 After evaluation (including consent-denied fallback), you **MUST** write a JSON report. The CLI checks for this file during closure.

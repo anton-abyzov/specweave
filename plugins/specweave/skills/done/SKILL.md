@@ -120,6 +120,8 @@ MANDATORY, cannot be bypassed. Runs BEFORE PM validation.
 2. **Desync check**: `DesyncDetector.validateOrThrow(incrementId)` -- blocks if metadata.json/spec.md inconsistent
 3. **Completion validation**: `IncrementCompletionValidator.validateCompletion(incrementId)`
 
+**Rubric Quality Contract**: If `rubric.md` exists in the increment directory, rubric evaluation runs automatically via the completion-validator. The validator reads rubric.md, evaluates all criteria against gate reports (grill-report.json, code-review-report.json, judge-llm-report.json), and blocks closure if any `[blocking]` criterion has status FAIL or PENDING. Advisory failures are reported as warnings. If rubric.md does not exist, the existing hardcoded gates run unchanged (backward compatible). Review any blocking rubric failures before retrying closure.
+
 **Gate 0 validates**:
 - All ACs checked in spec.md (`- [x] **AC-...`)
 - All tasks completed in tasks.md (`**Status**: [x] completed`)

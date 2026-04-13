@@ -44,17 +44,11 @@ export function applySmartDefaults(
   };
 
   // Deep interview: default to off (init-time, quick setup)
-  // Increment interview: default to ON (where planning value is highest)
   config.planning = {
     ...config.planning,
     deepInterview: {
       enabled: false,
       ...config.planning?.deepInterview,
-    },
-    incrementInterview: {
-      enabled: true,
-      minQuestions: 3,
-      ...config.planning?.incrementInterview,
     },
   };
 

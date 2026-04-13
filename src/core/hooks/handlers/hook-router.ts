@@ -11,6 +11,7 @@
 import type { HandlerFn, HookResult } from './types.js';
 import { getSafeDefault } from './types.js';
 import { findProjectRoot, createContext, parseStdinJson, logHook } from './utils.js';
+import { HookLogger } from '../hook-logger.js';
 
 /** Dynamic import map — only the requested handler is loaded per invocation */
 const HANDLERS: Record<string, () => Promise<{ handle: HandlerFn }>> = {
@@ -57,18 +58,51 @@ export async function hookRouter(
       return safeDefault;
     }
 
-    // Dynamic import + execute
+    // Dynamic import + execute with timing
+    const startTime = Date.now();
     const handlerModule = await loader();
     const result = await handlerModule.handle(input, context);
+    const duration = Date.now() - startTime;
+
+    // Semantic prefix: intentional blocks get [GUARD] label
+    if (result.decision === 'block' && result.reason) {
+      result.reason = `[GUARD] ${result.reason}`;
+    }
+
+    // Structured logging via HookLogger
+    try {
+      const hooksLogDir = `${context.logsDir}/hooks`;
+      const logger = new HookLogger(hooksLogDir);
+      await logger.log({
+        hookName: eventType,
+        status: result.decision === 'block' ? 'warning' : 'success',
+        duration,
+        ...(result.decision === 'block' && result.reason ? { error: result.reason } : {}),
+      });
+    } catch { /* logging must never crash hooks */ }
+
     return result;
   } catch (error) {
     // Never crash — log and return safe default
+    const duration = Date.now() - (0); // approximate
     try {
       const projectRoot = findProjectRoot();
       if (projectRoot) {
         const context = createContext(projectRoot);
         const msg = error instanceof Error ? error.message : String(error);
-        logHook(context, 'router', `Error in ${eventType}: ${msg}`);
+        logHook(context, 'router', `[ERROR] Error in ${eventType}: ${msg}`);
+
+        // Structured error logging
+        try {
+          const hooksLogDir = `${context.logsDir}/hooks`;
+          const logger = new HookLogger(hooksLogDir);
+          await logger.log({
+            hookName: eventType,
+            status: 'error',
+            duration,
+            error: msg,
+          });
+        } catch { /* logging must never crash hooks */ }
       }
     } catch (logErr) {
       // Last-resort fallback when even logHook fails
