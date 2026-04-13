@@ -4,6 +4,7 @@
  * @module cli/commands/hooks-cmd
  */
 
+import * as fs from 'fs';
 import * as path from 'path';
 import { HookLogger } from '../../core/hooks/hook-logger.js';
 import { HookHealthTracker } from '../../core/hooks/hook-health-tracker.js';
@@ -97,7 +98,7 @@ export interface HooksHealthOptions {
 export async function hooksHealthCommand(options: HooksHealthOptions = {}): Promise<void> {
   const logsDir = resolveLogsDir(process.cwd());
   const logger = new HookLogger(logsDir);
-  const tracker = new HookHealthTracker(logger);
+  const tracker = new HookHealthTracker();
 
   const hookNames = await logger.listHooks();
 
@@ -143,7 +144,15 @@ export async function hooksHealthCommand(options: HooksHealthOptions = {}): Prom
  */
 export async function hooksLsCommand(): Promise<void> {
   const cwd = process.cwd();
-  const scanner = new HookScanner(cwd);
+  const pluginsDir = path.join(cwd, 'plugins');
+  const pluginDirs: string[] = [];
+  if (fs.existsSync(pluginsDir)) {
+    for (const entry of fs.readdirSync(pluginsDir)) {
+      const full = path.join(pluginsDir, entry);
+      if (fs.statSync(full).isDirectory()) pluginDirs.push(full);
+    }
+  }
+  const scanner = new HookScanner({ projectRoot: cwd, pluginDirs, includeNonTestable: true });
 
   const hooks = await scanner.scanHooks();
 
@@ -155,7 +164,7 @@ export async function hooksLsCommand(): Promise<void> {
   // Group by trigger type
   const grouped: Record<string, typeof hooks> = {};
   for (const hook of hooks) {
-    const trigger = hook.trigger || hook.event || 'unknown';
+    const trigger = hook.trigger || 'unknown';
     if (!grouped[trigger]) grouped[trigger] = [];
     grouped[trigger].push(hook);
   }
@@ -165,7 +174,7 @@ export async function hooksLsCommand(): Promise<void> {
   for (const [trigger, hookList] of Object.entries(grouped)) {
     console.log(`\n┌─ ${trigger} ${'─'.repeat(Math.max(0, 65 - trigger.length))}┐`);
     for (const hook of hookList) {
-      const name = String(hook.name || hook.hookName || 'unnamed').padEnd(30);
+      const name = String(hook.name || 'unnamed').padEnd(30);
       const plugin = String(hook.plugin || 'core').padEnd(15);
       const critical = hook.critical ? '⚡' : '  ';
       console.log(`│ ${critical} ${name} ${plugin} │`);
