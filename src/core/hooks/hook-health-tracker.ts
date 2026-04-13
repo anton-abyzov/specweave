@@ -115,13 +115,13 @@ export class HookHealthTracker {
     // Generate recommendations
     const recommendations: string[] = [];
     if (status === 'FAILED') {
-      recommendations.push('Run `specweave check-hooks` to diagnose issues');
+      recommendations.push('Run `specweave hooks health` to diagnose issues');
       if (actualConsecutiveFailures >= 3) {
         recommendations.push('Multiple consecutive failures detected');
       }
       recommendations.push('Check `.specweave/logs/hooks/${hookName}.log` for details');
     } else if (status === 'DEGRADED') {
-      recommendations.push('Run `specweave check-hooks` to identify problems');
+      recommendations.push('Run `specweave hooks health` to identify problems');
       if (avgDuration > 5000) {
         recommendations.push('Hook execution is slow (>5s) - may timeout');
       }

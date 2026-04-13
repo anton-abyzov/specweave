@@ -404,6 +404,11 @@ Report includes both pre-validation and post-validation severity counts for tran
 
 ### Write JSON Report
 
+**Rubric Integration**: If `rubric.md` exists in the increment directory:
+1. Load the file and find all criteria where `Evaluator: sw:code-reviewer`
+2. After completing your review, update matching criteria: `[x] PASS` if no critical/high/medium findings, `[!] FAIL — N critical, M high findings` otherwise
+3. If rubric.md does not exist, skip rubric operations entirely (no error)
+
 **IMPORTANT**: When reviewing an increment (`--increment` flag), always use the fixed name
 `code-review-report.json`. The CLI's completion-validator checks for this exact filename.
 Date-based naming is for standalone reviews only.
