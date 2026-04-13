@@ -7,6 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HookContext, HookInput } from './types.js';
+import { HookLogger } from '../hook-logger.js';
 
 /**
  * Walk up from `startDir` to find the nearest directory containing `.specweave/config.json`.
@@ -53,7 +54,8 @@ export function parseStdinJson(raw: string): HookInput {
 }
 
 /**
- * Append a log entry to `.specweave/logs/hooks.log`.
+ * Append a log entry to `.specweave/logs/hooks.log` (plaintext, backwards compat)
+ * and to `.specweave/logs/hooks/{handler}.log` (structured JSONL via HookLogger).
  * Never throws — logging failures are silently ignored.
  */
 export function logHook(
@@ -62,9 +64,21 @@ export function logHook(
   message: string,
 ): void {
   try {
+    // Plaintext log (backwards compat)
     fs.mkdirSync(context.logsDir, { recursive: true });
     const entry = `[${context.timestamp}] ${handler}: ${message}\n`;
     fs.appendFileSync(path.join(context.logsDir, 'hooks.log'), entry);
+
+    // Structured JSONL dual-write
+    const hooksLogDir = path.join(context.logsDir, 'hooks');
+    const logger = new HookLogger(hooksLogDir);
+    const isError = message.startsWith('[ERROR]');
+    const isBlock = message.includes('block') || message.includes('GUARD');
+    logger.log({
+      hookName: handler,
+      status: isError ? 'error' : isBlock ? 'warning' : 'success',
+      error: isError || isBlock ? message : undefined,
+    }).catch(() => { /* never crash */ });
   } catch {
     // Never throw from logging
   }
