@@ -151,7 +151,7 @@ function determineFix(categories: CategoryResult[]): string {
   }
 
   if (hasHookIssues) {
-    return 'specweave check-hooks --fix';
+    return 'specweave hooks health';
   }
 
   return 'specweave update';

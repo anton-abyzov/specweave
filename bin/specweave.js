@@ -1606,8 +1606,8 @@ program
     await dashboardCommand(options);
   });
 
-// Hooks command - Manage HTTP hook system
-const hooksCmd = program.command('hooks').description('Manage HTTP hook system');
+// Hooks command - Hook observability and management
+const hooksCmd = program.command('hooks').description('Hook observability and management');
 
 hooksCmd
   .command('status')
@@ -1626,6 +1626,40 @@ hooksCmd
     const { writeSettings } = await import('../dist/src/hooks/generate-settings.js');
     writeSettings(process.cwd(), options.port ? parseInt(options.port, 10) : undefined);
     console.log('Hooks settings written to .claude/settings.json');
+  });
+
+hooksCmd
+  .command('log')
+  .description('View recent hook events')
+  .option('--last <number>', 'Number of entries to show (default: 20)', '20')
+  .option('--blocks-only', 'Show only block decisions')
+  .option('--errors-only', 'Show only error entries')
+  .option('--hook <name>', 'Filter by hook name')
+  .action(async (options) => {
+    const { hooksLogCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
+    await hooksLogCommand({
+      last: parseInt(options.last, 10),
+      blocksOnly: options.blocksOnly,
+      errorsOnly: options.errorsOnly,
+      hook: options.hook,
+    });
+  });
+
+hooksCmd
+  .command('health')
+  .description('Show hook health summary')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    const { hooksHealthCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
+    await hooksHealthCommand({ format: options.json ? 'json' : 'console' });
+  });
+
+hooksCmd
+  .command('ls')
+  .description('List registered hooks')
+  .action(async () => {
+    const { hooksLsCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
+    await hooksLsCommand();
   });
 
 // Get command - Clone and register an existing repository into the workspace

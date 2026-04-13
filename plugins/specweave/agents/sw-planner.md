@@ -52,6 +52,28 @@ Every task MUST have a `**Test**:` block. No exceptions.
 - Group tasks by user story — one section per US
 - Coverage targets: unit 95%, integration 90%, E2E 100% of AC scenarios
 
+## Step: Generate rubric.md
+
+After writing tasks.md, generate the quality contract rubric for this increment:
+
+1. Read spec.md to extract all acceptance criteria (AC-IDs)
+2. Generate `rubric.md` with:
+   - One criterion per AC (functional correctness category, evaluator: sw:grill)
+   - Standard infrastructure criteria (test coverage, code quality, independent evaluation)
+   - All criteria start as `[ ] PENDING`
+3. Write rubric.md to the increment directory
+4. Inform the user: "rubric.md has been generated. Review and customize criteria (change severity, add/remove criteria) before implementation begins."
+
+The rubric uses this format per criterion:
+```
+### R-001: Title [blocking]
+- **Source**: AC-US1-01
+- **Evaluator**: sw:grill
+- **Verify**: Description
+- **Threshold**: Pass condition
+- **Result**: [ ] PENDING
+```
+
 ## Critical Reminders
 
 - **ONE user story per response** — never generate all tasks at once (prevents crashes)
