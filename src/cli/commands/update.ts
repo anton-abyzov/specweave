@@ -153,8 +153,14 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
   // Check if this is a SpecWeave project
   if (!isSpecWeaveProject) {
-    console.log(chalk.yellow('⚠️  Not a SpecWeave project (no .specweave directory found)'));
-    console.log(chalk.gray('   Run: specweave init\n'));
+    const hasDir = fs.existsSync(path.join(projectPath, '.specweave'));
+    if (hasDir) {
+      console.log(chalk.yellow('⚠️  Not a SpecWeave project (.specweave directory exists but config.json is missing)'));
+      console.log(chalk.gray('   Run: specweave init  — or restore config.json\n'));
+    } else {
+      console.log(chalk.yellow('⚠️  Not a SpecWeave project (no .specweave directory found)'));
+      console.log(chalk.gray('   Run: specweave init\n'));
+    }
 
     // Nothing to do outside a SpecWeave project — plugin refresh requires
     // a project context and can hang when run from an arbitrary directory.
