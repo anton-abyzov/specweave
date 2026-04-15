@@ -34,6 +34,7 @@ import { refreshPluginsCommand } from './refresh-plugins.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { pruneSkillMemories, listSkillMemoryFiles } from '../../core/reflection/skill-memories.js';
 import { npmRegistryFlag } from '../../utils/npm-constants.js';
+import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
 
 interface UpdateOptions {
@@ -72,7 +73,7 @@ interface UpdateResult {
 export async function updateCommand(options: UpdateOptions = {}): Promise<void> {
   const projectPath = process.cwd();
   const version = getPackageVersion();
-  const isSpecWeaveProject = fs.existsSync(path.join(projectPath, '.specweave', 'config.json'));
+  let isSpecWeaveProject = fs.existsSync(path.join(projectPath, '.specweave', 'config.json'));
 
   console.log(chalk.blue.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.blue.bold('  SpecWeave Update'));
@@ -153,21 +154,44 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
   // Check if this is a SpecWeave project
   if (!isSpecWeaveProject) {
-    const hasDir = fs.existsSync(path.join(projectPath, '.specweave'));
-    if (hasDir) {
-      console.log(chalk.yellow('⚠️  Not a SpecWeave project (.specweave directory exists but config.json is missing)'));
-      console.log(chalk.gray('   Run: specweave init  — or restore config.json\n'));
-    } else {
-      console.log(chalk.yellow('⚠️  Not a SpecWeave project (no .specweave directory found)'));
-      console.log(chalk.gray('   Run: specweave init\n'));
+    const specweaveDir = path.join(projectPath, '.specweave');
+    const hasDir = fs.existsSync(specweaveDir);
+
+    // Recovery: .specweave/ exists with real content but config.json is missing.
+    // Restore a minimal config so the rest of the update (config migration,
+    // instruction updates, plugin refresh) can proceed normally.
+    if (hasDir && hasSpecweaveIncrements(projectPath)) {
+      const configPath = path.join(specweaveDir, 'config.json');
+      const projectName = path.basename(projectPath);
+      if (!options.check) {
+        fs.writeFileSync(configPath, JSON.stringify({
+          version: '2.0',
+          project: { name: projectName },
+        }, null, 2) + '\n');
+        isSpecWeaveProject = true;
+        console.log(chalk.green(`  ✓ Restored missing config.json (project: ${projectName})`));
+        console.log(chalk.gray('    .specweave/ directory had content but config.json was missing\n'));
+      } else {
+        console.log(chalk.yellow(`  ⚠️  config.json is missing but .specweave/ has content — would restore on update`));
+      }
     }
 
-    // Nothing to do outside a SpecWeave project — plugin refresh requires
-    // a project context and can hang when run from an arbitrary directory.
-    if (result.selfUpdated) {
-      console.log(chalk.green('✓ CLI updated successfully. Run `specweave update` from a project directory to refresh plugins.\n'));
+    if (!isSpecWeaveProject) {
+      if (hasDir) {
+        console.log(chalk.yellow('⚠️  Not a SpecWeave project (.specweave directory exists but config.json is missing)'));
+        console.log(chalk.gray('   Run: specweave init\n'));
+      } else {
+        console.log(chalk.yellow('⚠️  Not a SpecWeave project (no .specweave directory found)'));
+        console.log(chalk.gray('   Run: specweave init\n'));
+      }
+
+      // Nothing to do outside a SpecWeave project — plugin refresh requires
+      // a project context and can hang when run from an arbitrary directory.
+      if (result.selfUpdated) {
+        console.log(chalk.green('✓ CLI updated successfully. Run `specweave update` from a project directory to refresh plugins.\n'));
+      }
+      return;
     }
-    return;
   }
 
   // Step 1: Update instructions & migrate config
