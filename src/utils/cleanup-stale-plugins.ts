@@ -30,6 +30,9 @@ const REMOVED_PLUGINS = new Set([
   'sw-diagrams',   // Removed 2026-03-17 (consolidated into sw)
   'docs',          // Removed 2026-03-17 (consolidated into sw)
   'sw-media',      // Removed 2026-03-17 (consolidated into sw)
+  'sw-frontend',   // Removed 2026-02-19 (migrated to vskill as "frontend")
+  'sw-backend',    // Removed (migrated to vskill)
+  'sw-testing',    // Removed (migrated to vskill)
 ]);
 
 /**
