@@ -33,6 +33,7 @@ export interface CostsSummaryPayload {
 // Pricing per million tokens — official Anthropic rates (Mar 2026)
 // Source: https://platform.claude.com/docs/en/about-claude/pricing
 const PRICING: Record<string, { input: number; output: number; cacheWrite: number; cacheRead: number }> = {
+  'claude-opus-4-7': { input: 5, output: 25, cacheWrite: 6.25, cacheRead: 0.50 },
   'claude-opus-4-6': { input: 5, output: 25, cacheWrite: 6.25, cacheRead: 0.50 },
   'claude-sonnet-4-6': { input: 3, output: 15, cacheWrite: 3.75, cacheRead: 0.30 },
   'claude-haiku-4-5-20251001': { input: 1, output: 5, cacheWrite: 1.25, cacheRead: 0.10 },
@@ -40,6 +41,7 @@ const PRICING: Record<string, { input: number; output: number; cacheWrite: numbe
 
 // Friendly display names for model IDs
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
+  'claude-opus-4-7': 'Opus 4.7',
   'claude-opus-4-6': 'Opus 4.6',
   'claude-sonnet-4-6': 'Sonnet 4.6',
   'claude-haiku-4-5-20251001': 'Haiku 4.5',
