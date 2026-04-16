@@ -48,27 +48,43 @@ const LOCKFILE_NAME = 'vskill.lock';
 /**
  * Compute a SHA-256 content hash for a plugin directory.
  *
- * Reads all files in the directory (non-recursive, top-level only),
- * sorts them by name for determinism, concatenates their contents,
- * and returns the hex-encoded SHA-256 digest.
+ * Uses the same algorithm as vskill's computeSha(files) for compatibility:
+ * - Sorts files by relative path
+ * - Format: "relativePath\0normalizedContent\n" per file
+ * - Normalizes content: strip BOM, convert CRLF to LF
+ * - Recursively reads all files (not just top-level)
  */
 function computeDirectoryHash(dirPath: string): string {
   const hash = createHash('sha256');
+  const files: { relPath: string; content: string }[] = [];
 
-  try {
-    const entries = readdirSync(dirPath, { withFileTypes: true });
-    const files = entries
-      .filter(e => e.isFile())
-      .map(e => e.name)
-      .sort();
-
-    for (const file of files) {
-      const content = readFileSync(join(dirPath, file), 'utf-8');
-      hash.update(content);
+  function walkDir(dir: string, prefix: string) {
+    try {
+      const entries = readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) {
+          walkDir(fullPath, relPath);
+        } else if (entry.isFile()) {
+          const content = readFileSync(fullPath, 'utf-8');
+          files.push({ relPath, content });
+        }
+      }
+    } catch {
+      // If we can't read, skip
     }
-  } catch {
-    // If we can't read the directory, return a hash of empty string
-    hash.update('');
+  }
+
+  walkDir(dirPath, '');
+
+  // Sort by path for determinism (matches vskill)
+  files.sort((a, b) => a.relPath.localeCompare(b.relPath));
+
+  for (const file of files) {
+    // Normalize: strip BOM, convert CRLF to LF (matches vskill's normalizeContent)
+    const normalized = file.content.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
+    hash.update(`${file.relPath}\0${normalized}\n`);
   }
 
   return hash.digest('hex');
@@ -172,9 +188,9 @@ export function migrateToVskill(opts?: MigrateOptions): MigrationResult {
     skills[plugin.name] = {
       version: '1.0.0',
       sha,
-      tier: 'free',
+      tier: 'VERIFIED',
       installedAt: now,
-      source: 'migration',
+      source: `marketplace:anton-abyzov/specweave#${plugin.name}`,
       marketplace: 'specweave',
       pluginDir: true,
       scope: 'user',
