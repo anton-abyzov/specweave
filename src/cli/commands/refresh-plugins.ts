@@ -316,11 +316,11 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     }
 
     if (result.success && result.skipped) {
-      log(chalk.green(`  ✓ ${plugin.name}: active`));
+      log(chalk.green(`  ✓ ${plugin.name}: active`) + (plugin.version ? chalk.gray(` (v${plugin.version})`) : ''));
       skipped++;
       installedPluginNames.push(plugin.name);
     } else if (result.success) {
-      log(chalk.green(`  + ${plugin.name}: installed`));
+      log(chalk.green(`  + ${plugin.name}: installed`) + (plugin.version ? chalk.gray(` (v${plugin.version})`) : ''));
       installed++;
       installedPluginNames.push(plugin.name);
     } else {
