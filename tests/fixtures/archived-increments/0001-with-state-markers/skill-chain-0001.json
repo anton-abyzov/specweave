@@ -1,0 +1,7 @@
+{
+  "increment": "0001-with-state-markers",
+  "chain": ["sw:pm", "sw:architect", "sw:do"],
+  "current": "sw:do",
+  "timestamp": "2025-10-15T10:12:34.000Z",
+  "note": "Legacy state-marker file retained to test backwards compatibility with pre-0669 SpecWeave versions."
+}

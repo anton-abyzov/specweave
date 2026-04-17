@@ -155,6 +155,35 @@ npx vskill eval run my-skill                  # Run eval suite
 
 <br/>
 
+## Upgrading to v1.1.0 (Opus 4.7 Alignment)
+
+SpecWeave v1.1.0 aligns the framework with Claude Opus 4.7 best practices.
+
+### P0 Fixes (required if using judge-llm or team-lead)
+
+1. **Remove fixed extended thinking**: `sw:judge-llm` no longer passes `thinking.budget_tokens`. Adaptive prompt hints replace it. No user action needed — the CLI handles this automatically.
+
+2. **Team-lead spawn heuristic**: `sw:team-lead` now only spawns agents when `domains ≥ 3` OR `tasks ≥ 15` OR `--parallel` is set. Previously it always spawned agents.
+
+3. **State markers removed**: `skill-chain-*.json` and `interview-*.json` state files are no longer written. `pretooluse-guard.ts` uses TaskGet-based state with filesystem fallback.
+
+### Config Migration
+
+Run the migration script to add new config keys with defaults:
+
+```bash
+specweave migrate-config-0669
+```
+
+### Deprecations
+
+See full list in [CHANGELOG.md](./CHANGELOG.md). Key migrations:
+- `/sw:tdd-red` → `/sw:tdd-cycle --phase red`
+- `/sw:github-sync` → `/sw-github:sync-spec`
+- `/sw:team-build` → `/sw:team-lead --preset <name>`
+
+Full migration guide: `.specweave/docs/internal/specs/opus-47-migration.md`
+
 ## Documentation
 
 **[spec-weave.com](https://spec-weave.com)** — guides, reference, and enterprise docs.

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://spec-weave.com/schemas/skill-marketplace.v1.json",
+  "plugin": "sw",
+  "version": "1.1.0",
+  "description": "Skill-level marketplace catalog for the specweave plugin. Lists deprecation state, replacement pointers, and alias routing for each skill.",
+  "skills": [
+    {
+      "name": "sw:github-sync",
+      "path": "skills/github-sync/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw-github:sync-spec",
+      "migrationWarning": "sw:github-sync is deprecated. Use sw-github:sync-spec for push/pull operations. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw:jira-sync",
+      "path": "skills/jira-sync/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw-jira:push / sw-jira:pull",
+      "migrationWarning": "sw:jira-sync is deprecated. Use sw-jira:push (content) or sw-jira:pull (status) instead. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw:ado-sync",
+      "path": "skills/ado-sync/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw-ado:push / sw-ado:pull",
+      "migrationWarning": "sw:ado-sync is deprecated. Use sw-ado:push (content) or sw-ado:pull (status) instead. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw:tdd-red",
+      "path": "skills/tdd-red/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw:tdd-cycle --phase red",
+      "alias": {
+        "from": "/sw:tdd-red",
+        "to": "/sw:tdd-cycle --phase red",
+        "migrationWarning": "sw:tdd-red is deprecated. Use sw:tdd-cycle --phase red instead."
+      },
+      "migrationWarning": "sw:tdd-red is deprecated. Use sw:tdd-cycle --phase red instead. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw:tdd-green",
+      "path": "skills/tdd-green/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw:tdd-cycle --phase green",
+      "alias": {
+        "from": "/sw:tdd-green",
+        "to": "/sw:tdd-cycle --phase green",
+        "migrationWarning": "sw:tdd-green is deprecated. Use sw:tdd-cycle --phase green instead."
+      },
+      "migrationWarning": "sw:tdd-green is deprecated. Use sw:tdd-cycle --phase green instead. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw:tdd-refactor",
+      "path": "skills/tdd-refactor/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw:tdd-cycle --phase refactor",
+      "alias": {
+        "from": "/sw:tdd-refactor",
+        "to": "/sw:tdd-cycle --phase refactor",
+        "migrationWarning": "sw:tdd-refactor is deprecated. Use sw:tdd-cycle --phase refactor instead."
+      },
+      "migrationWarning": "sw:tdd-refactor is deprecated. Use sw:tdd-cycle --phase refactor instead. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw:github-issue-standard",
+      "path": "skills/github-issue-standard/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.1.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": ".specweave/docs/internal/specs/github-issue-standard.md",
+      "migrationWarning": "sw:github-issue-standard was a documentation standard, not an executable skill. Content moved to .specweave/docs/internal/specs/github-issue-standard.md. For GitHub sync, use sw-github:push. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw/github-multi-project",
+      "path": "skills/github-multi-project/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.2.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw/multi-project --tool github",
+      "alias": {
+        "from": "sw/github-multi-project",
+        "to": "sw/multi-project --tool github",
+        "migrationWarning": "sw/github-multi-project is deprecated. Use sw/multi-project --tool github instead."
+      },
+      "migrationWarning": "sw/github-multi-project is deprecated. Use sw/multi-project --tool github instead. Scheduled for removal in v1.3.0."
+    },
+    {
+      "name": "sw/ado-multi-project",
+      "path": "skills/ado-multi-project/SKILL.md",
+      "deprecated": true,
+      "deprecatedIn": "1.2.0",
+      "removalScheduledIn": "1.3.0",
+      "replacement": "sw/multi-project --tool ado",
+      "alias": {
+        "from": "sw/ado-multi-project",
+        "to": "sw/multi-project --tool ado",
+        "migrationWarning": "sw/ado-multi-project is deprecated. Use sw/multi-project --tool ado instead."
+      },
+      "migrationWarning": "sw/ado-multi-project is deprecated. Use sw/multi-project --tool ado instead. Scheduled for removal in v1.3.0."
+    }
+  ]
+}

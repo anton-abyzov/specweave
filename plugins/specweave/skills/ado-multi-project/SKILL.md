@@ -1,10 +1,18 @@
 ---
-description: Organize specs and tasks across multiple Azure DevOps projects with intelligent content-based mapping. Use when working with project-per-team, area-path-based, or team-based ADO architectures. Handles cross-project coordination and folder structure organization.
+description: "[DEPRECATED] Use `sw:multi-project --tool ado` instead. Organizes specs and tasks across multiple Azure DevOps projects. This skill will be removed in SpecWeave v1.3.0."
 user-invokable: false
 allowed-tools: Read, Write, Edit, Glob
 ---
 
 # Azure DevOps Multi-Project Skill
+
+## Migration
+
+> Deprecated. Use: `sw:multi-project --tool ado`
+
+This skill has been consolidated into the unified `sw:multi-project` skill. Replace any invocation of `sw:ado-multi-project` with `sw:multi-project --tool ado`. The flag-based skill supports GitHub, Azure DevOps, and Jira under a single interface. See `plugins/specweave/skills/multi-project/SKILL.md`.
+
+Scheduled for removal in SpecWeave v1.3.0.
 
 **Purpose**: Organize specs and increments across multiple Azure DevOps projects with intelligent mapping and folder organization.
 

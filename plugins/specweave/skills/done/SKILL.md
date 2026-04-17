@@ -5,6 +5,41 @@ argument-hint: "<increment-id> [--auto]"
 
 # Close Increment (PM Validated)
 
+## Tool-Use Rationale
+
+- **Bash**: Invoke the CLI closure gate (`specweave complete`), run `npx vitest run` and `npx playwright test` to verify the suite is green, and read `jq` values from `.specweave/config.json`.
+- **Read**: Load `code-review-report.json`, `grill-report.json`, `judge-llm-report.json`, and `rubric.md` to evaluate gate outcomes.
+- **Edit**: Update `metadata.json` status and any inline docs (CLAUDE.md, CHANGELOG.md) touched by the closure step.
+
+## Prompt Caching
+
+`sw:done` is a closure orchestrator that chains `code-reviewer`, `simplify`, `grill`, and `judge-llm`. Because the same increment context is loaded four times over, Anthropic's ephemeral prompt caching gives closure a substantial cost/latency win.
+
+**Files cached by default** (via `static-context-loader`):
+- `CLAUDE.md` (project root)
+- `.specweave/config.json`
+- The active increment's `spec.md`
+- The active increment's `rubric.md` (if present)
+
+**Cache window**: 5-minute TTL (Anthropic's `cache_control: { type: "ephemeral" }` breakpoint). Consecutive gate invocations within the TTL read the cached prefix instead of re-tokenizing it.
+
+**Extending the list**: Add paths to `cache.staticContextFiles` in `.specweave/config.json`:
+```json
+{
+  "cache": {
+    "staticContextFiles": [
+      "CLAUDE.md",
+      ".specweave/config.json",
+      ".specweave/docs/internal/specs/team-conventions.md"
+    ]
+  }
+}
+```
+
+**Disable caching**: Set `cache.staticContextFiles: []` in `.specweave/config.json`. Closure gates will still run but without the shared prefix cache.
+
+See `.specweave/docs/internal/specs/config-reference.md` and `opus-47-migration.md` for the full caching setup.
+
 ## Project Overrides
 
 **Skill Memories**: If `.specweave/skill-memories/done.md` exists, read and apply its learnings.
@@ -46,7 +81,7 @@ If closing a SpecWeave framework increment, show post-closure reminders: update 
 **The CLI blocks closure if `code-review-report.json` is missing (when required).** Do NOT skip this step.
 
 1. Check config: `jq -r '.codeReview.required // true' .specweave/config.json` — if `false`, skip to Step 3
-2. Read max iterations: `MAX_ITER=$(jq -r '.codeReview.maxFixIterations // 3' .specweave/config.json 2>/dev/null)`
+2. Read max iterations: `MAX_ITER=$(jq -r '.codeReview.maxFixIterations // 5' .specweave/config.json 2>/dev/null)` — default cap is **5** in SpecWeave 1.1.0 (Opus 4.7 converges faster per iteration, so a higher cap catches edge cases without stalling closure)
 3. Read blocking severities: defaults are `critical`, `high`, `medium` (configurable via `codeReview.blockingSeverities`)
 4. **Iteration loop** (ITERATION=1):
    a. Invoke `Skill({ skill: "sw:code-reviewer", args: "--increment <id>" })`

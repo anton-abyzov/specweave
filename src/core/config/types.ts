@@ -939,6 +939,68 @@ export interface CodeReviewConfig {
 }
 
 /**
+ * Thinking-budget level for Opus 4.7+ adaptive thinking (0669 Wave 2).
+ *
+ * - "low" / "medium" / "high" / "xhigh" / "max": adaptive-thinking tiers,
+ *   mapped to prompt-hint strength by each skill. "xhigh" is the default
+ *   for high-stakes skills (judge-llm, grill).
+ * - "legacy": pre-4.7 behavior — passes the retired `thinking` API param
+ *   on models that still accept it. Emergency escape hatch only.
+ */
+export type ThinkingBudgetLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'legacy';
+
+/**
+ * Quality-gate configuration (0669 Wave 2).
+ *
+ * Governs how SpecWeave's quality gates (judge-llm, grill, PM interview)
+ * spend thinking tokens and interpret model confidence.
+ */
+export interface QualityConfig {
+  /**
+   * Default thinking-budget tier for 4.7-family skills.
+   * Skills override per-call when a specific tier is required.
+   * @default "xhigh"
+   */
+  thinkingBudget?: ThinkingBudgetLevel;
+
+  /**
+   * Minimum model-reported confidence (0–100) a grill finding must clear
+   * before it blocks closure. Values below the threshold are demoted to
+   * warnings.
+   * @default 50
+   */
+  grillConfidenceThreshold?: number;
+
+  /**
+   * Per-stage token budgets keyed by stage ID
+   * (e.g., "pm.interview", "brainstorm.idea"). Callers read this map to
+   * size their `max_tokens` request field.
+   * @default { "pm.interview": 1500, "brainstorm.idea": 1800 }
+   */
+  tokenBudgets?: Record<string, number>;
+}
+
+/**
+ * Prompt-caching configuration (0669 Wave 2).
+ *
+ * Lists the long-lived project files that should be wrapped in an
+ * Anthropic SDK `cache_control: { type: "ephemeral" }` block when
+ * building API requests. See `src/core/cache/static-context-loader.ts`.
+ */
+export interface CacheConfig {
+  /**
+   * Paths (relative to project root) of static files to include in the
+   * prompt-cache breakpoint. Missing files are silently skipped. The
+   * token `<active>` in a path is expanded to the currently-active
+   * increment ID by the caller when appropriate.
+   * @default ["CLAUDE.md", ".specweave/config.json",
+   *           ".specweave/increments/<active>/spec.md",
+   *           ".specweave/increments/<active>/rubric.md"]
+   */
+  staticContextFiles?: string[];
+}
+
+/**
  * Skill generation configuration (v1.0.XXX+)
  *
  * Controls automatic detection of recurring patterns from living docs
@@ -1094,6 +1156,12 @@ export interface SpecWeaveConfig {
 
   /** Skill generation configuration — pattern detection + on-demand skill creation (v1.0.XXX+) */
   skillGen?: SkillGenConfig;
+
+  /** Quality-gate configuration — thinking budget, grill threshold, per-stage token budgets (0669 Wave 2) */
+  quality?: QualityConfig;
+
+  /** Prompt-caching configuration — list of static files to wrap in cache_control blocks (0669 Wave 2) */
+  cache?: CacheConfig;
 
   /** Allow additional properties for forward compatibility */
   [key: string]: any;
@@ -1273,6 +1341,22 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   contextBudget: {
     level: 'full',
     autoAdapt: true,
+  },
+  quality: {
+    thinkingBudget: 'xhigh',
+    grillConfidenceThreshold: 50,
+    tokenBudgets: {
+      'pm.interview': 1500,
+      'brainstorm.idea': 1800,
+    },
+  },
+  cache: {
+    staticContextFiles: [
+      'CLAUDE.md',
+      '.specweave/config.json',
+      '.specweave/increments/<active>/spec.md',
+      '.specweave/increments/<active>/rubric.md',
+    ],
   },
 };
 

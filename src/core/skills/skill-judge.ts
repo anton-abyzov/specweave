@@ -20,6 +20,8 @@ import { appendFileSync } from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { loadStaticContext, type CacheBlock } from '../cache/static-context-loader.js';
+import { readConfig } from '../config/config-manager.js';
 
 /**
  * Judge verdict levels
@@ -44,6 +46,11 @@ export interface JudgeInput {
   codeChanges: string;  // Diff or file contents
   specRequirements?: string;  // From spec.md
   acceptanceCriteria?: string[];  // ACs to check
+  /**
+   * Active increment ID used to expand the `<active>` placeholder in
+   * `cache.staticContextFiles` (0669 Wave 2 prompt caching).
+   */
+  incrementId?: string;
 }
 
 /**
@@ -79,6 +86,120 @@ export interface JudgeOptions {
   logFile?: string;
   model?: string;  // Default opus
   projectRoot?: string;  // Project root for config lookup (defaults to cwd)
+  thinkingBudget?: ThinkingBudget;  // "adaptive" (default) — 4.7 uses prompt hint; "legacy" — pre-4.7 behavior
+}
+
+/**
+ * Thinking-budget mode.
+ * - "adaptive": no API `thinking` parameter; rely on prompt-hint adaptive thinking (4.7+ default)
+ * - "legacy": pre-4.7 behavior, passes `thinking: { type: "enabled", budget_tokens }` on non-4.7 models
+ */
+export type ThinkingBudget = 'adaptive' | 'legacy';
+
+/**
+ * Check if a model ID belongs to the Opus 4.7 family or newer.
+ * 4.7+ models drop the `thinking` API parameter in favor of adaptive thinking
+ * triggered by prompt hints.
+ */
+export function isOpus47Family(modelId: string): boolean {
+  if (!modelId) return false;
+  const m = /^claude-opus-(\d+)-(\d+)/.exec(modelId);
+  if (!m) return false;
+  const major = Number(m[1]);
+  const minor = Number(m[2]);
+  if (Number.isNaN(major) || Number.isNaN(minor)) return false;
+  if (major > 4) return true;
+  if (major === 4 && minor >= 7) return true;
+  return false;
+}
+
+/**
+ * Parameters for constructing a judge API request.
+ */
+export interface BuildApiRequestInput {
+  model: string;
+  system: string;
+  userPrompt: string;
+  maxTokens: number;
+  thinkingBudget?: ThinkingBudget;
+  /**
+   * Optional ephemeral cache_control blocks to prepend to the user message
+   * content. Populated from {@link loadStaticContext} so CLAUDE.md, config
+   * and per-increment spec/rubric can be cached across calls (ADR-0250).
+   */
+  cacheBlocks?: CacheBlock[];
+}
+
+/**
+ * Construct the Anthropic API request body for a judge call.
+ *
+ * Model-version guard:
+ * - Opus 4.7 family → never includes `thinking` (adaptive-thinking prompt hint carries the load)
+ * - Legacy models  → includes `thinking` only when `thinkingBudget === "legacy"`
+ *
+ * Prompt caching (0669 Wave 2):
+ * - When `cacheBlocks` is non-empty, its entries are prepended to the user
+ *   message content as the first elements, BEFORE the dynamic prompt text.
+ *   This lets the Anthropic API reuse the cached prefix on subsequent calls.
+ */
+export function buildJudgeApiRequest(input: BuildApiRequestInput): Record<string, unknown> {
+  const {
+    model,
+    system,
+    userPrompt,
+    maxTokens,
+    thinkingBudget = 'adaptive',
+    cacheBlocks = [],
+  } = input;
+
+  const userContent: Array<Record<string, unknown>> =
+    cacheBlocks.length > 0
+      ? [
+          ...cacheBlocks.map((b) => ({ ...b })),
+          { type: 'text', text: userPrompt },
+        ]
+      : [];
+
+  const messages =
+    userContent.length > 0
+      ? [{ role: 'user', content: userContent }]
+      : [{ role: 'user', content: userPrompt }];
+
+  const request: Record<string, unknown> = {
+    model,
+    max_tokens: maxTokens,
+    system,
+    messages,
+  };
+
+  if (!isOpus47Family(model) && thinkingBudget === 'legacy') {
+    request.thinking = { type: 'enabled', budget_tokens: Math.max(1024, Math.floor(maxTokens / 2)) };
+  }
+
+  return request;
+}
+
+/**
+ * Resolve the list of static files to cache from the SpecWeave config,
+ * expanding the `<active>` placeholder to the provided increment ID.
+ *
+ * Returns an empty array when prompt caching is disabled or the config
+ * doesn't include any static files.
+ */
+export async function resolveCacheFilePaths(
+  projectRoot: string,
+  incrementId?: string,
+): Promise<string[]> {
+  try {
+    const config = await readConfig(projectRoot);
+    const files = config.cache?.staticContextFiles ?? [];
+    if (!incrementId) {
+      return files.filter((f) => !f.includes('<active>'));
+    }
+    return files.map((f) => f.replace(/<active>/g, incrementId));
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -329,6 +450,25 @@ export class SkillJudge {
     const criteria = DOMAIN_CRITERIA[input.domain] || DOMAIN_CRITERIA.backend;
     const userPrompt = this.buildPrompt(input, criteria);
 
+    // Load static-context cache blocks (CLAUDE.md, config.json, active spec/rubric).
+    // Empty array when config disables caching or files are missing — judge() stays
+    // fully functional in both cases.
+    const cacheFilePaths = await resolveCacheFilePaths(this.projectRoot, input.incrementId);
+    const cacheBlocks = cacheFilePaths.length > 0
+      ? await loadStaticContext(cacheFilePaths, this.projectRoot)
+      : [];
+    if (cacheBlocks.length > 0) {
+      logger.log(`Prompt cache: ${cacheFilePaths.length} file(s), 1 ephemeral breakpoint`, 'INFO');
+    }
+
+    const requestBody = buildJudgeApiRequest({
+      model: this.model,
+      system: JUDGE_SYSTEM_PROMPT,
+      userPrompt,
+      maxTokens: 2000,
+      cacheBlocks,
+    });
+
     logger.log('Sending request to Opus...', 'PROGRESS');
 
     try {
@@ -340,14 +480,10 @@ export class SkillJudge {
       }, this.timeout_ms);
 
       // Make API call with timeout
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 2000,
-        system: JUDGE_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }],
-      }, {
-        signal: controller.signal,
-      });
+      const response = await this.client.messages.create(
+        requestBody as unknown as Anthropic.MessageCreateParamsNonStreaming,
+        { signal: controller.signal },
+      );
 
       clearTimeout(timeoutId);
 

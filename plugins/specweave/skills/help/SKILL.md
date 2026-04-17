@@ -24,9 +24,40 @@ STATUS_JSON=$(specweave status --json 2>/dev/null || echo '{"increments":[]}')
 
 # Get usage stats (if initialized)
 ANALYTICS_JSON=$(specweave analytics --since 30d --json 2>/dev/null || echo '{}')
+
+# Parse flags
+SHOW_DEPRECATED=$(echo "$ARGUMENTS" | grep -c -- "--deprecated" || echo "0")
+
+# Load marketplace.json so deprecated skills can be filtered
+MARKETPLACE_JSON=$(cat "$(specweave root 2>/dev/null)/plugins/specweave/marketplace.json" 2>/dev/null || echo '{"skills":[]}')
 ```
 
 If any command fails, skip that section gracefully — never show errors to the user.
+
+## Deprecated skill filtering (v1.1.0+)
+
+By default, `sw:help` **HIDES** skills with `"deprecated": true` in `plugins/specweave/marketplace.json` from the workflow-stage listing in Step 2 / Section C.
+
+- Default invocation: `sw:help` → deprecated skills are **not listed**
+- Opt-in invocation: `sw:help --deprecated` → deprecated skills are listed in a dedicated "DEPRECATED" section with their migration notes extracted from each SKILL.md
+
+**Filtering logic**:
+1. Parse `marketplace.json` to build the set of deprecated skill names: `deprecated = {s.name for s in marketplace.skills if s.deprecated == true}`
+2. When rendering Section C (Skills by Workflow Stage), skip any skill whose name is in `deprecated` unless `--deprecated` was passed.
+3. When `--deprecated` is passed, after Section C render an extra section:
+   ```
+   DEPRECATED — Scheduled for removal
+     sw:github-sync       → Use sw-github:sync-spec (removal: v1.3.0)
+     sw:jira-sync         → Use sw-jira:push / sw-jira:pull (removal: v1.3.0)
+     sw:ado-sync          → Use sw-ado:push / sw-ado:pull (removal: v1.3.0)
+     sw:tdd-red           → Use sw:tdd-cycle --phase red (removal: v1.3.0)
+     sw:tdd-green         → Use sw:tdd-cycle --phase green (removal: v1.3.0)
+     sw:tdd-refactor      → Use sw:tdd-cycle --phase refactor (removal: v1.3.0)
+     sw:github-issue-standard → See .specweave/docs/internal/specs/github-issue-standard.md
+   ```
+4. Deprecated skills are still invokable directly (alias-routed in marketplace.json) — the filter only affects discovery listing, not invocation.
+
+See `.specweave/docs/internal/specs/skill-deprecation-policy.md` for the full lifecycle policy.
 
 ## Step 2: Display Help
 
@@ -90,10 +121,7 @@ IMPLEMENT — Build it
   sw:do            Execute tasks step by step
   sw:auto          Autonomous execution (unattended)
   sw:team-lead     Parallel multi-agent orchestration
-  sw:tdd-cycle     Test-driven development (red-green-refactor)
-  sw:tdd-red       Write failing tests first
-  sw:tdd-green     Make failing tests pass
-  sw:tdd-refactor  Refactor with test safety net
+  sw:tdd-cycle     Test-driven development (red-green-refactor; use --phase red|green|refactor for single phase)
 
 VERIFY — Check quality
   sw:validate      130+ rule-based checks + AI quality assessment

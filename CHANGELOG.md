@@ -1,3 +1,37 @@
+## [1.1.0] - 2026-04-17
+
+### Opus 4.7 Alignment (increment 0669)
+
+**Breaking Changes (P0 fixes):**
+- Removed fixed `extended thinking` / `ULTRATHINK BY DEFAULT` from `sw:judge-llm` — adaptive thinking prompt-hints replace explicit `thinking.budget_tokens`
+- `sw:team-lead` no longer spawns agents for single-domain <15-task work ("spawn agents anyway" directive removed)
+
+**New Features:**
+- Prompt caching: `cache_control: { type: "ephemeral" }` breakpoints for static context files (`CLAUDE.md`, `config.json`, `spec.md`, `rubric.md`)
+- `sw:increment` now defaults to single-agent planning; use `--parallel` or keywords for multi-agent
+- `--effort` flag (low|medium|high|xhigh|max) added to CLI dispatcher; default is `xhigh`
+- `sw:auto` adds `--respect-native` / `--force-sw-auto` flags; Native Auto Mode section documents Shift+Tab alternative
+- `sw:multi-project` consolidates github-multi-project and ado-multi-project with `--tool` flag
+- New telemetry: `cache-metrics.ts` tracks per-skill cache hit rates; `sw:analytics --cache-stats` surfaces them
+
+**Deprecations** (functional for 2 minor releases, removed in v1.3.0):
+- `sw:github-sync` → `sw-github:sync-spec`
+- `sw:jira-sync` → `sw-jira:push/pull`
+- `sw:ado-sync` → `sw-ado:push/pull`
+- `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor` → `sw:tdd-cycle --phase red|green|refactor`
+- `sw:github-multi-project` → `sw:multi-project --tool github`
+- `sw:ado-multi-project` → `sw:multi-project --tool ado`
+- `sw:team-build` → `sw:team-lead --preset <name>`
+- `sw:plan` (standalone) → `sw:increment --regenerate-plan`
+
+**Config keys added** (run `specweave migrate-config-0669` to auto-add with defaults):
+- `quality.thinkingBudget` (default: `"xhigh"`)
+- `quality.grillConfidenceThreshold` (default: `50`)
+- `quality.tokenBudgets` (default map)
+- `cache.staticContextFiles` (default list)
+
+**Migration guide**: `.specweave/docs/internal/specs/opus-47-migration.md`
+
 ## [1.0.577] - 2026-04-16
 
 - Patch release

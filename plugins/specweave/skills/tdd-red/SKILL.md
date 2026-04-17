@@ -1,5 +1,20 @@
 ---
-description: Write failing tests that define expected behavior. Use when saying "TDD red", "write failing tests", or "test first".
+description: "[DEPRECATED] Write failing tests that define expected behavior. Use when saying \"TDD red\", \"write failing tests\", or \"test first\"."
+deprecated: true
+---
+
+> ⚠️ DEPRECATED: Use `sw:tdd-cycle --phase red` instead. This skill will be removed in v1.3.0.
+
+## Migration
+
+This skill has been deprecated as part of the Opus 4.7 framework alignment (increment 0669).
+
+- **Use instead**: `sw:tdd-cycle --phase red` runs only the RED phase (write failing tests)
+- **Removal**: Scheduled for v1.3.0 (2 minor releases after v1.1.0)
+- **Why**: The three TDD phase skills (tdd-red, tdd-green, tdd-refactor) were consolidated into `sw:tdd-cycle` with a `--phase` flag. Alias routing in `marketplace.json` redirects `/sw:tdd-red` → `/sw:tdd-cycle --phase red` automatically.
+
+For the migration policy, see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
 ---
 
 # TDD Red Phase - Write Failing Tests
