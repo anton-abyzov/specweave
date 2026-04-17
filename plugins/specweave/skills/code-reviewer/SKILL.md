@@ -1,15 +1,58 @@
 ---
-description: "Elite multi-agent code review system. Spawns parallel specialized reviewers for logic, security, performance, silent failures, type design, spec compliance, comments, and test coverage — then validates findings independently. Use when saying 'review code', 'code review', 'audit code', 'review PR', 'review changes', 'check code quality'."
-argument-hint: "[--pr N] [--changes] [--increment NNNN] [--cross-repo] [path]"
+description: "Multi-agent code review system. Spawns 3 parallel reviewers (security, logic, performance) with inline self-critique. Use when saying 'review code', 'code review', 'audit code', 'review PR', 'review changes', 'check code quality'."
+argument-hint: "[--pr N] [--changes] [--increment NNNN] [--cross-repo] [--full-fanout] [path]"
 context: fork
 model: opus
 ---
 
 # Code Reviewer
 
-**Parallel multi-agent code review with specialized reviewers and independent finding validation.**
+**Parallel multi-agent code review with 3 core reviewers (security, logic, performance) and inline self-critique.**
 
-Spawns up to 8 specialized reviewer agents that analyze code simultaneously, validates each finding independently, then aggregates results into a unified report with deduplication and severity ranking.
+Default path spawns **3 reviewer agents** (security, logic, performance) that analyze code simultaneously. Each reviewer re-reads its own findings before emitting, validates evidence claims, and rates confidence 1–5. The 3-reviewer default balances coverage with token cost for typical reviews.
+
+**`--full-fanout`** restores the 8-reviewer + 10-validator path for maximum coverage at higher token cost. Reach for it on pre-release audits, large refactors, or security-sensitive PRs where thoroughness beats cost.
+
+## Tool-Use Rationale
+
+- **Read**: Load spec.md, rubric.md, CLAUDE.md, and the files under review so reviewers share identical context.
+- **Grep**: Locate call sites, try/catch patterns, and AC markers across the touched files.
+- **Bash**: Run `gh pr diff`, `git diff`, and `find` to build the file list and extract PR metadata.
+
+## Model Configuration
+
+**Default effort**: `xhigh` — recommended for all code-review tasks per Opus 4.7 conventions.
+**Opt-in max**: `--effort max` enables maximum effort with a warning: "max effort risks overthinking on straightforward problems."
+**Legacy mode**: Set `quality.thinkingBudget: "legacy"` in config to pass a fixed `thinking` parameter (for pre-4.7 models only).
+
+## Prompt Caching
+
+`sw:code-reviewer` uses Anthropic's ephemeral prompt caching so the shared context (project rules, active spec, rubric) is reused across the parallel reviewer fan-out and between fix-loop iterations. This is especially impactful during `sw:done`, where the fix loop can invoke code-reviewer up to 5 times per closure.
+
+**Files cached by default** (via `static-context-loader`):
+- `CLAUDE.md` (project root)
+- `.specweave/config.json`
+- The active increment's `spec.md`
+- The active increment's `rubric.md` (if present)
+
+**Cache window**: 5-minute TTL (Anthropic's `cache_control: { type: "ephemeral" }` breakpoint). Successive reviewer spawns that share this prefix read from cache.
+
+**Extending the list**: Add paths to `cache.staticContextFiles` in `.specweave/config.json`:
+```json
+{
+  "cache": {
+    "staticContextFiles": [
+      "CLAUDE.md",
+      ".specweave/config.json",
+      ".specweave/docs/internal/architecture/adr/ADR-001-something.md"
+    ]
+  }
+}
+```
+
+**Disable caching**: Set `cache.staticContextFiles: []` in `.specweave/config.json`. Reviewer agents will still run, but without the shared prefix cache.
+
+See `.specweave/docs/internal/specs/config-reference.md` and `opus-47-migration.md` for the full caching setup.
 
 ## MANDATORY: Orchestrator Identity
 
@@ -132,75 +175,81 @@ fi
 
 ## 1. Smart Reviewer Routing
 
-Not all 6 reviewers are needed for every review. Route based on what files changed.
+**Default (3 reviewers)**: security, logic, performance — each with inline self-critique.
+**`--full-fanout`**: restores the legacy 8-reviewer path (plus the 10-validator finding-validation fan-out).
 
-### Available Reviewers
+### Default Reviewers (always spawned)
 
 | Reviewer | Agent Template | Model | Specialization |
 |----------|---------------|-------|----------------|
-| **Logic** | `agents/reviewer-logic.md` (from team-lead) | **opus** | Bugs, edge cases, error handling |
 | **Security** | `agents/reviewer-security.md` (from team-lead) | **opus** | OWASP, auth, secrets, injection |
-| **Performance** | `agents/reviewer-performance.md` (from team-lead) | sonnet | N+1, memory, blocking ops |
-| **Silent Failures** | `agents/reviewer-silent-failures.md` | sonnet | Empty catches, swallowed errors |
-| **Type Design** | `agents/reviewer-types.md` | sonnet | Type quality, invariants, assertions |
-| **Spec Compliance** | `agents/reviewer-spec-compliance.md` | sonnet | AC verification, scope creep |
-| **Comments** | `agents/reviewer-comments.md` | sonnet | Stale/misleading comments, JSDoc accuracy |
-| **Tests** | `agents/reviewer-tests.md` | sonnet | Behavioral test coverage gaps |
+| **Logic** | inline (see §2 Logic Checklist) | **opus** | Bugs, edge cases, error handling, silent failures, type invariants, spec compliance |
+| **Performance** | inline (see §2 Performance Checklist) | sonnet | N+1, memory, blocking ops |
 
-**Model tiering rationale**: Logic and Security need deep reasoning (Opus). Pattern-matching reviewers (Performance, Silent Failures, Types, Spec Compliance) use Sonnet for cost efficiency. Non-Claude environments (Cursor, Copilot, etc.) ignore model hints gracefully — the review still runs on whatever model is available.
+The default logic reviewer absorbs silent-failures, types, spec-compliance, comments, and tests checks via its expanded checklist — a single careful reviewer with self-critique typically catches what 5 narrower reviewers would.
+
+**Model tiering rationale**: Security and Logic need deep reasoning (Opus). Performance is pattern-matching and uses Sonnet. Non-Claude environments (Cursor, Copilot, etc.) ignore model hints gracefully.
+
+### Full-Fanout Reviewers (`--full-fanout` only)
+
+| Reviewer | Agent Template | Model | Specialization |
+|----------|---------------|-------|----------------|
+| Silent Failures | `agents/reviewer-silent-failures.md` | sonnet | Empty catches, swallowed errors |
+| Type Design | `agents/reviewer-types.md` | sonnet | Type quality, invariants, assertions |
+| Spec Compliance | `agents/reviewer-spec-compliance.md` | sonnet | AC verification, scope creep |
+| Comments | `agents/reviewer-comments.md` | sonnet | Stale/misleading comments, JSDoc accuracy |
+| Tests | `agents/reviewer-tests.md` | sonnet | Behavioral test coverage gaps |
 
 ### Routing Rules
 
 ```
-ALWAYS include:
-  - reviewer-logic (runs on every review)
-  - reviewer-security (runs on every review)
+DEFAULT (3 reviewers, always spawned):
+  - security  (runs on every review)
+  - logic     (runs on every review, with expanded checklist)
+  - performance (runs on every review)
 
-Include IF file patterns match:
+WITH --full-fanout, also include IF file patterns match:
   - reviewer-types        → *.ts, *.tsx files present
   - reviewer-silent-failures → *.ts, *.tsx, *.js files with try/catch or .catch patterns
-  - reviewer-performance  → database files (prisma/, *.sql), API routes, data-heavy code
   - reviewer-spec-compliance → increment scope provided (--increment or active increment found)
   - reviewer-comments  → significant changes (> 50 changed lines)
   - reviewer-tests     → non-test source files changed
 
-Cap: --max-reviewers N (default: 8)
+Cap: --max-reviewers N (default: 3; with --full-fanout: 8)
 ```
 
 ### Routing Decision
 
 ```bash
-REVIEWERS=("logic" "security")  # Always
+# Default: security + logic + performance — all three always spawn
+REVIEWERS=("security" "logic" "performance")
 
-# TypeScript files → add type reviewer
-if echo "$FILES" | grep -qE '\.(ts|tsx)$'; then
-  REVIEWERS+=("types")
-fi
+if [ "$FULL_FANOUT" = "true" ]; then
+  # TypeScript files → add type reviewer
+  if echo "$FILES" | grep -qE '\.(ts|tsx)$'; then
+    REVIEWERS+=("types")
+  fi
 
-# Code files → add silent failures
-if echo "$FILES" | grep -qE '\.(ts|tsx|js|jsx)$'; then
-  REVIEWERS+=("silent-failures")
-fi
+  # Code files → add silent failures
+  if echo "$FILES" | grep -qE '\.(ts|tsx|js|jsx)$'; then
+    REVIEWERS+=("silent-failures")
+  fi
 
-# Database/API → add performance
-if echo "$FILES" | grep -qE '(prisma|\.sql|api/|routes/|controllers/)'; then
-  REVIEWERS+=("performance")
-fi
+  # Increment context → add spec compliance
+  if [ "$SCOPE" = "increment" ] || [ -n "$INCREMENT_PATH" ]; then
+    REVIEWERS+=("spec-compliance")
+  fi
 
-# Increment context → add spec compliance
-if [ "$SCOPE" = "increment" ] || [ -n "$INCREMENT_PATH" ]; then
-  REVIEWERS+=("spec-compliance")
-fi
+  # Significant changes → add comment reviewer
+  if [ "$(echo "$FILES" | wc -l)" -gt 10 ]; then
+    REVIEWERS+=("comments")
+  fi
 
-# Significant changes → add comment reviewer
-if [ "$(echo "$FILES" | wc -l)" -gt 10 ]; then
-  REVIEWERS+=("comments")
-fi
-
-# Source files (non-test) → add test coverage reviewer
-if echo "$FILES" | grep -qE '\.(ts|tsx|js|jsx)$'; then
-  if echo "$FILES" | grep -vqE '\.(test|spec)\.(ts|tsx|js|jsx)$'; then
-    REVIEWERS+=("tests")
+  # Source files (non-test) → add test coverage reviewer
+  if echo "$FILES" | grep -qE '\.(ts|tsx|js|jsx)$'; then
+    if echo "$FILES" | grep -vqE '\.(test|spec)\.(ts|tsx|js|jsx)$'; then
+      REVIEWERS+=("tests")
+    fi
   fi
 fi
 ```
@@ -298,20 +347,28 @@ Multiple reviewers may flag the same issue (e.g., logic + silent-failures both c
 
 ---
 
-## 3.5 Independent Finding Validation
+## 3.5 Inline Self-Critique (default)
 
-After aggregation, validate CRITICAL and HIGH findings with independent subagents. This catches hallucinated findings and reduces false positives.
+Default reviews use **inline self-critique** instead of spawning separate validator subagents. Each reviewer re-reads its own findings before emitting, validates evidence claims, and rates confidence 1–5.
 
-### Validation Scope
+### Self-Critique Contract
 
-- **CRITICAL**: ALWAYS validate
-- **HIGH**: ALWAYS validate
-- **MEDIUM/LOW/INFO**: Skip (trust the reviewer)
-- **Skip entirely**: `--fast` flag or `codeReview.skipValidation: true` in config
+Every reviewer prompt includes this closing instruction:
 
-### Spawn Validators
+```
+Before emitting REVIEW_COMPLETE, perform self-critique:
+  1. Re-read each finding you produced.
+  2. For each finding, re-open the cited file at the cited line and confirm the described issue is really there.
+  3. Rate confidence 1–5 (5 = certain, 1 = speculative).
+  4. Drop any finding where confidence < 3.
+  5. Emit remaining findings with a "confidence": N field.
+```
 
-For each CRITICAL/HIGH finding (max 10 concurrent, haiku model):
+Each finding therefore ships with a confidence score. Findings with confidence ≥ 3 keep their severity. Findings with confidence < 3 are dropped during the reviewer's own pass (never emitted).
+
+### Full-Fanout Validator Path (`--full-fanout` only)
+
+When `--full-fanout` is passed, the orchestrator additionally spawns (on the haiku tier) up to 10 independent verify-findings subagents for CRITICAL and HIGH findings (original behaviour):
 
 ```typescript
 Task({
@@ -343,7 +400,7 @@ RESPOND WITH EXACTLY ONE LINE:
 });
 ```
 
-### Process Results
+Process results (full-fanout only):
 
 | Result | Action |
 |--------|--------|
@@ -515,7 +572,7 @@ Produce a single report with sections per repo:
 
 ```typescript
 // Shutdown each reviewer
-SendMessage({ type: "shutdown_request", recipient: "reviewer-logic", content: "Review complete" });
+SendMessage({ type: "shutdown_request", recipient: "logic-inline", content: "Review complete" });
 SendMessage({ type: "shutdown_request", recipient: "reviewer-security", content: "Review complete" });
 // ... for each spawned reviewer
 ```

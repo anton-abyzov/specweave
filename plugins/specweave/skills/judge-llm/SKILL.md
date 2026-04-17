@@ -1,11 +1,35 @@
 ---
-description: Ultrathink LLM-as-Judge validation of completed work. Uses extended thinking and Opus model for thorough, independent evaluation. Use when saying "judge my code", "judge-llm", "deep validate", or as part of sw:done closure.
+description: Adaptive-thinking LLM-as-Judge validation of completed work. Uses the Opus model and an adaptive-thinking prompt hint for thorough, independent evaluation. Use when saying "judge my code", "judge-llm", "deep validate", or as part of sw:done closure.
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
-# Ultrathink LLM-as-Judge Validation
+# Adaptive-Thinking LLM-as-Judge Validation
 
-**ULTRATHINK BY DEFAULT** - Validate completed work using extended thinking and the LLM-as-Judge pattern. Provides an independent second opinion separate from `sw:grill`.
+Validate completed work using the adaptive-thinking LLM-as-Judge pattern. Provides an independent second opinion separate from `sw:grill`.
+
+## Tool-Use Rationale
+
+- **Read**: Load spec.md, tasks.md, rubric.md, and the files under review to build evaluation context.
+- **Grep**: Search for AC patterns, test assertions, and implementation markers across the codebase.
+- **Glob**: Discover test files and implementation files matching the increment's scope.
+- **Bash**: Run `npx vitest run` to verify test pass rates; check file existence.
+
+## Adaptive-Thinking Prompt Hint
+
+> **think carefully and step-by-step — this evaluation is harder than it looks**
+
+With Opus 4.7, we no longer pass a `thinking` API parameter. Instead, we rely on adaptive thinking triggered by the prompt hint above. The model decides how much reasoning each evaluation requires.
+
+## Model Configuration
+
+**Default effort**: `xhigh` — recommended for all evaluation tasks per Opus 4.7 conventions.
+**Opt-in max**: `--effort max` enables maximum effort with a warning: "max effort risks overthinking on straightforward problems."
+**Legacy mode**: Set `quality.thinkingBudget: "legacy"` in config to pass a fixed `thinking` parameter (for pre-4.7 models only).
+
+## Effort Level
+
+- **Default**: `xhigh` effort — the judge runs with the highest reasoning effort level by default.
+- **Opt-in**: `--effort max` — elevates to maximum effort for exceptionally complex or high-stakes reviews.
 
 ## How It Differs from sw:grill
 
@@ -13,7 +37,7 @@ allowed-tools: Read, Grep, Glob, Bash
 |--------|-------------|-----------------|
 | Execution | In-session (same context) | **Separate Opus API call** |
 | Context | Shares conversation context | **Fresh context (no bias)** |
-| Thinking | Standard reasoning | **Extended thinking / ultrathink** |
+| Reasoning | Standard reasoning | **Adaptive thinking via prompt hint (`xhigh` default, `--effort max` opt-in)** |
 | Output | Confidence-scored findings | Structured verdict + score |
 | Domain | Generic code review | **Built-in domain criteria** |
 
@@ -23,6 +47,7 @@ allowed-tools: Read, Grep, Glob, Bash
 
 **TypeScript**: `src/core/skills/skill-judge.ts`
 - Uses Anthropic SDK with user's `ANTHROPIC_API_KEY`
+- Model-version guard: omits the `thinking` API parameter on `claude-opus-4-7*` and newer models; falls back to adaptive-thinking prompt hint
 - AbortController-based timeout to prevent stuck states (default: 60s)
 - Progress logging to `.specweave/logs/judge-llm.log`
 - Fallback to basic pattern matching if no API key
@@ -31,17 +56,20 @@ allowed-tools: Read, Grep, Glob, Bash
 ## Usage
 
 ```bash
-# DEFAULT: Ultrathink validation (recommended)
+# DEFAULT: Adaptive-thinking validation at xhigh effort
 sw:judge-llm src/file.ts
 sw:judge-llm "src/**/*.ts"
 
-# Validate git changes (ultrathink by default)
+# Validate git changes (adaptive thinking by default)
 sw:judge-llm --staged           # Staged changes
 sw:judge-llm --last-commit      # Last commit
 sw:judge-llm --diff main        # Diff vs branch
 
 # Quick mode (ONLY if you need speed over thoroughness)
 sw:judge-llm src/file.ts --quick
+
+# Maximum reasoning effort (opt-in)
+sw:judge-llm src/file.ts --effort max
 
 # Timeout control (default: 60s)
 sw:judge-llm src/file.ts --timeout 120000
@@ -61,13 +89,13 @@ sw:judge-llm src/file.ts --verbose  # Show progress to console
 
 1. Read `.specweave/config.json` → check `externalModels.consent` field
 2. If `"always-allow"` → proceed silently
-3. If `"never"` → skip API call, use in-session ultrathink evaluation instead
+3. If `"never"` → skip API call, use in-session adaptive-thinking evaluation instead
 4. If `"ask"` (default):
    - Check if `"anthropic"` is in `externalModels.allowedProviders`
    - If YES → proceed silently (standing permission)
    - If NO → **ASK USER**: "Judge-LLM will call the Anthropic API using your ANTHROPIC_API_KEY. This costs ~$0.01-0.05 per evaluation. Proceed? (yes/no/always)"
      - "yes" → proceed this time only
-     - "no" → skip API call, use in-session ultrathink instead
+     - "no" → skip API call, use in-session adaptive-thinking evaluation instead
      - "always" → run: `grantStandingConsent('anthropic', projectRoot)` from `src/core/llm/consent.ts`, then proceed
 5. No `ANTHROPIC_API_KEY` set → falls back to pattern matching automatically (no cost, no consent needed)
 
@@ -82,12 +110,16 @@ Determine what to validate:
 - If `--diff <branch>`: get diff against branch
 - If no args: validate recent work in conversation context
 
-### Step 2: Ultrathink Analysis (Default)
+### Step 2: Adaptive-Thinking Analysis (Default)
 
-Use extended thinking for deep LLM-as-Judge evaluation via the Opus model:
+Prompt hint prefix (include verbatim at the start of the judge prompt):
+
+> **think carefully and step-by-step — this evaluation is harder than it looks**
+
+Use adaptive thinking (triggered by the hint) for deep LLM-as-Judge evaluation via the Opus 4.7 model at `xhigh` effort by default (`--effort max` opt-in for exceptional cases):
 
 ```
-Claude MUST use ultrathink/extended thinking to:
+Claude MUST think carefully and step-by-step to:
 
 1. DEEP READ: Thoroughly understand all code, context, and intent
 2. MULTI-DIMENSIONAL ANALYSIS: Evaluate across ALL dimensions:
@@ -109,12 +141,12 @@ Claude MUST use ultrathink/extended thinking to:
 JUDGE-LLM VERDICT: APPROVED | CONCERNS | REJECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Mode: ULTRATHINK (extended thinking)
+Mode: ADAPTIVE-THINKING (xhigh effort)
 Confidence: 0.XX
 Files Analyzed: N
 
 REASONING:
-[Detailed chain-of-thought from extended thinking]
+[Detailed chain-of-thought from adaptive thinking]
 
 ISSUES (if any):
   CRITICAL: [title]
@@ -161,7 +193,7 @@ After evaluation (including consent-denied fallback), you **MUST** write a JSON 
   "timestamp": "<ISO-8601>",
   "verdict": "APPROVED|CONCERNS|REJECTED",
   "score": 87,
-  "mode": "ultrathink|quick|pattern-match",
+  "mode": "adaptive-thinking|quick|pattern-match",
   "timedOut": false,
   "duration_ms": 45000,
   "consentStatus": "granted",

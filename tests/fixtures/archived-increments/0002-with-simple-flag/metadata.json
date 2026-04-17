@@ -1,0 +1,8 @@
+{
+  "id": "0002-with-simple-flag",
+  "name": "with-simple-flag",
+  "status": "active",
+  "created": "2025-11-01T14:00:00.000Z",
+  "phase": "implementation",
+  "flags": ["--simple"]
+}

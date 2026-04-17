@@ -1,5 +1,20 @@
 ---
-description: Refactor code with test safety net to improve quality. Use when saying "TDD refactor", "refactor with tests", or "improve code quality".
+description: "[DEPRECATED] Refactor code with test safety net to improve quality. Use when saying \"TDD refactor\", \"refactor with tests\", or \"improve code quality\"."
+deprecated: true
+---
+
+> ⚠️ DEPRECATED: Use `sw:tdd-cycle --phase refactor` instead. This skill will be removed in v1.3.0.
+
+## Migration
+
+This skill has been deprecated as part of the Opus 4.7 framework alignment (increment 0669).
+
+- **Use instead**: `sw:tdd-cycle --phase refactor` runs only the REFACTOR phase (improve code quality with test safety net)
+- **Removal**: Scheduled for v1.3.0 (2 minor releases after v1.1.0)
+- **Why**: The three TDD phase skills (tdd-red, tdd-green, tdd-refactor) were consolidated into `sw:tdd-cycle` with a `--phase` flag. Alias routing in `marketplace.json` redirects `/sw:tdd-refactor` → `/sw:tdd-cycle --phase refactor` automatically.
+
+For the migration policy, see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
 ---
 
 # TDD Refactor Phase - Improve Code Quality

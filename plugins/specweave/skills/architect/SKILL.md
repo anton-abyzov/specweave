@@ -6,26 +6,12 @@ model: opus
 
 # Architect
 
-## STEP 0: Register Skill Chain Marker (MANDATORY - DO THIS FIRST)
+## Tool-Use Rationale
 
-**Before any other work**, register your invocation so the skill-chain-enforcement-guard allows plan.md writes.
-
-Extract the increment ID from your args (e.g., "Design architecture for increment 0323-feature-name ...").
-Then write the marker file:
-
-```bash
-mkdir -p .specweave/state
-STATE_FILE=".specweave/state/skill-chain-XXXX-name.json"
-if [ -f "$STATE_FILE" ]; then
-  jq '.architect_invoked=true | .architect_invoked_at="'$(date -Iseconds)'"' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
-else
-  echo '{"architect_invoked":true,"architect_invoked_at":"'$(date -Iseconds)'"}' > "$STATE_FILE"
-fi
-```
-
-Replace `XXXX-name` with the actual increment ID. **This unblocks the guard for plan.md writes.**
-
-**If you skip this step, your Write to plan.md will be BLOCKED by the PreToolUse guard.**
+- **Read**: Load the increment's `spec.md`, existing ADRs under `.specweave/docs/internal/architecture/adr/`, and any living-docs referenced by the spec.
+- **Glob**: Discover repo layout, existing services, and interface files that inform component boundaries.
+- **Grep**: Locate existing types, APIs, and data models so the plan builds on reality instead of reinventing.
+- **Write**: Produce `plan.md` and new ADR files where design decisions warrant a record.
 
 ## Project Overrides
 
