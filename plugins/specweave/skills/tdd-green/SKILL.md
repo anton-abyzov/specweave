@@ -1,5 +1,20 @@
 ---
-description: Write minimal code to make failing tests pass. Use when saying "TDD green", "make tests pass", or "implement for tests".
+description: "[DEPRECATED] Write minimal code to make failing tests pass. Use when saying \"TDD green\", \"make tests pass\", or \"implement for tests\"."
+deprecated: true
+---
+
+> ⚠️ DEPRECATED: Use `sw:tdd-cycle --phase green` instead. This skill will be removed in v1.3.0.
+
+## Migration
+
+This skill has been deprecated as part of the Opus 4.7 framework alignment (increment 0669).
+
+- **Use instead**: `sw:tdd-cycle --phase green` runs only the GREEN phase (write minimal code to make tests pass)
+- **Removal**: Scheduled for v1.3.0 (2 minor releases after v1.1.0)
+- **Why**: The three TDD phase skills (tdd-red, tdd-green, tdd-refactor) were consolidated into `sw:tdd-cycle` with a `--phase` flag. Alias routing in `marketplace.json` redirects `/sw:tdd-green` → `/sw:tdd-cycle --phase green` automatically.
+
+For the migration policy, see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
 ---
 
 # TDD Green Phase - Make Tests Pass

@@ -78,19 +78,22 @@ if [ "$STATUS" = "planned" ] || [ "$STATUS" = "backlog" ]; then
 fi
 ```
 
-#### Step 4a: Closure via Subagent (Claude Code — preferred)
+#### Step 4a: Closure Routing — inline vs subagent
 
-Spawn an `sw-closer` subagent per increment for a fresh context:
+Route by increment count to keep small merges fast and large merges context-safe:
 
-```typescript
-Agent({
-  subagent_type: "sw:sw-closer",
-  prompt: "Close increment <ID>. Increment path: .specweave/increments/<ID>/",
-  description: "Close increment <ID>"
-})
-```
+- **≤ 5 increments → inline closure (preferred for small batches)**. Run `sw:done <id> --auto` directly in the team-lead context for each increment, one at a time, in dependency order. Skip the Agent spawn. Rationale: fewer than 5 closures fit comfortably in context and avoid ~3–5s of per-agent coordination overhead per increment.
+- **> 5 increments → subagent closure (context-safe for large batches)**. Spawn one `sw-closer` subagent per increment via the `Agent` tool to isolate each closure in a fresh context window:
 
-Wait for each sw-closer to complete before spawning the next (dependency order). If a closer fails, log the failure and continue to the next increment.
+  ```typescript
+  Agent({
+    subagent_type: "sw:sw-closer",
+    prompt: "Close increment <ID>. Increment path: .specweave/increments/<ID>/",
+    description: "Close increment <ID>"
+  })
+  ```
+
+Either way, wait for each closure to complete before starting the next (dependency order). If a closure fails, log the failure and continue to the next increment.
 
 #### Step 4b: Direct Closure (Non-cloud tools / fallback)
 

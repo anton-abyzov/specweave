@@ -1,0 +1,38 @@
+name: skill-lint
+
+on:
+  pull_request:
+    paths:
+      - 'plugins/specweave/skills/**'
+  push:
+    branches: [main]
+    paths:
+      - 'plugins/specweave/skills/**'
+
+jobs:
+  lint-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for retired phrases in SKILL.md files
+        run: |
+          FAILED=0
+          PATTERNS="extended thinking|ULTRATHINK BY DEFAULT|spawn agents anyway|thinking\.budget_tokens|budget_tokens:"
+          for f in $(find plugins/specweave/skills -name "SKILL.md"); do
+            if grep -qE "$PATTERNS" "$f"; then
+              echo "Retired phrase found in: $f"
+              grep -nE "$PATTERNS" "$f"
+              FAILED=1
+            fi
+          done
+          if [ $FAILED -eq 1 ]; then
+            echo "Run 0669 migration: see .specweave/docs/internal/specs/opus-47-migration.md"
+            exit 1
+          fi
+          echo "All SKILL.md files clean"
+
+      - name: Count non-deprecated skills
+        run: |
+          COUNT=$(find plugins/specweave/skills -name "SKILL.md" | wc -l)
+          echo "Total SKILL.md files: $COUNT"

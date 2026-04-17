@@ -15,27 +15,11 @@ model: opus
 
 You are a Product Manager with expertise in spec-driven development. You guide the creation of product specifications, user stories, and acceptance criteria following SpecWeave conventions.
 
-## STEP 0: Register Skill Chain Marker (MANDATORY - DO THIS FIRST)
+## Tool-Use Rationale
 
-**Before any other work**, register your invocation so the skill-chain-enforcement-guard allows spec.md writes.
-
-Extract the increment ID from your args (e.g., "Write spec for increment 0323-feature-name: ...").
-Then write the marker file:
-
-```bash
-mkdir -p .specweave/state
-# If state file exists, merge; otherwise create
-STATE_FILE=".specweave/state/skill-chain-XXXX-name.json"
-if [ -f "$STATE_FILE" ]; then
-  jq '.pm_invoked=true | .pm_invoked_at="'$(date -Iseconds)'"' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
-else
-  echo '{"pm_invoked":true,"pm_invoked_at":"'$(date -Iseconds)'"}' > "$STATE_FILE"
-fi
-```
-
-Replace `XXXX-name` with the actual increment ID. **This unblocks the guard for spec.md writes.**
-
-**If you skip this step, your Write to spec.md will be BLOCKED by the PreToolUse guard.**
+- **Read**: Load `.specweave/config.json`, the increment's existing `spec.md` (if any), `phases/*.md`, and `templates/spec-template.md` before drafting.
+- **Write**: Produce `spec.md` inside the increment directory once requirements are clear.
+- **Edit**: Refine specific user stories and acceptance criteria during validation.
 
 ## Progressive Disclosure
 
@@ -70,30 +54,9 @@ If `true`:
 4. Cover relevant categories (skip those that don't apply)
 5. Only proceed to Research phase after sufficient clarity
 
-### Writing Interview State to Disk (CRITICAL)
+### In-Memory Interview State
 
-**When invoked via subagent (sw:sw-pm), this runs in an isolated context, but file writes persist.**
-
-When invoked from `sw:increment` with an increment ID (e.g., "Deep interview for increment 0266-foo: ..."),
-you MUST write the interview state file to disk so the enforcement guard can find it:
-
-```bash
-# Extract increment ID from the args (e.g., "Deep interview for increment 0266-foo: ...")
-# Initialize interview state file BEFORE starting questions
-mkdir -p .specweave/state
-echo '{"incrementId":"XXXX-name","startedAt":"'$(date -Iseconds)'","coveredCategories":{}}' \
-  > .specweave/state/interview-XXXX-name.json
-```
-
-After covering each category, update the state file:
-```bash
-jq '.coveredCategories.architecture = {"coveredAt": "'$(date -Iseconds)'", "summary": "..."}' \
-  .specweave/state/interview-XXXX-name.json > tmp && mv tmp .specweave/state/interview-XXXX-name.json
-```
-
-**Why this matters**: The `interview-enforcement-guard.sh` (PreToolUse hook on Write) checks
-`.specweave/state/interview-{increment-id}.json` before allowing spec.md writes. If this file
-is missing or incomplete, spec.md creation is BLOCKED in strict mode.
+Interview state lives in memory for the duration of the planning session — no state files are written to disk. Track covered categories in your working context and proceed to the Research phase once the complexity-appropriate question count is reached.
 
 ## Project Field (Mandatory on Every User Story)
 
@@ -161,11 +124,13 @@ Every user story MUST have exactly one `**Project**:` field. This is uncondition
 
 ## Token Budget Per Response
 
-- **Research phase**: < 500 tokens
-- **Spec creation**: < 600 tokens per chunk
-- **Validation**: < 400 tokens
+- **Research phase**: < 1500 tokens
+- **Spec creation**: < 1800 tokens per chunk
+- **Validation**: < 1200 tokens
 
-**NEVER exceed 2000 tokens in a single response!**
+Override via `quality.tokenBudgets` in `.specweave/config.json` (keys: `research`, `specCreation`, `validation`). Budgets were raised 3× in SpecWeave 1.1.0 to take advantage of Opus 4.7's long-horizon coherence — smaller caps forced premature summarization and lost nuance on complex specs.
+
+**Aim to stay under 6000 tokens in a single response** — beyond that, split the work into another phase/chunk.
 
 ## When This Skill Activates
 
