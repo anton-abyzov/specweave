@@ -20,11 +20,20 @@ Execute a SpecWeave increment by running tasks from tasks.md with automatic AC-s
 ```
 sw:do <increment-id>    # Execute specific increment
 sw:do                   # Auto-select best candidate
-sw:do <id> --model haiku|sonnet|opus  # Override model for all tasks
+sw:do <id> --model <model-id>  # Override the model (effort stays at xhigh)
 ```
 
 - `<increment-id>`: Optional. Supports "001", "0001", "1", "0042", or "0153-feature-name" formats.
-- `--model <tier>`: Optional. Overrides per-task model hints.
+- `--model <model-id>`: Optional. Overrides the model. Effort stays at `xhigh`.
+
+All tasks execute at the `xhigh` effort tier (Opus 4.7 default). Use `--model` to override the model if needed, but effort stays at xhigh.
+
+## Tool-Use Rationale
+
+- **Read**: Load spec.md, plan.md, tasks.md, and any referenced living docs before executing a task.
+- **Edit**: Apply task-scoped code changes and flip `[ ]` → `[x]` in tasks.md after verification passes.
+- **Write**: Create new files the task defines (source, tests, migrations).
+- **Bash**: Run the task's test command and project-level verification (`npx vitest run`, `pytest`, `go test ./...`).
 
 ---
 
@@ -133,7 +142,7 @@ If TDD mode active:
 ### Step 4: Smart Resume
 
 1. Parse tasks.md, find first incomplete task (`[ ]`)
-2. Extract model hints per task (haiku/sonnet/opus)
+2. Run every task at the `xhigh` effort tier (Opus 4.7 default) — legacy tiered hints in tasks.md are ignored
 3. Show resume context with completion percentage
 
 ### Step 5: Update Status
@@ -155,8 +164,8 @@ Before marking ANY task `[x]`, you MUST run verification and see it pass:
 
 For each task:
 
-1. **Read task details**: ID, model hint, description, ACs, file paths
-2. **Select model**: Use task hint or `--model` override
+1. **Read task details**: ID, description, ACs, file paths
+2. **Run at xhigh effort**: All tasks execute at the `xhigh` effort tier (Opus 4.7 default). `--model` only overrides the model; effort stays at xhigh.
 3. **Execute**: Follow plan.md architecture, implement, write clean code
 4. **Verify**: Run the task's test command (see Iron Law above). Only proceed if green.
 5. **Mark complete**: Change `[ ]` to `[x]` in tasks.md — ONLY after verification passes

@@ -6,6 +6,12 @@ description: Phase-agnostic orchestrator for parallel multi-agent work — brain
 
 **Plan and launch parallel development agents across domains using Claude Code's native Agent Teams.**
 
+## Tool-Use Rationale
+
+- **Read**: Load the master `spec.md` once for fan-out decisions and read agent prompt templates under `plugins/specweave/skills/team-lead/agents/`. During the active phase, prefer `PLAN_READY` summaries from agents over re-reading full plan files.
+- **Bash**: Inspect team state (`specweave doctor`, `ls ~/.claude/teams/`, grep metadata.json) and run CLI-only operations — never to implement code.
+- **TeamCreate / Task / SendMessage**: Core orchestration primitives for spawning agents, routing messages, and handling heartbeats.
+
 ## MANDATORY: Orchestrator Identity (NEVER SKIP)
 
 **You are an ORCHESTRATOR. You do NOT implement, review, or analyze code yourself.**
@@ -14,7 +20,7 @@ description: Phase-agnostic orchestrator for parallel multi-agent work — brain
 - **NEVER** use `Bash`, `Edit`, `Read`, or `Agent` to do the actual work yourself
 - **NEVER** say "I'll do this directly" — that defeats the purpose of team-lead
 - Even if you just finished a previous team-lead session in this conversation, you MUST create a **new** team and spawn **new** agents
-- Even if the work seems "simple enough to do directly" — spawn agents anyway
+- **Fan-out threshold**: Spawn agents when **domains ≥ 3** OR **tasks ≥ 15** OR `--parallel` flag is set. For 1-domain or <15-task work, execute directly without spawning.
 - Your only tools are: `TeamCreate`, `Task`, `SendMessage`, `Read` (for agent templates; during active phase use PLAN_READY summaries instead of reading full plan files), `Bash` (only for team state inspection), and `Skill()` (only during closure phase for grill/done)
 
 **The test**: If you're about to call `Edit()` or write code, STOP — you're violating this rule.
@@ -59,6 +65,27 @@ sw:team-lead "<feature description>" [OPTIONS]
 | `--mode` | Force operating mode: `brainstorm`, `plan`, `implement`, `review`, `research`, `test` | auto-detect |
 | `--domains` | Override domain detection (e.g., `--domains frontend,backend,testing`) | auto-detect |
 | `--max-agents` | Maximum number of concurrent agents | 6 |
+| `--preset` | Use a named agent configuration (e.g., `--preset full-stack`). Presets are shortcuts for common domain combinations. Available: `full-stack`, `api-only`, `frontend-only`, `microservice`. | — |
+
+## Preset Configurations
+
+Presets expand into a pre-defined `--domains` set so you don't have to spell them out. A preset is applied before domain auto-detection and is overridden by an explicit `--domains` flag.
+
+| Preset | Domains | Typical Use |
+|--------|---------|-------------|
+| `full-stack` | frontend, backend, database, testing | Full web app increments that touch every layer |
+| `api-only` | backend, database, testing | Pure API work with no UI |
+| `frontend-only` | frontend, testing | UI-only increments (design, styling, components) |
+| `microservice` | backend, testing, devops | Single-service increments with deployment concerns |
+
+Usage:
+
+```bash
+sw:team-lead --preset full-stack "Build checkout flow"
+sw:team-lead --preset api-only --max-agents 4 "Add payments API"
+```
+
+`--preset` supersedes the deprecated `sw:team-build` skill — same preset names are honoured here.
 
 ---
 
@@ -546,7 +573,7 @@ The team lead reviews agent plans **asynchronously**. Agents do NOT wait for app
 The previous blocking handshake (where agents waited for explicit approval before implementing) caused sessions to freeze:
 - When 3-5 Phase 2 agents spawned simultaneously, they ALL blocked waiting for a response
 - Team-lead had to review each plan sequentially while all agents sat idle
-- If team-lead was processing another message (or in extended thinking), agents waited indefinitely
+- If team-lead was processing another message (or in a long reasoning pass), agents waited indefinitely
 - In tmux/iTerm2, this appeared as a completely frozen session
 
 Async review eliminates the bottleneck: agents proceed immediately, and the team-lead only intervenes when something is wrong.
@@ -622,21 +649,21 @@ For very large features, the team lead MAY split work into multiple increments p
 
 ### Task Cap Per Agent (CRITICAL — Context Overflow Prevention)
 
-**Maximum 15 tasks per agent.** Agents with more tasks accumulate too much context in auto-mode, leading to extended thinking loops and stuck agents.
+**Maximum 40 tasks per agent** (`TASK_CAP = 40`). Raised in SpecWeave 1.1.0 from the previous cap: Opus 4.7's long-horizon coherence improvements mean agents can maintain coherent context across 40 tasks without degradation.
 
 When distributing tasks from the master spec:
 1. Count tasks per domain
-2. If a domain has >15 tasks: **split into 2 agents** (e.g., `jira-agent-a`, `jira-agent-b`) with non-overlapping task ranges
+2. If a domain has >40 tasks: **split into 2 agents** (e.g., `jira-agent-a`, `jira-agent-b`) with non-overlapping task ranges
 3. If splitting isn't natural, group tasks into phases and create 2 increments per domain
 
 ```
 Domain tasks analysis:
-  Frontend: 12 tasks -> 1 agent (OK)
-  Backend:  8 tasks  -> 1 agent (OK)
-  JIRA:     23 tasks -> SPLIT into 2 agents (tasks 1-12, tasks 13-23)
+  Frontend: 32 tasks -> 1 agent (OK)
+  Backend:  18 tasks -> 1 agent (OK)
+  JIRA:     55 tasks -> SPLIT into 2 agents (tasks 1-28, tasks 29-55)
 ```
 
-**Why**: Each auto-mode iteration adds context (spec reads, edits, test outputs). At 20+ tasks, accumulated context causes the model to enter extended thinking (30+ min) and effectively hang. The 15-task cap keeps agents within a safe context budget.
+**Why**: Each auto-mode iteration adds context (spec reads, edits, test outputs). Prior to 4.7, a 15-task cap was necessary because older models entered deep reasoning loops and effectively hung past ~20 tasks. Opus 4.7's long-horizon coherence holds across substantially more work, so the safe budget is now 40. Above 40, we still split to prevent edge-case context blowups.
 
 ---
 
@@ -849,7 +876,7 @@ Quality gates are split: agents handle tests, team-lead handles closure (grill, 
 
 ```
 Agent Workflow:
-  1. Execute all assigned tasks via sw:auto --simple
+  1. Execute all assigned tasks via sw:auto
   2. Run all tests for owned code (unit + integration + E2E)
   3. Run linter/type-check for owned code
   4. If tests fail -> fix issues and repeat from step 2
@@ -858,33 +885,20 @@ Agent Workflow:
   7. Do NOT run sw:grill or sw:done — team-lead handles closure centrally
 ```
 
-**Why agents don't run sw:done**: The sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Closure is delegated to `sw-closer` subagents that run in a fresh context, avoiding overflow for both agents and the team-lead orchestrator.
+**Why agents don't run sw:done**: The sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After many tasks of auto-mode context, this pushes agents into deep reasoning loops (30+ min hangs). Closure is delegated to `sw-closer` subagents that run in a fresh context, avoiding overflow for both agents and the team-lead orchestrator.
 
-### Active Phase Rules (CRITICAL — While Agents Are Implementing)
+### Active Phase Responsibilities (While Agents Are Implementing)
 
-**During the active phase (between spawning agents and receiving ALL COMPLETION signals), the team-lead MUST NOT run any closure operations.**
+During the active phase (between spawning agents and receiving ALL COMPLETION signals), the team-lead focuses on orchestration:
 
-```
-ALLOWED during active phase:
-  ✓ Process SendMessage from agents (PLAN_READY, STATUS, CONTRACT_READY, BLOCKING_ISSUE, COMPLETION)
-  ✓ Async plan review (read PLAN_READY summaries, send PLAN_CORRECTION if needed)
-  ✓ Track heartbeat STATUS per agent for stuck detection
-  ✓ Respond to BLOCKING_ISSUE messages
-  ✓ Send STATUS_CHECK to silent agents
-  ✓ Shutdown stuck agents
+- Process SendMessage from agents (PLAN_READY, STATUS, CONTRACT_READY, BLOCKING_ISSUE, COMPLETION).
+- Async plan review (read PLAN_READY summaries, send PLAN_CORRECTION if needed).
+- Track heartbeat STATUS per agent for stuck detection.
+- Respond to BLOCKING_ISSUE messages.
+- Send STATUS_CHECK to silent agents.
+- Shutdown stuck agents and spawn replacements for the same domain on remaining tasks.
 
-FORBIDDEN during active phase:
-  ✗ Run sw:grill on any increment
-  ✗ Run sw:done on any increment
-  ✗ Invoke any closure-related skills (judge-llm, sync-docs, qa)
-  ✗ Read full plan/spec files (use PLAN_READY summaries instead)
-  ✗ Call TeamDelete() (kills all running agents — only use after all agents done or stuck)
-
-ALLOWED but use with caution:
-  ~ Spawn a replacement agent for a stuck agent that was shut down (same domain, remaining tasks)
-```
-
-**Why**: Closure loads 4+ skill definitions into context. Running it while agents are active causes the orchestrator to enter extended thinking (30+ min) and stop responding to agent messages — freezing the entire session.
+Closure operations (grill, done, judge-llm) are performed by `sw-closer` subagents spawned from the closure phase below, not by the orchestrator itself. The orchestrator avoids calling `TeamDelete()` while agents are still running — that kills every live agent.
 
 ### Orchestrator Quality Gate — Closure Phase (SIMPLIFIED)
 
@@ -943,15 +957,17 @@ Agent Heartbeat Log (example):
 
 ### Stuck Detection Rules
 
-**Note**: Claude Code has no built-in timers. Heartbeats are tracked relative to team-lead turns (each time the orchestrator processes messages).
+**Note**: Claude Code has no built-in timers. Heartbeats are tracked relative to team-lead turns (each time the orchestrator processes messages). Time thresholds below are approximate wall-clock estimates based on typical turn cadence.
 
-| Condition | Action |
-|-----------|--------|
-| Agent sent STATUS within last 2 team-lead turns | Healthy — no action needed |
-| No STATUS from agent for 2 consecutive turns | Send `STATUS_CHECK` message to agent |
-| No STATUS for 3 consecutive turns (or no response to STATUS_CHECK) | Declare agent stuck |
-| Agent sends STATUS but task number hasn't changed for 3+ heartbeats | Stuck in loop — declare stuck |
-| All agents stuck | STOP team, report to user |
+| Condition | Wall-clock estimate | Action |
+|-----------|---------------------|--------|
+| Agent sent STATUS within the current no-progress window | ≤ 5 min | Healthy — no action needed |
+| No STATUS / no progress from agent for the no-progress window | ~5 min | Send `STATUS_CHECK` message to agent |
+| No STATUS / no response to STATUS_CHECK for the total-stuck window | ~20 min | Declare agent stuck |
+| Agent sends STATUS but task number hasn't advanced for 3+ heartbeats | — | Stuck in loop — declare stuck |
+| All agents stuck | — | STOP team, report to user |
+
+**Window rationale**: Raised from 2min/10min to 5min/20min in SpecWeave 1.1.0 — Opus 4.7's long-horizon coherence means legitimate pauses (tool use, extended reasoning, long file writes) are longer, so the old 2min window produced false stuck-detection on otherwise-healthy agents. Override via `quality.stuckDetection.{noProgressMin, totalStuckMin}` in `.specweave/config.json`.
 
 ### Stuck-in-Loop Detection
 
@@ -971,11 +987,10 @@ When an agent is declared stuck:
 
 ### Preventing Stuck Agents
 
-- Enforce the 15-task cap (Section 3b)
-- Agents use `--simple` flag in auto-mode (reduces context per iteration)
+- Enforce the 40-task cap (Section 3b) — split larger work across multiple agents
 - Agents do NOT run sw:done (team-lead handles closure centrally)
 - Heartbeat STATUS messages let team-lead detect problems early instead of after long silences
-- If an agent's task count exceeds 15 despite the cap, the team-lead should split it before spawning
+- If an agent's task count exceeds 40 despite the cap, split before spawning
 
 ---
 
@@ -1098,7 +1113,7 @@ To execute, run without --dry-run.
 | **Agent stuck in loop (same task repeated)** | Test fail → fix → test fail cycle | Heartbeat shows same task number 3+ times. Send guidance message or declare stuck |
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
-| **Agent stuck in extended thinking** | Too many tasks (>15) causing context overflow | Enforce 15-task cap per agent; split large domains into 2 agents; agents use `--simple` mode |
+| **Agent stuck in long reasoning loop** | Too many tasks causing context overflow | Enforce the per-agent task cap (`TASK_CAP` = 40 in 1.1.0); split large domains into 2 agents; agents use `--simple-compat` mode |
 | **Agent hung on sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run sw:done — team-lead spawns `sw-closer` subagents (fresh context) for closure |
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
 | **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |

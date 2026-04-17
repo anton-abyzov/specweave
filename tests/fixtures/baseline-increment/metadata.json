@@ -1,0 +1,7 @@
+{
+  "id": "baseline-increment",
+  "status": "completed",
+  "taskCount": 5,
+  "domain": "single",
+  "note": "Benchmark fixture for agent-spawn-count.bench.ts — do not modify"
+}

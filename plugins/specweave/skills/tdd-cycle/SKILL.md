@@ -4,6 +4,44 @@ description: Execute full TDD red-green-refactor cycle with validation gates. Us
 
 # TDD Cycle - Comprehensive Test-Driven Development
 
+## --phase Flag (v1.1.0+)
+
+`sw:tdd-cycle` supports a `--phase` flag to run a single phase of the RED → GREEN → REFACTOR cycle. Omitting the flag (or passing `--phase all`) runs the full cycle.
+
+| Flag | Behavior |
+|------|----------|
+| `--phase all` (default) | Full RED → GREEN → REFACTOR cycle. Same as omitting the flag. |
+| `--phase red` | Runs only the RED phase — write failing tests. See Phase 2 below. |
+| `--phase green` | Runs only the GREEN phase — write minimal code to make tests pass. See Phase 3 below. |
+| `--phase refactor` | Runs only the REFACTOR phase — improve code quality with tests as safety net. See Phase 4 below. |
+
+### Alias routing from deprecated skills
+
+The following deprecated single-phase skills are aliased in `marketplace.json` to route through `sw:tdd-cycle --phase <x>`:
+
+- `/sw:tdd-red` → `/sw:tdd-cycle --phase red`
+- `/sw:tdd-green` → `/sw:tdd-cycle --phase green`
+- `/sw:tdd-refactor` → `/sw:tdd-cycle --phase refactor`
+
+The aliases emit a one-time migration warning pointing users to the canonical `--phase` form. The three `tdd-*` skills are scheduled for removal in v1.3.0 — see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
+### Examples
+
+```bash
+# Full cycle (default)
+sw:tdd-cycle "user authentication"
+
+# Single phases
+sw:tdd-cycle --phase red "user authentication"
+sw:tdd-cycle --phase green "user authentication"
+sw:tdd-cycle --phase refactor "user authentication"
+
+# Same as default — explicit
+sw:tdd-cycle --phase all "user authentication"
+```
+
+---
+
 ## Project Overrides
 
 **Skill Memories**: If `.specweave/skill-memories/tdd-cycle.md` exists, read and apply its learnings.

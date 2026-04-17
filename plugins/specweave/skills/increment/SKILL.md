@@ -2,9 +2,18 @@
 description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Use when starting new features, hotfixes, bugs, or any development work that needs specification and task breakdown. Creates spec.md, plan.md, tasks.md with proper AC-IDs and living docs integration.
 argument-hint: "<feature-description>"
 model: opus
+effort: xhigh
 ---
 
+**Effort**: `xhigh` (Opus 4.7 default for planning). Use `--effort max` for unusually complex architecture, accepting the overthinking risk.
+
 # Plan Product Increment
+
+## Tool-Use Rationale
+
+- **Read**: Load `.specweave/config.json`, existing increments, and referenced living docs to inform scope and AC-IDs.
+- **Write**: Produce the four increment artifacts (`metadata.json`, `spec.md`, `plan.md`, `tasks.md`) inside the increment directory.
+- **Edit**: Refine AC-IDs, user-story numbering, and task dependencies after the single-agent draft is complete.
 
 ## CRITICAL: Plan Mode Required (BLOCKING)
 
@@ -184,6 +193,18 @@ mkdir -p .specweave/increments/XXXX-name
 
 Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
+## Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--regenerate-plan` | Regenerate `plan.md` and `tasks.md` for an existing increment without re-running the PM interview. Useful when architecture changes after spec is finalized. Supersedes the deprecated standalone `sw:plan` skill. | false |
+
+Example:
+
+```bash
+sw:increment --regenerate-plan 0014-checkout-flow
+```
+
 ## Quick Reference
 
 ### Increment Types
@@ -251,23 +272,35 @@ The PM agent will:
 **After PM agent returns**, read the interview state file to confirm all categories are covered
 before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
-## Step 4: Direct Specification Writing (Universal — works with ALL AI tools)
+## Step 4: Single-Agent Planning (DEFAULT — 0669 AC-US4-01, AC-US4-02)
 
-**After increment folder + metadata.json are created, write the spec files using CLI commands and templates.**
+**Default path: one agent writes spec.md + plan.md + tasks.md + rubric.md sequentially.**
 
-This is the default path. It works with Claude Code, Cursor, OpenCode, Copilot, Aider, and any other AI tool.
+This is now the default for ALL increments — no fan-out, no team-creation overhead, faster planning for the typical small-to-medium increment. It works with Claude Code, Cursor, OpenCode, Copilot, Aider, and any other AI tool.
 
 1. Create the increment: `specweave create-increment --auto-id --name "feature-name" --title "Title" --description "Desc" --project "my-app"`
+   - Add `--parallel` to opt into 3-agent fan-out planning (see Step 4a).
 2. Write `spec.md` with user stories and acceptance criteria (use the User Story Format above)
-3. Write `plan.md` with architecture decisions and ADR references
-4. Write `tasks.md` with BDD test plans (Given/When/Then) for each AC
-5. Run: `specweave sync-living-docs {increment-id}`
+3. Write `plan.md` with architecture decisions and ADR references (must contain `## Design` and `## Rationale` headings)
+4. Write `tasks.md` with BDD test plans (Given/When/Then) for each AC (`### T-NN` entries)
+5. Write `rubric.md` with the per-increment quality contract (`## Quality Contract` heading)
+6. Run: `specweave sync-living-docs {increment-id}`
 
 Proceed to Step 5 after writing all files.
 
-### Step 4a: Enhanced — Team-Based Delegation (Optional, Claude Code only)
+**Parity contract (enforced by `tests/integration/increment-single-agent-parity.test.ts`):** single-agent output MUST match the top-level structure of the 3-agent path — `spec.md` with an `Acceptance Criteria` section and `AC-US*-NN` IDs, `plan.md` with `Design` and `Rationale` headings, `tasks.md` with `### T-NN` tasks, and `rubric.md` with a `Quality Contract` heading.
 
-**If TeamCreate is available**, use team-based delegation for better quality. This provides isolated context, persistent memory, resumability, auto-compaction, and tmux pane visibility for each agent.
+### Step 4a: Opt-In — Team-Based 3-Agent Fan-Out (Parallel Planning)
+
+**Use the 3-agent fan-out ONLY when one of these gates fires:**
+
+1. **Explicit flag** — user invoked with `--parallel` (maps to `parallel: true` on the create-increment options).
+2. **Large scope** — user-story count is ≥ 10 in the feature description or an existing draft.
+3. **Keyword trigger** — the feature description contains any of: `parallel`, `team lead`, `fan out`.
+
+If NONE of these fire, STOP — use Step 4 (single-agent) instead. Do not spawn a planning team for small/medium increments by default.
+
+**When the gate fires and TeamCreate is available**, use team-based delegation for better quality. This provides isolated context, persistent memory, resumability, auto-compaction, and tmux pane visibility for each agent.
 
 **Team lifecycle:**
 1. `TeamCreate({ team_name: "plan-XXXX-name", description: "Planning: <feature>" })`

@@ -361,6 +361,7 @@ program
   .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
   .option('--project-root <path>', 'Override project root directory')
+  .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
   .option('--json', 'Output result as JSON (for programmatic use)')
   .action(async (options) => {
     if (options.projectRoot) {

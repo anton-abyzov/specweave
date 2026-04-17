@@ -1,6 +1,21 @@
 ---
-description: Help and guidance for Azure DevOps synchronization with SpecWeave increments. Use when asking how to set up ADO sync, configure credentials, or troubleshoot integration issues. For actual syncing, use sw-ado:sync command.
+description: "[DEPRECATED] Help and guidance for Azure DevOps synchronization with SpecWeave increments. Use when asking how to set up ADO sync, configure credentials, or troubleshoot integration issues. For actual syncing, use sw-ado:push or sw-ado:pull command."
 user-invokable: false
+deprecated: true
+---
+
+> ⚠️ DEPRECATED: Use `sw-ado:push` / `sw-ado:pull` instead. This skill will be removed in v1.3.0.
+
+## Migration
+
+This skill has been deprecated as part of the Opus 4.7 framework alignment (increment 0669).
+
+- **Use instead**: `sw-ado:push` (content SpecWeave→ADO) and `sw-ado:pull` (status ADO→SpecWeave)
+- **Removal**: Scheduled for v1.3.0 (2 minor releases after v1.1.0)
+- **Why**: Consolidated sync logic moved to the `sw-ado:*` command family.
+
+For the migration policy, see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
 ---
 
 # Azure DevOps Sync Skill

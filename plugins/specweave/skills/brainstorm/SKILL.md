@@ -141,7 +141,7 @@ Override defaults: `sw:brainstorm "topic" --criteria "perf,cost,complexity,risk"
 
 ## Phase 1: Frame
 
-**Token budget: 400 tokens max.**
+**Token budget: ~1200 tokens max** (raised 3× in SpecWeave 1.1.0; override via `quality.tokenBudgets.frame`).
 
 ### 1a. Restate the Problem
 
@@ -181,7 +181,7 @@ Update state: `"phase": "evaluate"`.
 
 ## Phase 2: Diverge
 
-**Token budget: 600 tokens per approach (max 3600 for 6 approaches).**
+**Token budget: ~1800 tokens per approach** (max ~10800 for 6 approaches; raised 3× in SpecWeave 1.1.0; override via `quality.tokenBudgets.diverge`).
 
 ### 2a. Lens Selection
 
@@ -247,7 +247,7 @@ Update state: `"phase": "evaluate"`, populate `"approaches"` array.
 
 ## Phase 3: Evaluate
 
-**Token budget: 500 tokens max.**
+**Token budget: ~1500 tokens max** (raised 3× in SpecWeave 1.1.0; override via `quality.tokenBudgets.evaluate`).
 
 ### 3a. Comparison Matrix
 
@@ -295,7 +295,7 @@ Update state: `"selectedApproach": { ... }`.
 
 ## Phase 4: Deepen (Deep Mode Only)
 
-**Token budget: 500 tokens max.**
+**Token budget: ~1500 tokens max** (raised 3× in SpecWeave 1.1.0; override via `quality.tokenBudgets.deepen`).
 
 This phase only runs when `--depth deep`.
 
@@ -335,7 +335,7 @@ Update state: `"phase": "output"`.
 
 ## Phase 5: Output
 
-**Token budget: 400 tokens max.**
+**Token budget: ~1200 tokens max** (raised 3× in SpecWeave 1.1.0; override via `quality.tokenBudgets.output`).
 
 ### 5a. Save Brainstorm Document
 
@@ -507,19 +507,19 @@ Save to `.specweave/docs/brainstorms/YYYY-MM-DD-{topic-slug}.md`. Structure:
 
 ## Token Budgets (Guidelines)
 
-These are targets, not hard limits. Prefer conciseness, but expand when the problem demands it.
+These are targets, not hard limits. Prefer conciseness, but expand when the problem demands it. Override via `quality.tokenBudgets` in `.specweave/config.json`. Budgets were raised 3× in SpecWeave 1.1.0 to take advantage of Opus 4.7's long-horizon coherence — smaller caps forced premature summarization and missed approach trade-offs.
 
 | Phase | Target | Hard Max | Notes |
 |-------|--------|----------|-------|
-| Frame | ~400 tokens | 800 | Problem + 5W1H + questions |
-| Diverge (per approach) | ~600 tokens | 1000 | Name + summary + steps + trade-offs |
-| Diverge (total) | ~3600 tokens | 6000 | 6 approaches max |
-| Evaluate | ~500 tokens | 800 | Matrix + recommendation |
-| Deepen | ~500 tokens | 1000 | Ladder + analogies + assumptions + pre-mortem |
-| Output | ~400 tokens | 600 | Summary + handoff |
-| **Quick total** | ~1300 | ~2600 | Frame + 3 approaches + Evaluate |
-| **Standard total** | ~3500 | ~5200 | Frame + Diverge + Evaluate + Output |
-| **Deep total** | ~5400 | ~9200 | All 5 phases |
+| Frame | ~1200 tokens | 2400 | Problem + 5W1H + questions |
+| Diverge (per approach) | ~1800 tokens | 3000 | Name + summary + steps + trade-offs |
+| Diverge (total) | ~10800 tokens | 18000 | 6 approaches max |
+| Evaluate | ~1500 tokens | 2400 | Matrix + recommendation |
+| Deepen | ~1500 tokens | 3000 | Ladder + analogies + assumptions + pre-mortem |
+| Output | ~1200 tokens | 1800 | Summary + handoff |
+| **Quick total** | ~3900 | ~7800 | Frame + 3 approaches + Evaluate |
+| **Standard total** | ~10500 | ~15600 | Frame + Diverge + Evaluate + Output |
+| **Deep total** | ~16200 | ~27600 | All 5 phases |
 
 **When to exceed targets**: Complex problems with many stakeholders, deeply technical domains requiring precise terminology, or when the user explicitly asks for more detail.
 

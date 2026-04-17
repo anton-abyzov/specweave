@@ -39,6 +39,8 @@ export default defineConfig({
       'tests/plugin-validation/**/*.test.ts',
       'tests/e2e/**/*.test.ts',
       'tests/e2e/**/*.e2e.ts', // E2E test files with .e2e.ts extension
+      'plugins/specweave/.lint/**/*.test.ts', // Plugin lint tests (0669 Wave 3)
+      'src/**/*.test.ts', // Co-located unit tests (0669 Wave 5)
     ],
 
     // Exclude patterns

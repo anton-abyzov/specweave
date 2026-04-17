@@ -1,9 +1,17 @@
 ---
-description: Expert at organizing specs and splitting tasks across multiple GitHub repositories for monorepo, polyrepo, and parent repo architectures. Use when managing specs across multiple repos, coordinating cross-repo work, or allocating tasks to different teams/repositories.
+description: "[DEPRECATED] Use `sw:multi-project --tool github` instead. Organizes specs and splits tasks across multiple GitHub repositories. This skill will be removed in SpecWeave v1.3.0."
 user-invokable: false
 ---
 
 # GitHub Multi-Project Management Skill
+
+## Migration
+
+> Deprecated. Use: `sw:multi-project --tool github`
+
+This skill has been consolidated into the unified `sw:multi-project` skill. Replace any invocation of `sw:github-multi-project` with `sw:multi-project --tool github`. The flag-based skill supports GitHub, Azure DevOps, and Jira under a single interface. See `plugins/specweave/skills/multi-project/SKILL.md`.
+
+Scheduled for removal in SpecWeave v1.3.0.
 
 Expert skill for managing SpecWeave projects across multiple GitHub repositories.
 

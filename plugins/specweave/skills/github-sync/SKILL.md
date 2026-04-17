@@ -1,6 +1,21 @@
 ---
-description: Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Use when asking about GitHub integration setup, troubleshooting sync issues, or configuring sync settings. For actual syncing, use sw-github:sync-spec command.
+description: "[DEPRECATED] Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Use when asking about GitHub integration setup, troubleshooting sync issues, or configuring sync settings. For actual syncing, use sw-github:sync-spec command."
 user-invokable: false
+deprecated: true
+---
+
+> ⚠️ DEPRECATED: Use `sw-github:sync-spec` instead. This skill will be removed in v1.3.0.
+
+## Migration
+
+This skill has been deprecated as part of the Opus 4.7 framework alignment (increment 0669).
+
+- **Use instead**: `sw-github:sync-spec` for push/pull operations
+- **Removal**: Scheduled for v1.3.0 (2 minor releases after v1.1.0)
+- **Why**: Consolidated sync logic moved to the `sw-github:*` command family. This skill's guidance content is now covered by `sw-github:sync-spec` help text and `.specweave/docs/internal/specs/github-sync.md`.
+
+For the migration policy, see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
 ---
 
 # GitHub Sync - Two-way Spec ↔ Project Synchronization

@@ -28,6 +28,92 @@ export interface AutoCommandOptions {
   dryRun?: boolean;
   allBacklog?: boolean;
   reset?: boolean;
+  respectNative?: boolean;
+  forceSwAuto?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Native auto-mode advisory (0669 Wave 3 / AC-US12-03)
+// ---------------------------------------------------------------------------
+
+export interface AutoNativeOptions {
+  respectNative: boolean;
+  forceSw: boolean;
+}
+
+let nativeAdvisoryEmitted = false;
+
+/**
+ * Reset the one-time advisory flag. Tests call this in beforeEach; runtime
+ * callers never need it (the flag is correctly session-scoped).
+ */
+export function resetNativeAdvisoryState(): void {
+  nativeAdvisoryEmitted = false;
+}
+
+function isRunningInClaudeCode(): boolean {
+  return Boolean(process.env.CLAUDE_CODE || process.env.CLAUDE_CODE_SESSION);
+}
+
+/**
+ * Parse --respect-native and --force-sw-auto out of the argv array.
+ *
+ * Defaults:
+ *   respectNative: true when running in Claude Code, otherwise false
+ *   forceSw:       false
+ *
+ * Accepts `--respect-native` (boolean true), `--respect-native true`,
+ * `--respect-native false`.
+ */
+export function parseAutoNativeFlags(argv: string[]): AutoNativeOptions {
+  let respectNative = isRunningInClaudeCode();
+  let forceSw = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--force-sw-auto') {
+      forceSw = true;
+      continue;
+    }
+    if (arg === '--respect-native') {
+      const next = argv[i + 1];
+      if (next === 'true' || next === 'false') {
+        respectNative = next === 'true';
+        i++;
+      } else {
+        respectNative = true;
+      }
+      continue;
+    }
+    if (arg === '--no-respect-native') {
+      respectNative = false;
+      continue;
+    }
+  }
+
+  return { respectNative, forceSw };
+}
+
+export function shouldEmitNativeAdvisory(opts: AutoNativeOptions): boolean {
+  if (!isRunningInClaudeCode()) return false;
+  if (!opts.respectNative) return false;
+  if (opts.forceSw) return false;
+  return true;
+}
+
+const NATIVE_ADVISORY =
+  'ℹ️  Claude Code native auto mode (Shift+Tab) is available. Use sw:auto only when ' +
+  'you need increment-aware gates or external sync. Suppress this with --force-sw-auto.\n';
+
+/**
+ * Emit the native-auto advisory to stderr at most once per session.
+ * Respects --force-sw-auto and --respect-native=false.
+ */
+export function emitNativeAdvisory(opts: AutoNativeOptions): void {
+  if (!shouldEmitNativeAdvisory(opts)) return;
+  if (nativeAdvisoryEmitted) return;
+  nativeAdvisoryEmitted = true;
+  process.stderr.write(NATIVE_ADVISORY);
 }
 
 export function createAutoCommand(): Command {
@@ -37,6 +123,8 @@ export function createAutoCommand(): Command {
     .option('--dry-run', 'Preview without activating')
     .option('--all-backlog', 'Activate all backlog items')
     .option('--reset', 'Clean up any stale state files')
+    .option('--respect-native [bool]', 'Advise use of Claude Code native auto mode (Shift+Tab) when applicable', (v) => v !== 'false')
+    .option('--force-sw-auto', 'Suppress the native auto-mode advisory and use sw:auto unconditionally')
     .action(async (incrementIds: string[], options: AutoCommandOptions) => {
       const projectPath = process.cwd();
 

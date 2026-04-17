@@ -28,7 +28,7 @@ sw:auto [INCREMENT_IDS...] [OPTIONS]
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--max-turns N` | Max hook invocations before hard stop | 20 |
-| `--simple` | Minimal context mode | false |
+| `--simple-compat` | **Deprecated**. Equivalent to the legacy `--simple` flag. Emits a deprecation warning and will be removed in v1.3.0. | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
 | `--skip-gates G1,G2` | Pre-approve specific gates | None |
@@ -43,17 +43,48 @@ sw:auto [INCREMENT_IDS...] [OPTIONS]
 | `--cov <n>` | Code coverage threshold (%) | 80 |
 | `--cmd "<command>"` | Custom command must pass | None |
 
-## Simple Mode (`--simple`)
+## Context-Adaptive Execution (default)
 
-When `simple: true` is set in the session marker, reduce context consumption per iteration:
+`sw:auto` no longer exposes `--simple` as a primary execution path. Every session uses context-adaptive execution:
 
-1. **Skip spec re-reads** — Do NOT re-read `spec.md` on each task iteration. Read it once at session start, then rely on `tasks.md` alone for task-by-task execution.
-2. **Minimal task context** — Read only the current task's section from `tasks.md`, not the entire file. Use line offsets if the file is long.
-3. **No sub-skill loading** — Do NOT invoke domain skills (frontend:architect, testing:qa, etc.) during auto execution. Execute tasks directly using code tools.
-4. **Shorter status output** — Skip banners and progress tables between tasks. Just implement, test, mark complete, move on.
-5. **No complexity re-check** — Skip Step 1.5a (team-lead routing check) since the caller already decided the execution mode.
+- On large specs (>40KB), `sw:auto` **automatically reduces context re-reads internally** — no manual `--simple` flag needed. Specs are read once at session start; subsequent iterations rely on `tasks.md` plus diffs.
+- On smaller specs, spec re-reads stay enabled for maximum coherence.
+- Sub-skill loading is decided per-task based on domain signals, not by a global flag.
 
-**When to use**: Primarily for sub-agents in team-lead mode where the team-lead has already loaded specs, assigned tasks, and the agent just needs to execute. Also useful for simple increments with <10 tasks.
+## Legacy `--simple-compat` (deprecated)
+
+The legacy `--simple` minimal-context mode is retained for one minor release as `--simple-compat`.
+
+- Emits a deprecation warning on invocation.
+- Will be removed in v1.3.0.
+- Equivalent behaviour (for compatibility with external runbooks):
+  1. Skip spec re-reads — read `spec.md` once at session start, rely on `tasks.md` alone afterward.
+  2. Minimal task context — read only the current task's section from `tasks.md`.
+  3. No sub-skill loading — execute tasks directly using code tools.
+  4. Shorter status output — skip banners and progress tables between tasks.
+  5. No complexity re-check — skip Step 1.5a (team-lead routing check).
+
+New callers should rely on the context-adaptive default above instead.
+
+## Tool-Use Rationale
+
+- **Read**: Load `.specweave/config.json`, `metadata.json`, `spec.md`, and `tasks.md` to drive the auto loop.
+- **Write/Edit**: Update `auto-mode.json` session marker and flip task/AC status as work completes.
+- **Glob**: Locate active/planned increments and test files during gate evaluation.
+- **Bash**: Run the configured quality gates (tests, build, lint, types, custom commands).
+
+## Native Auto Mode
+
+Claude Code ships with a built-in auto mode, toggled with **Shift+Tab**. That native mode runs the agent autonomously without any SpecWeave-specific orchestration.
+
+**When to use `sw:auto` vs native auto**:
+
+- Use **`sw:auto`** when you need increment-aware gates: spec validation, AC tracking, rubric evaluation, task-level test enforcement, or external sync to GitHub/Jira/ADO.
+- Use **Claude Code native auto (Shift+Tab)** for general-purpose autonomous execution without increment tracking — e.g. quick refactors, research loops, exploration.
+
+**One-time advisory**: When invoked in Claude Code, `sw:auto` prints a one-time advisory pointing to Shift+Tab for users who may not need increment gates. The advisory is suppressed after the first acknowledgement.
+
+**Opt-out for power users**: Pass `--force-sw-auto` to suppress the advisory permanently.
 
 ## Core Loop
 
@@ -103,7 +134,7 @@ If `pr-based`: create/checkout feature branch before starting work (same logic a
 ```
 
 Map flags to session marker fields:
-- `--simple` -> set `"simple": true`
+- `--simple-compat` -> set `"simple": true` (deprecated — emits warning, removed in v1.3.0)
 - `--tests` -> `{ "type": "tests_pass", "required": true }`
 - `--build` -> `{ "type": "build_succeeds", "required": true }`
 - `--e2e` -> `{ "type": "tests_pass", "description": "E2E tests", "required": true }`

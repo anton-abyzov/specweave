@@ -1,8 +1,23 @@
 ---
-description: Generate plan.md and tasks.md for increment. Use when saying "create plan", "generate tasks", or "plan the increment".
+description: "[DEPRECATED] Standalone `sw:plan` is deprecated. Use `sw:increment --regenerate-plan` to regenerate plan.md for an existing increment."
 ---
 
 # sw:plan - Generate Implementation Plan
+
+## Migration
+
+> Standalone `sw:plan` is deprecated. Use `sw:increment --regenerate-plan` to regenerate `plan.md` and `tasks.md` for an existing increment.
+
+The standalone plan skill has been folded into `sw:increment` via the `--regenerate-plan` flag. This avoids two near-identical entry points and centralises planning logic. The old workflow still works during the deprecation window but will be removed in SpecWeave v1.3.0.
+
+Replace:
+```
+/sw:plan 0014
+```
+With:
+```
+/sw:increment --regenerate-plan 0014
+```
 
 **⚠️ FOR EXISTING INCREMENTS ONLY - NOT for creating new increments!**
 

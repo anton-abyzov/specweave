@@ -1,0 +1,8 @@
+{
+  "id": "0004-with-15-task-cap",
+  "name": "with-15-task-cap",
+  "status": "active",
+  "created": "2025-12-02T08:15:00.000Z",
+  "phase": "implementation",
+  "taskCap": 15
+}

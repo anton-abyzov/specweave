@@ -1,7 +1,22 @@
 ---
-description: Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use sw-jira:sync command instead.
+description: "[DEPRECATED] Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use sw-jira:push or sw-jira:pull command instead."
 user-invokable: false
+deprecated: true
 allowed-tools: Read, Task
+---
+
+> ⚠️ DEPRECATED: Use `sw-jira:push` / `sw-jira:pull` instead. This skill will be removed in v1.3.0.
+
+## Migration
+
+This skill has been deprecated as part of the Opus 4.7 framework alignment (increment 0669).
+
+- **Use instead**: `sw-jira:push` (content SpecWeave→JIRA) and `sw-jira:pull` (status JIRA→SpecWeave)
+- **Removal**: Scheduled for v1.3.0 (2 minor releases after v1.1.0)
+- **Why**: Consolidated sync logic moved to the `sw-jira:*` command family.
+
+For the migration policy, see `.specweave/docs/internal/specs/skill-deprecation-policy.md`.
+
 ---
 
 # JIRA Sync Skill

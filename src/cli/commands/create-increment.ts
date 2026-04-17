@@ -31,6 +31,14 @@ export interface CreateIncrementOptions {
   priority?: string;
   json?: boolean;
   projectRoot?: string;
+  /**
+   * Opt into 3-agent fan-out planning (0669 Wave 2, AC-US4-03).
+   * Default is single-agent planning; skills override when user-story
+   * count ≥ 10 or the feature description contains "parallel" /
+   * "team lead" / "fan out". When true, the increment skill hands
+   * the plan off to the team-lead skill for multi-agent authoring.
+   */
+  parallel?: boolean;
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -46,6 +54,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     priority,
     json = false,
     projectRoot: rawProjectRoot,
+    parallel = false,
   } = options;
 
   // Validate: either --id OR (--auto-id + --name) must be provided
@@ -96,6 +105,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     projectRoot,
     autoId,
     name,
+    parallel,
   });
 
   if (!result.success) {
