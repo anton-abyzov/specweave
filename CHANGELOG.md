@@ -1,3 +1,7 @@
+## [1.0.578] - 2026-04-17
+
+- Patch release
+
 ## [1.1.0] - 2026-04-17
 
 ### Opus 4.7 Alignment (increment 0669)
