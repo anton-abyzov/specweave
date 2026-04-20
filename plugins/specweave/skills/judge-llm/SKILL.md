@@ -215,6 +215,10 @@ After evaluation (including consent-denied fallback), you **MUST** write a JSON 
 
 A `WAIVED` verdict is accepted by the CLI — does not block closure.
 
+## Refinement Signal Emission (0671)
+
+When the verdict is `REJECTED` or `CONCERNS` and a finding references a specific skill slug (e.g. `sw:architect` in `concerns`, `recommendations`, or `summary`), `SkillJudge.writeReport` appends a refinement signal to `.specweave/state/skill-signals.json` (best-effort, never blocks the gate). `REJECTED` → severity `high`; `CONCERNS` → `medium`. Signals are consumed later by `sw:skill-refine`.
+
 ## Visibility & Stuck Detection
 
 Progress logged to `.specweave/logs/judge-llm.log`. Default timeout 60s aborts if stuck (`timedOut: true`).

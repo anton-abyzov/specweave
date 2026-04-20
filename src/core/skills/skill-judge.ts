@@ -22,6 +22,8 @@ import chalk from 'chalk';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { loadStaticContext, type CacheBlock } from '../cache/static-context-loader.js';
 import { readConfig } from '../config/config-manager.js';
+import { emitRefinementIfAttributable } from '../skill-signal-emit.js';
+import type { SignalSeverity } from '../../types/skill-signals.js';
 
 /**
  * Judge verdict levels
@@ -697,7 +699,69 @@ export class SkillJudge {
     };
 
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+
+    // 0671: emit refinement signals when a gate failure is attributable to a
+    // specific skill. Best-effort — never throws.
+    void this.emitRefinementSignals(incrementId, result);
+
     return reportPath;
+  }
+
+  /**
+   * Post-processing step for `writeReport`: scan concerns/recommendations/
+   * summary for skill-attributable findings and emit one refinement signal
+   * per attributed skill. Silent on PASS verdicts. Never throws.
+   *
+   * @internal exported for testability via a direct method call.
+   */
+  async emitRefinementSignals(
+    incrementId: string,
+    result: JudgeResult,
+  ): Promise<void> {
+    // Only emit on CONCERNS or FAIL — PASS verdicts are not "gate failures".
+    if (result.verdict === 'PASS') return;
+
+    const severity: SignalSeverity = result.verdict === 'FAIL' ? 'high' : 'medium';
+    const skillsRoot = path.join(this.projectRoot, 'plugins', 'specweave', 'skills');
+
+    // Attribute each evidence string, then emit at most one signal per
+    // distinct skill within this report — otherwise a verbose judge response
+    // that mentions the same slug in summary+concerns+recommendations would
+    // produce 3 duplicate signals.
+    const { attributeSkill } = await import('../skill-attribution.js');
+    const perSkillEvidence = new Map<string, string>();
+
+    const evidenceSources: string[] = [
+      ...result.concerns,
+      ...result.recommendations,
+      result.summary,
+    ];
+
+    for (const evidence of evidenceSources) {
+      if (!evidence) continue;
+      const attrib = attributeSkill({ evidenceText: evidence, skillsRoot });
+      if (attrib.skill && !perSkillEvidence.has(attrib.skill)) {
+        perSkillEvidence.set(attrib.skill, evidence);
+      }
+    }
+
+    for (const [skill, evidence] of perSkillEvidence) {
+      try {
+        await emitRefinementIfAttributable({
+          projectRoot: this.projectRoot,
+          source: 'judge-llm',
+          severity,
+          incrementId,
+          evidence,
+          attribution: {
+            // Force direct attribution since we already resolved the skill.
+            toolCallOrigin: skill,
+          },
+        });
+      } catch {
+        // Best-effort: never block the gate on signal-emission errors.
+      }
+    }
   }
 
   /**
