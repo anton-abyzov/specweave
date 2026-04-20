@@ -6,11 +6,28 @@ import type {
   CriterionResult,
   RubricSummary,
 } from './types.js';
+import { emitRefinementIfAttributable } from '../skill-signal-emit.js';
+import type { SignalSeverity } from '../../types/skill-signals.js';
 
 interface EvaluateOptions {
   grillReport?: string;
   codeReviewReport?: string;
   judgeLlmReport?: string;
+  /**
+   * 0671: enable refinement-signal emission. When `projectRoot` and
+   * `incrementId` are provided, each failed criterion whose evidence cites a
+   * specific skill triggers an append to `.specweave/state/skill-signals.json`.
+   *
+   * Both fields must be present; emission is silently skipped otherwise, so
+   * existing call sites continue to work unchanged.
+   */
+  projectRoot?: string;
+  incrementId?: string;
+  /**
+   * Optional skills directory for pattern-match attribution. Defaults to
+   * `<projectRoot>/plugins/specweave/skills` when `projectRoot` is set.
+   */
+  skillsRoot?: string;
 }
 
 async function loadReport(reportsDir: string, filename: string): Promise<any> {
@@ -135,7 +152,80 @@ export async function evaluateRubric(
     evaluatedCriteria.push({ ...criterion, result });
   }
 
+  // 0671 T-005: emit refinement signals for failed criteria whose rationale
+  // traces to a specific skill's instructions. Best-effort — never throws.
+  await maybeEmitRefinementSignals(evaluatedCriteria, options);
+
   return { ...rubric, criteria: evaluatedCriteria };
+}
+
+/**
+ * Post-evaluation emission step. Iterates failed criteria, attributes each
+ * failure to a skill via `attributeSkill`, and appends one refinement signal
+ * per distinct attributed skill. Silent when the caller doesn't provide the
+ * project/increment context (backward compatible).
+ */
+async function maybeEmitRefinementSignals(
+  criteria: RubricCriterion[],
+  options: EvaluateOptions,
+): Promise<void> {
+  if (!options.projectRoot || !options.incrementId) return;
+
+  const projectRoot = options.projectRoot;
+  const incrementId = options.incrementId;
+  const skillsRoot = options.skillsRoot
+    ?? path.join(projectRoot, 'plugins', 'specweave', 'skills');
+
+  const { attributeSkill } = await import('../skill-attribution.js');
+
+  // One signal per distinct attributed skill within a single rubric pass —
+  // a rubric with 5 failed criteria all blaming the same skill should emit
+  // one signal (at the highest observed severity), not five.
+  const perSkill = new Map<
+    string,
+    { severity: SignalSeverity; evidence: string }
+  >();
+
+  for (const criterion of criteria) {
+    if (criterion.result?.status !== 'fail') continue;
+
+    const evidenceParts: string[] = [
+      criterion.result.evidence ?? '',
+      criterion.verify ?? '',
+      criterion.threshold ?? '',
+    ].filter((s) => s.length > 0);
+
+    const evidenceText = evidenceParts.join(' | ');
+    const attrib = attributeSkill({ evidenceText, skillsRoot });
+    if (!attrib.skill) continue;
+
+    const severity: SignalSeverity =
+      criterion.severity === 'blocking' ? 'high' : 'medium';
+
+    const existing = perSkill.get(attrib.skill);
+    if (!existing || severityRank(severity) > severityRank(existing.severity)) {
+      perSkill.set(attrib.skill, { severity, evidence: evidenceText });
+    }
+  }
+
+  for (const [skill, { severity, evidence }] of perSkill) {
+    try {
+      await emitRefinementIfAttributable({
+        projectRoot,
+        source: 'rubric',
+        severity,
+        incrementId,
+        evidence,
+        attribution: { toolCallOrigin: skill },
+      });
+    } catch {
+      // Best-effort: rubric evaluation must not fail because of signal I/O.
+    }
+  }
+}
+
+function severityRank(sev: SignalSeverity): number {
+  return sev === 'high' ? 3 : sev === 'medium' ? 2 : 1;
 }
 
 /**
