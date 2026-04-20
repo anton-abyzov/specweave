@@ -133,7 +133,16 @@ RECENT LEARNINGS
   - [devops] LSP requires ENABLE_LSP_TOOL=1 env var
   - [frontend] Use shadcn/ui Button component
   - [backend] Return 404 for missing resources
+
+## Skill Refinement Suggestions
+  Skill            Signals (J/R/C)   Severity   Last seen         Command
+  sw:architect     5 (3/1/1)         high       2026-04-19 18:22  sw:skill-refine sw:architect
+  sw:pm            3 (2/1/0)         medium     2026-04-18 09:07  sw:skill-refine sw:pm
 ```
+
+Introduced in **increment 0671 — skill refinement loop**. Skills with ≥3 negative signals in `.specweave/state/skill-signals.json` (`type: "refinement"`) are ranked by severity × recency. Entries with `<3` signals are omitted from the list; the whole section is omitted when no skills qualify.
+
+Signal sources (J/R/C = judge-llm / rubric / code-reviewer) come from closure gates. See [`sw:skill-refine`](./skill-refine.md) for flags, attribution heuristics, and the four red-line ADRs.
 
 ### `--clear` - Remove Learnings
 
@@ -148,6 +157,44 @@ sw:reflect --clear --all              # Clear ALL learnings (requires confirmati
 1. Read CLAUDE.md to find Skill Memories section
 2. Show confirmation with what will be deleted
 3. Edit CLAUDE.md to remove matching learnings on confirmation
+
+## Session-end Nudge
+
+Added in increment 0671. When `/sw:done` closes an increment, the reflect stop-hook checks whether the session accumulated either:
+
+- ≥1 high-confidence learning (eligible for CLAUDE.md persistence), or
+- ≥1 refinement signal in `.specweave/state/skill-signals.json` attributed to an existing skill.
+
+If so, a **single-line** prompt is printed at closure time:
+
+```
+Detected: 2 signals for sw:architect — run sw:skill-refine sw:architect? (y/N)
+```
+
+or, for a learning nudge:
+
+```
+Detected: 1 high-confidence learning — run sw:reflect? (y/N)
+```
+
+**The nudge never auto-executes a command.** The user must explicitly run the suggested command. Declining (N or no input within 5s) logs no penalty; signals remain in `skill-signals.json` for later invocation.
+
+Performance: the nudge check adds <100ms to `/sw:done` close time.
+
+### Disabling the nudge
+
+Set `reflect.autoNudge: false` in `.specweave/config.json`:
+
+```json
+{
+  "reflect": {
+    "enabled": true,
+    "autoNudge": false
+  }
+}
+```
+
+When `autoNudge` is false, no nudge is printed at close; `sw:reflect` and `sw:skill-refine` remain manually invocable.
 
 ## Configuration
 
@@ -168,6 +215,7 @@ In `.specweave/config.json`:
 | `enabled` | `true` | Master switch for reflection |
 | `model` | `"haiku"` | LLM model for extraction |
 | `maxLearningsPerSession` | `3` | Limit per session |
+| `autoNudge` | `true` | Session-end nudge when learnings or refinement signals are detected (0671) |
 
 ## Skill Categories
 

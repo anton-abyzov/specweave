@@ -1,3 +1,26 @@
+## [1.0.580] - 2026-04-20
+
+### Skill Refinement Loop (increment 0671)
+
+**New skill:**
+- `sw:skill-refine <skill-slug>` — propose an AI-authored unified diff against an existing skill's `SKILL.md` using accumulated gate-failure evidence. Flags: `--dry-run`, `--show-signals`, `--scope project|user`, `-n/--last-n <N>`. Haiku runs at `temperature=0` for determinism. On approve: writes the diff, creates `git commit -m "refine(<skill>): <rationale>"`, and appends a ledger entry to `.specweave/state/skill-refinements.json`.
+
+**Signal schema v2:**
+- `.specweave/state/skill-signals.json` extended with `type: "refinement"` entries `{source, targetSkill, severity, incrementId, evidence, detectedAt, consumedBy}`. Existing v1 (generation-only) files auto-migrate on first read with no data loss.
+- Three closure gates now emit refinement signals when a failure traces to a specific skill: `sw:judge-llm`, the rubric evaluator, and `sw:code-reviewer`. Attribution heuristics in `src/core/skill-attribution.ts`: direct tool-call trace → slash-command trace → evidence pattern match → no signal (precision over recall).
+
+**Reflect UX:**
+- `sw:reflect --status` gains a `## Skill Refinement Suggestions` section listing skills with ≥3 negative signals, ranked by severity × recency, with one-click `sw:skill-refine <slug>` hints. Section is omitted when no skills qualify.
+- Session-end nudge: when `/sw:done` closes an increment with ≥1 high-confidence learning or ≥1 refinement signal, a single-line prompt suggests the next action. Never auto-executes writes. Disable via `reflect.autoNudge: false` in `.specweave/config.json`.
+
+**ADRs (red lines):**
+- `0671-01-no-runtime-skill-mutation` — no SKILL.md edits during active `/sw:do` or `/sw:done`.
+- `0671-02-registry-version-immutability` — a skill published at version X on verified-skill.com is bit-identical for the lifetime of that version.
+- `0671-03-no-self-improving-marketing` — no "self-improving skills" copy until reproducibility guarantees and audit log ship.
+- `0671-04-no-goodhart-loop` — a refinement signal emitted by gate G in session S cannot validate a refinement of its source skill within S.
+
+**Scope cap:** local-only. No verified-skill.com registry changes. No telemetry. No auto-merge. No cross-user aggregation.
+
 ## [1.0.579] - 2026-04-19
 
 - Patch release
