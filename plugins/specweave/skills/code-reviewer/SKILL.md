@@ -511,6 +511,10 @@ Write structured JSON with all findings, metadata, and reviewer statuses.
 
 The `summary` object reflects post-validation counts. The completion-validator only reads `summary.*` fields -- all new fields are additive and backward-compatible.
 
+### Refinement Signal Emission (0671)
+
+When the completion-validator parses `code-review-report.json`, it iterates `findings[]` and, for each CRITICAL or HIGH finding whose evidence references a specific skill slug (e.g. `sw:architect`) or matches a ≥6-word phrase from a `SKILL.md` under `plugins/specweave/skills/`, appends a refinement signal to `.specweave/state/skill-signals.json` (best-effort, never blocks closure). Source is `"code-reviewer"` and severity is always `"high"`. Reviewers do not need to do anything extra — include the offending skill slug or the SKILL.md-quoted instruction in the finding's `description`/`recommendation` and attribution is automatic. Signals are consumed later by `sw:skill-refine`.
+
 ---
 
 ## 5. Cross-Repo Mode
