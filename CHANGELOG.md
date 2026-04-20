@@ -1,5 +1,9 @@
 ## [1.0.580] - 2026-04-20
 
+- Patch release
+
+## [1.0.580] - 2026-04-20
+
 ### Skill Refinement Loop (increment 0671)
 
 **New skill:**
