@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "incrementId": "9991-fixture-refine",
+  "verdict": "rejected",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-04-20T14:12:00.000Z",
+  "findings": [
+    {
+      "id": "finding-001",
+      "severity": "high",
+      "title": "Over-architected CRUD endpoint",
+      "description": "The implementation introduced three microservices and a message bus for a CRUD feature that fits in a single-file Express handler. The skill sw:architect advised 'always split persistence from transport into separate services', which led to inappropriate decomposition for a <100 req/min feature.",
+      "evidenceRefs": [
+        "plan.md#L14-L22",
+        "src/services/user/index.ts",
+        "src/services/user-events/index.ts"
+      ],
+      "attributableSkill": "sw:architect"
+    },
+    {
+      "id": "finding-002",
+      "severity": "medium",
+      "title": "Missing validation at boundary",
+      "description": "No Zod schema at the API boundary. The rubric criterion 'input-validation' failed with rationale 'sw:architect SKILL.md instructs to defer validation to domain layer'.",
+      "evidenceRefs": ["src/services/user/handlers.ts#L40"],
+      "attributableSkill": "sw:architect"
+    }
+  ]
+}
