@@ -42,6 +42,8 @@ export interface ReflectConfig {
   model: ClaudeModel;
   /** Maximum learnings per session */
   maxLearningsPerSession: number;
+  /** Session-end nudge on /sw:done close (default: true). Set false to disable. */
+  autoNudge: boolean;
 }
 
 /**
@@ -51,6 +53,7 @@ export const DEFAULT_REFLECT_CONFIG: ReflectConfig = {
   enabled: true,
   model: 'haiku',
   maxLearningsPerSession: 3,
+  autoNudge: true,
 };
 
 /**
@@ -530,6 +533,9 @@ export function readReflectConfig(projectRoot: string): ReflectConfig {
       }
       if (typeof configContent.reflect.maxLearningsPerSession === 'number') {
         config.maxLearningsPerSession = configContent.reflect.maxLearningsPerSession;
+      }
+      if (typeof configContent.reflect.autoNudge === 'boolean') {
+        config.autoNudge = configContent.reflect.autoNudge;
       }
     }
   } catch {
