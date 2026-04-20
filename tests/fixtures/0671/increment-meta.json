@@ -1,0 +1,8 @@
+{
+  "id": "9991-fixture-refine",
+  "title": "Fixture increment for 0671 end-to-end test",
+  "status": "rejected",
+  "createdAt": "2026-04-20T13:00:00.000Z",
+  "closedAt": "2026-04-20T14:15:00.000Z",
+  "initiatingCommand": "/sw:architect"
+}
