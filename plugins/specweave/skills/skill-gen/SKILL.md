@@ -7,6 +7,14 @@ model: opus
 
 # sw:skill-gen — Project-Specific Skill Generation
 
+## Model Selection
+
+This skill does not call an LLM directly — it delegates to Anthropic's `skill-creator` plugin, which runs inside the current Claude Code session and inherits its model. Skill generation is a structured-output task where description wording drives auto-activation for every future invocation, so quality matters more than cost.
+
+- **Default (recommended)**: run the session on the newest Opus. If you are in Claude Code, switch with `/model opus` before starting. The frontmatter above declares `model: opus` so nested invocations prefer it when supported. "Newest Opus" is forward-compatible: today that is Opus 4.7, and the recommendation follows whichever Opus is current.
+- **BYO path (GPT-5, Gemini 3, OpenRouter, LM Studio, Ollama)**: start `npx anymodel proxy --model <model> --port <port>` in a separate shell, then `export ANTHROPIC_BASE_URL=http://localhost:<port>` before launching Claude Code. This only affects downstream tools that honor `ANTHROPIC_BASE_URL` — Claude Code's own chat model is controlled via `/model`.
+- **Rationale & registry**: see ADR `0676-01-skill-gen-model-selection.md`. The authoritative model registry lives in `vskill-platform` (`src/lib/eval/model-registry.ts`); update it there when a newer Opus ships.
+
 ## Project Overrides
 
 **Skill Memories**: If `.specweave/skill-memories/skill-gen.md` exists, read and apply its learnings.
