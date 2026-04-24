@@ -1,3 +1,27 @@
+## [1.0.581] - 2026-04-22
+
+### Hotfix: multi-provider closure via `externalLinks` fallback (increment 0696)
+
+`specweave complete <id> --yes` now reliably closes JIRA epics and ADO work
+items that are linked only via `metadata.externalLinks.{jira,ado}` (the
+current standard), not only via per-user-story frontmatter or legacy
+`metadata.{jira,ado}` paths. This fixes the `SWE2E-861` reproduction where
+JIRA epic closure silently did nothing.
+
+- `SyncCoordinator.closeJiraIssuesForUserStories` and
+  `closeAdoWorkItemsForUserStories` now consult four fallback sources (per-US
+  frontmatter → per-US `external_id` → legacy metadata → `externalLinks.*`)
+  and dedup candidate keys before closure.
+- Per-provider closure errors propagate into the returned `SyncResult.errors`
+  and into `LifecycleHookDispatcher` `result.syncErrors`.
+- `LifecycleHookDispatcher.logError` now persists errors to
+  `.specweave/logs/hooks.log` (exception-safe, swallow-and-fallback to stderr
+  on a read-only filesystem).
+- Added warning line + `result.errors` entry when a provider is enabled but
+  no issue key is resolvable — no more silent zero-closure runs.
+
+No config migration required.
+
 ## [1.0.580] - 2026-04-20
 
 - Patch release

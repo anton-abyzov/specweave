@@ -132,21 +132,22 @@ export class SyncCoordinator {
    * Close JIRA issues for completed user stories
    *
    * Transitions JIRA issues to "Done" status when increment is completed.
-   * Reads issue references from user story frontmatter (external.jira.issue_key).
+   * Reads issue references from four fallback sources (0696 hotfix):
+   *   1. per-US frontmatter `external_tools.jira.key`
+   *   2. per-US `external_id`
+   *   3. `metadata.jira.issue` (legacy)
+   *   4. `metadata.externalLinks.jira.epicKey` (current standard)
    *
    * @param config - Project config with JIRA settings
+   * @param errorsOut - Optional sink for per-issue error messages (0696)
    * @returns Number of closed JIRA issues
    */
-  async closeJiraIssuesForUserStories(config: SpecWeaveConfig): Promise<number> {
+  async closeJiraIssuesForUserStories(config: SpecWeaveConfig, errorsOut?: string[]): Promise<number> {
     let closedCount = 0;
 
     try {
       const userStories = await this.loadUserStoriesForIncrement();
       this.logger.log(`📚 Found ${userStories.length} user stor${userStories.length === 1 ? 'y' : 'ies'} for JIRA closure`);
-
-      if (userStories.length === 0) {
-        return 0;
-      }
 
       // Get JIRA config - v1.0.357: check issueTracker.domain as primary, sync.jira as fallback
       const jiraConfig = config.sync?.jira as JiraConfigExtended | undefined;
@@ -167,8 +168,9 @@ export class SyncCoordinator {
       const syncConfigExt = config.sync as SyncConfigurationExtended | undefined;
       const targetStatus = syncConfigExt?.statusSync?.mappings?.jira?.completed || 'Done';
 
-      // v1.0.357: Also check metadata.json for JIRA key (set by auto-creator)
+      // 0696 hotfix: read metadata.json ONCE, extract both legacy and externalLinks JIRA keys
       let metadataJiraKey: string | undefined;
+      let externalLinksJiraKey: string | undefined;
       try {
         const metadataFile = path.join(
           this.projectRoot,
@@ -180,31 +182,53 @@ export class SyncCoordinator {
           const metadataContent = await fs.readFile(metadataFile, 'utf-8');
           const metadata = JSON.parse(metadataContent);
           metadataJiraKey = metadata.jira?.issue;
+          externalLinksJiraKey = metadata.externalLinks?.jira?.epicKey
+            || metadata.externalLinks?.jira?.issueKey;
         }
       } catch {
         // Ignore metadata read errors
       }
 
-      for (const usFile of userStories) {
-        try {
-          // Check if US has JIRA reference in frontmatter, or fall back to metadata
-          const jiraKey = usFile.external_tools?.jira?.key || usFile.external_id || metadataJiraKey;
-          if (!jiraKey || !String(jiraKey).includes('-')) {
-            this.logger.log(`  ⏭️  ${usFile.id} - No JIRA issue reference`);
-            continue;
-          }
+      // 0696 hotfix: Collect candidate keys from all four sources, dedup, iterate.
+      // This covers both per-US and epic-only increments.
+      const candidates: Array<{ key: string; usId: string }> = [];
+      const seen = new Set<string>();
+      const pushKey = (rawKey: unknown, usId: string) => {
+        if (!rawKey) return;
+        const key = String(rawKey).trim();
+        if (!key || !key.includes('-')) return;
+        if (seen.has(key)) return;
+        seen.add(key);
+        candidates.push({ key, usId });
+      };
 
+      for (const usFile of userStories) {
+        pushKey(usFile.external_tools?.jira?.key, usFile.id);
+        pushKey(usFile.external_id, usFile.id);
+      }
+      if (metadataJiraKey) pushKey(metadataJiraKey, `metadata.jira.issue`);
+      if (externalLinksJiraKey) pushKey(externalLinksJiraKey, `metadata.externalLinks.jira`);
+
+      if (candidates.length === 0) {
+        const msg = '⚠️  JIRA enabled but no issue key resolvable for increment — skipping closure';
+        this.logger.log(msg);
+        if (errorsOut) errorsOut.push('JIRA enabled but no issue key resolvable for increment');
+        return 0;
+      }
+
+      for (const { key: jiraKey, usId } of candidates) {
+        try {
           // Get current issue status
           const issue = await jiraClient.getIssue(jiraKey);
           if (!issue) {
-            this.logger.log(`  ⚠️  ${usFile.id} - JIRA issue ${jiraKey} not found`);
+            this.logger.log(`  ⚠️  ${usId} - JIRA issue ${jiraKey} not found`);
             continue;
           }
 
           // Check if already in target status (status is nested in fields)
           const currentStatus = issue.fields?.status?.name || '';
           if (currentStatus.toLowerCase() === targetStatus.toLowerCase()) {
-            this.logger.log(`  ⏭️  ${usFile.id} - ${jiraKey} already ${targetStatus}`);
+            this.logger.log(`  ⏭️  JIRA ${jiraKey} already ${targetStatus}`);
             continue;
           }
 
@@ -219,14 +243,17 @@ export class SyncCoordinator {
               status: targetStatus
             });
             this.metrics.recordClosure('jira', jiraKey, true);
-            this.logger.log(`  ✅ Transitioned ${jiraKey}`);
+            this.logger.log(`  ✅ JIRA ${jiraKey} transitioned to ${targetStatus}`);
             closedCount++;
           } catch (updateError) {
             this.metrics.recordClosure('jira', jiraKey, false, String(updateError));
             throw updateError;
           }
         } catch (error) {
-          this.logger.error(`  ❌ Failed to close JIRA issue for ${usFile.id}:`, error);
+          const msg = error instanceof Error ? error.message : String(error);
+          this.logger.error(`  ❌ Failed to close JIRA issue ${jiraKey} (${usId}):`, error);
+          // 0696 hotfix: propagate the error into the caller's accumulator
+          if (errorsOut) errorsOut.push(`JIRA ${jiraKey}: ${msg}`);
         }
       }
 
@@ -241,21 +268,22 @@ export class SyncCoordinator {
    * Close ADO work items for completed user stories
    *
    * Transitions ADO work items to "Closed" state when increment is completed.
-   * Reads work item references from user story frontmatter (external.ado.id).
+   * Reads work item references from four fallback sources (0696 hotfix):
+   *   1. per-US frontmatter `external_tools.ado.id`
+   *   2. per-US `external_id`
+   *   3. `metadata.external_tools.ado.id` / `metadata.ado.work_item_id` (legacy)
+   *   4. `metadata.externalLinks.ado.workItemId` / `.featureId` (current standard)
    *
    * @param config - Project config with ADO settings
+   * @param errorsOut - Optional sink for per-item error messages (0696)
    * @returns Number of closed ADO work items
    */
-  async closeAdoWorkItemsForUserStories(config: SpecWeaveConfig): Promise<number> {
+  async closeAdoWorkItemsForUserStories(config: SpecWeaveConfig, errorsOut?: string[]): Promise<number> {
     let closedCount = 0;
 
     try {
       const userStories = await this.loadUserStoriesForIncrement();
       this.logger.log(`📚 Found ${userStories.length} user stor${userStories.length === 1 ? 'y' : 'ies'} for ADO closure`);
-
-      if (userStories.length === 0) {
-        return 0;
-      }
 
       // Get ADO config
       const adoConfig = config.sync?.ado;
@@ -298,30 +326,47 @@ export class SyncCoordinator {
         }
       }
 
-      // Read metadata.json once for fallback resolution
+      // 0696 hotfix: Read metadata.json once, extract legacy + externalLinks IDs
       let metadataAdoId: string | undefined;
+      let externalLinksAdoId: string | undefined;
       try {
         const metadataPath = path.join(this.projectRoot, '.specweave/increments', this.incrementId, 'metadata.json');
         if (existsSync(metadataPath)) {
           const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
           metadataAdoId = metadata?.external_tools?.ado?.id || metadata?.ado?.work_item_id;
+          externalLinksAdoId = metadata?.externalLinks?.ado?.workItemId
+            ?? metadata?.externalLinks?.ado?.featureId;
+          if (externalLinksAdoId !== undefined && externalLinksAdoId !== null) {
+            externalLinksAdoId = String(externalLinksAdoId);
+          }
         }
       } catch {
         // metadata read failure is not fatal
       }
 
-      // Collect work item IDs to fetch (3-layer resolution: frontmatter → external_id → metadata.json)
+      // 0696 hotfix: Collect candidate IDs (4-layer resolution), dedup, iterate.
       const workItemIds: { id: number; usId: string }[] = [];
+      const seenAdo = new Set<number>();
+      const pushAdo = (rawId: unknown, usId: string) => {
+        if (rawId === undefined || rawId === null || rawId === '') return;
+        const n = Number(rawId);
+        if (!Number.isFinite(n) || isNaN(n)) return;
+        if (seenAdo.has(n)) return;
+        seenAdo.add(n);
+        workItemIds.push({ id: n, usId });
+      };
+
       for (const usFile of userStories) {
-        const adoId = usFile.external_tools?.ado?.id || usFile.external_id || metadataAdoId;
-        if (adoId && !isNaN(Number(adoId))) {
-          workItemIds.push({ id: Number(adoId), usId: usFile.id });
-        } else {
-          this.logger.log(`  ⏭️  ${usFile.id} - No ADO work item reference`);
-        }
+        pushAdo(usFile.external_tools?.ado?.id, usFile.id);
+        pushAdo(usFile.external_id, usFile.id);
       }
+      if (metadataAdoId) pushAdo(metadataAdoId, 'metadata.ado');
+      if (externalLinksAdoId) pushAdo(externalLinksAdoId, 'metadata.externalLinks.ado');
 
       if (workItemIds.length === 0) {
+        const msg = '⚠️  ADO enabled but no work item ID resolvable for increment — skipping closure';
+        this.logger.log(msg);
+        if (errorsOut) errorsOut.push('ADO enabled but no work item ID resolvable for increment');
         return 0;
       }
 
@@ -360,14 +405,17 @@ export class SyncCoordinator {
               state: targetState
             });
             this.metrics.recordClosure('ado', workItemId, true);
-            this.logger.log(`  ✅ Closed #${workItemId}`);
+            this.logger.log(`  ✅ ADO #${workItemId} transitioned to ${targetState}`);
             closedCount++;
           } catch (updateError) {
             this.metrics.recordClosure('ado', workItemId, false, String(updateError));
             throw updateError;
           }
         } catch (error) {
-          this.logger.error(`  ❌ Failed to close ADO work item for ${usId}:`, error);
+          const msg = error instanceof Error ? error.message : String(error);
+          this.logger.error(`  ❌ Failed to close ADO work item #${workItemId} (${usId}):`, error);
+          // 0696 hotfix: propagate the error into the caller's accumulator
+          if (errorsOut) errorsOut.push(`ADO #${workItemId}: ${msg}`);
         }
       }
 
@@ -484,32 +532,34 @@ export class SyncCoordinator {
       }
 
       // ========================================================================
-      // JIRA Closure
+      // JIRA Closure — 0696: pass result.errors so per-issue errors propagate
       // ========================================================================
       if (jiraEnabled) {
         this.logger.log('\n🔹 JIRA: Closing issues for completed user stories...');
         try {
-          const jiraClosed = await this.closeJiraIssuesForUserStories(config);
+          const jiraClosed = await this.closeJiraIssuesForUserStories(config, result.errors);
           totalClosed += jiraClosed;
           this.logger.log(`   ✅ Closed ${jiraClosed} JIRA issue(s)`);
         } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
           this.logger.error('⚠️  JIRA issue closure failed:', error);
-          result.errors.push(`JIRA issue closure error: ${error}`);
+          result.errors.push(`JIRA issue closure error: ${msg}`);
         }
       }
 
       // ========================================================================
-      // ADO Closure
+      // ADO Closure — 0696: pass result.errors so per-item errors propagate
       // ========================================================================
       if (adoEnabled) {
         this.logger.log('\n🔹 ADO: Closing work items for completed user stories...');
         try {
-          const adoClosed = await this.closeAdoWorkItemsForUserStories(config);
+          const adoClosed = await this.closeAdoWorkItemsForUserStories(config, result.errors);
           totalClosed += adoClosed;
           this.logger.log(`   ✅ Closed ${adoClosed} ADO work item(s)`);
         } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
           this.logger.error('⚠️  ADO work item closure failed:', error);
-          result.errors.push(`ADO work item closure error: ${error}`);
+          result.errors.push(`ADO work item closure error: ${msg}`);
         }
       }
 

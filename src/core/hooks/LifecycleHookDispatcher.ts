@@ -12,6 +12,8 @@
  * Part of increment 0298: Hook Lifecycle Wiring
  */
 
+import { appendFileSync, mkdirSync } from 'fs';
+import path from 'path';
 import { ConfigManager } from '../config/config-manager.js';
 import type { HookConfiguration } from '../config/types.js';
 import type { IncrementMetadataV2 } from '../types/increment-metadata.js';
@@ -249,9 +251,16 @@ export class LifecycleHookDispatcher {
       }
 
       const shouldSyncLivingDocs = doneConfig.sync_living_docs === true && autoSync && !perIncrementSkip;
-      // v1.0.357: Support closing issues for ALL providers (JIRA/ADO/GitHub)
+      // v1.0.357 + 0696: Support closing issues for ALL providers (JIRA/ADO/GitHub).
       // close_github_issue is the legacy flag; close_external_issue is the new generic one.
-      // SyncCoordinator handles ALL providers despite the legacy flag name.
+      // SyncCoordinator.syncIncrementClosure() closes every enabled provider using a
+      // four-source fallback for the issue key:
+      //   1. per-US frontmatter external_tools.{jira.key|ado.id}
+      //   2. per-US external_id
+      //   3. metadata.{jira.issue | ado.work_item_id} (legacy)
+      //   4. metadata.externalLinks.{jira.epicKey | ado.workItemId|featureId} (current standard)
+      // Per-provider closure errors are pushed into the returned SyncResult.errors[]
+      // and forwarded into result.syncErrors (and .specweave/logs/hooks.log) below.
       const shouldCloseIssue = doneConfig.close_github_issue === true
         || doneConfig.close_external_issue === true
         || doneConfig.close_jira_issue === true;
@@ -295,6 +304,8 @@ export class LifecycleHookDispatcher {
       }
 
       // STEP 2: Run closure sync for JIRA/ADO (GitHub already handled by Step 1 via LivingDocsSync).
+      // 0696 hotfix: forward per-provider errors from SyncCoordinator into result.syncErrors
+      // AND persist them to .specweave/logs/hooks.log via logError.
       const syncClosure = async () => {
         if (!shouldCloseIssue) return;
         try {
@@ -305,12 +316,22 @@ export class LifecycleHookDispatcher {
             projectRoot,
             incrementId,
           });
-          await coordinator.syncIncrementClosure();
+          const closureResult = await coordinator.syncIncrementClosure();
           result.syncSuccess.push('Closure sync completed');
+          if (closureResult && Array.isArray(closureResult.errors) && closureResult.errors.length > 0) {
+            for (const err of closureResult.errors) {
+              result.syncErrors.push(err);
+            }
+            LifecycleHookDispatcher.logError(
+              'onIncrementDone:closure',
+              new Error(`Provider closure errors for ${incrementId}: ${closureResult.errors.join('; ')}`),
+              projectRoot,
+            );
+          }
         } catch (error) {
           const msg = error instanceof Error ? error.message : String(error);
           result.syncErrors.push(`Closure sync failed: ${msg}`);
-          LifecycleHookDispatcher.logError('onIncrementDone:closure', error);
+          LifecycleHookDispatcher.logError('onIncrementDone:closure', error, projectRoot);
         }
       };
 
@@ -530,13 +551,51 @@ export class LifecycleHookDispatcher {
   }
 
   /**
-   * Log error without propagating
+   * Log error without propagating.
+   *
+   * 0696 hotfix: when projectRoot is provided, also persist the error
+   * (with full stack) to .specweave/logs/hooks.log. Both the directory
+   * creation and the file append are wrapped in try/catch so a locked
+   * filesystem or missing directory never blocks hook execution.
    */
-  private static logError(method: string, error: unknown): void {
+  private static logError(method: string, error: unknown, projectRoot?: string): void {
     const message = error instanceof Error ? error.message : String(error);
-    // Use stderr to avoid polluting stdout
-    process.stderr.write(
-      `[LifecycleHookDispatcher.${method}] Hook dispatch error: ${message}\n`,
-    );
+    const stack = error instanceof Error && error.stack ? error.stack : '';
+    const timestamp = new Date().toISOString();
+    const logLine = `[${timestamp}] [LifecycleHookDispatcher.${method}] Hook dispatch error: ${message}`;
+
+    // Always write to stderr first (backwards-compatible behavior).
+    try {
+      process.stderr.write(`${logLine}\n`);
+    } catch {
+      // Ignore stderr write failures (tests often replace streams).
+    }
+
+    // 0696: persist to .specweave/logs/hooks.log when projectRoot is known.
+    if (!projectRoot) return;
+    try {
+      const logsDir = path.join(projectRoot, '.specweave', 'logs');
+      try {
+        mkdirSync(logsDir, { recursive: true });
+      } catch {
+        // Directory already exists or cannot be created — appendFileSync
+        // will raise below if the path is truly unusable.
+      }
+      const logFile = path.join(logsDir, 'hooks.log');
+      const payload = stack
+        ? `${logLine}\n${stack}\n`
+        : `${logLine}\n`;
+      appendFileSync(logFile, payload, 'utf8');
+    } catch (writeErr) {
+      // Swallow-and-fallback: best-effort persistence must never throw.
+      try {
+        const m = writeErr instanceof Error ? writeErr.message : String(writeErr);
+        process.stderr.write(
+          `[LifecycleHookDispatcher.logError] hooks.log write failed: ${m}\n`,
+        );
+      } catch {
+        // Truly give up.
+      }
+    }
   }
 }
