@@ -221,7 +221,12 @@ export class ACStatusManager {
       // Match AC checkbox pattern: - [ ] AC-ID: Description
       // or: - [x] AC-ID: Description
       // Also handles bold format: - [ ] **AC-ID**: Description
-      const acMatch = line.match(/^-\s+\[([ x])\]\s+\*{0,2}(AC-[A-Z0-9-]+)\*{0,2}:\s*(.+)/);
+      // 0708 wrap-up: also accept a parenthetical annotation between the
+      // closing bold and the colon — e.g. `**AC-US1-01** (P0): description`
+      // or `**AC-US1-01** (NFR-002): …`. Without this branch the sync hook
+      // logs 23+ false-positive `acSyncEvents` warnings on increments that
+      // adopt the parenthetical priority/annotation style.
+      const acMatch = line.match(/^-\s+\[([ x])\]\s+\*{0,2}(AC-[A-Z0-9-]+)\*{0,2}\s*(?:\([^)]*\))?\s*:\s*(.+)/);
 
       if (acMatch) {
         const checked = acMatch[1] === 'x';
