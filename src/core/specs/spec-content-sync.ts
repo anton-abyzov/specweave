@@ -109,8 +109,12 @@ function extractACsFromSection(
   const acSectionMatch = content.match(/##\s+Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|\z)/);
   if (!acSectionMatch) return [];
 
+  // 0708 wrap-up: tolerate a parenthetical annotation between the closing
+  // bold and the colon, e.g. `**AC-US1-01** (P0): …`. Without the optional
+  // `\\([^)]*\\)?` branch the sync hook misses parenthetical-format ACs and
+  // logs false-positive desync warnings.
   const acRegex = new RegExp(
-    `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^\\n]+)`,
+    `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*\\s*(?:\\([^)]*\\))?\\s*:\\s*([^\\n]+)`,
     'g'
   );
 
@@ -207,11 +211,11 @@ export async function parseSpecContent(
       // Pattern 3: AC-US-{prefix}-{number}-{seq} (e.g., AC-US-FE-001-01)
       const patterns = [
         // Legacy: AC-US1-01, AC-US001-01 → matches US-001
-        new RegExp(`- \\[([ x])\\] \\*\\*AC-US0*(${usIdPattern.replace(/^0+/, '')})-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
+        new RegExp(`- \\[([ x])\\] \\*\\*AC-US0*(${usIdPattern.replace(/^0+/, '')})-(\\d+)\\*\\*\\s*(?:\\([^)]*\\))?\\s*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
         // Prefixed: AC-API-US2-01 → matches US-API-002
-        new RegExp(`- \\[([ x])\\] \\*\\*AC-([A-Z]+)-US0*(${usIdPattern.replace(/^[A-Z]+-0*/, '')})-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
+        new RegExp(`- \\[([ x])\\] \\*\\*AC-([A-Z]+)-US0*(${usIdPattern.replace(/^[A-Z]+-0*/, '')})-(\\d+)\\*\\*\\s*(?:\\([^)]*\\))?\\s*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
         // Full match for flexible IDs
-        new RegExp(`- \\[([ x])\\] \\*\\*AC-(?:[A-Z]+-)?US(?:[A-Z]*)?-?0*${usIdPattern.replace(/^[A-Z]+-0*/, '')}-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
+        new RegExp(`- \\[([ x])\\] \\*\\*AC-(?:[A-Z]+-)?US(?:[A-Z]*)?-?0*${usIdPattern.replace(/^[A-Z]+-0*/, '')}-(\\d+)\\*\\*\\s*(?:\\([^)]*\\))?\\s*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
       ];
 
       for (const acRegex of patterns) {
