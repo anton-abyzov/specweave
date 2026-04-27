@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Standalone `sw:plan` is deprecated. Use `sw:increment --regenerate-plan` to regenerate plan.md for an existing increment."
+version: 1.0.0
 ---
 
 # sw:plan - Generate Implementation Plan

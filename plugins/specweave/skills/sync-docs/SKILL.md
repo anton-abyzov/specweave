@@ -1,5 +1,6 @@
 ---
 description: Sync living docs for an increment. Generates or updates spec files in .specweave/docs/internal/specs/. Use when saying "sync docs", "update living docs", or "sync-docs".
+version: 1.0.0
 argument-hint: "<increment-id> [--review]"
 ---
 

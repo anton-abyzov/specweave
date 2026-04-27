@@ -1,5 +1,6 @@
 ---
 description: Generate AI videos from text prompts or images. Supports Google Veo 3.1 and Pollinations.ai (free). Use when generating video, creating animations, text-to-video, AI video, video generation, make clip, animate.
+version: 1.0.0
 allowed-tools: Read, Bash, Glob
 context: fork
 ---

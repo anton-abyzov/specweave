@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Use `sw:multi-project --tool ado` instead. Organizes specs and tasks across multiple Azure DevOps projects. This skill will be removed in SpecWeave v1.3.0."
+version: 1.0.0
 user-invokable: false
 allowed-tools: Read, Write, Edit, Glob
 ---

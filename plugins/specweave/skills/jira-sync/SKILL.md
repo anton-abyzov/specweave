@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use sw-jira:push or sw-jira:pull command instead."
+version: 1.0.0
 user-invokable: false
 deprecated: true
 allowed-tools: Read, Task
