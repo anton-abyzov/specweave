@@ -1,5 +1,6 @@
 ---
 description: Full patch release with npm publish and GitHub Release. Flags: --quick (no GH release), --ci (Actions), --only (local).
+version: 1.0.0
 user-invokable: false
 ---
 

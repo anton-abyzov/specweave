@@ -1,5 +1,6 @@
 ---
 description: Merge completed parallel agent work and trigger GitHub sync per increment. Activates for: team merge, merge agents, combine work, team finish.
+version: 1.0.0
 ---
 
 # Team Merge

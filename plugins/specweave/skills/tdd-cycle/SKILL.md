@@ -1,5 +1,6 @@
 ---
 description: Execute full TDD red-green-refactor cycle with validation gates. Use when saying "TDD cycle", "test-driven development", or "full TDD workflow".
+version: 1.0.0
 ---
 
 # TDD Cycle - Comprehensive Test-Driven Development

@@ -1,5 +1,6 @@
 ---
 description: Adaptive-thinking LLM-as-Judge validation of completed work. Uses the Opus model and an adaptive-thinking prompt hint for thorough, independent evaluation. Use when saying "judge my code", "judge-llm", "deep validate", or as part of sw:done closure.
+version: 1.0.0
 allowed-tools: Read, Grep, Glob, Bash
 ---
 

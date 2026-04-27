@@ -1,5 +1,6 @@
 ---
 description: Product Manager for spec-driven development. Use when saying "write specs", "define requirements", "plan MVP", or "prioritize features".
+version: 1.0.0
 argument-hint: "[topic]"
 context: fork
 model: opus

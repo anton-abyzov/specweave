@@ -1,6 +1,7 @@
 ---
 name: sw/multi-project
 description: Unified multi-project management skill for GitHub, Azure DevOps, and Jira. Organizes specs and splits tasks across multiple repositories or projects for monorepo, polyrepo, project-per-team, and area-path architectures. Use `--tool github|ado|jira` to select the target integration.
+version: 1.0.0
 user-invokable: true
 allowed-tools: Read, Write, Edit, Glob
 ---

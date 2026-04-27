@@ -1,5 +1,6 @@
 ---
 description: Generate, run, and report Playwright E2E tests traced to spec.md acceptance criteria. Supports accessibility auditing via --a11y. Use when saying "e2e tests", "playwright tests", "run e2e", "generate e2e", "accessibility audit", "a11y test".
+version: 1.0.0
 argument-hint: "--generate|--run|--a11y <increment-id>"
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 context: fork

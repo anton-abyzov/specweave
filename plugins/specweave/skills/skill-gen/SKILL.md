@@ -1,5 +1,6 @@
 ---
 description: "Generate project-specific skills from detected patterns in living docs. Use when saying 'skill-gen', 'generate skills', 'create project skills', 'codify patterns', 'skill generation', 'project-specific skills', or 'detected patterns'. Also use when the user responds to a skill suggestion printed during increment closure."
+version: 1.0.0
 argument-hint: "[--refresh]"
 context: fork
 model: opus

@@ -1,5 +1,6 @@
 ---
 description: Create programmatic videos with Remotion (React components rendered to MP4). Use when creating animated presentations, product demos, marketing videos, code-generated video, Remotion project, animated explainer.
+version: 1.0.0
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 context: fork
 ---

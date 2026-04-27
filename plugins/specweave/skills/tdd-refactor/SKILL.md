@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Refactor code with test safety net to improve quality. Use when saying \"TDD refactor\", \"refactor with tests\", or \"improve code quality\"."
+version: 1.0.0
 deprecated: true
 ---
 

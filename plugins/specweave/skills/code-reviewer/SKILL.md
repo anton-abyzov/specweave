@@ -1,5 +1,6 @@
 ---
 description: "Multi-agent code review system. Spawns 3 parallel reviewers (security, logic, performance) with inline self-critique. Use when saying 'review code', 'code review', 'audit code', 'review PR', 'review changes', 'check code quality'."
+version: 1.0.0
 argument-hint: "[--pr N] [--changes] [--increment NNNN] [--cross-repo] [--full-fanout] [path]"
 context: fork
 model: opus

@@ -5,6 +5,7 @@ description: >
   "show commands", "what skills are available", "how do I use specweave",
   "getting started", "what's available", "list skills", or "specweave help".
   Do NOT activate for Claude Code's built-in /help command.
+version: 1.0.0
 ---
 
 # sw:help — SpecWeave Discovery

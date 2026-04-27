@@ -1,5 +1,6 @@
 ---
 description: Create pull request from increment feature branch. Use when increment is complete and push strategy is pr-based, or when explicitly saying "create PR", "open pull request", "make a PR".
+version: 1.0.0
 argument-hint: "<increment-id>"
 user-invokable: true
 ---

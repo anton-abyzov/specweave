@@ -1,5 +1,6 @@
 ---
 description: Validate increment with rule-based checks and AI quality assessment. Use when saying "validate", "check quality", or "verify increment".
+version: 1.0.0
 argument-hint: "[increment-id]"
 ---
 

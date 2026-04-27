@@ -1,5 +1,6 @@
 ---
 description: Start autonomous execution with stop hook feedback loop. Works until all tasks complete or max iterations reached. Use when you want continuous unattended execution.
+version: 1.0.0
 argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
 ---
 

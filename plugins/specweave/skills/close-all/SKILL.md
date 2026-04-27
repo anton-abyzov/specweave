@@ -1,6 +1,7 @@
 ---
 name: close-all
 description: Batch-close all complete increments by delegating each one to `sw:done`. Discovers active/ready-for-review increments with zero pending tasks, then iterates and calls `sw:done` per increment. Use when saying "close all", "close stuck increments", or "batch close".
+version: 1.0.0
 argument-hint: "[--dry-run]"
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: sw/team-build
 description: "[DEPRECATED] Use sw:team-lead --preset <name> instead."
+version: 1.0.0
 allowed-tools: Read
 ---
 

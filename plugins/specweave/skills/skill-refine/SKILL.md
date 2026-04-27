@@ -1,5 +1,6 @@
 ---
 description: "Refine an existing skill's SKILL.md against accumulated gate-failure signals. Use when saying 'sw:skill-refine', 'refine skill', 'improve skill', 'skill refinement', or responding to a session-end nudge suggesting refinement. One skill per invocation; user approval required; never runs during an active /sw:do or /sw:done session (ADR-0671-01)."
+version: 1.0.0
 argument-hint: "<skill-slug> [--dry-run] [--show-signals] [--scope project|user] [--last-n N]"
 allowed-tools: Read, Bash
 context: fork

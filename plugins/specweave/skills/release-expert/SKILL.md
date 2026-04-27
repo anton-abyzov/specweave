@@ -1,5 +1,6 @@
 ---
 description: Multi-repo release expert - version alignment, semantic versioning, release coordination, dependency management, release waves, RC lifecycle (alpha/beta/rc), brownfield detection, rollback planning. Use for synchronized releases, version alignment, or release strategy.
+version: 1.0.0
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 context: fork

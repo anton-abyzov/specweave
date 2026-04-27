@@ -1,6 +1,7 @@
 ---
 name: sw/analytics
 description: "Analytics and metrics for SpecWeave usage — token consumption, cache efficiency, agent spawn counts."
+version: 1.0.0
 allowed-tools: Read, Bash
 ---
 
