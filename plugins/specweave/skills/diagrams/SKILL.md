@@ -1,5 +1,6 @@
 ---
 description: Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams. Activates for create diagram, draw diagram, visualize, system diagram, architecture diagram, C4 diagram, context diagram, container diagram, component diagram, sequence diagram, ER diagram, entity relationship, data model, deployment diagram.
+version: 1.0.0
 allowed-tools: Read, Write, Edit
 model: opus
 ---

@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Use when asking about GitHub integration setup, troubleshooting sync issues, or configuring sync settings. For actual syncing, use sw-github:sync-spec command."
+version: 1.0.0
 user-invokable: false
 deprecated: true
 ---

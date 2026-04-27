@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Use `sw:multi-project --tool github` instead. Organizes specs and splits tasks across multiple GitHub repositories. This skill will be removed in SpecWeave v1.3.0."
+version: 1.0.0
 user-invokable: false
 ---
 

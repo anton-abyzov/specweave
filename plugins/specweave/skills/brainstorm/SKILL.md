@@ -1,5 +1,6 @@
 ---
 description: Multi-perspective ideation with selectable cognitive lenses, persistent idea trees, and native handoff to sw:increment. Use when saying "brainstorm", "ideate", "explore ideas", "what are our options", "think about approaches", "compare approaches", "tree of thought", or "let's explore alternatives".
+version: 1.0.0
 argument-hint: "<topic> [--depth quick|standard|deep] [--lens default|six-hats|scamper|triz|adjacent] [--resume] [--criteria c1,c2,c3]"
 context: fork
 model: opus

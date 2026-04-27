@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Write failing tests that define expected behavior. Use when saying \"TDD red\", \"write failing tests\", or \"test first\"."
+version: 1.0.0
 deprecated: true
 ---
 

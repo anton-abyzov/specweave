@@ -1,5 +1,6 @@
 ---
 description: Import external issues from GitHub, Jira, or Azure DevOps and create SpecWeave increments with platform suffixes (G/J/A). Supports filtering and duplicate prevention. Use when saying "import issues", "pull from github", "grab jira issues", or "import from ado".
+version: 1.0.0
 argument-hint: "[platform] [filter-query]"
 ---
 
