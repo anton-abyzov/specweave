@@ -1,0 +1,66 @@
+name: Version Alignment
+
+# Increment 0794 — enforce that:
+#   1. package.json + marketplace.json (root + plugin entry) + plugin.json
+#      all carry the same version string. Drift causes Claude Code to silently
+#      pin users to a stale plugin.json version. (validate-versions.cjs)
+#   2. Every plugins/specweave/skills/*/SKILL.md carries a top-level
+#      `version:` frontmatter field. Without per-skill versions, future
+#      skill-currency reporting cannot function. (validate-skill-versions.cjs)
+#
+# Both checks are pure file reads — fast (<1s), no network, safe to gate merges.
+# See ADR 0794-01-three-way-version-lockstep-with-ci-lint.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'package.json'
+      - '.claude-plugin/marketplace.json'
+      - 'plugins/specweave/.claude-plugin/plugin.json'
+      - 'plugins/specweave/skills/**/SKILL.md'
+      - 'scripts/validation/validate-versions.cjs'
+      - 'scripts/validation/validate-skill-versions.cjs'
+      - '.github/workflows/version-alignment.yml'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'package.json'
+      - '.claude-plugin/marketplace.json'
+      - 'plugins/specweave/.claude-plugin/plugin.json'
+      - 'plugins/specweave/skills/**/SKILL.md'
+      - 'scripts/validation/validate-versions.cjs'
+      - 'scripts/validation/validate-skill-versions.cjs'
+
+jobs:
+  validate-versions:
+    name: Plugin manifest version alignment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate version alignment (package.json / marketplace.json / plugin.json)
+        run: node scripts/validation/validate-versions.cjs
+
+  validate-skill-versions:
+    name: Per-skill version frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate every SKILL.md has a `version:` frontmatter
+        run: node scripts/validation/validate-skill-versions.cjs
