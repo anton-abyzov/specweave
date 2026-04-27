@@ -16,6 +16,8 @@ import { PluginsChecker } from './checkers/plugins-checker.js';
 import { IncrementsChecker } from './checkers/increments-checker.js';
 import { GitChecker } from './checkers/git-checker.js';
 import { InstallationHealthChecker } from './checkers/installation-health-checker.js';
+import { PluginCurrencyChecker } from './checkers/plugin-currency-checker.js';
+import { SkillCurrencyChecker } from './checkers/skill-currency-checker.js';
 
 /**
  * Run all diagnostic checks and return a comprehensive report
@@ -33,6 +35,8 @@ export async function runDoctor(
     new IncrementsChecker(),
     new GitChecker(),
     new InstallationHealthChecker(),
+    new PluginCurrencyChecker(),
+    new SkillCurrencyChecker(),
   ];
 
   const categories: CategoryResult[] = [];
