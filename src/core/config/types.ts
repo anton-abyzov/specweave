@@ -268,6 +268,23 @@ export interface HookConfiguration {
     close_external_issue?: boolean;
     update_living_docs_first?: boolean;
   };
+  /**
+   * Session-start banner that surfaces plugin/skill update warnings
+   * (increment 0796). The banner runs as a UserPromptSubmit hook on every
+   * Claude Code prompt; results are throttled to once per the configured
+   * window so it never spams the user.
+   */
+  banner?: BannerHookConfig;
+}
+
+export interface BannerHookConfig {
+  /** Disable the session-start banner entirely. Default: false (enabled). */
+  disabled?: boolean;
+  /**
+   * Throttle window in hours between banner re-checks. Allowed range
+   * [1, 168] (1 hour to 1 week). Default: 24.
+   */
+  throttleHours?: number;
 }
 
 /**
