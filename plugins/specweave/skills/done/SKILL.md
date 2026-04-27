@@ -1,5 +1,6 @@
 ---
 description: Close increment with PM 3-gate validation (tasks, tests, docs). Use when all tasks complete and saying "close increment", "we're done", or "finish up".
+version: 1.0.0
 argument-hint: "<increment-id> [--auto]"
 ---
 

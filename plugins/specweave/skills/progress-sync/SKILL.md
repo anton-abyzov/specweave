@@ -1,5 +1,6 @@
 ---
 description: Sync progress from tasks.md to living docs and external tools (GitHub/JIRA/ADO). Use when saying "sync progress" or "push progress".
+version: 1.0.0
 argument-hint: "[INCREMENT_ID] [--dry-run] [--no-create] [--no-github] [--no-jira]"
 ---
 

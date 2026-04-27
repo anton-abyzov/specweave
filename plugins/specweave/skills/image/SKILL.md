@@ -1,5 +1,6 @@
 ---
 description: Generate and edit images using AI. Powered by Nano Banana Pro (Google Gemini image models) with Pollinations.ai and Imagen 4 fallback. Supports text-to-image, image editing, aspect ratios, 2K/4K, and batch generation. Use when generating images, creating visuals, AI art, text-to-image, image generation, create picture, make illustration, generate photo, nano banana, edit image, batch images.
+version: 1.0.0
 allowed-tools: Read, Bash, Glob
 context: fork
 ---

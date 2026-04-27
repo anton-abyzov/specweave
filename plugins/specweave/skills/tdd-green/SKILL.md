@@ -1,5 +1,6 @@
 ---
 description: "[DEPRECATED] Write minimal code to make failing tests pass. Use when saying \"TDD green\", \"make tests pass\", or \"implement for tests\"."
+version: 1.0.0
 deprecated: true
 ---
 

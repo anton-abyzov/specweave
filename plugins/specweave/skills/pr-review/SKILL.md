@@ -1,5 +1,6 @@
 ---
 description: AI-powered pull request review against spec acceptance criteria. Use for "review PR", "check PR against spec", "review pull request". Enterprise feature.
+version: 1.0.0
 argument-hint: "<increment-id|pr-url>"
 user-invokable: true
 ---
