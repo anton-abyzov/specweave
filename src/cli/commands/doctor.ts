@@ -23,10 +23,15 @@ export async function doctor(
 ): Promise<DoctorReport> {
   const report = await runDoctor(projectRoot, options);
 
-  if (options.json) {
-    console.log(JSON.stringify(report, null, 2));
-  } else {
-    console.log(formatDoctorReport(report, options.verbose));
+  // 0796 / T-001 — `--quiet` suppresses all stdout but preserves exit code.
+  // Useful for hook-based callers that consume the returned `report` and
+  // don't want to pollute the user's terminal.
+  if (!options.quiet) {
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      console.log(formatDoctorReport(report, options.verbose));
+    }
   }
 
   return report;
@@ -44,6 +49,7 @@ export function registerDoctorCommand(program: Command): void {
     .option('--verbose', 'Show detailed output for each check')
     .option('--json', 'Output as JSON')
     .option('--quick', 'Skip slow checks (network, hook execution)')
+    .option('--quiet', 'Suppress all stdout (exit code still reflects failures)')
     .option('--skip-external', 'Skip external tool connectivity checks')
     .option('--fix', 'Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)')
     .action(async (options: Record<string, unknown>) => {
@@ -52,6 +58,7 @@ export function registerDoctorCommand(program: Command): void {
           verbose: options.verbose as boolean,
           json: options.json as boolean,
           quick: options.quick as boolean,
+          quiet: options.quiet as boolean,
           skipExternal: options.skipExternal as boolean,
           fix: options.fix as boolean,
         });
