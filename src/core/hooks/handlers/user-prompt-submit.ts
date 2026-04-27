@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { HandlerFn, HookContext, HookResult } from './types.js';
 import { logHook } from './utils.js';
+import { checkBanner } from './banner-check.js';
 
 /** Built-in Claude Code commands that should bypass all SpecWeave processing */
 const BUILTIN_COMMANDS = [
@@ -173,6 +174,20 @@ export const handle: HandlerFn = async (input, context) => {
     // TDD mode context
     const tddCtx = buildTddContext(context);
     if (tddCtx) contextParts.push(tddCtx);
+
+    // 0796 / T-005 — session-start banner for plugin/skill updates.
+    // Throttled, opt-out via hooks.banner.disabled. Errors NEVER block
+    // the prompt: any exception inside checkBanner is caught and logged.
+    try {
+      const cfg = readJsonSafe(context.configPath, context);
+      const bannerCfg = cfg?.hooks?.banner;
+      if (bannerCfg?.disabled !== true) {
+        const banner = await checkBanner(context, bannerCfg ?? {});
+        if (banner) contextParts.push(banner);
+      }
+    } catch (err) {
+      logHook(context, 'user-prompt-submit', `banner check error: ${err instanceof Error ? err.message : String(err)}`);
+    }
 
     const combined = contextParts.join('\n');
     if (combined) {
