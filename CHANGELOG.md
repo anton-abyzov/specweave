@@ -1,3 +1,7 @@
+## [1.0.582] - 2026-04-28
+
+- Patch release
+
 ## [1.0.581] - 2026-04-22
 
 ### Hotfix: multi-provider closure via `externalLinks` fallback (increment 0696)
