@@ -8,6 +8,8 @@
  * them in-place with minimal type checking.
  */
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, existsSync, statSync } from 'fs';
 import path from 'path';
@@ -67,4 +69,4 @@ async function transpilePlugins() {
 transpilePlugins().catch(err => {
   console.error('❌ Error transpiling plugin files:', err);
   process.exit(1);
-});
+});                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
