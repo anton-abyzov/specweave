@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Check for existing bot fix PRs
         id: dedup-check
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const owner = context.repo.owner;
@@ -100,7 +100,7 @@ jobs:
       - name: Get failure logs
         if: steps.dedup-check.outputs.skip != 'true' && steps.loop-check.outputs.skip != 'true'
         id: failure-logs
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const runId = context.payload.workflow_run.id;
@@ -131,7 +131,7 @@ jobs:
       - name: Classify failure
         if: steps.dedup-check.outputs.skip != 'true' && steps.loop-check.outputs.skip != 'true'
         id: classify
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -259,7 +259,7 @@ jobs:
         if: |
           always() &&
           (steps.dedup-check.outputs.escalate == 'true' || steps.loop-check.outputs.skip == 'true')
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const branch = context.payload.workflow_run.head_branch;

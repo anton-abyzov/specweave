@@ -163,7 +163,7 @@ jobs:
 
       - name: Comment on pull request
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -233,7 +233,7 @@ jobs:
 
       - name: Check if issue already exists
         id: check-issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const issues = await github.rest.issues.listForRepo({
@@ -256,7 +256,7 @@ jobs:
 
       - name: Create GitHub issue on validation failure
         if: failure() && steps.check-issue.outputs.result == 'null'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -303,7 +303,7 @@ jobs:
 
       - name: Create GitHub issue on stale data warning
         if: needs.validate.outputs.has_stale_data == 'true' && steps.check-issue.outputs.result == 'null'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
