@@ -55,13 +55,16 @@ describe('hooks/handlers/hook-router', () => {
       expect(result).toHaveProperty('decision', 'approve');
     });
 
-    it('returns allow for pre-tool-use when no project', async () => {
+    it('returns continue for pre-tool-use when no project', async () => {
       const { hookRouter } = await import(
         '../../../../../src/core/hooks/handlers/hook-router.js'
       );
 
       const result = await hookRouter('pre-tool-use', '{}');
-      expect(result).toHaveProperty('decision', 'allow');
+      // Claude Code's PreToolUse schema rejects decision='allow'.
+      // Safe pass-through is { continue: true } (no decision field).
+      expect(result).toHaveProperty('continue', true);
+      expect(result.decision).toBeUndefined();
     });
 
     it('returns continue for post-tool-use when no project', async () => {

@@ -69,6 +69,13 @@ export async function hookRouter(
       result.reason = `[GUARD] ${result.reason}`;
     }
 
+    // Claude Code's PreToolUse schema accepts decision values of "approve"|"block" only.
+    // Internal handlers use 'allow' for readability — translate to a schema-valid pass-through.
+    if (eventType === 'pre-tool-use' && result.decision === 'allow') {
+      delete result.decision;
+      result.continue = true;
+    }
+
     // Structured logging via HookLogger
     try {
       const hooksLogDir = `${context.logsDir}/hooks`;
