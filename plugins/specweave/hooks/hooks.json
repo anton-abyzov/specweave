@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"allow\\\"}\"; }'"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
           }
         ]
       },
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"allow\\\"}\"; }'"
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
           }
         ]
       }
