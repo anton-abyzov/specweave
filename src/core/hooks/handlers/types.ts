@@ -70,7 +70,7 @@ export type HookEventType =
 /** Map of event types to their safe fallback responses */
 export const SAFE_DEFAULTS: Record<string, HookResult> = {
   'user-prompt-submit': { decision: 'approve' },
-  'pre-tool-use': { decision: 'allow' },
+  'pre-tool-use': { continue: true },
 };
 
 /** Get safe default response for an event type */
