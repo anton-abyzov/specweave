@@ -96,7 +96,10 @@ describe('hook-router semantic prefixes', () => {
     );
 
     const result = await hookRouter('pre-tool-use', '{}');
-    expect(result.decision).toBe('allow');
+    // Router translates handler's internal decision='allow' to schema-valid {continue:true}
+    // (Claude Code rejects decision='allow' for PreToolUse; only 'approve'|'block' are valid).
+    expect(result.decision).toBeUndefined();
+    expect(result.continue).toBe(true);
     expect(result.reason).toBeUndefined();
   });
 

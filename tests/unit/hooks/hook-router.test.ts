@@ -85,8 +85,11 @@ describe('hookRouter behavior', () => {
       process.chdir(tmpDir);
       const { hookRouter } = await import('../../../src/core/hooks/handlers/hook-router.js');
       const result = await hookRouter('pre-tool-use', JSON.stringify({ tool_name: 'Write' }));
-      // The pre-tool-use handler returns a result with a decision field
-      expect(result).toHaveProperty('decision');
+      // Router yields a Claude-Code-schema-valid PreToolUse output:
+      // either {decision:'block', reason} or pass-through {continue:true}.
+      const isPassThrough = result.continue === true && result.decision === undefined;
+      const isBlock = result.decision === 'block' && typeof result.reason === 'string';
+      expect(isPassThrough || isBlock).toBe(true);
     } finally {
       process.chdir(origCwd);
     }
