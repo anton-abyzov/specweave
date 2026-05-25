@@ -7,7 +7,7 @@
  * @module core/config/config-manager
  */
 
-import { promises as fs, readFileSync } from 'fs';
+import { promises as fs, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import {
   SpecWeaveConfig,
@@ -68,6 +68,8 @@ export class ConfigManager {
         throw new Error(`Invalid JSON in config.json: ${parseMessage}`);
       }
 
+      const hadLegacyConfig = this.hasLegacyConfig(parsed);
+
       // Merge with defaults (for backward compatibility)
       let config = this.mergeWithDefaults(parsed);
 
@@ -81,6 +83,10 @@ export class ConfigManager {
         info: (msg: string) => this.logger.info(msg),
         warn: (msg: string) => this.logger.warn(msg),
       });
+
+      if (hadLegacyConfig && this.isPersistableWorkspaceMigration(config)) {
+        await this.persistMigratedConfig(config);
+      }
 
       this.config = config;
       return this.config;
@@ -119,6 +125,8 @@ export class ConfigManager {
         throw new Error(`Invalid JSON in config.json: ${parseMessage}`);
       }
 
+      const hadLegacyConfig = this.hasLegacyConfig(parsed);
+
       // Merge with defaults
       let config = this.mergeWithDefaults(parsed);
 
@@ -127,6 +135,10 @@ export class ConfigManager {
         info: (msg: string) => this.logger.info(msg),
         warn: (msg: string) => this.logger.warn(msg),
       });
+
+      if (hadLegacyConfig && this.isPersistableWorkspaceMigration(config)) {
+        this.persistMigratedConfigSync(config);
+      }
 
       this.config = config;
       return this.config;
@@ -384,6 +396,60 @@ export class ConfigManager {
    */
   private mergeWithDefaults(config: Partial<SpecWeaveConfig>): SpecWeaveConfig {
     return this.deepMerge(DEFAULT_CONFIG, config) as SpecWeaveConfig;
+  }
+
+  private hasLegacyConfig(config: Record<string, unknown>): boolean {
+    return !!(config.umbrella || config.multiProject || config.projectMappings);
+  }
+
+  private isPersistableWorkspaceMigration(config: SpecWeaveConfig): boolean {
+    return !!config.workspace && !config.umbrella && !config.multiProject && !config.projectMappings;
+  }
+
+  private stripLegacyKeys(config: SpecWeaveConfig): SpecWeaveConfig {
+    const toWrite = { ...config };
+    if (toWrite.workspace) {
+      delete toWrite.umbrella;
+      delete toWrite.multiProject;
+      delete toWrite.projectMappings;
+    }
+    return toWrite;
+  }
+
+  private async persistMigratedConfig(config: SpecWeaveConfig): Promise<void> {
+    const toWrite = this.stripLegacyKeys(config);
+    const validation = this.validate(toWrite);
+    if (!validation.valid) {
+      const errorMessages = validation.errors.map(e => `${e.path}: ${e.message}`).join('\n');
+      this.logger.warn(`Could not persist migrated config: ${errorMessages}`);
+      return;
+    }
+
+    try {
+      await fs.mkdir(path.dirname(this.configPath), { recursive: true });
+      await fs.writeFile(this.configPath, JSON.stringify(toWrite, null, 2), 'utf-8');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.logger.warn(`Could not persist migrated config: ${err.message || String(error)}`);
+    }
+  }
+
+  private persistMigratedConfigSync(config: SpecWeaveConfig): void {
+    const toWrite = this.stripLegacyKeys(config);
+    const validation = this.validate(toWrite);
+    if (!validation.valid) {
+      const errorMessages = validation.errors.map(e => `${e.path}: ${e.message}`).join('\n');
+      this.logger.warn(`Could not persist migrated config: ${errorMessages}`);
+      return;
+    }
+
+    try {
+      mkdirSync(path.dirname(this.configPath), { recursive: true });
+      writeFileSync(this.configPath, JSON.stringify(toWrite, null, 2), 'utf-8');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.logger.warn(`Could not persist migrated config: ${err.message || String(error)}`);
+    }
   }
 
   /**

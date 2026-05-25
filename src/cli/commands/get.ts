@@ -74,7 +74,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
     return;
   }
 
-  const isUmbrella = config.umbrella?.enabled === true;
+  const usesRepositoriesLayout = !!config.workspace || config.umbrella?.enabled === true;
 
   // Parse source
   let parsed;
@@ -117,11 +117,11 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
 
     console.log(chalk.blue(`\n  Registering local repo: ${absolutePath}\n`));
 
-    if (isUmbrella) {
-      const relPath = path.relative(projectRoot, absolutePath).replace(/\\/g, '/');
+    if (usesRepositoriesLayout) {
+      const relPath = _relativeToProject(projectRoot, absolutePath);
       await _registerAndInit(projectRoot, owner, repo, relPath, absolutePath, options, false);
     } else {
-      console.log(chalk.yellow('  Not an umbrella workspace — skipping registration.\n'));
+      console.log(chalk.yellow('  Not a repositories workspace — skipping registration.\n'));
     }
     return;
   }
@@ -129,7 +129,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   // Remote source: determine target directory
   // Use '_unknown' as owner fallback for generic git URLs with no detected org
   const ownerDir = owner || '_unknown';
-  const targetDir = isUmbrella
+  const targetDir = usesRepositoriesLayout
     ? path.join(projectRoot, 'repositories', ownerDir, repo)
     : path.join(projectRoot, repo);
 
@@ -150,8 +150,8 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   }
 
   // Register + init
-  if (isUmbrella) {
-    const relPath = path.relative(projectRoot, targetDir).replace(/\\/g, '/');
+  if (usesRepositoriesLayout) {
+    const relPath = _relativeToProject(projectRoot, targetDir);
     const githubUrl = parsed.type === 'github' ? `https://github.com/${owner}/${repo}` : undefined;
     await _registerAndInit(projectRoot, owner, repo, relPath, targetDir, options, true, githubUrl);
   } else {
@@ -226,9 +226,9 @@ async function _registerAndInit(
   });
 
   if (regResult.alreadyRegistered) {
-    console.log(chalk.dim(`   Already registered in umbrella config`));
+    console.log(chalk.dim(`   Already registered in workspace config`));
   } else {
-    console.log(chalk.green(`   Registered in umbrella config (prefix: ${options.prefix || repo.substring(0, 3).toUpperCase()})`));
+    console.log(chalk.green(`   Registered in workspace config (prefix: ${options.prefix || repo.substring(0, 3).toUpperCase()})`));
   }
 
   if (options.init !== false) {
@@ -253,5 +253,19 @@ async function _runInit(repoDir: string): Promise<void> {
     console.log(chalk.green('   Initialized with specweave'));
   } else {
     console.log(chalk.yellow('   specweave init had warnings (you can run it manually)'));
+  }
+}
+
+function _relativeToProject(projectRoot: string, targetPath: string): string {
+  const root = _realPath(projectRoot);
+  const target = _realPath(targetPath);
+  return path.relative(root, target).replace(/\\/g, '/');
+}
+
+function _realPath(targetPath: string): string {
+  try {
+    return fs.realpathSync.native(targetPath);
+  } catch {
+    return path.resolve(targetPath);
   }
 }
