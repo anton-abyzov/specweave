@@ -1663,6 +1663,19 @@ hooksCmd
     await hooksLsCommand();
   });
 
+// Context command - Show workspace project context for spec fields
+const contextCmd = program
+  .command('context')
+  .description('Show SpecWeave workspace context');
+
+contextCmd
+  .command('projects')
+  .description('List project and board values for spec.md')
+  .action(async () => {
+    const { getRequiredSpecFields } = await import('../dist/src/utils/structure-level-detector.js');
+    console.log(JSON.stringify(getRequiredSpecFields(process.cwd()), null, 2));
+  });
+
 // Get command - Clone and register an existing repository into the workspace
 program
   .command('get <source>')
