@@ -1,3 +1,12 @@
+## [1.0.586] - 2026-05-25
+
+### CLI install and workspace migration audit
+
+- Added `specweave context projects` so documented project/board discovery works from the installed CLI.
+- Fixed `specweave get` for current `workspace.repos` configs, including idempotent local repo registration and canonical relative paths under `repositories/{org}/{repo}`.
+- Persisted legacy umbrella/multiProject config migration after the first read to stop repeated migration noise.
+- Moved generated increment rubric placeholders from the increment root to `reports/rubric.md` to obey increment folder rules.
+
 ## [1.0.585] - 2026-05-08
 
 - Patch release

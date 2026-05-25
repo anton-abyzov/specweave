@@ -759,6 +759,45 @@ describe('ConfigManager workspace integration (T-008)', () => {
     expect(config.version).toBe('3.0');
   });
 
+  it('read() persists legacy migration so the next read is already workspace schema', async () => {
+    const legacyConfig = {
+      version: '2.0',
+      umbrella: {
+        enabled: true,
+        projectName: 'my-project',
+        childRepos: [
+          { id: 'fe', path: 'repos/fe', prefix: 'FE' },
+        ],
+      },
+    };
+    await fs.writeFile(
+      path.join(TEST_ROOT, '.specweave', 'config.json'),
+      JSON.stringify(legacyConfig, null, 2),
+    );
+
+    const messages: string[] = [];
+    const mgr = new ConfigManager(TEST_ROOT, {
+      info: (msg: string) => messages.push(msg),
+      warn: (msg: string) => messages.push(msg),
+      log: () => {},
+      error: () => {},
+      debug: () => {},
+      success: () => {},
+    } as any);
+
+    await mgr.read();
+    const written = JSON.parse(
+      await fs.readFile(path.join(TEST_ROOT, '.specweave', 'config.json'), 'utf-8'),
+    );
+    expect(written.version).toBe('3.0');
+    expect(written.workspace).toBeDefined();
+    expect(written.umbrella).toBeUndefined();
+
+    mgr.clearCache();
+    await mgr.read();
+    expect(messages.filter((msg) => msg.includes('Config migrated'))).toHaveLength(1);
+  });
+
   it('write() strips legacy keys when workspace is present', async () => {
     const config: SpecWeaveConfig = {
       version: '3.0',
