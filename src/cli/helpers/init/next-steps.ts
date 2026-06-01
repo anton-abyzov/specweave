@@ -198,7 +198,7 @@ export function showNextSteps(
 
   // Guided follow-up commands
   console.log(`   ${stepNumber}. ${chalk.white('specweave sync-setup')}          ${chalk.gray(strings.syncSetup)}`);
-  console.log(`   ${stepNumber + 1}. ${chalk.white('specweave increment "feature"')}  ${chalk.gray(strings.firstIncrement)}`);
+  console.log(`   ${stepNumber + 1}. ${chalk.white('specweave create-increment')}     ${chalk.gray(strings.firstIncrement)}`);
 
   // Always show specweave get -- every workspace uses repositories/ structure
   console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
