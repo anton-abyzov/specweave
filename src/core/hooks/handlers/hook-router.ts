@@ -17,6 +17,11 @@ import { HookLogger } from '../hook-logger.js';
 const HANDLERS: Record<string, () => Promise<{ handle: HandlerFn }>> = {
   'user-prompt-submit': () => import('./user-prompt-submit.js'),
   'pre-tool-use': () => import('./pre-tool-use.js'),
+  // Auto-write a work-handoff at context exhaustion (0867, AC-US7-01).
+  'pre-compact': () => import('./pre-compact.js'),
+  // Gated Stop variant — fires only under an active auto session (AC-US7-02).
+  // Maps the module's `handleStop` export onto the router's `handle` contract.
+  'stop': () => import('./pre-compact.js').then((m) => ({ handle: m.handleStop })),
 };
 
 /**
