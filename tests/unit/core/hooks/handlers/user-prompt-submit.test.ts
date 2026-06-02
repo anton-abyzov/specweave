@@ -19,7 +19,18 @@ const mockFs = vi.hoisted(() => ({
   readdirSync: vi.fn(),
 }));
 
-vi.mock('fs', () => mockFs);
+// Partial-mock: override only the sync methods this test drives, but preserve
+// the real module — transitive deps (banner-check → doctor → config-manager …)
+// do `import { promises as fs } from 'fs'`, so the mock MUST keep `promises`
+// (and other exports) or those modules crash at load.
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  return {
+    ...actual,
+    ...mockFs,
+    default: { ...actual, ...mockFs },
+  };
+});
 
 import { handle } from '../../../../../src/core/hooks/handlers/user-prompt-submit.js';
 
