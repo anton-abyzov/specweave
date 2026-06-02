@@ -27,6 +27,7 @@ const SENSITIVE_PATTERNS = [
   { pattern: /\b(SUPABASE_KEY|SUPABASE_ANON_KEY|SUPABASE_SERVICE_KEY)=([^\s]+)/gi, name: 'Supabase Key' },
   { pattern: /\b(CF_API_TOKEN|CLOUDFLARE_API_TOKEN)=([^\s]+)/gi, name: 'Cloudflare Token' },
   { pattern: /\b(VERCEL_TOKEN)=([^\s]+)/gi, name: 'Vercel Token' },
+  { pattern: /(--(?:token|api-token|api-key|pat|password|secret))=([^\s]+)/gi, name: 'CLI Secret Flag' },
 
   // JSON-style credentials
   { pattern: /"(token|apiToken|api_token|accessToken|access_token|password|secret|apiKey|api_key)"\s*:\s*"([^"]{8,})"/gi, name: 'JSON Token' },
@@ -40,6 +41,7 @@ const SENSITIVE_PATTERNS = [
   // Bearer tokens
   { pattern: /Bearer\s+([A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_.+/=]+)/gi, name: 'Bearer JWT' },
   { pattern: /Bearer\s+([A-Za-z0-9_\-]{20,})/gi, name: 'Bearer Token' },
+  { pattern: /Basic\s+([A-Za-z0-9+/=]{12,})/gi, name: 'Basic Auth' },
 
   // Generic tokens (alphanumeric strings 32+ chars)
   { pattern: /\b([a-zA-Z0-9_\-]{40,})\b/g, name: 'Generic Token' },
@@ -159,6 +161,11 @@ export function maskCredentials(text: string, options: MaskOptions = {}): string
         return `Bearer ${maskValue(key, options)}`;
       }
 
+      // Basic auth: Basic <base64>
+      if (match.toLowerCase().includes('basic') && key && typeof key === 'string') {
+        return `Basic ${maskValue(key, options)}`;
+      }
+
       // Generic token (single capture group)
       if (key && !value && typeof key === 'string') {
         return maskValue(key, options);
@@ -198,13 +205,16 @@ export function maskCredentialsInData(data: any, options: MaskOptions = {}): any
       const isSensitiveKey = [
         'token', 'password', 'secret', 'key', 'credential',
         'apitoken', 'api_token', 'accesstoken', 'access_token',
-        'pat', 'apikey', 'api_key'
+        'pat', 'apikey', 'api_key', 'authorization', 'cookie',
+        'set-cookie', 'privatekey', 'private_key'
       ].some(sensitive => lowerKey.includes(sensitive));
 
       if (isSensitiveKey && typeof value === 'string') {
         masked[key] = maskValue(value, options);
       } else if (typeof value === 'object') {
         masked[key] = maskCredentialsInData(value, options);
+      } else if (typeof value === 'string') {
+        masked[key] = maskCredentials(value, options);
       } else {
         masked[key] = value;
       }

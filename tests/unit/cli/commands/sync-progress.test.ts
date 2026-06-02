@@ -934,6 +934,143 @@ describe('sync-progress command', () => {
       expect(mockSyncCoordinatorInstance.syncACCheckboxesToGitHub).toHaveBeenCalled();
     });
 
+    it('should route GitHub AC sync from per-US Project field in workspace mode', async () => {
+      const specPath = path.join(incrementsDir, '0001-test', 'spec.md');
+      fs.writeFileSync(specPath, `
+# Feature
+
+### US-001: Install from child repo
+**Project**: vskill
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Routes to child repo
+`);
+
+      mockFsReadFile.mockImplementation(async (filePath: string) => {
+        if (filePath.endsWith('spec.md')) {
+          return fs.readFileSync(specPath, 'utf-8');
+        }
+        throw new Error('ENOENT');
+      });
+
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          github: { enabled: true, owner: 'global-org', repo: 'global-repo' },
+          settings: { canUpdateExternalItems: true },
+        },
+        workspace: {
+          name: 'workspace',
+          repos: [
+            {
+              id: 'vskill',
+              name: 'vskill',
+              path: 'repositories/anton-abyzov/vskill',
+              prefix: 'VSK',
+              sync: {
+                github: { owner: 'anton-abyzov', repo: 'vskill' },
+              },
+            },
+          ],
+        },
+      });
+
+      await syncProgress(['0001-test', '--no-create'], { logger });
+
+      expect(mockSyncCoordinatorInstance.syncACCheckboxesToGitHub).toHaveBeenCalled();
+      const effectiveConfig = mockSyncCoordinatorInstance.syncACCheckboxesToGitHub.mock.calls[0][0];
+      expect(effectiveConfig.sync.github.owner).toBe('anton-abyzov');
+      expect(effectiveConfig.sync.github.repo).toBe('vskill');
+    });
+
+    it('should prefer per-US Project field over stale frontmatter project', async () => {
+      const specPath = path.join(incrementsDir, '0001-test', 'spec.md');
+      fs.writeFileSync(specPath, `---
+project: stale-root
+---
+
+### US-001: Install from child repo
+**Project**: vskill
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Routes to child repo
+`);
+
+      mockFsReadFile.mockImplementation(async (filePath: string) => {
+        if (filePath.endsWith('spec.md')) {
+          return fs.readFileSync(specPath, 'utf-8');
+        }
+        throw new Error('ENOENT');
+      });
+
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          github: { enabled: true, owner: 'global-org', repo: 'global-repo' },
+          settings: { canUpdateExternalItems: true },
+        },
+        workspace: {
+          name: 'workspace',
+          repos: [
+            {
+              id: 'vskill',
+              name: 'vskill',
+              path: 'repositories/anton-abyzov/vskill',
+              prefix: 'VSK',
+              sync: {
+                github: { owner: 'anton-abyzov', repo: 'vskill' },
+              },
+            },
+          ],
+        },
+      });
+
+      await syncProgress(['0001-test', '--no-create'], { logger });
+
+      const effectiveConfig = mockSyncCoordinatorInstance.syncACCheckboxesToGitHub.mock.calls[0][0];
+      expect(effectiveConfig.sync.github.owner).toBe('anton-abyzov');
+      expect(effectiveConfig.sync.github.repo).toBe('vskill');
+    });
+
+    it('should detect GitHub from workspace repo sync when no global provider exists', async () => {
+      const specPath = path.join(incrementsDir, '0001-test', 'spec.md');
+      fs.writeFileSync(specPath, `
+### US-001: Child-only provider
+**Project**: vskill
+`);
+
+      mockFsReadFile.mockImplementation(async (filePath: string) => {
+        if (filePath.endsWith('spec.md')) {
+          return fs.readFileSync(specPath, 'utf-8');
+        }
+        throw new Error('ENOENT');
+      });
+
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          settings: { canUpdateExternalItems: true },
+        },
+        workspace: {
+          name: 'workspace',
+          repos: [
+            {
+              id: 'vskill',
+              name: 'vskill',
+              path: 'repositories/anton-abyzov/vskill',
+              prefix: 'VSK',
+              sync: {
+                github: { owner: 'anton-abyzov', repo: 'vskill' },
+              },
+            },
+          ],
+        },
+      });
+
+      await syncProgress(['0001-test', '--no-create'], { logger });
+
+      expect(mockSyncCoordinatorInstance.syncACCheckboxesToGitHub).toHaveBeenCalled();
+      const effectiveConfig = mockSyncCoordinatorInstance.syncACCheckboxesToGitHub.mock.calls[0][0];
+      expect(effectiveConfig.sync.github.repo).toBe('vskill');
+    });
+
     it('should not sync AC checkboxes when permissions disabled', async () => {
       mockConfigManagerInstance.read.mockResolvedValue({
         sync: {

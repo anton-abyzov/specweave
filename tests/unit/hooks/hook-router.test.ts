@@ -20,24 +20,28 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// 0867 added the work-handoff auto-write handlers: PreCompact (always) and a
+// gated Stop variant. These pins now expect 4 entries — pre-tool-use,
+// user-prompt-submit, pre-compact, stop.
+const EXPECTED_HOOK_KEYS = ['user-prompt-submit', 'pre-tool-use', 'pre-compact', 'stop'];
+
 describe('hook-router HANDLERS map', () => {
-  // TC-001: HANDLERS map has exactly 2 keys
-  it('should have exactly 2 handler entries: pre-tool-use and user-prompt-submit', async () => {
+  // TC-001: HANDLERS map has exactly the expected keys
+  it('should register pre-tool-use, user-prompt-submit, pre-compact, and stop', async () => {
     // Read the source and check the HANDLERS map keys via a regex parse
     const routerSrc = fs.readFileSync(
       path.resolve(__dirname, '../../../src/core/hooks/handlers/hook-router.ts'),
       'utf-8',
     );
     const handlerKeys = [...routerSrc.matchAll(/'([a-z-]+)':\s*\(\)\s*=>/g)].map(m => m[1]);
-    expect(handlerKeys).toHaveLength(2);
-    expect(handlerKeys).toContain('user-prompt-submit');
-    expect(handlerKeys).toContain('pre-tool-use');
+    expect(handlerKeys).toHaveLength(EXPECTED_HOOK_KEYS.length);
+    for (const key of EXPECTED_HOOK_KEYS) expect(handlerKeys).toContain(key);
   });
 });
 
 describe('HookEventType union', () => {
-  // TC-002: HookEventType has exactly 2 members
-  it('should contain exactly pre-tool-use and user-prompt-submit', () => {
+  // TC-002: HookEventType members match the registered handlers
+  it('should contain pre-tool-use, user-prompt-submit, pre-compact, and stop', () => {
     // Verify at the type level by checking SAFE_DEFAULTS keys which mirror HookEventType
     // Also parse the source for the union members
     const typesSrc = fs.readFileSync(
@@ -47,19 +51,17 @@ describe('HookEventType union', () => {
     const unionMatch = typesSrc.match(/export type HookEventType\s*=\s*([\s\S]*?);/);
     expect(unionMatch).toBeTruthy();
     const members = [...unionMatch![1].matchAll(/'([a-z-]+)'/g)].map(m => m[1]);
-    expect(members).toHaveLength(2);
-    expect(members).toContain('user-prompt-submit');
-    expect(members).toContain('pre-tool-use');
+    expect(members).toHaveLength(EXPECTED_HOOK_KEYS.length);
+    for (const key of EXPECTED_HOOK_KEYS) expect(members).toContain(key);
   });
 });
 
 describe('SAFE_DEFAULTS map', () => {
-  // TC-003: SAFE_DEFAULTS has exactly 2 entries
-  it('should contain exactly 2 entries matching remaining hook types', () => {
+  // TC-003: SAFE_DEFAULTS has an entry per registered hook type
+  it('should contain entries matching the registered hook types', () => {
     const keys = Object.keys(SAFE_DEFAULTS);
-    expect(keys).toHaveLength(2);
-    expect(keys).toContain('user-prompt-submit');
-    expect(keys).toContain('pre-tool-use');
+    expect(keys).toHaveLength(EXPECTED_HOOK_KEYS.length);
+    for (const key of EXPECTED_HOOK_KEYS) expect(keys).toContain(key);
   });
 });
 
