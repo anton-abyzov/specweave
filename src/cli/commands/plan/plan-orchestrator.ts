@@ -171,6 +171,19 @@ export class PlanCommandOrchestrator {
         `Failed to write files: ${error instanceof Error ? error.message : String(error)}`
       );
     }
+
+    // 0865 AC-US1-01: generate the AC-tied root rubric.md now that spec.md has
+    // ACs and tasks.md is finalized. Idempotent (no-clobber of a user rubric,
+    // replaces a `status: template` placeholder). Best-effort — a rubric
+    // generation hiccup must never fail planning.
+    try {
+      const { ensureRubricFile } = await import('../../../core/rubric/rubric-generator.js');
+      await ensureRubricFile(context.incrementId, context.incrementPath);
+    } catch (error) {
+      console.warn(
+        `Warning: Failed to generate rubric.md: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   /**

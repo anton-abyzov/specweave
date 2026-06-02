@@ -85,6 +85,26 @@ describe('core/analytics/event-writer', () => {
       expect(JSON.parse(lines[0]).name).toBe('a');
       expect(JSON.parse(lines[1]).name).toBe('b');
     });
+
+    it('should mask credentials before appending events', () => {
+      const event: AnalyticsEvent = {
+        timestamp: '2026-01-01T00:00:00Z',
+        type: 'command',
+        name: 'sw:sync',
+        success: false,
+        error: 'Authorization: Basic dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=',
+        metadata: {
+          args: ['AZURE_DEVOPS_PAT=abcdefghijklmnopqrstuvwxyz123456'],
+        },
+      };
+
+      appendAnalyticsEvent(analyticsDir, event);
+
+      const content = fs.readFileSync(path.join(analyticsDir, 'events.jsonl'), 'utf8');
+      expect(content).toContain('*');
+      expect(content).not.toContain('dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=');
+      expect(content).not.toContain('abcdefghijklmnopqrstuvwxyz123456');
+    });
   });
 
   describe('writeSkillEvent', () => {
