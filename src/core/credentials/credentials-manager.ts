@@ -18,6 +18,44 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+/**
+ * Canonical ADO PAT environment-variable aliases (0865 T-006).
+ *
+ * SINGLE SOURCE OF TRUTH for the ADO secret surface. Both the runtime resolver
+ * (`integrations/ado/ado-pat-provider.getAdoPat`) and the health check
+ * (`cli/commands/sync-health`) read through this table so health can never
+ * report green while runtime writes throw "PAT not found".
+ *
+ * Order is precedence: AZURE_DEVOPS_PAT wins over AZURE_DEVOPS_TOKEN over ADO_PAT.
+ * Org-specific PATs (`AZURE_DEVOPS_PAT_{ORG}`) take precedence over all of these
+ * and are resolved by the caller before consulting this table.
+ */
+export const ADO_PAT_ALIASES = [
+  'AZURE_DEVOPS_PAT',
+  'AZURE_DEVOPS_TOKEN',
+  'ADO_PAT',
+] as const;
+
+/**
+ * Resolve the ADO PAT from environment, honoring the org-specific override and
+ * the canonical alias table. Returns `undefined` when none is set (callers
+ * decide whether that is fatal). SECURITY: never logs the value.
+ *
+ * @param organization - Optional ADO organization for the `AZURE_DEVOPS_PAT_{ORG}` override
+ */
+export function resolveAdoPat(organization?: string): string | undefined {
+  if (organization) {
+    const orgEnvKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
+    const orgPat = process.env[orgEnvKey];
+    if (orgPat) return orgPat;
+  }
+  for (const alias of ADO_PAT_ALIASES) {
+    const value = process.env[alias];
+    if (value) return value;
+  }
+  return undefined;
+}
+
 export interface AdoCredentials {
   pat: string;
   organization: string;

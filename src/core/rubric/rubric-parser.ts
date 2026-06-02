@@ -18,6 +18,18 @@ const RESULT_PASS_RE = /^\[x\]\s*PASS/i;
 const RESULT_FAIL_RE = /^\[!\]\s*FAIL(?:\s*(?:—|-)\s*(.*))?$/i;
 const RESULT_PENDING_RE = /^\[\s*\]\s*PENDING/i;
 
+/**
+ * Strip a surrounding markdown inline-code span from a field value so a
+ * `command` probe written as `` `cmd` `` (or ``` ``cmd`` ```) executes the
+ * command itself, not a backtick-wrapped string the shell would treat as
+ * command substitution. Only strips when the whole value is one code span.
+ */
+function stripInlineCode(value: string): string {
+  const trimmed = value.trim();
+  const m = trimmed.match(/^(`{1,3})([\s\S]*)\1$/);
+  return m ? m[2].trim() : trimmed;
+}
+
 function toKebabCategory(heading: string): RubricCategory {
   const kebab = heading.trim().toLowerCase().replace(/\s+/g, '-');
   const validCategories: RubricCategory[] = [
@@ -131,14 +143,19 @@ export function parseRubric(content: string): RubricDocument {
                   .filter(Boolean);
                 break;
               case 'evaluator': {
-                const validEvaluators: EvaluatorId[] = ['sw:grill', 'sw:code-reviewer', 'sw:judge-llm', 'coverage', 'manual'];
+                const validEvaluators: EvaluatorId[] = ['sw:grill', 'sw:code-reviewer', 'sw:judge-llm', 'command', 'coverage', 'manual'];
                 currentCriterion.evaluator = validEvaluators.includes(fieldValue as EvaluatorId)
                   ? fieldValue as EvaluatorId
                   : 'sw:grill'; // default for unknown evaluators
                 break;
               }
               case 'verify':
-                currentCriterion.verify = fieldValue;
+                // Strip a surrounding markdown inline-code span (``` ``cmd`` ``` or
+                // `cmd`). Writing a command probe in backticks is the natural
+                // markdown idiom, but leaving the backticks in makes the shell do
+                // command substitution — it runs the inner command, then tries to
+                // exec its OUTPUT as a command (`exit 127: RUN: command not found`).
+                currentCriterion.verify = stripInlineCode(fieldValue);
                 break;
               case 'threshold':
                 currentCriterion.threshold = fieldValue;

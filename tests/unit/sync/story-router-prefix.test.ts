@@ -44,13 +44,12 @@ describe('story-router prefix extraction (T-010)', () => {
     expect(result.repoId).toBe('specweave'); // First repo as fallback
   });
 
-  // Phase 2 resolver integration
+  // Phase 2 resolver integration (workspace shape)
   it('should resolve US-SPE-001 to specweave via Phase 2 prefix routing', () => {
     const config = {
-      umbrella: {
-        enabled: true,
-        projectName: 'ws',
-        childRepos: [
+      workspace: {
+        name: 'ws',
+        repos: [
           {
             id: 'specweave', name: 'specweave', path: 'repos/specweave', prefix: 'SPE',
             sync: { github: { owner: 'a', repo: 'specweave' }, jira: { projectKey: 'SPE' } },
@@ -67,7 +66,7 @@ describe('story-router prefix extraction (T-010)', () => {
       },
     } as unknown as SpecWeaveConfig;
 
-    // US-SPE-001 is not a repo name/id, so Phase 1 won't match.
+    // US-SPE-001 is not a repo id, so Phase 1 won't match.
     // Phase 2 (prefix routing) should match SPE → specweave.
     const result = resolveSyncTarget('US-SPE-001', config);
     expect(result.source).toBe('child-repo-prefix');
@@ -77,10 +76,9 @@ describe('story-router prefix extraction (T-010)', () => {
   // Phase 3 fallback for old format
   it('should fall back to global for US-001 (no prefix match)', () => {
     const config = {
-      umbrella: {
-        enabled: true,
-        projectName: 'ws',
-        childRepos: [
+      workspace: {
+        name: 'ws',
+        repos: [
           {
             id: 'specweave', name: 'specweave', path: 'repos/specweave', prefix: 'SPE',
             sync: { github: { owner: 'a', repo: 'specweave' } },

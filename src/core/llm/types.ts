@@ -265,18 +265,18 @@ export interface ModelPricing {
  *
  * Usage:
  * - Use aliases (opus, sonnet, haiku) in AGENT.md, SKILL.md, and configs
- * - resolveModelAlias('opus') → 'claude-opus-4-6'
+ * - resolveModelAlias('opus') → 'claude-opus-4-8'
  *
- * Updated: 2026-04-16
+ * Updated: 2026-06-01
  */
 export const MODEL_ALIASES: Record<string, string> = {
   // Anthropic Claude aliases
-  'opus': 'claude-opus-4-7',
+  'opus': 'claude-opus-4-8',
   'sonnet': 'claude-sonnet-4-6',
   'haiku': 'claude-haiku-4-5-20251001',
 
   // AWS Bedrock aliases (includes provider prefix)
-  'bedrock:opus': 'anthropic.claude-opus-4-7-v1:0',
+  'bedrock:opus': 'anthropic.claude-opus-4-8-v1:0',
   'bedrock:sonnet': 'anthropic.claude-sonnet-4-6-v1:0',
   'bedrock:haiku': 'anthropic.claude-haiku-4-5-20251001-v1:0',
 
@@ -292,9 +292,9 @@ export const MODEL_ALIASES: Record<string, string> = {
  * @returns Full model ID
  *
  * @example
- * resolveModelAlias('opus') // → 'claude-opus-4-7'
- * resolveModelAlias('opus', 'bedrock') // → 'anthropic.claude-opus-4-7-v1:0'
- * resolveModelAlias('claude-opus-4-7') // → 'claude-opus-4-7' (passthrough)
+ * resolveModelAlias('opus') // → 'claude-opus-4-8'
+ * resolveModelAlias('opus', 'bedrock') // → 'anthropic.claude-opus-4-8-v1:0'
+ * resolveModelAlias('claude-opus-4-8') // → 'claude-opus-4-8' (passthrough)
  */
 export function resolveModelAlias(modelOrAlias: string, provider?: string): string {
   // Check provider-specific alias first
@@ -320,6 +320,7 @@ export function resolveModelAlias(modelOrAlias: string, provider?: string): stri
  */
 export const MODEL_PRICING: Record<string, ModelPricing> = {
   // Anthropic (use full IDs for API calls, aliases for display)
+  'claude-opus-4-8': { inputPer1M: 5, outputPer1M: 25 },
   'claude-opus-4-7': { inputPer1M: 5, outputPer1M: 25 },
   'claude-opus-4-6': { inputPer1M: 5, outputPer1M: 25 },
   'claude-sonnet-4-6': { inputPer1M: 3, outputPer1M: 15 },
@@ -351,7 +352,7 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
 export const RECOMMENDED_MODELS: Record<string, Partial<Record<LLMProviderType, string>>> = {
   // Deep analysis - needs reasoning
   'deep-analysis': {
-    'claude-code': 'opus',  // Uses MAX subscription via CLI - Opus 4.7 for best quality
+    'claude-code': 'opus',  // Uses MAX subscription via CLI - Opus 4.8 for best quality
     'anthropic': 'claude-sonnet-4-6',
     'openai': 'gpt-5.3',
     'azure-openai': 'gpt-5.3',
