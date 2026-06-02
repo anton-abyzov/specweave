@@ -2,13 +2,10 @@
  * Diagnose GitHub "create" failures that are really auth/access problems.
  *
  * GitHub returns **404 Not Found** (not 403) when a token's account cannot even
- * SEE a repo — so a wrong-account token in `.env` surfaces as a confusing
- * `gh: Not Found (HTTP 404)` at issue/milestone create. This module turns that
- * into a clear, actionable error.
- *
- * Background: increment 0866 — the repo `.env` `GITHUB_TOKEN` belonged to an
- * account (`antonoly`) with no write access to the target repo
- * (`anton-abyzov/specweave`), which GitHub masked as a 404.
+ * SEE a repo — so a token in `.env` whose account lacks write access to the
+ * target repo surfaces as a confusing `gh: Not Found (HTTP 404)` at
+ * issue/milestone create. This module turns that into a clear, actionable error
+ * naming the token's account and the repo it can't write.
  */
 
 export interface GitHubAccessFacts {
