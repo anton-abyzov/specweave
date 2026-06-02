@@ -318,7 +318,7 @@ export async function handleAutoCommand(
     console.log('');
     console.log('Create an increment first:');
     console.log('  • ' + chalk.cyan('sw:increment "Feature description"'));
-    console.log('  • ' + chalk.cyan('specweave increment --title "Feature"'));
+    console.log('  • ' + chalk.cyan('specweave create-increment --title "Feature"'));
   }
 }
 

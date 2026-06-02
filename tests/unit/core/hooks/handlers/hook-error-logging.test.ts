@@ -103,8 +103,11 @@ describe('hook error logging', () => {
 
       const result = await hookRouter('pre-tool-use', '{}');
 
-      // Should return safe default
-      expect(result).toHaveProperty('decision', 'allow');
+      // Should return the schema-valid safe default and fail OPEN.
+      // PreToolUse rejects decision='allow'; the safe pass-through is
+      // { continue: true } (no decision field) — migrated in 112a102c2.
+      expect(result).toHaveProperty('continue', true);
+      expect(result.decision).toBeUndefined();
       // Should have logged the error
       expect(mockUtils.logHook).toHaveBeenCalledWith(
         context,

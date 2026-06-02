@@ -58,6 +58,8 @@ describe('create-increment CLI e2e', () => {
     expect(output.createdFiles).toContain('spec.md');
     expect(output.createdFiles).toContain('plan.md');
     expect(output.createdFiles).toContain('tasks.md');
+    expect(output.createdFiles).toContain('reports/rubric.md');
+    expect(output.createdFiles).not.toContain('rubric.md');
 
     // Verify files actually exist on disk
     const incPath = path.join(incrementsPath, '0001-cli-test');
@@ -65,6 +67,8 @@ describe('create-increment CLI e2e', () => {
     expect(fs.existsSync(path.join(incPath, 'spec.md'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(true);
+    expect(fs.existsSync(path.join(incPath, 'rubric.md'))).toBe(false);
+    expect(fs.existsSync(path.join(incPath, 'reports', 'rubric.md'))).toBe(true);
 
     // Verify metadata content
     const metadata = JSON.parse(
