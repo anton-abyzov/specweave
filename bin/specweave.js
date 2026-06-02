@@ -377,6 +377,36 @@ program
     await createIncrementCommand(options);
   });
 
+// Handoff command - Assemble a portable cross-tool work-handoff doc + diff
+program
+  .command('handoff [incrementId]')
+  .description('Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool')
+  .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
+  .option('--summary <summary>', 'Short summary of where things stand')
+  .option('--next <next>', 'The exact next step for the resuming agent')
+  .option('--gotcha <gotcha>', 'A gotcha / warning for the next agent')
+  .option('--decision <decision>', 'A key decision (repeatable)', (val, acc) => { (acc || []).push(val); return acc || [val]; }, [])
+  .option('--inline', 'Embed the full scrubbed doc body in the paste-prompt (cross-machine resume)')
+  .option('--clipboard', 'Alias for --inline')
+  .option('--non-specweave', 'Force the .handoff/ fallback even inside a SpecWeave workspace')
+  .option('--out <path>', 'Override the doc output path')
+  .option('--json', 'Output the full result as JSON (for programmatic use)')
+  .action(async (incrementId, options) => {
+    const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
+    await handoffCommand({
+      incrementId,
+      reason: options.reason,
+      summary: options.summary,
+      next: options.next,
+      gotcha: options.gotcha,
+      decision: options.decision,
+      inline: options.inline || options.clipboard,
+      nonSpecweave: options.nonSpecweave,
+      out: options.out,
+      json: options.json,
+    });
+  });
+
 // Next ID command - Return the next available increment number
 program
   .command('next-id')
@@ -1405,6 +1435,19 @@ program
     process.exit(result.complete ? 0 : 1);
   });
 
+// Generate rubric command - emit the AC-tied quality contract rubric.md (0865)
+program
+  .command('generate-rubric <increment-id>')
+  .description('Generate or refresh the AC-tied rubric.md quality contract at the increment root')
+
+  .option('--refresh', 'Regenerate from current ACs, overwriting an existing non-template rubric')
+  .option('--silent', 'Minimal output')
+  .action(async (incrementId, options) => {
+    const { generateRubricCommand } = await import('../dist/src/cli/commands/generate-rubric.js');
+    const result = await generateRubricCommand(incrementId, options);
+    process.exit(result.success ? 0 : 1);
+  });
+
 // Reflect stop command - Extract learnings at session end (internal, called by stop hook)
 program
   .command('reflect-stop <transcript-path>')
@@ -1661,6 +1704,19 @@ hooksCmd
   .action(async () => {
     const { hooksLsCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
     await hooksLsCommand();
+  });
+
+// Context command - Show workspace project context for spec fields
+const contextCmd = program
+  .command('context')
+  .description('Show SpecWeave workspace context');
+
+contextCmd
+  .command('projects')
+  .description('List project and board values for spec.md')
+  .action(async () => {
+    const { getRequiredSpecFields } = await import('../dist/src/utils/structure-level-detector.js');
+    console.log(JSON.stringify(getRequiredSpecFields(process.cwd()), null, 2));
   });
 
 // Get command - Clone and register an existing repository into the workspace
