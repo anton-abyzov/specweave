@@ -4,12 +4,18 @@
  * Centralized PAT retrieval logic for Azure DevOps.
  * Supports organization-specific PATs via environment variables.
  *
- * PAT Resolution Priority:
+ * PAT Resolution Priority (0865 T-006 — unified with sync-health):
  * 1. Organization-specific: AZURE_DEVOPS_PAT_{ORG} (e.g., AZURE_DEVOPS_PAT_NOVA_SYSTEMS)
- * 2. Default: AZURE_DEVOPS_PAT
+ * 2. Canonical aliases (in order): AZURE_DEVOPS_PAT, AZURE_DEVOPS_TOKEN, ADO_PAT
+ *
+ * Both this runtime resolver and `cli/commands/sync-health` resolve through the
+ * single `resolveAdoPat` / `ADO_PAT_ALIASES` surface in credentials-manager, so
+ * health can never report green while runtime writes throw "PAT not found".
  *
  * @module integrations/ado/ado-pat-provider
  */
+
+import { ADO_PAT_ALIASES, resolveAdoPat } from '../../core/credentials/credentials-manager.js';
 
 /**
  * Get PAT for a specific ADO organization
@@ -26,25 +32,18 @@
  * const pat = getAdoPat('acme-corp');
  */
 export function getAdoPat(organization: string): string {
-  // SECURITY: Never log the PAT value itself
-
-  // Try organization-specific PAT first (e.g., AZURE_DEVOPS_PAT_NOVA_SYSTEMS)
-  const orgEnvKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
-  const orgPat = process.env[orgEnvKey];
-  if (orgPat) {
-    return orgPat;
-  }
-
-  // Fall back to default PAT
-  const defaultPat = process.env.AZURE_DEVOPS_PAT;
-  if (!defaultPat) {
+  // SECURITY: Never log the PAT value itself.
+  // Resolution (org override + canonical aliases) is owned by credentials-manager.
+  const pat = resolveAdoPat(organization);
+  if (!pat) {
+    const orgEnvKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
     throw new Error(
-      `Azure DevOps PAT not found. Set AZURE_DEVOPS_PAT in .env file ` +
-      `or ${orgEnvKey} for organization-specific PAT.`
+      `Azure DevOps PAT not found. Set one of ${ADO_PAT_ALIASES.join(', ')} in .env ` +
+      `or ${orgEnvKey} for an organization-specific PAT.`
     );
   }
 
-  return defaultPat;
+  return pat;
 }
 
 /**
@@ -54,14 +53,7 @@ export function getAdoPat(organization: string): string {
  * @returns true if a PAT is available (org-specific or default)
  */
 export function hasAdoPat(organization?: string): boolean {
-  if (organization) {
-    const orgEnvKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
-    if (process.env[orgEnvKey]) {
-      return true;
-    }
-  }
-
-  return !!process.env.AZURE_DEVOPS_PAT;
+  return !!resolveAdoPat(organization);
 }
 
 /**

@@ -1,8 +1,10 @@
 /**
  * SyncTargetResolver Unit Tests
  *
- * Tests the three-phase resolution logic for umbrella sync routing.
- * Routing is controlled by umbrella.enabled + **Project** field in specs.
+ * Tests the three-phase resolution logic for workspace sync routing.
+ * Routing is controlled by `config.workspace.repos[]` + the **Project** field
+ * in specs. (0865 T-005: migrated from the legacy `umbrella` shape to
+ * `workspace`; assertions are preserved verbatim to prove equivalence.)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -11,7 +13,7 @@ import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 
 function makeConfig(overrides: Partial<SpecWeaveConfig> = {}): SpecWeaveConfig {
   return {
-    version: '2.0',
+    version: '3.0',
     sync: {
       enabled: true,
       direction: 'bidirectional',
@@ -22,9 +24,9 @@ function makeConfig(overrides: Partial<SpecWeaveConfig> = {}): SpecWeaveConfig {
       jira: { projectKey: 'GLOB' },
       ado: { project: 'GlobalProject' },
     },
-    umbrella: {
-      enabled: true,
-      childRepos: [
+    workspace: {
+      name: 'workspace',
+      repos: [
         {
           id: 'vskill',
           path: 'repositories/anton-abyzov/vskill',
@@ -53,12 +55,12 @@ function makeConfig(overrides: Partial<SpecWeaveConfig> = {}): SpecWeaveConfig {
       ],
     },
     ...overrides,
-  };
+  } as SpecWeaveConfig;
 }
 
 describe('resolveSyncTarget', () => {
   describe('Phase 1: Name match', () => {
-    it('should resolve by name when project matches childRepos[].name', () => {
+    it('should resolve by id when project matches workspace.repos[].id', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('vskill', config);
 
@@ -68,7 +70,7 @@ describe('resolveSyncTarget', () => {
       expect(result.ado).toEqual({ project: 'VSkillProject' });
     });
 
-    it('should resolve by id when project matches childRepos[].id', () => {
+    it('should resolve by id when project matches another workspace repo', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('specweave', config);
 
@@ -76,7 +78,7 @@ describe('resolveSyncTarget', () => {
       expect(result.github).toEqual({ owner: 'anton-abyzov', repo: 'specweave' });
     });
 
-    it('should return partial sync config when child repo only has github', () => {
+    it('should return partial sync config when repo only has github', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('specweave', config);
 
@@ -98,7 +100,7 @@ describe('resolveSyncTarget', () => {
   });
 
   describe('Phase 3: Global fallback', () => {
-    it('should fall back to global config when no child repo matches', () => {
+    it('should fall back to global config when no repo matches', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('unknown-project', config);
 
@@ -108,34 +110,29 @@ describe('resolveSyncTarget', () => {
       expect(result.ado).toEqual({ project: 'GlobalProject' });
     });
 
-    it('should fall back to global when child repo has no sync config', () => {
+    it('should match by id but return undefined fields when repo has no sync config', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('no-sync-repo', config);
 
-      // Matches by name but has no sync config — should still return matched
+      // Matches by id but has no sync config — should still return matched
       // with undefined fields, which callers handle via their own fallback
       expect(result.source).toBe('child-repo-name');
       expect(result.github).toBeUndefined();
     });
   });
 
-  describe('Umbrella disabled (single-repo mode)', () => {
-    it('should always return global config when umbrella is not enabled', () => {
-      const config = makeConfig({
-        umbrella: undefined,
-      });
+  describe('Workspace absent (single-repo mode)', () => {
+    it('should always return global config when no workspace is configured', () => {
+      const config = makeConfig({ workspace: undefined });
       const result = resolveSyncTarget('vskill', config);
 
       expect(result.source).toBe('global');
       expect(result.github).toEqual({ owner: 'global-org', repo: 'global-repo' });
     });
 
-    it('should always return global config when umbrella.enabled is false', () => {
+    it('should always return global config when workspace has no repos', () => {
       const config = makeConfig({
-        umbrella: {
-          ...makeConfig().umbrella!,
-          enabled: false,
-        },
+        workspace: { name: 'workspace', repos: [] },
       });
       const result = resolveSyncTarget('vskill', config);
 
@@ -153,12 +150,9 @@ describe('resolveSyncTarget', () => {
       expect(result.github).toEqual({ owner: 'global-org', repo: 'global-repo' });
     });
 
-    it('should fall back to global when childRepos is empty', () => {
+    it('should fall back to global when repos is empty', () => {
       const config = makeConfig({
-        umbrella: {
-          enabled: true,
-          childRepos: [],
-        },
+        workspace: { name: 'workspace', repos: [] },
       });
       const result = resolveSyncTarget('vskill', config);
 

@@ -12,15 +12,14 @@ import type { SpecWeaveConfig } from '../../../../src/core/config/types.js';
 
 describe('Phase 1 resolver integration (T-005)', () => {
   const config = {
-    umbrella: {
-      enabled: true,
-      projectName: 'specweave-umb',
-      sync: {
+    workspace: {
+      name: 'specweave-umb',
+      rootRepo: {
         github: { owner: 'anton-abyzov', repo: 'specweave-umb' },
         jira: { projectKey: 'UMB' },
         ado: { organization: 'EasyChamp', project: 'Umbrella' },
       },
-      childRepos: [
+      repos: [
         {
           id: 'specweave',
           name: 'specweave',
@@ -69,7 +68,7 @@ describe('Phase 1 resolver integration (T-005)', () => {
     expect(result.jira).toEqual({ projectKey: 'VSK' });
   });
 
-  it('should resolve umbrella project to umbrella sync targets', () => {
+  it('should resolve workspace root project to rootRepo sync targets', () => {
     const result = resolveSyncTarget('specweave-umb', config);
 
     expect(result.source).toBe('child-repo-name');
