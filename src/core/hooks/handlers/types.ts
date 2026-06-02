@@ -65,12 +65,17 @@ export type HandlerFn = (
 /** Event types supported by the hook router */
 export type HookEventType =
   | 'user-prompt-submit'
-  | 'pre-tool-use';
+  | 'pre-tool-use'
+  | 'pre-compact'
+  | 'stop';
 
 /** Map of event types to their safe fallback responses */
 export const SAFE_DEFAULTS: Record<string, HookResult> = {
   'user-prompt-submit': { decision: 'approve' },
   'pre-tool-use': { continue: true },
+  // Compaction / turn-end must never be blocked by a handoff failure.
+  'pre-compact': { continue: true },
+  'stop': { continue: true },
 };
 
 /** Get safe default response for an event type */
