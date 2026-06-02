@@ -201,7 +201,7 @@ declare const _default: {
     ensureFileSync: typeof ensureFileSync;
     readFileSync: typeof readFileSync;
     writeFileSync: typeof writeFileSync;
-    statSync: import("node:fs").StatSyncFn;
+    statSync: typeof statSync;
     readdirSync: typeof readdirSync;
     unlinkSync: typeof unlinkSync;
     mkdirSync: typeof mkdirSync;
