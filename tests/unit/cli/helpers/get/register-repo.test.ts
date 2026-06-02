@@ -41,6 +41,54 @@ describe('registerRepo', () => {
       expect(result.registered).toBe(false);
       expect(mockPersistUmbrellaConfig).not.toHaveBeenCalled();
     });
+
+    it('returns alreadyRegistered=true when id already in workspace.repos', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({
+        workspace: {
+          name: 'workspace',
+          repos: [{ id: 'my-repo', path: 'repositories/org/my-repo', name: 'my-repo', prefix: 'MYR' }],
+        },
+      }));
+
+      const result = await registerRepo(projectRoot, 'org', 'my-repo', 'repositories/org/my-repo');
+
+      expect(result.alreadyRegistered).toBe(true);
+      expect(result.registered).toBe(false);
+      expect(mockPersistUmbrellaConfig).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('current workspace config', () => {
+    beforeEach(() => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({
+        version: '3.0',
+        workspace: { name: 'workspace', repos: [] },
+      }));
+    });
+
+    it('registers new repos under workspace.repos', async () => {
+      await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service', {
+        prefix: 'BE',
+        role: 'backend',
+        githubUrl: 'https://github.com/org/my-service',
+      });
+
+      expect(mockPersistUmbrellaConfig).not.toHaveBeenCalled();
+      const writeCall = mockFs.promises.writeFile.mock.calls[0];
+      const written = JSON.parse(writeCall[1]);
+      expect(written.workspace.repos).toEqual([
+        expect.objectContaining({
+          id: 'my-service',
+          path: 'repositories/org/my-service',
+          name: 'my-service',
+          prefix: 'BE',
+          role: 'backend',
+          sync: { github: { owner: 'org', repo: 'my-service' } },
+        }),
+      ]);
+    });
   });
 
   describe('successful registration', () => {

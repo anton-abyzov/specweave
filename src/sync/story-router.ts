@@ -6,7 +6,15 @@
  * Falls back to first repo (or custom default) when no match.
  */
 
-import type { ChildRepoConfig } from '../core/config/types.js';
+/**
+ * Minimal repo shape the prefix router needs: an `id` and an optional `prefix`.
+ * Both legacy `ChildRepoConfig` and the v3.0 `WorkspaceRepo` satisfy this, so
+ * routing is decoupled from the config source-of-truth (0865 T-005).
+ */
+export interface PrefixRoutableRepo {
+  id: string;
+  prefix?: string;
+}
 
 export interface StoryRoutingResult {
   /** Matched repo ID, or null if no repos available */
@@ -46,7 +54,7 @@ export function extractPrefix(storyId: string): string | null {
  */
 export function routeByPrefix(
   storyId: string,
-  childRepos: ChildRepoConfig[],
+  childRepos: PrefixRoutableRepo[],
   defaultRepoId?: string,
 ): StoryRoutingResult {
   if (childRepos.length === 0) {

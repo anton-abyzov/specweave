@@ -1,5 +1,9 @@
 /**
- * Handoff Context Generator
+ * Plugin-Install Handoff Context Generator
+ *
+ * NOTE: This is the legacy plugin-INSTALL handoff (renamed from
+ * `handoff-context.ts` in 0867 to free that name for the cross-tool work
+ * handoff). It is unrelated to `work-handoff.ts` / `handoff-doc-format.ts`.
  *
  * Generates context information for session handoff, enabling users
  * to continue their work in a new session after plugin installation.
@@ -11,7 +15,7 @@
  * - Available skills from those plugins
  * - Suggested continuation prompt
  *
- * @module core/session/handoff-context
+ * @module core/session/install-handoff-context
  */
 
 // ============================================================================

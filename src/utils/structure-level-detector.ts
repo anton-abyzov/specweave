@@ -35,7 +35,7 @@ export interface StructureLevelConfig {
   detectionReason: string;
 
   /** Source of configuration */
-  source: 'ado-area-path' | 'jira-board' | 'umbrella-teams' | 'multi-project' | 'single-project' | 'existing-folders';
+  source: 'ado-area-path' | 'jira-board' | 'workspace-repos' | 'umbrella-teams' | 'multi-project' | 'single-project' | 'existing-folders';
 }
 
 /**
@@ -122,6 +122,14 @@ interface ConfigSubset {
       name: string;
       team?: string;
       areaPath?: string;
+    }>;
+  };
+  workspace?: {
+    name?: string;
+    repos?: Array<{
+      id: string;
+      name?: string;
+      path?: string;
     }>;
   };
   multiProject?: {
@@ -283,7 +291,28 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
     }
   }
 
-  // Check 3: GitHub sync profiles (1-level structure)
+  // Check 3: Current workspace.repos schema (1-level structure)
+  if (config.workspace) {
+    const repos = config.workspace.repos ?? [];
+    const projects: ProjectInfo[] = repos.length > 0
+      ? repos.map(repo => ({
+          id: repo.id,
+          name: repo.name || repo.id,
+        }))
+      : [{
+          id: normalizeId(config.workspace.name || 'workspace'),
+          name: config.workspace.name || 'Workspace',
+        }];
+
+    return {
+      level: 1,
+      projects,
+      detectionReason: 'Workspace repos configured',
+      source: 'workspace-repos'
+    };
+  }
+
+  // Check 4: GitHub sync profiles (1-level structure)
   // For GitHub-based umbrellas, each sync profile = a project (no boards)
   // This takes precedence over umbrella team detection for GitHub
   if (config.sync?.profiles) {
@@ -307,7 +336,7 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
     }
   }
 
-  // Check 4: Umbrella with teams (2-level structure)
+  // Check 5: Umbrella with teams (2-level structure)
   // Only triggers for NON-GitHub setups (ADO/JIRA with team hierarchy)
   if (config.umbrella?.enabled && config.umbrella?.childRepos?.length) {
     const repos = config.umbrella.childRepos;
@@ -355,7 +384,7 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
     };
   }
 
-  // Check 4: multiProject.projects (1-level structure)
+  // Check 6: multiProject.projects (1-level structure)
   if (config.multiProject?.enabled && config.multiProject?.projects) {
     const projectEntries = Object.entries(config.multiProject.projects);
     if (projectEntries.length >= 1) {
@@ -373,7 +402,7 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
     }
   }
 
-  // Check 5: Existing folder structure
+  // Check 7: Existing folder structure
   if (fs.existsSync(specsPath)) {
     try {
       const entries = fs.readdirSync(specsPath, { withFileTypes: true });

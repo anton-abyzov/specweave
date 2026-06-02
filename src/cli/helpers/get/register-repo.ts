@@ -32,12 +32,14 @@ export async function registerRepo(
   options: RegisterOptions = {},
 ): Promise<RegisterResult> {
   const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  let config: Record<string, any> | undefined;
 
   // Check for existing entry
   if (fs.existsSync(configPath)) {
     try {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      const existing = config.umbrella?.childRepos?.find((r: any) => r.id === repoName);
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      const existing = config?.workspace?.repos?.find((r: any) => r.id === repoName)
+        || config?.umbrella?.childRepos?.find((r: any) => r.id === repoName);
       if (existing) {
         return { registered: false, alreadyRegistered: true };
       }
@@ -49,6 +51,32 @@ export async function registerRepo(
   const prefix = options.prefix || repoName.substring(0, 3).toUpperCase();
   // Normalize path separators to forward slashes for config.json
   const normalizedPath = repoPath.replace(/\\/g, '/');
+
+  if (config?.workspace) {
+    const repoEntry: Record<string, any> = {
+      id: repoName,
+      path: normalizedPath,
+      name: repoName,
+      prefix,
+    };
+    if (options.role) repoEntry.role = options.role;
+    if (owner) {
+      repoEntry.sync = {
+        github: { owner, repo: repoName },
+      };
+    }
+
+    const nextConfig = {
+      ...config,
+      workspace: {
+        ...config.workspace,
+        repos: [...(config.workspace.repos ?? []), repoEntry],
+      },
+    };
+
+    await fs.promises.writeFile(configPath, JSON.stringify(nextConfig, null, 2));
+    return { registered: true, alreadyRegistered: false };
+  }
 
   // Base registration via persistUmbrellaConfig (handles dedup-safe merge).
   // persistUmbrellaConfig uses a minimal ChildRepoConfig without prefix/role/githubUrl;

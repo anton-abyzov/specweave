@@ -40,6 +40,11 @@ const umbrellaConfig = JSON.stringify({
   umbrella: { enabled: true, childRepos: [] },
 });
 
+const workspaceConfig = JSON.stringify({
+  version: '3.0',
+  workspace: { name: 'workspace', repos: [] },
+});
+
 const nonUmbrellaConfig = JSON.stringify({
   umbrella: { enabled: false },
 });
@@ -78,6 +83,46 @@ describe('getCommand', () => {
       await getCommand('org/repo', { init: false });
 
       expect(mockExecFileNoThrow).not.toHaveBeenCalledWith('specweave', expect.anything(), expect.anything());
+    });
+  });
+
+  describe('workspace config flow', () => {
+    beforeEach(() => {
+      mockFs.readFileSync.mockReturnValue(workspaceConfig);
+    });
+
+    it('clones to repositories/org/repo/, registers, and inits', async () => {
+      await getCommand('org/repo');
+
+      expect(mockCloneRepo).toHaveBeenCalledWith(
+        expect.objectContaining({ owner: 'org', repo: 'repo' }),
+        expect.stringContaining(path.join('repositories', 'org', 'repo')),
+        expect.any(Object)
+      );
+      expect(mockRegisterRepo).toHaveBeenCalled();
+      expect(mockExecFileNoThrow).toHaveBeenCalledWith('specweave', ['init', '.'], expect.any(Object));
+    });
+
+    it('registers local repos when workspace config is current schema', async () => {
+      const localPath = path.join(projectRoot, 'repositories', 'org', 'my-service');
+      mockFs.existsSync.mockImplementation((p: string) => {
+        if (p === configPath) return true;
+        if (p === localPath) return true;
+        if (p === path.join(localPath, '.git')) return true;
+        return false;
+      });
+      mockDetectRepository.mockResolvedValue({ owner: 'org', repo: 'my-service' });
+
+      await getCommand(localPath, { init: false });
+
+      expect(mockCloneRepo).not.toHaveBeenCalled();
+      expect(mockRegisterRepo).toHaveBeenCalledWith(
+        projectRoot,
+        'org',
+        'my-service',
+        path.normalize('repositories/org/my-service'),
+        expect.objectContaining({ prefix: undefined, role: undefined }),
+      );
     });
   });
 

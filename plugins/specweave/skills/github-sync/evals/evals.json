@@ -5,7 +5,7 @@
       "id": 1,
       "name": "initial-github-sync-setup",
       "prompt": "I just started using SpecWeave on my project at github.com/myorg/backend-api. I want to sync my specs to GitHub Projects so my team can track progress. How do I set up the GitHub integration? I need two-way sync.",
-      "expected_output": "Should guide through GitHub CLI authentication (gh auth login), explain the config.json setup for specweave-github plugin with repo, autoSyncSpecs, syncDirection settings, explain that specs (not increments) are synced to GitHub Projects, and mention the sw-github:sync-spec command for manual sync.",
+      "expected_output": "Should guide through GitHub CLI authentication (gh auth login), explain the config.json setup for the specweave-github plugin with repo and sync settings, and mention the live sw-github:push / sw-github:pull / sw-github:sync commands for manual sync.",
       "files": [],
       "assertions": [
         {
@@ -30,7 +30,7 @@
         },
         {
           "id": "sync-command",
-          "text": "References the sw-github:sync-spec command for triggering manual sync operations",
+          "text": "References a live sw-github:* command (sw-github:push, sw-github:pull, or sw-github:sync) for triggering manual sync operations",
           "type": "boolean"
         }
       ]
@@ -38,7 +38,7 @@
     {
       "id": 2,
       "name": "sync-troubleshooting-permissions",
-      "prompt": "My GitHub sync keeps failing with a 403 error when I run sw-github:sync-spec spec-003. I'm getting 'insufficient permissions' errors. I set up the token but something is wrong. How do I fix this?",
+      "prompt": "My GitHub sync keeps failing with a 403 error when I run sw-github:push for increment 0003. I'm getting 'insufficient permissions' errors. I set up the token but something is wrong. How do I fix this?",
       "expected_output": "Should diagnose GitHub permissions issues: check gh auth status, verify token scopes (needs repo and project access), check repository write access, suggest re-authenticating with correct scopes, and mention rate limit checking with gh api rate_limit.",
       "files": [],
       "assertions": [
