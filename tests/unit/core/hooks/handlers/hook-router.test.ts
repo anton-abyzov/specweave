@@ -76,13 +76,18 @@ describe('hooks/handlers/hook-router', () => {
       expect(result).toHaveProperty('continue', true);
     });
 
-    it('returns approve for stop hooks when no project', async () => {
+    it('returns continue for stop hooks when no project', async () => {
       const { hookRouter } = await import(
         '../../../../../src/core/hooks/handlers/hook-router.js'
       );
 
+      // Stop hooks use the schema-valid { continue: true } pass-through.
+      // decision='approve' is not a valid Stop output — the hook contract was
+      // migrated off decision=allow/approve to continue in 112a102c2. 'stop-reflect'
+      // has no dedicated handler, so it falls through to the safe default.
       const result = await hookRouter('stop-reflect', '{}');
-      expect(result).toHaveProperty('decision', 'approve');
+      expect(result).toHaveProperty('continue', true);
+      expect(result.decision).toBeUndefined();
     });
 
     it('never throws even on internal error', async () => {
