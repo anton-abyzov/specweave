@@ -1,3 +1,7 @@
+## [1.0.587] - 2026-06-02
+
+- Patch release
+
 ## [1.0.586] - 2026-05-25
 
 ### CLI install and workspace migration audit
