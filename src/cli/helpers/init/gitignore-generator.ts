@@ -423,6 +423,9 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.claude-plugin/',
     'plugins/',
     'vskill.lock',
+    '# Work handoff (secret-scrubbed, never auto-committed)',
+    '.handoff/',
+    '.specweave/state/handoff-latest.*',
   ],
 };
 

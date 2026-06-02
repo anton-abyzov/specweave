@@ -12,6 +12,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { AnalyticsEvent } from './types.js';
+import { maskCredentialsInData } from '../../utils/credential-masker.js';
 
 export interface WriteResult {
   written: number;
@@ -36,10 +37,11 @@ export function appendAnalyticsEvent(
   event: AnalyticsEvent,
 ): WriteResult {
   try {
+    const safeEvent = maskCredentialsInData(event) as AnalyticsEvent;
     fs.mkdirSync(analyticsDir, { recursive: true });
     fs.appendFileSync(
       path.join(analyticsDir, 'events.jsonl'),
-      JSON.stringify(event) + '\n',
+      JSON.stringify(safeEvent) + '\n',
     );
     return { written: 1 };
   } catch {

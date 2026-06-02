@@ -18,12 +18,12 @@ import { resolveSyncTarget } from '../../../src/sync/sync-target-resolver.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 
 /**
- * Config that mirrors the real specweave-umb umbrella config.
- * Three child repos, all with GitHub + JIRA + ADO sync targets.
+ * Config that mirrors the real specweave-umb workspace config.
+ * Three repos, all with GitHub + JIRA + ADO sync targets.
  */
-function makeFullUmbrellaConfig(): SpecWeaveConfig {
+function makeFullWorkspaceConfig(): SpecWeaveConfig {
   return {
-    version: '2.0',
+    version: '3.0',
     sync: {
       enabled: true,
       direction: 'bidirectional',
@@ -34,15 +34,14 @@ function makeFullUmbrellaConfig(): SpecWeaveConfig {
       jira: { enabled: true, projectKey: 'SWE2E' },
       ado: { enabled: true, organization: 'EasyChamp', project: 'SpecWeaveSync' },
     },
-    umbrella: {
-      enabled: true,
-      projectName: 'specweave-umb',
-      sync: {
+    workspace: {
+      name: 'specweave-umb',
+      rootRepo: {
         github: { owner: 'anton-abyzov', repo: 'specweave-umb' },
         jira: { projectKey: 'SWE2E' },
         ado: { organization: 'EasyChamp', project: 'SpecWeaveSync' },
       },
-      childRepos: [
+      repos: [
         {
           id: 'specweave',
           name: 'specweave',
@@ -84,7 +83,7 @@ function makeFullUmbrellaConfig(): SpecWeaveConfig {
 describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () => {
   describe('Scenario 1: Internal routing — each child repo gets correct targets', () => {
     it('specweave repo: GitHub → specweave, JIRA → WTTC, ADO → SpecWeaveSync', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('specweave', config);
 
       expect(result.source).toBe('child-repo-name');
@@ -94,7 +93,7 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
     });
 
     it('vskill repo: GitHub → vskill, JIRA → SWE2E, ADO → VSkillSync', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('vskill', config);
 
       expect(result.source).toBe('child-repo-name');
@@ -104,7 +103,7 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
     });
 
     it('vskill-platform repo: GitHub → vskill-platform, JIRA → SWE2E, ADO → VSkillPlatformSync', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('vskill-platform', config);
 
       expect(result.source).toBe('child-repo-name');
@@ -116,7 +115,7 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
 
   describe('Scenario 2: External routing — all three platforms resolve from single call', () => {
     it('single resolveSyncTarget call returns GitHub + JIRA + ADO for child repo', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('vskill', config);
 
       // All three platforms resolved
@@ -132,26 +131,26 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
     });
 
     it('ADO organization is preserved in resolution', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('vskill', config);
 
       expect(result.ado!.organization).toBe('EasyChamp');
     });
   });
 
-  describe('Scenario 3: Umbrella project match — work targeting the umbrella itself', () => {
-    it('project=specweave-umb routes to umbrella sync targets', () => {
-      const config = makeFullUmbrellaConfig();
+  describe('Scenario 3: Workspace root match — work targeting the umbrella itself', () => {
+    it('project=specweave-umb routes to rootRepo sync targets', () => {
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('specweave-umb', config);
 
-      expect(result.source).toBe('child-repo-name'); // umbrella treated as named project
+      expect(result.source).toBe('child-repo-name'); // workspace root treated as named project
       expect(result.github).toEqual({ owner: 'anton-abyzov', repo: 'specweave-umb' });
       expect(result.jira).toEqual({ projectKey: 'SWE2E' });
       expect(result.ado).toEqual({ organization: 'EasyChamp', project: 'SpecWeaveSync' });
     });
 
-    it('umbrella match is case-insensitive', () => {
-      const config = makeFullUmbrellaConfig();
+    it('workspace root match is case-insensitive', () => {
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('Specweave-Umb', config);
 
       expect(result.source).toBe('child-repo-name');
@@ -161,7 +160,7 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
 
   describe('Scenario 4: Fallback — unknown project falls back to global', () => {
     it('unknown project name returns global targets', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget('unknown-project', config);
 
       expect(result.source).toBe('global');
@@ -171,15 +170,15 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
     });
 
     it('undefined project name returns global targets', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       const result = resolveSyncTarget(undefined, config);
 
       expect(result.source).toBe('global');
     });
 
-    it('umbrella.enabled=false always returns global regardless of project name', () => {
-      const config = makeFullUmbrellaConfig();
-      config.umbrella!.enabled = false;
+    it('no workspace always returns global regardless of project name', () => {
+      const config = makeFullWorkspaceConfig();
+      delete config.workspace;
       const result = resolveSyncTarget('vskill', config);
 
       expect(result.source).toBe('global');
@@ -191,9 +190,9 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
 
   describe('Scenario 5: Partial config — child repo with only some platforms', () => {
     it('child repo with only GitHub returns undefined for JIRA and ADO', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
       // Strip JIRA and ADO from vskill
-      config.umbrella!.childRepos[1].sync = {
+      config.workspace!.repos[1].sync = {
         github: { owner: 'anton-abyzov', repo: 'vskill' },
       };
 
@@ -206,8 +205,8 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
     });
 
     it('caller falls back to global for missing platform', () => {
-      const config = makeFullUmbrellaConfig();
-      config.umbrella!.childRepos[1].sync = {
+      const config = makeFullWorkspaceConfig();
+      config.workspace!.repos[1].sync = {
         github: { owner: 'anton-abyzov', repo: 'vskill' },
       };
 
@@ -224,8 +223,8 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
     });
 
     it('child repo with no sync config at all returns all undefined', () => {
-      const config = makeFullUmbrellaConfig();
-      delete config.umbrella!.childRepos[1].sync;
+      const config = makeFullWorkspaceConfig();
+      delete config.workspace!.repos[1].sync;
 
       const result = resolveSyncTarget('vskill', config);
 
@@ -238,7 +237,7 @@ describe('E2E: Umbrella Routing — All Three Platforms (GitHub/JIRA/ADO)', () =
 
   describe('Scenario 6: Cross-cutting increment — multiple projects in one increment', () => {
     it('different user stories resolve to different child repos', () => {
-      const config = makeFullUmbrellaConfig();
+      const config = makeFullWorkspaceConfig();
 
       // Simulates a cross-cutting increment where:
       // US-FE-001 targets vskill-platform (frontend)

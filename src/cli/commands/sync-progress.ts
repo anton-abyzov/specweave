@@ -283,11 +283,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       if (existsSync(specPath)) {
         try {
           const cachedSpecContent = await fs.readFile(specPath, 'utf-8');
-          const fmMatch = cachedSpecContent.match(/^---\n([\s\S]*?)\n---/);
-          if (fmMatch) {
-            const parsed = yaml.parse(fmMatch[1]);
-            projectName = parsed?.project;
-          }
+          projectName = extractPrimaryProjectFromSpecContent(cachedSpecContent);
           // Pre-parse user story IDs for Step 5b
           cachedAllUSIds = parseAllUserStoryIds(cachedSpecContent);
         } catch {
@@ -442,13 +438,36 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
                 projectKey: distributedJiraProjectKey || config.jira?.projectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
               } : undefined;
 
-              const resolvedAdo = config.ado || config.sync?.ado;
-              const adoPat = envVars.AZURE_DEVOPS_PAT || process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT || '';
-              const adoOrg = envVars.AZURE_DEVOPS_ORG || process.env.AZURE_DEVOPS_ORG || resolvedAdo?.organization || '';
-              const adoProject = distributedAdoProject || envVars.AZURE_DEVOPS_PROJECT || process.env.AZURE_DEVOPS_PROJECT || resolvedAdo?.project || '';
-              const effectiveAdo = (adoConfigured && resolvedAdo)
+              const resolvedAdo = config.ado || config.sync?.ado || {};
+              const adoPat = envVars.AZURE_DEVOPS_PAT
+                || envVars.AZURE_DEVOPS_TOKEN
+                || envVars.ADO_PAT
+                || process.env.AZURE_DEVOPS_PAT
+                || process.env.AZURE_DEVOPS_TOKEN
+                || process.env.ADO_PAT
+                || '';
+              const issueTrackerConfig = config.issueTracker as any;
+              const adoOrg = issueTrackerConfig?.organization_ado
+                || issueTrackerConfig?.organization
+                || resolvedAdo?.organization
+                || envVars.AZURE_DEVOPS_ORG
+                || envVars.ADO_ORGANIZATION
+                || envVars.ADO_ORG
+                || process.env.AZURE_DEVOPS_ORG
+                || process.env.ADO_ORGANIZATION
+                || process.env.ADO_ORG
+                || '';
+              const adoProject = distributedAdoProject
+                || issueTrackerConfig?.project
+                || resolvedAdo?.project
+                || envVars.AZURE_DEVOPS_PROJECT
+                || envVars.ADO_PROJECT
+                || process.env.AZURE_DEVOPS_PROJECT
+                || process.env.ADO_PROJECT
+                || '';
+              const effectiveAdo = adoConfigured
                 ? { ...resolvedAdo, organization: adoOrg, project: adoProject, pat: adoPat }
-                : resolvedAdo;
+                : undefined;
 
               const acSyncConfig: ACProgressSyncConfig = {
                 sync: {
@@ -713,7 +732,27 @@ function isProviderConfigured(config: any, provider: string, aliases: string[] =
     return true;
   }
 
+  // Check workspace root and per-repo sync targets. Per-repo sync targets are
+  // valid even when the workspace root has no global provider configured.
+  // (0865 T-005: read config.workspace, not the migrated-away config.umbrella.)
+  if (hasProviderSyncTarget(config.workspace?.rootRepo, provider)) {
+    return true;
+  }
+  for (const repo of config.workspace?.repos ?? []) {
+    if (hasProviderSyncTarget(repo.sync, provider)) {
+      return true;
+    }
+  }
+
   return false;
+}
+
+function hasProviderSyncTarget(sync: any, provider: string): boolean {
+  if (!sync) return false;
+  if (provider === 'github') return Boolean(sync.github);
+  if (provider === 'jira') return Boolean(sync.jira);
+  if (provider === 'ado') return Boolean(sync.ado);
+  return Boolean(sync[provider]);
 }
 
 function isGitHubConfigured(config: any): boolean {
@@ -726,6 +765,21 @@ function isJiraConfigured(config: any): boolean {
 
 function isAdoConfigured(config: any): boolean {
   return isProviderConfigured(config, 'ado', ['azure-devops']);
+}
+
+function extractPrimaryProjectFromSpecContent(content: string): string | undefined {
+  const projectFieldMatch = content.match(/\*\*Project\*\*:\s*(\S+)/i);
+  if (projectFieldMatch?.[1]) {
+    return projectFieldMatch[1];
+  }
+
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (fmMatch) {
+    const parsed = yaml.parse(fmMatch[1]);
+    if (typeof parsed?.project === 'string' && parsed.project.trim()) {
+      return parsed.project.trim();
+    }
+  }
 }
 
 /**

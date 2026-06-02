@@ -14,6 +14,7 @@ import {
   DEFAULT_ANALYTICS_CONFIG,
   parseAnalyticsEvent,
 } from './types.js';
+import { maskCredentials, maskCredentialsInData } from '../../utils/credential-masker.js';
 
 /**
  * Singleton analytics collector for tracking SpecWeave usage
@@ -158,7 +159,7 @@ export class AnalyticsCollector {
       timestamp: new Date().toISOString(),
     };
 
-    this.appendEvent(fullEvent);
+    this.appendEvent(sanitizeAnalyticsEvent(fullEvent));
     this.checkRotation();
   }
 
@@ -323,6 +324,14 @@ export class AnalyticsCollector {
   enable(): void {
     this.config.enabled = true;
   }
+}
+
+function sanitizeAnalyticsEvent(event: AnalyticsEvent): AnalyticsEvent {
+  return {
+    ...event,
+    error: event.error ? maskCredentials(event.error) : event.error,
+    metadata: event.metadata ? maskCredentialsInData(event.metadata) : event.metadata,
+  };
 }
 
 /**

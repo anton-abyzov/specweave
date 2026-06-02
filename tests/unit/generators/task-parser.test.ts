@@ -330,4 +330,93 @@ describe('Task Parser - E Suffix Support (T-029)', () => {
       expect(tasks['US-456E'][0].id).toBe('T-456E');
     });
   });
+
+  describe('0867: same-line combined fields (regression for status drop)', () => {
+    it('parses userStory + satisfiesACs + status from ONE combined line', () => {
+      // The canonical format combines all three fields on one line separated
+      // by `|`. Previously only userStory was parsed (the rest were dropped),
+      // so every such task read as `pending`.
+      const tasksContent = `
+# Tasks
+
+### T-001: Combined-line task
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-02 | **Status**: [x] completed
+
+### T-002: Another combined-line task
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [ ] pending
+`;
+      fs.writeFileSync(tasksPath, tasksContent, 'utf-8');
+      const tasks = parseTasksWithUSLinks(tasksPath);
+
+      const us1 = tasks['US-001'];
+      expect(us1).toHaveLength(2);
+
+      const t1 = us1.find(t => t.id === 'T-001')!;
+      expect(t1.userStory).toBe('US-001');
+      expect(t1.satisfiesACs).toEqual(['AC-US1-01', 'AC-US1-02']);
+      expect(t1.status).toBe('completed'); // ← was 'pending' before the fix
+
+      const t2 = us1.find(t => t.id === 'T-002')!;
+      expect(t2.satisfiesACs).toEqual(['AC-US1-03']);
+      expect(t2.status).toBe('pending');
+    });
+
+    it('still parses the multi-line format (each field on its own line)', () => {
+      const tasksContent = `
+# Tasks
+
+### T-005: Multi-line task
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01
+**Status**: [x] completed
+**Priority**: P1
+`;
+      fs.writeFileSync(tasksPath, tasksContent, 'utf-8');
+      const tasks = parseTasksWithUSLinks(tasksPath);
+
+      const t = tasks['US-002'][0];
+      expect(t.id).toBe('T-005');
+      expect(t.userStory).toBe('US-002');
+      expect(t.satisfiesACs).toEqual(['AC-US2-01']);
+      expect(t.status).toBe('completed');
+      expect(t.priority).toBe('P1');
+    });
+
+    it('combined line with Priority does not swallow the next segment into the value', () => {
+      const tasksContent = `
+# Tasks
+
+### T-009: Priority then status
+**User Story**: US-003 | **Priority**: P0 | **Status**: [x] completed
+`;
+      fs.writeFileSync(tasksPath, tasksContent, 'utf-8');
+      const tasks = parseTasksWithUSLinks(tasksPath);
+
+      const t = tasks['US-003'][0];
+      expect(t.priority).toBe('P0');         // not "P0 | **Status**: ..."
+      expect(t.status).toBe('completed');
+    });
+
+    it('parses a bare-checkbox status with NO trailing word (F-004 regression)', () => {
+      // The checkbox is the source of truth: `**Status**: [x]` (no "completed"
+      // word) must still read as completed, and `[ ]` as pending. Previously
+      // the mandatory trailing-word regex dropped these to pending.
+      const tasksContent = `
+# Tasks
+
+### T-010: Bare-checkbox done
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-01 | **Status**: [x]
+
+### T-011: Bare-checkbox pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-02 | **Status**: [ ]
+`;
+      fs.writeFileSync(tasksPath, tasksContent, 'utf-8');
+      const tasks = parseTasksWithUSLinks(tasksPath);
+
+      const t10 = tasks['US-004'].find(t => t.id === 'T-010')!;
+      expect(t10.status).toBe('completed'); // ← was 'pending' before the fix
+      const t11 = tasks['US-004'].find(t => t.id === 'T-011')!;
+      expect(t11.status).toBe('pending');
+    });
+  });
 });

@@ -229,7 +229,14 @@ export class IncrementCompletionValidator {
         const merged = await mergeRubricLayers(projectRoot, incrementId, incrementPath);
 
         if (merged) {
-          const evaluated = await evaluateRubric(merged, reportsDir);
+          // Run `command`-evaluator probes from the project root so repo-wide
+          // grep/test invariants resolve. projectRoot also enables refinement
+          // signal attribution for failed criteria.
+          const evaluated = await evaluateRubric(merged, reportsDir, {
+            projectRoot,
+            incrementId,
+            commandCwd: projectRoot,
+          });
           const summary = summarizeResults(evaluated);
 
           // Report non-passing blocking criteria with distinct messages per status

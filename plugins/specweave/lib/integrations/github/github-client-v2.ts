@@ -9,6 +9,7 @@
  */
 
 import { execFileNoThrow } from '../../vendor/utils/execFileNoThrow.js';
+import { explainGitHubAccessError, resolveGitHubAccessFacts } from './github-access-error.js';
 import { GitHubIssue, GitHubMilestone, GitHubExternalChange } from './types';
 import { SyncProfile, GitHubConfig, TimeRangePreset } from '../../../../../src/core/types/sync-profile';
 import { checkAndDecrement } from '../../../../../src/sync/github-rate-limit-budget.js';
@@ -56,6 +57,29 @@ export class GitHubClientV2 {
     return this.token
       ? { ...process.env, GH_TOKEN: this.token }
       : process.env;
+  }
+
+  /**
+   * Turn a failed `gh` create result into a clear error.
+   *
+   * When the failure looks like an auth/access problem (notably a 404 masking a
+   * wrong-account token in .env), resolve the token's account + write access and
+   * explain exactly what to fix; otherwise fall back to the raw gh error.
+   */
+  private async buildCreateError(action: string, rawError: string): Promise<Error> {
+    try {
+      const facts = await resolveGitHubAccessFacts(
+        execFileNoThrow,
+        this.getGhEnv(),
+        this.owner,
+        this.repo,
+      );
+      const explained = explainGitHubAccessError(rawError, { ...facts, owner: this.owner, repo: this.repo });
+      if (explained) return new Error(`Failed to ${action}: ${explained}`);
+    } catch {
+      /* fall through to the raw error */
+    }
+    return new Error(`Failed to ${action}: ${rawError}`);
   }
 
   /**
@@ -221,7 +245,7 @@ export class GitHubClientV2 {
     const result = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
+      throw await this.buildCreateError('create milestone', result.stderr || result.stdout);
     }
 
     return JSON.parse(result.stdout);
@@ -435,9 +459,7 @@ export class GitHubClientV2 {
     const createResult = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (createResult.exitCode !== 0) {
-      throw new Error(
-        `Failed to create epic issue: ${createResult.stderr || createResult.stdout}`
-      );
+      throw await this.buildCreateError('create issue', createResult.stderr || createResult.stdout);
     }
 
     const issueUrl = createResult.stdout.trim();

@@ -100,13 +100,27 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
 
     // Regex patterns for task parsing (T-029: Support E suffix for external IDs)
     // Updated: Support 3+ digits for T-XXX and US-XXX (Y2K fix)
+    //
+    // 0867: These field regexes are NOT `^`-anchored. The canonical task format
+    // combines several fields on ONE line separated by `|`:
+    //   **User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [x] completed
+    // The line is split on `|` and each segment matched independently (see
+    // below). Previously these were `^`-anchored and the userStory match
+    // early-`continue`d, silently dropping same-line `Satisfies ACs`/`Status` —
+    // making every combined-format task read as `pending` (whole-codebase bug).
+    // The multi-line format (each `**Field**:` on its own line) still parses
+    // because each line is a single segment.
     const taskHeaderRegex = /^###\s+(T-\d{3,}E?):\s*(.+)$/;
-    const userStoryRegex = /^\*\*User Story\*\*:\s*(US-\d{3,}E?)/;
-    const satisfiesACsRegex = /^\*\*Satisfies ACs\*\*:\s*(AC-US\d+E?-\d{2}(?:,\s*AC-US\d+E?-\d{2})*)/;
-    const statusRegex = /^\*\*Status\*\*:\s*\[([x ])\]\s*(\w+)/;
-    const priorityRegex = /^\*\*Priority\*\*:\s*(.+)/;
-    const estimatedEffortRegex = /^\*\*Estimated Effort\*\*:\s*(.+)/;
-    const dependenciesRegex = /^\*\*Dependencies\*\*:\s*(.+)/;
+    const userStoryRegex = /\*\*User Story\*\*:\s*(US-\d{3,}E?)/;
+    const satisfiesACsRegex = /\*\*Satisfies ACs\*\*:\s*(AC-US\d+E?-\d{2}(?:,\s*AC-US\d+E?-\d{2})*)/;
+    // Trailing status word is OPTIONAL: a checkbox-only `**Status**: [x]` is a
+    // valid completed task. The checkbox is the source of truth (see
+    // parseTaskStatus), so requiring `(\w+)` here would silently under-report a
+    // bare-checkbox task as pending — the same drop-class T-019 fixed.
+    const statusRegex = /\*\*Status\*\*:\s*\[([x ])\]\s*(\w+)?/;
+    const priorityRegex = /\*\*Priority\*\*:\s*([^|]+)/;
+    const estimatedEffortRegex = /\*\*Estimated Effort\*\*:\s*([^|]+)/;
+    const dependenciesRegex = /\*\*Dependencies\*\*:\s*([^|]+)/;
 
     let currentTask: Task | null = null;
     let currentDescription: string[] = [];
@@ -139,11 +153,17 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
       // Skip if no current task
       if (!currentTask) continue;
 
-      // Parse task fields
+      // Parse task fields. A single line may carry MULTIPLE `**Field**:`
+      // segments separated by `|`, so we extract EVERY recognized field from
+      // the line instead of early-`continue`ing after the first match. The
+      // regexes are unanchored (above), and value-capturing fields stop at `|`
+      // so a later segment's value isn't swallowed.
+      let matchedAnyField = false;
+
       const userStoryMatch = line.match(userStoryRegex);
       if (userStoryMatch) {
         currentTask.userStory = userStoryMatch[1];
-        continue;
+        matchedAnyField = true;
       }
 
       const satisfiesACsMatch = line.match(satisfiesACsRegex);
@@ -152,28 +172,29 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
         currentTask.satisfiesACs = satisfiesACsMatch[1]
           .split(',')
           .map(ac => ac.trim());
-        continue;
+        matchedAnyField = true;
       }
 
       const statusMatch = line.match(statusRegex);
       if (statusMatch) {
         const checkbox = statusMatch[1];
-        const statusText = statusMatch[2].toLowerCase();
+        // statusMatch[2] is optional (bare `[x]` has no trailing word).
+        const statusText = (statusMatch[2] ?? '').toLowerCase();
 
         currentTask.status = parseTaskStatus(checkbox, statusText);
-        continue;
+        matchedAnyField = true;
       }
 
       const priorityMatch = line.match(priorityRegex);
       if (priorityMatch) {
-        currentTask.priority = priorityMatch[1];
-        continue;
+        currentTask.priority = priorityMatch[1].trim();
+        matchedAnyField = true;
       }
 
       const estimatedEffortMatch = line.match(estimatedEffortRegex);
       if (estimatedEffortMatch) {
-        currentTask.estimatedEffort = estimatedEffortMatch[1];
-        continue;
+        currentTask.estimatedEffort = estimatedEffortMatch[1].trim();
+        matchedAnyField = true;
       }
 
       const dependenciesMatch = line.match(dependenciesRegex);
@@ -183,8 +204,10 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
           .split(',')
           .map(dep => dep.trim())
           .filter(dep => dep.match(/^T-\d{3,}$/));
-        continue;
+        matchedAnyField = true;
       }
+
+      if (matchedAnyField) continue;
 
       // Track sections for description parsing
       if (line.startsWith('**Description**:')) {

@@ -1,4 +1,5 @@
 import { execFileNoThrow } from "../../vendor/utils/execFileNoThrow.js";
+import { explainGitHubAccessError, resolveGitHubAccessFacts } from "./github-access-error.js";
 import { checkAndDecrement } from "../../../../../src/sync/github-rate-limit-budget.js";
 import { findProjectRoot } from "../../../../../src/utils/find-project-root.js";
 const _GitHubClientV2 = class _GitHubClientV2 {
@@ -28,6 +29,27 @@ const _GitHubClientV2 = class _GitHubClientV2 {
    */
   getGhEnv() {
     return this.token ? { ...process.env, GH_TOKEN: this.token } : process.env;
+  }
+  /**
+   * Turn a failed `gh` create result into a clear error.
+   *
+   * When the failure looks like an auth/access problem (notably a 404 masking a
+   * wrong-account token in .env), resolve the token's account + write access and
+   * explain exactly what to fix; otherwise fall back to the raw gh error.
+   */
+  async buildCreateError(action, rawError) {
+    try {
+      const facts = await resolveGitHubAccessFacts(
+        execFileNoThrow,
+        this.getGhEnv(),
+        this.owner,
+        this.repo
+      );
+      const explained = explainGitHubAccessError(rawError, { ...facts, owner: this.owner, repo: this.repo });
+      if (explained) return new Error(`Failed to ${action}: ${explained}`);
+    } catch {
+    }
+    return new Error(`Failed to ${action}: ${rawError}`);
   }
   /**
    * Set the project root for rate-limit budget tracking.
@@ -153,7 +175,7 @@ const _GitHubClientV2 = class _GitHubClientV2 {
     }
     const result = await this.execWithBudget("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
-      throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
+      throw await this.buildCreateError("create milestone", result.stderr || result.stdout);
     }
     return JSON.parse(result.stdout);
   }
@@ -324,9 +346,7 @@ FIX:
     }
     const createResult = await this.execWithBudget("gh", args, { env: this.getGhEnv() });
     if (createResult.exitCode !== 0) {
-      throw new Error(
-        `Failed to create epic issue: ${createResult.stderr || createResult.stdout}`
-      );
+      throw await this.buildCreateError("create issue", createResult.stderr || createResult.stdout);
     }
     const issueUrl = createResult.stdout.trim();
     const issueNumber = parseInt(issueUrl.split("/").pop() || "0", 10);

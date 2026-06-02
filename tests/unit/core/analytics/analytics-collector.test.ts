@@ -75,6 +75,22 @@ describe('AnalyticsCollector', () => {
       expect(event.error).toBe('Validation failed');
     });
 
+    it('should mask credentials in command errors and args', () => {
+      const collector = AnalyticsCollector.getInstance(testDir);
+      collector.trackCommand('sw:sync', {
+        success: false,
+        error: 'Authorization: Basic dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=',
+        args: ['--token=ghp_1234567890abcdefghij'],
+      });
+
+      const content = fs.readFileSync(eventsFile, 'utf-8').trim();
+      const event = JSON.parse(content);
+
+      expect(JSON.stringify(event)).toContain('*');
+      expect(JSON.stringify(event)).not.toContain('dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=');
+      expect(JSON.stringify(event)).not.toContain('1234567890abcdefghij');
+    });
+
     it('should track command with duration', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
       collector.trackCommand('sw:validate', { duration: 1234 });

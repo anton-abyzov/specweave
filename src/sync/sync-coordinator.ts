@@ -35,6 +35,9 @@ import {
   RepoInfo,
 } from './provider-router.js';
 import { resolvePermissions, SyncPreset } from './config.js';
+import { maskCredentials } from '../utils/credential-masker.js';
+import { SyncRetryQueue } from '../core/sync/sync-retry-queue.js';
+import { resilientWrite } from './resilient-write.js';
 
 // Re-export for backwards compatibility
 export { isProviderEnabled } from './status-mapper.js';
@@ -75,6 +78,7 @@ export class SyncCoordinator {
   private adoProfile?: ResolvedAdoProfile;
   private metrics: ClosureMetrics;
   private providerRouter: ProviderRouter;
+  private retryQueue?: SyncRetryQueue;
 
   constructor(options: SyncCoordinatorOptions) {
     this.projectRoot = options.projectRoot;
@@ -237,21 +241,31 @@ export class SyncCoordinator {
 
           // Track metrics
           this.metrics.startOperation();
-          try {
-            await jiraClient.updateIssue({
-              key: jiraKey,
-              status: targetStatus
-            });
+          // 0865 T-007: wrap the write so transient 429/5xx are retried with
+          // backoff and a terminal failure enqueues into SyncRetryQueue (drained
+          // by `sync-retry`) instead of being silently lost.
+          const writeResult = await resilientWrite(
+            () => jiraClient.updateIssue({ key: jiraKey, status: targetStatus }),
+            {
+              retryQueue: this.getRetryQueue(),
+              incrementId: this.incrementId,
+              provider: 'jira',
+              featureId: this.retryFeatureId(),
+              projectPath: this.projectRoot,
+              projectName: this.projectId,
+            },
+          );
+          if (writeResult.ok) {
             this.metrics.recordClosure('jira', jiraKey, true);
             this.logger.log(`  ✅ JIRA ${jiraKey} transitioned to ${targetStatus}`);
             closedCount++;
-          } catch (updateError) {
-            this.metrics.recordClosure('jira', jiraKey, false, String(updateError));
-            throw updateError;
+          } else {
+            this.metrics.recordClosure('jira', jiraKey, false, writeResult.error);
+            throw new Error(writeResult.error || 'JIRA update failed');
           }
         } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          this.logger.error(`  ❌ Failed to close JIRA issue ${jiraKey} (${usId}):`, error);
+          const msg = safeErrorMessage(error);
+          this.logger.error(`  ❌ Failed to close JIRA issue ${jiraKey} (${usId}): ${msg}`);
           // 0696 hotfix: propagate the error into the caller's accumulator
           if (errorsOut) errorsOut.push(`JIRA ${jiraKey}: ${msg}`);
         }
@@ -259,7 +273,7 @@ export class SyncCoordinator {
 
       return closedCount;
     } catch (error) {
-      this.logger.error('❌ Failed to close JIRA issues:', error);
+      this.logger.error(`❌ Failed to close JIRA issues: ${safeErrorMessage(error)}`);
       throw error;
     }
   }
@@ -399,21 +413,30 @@ export class SyncCoordinator {
 
           // Track metrics
           this.metrics.startOperation();
-          try {
-            await adoClient.updateWorkItem({
-              id: workItemId,
-              state: targetState
-            });
+          // 0865 T-007: wrap the write so transient 429/5xx are retried with
+          // backoff and a terminal failure enqueues into SyncRetryQueue.
+          const adoWriteResult = await resilientWrite(
+            () => adoClient.updateWorkItem({ id: workItemId, state: targetState }),
+            {
+              retryQueue: this.getRetryQueue(),
+              incrementId: this.incrementId,
+              provider: 'ado',
+              featureId: this.retryFeatureId(),
+              projectPath: this.projectRoot,
+              projectName: this.projectId,
+            },
+          );
+          if (adoWriteResult.ok) {
             this.metrics.recordClosure('ado', workItemId, true);
             this.logger.log(`  ✅ ADO #${workItemId} transitioned to ${targetState}`);
             closedCount++;
-          } catch (updateError) {
-            this.metrics.recordClosure('ado', workItemId, false, String(updateError));
-            throw updateError;
+          } else {
+            this.metrics.recordClosure('ado', workItemId, false, adoWriteResult.error);
+            throw new Error(adoWriteResult.error || 'ADO update failed');
           }
         } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          this.logger.error(`  ❌ Failed to close ADO work item #${workItemId} (${usId}):`, error);
+          const msg = safeErrorMessage(error);
+          this.logger.error(`  ❌ Failed to close ADO work item #${workItemId} (${usId}): ${msg}`);
           // 0696 hotfix: propagate the error into the caller's accumulator
           if (errorsOut) errorsOut.push(`ADO #${workItemId}: ${msg}`);
         }
@@ -421,7 +444,7 @@ export class SyncCoordinator {
 
       return closedCount;
     } catch (error) {
-      this.logger.error('❌ Failed to close ADO work items:', error);
+      this.logger.error(`❌ Failed to close ADO work items: ${safeErrorMessage(error)}`);
       throw error;
     }
   }
@@ -541,8 +564,8 @@ export class SyncCoordinator {
           totalClosed += jiraClosed;
           this.logger.log(`   ✅ Closed ${jiraClosed} JIRA issue(s)`);
         } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          this.logger.error('⚠️  JIRA issue closure failed:', error);
+          const msg = safeErrorMessage(error);
+          this.logger.error(`⚠️  JIRA issue closure failed: ${msg}`);
           result.errors.push(`JIRA issue closure error: ${msg}`);
         }
       }
@@ -557,8 +580,8 @@ export class SyncCoordinator {
           totalClosed += adoClosed;
           this.logger.log(`   ✅ Closed ${adoClosed} ADO work item(s)`);
         } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          this.logger.error('⚠️  ADO work item closure failed:', error);
+          const msg = safeErrorMessage(error);
+          this.logger.error(`⚠️  ADO work item closure failed: ${msg}`);
           result.errors.push(`ADO work item closure error: ${msg}`);
         }
       }
@@ -1151,6 +1174,31 @@ export class SyncCoordinator {
   }
 
   /**
+   * Shared retry queue for terminal external-write failures during closure.
+   * Lazily created so test/no-op paths don't touch the filesystem.
+   * (0865 T-007 — the queue used to be structurally always-empty.)
+   */
+  private getRetryQueue(): SyncRetryQueue {
+    if (!this.retryQueue) {
+      this.retryQueue = new SyncRetryQueue({
+        statePath: path.join(this.projectRoot, '.specweave', 'state'),
+      });
+    }
+    return this.retryQueue;
+  }
+
+  /**
+   * Best-effort feature ID for retry-queue jobs (derived from the increment ID).
+   */
+  private retryFeatureId(): string {
+    try {
+      return deriveFeatureId(this.incrementId);
+    } catch {
+      return this.incrementId;
+    }
+  }
+
+  /**
    * Load config
    */
   private async loadConfig(): Promise<SpecWeaveConfig> {
@@ -1268,4 +1316,8 @@ export class SyncCoordinator {
     return lines.join('\n');
   }
 
+}
+
+function safeErrorMessage(error: unknown): string {
+  return maskCredentials(error instanceof Error ? error.message : String(error));
 }

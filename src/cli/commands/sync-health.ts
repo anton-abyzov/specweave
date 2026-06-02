@@ -22,6 +22,8 @@ import {
   formatHealthCheckResults as formatResults,
   type HealthCheckResult,
 } from '../../sync/integration-health-check.js';
+import { parseEnvFile } from '../../utils/env-file.js';
+import { ADO_PAT_ALIASES, resolveAdoPat } from '../../core/credentials/credentials-manager.js';
 
 export interface SyncHealthOptions {
   /** Output results as JSON */
@@ -35,19 +37,48 @@ export interface SyncHealthOptions {
  */
 function getEnabledProviders(config: any): Array<'github' | 'jira' | 'ado'> {
   const providers: Array<'github' | 'jira' | 'ado'> = [];
+  const add = (provider: 'github' | 'jira' | 'ado') => {
+    if (!providers.includes(provider)) providers.push(provider);
+  };
 
   // Check sync section
   if (config.sync?.github?.enabled !== false && (config.sync?.github?.enabled || config.repository?.provider === 'github')) {
-    providers.push('github');
+    add('github');
   }
   if (config.sync?.jira?.enabled || config.issueTracker?.provider === 'jira') {
-    providers.push('jira');
+    add('jira');
   }
-  if (config.sync?.ado?.enabled || config.issueTracker?.provider === 'ado') {
-    providers.push('ado');
+  if (config.sync?.ado?.enabled || ['ado', 'azure-devops'].includes(config.issueTracker?.provider)) {
+    add('ado');
+  }
+
+  for (const profile of Object.values(config.sync?.profiles ?? {}) as any[]) {
+    if (profile.provider === 'github') add('github');
+    if (profile.provider === 'jira') add('jira');
+    if (['ado', 'azure-devops'].includes(profile.provider)) add('ado');
+  }
+
+  if (config.umbrella?.sync?.github) add('github');
+  if (config.umbrella?.sync?.jira) add('jira');
+  if (config.umbrella?.sync?.ado) add('ado');
+  for (const child of config.umbrella?.childRepos ?? []) {
+    if (child.sync?.github) add('github');
+    if (child.sync?.jira) add('jira');
+    if (child.sync?.ado) add('ado');
   }
 
   return providers;
+}
+
+function loadProjectEnv(projectPath: string): Record<string, string> {
+  const envPath = path.join(projectPath, '.env');
+  if (!fs.existsSync(envPath)) return {};
+
+  try {
+    return parseEnvFile(fs.readFileSync(envPath, 'utf-8'));
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -59,6 +90,7 @@ export async function runHealthChecksForConfig(
   projectPath: string
 ): Promise<HealthCheckResult[]> {
   const providers = getEnabledProviders(config);
+  const env = loadProjectEnv(projectPath);
   const results: HealthCheckResult[] = [];
 
   for (const provider of providers) {
@@ -68,11 +100,11 @@ export async function runHealthChecksForConfig(
         break;
 
       case 'jira': {
-        const domain = config.issueTracker?.domain || config.sync?.jira?.domain || '';
+        const domain = config.issueTracker?.domain || config.sync?.jira?.domain || env.JIRA_DOMAIN || process.env.JIRA_DOMAIN || '';
         const projectKey = config.issueTracker?.projects?.[0]?.key
-          || config.sync?.jira?.projectKey || '';
-        const email = process.env.JIRA_EMAIL || '';
-        const apiToken = process.env.JIRA_API_TOKEN || '';
+          || config.sync?.jira?.projectKey || env.JIRA_PROJECT_KEY || process.env.JIRA_PROJECT_KEY || '';
+        const email = env.JIRA_EMAIL || process.env.JIRA_EMAIL || '';
+        const apiToken = env.JIRA_API_TOKEN || process.env.JIRA_API_TOKEN || '';
 
         if (domain && email && apiToken) {
           results.push(await checkJiraIntegration({ domain, projectKey, email, apiToken }));
@@ -93,10 +125,30 @@ export async function runHealthChecksForConfig(
 
       case 'ado': {
         const organization = config.issueTracker?.organization_ado
-          || config.sync?.ado?.organization || '';
+          || config.issueTracker?.organization
+          || config.sync?.ado?.organization
+          || env.AZURE_DEVOPS_ORG
+          || env.ADO_ORGANIZATION
+          || env.ADO_ORG
+          || process.env.AZURE_DEVOPS_ORG
+          || process.env.ADO_ORGANIZATION
+          || process.env.ADO_ORG
+          || '';
         const project = config.issueTracker?.project
-          || config.sync?.ado?.project || '';
-        const pat = process.env.ADO_PAT || '';
+          || config.sync?.ado?.project
+          || env.AZURE_DEVOPS_PROJECT
+          || env.ADO_PROJECT
+          || process.env.AZURE_DEVOPS_PROJECT
+          || process.env.ADO_PROJECT
+          || '';
+        // 0865 T-006: resolve the PAT through the SAME canonical alias surface
+        // the ADO runtime resolver uses (ADO_PAT_ALIASES / resolveAdoPat), so
+        // health can never report green while runtime writes throw "PAT not found".
+        // Project `.env` values (loaded into `env`) take precedence, then
+        // process.env via resolveAdoPat().
+        const pat = ADO_PAT_ALIASES.map((alias) => env[alias]).find(Boolean)
+          || resolveAdoPat()
+          || '';
 
         if (organization && project && pat) {
           results.push(await checkAdoIntegration({ organization, project, pat }));
@@ -107,7 +159,7 @@ export async function runHealthChecksForConfig(
               name: 'Credentials',
               status: 'fail',
               message: 'Missing Azure DevOps credentials',
-              fix: 'Set ADO_ORGANIZATION, ADO_PROJECT, and ADO_PAT in .env',
+              fix: 'Set AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT, and AZURE_DEVOPS_PAT in .env',
             }],
             healthy: false,
           });
