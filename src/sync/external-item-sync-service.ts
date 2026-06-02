@@ -21,6 +21,7 @@ import { consoleLogger } from '../utils/logger.js';
 import type { LivingDocsUSFile } from '../types/living-docs-us-file.js';
 import { FormatPreservationValidator } from '../validators/format-preservation-validator.js';
 import type { SyncOperation } from '../validators/format-preservation-validator.js';
+import { maskCredentials } from '../utils/credential-masker.js';
 
 /**
  * Task completion data for sync
@@ -154,12 +155,12 @@ export class ExternalItemSyncService {
         return await this.fullSync(completionData, options);
       }
     } catch (error: any) {
-      this.logger.error(`   ❌ Sync failed for ${completionData.taskId}:`, error);
+      this.logger.error(`   ❌ Sync failed for ${completionData.taskId}: ${safeErrorMessage(error)}`);
       return {
         success: false,
         mode: 'skipped',
         reason: 'Error during sync',
-        error: error.message
+        error: safeErrorMessage(error)
       };
     }
   }
@@ -566,4 +567,8 @@ ${data.livingDocsUrl ? `**Living Docs**: [View spec](${data.livingDocsUrl})` : '
 ---
 *Auto-posted by SpecWeave format preservation sync*`;
   }
+}
+
+function safeErrorMessage(error: unknown): string {
+  return maskCredentials(error instanceof Error ? error.message : String(error));
 }
