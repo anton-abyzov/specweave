@@ -662,7 +662,7 @@ export async function promptAndRunExternalImport(
   }
 
   // Map config timeRangeMonths to closest prompt option
-  let defaultTimeRange = 3;
+  let defaultTimeRange: 1 | 3 | 6 | 999 = 3;
   if (importConfig.timeRangeMonths === 1) defaultTimeRange = 1;
   else if (importConfig.timeRangeMonths <= 3) defaultTimeRange = 3;
   else if (importConfig.timeRangeMonths <= 6) defaultTimeRange = 6;
