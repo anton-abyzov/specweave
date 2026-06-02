@@ -57,6 +57,17 @@ describe('gitignore-generator', () => {
       expect(result).toContain('vskill.lock');
     });
 
+    it('should gitignore work-handoff artifacts (0867 AC-US6-03)', () => {
+      const detection: TechStackDetection = {
+        detected: [],
+        primary: null,
+        categories: new Map(),
+      };
+      const result = generateGitignore(detection);
+      expect(result).toContain('.handoff/');
+      expect(result).toContain('.specweave/state/handoff-latest.*');
+    });
+
     it('should exclude common when includeCommon=false', () => {
       const detection: TechStackDetection = {
         detected: [],

@@ -25,9 +25,9 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
         autoApplyLabels: true,
         github: { owner: 'global-org', repo: 'global-repo' },
       },
-      umbrella: {
-        enabled: true,
-        childRepos: [
+      workspace: {
+        name: 'workspace',
+        repos: [
           {
             id: 'vskill',
             name: 'vskill',
@@ -37,7 +37,7 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
           },
         ],
       },
-    };
+    } as SpecWeaveConfig;
 
     const result = resolveSyncTarget('vskill', config);
 
@@ -47,9 +47,9 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
     expect(result.source).toBe('child-repo-name');
   });
 
-  it('should resolve global target when umbrella is disabled', () => {
+  it('should resolve global target when no workspace is configured', () => {
     const config: SpecWeaveConfig = {
-      version: '2.0',
+      version: '3.0',
       sync: {
         enabled: true,
         direction: 'bidirectional',
@@ -58,23 +58,12 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
         autoApplyLabels: true,
         github: { owner: 'global-org', repo: 'global-repo' },
       },
-      umbrella: {
-        enabled: false,
-        childRepos: [
-          {
-            id: 'vskill',
-            name: 'vskill',
-            path: 'repositories/anton-abyzov/vskill',
-            prefix: 'VSK',
-            sync: { github: { owner: 'anton-abyzov', repo: 'vskill' } },
-          },
-        ],
-      },
-    };
+      // No workspace → single-repo mode → always global.
+    } as SpecWeaveConfig;
 
     const result = resolveSyncTarget('vskill', config);
 
-    // Umbrella disabled: always uses global
+    // No workspace: always uses global
     expect(result.github?.owner).toBe('global-org');
     expect(result.github?.repo).toBe('global-repo');
     expect(result.source).toBe('global');
@@ -92,9 +81,9 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
         autoApplyLabels: true,
         github: { owner: 'global-org', repo: 'global-repo' },
       },
-      umbrella: {
-        enabled: true,
-        childRepos: [
+      workspace: {
+        name: 'workspace',
+        repos: [
           {
             id: 'vskill',
             name: 'vskill',
@@ -104,7 +93,7 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
           },
         ],
       },
-    };
+    } as SpecWeaveConfig;
 
     const resolved = resolveSyncTarget('vskill', config);
 

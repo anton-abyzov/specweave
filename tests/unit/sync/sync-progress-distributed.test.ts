@@ -1,18 +1,19 @@
 /**
- * sync-progress umbrella routing tests
+ * sync-progress workspace routing tests
  *
- * Tests that AC checkbox sync uses resolveSyncTarget for umbrella routing.
+ * Tests that AC checkbox sync uses resolveSyncTarget for workspace routing.
  * AC: AC-US1-03
+ * (0865 T-005: migrated from legacy `umbrella` config to `workspace`.)
  */
 
 import { describe, it, expect } from 'vitest';
 import { resolveSyncTarget } from '../../../src/sync/sync-target-resolver.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 
-describe('sync-progress umbrella routing (AC-US1-03)', () => {
-  it('should resolve per-project GitHub target when umbrella enabled', () => {
+describe('sync-progress workspace routing (AC-US1-03)', () => {
+  it('should resolve per-project GitHub target when workspace configured', () => {
     const config: SpecWeaveConfig = {
-      version: '2.0',
+      version: '3.0',
       sync: {
         enabled: true,
         direction: 'bidirectional',
@@ -21,9 +22,9 @@ describe('sync-progress umbrella routing (AC-US1-03)', () => {
         autoApplyLabels: true,
         github: { enabled: true, owner: 'global-org', repo: 'global-repo' },
       },
-      umbrella: {
-        enabled: true,
-        childRepos: [
+      workspace: {
+        name: 'workspace',
+        repos: [
           {
             id: 'vskill',
             name: 'vskill',
@@ -33,7 +34,7 @@ describe('sync-progress umbrella routing (AC-US1-03)', () => {
           },
         ],
       },
-    };
+    } as SpecWeaveConfig;
 
     const resolved = resolveSyncTarget('vskill', config);
 
@@ -53,9 +54,9 @@ describe('sync-progress umbrella routing (AC-US1-03)', () => {
     expect(effectiveConfig.sync?.github?.repo).toBe('vskill');
   });
 
-  it('should keep global GitHub target when umbrella disabled', () => {
+  it('should keep global GitHub target when no workspace configured', () => {
     const config: SpecWeaveConfig = {
-      version: '2.0',
+      version: '3.0',
       sync: {
         enabled: true,
         direction: 'bidirectional',
@@ -64,24 +65,13 @@ describe('sync-progress umbrella routing (AC-US1-03)', () => {
         autoApplyLabels: true,
         github: { enabled: true, owner: 'global-org', repo: 'global-repo' },
       },
-      umbrella: {
-        enabled: false,
-        childRepos: [
-          {
-            id: 'vskill',
-            name: 'vskill',
-            path: 'repositories/anton-abyzov/vskill',
-            prefix: 'VSK',
-            sync: { github: { owner: 'anton-abyzov', repo: 'vskill' } },
-          },
-        ],
-      },
-    };
+      // No workspace → single-repo mode → global target only.
+    } as SpecWeaveConfig;
 
     const resolved = resolveSyncTarget('vskill', config);
 
     const effectiveConfig = { ...config };
-    if (resolved.github) {
+    if (resolved.github && resolved.source !== 'global') {
       effectiveConfig.sync = {
         ...effectiveConfig.sync!,
         github: {
@@ -92,7 +82,7 @@ describe('sync-progress umbrella routing (AC-US1-03)', () => {
       };
     }
 
-    // Global target preserved when umbrella disabled
+    // Global target preserved when no workspace
     expect(effectiveConfig.sync?.github?.owner).toBe('global-org');
     expect(effectiveConfig.sync?.github?.repo).toBe('global-repo');
   });

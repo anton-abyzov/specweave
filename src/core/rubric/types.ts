@@ -13,6 +13,7 @@ export type EvaluatorId =
   | 'sw:grill'
   | 'sw:code-reviewer'
   | 'sw:judge-llm'
+  | 'command'
   | 'coverage'
   | 'manual';
 

@@ -1,5 +1,6 @@
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
+import { spawnSync } from 'child_process';
 import type {
   RubricDocument,
   RubricCriterion,
@@ -8,6 +9,124 @@ import type {
 } from './types.js';
 import { emitRefinementIfAttributable } from '../skill-signal-emit.js';
 import type { SignalSeverity } from '../../types/skill-signals.js';
+
+/** Default bound for a `command` criterion probe (ms). */
+export const DEFAULT_COMMAND_TIMEOUT_MS = 60000;
+
+/** Max bytes of stdout/stderr captured into a command criterion's evidence. */
+const COMMAND_EVIDENCE_MAX_BYTES = 2048;
+
+/**
+ * Credential-like env var names stripped before running a `command` probe.
+ * Keywords match only as whole `_`-delimited segments (or the full name) — so
+ * `AZURE_DEVOPS_PAT` / `GITHUB_TOKEN` are stripped but `PATH` is NOT (the bare
+ * substring `PAT` inside `PATH` must never trigger removal, or every probe loses
+ * its executable lookup path and dies with `exit 127: command not found`).
+ */
+const CREDENTIAL_ENV_PATTERN = /(^|_)(PAT|TOKEN|SECRET|PASSWORD|PASSWD|APIKEY|API_KEY|PRIVATE_KEY|CREDENTIAL|ACCESS_KEY)($|_)/i;
+
+/** Env vars always preserved for the probe shell, regardless of name match. */
+const ESSENTIAL_ENV_KEYS = new Set([
+  'PATH', 'HOME', 'SHELL', 'USER', 'LOGNAME', 'TMPDIR', 'TMP', 'TEMP',
+  'LANG', 'LC_ALL', 'PWD', 'NODE_PATH', 'NVM_DIR',
+]);
+
+export interface CommandEvalOptions {
+  /** Working directory the probe runs in (repo / increment root). */
+  cwd: string;
+  /** Bounded timeout in ms. Defaults to {@link DEFAULT_COMMAND_TIMEOUT_MS}. */
+  timeoutMs?: number;
+}
+
+/** Keep only the last `maxBytes` of a string, prefixing an ellipsis on truncation. */
+function tailTruncate(text: string, maxBytes: number): string {
+  if (text.length <= maxBytes) return text;
+  return '…' + text.slice(text.length - maxBytes);
+}
+
+/**
+ * Build a child-process env with credential-like vars stripped. We never inject
+ * tokens into a probe; a `command` criterion must be self-contained.
+ */
+function buildSanitizedEnv(): NodeJS.ProcessEnv {
+  const sanitized: NodeJS.ProcessEnv = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!ESSENTIAL_ENV_KEYS.has(key) && CREDENTIAL_ENV_PATTERN.test(key)) continue;
+    sanitized[key] = value;
+  }
+  return sanitized;
+}
+
+/**
+ * Run a `command` criterion's `Verify` shell probe and map the exit code to a
+ * pass/fail result. Exit 0 → pass; non-zero, timeout, or spawn error → fail.
+ * NEVER returns `skip`. Evidence captures a truncated tail of stdout/stderr.
+ *
+ * The probe runs with `shell: true` in `options.cwd`, a bounded timeout, and an
+ * env with credential-like variables stripped (no token injection).
+ */
+export function evaluateCommandCriterion(
+  criterion: RubricCriterion,
+  options: CommandEvalOptions,
+): CriterionResult {
+  const now = new Date().toISOString();
+  const command = (criterion.verify ?? '').trim();
+  const timeout = options.timeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS;
+
+  if (!command) {
+    return {
+      status: 'fail',
+      evidence: 'command criterion has no Verify probe',
+      evaluatedAt: now,
+    };
+  }
+
+  const proc = spawnSync(command, {
+    cwd: options.cwd,
+    shell: true,
+    timeout,
+    env: buildSanitizedEnv(),
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024,
+  });
+
+  const stdout = proc.stdout ?? '';
+  const stderr = proc.stderr ?? '';
+  const combined = tailTruncate([stdout, stderr].filter(Boolean).join('\n').trim(), COMMAND_EVIDENCE_MAX_BYTES);
+
+  // Node sets error.code === 'ETIMEDOUT' and signal === 'SIGTERM' on timeout.
+  const timedOut =
+    proc.error && (proc.error as NodeJS.ErrnoException).code === 'ETIMEDOUT';
+  if (timedOut || proc.signal === 'SIGTERM') {
+    return {
+      status: 'fail',
+      evidence: `command timed out after ${timeout}ms${combined ? `: ${combined}` : ''}`,
+      evaluatedAt: now,
+    };
+  }
+
+  if (proc.error) {
+    return {
+      status: 'fail',
+      evidence: `command failed to run: ${proc.error.message}${combined ? ` | ${combined}` : ''}`,
+      evaluatedAt: now,
+    };
+  }
+
+  if (proc.status === 0) {
+    return {
+      status: 'pass',
+      evidence: combined || 'exit 0',
+      evaluatedAt: now,
+    };
+  }
+
+  return {
+    status: 'fail',
+    evidence: `exit ${proc.status ?? 'unknown'}${combined ? `: ${combined}` : ''}`,
+    evaluatedAt: now,
+  };
+}
 
 interface EvaluateOptions {
   grillReport?: string;
@@ -28,6 +147,13 @@ interface EvaluateOptions {
    * `<projectRoot>/plugins/specweave/skills` when `projectRoot` is set.
    */
   skillsRoot?: string;
+  /**
+   * Working directory for `command`-evaluator probes. Defaults to
+   * `projectRoot`, then `reportsDir`'s parent. The probe runs here.
+   */
+  commandCwd?: string;
+  /** Bounded timeout (ms) for `command`-evaluator probes. */
+  commandTimeoutMs?: number;
 }
 
 async function loadReport(reportsDir: string, filename: string): Promise<any> {
@@ -138,6 +264,15 @@ export async function evaluateRubric(
           result = evaluateJudgeLlm(report);
           break;
         }
+        case 'command': {
+          const cwd =
+            options.commandCwd ?? options.projectRoot ?? path.dirname(reportsDir);
+          result = evaluateCommandCriterion(criterion, {
+            cwd,
+            timeoutMs: options.commandTimeoutMs,
+          });
+          break;
+        }
         case 'coverage':
         case 'manual':
         default:
@@ -146,7 +281,10 @@ export async function evaluateRubric(
       }
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      result = { status: 'skip', evidence: `Gate report unavailable: ${reason}`, evaluatedAt: new Date().toISOString() };
+      // A `command` criterion must NEVER resolve to skip — any failure to run
+      // its probe is a hard fail, not an unevaluated pass-through.
+      const fallbackStatus = criterion.evaluator === 'command' ? 'fail' : 'skip';
+      result = { status: fallbackStatus, evidence: `Gate report unavailable: ${reason}`, evaluatedAt: new Date().toISOString() };
     }
 
     evaluatedCriteria.push({ ...criterion, result });

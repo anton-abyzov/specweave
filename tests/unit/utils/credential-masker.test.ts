@@ -89,6 +89,15 @@ describe('credential-masker', () => {
       expect(masked).not.toContain('SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c');
     });
 
+    it('should mask Basic auth headers', () => {
+      const text = 'Authorization: Basic dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=';
+      const masked = maskCredentials(text);
+
+      expect(masked).toContain('Basic ');
+      expect(masked).toContain('*');
+      expect(masked).not.toContain('dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=');
+    });
+
     it('should mask JSON credentials', () => {
       const text = '{"apiToken": "sk_test_1234567890abcdefghij", "password": "mySecretPass123"}';
       const masked = maskCredentials(text);
@@ -145,6 +154,21 @@ describe('credential-masker', () => {
       expect(masked.config.database.password).toContain('*');
       expect(masked.config.database.password).not.toBe('superSecret123');
       expect(masked.normal).toBe('not a secret');
+    });
+
+    it('should mask Authorization headers inside error config objects', () => {
+      const data = {
+        config: {
+          headers: {
+            Authorization: 'Basic dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=',
+          },
+        },
+      };
+
+      const masked = maskCredentialsInData(data);
+
+      expect(masked.config.headers.Authorization).toContain('*');
+      expect(masked.config.headers.Authorization).not.toContain('dXNlcjpzZWNyZXRfdG9rZW5fdmFsdWU=');
     });
 
     it('should mask credentials in arrays', () => {

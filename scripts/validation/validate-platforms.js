@@ -14,6 +14,8 @@
  *   npm run validate:platforms
  */
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -248,4 +250,4 @@ if (failedValidation > 0) {
 } else {
   console.log('✅ All platform data validated successfully!\n');
   process.exit(0);
-}
+};                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

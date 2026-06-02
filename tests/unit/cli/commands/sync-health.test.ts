@@ -34,6 +34,8 @@ import { syncHealthCommand, runHealthChecksForConfig } from '../../../../src/cli
 describe('sync-health', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExistsSync.mockReturnValue(false);
+    mockReadFileSync.mockReturnValue('');
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -122,6 +124,122 @@ describe('sync-health', () => {
       expect(results[0].healthy).toBe(true);
 
       delete process.env.ADO_PAT;
+    });
+
+    it('runs ADO health check with AZURE_DEVOPS_PAT alias', async () => {
+      mockCheckAdo.mockResolvedValue({
+        provider: 'ado',
+        checks: [{ name: 'API Auth', status: 'pass', message: 'ok' }],
+        healthy: true,
+      });
+
+      const originalAdoPat = process.env.ADO_PAT;
+      const originalAzurePat = process.env.AZURE_DEVOPS_PAT;
+      delete process.env.ADO_PAT;
+      process.env.AZURE_DEVOPS_PAT = 'azure-pat123';
+
+      const config = {
+        issueTracker: { provider: 'ado', organization_ado: 'myorg', project: 'myproj' },
+        sync: { ado: { enabled: true } },
+      };
+      const results = await runHealthChecksForConfig(config, '/tmp');
+
+      expect(mockCheckAdo).toHaveBeenCalledWith({
+        organization: 'myorg',
+        project: 'myproj',
+        pat: 'azure-pat123',
+      });
+      expect(results[0].healthy).toBe(true);
+
+      if (originalAdoPat === undefined) {
+        delete process.env.ADO_PAT;
+      } else {
+        process.env.ADO_PAT = originalAdoPat;
+      }
+      if (originalAzurePat === undefined) {
+        delete process.env.AZURE_DEVOPS_PAT;
+      } else {
+        process.env.AZURE_DEVOPS_PAT = originalAzurePat;
+      }
+    });
+
+    it('runs ADO health check for azure-devops issueTracker alias', async () => {
+      mockCheckAdo.mockResolvedValue({
+        provider: 'ado',
+        checks: [{ name: 'API Auth', status: 'pass', message: 'ok' }],
+        healthy: true,
+      });
+
+      const originalAzurePat = process.env.AZURE_DEVOPS_PAT;
+      process.env.AZURE_DEVOPS_PAT = 'azure-pat123';
+
+      const config = {
+        issueTracker: { provider: 'azure-devops', organization_ado: 'myorg', project: 'myproj' },
+      };
+      const results = await runHealthChecksForConfig(config, '/tmp');
+
+      expect(mockCheckAdo).toHaveBeenCalledWith({
+        organization: 'myorg',
+        project: 'myproj',
+        pat: 'azure-pat123',
+      });
+      expect(results[0].healthy).toBe(true);
+
+      if (originalAzurePat === undefined) {
+        delete process.env.AZURE_DEVOPS_PAT;
+      } else {
+        process.env.AZURE_DEVOPS_PAT = originalAzurePat;
+      }
+    });
+
+    it('loads JIRA credentials from project .env', async () => {
+      mockExistsSync.mockImplementation((filePath: string) => filePath.endsWith('/.env'));
+      mockReadFileSync.mockReturnValue([
+        'JIRA_EMAIL=test@example.com',
+        'JIRA_API_TOKEN=token123',
+      ].join('\n'));
+      mockCheckJira.mockResolvedValue({
+        provider: 'jira',
+        checks: [{ name: 'API Auth', status: 'pass', message: 'ok' }],
+        healthy: true,
+      });
+
+      const config = {
+        issueTracker: { provider: 'jira', domain: 'test.atlassian.net', projects: [{ key: 'TEST' }] },
+      };
+      await runHealthChecksForConfig(config, '/tmp/project');
+
+      expect(mockCheckJira).toHaveBeenCalledWith({
+        domain: 'test.atlassian.net',
+        projectKey: 'TEST',
+        email: 'test@example.com',
+        apiToken: 'token123',
+      });
+    });
+
+    it('loads ADO credentials from project .env aliases', async () => {
+      mockExistsSync.mockImplementation((filePath: string) => filePath.endsWith('/.env'));
+      mockReadFileSync.mockReturnValue([
+        'AZURE_DEVOPS_ORG=myorg',
+        'ADO_PROJECT=myproj',
+        'AZURE_DEVOPS_TOKEN=token123',
+      ].join('\n'));
+      mockCheckAdo.mockResolvedValue({
+        provider: 'ado',
+        checks: [{ name: 'API Auth', status: 'pass', message: 'ok' }],
+        healthy: true,
+      });
+
+      const config = {
+        issueTracker: { provider: 'azure-devops' },
+      };
+      await runHealthChecksForConfig(config, '/tmp/project');
+
+      expect(mockCheckAdo).toHaveBeenCalledWith({
+        organization: 'myorg',
+        project: 'myproj',
+        pat: 'token123',
+      });
     });
 
     it('returns empty array when no providers configured', async () => {
