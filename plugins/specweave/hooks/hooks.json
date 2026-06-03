@@ -89,6 +89,11 @@
             "type": "command",
             "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-sync || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
             "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
+            "timeout": 15000
           }
         ]
       }
