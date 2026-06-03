@@ -77,40 +77,13 @@ case $BUMP_TYPE in
     ;;
 esac
 
-# 0794 / T-010 — propagate the bumped version to plugin.json + marketplace.json
-# atomically. Without this, plugin.json freezes (silently breaks Claude Code's
-# update detection) and marketplace.json drifts from package.json. Validated
-# by scripts/validation/validate-versions.cjs in CI.
-node -e '
-  const fs = require("node:fs");
-  const v = require("./package.json").version;
-  const targets = [
-    {
-      file: "plugins/specweave/.claude-plugin/plugin.json",
-      pointer: ["version"],
-    },
-    {
-      file: ".claude-plugin/marketplace.json",
-      pointer: ["version"],
-    },
-    {
-      file: ".claude-plugin/marketplace.json",
-      pointer: ["plugins", 0, "version"],
-    },
-  ];
-  for (const t of targets) {
-    if (!fs.existsSync(t.file)) continue;
-    const j = JSON.parse(fs.readFileSync(t.file, "utf8"));
-    let cur = j;
-    for (let i = 0; i < t.pointer.length - 1; i++) cur = cur[t.pointer[i]];
-    const lastKey = t.pointer[t.pointer.length - 1];
-    if (cur[lastKey] !== v) {
-      cur[lastKey] = v;
-      fs.writeFileSync(t.file, JSON.stringify(j, null, 2) + "\n");
-      console.log("  bumped " + t.file + " (" + t.pointer.join(".") + ") to " + v);
-    }
-  }
-'
+# 0794 / 0871 — propagate the bumped version to plugin.json + marketplace.json.
+# Without this, plugin.json freezes (silently breaks Claude Code's update
+# detection) and marketplace.json drifts from package.json. The stamp is the
+# single source of truth (scripts/build/stamp-plugin-version.cjs) and also runs
+# in the `build`/`version` npm lifecycle so EVERY publish path stamps. Validated
+# by scripts/validation/validate-versions.cjs (also a prepublishOnly gate + unit test).
+node "$(dirname "$0")/stamp-plugin-version.cjs"
 
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
