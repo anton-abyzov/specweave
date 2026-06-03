@@ -22,6 +22,15 @@ const HANDLERS: Record<string, () => Promise<{ handle: HandlerFn }>> = {
   // Gated Stop variant — fires only under an active auto session (AC-US7-02).
   // Maps the module's `handleStop` export onto the router's `handle` contract.
   'stop': () => import('./pre-compact.js').then((m) => ({ handle: m.handleStop })),
+  // Restored in 0870 — these were dead since 0f81519b1 (hooks.json invoked them
+  // but the router never registered them, so they silently no-op'd).
+  'session-start': () => import('./session-start.js'),
+  'post-tool-use': () => import('./post-tool-use.js'),
+  'post-tool-use-analytics': () => import('./post-tool-use-analytics.js'),
+  'stop-reflect': () => import('./stop-reflect.js'),
+  'stop-sync': () => import('./stop-sync.js'),
+  // Real blocking auto-loop driver (0870 rewrite — see stop-auto.ts).
+  'stop-auto': () => import('./stop-auto.js'),
 };
 
 /**
