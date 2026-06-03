@@ -19,16 +19,12 @@ import * as path from 'path';
  * Hooks the router does NOT register today (dead since 0f81519b1), kept here so the
  * parity test stays green while the breakage is tracked. RESTORING a hook = add its key
  * to hook-router.ts HANDLERS AND remove it here (the stale-entry assertion enforces this).
- * Tracked for restoration in a follow-up to increment 0869.
+ *
+ * 0870 restored all 6 (the 5 non-blocking handlers + a real blocking stop-auto), so this
+ * allowlist is now EMPTY: every `specweave hook X` the plugin invokes is registered in the
+ * router. Re-adding a name here means a hook went dead again — fix the router, don't allowlist.
  */
-const KNOWN_UNROUTED = new Set<string>([
-  'session-start',
-  'post-tool-use',
-  'post-tool-use-analytics',
-  'stop-reflect',
-  'stop-auto',
-  'stop-sync',
-]);
+const KNOWN_UNROUTED = new Set<string>([]);
 
 /** The 4 events that MUST stay registered — a regression dropping one fails loudly. */
 const MUST_BE_REGISTERED = ['user-prompt-submit', 'pre-tool-use', 'pre-compact', 'stop'];
