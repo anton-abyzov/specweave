@@ -25,6 +25,7 @@ import {
   findSpecweaveRoot,
   migrateBundledToGlobalLock,
   migrateSatelliteToUnifiedLock,
+  syncNativePluginContent,
 } from '../../utils/plugin-copier.js';
 import { cleanupStalePlugins, migrateUserLevelPlugins } from '../../utils/cleanup-stale-plugins.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
@@ -329,6 +330,23 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         logError(result.error, chalk.gray(`    ${result.error}`));
       }
       failed++;
+    }
+  }
+
+  // Step 4a-force: FORCE a content sync into each installPath (0872).
+  // `claude plugin install` dedups and reports "active" without re-copying content
+  // after a version bump, so the installed cache goes stale. Copy the current
+  // plugin source over it so hooks/skills actually update.
+  if (useNativeCli) {
+    for (const name of installedPluginNames) {
+      try {
+        const synced = syncNativePluginContent(name, specweaveRoot);
+        if (synced.synced > 0) {
+          log(chalk.cyan(`  ↻ ${name}: content synced`) + (synced.toVersion ? chalk.gray(` (v${synced.toVersion})`) : ''));
+        }
+      } catch (err) {
+        logger.debug(`Step 4a-force: content sync failed for ${name}: ${err}`);
+      }
     }
   }
 

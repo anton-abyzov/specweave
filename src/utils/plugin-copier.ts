@@ -13,6 +13,7 @@
 import {
   chmodSync,
   copyFileSync,
+  cpSync,
   lstatSync,
   mkdirSync,
   readdirSync,
@@ -183,6 +184,108 @@ export function fixHookPermissions(targetDir: string): void {
     }
   } catch (err) {
     consoleLogger.debug(`fixHookPermissions failed for ${targetDir}: ${err instanceof Error ? err.message : err}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Force content sync (0872)
+// ---------------------------------------------------------------------------
+
+export interface SyncContentResult {
+  /** Number of installPaths whose content was (re)copied. */
+  synced: number;
+  /** The installPaths that were synced. */
+  paths: string[];
+  /** The manifest version the content was synced to (if resolvable). */
+  toVersion?: string;
+}
+
+/**
+ * Force the installed plugin CONTENT to match the current package.
+ *
+ * Why: `claude plugin install` (which refresh-plugins wraps) records a fixed
+ * installPath in installed_plugins.json and, on re-run after a version bump,
+ * reports "active" WITHOUT re-copying content — so users keep stale hooks/skills.
+ * This copies the plugin source into every recorded installPath (recreating a
+ * wiped dir), fixes hook permissions, and refreshes the stale version label.
+ *
+ * Never throws — returns { synced: 0 } on any problem (missing/malformed
+ * installed_plugins.json, plugin not in marketplace, absent source dir).
+ *
+ * @param pluginName    Marketplace plugin name (e.g. "sw").
+ * @param specweaveRoot Marketplace root (contains .claude-plugin/marketplace.json + plugins/).
+ * @param opts.homeOverride  Override $HOME (for tests).
+ */
+export function syncNativePluginContent(
+  pluginName: string,
+  specweaveRoot: string,
+  opts: { homeOverride?: string } = {},
+): SyncContentResult {
+  const empty: SyncContentResult = { synced: 0, paths: [] };
+  try {
+    // 1. Resolve the plugin's source dir from the marketplace's `source` mapping.
+    const marketplacePath = join(specweaveRoot, '.claude-plugin', 'marketplace.json');
+    if (!existsSync(marketplacePath)) return empty;
+    const marketplace = JSON.parse(readFileSync(marketplacePath, 'utf-8'));
+    const entry = (marketplace?.plugins ?? []).find((p: { name?: string }) => p?.name === pluginName);
+    if (!entry?.source) return empty;
+    const sourceDir = resolve(specweaveRoot, entry.source);
+    if (!existsSync(sourceDir)) return empty;
+
+    // 2. Read the install records for this plugin from installed_plugins.json.
+    const home = opts.homeOverride ?? homedir();
+    const installedPath = join(home, '.claude', 'plugins', 'installed_plugins.json');
+    if (!existsSync(installedPath)) return empty;
+    const installed = JSON.parse(readFileSync(installedPath, 'utf-8'));
+    const key = `${pluginName}@specweave`;
+    const raw = installed?.plugins?.[key];
+    const records: Array<Record<string, unknown>> = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    if (records.length === 0) return empty;
+
+    // 3. Resolve the source manifest version (for the label refresh).
+    let toVersion: string | undefined;
+    try {
+      const manifest = JSON.parse(
+        readFileSync(join(sourceDir, '.claude-plugin', 'plugin.json'), 'utf-8'),
+      );
+      toVersion = typeof manifest?.version === 'string' ? manifest.version : undefined;
+    } catch { /* no manifest — leave version label as-is */ }
+
+    // 4. Copy source → each installPath (recreate if wiped) + fix perms + label.
+    const paths: string[] = [];
+    let recordsChanged = false;
+    const now = new Date().toISOString();
+    for (const rec of records) {
+      const installPath = typeof rec?.installPath === 'string' ? rec.installPath : '';
+      if (!installPath) continue;
+      try {
+        mkdirSync(installPath, { recursive: true });
+        cpSync(sourceDir, installPath, { recursive: true, force: true });
+        fixHookPermissions(installPath);
+        paths.push(installPath);
+        if (toVersion && rec.version !== toVersion) {
+          rec.version = toVersion;
+          rec.lastUpdated = now;
+          recordsChanged = true;
+        }
+      } catch (err) {
+        consoleLogger.debug(`syncNativePluginContent: copy to ${installPath} failed: ${err instanceof Error ? err.message : err}`);
+      }
+    }
+
+    // 5. Persist the refreshed version labels.
+    if (recordsChanged) {
+      try {
+        writeFileSync(installedPath, JSON.stringify(installed, null, 2));
+      } catch (err) {
+        consoleLogger.debug(`syncNativePluginContent: failed to write installed_plugins.json: ${err instanceof Error ? err.message : err}`);
+      }
+    }
+
+    return { synced: paths.length, paths, ...(toVersion ? { toVersion } : {}) };
+  } catch (err) {
+    consoleLogger.debug(`syncNativePluginContent failed: ${err instanceof Error ? err.message : err}`);
+    return empty;
   }
 }
 
