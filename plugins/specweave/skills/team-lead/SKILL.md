@@ -1,6 +1,6 @@
 ---
-description: Phase-agnostic orchestrator for parallel multi-agent work — brainstorm, plan, implement, review, research, or test. Auto-detects mode from intent. Use for implementation (3+ domains or 15+ tasks), brainstorming (multiple perspectives), parallel planning (PM + Architect), code review (delegates to sw:code-reviewer), research (multiple topics), or testing (parallel test layers). Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "brainstorm with agents", "plan in parallel", "review code", "research this".
-version: 1.0.0
+description: Phase-agnostic orchestrator for parallel multi-agent work — brainstorm, plan, implement, review, research, or test. Auto-detects mode from intent. Use for implementation (3+ domains or 15+ tasks), brainstorming (multiple perspectives), parallel planning (PM + Architect), code review (delegates to sw:code-reviewer), research (multiple topics), or testing (parallel test layers). Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "brainstorm with agents", "plan in parallel", "review code", "research this". Also auto-selects a dynamic Workflow for batch-class work (migrations, repo-wide audits, deep research, high-stakes verification) without being asked.
+version: 1.1.0
 ---
 
 # Team Lead
@@ -12,6 +12,7 @@ version: 1.0.0
 - **Read**: Load the master `spec.md` once for fan-out decisions and read agent prompt templates under `plugins/specweave/skills/team-lead/agents/`. During the active phase, prefer `PLAN_READY` summaries from agents over re-reading full plan files.
 - **Bash**: Inspect team state (`specweave doctor`, `ls ~/.claude/teams/`, grep metadata.json) and run CLI-only operations — never to implement code.
 - **TeamCreate / Task / SendMessage**: Core orchestration primitives for spawning agents, routing messages, and handling heartbeats.
+- **Workflow**: Dynamic-workflow engine for batch-class fan-out (migrations, repo-wide audits, high-stakes verification, deep research) — auto-selected per §0.4, never requires the user to ask. See `reference/dynamic-workflows.md`.
 
 ## MANDATORY: Orchestrator Identity (NEVER SKIP)
 
@@ -22,9 +23,10 @@ version: 1.0.0
 - **NEVER** say "I'll do this directly" — that defeats the purpose of team-lead
 - Even if you just finished a previous team-lead session in this conversation, you MUST create a **new** team and spawn **new** agents
 - **Fan-out threshold**: Spawn agents when **domains ≥ 3** OR **tasks ≥ 15** OR `--parallel` flag is set. For 1-domain or <15-task work, execute directly without spawning.
-- Your only tools are: `TeamCreate`, `Task`, `SendMessage`, `Read` (for agent templates; during active phase use PLAN_READY summaries instead of reading full plan files), `Bash` (only for team state inspection), and `Skill()` (only during closure phase for grill/done)
+- Your only tools are: `TeamCreate`, `Task`, `SendMessage`, `Workflow` (for batch-class fan-out per §0.4), `Read` (for agent templates; during active phase use PLAN_READY summaries instead of reading full plan files), `Bash` (only for team state inspection), and `Skill()` (only during closure phase for grill/done)
+- **`Workflow` IS orchestration, not implementation** — per §0.4 you MAY launch a `Workflow()` for batch-class work (migrations, repo-wide audits, high-stakes verification, deep research). Delegating to a Workflow does NOT violate this rule; writing the code yourself does.
 
-**The test**: If you're about to call `Edit()` or write code, STOP — you're violating this rule.
+**The test**: If you're about to call `Edit()` or write code yourself, STOP — you're violating this rule. (Launching a `Workflow()` that spawns agents to do the work is fine.)
 
 ---
 
@@ -127,6 +129,8 @@ sw:team-lead --preset api-only --max-agents 4 "Add payments API"
 ### 0a. BRAINSTORM Mode
 
 **team_name**: `brainstorm-{topic-slug}`
+
+**Engine** (per §0.4): Agent Teams — brainstorm needs interactive steering + the idea tree, not a deterministic batch. Pattern: perspective-diverse verify (advocate / critic / pragmatist fan out → synthesize).
 
 Skip increment pre-flight entirely. Brainstorm doesn't need a spec — it explores possibilities.
 
@@ -249,6 +253,8 @@ Pass through any arguments the user provided (--pr N, --changes, --cross-repo, p
 
 **team_name**: `research-{topic-slug}`
 
+**Engine** (per §0.4): prefer a **Dynamic Workflow** deep-research pipeline (fan-out searches → fetch → adversarially verify → synthesize a cited report, results held off-context) for multi-source / multi-subtopic research; use Agent Teams only for 2-3 steerable researchers. Falls back to Agent Teams when `quality.workflows.enabled` is off.
+
 Skip increment pre-flight. Research is exploratory — no spec needed.
 
 1. Create team: `TeamCreate({ team_name: "research-{slug}", description: "Research: {topic}" })`
@@ -285,6 +291,8 @@ Skip increment pre-flight. Research is exploratory — no spec needed.
 
 **team_name**: `test-{increment-id}`
 
+**Engine** (per §0.4): route **many independent same-shape tests** to a **Dynamic Workflow** (generate → run → fix-loop until green); keep Agent Teams when test layers have setup dependencies. Falls back to Agent Teams when `quality.workflows.enabled` is off.
+
 Testing mode requires an increment (it needs to know WHAT to test).
 
 1. **Verify increment exists** (same as implementation mode — see below)
@@ -318,6 +326,48 @@ Testing mode requires an increment (it needs to know WHAT to test).
    - Phase 2: `TeamDelete()` (retry once after 3s if it fails)
    - Phase 3: Run the orphaned pane safety net bash script from Step 9 — `SendMessage` shutdown does NOT close tmux panes, this script is the ONLY thing that does
 9. **STOP** — do not proceed to implementation sections
+
+---
+
+## 0.4. Orchestration Engine Selection (AUTO-DETECT — never wait for a flag)
+
+**Run AFTER §0 Mode Detection, BEFORE §0.5 Increment Pre-Flight.** Pick the engine from the *shape* of the work, not from the user's words. The user must NEVER have to say "use a workflow" — you infer it.
+
+Three engines:
+
+| Engine | What it is | Owns |
+|--------|-----------|------|
+| **Dynamic Workflow** | `Workflow()` — deterministic JS scheduler, ≤16 concurrent / 1000 total subagents, results in script vars (off context), resumable, background | Large homogeneous fan-out: migrations, repo-wide audits, many-similar-tests, adversarial/judge verification |
+| **Agent Teams** (default) | `TeamCreate` + `Task` + `SendMessage` + tmux — model-driven, domain-aware, SpecWeave-lifecycle owner | Feature work: 3+ domains or 15+ tasks with cross-domain contracts + closure + sync |
+| **Inline** | This orchestrator, no spawn | <15 tasks, single domain, sequential |
+
+### Decision table (first match wins)
+
+| Signal in the work | Engine | Why |
+|--------------------|--------|-----|
+| ≥~25 **same-shape** tasks, no cross-task deps (rename X→Y across N files, add header to N modules, port N tests) | **Dynamic Workflow** (top-level, bypass team-lead) | Pure fan-out under ONE budget + ONE scheduler — no glue needed |
+| Codebase **migration** / repo-wide **audit** / lint-sweep / dependency-bump across many files | **Dynamic Workflow** (top-level) | Domain-blind batch; team-lead's lifecycle is dead weight here |
+| High-stakes **verification** needing N independent checks (adversarial-verify, judge-panel, completeness-critic) | **Dynamic Workflow** (top-level) | Built-in reusable patterns; deterministic reduce |
+| **Deep research** spanning many sources/subtopics | **Dynamic Workflow** (pipeline) | fan-out → fetch → verify → synthesize, results off-context |
+| 3+ domains OR 15+ tasks **with cross-domain contracts** (frontend ⇐ OpenAPI ⇐ schema), needs increment activation + closure + GitHub/Jira/ADO sync | **Agent Teams** | Phased dependencies defeat fan-out; only team-lead owns the SpecWeave contract |
+| A single Agent-Teams **domain agent** discovers its OWN task list is a ≥~25 same-shape batch | Agent Teams **+ inner Workflow ×1** (see `agents/_protocol.md` Workflow Mode) | Legal one-level borrow; team-lead stays outer coordinator |
+| <15 tasks, 1 domain, sequential | **Inline** | Spawning overhead unjustified |
+
+### AUTO-DETECT signals (no flag required)
+
+- **→ Dynamic Workflow**: `migrate`, `migration`, `port`, `rename across`, `repo-wide`, `codebase-wide`, `audit`, `sweep`, `bulk`, `every file`, `all <N> …`, `double-check`, `verify independently`, `judge`, `tournament`, `deep research`, `survey the literature`, `ultracode` keyword / `/effort ultracode`.
+- **→ Agent Teams**: `build <feature>`, `team`, `parallel agents`, `multi-domain`, increment with 3+ domains, contracts (Prisma/OpenAPI/shared types) in scope, anything needing `sw:done`/sync.
+- **→ Inline**: small single-domain change, hotfix, one-file edit.
+
+### Guards (CHECK before routing to any Workflow)
+
+1. **Default-off** — if `quality.workflows.enabled` is absent or `false`, do NOT auto-fire a Workflow and do NOT honor the inner borrow; fall back to Agent Teams / inline (classic behavior, byte-for-byte). This is what keeps the enhancement non-destructive.
+2. **Budget gate** — read `quality.workflows.perRunTokenBudget` + `maxConcurrentWorkflows` from config. If a route would exceed either, DOWNGRADE to inline/sequential and tell the user.
+3. **Nesting law** — `Workflow()` allows ONE nesting level and THROWS inside a leaf subagent. Legal chain: `team-lead (orchestrator, not a Workflow) → Task member → Workflow ×1 → leaves (cannot nest)`. team-lead may fire a top-level Workflow OR delegate the borrow to a member — never both for the same work.
+4. **One top-level Workflow beats N nested ones** — for pure batch-class work, prefer a SINGLE top-level `Workflow` with `parallel()` over the items (one budget, one scheduler) instead of N domain agents each launching their own.
+5. **Inject SpecWeave context** — Workflow is domain-blind (zero knowledge of specs/ACs/increments/gates). Every Workflow-routed agent prompt MUST carry the increment path, file-ownership patterns, AC list, and contract artifacts, or it produces unanchored code.
+
+See `reference/dynamic-workflows.md` for primitives, quality patterns, and the full `quality.workflows` config schema.
 
 ---
 
@@ -402,6 +452,7 @@ fi
 | Spawn agent | `Task` | `team_name`, `name`, `subagent_type`, `prompt`, `mode: "bypassPermissions"` |
 | Send message | `SendMessage` | `type`, `recipient`, `content`, `summary` |
 | Shutdown agent | `SendMessage` | `type: "shutdown_request"`, `recipient` |
+| Run batch fan-out | `Workflow` | `script` (a `meta` literal + `agent()`/`parallel()`/`pipeline()`) — for batch-class work per §0.4; see `reference/dynamic-workflows.md` |
 
 ---
 
@@ -992,6 +1043,18 @@ When an agent is declared stuck:
 - Agents do NOT run sw:done (team-lead handles closure centrally)
 - Heartbeat STATUS messages let team-lead detect problems early instead of after long silences
 - If an agent's task count exceeds 40 despite the cap, split before spawning
+
+### Workflow-Aware Stuck Detection (agent borrowing a Workflow)
+
+A domain agent that borrows a Workflow (see `agents/_protocol.md` Workflow Mode) goes **silent for minutes** while the background run executes — the normal 5min/20min windows would false-kill a healthy agent. Additive handling:
+
+1. **Delegation state** — when an agent's STATUS contains `DELEGATING … workflow_id=`, mark it `state=workflow-delegating` and record the `workflow_id`. SUSPEND the normal 5/20 windows.
+2. **Extended windows** — while delegating, apply `quality.workflows.stuckDetection.{workflowNoProgressMin, workflowTotalStuckMin}` (defaults 20min / 60min) instead. Silence here is expected, not stuck.
+3. **Clear on completion** — a `STATUS: WORKFLOW_DONE` (or a `BLOCKING_ISSUE` citing the same `workflow_id`) restores `state=active` and the normal 5/20 windows from the next heartbeat.
+4. **Probe before kill** — if `workflowTotalStuckMin` elapses with no `WORKFLOW_DONE`, send ONE `STATUS_CHECK` asking the agent to report the Workflow's own progress (it is resumable/background). Declare stuck only after a second unanswered probe; prefer leaving the increment open over killing mid-batch.
+5. **Loop-detection unchanged** — the "same task number 3+ heartbeats = stuck loop" rule still applies to NON-delegating agents; a delegating agent emits no task-number heartbeats and is exempt by construction.
+
+**Default-off**: with no `quality.workflows` config, no agent ever enters `state=workflow-delegating`, so behavior is identical to today.
 
 ---
 
