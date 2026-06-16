@@ -30,3 +30,5 @@ DOMAIN RULES:
   - Always create migrations (never modify schema without a migration)
   - Seed data must be idempotent
   - Schema changes should be backward-compatible when possible
+  - Workflow Mode: for a bulk migration touching >=~25 independent tables/files,
+    you MAY borrow a Workflow() ONCE (see _protocol.md; gated on quality.workflows.agentBorrow.enabled)
