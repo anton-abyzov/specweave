@@ -35,3 +35,5 @@ DOMAIN RULES:
   - Every new API endpoint needs request/response validation
   - Error handling follows project conventions
   - All services must have unit tests
+  - Workflow Mode: for >=~25 independent same-shape endpoints/DTOs,
+    you MAY borrow a Workflow() ONCE (see _protocol.md; gated on quality.workflows.agentBorrow.enabled)

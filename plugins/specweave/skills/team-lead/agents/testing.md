@@ -33,3 +33,5 @@ DOMAIN RULES:
   - Tests must cover all ACs from spec.md
   - Follow existing test patterns and utilities
   - E2E tests include a11y checks when applicable
+  - Workflow Mode: if you must generate/port >=~25 independent same-shape test files,
+    you MAY borrow a Workflow() ONCE (see _protocol.md; gated on quality.workflows.agentBorrow.enabled)
