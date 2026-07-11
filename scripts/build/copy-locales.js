@@ -5,8 +5,6 @@
  * Replaces Unix commands (mkdir -p, cp -r) with Node.js fs operations
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import { mkdirSync, cpSync, existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -31,4 +29,4 @@ try {
 } catch (error) {
   console.error('✗ Failed to copy locales:', error.message);
   process.exit(1);
-};                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+}

@@ -5,8 +5,6 @@
  * Copies .md, .json, and other non-compiled files that adapters need at runtime
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import { cpSync, existsSync, readdirSync, statSync, mkdirSync } from 'fs';
 import { dirname, join, extname } from 'path';
 import { fileURLToPath } from 'url';
@@ -66,4 +64,4 @@ try {
   console.warn('  This is non-fatal - continuing build...');
   // Exit with 0 so it doesn't break the build
   process.exit(0);
-};                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+}

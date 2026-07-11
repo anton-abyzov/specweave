@@ -14,8 +14,6 @@
 // - Marketplace-compatible (no build step required)
 // - Simple build process (just copy files)
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync, rmSync, promises as fsPromises } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -168,4 +166,4 @@ async function main() {
   }
 }
 
-main();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+main();

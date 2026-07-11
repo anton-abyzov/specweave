@@ -4,8 +4,6 @@
  * Measures registry update latency and performance
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
@@ -199,4 +197,4 @@ async function main() {
 main().catch(err => {
   console.error('Benchmark failed:', err);
   process.exit(1);
-});                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+});

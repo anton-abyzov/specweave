@@ -12,8 +12,6 @@
  * - Without this check, users see cryptic "SyntaxError: Unexpected token 'with'"
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 const MIN_NODE_VERSION = '20.12.0';
 const CURRENT_NODE_VERSION = process.versions.node;
 
@@ -128,4 +126,4 @@ if (!isVersionSatisfied(CURRENT_NODE_VERSION, MIN_NODE_VERSION)) {
 }
 
 // Version OK - continue silently
-process.exit(0);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+process.exit(0);
