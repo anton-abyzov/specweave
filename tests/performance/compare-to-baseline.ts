@@ -4,8 +4,6 @@
  * Detects performance regressions by comparing results to baseline thresholds
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -207,4 +205,4 @@ function main() {
   }
 }
 
-main();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+main();
