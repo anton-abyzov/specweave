@@ -4,8 +4,6 @@
  * Executes all performance benchmarks and generates RESULTS.md
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import { runProjectManagerBenchmarks } from './project-manager.bench';
 import { runBrownfieldImportBenchmarks } from './brownfield-import.bench';
 import { runAnalyzerBenchmarks } from './analyzer.bench';
@@ -220,4 +218,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
 }
 
-export { runAllBenchmarks };                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+export { runAllBenchmarks };
