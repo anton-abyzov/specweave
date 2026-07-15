@@ -1,7 +1,7 @@
 {
   "name": "sw",
   "description": "SpecWeave unified plugin. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, brownfield support, GitHub/JIRA/ADO bidirectional sync, documentation generation, release management, architecture diagrams, and AI media generation.",
-  "version": "1.0.592",
+  "version": "1.0.593",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"

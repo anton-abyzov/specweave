@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "1.0.592",
+  "version": "1.0.593",
   "description": "100+ domain-expert AI skills — PM, Architect, Frontend, QA, Security and more. Skills learn your team's patterns permanently. Spec-first planning, autonomous execution, multi-agent teams, synced to GitHub/JIRA. Claude Code, Cursor, Copilot & more.",
   "type": "module",
   "main": "dist/index.js",
