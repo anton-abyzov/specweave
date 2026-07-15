@@ -42,6 +42,11 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
+      # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 22 ships an older
+      # npm. Without this the publish silently falls back to token auth.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm i -g npm@latest
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
@@ -157,19 +162,28 @@ jobs:
             echo "already_published=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to npm
+      # Publishes via npm Trusted Publishing (OIDC) — no token, no OTP.
+      # Configured at npmjs.com/package/specweave/access → Trusted Publisher:
+      #   org anton-abyzov · repo specweave · workflow release.yml.
+      # Requires `permissions: id-token: write` (set on the job above).
+      #
+      # Deliberately NO `NODE_AUTH_TOKEN` here: a stale/revoked token in the
+      # env makes npm prefer token auth and fail 401 instead of using OIDC.
+      # Deliberately NO `--provenance`: trusted publishing attaches provenance
+      # automatically, and passing it alongside OIDC is redundant.
+      - name: Publish to npm (OIDC trusted publishing)
         if: steps.check-published.outputs.already_published != 'true'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
+          npm --version
           # Check if it's a prerelease version
           if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
             echo "Publishing prerelease version with 'next' tag..."
-            npm publish --provenance --access public --tag next || npm publish --access public --tag next
+            npm publish --access public --tag next
           else
             echo "Publishing stable version..."
-            npm publish --provenance --access public || npm publish --access public
+            npm publish --access public
           fi
 
       - name: Create GitHub Release
