@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "1.0.592",
+  "version": "1.0.593",
   "description": "SpecWeave - Spec-Driven Development Framework. PM-led planning, intelligent model selection, living documentation, multi-tool support.",
   "owner": {
     "name": "Anton Abyzov",
@@ -12,7 +12,7 @@
       "description": "SpecWeave unified plugin — increment lifecycle, living docs, PM-led planning, GitHub/JIRA/ADO sync, docs generation, release management, diagrams, AI media",
       "source": "./plugins/specweave",
       "category": "development",
-      "version": "1.0.592",
+      "version": "1.0.593",
       "author": {
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
