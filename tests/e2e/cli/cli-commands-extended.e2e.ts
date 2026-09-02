@@ -117,8 +117,8 @@ describe.skipIf(!canRunCliE2E)('Extended CLI Commands', { timeout: CLI_TIMEOUT }
 
       // Status always shows overall progress section
       expect(output).toMatch(/Overall Progress/i);
-      // Status always shows WIP limit info
-      expect(output).toMatch(/WIP Limit/i);
+      // 2.0 dropped the WIP-limit line from status output.
+      expect(output).not.toMatch(/WIP Limit/i);
       // Status always shows summary counts
       expect(output).toMatch(/Summary/i);
       expect(output).toMatch(/Active:\s*\d+/i);

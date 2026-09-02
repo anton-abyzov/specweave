@@ -131,12 +131,13 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
     const dirStat = await fs.stat(specweaveDir);
     expect(dirStat.isDirectory()).toBe(true);
 
-    // Verify config.json has correct adapter and language
+    // Verify config.json has the correct adapter. `language` is a 1.x key the
+    // 2.0 migrator deletes, so init must not write it back.
     const configPath = path.join(specweaveDir, 'config.json');
     const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
     expect(config).toHaveProperty('project');
     expect(config.adapters?.default).toBe('claude');
-    expect(config.language).toBe('en');
+    expect(config).not.toHaveProperty('language');
 
     // Verify increments/ exists
     const incrementsDir = path.join(specweaveDir, 'increments');
@@ -275,7 +276,7 @@ describe.skipIf(!canRunLifecycleE2E)('Full SpecWeave Lifecycle', { timeout: LIFE
     expect(config).toHaveProperty('project');
     expect(config).toHaveProperty('adapters');
     expect(config.adapters.default).toBe('claude');
-    expect(config.language).toBe('en');
+    expect(config).not.toHaveProperty('language');
 
     // Verify CLAUDE.md was created at project root
     const claudeMdPath = path.join(workDir, 'CLAUDE.md');

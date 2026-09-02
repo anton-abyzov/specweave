@@ -56,7 +56,7 @@ describe('renderNudgePrompt', () => {
       topRefinement: null,
       hasHighConfidenceLearning: true,
     });
-    expect(result).toBe('Detected: new learning worth persisting — run `sw:reflect`? (y/N)');
+    expect(result).toBe('Detected: new learning worth persisting — record it in the increment notes? (y/N)');
   });
 
   it('ends with (y/N) — default is No (AC-US3-01, AC-US3-03)', () => {
