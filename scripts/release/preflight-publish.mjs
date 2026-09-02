@@ -54,30 +54,52 @@ try {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, npm_config_ignore_scripts: 'true' }, // no nested hooks
   });
-  // npm prints notices around the JSON payload, and those notices can contain
-  // brackets, so lastIndexOf(']') overshoots the array and JSON.parse then
-  // reports trailing content. Scan for the bracket that actually closes the
-  // array, tracking string literals and escapes.
-  const start = raw.indexOf('[');
-  if (start === -1) throw new Error(`no JSON array in npm pack output:\n${raw}`);
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  let end = -1;
-  for (let i = start; i < raw.length; i++) {
+  // npm's --json payload is surrounded by notices whose text can contain
+  // brackets, and its exact shape varies by npm major. Rather than guess:
+  // try the whole output, then every plausible JSON start, and accept the
+  // first candidate that actually yields a file list.
+  const readFiles = (value) => {
+    const payload = Array.isArray(value) ? value[0] : value;
+    const files = payload?.files;
+    if (!Array.isArray(files) || files.length === 0) return null;
+    return files.map((f) => (typeof f === 'string' ? f : f.path)).filter(Boolean);
+  };
+
+  const candidates = [];
+  const trimmed = raw.trim();
+  if (trimmed) candidates.push(trimmed);
+  for (let i = 0; i < raw.length; i++) {
     const ch = raw[i];
-    if (escaped) { escaped = false; continue; }
-    if (ch === '\\') { escaped = true; continue; }
-    if (ch === '"') { inString = !inString; continue; }
-    if (inString) continue;
-    if (ch === '[' || ch === '{') depth++;
-    else if (ch === ']' || ch === '}') {
-      depth--;
-      if (depth === 0) { end = i; break; }
+    if (ch !== '[' && ch !== '{') continue;
+    let depth = 0, inString = false, escaped = false;
+    for (let j = i; j < raw.length; j++) {
+      const c = raw[j];
+      if (escaped) { escaped = false; continue; }
+      if (c === '\\') { escaped = true; continue; }
+      if (c === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (c === '[' || c === '{') depth++;
+      else if (c === ']' || c === '}') {
+        depth--;
+        if (depth === 0) { candidates.push(raw.slice(i, j + 1)); i = j; break; }
+      }
     }
   }
-  if (end === -1) throw new Error(`unterminated JSON array in npm pack output:\n${raw}`);
-  entries = new Set(JSON.parse(raw.slice(start, end + 1))[0].files.map((f) => f.path));
+
+  let files = null;
+  for (const candidate of candidates) {
+    let parsed;
+    try { parsed = JSON.parse(candidate); } catch { continue; }
+    files = readFiles(parsed);
+    if (files) break;
+  }
+  if (!files) {
+    throw new Error(
+      `could not read a file list from \`npm pack --dry-run --json\` (npm ${process.env.npm_config_user_agent ?? 'unknown'}).\n` +
+        `First 500 chars of output:\n${raw.slice(0, 500)}`,
+    );
+  }
+  entries = new Set(files);
 } catch (err) {
   console.error('[preflight] `npm pack --dry-run --json` failed:');
   console.error(err.stderr?.toString() ?? err.message);
