@@ -220,11 +220,12 @@ A properly completed specification.
         projectRoot: tempDir,
       });
 
-      expect(result.nextSteps).toHaveLength(3);
-      expect(result.nextSteps[0]).toContain('Complete product specification');
-      expect(result.nextSteps[0]).toContain('0001-feature');
-      expect(result.nextSteps[1]).toContain('Design architecture');
-      expect(result.nextSteps[2]).toContain('Create tasks');
+      // 2.0 loop: spec → tasks → work the ledger → verify/complete.
+      expect(result.nextSteps).toHaveLength(4);
+      expect(result.nextSteps[0]).toContain('spec.md');
+      expect(result.nextSteps[1]).toContain('tasks.md');
+      expect(result.nextSteps[2]).toContain('specweave task next');
+      expect(result.nextSteps[3]).toContain('0001-feature');
     });
   });
 

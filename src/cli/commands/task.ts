@@ -36,7 +36,7 @@ import {
   type TaskBoard,
   type BoardTask,
 } from '../../core/tasks/task-board.js';
-import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
+import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 
 export interface TaskCommandOptions {
   force?: boolean;
@@ -105,6 +105,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   /** Current state of a task after the last append. */
   const stateOf = (id: string) => board.tasks.find((t) => t.id === id)!.state;
 
+  // Headings the parser could not read are reported, never dropped in silence.
+  for (const w of board.warnings) err(`warning: ${w}`);
+
   if (action === 'list') {
     if (opts.json) {
       out(JSON.stringify({
@@ -153,6 +156,10 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   switch (action) {
     case 'claim': {
       if (task.state.status === 'done' || task.state.status === 'skipped') { err(`${taskId} is already ${task.state.status}`); return 1; }
+      // Claiming a task starts the increment (planned → active). This is the
+      // CLI transition the skills point at; nobody hand-edits metadata.json.
+      const started = ensureIncrementStarted(inc.dir);
+      if (started && !opts.json) out(started);
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
       const deps = unmetDeps(board, task);
       if (deps.length && !opts.force) { err(`${taskId} depends on ${deps.join(', ')} (not done). Use --force to override.`); return EXIT_DEPS_UNMET; }
