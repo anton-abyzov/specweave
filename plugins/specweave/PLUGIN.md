@@ -1,119 +1,55 @@
-# SpecWeave Core
+# SpecWeave plugin (`sw`)
 
-**Version**: 1.0.227
-**Author**: SpecWeave Contributors
-**License**: MIT
-
-## Description
-
-SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.
+The Claude Code surface for SpecWeave: **10 skills, 4 hooks, 1 closer agent**.
+Everything deterministic lives in the `specweave` CLI; a skill exists only where a
+procedure needs model judgement. There is no `commands/` namespace in 2.0.
 
 ## Skills
 
-| Skill | Description |
-|-------|-------------|
-| pm | Product Manager for spec-driven development with user stories, acceptance criteria, and MVP planning |
-| architect | System architect for scalable, maintainable technical designs and ADRs |
-| roadmap-planner | Product roadmap and feature prioritization with RICE, MoSCoW, and Kano frameworks |
-| code-simplifier | Code refinement agent that simplifies and improves code clarity |
-| performance | Performance engineering for web apps, databases, and distributed systems |
-| security | Security engineer for vulnerability assessment and secure code review |
-| security-patterns | Real-time security pattern detector for dangerous code patterns |
-| compliance-architecture | Enterprise compliance architecture for SOC 2, HIPAA, GDPR, PCI-DSS |
-| serverless-recommender | Serverless platform selection expert for AWS Lambda, Azure Functions, etc. |
-| service-connect | Smart external service connection orchestrator (MCP, REST, SDK, CLI) |
-| external-sync-wizard | Guide for bidirectional sync with GitHub, JIRA, Azure DevOps |
-| update-instructions | Smart merge for CLAUDE.md and AGENTS.md instruction files |
-| translator | LLM-native translation skill for SpecWeave content |
-| framework | Expert on SpecWeave framework structure, rules, and conventions |
-| detector | Detects SpecWeave context and provides workflow documentation |
-| sync | One sync surface for GitHub/Jira/ADO (push, pull, status, setup) |
-| grill | Critical code review before increment completion |
-| self-validating-example | Example skill demonstrating self-validating REST API generation |
-| lsp | Language Server Protocol support for code navigation |
-| brainstorm | Multi-perspective ideation with cognitive lenses, persistent idea trees, and sw:increment handoff |
-| code-reviewer | Elite multi-agent code review with parallel specialized reviewers for logic, security, performance, silent failures, type design, and spec compliance |
+| Skill | What it does |
+|---|---|
+| `sw:increment` | Plan a unit of work → `spec.md` (Problem, Scope, ACs, Approach) + `tasks.md` |
+| `sw:do` | Work the increment task by task through the ledger, with evidence per task |
+| `sw:done` | Close it: ledger check → `specweave verify` → optional review → `specweave complete` |
+| `sw:review` | Adversarial fresh-context review; every finding cites `path:line` |
+| `sw:team` | Several agents on one increment: a worktree each, claims through the ledger |
+| `sw:handoff` | Portable, secret-scrubbed handoff doc so the work continues in any tool |
+| `sw:sync` | GitHub / Jira / ADO: push, pull, status, setup |
+| `sw:auto` | Unattended loop driven by the Stop hook |
+| `sw:brainstorm` | Expand the option space before committing to one |
+| `sw:qa` | Risk-scored quality assessment (`specweave qa`) |
 
-## Commands
+Optional procedures (tdd-cycle, e2e, debug, diagrams, release-expert) are **not** in the
+plugin — they ship from `skills-optional/` via
+`npx vskill install anton-abyzov/specweave/skills-optional/<name>`.
 
-| Command | Description |
-|---------|-------------|
-| sw:increment | Plan new Product Increment with spec.md, plan.md, tasks.md |
-| sw:do | Execute increment implementation following spec and plan |
-| sw:progress | Show detailed progress for active increments |
-| sw:done | Close increment with PM validation (3-gate quality check) |
-| sw:auto | Start autonomous execution with stop hook feedback loop |
-| sw:auto-status | Show current auto session status and progress |
-| sw:cancel-auto | Emergency cancel of running auto session |
-| sw:auto-parallel | Enable parallel agent execution for multi-domain features |
-| sw:save | Smart save with auto-generated commits and git handling |
-| sw:validate | Validate increment with rule-based checks and AI assessment |
-| sw:qa | Run quality assessment with risk scoring and gate decisions |
-| sw:judge-llm | Ultrathink LLM-as-Judge validation of completed work |
-| sw:status | Show increment status overview (active, backlog, paused, etc.) |
-| sw:next | Smart increment transition - auto-close and suggest next work |
-| sw:pause | Pause an active increment |
-| sw:resume | Resume a paused or backlog increment |
-| sw:abandon | Abandon an incomplete increment |
-| sw:archive | Manually archive completed increments |
-| sw:restore | Restore archived increments back to active |
-| sw:reopen | Reopen a completed increment for additional work |
-| sw:backlog | Move an increment to backlog |
-| sw:plan | Generate plan.md and tasks.md using Architect Agent |
-| sw:increment-quality-judge-v2 | AI-powered quality assessment with BMAD risk scoring |
-| sw:tdd-cycle | Execute comprehensive TDD workflow with strict discipline |
-| sw:tdd-red | Write comprehensive failing tests (TDD red phase) |
-| sw:tdd-green | Implement minimal code to make tests pass (TDD green phase) |
-| sw:tdd-refactor | Refactor code with comprehensive test safety net |
-| sw:sync-docs | Strategic documentation sync (review or export) |
-| sw:sync | Sync with GitHub/Jira/ADO: push, pull, status, setup |
-| sw:living-docs | Launch Living Docs Builder independently |
-| sw:sync (pull --create-increments) | Import external work items (GitHub/JIRA/ADO) |
-| sw:discrepancies | View and manage code-to-spec discrepancies |
-| sw:discrepancy-to-increment | Convert discrepancies into new increment |
-| sw:fix-duplicates | Detect and resolve duplicate increments |
-| sw:reconcile | Reconcile increment ID collisions after merge |
-| sw:reflect | Analyze session and extract learnings to CLAUDE.md |
-| sw:reflect-on | Enable automatic reflection on session end |
-| sw:reflect-off | Disable automatic reflection |
-| sw:reflect-status | Show reflection configuration and statistics |
-| sw:reflect-check | Diagnostic tool for reflection system health |
-| sw:reflect-clear | Clear specific learnings from Skill Memories |
-| sw:code-reviewer | Elite multi-agent code review system |
-| sw:code-standards-analyzer | Generate coding standards from codebase patterns |
-| sw:grill | Comprehensive implementation auditor |
-| sw:feature-dev | Feature Development Workflow (7-phase structured approach) |
-| sw:role-orchestrator | Multi-agent orchestration for complex tasks |
-| sw:docs-writer | Technical documentation writer |
-| sw:translate | Translate SpecWeave project content |
-| sw:skill | Create and validate Claude Code skills |
-| sw:npm | Full patch release with npm publish |
-| sw-media:image | AI image generation (Google Imagen 4 / Pollinations.ai) |
-| sw-media:video | AI video generation (Google Veo 3.1 / Pollinations.ai) |
-| sw-media:remotion | Programmatic video from React with Remotion |
-| sw:analytics | Show usage analytics dashboard |
+## Hooks
 
-## Subagents
+Four, all exec-form `node hooks/run.mjs <event>` (no shell, Windows-safe):
 
-SpecWeave uses specialized subagents for different phases of the increment workflow. These run in isolated contexts to keep the main agent's context clean.
+| Hook | Job |
+|---|---|
+| `SessionStart` | Inject the active increment + next task as context |
+| `PreToolUse` (Write\|Edit) | Guard writes under `.specweave/increments/` |
+| `Stop` | Drive the `sw:auto` loop; `{}` for every ordinary session |
+| `PreCompact` | Write a handoff doc before context is compacted |
 
-| Subagent | Purpose | When to Use |
-|----------|---------|-------------|
-| `sw:sw-closer` | Runs full `sw:done` closure pipeline in fresh context | After team-lead/team-merge completes, prevents context overflow |
-| `sw:sw-pm` | Writes spec.md with user stories and acceptance criteria | During `sw:increment` planning phase |
-| `sw:sw-architect` | Writes plan.md with architecture decisions | During `sw:increment` planning phase |
-| `sw:sw-planner` | Writes tasks.md with BDD test plans | During `sw:increment` planning phase |
+## Agents
 
-Agent definitions live in `plugins/specweave/agents/`.
+| Agent | Purpose |
+|---|---|
+| `sw:sw-closer` | Runs closure in a fresh context after implementation finishes |
 
-## Installation
-
-```bash
-vskill add specweave --plugin sw
-```
+Team lane templates live in `skills/team/agents/` and are loaded by `specweave team`.
 
 ## Requirements
 
-- Claude Code 2.1.0+
-- Node.js 18+ (for CLI tools)
-- Git (for version control integration)
+- Claude Code 2.1.0+, Node.js 18+, Git
+- The `specweave` CLI on PATH (`npm i -g specweave`). Skills degrade to documented
+  manual steps when it is absent; they never silently no-op.
+
+## Install
+
+```bash
+claude plugin install sw@specweave     # or: specweave refresh-plugins
+```

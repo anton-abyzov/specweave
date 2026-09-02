@@ -1,52 +1,33 @@
-# SpecWeave Plugins Index
+# SpecWeave plugins index
 
-**Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
+**Plugins**: 1 (`sw`) · **Skills**: 10 · **Commands**: 0 · **Hooks**: 4
 
-**Total Plugins**: 1 | **Total Skills**: 44 | **Total Commands**: 72 | **Last Updated**: 2026-03-17
+The 1.x `commands/` namespace is gone: anything deterministic is a `specweave`
+CLI subcommand, and the model-judgement procedures are the 10 skills below.
 
----
+| Plugin | Triggers | Description |
+|---|---|---|
+| **specweave** (`sw`) | increment, spec, tasks, plan, implement, close, review, team, handoff, sync, GitHub, Jira, ADO, auto, brainstorm, qa | Increment lifecycle: plan → work the ledger → verify → review → complete, with cross-tool handoff and tracker sync |
 
-## Progressive Loading Pattern
+## Quick lookup
 
-1. **Scan this index** at session start (~2KB)
-2. **Match triggers** to user intent
-3. **Load plugin content** only when matched
-4. **Savings**: ~95% (index only vs all plugins)
+| User intent | Skill |
+|---|---|
+| "Plan a feature" / "let's build X" | `sw:increment` |
+| "Implement" / "continue increment" | `sw:do` |
+| "We're done" / "close it" | `sw:done` |
+| "Review this" / "grill the code" | `sw:review` |
+| "Parallel agents" / "split this up" | `sw:team` |
+| "Handoff" / "continue in another tool" | `sw:handoff` |
+| "Push to GitHub" / "import issues" | `sw:sync` |
+| "Run until done" | `sw:auto` |
+| "What are our options" | `sw:brainstorm` |
+| "Quality check" / "risk assessment" | `sw:qa` |
 
----
+## Not in the plugin
 
-## Unified Plugin
+`tdd-cycle`, `e2e`, `debug`, `diagrams`, `release-expert` live in `skills-optional/`
+and install per-project with vskill. See `skills-optional/README.md`.
 
-| Plugin | Triggers | Skills | Commands | Description |
-|--------|----------|--------|----------|-------------|
-| **specweave** (sw) | increment, feature, plan, spec, tasks, TDD, PM, architect, brainstorm, debug, team, grill, validate, GitHub, issues, gh, sync to GitHub, PR review, JIRA, Jira, epics, stories, sync to JIRA, Azure DevOps, ADO, work items, Azure boards, documentation, docs site, Docusaurus, preview, build docs, release, version, npm publish, changelog, RC, diagram, Mermaid, C4, architecture diagram, image, video, remotion, generate image, AI video | 44 | 72 | Unified SpecWeave plugin — planning, specs, TDD, living docs, multi-agent teams, code review, GitHub/JIRA/ADO sync, docs generation, release management, diagrams, AI media |
-
----
-
-## Quick Lookup Table
-
-| User Intent | Skill/Command |
-|-------------|---------------|
-| "Plan a feature" | `sw:increment` |
-| "Sync to GitHub" | `sw:github-sync` |
-| "Review PR" | `sw:pr` (pr-review skill) |
-| "Sync to JIRA" | `sw:jira-sync` |
-| "Sync to Azure DevOps" | `sw:ado-sync` |
-| "Create release" | `sw:release-npm` |
-| "Generate diagram" | `sw:diagrams-generate` |
-| "Generate an image" | image skill |
-| "Create video" | video / remotion skill |
-| "Preview docs" | `sw:docs-view` |
-| "Build docs" | `sw:docs-build` |
-| "Import JIRA issues" | `sw:jira-import-projects` |
-| "Import ADO work items" | `sw:ado-import-projects` |
-
----
-
-## Token Efficiency
-
-- **This index**: ~50 lines (~1.5KB)
-- **Full plugin loaded**: ~24.6 MB markdown
-- **Savings**: ~99.99% by loading on-demand
-
-**Pattern**: Load index → Match triggers → Load only matched plugin content
+Deterministic operations are CLI: `specweave status | task | verify | complete | qa |
+handoff | sync | docs | doctor | gc`.
