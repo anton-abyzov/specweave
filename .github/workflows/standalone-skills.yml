@@ -9,6 +9,7 @@ on:
     paths:
       - 'skills/**'
       - 'scripts/lint-standalone-skills.mjs'
+      - 'src/templates/*.template'
       - 'tests/unit/skills/**'
       - 'src/core/tasks/**'
       - 'src/core/session/handoff-doc-format.ts'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'skills/**'
       - 'scripts/lint-standalone-skills.mjs'
+      - 'src/templates/*.template'
       - 'tests/unit/skills/**'
 
 jobs:

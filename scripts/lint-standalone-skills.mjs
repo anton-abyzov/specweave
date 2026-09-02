@@ -18,6 +18,8 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const TEMPLATES_DIR = path.join(REPO_ROOT, 'src', 'templates');
+const OPTIONAL_SKILLS_DIR = path.join(REPO_ROOT, 'skills-optional');
 const MAX_LINES = 150;
 const MAX_DESCRIPTION = 200;
 
@@ -33,6 +35,11 @@ const CLAUDE_ONLY = [
   [/\/sw:[a-z-]+/, 'Claude Code plugin command (/sw:…)'],
   [/^allowed-tools\s*:/m, 'allowed-tools frontmatter'],
 ];
+
+const IS_POSIX_SHELL = /^(bash|sh|zsh|shell)$/i;
+const IS_POWERSHELL = /^(powershell|pwsh|ps1)$/i;
+/** A shell redirect that creates/appends a file (ignores 2>&1 and /dev/null). */
+const SHELL_WRITE_REDIRECT = /(?:^|[^0-9&>])>{1,2}\s*(?![&|])(?!\/dev\/null)["'$A-Za-z0-9_./\\~-]/;
 
 /** Ledger event keys, in the order `formatLedgerLine` writes them. */
 const LEDGER_KEY_ORDER = ['t', 'e', 'by', 'at', 'note', 'evidence'];
@@ -117,7 +124,7 @@ export function lintSkill(dir) {
   const blocks = codeBlocks(lines);
   for (const b of blocks) {
     if (b.unterminated) add(`unterminated code fence opened at line ${b.start}`);
-    if (/^(powershell|pwsh|ps1)$/i.test(b.lang)) {
+    if (IS_POWERSHELL.test(b.lang)) {
       b.lines.forEach((l, i) => {
         if (/(^|[^`>])>>?[^>=]/.test(l) && !l.includes('::')) {
           add(`PowerShell redirect on line ${b.start + i + 1} — use [IO.File]::AppendAllText / WriteAllText`);
@@ -125,7 +132,23 @@ export function lintSkill(dir) {
       });
     }
   }
-  const hasPsBlock = blocks.some((b) => /^(powershell|pwsh|ps1)$/i.test(b.lang));
+  // A bash block that WRITES A FILE must be followed by a PowerShell sibling:
+  // `{ a; b; } > f` and `>>` are silent data corruption in PowerShell (a
+  // scriptblock literal / UTF-16), and a `bash`-tagged block is invisible to
+  // the PowerShell redirect rule above.
+  const real = blocks.filter((b) => !b.unterminated);
+  real.forEach((b, i) => {
+    if (!IS_POSIX_SHELL.test(b.lang)) return;
+    // Strip <placeholders> first: their closing `>` is not a redirect.
+    const writes = b.lines.some((l) => SHELL_WRITE_REDIRECT.test(l.replace(/<[^<>]*>/g, '')));
+    if (!writes) return;
+    const next = real[i + 1];
+    if (!next || !IS_POWERSHELL.test(next.lang)) {
+      add(`bash block at line ${b.start} writes a file but has no PowerShell sibling block after it`);
+    }
+  });
+
+  const hasPsBlock = blocks.some((b) => IS_POWERSHELL.test(b.lang));
   const hasIoWrite = /\[IO\.File\]::(AppendAllText|WriteAllText)/.test(content);
   if (hasPsBlock && !hasIoWrite) add('has a PowerShell block without the [IO.File]:: write form');
   // A skill that tells you to append to the ledger must show the Windows form too.
@@ -160,6 +183,51 @@ export function lintSkill(dir) {
   return errors;
 }
 
+/**
+ * Every `vskill install anton-abyzov/specweave/<ref>` line shipped in a
+ * template must name a real standalone skill directory. The canonical form has
+ * NO `skills/` segment (skills/README.md is the enforced reference); the only
+ * other legal shape is `skills-optional/<name>`. Without this the install line
+ * baked into every generated AGENTS.md can silently drift from the folder
+ * layout and hand non-Claude users a path that does not resolve.
+ */
+export function lintTemplateInstallRefs(templatesDir = TEMPLATES_DIR, validSkills = []) {
+  const errors = [];
+  if (!fs.existsSync(templatesDir)) return errors;
+  const files = fs
+    .readdirSync(templatesDir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.template'))
+    .map((e) => e.name)
+    .sort();
+  const optional = fs.existsSync(OPTIONAL_SKILLS_DIR)
+    ? fs.readdirSync(OPTIONAL_SKILLS_DIR, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)
+    : [];
+
+  for (const f of files) {
+    const content = fs.readFileSync(path.join(templatesDir, f), 'utf-8');
+    const rel = `src/templates/${f}`;
+    for (const m of content.matchAll(/vskill install anton-abyzov\/specweave\/([^\s`)'"]+)/g)) {
+      const ref = m[1];
+      if (/^<[^>]+>$/.test(ref)) continue; // placeholder
+      if (ref.startsWith('skills-optional/')) {
+        const name = ref.slice('skills-optional/'.length);
+        if (!/^<[^>]+>$/.test(name) && !optional.includes(name)) {
+          errors.push(`${rel}: install ref "${ref}" is not a folder under skills-optional/`);
+        }
+        continue;
+      }
+      if (ref.includes('/')) {
+        errors.push(`${rel}: install ref "${ref}" must be \`anton-abyzov/specweave/<skill-dir>\` (no extra path segment)`);
+        continue;
+      }
+      if (!validSkills.includes(ref)) {
+        errors.push(`${rel}: install ref "${ref}" is not a standalone skill directory (have: ${validSkills.join(', ')})`);
+      }
+    }
+  }
+  return errors;
+}
+
 export function lintStandaloneSkills(skillsDir = path.join(REPO_ROOT, 'skills')) {
   const errors = [];
   if (!fs.existsSync(skillsDir)) return [`${skillsDir}: missing`];
@@ -184,6 +252,10 @@ export function lintStandaloneSkills(skillsDir = path.join(REPO_ROOT, 'skills'))
   }
 
   for (const d of dirs) errors.push(...lintSkill(path.join(skillsDir, d)));
+  // Templates ship install lines for THESE skills; only meaningful for the real folder.
+  if (path.resolve(skillsDir) === path.join(REPO_ROOT, 'skills')) {
+    errors.push(...lintTemplateInstallRefs(TEMPLATES_DIR, dirs));
+  }
   return errors;
 }
 
