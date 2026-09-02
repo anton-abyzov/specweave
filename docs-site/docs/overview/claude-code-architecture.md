@@ -138,7 +138,7 @@ SpecWeave ships as a **single bundled plugin** (`specweave`) that installs autom
 | Component | Count | Details |
 |-----------|-------|---------|
 | **Skills** | 44 | Auto-activating expertise (increment, PM, architect, TDD, grill, sync...) |
-| **Commands** | 72 | Slash commands (`sw:increment`, `sw:do`, `sw:done`, `sw:sync`...) |
+| **Skills** | 10 | `sw:increment`, `sw:do`, `sw:done`, `sw:review`, `sw:team`, `sw:handoff`, `sw:sync`, `sw:auto`, `sw:brainstorm`, `sw:qa` |
 | **Agents** | 3 + 21 | 3 top-level (PM, Architect, Planner) + 21 sub-agents (team-lead, code-reviewer) |
 
 Key functional areas within the plugin:
@@ -146,13 +146,13 @@ Key functional areas within the plugin:
 | Area | Examples |
 |------|----------|
 | **Increment lifecycle** | `sw:increment`, `sw:do`, `sw:done`, `sw:review`, `sw:auto` |
-| **GitHub/JIRA/ADO sync** | `sw:sync`, `sw:sync`, `sw:sync`, reconcile, close |
-| **Testing & TDD** | `sw:do`, `sw:do`, `sw:do`, `sw:do`, `sw:qa` |
-| **Code review** | `sw:review`, `sw:review`, `sw:review`, `sw:review` |
+| **GitHub/Jira/ADO sync** | `sw:sync` (push, pull, status, setup) |
+| **Testing** | `sw:do` (test-first loop), `specweave verify`, `sw:qa` |
+| **Code review** | `sw:review` (one adversarial fresh-context pass) |
 | **Release management** | `specweave save`, `specweave save`, `specweave save`, `specweave save` |
 | **Documentation** | `specweave docs`, `specweave living-docs`, `specweave docs build`, `specweave docs preview` |
 | **Diagrams & media** | `specweave docs`, `specweave docs`, `specweave docs`, `specweave docs` |
-| **Team orchestration** | `sw:team`, `sw:team`, `sw:team` |
+| **Team orchestration** | `sw:team` (worktree per agent, ledger claims) |
 
 Additional domain-specific skills are available via the [vskill CLI](https://verified-skill.com) and the community registry (see [Skills & Capabilities](/docs/overview/skills-and-capabilities)).
 

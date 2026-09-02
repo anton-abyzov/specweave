@@ -60,7 +60,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: TDD (Test-Driven Development) Workflow Leader
 - **Expertise**: Red-Green-Refactor cycle, test-first development
 - **Activates**: When using TDD workflow
-- **Commands**: `sw:do`, `sw:do`, `sw:do`, `sw:do`
+- **Commands**: `sw:do` (TDD loop), `specweave verify`
 - **Output**: TDD workflow guidance, test implementation
 
 **6. Planner Agent** (`sw-planner`)

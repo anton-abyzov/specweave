@@ -40,9 +40,9 @@ In Claude Code, skills and commands are invoked the same way - with `sw:&lt;name
 **All slash commands** organized by purpose:
 - **Planning**: `sw:increment`
 - **Execution**: `sw:auto`, `sw:do`, `sw:team`
-- **Quality**: `sw:review`, `sw:qa`, `sw:review`
+- **Quality**: `sw:review`, `sw:qa`
 - **Completion**: `specweave task next`, `sw:done`
-- **Sync**: `sw:sync`, `sw:sync`, `sw:sync`
+- **Sync**: `sw:sync` (push, pull, status, setup)
 
 ### [Configuration Reference](./configuration)
 
