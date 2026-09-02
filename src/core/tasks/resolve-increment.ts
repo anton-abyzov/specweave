@@ -2,8 +2,10 @@
  * Increment resolution shared by `task`, `verify`, `handoff`.
  *
  * - explicit id: short (`0874`) or full slug, via resolveIncrementId
- * - omitted: the SINGLE increment whose metadata.json status is in flight
- *   (`active`, `in-progress`, `ready_for_review`)
+ * - omitted: the SINGLE increment whose metadata.json status is in flight —
+ *   anything that is not terminal or parked (so `planned`/`planning`,
+ *   `active`, `in-progress`, `ready_for_review` all qualify; `completed`,
+ *   `abandoned`, `archived`, `superseded`, `paused`, `backlog` do not)
  *   (2+ → error listing candidates; 0 → error). metadata.json is read directly
  *   (never lazily created).
  *
@@ -27,14 +29,41 @@ export class IncrementResolutionError extends Error {
   }
 }
 
-/** Statuses that count as "work in flight" for id resolution. */
-const ACTIVE_STATUSES = new Set(['active', 'in-progress', 'ready_for_review', 'ready-for-review']);
+/**
+ * Statuses that are TERMINAL (or explicitly parked) — an increment in one of
+ * these is never auto-resolved as "the increment I am working on".
+ *
+ * Everything else counts as work in flight, including the status a freshly
+ * created increment carries (`planning` in 1.x, `planned` in 2.0). Before
+ * 2.0 the set was an allow-list of `active`-ish values, so `task next`,
+ * `verify` and `handoff` all failed immediately after `create-increment`
+ * (the documented loop step 1 → step 2) and `handoff` silently fell back to
+ * the un-tracked `.handoff/HANDOFF.md`.
+ */
+const TERMINAL_STATUSES = new Set([
+  'completed',
+  'complete',
+  'done',
+  'abandoned',
+  'cancelled',
+  'canceled',
+  'archived',
+  'superseded',
+  'paused',
+  'backlog',
+]);
+
+/** True when `status` is a work-in-flight status (see {@link TERMINAL_STATUSES}). */
+export function isInFlightStatus(status: string | undefined): boolean {
+  if (!status) return false;
+  return !TERMINAL_STATUSES.has(status.trim().toLowerCase());
+}
 
 export function incrementsDir(projectRoot: string): string {
   return path.join(projectRoot, '.specweave', 'increments');
 }
 
-/** Ids of increments whose metadata.json says `active` (read-only scan). */
+/** Ids of increments whose metadata.json status is work-in-flight (read-only scan). */
 export function listActiveIncrementIds(projectRoot: string): string[] {
   const dir = incrementsDir(projectRoot);
   if (!fs.existsSync(dir)) return [];
@@ -45,7 +74,7 @@ export function listActiveIncrementIds(projectRoot: string): string[] {
     if (!fs.existsSync(meta)) continue;
     try {
       const status = (JSON.parse(fs.readFileSync(meta, 'utf-8')) as { status?: string }).status;
-      if (status && ACTIVE_STATUSES.has(status)) ids.push(entry);
+      if (isInFlightStatus(status)) ids.push(entry);
     } catch {
       // unreadable metadata → not a candidate
     }
