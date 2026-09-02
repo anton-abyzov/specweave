@@ -180,6 +180,10 @@ Full migration guide: `.specweave/docs/internal/specs/opus-47-migration.md`
 
 **[spec-weave.com](https://spec-weave.com)** — guides, reference, and enterprise docs.
 
+## Contributing
+
+Inside this repo dependency install scripts are disabled (`.npmrc`): run `npm ci`, then `npm run setup` (rebuilds the allowlisted native deps), and `npm run security:scan` before pushing — see [SECURITY.md](SECURITY.md).
+
 ## Community
 
 [Discord](https://discord.gg/UYg4BGJ65V) · [YouTube](https://www.youtube.com/@antonabyzov) · [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)

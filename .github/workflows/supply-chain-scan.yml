@@ -1,0 +1,49 @@
+name: Supply-chain scan
+
+# Blocks the July-2026 injection class: whitespace-padded payload lines,
+# oversized lines, base64 blobs, eval/atob decoders and createRequire shims in
+# test files. Zero-dependency scanner: scripts/security/scan-payload.mjs.
+# Make this a required status check on the default branch before re-enabling
+# any bot auto-merge.
+
+on:
+  pull_request:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Payload scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Scanner self-test + tree scan
+        run: node scripts/security/scan-payload.mjs --self-test
+
+  signatures:
+    name: npm audit signatures
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install (no install scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Verify registry signatures and attestations
+        run: npm audit signatures

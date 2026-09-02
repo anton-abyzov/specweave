@@ -20,9 +20,15 @@ runs:
         node-version: ${{ inputs.node-version }}
         cache: 'npm'
 
-    - name: Install dependencies
+    # Supply-chain guard: dependency install scripts never run in CI.
+    # `npm run setup` rebuilds only the allowlisted packages (see SECURITY.md).
+    - name: Install dependencies (no install scripts)
       shell: bash
-      run: npm ci
+      run: npm ci --ignore-scripts
+
+    - name: Rebuild allowlisted native deps
+      shell: bash
+      run: npm run setup
 
     - name: Build project
       if: inputs.skip-build != 'true'

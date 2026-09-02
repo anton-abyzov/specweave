@@ -1,3 +1,13 @@
+# DISABLED 2026-09-02 (supply-chain hardening). Do not move back into .github/workflows/.
+#
+# Why: the July-2026 injection reached develop through this automation class.
+# An agent job ran plain `npm ci` (dependency install scripts enabled), then
+# `git add -A && git push` — that is how commit 7e1084e5c (dependabot PR #1912)
+# got poisoned with 13 padded-line payload scripts. Dependabot auto-merge then
+# carried it in without a human. Policy (SECURITY.md): CI agents never run
+# install scripts and never `git add -A`; bot PRs are merged by a person after
+# the supply-chain-scan check passes.
+#
 name: Dependabot Auto-Merge
 
 # Auto-approve and auto-merge Dependabot PRs for minor/patch updates.
