@@ -68,7 +68,8 @@ describe('LifecycleHookDispatcher — cross-project docs links (#1925)', () => {
     projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-1925-'));
     fs.mkdirSync(path.join(projectRoot, '.specweave', 'state'), { recursive: true });
     mocks.mockConfigRead.mockResolvedValue({
-      hooks: { post_increment_done: { sync_living_docs: true } },
+      livingDocs: 'onDone',
+      hooks: { post_increment_done: {} },
       skillGen: { detection: 'off' },
     });
     // Umbrella-level id — must NOT be used when projectIds is populated
