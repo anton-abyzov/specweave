@@ -173,7 +173,7 @@ For each task:
 
 **After EVERY task completion** (CRITICAL):
 
-- **AC-sync hook fires automatically** (via PostToolUse on Edit/Write) updating spec.md ACs
+- **Tick the ACs the task satisfied** in spec.md (`- [ ]` -> `- [x]`) — there is no PostToolUse hook doing this for you
 - **Update docs inline**: CLAUDE.md (new commands/config/skills), README.md (user-facing changes), CHANGELOG.md (API/breaking changes), openapi.yaml (if API task + apiDocs.enabled)
 - **GitHub sync** (if plugin enabled): close task issue, check off in epic, post completion comment
 - Continue to next incomplete task
