@@ -114,7 +114,7 @@ sw:auto --dry-run
 ### Check Status
 
 ```bash
-sw:auto-status
+specweave auto-status
 ```
 
 Output:
@@ -140,13 +140,13 @@ Progress: [████████████████░░░░░░░
 
 ```bash
 # Interactive (asks confirmation)
-sw:cancel-auto
+specweave cancel-auto
 
 # Force cancel
-sw:cancel-auto --force
+specweave cancel-auto --force
 
 # With reason
-sw:cancel-auto --reason "Need to pivot to urgent bug fix"
+specweave cancel-auto --reason "Need to pivot to urgent bug fix"
 ```
 
 ### Resume After Crash
@@ -232,7 +232,7 @@ Failing tests:
 - checkout.spec.ts:112 - Payment timeout
 - ...
 
-Run sw:auto-status for details.
+Run specweave auto-status for details.
 ```
 
 ### 6. Circuit Breakers
@@ -354,7 +354,7 @@ I need your DATABASE_URL to execute the migration.
 
 ```bash
 # Run quality check first
-sw:validate 0001 --quality
+sw:review 0001 --quality
 
 # Then start auto
 sw:auto 0001
@@ -385,8 +385,8 @@ sw:auto --max-iterations 25
 For your first few auto sessions:
 
 1. Keep the terminal visible
-2. Check `sw:auto-status` periodically
-3. Be ready to `sw:cancel-auto` if needed
+2. Check `specweave auto-status` periodically
+3. Be ready to `specweave cancel-auto` if needed
 
 ### 5. Review Summaries
 
@@ -406,8 +406,8 @@ After completion, review the summary:
 ❌ Auto session already active: auto-2025-12-29-xyz789
 
 Options:
-  1. Cancel it: sw:cancel-auto
-  2. Check status: sw:auto-status
+  1. Cancel it: specweave cancel-auto
+  2. Check status: specweave auto-status
   3. Let it continue (close this tab)
 ```
 
@@ -419,7 +419,7 @@ If a session seems stuck:
 
 ```bash
 # Check status
-sw:auto-status
+specweave auto-status
 
 # If paused, check why
 cat .specweave/state/auto-session.json
@@ -502,11 +502,11 @@ done
 | Command | Purpose |
 |---------|---------|
 | `sw:auto` | Start autonomous execution |
-| `sw:auto-status` | Check session status |
-| `sw:cancel-auto` | Cancel running session |
+| `specweave auto-status` | Check session status |
+| `specweave cancel-auto` | Cancel running session |
 | `sw:do` | Manual task execution |
-| `sw:progress` | Show increment progress |
-| `sw:validate` | Quality check before auto |
+| `specweave status` | Show increment progress |
+| `sw:review` | Quality check before auto |
 
 ---
 
@@ -515,8 +515,8 @@ done
 | Aspect | Details |
 |--------|---------|
 | **Start** | `sw:auto [increment-ids] [options]` |
-| **Check** | `sw:auto-status` |
-| **Cancel** | `sw:cancel-auto` |
+| **Check** | `specweave auto-status` |
+| **Cancel** | `specweave cancel-auto` |
 | **Resume** | `sw:do` (auto-detects incomplete) |
 | **Max iterations** | `--max-iterations N` (default: 100) |
 | **Max hours** | `--max-hours N` (optional) |

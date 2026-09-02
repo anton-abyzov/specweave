@@ -1,388 +1,147 @@
 ---
 sidebar_position: 4
 title: Validation Workflow
-description: Verify your increment is ready to ship
+description: Verify an increment with specweave verify, review it, then close it.
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';
 
-# Validation Workflow
+# Validation workflow
 
-**Prove your code works before shipping.**
+**Prove the code works before shipping — with one gate you can actually see.**
+
+SpecWeave 1.x blocked closure on three generated reports (`grill-report.json`, `code-review-report.json`, `judge-llm-report.json`). In practice all three were present for 33% of closed increments; the rest were closed with `--force` or by hand-writing the files. 2.0 replaced them with a single gate: **`reports/verify.json` with `ok: true`.**
 
 ---
 
-## Overview
+## The shape
 
 ```mermaid
 graph LR
-    A[Implementation Complete] --> B[Run Tests]
-    B --> C[Check Coverage]
-    C --> D[Validate ACs]
-    D --> E[Quality Gates]
-    E --> F{All Pass?}
-    F -->|Yes| G[Code Grill]
-    G --> H{Grill Pass?}
-    H -->|Yes| I[Ready to Ship]
-    H -->|No| J[Fix Issues]
-    F -->|No| J
-    J --> B
+    A[Tasks done] --> B[specweave verify]
+    B --> C{verify.json ok?}
+    C -->|No| D[Fix]
+    D --> B
+    C -->|Yes| E[sw:review]
+    E --> F{Findings?}
+    F -->|Yes| D
+    F -->|No| G[specweave complete]
 ```
 
 ---
 
-## The Validation Command
+## 1. Verify
 
-Say "check if everything looks good" or "validate it" -- or use the slash command:
+```bash
+specweave verify           # the active increment
+specweave verify 0042      # a specific one
+```
+
+`verify` runs the project's verification commands **in order**, then writes `reports/verify.md` and `reports/verify.json`.
+
+Which commands? `testing.commands[]` in `.specweave/config.json`:
+
+```json
+{
+  "testing": {
+    "commands": ["npm test", "npm run lint", "npm run build"]
+  }
+}
+```
+
+If that array is empty, SpecWeave auto-detects from the stack: `package.json` scripts (`test` → `lint` → `build`), Cargo, pytest, or go.
+
+### What verify.json contains
+
+| Field | Meaning |
+|-------|---------|
+| `ok` | Every command exited 0. **This is the closure gate.** |
+| `ranAt` | ISO timestamp. |
+| `commands[]` | `{ cmd, exit }` per command. |
+| `acs` | `{ total, done }` from the `- [ ] AC-NN` checkboxes in `spec.md`. |
+| `tasks` | `{ total, done, skipped, open }` from the ledger fold. |
+| `skipped[]` | Every skipped task with its mandatory reason. |
+| `ledgerMalformed` | Count of ledger lines that could not be parsed (BOM and CRLF are tolerated; this counts real junk). |
+
+A failing command is not hidden: the tail of its output is stored, and `complete` will name it.
+
+---
+
+## 2. Review
 
 <CommandTabs
-  natural="Check if everything looks good"
-  claude="sw:validate 0001"
-  other="validate 0001"
+  natural="Review this before I ship it"
+  claude="sw:review 0042"
+  other="specweave verify 0042 && read the diff yourself"
 />
 
-This runs comprehensive checks on your increment.
+`sw:review` is a **fresh-context adversarial pass** — the session that wrote the code never approves its own work. It reads the spec, the diff and the surrounding code and reports what is actually wrong. Every finding cites `path:line` and is re-verified before it is reported. `--full` fans the review out in parallel.
+
+It writes `reports/review.md` and `reports/review.json`.
+
+**Review never blocks.** `specweave complete` prints a one-line notice when `reports/review.md` is missing, and closes anyway. A gate that cannot be bypassed gets bypassed; a notice you can read gets read.
+
+This one skill replaces 1.x's `grill`, `code-reviewer` and `judge-llm`.
 
 ---
 
-## What Gets Validated
-
-### 1. Task Completion
+## 3. Risk assessment (optional)
 
 ```bash
-✓ Tasks: 15/15 complete (100%)
+specweave qa 0042
 ```
 
-All tasks in tasks.md must be marked complete.
+Risk score and blockers. It is neither the review nor the gate — it is a second opinion on whether the increment is ready to be looked at.
 
-**If failing:**
+---
+
+## 4. Close
+
 ```bash
-sw:progress 0001
-# See which tasks are incomplete
+specweave complete 0042
 ```
 
-### 2. Test Suite
+The gate, in full:
+
+| Condition | Result |
+|-----------|--------|
+| `reports/verify.json` missing | **Blocked** — run `specweave verify`, or pass `--reason "<why>"`. |
+| `verify.json.ok` is false | **Blocked** — the failing commands are named. `--reason` overrides. |
+| Tasks still open or claimed | Notice, not a block — they are listed. |
+| `reports/review.md` missing | Notice: "consider running sw:review before shipping user-facing work". |
+
+`--reason` is recorded in `metadata.json` as `closeReason`, so a deliberately un-verified closure leaves a trail instead of a lie.
+
+Batch triage:
 
 ```bash
-✓ Tests: 47/47 passing
-```
-
-All automated tests must pass.
-
-**If failing:**
-```bash
-npm test
-# See which tests fail
-```
-
-### 3. Code Coverage
-
-```bash
-✓ Coverage: 87% (target: 80%)
-```
-
-Coverage must meet threshold defined in plan.md.
-
-**If failing:**
-```bash
-npm run test:coverage
-# See which lines are uncovered
-```
-
-### 4. Acceptance Criteria
-
-```bash
-✓ AC-IDs: 12/12 satisfied
-  ✓ AC-US1-01: User can register
-  ✓ AC-US1-02: Email must be unique
-  ...
-```
-
-Every AC-ID in spec.md must be validated.
-
-**If failing:**
-- Review spec.md for uncovered ACs
-- Add tests or implementation for missing ACs
-
-### 5. Quality Gates
-
-```bash
-✓ Lint: 0 errors
-✓ Types: No TypeScript errors
-✓ Format: All files formatted
-```
-
-Code quality checks must pass.
-
-**If failing:**
-```bash
-npm run lint
-npm run typecheck
-npm run format
+specweave complete --all --reason "closing stale spikes"
 ```
 
 ---
 
-## Validation Levels
+## Task-level verification
 
-### Quick Validation
-
-```bash
-sw:validate 0001 --quick
-```
-
-- Task completion
-- Test pass/fail
-- Basic lint check
-
-### Full Validation
+Validation is not only an end-of-increment event. Every `done` carries proof:
 
 ```bash
-sw:validate 0001
+specweave task done T-03 --run "npm test -- cart"
 ```
 
-- All quick checks
-- Coverage threshold
-- AC-ID tracing
-- Documentation completeness
+The command runs through the OS shell (so Windows `.cmd` shims work), and the exit code plus the output tail are stored as the ledger event's evidence. **A failing command means the task does not close** (exit 5). You cannot mark a task done by asserting that it works.
 
-### AI Quality Assessment
+A task that turns out to be unnecessary is closed honestly:
 
 ```bash
-sw:qa 0001
+specweave task skip T-07 --reason "endpoint already exists in v2 API"
 ```
 
-- All validation checks
-- AI review of code quality
-- Risk assessment
-- Improvement suggestions
+`skip` is terminal and the reason is mandatory — it shows up in `verify.json.skipped[]`.
 
 ---
 
-## The Validation Report
+## See also
 
-```markdown
-# Increment Validation: 0001-user-authentication
-
-## Summary
-Status: READY TO SHIP
-
-## Checks
-
-### Tasks
-- Total: 15
-- Complete: 15
-- Status: PASS
-
-### Tests
-- Total: 47
-- Passing: 47
-- Failing: 0
-- Status: PASS
-
-### Coverage
-- Target: 80%
-- Actual: 87%
-- Status: PASS
-
-### Acceptance Criteria
-- Total AC-IDs: 12
-- Satisfied: 12
-- Missing: 0
-- Status: PASS
-
-### Quality
-- Lint errors: 0
-- Type errors: 0
-- Format issues: 0
-- Status: PASS
-
-## Conclusion
-All validation gates passed. Ready for sw:done.
-```
-
----
-
-## Common Validation Issues
-
-### Issue: Tests Failing
-
-```bash
-✗ Tests: 45/47 passing
-
-Failed:
-- auth.test.ts: should reject expired token
-- user.test.ts: should require email verification
-```
-
-**Fix:**
-1. Run tests locally: `npm test`
-2. Debug failing tests
-3. Fix implementation or test
-4. Re-validate
-
-### Issue: Coverage Below Threshold
-
-```bash
-✗ Coverage: 72% (target: 80%)
-
-Uncovered:
-- src/utils/helpers.ts: lines 45-67
-- src/services/email.ts: lines 12-30
-```
-
-**Fix:**
-1. Identify uncovered code
-2. Add missing tests
-3. Consider if code is dead (remove it)
-4. Re-validate
-
-### Issue: AC Not Satisfied
-
-```bash
-✗ AC-IDs: 11/12 satisfied
-
-Missing:
-- AC-US3-02: User can reset password via email
-```
-
-**Fix:**
-1. Check if feature is implemented
-2. Add tests proving AC is met
-3. Link tests to AC-ID in tasks.md
-4. Re-validate
-
-### Issue: Lint Errors
-
-```bash
-✗ Lint: 3 errors
-
-Errors:
-- src/auth.ts:45 - 'unused' is defined but never used
-- src/user.ts:23 - Unexpected any
-- src/api.ts:67 - Missing return type
-```
-
-**Fix:**
-```bash
-npm run lint:fix
-# Or fix manually
-```
-
----
-
-## Pre-Validation Checklist
-
-Before running validation:
-
-- [ ] All tasks marked complete in tasks.md
-- [ ] All tests passing locally
-- [ ] No console.log statements in production code
-- [ ] Error handling is complete
-- [ ] Edge cases are covered
-- [ ] Documentation is updated
-
----
-
-## Validation in CI/CD
-
-Integrate validation into your pipeline:
-
-```yaml
-# .github/workflows/validate.yml
-name: Increment Validation
-
-on:
-  pull_request:
-    branches: [main, develop]
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type Check
-        run: npm run typecheck
-
-      - name: Test
-        run: npm test
-
-      - name: Coverage
-        run: npm run test:coverage
-        env:
-          COVERAGE_THRESHOLD: 80
-```
-
----
-
-## After Validation Passes
-
-### Code Grill (Mandatory)
-
-After all validation checks pass, run the **code grill** - a demanding senior engineer review:
-
-```bash
-sw:grill 0001
-```
-
-The grill performs:
-- **Correctness checks** - edge cases, null handling, error paths
-- **Security review** - OWASP Top 10, injection vulnerabilities
-- **Performance audit** - time complexity, N+1 queries, memory leaks
-- **Maintainability review** - code clarity, magic numbers, consistency
-
-**Grill Verdicts:**
-
-| Severity | Action Required |
-|----------|-----------------|
-| **BLOCKER** | Must fix before close |
-| **CRITICAL** | Must fix before close |
-| **MAJOR** | Should fix before close |
-| **MINOR** | Can fix in follow-up |
-
-```bash
-# If grill fails
-sw:grill 0001          # Fix issues, re-run
-
-# If grill passes
-sw:done 0001           # Now you can close
-```
-
-:::warning Grill is Mandatory
-`sw:done` will **block** if grill hasn't passed. The grill creates a marker file that `sw:done` checks before allowing closure.
-:::
-
-### Close the Increment
-
-```bash
-# All checks passed AND grill passed? Close the increment
-sw:done 0001
-```
-
-This:
-1. Verifies grill marker exists
-2. Marks increment as complete
-3. Updates living docs
-4. Syncs to external tools (GitHub/JIRA)
-5. Archives increment data
-
----
-
-## Related
-
-- [Code Grill Command](/docs/commands/grill) - Deep code review before closure
-- [Quality Gates](/docs/glossary/terms/quality-gate)
-- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
-- [Implementation Workflow](/docs/workflows/implementation)
+- [SpecWeave 2.0](/docs/guides/specweave-2) — why the three-report pipeline went away
+- [Skills reference](/docs/reference/skills) — `/sw:review`, `/sw:qa`, `/sw:done`
+- [Configuration](/docs/reference/configuration) — `testing.commands`

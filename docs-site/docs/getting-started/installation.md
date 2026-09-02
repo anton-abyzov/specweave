@@ -150,7 +150,7 @@ your-project/
 │   │   ├── specweave-framework/
 │   │   ├── task-builder/
 │   │   └── translator/
-│   ├── commands/             # 22 slash commands (installed from plugins)
+│   ├── skills/               # 10 sw skills (installed from the plugin)
 │   │   ├── increment.md
 │   │   ├── do.md
 │   │   ├── progress.md
@@ -204,7 +204,7 @@ your-project/
 Gets **full native integration**:
 - ✅ 11 agents in `.claude/agents/`
 - ✅ 17 skills in `.claude/skills/`
-- ✅ 22 slash commands in `.claude/commands/`
+- ✅ 10 `sw:` skills from the plugin
 - ✅ 8 automation hooks in `.claude/hooks/`
 
 ### For Other AI Tools (Cursor, Copilot, Gemini, ChatGPT)
@@ -388,7 +388,7 @@ my-workspace/
 - One `specweave init` -- the workspace owns all configuration
 - Increments centralized at workspace root, tagged by project
 - Individual repos do NOT get their own `.specweave/increments/`
-- ✅ Cross-repo coordination via `sw:team-lead` for parallel work across repos
+- ✅ Cross-repo coordination via `sw:team` for parallel work across repos
 
 ## Verification
 
@@ -406,13 +406,13 @@ cat .gitignore              # Should exist
 # For Claude Code users
 ls -la .claude/agents/      # Should have 11 agents
 ls -la .claude/skills/      # Should have 17 skills
-ls -la .claude/commands/    # Should have 22 commands
+specweave doctor            # verifies skills and hooks resolve
 ls -la .claude/hooks/       # Should have 8 hooks
 
 # For other AI tool users
 cat AGENTS.md               # Should exist
 
-# Test a command (Claude Code: sw:progress, or just say "what's the status?")
+# Test a command (Claude Code: specweave status, or just say "what's the status?")
 ```
 
 ### Verification Checklist
@@ -424,7 +424,7 @@ cat AGENTS.md               # Should exist
 - [ ] Git repository initialized (if git available)
 - [ ] For Claude Code: `.claude/agents/` has 11 agent folders
 - [ ] For Claude Code: `.claude/skills/` has 17 skill folders
-- [ ] For Claude Code: `.claude/commands/` has 22 command files
+- [ ] For Claude Code: `specweave doctor` reports the `sw` plugin skills as resolvable
 - [ ] For other tools: `AGENTS.md` exists
 
 ### Test the Interactive Flow
@@ -453,28 +453,20 @@ After installation, optionally customize `.specweave/config.json`:
 
 ```json
 {
-  "project": {
-    "name": "your-project",
-    "type": "greenfield"
-  },
-  "hooks": {
-    "enabled": true,
-    "post_task_completion": {
-      "enabled": true,
-      "notification_sound": true
-    }
-  },
+  "version": "2.0",
+  "project": { "name": "your-project" },
   "testing": {
-    "e2e_playwright_mandatory_for_ui": true,
-    "min_coverage": 80
+    "mode": "TDD",
+    "commands": ["npm test", "npm run lint"],
+    "coverage": { "unit": 95, "integration": 90, "e2e": 100 }
   },
-  "integrations": {
-    "jira": { "enabled": false, "url": "", "project_key": "" },
-    "github": { "enabled": false, "repository": "" },
-    "azure_devops": { "enabled": false, "organization": "", "project": "" }
-  }
+  "limits": { "activeIncrements": 3 },
+  "livingDocs": false,
+  "sync": { "enabled": false }
 }
 ```
+
+Every key is documented in the [Configuration reference](/docs/reference/configuration). Anything not listed there produces one warning line on load and is ignored.
 
 **Configuration options:**
 
@@ -615,11 +607,11 @@ npx specweave init . --force
 
 ```bash
 # Verify commands
-ls -la .claude/commands/
+specweave doctor
 # Should see: increment.md, do.md, etc. (22 total)
 
 # Check a specific command
-cat .claude/commands/increment.md
+specweave doctor --verbose
 
 # If missing, reinstall
 npx specweave init . --force

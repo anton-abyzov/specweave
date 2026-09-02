@@ -44,9 +44,9 @@ const sidebars: SidebarsConfig = {
       label: 'Core Concepts',
       collapsed: false,
       items: [
+        {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'What is an Increment?'},
         {type: 'doc', id: 'guides/core-concepts/living-documentation', label: 'Living Documentation'},
-        {type: 'doc', id: 'guides/core-concepts/who-benefits-from-living-docs', label: 'Who Benefits from Living Docs?'},
         {type: 'doc', id: 'guides/core-concepts/skills-first-architecture', label: 'Skills-First Architecture'},
         {type: 'doc', id: 'guides/core-concepts/background-jobs', label: 'Background Jobs'},
         {type: 'doc', id: 'guides/core-concepts/deterministic-llm-hybrid', label: 'Deterministic Config + LLM Execution'},
@@ -72,9 +72,7 @@ const sidebars: SidebarsConfig = {
           items: [
             {type: 'doc', id: 'skills/extensible/extensible-skills-standard', label: 'Extensibility Standard'},
             {type: 'doc', id: 'skills/extensible/extensible-skills', label: 'Overview (Open/Closed)'},
-            {type: 'doc', id: 'skills/extensible/self-improving-skills', label: 'Self-Improving Skills (Reflect)'},
             {type: 'doc', id: 'skills/extensible/skill-development-guidelines', label: 'Development Guidelines'},
-            {type: 'doc', id: 'skills/extensible/skill-generation', label: 'Skill Generation'},
           ],
         },
         {
@@ -117,7 +115,6 @@ const sidebars: SidebarsConfig = {
       items: [
         {type: 'doc', id: 'guides/analytics-dashboard', label: 'Dashboard Overview'},
         {type: 'doc', id: 'guides/dashboard/errors', label: 'Error Tracing'},
-        {type: 'doc', id: 'guides/dashboard/sync', label: 'Sync Audit'},
         {type: 'doc', id: 'guides/dashboard/activity', label: 'Activity Stream'},
         {type: 'doc', id: 'guides/dashboard/config', label: 'Config Editor'},
         {type: 'doc', id: 'guides/dashboard/services', label: 'Service Management'},
@@ -133,28 +130,11 @@ const sidebars: SidebarsConfig = {
       label: 'Integrations',
       collapsed: true,
       items: [
-        {type: 'doc', id: 'guides/integrations/external-tools-overview', label: 'External Tools Overview'},
-        {type: 'doc', id: 'guides/integrations/issue-trackers', label: 'Issue Trackers'},
-        {type: 'doc', id: 'guides/github-integration', label: 'GitHub Integration'},
-        {type: 'doc', id: 'guides/external-tool-sync', label: 'External Tool Sync'},
+        {type: 'doc', id: 'guides/github-sync', label: 'GitHub Sync'},
+        {type: 'doc', id: 'guides/jira-ado-sync', label: 'Jira & Azure DevOps'},
+        {type: 'doc', id: 'reference/sync-cli', label: 'specweave sync (CLI)'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Other AI Tools'},
         {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Cross-Tool Handoff'},
-        {
-          type: 'category',
-          label: 'Sync Deep Dives',
-          collapsed: true,
-          items: [
-            {type: 'doc', id: 'guides/sync-strategies', label: 'Sync Strategies'},
-            {type: 'doc', id: 'guides/sync-configuration', label: 'Sync Configuration'},
-            {type: 'doc', id: 'guides/spec-bidirectional-sync', label: 'Bidirectional Spec Sync'},
-            {type: 'doc', id: 'guides/spec-commit-sync', label: 'Commit Traceability Sync'},
-            {type: 'doc', id: 'guides/status-sync-guide', label: 'Status Sync'},
-            {type: 'doc', id: 'guides/status-sync-migration', label: 'Status Sync Migration'},
-            {type: 'doc', id: 'guides/multi-project-sync-architecture', label: 'Multi-Project Sync'},
-            {type: 'doc', id: 'guides/umbrella-sync-routing', label: 'Umbrella Sync Routing'},
-            {type: 'doc', id: 'guides/hierarchy-mapping', label: 'Hierarchy Mapping'},
-          ],
-        },
       ],
     },
     {
@@ -163,9 +143,7 @@ const sidebars: SidebarsConfig = {
       collapsed: true,
       items: [
         {type: 'doc', id: 'guides/agent-teams-and-swarms', label: 'Teams & Swarms'},
-        {type: 'link', label: 'Team-Lead Orchestration', href: '/docs/guides/agent-teams-and-swarms#team-lead-orchestration'},
         {type: 'doc', id: 'guides/autonomous-execution', label: 'Autonomous Execution'},
-        {type: 'doc', id: 'guides/multi-project-setup', label: 'Multi-Project Setup'},
         {type: 'doc', id: 'guides/openclaw-agent-setup', label: 'OpenClaw Agent Setup'},
         {type: 'doc', id: 'guides/agent-security-best-practices', label: 'Agent Security'},
       ],
@@ -182,7 +160,6 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/strategic-init', label: 'Strategic Init'},
         {type: 'doc', id: 'guides/bidirectional-linking', label: 'Bidirectional Linking'},
         {type: 'doc', id: 'guides/lsp-integration', label: 'LSP Integration'},
-        {type: 'doc', id: 'guides/multilingual-guide', label: 'Multilingual Support'},
         {
           type: 'category',
           label: 'Advanced Topics',
@@ -190,7 +167,6 @@ const sidebars: SidebarsConfig = {
           items: [
             {type: 'doc', id: 'guides/plugin-management', label: 'Plugin Management'},
             {type: 'doc', id: 'guides/lazy-plugin-loading', label: 'Lazy Plugin Loading'},
-            {type: 'doc', id: 'guides/repository-selection', label: 'Repository Selection'},
             {type: 'doc', id: 'guides/scheduling-and-planning', label: 'Scheduling & Planning'},
             {type: 'doc', id: 'guides/specs-organization-guide', label: 'Specs Organization'},
             {type: 'doc', id: 'guides/increment-status-reference', label: 'Increment Status Reference'},
@@ -216,12 +192,10 @@ const sidebars: SidebarsConfig = {
           collapsed: true,
           items: [
             {type: 'doc', id: 'guides/mobile/react-native-setup-guide', label: 'React Native Setup'},
-            {type: 'doc', id: 'guides/ado-multi-project-migration', label: 'ADO Multi-Project Migration'},
             {type: 'doc', id: 'guides/deployment-platforms', label: 'Deployment Platforms'},
           ],
         },
         {type: 'doc', id: 'guides/agent-skills-extensibility-analysis', label: 'Agent-Skills Extensibility'},
-        {type: 'doc', id: 'guides/command-reference-by-priority', label: 'Commands by Priority'},
         {type: 'doc', id: 'guides/life-automation', label: 'Life Automation'},
         {
           type: 'category',
@@ -246,20 +220,8 @@ const sidebars: SidebarsConfig = {
           label: 'Commands',
           collapsed: true,
           items: [
-            {type: 'doc', id: 'commands/overview', label: 'Command Overview'},
-            {type: 'doc', id: 'reference/command-decision-tree', label: 'Decision Tree'},
             {type: 'doc', id: 'reference/commands', label: 'Commands Reference'},
-            {type: 'doc', id: 'commands/do', label: 'sw:do'},
-            {type: 'doc', id: 'commands/auto', label: 'sw:auto'},
-            {type: 'doc', id: 'commands/auto-status', label: 'sw:auto-status'},
-            {type: 'doc', id: 'commands/cancel-auto', label: 'sw:cancel-auto'},
-            {type: 'doc', id: 'commands/save', label: 'sw:save'},
-            {type: 'doc', id: 'commands/jobs', label: 'sw:jobs'},
-            {type: 'doc', id: 'commands/pause', label: 'sw:pause'},
-            {type: 'doc', id: 'commands/resume', label: 'sw:resume'},
-            {type: 'doc', id: 'commands/abandon', label: 'sw:abandon'},
-            {type: 'doc', id: 'commands/status', label: 'sw:status'},
-            {type: 'doc', id: 'commands/status-management', label: 'Status Management'},
+            {type: 'doc', id: 'reference/sync-cli', label: 'specweave sync'},
           ],
         },
         {
@@ -267,23 +229,13 @@ const sidebars: SidebarsConfig = {
           label: 'Skills & Cost',
           collapsed: true,
           items: [
-            {type: 'doc', id: 'reference/skills', label: 'Skills Reference (~100+)'},
-            {type: 'doc', id: 'reference/use-case-guide', label: 'Use Case Guide'},
+            {type: 'doc', id: 'reference/skills', label: 'Skills Reference'},
             {type: 'doc', id: 'reference/cost-tracking', label: 'Cost Tracking'},
           ],
         },
         {type: 'doc', id: 'reference/configuration', label: 'Configuration'},
         {type: 'doc', id: 'reference/metadata-reference', label: 'Metadata Reference'},
         {type: 'doc', id: 'reference/changelog', label: 'Changelog'},
-        {
-          type: 'category',
-          label: 'Migration Guides',
-          collapsed: true,
-          items: [
-            {type: 'doc', id: 'guides/migration-v024', label: 'v0.23 to v0.24'},
-            {type: 'doc', id: 'guides/migration-v031-project-fields', label: 'v0.31 Project Fields'},
-          ],
-        },
         {
           type: 'category',
           label: 'Glossary',
@@ -356,28 +308,10 @@ const sidebars: SidebarsConfig = {
   // Enterprise sidebar
   enterpriseSidebar: [
     {type: 'doc', id: 'enterprise/index', label: 'Enterprise Overview'},
-    {
-      type: 'category',
-      label: 'Migration',
-      collapsed: false,
-      items: [
-        {type: 'doc', id: 'enterprise/github-migration', label: 'GitHub Enterprise'},
-        {type: 'doc', id: 'enterprise/jira-migration', label: 'JIRA Enterprise'},
-        {type: 'doc', id: 'enterprise/azure-devops-migration', label: 'Azure DevOps'},
-        {type: 'doc', id: 'enterprise/knowledge-transfer-migration', label: 'Knowledge Transfer'},
-        {type: 'doc', id: 'enterprise/case-study-migration', label: 'Case Study'},
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Deployment',
-      collapsed: false,
-      items: [
-        {type: 'doc', id: 'enterprise/multi-environment-deployment', label: 'Multi-Environment'},
-        {type: 'doc', id: 'enterprise/release-management', label: 'Release Management'},
-        {type: 'doc', id: 'enterprise/monolith-to-microservices', label: 'Monolith to Microservices'},
-      ],
-    },
+    {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
+    {type: 'doc', id: 'guides/github-sync', label: 'GitHub Sync'},
+    {type: 'doc', id: 'guides/jira-ado-sync', label: 'Jira & Azure DevOps'},
+    {type: 'doc', id: 'guides/compliance-standards', label: 'Compliance Standards'},
   ],
 
   // Glossary sidebar (standalone for direct access)

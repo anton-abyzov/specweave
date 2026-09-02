@@ -176,7 +176,7 @@ How would you like to connect repositories?
 
 If you choose **Connect repositories**, you'll be prompted for repository URLs or organization details. SpecWeave clones them into the `repositories/` directory and configures the workspace automatically.
 
-If you choose **Add later**, SpecWeave creates a minimal workspace and you can connect repositories at any time using `specweave init` or `sw:sync-setup`.
+If you choose **Add later**, SpecWeave creates a minimal workspace and you can connect repositories at any time using `specweave init` or `sw:sync`.
 
 ---
 
@@ -389,9 +389,9 @@ specweave init --quick \
 
 ## Learn More
 
-- [Multi-Project Setup Guide](./multi-project-setup.md) - Organizing multiple projects
+- [Workspace configuration](/docs/reference/configuration#workspace) - Organizing multiple projects
 - [Compliance Standards Reference](./compliance-standards.md) - All 30+ supported standards
-- [Repository Selection Guide](./repository-selection.md) - Advanced selection patterns
+- [Repository Selection Guide](/docs/reference/configuration) - Advanced selection patterns
 - [Architecture Decisions](../../internal/architecture/adr/) - How Strategic Init makes decisions
 
 ---

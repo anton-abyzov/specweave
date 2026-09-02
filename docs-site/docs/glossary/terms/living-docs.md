@@ -434,7 +434,7 @@ Layer 3: Increment (source of truth)
 3. Living docs sync updates increment tasks.md: [x] T-002
 ```
 
-**Learn More**: [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync#three-layer-bidirectional-sync)
+**Learn More**: [Bidirectional Sync](/docs/reference/sync-cli)
 
 ---
 
@@ -476,29 +476,15 @@ COPIED content becomes **checkable checkboxes** in GitHub issues:
 
 ## Configuration
 
-**Enable Living Docs Sync** (`.specweave/config.json`):
+**Enable living docs** (`.specweave/config.json`). They are **off by default** in SpecWeave 2.0 — the 1.x auto-generated tree was never read, so nothing is generated unless you ask:
 
 ```json
 {
-  "hooks": {
-    "post_task_completion": {
-      "sync_living_docs": true,        // ✅ Enable auto-sync
-      "sync_tasks_md": true,           // ✅ Update tasks.md
-      "external_tracker_sync": true    // ✅ Sync to GitHub/JIRA/ADO
-    }
-  },
-  "livingDocs": {
-    "intelligent": {
-      "enabled": true,                 // ✅ Use intelligent mode
-      "splitByCategory": true,         // ✅ Classify content
-      "generateCrossLinks": true,      // ✅ Auto-link related docs
-      "preserveOriginal": true,        // ✅ Keep original spec
-      "classificationConfidenceThreshold": 0.6,
-      "fallbackProject": "default"
-    }
-  }
+  "livingDocs": "onDone"
 }
 ```
+
+`false` (the default) never generates. `"onDone"` regenerates when an increment is completed. The 1.x `hooks.post_task_completion.sync_living_docs` flag is migrated to this key by `specweave update`.
 
 ---
 
@@ -759,7 +745,7 @@ If automatic sync is disabled, you can manually sync:
 
 <CommandTabs
   natural="Update the docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 
@@ -852,8 +838,8 @@ GitHub issue closed → Hook updates living docs → Link removed
 
 - Specs - Specifications (permanent knowledge base)
 - [Increments](/docs/glossary/terms/increments) - Temporary implementation tracker
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
-- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Content classification
+- [Bidirectional Sync](/docs/reference/sync-cli) - Two-way synchronization
+- [Intelligent Living Docs Sync](/docs/guides/core-concepts/living-documentation) - Content classification
 - Source of Truth - Single source of truth principle
 - User Stories - User story format
 - [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers

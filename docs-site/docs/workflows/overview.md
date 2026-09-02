@@ -193,7 +193,7 @@ graph LR
 - Completion summary
 - Deployment readiness
 
-**Command**: `sw:validate` -- or just say: "Check if everything looks good"
+**Command**: `sw:review` -- or just say: "Check if everything looks good"
 
 **[→ Full Validation Workflow](/docs/workflows/validation)**
 
@@ -238,8 +238,8 @@ Every command can also be triggered with natural language -- just describe what 
 | **Planning** | "Let's build a payment system" | `sw:increment "feature"` | Creates spec, plan, tasks |
 | **Implementation** | "Start implementing" | `sw:do` | Executes tasks, auto-resumes |
 | **Autonomous** | "Ship it while I sleep" | `sw:auto` | Hands-free execution |
-| **Progress Check** | "What's the status?" | `sw:progress` | Shows status, next task |
-| **Validation** | "Check if everything looks good" | `sw:validate` | Quality checks |
+| **Progress Check** | "What's the status?" | `specweave status` | Shows status, next task |
+| **Validation** | "Check if everything looks good" | `sw:review` | Quality checks |
 | **Completion** | "We're done" | `sw:done` | Closes increment |
 
 ## Workflow Patterns
@@ -445,7 +445,7 @@ Solution: Define test strategy in plan.md
 ```
 Problem: Mark tasks done without checking
 Result: Incomplete features, failing tests
-Solution: Run sw:validate before sw:done
+Solution: Run sw:review before sw:done
 ```
 
 ## Real-World Workflow Example
@@ -480,13 +480,13 @@ sw:do
 # ...
 # T-018: E2E payment flow ✅
 
-sw:progress
+specweave status
 # Shows: 18/18 tasks (100%)
 ```
 
 ### Week 5: Validation & Deploy
 ```bash
-sw:validate 0015
+sw:review 0015
 # ✅ All AC-IDs validated
 # ✅ Test coverage: 92%
 # ✅ Quality checks passed
@@ -510,5 +510,5 @@ Ready to dive deeper? Choose your path:
 
 **Learn More:**
 - [Core Concepts](/docs/guides/core-concepts/what-is-an-increment)
-- [Command Reference](/docs/commands/status-management)
+- [Command Reference](/docs/reference/commands)
 - [Best Practices](/docs/guides/best-practices) - Claude Code + SpecWeave optimization tips

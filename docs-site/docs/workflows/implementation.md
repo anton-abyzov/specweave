@@ -258,7 +258,7 @@ Continue? (Y/n)
 ### Step 5: Check Progress Anytime
 
 ```bash
-sw:progress
+specweave status
 ```
 
 **Output:**
@@ -473,7 +473,7 @@ sw:do --skip T-006
 # Document TODO: Replace with real Redis
 
 # Option 3: Pause entire increment
-sw:pause 0012 --reason="Waiting for Redis setup"
+specweave pause 0012 --reason="Waiting for Redis setup"
 # Resume later when unblocked
 ```
 
@@ -626,7 +626,7 @@ Continue? (Y/n):
 - **Auto-resume**: Picks up where you left off
 - **Auto-docs**: Hooks update living docs
 - **Quality**: Tests + linting + coverage checks
-- **Progress**: `sw:progress` anytime
+- **Progress**: `specweave status` anytime
 - **Flexibility**: Pause/resume, skip tasks, work in parallel
 
 ## Next Steps
@@ -634,7 +634,7 @@ Continue? (Y/n):
 Implementation complete? Move to validation:
 
 ```bash
-sw:validate 0012
+sw:review 0012
 ```
 
 **Learn more:**

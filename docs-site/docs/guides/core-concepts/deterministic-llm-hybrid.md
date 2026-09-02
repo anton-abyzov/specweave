@@ -91,7 +91,7 @@ These are real config properties and the LLM behaviors they enforce:
 |--------|------------------|
 | `testing.tddEnforcement: "strict"` | Always does RED → GREEN → REFACTOR before marking tasks complete |
 | `auto.requireTests: true` | Cannot close an increment in auto mode without passing tests |
-| `auto.requireValidation: true` | Runs `sw:validate` before declaring done |
+| `auto.requireValidation: true` | Runs `sw:review` before declaring done |
 | `planning.deepInterview.enabled: true` | Asks clarifying questions across 5+ categories before writing specs |
 | `limits.activeIncrements: 3` | Prints one advisory note when more increments are active (never blocks) |
 | `grill.required: true` | Runs code review before closure — can't be skipped |

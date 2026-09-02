@@ -35,7 +35,7 @@ Overview page with quick reference table and links to the specification and guid
 ### [Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)
 How skills work under the hood — progressive disclosure architecture, comparison with other AI tool systems, and the evolution from prompts to programs.
 
-### [Self-Improving Skills (Reflect)](/docs/skills/extensible/self-improving-skills)
+### [Self-Improving Skills (Reflect)](/docs/skills/extensible/extensible-skills)
 The Reflect system auto-learns from corrections and saves them to skill memories. Correct once, applied forever.
 
 ### [Development Guidelines](/docs/skills/extensible/skill-development-guidelines)

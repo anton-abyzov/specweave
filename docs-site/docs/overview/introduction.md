@@ -90,16 +90,13 @@ SpecWeave encodes your standards into version-controlled configuration. Every de
 // .specweave/config.json
 {
   "testing": {
-    "defaultTestMode": "TDD",       // AI always follows red-green-refactor
-    "tddEnforcement": "strict"      // Tasks cannot close without passing tests
+    "mode": "TDD",                         // AI writes tests first
+    "commands": ["npm test", "npm run lint"] // what `specweave verify` runs
   },
-  "quality": {
-    "grillRequired": true,          // Code review gate before every close
-    "judgeLlmRequired": true        // Independent AI validation gate
-  },
+  "limits": { "activeIncrements": 3 },      // advisory WIP note, never a block
   "sync": {
-    "github": true,                 // Auto-sync to GitHub Issues / PRs
-    "jira": true                    // Bidirectional JIRA sync on close
+    "enabled": true,
+    "github": { "enabled": true, "owner": "my-org", "repo": "my-app" }
   }
 }
 ```
@@ -163,7 +160,7 @@ For fine-grained control, invoke capabilities directly:
 
 <CommandTabs
   natural="Split this into agent teams"
-  claude="sw:team-lead"
+  claude="sw:team"
   other="team-lead"
 />
 

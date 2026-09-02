@@ -21,7 +21,7 @@ The same properties that make SpecWeave powerful for software development apply 
 
 **Traceability.** When you reorganize 500 Obsidian notes, you want to know *why* each note ended up where it did. SpecWeave's acceptance criteria and task history provide that audit trail.
 
-**Quality gates.** The `sw:grill` command reviews your work against the spec before you declare it done. This works whether you're shipping code or publishing a YouTube video.
+**Quality gates.** The `sw:review` command reviews your work against the spec before you declare it done. This works whether you're shipping code or publishing a YouTube video.
 
 **Autonomous execution.** `sw:auto` lets the AI work through tasks while you sleep, eat, or do something else entirely. Wake up to a completed research report or a deployed landing page.
 
@@ -154,13 +154,13 @@ The AI works through each task autonomously:
 - T-006: Identify top attractions near each venue
 - T-007: Synthesize findings into a ranked recommendation
 
-Each task produces documented output. The AI marks tasks complete as it goes, and you can check progress anytime with `sw:progress`.
+Each task produces documented output. The AI marks tasks complete as it goes, and you can check progress anytime with `specweave status`.
 
 ### Step 4: Review and Close
 
 ```
-sw:progress    # Check what's done
-sw:validate    # Run quality checks against acceptance criteria
+specweave status    # Check what's done
+sw:review    # Run quality checks against acceptance criteria
 sw:done 0001   # Close the increment
 ```
 

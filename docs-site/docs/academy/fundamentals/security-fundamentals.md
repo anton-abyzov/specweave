@@ -422,7 +422,7 @@ SpecWeave includes security checks in quality gates:
 
 <CommandTabs
   natural="Validate the increment"
-  claude="sw:validate"
+  claude="sw:review"
   other="validate"
 />
 

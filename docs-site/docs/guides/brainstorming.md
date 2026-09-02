@@ -299,8 +299,8 @@ sw:brainstorm "developer productivity tool for code review" --depth deep --lens 
 ```mermaid
 graph LR
     A["sw:brainstorm"] -->|selected approach| B["sw:increment"]
-    B --> C["sw:pm"]
-    C --> D["sw:architect"]
+    B --> C["sw:increment"]
+    C --> D["sw:increment"]
     D --> E["sw:do / sw:auto"]
 
     style A fill:#fff3e0
@@ -332,5 +332,5 @@ The brainstorm document persists at `.specweave/docs/brainstorms/` and is bidire
 ## Related
 
 - [Planning Workflow](/docs/workflows/planning) — The full planning flow that brainstorming precedes
-- [Skills Reference: brainstorm](/docs/reference/skills#brainstorm) — Quick reference for all arguments
+- [Skills Reference: brainstorm](/docs/reference/skills) — Quick reference for all arguments
 - [Deep Interview Mode](/docs/guides/deep-interview-mode) — Complementary feature for detailed requirement gathering

@@ -6,20 +6,20 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 ---
 
-## sw:costs Command
+## specweave analytics Command
 
 ### Syntax
 
 <CommandTabs
   natural="How much did this increment cost?"
-  claude='sw:costs'
+  claude='specweave analytics'
   other='costs'
 />
 
 With options:
 
 ```bash
-sw:costs [incrementId] [--export json|csv|both]
+specweave analytics [incrementId] [--export json|csv|both]
 ```
 
 ### Parameters
@@ -31,19 +31,19 @@ sw:costs [incrementId] [--export json|csv|both]
 
 ```bash
 # View all increments
-sw:costs
+specweave analytics
 
 # View specific increment
-sw:costs 0003
+specweave analytics 0003
 
 # Export to JSON
-sw:costs 0003 --export json
+specweave analytics 0003 --export json
 
 # Export to CSV
-sw:costs 0003 --export csv
+specweave analytics 0003 --export csv
 
 # Export both formats
-sw:costs 0003 --export both
+specweave analytics 0003 --export both
 ```
 
 ---
@@ -157,7 +157,7 @@ savings = baselineCost - actualCost
 **Columns**:
 ```csv
 Session ID,Agent,Model,Command,Started At,Ended At,Input Tokens,Output Tokens,Total Tokens,Cost ($),Savings ($)
-session_123,pm,sonnet,sw:inc,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
+session_123,pm,sonnet,sw:increment,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
 ```
 
 ---

@@ -106,7 +106,7 @@ Generated code →  copy/paste → ship
 
 **Real cost**: Bugs in production. Security vulnerabilities. Customer trust destroyed.
 
-**SpecWeave solution**: `sw:qa` and `sw:validate` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
+**SpecWeave solution**: `sw:qa` and `sw:review` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
 
 <CommandTabs
   natural="Check quality on this increment"
@@ -155,7 +155,7 @@ Developer B: "Claude, add a customer model"
 
 **Real cost**: Team velocity drops. Conflicts waste hours. Inconsistent codebase emerges.
 
-**SpecWeave solution**: One increment = one source of truth. `sw:status --all` shows who's working on what. An advisory WIP note keeps the active count visible.
+**SpecWeave solution**: One increment = one source of truth. `specweave status --all` shows who's working on what. An advisory WIP note keeps the active count visible.
 
 ---
 

@@ -596,7 +596,7 @@ Note: SpecWeave slash commands (`sw:increment`, etc.) run through Claude Code, n
 sw:increment "feature name"
 
 # Or resume an existing one
-sw:resume 0001
+specweave resume 0001
 ```
 
 ### "Increment validation failed"
@@ -606,13 +606,13 @@ sw:resume 0001
 **Solution**:
 ```
 # Check what failed
-sw:validate 0001
+sw:review 0001
 
 # Common fixes:
 # - Mark incomplete tasks as done
 # - Run and pass tests
 # - Sync documentation
-sw:sync-docs
+sw:sync
 ```
 
 ### "GitHub sync failed"
@@ -635,8 +635,8 @@ echo "GITHUB_TOKEN=ghp_xxxx" >> .env
 
 **Session stuck or not completing?**
 ```bash
-sw:auto-status   # Check what's happening
-sw:cancel-auto   # Cancel if needed
+specweave auto-status   # Check what's happening
+specweave cancel-auto   # Cancel if needed
 sw:auto          # Resume with fresh session
 ```
 
@@ -710,7 +710,7 @@ mv ~/.claude/plugins/installed_plugins.json ~/.claude/plugins/installed_plugins.
 | Error | Quick Fix |
 |-------|-----------|
 | SpecWeave skills/commands broken | `specweave update` |
-| Auto mode stuck | `sw:auto-status` then `sw:cancel-auto` |
+| Auto mode stuck | `specweave auto-status` then `specweave cancel-auto` |
 | Plugin commands broken | `claude plugin uninstall/install` (NEVER edit installed_plugins.json) |
 | "command not found" | Install the tool |
 | "permission denied" | Use nvm or fix npm permissions |

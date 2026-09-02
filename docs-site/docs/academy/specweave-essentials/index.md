@@ -97,9 +97,9 @@ Prefer watching? Start with the Complete Masterclass:
 | [**11. The Vibe Coding Problem**](./11-vibe-coding-problem) | Why SpecWeave exists |
 | [**12. Init Deep Dive**](./12-init-deep-dive) | Every init question explained |
 | [**13. Increment Lifecycle**](./13-increment-lifecycle) | Archive, cleanup, status management |
-| [**14. GitHub Integration**](./14-github-integration) | Complete GitHub setup |
-| [**15. JIRA Integration**](./15-jira-integration) | Complete JIRA setup |
-| [**16. Azure DevOps**](./16-ado-integration) | Complete ADO setup |
+| [**14. GitHub Integration**](/docs/guides/github-sync) | Complete GitHub setup |
+| [**15. JIRA Integration**](/docs/guides/jira-ado-sync) | Complete JIRA setup |
+| [**16. Azure DevOps**](/docs/guides/jira-ado-sync) | Complete ADO setup |
 
 ---
 
@@ -118,8 +118,8 @@ Every command can be triggered with natural language or a slash command. Here's 
 | "Let's build a payment system" | `sw:increment "feature"` | Plan new work |
 | "Ship it while I sleep" | `sw:auto` | Autonomous execution |
 | "Start implementing" | `sw:do` | Execute one task at a time |
-| "What should I do next?" | `sw:next` | Smart continuation |
-| "What's the status?" | `sw:progress` | Check status |
+| "What should I do next?" | `specweave task next` | Smart continuation |
+| "What's the status?" | `specweave status` | Check status |
 | "We're done" | `sw:done` | Close increment |
 
 ---

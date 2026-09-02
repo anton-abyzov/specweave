@@ -102,7 +102,7 @@ npm install -g specweave
 
 ```bash
 specweave --version
-# Should show: specweave v0.28.x
+# Should show: specweave.28.x
 ```
 
 ### Step 3: Go to Your Project
@@ -159,7 +159,7 @@ You should see:
 Let's verify everything works:
 
 ```bash
-sw:status
+specweave status
 ```
 
 You should see something like:
@@ -190,8 +190,8 @@ Here's the entire SpecWeave workflow. You can use natural language or slash comm
 |-----------------|---------------|---------|
 | "Let's build a login page" | `sw:increment "feature"` | Plan the work |
 | "Start implementing" | `sw:do` | Execute tasks |
-| "What's the status?" | `sw:progress` | Check status |
-| "What should I do next?" | `sw:next` | Close or continue |
+| "What's the status?" | `specweave status` | Check status |
+| "What should I do next?" | `specweave task next` | Close or continue |
 
 That's it. These cover 90% of daily use.
 
@@ -203,7 +203,7 @@ That's it. These cover 90% of daily use.
 
 ```bash
 # 1. Check status
-sw:status
+specweave status
 
 # 2. Explore the structure
 ls .specweave/

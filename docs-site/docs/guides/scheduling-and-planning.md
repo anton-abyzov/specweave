@@ -58,7 +58,7 @@ SpecWeave deliberately **does not sync** scheduling and planning metadata:
 ### GitHub Users: GitHub Projects
 
 **Setup**:
-1. SpecWeave syncs increments → GitHub Issues (automatic via `sw-github:create-issue`)
+1. SpecWeave syncs increments → GitHub Issues (automatic via `sw:sync`)
 2. Create GitHub Project for scheduling (Web UI or CLI)
 3. Add SpecWeave issues to Project
 4. Manage sprints/estimates/dates in Project UI
@@ -118,7 +118,7 @@ sw:do
 ### JIRA Users: JIRA Boards + Sprints
 
 **Setup**:
-1. SpecWeave syncs increments → JIRA Epics/Stories (via `sw-jira:sync`)
+1. SpecWeave syncs increments → JIRA Epics/Stories (via `sw:sync`)
 2. Use JIRA's native sprint planning
 3. Assign stories to sprints in JIRA
 4. SpecWeave reflects implementation status only
@@ -160,7 +160,7 @@ sw:do
 ### Azure DevOps Users: ADO Boards + Iterations
 
 **Setup**:
-1. SpecWeave syncs increments → ADO Work Items (via `sw-ado:sync`)
+1. SpecWeave syncs increments → ADO Work Items (via `sw:sync`)
 2. Use ADO's iteration planning
 3. Set Iteration Path and Effort in ADO
 4. SpecWeave reflects implementation status only
@@ -259,7 +259,7 @@ gh issue list --milestone "v0.19.0"
 
 ### Q: What if I use multiple tools (GitHub + JIRA)?
 
-**A**: Use SpecWeave's multi-project sync (see [Multi-Project Sync Guide](./multi-project-sync.md)). SpecWeave syncs implementation status to both tools, while you manage scheduling separately in each tool.
+**A**: Use SpecWeave's multi-project sync (see [Multi-Project Sync Guide](/docs/guides/jira-ado-sync)). SpecWeave syncs implementation status to both tools, while you manage scheduling separately in each tool.
 
 ### Q: How do I track velocity if SpecWeave doesn't sync estimates?
 
@@ -439,8 +439,8 @@ sw:done 0039
 
 ## Next Steps
 
-- [Status Sync Guide](./status-sync-guide.md) - Configure sync with external tools
-- [Multi-Project Sync](./multi-project-sync.md) - Sync to multiple projects/repos
-- [GitHub Sync](./github-integration.md) - GitHub-specific setup
-- [JIRA Sync](./spec-commit-sync.md) - JIRA sync via SpecWeave
-- [ADO Sync](./spec-commit-sync.md) - Azure DevOps sync via SpecWeave
+- [Status Sync Guide](/docs/reference/sync-cli) - Configure sync with external tools
+- [Multi-Project Sync](/docs/guides/jira-ado-sync) - Sync to multiple projects/repos
+- [GitHub Sync](/docs/guides/github-sync) - GitHub-specific setup
+- [JIRA Sync](/docs/reference/sync-cli) - JIRA sync via SpecWeave
+- [ADO Sync](/docs/reference/sync-cli) - Azure DevOps sync via SpecWeave

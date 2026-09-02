@@ -40,7 +40,7 @@ SpecWeave's AI agents embody these fundamentals:
 | AI Development | All agents (spec-driven validation, guardrails) |
 | Enterprise Development | PM Agent (requirements), Architect Agent (design) |
 | Backend | `backend:database-optimizer` |
-| Frontend | `sw:architect` |
+| Frontend | `sw:increment` |
 | Testing | `testing:qa` |
 | Infrastructure | `infra:devops`, `k8s:kubernetes-architect` |
 | ML/AI | `ml:engineer`, `ml:data-scientist` |

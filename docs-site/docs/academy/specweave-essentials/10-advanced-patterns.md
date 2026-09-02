@@ -27,7 +27,7 @@ Developer C: 0003-notification-system
 **Coordination**:
 ```bash
 # View team status
-sw:status --all
+specweave status --all
 
 # Output:
 0001-authentication        ████████░░  65%  (Dev A)
@@ -178,13 +178,13 @@ Proceed with 0011-graphql-phase-1
 specweave init . --brownfield
 
 # Import existing issues
-sw-github:sync --import-only --since "2025-01-01"
+sw:sync --import-only --since "2025-01-01"
 
 # Create new increment
 sw:increment "New feature X"
 
 # Link to existing issue
-sw-github:create-issue 0001 --link-existing 42
+sw:sync 0001 --link-existing 42
 ```
 
 ---
@@ -310,19 +310,19 @@ sw:do 0001                   # Specific increment
 
 # Check progress
 # Say: "What's the status?" or:
-sw:progress                  # All increments
-sw:progress 0001             # Specific increment
+specweave status                  # All increments
+specweave status 0001             # Specific increment
 
 # Workflow guidance
-sw:workflow                  # Smart suggestions
-sw:next                      # What to do next
+sw:do                  # Smart suggestions
+specweave task next                      # What to do next
 ```
 
 ### Quality Phase
 
 ```bash
 # Validation
-sw:validate 0001             # Rule-based checks (120+ rules)
+sw:review 0001             # Rule-based checks (120+ rules)
 sw:qa 0001                   # AI quality assessment
 sw:qa 0001 --pre             # Before starting work
 sw:qa 0001 --gate            # Before closing
@@ -339,48 +339,48 @@ sw:done 0001                 # Normal close (validates gates)
 sw:done 0001 --expedite      # Emergency close (skip gates)
 
 # Sync documentation
-sw:sync-docs update          # Update living docs
-sw:sync-progress             # Full sync to all systems
+sw:sync update          # Update living docs
+sw:sync             # Full sync to all systems
 ```
 
 ### Lifecycle Management
 
 ```bash
 # Status transitions
-sw:pause 0001                # Pause (blocked, deprioritized)
-sw:resume 0001               # Resume paused work
-sw:status 0001              # Move to backlog
-sw:abandon 0001              # Cancel (obsolete, requirements changed)
+specweave pause 0001                # Pause (blocked, deprioritized)
+specweave resume 0001               # Resume paused work
+specweave status 0001              # Move to backlog
+specweave abandon 0001              # Cancel (obsolete, requirements changed)
 
 # Workspace cleanup
-sw:archive 0001              # Archive completed increment
-sw:archive --completed       # Archive all completed
-sw:restore 0001              # Restore archived increment
+specweave archive 0001              # Archive completed increment
+specweave archive --completed       # Archive all completed
+specweave resume 0001              # Restore archived increment
 
 # Status overview
-sw:status                    # All increments
-sw:status --all              # Include completed
-sw:sync-status               # Fix status desync
+specweave status                    # All increments
+specweave status --all              # Include completed
+sw:sync               # Fix status desync
 ```
 
 ### External Tool Sync
 
 ```bash
 # GitHub
-sw-github:status             # Check connection
-sw-github:create-issue 0001  # Create issue
-sw-github:sync 0001          # Sync progress
-sw-github:close-issue 0001   # Close issue
+sw:sync             # Check connection
+sw:sync 0001  # Create issue
+sw:sync 0001          # Sync progress
+sw:sync 0001   # Close issue
 
 # JIRA
-sw-jira:status               # Check connection
-sw-jira:sync 0001            # Sync to JIRA
-sw-jira:sync 0001 --create   # Create Epic hierarchy
+sw:sync               # Check connection
+sw:sync 0001            # Sync to JIRA
+sw:sync 0001 --create   # Create Epic hierarchy
 
 # Azure DevOps
-sw-ado:status                # Check connection
-sw-ado:sync 0001             # Sync to ADO
-sw-ado:create-workitem 0001  # Create work item
+sw:sync                # Check connection
+sw:sync 0001             # Sync to ADO
+sw:sync 0001  # Create work item
 ```
 
 ---
@@ -404,9 +404,9 @@ You've completed the core curriculum! For specialized topics, continue with:
 - [Lesson 11: The Vibe Coding Problem](./11-vibe-coding-problem) — Why SpecWeave exists
 - [Lesson 12: The specweave init Deep Dive](./12-init-deep-dive) — Master initialization
 - [Lesson 13: Increment Lifecycle Management](./13-increment-lifecycle) — Status, cleanup, archiving
-- [Lesson 14: GitHub Integration Guide](./14-github-integration) — Complete GitHub setup
-- [Lesson 15: JIRA Integration Guide](./15-jira-integration) — Complete JIRA setup
-- [Lesson 16: Azure DevOps Integration Guide](./16-ado-integration) — Complete ADO setup
+- [Lesson 14: GitHub Integration Guide](/docs/guides/github-sync) — Complete GitHub setup
+- [Lesson 15: JIRA Integration Guide](/docs/guides/jira-ado-sync) — Complete JIRA setup
+- [Lesson 16: Azure DevOps Integration Guide](/docs/guides/jira-ado-sync) — Complete ADO setup
 
 ---
 
@@ -430,7 +430,7 @@ You've completed the SpecWeave Academy core curriculum.
 ### Resources
 
 - [Full Documentation](/)
-- [Commands Reference](/docs/commands/overview)
+- [Commands Reference](/docs/reference/commands)
 - [Glossary](/docs/glossary)
 - [GitHub Repository](https://github.com/specweave/specweave)
 

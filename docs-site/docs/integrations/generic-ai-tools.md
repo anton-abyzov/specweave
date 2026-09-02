@@ -353,10 +353,10 @@ exit 1
 |---------|-------------|-------------------|
 | `sw:increment "X"` | Plan new feature | Create spec.md and tasks.md files manually |
 | `sw:do` | Work on tasks | Read tasks.md, implement, update checkboxes |
-| `sw:progress` | Check status | `grep -c '\[x\]' tasks.md` vs total tasks |
+| `specweave status` | Check status | `grep -c '\[x\]' tasks.md` vs total tasks |
 | `sw:done` | Close increment | Verify all [x], update metadata.json status |
-| `sw:validate` | Quality check | Run tests, check coverage, lint |
-| `sw:reflect` | Extract learnings | Save patterns to .specweave/memory/*.md |
+| `sw:review` | Quality check | Run tests, check coverage, lint |
+| `sw:handoff` | Extract learnings | Save patterns to .specweave/memory/*.md |
 
 ---
 
@@ -440,4 +440,4 @@ Description of what needs to be done.
 
 - [SpecWeave Documentation](https://spec-weave.com)
 - [GitHub Repository](https://github.com/anton-abyzov/specweave)
-- [Auto Mode Documentation](https://spec-weave.com/docs/commands/auto)
+- [Auto Mode Documentation](https://spec-weave.com/docs/reference/commands)

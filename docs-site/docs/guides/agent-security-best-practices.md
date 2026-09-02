@@ -51,7 +51,7 @@ SpecWeave includes several layers of defense:
 Each agent works within a defined increment. The spec.md explicitly lists which files to modify. If an agent tries to modify files outside its scope, that's a red flag during code review.
 
 **2. Quality Gates Catch Anomalies**
-`sw:grill` reviews all changes before completion. A senior-engineer-level review catches suspicious modifications — files that shouldn't have been touched, unexpected dependencies added, configuration changes.
+`sw:review` reviews all changes before completion. A senior-engineer-level review catches suspicious modifications — files that shouldn't have been touched, unexpected dependencies added, configuration changes.
 
 **3. Hook Validation**
 Post-tool-use hooks can validate that file modifications stay within the increment's declared scope. If an agent edits `/etc/passwd` when it should be editing `src/auth/login.ts`, the hook flags it.
@@ -210,7 +210,7 @@ Then when ready for autonomous mode:
 />
 
 2. **Set reasonable iteration limits** — `auto.maxIterations: 100` for early runs, increase as trust builds
-3. **Check `sw:auto-status` periodically** — don't go fully hands-off on day one
+3. **Check `specweave auto-status` periodically** — don't go fully hands-off on day one
 4. **Review diffs before pushing** — autonomous execution != autonomous deployment
 5. **Use branch protection** — agents should work on feature branches, never directly on main
 

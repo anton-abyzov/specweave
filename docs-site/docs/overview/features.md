@@ -87,7 +87,7 @@ Works with any tech stack -- TypeScript/JavaScript, Python, Go, Rust, Java, C#/.
 
 Bidirectional sync with **GitHub** (Issues, Milestones), **JIRA** (Epics, Stories, Tasks), and **Azure DevOps** (4-level hierarchy). Increments map to external work items automatically.
 
-[External Tools Overview](/docs/guides/integrations/external-tools-overview) | [Sync Deep Dives](/docs/guides/sync-strategies)
+[External Tools Overview](/docs/guides/github-sync) | [Sync Deep Dives](/docs/reference/sync-cli)
 
 ## Brownfield Excellence
 
@@ -103,7 +103,7 @@ Post-task hooks automatically update CLAUDE.md, API references, and changelogs. 
 
 Every command works three ways: natural language, slash commands (Claude Code), or keywords (other AI tools).
 
-[Command Overview](/docs/commands/overview) | [Decision Tree](/docs/reference/command-decision-tree) | [Commands by Priority](/docs/guides/command-reference-by-priority)
+[Command Overview](/docs/reference/commands) | [Decision Tree](/docs/reference/commands) | [Commands by Priority](/docs/reference/commands)
 
 ## Additional Capabilities
 
