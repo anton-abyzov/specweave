@@ -193,6 +193,18 @@ export class IncrementCompletionValidator {
       warnings.push('Closure gate check skipped due to error');
     }
 
+    // Optional evidence: a code-review report still feeds skill-refinement
+    // signals. Read-only — findings never block closure in 2.0.
+    try {
+      const codeReviewPath = path.join(incrementPath, 'reports', 'code-review-report.json');
+      if (await fs.pathExists(codeReviewPath)) {
+        const report = JSON.parse(await fs.readFile(codeReviewPath, 'utf-8'));
+        await this.emitCodeReviewRefinementSignals(report, incrementId, resolveEffectiveRoot());
+      }
+    } catch {
+      // Best-effort: signal emission must never affect closure.
+    }
+
     // NEW (v1.0.105): Test coverage validation for TDD increments
     // Validates that coverage meets target when testMode != 'none' and coverageTarget > 0
     // See: ADR-0163 (TDD Enforcement Implementation)
@@ -259,6 +271,90 @@ export class IncrementCompletionValidator {
       errors,
       warnings
     };
+  }
+
+
+  /**
+   * 0671 T-006: emit refinement signals from code-reviewer findings.
+   *
+   * Iterates the `findings[]` array from `code-review-report.json`, keeps
+   * CRITICAL and HIGH severity entries, and delegates each to the shared
+   * `emitRefinementIfAttributable` pipeline. Precision matters — a finding
+   * that doesn't trace to a specific skill (direct slug or ≥6-word SKILL.md
+   * phrase) produces no signal.
+   *
+   * Per AC-US1-03 the emitted severity is always `"high"` — the source
+   * code-reviewer severity is the *finding* severity, but a refinement
+   * signal with source="code-reviewer" is always treated as high-priority
+   * advice for the target skill.
+   *
+   * Best-effort: all I/O errors are swallowed so closure validation is
+   * never blocked by signal persistence issues.
+   */
+  static async emitCodeReviewRefinementSignals(
+    report: any,
+    incrementId: string,
+    projectRoot: string
+  ): Promise<void> {
+    const findings = Array.isArray(report?.findings) ? report.findings : [];
+    if (findings.length === 0) return;
+
+    const skillsRoot = path.join(projectRoot, 'plugins', 'specweave', 'skills');
+
+    const { attributeSkill } = await import('../skill-attribution.js');
+    const { emitRefinementIfAttributable } = await import(
+      '../skill-signal-emit.js'
+    );
+
+    // Dedupe: one signal per distinct skill, earliest (highest-severity)
+    // finding wins since we iterate critical before high.
+    const perSkillEvidence = new Map<string, string>();
+
+    const orderedFindings = [...findings].sort((a, b) => {
+      const rank = (s: string) =>
+        s === 'critical' ? 2 : s === 'high' ? 1 : 0;
+      return (
+        rank(String(b?.severity ?? '').toLowerCase()) -
+        rank(String(a?.severity ?? '').toLowerCase())
+      );
+    });
+
+    for (const finding of orderedFindings) {
+      const severity = String(finding?.severity ?? '').toLowerCase();
+      if (severity !== 'critical' && severity !== 'high') continue;
+
+      const evidenceText = [
+        finding?.title,
+        finding?.description,
+        finding?.message,
+        finding?.recommendation,
+        finding?.category,
+        finding?.file,
+      ]
+        .filter((s: unknown) => typeof s === 'string' && s.length > 0)
+        .join(' | ');
+      if (!evidenceText) continue;
+
+      const attrib = attributeSkill({ evidenceText, skillsRoot });
+      if (!attrib.skill) continue;
+      if (perSkillEvidence.has(attrib.skill)) continue;
+      perSkillEvidence.set(attrib.skill, evidenceText);
+    }
+
+    for (const [skill, evidence] of perSkillEvidence) {
+      try {
+        await emitRefinementIfAttributable({
+          projectRoot,
+          source: 'code-reviewer',
+          severity: 'high',
+          incrementId,
+          evidence,
+          attribution: { toolCallOrigin: skill },
+        });
+      } catch {
+        // Best-effort: signal I/O must not break closure validation.
+      }
+    }
   }
 
   /**
