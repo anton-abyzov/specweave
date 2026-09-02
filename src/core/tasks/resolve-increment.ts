@@ -13,6 +13,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
+import { loadTaskBoard } from './task-board.js';
 
 export interface ResolvedIncrement {
   id: string;
@@ -86,4 +87,21 @@ export function readLeaseHours(projectRoot: string): number {
   } catch {
     return 2;
   }
+}
+
+/**
+ * Active increments whose task board is finished (every task done or skipped,
+ * and at least one task exists). This is the candidate set for
+ * `specweave complete --all --reason "…"`.
+ */
+export function listTaskCompleteIncrementIds(projectRoot: string, leaseHours?: number): string[] {
+  const dir = incrementsDir(projectRoot);
+  return listActiveIncrementIds(projectRoot).filter((id) => {
+    try {
+      const board = loadTaskBoard(path.join(dir, id), { leaseHours });
+      return board.counts.total > 0 && board.counts.done + board.counts.skipped === board.counts.total;
+    } catch {
+      return false;
+    }
+  });
 }

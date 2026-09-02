@@ -19,7 +19,8 @@ import {
   createDefaultMetadata,
   isValidTransition,
   isStale,
-  shouldAutoAbandon
+  shouldAutoAbandon,
+  migrateLegacyStatus
 } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
@@ -894,6 +895,16 @@ export class MetadataManager {
           syncedAt: oldGithub.lastSync || new Date().toISOString(),
         };
         warnings.push('Copied legacy github data to externalLinks.github');
+        corrected = true;
+      }
+    }
+
+    // --- status: migrate statuses that never existed in the enum (e.g. 'superseded') ---
+    {
+      const migration = migrateLegacyStatus(metadata);
+      if (migration.changed) {
+        Object.assign(metadata, migration.metadata);
+        if (migration.note) warnings.push(migration.note);
         corrected = true;
       }
     }

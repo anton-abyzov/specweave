@@ -127,17 +127,73 @@ export interface IncrementMetadata {
 
   /**
    * Why the increment was closed without a passing `reports/verify.json`
-   * (`specweave complete --reason "<text>"`). Present only when the 2.0
-   * closure gate was overridden.
+   * (`specweave complete --reason "<text>"`), or why it was abandoned in
+   * favour of another increment. Present only when the 2.0 closure gate was
+   * overridden or the increment was superseded.
    */
   closeReason?: string;
 
   /**
-   * Id of the increment this one replaces
-   * (`specweave create-increment "…" --supersedes NNNN`). The superseded
-   * increment is abandoned with a matching `abandonedReason`.
+   * Increment id this one replaces (`specweave create-increment --supersedes NNNN`).
+   * The superseded increment is moved to `abandoned` with
+   * `closeReason: "superseded by <this id>"`.
    */
   supersedes?: string;
+
+  /** Parent increment id when this increment is a split-off / follow-up child. */
+  parent?: string;
+}
+
+/**
+ * Statuses seen in the wild that never existed in the enum, mapped to the
+ * status 2.0 uses instead. `superseded` was written by hand (and by older
+ * skills) whenever an increment was replaced by a newer one.
+ */
+export const LEGACY_STATUS_MAP: Record<string, IncrementStatus> = {
+  superseded: IncrementStatus.ABANDONED,
+  cancelled: IncrementStatus.ABANDONED,
+  canceled: IncrementStatus.ABANDONED,
+  done: IncrementStatus.COMPLETED,
+  closed: IncrementStatus.COMPLETED,
+  complete: IncrementStatus.COMPLETED,
+  in_progress: IncrementStatus.ACTIVE,
+  'in-progress': IncrementStatus.ACTIVE,
+};
+
+export interface LegacyStatusMigration {
+  /** The patched metadata (a copy; unchanged input when nothing matched). */
+  metadata: Record<string, unknown>;
+  /** True when a legacy status was rewritten. */
+  changed: boolean;
+  /** Human-readable note for the caller's warning channel. */
+  note?: string;
+}
+
+/**
+ * One-shot migration for `metadata.json` files carrying a status that is not
+ * in {@link IncrementStatus}. `superseded` becomes `abandoned` and records the
+ * intent in `closeReason` (+ `supersedes` when the file names a successor).
+ * Idempotent: metadata already using enum statuses is returned untouched.
+ */
+export function migrateLegacyStatus(raw: Record<string, unknown>): LegacyStatusMigration {
+  const status = typeof raw.status === 'string' ? raw.status : undefined;
+  if (!status || (Object.values(IncrementStatus) as string[]).includes(status)) {
+    return { metadata: raw, changed: false };
+  }
+  const mapped = LEGACY_STATUS_MAP[status.toLowerCase()];
+  if (!mapped) return { metadata: raw, changed: false };
+
+  const metadata: Record<string, unknown> = { ...raw, status: mapped };
+  if (mapped === IncrementStatus.ABANDONED) {
+    // `supersedes` points forward (new → old), so a superseded increment records
+    // its successor in closeReason, never in its own `supersedes` field.
+    const successor = typeof raw.supersededBy === 'string' ? raw.supersededBy : undefined;
+    if (!metadata.closeReason) {
+      metadata.closeReason = successor ? `superseded by ${successor}` : `migrated from legacy status "${status}"`;
+    }
+    if (!metadata.abandonedAt) metadata.abandonedAt = (raw.lastActivity as string) || new Date().toISOString();
+  }
+  return { metadata, changed: true, note: `Legacy status '${status}' migrated to '${mapped}'` };
 }
 
 /**
