@@ -93,8 +93,12 @@ QUICK START:
 3. Ask AI to follow the workflow instructions
 4. Save generated files to .specweave/increments/
 
-AVAILABLE COMMANDS (in AGENTS.md):
-/inc "feature" | /do | /done | /validate | /progress | /sync-docs
+AVAILABLE COMMANDS (the CLI works in any tool):
+specweave create-increment "feature"   Plan the work (spec.md + tasks.md)
+specweave task next | task claim T-01 | task done T-01 --run "<test>"
+specweave verify <id>                  Run the checks, write reports/verify.json
+specweave complete <id>                Close the increment
+specweave handoff [id]                 Write handoff.md before you stop
 
 DOCUMENTATION:
 - AGENTS.md - Workflow instructions (works with any AI!)

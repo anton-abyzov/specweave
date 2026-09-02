@@ -81,7 +81,7 @@ export class ClaudeAdapter extends AdapterBase {
     console.log('\n  3️⃣  (Optional) Install GitHub plugin:');
     console.log('     /plugin install sw-github@specweave');
     console.log('\n  4️⃣  Start using SpecWeave:');
-    console.log('     /specweave.inc "create a todo app"');
+    console.log('     /sw:increment "create a todo app"');
     console.log('\n💡 Tip: Plugins load natively - no file copying needed!');
   }
 
@@ -118,15 +118,15 @@ QUICK START:
    - Architect agent creates plan.md
 
 3. Use slash commands:
-   sw:increment "payment processing"
-   sw:progress
-   sw-github:push
+   /sw:increment "payment processing"
+   /sw:do
+   /sw:done
 
 WHAT THIS PROVIDES:
 
 - Skills (Auto-Activating): specweave-detector, skill-router, context-loader, increment
 - Agents (Specialized Roles): PM, Architect, DevOps, QA, Security, and 14 more
-- Slash Commands: /specweave inc, /specweave do, /specweave validate, /specweave sync-github
+- Slash Commands: /sw:increment, /sw:do, /sw:review, /sw:done, /sw:sync
 - Hooks (Auto-Update): post-task-completion, pre-implementation, docs-changed
 
 WHY CLAUDE CODE IS BEST:

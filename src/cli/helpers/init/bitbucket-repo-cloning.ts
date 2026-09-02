@@ -262,7 +262,7 @@ export async function triggerBitbucketRepoCloning(
 ): Promise<string | undefined> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
-    console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /specweave-bitbucket:clone-repos)\n'));
+    console.log(chalk.gray('\n   Skipping repository cloning (add repos later with: specweave get <workspace>/<repo>)\n'));
     return undefined;
   }
 
