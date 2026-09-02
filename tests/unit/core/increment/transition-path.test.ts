@@ -14,7 +14,7 @@ describe('computeTransitionPath', () => {
 
   it('computes PLANNING -> COMPLETED path', () => {
     const path = computeTransitionPath(
-      IncrementStatus.PLANNING,
+      IncrementStatus.PLANNED,
       IncrementStatus.COMPLETED
     );
     expect(path).toEqual([

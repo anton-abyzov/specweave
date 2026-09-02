@@ -141,6 +141,7 @@ export class StatusLineUpdater {
         // ONLY accepts official IncrementStatus enum values
         if (
           metadata.status === 'active' ||
+          metadata.status === 'planned' ||
           metadata.status === 'planning' ||
           metadata.status === 'backlog' ||
           metadata.status === 'ready_for_review'

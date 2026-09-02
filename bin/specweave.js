@@ -316,8 +316,16 @@ program
   });
 
 program
+  .command('start <increment-id>')
+  .description('Start a planned/backlog/paused increment (status -> active)')
+  .action(async (incrementId) => {
+    const { startCommand } = await import('../dist/src/cli/commands/start.js');
+    await startCommand(incrementId);
+  });
+
+program
   .command('resume <increment-id>')
-  .description('Resume a paused or abandoned increment')
+  .description('Resume a paused, abandoned or not-yet-started increment')
   .action(async (incrementId) => {
     const { resumeCommand } = await import('../dist/src/cli/commands/resume.js');
     await resumeCommand(incrementId);
@@ -391,6 +399,7 @@ program
   .option('--project-root <path>', 'Override project root directory')
   .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
   .option('--with-plan', 'Also scaffold plan.md (optional overflow; spec.md carries the Approach)')
+  .option('--planned', 'Create as "planned" instead of "active" (backlog work; start it with specweave start <id>)')
   .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
   .option('--parent <increment-id>', 'Parent increment (recorded as metadata.parent)')
   .option('--json', 'Output result as JSON (for programmatic use)')

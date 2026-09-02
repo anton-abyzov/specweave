@@ -27,13 +27,13 @@ class StatusChangeSyncTriggerTestable {
     const transition = `${oldStatus} → ${newStatus}`;
 
     const SYNC_WORTHY = [
-      'planning → active',            // Work started
+      'planned → active',            // Work started
       'active → completed',           // Work finished (legacy direct completion)
       'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
       'completed → active',           // Work reopened
       'backlog → active',             // Backlog item started
       'paused → active',              // Work resumed
-      'planning → completed',         // Direct completion (bypassed CLI)
+      'planned → completed',         // Direct completion (bypassed CLI)
       'backlog → completed',          // Direct completion (bypassed CLI)
       'paused → completed',           // Direct completion (bypassed CLI)
       'paused → ready_for_review'     // Paused -> review (valid transition)
@@ -53,9 +53,9 @@ describe('StatusChangeSyncTrigger', () => {
       expect(result).toBe(true);
     });
 
-    it('should trigger sync for planning → active (work started)', () => {
+    it('should trigger sync for planned → active (work started)', () => {
       const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
-        IncrementStatus.PLANNING,
+        IncrementStatus.PLANNED,
         IncrementStatus.ACTIVE
       );
       expect(result).toBe(true);
@@ -93,9 +93,9 @@ describe('StatusChangeSyncTrigger', () => {
       expect(result).toBe(true);
     });
 
-    it('should trigger sync for planning → completed (defense-in-depth)', () => {
+    it('should trigger sync for planned → completed (defense-in-depth)', () => {
       const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
-        IncrementStatus.PLANNING,
+        IncrementStatus.PLANNED,
         IncrementStatus.COMPLETED
       );
       expect(result).toBe(true);

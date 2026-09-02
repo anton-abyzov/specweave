@@ -59,7 +59,7 @@ export class IncrementDetector {
       try {
         const metadata = MetadataManager.read(incrementId, this.projectRoot);
 
-        if (metadata.status === IncrementStatus.PLANNING) {
+        if (metadata.status === IncrementStatus.PLANNED) {
           planningIncrements.push(incrementId);
         } else if (metadata.status === IncrementStatus.ACTIVE) {
           activeIncrements.push(incrementId);

@@ -5,30 +5,38 @@
  * Part of increment 0007: Smart Status Management
  */
 /**
- * Increment status enum
- * Tracks the lifecycle state of an increment
+ * Increment status enum — the 2.0 closed vocabulary.
+ *
+ * SpecWeave 2.0 recognises exactly five statuses on disk:
+ *   planned | active | paused | completed | abandoned
+ * and they are set ONLY by CLI transitions (`create-increment`, `start`,
+ * `pause`, `resume`, `abandon`, `complete`) — never by hand.
+ *
+ * `backlog` and `ready_for_review` are 1.x states kept for backwards
+ * compatibility with increments already on disk (and with the 1.x
+ * ready-for-review closure gate). They are not part of the 2.0 vocabulary
+ * and `create-increment` never writes them.
  */
 export var IncrementStatus;
 (function (IncrementStatus) {
-    /** Planning phase - spec/plan/tasks being created (does NOT count towards WIP limits) */
-    IncrementStatus["PLANNING"] = "planning";
-    /** Currently being worked on */
+    /**
+     * Spec exists, work has not started (does NOT count towards WIP limits).
+     *
+     * 1.x wrote `planning` for the same state; that spelling is migrated to
+     * `planned` on read (see {@link LEGACY_STATUS_MAP}).
+     */
+    IncrementStatus["PLANNED"] = "planned";
+    /** Currently being worked on — what `task`/`verify`/`handoff` resolve to */
     IncrementStatus["ACTIVE"] = "active";
-    /** Planned but not ready to start yet (does NOT count towards WIP limits) */
+    /** @deprecated 1.x only. Planned but not ready to start yet. */
     IncrementStatus["BACKLOG"] = "backlog";
     /** Temporarily stopped (blocked by external dependency, deprioritized) */
     IncrementStatus["PAUSED"] = "paused";
     /**
-     * All tasks complete, awaiting user review (v0.28.63+)
+     * @deprecated 1.x only — 2.0 closes through `specweave complete`.
      *
-     * CRITICAL: This is a gating status that prevents auto-completion bugs.
-     * - Auto-transitions to READY_FOR_REVIEW when all tasks completed
-     * - User MUST explicitly run sw:done to move to COMPLETED
-     * - sw:next will prompt for confirmation before closure
-     *
-     * Prevents the bug where status becomes "completed" without:
-     * 1. ACs being checked in spec.md
-     * 2. User approval
+     * All tasks complete, awaiting user review. Still resolved as "in flight"
+     * so 1.x increments mid-closure keep working.
      */
     IncrementStatus["READY_FOR_REVIEW"] = "ready_for_review";
     /** All tasks complete AND user approved - increment finished */
@@ -56,20 +64,49 @@ export var IncrementType;
     IncrementType["EXPERIMENT"] = "experiment";
 })(IncrementType || (IncrementType = {}));
 /**
- * Statuses seen in the wild that never existed in the enum, mapped to the
- * status 2.0 uses instead. `superseded` was written by hand (and by older
- * skills) whenever an increment was replaced by a newer one.
+ * Statuses seen in the wild that are not part of the 2.0 vocabulary, mapped to
+ * the status 2.0 uses instead.
+ *
+ * - `planning` is the 1.x spelling of `planned` (what `create-increment` wrote
+ *   up to 1.x, and what 217+ increments on disk carry).
+ * - `superseded` was written by hand (and by older skills) whenever an
+ *   increment was replaced by a newer one.
+ *
+ * Anything here is rewritten on read by {@link migrateLegacyStatus}, so legacy
+ * increments keep resolving instead of silently disappearing from
+ * `specweave status` totals.
  */
 export const LEGACY_STATUS_MAP = {
+    planning: IncrementStatus.PLANNED,
+    new: IncrementStatus.PLANNED,
+    todo: IncrementStatus.PLANNED,
     superseded: IncrementStatus.ABANDONED,
     cancelled: IncrementStatus.ABANDONED,
     canceled: IncrementStatus.ABANDONED,
     done: IncrementStatus.COMPLETED,
     closed: IncrementStatus.COMPLETED,
     complete: IncrementStatus.COMPLETED,
+    finished: IncrementStatus.COMPLETED,
     in_progress: IncrementStatus.ACTIVE,
     'in-progress': IncrementStatus.ACTIVE,
+    'in progress': IncrementStatus.ACTIVE,
+    started: IncrementStatus.ACTIVE,
+    'ready-for-review': IncrementStatus.READY_FOR_REVIEW,
+    'ready_for_review ': IncrementStatus.READY_FOR_REVIEW,
+    'in-review': IncrementStatus.READY_FOR_REVIEW,
+    'in_review': IncrementStatus.READY_FOR_REVIEW,
+    review: IncrementStatus.READY_FOR_REVIEW,
+    on_hold: IncrementStatus.PAUSED,
+    'on-hold': IncrementStatus.PAUSED,
+    blocked: IncrementStatus.PAUSED,
 };
+/**
+ * What `metadata.json` falls back to when its status is neither an
+ * {@link IncrementStatus} nor in {@link LEGACY_STATUS_MAP}. Surfacing such an
+ * increment as `planned` keeps it visible (and fixable) in `specweave status`;
+ * before 2.0 the read threw and the increment vanished from every total.
+ */
+export const UNKNOWN_STATUS_FALLBACK = IncrementStatus.PLANNED;
 /**
  * One-shot migration for `metadata.json` files carrying a status that is not
  * in {@link IncrementStatus}. `superseded` becomes `abandoned` and records the
@@ -81,11 +118,16 @@ export function migrateLegacyStatus(raw) {
     if (!status || Object.values(IncrementStatus).includes(status)) {
         return { metadata: raw, changed: false };
     }
-    const mapped = LEGACY_STATUS_MAP[status.toLowerCase()];
+    const mapped = LEGACY_STATUS_MAP[status.trim().toLowerCase()];
+    // A status we cannot interpret is NOT silently rewritten here — callers that
+    // must keep the increment visible (metadata.json) coerce it themselves with
+    // UNKNOWN_STATUS_FALLBACK; callers validating authored content (spec.md
+    // frontmatter) still reject it.
     if (!mapped)
         return { metadata: raw, changed: false };
-    const metadata = { ...raw, status: mapped };
-    if (mapped === IncrementStatus.ABANDONED) {
+    const mappedStatus = mapped;
+    const metadata = { ...raw, status: mappedStatus };
+    if (mappedStatus === IncrementStatus.ABANDONED) {
         // `supersedes` points forward (new → old), so a superseded increment records
         // its successor in closeReason, never in its own `supersedes` field.
         const successor = typeof raw.supersededBy === 'string' ? raw.supersededBy : undefined;
@@ -95,7 +137,7 @@ export function migrateLegacyStatus(raw) {
         if (!metadata.abandonedAt)
             metadata.abandonedAt = raw.lastActivity || new Date().toISOString();
     }
-    return { metadata, changed: true, note: `Legacy status '${status}' migrated to '${mapped}'` };
+    return { metadata, changed: true, note: `Legacy status '${status}' migrated to '${mappedStatus}'` };
 }
 /**
  * Valid status transitions
@@ -107,7 +149,7 @@ export function migrateLegacyStatus(raw) {
  * without ACs being checked or user confirmation.
  */
 export const VALID_TRANSITIONS = {
-    [IncrementStatus.PLANNING]: [
+    [IncrementStatus.PLANNED]: [
         IncrementStatus.ACTIVE, // Move to active when tasks start
         IncrementStatus.BACKLOG, // Move to backlog if deprioritized
         IncrementStatus.ABANDONED // Cancel planning
@@ -120,7 +162,7 @@ export const VALID_TRANSITIONS = {
         // NOTE: COMPLETED intentionally NOT allowed! Must go through READY_FOR_REVIEW
     ],
     [IncrementStatus.BACKLOG]: [
-        IncrementStatus.PLANNING, // Resume planning
+        IncrementStatus.PLANNED, // Resume planning
         IncrementStatus.ACTIVE,
         IncrementStatus.ABANDONED
     ],
@@ -188,16 +230,19 @@ export const STALENESS_THRESHOLDS = {
     EXPERIMENT: 14
 };
 /**
- * Default metadata for new increments
+ * Default metadata for an increment whose metadata.json is missing (lazy
+ * repair of a folder created by hand).
  *
- * NOTE: New increments start in PLANNING status by default.
- * They auto-transition to ACTIVE when tasks.md is created or first task starts.
+ * NOTE: this is the REPAIR default, not what `create-increment` writes —
+ * `createIncrementTemplates` writes `active` so the 2.0 loop
+ * (`task next` → `claim` → `done` → `verify` → `complete`) works on a freshly
+ * created increment without any hand-editing of metadata.json.
  */
 export function createDefaultMetadata(id, type = IncrementType.FEATURE) {
     const now = new Date().toISOString();
     return {
         id,
-        status: IncrementStatus.PLANNING, // Start in planning phase
+        status: IncrementStatus.PLANNED, // Repair default: spec exists, work not claimed
         type,
         created: now,
         lastActivity: now

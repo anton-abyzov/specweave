@@ -14,11 +14,6 @@ export declare class MetadataError extends Error {
     cause?: Error | undefined;
     constructor(message: string, incrementId: string, cause?: Error | undefined);
 }
-/**
- * Metadata Manager
- *
- * Provides CRUD operations and queries for increment metadata
- */
 export declare class MetadataManager {
     /**
      * Logger instance (injectable for testing)

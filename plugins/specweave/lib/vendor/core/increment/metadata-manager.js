@@ -7,7 +7,7 @@
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
-import { IncrementStatus, IncrementType, createDefaultMetadata, isValidTransition, isStale, shouldAutoAbandon, migrateLegacyStatus } from '../types/increment-metadata.js';
+import { IncrementStatus, IncrementType, createDefaultMetadata, isValidTransition, isStale, shouldAutoAbandon, migrateLegacyStatus, UNKNOWN_STATUS_FALLBACK } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { consoleLogger } from '../../utils/logger.js';
@@ -38,6 +38,11 @@ const TYPE_ALIAS_MAP = {
  *
  * Provides CRUD operations and queries for increment metadata
  */
+/** Schema-repair diagnostics are opt-in (SPECWEAVE_DEBUG=1). */
+function isMetadataDebug() {
+    const v = process.env.SPECWEAVE_DEBUG;
+    return !!v && v !== '0' && v.toLowerCase() !== 'false';
+}
 export class MetadataManager {
     /**
      * Set logger instance (primarily for testing with silentLogger)
@@ -96,8 +101,10 @@ export class MetadataManager {
             // Create default metadata and run through schema validation
             const raw = createDefaultMetadata(incrementId);
             const { metadata: defaultMetadata, warnings } = this.validateMetadataSchema(raw, incrementId);
-            for (const w of warnings) {
-                this.logger.warn(`metadata(${incrementId}): ${w}`);
+            if (isMetadataDebug()) {
+                for (const w of warnings) {
+                    this.logger.warn(`metadata(${incrementId}): ${w}`);
+                }
             }
             this.write(incrementId, defaultMetadata, rootDir);
             // **CRITICAL**: Update active increment state if default status is ACTIVE
@@ -114,9 +121,14 @@ export class MetadataManager {
             const rawMetadata = JSON.parse(content);
             // Validate & auto-correct schema issues (T-012/T-013)
             const { metadata, corrected, warnings } = this.validateMetadataSchema(rawMetadata, incrementId);
-            // Emit warnings to stderr so they are visible but non-blocking
-            for (const w of warnings) {
-                this.logger.warn(`metadata(${incrementId}): ${w}`);
+            // Schema repairs are auto-applied AND persisted, so they are diagnostics,
+            // not user-actionable warnings — printing them mid-command corrupted the
+            // output of `specweave status` (and anything parsing it). Behind
+            // SPECWEAVE_DEBUG they are still available.
+            if (warnings.length > 0 && isMetadataDebug()) {
+                for (const w of warnings) {
+                    this.logger.warn(`metadata(${incrementId}): ${w}`);
+                }
             }
             // Validate hard constraints (id, status enum, type enum, required fields)
             this.validate(metadata);
@@ -461,7 +473,12 @@ export class MetadataManager {
                 return this.read(folder);
             }
             catch (error) {
-                // Skip increments with invalid/missing metadata
+                // An increment that cannot be read must never vanish silently: before
+                // 2.0 a metadata.json with an unrecognised status dropped out of every
+                // total and the project read as "100% complete". Legacy statuses are
+                // migrated in validateMetadataSchema; anything left here is corrupt
+                // JSON or a missing folder, and the user has to know.
+                this.logger.warn(`metadata(${folder}): excluded from status — ${error instanceof Error ? error.message : String(error)}`);
                 return null;
             }
         })
@@ -710,11 +727,20 @@ export class MetadataManager {
                     warnings.push(migration.note);
                 corrected = true;
             }
+            else if (typeof metadata.status === 'string' &&
+                !Object.values(IncrementStatus).includes(metadata.status)) {
+                // Not a known legacy spelling either. Keep the increment VISIBLE rather
+                // than letting read() throw and getAll() drop it — a project with
+                // pending work used to report "100% complete" because of exactly this.
+                warnings.push(`Unrecognized status '${metadata.status}' — treated as '${UNKNOWN_STATUS_FALLBACK}' (2.0 statuses: ${Object.values(IncrementStatus).join(', ')})`);
+                metadata.status = UNKNOWN_STATUS_FALLBACK;
+                corrected = true;
+            }
         }
         // --- sensible defaults ---
         if (!metadata.status) {
-            metadata.status = IncrementStatus.PLANNING;
-            warnings.push(`Missing 'status' — defaulted to '${IncrementStatus.PLANNING}'`);
+            metadata.status = IncrementStatus.PLANNED;
+            warnings.push(`Missing 'status' — defaulted to '${IncrementStatus.PLANNED}'`);
             corrected = true;
         }
         if (!metadata.priority) {

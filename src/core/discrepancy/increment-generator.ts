@@ -256,7 +256,7 @@ export async function generateIncrementFromDiscrepancies(
     const metadata = {
       incrementId,
       title: options.incrementTitle || `Documentation: ${primaryModule}`,
-      status: 'planning',
+      status: 'planned',
       type: 'documentation',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

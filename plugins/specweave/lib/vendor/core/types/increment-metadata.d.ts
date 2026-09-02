@@ -5,29 +5,37 @@
  * Part of increment 0007: Smart Status Management
  */
 /**
- * Increment status enum
- * Tracks the lifecycle state of an increment
+ * Increment status enum — the 2.0 closed vocabulary.
+ *
+ * SpecWeave 2.0 recognises exactly five statuses on disk:
+ *   planned | active | paused | completed | abandoned
+ * and they are set ONLY by CLI transitions (`create-increment`, `start`,
+ * `pause`, `resume`, `abandon`, `complete`) — never by hand.
+ *
+ * `backlog` and `ready_for_review` are 1.x states kept for backwards
+ * compatibility with increments already on disk (and with the 1.x
+ * ready-for-review closure gate). They are not part of the 2.0 vocabulary
+ * and `create-increment` never writes them.
  */
 export declare enum IncrementStatus {
-    /** Planning phase - spec/plan/tasks being created (does NOT count towards WIP limits) */
-    PLANNING = "planning",
-    /** Currently being worked on */
+    /**
+     * Spec exists, work has not started (does NOT count towards WIP limits).
+     *
+     * 1.x wrote `planning` for the same state; that spelling is migrated to
+     * `planned` on read (see {@link LEGACY_STATUS_MAP}).
+     */
+    PLANNED = "planned",
+    /** Currently being worked on — what `task`/`verify`/`handoff` resolve to */
     ACTIVE = "active",
-    /** Planned but not ready to start yet (does NOT count towards WIP limits) */
+    /** @deprecated 1.x only. Planned but not ready to start yet. */
     BACKLOG = "backlog",
     /** Temporarily stopped (blocked by external dependency, deprioritized) */
     PAUSED = "paused",
     /**
-     * All tasks complete, awaiting user review (v0.28.63+)
+     * @deprecated 1.x only — 2.0 closes through `specweave complete`.
      *
-     * CRITICAL: This is a gating status that prevents auto-completion bugs.
-     * - Auto-transitions to READY_FOR_REVIEW when all tasks completed
-     * - User MUST explicitly run sw:done to move to COMPLETED
-     * - sw:next will prompt for confirmation before closure
-     *
-     * Prevents the bug where status becomes "completed" without:
-     * 1. ACs being checked in spec.md
-     * 2. User approval
+     * All tasks complete, awaiting user review. Still resolved as "in flight"
+     * so 1.x increments mid-closure keep working.
      */
     READY_FOR_REVIEW = "ready_for_review",
     /** All tasks complete AND user approved - increment finished */
@@ -113,11 +121,26 @@ export interface IncrementMetadata {
     parent?: string;
 }
 /**
- * Statuses seen in the wild that never existed in the enum, mapped to the
- * status 2.0 uses instead. `superseded` was written by hand (and by older
- * skills) whenever an increment was replaced by a newer one.
+ * Statuses seen in the wild that are not part of the 2.0 vocabulary, mapped to
+ * the status 2.0 uses instead.
+ *
+ * - `planning` is the 1.x spelling of `planned` (what `create-increment` wrote
+ *   up to 1.x, and what 217+ increments on disk carry).
+ * - `superseded` was written by hand (and by older skills) whenever an
+ *   increment was replaced by a newer one.
+ *
+ * Anything here is rewritten on read by {@link migrateLegacyStatus}, so legacy
+ * increments keep resolving instead of silently disappearing from
+ * `specweave status` totals.
  */
 export declare const LEGACY_STATUS_MAP: Record<string, IncrementStatus>;
+/**
+ * What `metadata.json` falls back to when its status is neither an
+ * {@link IncrementStatus} nor in {@link LEGACY_STATUS_MAP}. Surfacing such an
+ * increment as `planned` keeps it visible (and fixable) in `specweave status`;
+ * before 2.0 the read threw and the increment vanished from every total.
+ */
+export declare const UNKNOWN_STATUS_FALLBACK = IncrementStatus.PLANNED;
 export interface LegacyStatusMigration {
     /** The patched metadata (a copy; unchanged input when nothing matched). */
     metadata: Record<string, unknown>;
@@ -183,10 +206,13 @@ export declare const STALENESS_THRESHOLDS: {
     EXPERIMENT: number;
 };
 /**
- * Default metadata for new increments
+ * Default metadata for an increment whose metadata.json is missing (lazy
+ * repair of a folder created by hand).
  *
- * NOTE: New increments start in PLANNING status by default.
- * They auto-transition to ACTIVE when tasks.md is created or first task starts.
+ * NOTE: this is the REPAIR default, not what `create-increment` writes —
+ * `createIncrementTemplates` writes `active` so the 2.0 loop
+ * (`task next` → `claim` → `done` → `verify` → `complete`) works on a freshly
+ * created increment without any hand-editing of metadata.json.
  */
 export declare function createDefaultMetadata(id: string, type?: IncrementType): IncrementMetadata;
 /**

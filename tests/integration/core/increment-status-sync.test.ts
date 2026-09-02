@@ -345,7 +345,7 @@ All tasks complete (for testing purposes).
     it('testAllTransitionsUpdateSpec - should update spec.md for every valid transition', async () => {
       // Test all valid direct transitions (v0.28.63+ requires READY_FOR_REVIEW before COMPLETED)
       const transitions = [
-        { from: IncrementStatus.PLANNING, to: IncrementStatus.ACTIVE, label: 'planning→active' },
+        { from: IncrementStatus.PLANNED, to: IncrementStatus.ACTIVE, label: 'planning→active' },
         { from: IncrementStatus.ACTIVE, to: IncrementStatus.READY_FOR_REVIEW, label: 'active→ready_for_review' },
         { from: IncrementStatus.READY_FOR_REVIEW, to: IncrementStatus.COMPLETED, label: 'ready_for_review→completed' },
         { from: IncrementStatus.ACTIVE, to: IncrementStatus.PAUSED, label: 'active→paused' },
