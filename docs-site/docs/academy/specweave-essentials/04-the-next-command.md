@@ -193,7 +193,7 @@ C. Create new → sw:increment "description"
 
 ---
 
-## Scenario 4: WIP Limit Warning
+## Scenario 4: WIP Advisory Note
 
 **Situation**: Multiple increments in progress.
 
@@ -203,10 +203,10 @@ sw:next
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  WIP LIMIT WARNING
+ℹ️  WIP ADVISORY NOTE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Multiple increments in-progress (2/2 at limit)
+Multiple increments in-progress (2, advisory limit 3)
 
 Active:
   0002-payment-processing    ████████░░  55%

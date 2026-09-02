@@ -53,8 +53,7 @@ Completed (3):
   0002-core-enhancements
   0004-plugin-architecture
 
-WIP Limit:
-  Active increments: 1/1 (within limit)
+Active increments: 1 (advisory limit 1)
 
 Suggestions:
   - 0006 ready to resume (backend API available)
@@ -136,7 +135,7 @@ $ specweave status
 Increment Status Overview
 Active (1): 0007-payment-integration (60% complete)
 
-# WIP limit reached, need to complete or pause current work first
+# Prefer finishing active work before starting more
 $ specweave do  # Continue current work (or say "start implementing")
 ```
 
