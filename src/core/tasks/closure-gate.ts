@@ -18,13 +18,20 @@ export interface ClosureGateResult {
   ok: boolean;
   /** Blocking errors (empty when ok). */
   errors: string[];
-  /** Non-blocking notices. */
+  /** Non-blocking notices — things the reader may want to act on. */
   notices: string[];
+  /**
+   * Purely informational results. A PASSING verify belongs here, not in
+   * `notices`: printing "verify ok" under a "⚠️ Warnings" header made a green
+   * closure read like a problem report.
+   */
+  info: string[];
 }
 
 export function checkClosureGate(incrementDir: string, incrementId: string, opts: { reason?: string } = {}): ClosureGateResult {
   const errors: string[] = [];
   const notices: string[] = [];
+  const info: string[] = [];
   const verify = readVerifyReport(incrementDir);
   const reason = opts.reason?.trim();
 
@@ -50,7 +57,7 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
       notices.push(`closing with failed verify (${why}) — reason: ${reason}`);
     }
   } else {
-    notices.push(`verify ok (${verify.ranAt}; ${verify.commands.length} command(s); ACs ${verify.acs.done}/${verify.acs.total})`);
+    info.push(`verify ok (${verify.ranAt}; ${verify.commands.length} command(s); ACs ${verify.acs.done}/${verify.acs.total})`);
     // An `ok` report that still has open ACs can only come from a spec with no
     // AC lines at all, or a hand-edited verify.json. Say so out loud.
     const unchecked = describeUncheckedAcs(verify.acs);
@@ -70,5 +77,5 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     notices.push('no reports/review.md — consider running sw:review before shipping user-facing work');
   }
 
-  return { ok: errors.length === 0, errors, notices };
+  return { ok: errors.length === 0, errors, notices, info };
 }

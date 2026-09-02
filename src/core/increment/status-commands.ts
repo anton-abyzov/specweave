@@ -357,6 +357,14 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
         return false;
       }
 
+      // A PASSING verify is a RESULT, not a warning. It used to be printed
+      // under the "⚠️  Warnings (non-blocking)" header, so a clean close read
+      // as three problems — the loudest of which was the gate that passed.
+      if (validation.info && validation.info.length > 0) {
+        log(chalk.gray(`\nℹ️  Checks:\n`));
+        validation.info.forEach((line) => log(chalk.gray(`   • ${line}`)));
+      }
+
       // Show warnings but continue
       if (validation.warnings && validation.warnings.length > 0) {
         log(chalk.yellow(`\n⚠️  Warnings (non-blocking):\n`));
