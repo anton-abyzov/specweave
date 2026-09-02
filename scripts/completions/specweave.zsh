@@ -188,6 +188,7 @@ _specweave() {
                         '--priority[Priority (P1, P2, P3)]' \
                         '--project-root[Override project root directory]' \
                         '--parallel[Opt into 3-agent fan-out planning (default\: single-agent)]' \
+                        '--with-plan[Also scaffold plan.md (optional overflow; spec.md carries the Approach)]' \
                         '--supersedes[Increment this one replaces (the old one is abandoned with a closeReason)]' \
                         '--parent[Parent increment (recorded as metadata.parent)]' \
                         '--json[Output result as JSON (for programmatic use)]' \
