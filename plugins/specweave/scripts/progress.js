@@ -2,7 +2,7 @@
 /**
  * Instant Increment Progress (Node.js fallback)
  *
- * Executed by UserPromptSubmit hook for sw:progress when jq is unavailable.
+ * Prints task-completion progress. Run directly: node scripts/progress.js
  * Reads files directly (no cache needed). Bypasses LLM entirely.
  *
  * Usage: node progress.js [incrementId] [--help]
@@ -29,7 +29,7 @@ DESCRIPTION
   This script bypasses LLM processing for instant results (<100ms).
 
 EXECUTION PATHS
-  1. Claude Code:  sw:progress  (hook intercepts, <100ms)
+  1. CLI:          specweave status
   2. Any LLM:      Skill instructs to run this script (~2s)
   3. Terminal:     specweave status --verbose (~500ms)
 
@@ -199,7 +199,7 @@ console.log('\n📊 Increment Progress\n');
 if (needsClosure.length > 0) {
   console.log('⚠️  Needs Closure (100% tasks done):');
   for (const inc of needsClosure) {
-    console.log(`  ${inc.id} → sw:done ${inc.id}`);
+    console.log(`  ${inc.id} → specweave complete ${inc.id}`);
   }
   console.log('');
 }
@@ -217,7 +217,7 @@ if (readyForReview.length > 0) {
     }
     console.log(`  ${priBadge} ${inc.id}`);
     console.log(`     ${bar} ${inc.completedTasks}/${inc.totalTasks} tasks${acInfo}`);
-    console.log(`     → sw:done ${inc.id}`);
+    console.log(`     → specweave complete ${inc.id}`);
   }
   console.log('');
 }
@@ -281,11 +281,11 @@ if (totalActionable > 0) {
   console.log('');
 
   if (needsClosure.length > 0) {
-    console.log('💡 Run sw:done <id> to close completed increments');
+    console.log('💡 Run specweave complete <id> to close completed increments');
   } else if (readyForReview.length > 0) {
-    console.log('💡 Run sw:done <id> to close reviewed increments');
+    console.log('💡 Run specweave complete <id> to close reviewed increments');
   } else {
-    console.log('💡 For details: sw:progress <incrementId>');
+    console.log('💡 For details: specweave status');
   }
 } else {
   console.log('No active increments.');

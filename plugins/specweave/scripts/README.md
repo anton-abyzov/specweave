@@ -26,7 +26,7 @@ Supporting helpers: `detect-project-type.js`, `get-default-conditions.js`,
 
 ```bash
 specweave status
-specweave progress
+specweave status
 specweave jobs
 ```
 
