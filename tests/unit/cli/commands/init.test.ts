@@ -597,8 +597,6 @@ describe('init command', () => {
         expect.any(String),
         'my-cool-project',
         expect.any(String),
-        expect.any(String),
-        false,
       );
     });
 
@@ -659,8 +657,6 @@ describe('init command', () => {
         expect.any(String),
         expect.stringMatching(/^[a-z0-9-]+$/),
         expect.any(String),
-        expect.any(String),
-        false,
       );
 
       cwdSpy.mockRestore();
@@ -1040,8 +1036,6 @@ describe('init command', () => {
         expect.stringContaining('config-test'),
         'config-test',
         expect.any(String), // adapter
-        'en', // language
-        false, // enableDocsPreview
       );
     });
   });
@@ -1397,7 +1391,7 @@ describe('init command', () => {
 
       expect(mockApplySmartDefaults).toHaveBeenCalledWith(
         expect.any(Object),
-        expect.objectContaining({ language: 'en' })
+        expect.objectContaining({ adapter: 'claude' })
       );
     });
 

@@ -26,10 +26,8 @@ function makeOptions(overrides: Partial<SummaryBannerOptions> = {}): SummaryBann
     language: 'en',
     defaults: {
       testing: 'TDD',
-      qualityGates: 'standard',
       lspEnabled: true,
       gitHooksInstalled: true,
-      translationEnabled: false,
     },
     ...overrides,
   };
@@ -86,11 +84,6 @@ describe('summary-banner', () => {
       expect(output).toContain('test-after');
     });
 
-    it('should list quality gates', () => {
-      const output = strip(formatSummaryBanner(makeOptions()));
-      expect(output).toMatch(/[Ss]tandard quality gates/);
-    });
-
     it('should list LSP when enabled (Claude)', () => {
       const output = strip(formatSummaryBanner(makeOptions()));
       expect(output).toContain('LSP code intelligence');
@@ -113,14 +106,6 @@ describe('summary-banner', () => {
         defaults: { ...makeOptions().defaults, gitHooksInstalled: false },
       })));
       expect(output).not.toContain('Git pre-commit hooks');
-    });
-
-    it('should list translation when enabled for non-English', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        language: 'es',
-        defaults: { ...makeOptions().defaults, translationEnabled: true },
-      })));
-      expect(output).toContain('Auto-translation (es)');
     });
 
     it('should NOT list translation for English', () => {
@@ -263,19 +248,19 @@ describe('summary-banner', () => {
 
     // ─── Coverage targets ──────────────────────────────────────
 
-    it('should show coverage targets when TDD with coverageTargets', () => {
+    it('should show coverage targets when TDD with coverage', () => {
       const output = strip(formatSummaryBanner(makeOptions({
         defaults: {
           ...makeOptions().defaults,
           testing: 'TDD',
-          coverageTargets: { unit: 80, integration: 60, e2e: 40 },
+          coverage: { unit: 80, integration: 60, e2e: 40 },
         },
       })));
       expect(output).toContain('TDD mode (coverage: 80% unit, 60% integration, 40% e2e)');
       expect(output).not.toContain('TDD mode (testing)');
     });
 
-    it('should fall back to "TDD mode (testing)" when no coverageTargets', () => {
+    it('should fall back to "TDD mode (testing)" when no coverage', () => {
       const output = strip(formatSummaryBanner(makeOptions({
         defaults: { ...makeOptions().defaults, testing: 'TDD' },
       })));
@@ -287,7 +272,7 @@ describe('summary-banner', () => {
         defaults: {
           ...makeOptions().defaults,
           testing: 'test-after',
-          coverageTargets: { unit: 80, integration: 60, e2e: 40 },
+          coverage: { unit: 80, integration: 60, e2e: 40 },
         },
       })));
       expect(output).toContain('test-after (testing)');
