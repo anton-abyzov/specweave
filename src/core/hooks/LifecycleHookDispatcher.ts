@@ -282,13 +282,20 @@ export class LifecycleHookDispatcher {
           // This ensures FEATURE-CATALOG, module docs, and specs README contain links
           // to the newly created feature spec files. Without this, the link update is
           // deferred to the done step which may not always run.
+          // Issue #1925: cross-project increments write specs under per-US project
+          // paths, not the umbrella project id — loop over what the sync resolved.
           if (syncResult.success && syncResult.featureId) {
             try {
-              await LifecycleHookDispatcher.updateDocsLinks(
-                projectRoot,
-                syncResult.featureId,
-                sync.getProjectId(),
-              );
+              const targets = syncResult.projectIds && syncResult.projectIds.length > 0
+                ? syncResult.projectIds
+                : [sync.getProjectId()];
+              for (const target of targets) {
+                await LifecycleHookDispatcher.updateDocsLinks(
+                  projectRoot,
+                  syncResult.featureId,
+                  target,
+                );
+              }
               result.syncSuccess.push('Docs links updated');
             } catch (linkError) {
               const linkMsg = linkError instanceof Error ? linkError.message : String(linkError);

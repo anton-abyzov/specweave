@@ -445,6 +445,7 @@ export class LivingDocsSync {
 
         // Cross-project sync complete - skip single-project logic
         result.success = true;
+        result.projectIds = [...validGroups.keys()].map((p) => p.replace(/^\.\//, ''));
         this.crossProjectSync.logSyncSummary({
           success: true,
           projects: [...validGroups.entries()].map(([targetPath, stories]) => ({
@@ -470,6 +471,7 @@ export class LivingDocsSync {
       // CRITICAL v0.35.1: Validate project BEFORE creating folder
       // CRITICAL FIX (v1.0.23): Strip ./ prefix to prevent "." being extracted
       const normalizedProjectPath = resolvedProjectPath.replace(/^\.\//, '');
+      result.projectIds = [normalizedProjectPath];
       const projectIdToValidate = normalizedProjectPath.split('/')[0];
       const projectValidation = await this.projectResolution.validateProjectForFolderCreation(projectIdToValidate);
       if (!projectValidation.valid) {
