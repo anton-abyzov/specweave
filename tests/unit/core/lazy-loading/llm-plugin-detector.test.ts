@@ -55,17 +55,18 @@ import type {
 describe('SPECWEAVE_PLUGINS constant (v1.0.315: workflow/integration only)', () => {
   it('should be a non-empty array', () => {
     expect(Array.isArray(SPECWEAVE_PLUGINS)).toBe(true);
-    expect(SPECWEAVE_PLUGINS.length).toBeGreaterThanOrEqual(5);
+    expect(SPECWEAVE_PLUGINS.length).toBeGreaterThanOrEqual(4);
   });
 
   it('should have "sw" as the first element (core plugin)', () => {
     expect(SPECWEAVE_PLUGINS[0]).toBe('sw');
   });
 
-  it('should include external tool integration plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-github');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-jira');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-ado');
+  it('should NOT contain the per-provider sync plugins removed in 2.0', () => {
+    // Tracker sync ships in the core sw plugin (sw:sync / `specweave sync`).
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-github');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-jira');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-ado');
   });
 
   it('should include workflow plugins that remain in specweave', () => {
@@ -164,10 +165,10 @@ describe('isSpecWeavePlugin (v1.0.315: narrowed to workflow/integration)', () =>
     expect(isSpecWeavePlugin('sw')).toBe(true);
   });
 
-  it('should return true for integration plugins', () => {
-    expect(isSpecWeavePlugin('sw-github')).toBe(true);
-    expect(isSpecWeavePlugin('sw-jira')).toBe(true);
-    expect(isSpecWeavePlugin('sw-ado')).toBe(true);
+  it('should return false for the per-provider sync plugins removed in 2.0', () => {
+    expect(isSpecWeavePlugin('sw-github')).toBe(false);
+    expect(isSpecWeavePlugin('sw-jira')).toBe(false);
+    expect(isSpecWeavePlugin('sw-ado')).toBe(false);
   });
 
   it('should return true for all entries in SPECWEAVE_PLUGINS', () => {
@@ -211,7 +212,8 @@ describe('isSpecWeavePlugin (v1.0.315: narrowed to workflow/integration)', () =>
 describe('isKnownPlugin (specweave-only validation)', () => {
   it('should return true for specweave plugins', () => {
     expect(isKnownPlugin('sw')).toBe(true);
-    expect(isKnownPlugin('sw-github')).toBe(true);
+    expect(isKnownPlugin('sw-media')).toBe(true);
+    expect(isKnownPlugin('sw-github')).toBe(false);
   });
 
   it('should return false for removed vskill plugins', () => {

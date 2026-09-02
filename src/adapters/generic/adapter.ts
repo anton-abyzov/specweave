@@ -174,7 +174,7 @@ Ready to build with SpecWeave using ANY AI tool!
     pluginSection += `| \`specweave status\` | Check current progress |\n`;
     pluginSection += `| \`specweave validate\` | Run quality checks |\n`;
     pluginSection += `| \`specweave complete\` | Close an increment |\n`;
-    pluginSection += `| \`specweave sync-living-docs\` | Sync documentation |\n`;
+    pluginSection += `| \`specweave sync push\` | Push progress + docs to the tracker |\n`;
     pluginSection += `\n`;
 
     pluginSection += `## Skill Files\n\n`;

@@ -135,7 +135,7 @@ export async function syncStatusCommand(
   // Summary
   if (result.hasIssues) {
     logger.log('Status: ISSUES DETECTED');
-    if (result.retryQueuePending > 0) logger.log('  Run: specweave sync-retry');
+    if (result.retryQueuePending > 0) logger.log('  Run: specweave sync push --force to retry queued events');
     if (hasOpenCircuits) logger.log('  Circuit breakers will auto-reset after 5 minutes');
   } else {
     logger.log('Status: HEALTHY');

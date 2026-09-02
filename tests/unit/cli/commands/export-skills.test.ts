@@ -12,7 +12,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { exportSkills, ExportSkillsOptions } from '../../../../src/cli/commands/export-skills.js';
+import {
+  exportSkills,
+  ExportSkillsOptions,
+  convertSkill,
+  resolveSkillName,
+} from '../../../../src/cli/commands/export-skills.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -534,8 +539,10 @@ describe('exportSkills', () => {
 
     it('should report multiple validation errors', async () => {
       setup('validate-multi');
-      // Empty name + empty description = multiple errors
-      const content = '---\nname: ""\ndescription: ""\n---\nBody';
+      // Over-long name + empty description = multiple errors.
+      // NOTE: an empty `name:` is no longer an error - 2.0 skills omit the key
+      // entirely and the directory name supplies it.
+      const content = `---\nname: "${'a'.repeat(70)}"\ndescription: ""\n---\nBody`;
       createSkillFile(testDir, 'plug', 'multi-err', content);
 
       const results = await exportSkills({ output: outputDir, validate: true });
@@ -1049,6 +1056,65 @@ describe('exportSkills', () => {
     it('should be importable as a named export', async () => {
       const { exportSkillsCommand } = await import('../../../../src/cli/commands/export-skills.js');
       expect(typeof exportSkillsCommand).toBe('function');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────
+  // Skill name resolution (2.0: directory name IS the command)
+  // ─────────────────────────────────────────────────────────────────
+
+  describe('skill name resolution', () => {
+    it('derives the name from the directory when frontmatter has no name: key', () => {
+      expect(resolveSkillName(undefined, 'handoff')).toBe('handoff');
+      expect(resolveSkillName('', 'code-reviewer')).toBe('code-reviewer');
+      expect(resolveSkillName('   ', 'code-reviewer')).toBe('code-reviewer');
+    });
+
+    it('strips the sw/ namespace from a namespaced name', () => {
+      expect(resolveSkillName('sw/handoff', 'handoff')).toBe('handoff');
+      expect(resolveSkillName('sw/github-sync', 'sync')).toBe('github-sync');
+    });
+
+    it('keeps a plain declared name', () => {
+      expect(resolveSkillName('analytics', 'analytics')).toBe('analytics');
+    });
+
+    it('convertSkill handles all three frontmatter shapes', () => {
+      const missing = convertSkill({ description: 'x'.repeat(30) }, 'specweave', 'handoff');
+      expect(missing.agentSkill.name).toBe('handoff');
+      expect(missing.warnings).toEqual([]);
+
+      const namespaced = convertSkill(
+        { name: 'sw/handoff', description: 'x'.repeat(30) },
+        'specweave',
+        'handoff'
+      );
+      expect(namespaced.agentSkill.name).toBe('handoff');
+      expect(namespaced.warnings).toEqual([]);
+
+      const plain = convertSkill(
+        { name: 'Analytics', description: 'x'.repeat(30) },
+        'specweave',
+        'analytics'
+      );
+      expect(plain.agentSkill.name).toBe('analytics');
+    });
+
+    it('exports a 2.0 skill that has no name: frontmatter key', async () => {
+      setup('no-name');
+      createSkillFile(
+        testDir,
+        'specweave',
+        'handoff',
+        '---\ndescription: "Write a portable work handoff doc for another AI tool."\n---\n# Handoff\n'
+      );
+
+      const results = await exportSkills({ output: outputDir });
+      expect(results).toHaveLength(1);
+      expect(results[0].success).toBe(true);
+
+      const outputContent = fs.readFileSync(path.join(outputDir, 'handoff', 'SKILL.md'), 'utf-8');
+      expect(outputContent).toContain('name: handoff');
     });
   });
 });

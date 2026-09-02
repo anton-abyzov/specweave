@@ -3,6 +3,7 @@
  * Instant Increment Status Overview
  *
  * Prints the increment status overview. Run directly: node scripts/status.js
+ * CLI equivalent: `specweave status`.
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node status.js [--help]
