@@ -822,3 +822,26 @@ export async function generateSmartGitignore(
 
   return { detection, result };
 }
+
+/**
+ * Append the SpecWeave runtime-state entries (`.specweave/state/`, logs, jobs,
+ * cache, backups, `reports/artifacts/`, `.claude/worktrees/`) to an existing
+ * `.gitignore`, skipping every line that is already there.
+ *
+ * Used by `specweave update` so upgraded projects get the 2.0 hygiene rules
+ * without regenerating their whole .gitignore. Idempotent; creates the file
+ * when it is missing.
+ */
+export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: string[]; path: string } {
+  const gitignorePath = path.join(targetDir, '.gitignore');
+  const wanted = GITIGNORE_ENTRIES.specweave;
+  const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
+  const present = new Set(existing.split('\n').map((l) => l.trim()).filter(Boolean));
+
+  const missing = wanted.filter((line) => !line.startsWith('#') && !present.has(line.trim()));
+  if (missing.length === 0) return { added: [], path: gitignorePath };
+
+  const prefix = existing && !existing.endsWith('\n') ? '\n' : '';
+  fs.writeFileSync(gitignorePath, `${existing}${prefix}\n# SpecWeave (added by specweave update)\n${missing.join('\n')}\n`);
+  return { added: missing, path: gitignorePath };
+}

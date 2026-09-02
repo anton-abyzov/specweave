@@ -1,6 +1,7 @@
 import { completeIncrement } from '../../core/increment/status-commands.js';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { listTaskCompleteIncrementIds, readLeaseHours } from '../../core/tasks/resolve-increment.js';
 
 interface CompleteCommandOptions {
   silent?: boolean;
@@ -8,6 +9,8 @@ interface CompleteCommandOptions {
   yes?: boolean;
   /** Close without a passing reports/verify.json (stored as metadata.closeReason). */
   reason?: string;
+  /** Batch-close every active increment whose tasks are all done or skipped. */
+  all?: boolean;
 }
 
 /**
@@ -29,12 +32,32 @@ interface CompleteCommandOptions {
  * @since v4.1 - Short-ID resolution and batch mode
  */
 export async function completeCommand(
-  incrementId: string,
+  incrementId: string | undefined,
   moreIds: string[] = [],
   options: CompleteCommandOptions = {}
 ): Promise<void> {
   const projectRoot = resolveEffectiveRoot();
-  const allIds = [incrementId, ...moreIds];
+
+  let allIds: string[];
+  if (options.all) {
+    if (!options.reason?.trim()) {
+      console.error('Error: --all requires --reason "<why these are being closed in bulk>"');
+      process.exit(1);
+    }
+    allIds = listTaskCompleteIncrementIds(projectRoot, readLeaseHours(projectRoot));
+    if (allIds.length === 0) {
+      console.log('Nothing to close: no active increment has every task done or skipped.');
+      return;
+    }
+    console.log(`Closing ${allIds.length} task-complete increment(s): ${allIds.join(', ')}`);
+  } else {
+    if (!incrementId) {
+      console.error('Error: specweave complete <increment-id> [more-ids...] | --all --reason "<why>"');
+      process.exit(1);
+    }
+    allIds = [incrementId, ...moreIds];
+  }
+
   const results: Array<{ id: string; resolved: string; success: boolean }> = [];
   const isBatch = allIds.length > 1;
 

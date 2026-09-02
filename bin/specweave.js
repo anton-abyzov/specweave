@@ -335,13 +335,14 @@ program
 
 // Complete command - Mark increment(s) as complete (triggers external sync)
 program
-  .command('complete <increment-id> [more-ids...]')
+  .command('complete [increment-id] [more-ids...]')
   .alias('done')
   .description('Complete one or more increments (triggers GitHub/JIRA/ADO sync)')
   .option('-s, --silent', 'Silent mode (for auto mode stop hook)')
   .option('-y, --yes', 'Assume yes (silent confirmation)')
   .option('--skip-validation', 'Skip quality gate validation (DANGEROUS)')
   .option('-r, --reason <text>', 'Close without a passing reports/verify.json (stored as metadata.closeReason)')
+  .option('--all', 'Close every active increment whose tasks are all done or skipped (requires --reason)')
   .action(async (incrementId, moreIds, options) => {
     const { completeCommand } = await import('../dist/src/cli/commands/complete.js');
     await completeCommand(incrementId, moreIds, options);
