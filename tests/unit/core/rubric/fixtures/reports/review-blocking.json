@@ -1,0 +1,12 @@
+{
+  "ok": false,
+  "increment": "0001",
+  "reviewedAt": "2026-09-02T12:00:00Z",
+  "mode": "full",
+  "findings": [
+    { "severity": "critical", "file": "src/a.ts", "line": 42, "summary": "claim never released", "confidence": "confirmed" },
+    { "severity": "high", "file": "src/b.ts", "line": 7, "summary": "token logged in plaintext", "confidence": "confirmed" },
+    { "severity": "low", "file": "src/c.ts", "line": 3, "summary": "naming", "confidence": "plausible" }
+  ],
+  "droppedNits": 2
+}

@@ -167,7 +167,13 @@ export function lintContent(relPath, content, { commands, skills, isSkillFile })
 /** Files this linter owns. */
 export function collectFiles(root = REPO_ROOT) {
   const files = [];
-  for (const rel of [PLUGIN_SKILLS, PLUGIN_AGENTS, path.join('skills-optional')]) {
+  for (const rel of [
+    PLUGIN_SKILLS,
+    PLUGIN_AGENTS,
+    path.join('plugins', 'specweave', 'reference'),
+    path.join('plugins', 'specweave', 'defaults'),
+    path.join('skills-optional'),
+  ]) {
     for (const abs of walk(path.join(root, rel))) files.push(path.relative(root, abs));
   }
   for (const rel of [

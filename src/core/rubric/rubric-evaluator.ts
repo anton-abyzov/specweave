@@ -129,6 +129,8 @@ export function evaluateCommandCriterion(
 }
 
 interface EvaluateOptions {
+  /** Filename of the sw:review report inside reportsDir. Defaults to `review.json`. */
+  reviewReport?: string;
   grillReport?: string;
   codeReviewReport?: string;
   judgeLlmReport?: string;
@@ -212,6 +214,34 @@ function evaluateCodeReviewer(report: any): CriterionResult {
   return { status: 'pass', evidence: 'No blocking findings', evaluatedAt: now };
 }
 
+/**
+ * Evaluate a `sw:review` criterion against reports/review.json
+ * (`{ ok, findings: [{ severity, file, line, summary }] }`).
+ *
+ * Only critical and high findings block — that is the severity contract the review
+ * skill documents. `ok` is honoured when present so a reviewer can fail a review for
+ * a reason that is not expressible as a finding.
+ */
+function evaluateReview(report: any): CriterionResult {
+  const now = new Date().toISOString();
+  const findings: any[] = Array.isArray(report?.findings) ? report.findings : [];
+  const count = (severity: string) =>
+    findings.filter((f) => String(f?.severity ?? '').toLowerCase() === severity).length;
+  const critical = count('critical');
+  const high = count('high');
+
+  if (critical + high > 0) {
+    const parts: string[] = [];
+    if (critical > 0) parts.push(`${critical} critical`);
+    if (high > 0) parts.push(`${high} high`);
+    return { status: 'fail', evidence: parts.join(', ') + ' findings', evaluatedAt: now };
+  }
+  if (report?.ok === false) {
+    return { status: 'fail', evidence: 'review reported ok: false', evaluatedAt: now };
+  }
+  return { status: 'pass', evidence: 'No blocking findings', evaluatedAt: now };
+}
+
 function evaluateJudgeLlm(report: any): CriterionResult {
   const now = new Date().toISOString();
   if (report.verdict === 'REJECTED') {
@@ -229,6 +259,7 @@ export async function evaluateRubric(
   reportsDir: string,
   options: EvaluateOptions = {},
 ): Promise<RubricDocument> {
+  const reviewFile = options.reviewReport ?? 'review.json';
   const grillFile = options.grillReport ?? 'grill-report.json';
   const codeReviewFile = options.codeReviewReport ?? 'code-review-report.json';
   const judgeLlmFile = options.judgeLlmReport ?? 'judge-llm-report.json';
@@ -249,6 +280,11 @@ export async function evaluateRubric(
 
     try {
       switch (criterion.evaluator) {
+        case 'sw:review': {
+          const report = await cachedLoadReport(reviewFile);
+          result = evaluateReview(report);
+          break;
+        }
         case 'sw:grill': {
           const report = await cachedLoadReport(grillFile);
           result = evaluateGrill(criterion, report);

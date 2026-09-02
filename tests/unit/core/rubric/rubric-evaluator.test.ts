@@ -69,6 +69,26 @@ describe('evaluateRubric', () => {
     expect(result.criteria[0].result!.evidence).toContain('2 critical');
   });
 
+  it('TC-003b: review evaluator — only low findings → pass', async () => {
+    const doc = makeDoc([makeCriterion({ id: 'R-D02', evaluator: 'sw:review' })]);
+    const result = await evaluateRubric(doc, REPORTS_DIR);
+    expect(result.criteria[0].result!.status).toBe('pass');
+  });
+
+  it('TC-003c: review evaluator — critical/high findings → fail with counts', async () => {
+    const doc = makeDoc([makeCriterion({ id: 'R-D02', evaluator: 'sw:review' })]);
+    const result = await evaluateRubric(doc, REPORTS_DIR, { reviewReport: 'review-blocking.json' });
+    expect(result.criteria[0].result!.status).toBe('fail');
+    expect(result.criteria[0].result!.evidence).toContain('1 critical');
+    expect(result.criteria[0].result!.evidence).toContain('1 high');
+  });
+
+  it('TC-003d: review evaluator — missing review.json → skip, never a silent pass', async () => {
+    const doc = makeDoc([makeCriterion({ id: 'R-D02', evaluator: 'sw:review' })]);
+    const result = await evaluateRubric(doc, REPORTS_DIR, { reviewReport: 'review-absent.json' });
+    expect(result.criteria[0].result!.status).toBe('skip');
+  });
+
   it('TC-005: judge-llm evaluator — APPROVED verdict → pass', async () => {
     const doc = makeDoc([
       makeCriterion({ id: 'R-D04', evaluator: 'sw:judge-llm' }),
