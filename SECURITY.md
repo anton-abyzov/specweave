@@ -48,6 +48,31 @@ When we receive a security bug report, we will:
 3. Prepare fixes for all supported versions
 4. Release new versions as soon as possible
 
+## Supply-Chain Guard (since 2026-09)
+
+In July 2026 a dependency-install-script payload reached `develop` through a
+CI agent that ran `npm ci` with scripts enabled and then `git add -A && git push`
+(commit 7e1084e5c, dependabot PR #1912). The repository now enforces:
+
+- **No install scripts.** The committed `.npmrc` sets `ignore-scripts=true`
+  for every install inside this repo, and CI always runs `npm ci --ignore-scripts`.
+  The few packages that need a build step are rebuilt explicitly with
+  `npm run setup` (`npm rebuild --ignore-scripts=false <allowlist>`). The
+  published npm package does not carry `.npmrc`, so end-user installs are unaffected.
+- **Payload scan on every PR and push.** `.github/workflows/supply-chain-scan.yml`
+  runs `scripts/security/scan-payload.mjs` (zero dependencies) and fails on:
+  whitespace-padded payload lines (`^[\s});]{0,6}\s{800,}\S` — the July-2026
+  signature, never allowlistable), lines over 5000 chars, base64 blobs over
+  2000 chars, `eval` / `Function` wrapped around an `atob` or `Buffer.from` decode,
+  and `createRequire(import.meta.url)` shims inserted into `*.test.*` files.
+  Legitimate exceptions live in `scripts/security/scan-allowlist.txt`.
+  It also runs `npm audit signatures` (registry signatures + provenance attestations).
+- **Run it locally:** `npm run security:scan` (self-test + full tree scan).
+- **Policy:** CI agents never run install scripts and never `git add -A`.
+  Agent auto-fix workflows and dependabot auto-merge are disabled
+  (`.github/workflows/_disabled/`); bot PRs are merged by a person only after
+  the supply-chain scan passes. Dependabot uses a 7-day cooldown.
+
 ## Known Security Considerations
 
 ### Command Injection
@@ -92,4 +117,4 @@ We would like to thank the following individuals for responsibly disclosing secu
 
 ---
 
-**Last Updated**: 2026-01-02
+**Last Updated**: 2026-09-02

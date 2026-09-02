@@ -47,7 +47,9 @@
     "release:minor": "bash scripts/build/bump-version.sh minor",
     "release:major": "bash scripts/build/bump-version.sh major",
     "release": "bash scripts/build/bump-version.sh",
-    "setup:hooks": "bash scripts/hooks/install-git-hooks.sh"
+    "setup:hooks": "bash scripts/hooks/install-git-hooks.sh",
+    "setup": "npm rebuild --ignore-scripts=false esbuild",
+    "security:scan": "node scripts/security/scan-payload.mjs --self-test"
   },
   "keywords": [
     "specweave",
