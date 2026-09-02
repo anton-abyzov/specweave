@@ -78,7 +78,7 @@ export const EMPTY_SIGNAL_STORE: SignalStore = {
 };
 
 /**
- * Default SkillGen config values (applied when config.skillGen is absent)
+ * Default SkillGen values (2.0 has no `skillGen` config key)
  */
 export const SKILL_GEN_DEFAULTS = {
   detection: 'on-close' as const,
