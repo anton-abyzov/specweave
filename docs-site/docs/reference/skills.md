@@ -68,6 +68,8 @@ Unattended execution. `specweave auto` writes a session file; the plugin's Stop 
 
 Diverge, converge, pick — then hand the winner to `/sw:increment`. Decides *which* thing to spec; never replaces the spec.
 
+Auto-activates on "brainstorm", "ideate" and "what are our options" — reach for it when the problem is clear but the approach is not, and you want to explore the space before a spec locks one in.
+
 ### `/sw:qa`
 
 `<increment-id> [--gate|--pre|--full]`
