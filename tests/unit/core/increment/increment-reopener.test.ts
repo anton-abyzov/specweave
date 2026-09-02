@@ -205,17 +205,22 @@ describe('IncrementReopener.reopenIncrement', () => {
     expect(result.errors[0]).toContain('Cannot reopen: increment status is active, not completed');
   });
 
-  it('should allow reopen when WIP limit not exceeded', async () => {
+  it('reopens regardless of how many increments are active (no WIP cap)', async () => {
     mockMetadataExists.mockReturnValue(true);
     const metadata = makeCompletedMetadata('0010-feature', IncrementType.FEATURE);
     mockMetadataRead
       .mockReturnValueOnce(metadata)
       .mockReturnValueOnce({ ...metadata, status: IncrementStatus.ACTIVE });
 
-    // Only 1 active feature (limit is 2)
-    mockMetadataGetActive.mockReturnValue([
-      { id: '0001-a', type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE },
-    ]);
+    // 2.0: there is no hard cap and no per-type limit — 10 active features
+    // must not stop a reopen.
+    mockMetadataGetActive.mockReturnValue(
+      Array.from({ length: 10 }, (_, i) => ({
+        id: `00${i + 1}-f`,
+        type: IncrementType.FEATURE,
+        status: IncrementStatus.ACTIVE,
+      }))
+    );
 
     createIncrement('0010-feature');
 
@@ -226,6 +231,7 @@ describe('IncrementReopener.reopenIncrement', () => {
     });
 
     expect(result.success).toBe(true);
+    expect(result.errors).toHaveLength(0);
     expect(mockMetadataUpdateStatus).toHaveBeenCalledWith(
       '0010-feature',
       IncrementStatus.ACTIVE,
@@ -234,50 +240,7 @@ describe('IncrementReopener.reopenIncrement', () => {
     expect(mockMetadataWrite).toHaveBeenCalled();
   });
 
-  it('should allow unlimited types (hotfix) regardless of active count', async () => {
-    mockMetadataExists.mockReturnValue(true);
-    const metadata = makeCompletedMetadata('0010-hotfix', IncrementType.HOTFIX);
-    mockMetadataRead
-      .mockReturnValueOnce(metadata)
-      .mockReturnValueOnce({ ...metadata, status: IncrementStatus.ACTIVE });
 
-    // Many active hotfixes (limit is null for hotfix)
-    mockMetadataGetActive.mockReturnValue([
-      { id: '0001-h', type: IncrementType.HOTFIX },
-      { id: '0002-h', type: IncrementType.HOTFIX },
-      { id: '0003-h', type: IncrementType.HOTFIX },
-    ]);
-
-    createIncrement('0010-hotfix');
-
-    const result = await IncrementReopener.reopenIncrement({
-      target: ReopenTarget.INCREMENT,
-      incrementId: '0010-hotfix',
-      reason: 'Production issue returned',
-    });
-
-    expect(result.success).toBe(true);
-  });
-
-  it('should allow unlimited types (bug) regardless of active count', async () => {
-    mockMetadataExists.mockReturnValue(true);
-    const metadata = makeCompletedMetadata('0010-bug', IncrementType.BUG);
-    mockMetadataRead
-      .mockReturnValueOnce(metadata)
-      .mockReturnValueOnce({ ...metadata, status: IncrementStatus.ACTIVE });
-
-    mockMetadataGetActive.mockReturnValue([]);
-
-    createIncrement('0010-bug');
-
-    const result = await IncrementReopener.reopenIncrement({
-      target: ReopenTarget.INCREMENT,
-      incrementId: '0010-bug',
-      reason: 'Regression found',
-    });
-
-    expect(result.success).toBe(true);
-  });
 
   it('should allow unlimited types (experiment) regardless of active count', async () => {
     mockMetadataExists.mockReturnValue(true);
@@ -467,30 +430,6 @@ describe('IncrementReopener.reopenIncrement', () => {
     expect(result.errors[0]).toContain('string error');
   });
 
-  it('should not count other types toward WIP limit', async () => {
-    mockMetadataExists.mockReturnValue(true);
-    const metadata = makeCompletedMetadata('0010-feature', IncrementType.FEATURE);
-    mockMetadataRead
-      .mockReturnValueOnce(metadata)
-      .mockReturnValueOnce({ ...metadata, status: IncrementStatus.ACTIVE });
-
-    // Active items are all bugs, not features
-    mockMetadataGetActive.mockReturnValue([
-      { id: '0001-b', type: IncrementType.BUG },
-      { id: '0002-b', type: IncrementType.BUG },
-      { id: '0003-b', type: IncrementType.BUG },
-    ]);
-
-    createIncrement('0010-feature');
-
-    const result = await IncrementReopener.reopenIncrement({
-      target: ReopenTarget.INCREMENT,
-      incrementId: '0010-feature',
-      reason: 'No feature conflict',
-    });
-
-    expect(result.success).toBe(true);
-  });
 });
 
 // ===========================================================================

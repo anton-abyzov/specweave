@@ -298,7 +298,7 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
     L.push('**Ambient rules (config.json):**');
     if (input.ambient.testMode) L.push(`- Test mode: ${input.ambient.testMode}`);
     if (input.ambient.coverageTarget != null) L.push(`- Coverage target: ${input.ambient.coverageTarget}%`);
-    if (input.ambient.wipLimit != null) L.push(`- WIP limit: ${input.ambient.wipLimit}`);
+    if (input.ambient.wipLimit != null) L.push(`- Active increments (advisory): ${input.ambient.wipLimit}`);
   }
   L.push('');
 

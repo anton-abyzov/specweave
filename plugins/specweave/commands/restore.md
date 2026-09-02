@@ -287,7 +287,7 @@ Once restored, the increment is back in the active folder:
 - ✅ Shows up in `sw:status`
 - ✅ Can be resumed with `sw:do`
 - ✅ Can be re-archived with `sw:archive`
-- ✅ Included in increment counts and WIP limits
+- ✅ Included in increment counts and the advisory WIP note
 
 ---
 
