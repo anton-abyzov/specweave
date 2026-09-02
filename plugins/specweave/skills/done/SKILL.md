@@ -19,7 +19,7 @@ sw:done <increment-id> --reason "<why>"   # close without a green verify (record
 
 ## Steps
 
-1. **Ledger check**: `specweave task list <id>`. Every task must be `done` or `skipped`. Open/claimed tasks → go back to `sw:do` (or `task skip … --note` with a reason). Release your own claims: `specweave task release --all-mine`.
+1. **Ledger check**: `specweave task list <id>`. Every task must be `done` or `skipped`. Open/claimed tasks → go back to `sw:do` (or `task skip … --reason "<why>"`). Release your own claims: `specweave task release --all-mine`.
 2. **Verify**: `specweave verify <id>`. Runs `testing.commands` from config (else `npm run test|lint|build`, `cargo test`, `pytest`, `go test ./...`), writes `reports/verify.md` + `reports/verify.json`. Non-zero exit → fix, re-run. Do not proceed on red without a `--reason` from the user.
 3. **Review (recommended for anything user-facing, optional otherwise)**: invoke `Skill({ skill: "sw:review" })` — fresh context, adversarial, findings cite `path:line`, written to `reports/review.md`. If `sw:review` is not installed, `sw:code-reviewer` is the fallback. Fix critical/high findings, re-run step 2 if code changed.
 4. **Docs touched?** If the increment changed commands, config, or user-facing behaviour, update README/CHANGELOG/CLAUDE.md `## Commands` in the same commit. Living docs sync only if `livingDocs` is enabled in config (`sw:sync-docs`).

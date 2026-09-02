@@ -24,7 +24,7 @@ sw:do [<increment-id>]     # id optional when exactly one increment is active
 4. **Implement** inside the task's `Files` only. Need another file → claim the task that owns it, or add a task (`### T-NN Title` + `- AC: … | Files: … | Test: …`).
 5. **Commit** with the increment id in the subject: `git commit -m "<id>: <what>"`.
 6. **Done with evidence**: `specweave task done T-NN <id> --run "<Test command>"` (uses the task's `Test:` when `--run` is omitted). Exit 5 = the command failed → task stays open; fix and re-run. No `Test:` → `--evidence "<sha + what you ran>"`. Never claim completion without a fresh, passing run.
-7. **Stuck?** `specweave task block T-NN <id> --note "<what is missing>"`; not needed? `specweave task skip T-NN <id> --note "<why>"`.
+7. **Stuck?** `specweave task block T-NN <id> --reason "<what is missing>"`; not needed? `specweave task skip T-NN <id> --reason "<why>"` (terminal).
 8. Go to 1.
 
 ## Rules
