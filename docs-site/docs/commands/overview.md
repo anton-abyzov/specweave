@@ -573,8 +573,7 @@ All commands respect `.specweave/config.json`:
 ```json
 {
   "limits": {
-    "maxActiveIncrements": 1,
-    "hardCap": 2
+    "activeIncrements": 1
   },
   "auto": {
     "enabled": true,

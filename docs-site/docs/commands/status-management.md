@@ -120,9 +120,7 @@ Edit `.specweave/config.json`:
 ```json
 {
   "limits": {
-    "maxActiveIncrements": 1,  // Default: 1 active (focus)
-    "hardCap": 2,               // Emergency ceiling (never exceeded)
-    "allowEmergencyInterrupt": true
+    "activeIncrements": 1  // Advisory only (default 3, 0 = off); never blocks
   }
 }
 ```

@@ -430,8 +430,7 @@ After init, you'll have `.specweave/config.json`:
     "description": "Your project description"
   },
   "limits": {
-    "maxActiveIncrements": 1,
-    "hardCap": 2
+    "activeIncrements": 1
   },
   "sync": {
     "github": {

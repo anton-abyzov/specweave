@@ -93,7 +93,7 @@ These are real config properties and the LLM behaviors they enforce:
 | `auto.requireTests: true` | Cannot close an increment in auto mode without passing tests |
 | `auto.requireValidation: true` | Runs `sw:validate` before declaring done |
 | `planning.deepInterview.enabled: true` | Asks clarifying questions across 5+ categories before writing specs |
-| `limits.maxActiveIncrements: 3` | Refuses to start new work when the WIP limit is reached |
+| `limits.activeIncrements: 3` | Prints one advisory note when more increments are active (never blocks) |
 | `grill.required: true` | Runs code review before closure — can't be skipped |
 | `hooks.post_increment_done.sync_living_docs: true` | Fires living docs sync after every increment, deterministically |
 | `sync.settings.autoSyncOnCompletion: true` | Pushes to external tracker on every closure |

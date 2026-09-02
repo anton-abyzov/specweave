@@ -150,28 +150,21 @@ Quality gate requiring a grill report before increment closure.
 
 ### limits
 
-Work-in-progress limits and staleness detection.
+Advisory work-in-progress note. There is no hard cap: exceeding the number prints one info note and never blocks.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `maxActiveIncrements` | `number` | `3` | Recommended max concurrent active increments |
-| `hardCap` | `number` | `5` | Absolute maximum active increments |
-| `allowEmergencyInterrupt` | `boolean` | `true` | Allow hotfix/bug to bypass WIP limits |
-| `typeBehaviors.canInterrupt` | `string[]` | `["hotfix", "bug"]` | Increment types that can bypass limits |
-| `typeBehaviors.autoAbandonDays.experiment` | `number` | `14` | Days before auto-abandoning experiments |
-| `staleness.paused` | `number` | `7` | Days before marking paused increments as stale |
-| `staleness.active` | `number` | `30` | Days before marking active increments as stale |
+| `activeIncrements` | `number` | `3` | Recommended max concurrent active increments (`0` disables the note) |
 
 ```json
 {
   "limits": {
-    "maxActiveIncrements": 3,
-    "hardCap": 5,
-    "allowEmergencyInterrupt": true,
-    "staleness": { "paused": 7, "active": 30 }
+    "activeIncrements": 3
   }
 }
 ```
+
+1.x keys (`maxActiveIncrements`, `hardCap`, `allowEmergencyInterrupt`, `typeBehaviors`, `staleness`) are migrated automatically on first read: `maxActiveIncrements` becomes `activeIncrements`, the rest are dropped.
 
 ### planning
 

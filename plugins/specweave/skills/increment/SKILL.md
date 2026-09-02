@@ -84,7 +84,7 @@ specweave context projects 2>/dev/null
 # 3. Check deep interview mode (note: interview itself runs at Step 3a, after increment exists)
 DEEP_INTERVIEW=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
 
-# 4. Check WIP limits
+# 4. Count active increments (advisory only, never blocks)
 find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status":"active"' {} \; 2>/dev/null | wc -l
 ```
 
@@ -169,14 +169,14 @@ sw:increment --regenerate-plan 0014-checkout-flow
 
 ### Increment Types
 
-| Type | Use When | WIP Limit |
-|------|----------|-----------|
-| **feature** | New functionality | Max 2 |
-| **hotfix** | Production broken | Unlimited |
-| **bug** | Needs RCA | Unlimited |
-| **change-request** | Business changes | Max 2 |
-| **refactor** | Technical debt | Max 1 |
-| **experiment** | POC/spike | Unlimited |
+| Type | Use When |
+|------|----------|
+| **feature** | New functionality |
+| **hotfix** | Production broken |
+| **bug** | Needs RCA |
+| **change-request** | Business changes |
+| **refactor** | Technical debt |
+| **experiment** | POC/spike |
 
 ### Directory Structure
 
