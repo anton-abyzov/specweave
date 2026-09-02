@@ -116,6 +116,14 @@ export function migrateTo2(config: Record<string, unknown>): MigrateResult {
     }
   }
 
+  // The 1.x `livingDocs` object (copyBasedSync/threeLayerSync) becomes the
+  // `false | 'onDone'` switch; the hooks flags below decide which.
+  if (isPlainObject(config.livingDocs)) {
+    delete config.livingDocs;
+    removedKeys.push('livingDocs.{copyBasedSync,threeLayerSync}');
+    changed = true;
+  }
+
   // hooks.*.sync_living_docs → livingDocs
   if (isPlainObject(config.hooks)) {
     const hooks = config.hooks;
