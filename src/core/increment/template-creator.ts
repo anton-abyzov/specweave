@@ -16,6 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { IncrementNumberManager } from './increment-utils.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { IncrementStatus } from '../types/increment-metadata.js';
 
 /**
  * Template markers that indicate a file is still a template
@@ -223,7 +224,11 @@ export async function createIncrementTemplates(
     const metadataPath = path.join(incrementPath, 'metadata.json');
     const metadata: Record<string, unknown> = {
       id: incrementId,
-      status: 'planned',
+      // Must be an IncrementStatus member: MetadataManager.validate() throws on
+      // anything else, so writing the legacy 'planned' made `complete`/`read`
+      // fail on every freshly created increment. 'planned' is the 1.x spelling
+      // that status-auto-transition migrates away.
+      status: IncrementStatus.PLANNING,
       type,
       priority,
       created: new Date().toISOString(),
@@ -573,7 +578,7 @@ increment: ${incrementId}
 title: "${title}"
 type: ${type}
 priority: ${priority}
-status: planned
+status: planning
 created: ${date}
 structure: user-stories
 test_mode: ${testMode}
@@ -847,7 +852,7 @@ increment: ${incrementId}
 title: "${title}"
 type: ${type}
 priority: ${priority}
-status: planned
+status: planning
 created: ${date}
 structure: user-stories
 test_mode: ${testMode}

@@ -22,6 +22,8 @@ import {
   detectProjectFromCwd,
   TEMPLATE_MARKERS,
 } from '../../../../src/core/increment/template-creator.js';
+import { IncrementStatus } from '../../../../src/core/types/increment-metadata.js';
+import { MetadataManager } from '../../../../src/core/increment/metadata-manager.js';
 
 describe('template-creator', () => {
   let tempDir: string;
@@ -177,11 +179,34 @@ describe('template-creator', () => {
       const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
 
       expect(metadata.id).toBe('0001-test-feature');
-      expect(metadata.status).toBe('planned');
+      expect(metadata.status).toBe('planning');
       expect(metadata.type).toBe('hotfix');
       expect(metadata.priority).toBe('P1');
       expect(metadata.testMode).toBe('TDD');
       expect(metadata.coverageTarget).toBe(90);
+    });
+
+    it('writes a status MetadataManager.read() accepts (create → read → complete)', async () => {
+      // Regression: createIncrementFiles wrote 'planned', which is NOT an
+      // IncrementStatus member, so MetadataManager.validate() threw and both
+      // `specweave complete` and every metadata read failed on a brand-new
+      // increment ("Invalid status: planned").
+      await createIncrementTemplates({
+        incrementId: '0001-round-trip',
+        title: 'Round trip',
+        description: 'status must survive a read',
+        projectId: 'test-project',
+        projectRoot: tempDir,
+      });
+
+      const metadataPath = path.join(incrementsPath, '0001-round-trip', 'metadata.json');
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+
+      expect(Object.values(IncrementStatus)).toContain(metadata.status);
+      expect(() => MetadataManager.validate(metadata)).not.toThrow();
+
+      const spec = fs.readFileSync(path.join(incrementsPath, '0001-round-trip', 'spec.md'), 'utf-8');
+      expect(spec).toContain(`status: ${metadata.status}`);
     });
 
     it('should provide next steps guidance', async () => {
