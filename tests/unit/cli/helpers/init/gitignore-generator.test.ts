@@ -167,6 +167,44 @@ describe('gitignore-generator', () => {
     });
   });
 
+  // ─── .gitignore.template (init fallback copy) ─────────────────
+
+  describe('.gitignore.template', () => {
+    const templatePath = path.join(
+      process.cwd(),
+      'src',
+      'templates',
+      '.gitignore.template'
+    );
+
+    it('has no inline comments (gitignore treats them as part of the pattern)', () => {
+      const lines = readFileSync(templatePath, 'utf-8').split('\n');
+      const offenders = lines.filter(
+        (l) => !l.trimStart().startsWith('#') && l.includes('#')
+      );
+      expect(offenders).toEqual([]);
+    });
+
+    it('ignores the 2.0 runtime state dirs and binary report evidence', () => {
+      const content = readFileSync(templatePath, 'utf-8');
+      for (const entry of [
+        '.specweave/state/',
+        '.specweave/logs/',
+        '.specweave/cache/',
+        '.specweave/backups/',
+        '.specweave/jobs/',
+        '**/reports/*.mp4',
+        '**/reports/*.png',
+        '**/reports/*.jpg',
+        '**/reports/*.aab',
+        '**/reports/*.ipa',
+        '**/reports/*.dSYM/',
+      ]) {
+        expect(content.split('\n')).toContain(entry);
+      }
+    });
+  });
+
   // ─── detectTechStack ───────────────────────────────────────────
 
   describe('detectTechStack', () => {
