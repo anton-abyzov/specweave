@@ -87,6 +87,60 @@ describe('standalone skills (skills/)', () => {
     expect(stderr).toMatch(/PowerShell redirect/);
     expect(stderr).toContain('no install line for sw-bad');
   });
+
+  it('sw-handoff captures the git diff for PowerShell as well as bash', () => {
+    const handoff = read('sw-handoff');
+    const ps = fenced(handoff, 'powershell').find((b) => b.includes('handoff.diff'));
+    expect(ps, 'no PowerShell form of the handoff.diff capture').toBeDefined();
+    // `{ … } > file` in PowerShell writes the scriptblock text in UTF-16.
+    expect(ps).toContain('[IO.File]::WriteAllText');
+    expect(ps).not.toMatch(/[^`>]>[^>=]/);
+  });
+
+  it('lint catches a bash block that writes a file with no PowerShell sibling', async () => {
+    const { lintSkill } = (await import('../../../scripts/lint-standalone-skills.mjs')) as {
+      lintSkill: (dir: string) => string[];
+    };
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-bashwrite-'));
+    tmpDirs.push(dir);
+    const skill = path.join(dir, 'sw-bad');
+    fs.mkdirSync(skill);
+    const head = ['---', 'description: x', 'argument-hint: "[x]"', '---', '', '# bad', '',
+      'specweave handoff — manual path below', ''];
+    const bash = ['```bash', '{ git diff HEAD; git diff --cached; } > handoff.diff', '```', ''];
+    fs.writeFileSync(path.join(skill, 'SKILL.md'), [...head, ...bash].join('\n'));
+    expect(lintSkill(skill).join('\n')).toMatch(/writes a file but has no PowerShell sibling/);
+
+    const ps = ['```powershell', "$d = (git diff HEAD | Out-String)",
+      "[IO.File]::WriteAllText('handoff.diff', $d, [Text.UTF8Encoding]::new($false))", '```', ''];
+    fs.writeFileSync(path.join(skill, 'SKILL.md'), [...head, ...bash, ...ps].join('\n'));
+    expect(lintSkill(skill).join('\n')).not.toMatch(/PowerShell sibling/);
+  });
+
+  it('the AGENTS.md template installs standalone skills by their canonical path', () => {
+    const tpl = fs.readFileSync(path.join(REPO_ROOT, 'src', 'templates', 'AGENTS.md.template'), 'utf-8');
+    expect(tpl).toContain('npx vskill install anton-abyzov/specweave/sw-do');
+    expect(tpl).not.toMatch(/anton-abyzov\/specweave\/skills\/sw-/);
+  });
+
+  it('lint rejects a template install ref that drifts from the skill folder layout', async () => {
+    const { lintTemplateInstallRefs } = (await import('../../../scripts/lint-standalone-skills.mjs')) as {
+      lintTemplateInstallRefs: (dir: string, skills: string[]) => string[];
+    };
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-tpl-'));
+    tmpDirs.push(dir);
+    fs.writeFileSync(
+      path.join(dir, 'AGENTS.md.template'),
+      ['`npx vskill install anton-abyzov/specweave/skills/sw-do`', '`npx vskill install anton-abyzov/specweave/sw-nope`', ''].join('\n'),
+    );
+    const errors = lintTemplateInstallRefs(dir, EXPECTED_SKILLS);
+    expect(errors).toHaveLength(2);
+    expect(errors[0]).toContain('no extra path segment');
+    expect(errors[1]).toContain('not a standalone skill directory');
+
+    fs.writeFileSync(path.join(dir, 'AGENTS.md.template'), '`npx vskill install anton-abyzov/specweave/sw-do`\n');
+    expect(lintTemplateInstallRefs(dir, EXPECTED_SKILLS)).toEqual([]);
+  });
 });
 
 describe('documented formats match the CLI', () => {
