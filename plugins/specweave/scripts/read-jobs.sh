@@ -237,7 +237,7 @@ if [[ "$HAS_JOBS" == "false" ]]; then
   echo "   • Brownfield analysis (documentation gap detection)"
   echo ""
   echo "   Start jobs with:"
-  echo "   • /sw:import-external  - Import from external tools"
+  echo "   • specweave sync pull --create-increments  - Import from external tools"
   echo "   • specweave init              - May spawn background jobs"
 else
   echo ""

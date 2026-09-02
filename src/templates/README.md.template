@@ -94,7 +94,7 @@ sw:increment "feature" → sw:do → sw:progress → sw:done → repeat
 | `sw:validate 0001` | Validate quality | Before completion |
 | `sw:done 0001` | Close increment | Feature finished |
 | `sw:team-lead "feature"` | Parallel agents | Complex multi-domain features |
-| `sw:progress-sync` | Sync to external tools | Export to GitHub/JIRA/ADO |
+| `sw:sync` | Sync to external tools | Push/pull GitHub/JIRA/ADO |
 
 For complex features spanning frontend, backend, and database — `sw:team-lead` splits work across parallel agents for faster delivery. [Learn more](https://verified-skill.com/docs/guides/agent-teams-and-swarms).
 
