@@ -1,7 +1,7 @@
 {
   "name": "sw",
   "description": "SpecWeave: increment lifecycle for any AI tool. 10 skills (increment, do, done, review, team, handoff, sync, auto, brainstorm, qa), 4 exec-form hooks, and the specweave CLI for everything deterministic.",
-  "version": "1.0.593",
+  "version": "2.0.0",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
