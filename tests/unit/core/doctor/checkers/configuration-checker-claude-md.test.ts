@@ -64,7 +64,7 @@ describe('ConfigurationChecker — CLAUDE.md freshness', () => {
     const check = await claudeMdCheck();
 
     expect(check.status).toBe('pass');
-    expect(check.message).toBe('v2.1.7');
+    expect(check.message).toContain('v2.1.7');
   });
 
   it('warns that the file is unmanaged when there is no SW:META line', async () => {

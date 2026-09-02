@@ -27,7 +27,9 @@ export declare function isOAuthToken(token: string): boolean;
 export declare function isPersonalAccessToken(token: string): boolean;
 export interface GitHubAuth {
     token: string;
-    source: 'GITHUB_TOKEN' | 'GH_TOKEN' | 'gh-cli' | 'none';
+    source: 'config' | 'GITHUB_TOKEN' | 'GH_TOKEN' | 'gh-cli' | 'none';
+    /** Resolution layer the token came from (config → process.env → .env → gh CLI). */
+    origin?: GitHubTokenOrigin;
     /**
      * Whether this is an OAuth token (gho_ prefix) which may lack repo scope.
      * OAuth tokens from `gh auth` typically cannot access private repos unless
@@ -45,24 +47,43 @@ export interface JiraAuth {
     email: string;
     domain: string;
 }
+/** Where a GitHub token came from, in resolution order. */
+export type GitHubTokenOrigin = 'config' | 'process.env' | '.env' | 'gh-cli' | 'none';
+export interface ResolveGitHubTokenOptions {
+    /** Token from .specweave/config.json (sync.github.token / profile config.token). Highest precedence. */
+    configToken?: string;
+    /** Environment to consult (defaults to process.env). */
+    env?: NodeJS.ProcessEnv;
+    /** Override for the gh CLI probe (tests). */
+    ghCliToken?: () => string | undefined;
+}
 /**
- * Get GitHub authentication token from project .env file
- * Priority: .env GITHUB_TOKEN > .env GH_TOKEN > process.env > gh CLI
+ * Resolve a GitHub token with ONE documented precedence:
+ *   1. config (explicit token in .specweave/config.json)
+ *   2. process.env GITHUB_TOKEN / GH_TOKEN (CI, shell exports)
+ *   3. <projectRoot>/.env GITHUB_TOKEN / GH_TOKEN
+ *   4. gh CLI (`gh auth token`, then ~/.config/gh/hosts.yml)
  *
- * CRITICAL (2025-11-26): This function MUST be used when projectRoot is available
- * to properly load tokens from .env file. The original getGitHubAuth() only
- * reads process.env which is empty unless dotenv is explicitly loaded.
- *
- * @param projectRoot - Path to project root containing .env file
- * @returns GitHub authentication with source information
+ * Every sync entry point should call this once and print `describeGitHubAuth()`
+ * so a wrong-account token is visible before the first 404.
  */
-export declare function getGitHubAuthFromProject(projectRoot: string): GitHubAuth;
+export declare function resolveGitHubToken(projectRoot: string, options?: ResolveGitHubTokenOptions): GitHubAuth;
+/** One-line, secret-free description of where the active GitHub token came from. */
+export declare function describeGitHubAuth(auth: GitHubAuth, login?: string | null): string;
 /**
- * Get GitHub authentication token
- * Priority: GITHUB_TOKEN (CI) > GH_TOKEN (custom) > gh CLI config (local)
- *
- * WARNING: This function only reads from process.env, NOT from .env files!
- * If you have access to projectRoot, use getGitHubAuthFromProject() instead.
+ * Best-effort lookup of the account a token belongs to (`gh api user`).
+ * Never throws; returns null when gh is missing or the token is invalid.
+ */
+export declare function resolveGitHubLogin(token: string, exec?: (cmd: string, env: NodeJS.ProcessEnv) => string): string | null;
+/**
+ * Get GitHub authentication for a project.
+ * Order: config token (when passed) → process.env → <projectRoot>/.env → gh CLI.
+ * Thin wrapper over resolveGitHubToken() kept for existing call sites.
+ */
+export declare function getGitHubAuthFromProject(projectRoot: string, configToken?: string): GitHubAuth;
+/**
+ * Get GitHub authentication without a project root (process.env → gh CLI only).
+ * Prefer getGitHubAuthFromProject()/resolveGitHubToken() when projectRoot is known.
  */
 export declare function getGitHubAuth(): GitHubAuth;
 /**

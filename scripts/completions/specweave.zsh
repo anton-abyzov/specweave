@@ -30,7 +30,6 @@ commands=(
     'status:Show increment status overview'
     'progress:Show increment status (alias for status)'
     'interview:Manage Deep Interview Mode'
-    'logs:View hook execution logs'
     'decision-log:Query structured decision logs'
     'status-line:Display current increment status line'
     'auto:Start autonomous execution'

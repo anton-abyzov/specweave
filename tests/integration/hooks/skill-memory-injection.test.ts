@@ -409,7 +409,9 @@ describe('Instruction-Based Skill Memory Format (E2E from real SKILL.md)', () =>
 describe('Project Context Instruction Blocks', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
 
-  const CONTEXT_SKILLS = ['do', 'auto', 'increment', 'validate'];
+  // 2.0: the rewritten `do` skill drives the ledger loop and carries no
+  // `## Project Context` block any more.
+  const CONTEXT_SKILLS = ['auto', 'increment', 'validate'];
 
   it('priority skills have ## Project Context section', () => {
     const missing: string[] = [];

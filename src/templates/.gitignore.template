@@ -11,6 +11,9 @@
 # Increment logs and test results (folder structure is preserved)
 .specweave/increments/*/logs/
 .specweave/increments/*/test-results/
+# Binary evidence and agent worktrees (never committed)
+.specweave/increments/**/reports/artifacts/
+.claude/worktrees/
 # Generated Docusaurus site for internal docs
 .specweave/docs-site-internal/
 # Framework files (plugin marketplace + plugin implementations)
