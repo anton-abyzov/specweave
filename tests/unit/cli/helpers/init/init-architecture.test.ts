@@ -11,12 +11,12 @@ import * as fsPromises from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-// Mock execFileNoThrowSync for credential tests
-const { mockExecFileNoThrowSync } = vi.hoisted(() => ({
-  mockExecFileNoThrowSync: vi.fn(),
-}));
-vi.mock('../../../../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrowSync: mockExecFileNoThrowSync,
+// GitHub credential detection ends at `gh auth token` (child_process.execSync)
+// inside resolveGitHubToken — mock it so the developer's own gh login cannot leak in.
+const { mockExecSync } = vi.hoisted(() => ({ mockExecSync: vi.fn() }));
+vi.mock('child_process', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('child_process')>()),
+  execSync: mockExecSync,
 }));
 
 import { detectProvider, detectCredentials } from '../../../../../src/cli/helpers/init/provider-detection.js';
@@ -51,7 +51,7 @@ describe('init-architecture (integration)', () => {
       const dir = tmpPath('standalone-creds');
       mkdirSync(dir, { recursive: true });
       writeFileSync(path.join(dir, '.env'), 'GITHUB_TOKEN=standalone-test\n');
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
 
       // Clear env vars that would shadow the .env file read
       const savedToken = process.env['GITHUB_TOKEN'];
@@ -123,7 +123,8 @@ describe('init-architecture (integration)', () => {
     beforeEach(() => {
       dir = tmpPath('compose');
       mkdirSync(path.join(dir, '.git'), { recursive: true });
-      mockExecFileNoThrowSync.mockReset();
+      mockExecSync.mockReset();
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
 
       for (const key of ['GITHUB_TOKEN', 'GH_TOKEN']) {
         savedEnv[key] = process.env[key];
@@ -146,7 +147,7 @@ describe('init-architecture (integration)', () => {
         '[remote "origin"]\n\turl = https://github.com/acme/my-app.git\n'
       );
       writeFileSync(path.join(dir, 'README.md'), '# My App');
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: 'ghp_token123\n', exitCode: 0 });
+      mockExecSync.mockReturnValue('ghp_token123\n');
 
       // Phase 1: Detect provider
       const provider = detectProvider(dir);
@@ -200,7 +201,7 @@ describe('init-architecture (integration)', () => {
       writeFileSync(path.join(dir, 'package.json'), JSON.stringify({
         dependencies: { express: '^4.0.0' },
       }));
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
       writeFileSync(path.join(dir, '.env'), 'GITHUB_TOKEN=env-token\n');
 
       const provider = detectProvider(dir);
