@@ -392,11 +392,13 @@ describe('qa-runner', () => {
   // runQA - Rule-based validation
   // -------------------------------------------------------------------------
   describe('runQA - rule-based validation', () => {
-    it('reports all 3 files passing when they exist', async () => {
+    it('reports the required files passing when they exist', async () => {
+      // plan.md is OPTIONAL in 2.0 (`create-increment --with-plan`), so only
+      // spec.md and tasks.md are required.
       setupPassingScenario();
       const report = await runQA('0008', { noAi: true, silent: true });
-      expect(report.rule_based.passedCount).toBe(3);
-      expect(report.rule_based.totalCount).toBe(3);
+      expect(report.rule_based.passedCount).toBe(2);
+      expect(report.rule_based.totalCount).toBe(2);
       expect(report.rule_based.failedCount).toBe(0);
       expect(report.rule_based.errors).toHaveLength(0);
     });
@@ -410,13 +412,13 @@ describe('qa-runner', () => {
       expect(report.rule_based.errors.length).toBeGreaterThan(0);
     });
 
-    it('checks for spec.md, plan.md, and tasks.md', async () => {
+    it('checks for spec.md and tasks.md, but never requires plan.md', async () => {
       setupMissingFilesScenario();
       const report = await runQA('0008', { noAi: true, silent: true, force: true });
 
       const missingFiles = report.rule_based.errors.map(e => e.file);
-      expect(missingFiles).toContain('plan.md');
       expect(missingFiles).toContain('tasks.md');
+      expect(missingFiles).not.toContain('plan.md');
     });
 
     it('calls process.exit(1) when validation fails and force is not set', async () => {
@@ -925,7 +927,7 @@ describe('qa-runner', () => {
   // Rule-based validation - edge cases
   // -------------------------------------------------------------------------
   describe('rule-based validation - edge cases', () => {
-    it('handles all three files missing', async () => {
+    it('handles every required file missing', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (p === INCREMENTS_DIR) return true;
         return false;
@@ -936,9 +938,9 @@ describe('qa-runner', () => {
       const report = await runQA('0008', { noAi: true, silent: true, force: true });
 
       expect(report.rule_based.passed).toBe(false);
-      expect(report.rule_based.errors).toHaveLength(3);
+      expect(report.rule_based.errors).toHaveLength(2);
       expect(report.rule_based.passedCount).toBe(0);
-      expect(report.rule_based.failedCount).toBe(3);
+      expect(report.rule_based.failedCount).toBe(2);
     });
 
     it('error messages describe which file is missing', async () => {
@@ -953,8 +955,8 @@ describe('qa-runner', () => {
 
       const messages = report.rule_based.errors.map(e => e.message);
       expect(messages).toContain('Missing required file: spec.md');
-      expect(messages).toContain('Missing required file: plan.md');
       expect(messages).toContain('Missing required file: tasks.md');
+      expect(messages).not.toContain('Missing required file: plan.md');
     });
   });
 

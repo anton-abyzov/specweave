@@ -148,6 +148,7 @@ complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l type 
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l priority -d "Priority (P1, P2, P3)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l project-root -d "Override project root directory"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parallel -d "Opt into 3-agent fan-out planning (default: single-agent)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l with-plan -d "Also scaffold plan.md (optional overflow; spec.md carries the Approach)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l supersedes -d "Increment this one replaces (the old one is abandoned with a closeReason)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parent -d "Parent increment (recorded as metadata.parent)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l json -d "Output result as JSON (for programmatic use)"
