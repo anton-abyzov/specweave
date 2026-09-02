@@ -47,7 +47,6 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/plugins/**/lib/hooks/**', // Exclude hook TypeScript files (not tests!)
     ],
 
     // Global setup/teardown

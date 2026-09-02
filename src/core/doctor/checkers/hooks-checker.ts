@@ -1,206 +1,134 @@
 /**
- * Hooks Checker - validates hook health (quick check, not full execution)
+ * Hooks Checker — dry-runs the SpecWeave 2.0 hook launcher for each of the
+ * four registered events with a sample stdin and validates the JSON output
+ * against the per-event Claude Code schema.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
-import type {
-  HealthChecker,
-  CategoryResult,
-  CheckResult,
-  DoctorOptions,
-} from '../types.js';
+import { execFileSync } from 'child_process';
+import { fileURLToPath } from 'url';
+import type { HealthChecker, CategoryResult, CheckResult, DoctorOptions } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
+import { HOOK_EVENTS, validateHookOutput } from '../../hooks/handlers/types.js';
+
+/** Sample payloads that must never trigger a block or a side effect. */
+export const SAMPLE_HOOK_INPUT: Record<(typeof HOOK_EVENTS)[number], Record<string, unknown>> = {
+  'session-start': { hook_event_name: 'SessionStart', source: 'startup' },
+  'pre-tool-use': {
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Edit',
+    tool_input: { file_path: 'C:\\proj\\.specweave\\increments\\0001-doctor\\tasks.md', old_string: 'a', new_string: 'b' },
+  },
+  'stop': { hook_event_name: 'Stop', stop_hook_active: false },
+  'pre-compact': { hook_event_name: 'PreCompact', trigger: 'auto' },
+};
+
+/** The specweave package root: walk up from this file until package.json name === 'specweave'. */
+export function packageRoot(): string {
+  let dir = path.dirname(fileURLToPath(import.meta.url));
+  for (let i = 0; i < 8; i++) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')) as { name?: string };
+      if (pkg.name === 'specweave') return dir;
+    } catch {
+      // keep walking
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..', '..');
+}
 
 export class HooksChecker implements HealthChecker {
   category = 'Hooks';
 
-  async check(
-    projectRoot: string,
-    options: DoctorOptions
-  ): Promise<CategoryResult> {
+  async check(projectRoot: string, options: DoctorOptions): Promise<CategoryResult> {
     const checks: CheckResult[] = [];
+    const pluginRoot = path.join(packageRoot(), 'plugins', 'specweave');
+    const runner = path.join(pluginRoot, 'hooks', 'run.mjs');
+    const hooksJson = path.join(pluginRoot, 'hooks', 'hooks.json');
 
-    // Find hooks in .claude/hooks or plugin hooks
-    const hookLocations = this.findHookLocations(projectRoot);
-
-    if (hookLocations.length === 0) {
+    if (!fs.existsSync(runner) || !fs.existsSync(hooksJson)) {
       checks.push({
-        name: 'Hooks',
-        status: 'skip',
-        message: 'no hooks configured',
-      });
-      return {
-        category: this.category,
-        status: 'skip',
-        checks,
-      };
-    }
-
-    // Check each hook location
-    for (const location of hookLocations) {
-      const hookChecks = await this.checkHooksInLocation(
-        location,
-        options.quick
-      );
-      checks.push(...hookChecks);
-    }
-
-    // Summary check
-    const failedHooks = checks.filter((c) => c.status === 'fail').length;
-    const totalHooks = checks.filter((c) => c.status !== 'skip').length;
-
-    if (failedHooks > 0) {
-      checks.unshift({
-        name: 'Hooks summary',
+        name: 'Hook launcher',
         status: 'fail',
-        message: `${failedHooks}/${totalHooks} hooks failing`,
-        fixSuggestion: 'Run: specweave hooks health',
+        message: `missing ${fs.existsSync(runner) ? 'hooks.json' : 'hooks/run.mjs'} in ${pluginRoot}`,
+        fixSuggestion: 'Reinstall: npm i -g specweave && specweave refresh-plugins',
       });
-    } else if (totalHooks > 0) {
-      checks.unshift({
-        name: 'Hooks summary',
-        status: 'pass',
-        message: `${totalHooks}/${totalHooks} hooks healthy`,
-      });
+      return { category: this.category, status: 'fail', checks };
     }
 
-    return {
-      category: this.category,
-      status: calculateOverallStatus(checks),
-      checks,
-    };
-  }
+    checks.push(this.checkHooksJson(hooksJson));
 
-  private findHookLocations(projectRoot: string): string[] {
-    const locations: string[] = [];
-
-    // Check .claude/hooks
-    const claudeHooks = path.join(projectRoot, '.claude', 'hooks');
-    if (fs.existsSync(claudeHooks)) {
-      locations.push(claudeHooks);
-    }
-
-    // Check .specweave hooks (if any)
-    const specweaveHooks = path.join(projectRoot, '.specweave', 'hooks');
-    if (fs.existsSync(specweaveHooks)) {
-      locations.push(specweaveHooks);
-    }
-
-    return locations;
-  }
-
-  private async checkHooksInLocation(
-    location: string,
-    quickMode?: boolean
-  ): Promise<CheckResult[]> {
-    const checks: CheckResult[] = [];
-
-    try {
-      const files = fs.readdirSync(location);
-      const hookFiles = files.filter(
-        (f) => f.endsWith('.sh') || f.endsWith('.js')
-      );
-
-      for (const hookFile of hookFiles) {
-        const hookPath = path.join(location, hookFile);
-        const hookName = hookFile.replace(/\.(sh|js)$/, '');
-
-        // Basic syntax check
-        const syntaxCheck = this.checkHookSyntax(hookPath, hookFile);
-        if (syntaxCheck.status === 'fail') {
-          checks.push(syntaxCheck);
-          continue;
-        }
-
-        // Skip execution test in quick mode
-        if (quickMode) {
-          checks.push({
-            name: hookName,
-            status: 'skip',
-            message: 'execution skipped (quick mode)',
-          });
-          continue;
-        }
-
-        // Quick execution test (with timeout)
-        checks.push(await this.testHookExecution(hookPath, hookName));
+    for (const event of HOOK_EVENTS) {
+      if (options.quick) {
+        checks.push({ name: `${event} dry-run`, status: 'skip', message: 'skipped (quick mode)' });
+        continue;
       }
-    } catch {
-      checks.push({
-        name: path.basename(location),
-        status: 'fail',
-        message: 'could not read hooks directory',
-      });
+      checks.push(this.dryRun(runner, event, projectRoot));
     }
 
-    return checks;
+    return { category: this.category, status: calculateOverallStatus(checks), checks };
   }
 
-  private checkHookSyntax(hookPath: string, fileName: string): CheckResult {
-    const hookName = fileName.replace(/\.(sh|js)$/, '');
-
+  /** hooks.json must be exec-form (command + args), node-based, with sane timeouts. */
+  private checkHooksJson(hooksJson: string): CheckResult {
     try {
-      const content = fs.readFileSync(hookPath, 'utf8');
-
-      if (fileName.endsWith('.sh')) {
-        // Basic bash syntax check
-        if (!content.includes('#!/')) {
-          return {
-            name: hookName,
-            status: 'warn',
-            message: 'missing shebang',
-            fixSuggestion: 'Add #!/bin/bash at the start',
-          };
+      const data = JSON.parse(fs.readFileSync(hooksJson, 'utf8')) as {
+        hooks?: Record<string, Array<{ hooks?: Array<{ command?: string; args?: string[]; timeout?: number }> }>>;
+      };
+      const problems: string[] = [];
+      for (const [event, groups] of Object.entries(data.hooks ?? {})) {
+        for (const group of groups) {
+          for (const h of group.hooks ?? []) {
+            if (h.command !== 'node' || !Array.isArray(h.args)) problems.push(`${event}: not exec-form node`);
+            if (typeof h.timeout === 'number' && h.timeout > 60) problems.push(`${event}: timeout ${h.timeout}s > 60s`);
+          }
         }
       }
-
-      return {
-        name: `${hookName} syntax`,
-        status: 'pass',
-        message: 'valid',
-      };
-    } catch {
-      return {
-        name: `${hookName} syntax`,
-        status: 'fail',
-        message: 'could not read file',
-      };
+      return problems.length === 0
+        ? { name: 'hooks.json', status: 'pass', message: 'exec-form node launcher, timeouts <= 60s' }
+        : { name: 'hooks.json', status: 'fail', message: problems.join('; ') };
+    } catch (err) {
+      return { name: 'hooks.json', status: 'fail', message: `unreadable: ${err instanceof Error ? err.message : String(err)}` };
     }
   }
 
-  private async testHookExecution(
-    hookPath: string,
-    hookName: string
-  ): Promise<CheckResult> {
+  private dryRun(runner: string, event: (typeof HOOK_EVENTS)[number], projectRoot: string): CheckResult {
     const start = Date.now();
-
+    const name = `${event} dry-run`;
     try {
-      // Dry-run test with minimal input
-      execSync(`bash "${hookPath}" --help 2>/dev/null || true`, {
+      const stdout = execFileSync(process.execPath, [runner, event], {
+        cwd: projectRoot,
+        input: JSON.stringify({ ...SAMPLE_HOOK_INPUT[event], cwd: projectRoot }),
         encoding: 'utf8',
-        timeout: 3000,
+        timeout: 15000,
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: {
-          ...process.env,
-          SPECWEAVE_DOCTOR_DRY_RUN: '1',
-        },
+        env: { ...process.env, SPECWEAVE_HOME: packageRoot(), SPECWEAVE_HOOK_DRY_RUN: '1' },
       });
-
+      const durationMs = Date.now() - start;
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(stdout.trim() || '{}');
+      } catch {
+        return { name, status: 'fail', message: `non-JSON output: ${stdout.trim().slice(0, 80)}`, durationMs };
+      }
+      const problem = validateHookOutput(event, parsed);
+      if (problem) return { name, status: 'fail', message: problem, durationMs };
+      if (event === 'session-start' && JSON.stringify(parsed).includes('hooks inactive')) {
+        return { name, status: 'warn', message: 'launcher could not locate the specweave CLI', durationMs,
+          fixSuggestion: 'npm i -g specweave (or set SPECWEAVE_HOME)' };
+      }
+      return { name, status: 'pass', message: `valid ${JSON.stringify(parsed).slice(0, 60)}`, durationMs };
+    } catch (err) {
       return {
-        name: `${hookName} execution`,
-        status: 'pass',
-        message: 'responds',
+        name,
+        status: 'fail',
+        message: `launcher failed: ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`,
         durationMs: Date.now() - start,
-      };
-    } catch {
-      return {
-        name: `${hookName} execution`,
-        status: 'warn',
-        message: 'execution test failed',
-        durationMs: Date.now() - start,
-        fixSuggestion: 'Run: specweave hooks health for detailed analysis',
+        fixSuggestion: 'node must be on PATH; run: node <plugin>/hooks/run.mjs ' + event,
       };
     }
   }

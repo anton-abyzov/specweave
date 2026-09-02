@@ -136,17 +136,4 @@ describe('DashboardDataAggregator - Skill & Agent tracking', () => {
     });
   });
 
-  describe('contract: event types match track-analytics.sh', () => {
-    it('should use the same type strings as track-analytics.sh produces', () => {
-      const scriptPath = path.resolve(
-        path.join(__dirname, '../../../plugins/specweave/scripts/track-analytics.sh')
-      );
-      const script = fs.readFileSync(scriptPath, 'utf-8');
-
-      // track-analytics.sh documents valid types in its Usage comment
-      expect(script).toContain('bash track-analytics.sh command');
-      expect(script).toContain('bash track-analytics.sh skill');
-      expect(script).toContain('bash track-analytics.sh agent');
-    });
-  });
 });

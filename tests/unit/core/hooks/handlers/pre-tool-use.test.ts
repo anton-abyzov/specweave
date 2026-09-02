@@ -1,458 +1,144 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+/**
+ * PreToolUse guard tests — real temp filesystem, POSIX and Windows path fixtures.
+ * Output contract: pass = `{}`; deny = hookSpecificOutput.permissionDecision "deny".
+ */
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
-import { mkdtempSync, rmSync } from 'fs';
+import * as os from 'os';
 import * as path from 'path';
-import { tmpdir } from 'os';
+import { handle } from '../../../../../src/core/hooks/handlers/pre-tool-use.js';
+import { createContext } from '../../../../../src/core/hooks/handlers/utils.js';
 import type { HookContext, HookInput } from '../../../../../src/core/hooks/handlers/types.js';
 
-vi.mock('fs', async () => {
-  const actual = await vi.importActual<typeof import('fs')>('fs');
-  return {
-    ...actual,
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
-    mkdirSync: vi.fn(),
-    appendFileSync: vi.fn(),
-  };
-});
+let root = '';
+let ctx: HookContext;
 
-const mockedFs = vi.mocked(fs);
+const WIN_META = 'C:\\proj\\.specweave\\increments\\0001-x\\metadata.json';
+const POSIX_META = '/proj/.specweave/increments/0001-x/metadata.json';
+const WIN_SPEC = 'C:\\proj\\.specweave\\increments\\0002-y\\spec.md';
 
-let testLogsDir: string;
-
-function makeContext(root = '/project'): HookContext {
-  return {
-    projectRoot: root,
-    stateDir: `${root}/.specweave/state`,
-    logsDir: testLogsDir,
-    configPath: `${root}/.specweave/config.json`,
-    timestamp: '2026-03-27T00:00:00.000Z',
-  };
+function edit(file_path: string, new_string: string, tool_name = 'Edit'): HookInput {
+  return { tool_name, tool_input: { file_path, old_string: 'x', new_string } };
+}
+function write(file_path: string, content: string): HookInput {
+  return { tool_name: 'Write', tool_input: { file_path, content } };
+}
+function writeConfig(cfg: unknown) {
+  fs.writeFileSync(ctx.configPath, JSON.stringify(cfg));
 }
 
-describe('pre-tool-use handler', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    vi.resetModules();
-    testLogsDir = mkdtempSync(path.join(tmpdir(), 'sw-test-logs-'));
+beforeEach(() => {
+  root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-ptu-'));
+  fs.mkdirSync(path.join(root, '.specweave', 'state'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.specweave', 'config.json'), '{}');
+  ctx = createContext(root);
+});
+afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
+
+describe('fast paths', () => {
+  it('passes for files outside .specweave/increments/', async () => {
+    expect(await handle(edit('/proj/src/index.ts', 'b'), ctx)).toEqual({});
+    expect(await handle(edit('C:\\proj\\src\\index.ts', '"status": "completed"'), ctx)).toEqual({});
   });
-
-  afterEach(() => {
-    rmSync(testLogsDir, { recursive: true, force: true });
+  it('passes for non-Write/Edit tools even on increment files', async () => {
+    expect(await handle({ tool_name: 'Read', tool_input: { file_path: POSIX_META } }, ctx)).toEqual({});
+    expect(await handle({ tool_name: 'TeamCreate', tool_input: { team_name: 'impl' } }, ctx)).toEqual({});
   });
-
-  // ---- FAST PATH: non-increment files ----
-
-  it('allows tools not targeting .specweave/increments/', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-    const input: HookInput = {
-      tool_name: 'Edit',
-      tool_input: { file_path: '/project/src/index.ts', old_string: 'a', new_string: 'b' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('passes on missing tool_input', async () => {
+    expect(await handle({ tool_name: 'Edit' }, ctx)).toEqual({});
   });
-
-  it('allows non-Edit/Write/TeamCreate tools even for increment files', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-    const input: HookInput = {
-      tool_name: 'Read',
-      tool_input: { file_path: '/project/.specweave/increments/0001-feat/spec.md' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('accepts camelCase toolName/toolInput fallbacks', async () => {
+    const res = await handle({ toolName: 'Edit', toolInput: { file_path: WIN_META, new_string: '"status": "completed"' } }, ctx);
+    expect(res.hookSpecificOutput?.permissionDecision).toBe('deny');
   });
+});
 
-  // ---- STATUS COMPLETION GUARD (Edit on metadata.json) ----
-
-  it('blocks Edit setting status to "completed" on metadata.json', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockReturnValue(false); // no sw-done marker, no auto session
-
-    const input: HookInput = {
-      tool_name: 'Edit',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/metadata.json',
-        old_string: '"status": "active"',
-        new_string: '"status": "completed"',
+describe('status completion guard', () => {
+  it.each([POSIX_META, WIN_META])('denies status→completed via Edit (%s)', async (fp) => {
+    const res = await handle(edit(fp, '"status": "completed"'), ctx);
+    expect(res).toEqual({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: expect.stringContaining('0001-x'),
       },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('block');
-    expect(result.reason).toBeDefined();
-  });
-
-  it('allows Edit on metadata.json not changing status to completed', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-    const input: HookInput = {
-      tool_name: 'Edit',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/metadata.json',
-        old_string: '"title": "old"',
-        new_string: '"title": "new"',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
-  });
-
-  it('allows status→completed when sw-done marker exists', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
-      return String(p).includes('.sw-done-in-progress');
     });
-
-    const input: HookInput = {
-      tool_name: 'Edit',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/metadata.json',
-        old_string: '"status": "active"',
-        new_string: '"status": "completed"',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('/sw:done 0001-x');
+    expect(res).not.toHaveProperty('decision');
   });
 
-  it('allows status→completed when auto-mode active with testsVerified', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
-      return String(p).includes('auto/session.json');
-    });
-    mockedFs.readFileSync.mockReturnValue(
-      JSON.stringify({ status: 'active', testsVerified: true }),
-    );
-
-    const input: HookInput = {
-      tool_name: 'Edit',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/metadata.json',
-        old_string: '"status": "active"',
-        new_string: '"status": "completed"',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('denies a Write of a whole metadata.json with status completed (Windows path)', async () => {
+    const res = await handle(write(WIN_META, '{"status": "completed"}'), ctx);
+    expect(res.hookSpecificOutput?.permissionDecision).toBe('deny');
   });
 
-  // ---- INTERVIEW ENFORCEMENT GUARD (Write to spec.md) ----
-
-  it('allows Write to spec.md when interview enforcement is not strict', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
-      return String(p).includes('config.json');
-    });
-    mockedFs.readFileSync.mockReturnValue(
-      JSON.stringify({ planning: { deepInterview: { enabled: true, enforcement: 'advisory' } } }),
-    );
-
-    const input: HookInput = {
-      tool_name: 'Write',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/spec.md',
-        content: '# Spec\nReal content here with AC-US1-01',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('passes other metadata edits', async () => {
+    expect(await handle(edit(WIN_META, '"title": "new"'), ctx)).toEqual({});
   });
 
-  it('blocks Write to spec.md when strict interview not started', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
-      const s = String(p);
-      if (s.includes('config.json')) return true;
-      return false; // no interview state file
-    });
-    mockedFs.readFileSync.mockReturnValue(
-      JSON.stringify({ planning: { deepInterview: { enabled: true, enforcement: 'strict' } } }),
-    );
-
-    const input: HookInput = {
-      tool_name: 'Write',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/spec.md',
-        content: '# Real spec with substance',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('block');
-    expect(result.reason).toContain('Interview');
+  it('passes when sw-done marker exists', async () => {
+    fs.writeFileSync(path.join(ctx.stateDir, '.sw-done-in-progress'), '');
+    expect(await handle(edit(WIN_META, '"status": "completed"'), ctx)).toEqual({});
   });
 
-  it('blocks Write to spec.md when strict interview has missing categories', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readFileSync.mockImplementation((p: fs.PathOrFileDescriptor) => {
-      const s = String(p);
-      if (s.includes('config.json')) {
-        return JSON.stringify({
-          planning: { deepInterview: { enabled: true, enforcement: 'strict' } },
-        });
-      }
-      if (s.includes('interview-')) {
-        return JSON.stringify({
-          coveredCategories: { architecture: { summary: 'done' }, security: { summary: 'done' } },
-        });
-      }
-      return '{}';
-    });
-
-    const input: HookInput = {
-      tool_name: 'Write',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/spec.md',
-        content: '# Real spec with substance',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('block');
-    expect(result.reason).toContain('Incomplete');
+  it('passes under a verified auto session', async () => {
+    fs.mkdirSync(path.join(ctx.stateDir, 'auto'), { recursive: true });
+    fs.writeFileSync(path.join(ctx.stateDir, 'auto', 'session.json'), JSON.stringify({ status: 'active', testsVerified: true }));
+    expect(await handle(edit(POSIX_META, '"status": "completed"'), ctx)).toEqual({});
   });
 
-  it('allows Write to spec.md when strict interview all categories covered', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
+  it('still denies when the auto session file is corrupt', async () => {
+    fs.mkdirSync(path.join(ctx.stateDir, 'auto'), { recursive: true });
+    fs.writeFileSync(path.join(ctx.stateDir, 'auto', 'session.json'), '{{{CORRUPT');
+    const res = await handle(edit(POSIX_META, '"status": "completed"'), ctx);
+    expect(res.hookSpecificOutput?.permissionDecision).toBe('deny');
+  });
+});
 
-    mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readFileSync.mockImplementation((p: fs.PathOrFileDescriptor) => {
-      const s = String(p);
-      if (s.includes('config.json')) {
-        return JSON.stringify({
-          planning: { deepInterview: { enabled: true, enforcement: 'strict' } },
-        });
-      }
-      if (s.includes('interview-')) {
-        return JSON.stringify({
-          coveredCategories: {
-            architecture: { summary: 'done' },
-            integrations: { summary: 'done' },
-            'ui-ux': { summary: 'done' },
-            performance: { summary: 'done' },
-            security: { summary: 'done' },
-            'edge-cases': { summary: 'done' },
-          },
-        });
-      }
-      return '{}';
-    });
+describe('interview enforcement guard (Write spec.md)', () => {
+  const strict = { planning: { deepInterview: { enabled: true, enforcement: 'strict' } } };
 
-    const input: HookInput = {
-      tool_name: 'Write',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/spec.md',
-        content: '# Real spec with substance',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('passes when enforcement is not strict', async () => {
+    writeConfig({ planning: { deepInterview: { enabled: true, enforcement: 'warn' } } });
+    expect(await handle(write(WIN_SPEC, '# Real spec with AC-01'), ctx)).toEqual({});
   });
 
-  it('allows Write to spec.md when content contains template markers', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readFileSync.mockReturnValue(
-      JSON.stringify({
-        planning: { deepInterview: { enabled: true, enforcement: 'strict' } },
-      }),
-    );
-
-    const input: HookInput = {
-      tool_name: 'Write',
-      tool_input: {
-        file_path: '/project/.specweave/increments/0001-feat/spec.md',
-        content: '# TEMPLATE FILE\n[Story Title] as [user type]',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('passes template writes even under strict', async () => {
+    writeConfig(strict);
+    expect(await handle(write(WIN_SPEC, '# TEMPLATE FILE\n[Story Title]'), ctx)).toEqual({});
   });
 
-  // ---- INCREMENT EXISTENCE GUARD (TeamCreate) ----
-
-  it('blocks TeamCreate when no active increment with valid spec exists', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    mockedFs.existsSync.mockReturnValue(false);
-
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: 'impl-team', description: 'implement the feature' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('block');
-    expect(result.reason).toContain('Increment');
+  it('denies when the interview was never started (Windows path)', async () => {
+    writeConfig(strict);
+    const res = await handle(write(WIN_SPEC, '# Real spec'), ctx);
+    expect(res.hookSpecificOutput?.permissionDecision).toBe('deny');
+    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('0002-y');
+    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('Interview Required');
   });
 
-  it('allows TeamCreate for non-implementation teams (review- prefix)', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
+  it('denies with the missing categories listed', async () => {
+    writeConfig(strict);
+    fs.writeFileSync(
+      path.join(ctx.stateDir, 'interview-0002-y.json'),
+      JSON.stringify({ coveredCategories: { architecture: {}, security: {} } }),
     );
-
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: 'review-pr-123', description: 'review the PR' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+    const res = await handle(write(WIN_SPEC, '# Real spec'), ctx);
+    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('Incomplete');
+    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('integrations');
   });
 
-  it.each([
-    'test-hooks',
-    'debug-auth-issue',
-    'investigate-perf',
-    'verify-release',
-    'qa-regression',
-    'research-options',
-    'brainstorm-ideas',
-    'plan-migration',
-  ])('allows TeamCreate for non-impl prefix: %s', async (teamName) => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
+  it('passes when every category is covered', async () => {
+    writeConfig(strict);
+    const all = ['architecture', 'integrations', 'ui-ux', 'performance', 'security', 'edge-cases'];
+    fs.writeFileSync(
+      path.join(ctx.stateDir, 'interview-0002-y.json'),
+      JSON.stringify({ coveredCategories: Object.fromEntries(all.map((c) => [c, {}])) }),
     );
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: teamName, description: 'some work' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+    expect(await handle(write(WIN_SPEC, '# Real spec'), ctx)).toEqual({});
   });
 
-  it('allows TeamCreate for non-implementation teams (description keyword)', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: 'my-team', description: 'brainstorm new ideas' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
-  });
-
-  it.each([
-    'test the published version',
-    'testing hooks end-to-end',
-    'verify deployment works',
-    'debug the auth failure',
-    'investigate performance regression',
-    'diagnose timeout issue',
-    'troubleshoot CI failures',
-    'qa pass on release candidate',
-  ])('allows TeamCreate for non-impl keyword in description: %s', async (desc) => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: 'my-team', description: desc },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
-  });
-
-  it('allows TeamCreate when valid spec.md exists in increments', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    const specContent = 'A'.repeat(600) + '\nAC-US1-01: Must do something';
-
-    mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
-      const s = String(p);
-      return s.includes('increments') || s.includes('spec.md') || s.includes('metadata.json');
-    });
-    mockedFs.readFileSync.mockImplementation((p: fs.PathOrFileDescriptor) => {
-      const s = String(p);
-      if (s.includes('metadata.json')) return JSON.stringify({ status: 'active' });
-      return specContent;
-    });
-
-    // Mock readdirSync for scanning increments
-    (mockedFs as any).readdirSync = vi.fn().mockReturnValue([
-      { name: '0001-feat', isDirectory: () => true },
-    ]);
-
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: 'impl-team', description: 'implement the feature' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
-  });
-
-  it('allows TeamCreate when SPECWEAVE_NO_INCREMENT env var is set', async () => {
-    process.env.SPECWEAVE_NO_INCREMENT = '1';
-
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-
-    const input: HookInput = {
-      tool_name: 'TeamCreate',
-      tool_input: { team_name: 'impl-team', description: 'build something' },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
-
-    delete process.env.SPECWEAVE_NO_INCREMENT;
-  });
-
-  // ---- Edge cases ----
-
-  it('handles missing tool_input gracefully', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-    const input: HookInput = { tool_name: 'Edit' };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
-  });
-
-  it('uses toolName fallback when tool_name is missing', async () => {
-    const { handle } = await import(
-      '../../../../../src/core/hooks/handlers/pre-tool-use.js'
-    );
-    const input: HookInput = {
-      toolName: 'Edit',
-      toolInput: {
-        file_path: '/project/src/foo.ts',
-        old_string: 'a',
-        new_string: 'b',
-      },
-    };
-    const result = await handle(input, makeContext());
-    expect(result.decision).toBe('allow');
+  it('Edit on spec.md is not subject to the interview guard', async () => {
+    writeConfig(strict);
+    expect(await handle(edit(WIN_SPEC, 'more text'), ctx)).toEqual({});
   });
 });

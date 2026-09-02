@@ -1,118 +1,131 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as path from 'path';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import {
+  findProjectRoot,
+  createContext,
+  parseStdinJson,
+  normalizePath,
+  getFilePath,
+  isIncrementFile,
+  extractIncrementId,
+  readActiveIncrements,
+  logHook,
+  HOOK_LOG_FILE,
+  HOOK_LOG_MAX_BYTES,
+} from '../../../../../src/core/hooks/handlers/utils.js';
 
-// Mock fs before importing utils
-vi.mock('fs', async () => {
-  const actual = await vi.importActual<typeof import('fs')>('fs');
-  return {
-    ...actual,
-    existsSync: vi.fn(),
-    mkdirSync: vi.fn(),
-    appendFileSync: vi.fn(),
-  };
+let root = '';
+beforeEach(() => {
+  root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-hook-utils-'));
+  fs.mkdirSync(path.join(root, '.specweave', 'state'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.specweave', 'config.json'), '{}');
+});
+afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
+
+describe('findProjectRoot / createContext', () => {
+  it('walks up to the directory containing .specweave/config.json', () => {
+    const deep = path.join(root, 'a', 'b');
+    fs.mkdirSync(deep, { recursive: true });
+    expect(findProjectRoot(deep)).toBe(root);
+  });
+  it('returns null outside a project', () => {
+    const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-bare-'));
+    try {
+      expect(findProjectRoot(bare)).toBeNull();
+    } finally {
+      fs.rmSync(bare, { recursive: true, force: true });
+    }
+  });
+  it('createContext derives state/logs/config paths', () => {
+    const ctx = createContext(root);
+    expect(ctx.stateDir).toBe(path.join(root, '.specweave', 'state'));
+    expect(ctx.logsDir).toBe(path.join(root, '.specweave', 'logs'));
+    expect(ctx.configPath).toBe(path.join(root, '.specweave', 'config.json'));
+    expect(new Date(ctx.timestamp).toString()).not.toBe('Invalid Date');
+  });
 });
 
-const mockedFs = vi.mocked(fs);
-
-describe('hooks/handlers/utils', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
+describe('parseStdinJson', () => {
+  it('parses objects, returns {} for empty/garbage/non-objects', () => {
+    expect(parseStdinJson('{"a":1}')).toEqual({ a: 1 });
+    expect(parseStdinJson('')).toEqual({});
+    expect(parseStdinJson('   ')).toEqual({});
+    expect(parseStdinJson('nope{')).toEqual({});
+    expect(parseStdinJson('[1]')).toEqual({});
+    expect(parseStdinJson('null')).toEqual({});
   });
+});
 
-  describe('findProjectRoot', () => {
-    it('returns project root when .specweave/config.json exists', async () => {
-      const { findProjectRoot } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
-
-      const cwd = '/users/test/project/subdir';
-      mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
-        return String(p) === '/users/test/project/.specweave/config.json';
-      });
-
-      const result = findProjectRoot(cwd);
-      expect(result).toBe('/users/test/project');
-    });
-
-    it('returns null when no .specweave/config.json found', async () => {
-      const { findProjectRoot } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
-
-      mockedFs.existsSync.mockReturnValue(false);
-
-      const result = findProjectRoot('/users/test/no-project');
-      expect(result).toBeNull();
-    });
+describe('path helpers (Windows fixtures)', () => {
+  const win = 'C:\\proj\\.specweave\\increments\\0001-x\\metadata.json';
+  it('normalizePath turns backslashes into slashes', () => {
+    expect(normalizePath(win)).toBe('C:/proj/.specweave/increments/0001-x/metadata.json');
   });
-
-  describe('createContext', () => {
-    it('builds HookContext with correct paths', async () => {
-      const { createContext } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
-
-      const ctx = createContext('/users/test/project');
-      expect(ctx.projectRoot).toBe('/users/test/project');
-      expect(ctx.stateDir).toBe(
-        path.join('/users/test/project', '.specweave', 'state'),
-      );
-      expect(ctx.logsDir).toBe(
-        path.join('/users/test/project', '.specweave', 'logs'),
-      );
-      expect(ctx.configPath).toBe(
-        path.join('/users/test/project', '.specweave', 'config.json'),
-      );
-      expect(ctx.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    });
+  it('getFilePath normalizes tool_input.file_path', () => {
+    expect(getFilePath({ tool_input: { file_path: win } })).toBe('C:/proj/.specweave/increments/0001-x/metadata.json');
+    expect(getFilePath({})).toBe('');
+    expect(getFilePath({ tool_input: { file_path: 42 } })).toBe('');
   });
-
-  describe('readStdin', () => {
-    it('parses valid JSON from stdin string', async () => {
-      const { parseStdinJson } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
-
-      const result = parseStdinJson('{"tool_name":"Edit"}');
-      expect(result).toEqual({ tool_name: 'Edit' });
-    });
-
-    it('returns empty object on invalid JSON', async () => {
-      const { parseStdinJson } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
-
-      const result = parseStdinJson('not json');
-      expect(result).toEqual({});
-    });
-
-    it('returns empty object on empty string', async () => {
-      const { parseStdinJson } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
-
-      const result = parseStdinJson('');
-      expect(result).toEqual({});
-    });
+  it('isIncrementFile matches both separators', () => {
+    expect(isIncrementFile(win)).toBe(true);
+    expect(isIncrementFile('/p/.specweave/increments/0001-x/spec.md')).toBe(true);
+    expect(isIncrementFile('C:\\proj\\src\\a.ts')).toBe(false);
   });
+  it('extractIncrementId handles E-suffix ids and Windows paths', () => {
+    expect(extractIncrementId(win)).toBe('0001-x');
+    expect(extractIncrementId('D:\\r\\.specweave\\increments\\0042E-emergency-fix\\tasks.md')).toBe('0042E-emergency-fix');
+    expect(extractIncrementId('/nowhere/file.md')).toBe('unknown');
+  });
+});
 
-  describe('logHook', () => {
-    it('appends log entry to hooks.log', async () => {
-      const { logHook, createContext } = await import(
-        '../../../../../src/core/hooks/handlers/utils.js'
-      );
+describe('readActiveIncrements', () => {
+  const inc = (id: string, status: string) => {
+    const d = path.join(root, '.specweave', 'increments', id);
+    fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, 'metadata.json'), JSON.stringify({ status }));
+  };
+  it('prefers active-increment.json ids that still exist on disk', () => {
+    inc('0001-a', 'active');
+    inc('0002-b', 'active');
+    fs.writeFileSync(path.join(root, '.specweave', 'state', 'active-increment.json'), JSON.stringify({ ids: ['0002-b', '0999-gone'] }));
+    expect(readActiveIncrements(root)).toEqual(['0002-b']);
+  });
+  it('falls back to a metadata scan', () => {
+    inc('0003-c', 'completed');
+    inc('0004-d', 'in-progress');
+    inc('0005-e', 'active');
+    expect(readActiveIncrements(root)).toEqual(['0004-d', '0005-e']);
+  });
+  it('returns [] without an increments dir', () => {
+    expect(readActiveIncrements(root)).toEqual([]);
+  });
+});
 
-      mockedFs.existsSync.mockReturnValue(true);
-      const ctx = createContext('/users/test/project');
-
-      logHook(ctx, 'pre-compact', 'test message');
-
-      expect(mockedFs.mkdirSync).toHaveBeenCalled();
-      expect(mockedFs.appendFileSync).toHaveBeenCalledWith(
-        expect.stringContaining('hooks.log'),
-        expect.stringContaining('pre-compact'),
-      );
-    });
+describe('logHook (single JSONL, rotated at 1 MB)', () => {
+  it('appends one JSON line per call to hooks.jsonl', () => {
+    const ctx = createContext(root);
+    logHook(ctx, 'pre-tool-use', 'blocked x', 'block');
+    logHook(ctx, 'stop', '[ERROR] boom', 'error');
+    const lines = fs.readFileSync(path.join(ctx.logsDir, HOOK_LOG_FILE), 'utf8').trim().split('\n');
+    expect(lines).toHaveLength(2);
+    expect(JSON.parse(lines[0])).toEqual({ t: ctx.timestamp, hook: 'pre-tool-use', level: 'block', msg: 'blocked x' });
+    expect(JSON.parse(lines[1]).level).toBe('error');
+    expect(fs.existsSync(path.join(ctx.logsDir, 'hooks.log'))).toBe(false);
+    expect(fs.existsSync(path.join(ctx.logsDir, 'hooks'))).toBe(false);
+  });
+  it('rotates to hooks.jsonl.1 once the cap is exceeded', () => {
+    const ctx = createContext(root);
+    fs.mkdirSync(ctx.logsDir, { recursive: true });
+    const file = path.join(ctx.logsDir, HOOK_LOG_FILE);
+    fs.writeFileSync(file, 'x'.repeat(HOOK_LOG_MAX_BYTES + 1));
+    logHook(ctx, 'stop', 'after rotation');
+    expect(fs.statSync(`${file}.1`).size).toBe(HOOK_LOG_MAX_BYTES + 1);
+    expect(fs.readFileSync(file, 'utf8')).toContain('after rotation');
+  });
+  it('never throws when the logs dir is unwritable', () => {
+    const ctx = { ...createContext(root), logsDir: path.join(root, '.specweave', 'config.json', 'nope') };
+    expect(() => logHook(ctx, 'stop', 'x')).not.toThrow();
   });
 });

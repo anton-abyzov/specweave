@@ -78,7 +78,7 @@ export function buildNotificationMessage(
       return `${context.jobType ?? 'Background'} job started${context.jobId ? ` (${context.jobId})` : ''}. Running in background.`;
 
     case 'session_stuck':
-      return `Session may be stuck: ${context.reason ?? 'Unknown reason'}. Run cleanup-state.sh if unresponsive.`;
+      return `Session may be stuck: ${context.reason ?? 'Unknown reason'}. Remove .specweave/state/*.lock and restart if unresponsive.`;
 
     case 'session_recovered':
       return `Session recovered. Normal operation resumed.`;
