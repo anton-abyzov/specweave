@@ -9,7 +9,7 @@
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
   <img src="https://img.shields.io/badge/increments-600+-blue" alt="600+ increments" />
   <img src="https://img.shields.io/badge/production_apps-10+-green" alt="10+ production apps" />
-  <img src="https://img.shields.io/badge/skills-100+-8B5CF6" alt="100+ skills" />
+  <img src="https://img.shields.io/badge/core_skills-10-8B5CF6" alt="10 core skills" />
   <img src="https://img.shields.io/badge/agent_platforms-49-orange" alt="49 platforms" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
@@ -32,16 +32,16 @@ SpecWeave is a spec-first development layer. Configuration, not prompting. Enfor
 ```
 You: "Build a checkout flow with Stripe"
   ↓
-  spec.md → plan.md → tasks.md       ← you review the plan
+  spec.md (ACs + Approach) → tasks.md ← you review the plan
   ↓
-  Autonomous execution for hours      ← AI builds, tests, fixes
+  Autonomous execution for hours      ← AI claims a task, builds, tests, commits
   ↓
-  Quality gates (Grill + Judge-LLM)   ← code reviewed automatically
+  specweave verify + sw:review        ← evidence, then an adversarial pass
   ↓
   Synced to GitHub/JIRA/ADO           ← closed, documented, shipped
 ```
 
-Every feature starts as a specification — user stories, acceptance criteria, architecture decisions — before a single line of code is written. TDD enforces correctness. Quality gates catch what tests miss.
+Every feature starts as a specification — problem, scope, numbered acceptance criteria, approach — before a single line of code is written. Tasks close on a passing test command and a commit sha. A fresh-context review catches what tests miss.
 
 <br/>
 
@@ -84,14 +84,14 @@ specweave init .
 
 | Capability | Cursor Rules | Copilot Instructions | Windsurf | Cline | Vibe Coding | **SpecWeave** |
 |------------|:---:|:---:|:---:|:---:|:---:|:---:|
-| Structured specs (spec + plan + tasks) | — | — | — | — | — | **Yes** |
-| Quality gates (Grill + Judge-LLM + 130 rules) | — | — | — | — | — | **Yes** |
+| Structured specs (ACs + approach + tasks) | — | — | — | — | — | **Yes** |
+| Quality gates (verify + adversarial review) | — | — | — | — | — | **Yes** |
 | Autonomous execution (hours, unattended) | — | — | — | — | — | **Yes** |
 | Multi-agent teams (parallel, contract-first) | — | — | — | — | — | **Yes** |
 | External sync (GitHub / JIRA / ADO) | — | — | — | — | — | **Yes** |
-| TDD enforcement (strict red-green-refactor) | — | — | — | — | — | **Yes** |
+| Evidence-backed task closure (test exit + sha) | — | — | — | — | — | **Yes** |
 | LSP code intelligence (198x faster) | — | — | — | — | — | **Yes** |
-| Self-improving skills (learns from corrections) | — | — | — | — | — | **Yes** |
+| Append-only task ledger (conflict-free merges) | — | — | — | — | — | **Yes** |
 
 Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow with 5 acceptance criteria, test it, review it, sync to JIRA, and close."
 
@@ -99,11 +99,11 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow with 5
 
 ## Key Features
 
-**Spec-First Planning** — Every feature starts as spec.md + plan.md + tasks.md. Configuration, not prompting.
+**Spec-First Planning** — Every feature starts as spec.md (problem, scope, numbered ACs, approach) plus tasks.md. Configuration, not prompting.
 
-**TDD Enforcement** — Strict red-green-refactor. Tasks cannot close without passing tests. Coverage targets enforced.
+**Evidence, Not Claims** — A task closes only with its test command exit 0 and the commit sha, recorded in an append-only ledger. Optional strict red-green-refactor via the `tdd-cycle` skill.
 
-**Agent Swarms** — Run parallel agents across iTerm/tmux panes. Team lead splits work, each agent owns an increment.
+**Agent Swarms** — Run parallel agents across iTerm/tmux panes. `sw:team` gives each agent its own worktree; the ledger arbitrates who owns which task.
 
 ```
 ┌──────────────────┬──────────────────┬──────────────────┐
@@ -115,7 +115,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow with 5
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**100+ Skills** — PM, Architect, QA, Security, DevOps, Frontend, Backend, Mobile, ML. Every skill is customizable via skill-memories without forking.
+**10 Core Skills** — increment, do, done, review, team, handoff, sync, auto, brainstorm, qa. Nothing else ships in the plugin, so nothing goes stale. Longer procedures (tdd-cycle, e2e, debug, diagrams, release-expert) live in `skills-optional/` and install on demand with [vskill](https://www.npmjs.com/package/vskill).
 
 **External Sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time. Close an increment, external tools update automatically.
 
@@ -145,36 +145,50 @@ npx vskill eval run my-skill                  # Run eval suite
 
 | You say | SpecWeave runs |
 |---------|---------------|
-| "Build me X" | `sw:increment` → spec + plan + tasks |
-| "Go ahead" | `sw:auto` → autonomous execution |
-| "Ship it" | `sw:done` → quality gates + close |
-| "Split into teams" | `sw:team-lead` → parallel agents |
-| "Review the code" | `sw:code-reviewer` → 6 parallel reviewers |
+| "What are our options?" | `sw:brainstorm` → framed alternatives, ends in a pick |
+| "Build me X" | `sw:increment` → spec.md with ACs + approach, plus tasks.md |
+| "Start working" | `sw:do` → claim a task, implement, commit, close it with evidence |
+| "Go ahead" | `sw:auto` → the same loop, unattended, until the tasks run out |
+| "Split this across agents" | `sw:team` → a worktree per agent, claims through the ledger |
+| "Review the code" | `sw:review` → fresh-context adversarial pass, every finding cites path:line |
+| "How risky is this?" | `sw:qa` → risk-scored assessment, blockers, verdict |
+| "Ship it" | `sw:done` → verify, review check, `specweave complete` |
+| "Push it to the tracker" | `sw:sync` → GitHub, Jira and Azure DevOps: push, pull, status, setup |
+| "I'm stopping here" | `sw:handoff` → a one-page, secret-scrubbed continuation doc |
+
+Every skill is a thin wrapper over a CLI command, so the same loop runs in Cursor, Copilot,
+Codex or a bare terminal: `specweave create-increment` → `specweave task next` → `specweave task claim`
+→ `specweave task done --run "<test cmd>"` → `specweave verify` → `specweave complete`.
 
 [Full command reference](https://spec-weave.com/docs/commands/overview)
 
 <br/>
 
-## Upgrading to v1.1.0 (Opus 4.7 Alignment)
+## Upgrading from 1.x to 2.0
 
-SpecWeave v1.1.0 aligns the framework with Claude Opus 4.7 best practices.
+```bash
+npm i -g specweave@2
+specweave update       # rewrites the managed sections, keeps everything you wrote
+```
 
-### P0 Fixes (required if using judge-llm or team-lead)
+2.0 replaces the 51-skill surface with the 10 above. There is no alias routing — an old slug
+simply has no skill behind it, so use the replacement:
 
-1. **Remove fixed extended thinking**: `sw:judge-llm` no longer passes `thinking.budget_tokens`. Adaptive prompt hints replace it. No user action needed — the CLI handles this automatically.
+| 1.x | 2.0 |
+|-----|-----|
+| `sw:grill`, `sw:code-reviewer`, `sw:judge-llm`, `sw:pr-review` | `sw:review` |
+| `sw:team-lead`, `sw:team-merge`, `sw:team-build` | `sw:team` |
+| `sw:pm`, `sw:architect`, `sw:plan` | `sw:increment` |
+| `sw:validate` | `sw:qa` |
+| `sw:progress-sync`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync`, `sw:multi-project` | `sw:sync` |
+| `sw:progress`, `sw:close-all`, `sw:analytics`, `sw:help` | `specweave status`, `specweave complete --all`, `specweave analytics`, `specweave help` |
+| `sw:tdd-cycle`, `sw:tdd-red`, `sw:e2e`, `sw:debug`, `sw:diagrams`, `sw:npm` | `npx vskill install anton-abyzov/specweave/skills-optional/<name>` |
+| `sw:skill-gen`, `sw:skill-refine` | the vskill skill-creator |
 
-2. **Team-lead spawn heuristic**: `sw:team-lead` now only spawns agents when `domains ≥ 3` OR `tasks ≥ 15` OR `--parallel` is set. Previously it always spawned agents.
+The full map, including the CLI replacements, is `removedIn2_0` in
+[`plugins/specweave/marketplace.json`](plugins/specweave/marketplace.json).
 
-3. **State markers removed**: `skill-chain-*.json` and `interview-*.json` state files are no longer written. `pretooluse-guard.ts` uses TaskGet-based state with filesystem fallback.
-
-### Deprecations
-
-See full list in [CHANGELOG.md](./CHANGELOG.md). Key migrations:
-- `/sw:tdd-red` → `/sw:tdd-cycle --phase red`
-- `/sw:github-sync` → `/sw-github:sync-spec`
-- `/sw:team-build` → `/sw:team-lead --preset <name>`
-
-Full migration guide: `.specweave/docs/internal/specs/opus-47-migration.md`
+<br/>
 
 ## Documentation
 
