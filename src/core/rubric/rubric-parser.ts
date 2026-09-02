@@ -143,7 +143,7 @@ export function parseRubric(content: string): RubricDocument {
                   .filter(Boolean);
                 break;
               case 'evaluator': {
-                const validEvaluators: EvaluatorId[] = ['sw:grill', 'sw:code-reviewer', 'sw:judge-llm', 'command', 'coverage', 'manual'];
+                const validEvaluators: EvaluatorId[] = ['sw:review', 'sw:grill', 'sw:code-reviewer', 'sw:judge-llm', 'command', 'coverage', 'manual'];
                 currentCriterion.evaluator = validEvaluators.includes(fieldValue as EvaluatorId)
                   ? fieldValue as EvaluatorId
                   : 'sw:grill'; // default for unknown evaluators

@@ -8,8 +8,15 @@
 /** Two severity levels only — blocking must pass, advisory is informational */
 export type RubricSeverity = 'blocking' | 'advisory';
 
-/** Gate that evaluates this criterion */
+/**
+ * Gate that evaluates this criterion.
+ *
+ * `sw:review` is the 2.0 gate (one adversarial pass, reports/review.json). The three
+ * 1.x ids below are kept so rubrics written before 2.0 still parse; new rubrics should
+ * use `sw:review`.
+ */
 export type EvaluatorId =
+  | 'sw:review'
   | 'sw:grill'
   | 'sw:code-reviewer'
   | 'sw:judge-llm'

@@ -409,7 +409,7 @@ SpecWeave: .specweave/docs/internal/architecture/frontend-auth/
 
 **Start**: Jira Epic PROJ-123 "User Authentication"
 
-**Trace** (`specweave trace --jira PROJ-123`):
+**Trace** (follow `externalLinks` in each increment's metadata.json; `specweave sync status --json` lists them):
 ```
 Jira Epic: PROJ-123 "User Authentication"
   ↓
@@ -439,7 +439,7 @@ Runbook: .specweave/docs/internal/operations/runbook-auth-service.md
 
 **Start**: Code file `src/services/auth/oauth.ts`
 
-**Trace** (`specweave trace --file src/services/auth/oauth.ts`):
+**Trace** (from `src/services/auth/oauth.ts` back through the increment that owns it):
 ```
 File: src/services/auth/oauth.ts
   ↓

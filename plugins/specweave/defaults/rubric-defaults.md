@@ -33,25 +33,25 @@ status: defaults
 
 ### R-D02: No critical or high code review findings [blocking]
 - **Source**: project-default
-- **Evaluator**: sw:code-reviewer
-- **Verify**: code-review-report.json summary
-- **Threshold**: critical === 0 AND high === 0 AND medium === 0
+- **Evaluator**: sw:review
+- **Verify**: review.json findings
+- **Threshold**: critical === 0 AND high === 0
 - **Result**: [ ] PENDING
 
 ---
 
 ## Independent Evaluation
 
-### R-D03: Grill ship readiness verified [blocking]
+### R-D03: Review verdict is ship [blocking]
 - **Source**: project-default
-- **Evaluator**: sw:grill
-- **Verify**: grill-report.json shipReadiness
-- **Threshold**: shipReadiness !== "NOT READY"
+- **Evaluator**: sw:review
+- **Verify**: review.json ok
+- **Threshold**: ok !== false
 - **Result**: [ ] PENDING
 
-### R-D04: LLM judge verdict acceptable [blocking]
+### R-D04: Independent reviewer was a fresh context [advisory]
 - **Source**: project-default
-- **Evaluator**: sw:judge-llm
-- **Verify**: judge-llm-report.json verdict
-- **Threshold**: verdict !== "REJECTED"
+- **Evaluator**: manual
+- **Verify**: review.md "Reviewer context" line
+- **Threshold**: subagent or new session (never the authoring session)
 - **Result**: [ ] PENDING

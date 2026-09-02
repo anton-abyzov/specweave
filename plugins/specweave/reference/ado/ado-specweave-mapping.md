@@ -432,7 +432,7 @@ SpecWeave: .specweave/docs/internal/architecture/frontend-auth/
 
 **Start**: ADO Epic #12345 "Payment Integration"
 
-**Trace** (`specweave trace --ado 12345`):
+**Trace** (follow `externalLinks` in each increment's metadata.json; `specweave sync status --json` lists them):
 ```
 ADO Epic: #12345 "Payment Integration"
   ↓
@@ -460,7 +460,7 @@ Runbook: .specweave/docs/internal/operations/runbook-payment-service.md
 
 **Start**: Code file `src/services/payment/stripe.ts`
 
-**Trace** (`specweave trace --file src/services/payment/stripe.ts`):
+**Trace** (from `src/services/payment/stripe.ts` back through the increment that owns it):
 ```
 File: src/services/payment/stripe.ts
   ↓
