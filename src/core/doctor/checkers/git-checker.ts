@@ -3,6 +3,16 @@
  */
 
 import { execSync } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import {
+  installGitHooks,
+  needsHookRefresh,
+  readInstalledHookVersion,
+  PRE_COMMIT_HOOK_VERSION,
+} from '../../../cli/helpers/init/git-hooks-installer.js';
+import { findSourceDir } from '../../../cli/helpers/init/path-utils.js';
 import type {
   HealthChecker,
   CategoryResult,
@@ -42,6 +52,10 @@ export class GitChecker implements HealthChecker {
     // Check for remote
     checks.push(this.checkRemote(projectRoot));
 
+    // Pre-commit hook freshness: a 1.x hook body blocks the 2.0 loop
+    // (it rejects ledger.jsonl / handoff.md at the increment root).
+    checks.push(this.checkPreCommitHook(projectRoot, options));
+
     // Skip branch checks in quick mode
     if (!options.quick) {
       checks.push(this.checkBranch(projectRoot));
@@ -65,6 +79,70 @@ export class GitChecker implements HealthChecker {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * A SpecWeave pre-commit hook installed by an older CLI still carries the 1.x
+   * "only 4 files at increment root" rule and the maxdepth-2 duplicate-ID scan,
+   * both of which reject a perfectly valid 2.0 increment. Detect and (with
+   * --fix) rewrite it.
+   */
+  private checkPreCommitHook(projectRoot: string, options: DoctorOptions): CheckResult {
+    const hookPath = path.join(projectRoot, '.git', 'hooks', 'pre-commit');
+    if (!fs.existsSync(hookPath)) {
+      return {
+        name: 'Pre-commit hook',
+        status: 'skip',
+        message: 'not installed',
+      };
+    }
+
+    let content = '';
+    try {
+      content = fs.readFileSync(hookPath, 'utf-8');
+    } catch {
+      return { name: 'Pre-commit hook', status: 'warn', message: 'could not read hook' };
+    }
+
+    const installed = readInstalledHookVersion(content);
+    if (installed === null) {
+      return {
+        name: 'Pre-commit hook',
+        status: 'skip',
+        message: 'custom (not SpecWeave)',
+      };
+    }
+
+    if (!needsHookRefresh(content)) {
+      return {
+        name: 'Pre-commit hook',
+        status: 'pass',
+        message: `v${installed}`,
+      };
+    }
+
+    if (options.fix) {
+      try {
+        const here = path.dirname(fileURLToPath(import.meta.url));
+        const templatesDir = findSourceDir('templates', here);
+        fs.unlinkSync(hookPath);
+        installGitHooks(projectRoot, templatesDir);
+        return {
+          name: 'Pre-commit hook',
+          status: 'pass',
+          message: `refreshed v${installed} → v${PRE_COMMIT_HOOK_VERSION}`,
+        };
+      } catch {
+        // fall through to the warning below
+      }
+    }
+
+    return {
+      name: 'Pre-commit hook',
+      status: 'warn',
+      message: `stale v${installed} (blocks 2.0 increments; current v${PRE_COMMIT_HOOK_VERSION})`,
+      fixSuggestion: 'Run: specweave doctor --fix',
+    };
   }
 
   private checkWorkingDirectory(projectRoot: string): CheckResult {

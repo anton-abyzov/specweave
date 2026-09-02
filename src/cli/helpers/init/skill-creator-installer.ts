@@ -1,5 +1,15 @@
 /**
- * Auto-install Anthropic's skill-creator into .claude/skills/skill-creator/
+ * Install Anthropic's skill-creator into .claude/skills/skill-creator/
+ *
+ * OPT-IN since 2.0. `specweave init` / `specweave update` used to fetch this
+ * from github.com unannounced and record it in a project `vskill.lock`. That
+ * is a supply-chain surface the user never asked for, it is not part of the
+ * 2.0 loop, and the lockfile it left behind made `specweave doctor` fail
+ * forever (vskill's 64-char digest is not SpecWeave's 12-char plugin digest).
+ *
+ * Enable explicitly with `SPECWEAVE_INSTALL_SKILL_CREATOR=1`, or install it
+ * yourself at any time:
+ *   npx vskill install anthropics/skills/skill-creator
  *
  * Called during `specweave init` and `specweave update-instructions`.
  * Non-blocking: never throws, never prevents init from completing.
@@ -33,16 +43,28 @@ const VSKILL_INSTALL_ARGS = ['install', SKILL_CREATOR_ID, '--yes', '--agent', 'c
 export interface EnsureSkillCreatorResult {
   installed: boolean;
   skipped: boolean;
+  /** Why nothing was installed, when skipped. */
+  reason?: 'already-installed' | 'opt-in-required';
   error?: string;
+}
+
+/** Env var that opts a project in to the network fetch. */
+export const SKILL_CREATOR_OPT_IN_ENV = 'SPECWEAVE_INSTALL_SKILL_CREATOR';
+
+/** True when the user explicitly asked for the skill-creator download. */
+export function skillCreatorOptedIn(env: NodeJS.ProcessEnv = process.env): boolean {
+  const raw = (env[SKILL_CREATOR_OPT_IN_ENV] ?? '').trim().toLowerCase();
+  return raw === '1' || raw === 'true' || raw === 'yes';
 }
 
 /**
  * Ensure Anthropic's skill-creator is installed locally.
  *
  * 1. Check if already installed at .claude/skills/skill-creator/SKILL.md
- * 2. Try `vskill install` (preferred — globally installed)
- * 3. Try `npx --registry <public> vskill install` (handles missing global + .npmrc issues)
- * 4. Fall back to `claude install-skill` if vskill is unavailable
+ * 2. Bail out unless SPECWEAVE_INSTALL_SKILL_CREATOR opts in (no silent fetch)
+ * 3. Try `vskill install` (preferred — globally installed)
+ * 4. Try `npx --registry <public> vskill install` (handles missing global + .npmrc issues)
+ * 5. Fall back to `claude install-skill` if vskill is unavailable
  *
  * All errors are caught — this function never throws.
  */
@@ -51,12 +73,17 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
     // 1. Check if already installed locally (handles files and symlinks)
     const localPath = path.join(projectRoot, SKILL_CREATOR_LOCAL);
     if (fs.existsSync(localPath)) {
-      return { installed: false, skipped: true };
+      return { installed: false, skipped: true, reason: 'already-installed' };
+    }
+
+    // 2. Opt-in gate: never reach the network unless the user asked.
+    if (!skillCreatorOptedIn()) {
+      return { installed: false, skipped: true, reason: 'opt-in-required' };
     }
 
     const errors: string[] = [];
 
-    // 2. Try global vskill install (preferred method)
+    // 3. Try global vskill install (preferred method)
     const vskillAvailable = await isCommandAvailable('vskill');
     if (vskillAvailable) {
       const result = await execFileNoThrow('vskill', VSKILL_INSTALL_ARGS, {
@@ -78,7 +105,7 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
       }
     }
 
-    // 3. Try npx with explicit public registry (bypasses .npmrc redirects)
+    // 4. Try npx with explicit public registry (bypasses .npmrc redirects)
     //    Also use a temp cache dir to bypass corrupted ~/.npm/_cacache/ (EACCES/EEXIST)
     const npxAvailable = await isCommandAvailable('npx');
     if (npxAvailable) {
@@ -108,7 +135,7 @@ export async function ensureSkillCreator(projectRoot: string): Promise<EnsureSki
       try { fs.rmSync(tmpCache, { recursive: true, force: true }); } catch { /* non-fatal */ }
     }
 
-    // 4. Fall back to claude install-skill
+    // 5. Fall back to claude install-skill
     const claudeAvailable = await isCommandAvailable('claude');
     if (!claudeAvailable) {
       console.warn(`[skill-gen] no CLI available -- run 'npx --registry ${NPM_PUBLIC_REGISTRY} vskill install ${SKILL_CREATOR_ID}' manually`);

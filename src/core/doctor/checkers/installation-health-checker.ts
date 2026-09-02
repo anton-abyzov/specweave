@@ -16,8 +16,9 @@ import {
   rmSync,
   copyFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import type {
   HealthChecker,
@@ -38,7 +39,19 @@ const PLUGIN_HOOK_ASSETS = ['hooks.json', 'run.mjs'] as const;
 interface InstallationHealthOptions {
   commandsDir?: string;
   cacheDir?: string;
+  /** Global skills dir (~/.claude/skills). Injectable for tests. */
+  skillsDir?: string;
+  /** Root of the specweave package (holds .claude-plugin/marketplace.json). Injectable for tests. */
+  packageRoot?: string;
 }
+
+/**
+ * SpecWeave's own plugin digest (computePluginHash) is a 12-char sha256 prefix.
+ * vskill records a FULL 64-char sha256 of the skill source instead — the two
+ * are not comparable, and comparing them produced a permanent, unfixable
+ * "hash mismatch" in `doctor` after every `specweave update`.
+ */
+const FOREIGN_DIGEST_RE = /^[0-9a-f]{64}$/;
 
 /** How long a `npm view specweave version` answer stays good for. */
 export const NPM_VERSION_CACHE_MS = 24 * 60 * 60 * 1000;
@@ -47,11 +60,15 @@ export class InstallationHealthChecker implements HealthChecker {
   category = 'Installation Health';
   private commandsDir: string;
   private cacheDir: string;
+  private skillsDir: string;
+  private packageRootOverride?: string;
 
   constructor(opts?: InstallationHealthOptions) {
     const home = homedir();
     this.commandsDir = opts?.commandsDir ?? join(home, '.claude', 'commands');
     this.cacheDir = opts?.cacheDir ?? join(home, '.claude', 'plugins', 'cache');
+    this.skillsDir = opts?.skillsDir ?? join(home, '.claude', 'skills');
+    this.packageRootOverride = opts?.packageRoot;
   }
 
   async check(
@@ -205,15 +222,95 @@ export class InstallationHealthChecker implements HealthChecker {
   }
 
   /**
-   * Verify installed plugin hashes match vskill.lock entries.
-   * Checks the native plugin cache (~/.claude/plugins/cache/specweave/<name>/).
+   * Locations a locked skill may legitimately live in, in resolution order.
+   *
+   * `specweave init` installs the sw plugin's skills PROJECT-LOCAL into
+   * `<project>/.claude/skills/` (that is what its own output says), and vskill
+   * installs third-party skills there too. Only looking in the Claude plugin
+   * cache made every fresh `init` end in
+   * "N skill(s) missing from plugin cache" and a doctor exit code of 1.
+   */
+  private skillSearchPaths(projectRoot: string, name: string): string[] {
+    return [
+      join(this.cacheDir, 'specweave', name),
+      join(this.commandsDir, name),
+      join(projectRoot, '.claude', 'skills', name),
+      join(this.skillsDir, name),
+    ];
+  }
+
+  /** Root of the running specweave package, or null. */
+  private packageRoot(): string | null {
+    if (this.packageRootOverride) return this.packageRootOverride;
+    let dir = dirname(fileURLToPath(import.meta.url));
+    for (let i = 0; i < 8; i++) {
+      try {
+        const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')) as { name?: string };
+        if (pkg.name === 'specweave') return dir;
+      } catch { /* keep walking */ }
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+    return null;
+  }
+
+  /**
+   * Source directory of a bundled marketplace plugin in the running package
+   * (e.g. `sw` -> `<pkg>/plugins/specweave`). This is the directory the sha in
+   * the global lockfile was computed from, so it is the ONLY dir a bundled
+   * entry's hash can meaningfully be compared against.
+   */
+  private bundledPluginSourceDir(name: string): string | null {
+    const root = this.packageRoot();
+    if (!root) return null;
+    try {
+      const marketplace = JSON.parse(
+        readFileSync(join(root, '.claude-plugin', 'marketplace.json'), 'utf-8')
+      ) as { plugins?: Array<{ name?: string; source?: string }> };
+      const entry = (marketplace.plugins ?? []).find(p => p?.name === name);
+      if (!entry?.source) return null;
+      const dir = join(root, entry.source);
+      return existsSync(dir) ? dir : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * A bundled plugin installed PROJECT-LOCAL is exploded into
+   * `<project>/.claude/skills/<skill>/` — one dir per skill, no dir named after
+   * the plugin. Detect that layout so `init`'s own default install mode is not
+   * reported as "missing from plugin cache".
+   */
+  private bundledSkillsCopiedIntoProject(projectRoot: string, name: string): boolean {
+    const sourceDir = this.bundledPluginSourceDir(name);
+    if (!sourceDir) return false;
+    const skillsDir = join(sourceDir, 'skills');
+    if (!existsSync(skillsDir)) return false;
+    const projectSkills = join(projectRoot, '.claude', 'skills');
+    if (!existsSync(projectSkills)) return false;
+    return this.listDirs(skillsDir).some(skill => existsSync(join(projectSkills, skill, 'SKILL.md')));
+  }
+
+  /**
+   * Verify installed skills recorded in the lockfiles are actually present, and
+   * — where the digest is one SpecWeave itself wrote — that it still matches.
+   *
+   * Provenance matters:
+   *   - global `~/.specweave/plugins-lock.json` = SpecWeave-managed plugins
+   *     (12-char computePluginHash digest). A missing one is a real failure.
+   *   - project `vskill.lock` = third-party skills installed by vskill, with a
+   *     full 64-char sha256 of the source file. That digest is NOT comparable
+   *     with computePluginHash, so it is presence-checked only; a missing one
+   *     is a warning pointing at vskill, never a `specweave doctor` failure.
    */
   private checkLockfileIntegrity(
     projectRoot: string,
     fix: boolean
   ): CheckResult {
-    // Merge skills from both project vskill.lock and global plugins-lock.json
-    const mergedSkills: Record<string, { sha: string; version: string; source: string }> = {};
+    type Entry = { sha: string; version: string; source: string; tier?: string };
+    const mergedSkills: Record<string, Entry> = {};
 
     // Read global lock first (bundled plugins)
     try {
@@ -249,35 +346,48 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
-    // Use merged skills for integrity check — alias for downstream code
     const lockfile = { skills: mergedSkills };
 
+    /**
+     * Provenance comes from the ENTRY, not from which file it sits in: a
+     * bundled `sw` entry can legitimately live in either lockfile, while a
+     * `github:`/`npm:` entry is always vskill's.
+     */
+    const isVskillManaged = (entry: Entry): boolean =>
+      !(entry.source ?? '').startsWith('local:') && entry.tier !== 'BUNDLED';
+    const foreign = new Set(
+      Object.entries(lockfile.skills).filter(([, e]) => isVskillManaged(e)).map(([n]) => n)
+    );
+
     const mismatches: string[] = [];
+    /** Missing SpecWeave-managed plugins — a genuine broken install. */
     const missing: string[] = [];
+    /** Missing vskill-managed skills — vskill's problem, not a doctor failure. */
+    const missingForeign: string[] = [];
 
     for (const [name, entry] of Object.entries(lockfile.skills)) {
-      // Check native plugin cache first, fall back to legacy commands dir
-      const cachePluginDir = join(this.cacheDir, 'specweave', name);
-      const legacyPluginDir = join(this.commandsDir, name);
-      let pluginDir: string | null = null;
+      const isForeign = foreign.has(name);
+      const installedDir = this.skillSearchPaths(projectRoot, name).find(p => existsSync(p)) ?? null;
+      const present = installedDir !== null
+        || (!isForeign && this.bundledSkillsCopiedIntoProject(projectRoot, name));
 
-      if (existsSync(cachePluginDir)) {
-        pluginDir = cachePluginDir;
-      } else if (existsSync(legacyPluginDir)) {
-        pluginDir = legacyPluginDir;
-      }
-
-      if (!pluginDir) {
-        missing.push(name);
+      if (!present) {
+        (isForeign ? missingForeign : missing).push(name);
         continue;
       }
 
+      // Only compare digests SpecWeave itself produced.
+      if (isForeign || FOREIGN_DIGEST_RE.test(entry.sha ?? '')) continue;
+
+      // A bundled entry's sha is the hash of the plugin SOURCE in the package,
+      // not of whatever the installer exploded into the cache/project.
+      const hashDir = this.bundledPluginSourceDir(name) ?? installedDir;
+      if (!hashDir) continue;
+
       try {
-        const currentHash = computePluginHash(pluginDir);
+        const currentHash = computePluginHash(hashDir);
         if (currentHash !== entry.sha) {
-          mismatches.push(
-            `${name}: expected ${entry.sha}, got ${currentHash}`
-          );
+          mismatches.push(`${name}: expected ${entry.sha}, got ${currentHash}`);
         }
       } catch {
         mismatches.push(`${name}: could not compute hash`);
@@ -287,6 +397,7 @@ export class InstallationHealthChecker implements HealthChecker {
     if (missing.length > 0) {
       const allDetails = [
         ...missing.map(m => `Missing: ${m}`),
+        ...missingForeign.map(m => `Missing (vskill-managed): ${m}`),
         ...mismatches.map(m => `Mismatch: ${m}`),
       ];
       const mismatchNote = mismatches.length > 0
@@ -328,10 +439,10 @@ export class InstallationHealthChecker implements HealthChecker {
         try {
           const updatedSkills: typeof lockfile.skills = {};
           for (const [name, entry] of Object.entries(lockfile.skills)) {
-            const cachePluginDir = join(this.cacheDir, 'specweave', name);
-            const legacyDir = join(this.commandsDir, name);
-            const dir = existsSync(cachePluginDir) ? cachePluginDir : existsSync(legacyDir) ? legacyDir : null;
-            if (dir) {
+            const dir = this.bundledPluginSourceDir(name)
+              ?? this.skillSearchPaths(projectRoot, name).find(p => existsSync(p))
+              ?? null;
+            if (dir && !foreign.has(name) && !FOREIGN_DIGEST_RE.test(entry.sha ?? '')) {
               try {
                 updatedSkills[name] = { ...entry, sha: computePluginHash(dir) };
               } catch {
@@ -367,10 +478,20 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
+    if (missingForeign.length > 0) {
+      return {
+        name: 'Lockfile integrity',
+        status: 'warn',
+        message: `${missingForeign.length} vskill-managed skill(s) not installed`,
+        details: missingForeign.map(m => `Missing: ${m}`),
+        fixSuggestion: `Run: npx vskill install ${missingForeign[0]}`,
+      };
+    }
+
     return {
       name: 'Lockfile integrity',
       status: 'pass',
-      message: 'all skill hashes match lockfile',
+      message: 'all locked skills present',
     };
   }
 
@@ -657,18 +778,37 @@ export class InstallationHealthChecker implements HealthChecker {
     return version;
   }
 
+  /**
+   * Version of the CLI that is ACTUALLY EXECUTING, read from its own
+   * package.json.
+   *
+   * Shelling out to `specweave --version` answered for whatever `specweave`
+   * happens to be first on PATH — a different (usually older) install, or the
+   * marketplace plugin cache — so `doctor` told users running the newest CLI
+   * that they were outdated. It compared two numbers from two different
+   * installs under a "your CLI is out of date" label.
+   */
+  runningCliVersion(): string | null {
+    let dir = dirname(fileURLToPath(import.meta.url));
+    for (let i = 0; i < 8; i++) {
+      try {
+        const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')) as {
+          name?: string;
+          version?: string;
+        };
+        if (pkg.name === 'specweave' && typeof pkg.version === 'string') return pkg.version;
+      } catch { /* keep walking */ }
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+    return null;
+  }
+
   private checkUpdateHealth(fix: boolean, projectRoot: string): CheckResult {
-    // Get installed version
-    let installedVersion: string;
-    try {
-      const output = execSync('specweave --version', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 10000,
-      }).trim();
-      const match = output.match(/(\d+\.\d+\.\d+)/);
-      installedVersion = match ? match[1] : output;
-    } catch {
+    // The version of the binary the user is running RIGHT NOW.
+    const installedVersion = this.runningCliVersion();
+    if (!installedVersion) {
       return {
         name: 'Update health',
         status: 'skip',
