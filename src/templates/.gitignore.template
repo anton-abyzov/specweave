@@ -1,15 +1,23 @@
+# NOTE: gitignore has no inline comments — a "#" after a pattern is part of the
+# pattern. Keep every comment on its own line.
+
 # SpecWeave
+# Runtime state / logs / backups / jobs are machine-local and regenerated
 .specweave/cache/
-.specweave/state/                   # Runtime state (machine-local, regenerated)
+.specweave/state/
 .specweave/logs/
 .specweave/backups/
 .specweave/jobs/
-.specweave/increments/*/logs/       # Gitignored, but structure preserved
+# Increment logs and test results (folder structure is preserved)
+.specweave/increments/*/logs/
 .specweave/increments/*/test-results/
-.specweave/docs-site-internal/      # Generated Docusaurus site for internal docs
-.claude-plugin/                     # Plugin marketplace (framework files)
-plugins/                            # Plugin implementations (framework files)
-.handoff/                           # Work handoff (secret-scrubbed, never auto-committed)
+# Generated Docusaurus site for internal docs
+.specweave/docs-site-internal/
+# Framework files (plugin marketplace + plugin implementations)
+.claude-plugin/
+plugins/
+# Work handoff (secret-scrubbed, never auto-committed)
+.handoff/
 
 # Binary evidence in reports/ (videos, screenshots, app bundles)
 **/reports/*.mp4
@@ -20,11 +28,13 @@ plugins/                            # Plugin implementations (framework files)
 **/reports/*.dSYM/
 
 # Dependencies (framework-agnostic)
-node_modules/          # JavaScript/TypeScript
+# JavaScript/TypeScript
+node_modules/
 .pnpm-store/
 .yarn/
 .npm/
-__pycache__/           # Python
+# Python
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -32,22 +42,29 @@ __pycache__/           # Python
 venv/
 env/
 ENV/
-target/                # Rust
+# Rust
+target/
 Cargo.lock
-vendor/                # Go
+# Go
+vendor/
 go.sum
 
 # Build outputs (framework-agnostic)
-.next/                 # NextJS
-dist/                  # Generic
-build/                 # Generic
-out/                   # Generic
-.output/               # Nuxt
-*.egg-info/            # Python
-__pypackages__/        # Python
-*.class                # Java
-*.jar                  # Java
-bin/                   # Go, Java
+# Next.js / Nuxt
+.next/
+.output/
+# Generic
+dist/
+build/
+out/
+# Python
+*.egg-info/
+__pypackages__/
+# Java
+*.class
+*.jar
+# Go, Java
+bin/
 
 # Environment
 .env
@@ -61,17 +78,20 @@ bin/                   # Go, Java
 *.sqlite3
 *.db-shm
 *.db-wal
-prisma/migrations/*/migration.sql   # Prisma (TypeScript)
-*/migrations/__pycache__/           # Django (Python)
+# Prisma (TypeScript)
+prisma/migrations/*/migration.sql
+# Django (Python)
+*/migrations/__pycache__/
 
 # Testing (framework-agnostic)
-coverage/              # Generic
-.nyc_output/           # JavaScript
-.coverage              # Python
-htmlcov/               # Python
-*.cover                # Python
-.pytest_cache/         # Python
-test-results/          # Playwright
+coverage/
+.nyc_output/
+.coverage
+htmlcov/
+*.cover
+.pytest_cache/
+# Playwright
+test-results/
 
 # IDEs
 .vscode/

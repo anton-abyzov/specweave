@@ -8,7 +8,7 @@
 
 import chalk from 'chalk';
 import { MetadataManager } from './metadata-manager.js';
-import { IncrementStatus, IncrementType, computeTransitionPath } from '../types/increment-metadata.js';
+import { IncrementStatus, IncrementType, computeTransitionPath, countsTowardWipLimit } from '../types/increment-metadata.js';
 import { DisciplineChecker, buildWipNote } from './discipline-checker.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
@@ -404,13 +404,16 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
       increments = increments.filter(m => m.type === type);
     }
 
-    // Group by status
-    // CRITICAL: "active" includes planning, active, and ready_for_review (all count towards WIP limits)
+    // Group by status.
+    // Display "Active" is broad (planning counts as in-flight work for the reader);
+    // the advisory WIP note below uses the single canonical definition
+    // (countsTowardWipLimit) so `status` and `check-discipline` never disagree.
     const active = increments.filter(m =>
       m.status === IncrementStatus.PLANNING ||
       m.status === IncrementStatus.ACTIVE ||
       m.status === IncrementStatus.READY_FOR_REVIEW
     );
+    const wipActive = increments.filter(m => countsTowardWipLimit(m.status));
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
     const abandoned = increments.filter(m => m.status === IncrementStatus.ABANDONED);
@@ -453,7 +456,7 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     }
 
     // Advisory WIP note (never blocks)
-    const wipNote = buildWipNote(active.length, new DisciplineChecker(resolveEffectiveRoot()).getLimits().activeIncrements);
+    const wipNote = buildWipNote(wipActive.length, new DisciplineChecker(resolveEffectiveRoot()).getLimits().activeIncrements);
     if (wipNote) {
       console.log(chalk.blue(`ℹ️  ${wipNote.message}`));
       console.log('');
