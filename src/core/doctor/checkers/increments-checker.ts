@@ -233,7 +233,7 @@ export class IncrementsChecker implements HealthChecker {
       status: 'warn',
       message: `${issues.length} desync(s)`,
       details: issues.slice(0, 3),
-      fixSuggestion: 'Run: specweave repair-status-desync',
+      fixSuggestion: 'Run: specweave doctor --fix-status',
     };
   }
 }

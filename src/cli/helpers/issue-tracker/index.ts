@@ -883,7 +883,7 @@ async function validateResources(
 
       if (!result.valid) {
         console.log(chalk.yellow('⚠️  Some Jira resources could not be validated'));
-        console.log(chalk.gray('   You can run "specweave validate-jira" later to fix this\n'));
+        console.log(chalk.gray('   You can run "specweave sync setup --validate" later to fix this\n'));
       }
     } else if (tracker === 'ado') {
       // Import the ADO validator (dynamic import for ESM)
@@ -908,8 +908,7 @@ async function validateResources(
     if (process.env.DEBUG) {
       console.log(chalk.gray(`\n   Resource validation skipped: ${error.message}`));
     }
-    const validatorCommand = tracker === 'jira' ? 'validate-jira' : 'validate-ado';
-    console.log(chalk.gray(`   You can run "specweave ${validatorCommand}" later\n`));
+    console.log(chalk.gray('   You can run "specweave sync setup --validate" later\n'));
   }
 }
 
