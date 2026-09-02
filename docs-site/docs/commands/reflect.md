@@ -101,7 +101,7 @@ Detected: 1 high-confidence learning — run sw:reflect? (y/N)
 }
 ```
 
-The close-time check adds <100ms to `/sw:done`.
+The close-time check adds under 100ms to `/sw:done`.
 
 ---
 
