@@ -710,6 +710,17 @@ export interface AdapterConfig {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * Task-ledger settings (2.0).
+ *
+ * Documented in the `do` and `team` skills as the way to change the claim
+ * lease; read by {@link readLeaseHours} in core/tasks/resolve-increment.ts.
+ */
+export interface TasksConfig {
+  /** Hours before an unfinished claim goes stale and may be taken over. Default 2. */
+  leaseHours?: number;
+}
+
+/**
  * Main SpecWeave configuration
  */
 export interface SpecWeaveConfig {
@@ -736,6 +747,9 @@ export interface SpecWeaveConfig {
 
   /** Autonomous-run settings (`specweave auto`). */
   auto?: AutoConfig;
+
+  /** Task-ledger settings. Read by core/tasks/resolve-increment.ts. */
+  tasks?: TasksConfig;
 
   /** External tracker sync (GitHub first-class; Jira/ADO community). */
   sync?: SyncConfiguration;
@@ -812,6 +826,7 @@ export const KNOWN_CONFIG_KEYS = [
   'limits',
   'planning',
   'auto',
+  'tasks',
   'sync',
   'livingDocs',
   'lsp',

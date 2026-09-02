@@ -11,6 +11,7 @@ import * as path from 'path';
 import { migrateTo2, unknownKeys, buildMigrationNote } from '../../../../src/core/config/migrate-to-2.js';
 import { ConfigManager } from '../../../../src/core/config/config-manager.js';
 import { KNOWN_CONFIG_KEYS } from '../../../../src/core/config/types.js';
+import { readLeaseHours } from '../../../../src/core/tasks/resolve-increment.js';
 
 /** The umbrella repo's config: 27 keys, most of them dead by 2.0. */
 function umbrellaConfig(): Record<string, unknown> {
@@ -229,6 +230,22 @@ describe('ConfigManager migration pass', () => {
     expect(unknownWarnings).toHaveLength(1);
     expect(unknownWarnings[0]).toContain('mystery');
     expect(unknownWarnings[0]).toContain('alsoMystery');
+  });
+
+  it('accepts tasks.leaseHours — the documented lease knob is not "unknown"', async () => {
+    // `specweave task claim` reads cfg.tasks.leaseHours and both the do and
+    // team skills document it, so it must be a declared 2.0 key: otherwise
+    // every config load warns at the user for following the docs.
+    fs.writeFileSync(configPath(), JSON.stringify({ version: '2.0', tasks: { leaseHours: 6 } }, null, 2));
+    const warnings: string[] = [];
+
+    const config = await new ConfigManager(dir, {
+      info: () => {}, warn: (m: string) => warnings.push(m), error: () => {}, debug: () => {}, log: () => {},
+    } as never).read();
+
+    expect(warnings.filter((w) => w.includes('unknown key'))).toHaveLength(0);
+    expect(config.tasks?.leaseHours).toBe(6);
+    expect(readLeaseHours(dir)).toBe(6);
   });
 
   it('composes with the limits migrator — one rewrite, not two', async () => {

@@ -552,6 +552,18 @@
       },
       "additionalProperties": false
     },
+    "tasks": {
+      "type": "object",
+      "description": "Task-ledger settings (2.0)",
+      "properties": {
+        "leaseHours": {
+          "type": "number",
+          "minimum": 0,
+          "default": 2,
+          "description": "Hours before an unfinished task claim goes stale and may be taken over"
+        }
+      }
+    },
     "testing": {
       "type": "object",
       "description": "Testing configuration including TDD mode, coverage targets, and browser automation",
