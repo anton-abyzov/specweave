@@ -78,7 +78,7 @@ echo "------------------------"
 test_command "CLAUDE.md.template exists" "test -f $PROJECT_ROOT/src/templates/CLAUDE.md.template"
 test_command "README.md.template exists" "test -f $PROJECT_ROOT/src/templates/README.md.template"
 test_command ".gitignore.template exists" "test -f $PROJECT_ROOT/src/templates/.gitignore.template"
-test_command "tasks.md.template exists" "test -f $PROJECT_ROOT/src/templates/tasks.md.template"
+test_command "AGENTS.md.template exists" "test -f $PROJECT_ROOT/src/templates/AGENTS.md.template"
 echo ""
 
 echo "📚 Test 6: Package Structure"
