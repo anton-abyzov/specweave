@@ -89,3 +89,96 @@ name: sw/test
     expect(result.errors).toHaveLength(0);
   });
 });
+
+/**
+ * Repo-surface lint (2.0): scripts/lint-skills.mjs is the guard that keeps the shipped
+ * skill surface honest — no `name:` frontmatter, no model/effort/context pins, short
+ * descriptions, and every `specweave <cmd>` / `sw:<name>` reference resolvable.
+ */
+// @ts-expect-error — zero-dep .mjs linter, no type declarations by design
+import { lintContent, lintRepo, readRegisteredCommands, readShippedSkills } from '../../../scripts/lint-skills.mjs';
+
+const ctx = {
+  commands: new Set(['verify', 'complete', 'task', 'status']),
+  skills: new Set(['do', 'done', 'review']),
+  isSkillFile: true,
+};
+const body = (fm: string, rest = '\n# Body\n') => `---\n${fm}\n---\n${rest}`;
+const rules = (r: { errors: Array<{ rule: string }> }) => r.errors.map((e) => e.rule);
+
+describe('lint-skills: shipped skill surface', () => {
+  it('rejects a `name:` frontmatter key (the directory is the skill name)', () => {
+    const r = lintContent('skills/x/SKILL.md', body('name: sw/x\ndescription: short'), ctx);
+    expect(rules(r)).toContain('forbidden-key');
+    expect(r.errors[0].line).toBe(2);
+  });
+
+  it('rejects model / effort / context pins', () => {
+    const r = lintContent(
+      'skills/x/SKILL.md',
+      body('description: short\nmodel: opus\neffort: xhigh\ncontext: fork'),
+      ctx,
+    );
+    expect(r.errors.filter((e: { rule: string }) => e.rule === 'forbidden-key')).toHaveLength(3);
+  });
+
+  it('rejects a description longer than 200 characters', () => {
+    const r = lintContent('skills/x/SKILL.md', body(`description: ${'x'.repeat(201)}`), ctx);
+    expect(rules(r)).toContain('description-length');
+  });
+
+  it('accepts a description of exactly 200 characters', () => {
+    const r = lintContent('skills/x/SKILL.md', body(`description: ${'x'.repeat(200)}`), ctx);
+    expect(r.errors).toHaveLength(0);
+  });
+
+  it('rejects a `specweave <cmd>` that is not registered in the CLI', () => {
+    const r = lintContent(
+      'skills/x/SKILL.md',
+      body('description: short', '\nRun `specweave metrics` then `specweave verify`.\n'),
+      ctx,
+    );
+    expect(rules(r)).toEqual(['unknown-cli']);
+    expect(r.errors[0].message).toMatch(/specweave metrics/);
+  });
+
+  it('does not flag prose that merely mentions the CLI', () => {
+    const r = lintContent(
+      'skills/x/SKILL.md',
+      body('description: short', '\nThe specweave CLI is optional; specweave commands are documented.\n'),
+      ctx,
+    );
+    expect(r.errors).toHaveLength(0);
+  });
+
+  it('rejects an `sw:<name>` with no skill directory', () => {
+    const r = lintContent(
+      'skills/x/SKILL.md',
+      body('description: short', '\nHand off to `sw:grill`, then `sw:done`.\n'),
+      ctx,
+    );
+    expect(rules(r)).toEqual(['unknown-skill']);
+    expect(r.errors[0].message).toMatch(/sw:grill/);
+  });
+
+  it('reads the real CLI command registry and the real skill list', () => {
+    const commands = readRegisteredCommands();
+    expect(commands.has('verify')).toBe(true);
+    expect(commands.has('complete')).toBe(true);
+    expect(commands.has('metrics')).toBe(false);
+
+    const skills = readShippedSkills();
+    for (const core of ['increment', 'do', 'done', 'review', 'team', 'handoff', 'sync', 'auto', 'brainstorm', 'qa']) {
+      expect(skills.has(core), `core skill ${core} missing`).toBe(true);
+    }
+  });
+
+  it('the shipped tree passes the linter', () => {
+    const report = lintRepo();
+    const failures = report.results
+      .flatMap((r: { file: string; errors: Array<{ line: number; message: string }> }) =>
+        r.errors.map((e) => `${r.file}:${e.line} ${e.message}`),
+      );
+    expect(failures).toEqual([]);
+  });
+});

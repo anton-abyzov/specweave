@@ -1,5 +1,5 @@
 ---
-description: Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams. Activates for create diagram, draw diagram, visualize, system diagram, architecture diagram, C4 diagram, context diagram, container diagram, component diagram, sequence diagram, ER diagram, entity relationship, data model, deployment diagram.
+description: Mermaid diagrams following the C4 model: context, container, component, sequence, ER and deployment. Use when saying "diagram", "visualize", or "architecture diagram".
 version: 1.0.0
 ---
 

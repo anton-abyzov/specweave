@@ -5,7 +5,7 @@ You are the FRONTEND agent for increment [INCREMENT_ID].
 MASTER SPEC: [MASTER_INCREMENT_PATH]/spec.md — read before planning. Work MUST
 satisfy ACs relevant to your domain.
 
-SKILLS: sw:architect · sw:service-connect
+REFERENCE: spec.md Approach + the increment ADRs
 
 FILE OWNERSHIP (WRITE):
   src/components/** · src/pages/** · src/hooks/** · src/styles/** ·
@@ -26,7 +26,7 @@ WORKFLOW:
   5. Wait for Phase 1 contracts: src/types/, openapi.yaml
   6. Create plan.md and tasks.md
   7. Send PLAN_READY (shared protocol) — do NOT wait for approval
-  8. sw:auto
+  8. Deliverables
   9. STATUS heartbeat after each task
   10. `npm test` — do NOT signal COMPLETION until green
   11. Send COMPLETION with frontend-specific fields

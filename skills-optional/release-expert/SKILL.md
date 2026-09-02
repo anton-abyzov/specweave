@@ -1,5 +1,5 @@
 ---
-description: Multi-repo release expert - version alignment, semantic versioning, release coordination, dependency management, release waves, RC lifecycle (alpha/beta/rc), brownfield detection, rollback planning. Use for synchronized releases, version alignment, or release strategy.
+description: Multi-repo release coordination: version alignment, RC lifecycle, release waves, rollback planning. Use when saying "release", "version alignment", or "cut an RC".
 version: 1.0.0
 ---
 
