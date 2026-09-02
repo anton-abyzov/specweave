@@ -47,8 +47,8 @@ export function initInterviewStateFile(projectRoot: string, incrementId: string)
 function getRequiredCategories(projectRoot: string): string[] {
   try {
     const configPath = path.join(projectRoot, '.specweave', 'config.json');
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    return config.planning?.deepInterview?.categories || DEFAULT_CATEGORIES;
+    JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    return DEFAULT_CATEGORIES;
   } catch {
     return DEFAULT_CATEGORIES;
   }
@@ -60,9 +60,9 @@ function getRequiredCategories(projectRoot: string): string[] {
 function isStrictEnforcement(projectRoot: string): boolean {
   try {
     const configPath = path.join(projectRoot, '.specweave', 'config.json');
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    return config.planning?.deepInterview?.enabled === true &&
-           config.planning?.deepInterview?.enforcement === 'strict';
+    JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    // 2.0: deep interview is advisory ('off' | 'warn'); nothing enforces strictly.
+    return false;
   } catch {
     return false;
   }

@@ -107,13 +107,10 @@ export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
       const content = fs.readFileSync(configPath, 'utf8');
       const config = JSON.parse(content);
 
-      if (config.pluginAutoLoad) {
-        const result = {
-          enabled: config.pluginAutoLoad.enabled !== false, // default true
-          suggestOnly: config.pluginAutoLoad.suggestOnly !== false, // default true (consent-first)
-        };
-        logger.debug(`[readPluginAutoLoadConfig] Config: enabled=${result.enabled}, suggestOnly=${result.suggestOnly}`);
-        return result;
+      // 2.0 dropped the pluginAutoLoad key: auto-load is on, consent-first.
+      if (config) {
+        logger.debug('[readPluginAutoLoadConfig] Using 2.0 defaults: enabled=true, suggestOnly=true');
+        return { enabled: true, suggestOnly: true };
       }
     }
   } catch (error) {

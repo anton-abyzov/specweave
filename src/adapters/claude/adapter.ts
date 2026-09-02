@@ -252,11 +252,9 @@ Using SpecWeave CLI for plugin management.
 
     console.log(`\n📦 Installing plugin: ${plugin.manifest.name}`);
 
-    // Get language configuration for system prompt injection
-    const language = await this.getLanguageConfig();
-    if (language !== 'en') {
-      console.log(`   🌐 Language: ${language} (system prompts will be injected)`);
-    }
+    // 2.0 dropped the `language` config key — skills ship in English.
+    const language = 'en';
+
 
     // Check for native plugin support
     const hasNativePlugins = await this.supportsNativePlugins();

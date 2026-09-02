@@ -644,12 +644,10 @@ export async function initCommand(
       }
 
       const finalDefaults = {
-        testing: bannerConfig?.testing?.defaultTestMode || 'TDD',
-        qualityGates: bannerConfig?.qualityGates?.preset || 'standard',
+        testing: bannerConfig?.testing?.mode || 'TDD',
         lspEnabled: !!bannerConfig?.lsp?.enabled,
         gitHooksInstalled: isGitRepo,
-        translationEnabled: !!bannerConfig?.translation?.enabled,
-        coverageTargets: bannerConfig?.testing?.coverageTargets,
+        coverage: bannerConfig?.testing?.coverage,
       };
 
       displaySummaryBanner({

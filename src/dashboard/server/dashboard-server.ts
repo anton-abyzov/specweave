@@ -379,9 +379,7 @@ export class DashboardServer {
     this.router.get('/api/overview', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const config = await project.aggregator.getConfig();
-      const billingConfig = config.billing as { planType?: string; monthlyAmount?: number } | undefined;
-      const costData = await project.costAggregator.getTokenSummaries(50, billingConfig);
+      const costData = await project.costAggregator.getTokenSummaries(50);
       const data = await project.aggregator.getOverview(costData);
       // Ensure project name is always set using the resolved project info
       const info = this.getProjectInfo(project.id, project.root);
@@ -444,9 +442,7 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const limit = safeParseInt(url.searchParams.get('limit'), 200, 1, 500);
-      const config = await project.aggregator.getConfig();
-      const billingConfig = config.billing as { planType?: string; monthlyAmount?: number } | undefined;
-      const data = await project.costAggregator.getTokenSummaries(limit, billingConfig);
+      const data = await project.costAggregator.getTokenSummaries(limit);
 
       // Enrich with multi-model spend data if available
       const enriched: Record<string, unknown> = { ...data };
@@ -456,11 +452,7 @@ export class DashboardServer {
         const spendAgg = new SpendAggregator(spendDir);
         enriched.trends = spendAgg.getDailyRollups();
         enriched.providerBreakdown = spendAgg.getProviderBreakdown();
-        const billingBudgets = (config as Record<string, unknown>)?.billing;
-        const budgetConfig = billingBudgets && typeof billingBudgets === 'object'
-          ? (billingBudgets as Record<string, unknown>).budgets
-          : undefined;
-        const budget = spendAgg.getBudgetStatus(budgetConfig as any);
+        const budget = spendAgg.getBudgetStatus(undefined);
         if (budget) enriched.budget = budget;
       } catch {
         // Spend tracking not yet initialized — no spend files exist
@@ -706,11 +698,11 @@ export class DashboardServer {
         // Validate known typed fields
         if (body.testing && typeof body.testing === 'object') {
           const testing = body.testing as Record<string, unknown>;
-          if (testing.defaultTestMode && !['test-after', 'TDD', 'coverage-only'].includes(String(testing.defaultTestMode))) {
-            errors.push({ path: 'testing.defaultTestMode', message: 'must be one of: test-after, TDD, coverage-only' });
+          if (testing.mode && !['TDD', 'test-after', 'manual', 'none'].includes(String(testing.mode))) {
+            errors.push({ path: 'testing.mode', message: 'must be one of: TDD, test-after, manual, none' });
           }
-          if (testing.tddEnforcement && !['strict', 'warn', 'off'].includes(String(testing.tddEnforcement))) {
-            errors.push({ path: 'testing.tddEnforcement', message: 'must be one of: strict, warn, off' });
+          if (testing.commands != null && !Array.isArray(testing.commands)) {
+            errors.push({ path: 'testing.commands', message: 'must be an array of shell commands' });
           }
         }
         if (body.limits && typeof body.limits === 'object') {
