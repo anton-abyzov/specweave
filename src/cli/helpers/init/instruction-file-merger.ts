@@ -35,6 +35,12 @@ export interface TemplateSection {
   id: string;
   order: number;
   required: boolean;
+  /**
+   * Name of the condition flag (`<!-- SECTION:umbrella when="umbrella" -->`).
+   * The section is rendered only when `MergeOptions.flags[when]` is true, and is
+   * removed from an existing file when the flag turns false.
+   */
+  when?: string;
   content: string;
 }
 
@@ -49,6 +55,8 @@ export interface MergeOptions {
   tail?: string;
   /** Detected project commands for the {{BUILD_CMD}} family of placeholders. */
   commands?: StackCommands;
+  /** Condition flags for `when="…"` sections (e.g. `{ umbrella: true }`). */
+  flags?: Record<string, boolean>;
 }
 
 export interface MigrationInfo {
@@ -75,7 +83,7 @@ const META_RE = /<!-- SW:META\b([^>]*)-->/;
 const START_RE = /^\s*<!-- SW:SECTION:([\w-]+)(?:\s+version="([^"]*)")?\s*-->\s*$/;
 const END_RE = /^\s*<!-- SW:END:([\w-]+)\s*-->\s*$/;
 const LEGACY_MARKER_RE = /^\s*<!--\s*↓\s*(?:ORIGINAL|PROJECT-SPECIFIC)[^>]*-->\s*$/;
-const TEMPLATE_START_RE = /^\s*<!-- SECTION:([\w-]+)(?:\s+(required))?\s*-->\s*$/;
+const TEMPLATE_START_RE = /^\s*<!-- SECTION:([\w-]+)((?:\s+[\w-]+(?:="[^"]*")?)*)\s*-->\s*$/;
 const TEMPLATE_END_RE = /^\s*<!-- \/SECTION -->\s*$/;
 const HR_RE = /^\s*---\s*$/;
 const H2_RE = /^## /;
@@ -191,7 +199,7 @@ const SKILL_MEMORIES_BOILERPLATE: RegExp[] = [
 export function parseTemplate(content: string): ParsedTemplate {
   const lines = content.replace(/\r\n/g, '\n').split('\n');
   const sections: TemplateSection[] = [];
-  let cur: { id: string; req: boolean; lines: string[] } | null = null;
+  let cur: { id: string; req: boolean; when?: string; lines: string[] } | null = null;
   let lastEnd = -1;
 
   const flush = (): void => {
@@ -200,6 +208,7 @@ export function parseTemplate(content: string): ParsedTemplate {
       id: cur.id,
       order: sections.length,
       required: cur.req,
+      ...(cur.when ? { when: cur.when } : {}),
       content: cur.lines.join('\n').trim(),
     });
     cur = null;
@@ -209,7 +218,13 @@ export function parseTemplate(content: string): ParsedTemplate {
     const start = l.match(TEMPLATE_START_RE);
     if (start) {
       flush();
-      cur = { id: start[1], req: start[2] === 'required', lines: [] };
+      const flags = start[2] ?? '';
+      cur = {
+        id: start[1],
+        req: /(^|\s)required(\s|$)/.test(flags),
+        when: flags.match(/\bwhen="([^"]*)"/)?.[1],
+        lines: [],
+      };
       return;
     }
     if (TEMPLATE_END_RE.test(l)) {
@@ -539,13 +554,20 @@ const PLACEHOLDERS: Array<{ key: string; label: string; pick: (c: StackCommands)
   { key: 'LINT_CMD', label: 'lint', pick: c => c.lint },
 ];
 
+/**
+ * Visible marker for a command the stack detector could not find. An HTML
+ * comment would render as an empty table cell, so agents never saw it.
+ * The label keeps each row's marker distinct, so filling one in later does not
+ * overwrite the others.
+ */
 function todoComment(label: string): string {
-  return `<!-- TODO: add ${label} command -->`;
+  return `TODO: not detected \u2014 fill in the ${label} command`;
 }
 
 /**
- * Fill `{{BUILD_CMD}}` / `{{TEST_CMD}}` / `{{LINT_CMD}}` (and the TODO comment a
- * previous run may have left) only where they are still present.
+ * Fill `{{BUILD_CMD}}` / `{{TEST_CMD}}` / `{{LINT_CMD}}` (and the TODO marker a
+ * previous run may have left) only where they are still present. Guarantees no
+ * `{{…}}` placeholder survives into a written instruction file.
  */
 export function fillCommandPlaceholders(text: string, commands?: StackCommands): string {
   let out = text;
@@ -594,11 +616,14 @@ export function mergeInstructionFile(
   opts: MergeOptions = {}
 ): MergeResult {
   const tpl = normalizeTemplate(secs, opts);
-  const ids = tpl.sections.map(s => s.id);
+  // `when="flag"` sections are rendered only while their flag is on; when it
+  // turns off they are treated exactly like a section dropped from the template.
+  const active = tpl.sections.filter(s => !s.when || opts.flags?.[s.when] === true);
+  const ids = active.map(s => s.id);
 
   if (!existing || !existing.trim()) {
     const parts = [genMeta(type, ver, ids)];
-    for (const s of tpl.sections) parts.push(wrap(s.id, fillName(s.content, name), ver));
+    for (const s of active) parts.push(wrap(s.id, fillName(s.content, name), ver));
     if (tpl.tail) parts.push(fillName(tpl.tail, name));
     return {
       content: finish(fillCommandPlaceholders(parts.join('\n\n'), opts.commands), null),
@@ -626,7 +651,7 @@ export function mergeInstructionFile(
   const added: string[] = [];
   const skipped: string[] = [];
 
-  for (const s of tpl.sections) {
+  for (const s of active) {
     const body = fillName(s.content, name);
     const cur = fileById.get(s.id);
     if (cur) {
