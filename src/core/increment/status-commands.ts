@@ -373,18 +373,6 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       log(chalk.yellow(`   Sync: ${e} — run specweave sync push to retry`));
     }
 
-    // Session-end nudge (T-013/T-014). Never blocks closure.
-    try {
-      const { runSessionEndNudge } = await import('../reflect-nudge/index.js');
-      await runSessionEndNudge({
-        projectRoot: resolveEffectiveRoot(),
-        incrementId,
-        silent,
-      });
-    } catch {
-      // Nudge is best-effort — close path must never fail on nudge errors.
-    }
-
     return true;
 
   } catch (error) {
