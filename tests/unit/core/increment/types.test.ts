@@ -17,10 +17,8 @@ describe('Increment Discipline Types', () => {
   describe('ViolationType', () => {
     it('should have all expected violation types', () => {
       const validTypes: ViolationType[] = [
-        'hard_cap_exceeded',
         'wip_limit_exceeded',
         'incomplete_work',
-        'emergency_violation',
         'metadata_inconsistency',
         'github_sync_failed',
       ];
@@ -30,7 +28,7 @@ describe('Increment Discipline Types', () => {
         expect(typeof type).toBe('string');
       });
 
-      expect(validTypes).toHaveLength(6);
+      expect(validTypes).toHaveLength(4);
     });
   });
 
@@ -40,9 +38,9 @@ describe('Increment Discipline Types', () => {
         compliant: false,
         violations: [
           {
-            type: 'hard_cap_exceeded',
-            message: 'Too many active increments',
-            suggestion: 'Complete or pause one increment',
+            type: 'metadata_inconsistency',
+            message: 'metadata.json missing for 0018-test',
+            suggestion: 'Recreate metadata.json',
             severity: 'error',
             incrementId: '0018-test',
             context: { activeCount: 3 },
@@ -57,9 +55,7 @@ describe('Increment Discipline Types', () => {
           abandoned: 1,
         },
         config: {
-          maxActiveIncrements: 1,
-          hardCap: 2,
-          allowEmergencyInterrupt: true,
+          activeIncrements: 1,
         },
         timestamp: '2025-11-10T14:00:00Z',
       };
@@ -67,12 +63,11 @@ describe('Increment Discipline Types', () => {
       // Verify structure
       expect(result.compliant).toBe(false);
       expect(result.violations).toHaveLength(1);
-      expect(result.violations[0].type).toBe('hard_cap_exceeded');
+      expect(result.violations[0].type).toBe('metadata_inconsistency');
       expect(result.violations[0].severity).toBe('error');
       expect(result.increments.total).toBe(10);
       expect(result.increments.active).toBe(3);
-      expect(result.config.maxActiveIncrements).toBe(1);
-      expect(result.config.hardCap).toBe(2);
+      expect(result.config.activeIncrements).toBe(1);
       expect(result.timestamp).toBeTruthy();
     });
 
@@ -89,9 +84,7 @@ describe('Increment Discipline Types', () => {
           abandoned: 0,
         },
         config: {
-          maxActiveIncrements: 1,
-          hardCap: 2,
-          allowEmergencyInterrupt: true,
+          activeIncrements: 1,
         },
         timestamp: '2025-11-10T14:00:00Z',
       };
@@ -131,24 +124,8 @@ describe('Increment Discipline Types', () => {
 
   describe('DisciplineLimits', () => {
     it('should properly type discipline limits configuration', () => {
-      const limits: DisciplineLimits = {
-        maxActiveIncrements: 1,
-        hardCap: 2,
-        allowEmergencyInterrupt: true,
-        typeBehaviors: {
-          canInterrupt: ['hotfix', 'bug'],
-          autoAbandonDays: {
-            experiment: 14,
-          },
-        },
-      };
-
-      expect(limits.maxActiveIncrements).toBe(1);
-      expect(limits.hardCap).toBe(2);
-      expect(limits.allowEmergencyInterrupt).toBe(true);
-      expect(limits.typeBehaviors?.canInterrupt).toContain('hotfix');
-      expect(limits.typeBehaviors?.canInterrupt).toContain('bug');
-      expect(limits.typeBehaviors?.autoAbandonDays?.experiment).toBe(14);
+      const limits: DisciplineLimits = { activeIncrements: 1 };
+      expect(limits.activeIncrements).toBe(1);
     });
   });
 });

@@ -19,7 +19,7 @@ _specweave_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Main commands (synced with bin/specweave.js)
-    local main_commands="init install list pause resume abandon complete create-increment archive save status progress interview logs decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline revert-wip-limit qa validate-jira jobs living-docs cache analytics lsp commits sync-scheduled sync-progress docs context refresh-marketplace doctor export-skills set-sync-target dashboard"
+    local main_commands="init install list pause resume abandon complete create-increment archive save status progress interview logs decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa validate-jira jobs living-docs cache analytics lsp commits sync-scheduled sync-progress docs context refresh-marketplace doctor export-skills set-sync-target dashboard"
 
     case "${prev}" in
         specweave)

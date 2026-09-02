@@ -86,7 +86,7 @@ describe('renderHandoffDoc', () => {
     expect(doc).toContain('2026-05-30: 2 ACs updated, 0 conflicts');
     expect(doc).toContain('Test mode: TDD');
     expect(doc).toContain('Coverage target: 90%');
-    expect(doc).toContain('WIP limit: 7');
+    expect(doc).toContain('Active increments (advisory): 7');
   });
 
   it('shows an uncommitted warning + porcelain + diff-stat + diff path link', () => {

@@ -8,7 +8,6 @@
 
 import type { SyncOrchestrationConfig } from '../types/sync-config.js';
 import type { PluginConfig } from '../types/plugin.js';
-import { IncrementType } from '../types/increment-metadata.js';
 
 /**
  * Repository provider types
@@ -706,22 +705,14 @@ export interface TestingConfig {
 }
 
 /**
- * WIP Limits Configuration (v0.7.0+)
+ * Advisory WIP limit (2.0: no hard cap)
+ *
+ * `activeIncrements` is a recommendation only: when more increments are
+ * active than this number, SpecWeave prints ONE info note. Nothing blocks.
+ * 0 disables the note. Default: 3.
  */
 export interface LimitsConfig {
-  maxActiveIncrements?: number;
-  hardCap?: number;
-  allowEmergencyInterrupt?: boolean;
-  typeBehaviors?: {
-    canInterrupt?: (IncrementType | string)[];
-    autoAbandonDays?: {
-      experiment?: number;
-    };
-  };
-  staleness?: {
-    paused?: number;
-    active?: number;
-  };
+  activeIncrements?: number;
 }
 
 /**
@@ -1231,19 +1222,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     },
   },
   limits: {
-    maxActiveIncrements: 3,
-    hardCap: 5,
-    allowEmergencyInterrupt: true,
-    typeBehaviors: {
-      canInterrupt: [IncrementType.HOTFIX, IncrementType.BUG],
-      autoAbandonDays: {
-        experiment: 14,
-      },
-    },
-    staleness: {
-      paused: 7,
-      active: 30,
-    },
+    activeIncrements: 3,
   },
   deduplication: {
     enabled: true,

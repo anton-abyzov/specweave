@@ -358,12 +358,12 @@ function readAmbientRules(effectiveRoot: string): HandoffAmbientRules {
       fs.readFileSync(path.join(effectiveRoot, '.specweave', 'config.json'), 'utf-8'),
     ) as {
       testing?: { defaultTestMode?: string; defaultCoverageTarget?: number };
-      limits?: { maxActiveIncrements?: number };
+      limits?: { activeIncrements?: number };
     };
     return {
       testMode: cfg.testing?.defaultTestMode,
       coverageTarget: cfg.testing?.defaultCoverageTarget,
-      wipLimit: cfg.limits?.maxActiveIncrements,
+      wipLimit: cfg.limits?.activeIncrements,
     };
   } catch {
     return {};

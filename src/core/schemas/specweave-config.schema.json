@@ -79,74 +79,13 @@
     },
     "limits": {
       "type": "object",
-      "description": "Work-in-progress (WIP) limits - simplified to enforce focus (v0.7.0+)",
+      "description": "Advisory WIP limit (2.0). No hard cap: exceeding it prints one info note and never blocks.",
       "properties": {
-        "maxActiveIncrements": {
+        "activeIncrements": {
           "type": "number",
-          "description": "Maximum active increments at any time (default: 3 for balanced productivity)",
-          "minimum": 1,
-          "maximum": 10,
+          "description": "Recommended maximum active increments. 0 disables the note.",
+          "minimum": 0,
           "default": 3
-        },
-        "hardCap": {
-          "type": "number",
-          "description": "Absolute maximum active increments, never exceeded (emergency ceiling)",
-          "minimum": 1,
-          "maximum": 10,
-          "default": 5
-        },
-        "allowEmergencyInterrupt": {
-          "type": "boolean",
-          "description": "Allow 2nd active increment for hotfix/bug emergencies",
-          "default": true
-        },
-        "typeBehaviors": {
-          "type": "object",
-          "description": "Increment type-specific behaviors",
-          "properties": {
-            "canInterrupt": {
-              "type": "array",
-              "description": "Types that can interrupt existing work (emergency scenarios)",
-              "items": {
-                "type": "string",
-                "enum": ["hotfix", "bug"]
-              },
-              "default": ["hotfix", "bug"]
-            },
-            "autoAbandonDays": {
-              "type": "object",
-              "description": "Auto-abandon increments after N days of inactivity",
-              "properties": {
-                "experiment": {
-                  "type": "number",
-                  "description": "Days before experiment auto-abandons",
-                  "minimum": 1,
-                  "default": 14
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        },
-        "staleness": {
-          "type": "object",
-          "description": "Staleness warning thresholds (in days)",
-          "properties": {
-            "paused": {
-              "type": "number",
-              "description": "Warn if paused for more than N days",
-              "minimum": 1,
-              "default": 7
-            },
-            "active": {
-              "type": "number",
-              "description": "Warn if active for more than N days",
-              "minimum": 1,
-              "default": 30
-            }
-          },
-          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -1699,19 +1638,7 @@
         "version": "2.0.0"
       },
       "limits": {
-        "maxActiveIncrements": 1,
-        "hardCap": 2,
-        "allowEmergencyInterrupt": true,
-        "typeBehaviors": {
-          "canInterrupt": ["hotfix", "bug"],
-          "autoAbandonDays": {
-            "experiment": 21
-          }
-        },
-        "staleness": {
-          "paused": 14,
-          "active": 60
-        }
+        "activeIncrements": 1
       },
       "plugins": {
         "enabled": [

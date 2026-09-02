@@ -5,7 +5,7 @@
 #
 
 # Main commands (synced with bin/specweave.js)
-set -l commands init install list pause resume abandon complete create-increment archive save status progress interview logs decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline revert-wip-limit qa validate-jira jobs living-docs cache analytics lsp commits sync-scheduled sync-progress docs context refresh-marketplace doctor export-skills set-sync-target dashboard
+set -l commands init install list pause resume abandon complete create-increment archive save status progress interview logs decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa validate-jira jobs living-docs cache analytics lsp commits sync-scheduled sync-progress docs context refresh-marketplace doctor export-skills set-sync-target dashboard
 
 # Disable file completion for specweave
 complete -c specweave -f

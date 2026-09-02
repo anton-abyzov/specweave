@@ -477,60 +477,20 @@ graph LR
 ```json
 {
   "limits": {
-    "maxActiveIncrements": 1,  // Default: 1 active (focus)
-    "hardCap": 2,               // Emergency ceiling (never exceeded)
-    "allowEmergencyInterrupt": true, // hotfix/bug can interrupt
-    "typeBehaviors": {
-      "canInterrupt": ["hotfix", "bug"], // Emergency types
-      "autoAbandonDays": {
-        "experiment": 14  // Auto-abandon stale experiments
-      }
-    }
+    "activeIncrements": 1  // Advisory only (default 3, 0 = off); never blocks
   }
 }
 ```
 
 ### Enforcement
 
-**Scenario 1: 0 Active** → Create new (no warnings)
-
-<CommandTabs
-  natural="Let's build user authentication"
-  claude='sw:increment "user authentication"'
-  other='increment "user authentication"'
-/>
+There is no hard cap. When more increments are active than `limits.activeIncrements`, the CLI prints one info note and continues:
 
 ```bash
-# ✅ Creates 0008-user-authentication (no conflict)
-```
-
-**Scenario 2: 1 Active** → Warn about context switching
-
-```bash
-# 0008-user-authentication is active
-sw:increment "dark mode"
-# ⚠️  Warning: 1 increment already active (0008)
-# 💡 Recommendation: Complete 0008 first
-# ❓ Continue anyway? (y/N)
-```
-
-**Scenario 3: 2 Active** → HARD BLOCK
-
-```bash
-# 0008-user-authentication and 0009-dark-mode both active
+# 0008, 0009 and 0010 are active, limit is 1
 sw:increment "payment integration"
-# ❌ BLOCKED! Hard cap reached (2 active)
-# 💡 Must complete or pause one increment first
-# Options: sw:done 0008 OR sw:pause 0009
-```
-
-**Exception: Emergency Interrupt**
-
-```bash
-# 0008-user-authentication is active
-sw:increment "SQL injection hotfix" --type hotfix
-# ✅ Allowed! Hotfix can interrupt (emergency)
-# ⚠️  Now 2 active (max reached)
+# 3 active increments (recommended: 1). Prefer finishing before starting.
+# (creates 0011-payment-integration anyway)
 ```
 
 ---

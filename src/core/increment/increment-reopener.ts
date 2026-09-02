@@ -13,8 +13,7 @@ import { MetadataManager } from './metadata-manager.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import {
   IncrementMetadata,
-  IncrementStatus,
-  TYPE_LIMITS
+  IncrementStatus
 } from '../types/increment-metadata.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
@@ -50,9 +49,6 @@ export interface ReopenContext {
 
   /** Reason for reopening (required for audit trail) */
   reason: string;
-
-  /** Force reopen (bypass WIP checks) */
-  force?: boolean;
 }
 
 /**
@@ -71,31 +67,8 @@ export interface ReopenResult {
   /** Error messages */
   errors: string[];
 
-  /** WIP limit exceeded? */
-  wipLimitExceeded?: boolean;
-
   /** Increment metadata after reopen */
   metadata?: IncrementMetadata;
-}
-
-/**
- * WIP validation result
- */
-export interface WIPValidationResult {
-  /** Is reopen allowed? */
-  allowed: boolean;
-
-  /** Warning flag */
-  warning: boolean;
-
-  /** Message */
-  message?: string;
-
-  /** Current active count */
-  activeCount?: number;
-
-  /** Limit for increment type */
-  limit?: number;
 }
 
 /**
@@ -142,7 +115,7 @@ export class IncrementReopener {
    * @returns Reopen result
    */
   static async reopenIncrement(context: ReopenContext): Promise<ReopenResult> {
-    const { incrementId, reason, force } = context;
+    const { incrementId, reason } = context;
     const result: ReopenResult = {
       success: false,
       itemsReopened: [],
@@ -166,23 +139,6 @@ export class IncrementReopener {
           `Cannot reopen: increment status is ${metadata.status}, not completed`
         );
         return result;
-      }
-
-      // 4. Validate WIP limits
-      const wipValidation = this.validateWIPLimits(metadata, force);
-      if (!wipValidation.allowed && !force) {
-        result.errors.push(
-          wipValidation.message || 'WIP limit exceeded'
-        );
-        result.wipLimitExceeded = true;
-        return result;
-      }
-
-      if (wipValidation.warning) {
-        result.warnings.push(
-          wipValidation.message || 'WIP limit will be exceeded'
-        );
-        result.wipLimitExceeded = true;
       }
 
       // 5. Update status: COMPLETED → ACTIVE (atomically updates both spec.md and metadata.json)
@@ -362,8 +318,7 @@ export class IncrementReopener {
           target: ReopenTarget.TASK,
           incrementId,
           taskId,
-          reason: `Reopened via user story ${userStoryId}: ${reason}`,
-          force: context.force
+          reason: `Reopened via user story ${userStoryId}: ${reason}`
         });
 
         if (taskResult.success) {
@@ -400,56 +355,6 @@ export class IncrementReopener {
       );
       return result;
     }
-  }
-
-  /**
-   * Validate WIP limits before reopening
-   *
-   * @param metadata - Increment metadata
-   * @param force - Force reopen?
-   * @returns Validation result
-   */
-  private static validateWIPLimits(
-    metadata: IncrementMetadata,
-    force?: boolean
-  ): WIPValidationResult {
-    const type = metadata.type;
-    const limit = TYPE_LIMITS[type];
-
-    // If unlimited type (hotfix, bug, experiment), allow
-    if (limit === null) {
-      return { allowed: true, warning: false };
-    }
-
-    // Count current active of same type
-    const activeCount = MetadataManager.getActive()
-      .filter(m => m.type === type)
-      .length;
-
-    // If reopening would exceed limit, warn or block
-    if (activeCount >= limit) {
-      const message = `Reopening will exceed WIP limit (${activeCount + 1}/${limit} active ${type}s). Complete or pause another ${type} first, or use --force.`;
-
-      if (force) {
-        return {
-          allowed: true,
-          warning: true,
-          message,
-          activeCount,
-          limit
-        };
-      }
-
-      return {
-        allowed: false,
-        warning: true,
-        message,
-        activeCount,
-        limit
-      };
-    }
-
-    return { allowed: true, warning: false, activeCount, limit };
   }
 
   /**

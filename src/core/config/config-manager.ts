@@ -16,6 +16,7 @@ import {
   ValidationError
 } from './types.js';
 import { migrateToWorkspace } from './workspace-migrator.js';
+import { migrateLimits } from './limits-migrator.js';
 import { consoleLogger, type Logger } from '../../utils/logger.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 
@@ -69,6 +70,10 @@ export class ConfigManager {
       }
 
       const hadLegacyConfig = this.hasLegacyConfig(parsed);
+      const limitsChanged = migrateLimits(parsed);
+      if (limitsChanged && !hadLegacyConfig) {
+        await this.rewriteRaw(parsed);
+      }
 
       // Merge with defaults (for backward compatibility)
       let config = this.mergeWithDefaults(parsed);
@@ -126,6 +131,10 @@ export class ConfigManager {
       }
 
       const hadLegacyConfig = this.hasLegacyConfig(parsed);
+      const limitsChanged = migrateLimits(parsed);
+      if (limitsChanged && !hadLegacyConfig) {
+        this.rewriteRawSync(parsed);
+      }
 
       // Merge with defaults
       let config = this.mergeWithDefaults(parsed);
@@ -428,6 +437,25 @@ export class ConfigManager {
     try {
       await fs.mkdir(path.dirname(this.configPath), { recursive: true });
       await fs.writeFile(this.configPath, JSON.stringify(toWrite, null, 2), 'utf-8');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.logger.warn(`Could not persist migrated config: ${err.message || String(error)}`);
+    }
+  }
+
+  /** Write the user's raw config back unchanged except for a one-shot key migration. */
+  private async rewriteRaw(parsed: Record<string, unknown>): Promise<void> {
+    try {
+      await fs.writeFile(this.configPath, JSON.stringify(parsed, null, 2), 'utf-8');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.logger.warn(`Could not persist migrated config: ${err.message || String(error)}`);
+    }
+  }
+
+  private rewriteRawSync(parsed: Record<string, unknown>): void {
+    try {
+      writeFileSync(this.configPath, JSON.stringify(parsed, null, 2), 'utf-8');
     } catch (error: unknown) {
       const err = error as { message?: string };
       this.logger.warn(`Could not persist migrated config: ${err.message || String(error)}`);

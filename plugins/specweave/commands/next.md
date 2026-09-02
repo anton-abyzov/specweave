@@ -15,7 +15,7 @@ find .specweave/increments -type f -name "spec.md" -exec grep -l "status: in-pro
 ```
 
 - One in-progress → Validate for closure
-- Multiple in-progress → Warn about WIP limit, ask which to close
+- Multiple in-progress → Mention the advisory WIP note, ask which to close
 - None in-progress → Skip to Step 4 (suggest next work)
 
 ### Step 2: PM Validation (3 Gates)
@@ -53,7 +53,7 @@ AskUserQuestion({
 })
 ```
 
-Only on user confirmation: update status → completed, set completion date, generate report, free WIP slot.
+Only on user confirmation: update status → completed, set completion date, generate report.
 
 **If ANY gate fails** — present options:
 - A. Complete remaining work (recommended)

@@ -421,7 +421,7 @@ Solution: Always create spec.md and plan.md first
 ```
 Problem: Start 0002 before finishing 0001
 Result: Context switching, neither complete, docs stale
-Solution: One increment at a time (WIP limit = 1)
+Solution: One increment at a time (advisory limit: limits.activeIncrements)
 ```
 
 ### Mistake 3: Manual Documentation

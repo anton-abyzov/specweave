@@ -206,21 +206,15 @@ graph LR
 # Before pause
 $ specweave status
 Active (1): 0007-payment-integration
-WIP Limit: 1/1
-
-# Try to start new work
-$ specweave inc "0008-feature"
-Cannot create! WIP limit reached
 
 # Pause current work (or say "pause this")
 $ specweave pause 0007 --reason "Blocked"
 
-# After pause
+# After pause — paused increments no longer count as active
 $ specweave status
 Paused (1): 0007-payment-integration
-WIP Limit: 0/1
+Active (0)
 
-# Now can start new work
 $ specweave inc "0008-feature"
 Created!
 ```

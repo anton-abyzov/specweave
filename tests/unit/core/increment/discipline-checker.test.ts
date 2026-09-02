@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import path from 'path';
 import * as fs from '../../../../src/utils/fs-native.js';
 import os from 'os';
-import { DisciplineChecker } from '../../../../src/core/increment/discipline-checker.js';
+import { DisciplineChecker, buildWipNote, resolveDisciplineLimits } from '../../../../src/core/increment/discipline-checker.js';
 import { DisciplineLimits } from '../../../../src/core/increment/types.js';
 
 /**
@@ -80,19 +80,57 @@ describe('DisciplineChecker', () => {
   });
 
   describe('constructor', () => {
-    it('should create checker with default limits', () => {
+    it('should create checker with default limits (advisory 3)', () => {
       const checker = new DisciplineChecker(testDir);
-      expect(checker).toBeDefined();
+      expect(checker.getLimits()).toEqual({ activeIncrements: 3 });
     });
 
     it('should create checker with custom limits', () => {
-      const customLimits: DisciplineLimits = {
-        maxActiveIncrements: 2,
-        hardCap: 3,
-        allowEmergencyInterrupt: false,
-      };
+      const customLimits: DisciplineLimits = { activeIncrements: 2 };
       const checker = new DisciplineChecker(testDir, customLimits);
-      expect(checker).toBeDefined();
+      expect(checker.getLimits()).toEqual({ activeIncrements: 2 });
+    });
+
+    it('should read limits.activeIncrements from config.json', async () => {
+      await fs.writeFile(
+        path.join(testDir, '.specweave', 'config.json'),
+        JSON.stringify({ version: '2.0', limits: { activeIncrements: 5 } })
+      );
+      const checker = new DisciplineChecker(testDir);
+      expect(checker.getLimits()).toEqual({ activeIncrements: 5 });
+    });
+  });
+
+  describe('resolveDisciplineLimits', () => {
+    it('defaults to 3', () => {
+      expect(resolveDisciplineLimits(undefined)).toEqual({ activeIncrements: 3 });
+      expect(resolveDisciplineLimits({})).toEqual({ activeIncrements: 3 });
+    });
+
+    it('honours legacy maxActiveIncrements until migrated', () => {
+      expect(resolveDisciplineLimits({ maxActiveIncrements: 7, hardCap: 9 })).toEqual({ activeIncrements: 7 });
+    });
+
+    it('clamps negatives to 0 (off)', () => {
+      expect(resolveDisciplineLimits({ activeIncrements: -1 })).toEqual({ activeIncrements: 0 });
+    });
+  });
+
+  describe('buildWipNote', () => {
+    it('returns null at or under the limit', () => {
+      expect(buildWipNote(3, 3)).toBeNull();
+      expect(buildWipNote(0, 3)).toBeNull();
+    });
+
+    it('returns null when disabled (0)', () => {
+      expect(buildWipNote(50, 0)).toBeNull();
+    });
+
+    it('returns a single info note when over the limit', () => {
+      const note = buildWipNote(4, 3);
+      expect(note?.severity).toBe('info');
+      expect(note?.type).toBe('wip_limit_exceeded');
+      expect(note?.message).toContain('4 active');
     });
   });
 
@@ -108,7 +146,6 @@ describe('DisciplineChecker', () => {
     });
 
     it('should return compliant when only completed increments exist', async () => {
-      // Create completed increment with metadata.json
       await createIncrement(testDir, '0001-feature', 'completed');
 
       const checker = new DisciplineChecker(testDir);
@@ -119,158 +156,105 @@ describe('DisciplineChecker', () => {
       expect(result.increments.completed).toBe(1);
     });
 
-    it('should return compliant when 1 active increment (at limit)', async () => {
-      // Create 1 active increment
-      await createIncrement(testDir, '0001-feature', 'active');
+    it('should return compliant with exactly 3 active (at limit)', async () => {
+      for (let i = 1; i <= 3; i++) {
+        await createIncrement(testDir, `000${i}-inc`, 'active');
+      }
 
       const checker = new DisciplineChecker(testDir);
       const result = await checker.validate();
 
       expect(result.compliant).toBe(true);
       expect(result.violations).toHaveLength(0);
-      expect(result.increments.active).toBe(1);
+      expect(result.increments.active).toBe(3);
     });
   });
 
-  describe('validate() - hard cap violations', () => {
-    it('should detect hard cap exceeded (6 active, limit 5)', async () => {
-      // Create 6 active increments (hard cap is 5)
+  describe('validate() - advisory WIP note (no hard cap)', () => {
+    it('10 active increments produce exactly one info note and no error', async () => {
+      for (let i = 1; i <= 10; i++) {
+        await createIncrement(testDir, `${String(i).padStart(4, '0')}-inc`, 'active');
+      }
+
+      const checker = new DisciplineChecker(testDir);
+      const result = await checker.validate();
+
+      expect(result.increments.active).toBe(10);
+      expect(result.compliant).toBe(true);
+      expect(result.violations).toHaveLength(1);
+      expect(result.violations[0].type).toBe('wip_limit_exceeded');
+      expect(result.violations[0].severity).toBe('info');
+      expect(result.violations[0].message).toContain('10 active');
+      expect(result.violations.some(v => v.severity === 'error')).toBe(false);
+      expect(result.violations.some(v => (v.type as string) === 'hard_cap_exceeded')).toBe(false);
+    });
+
+    it('emits no note when limits.activeIncrements is 0', async () => {
       for (let i = 1; i <= 6; i++) {
         await createIncrement(testDir, `000${i}-inc`, 'active');
       }
 
-      const checker = new DisciplineChecker(testDir);
+      const checker = new DisciplineChecker(testDir, { activeIncrements: 0 });
       const result = await checker.validate();
 
-      expect(result.compliant).toBe(false);
-      expect(result.violations.length).toBeGreaterThan(0);
-
-      const hardCapViolation = result.violations.find(
-        (v) => v.type === 'hard_cap_exceeded'
-      );
-      expect(hardCapViolation).toBeDefined();
-      expect(hardCapViolation?.message).toContain('6 active');
-      expect(hardCapViolation?.severity).toBe('warning');
+      expect(result.compliant).toBe(true);
+      expect(result.violations).toHaveLength(0);
     });
-  });
 
-  describe('validate() - WIP limit warnings', () => {
-    it('should warn when exceeding recommended limit but under hard cap', async () => {
-      // Create 4 active increments (exceeds max of 3, but under hard cap of 5)
+    it('should respect custom limits', async () => {
       for (let i = 1; i <= 4; i++) {
         await createIncrement(testDir, `000${i}-inc`, 'active');
       }
 
-      const checker = new DisciplineChecker(testDir);
-      const result = await checker.validate();
+      const result1 = await new DisciplineChecker(testDir).validate();
+      expect(result1.violations.find(v => v.type === 'wip_limit_exceeded')).toBeDefined();
 
-      expect(result.compliant).toBe(false);
-
-      const wipViolation = result.violations.find(
-        (v) => v.type === 'wip_limit_exceeded'
-      );
-      expect(wipViolation).toBeDefined();
-      expect(wipViolation?.severity).toBe('warning');
-      expect(wipViolation?.message).toContain('4 active');
+      const result2 = await new DisciplineChecker(testDir, { activeIncrements: 4 }).validate();
+      expect(result2.violations.find(v => v.type === 'wip_limit_exceeded')).toBeUndefined();
     });
   });
 
-  describe('validate() - active increment tracking', () => {
-    it('should track active increments with pending tasks (compliant if under limit)', async () => {
-      // Create 1 active increment
-      await createIncrement(testDir, '0001-feature', 'active');
-
-      const checker = new DisciplineChecker(testDir);
-      const result = await checker.validate();
-
-      // Should be compliant (1 active is at the limit)
-      expect(result.compliant).toBe(true);
-      expect(result.violations).toHaveLength(0);
-
-      // But should report 1 active increment
-      expect(result.increments.active).toBe(1);
-      expect(result.increments.completed).toBe(0);
-    });
-  });
-
-  describe('validate() - edge cases', () => {
-    it('should handle exactly at limit (no violation)', async () => {
-      // Create exactly 1 active (at maxActiveIncrements)
-      await createIncrement(testDir, '0001-feature', 'active');
-
-      const checker = new DisciplineChecker(testDir);
-      const result = await checker.validate();
-
-      expect(result.compliant).toBe(true);
-      expect(result.violations).toHaveLength(0);
-      expect(result.increments.active).toBe(1);
-    });
-
+  describe('validate() - active definition (WIP_COUNTED_STATUSES)', () => {
     it('should handle missing metadata.json gracefully with lazy init', async () => {
-      // Create increment directory without metadata.json
-      // MetadataManager uses lazy initialization - it will create default metadata
       const incPath = path.join(testDir, '.specweave', 'increments', '0001-feature');
       await fs.ensureDir(incPath);
-      // Only create tasks.md, no metadata.json
       await fs.writeFile(path.join(incPath, 'tasks.md'), '# Tasks');
 
       const checker = new DisciplineChecker(testDir);
       const result = await checker.validate();
 
-      // Should not crash
       expect(result).toBeDefined();
       expect(result.timestamp).toBeTruthy();
-      // Lazy init creates default metadata with PLANNING status (counts as active)
       expect(result.increments.total).toBe(1);
-      expect(result.increments.active).toBe(1); // PLANNING counts as active
+      // Lazy init creates PLANNING metadata, which is not active
+      expect(result.increments.active).toBe(0);
     });
 
-    it('should count planning status as active', async () => {
+    it('should NOT count planning status as active', async () => {
       await createIncrement(testDir, '0001-feature', 'planning');
 
-      const checker = new DisciplineChecker(testDir);
-      const result = await checker.validate();
-
-      expect(result.increments.active).toBe(1);
+      const result = await new DisciplineChecker(testDir).validate();
+      expect(result.increments.active).toBe(0);
     });
 
     it('should count ready_for_review status as active', async () => {
       await createIncrement(testDir, '0001-feature', 'ready_for_review');
 
-      const checker = new DisciplineChecker(testDir);
-      const result = await checker.validate();
-
+      const result = await new DisciplineChecker(testDir).validate();
       expect(result.increments.active).toBe(1);
     });
-  });
 
-  describe('validate() - configuration', () => {
-    it('should respect custom limits', async () => {
-      // Create 4 active increments
-      for (let i = 1; i <= 4; i++) {
-        await createIncrement(testDir, `000${i}-inc`, 'active');
-      }
+    it('should NOT count paused status as active', async () => {
+      await createIncrement(testDir, '0001-feature', 'paused');
 
-      // With default limits (max=3), this should warn
-      const checker1 = new DisciplineChecker(testDir);
-      const result1 = await checker1.validate();
-      expect(result1.compliant).toBe(false);
-
-      // With custom limits (max=4), this should pass
-      const customLimits: DisciplineLimits = {
-        maxActiveIncrements: 4,
-        hardCap: 6,
-        allowEmergencyInterrupt: true,
-      };
-      const checker2 = new DisciplineChecker(testDir, customLimits);
-      const result2 = await checker2.validate();
-      expect(result2.compliant).toBe(true);
+      const result = await new DisciplineChecker(testDir).validate();
+      expect(result.increments.active).toBe(0);
+      expect(result.increments.paused).toBe(1);
     });
   });
 
   describe('validate() - mixed status counts', () => {
     it('should correctly count different statuses', async () => {
-      // Create mix of statuses
       await createIncrement(testDir, '0001-active', 'active');
       await createIncrement(testDir, '0002-completed', 'completed');
       await createIncrement(testDir, '0003-paused', 'paused');
