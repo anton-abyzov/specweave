@@ -9,10 +9,6 @@ argument-hint: "[--fix] [--verbose]"
 
 **Skill Memories**: If `.specweave/skill-memories/doctor.md` exists, read and apply its learnings.
 
-## Project Context
-
-!`.specweave/scripts/skill-context.sh doctor 2>/dev/null || true`
-
 Run SpecWeave installation health diagnostics to detect and fix common issues.
 
 ## Usage
