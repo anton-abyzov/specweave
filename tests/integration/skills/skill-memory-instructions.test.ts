@@ -28,8 +28,10 @@ describe('Skill memory loading architecture', () => {
   // Note: code-simplifier, security, security-patterns migrated to vskill repo
   // Note: cancel-auto, docs, docs-updater, framework, lsp, progress, save
   // were moved to other repos or renamed and no longer exist in this plugins dir.
+  // 2.0: `do` and `done` were rewritten as slim, vendor-agnostic skills and no
+  // longer carry the skill-memory (`reflect`) instruction block, which 2.0 drops.
   const DCI_SKILLS = [
-    'architect', 'auto', 'do', 'done', 'grill', 'increment',
+    'architect', 'auto', 'grill', 'increment',
     'pm', 'tdd-cycle', 'tdd-green', 'tdd-red', 'validate',
   ].map(s => ({ skill: s, dir: pluginsDir }));
 

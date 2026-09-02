@@ -60,101 +60,115 @@ function parseEnvFileSimple(content) {
     return result;
 }
 /**
- * Get GitHub authentication token from project .env file
- * Priority: .env GITHUB_TOKEN > .env GH_TOKEN > process.env > gh CLI
+ * Resolve a GitHub token with ONE documented precedence:
+ *   1. config (explicit token in .specweave/config.json)
+ *   2. process.env GITHUB_TOKEN / GH_TOKEN (CI, shell exports)
+ *   3. <projectRoot>/.env GITHUB_TOKEN / GH_TOKEN
+ *   4. gh CLI (`gh auth token`, then ~/.config/gh/hosts.yml)
  *
- * CRITICAL (2025-11-26): This function MUST be used when projectRoot is available
- * to properly load tokens from .env file. The original getGitHubAuth() only
- * reads process.env which is empty unless dotenv is explicitly loaded.
- *
- * @param projectRoot - Path to project root containing .env file
- * @returns GitHub authentication with source information
+ * Every sync entry point should call this once and print `describeGitHubAuth()`
+ * so a wrong-account token is visible before the first 404.
  */
-export function getGitHubAuthFromProject(projectRoot) {
-    // 1. First, try to read from project .env file
+export function resolveGitHubToken(projectRoot, options = {}) {
+    const env = options.env ?? process.env;
+    if (options.configToken) {
+        return { token: options.configToken, source: 'config', origin: 'config', isOAuthToken: isOAuthToken(options.configToken) };
+    }
+    if (env.GITHUB_TOKEN) {
+        return { token: env.GITHUB_TOKEN, source: 'GITHUB_TOKEN', origin: 'process.env', isOAuthToken: isOAuthToken(env.GITHUB_TOKEN) };
+    }
+    if (env.GH_TOKEN) {
+        return { token: env.GH_TOKEN, source: 'GH_TOKEN', origin: 'process.env', isOAuthToken: isOAuthToken(env.GH_TOKEN) };
+    }
+    if (projectRoot) {
+        try {
+            const envPath = path.join(projectRoot, '.env');
+            if (fs.existsSync(envPath)) {
+                const envVars = parseEnvFileSimple(fs.readFileSync(envPath, 'utf-8'));
+                if (envVars.GITHUB_TOKEN) {
+                    return { token: envVars.GITHUB_TOKEN, source: 'GITHUB_TOKEN', origin: '.env', isOAuthToken: isOAuthToken(envVars.GITHUB_TOKEN) };
+                }
+                if (envVars.GH_TOKEN) {
+                    return { token: envVars.GH_TOKEN, source: 'GH_TOKEN', origin: '.env', isOAuthToken: isOAuthToken(envVars.GH_TOKEN) };
+                }
+            }
+        }
+        catch {
+            // .env is optional
+        }
+    }
+    const ghToken = options.ghCliToken ? options.ghCliToken() : readGhCliToken();
+    if (ghToken) {
+        return { token: ghToken, source: 'gh-cli', origin: 'gh-cli', isOAuthToken: isOAuthToken(ghToken) };
+    }
+    return { token: '', source: 'none', origin: 'none', isOAuthToken: false };
+}
+/** One-line, secret-free description of where the active GitHub token came from. */
+export function describeGitHubAuth(auth, login) {
+    if (!auth.token)
+        return 'GitHub token: none (set GITHUB_TOKEN, add it to .env, or run `gh auth login`)';
+    const where = auth.origin === 'process.env' || auth.origin === '.env'
+        ? `${auth.origin} ${auth.source}`
+        : auth.origin === 'config'
+            ? '.specweave/config.json'
+            : auth.origin ?? auth.source;
+    const kind = auth.isOAuthToken ? 'oauth' : 'pat';
+    return `GitHub token: ${where} (${kind}${login ? `, account ${login}` : ''})`;
+}
+/**
+ * Best-effort lookup of the account a token belongs to (`gh api user`).
+ * Never throws; returns null when gh is missing or the token is invalid.
+ */
+export function resolveGitHubLogin(token, exec = runSync) {
+    if (!token)
+        return null;
     try {
-        const envPath = path.join(projectRoot, '.env');
-        if (fs.existsSync(envPath)) {
-            const content = fs.readFileSync(envPath, 'utf-8');
-            const envVars = parseEnvFileSimple(content);
-            // Check GITHUB_TOKEN first (standard)
-            if (envVars.GITHUB_TOKEN) {
-                return {
-                    token: envVars.GITHUB_TOKEN,
-                    source: 'GITHUB_TOKEN',
-                    isOAuthToken: isOAuthToken(envVars.GITHUB_TOKEN)
-                };
-            }
-            // Check GH_TOKEN (alternative)
-            if (envVars.GH_TOKEN) {
-                return {
-                    token: envVars.GH_TOKEN,
-                    source: 'GH_TOKEN',
-                    isOAuthToken: isOAuthToken(envVars.GH_TOKEN)
-                };
-            }
+        const out = exec('gh api user --jq .login', { ...process.env, GH_TOKEN: token }).trim();
+        return out || null;
+    }
+    catch {
+        return null;
+    }
+}
+function runSync(cmd, env) {
+    return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'], env });
+}
+function readGhCliToken() {
+    try {
+        const token = execSync('gh auth token', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+        if (token)
+            return token;
+    }
+    catch {
+        // gh CLI not installed or not authenticated
+    }
+    try {
+        // Security: JSON_SCHEMA only allows JSON-safe types (no arbitrary tags)
+        const ghConfigPath = path.join(os.homedir(), '.config', 'gh', 'hosts.yml');
+        if (fs.existsSync(ghConfigPath)) {
+            const config = yaml.load(fs.readFileSync(ghConfigPath, 'utf8'), { schema: yaml.JSON_SCHEMA });
+            return config?.['github.com']?.oauth_token || undefined;
         }
     }
     catch {
-        // Silently fail - .env file is optional
+        // optional
     }
-    // 2. Fall back to existing getGitHubAuth() for process.env and gh CLI
-    return getGitHubAuth();
+    return undefined;
 }
 /**
- * Get GitHub authentication token
- * Priority: GITHUB_TOKEN (CI) > GH_TOKEN (custom) > gh CLI config (local)
- *
- * WARNING: This function only reads from process.env, NOT from .env files!
- * If you have access to projectRoot, use getGitHubAuthFromProject() instead.
+ * Get GitHub authentication for a project.
+ * Order: config token (when passed) → process.env → <projectRoot>/.env → gh CLI.
+ * Thin wrapper over resolveGitHubToken() kept for existing call sites.
+ */
+export function getGitHubAuthFromProject(projectRoot, configToken) {
+    return resolveGitHubToken(projectRoot, { configToken });
+}
+/**
+ * Get GitHub authentication without a project root (process.env → gh CLI only).
+ * Prefer getGitHubAuthFromProject()/resolveGitHubToken() when projectRoot is known.
  */
 export function getGitHubAuth() {
-    // 1. Check GITHUB_TOKEN (auto-provided in GitHub Actions)
-    if (process.env.GITHUB_TOKEN) {
-        return {
-            token: process.env.GITHUB_TOKEN,
-            source: 'GITHUB_TOKEN',
-            isOAuthToken: isOAuthToken(process.env.GITHUB_TOKEN)
-        };
-    }
-    // 2. Check GH_TOKEN (custom PAT from .env)
-    if (process.env.GH_TOKEN) {
-        return {
-            token: process.env.GH_TOKEN,
-            source: 'GH_TOKEN',
-            isOAuthToken: isOAuthToken(process.env.GH_TOKEN)
-        };
-    }
-    // 3. Try to get token via gh CLI command (works with Keychain, plain-text, etc.)
-    try {
-        const token = execSync('gh auth token', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-        if (token && token.length > 0) {
-            return { token, source: 'gh-cli', isOAuthToken: isOAuthToken(token) };
-        }
-    }
-    catch (error) {
-        // gh CLI not installed or not authenticated - silently fail
-    }
-    // 4. Fallback: Try to parse gh CLI config directly (~/.config/gh/hosts.yml)
-    // This covers edge cases where gh CLI isn't available but config file exists
-    try {
-        const ghConfigPath = path.join(os.homedir(), '.config', 'gh', 'hosts.yml');
-        if (fs.existsSync(ghConfigPath)) {
-            // Security: Use JSON_SCHEMA to prevent arbitrary code execution via YAML
-            // This only allows JSON-safe types (strings, numbers, booleans, arrays, objects)
-            const config = yaml.load(fs.readFileSync(ghConfigPath, 'utf8'), {
-                schema: yaml.JSON_SCHEMA
-            });
-            const token = config?.['github.com']?.oauth_token;
-            if (token) {
-                return { token, source: 'gh-cli', isOAuthToken: isOAuthToken(token) };
-            }
-        }
-    }
-    catch (error) {
-        // Silently fail - gh CLI config is optional
-    }
-    return { token: '', source: 'none', isOAuthToken: false };
+    return resolveGitHubToken('', {});
 }
 /**
  * Get Azure DevOps authentication from project .env file

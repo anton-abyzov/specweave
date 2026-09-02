@@ -110,7 +110,7 @@ export class ConfigurationChecker implements HealthChecker {
         return {
           name: 'CLAUDE.md',
           status: 'pass',
-          message: `v${fileVersion}`,
+          message: `v${fileVersion} (CLI v${cliVersion})`,
         };
       }
 

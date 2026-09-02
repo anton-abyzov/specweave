@@ -120,9 +120,10 @@ describe('Increment Template Workflow Integration', () => {
       const tasksPath = path.join(incrementsPath, '0001-stripe-dashboard', 'tasks.md');
       const content = fs.readFileSync(tasksPath, 'utf-8');
 
-      // CRITICAL: Must have template markers
-      expect(content).toContain('[User Story Title]');
-      expect(content).toContain('[component]');
+      // CRITICAL: Must have template markers (2.0 task format)
+      expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
+      expect(content).toContain('### T-01 [First task]');
+      expect(content).toContain('[command or Given/When/Then]');
 
       // CRITICAL: Must NOT have fully populated tasks
       // These would indicate the skill system was bypassed
