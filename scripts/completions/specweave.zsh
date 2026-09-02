@@ -16,7 +16,8 @@ commands=(
     'judge-skill:Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)'
     'list:List available and installed components'
     'pause:Pause an active increment'
-    'resume:Resume a paused or abandoned increment'
+    'start:Start a planned/backlog/paused increment (status -> active)'
+    'resume:Resume a paused, abandoned or not-yet-started increment'
     'abandon:Abandon an increment'
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
@@ -139,6 +140,10 @@ _specweave() {
                         '--force[Force pause (update reason if already paused)]' \
                         '--help[Show help]'
                     ;;
+                start)
+                    _arguments \
+                        '--help[Show help]'
+                    ;;
                 resume)
                     _arguments \
                         '--help[Show help]'
@@ -189,6 +194,7 @@ _specweave() {
                         '--project-root[Override project root directory]' \
                         '--parallel[Opt into 3-agent fan-out planning (default\: single-agent)]' \
                         '--with-plan[Also scaffold plan.md (optional overflow; spec.md carries the Approach)]' \
+                        '--planned[Create as "planned" instead of "active" (backlog work; start it with specweave start <id>)]' \
                         '--supersedes[Increment this one replaces (the old one is abandoned with a closeReason)]' \
                         '--parent[Parent increment (recorded as metadata.parent)]' \
                         '--json[Output result as JSON (for programmatic use)]' \

@@ -11,6 +11,26 @@ import { MetadataManager } from './metadata-manager.js';
 import { IncrementStatus, IncrementType, computeTransitionPath, countsTowardWipLimit } from '../types/increment-metadata.js';
 import { DisciplineChecker, buildWipNote } from './discipline-checker.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
+
+/**
+ * Expand a bare 4-digit id (`0001`) to the folder name (`0001-add-login`).
+ *
+ * The design says the bare id is accepted wherever an increment id is taken
+ * (`specweave complete <NNNN>` spells it out); `pause`/`resume`/`abandon` used
+ * to hand the short form straight to MetadataManager and die with
+ * "Invalid increment ID format". Unknown / ambiguous ids are returned
+ * unchanged so the caller still produces its own error.
+ */
+export function expandIncrementId(incrementId: string, projectRoot?: string): string {
+  if (!incrementId) return incrementId;
+  try {
+    const resolved = resolveIncrementId(incrementId, projectRoot ?? resolveEffectiveRoot());
+    return typeof resolved === 'string' ? resolved : incrementId;
+  } catch {
+    return incrementId;
+  }
+}
 
 export interface PauseOptions {
   incrementId: string;
@@ -37,7 +57,8 @@ export interface StatusOptions {
  * Pause an active increment
  */
 export async function pauseIncrement(options: PauseOptions): Promise<void> {
-  const { incrementId, reason, force } = options;
+  const { reason, force } = options;
+  const incrementId = expandIncrementId(options.incrementId);
 
   console.log(chalk.blue(`\n⏸️  Pausing increment ${incrementId}...\n`));
 
@@ -86,7 +107,7 @@ export async function pauseIncrement(options: PauseOptions): Promise<void> {
  * Resume a paused or abandoned increment
  */
 export async function resumeIncrement(options: ResumeOptions): Promise<void> {
-  const { incrementId } = options;
+  const incrementId = expandIncrementId(options.incrementId);
 
   console.log(chalk.blue(`\n▶️  Resuming increment ${incrementId}...\n`));
 
@@ -108,10 +129,19 @@ export async function resumeIncrement(options: ResumeOptions): Promise<void> {
       process.exit(1);
     }
 
-    if (metadata.status !== IncrementStatus.PAUSED && metadata.status !== IncrementStatus.ABANDONED) {
+    const RESUMABLE = [
+      IncrementStatus.PAUSED,
+      IncrementStatus.ABANDONED,
+      // A never-started increment resumes too: `resume` is how the docs tell
+      // you to get back to work, and refusing here left `planned` increments
+      // with no CLI path to `active` at all.
+      IncrementStatus.PLANNED,
+      IncrementStatus.BACKLOG,
+    ];
+    if (!RESUMABLE.includes(metadata.status)) {
       console.log(chalk.red(`❌ Cannot resume increment ${incrementId}`));
       console.log(chalk.gray(`   Current status: ${metadata.status}`));
-      console.log(chalk.gray(`   Only paused or abandoned increments can be resumed\n`));
+      console.log(chalk.gray(`   Resumable statuses: ${RESUMABLE.join(', ')}\n`));
       process.exit(1);
     }
 
@@ -137,10 +167,50 @@ export async function resumeIncrement(options: ResumeOptions): Promise<void> {
 }
 
 /**
+ * Start an increment: `planned`/`backlog`/`paused` → `active`.
+ *
+ * The 2.0 loop resolves the single ACTIVE increment for `task`, `verify` and
+ * `handoff`. `create-increment` already creates in `active`; this is the
+ * explicit CLI transition for `--planned` (backlog) increments, for imported
+ * ones, and for 1.x increments still carrying `planning`. Idempotent.
+ */
+export async function startIncrement(options: ResumeOptions): Promise<void> {
+  const incrementId = expandIncrementId(options.incrementId);
+
+  try {
+    const metadata = MetadataManager.read(incrementId);
+
+    if (metadata.status === IncrementStatus.ACTIVE) {
+      console.log(chalk.gray(`Increment ${incrementId} is already active`));
+      return;
+    }
+
+    const STARTABLE = [IncrementStatus.PLANNED, IncrementStatus.BACKLOG, IncrementStatus.PAUSED];
+    if (!STARTABLE.includes(metadata.status)) {
+      console.log(chalk.red(`❌ Cannot start increment ${incrementId}`));
+      console.log(chalk.gray(`   Current status: ${metadata.status}`));
+      console.log(chalk.gray(`   Startable statuses: ${STARTABLE.join(', ')}`));
+      if (metadata.status === IncrementStatus.ABANDONED) {
+        console.log(chalk.gray(`\n   💡 Bring it back first: specweave resume ${incrementId}`));
+      }
+      process.exit(1);
+    }
+
+    MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
+    console.log(chalk.green(`✅ Increment ${incrementId} started (${metadata.status} → active)`));
+    console.log(chalk.gray(`\n💡 Next: specweave task next\n`));
+  } catch (error) {
+    console.log(chalk.red(`\n❌ Failed to start increment: ${error instanceof Error ? error.message : String(error)}\n`));
+    process.exit(1);
+  }
+}
+
+/**
  * Abandon an increment
  */
 export async function abandonIncrement(options: AbandonOptions): Promise<void> {
-  const { incrementId, reason, force } = options;
+  const { reason, force } = options;
+  const incrementId = expandIncrementId(options.incrementId);
 
   console.log(chalk.blue(`\n🗑️  Abandoning increment ${incrementId}...\n`));
 
@@ -215,7 +285,8 @@ export interface CompleteOptions {
  * @since v4.0 - Auto mode stop hook integration
  */
 export async function completeIncrement(options: CompleteOptions): Promise<boolean> {
-  const { incrementId, silent = false, skipValidation = false } = options;
+  const { silent = false, skipValidation = false } = options;
+  const incrementId = expandIncrementId(options.incrementId);
   const closeReason = options.reason?.trim() || undefined;
 
   const log = (msg: string) => !silent && console.log(msg);
@@ -416,8 +487,10 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
 
     // Group by status. "Active" is exactly what the advisory WIP note counts
     // (countsTowardWipLimit) so `status` and `check-discipline` never disagree;
-    // planning is shown as its own group.
-    const planning = increments.filter(m => m.status === IncrementStatus.PLANNING);
+    // not-started increments are shown as their own group.
+    const planning = increments.filter(
+      m => m.status === IncrementStatus.PLANNED || m.status === IncrementStatus.BACKLOG,
+    );
     const active = increments.filter(m => countsTowardWipLimit(m.status));
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
@@ -434,7 +507,7 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
 
     // Show planning increments (not counted as active)
     if (planning.length > 0) {
-      console.log(chalk.magenta.bold(`📝 Planning (${planning.length}):`));
+      console.log(chalk.magenta.bold(`📝 Planned (${planning.length}):`));
       planning.forEach(m => {
         console.log(`  ${chalk.magenta('○')} ${m.id} [${m.type}]`);
       });
@@ -478,7 +551,7 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
 
     // Show summary
     console.log(chalk.gray(`📊 Summary:`));
-    console.log(chalk.gray(`   Planning: ${planning.length}`));
+    console.log(chalk.gray(`   Planned: ${planning.length}`));
     console.log(chalk.gray(`   Active: ${active.length}`));
     console.log(chalk.gray(`   Paused: ${paused.length}`));
     console.log(chalk.gray(`   Completed: ${completed.length}`));
@@ -486,10 +559,12 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     console.log(chalk.gray(`   Total: ${increments.length}\n`));
 
     // Show next actions
-    if (active.length === 0 && paused.length > 0) {
-      console.log(chalk.gray(`💡 Resume a paused increment: /resume <id>`));
+    if (active.length === 0 && planning.length > 0) {
+      console.log(chalk.gray(`💡 Start a planned increment: specweave start <id>`));
+    } else if (active.length === 0 && paused.length > 0) {
+      console.log(chalk.gray(`💡 Resume a paused increment: specweave resume <id>`));
     } else if (active.length === 0) {
-      console.log(chalk.gray(`💡 Start new increment: /inc "feature description"`));
+      console.log(chalk.gray(`💡 Start new increment: specweave create-increment "<title>"`));
     }
 
   } catch (error) {
