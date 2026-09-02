@@ -107,31 +107,9 @@ export async function runQA(
     console.log(chalk.gray('\n⏭️  Skipping AI assessment (--no-ai flag)\n'));
   }
 
-  // Step 3: Quality Gate Decision — use config thresholds if available
-  let thresholds = DEFAULT_THRESHOLDS;
-  try {
-    const configPath = path.join(getSpecweavePath(), 'config.json');
-    if (fs.existsSync(configPath)) {
-      const config = fs.readJsonSync(configPath);
-      const ct = config.qualityGates?.thresholds;
-      if (
-        ct?.fail &&
-        typeof ct.fail.riskScore === 'number' &&
-        typeof ct.fail.testCoverage === 'number' &&
-        typeof ct.fail.specQuality === 'number' &&
-        typeof ct.fail.criticalVulnerabilities === 'number' &&
-        ct?.concerns &&
-        typeof ct.concerns.riskScore === 'number' &&
-        typeof ct.concerns.testCoverage === 'number' &&
-        typeof ct.concerns.specQuality === 'number' &&
-        typeof ct.concerns.highVulnerabilities === 'number'
-      ) {
-        thresholds = ct;
-      }
-    }
-  } catch {
-    // Config missing/invalid — fall back to defaults
-  }
+  // Step 3: Quality Gate Decision.
+  // 2.0 removed the `qualityGates` config key — thresholds are fixed.
+  const thresholds = DEFAULT_THRESHOLDS;
   const decider = new QualityGateDecider(thresholds);
   const qualityGate: QualityGateResult = specQuality
     ? decider.decide(specQuality)

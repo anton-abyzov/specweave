@@ -475,9 +475,9 @@ export function updateConfigWithTesting(
   const trackCoverage = coverageTarget > 0 && testMode !== 'none';
 
   config.testing = {
-    defaultTestMode: testMode,
-    defaultCoverageTarget: coverageTarget,
-    coverageTargets: trackCoverage
+    mode: testMode,
+    commands: Array.isArray(config.testing?.commands) ? config.testing.commands : [],
+    coverage: trackCoverage
       ? {
           unit: Math.min(coverageTarget + 5, 100),
           integration: coverageTarget,

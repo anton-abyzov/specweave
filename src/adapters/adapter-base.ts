@@ -203,7 +203,8 @@ export abstract class AdapterBase implements IAdapter {
     const targetDir = path.join(projectPath, rulesDir);
     await fs.ensureDir(targetDir);
 
-    const language = await this.getLanguageConfig();
+    // 2.0 dropped the `language`/`translation` config keys — skills ship in English.
+    const language = 'en';
 
     for (const skill of plugin.skills) {
       const skillMdPath = path.join(skill.path, 'SKILL.md');
@@ -258,24 +259,6 @@ export abstract class AdapterBase implements IAdapter {
     return pluginNames;
   }
 
-  /**
-   * Read language configuration from project config
-   */
-  protected async getLanguageConfig(): Promise<SupportedLanguage> {
-    const projectPath = process.cwd();
-    const configPath = path.join(projectPath, '.specweave', 'config.json');
-
-    if (!(await fs.pathExists(configPath))) {
-      return 'en';
-    }
-
-    try {
-      const config = await fs.readJson(configPath);
-      return (config.language as SupportedLanguage) || 'en';
-    } catch {
-      return 'en';
-    }
-  }
 
   /**
    * Sanitize frontmatter for non-Claude tools:

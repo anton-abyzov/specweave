@@ -20,11 +20,9 @@ export interface SummaryBannerOptions {
   language: string;
   defaults: {
     testing: string;
-    qualityGates: string;
     lspEnabled: boolean;
     gitHooksInstalled: boolean;
-    translationEnabled: boolean;
-    coverageTargets?: { unit: number; integration: number; e2e: number };
+    coverage?: { unit: number; integration: number; e2e: number };
   };
   umbrellaDiscovery?: UmbrellaDiscoveryResult;
 }
@@ -85,8 +83,8 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
   lines.push(chalk.cyan('  Enabled by default:'));
 
   let testLabel: string;
-  if (options.defaults.testing === 'TDD' && options.defaults.coverageTargets) {
-    const ct = options.defaults.coverageTargets;
+  if (options.defaults.testing === 'TDD' && options.defaults.coverage) {
+    const ct = options.defaults.coverage;
     testLabel = `TDD mode (coverage: ${ct.unit}% unit, ${ct.integration}% integration, ${ct.e2e}% e2e)`;
   } else if (options.defaults.testing === 'TDD') {
     testLabel = 'TDD mode (testing)';
@@ -94,9 +92,6 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
     testLabel = `${options.defaults.testing} (testing)`;
   }
   lines.push(`    • ${testLabel}`);
-
-  const gateLabel = options.defaults.qualityGates.charAt(0).toUpperCase() + options.defaults.qualityGates.slice(1);
-  lines.push(`    • ${gateLabel} quality gates`);
 
   if (options.defaults.lspEnabled) {
     lines.push('    • LSP code intelligence');
@@ -106,9 +101,6 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
     lines.push('    • Git pre-commit hooks');
   }
 
-  if (options.defaults.translationEnabled) {
-    lines.push(`    • Auto-translation (${options.language})`);
-  }
 
   lines.push('');
 
