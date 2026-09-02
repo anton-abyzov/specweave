@@ -104,10 +104,14 @@ export declare function onFileCreated(incrementId: string, createdFile: string):
  */
 export declare function shouldTransitionToActive(incrementId: string): boolean;
 /**
- * Validate and fix "planned" vs "planning" inconsistency
+ * Rewrite every metadata.json whose `status` is not in the 2.0 vocabulary.
  *
- * Legacy increments may have "planned" status (not in enum).
- * This migrates them to "planning" (valid enum value).
+ * 2.0 canonical statuses are planned | active | paused | completed | abandoned;
+ * 1.x wrote `planning` (and hand edits produced `closed`, `complete`,
+ * `superseded`, …). Left alone, those increments failed `MetadataManager.read`
+ * and disappeared from `specweave status` totals entirely.
+ *
+ * @returns number of metadata.json files rewritten
  */
 export declare function migrateLegacyStatuses(): number;
 //# sourceMappingURL=status-auto-transition.d.ts.map

@@ -39,7 +39,8 @@ sw:do [<increment-id>]     # id optional when exactly one increment is active
 
 - Exactly one `metadata.json` with `status: active` → use it.
 - Several → `specweave task list` errors listing candidates; ask which, or take the one named in the auto-mode context / stop-hook feedback.
-- None → `sw:increment` first.
+- None active but exactly one `planned` → the CLI uses it, and `task claim` starts it (`planned → active`). `specweave start <id>` does it explicitly.
+- None at all → `sw:increment` first.
 
 ## Finish (mandatory, never stop to ask)
 
