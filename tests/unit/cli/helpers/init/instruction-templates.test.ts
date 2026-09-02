@@ -134,8 +134,9 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(claude).toContain('`/sw:increment "title"`');
     expect(agents).toContain('`specweave create-increment "title"`');
     expect(agents).not.toMatch(/`\/sw:/);
-    // the sw-* skills are vskill-installed standalone skills, not plugin commands
-    expect(agents).toContain('npx vskill install anton-abyzov/specweave/skills/sw-do');
+    // the sw-* skills are vskill-installed standalone skills, not plugin commands;
+    // the canonical ref carries no `skills/` segment — see lintTemplateInstallRefs
+    expect(agents).toContain('npx vskill install anton-abyzov/specweave/sw-do');
   });
 
   it('README.md.template is short and only needs {{PROJECT_NAME}}', () => {
