@@ -50,7 +50,9 @@ git status --porcelain; git diff --stat
    `password=…`, `api_key=…`, `-----BEGIN …` with `[REDACTED-<type>]` and count
    them. Heuristic — say so; an empty list is not a guarantee.
 4. Write the document below to `.specweave/increments/<inc>/handoff.md`
-   (no increment → `.handoff/HANDOFF.md`, with `.handoff/.gitignore` = `*`).
+   (SpecWeave workspace without an active increment → `.specweave/state/handoff-latest.md`;
+   outside a workspace → `./HANDOFF.md`, or `.handoff/HANDOFF.md` with
+   `.handoff/.gitignore` = `*` when a foreign `HANDOFF.md` is in the way).
    UTF-8 without BOM; on PowerShell write with
    `[IO.File]::WriteAllText($p, $body, [Text.UTF8Encoding]::new($false))`, never `>`.
    If a file is already there without the `Doc format v2` (or `v1`) marker it is
