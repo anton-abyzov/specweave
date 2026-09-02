@@ -345,7 +345,7 @@ export async function main() {
   const hasIssues = results.some(r => !r.isValid);
   if (hasIssues) {
     console.log('\n❌ Validation failed! Status line is out of sync.');
-    console.log('Run: bash plugins/specweave/hooks/lib/update-status-line.sh');
+    console.log('Run: specweave status-line --clear   (then reopen the increment to rebuild it)');
     process.exit(1);
   } else {
     console.log('\n✅ All status lines valid!');
