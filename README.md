@@ -66,20 +66,9 @@ specweave update
 
 2.0 removed a lot on purpose — the three-report closure pipeline, auto-generated living docs, 34 never-invoked skills, the queued sync mode. See **[What was removed, and why](https://spec-weave.com/docs/guides/specweave-2#what-was-removed-and-why)**.
 
-There is no alias routing: an old slug simply has no skill behind it, so use the replacement.
-
-| 1.x | 2.0 |
-|-----|-----|
-| `sw:grill`, `sw:code-reviewer`, `sw:judge-llm`, `sw:pr-review` | `sw:review` |
-| `sw:team-lead`, `sw:team-merge`, `sw:team-build` | `sw:team` |
-| `sw:pm`, `sw:architect`, `sw:plan` | `sw:increment` |
-| `sw:validate` | `sw:qa` |
-| `sw:progress-sync`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync` | `sw:sync` |
-| `sw:progress`, `sw:close-all`, `sw:analytics`, `sw:help` | `specweave status`, `specweave complete --all`, `specweave analytics`, `specweave help` |
-| `sw:tdd-cycle`, `sw:e2e`, `sw:debug`, `sw:diagrams`, `sw:npm` | `npx vskill install anton-abyzov/specweave/skills-optional/<name>` |
-| `sw:skill-gen`, `sw:skill-refine` | the vskill skill-creator |
-
-The full map, including the CLI replacements, is `removedIn2_0` in
+There is no alias routing: a 1.x slug simply has no skill behind it. The old-to-new map —
+every removed skill, the skill or CLI command that replaced it, and the ones that moved to
+`skills-optional/` — is `removedIn2_0` in
 [`plugins/specweave/marketplace.json`](plugins/specweave/marketplace.json).
 
 <br/>
