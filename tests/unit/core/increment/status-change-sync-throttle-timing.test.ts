@@ -58,6 +58,16 @@ vi.mock('../../../../src/core/living-docs/living-docs-enabled.js', () => ({
   livingDocsEnabled: (...args: unknown[]) => mockLivingDocsEnabled(...args),
 }));
 
+// ─── Mock the external-tracker gate ─────────────────────────────
+// With no tracker configured there is nowhere to sync TO, and the trigger must
+// not run the pipeline (nor print "Auto-synced … to external tools").
+const { mockExternalSyncConfigured } = vi.hoisted(() => ({
+  mockExternalSyncConfigured: vi.fn().mockReturnValue(true),
+}));
+vi.mock('../../../../src/sync/external-sync-configured.js', () => ({
+  externalSyncConfigured: (...args: unknown[]) => mockExternalSyncConfigured(...args),
+}));
+
 // ─── Mock SyncCircuitBreaker ────────────────────────────────────
 vi.mock('../../../../src/core/increment/sync-circuit-breaker.js', () => ({
   SyncCircuitBreaker: class {
@@ -140,6 +150,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
     mockShouldSkip.mockReturnValue(false);
     mockCanSync.mockReturnValue(true);
     mockLivingDocsEnabled.mockReturnValue(true);
+    mockExternalSyncConfigured.mockReturnValue(true);
 
     // The SUT early-returns when NODE_ENV=test or VITEST is set.
     // Temporarily remove both so triggerIfNeeded executes the real path.
@@ -227,6 +238,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
 
   it('never generates living docs when config.livingDocs is off (2.0 default)', async () => {
     mockLivingDocsEnabled.mockReturnValue(false);
+    mockExternalSyncConfigured.mockReturnValue(true);
 
     await StatusChangeSyncTrigger.triggerIfNeeded(
       '0004-test',
@@ -240,6 +252,26 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
     expect(mockSyncIncrement).not.toHaveBeenCalled();
     // External sync still runs — only doc GENERATION is gated.
     expect(mockRecord).toHaveBeenCalledWith('0004-test');
+  });
+
+  it('does nothing at all when neither living docs nor a tracker is configured', async () => {
+    // The 2.0 default project: `livingDocs: false`, no sync block. The trigger
+    // used to run the whole pipeline anyway and announce
+    // "✅ Auto-synced increment … to external tools" — in a project whose own
+    // doctor reports "no external sync enabled".
+    mockLivingDocsEnabled.mockReturnValue(false);
+    mockExternalSyncConfigured.mockReturnValue(false);
+
+    await StatusChangeSyncTrigger.triggerIfNeeded(
+      '0006-test',
+      IncrementStatus.PLANNED,
+      IncrementStatus.ACTIVE
+    );
+    await flushMicrotasks();
+
+    expect(mockSyncIncrement).not.toHaveBeenCalled();
+    expect(mockRecord).not.toHaveBeenCalled();
+    expect(mockRecordSuccess).not.toHaveBeenCalled();
   });
 
   it('is a no-op while a closure is in progress (single sync point)', async () => {
