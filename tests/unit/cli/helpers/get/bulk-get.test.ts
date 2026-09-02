@@ -5,12 +5,12 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockExecFileNoThrow = vi.hoisted(() => vi.fn());
+const mockResolveGitHubToken = vi.hoisted(() => vi.fn());
 const mockFetchGitHubRepos = vi.hoisted(() => vi.fn());
 const mockMatchByGlob = vi.hoisted(() => vi.fn());
 
-vi.mock('../../../../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrow: mockExecFileNoThrow,
+vi.mock('../../../../../src/utils/auth-helpers.js', () => ({
+  resolveGitHubToken: mockResolveGitHubToken,
 }));
 
 vi.mock('../../../../../src/cli/helpers/init/github-repo-cloning.js', () => ({
@@ -94,32 +94,25 @@ describe('parseBulkSource', () => {
 // ---------------------------------------------------------------------------
 describe('getAuthToken', () => {
   beforeEach(() => {
-    delete process.env.GH_TOKEN;
-    mockExecFileNoThrow.mockReset();
+    mockResolveGitHubToken.mockReset();
   });
 
-  it('returns GH_TOKEN env var when set', async () => {
-    process.env.GH_TOKEN = 'my-env-token';
-    const token = await getAuthToken();
+  it('returns whatever the single resolver found', async () => {
+    mockResolveGitHubToken.mockReturnValue({ token: 'my-env-token', source: 'GH_TOKEN', origin: 'process.env' });
+    const token = await getAuthToken('/proj');
     expect(token).toBe('my-env-token');
-    expect(mockExecFileNoThrow).not.toHaveBeenCalled();
+    expect(mockResolveGitHubToken).toHaveBeenCalledWith('/proj');
   });
 
-  it('falls back to gh auth token CLI', async () => {
-    mockExecFileNoThrow.mockResolvedValue({ exitCode: 0, stdout: 'cli-token\n', stderr: '' });
-    const token = await getAuthToken();
-    expect(token).toBe('cli-token');
-    expect(mockExecFileNoThrow).toHaveBeenCalledWith('gh', ['auth', 'token'], expect.anything());
+  it('defaults the project root to cwd', async () => {
+    mockResolveGitHubToken.mockReturnValue({ token: 'cli-token', source: 'gh-cli', origin: 'gh-cli' });
+    expect(await getAuthToken()).toBe('cli-token');
+    expect(mockResolveGitHubToken).toHaveBeenCalledWith(process.cwd());
   });
 
-  it('throws helpful error when neither GH_TOKEN nor gh CLI available', async () => {
-    mockExecFileNoThrow.mockResolvedValue({ exitCode: 1, stdout: '', stderr: 'not logged in' });
-    await expect(getAuthToken()).rejects.toThrow('GitHub auth required');
-  });
-
-  it('throws when gh auth token returns empty string', async () => {
-    mockExecFileNoThrow.mockResolvedValue({ exitCode: 0, stdout: '   ', stderr: '' });
-    await expect(getAuthToken()).rejects.toThrow('GitHub auth required');
+  it('throws a helpful error when the resolver finds nothing', async () => {
+    mockResolveGitHubToken.mockReturnValue({ token: '', source: 'none', origin: 'none' });
+    await expect(getAuthToken('/proj')).rejects.toThrow('GitHub auth required');
   });
 });
 
