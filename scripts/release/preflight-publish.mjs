@@ -58,11 +58,30 @@ try {
   // brackets, and its exact shape varies by npm major. Rather than guess:
   // try the whole output, then every plausible JSON start, and accept the
   // first candidate that actually yields a file list.
-  const readFiles = (value) => {
-    const payload = Array.isArray(value) ? value[0] : value;
+  // Shapes seen in the wild: npm 10 -> [ { files: [...] } ];
+  // npm 12 -> { "<package-name>": { files: [...] } }; and a bare object.
+  const filesOf = (payload) => {
     const files = payload?.files;
     if (!Array.isArray(files) || files.length === 0) return null;
     return files.map((f) => (typeof f === 'string' ? f : f.path)).filter(Boolean);
+  };
+  const readFiles = (value) => {
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        const found = filesOf(v);
+        if (found) return found;
+      }
+      return null;
+    }
+    const direct = filesOf(value);
+    if (direct) return direct;
+    if (value && typeof value === 'object') {
+      for (const v of Object.values(value)) {
+        const found = filesOf(v);
+        if (found) return found;
+      }
+    }
+    return null;
   };
 
   const candidates = [];
