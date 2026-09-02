@@ -755,9 +755,8 @@ function generateTasksTemplate(options: {
  * Generate standard tasks template.
  *
  * NOTE: TDD-specific task generation was removed from planning phase.
- * TDD discipline (RED-GREEN-REFACTOR triplets) is applied at EXECUTION time
- * via the sw:tdd-cycle, sw:tdd-red, sw:tdd-green, sw:tdd-refactor commands.
- * See plugins/specweave/commands/tdd-*.md for TDD execution workflow.
+ * TDD discipline (RED-GREEN-REFACTOR) is applied at EXECUTION time; the
+ * procedure ships as the optional skill skills-optional/tdd-cycle/.
  */
 function generateStandardTasksTemplate(title: string): string {
   return `# Tasks: ${title}
