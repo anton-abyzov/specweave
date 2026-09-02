@@ -94,8 +94,9 @@ describe('create-increment CLI command', () => {
 
     const specPath = path.join(incrementsPath, '0001-test-feature', 'spec.md');
     const content = fs.readFileSync(specPath, 'utf-8');
-    expect(content).toContain('[Story Title]');
-    expect(content).toContain('[user type]');
+    expect(content).toContain('## Problem');
+    expect(content).toContain('- [ ] AC-01:');
+    expect(content).toContain('[Specific, testable criterion]');
     expect(content).toContain('TEMPLATE FILE');
   });
 

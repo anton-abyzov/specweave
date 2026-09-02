@@ -95,14 +95,47 @@ describe('template-creator', () => {
       const content = fs.readFileSync(specPath, 'utf-8');
 
       // CRITICAL: spec.md must contain template markers
-      expect(content).toContain(TEMPLATE_MARKERS.STORY_TITLE);
-      expect(content).toContain(TEMPLATE_MARKERS.USER_TYPE);
-      expect(content).toContain(TEMPLATE_MARKERS.GOAL);
-      expect(content).toContain(TEMPLATE_MARKERS.BENEFIT);
+      expect(content).toContain(TEMPLATE_MARKERS.PROBLEM);
+      expect(content).toContain(TEMPLATE_MARKERS.SCOPE_IN);
+      expect(content).toContain(TEMPLATE_MARKERS.APPROACH_FILES);
       expect(content).toContain(TEMPLATE_MARKERS.CRITERION);
 
       // Must contain the template warning comment
       expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS');
+    });
+
+    it('scaffolds the 2.0 spec.md shape (Problem/Scope/AC/Approach/Open questions)', async () => {
+      // The 1.x shape (## Overview + ## User Stories + **AC-US1-01**) is not
+      // what the 2.0 loop — or any non-Claude tool following AGENTS.md — expects.
+      await createIncrementTemplates({
+        incrementId: '0004-shape',
+        title: 'Shape',
+        description: 'The spec shape must match the design',
+        projectId: 'test-project',
+        projectRoot: tempDir,
+      });
+
+      const content = fs.readFileSync(
+        path.join(incrementsPath, '0004-shape', 'spec.md'),
+        'utf-8'
+      );
+
+      expect(content).toContain('## Problem');
+      expect(content).toContain('## Scope');
+      expect(content).toContain('## Acceptance Criteria');
+      expect(content).toContain('## Approach');
+      expect(content).toContain('## Open questions');
+      expect(content).toContain('- [ ] AC-01:');
+      expect(content).toContain('- [ ] AC-02:');
+
+      // 1.x sections are gone.
+      expect(content).not.toContain('## User Stories');
+      expect(content).not.toContain('## Functional Requirements');
+      expect(content).not.toContain('**AC-US1-01**');
+
+      // The AC lines must be countable by the verify runner / Stop hook regex.
+      const acRe = /^-\s+\[([ xX])\]\s+\*{0,2}(AC-[A-Za-z0-9-]+)\*{0,2}:?\s*(.*)$/gm;
+      expect([...content.matchAll(acRe)].map((m) => m[2])).toEqual(['AC-01', 'AC-02']);
     });
 
     it('should create plan.md as a TEMPLATE with markers (--with-plan)', async () => {
