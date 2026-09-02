@@ -2,7 +2,8 @@
  * Increment resolution shared by `task`, `verify`, `handoff`.
  *
  * - explicit id: short (`0874`) or full slug, via resolveIncrementId
- * - omitted: the SINGLE increment whose metadata.json status is `active`
+ * - omitted: the SINGLE increment whose metadata.json status is in flight
+ *   (`active`, `in-progress`, `ready_for_review`)
  *   (2+ → error listing candidates; 0 → error). metadata.json is read directly
  *   (never lazily created).
  *
@@ -25,6 +26,9 @@ export class IncrementResolutionError extends Error {
   }
 }
 
+/** Statuses that count as "work in flight" for id resolution. */
+const ACTIVE_STATUSES = new Set(['active', 'in-progress', 'ready_for_review', 'ready-for-review']);
+
 export function incrementsDir(projectRoot: string): string {
   return path.join(projectRoot, '.specweave', 'increments');
 }
@@ -40,7 +44,7 @@ export function listActiveIncrementIds(projectRoot: string): string[] {
     if (!fs.existsSync(meta)) continue;
     try {
       const status = (JSON.parse(fs.readFileSync(meta, 'utf-8')) as { status?: string }).status;
-      if (status === 'active' || status === 'in-progress') ids.push(entry);
+      if (status && ACTIVE_STATUSES.has(status)) ids.push(entry);
     } catch {
       // unreadable metadata → not a candidate
     }

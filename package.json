@@ -38,6 +38,7 @@
     "test:e2e:dashboard": "npx playwright test --config playwright.config.ts",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e && npm run test:e2e:lifecycle",
     "test:coverage": "vitest run --coverage",
+    "e2e:ledger": "node scripts/e2e/task-ledger-e2e.mjs",
     "test": "npm run test:smoke",
     "benchmark": "ts-node tests/performance/run-all-benchmarks.ts",
     "validate:plugins": "node scripts/validation/validate-plugin-manifests.cjs",
