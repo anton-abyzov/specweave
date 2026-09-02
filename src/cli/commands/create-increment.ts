@@ -20,6 +20,8 @@ import { readConfig } from '../../core/config/config-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { initInterviewStateFile } from './interview.js';
 import { slugify } from '../../utils/string-utils.js';
+import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
+import * as fs from '../../utils/fs-native.js';
 
 
 export interface CreateIncrementOptions {
@@ -44,6 +46,51 @@ export interface CreateIncrementOptions {
    * the plan off to the team-lead skill for multi-agent authoring.
    */
   parallel?: boolean;
+
+  /**
+   * Id of an increment this one replaces. The old increment is abandoned with
+   * `Superseded by <new id>` and the new one records `supersedes`.
+   */
+  supersedes?: string;
+}
+
+/**
+ * Abandon the superseded increment and record the link on the new one.
+ * Never fails increment creation: a bad reference is reported and skipped.
+ *
+ * Reads and writes metadata.json directly — MetadataManager rejects the
+ * "planned" status the template creator writes.
+ */
+function applySupersedes(ref: string, newId: string, projectRoot: string): void {
+  const resolved = resolveIncrementId(ref, projectRoot);
+  if (!resolved || Array.isArray(resolved)) {
+    console.error(chalk.yellow(
+      Array.isArray(resolved)
+        ? `⚠️  --supersedes ${ref} is ambiguous (${resolved.join(', ')}); skipped`
+        : `⚠️  --supersedes ${ref}: increment not found; skipped`
+    ));
+    return;
+  }
+  const metaPath = (incrementId: string): string =>
+    path.join(projectRoot, '.specweave', 'increments', incrementId, 'metadata.json');
+  const patch = (incrementId: string, fields: Record<string, unknown>): void => {
+    const file = metaPath(incrementId);
+    const meta = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    fs.writeFileSync(file, JSON.stringify({ ...meta, ...fields }, null, 2) + '\n');
+  };
+  try {
+    const now = new Date().toISOString();
+    patch(resolved, {
+      status: 'abandoned',
+      abandonedReason: `Superseded by ${newId}`,
+      abandonedAt: now,
+      lastActivity: now,
+    });
+    patch(newId, { supersedes: resolved });
+    console.log(chalk.gray(`  Superseded ${resolved} (abandoned)`));
+  } catch (err) {
+    console.error(chalk.yellow(`⚠️  Could not supersede ${resolved}: ${err instanceof Error ? err.message : err}`));
+  }
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -128,6 +175,8 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   const finalId = autoId
     ? path.basename(result.incrementPath)
     : resolvedId;
+
+  if (options.supersedes) applySupersedes(options.supersedes, finalId, projectRoot);
 
   // Auto-initialize interview state when deep interview is enabled.
   // The interview-enforcement-guard blocks spec.md writes until all categories
