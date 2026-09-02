@@ -342,9 +342,36 @@ program
   .option('-s, --silent', 'Silent mode (for auto mode stop hook)')
   .option('-y, --yes', 'Assume yes (silent confirmation)')
   .option('--skip-validation', 'Skip quality gate validation (DANGEROUS)')
+  .option('-r, --reason <text>', 'Close without a passing reports/verify.json (stored as metadata.closeReason)')
   .action(async (incrementId, moreIds, options) => {
     const { completeCommand } = await import('../dist/src/cli/commands/complete.js');
     await completeCommand(incrementId, moreIds, options);
+  });
+
+// Task command - multi-vendor task ledger (claim / done / release / block / skip)
+program
+  .command('task <action> [taskOrIncrement] [increment]')
+  .description('Task ledger: list | next | claim | done | release | block | skip | render | whoami')
+  .option('-f, --force', 'Override a live claim, unmet deps or a Files overlap')
+  .option('-e, --evidence <text>', 'Evidence for `done` (commit sha, test output)')
+  .option('--run <cmd>', 'Run <cmd> through the OS shell; exit 0 required, output stored as evidence')
+  .option('-n, --note <text>', 'Note (required for block / skip)')
+  .option('--all-mine', 'With `release`: release every task claimed by this agent')
+  .option('--json', 'Machine-readable output')
+  .action(async (action, taskOrIncrement, increment, options) => {
+    const { taskCommand } = await import('../dist/src/cli/commands/task.js');
+    process.exitCode = await taskCommand(action, taskOrIncrement, increment, options);
+  });
+
+// Verify command - run the project's verification commands, write reports/verify.{md,json}
+program
+  .command('verify [incrementId]')
+  .description("Run the project's test/lint/build commands and write reports/verify.{md,json}")
+  .option('--cmd <command>', 'Command to run (repeatable; overrides config/auto-detection)', (val, acc) => { (acc || []).push(val); return acc || [val]; }, [])
+  .option('--json', 'Print the verify report as JSON')
+  .action(async (incrementId, options) => {
+    const { verifyCommand } = await import('../dist/src/cli/commands/verify.js');
+    process.exitCode = await verifyCommand(incrementId, options);
   });
 
 // Create Increment command - Create template files for a new increment
