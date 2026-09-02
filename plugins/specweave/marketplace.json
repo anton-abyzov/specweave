@@ -1,57 +1,122 @@
 {
   "$schema": "https://spec-weave.com/schemas/skill-marketplace.v1.json",
   "plugin": "sw",
-  "version": "2.0.0",
-  "description": "Skill-level marketplace catalog for the specweave plugin. Lists deprecation state, replacement pointers, and alias routing for each skill.",
+  "description": "Skill catalog for the specweave plugin. The plugin version is tracked in .claude-plugin/plugin.json (stamped from package.json); this file only lists what ships.",
   "skills": [
+    {
+      "name": "sw:increment",
+      "path": "skills/increment/SKILL.md",
+      "description": "Plan a unit of work: spec.md with Problem, Scope, numbered ACs and an Approach, plus tasks.md definitions.",
+      "deprecated": false
+    },
+    {
+      "name": "sw:do",
+      "path": "skills/do/SKILL.md",
+      "description": "Work the increment task by task through the ledger: task next, claim, implement, commit, task done with evidence.",
+      "deprecated": false
+    },
+    {
+      "name": "sw:done",
+      "path": "skills/done/SKILL.md",
+      "description": "Close an increment: ledger check, specweave verify, optional review, specweave complete.",
+      "deprecated": false
+    },
+    {
+      "name": "sw:review",
+      "path": "skills/review/SKILL.md",
+      "description": "Adversarial fresh-context review; every finding cites path:line and is re-verified. Replaces grill, code-reviewer and judge-llm.",
+      "deprecated": false
+    },
+    {
+      "name": "sw:team",
+      "path": "skills/team/SKILL.md",
+      "description": "Several agents on one increment: a worktree each, claims through the ledger, one closure. Replaces team-lead and team-merge.",
+      "deprecated": false
+    },
+    {
+      "name": "sw:handoff",
+      "path": "skills/handoff/SKILL.md",
+      "description": "Portable, secret-scrubbed handoff doc so the work continues in any AI tool or on any machine.",
+      "deprecated": false
+    },
     {
       "name": "sw:sync",
       "path": "skills/sync/SKILL.md",
-      "deprecated": false,
-      "replacement": null,
-      "migrationWarning": "Replaces sw:github-sync, sw:jira-sync, sw:ado-sync, sw:progress-sync, sw:import and the per-provider mapper/validator/multi-project skills. Use specweave sync push|pull|status|setup."
+      "description": "One sync surface for GitHub, Jira and Azure DevOps: push, pull, status, setup. Replaces the per-provider sync, mapper, validator and import skills.",
+      "deprecated": false
     },
     {
-      "name": "sw:tdd-red",
-      "path": "skills/tdd-red/SKILL.md",
-      "deprecated": true,
-      "deprecatedIn": "1.1.0",
-      "removalScheduledIn": "1.3.0",
-      "replacement": "sw:tdd-cycle --phase red",
-      "alias": {
-        "from": "/sw:tdd-red",
-        "to": "/sw:tdd-cycle --phase red",
-        "migrationWarning": "sw:tdd-red is deprecated. Use sw:tdd-cycle --phase red instead."
-      },
-      "migrationWarning": "sw:tdd-red is deprecated. Use sw:tdd-cycle --phase red instead. Scheduled for removal in v1.3.0."
+      "name": "sw:auto",
+      "path": "skills/auto/SKILL.md",
+      "description": "Unattended execution driven by the Stop hook until every task is done.",
+      "deprecated": false
     },
     {
-      "name": "sw:tdd-green",
-      "path": "skills/tdd-green/SKILL.md",
-      "deprecated": true,
-      "deprecatedIn": "1.1.0",
-      "removalScheduledIn": "1.3.0",
-      "replacement": "sw:tdd-cycle --phase green",
-      "alias": {
-        "from": "/sw:tdd-green",
-        "to": "/sw:tdd-cycle --phase green",
-        "migrationWarning": "sw:tdd-green is deprecated. Use sw:tdd-cycle --phase green instead."
-      },
-      "migrationWarning": "sw:tdd-green is deprecated. Use sw:tdd-cycle --phase green instead. Scheduled for removal in v1.3.0."
+      "name": "sw:brainstorm",
+      "path": "skills/brainstorm/SKILL.md",
+      "description": "Expand the option space before committing to one, ending in a pick handed to sw:increment.",
+      "deprecated": false
     },
     {
-      "name": "sw:tdd-refactor",
-      "path": "skills/tdd-refactor/SKILL.md",
-      "deprecated": true,
-      "deprecatedIn": "1.1.0",
-      "removalScheduledIn": "1.3.0",
-      "replacement": "sw:tdd-cycle --phase refactor",
-      "alias": {
-        "from": "/sw:tdd-refactor",
-        "to": "/sw:tdd-cycle --phase refactor",
-        "migrationWarning": "sw:tdd-refactor is deprecated. Use sw:tdd-cycle --phase refactor instead."
-      },
-      "migrationWarning": "sw:tdd-refactor is deprecated. Use sw:tdd-cycle --phase refactor instead. Scheduled for removal in v1.3.0."
+      "name": "sw:qa",
+      "path": "skills/qa/SKILL.md",
+      "description": "Risk-scored quality assessment via specweave qa: verdict, blockers, optional export to tasks.md.",
+      "deprecated": false
     }
-  ]
+  ],
+  "optionalSkills": {
+    "note": "Not shipped in the plugin. Install with: npx vskill install anton-abyzov/specweave/skills-optional/<name>",
+    "names": [
+      "tdd-cycle",
+      "e2e",
+      "debug",
+      "diagrams",
+      "release-expert"
+    ]
+  },
+  "removedIn2_0": {
+    "note": "Removed in 2.0. Use the replacement; there is no alias routing.",
+    "map": {
+      "sw:grill": "sw:review",
+      "sw:code-reviewer": "sw:review",
+      "sw:judge-llm": "sw:review",
+      "sw:pr-review": "sw:review",
+      "sw:team-lead": "sw:team",
+      "sw:team-merge": "sw:team",
+      "sw:team-build": "sw:team",
+      "sw:plan": "sw:increment",
+      "sw:pm": "sw:increment",
+      "sw:architect": "sw:increment",
+      "sw:validate": "sw:qa",
+      "sw:close-all": "specweave complete --all",
+      "sw:progress": "specweave status",
+      "sw:analytics": "specweave analytics",
+      "sw:help": "specweave help",
+      "sw:get": "specweave get",
+      "sw:umbrella": "specweave init --umbrella",
+      "sw:npm": "skills-optional/release-expert",
+      "sw:pr": "specweave link-pr",
+      "sw:sync-docs": "specweave docs sync",
+      "sw:living-docs": "specweave sync-living-docs",
+      "sw:progress-sync": "sw:sync",
+      "sw:import": "sw:sync",
+      "sw:github-sync": "sw:sync",
+      "sw:jira-sync": "sw:sync",
+      "sw:ado-sync": "sw:sync",
+      "sw:multi-project": "sw:sync",
+      "sw:tdd-red": "skills-optional/tdd-cycle",
+      "sw:tdd-green": "skills-optional/tdd-cycle",
+      "sw:tdd-refactor": "skills-optional/tdd-cycle",
+      "sw:tdd-cycle": "skills-optional/tdd-cycle",
+      "sw:e2e": "skills-optional/e2e",
+      "sw:debug": "skills-optional/debug",
+      "sw:diagrams": "skills-optional/diagrams",
+      "sw:release-expert": "skills-optional/release-expert",
+      "sw:image": "external media skills",
+      "sw:video": "external media skills",
+      "sw:remotion": "external media skills",
+      "sw:skill-gen": "vskill skill-creator",
+      "sw:skill-refine": "vskill skill-creator"
+    }
+  }
 }
