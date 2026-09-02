@@ -92,6 +92,8 @@ describe('task skip (reason mandatory, terminal)', () => {
     await taskCommand('skip', 'T-01', undefined, { cwd: root, agent: 'a@h', reason: 'obsolete' });
     const code = await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', evidence: 'abc123' });
     expect(code).not.toBe(0);
+    expect(stderr.join('')).toContain('skip is terminal');
+    expect(ledgerLines(incDir).map((e) => e.e)).toEqual(['skip']);
     expect(loadTaskBoard(incDir).tasks[0].state.status).toBe('skipped');
   });
 
