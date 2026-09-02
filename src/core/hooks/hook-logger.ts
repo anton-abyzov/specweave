@@ -46,7 +46,7 @@ export interface HookLogEntry {
  *   warnings: [{
  *     severity: 'WARNING',
  *     message: 'Hook execution timeout after 5s',
- *     recommendation: 'Run specweave hooks health'
+ *     recommendation: 'Run specweave doctor'
  *   }]
  * });
  * ```

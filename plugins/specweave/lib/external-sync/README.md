@@ -19,7 +19,6 @@ This directory contains extracted boilerplate code that is 80-100% identical acr
 
 | File | Purpose | Used By |
 |------|---------|---------|
-| `hooks-common.sh` | Shared bash functions | All post-task-completion hooks |
 
 ## Usage
 
@@ -65,7 +64,7 @@ class GitHubDuplicateDetector extends DuplicateDetectorBase<GitHubIssue> {
 #!/bin/bash
 # Source shared utilities
 SCRIPT_DIR="$(dirname "$0")"
-source "$SCRIPT_DIR/../../specweave/lib/external-sync/hooks-common.sh"
+# (2.0) shell hook helpers were removed; call the Node modules in this directory directly
 
 # Use shared functions
 PROJECT_ROOT=$(find_project_root)
@@ -107,7 +106,7 @@ When adding support for a new PM tool (e.g., Linear, Notion):
 
 1. Create plugin: `plugins/specweave-{tool}/`
 2. Extend `DuplicateDetectorBase` for the tool
-3. Source `hooks-common.sh` in your hooks
+3. Import the Node modules in this directory (no shell helpers in 2.0)
 4. Use `checkSyncPermissions()` in commands
 5. Implement tool-specific API client
 
