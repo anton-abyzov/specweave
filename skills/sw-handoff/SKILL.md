@@ -43,6 +43,15 @@ git status --porcelain; git diff --stat
 { git diff HEAD; git diff --cached; } > handoff.diff
 ```
 
+PowerShell — `{ … } > file` writes the *scriptblock text* in UTF-16, not a diff:
+
+```powershell
+git rev-parse --abbrev-ref HEAD; git rev-parse --short HEAD
+git status --porcelain; git diff --stat
+$d = (git diff HEAD | Out-String) + (git diff --cached | Out-String)
+[IO.File]::WriteAllText('handoff.diff', $d, [Text.UTF8Encoding]::new($false))
+```
+
 2. Ask the user only what the files cannot know: why you are stopping, where
    things stand in one line, the exact next step, any gotcha, key decisions.
 3. **Scrub secrets** in the free text AND the diff before writing: replace

@@ -69,6 +69,33 @@ describe('sw plugin surface', () => {
     }
   });
 
+  it('the increment skill drives supersede through the flag the CLI registers', () => {
+    const bin = readFileSync(join(projectRoot, 'bin', 'specweave.js'), 'utf-8');
+    const start = bin.indexOf(".command('create-increment");
+    expect(start).toBeGreaterThan(-1);
+    const next = bin.indexOf('.command(', start + 10);
+    const createBlock = bin.slice(start, next === -1 ? undefined : next);
+    const registered = new Set(
+      [...createBlock.matchAll(/\.option\('(--[a-z-]+)/g)].map((m) => m[1]),
+    );
+    expect(registered.has('--supersedes')).toBe(true);
+
+    const skill = skillBody('increment');
+    const lines = skill.split('\n');
+    const from = lines.findIndex((l) => l.includes('specweave create-increment'));
+    expect(from, 'increment skill has no create-increment example').toBeGreaterThan(-1);
+    const to = lines.findIndex((l, i) => i > from && l.trim() === '```');
+    const block = lines.slice(from, to === -1 ? undefined : to).join('\n');
+    const used = [...block.matchAll(/--[a-z][a-z-]*/g)].map((m) => m[0]);
+    expect(used).toContain('--supersedes');
+    for (const flag of used) {
+      expect(registered.has(flag), `${flag} is not registered on create-increment`).toBe(true);
+    }
+    // No "the CLI does not have it yet" workaround: supersede is one atomic call.
+    expect(skill).not.toMatch(/once the CLI ships/i);
+    expect(skill).not.toMatch(/specweave abandon/);
+  });
+
   it('moved the optional procedures out of the plugin', () => {
     const optional = join(projectRoot, 'skills-optional');
     const dirs = readdirSync(optional, { withFileTypes: true })

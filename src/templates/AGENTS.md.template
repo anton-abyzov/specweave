@@ -21,7 +21,7 @@ Only those files (plus optional `plan.md` when Approach outgrows a page, and `sc
 <!-- SECTION:loop required -->
 ## The loop
 
-| Step | Command (each step is also a standalone skill you can install into any tool with `npx vskill install anton-abyzov/specweave/skills/sw-do` — same for `sw-increment`, `sw-review`, `sw-handoff`, `sw-task`) |
+| Step | Command (each step is also a standalone skill you can install into any tool with `npx vskill install anton-abyzov/specweave/sw-do` — same for `sw-increment`, `sw-review`, `sw-handoff`, `sw-task`) |
 |---|---|
 | Plan a feature: write `spec.md` (Problem, Scope, `AC-01…` checkboxes, Approach: files that change, order of work, risks, decisions), get approval before any code | `specweave create-increment "title"` |
 | Work the tasks | `specweave task next` → `specweave task claim T-NN` → implement → commit (`NNNN: …`) → `specweave task done T-NN --run "<test cmd>"` (the command runs through your OS shell: cmd.exe on Windows, sh elsewhere) |
