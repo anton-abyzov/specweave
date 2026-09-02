@@ -161,7 +161,7 @@ Imports work items from GitHub Issues, JIRA, or Azure DevOps.
 
 Bidirectional synchronization with external tools.
 
-**Triggered by**: `sw:sync`, `sw:sync`, `sw:sync`
+**Triggered by**: `sw:sync` / `specweave sync push|pull`
 
 **Features**:
 - Push progress to external tools

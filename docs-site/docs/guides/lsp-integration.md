@@ -120,7 +120,7 @@ WITHOUT LSP:                          WITH LSP:
 
 | Phase | What Happens | LSP Involvement |
 |-------|--------------|-----------------|
-| **Planning** (`sw:increment`, `sw:increment`) | Analyzing existing codebase | LSP maps dependencies, types |
+| **Planning** (`sw:increment`) | Analyzing existing codebase | LSP maps dependencies, types |
 | **Implementation** (`sw:do`) | Writing code | LSP provides diagnostics automatically |
 | **Refactoring** | Changing existing code | `findReferences` before ANY change |
 | **Code Review** | Verifying changes | `getDiagnostics` to catch errors |

@@ -77,11 +77,11 @@ SpecWeave ships with 44 core skills for planning, execution, quality, and sync:
 - **PM** (`sw:increment`) — writes user stories with acceptance criteria
 - **Architect** (`sw:increment`) — designs systems, writes ADRs
 - **Code Review** (`sw:review`) — parallel multi-agent review with confidence scoring
-- **Testing** (`sw:do`, `sw:do`) — E2E automation, TDD red-green-refactor
-- **Quality** (`sw:review`, `sw:review`) — critical code review and LLM-as-Judge validation
+- **Testing** (`sw:do`) — test-first loop, evidence stored on every `task done`
+- **Quality** (`sw:review`) — one adversarial fresh-context review; every finding cites `path:line`
 - **Debug** (`sw:review`) — systematic 4-phase debugging with escalation
 - **Team Lead** (`sw:team`) — parallel multi-agent orchestration
-- **Release** (`sw:done`, `sw:done`) — multi-repo release coordination
+- **Release** (`sw:done`) — verify gate, then close and sync
 
 Need domain-specific skills like frontend frameworks, backend languages, or security? Install them from the [vskill marketplace](https://verified-skill.com) — they plug into SpecWeave's core workflow without modification.
 
