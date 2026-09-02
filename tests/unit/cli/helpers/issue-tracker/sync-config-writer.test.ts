@@ -211,6 +211,31 @@ describe('sync-config-writer', () => {
       expect(logger.log).toHaveBeenCalled();
     });
 
+    it('summary names only the hooks it actually writes', async () => {
+      // The summary used to advertise post_task_completion and
+      // post_increment_planning, neither of which 2.0 writes or dispatches —
+      // users were told per-task sync was wired up when nothing fired.
+      mockExecSync.mockReturnValue('https://github.com/myorg/myrepo.git\n');
+      const logger = makeLogger();
+
+      await writeSyncConfig(
+        '/project',
+        'github',
+        { token: 'ghp_xxx', instanceType: 'cloud' } as any,
+        makeSyncSettings(),
+        makeSyncPermissions(),
+        undefined,
+        undefined,
+        logger
+      );
+
+      const summary = logger.log.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
+      expect(summary).not.toContain('post_task_completion');
+      expect(summary).not.toContain('post_increment_planning');
+      expect(summary).toContain('post_increment_done');
+      expect(summary).toContain('specweave sync push');
+    });
+
     it('parses SSH git remote URL', async () => {
       mockExecSync.mockReturnValue('git@github.com:owner/repo-name.git\n');
       const logger = makeLogger();
