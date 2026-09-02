@@ -404,16 +404,11 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
       increments = increments.filter(m => m.type === type);
     }
 
-    // Group by status.
-    // Display "Active" is broad (planning counts as in-flight work for the reader);
-    // the advisory WIP note below uses the single canonical definition
-    // (countsTowardWipLimit) so `status` and `check-discipline` never disagree.
-    const active = increments.filter(m =>
-      m.status === IncrementStatus.PLANNING ||
-      m.status === IncrementStatus.ACTIVE ||
-      m.status === IncrementStatus.READY_FOR_REVIEW
-    );
-    const wipActive = increments.filter(m => countsTowardWipLimit(m.status));
+    // Group by status. "Active" is exactly what the advisory WIP note counts
+    // (countsTowardWipLimit) so `status` and `check-discipline` never disagree;
+    // planning is shown as its own group.
+    const planning = increments.filter(m => m.status === IncrementStatus.PLANNING);
+    const active = increments.filter(m => countsTowardWipLimit(m.status));
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
     const abandoned = increments.filter(m => m.status === IncrementStatus.ABANDONED);
@@ -426,6 +421,15 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     // Show overall progress (prominent)
     console.log(chalk.cyan.bold(`📈 Overall Progress: ${completedCount}/${totalIncrements} increments complete (${overallProgress}%)`));
     console.log('');
+
+    // Show planning increments (not counted as active)
+    if (planning.length > 0) {
+      console.log(chalk.magenta.bold(`📝 Planning (${planning.length}):`));
+      planning.forEach(m => {
+        console.log(`  ${chalk.magenta('○')} ${m.id} [${m.type}]`);
+      });
+      console.log('');
+    }
 
     // Show active increments
     if (active.length > 0) {
@@ -456,7 +460,7 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     }
 
     // Advisory WIP note (never blocks)
-    const wipNote = buildWipNote(wipActive.length, new DisciplineChecker(resolveEffectiveRoot()).getLimits().activeIncrements);
+    const wipNote = buildWipNote(active.length, new DisciplineChecker(resolveEffectiveRoot()).getLimits().activeIncrements);
     if (wipNote) {
       console.log(chalk.blue(`ℹ️  ${wipNote.message}`));
       console.log('');
@@ -464,6 +468,7 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
 
     // Show summary
     console.log(chalk.gray(`📊 Summary:`));
+    console.log(chalk.gray(`   Planning: ${planning.length}`));
     console.log(chalk.gray(`   Active: ${active.length}`));
     console.log(chalk.gray(`   Paused: ${paused.length}`));
     console.log(chalk.gray(`   Completed: ${completed.length}`));
