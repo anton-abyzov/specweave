@@ -20,8 +20,7 @@ import { readConfig } from '../../core/config/config-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { initInterviewStateFile } from './interview.js';
 import { slugify } from '../../utils/string-utils.js';
-import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
-import * as fs from '../../utils/fs-native.js';
+import { supersedeIncrement, setParentIncrement } from '../../core/tasks/supersede.js';
 
 
 export interface CreateIncrementOptions {
@@ -48,49 +47,13 @@ export interface CreateIncrementOptions {
   parallel?: boolean;
 
   /**
-   * Id of an increment this one replaces. The old increment is abandoned with
-   * `Superseded by <new id>` and the new one records `supersedes`.
+   * Increment this one replaces. The old increment moves to `abandoned` with
+   * `closeReason: "superseded by <new id>"`, the new one records `supersedes`.
    */
   supersedes?: string;
-}
 
-/**
- * Abandon the superseded increment and record the link on the new one.
- * Never fails increment creation: a bad reference is reported and skipped.
- *
- * Reads and writes metadata.json directly — MetadataManager rejects the
- * "planned" status the template creator writes.
- */
-function applySupersedes(ref: string, newId: string, projectRoot: string): void {
-  const resolved = resolveIncrementId(ref, projectRoot);
-  if (!resolved || Array.isArray(resolved)) {
-    console.error(chalk.yellow(
-      Array.isArray(resolved)
-        ? `⚠️  --supersedes ${ref} is ambiguous (${resolved.join(', ')}); skipped`
-        : `⚠️  --supersedes ${ref}: increment not found; skipped`
-    ));
-    return;
-  }
-  const metaPath = (incrementId: string): string =>
-    path.join(projectRoot, '.specweave', 'increments', incrementId, 'metadata.json');
-  const patch = (incrementId: string, fields: Record<string, unknown>): void => {
-    const file = metaPath(incrementId);
-    const meta = JSON.parse(fs.readFileSync(file, 'utf-8'));
-    fs.writeFileSync(file, JSON.stringify({ ...meta, ...fields }, null, 2) + '\n');
-  };
-  try {
-    const now = new Date().toISOString();
-    patch(resolved, {
-      status: 'abandoned',
-      abandonedReason: `Superseded by ${newId}`,
-      abandonedAt: now,
-      lastActivity: now,
-    });
-    patch(newId, { supersedes: resolved });
-    console.log(chalk.gray(`  Superseded ${resolved} (abandoned)`));
-  } catch (err) {
-    console.error(chalk.yellow(`⚠️  Could not supersede ${resolved}: ${err instanceof Error ? err.message : err}`));
-  }
+  /** Parent increment (split-off / follow-up work), recorded as `parent`. */
+  parent?: string;
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -103,6 +66,8 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     json = false,
     projectRoot: rawProjectRoot,
     parallel = false,
+    supersedes,
+    parent,
   } = options;
 
   if (id && options.autoId) {
@@ -176,7 +141,14 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     ? path.basename(result.incrementPath)
     : resolvedId;
 
-  if (options.supersedes) applySupersedes(options.supersedes, finalId, projectRoot);
+  // Relationships: --supersedes abandons the old increment, --parent links up.
+  const relations: string[] = [];
+  const record = (result: { ok: boolean; message: string }) => {
+    if (result.ok) relations.push(result.message);
+    else console.error(chalk.yellow(`⚠️  ${result.message}`));
+  };
+  if (supersedes) record(supersedeIncrement(projectRoot, supersedes, finalId));
+  if (parent) record(setParentIncrement(projectRoot, finalId, parent));
 
   // 2.0: deep interview is advisory. `warn` seeds the interview state file so
   // the planning skill can track which categories it has covered; nothing blocks.
@@ -204,11 +176,13 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
       incrementPath: result.incrementPath,
       createdFiles: result.createdFiles,
       nextSteps: result.nextSteps,
+      ...(relations.length ? { relations } : {}),
     }));
   } else {
     console.log(chalk.green(`\nIncrement created: ${finalId}`));
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
+    for (const r of relations) console.log(`  ${r}`);
     console.log(chalk.blue('\nNext steps:'));
     result.nextSteps.forEach((step, i) => {
       console.log(`  ${i + 1}. ${step}`);

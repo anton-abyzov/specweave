@@ -29,6 +29,10 @@ export interface VerifyReport {
   commands: Array<{ cmd: string; exit: number }>;
   acs: { total: number; done: number };
   tasks: { total: number; done: number; skipped: number; open: number };
+  /** Skipped tasks with the mandatory reason from `specweave task skip`. */
+  skipped: Array<{ id: string; by?: string; reason?: string }>;
+  /** Ledger lines that could not be parsed (BOM/CRLF are tolerated; this counts real junk). */
+  ledgerMalformed: number;
 }
 
 export interface AcEntry { id: string; done: boolean; text: string }
@@ -116,6 +120,10 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
     commands: results.map((r) => ({ cmd: r.cmd, exit: r.exit })),
     acs: { total: acs.length, done: acs.filter((a) => a.done).length },
     tasks: { total: board.counts.total, done: board.counts.done, skipped: board.counts.skipped, open: board.counts.total - board.counts.done - board.counts.skipped },
+    skipped: board.tasks
+      .filter((t) => t.state.status === 'skipped')
+      .map((t) => ({ id: t.id, by: t.state.by, reason: t.state.note })),
+    ledgerMalformed: board.fold.malformed,
   };
 
   const reportsDir = path.join(incrementDir, 'reports');
@@ -159,6 +167,16 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
   L.push('');
   L.push(renderBoardTable(board));
   L.push('');
+  if (report.skipped.length) {
+    L.push('### Skipped');
+    L.push('');
+    for (const s of report.skipped) L.push(`- ${s.id} — ${s.reason ?? '(no reason recorded)'} (${s.by ?? 'unknown'})`);
+    L.push('');
+  }
+  if (report.ledgerMalformed) {
+    L.push(`_${report.ledgerMalformed} malformed ledger line(s) skipped — inspect ledger.jsonl._`);
+    L.push('');
+  }
   return L.join('\n');
 }
 

@@ -335,13 +335,14 @@ program
 
 // Complete command - Mark increment(s) as complete (triggers external sync)
 program
-  .command('complete <increment-id> [more-ids...]')
+  .command('complete [increment-id] [more-ids...]')
   .alias('done')
   .description('Complete one or more increments (triggers GitHub/JIRA/ADO sync)')
   .option('-s, --silent', 'Silent mode (for auto mode stop hook)')
   .option('-y, --yes', 'Assume yes (silent confirmation)')
   .option('--skip-validation', 'Skip quality gate validation (DANGEROUS)')
   .option('-r, --reason <text>', 'Close without a passing reports/verify.json (stored as metadata.closeReason)')
+  .option('--all', 'Close every active increment whose tasks are all done or skipped (requires --reason)')
   .action(async (incrementId, moreIds, options) => {
     const { completeCommand } = await import('../dist/src/cli/commands/complete.js');
     await completeCommand(incrementId, moreIds, options);
@@ -354,7 +355,8 @@ program
   .option('-f, --force', 'Override a live claim, unmet deps or a Files overlap')
   .option('-e, --evidence <text>', 'Evidence for `done` (commit sha, test output)')
   .option('--run <cmd>', 'Run <cmd> through the OS shell; exit 0 required, output stored as evidence')
-  .option('-n, --note <text>', 'Note (required for block / skip)')
+  .option('-n, --note <text>', 'Note (alias of --reason)')
+  .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
@@ -389,6 +391,8 @@ program
   .option('--project-root <path>', 'Override project root directory')
   .option('--supersedes <increment-id>', 'Abandon the increment this one replaces and record the link')
   .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
+  .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
+  .option('--parent <increment-id>', 'Parent increment (recorded as metadata.parent)')
   .option('--json', 'Output result as JSON (for programmatic use)')
   .action(async (title, options) => {
     if (title && !options.title) options.title = title;
