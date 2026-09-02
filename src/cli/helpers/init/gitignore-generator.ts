@@ -417,6 +417,7 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
   specweave: [
     '# SpecWeave',
     '.specweave/cache/',
+    '.specweave/backups/',
     '.specweave/increments/*/logs/',
     '.specweave/increments/*/test-results/',
     '.specweave/docs-site-internal/',
