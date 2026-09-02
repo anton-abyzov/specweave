@@ -37,6 +37,10 @@ Manual: next id = highest existing number + 1, zero-padded to 4
 {"id":"0042-ledger-fold","status":"active","type":"feature","created":"2026-09-02T10:00:00Z","lastActivity":"2026-09-02T10:00:00Z"}
 ```
 
+Write every file as UTF-8 **without a BOM** (PowerShell:
+`[IO.File]::WriteAllText($p, $body, [Text.UTF8Encoding]::new($false))`, never `>`)
+— a BOM breaks the parsers that read these files on the next machine.
+
 Status is one of `planning` `active` `paused` `ready_for_review` `completed`
 `abandoned`, and only lifecycle commands change it. Replacing an older
 increment? Add `"supersedes":"0031-old-slug"` here and close that one as
