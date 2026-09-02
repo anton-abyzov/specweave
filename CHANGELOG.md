@@ -11,7 +11,7 @@ SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and delete
 - `sw:pm`, `sw:architect`, `sw:plan` → **`sw:increment`** (the Approach section absorbed `plan.md`).
 - `sw:tdd-cycle`, `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor` → **`sw:do`**.
 - `sw:sync-docs`, `sw:progress-sync`, `sw:sync-setup`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync` → **`sw:sync`**.
-- `sw:next`, `sw:progress`, `sw:close-all`, `sw:doctor`, `sw:jobs`, `sw:analytics`, `sw:lsp`, `sw:docs`, `sw:living-docs`, `sw:help`, `sw:framework`, `sw:reflect` → the CLI (`specweave task next`, `specweave status`, `specweave doctor`, …).
+- `sw:next`, `sw:progress`, `sw:close-all`, `sw:doctor`, `sw:jobs`, `sw:analytics`, `sw:lsp`, `sw:docs`, `sw:living-docs`, `sw:help`, `sw:framework` → the CLI (`specweave task next`, `specweave status`, `specweave doctor`, …).
 - `sw:e2e`, `sw:debug`, `sw:image`, `sw:video`, `sw:remotion`, `sw:npm`, `sw:release-*`, `sw:skill-gen`, `sw:skill-refine`, `sw:diagrams` → removed from the core plugin; available as optional vskill-distributed skills.
 - The whole `commands/` plugin namespace (73 `.md` files) is gone.
 - The per-provider `sw-github:`, `sw-jira:` and `sw-ado:` namespaces are gone. Use `sw:sync` / `specweave sync --provider <name>`.
@@ -24,6 +24,7 @@ SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and delete
 
 - Removed outright: `contextBudget`, `quality`, `cache`, `deduplication`, `archiving`, `apiDocs`, `statusLine`, `incrementAssist`, `billing`, `translation`, `language`, `documentation`, `reflect`, `pluginAutoLoad`, `grill`, `codeReview`, `qualityGates`, `skillGen`.
 - Removed `hooks` sub-keys: `banner`, `post_increment_planning`, `post_task_completion`.
+- Removed with `reflect`: the `sw:reflect` skill, the `specweave reflect-stop` command, the session-end nudge, skill-memory pruning and `.specweave/state/reflect-config.json` (deleted on `update`).
 - Removed `testing` sub-keys: `defaultTestMode`, `defaultCoverageTarget`, `coverageTargets`, `tddEnforcement`, `playwright`.
 - Removed `sync.mode` — the queued event-queue path dropped events on a partial flush.
 - Renamed: `testing.defaultTestMode` → `testing.mode`; `testing.coverageTargets` → `testing.coverage`; `limits.maxActiveIncrements` → `limits.activeIncrements`; `hooks.*.sync_living_docs` → `livingDocs`; `planning.deepInterview.{enabled,enforcement}` → `planning.deepInterview` (`off` | `warn`); `umbrella` / `multiProject` / `projectMappings` → `workspace`.
