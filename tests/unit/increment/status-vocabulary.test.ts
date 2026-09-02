@@ -16,6 +16,7 @@ import * as path from 'path';
 import {
   IncrementStatus,
   migrateLegacyStatus,
+  UNKNOWN_STATUS_FALLBACK,
 } from '../../../src/core/types/increment-metadata.js';
 import {
   resolveIncrement,
@@ -55,11 +56,12 @@ describe('migrateLegacyStatus', () => {
     expect(result.metadata.status).toBe(expected);
   });
 
-  it('keeps an unrecognised status visible instead of dropping the increment', () => {
-    const result = migrateLegacyStatus({ id: '0001-x', status: 'totally-made-up' });
-    expect(result.changed).toBe(true);
-    expect(result.metadata.status).toBe(IncrementStatus.PLANNED);
-    expect(result.note).toMatch(/Unrecognized status/);
+  it('leaves a status it cannot interpret to the caller (metadata.json coerces, spec.md rejects)', () => {
+    expect(migrateLegacyStatus({ id: '0001-x', status: 'totally-made-up' })).toMatchObject({
+      changed: false,
+    });
+    // The visibility fallback for metadata.json is applied by MetadataManager.
+    expect(UNKNOWN_STATUS_FALLBACK).toBe(IncrementStatus.PLANNED);
   });
 
   it('is idempotent for statuses already in the vocabulary', () => {

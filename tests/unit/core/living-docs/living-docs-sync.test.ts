@@ -2303,10 +2303,10 @@ title: No Metadata
       const result = await sync.syncIncrement(incrementId);
 
       expect(result.success).toBe(true);
-      // Status should default to 'planning'
+      // Status should default to the 2.0 'planned'
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
-        expect.objectContaining({ status: 'planning' }),
+        expect.objectContaining({ status: 'planned' }),
         incrementId,
         undefined,
         undefined

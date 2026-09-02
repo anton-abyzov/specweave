@@ -7,7 +7,7 @@
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
-import { IncrementStatus, IncrementType, createDefaultMetadata, isValidTransition, isStale, shouldAutoAbandon, migrateLegacyStatus } from '../types/increment-metadata.js';
+import { IncrementStatus, IncrementType, createDefaultMetadata, isValidTransition, isStale, shouldAutoAbandon, migrateLegacyStatus, UNKNOWN_STATUS_FALLBACK } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { consoleLogger } from '../../utils/logger.js';
@@ -725,6 +725,15 @@ export class MetadataManager {
                 Object.assign(metadata, migration.metadata);
                 if (migration.note)
                     warnings.push(migration.note);
+                corrected = true;
+            }
+            else if (typeof metadata.status === 'string' &&
+                !Object.values(IncrementStatus).includes(metadata.status)) {
+                // Not a known legacy spelling either. Keep the increment VISIBLE rather
+                // than letting read() throw and getAll() drop it — a project with
+                // pending work used to report "100% complete" because of exactly this.
+                warnings.push(`Unrecognized status '${metadata.status}' — treated as '${UNKNOWN_STATUS_FALLBACK}' (2.0 statuses: ${Object.values(IncrementStatus).join(', ')})`);
+                metadata.status = UNKNOWN_STATUS_FALLBACK;
                 corrected = true;
             }
         }

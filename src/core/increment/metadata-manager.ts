@@ -20,7 +20,8 @@ import {
   isValidTransition,
   isStale,
   shouldAutoAbandon,
-  migrateLegacyStatus
+  migrateLegacyStatus,
+  UNKNOWN_STATUS_FALLBACK
 } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
@@ -925,6 +926,20 @@ export class MetadataManager {
       if (migration.changed) {
         Object.assign(metadata, migration.metadata);
         if (migration.note) warnings.push(migration.note);
+        corrected = true;
+      } else if (
+        typeof metadata.status === 'string' &&
+        !(Object.values(IncrementStatus) as string[]).includes(metadata.status)
+      ) {
+        // Not a known legacy spelling either. Keep the increment VISIBLE rather
+        // than letting read() throw and getAll() drop it — a project with
+        // pending work used to report "100% complete" because of exactly this.
+        warnings.push(
+          `Unrecognized status '${metadata.status}' — treated as '${UNKNOWN_STATUS_FALLBACK}' (2.0 statuses: ${Object.values(
+            IncrementStatus,
+          ).join(', ')})`,
+        );
+        metadata.status = UNKNOWN_STATUS_FALLBACK;
         corrected = true;
       }
     }

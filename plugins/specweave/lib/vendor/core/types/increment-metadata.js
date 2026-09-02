@@ -101,10 +101,10 @@ export const LEGACY_STATUS_MAP = {
     blocked: IncrementStatus.PAUSED,
 };
 /**
- * Fallback for a status that is neither an {@link IncrementStatus} nor in
- * {@link LEGACY_STATUS_MAP}. Surfacing such an increment as `planned` keeps it
- * visible (and fixable) in `specweave status`; before 2.0 it threw on read and
- * the increment vanished from every total.
+ * What `metadata.json` falls back to when its status is neither an
+ * {@link IncrementStatus} nor in {@link LEGACY_STATUS_MAP}. Surfacing such an
+ * increment as `planned` keeps it visible (and fixable) in `specweave status`;
+ * before 2.0 the read threw and the increment vanished from every total.
  */
 export const UNKNOWN_STATUS_FALLBACK = IncrementStatus.PLANNED;
 /**
@@ -118,18 +118,15 @@ export function migrateLegacyStatus(raw) {
     if (!status || Object.values(IncrementStatus).includes(status)) {
         return { metadata: raw, changed: false };
     }
-    const key = status.trim().toLowerCase();
-    const mapped = LEGACY_STATUS_MAP[key];
-    const target = mapped ?? UNKNOWN_STATUS_FALLBACK;
-    const metadata = { ...raw, status: target };
-    if (!mapped) {
-        return {
-            metadata,
-            changed: true,
-            note: `Unrecognized status '${status}' migrated to '${target}' (2.0 statuses: ${Object.values(IncrementStatus).join(', ')})`,
-        };
-    }
+    const mapped = LEGACY_STATUS_MAP[status.trim().toLowerCase()];
+    // A status we cannot interpret is NOT silently rewritten here — callers that
+    // must keep the increment visible (metadata.json) coerce it themselves with
+    // UNKNOWN_STATUS_FALLBACK; callers validating authored content (spec.md
+    // frontmatter) still reject it.
+    if (!mapped)
+        return { metadata: raw, changed: false };
     const mappedStatus = mapped;
+    const metadata = { ...raw, status: mappedStatus };
     if (mappedStatus === IncrementStatus.ABANDONED) {
         // `supersedes` points forward (new → old), so a superseded increment records
         // its successor in closeReason, never in its own `supersedes` field.
