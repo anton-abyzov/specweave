@@ -170,6 +170,10 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
     }
     case 'done': {
       if (task.state.status === 'done') { out(`${taskId} already done by ${task.state.by}`); return 0; }
+      if (task.state.status === 'skipped') {
+        err(`${taskId} was skipped by ${task.state.by}${task.state.note ? ` (${task.state.note})` : ''} — skip is terminal; add a new task in tasks.md if the work is needed after all`);
+        return 1;
+      }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
 
       let evidence = (opts.evidence ?? '').trim();
