@@ -11,9 +11,12 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
+import { getPackageVersion } from '../../../cli/helpers/init/instruction-file-merger.js';
 
-// Current version - should match CLAUDE.md template
-const CURRENT_VERSION = '1.0.183';
+function majorOf(version: string): number {
+  const m = version.match(/^(\d+)/);
+  return m ? Number(m[1]) : 0;
+}
 
 export class ConfigurationChecker implements HealthChecker {
   category = 'Configuration';
@@ -156,26 +159,19 @@ export class ConfigurationChecker implements HealthChecker {
       }
 
       const fileVersion = versionMatch[1];
-      const comparison = this.compareVersions(fileVersion, CURRENT_VERSION);
+      const cliVersion = getPackageVersion();
 
-      if (comparison === 0) {
-        return {
-          name: 'CLAUDE.md',
-          status: 'pass',
-          message: `v${fileVersion} (current)`,
-        };
-      }
-
-      if (comparison < 0) {
+      // Only a MAJOR mismatch means the managed block has a different shape
+      // and must be regenerated; patch/minor drift is harmless.
+      if (majorOf(fileVersion) < majorOf(cliVersion)) {
         return {
           name: 'CLAUDE.md',
           status: 'warn',
-          message: `v${fileVersion} (current: v${CURRENT_VERSION})`,
-          fixSuggestion: 'Run: specweave update',
+          message: `v${fileVersion} (CLI v${cliVersion}, instruction schema changed)`,
+          fixSuggestion: 'Run: specweave update-instructions',
         };
       }
 
-      // Newer version somehow
       return {
         name: 'CLAUDE.md',
         status: 'pass',
@@ -270,18 +266,5 @@ export class ConfigurationChecker implements HealthChecker {
       status: 'pass',
       message: 'present',
     };
-  }
-
-  private compareVersions(a: string, b: string): number {
-    const partsA = a.split('.').map(Number);
-    const partsB = b.split('.').map(Number);
-
-    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-      const numA = partsA[i] || 0;
-      const numB = partsB[i] || 0;
-      if (numA < numB) return -1;
-      if (numA > numB) return 1;
-    }
-    return 0;
   }
 }

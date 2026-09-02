@@ -1,7 +1,8 @@
 /**
  * Update Instructions Command
  *
- * Smart merge for CLAUDE.md and AGENTS.md instruction files.
+ * Smart merge for CLAUDE.md and AGENTS.md instruction files (both are always
+ * generated: Claude Code reads CLAUDE.md, every other tool reads AGENTS.md).
  * Preserves user customizations while updating SpecWeave sections.
  * Also migrates config.json to add missing sections (v1.0.131+).
  */
@@ -9,11 +10,13 @@
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
+import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import {
-  mergeInstructionFile,
-  parseTemplateSections,
-  getPackageVersion
-} from '../helpers/init/instruction-file-merger.js';
+  applyInstructionTemplate,
+  type ApplyInstructionResult,
+  type InstructionFileName,
+} from '../helpers/init/instruction-file-writer.js';
+import { detectStackCommands } from '../helpers/init/stack-detector.js';
 import { findSourceDir } from '../helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { ensureSkillCreator } from '../helpers/init/skill-creator-installer.js';
@@ -38,6 +41,8 @@ const DEFAULT_AUTO_CONFIG = {
   skipQualityGates: false,
 };
 
+const INSTRUCTION_FILES: InstructionFileName[] = ['CLAUDE.md', 'AGENTS.md'];
+
 /**
  * CLI command to update CLAUDE.md and AGENTS.md with smart merge
  */
@@ -61,31 +66,16 @@ export async function updateInstructionsCommand(
     process.exit(1);
   }
 
-  // Read adapter from config to determine which files to update
-  const adapter = readAdapterFromConfig(projectPath);
+  const projectName = detectProjectName(projectPath);
+  const commands = detectStackCommands(projectPath);
 
-  // Update CLAUDE.md
-  const claudeResult = await updateFile(
-    projectPath,
-    templatesDir,
-    'CLAUDE.md',
-    'claude',
-    version,
-    options
+  const results = INSTRUCTION_FILES.map(filename =>
+    reportFile(
+      applyInstructionTemplate({ projectPath, templatesDir, filename, projectName, version, commands, dryRun: options.dryRun }),
+      filename,
+      options
+    )
   );
-
-  // Update AGENTS.md only for non-Claude adapters
-  // Claude Code reads CLAUDE.md natively; AGENTS.md is for other AI tools
-  const agentsResult = adapter === 'claude'
-    ? { action: 'skipped', preserved: 0 }
-    : await updateFile(
-        projectPath,
-        templatesDir,
-        'AGENTS.md',
-        'agents',
-        version,
-        options
-      );
 
   // Summary
   console.log(chalk.blue('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
@@ -97,19 +87,13 @@ export async function updateInstructionsCommand(
     console.log(chalk.gray('    Added ' + configMigrated.sectionsAdded + ' missing section(s): ' + configMigrated.sections.join(', ')));
   }
 
-  if (claudeResult.action !== 'skipped') {
-    console.log('  CLAUDE.md: ' + formatAction(claudeResult.action));
-    if (claudeResult.preserved > 0) {
-      console.log(chalk.gray('    Preserved ' + claudeResult.preserved + ' user sections'));
+  results.forEach((r, i) => {
+    if (r.action === 'skipped') return;
+    console.log('  ' + INSTRUCTION_FILES[i] + ': ' + formatAction(r.action));
+    if (r.preserved > 0) {
+      console.log(chalk.gray('    Preserved ' + r.preserved + ' user section(s)'));
     }
-  }
-
-  if (agentsResult.action !== 'skipped') {
-    console.log('  AGENTS.md: ' + formatAction(agentsResult.action));
-    if (agentsResult.preserved > 0) {
-      console.log(chalk.gray('    Preserved ' + agentsResult.preserved + ' user sections'));
-    }
-  }
+  });
 
   if (options.dryRun) {
     console.log(chalk.yellow('\n  ⚠ Dry run - no files were modified'));
@@ -124,87 +108,34 @@ export async function updateInstructionsCommand(
   console.log('');
 }
 
-async function updateFile(
-  projectPath: string,
-  templatesDir: string,
+function reportFile(
+  result: ApplyInstructionResult,
   filename: string,
-  type: 'claude' | 'agents',
-  version: string,
   options: UpdateInstructionsOptions
-): Promise<{ action: string; preserved: number }> {
-  const filePath = path.join(projectPath, filename);
-  const templatePath = path.join(templatesDir, filename + '.template');
-
-  if (!fs.existsSync(templatePath)) {
-    if (options.verbose) {
-      console.log(chalk.gray('  ⊘ ' + filename + ': template not found, skipping'));
-    }
-    return { action: 'skipped', preserved: 0 };
+): ApplyInstructionResult {
+  if (result.action === 'skipped') {
+    if (options.verbose) console.log(chalk.gray('  ⊘ ' + filename + ': template not found, skipping'));
+    return result;
   }
 
-  const templateContent = fs.readFileSync(templatePath, 'utf-8');
-  const sections = parseTemplateSections(templateContent);
-
-  const existingContent = fs.existsSync(filePath)
-    ? fs.readFileSync(filePath, 'utf-8')
-    : null;
-
-  // Detect project name from existing content or directory
-  const projectName = detectProjectName(existingContent, projectPath);
-
-  const result = mergeInstructionFile(
-    existingContent,
-    sections,
-    type,
-    version,
-    projectName
-  );
-
-  if (options.dryRun) {
-    console.log(chalk.yellow('  ○ ' + filename + ': would ' + result.action));
-    if (options.verbose && result.updated.length > 0) {
-      console.log(chalk.gray('    Would update: ' + result.updated.join(', ')));
-    }
-    if (options.verbose && result.added.length > 0) {
-      console.log(chalk.gray('    Would add: ' + result.added.join(', ')));
-    }
+  const prefix = options.dryRun ? '  ○ ' + filename + ': would ' : '  ✓ ' + filename + ': ';
+  if (result.action === 'unchanged') {
+    console.log(chalk.gray('  ⊘ ' + filename + ': already up to date'));
+  } else if (result.action === 'created') {
+    console.log(chalk.green(prefix + (options.dryRun ? 'create' : 'created')));
   } else {
-    // Create backup before overwriting (safety net for merge issues)
-    if (existingContent) {
-      try {
-        fs.writeFileSync(filePath + '.bak', existingContent);
-      } catch {
-        // Non-fatal: proceed even if backup fails
-      }
-    }
-    fs.writeFileSync(filePath, result.content);
-
-    if (result.action === 'created') {
-      console.log(chalk.green('  ✓ ' + filename + ': created'));
-    } else if (result.action === 'merged') {
-      console.log(chalk.blue('  ✓ ' + filename + ': merged'));
-      if (options.verbose && result.updated.length > 0) {
-        console.log(chalk.gray('    Updated: ' + result.updated.join(', ')));
-      }
-    } else if (result.action === 'preserved') {
-      console.log(chalk.yellow('  ⚠ ' + filename + ': preserved (errors found)'));
-      result.warnings.forEach(w => console.log(chalk.yellow('    ' + w)));
-    }
+    console.log(chalk.blue(prefix + (options.dryRun ? 'merge' : 'merged')));
   }
 
-  return { action: result.action, preserved: result.preserved };
+  if (options.verbose && result.updated.length > 0) console.log(chalk.gray('    Updated: ' + result.updated.join(', ')));
+  if (options.verbose && result.added.length > 0) console.log(chalk.gray('    Added: ' + result.added.join(', ')));
+  if (result.removed.length > 0) console.log(chalk.gray('    Removed: ' + result.removed.join(', ')));
+  // Migration notes and marker repairs are shown without --verbose: they are one-time and actionable.
+  result.warnings.forEach(w => console.log(chalk.yellow('    ⚠ ' + w)));
+  return result;
 }
 
-function detectProjectName(content: string | null, projectPath: string): string {
-  // Try to extract from existing content
-  if (content) {
-    const match = content.match(/^#\s+(.+?)\s*[-–—]/m);
-    if (match) {
-      return match[1].trim();
-    }
-  }
-
-  // Try config.json
+function detectProjectName(projectPath: string): string {
   const configPath = path.join(projectPath, '.specweave', 'config.json');
   if (fs.existsSync(configPath)) {
     try {
@@ -216,8 +147,6 @@ function detectProjectName(content: string | null, projectPath: string): string 
       // ignore
     }
   }
-
-  // Fallback to directory name
   return path.basename(projectPath);
 }
 
@@ -227,8 +156,8 @@ function formatAction(action: string): string {
       return chalk.green('created');
     case 'merged':
       return chalk.blue('merged');
-    case 'preserved':
-      return chalk.yellow('preserved (manual fix needed)');
+    case 'unchanged':
+      return chalk.gray('up to date');
     default:
       return action;
   }
@@ -244,23 +173,6 @@ function formatAction(action: string): string {
  * - Preserves all existing configuration
  * - Can be run multiple times
  */
-/**
- * Read adapter type from .specweave/config.json
- * Defaults to 'claude' if not found or unreadable
- */
-function readAdapterFromConfig(projectPath: string): string {
-  try {
-    const configPath = path.join(projectPath, '.specweave', 'config.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      return config?.adapters?.default || 'claude';
-    }
-  } catch {
-    // Fall through to default
-  }
-  return 'claude';
-}
-
 async function migrateConfig(
   projectPath: string,
   options: UpdateInstructionsOptions
