@@ -7,6 +7,12 @@
  * 1. every `specweave <cmd>` named in the managed files is registered in bin/specweave.js
  * 2. every `/sw:<name>` named in them has plugins/specweave/skills/<name>/SKILL.md
  * 3. no `{{` placeholder is left anywhere in the file
+ *
+ * Severity depends on WHERE a reference lives. Inside the SW:SECTION regions
+ * SpecWeave generates, an unresolvable reference is our bug: hard `fail`.
+ * Outside them the text is the user's own writing, which the merger exists to
+ * preserve verbatim — failing a health check over it would be incoherent, so it
+ * is a `warn` that names the 2.0 replacement when one is known.
  */
 
 import * as fs from 'fs';
@@ -14,6 +20,7 @@ import * as path from 'path';
 import type { HealthChecker, CategoryResult, CheckResult, DoctorOptions } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
 import { packageRoot } from './hooks-checker.js';
+import { splitManagedRegions } from '../../../cli/helpers/init/instruction-file-merger.js';
 
 const INSTRUCTION_FILES = ['CLAUDE.md', 'AGENTS.md'];
 
@@ -53,6 +60,32 @@ export function availableSkills(root: string): Set<string> {
   }
 }
 
+/**
+ * `sw:<name>` -> its 2.0 replacement, from the plugin manifest's `removedIn2_0`
+ * forwarding table. Keys are stored without the `sw:` prefix to match SKILL_RE.
+ */
+export function removedSkillReplacements(root: string): Map<string, string> {
+  const out = new Map<string, string>();
+  try {
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(root, 'plugins', 'specweave', 'marketplace.json'), 'utf8'),
+    ) as { removedIn2_0?: { map?: Record<string, string> } };
+    for (const [from, to] of Object.entries(manifest.removedIn2_0?.map ?? {})) {
+      out.set(from.replace(/^sw:/, ''), to);
+    }
+  } catch {
+    // no manifest: every miss simply reports as "resolves to nothing"
+  }
+  return out;
+}
+
+/** How a `/sw:<name>` or `specweave <cmd>` miss is described to the user. */
+function describeMiss(label: string, replacement: string | undefined): string {
+  if (!replacement) return `${label} resolves to nothing`;
+  const target = replacement.startsWith('sw:') ? `/${replacement}` : replacement;
+  return `${label} was removed in 2.0 — its work is now ${target}`;
+}
+
 export class InstructionFilesChecker implements HealthChecker {
   category = 'Instruction Files';
 
@@ -61,6 +94,7 @@ export class InstructionFilesChecker implements HealthChecker {
     const root = packageRoot();
     const commands = registeredCommands(root);
     const skills = availableSkills(root);
+    const removed = removedSkillReplacements(root);
 
     const present = INSTRUCTION_FILES
       .map((name) => ({ name, file: path.join(projectRoot, name) }))
@@ -82,7 +116,7 @@ export class InstructionFilesChecker implements HealthChecker {
     for (const { name, file } of present) {
       const content = fs.readFileSync(file, 'utf8');
       checks.push(this.checkPlaceholders(name, content));
-      checks.push(this.checkReferences(name, content, commands, skills));
+      checks.push(this.checkReferences(name, content, commands, skills, removed));
     }
 
     return { category: this.category, status: calculateOverallStatus(checks), checks };
@@ -110,26 +144,8 @@ export class InstructionFilesChecker implements HealthChecker {
     content: string,
     commands: Set<string>,
     skills: Set<string>,
+    removed: Map<string, string>,
   ): CheckResult {
-    const missing: string[] = [];
-
-    if (commands.size > 0) {
-      for (const m of content.matchAll(CLI_RE)) {
-        const cmd = m[1];
-        if (NON_COMMANDS.has(cmd) || commands.has(cmd)) continue;
-        const label = `specweave ${cmd}`;
-        if (!missing.includes(label)) missing.push(label);
-      }
-    }
-    if (skills.size > 0) {
-      for (const m of content.matchAll(SKILL_RE)) {
-        const skill = m[1];
-        if (skills.has(skill)) continue;
-        const label = `/sw:${skill}`;
-        if (!missing.includes(label)) missing.push(label);
-      }
-    }
-
     if (commands.size === 0 && skills.size === 0) {
       return {
         name: `${name} references`,
@@ -137,14 +153,55 @@ export class InstructionFilesChecker implements HealthChecker {
         message: 'could not read the installed CLI/plugin to verify against',
       };
     }
-    if (missing.length === 0) {
-      return { name: `${name} references`, status: 'pass', message: 'every command and skill resolves' };
-    }
-    return {
-      name: `${name} references`,
-      status: 'fail',
-      message: `${missing.length} unresolvable reference(s): ${missing.slice(0, 5).join(', ')}`,
-      fixSuggestion: 'Run: specweave update-instructions (the file is from an older SpecWeave)',
+
+    // The merger's own marker parser decides what SpecWeave generated and what
+    // the user wrote. A file with no markers is entirely user-owned.
+    const { managed, user } = splitManagedRegions(content);
+
+    const scan = (text: string): string[] => {
+      const misses: string[] = [];
+      const add = (label: string, replacement: string | undefined): void => {
+        const line = describeMiss(label, replacement);
+        if (!misses.includes(line)) misses.push(line);
+      };
+      if (commands.size > 0) {
+        for (const m of text.matchAll(CLI_RE)) {
+          const cmd = m[1];
+          if (NON_COMMANDS.has(cmd) || commands.has(cmd)) continue;
+          add(`specweave ${cmd}`, undefined);
+        }
+      }
+      if (skills.size > 0) {
+        for (const m of text.matchAll(SKILL_RE)) {
+          const skill = m[1];
+          if (skills.has(skill)) continue;
+          add(`/sw:${skill}`, removed.get(skill));
+        }
+      }
+      return misses;
     };
+
+    const managedMisses = scan(managed);
+    const userMisses = scan(user).filter((m) => !managedMisses.includes(m));
+
+    if (managedMisses.length > 0) {
+      return {
+        name: `${name} references`,
+        status: 'fail',
+        message: `${managedMisses.length} unresolvable reference(s) in the SpecWeave-managed block: ${managedMisses.slice(0, 3).join('; ')}`,
+        details: managedMisses,
+        fixSuggestion: 'Run: specweave update-instructions (the managed block is from an older SpecWeave)',
+      };
+    }
+    if (userMisses.length > 0) {
+      return {
+        name: `${name} references`,
+        status: 'warn',
+        message: `${userMisses.length} stale reference(s) in your own text: ${userMisses.slice(0, 3).join('; ')}`,
+        details: userMisses,
+        fixSuggestion: `Edit ${name} by hand — SpecWeave preserves your own sections and will not rewrite them`,
+      };
+    }
+    return { name: `${name} references`, status: 'pass', message: 'every command and skill resolves' };
   }
 }
