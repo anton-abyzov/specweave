@@ -196,9 +196,9 @@ describe('sync-config-writer', () => {
       expect(mockConfigWrite).toHaveBeenCalledTimes(1);
       const writtenConfig = mockConfigWrite.mock.calls[0][0];
 
-      // Verify hooks
-      expect(writtenConfig.hooks.post_task_completion.external_tracker_sync).toBe(true);
-      expect(writtenConfig.hooks.post_increment_planning.auto_create_github_issue).toBe(true);
+      // Verify hooks (2.0: closure flags only — living docs are `livingDocs`)
+      expect(writtenConfig.hooks.post_increment_done.close_external_issue).toBe(true);
+      expect(writtenConfig.hooks.post_increment_planning).toBeUndefined();
 
       // Verify sync config
       expect(writtenConfig.sync.provider).toBe('github');
@@ -599,7 +599,7 @@ describe('sync-config-writer', () => {
       expect(writtenConfig.sync.profiles['jira-default']).toBeDefined();
       expect(writtenConfig.sync.profiles['jira-default'].config.domain).toBe('myteam.atlassian.net');
       expect(writtenConfig.sync.profiles['jira-default'].config.projectKey).toBe('MAIN');
-      expect(writtenConfig.hooks.post_increment_planning.auto_create_github_issue).toBe(false);
+      expect(writtenConfig.hooks.post_increment_planning).toBeUndefined();
     });
 
     it('writes JIRA multi-project config with projectConfigs', async () => {
@@ -887,7 +887,7 @@ describe('sync-config-writer', () => {
   // =========================================================================
 
   describe('hooks configuration', () => {
-    it('sets auto_create_github_issue true only for github', async () => {
+    it('writes the closure flags and no living-docs flag', async () => {
       const logger = makeLogger();
 
       await writeSyncConfig(
@@ -901,31 +901,10 @@ describe('sync-config-writer', () => {
         logger
       );
 
-      let writtenConfig = mockConfigWrite.mock.calls[0][0];
-      expect(writtenConfig.hooks.post_increment_planning.auto_create_github_issue).toBe(true);
-
-      // Reset and test with jira
-      vi.clearAllMocks();
-      mockConfigRead.mockResolvedValue({});
-      mockConfigWrite.mockResolvedValue(undefined);
-      mockGetConfigManager.mockReturnValue({
-        read: mockConfigRead,
-        write: mockConfigWrite,
+      const writtenConfig = mockConfigWrite.mock.calls[0][0];
+      expect(writtenConfig.hooks).toEqual({
+        post_increment_done: { sync_to_github_project: true, close_external_issue: true },
       });
-
-      await writeSyncConfig(
-        '/project',
-        'jira',
-        { token: 'token', email: 'u@t.com', domain: 'd.net', instanceType: 'cloud', projectKey: 'X' } as any,
-        makeSyncSettings(),
-        makeSyncPermissions(),
-        undefined,
-        undefined,
-        logger
-      );
-
-      writtenConfig = mockConfigWrite.mock.calls[0][0];
-      expect(writtenConfig.hooks.post_increment_planning.auto_create_github_issue).toBe(false);
     });
   });
 });

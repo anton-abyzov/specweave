@@ -59,7 +59,9 @@ describe('ConfigManager', () => {
       await fs.writeFile(configPath, JSON.stringify(partialConfig, null, 2));
       const config = await configManager.read();
       expect(config.issueTracker?.provider).toBe('jira');
-      expect(config.repository?.provider).toBe('local');
+      // 2.0 defaults are merged in for keys the user did not set
+      expect(config.testing?.mode).toBe('TDD');
+      expect(config.livingDocs).toBe(false);
     });
 
     it('should throw specific error for malformed JSON', async () => {
@@ -166,104 +168,47 @@ describe('ConfigManager', () => {
   // 0188: Unified config type consolidation tests
   // ═══════════════════════════════════════════════════════════════════
 
-  describe('unified config type (0188)', () => {
+  describe('2.0 config surface', () => {
     it('should export SpecweaveConfig as alias for SpecWeaveConfig', () => {
-      // SpecweaveConfig (camelCase) should be available from config/types.ts
-      // This is the canonical name used by 25+ files in the old system
       const config: SpecweaveConfig = { version: '2.0' };
       const configAlt: SpecWeaveConfig = config;
       expect(configAlt.version).toBe('2.0');
     });
 
-    it('should have testing config in DEFAULT_CONFIG', () => {
-      // The comprehensive DEFAULT_CONFIG should include testing settings
-      const config = DEFAULT_CONFIG as any;
-      expect(config.testing).toBeDefined();
-      expect(config.testing.defaultTestMode).toBe('TDD');
-      expect(config.testing.defaultCoverageTarget).toBe(90);
-      expect(config.testing.coverageTargets).toBeDefined();
-      expect(config.testing.coverageTargets.unit).toBe(95);
+    it('DEFAULT_CONFIG carries exactly the 2.0 keys', () => {
+      expect(Object.keys(DEFAULT_CONFIG).sort()).toEqual(
+        ['adapters', 'limits', 'livingDocs', 'planning', 'sync', 'testing', 'version'].sort(),
+      );
     });
 
-    it('should have limits config in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.limits).toBeDefined();
-      expect(config.limits.activeIncrements).toBe(3);
-      expect(config.limits.hardCap).toBeUndefined();
+    it('has the 2.0 testing shape', () => {
+      expect(DEFAULT_CONFIG.testing?.mode).toBe('TDD');
+      expect(DEFAULT_CONFIG.testing?.commands).toEqual([]);
+      expect(DEFAULT_CONFIG.testing?.coverage?.unit).toBe(95);
     });
 
-    it('should have archiving config in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.archiving).toBeDefined();
-      expect(config.archiving.keepLast).toBe(5);
-      expect(config.archiving.autoArchive).toBe(false);
+    it('has an advisory limits block with no hard cap', () => {
+      expect(DEFAULT_CONFIG.limits?.activeIncrements).toBe(3);
+      expect((DEFAULT_CONFIG.limits as Record<string, unknown>).hardCap).toBeUndefined();
     });
 
-    it('should have planning config in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.planning).toBeDefined();
-      expect(config.planning.deepInterview).toBeDefined();
-      expect(config.planning.deepInterview.enabled).toBe(false);
-      expect(config.planning.deepInterview.minQuestions).toBe(5);
+    it('has planning.deepInterview as an enum defaulting to off', () => {
+      expect(DEFAULT_CONFIG.planning?.deepInterview).toBe('off');
     });
 
-    it('should have livingDocs config in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.livingDocs).toBeDefined();
-      expect(config.livingDocs.copyBasedSync).toBeDefined();
-      expect(config.livingDocs.threeLayerSync).toBeDefined();
+    it('has livingDocs off by default', () => {
+      expect(DEFAULT_CONFIG.livingDocs).toBe(false);
     });
 
-    it('should have pluginAutoLoad config in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.pluginAutoLoad).toBeDefined();
-      expect(config.pluginAutoLoad.enabled).toBe(true);
-    });
-
-    it('should have deduplication config in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.deduplication).toBeDefined();
-      expect(config.deduplication.enabled).toBe(true);
-      expect(config.deduplication.windowMs).toBe(1000);
-    });
-
-    it('should have language and translation defaults in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.language).toBe('en');
-      expect(config.translation).toBeDefined();
-      expect(config.translation.primary).toBe('en');
-    });
-  });
-
-  // ═══════════════════════════════════════════════════════════════════
-  // 0188 Phase 2: CI/CD Config Schema (US-002)
-  // ═══════════════════════════════════════════════════════════════════
-
-  describe('CiCdConfig type and defaults (0188 T-007)', () => {
-    it('should have cicd section in DEFAULT_CONFIG', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.cicd).toBeDefined();
-    });
-
-    it('should have pushStrategy defaulting to direct', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.cicd.pushStrategy).toBe('direct');
-    });
-
-    it('should have autoFix.enabled defaulting to true', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.cicd.autoFix).toBeDefined();
-      expect(config.cicd.autoFix.enabled).toBe(true);
-    });
-
-    it('should have autoFix.maxRetries defaulting to 1', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.cicd.autoFix.maxRetries).toBe(1);
-    });
-
-    it('should have autoFix.allowedBranches defaulting to develop and main', () => {
-      const config = DEFAULT_CONFIG as any;
-      expect(config.cicd.autoFix.allowedBranches).toEqual(['develop', 'main']);
+    it('drops every 1.x key that had no reader', () => {
+      const config = DEFAULT_CONFIG as Record<string, unknown>;
+      for (const key of [
+        'archiving', 'deduplication', 'pluginAutoLoad', 'language', 'translation',
+        'contextBudget', 'quality', 'cache', 'apiDocs', 'statusLine', 'incrementAssist',
+        'documentation', 'grill', 'codeReview', 'qualityGates', 'skillGen', 'cicd',
+      ]) {
+        expect(config[key]).toBeUndefined();
+      }
     });
   });
 

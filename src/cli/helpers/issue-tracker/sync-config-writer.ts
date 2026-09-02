@@ -45,20 +45,11 @@ export async function writeSyncConfig(
   // Read existing config
   const config = await configManager.read();
 
-  // Add hooks configuration (enables auto-sync!)
+  // Closure-time tracker flags (living docs are controlled by `livingDocs`).
   config.hooks = {
-    post_task_completion: {
-      sync_tasks_md: true,
-      external_tracker_sync: true
-    },
-    post_increment_planning: {
-      auto_create_github_issue: tracker === 'github', // Only for GitHub
-      sync_living_docs: true
-    },
     post_increment_done: {
-      sync_living_docs: true,
       sync_to_github_project: true,
-      close_github_issue: true
+      close_external_issue: true
     }
   };
 

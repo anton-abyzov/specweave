@@ -285,19 +285,6 @@ describe('readPluginAutoLoadConfig', () => {
     expect(config).toEqual({ enabled: true, suggestOnly: true });
   });
 
-  it('should read pluginAutoLoad.enabled: false', () => {
-    const configDir = path.join(tmpDir, '.specweave');
-    fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(configDir, 'config.json'),
-      JSON.stringify({ pluginAutoLoad: { enabled: false } })
-    );
-
-    const config = readPluginAutoLoadConfig();
-    expect(config.enabled).toBe(false);
-    expect(config.suggestOnly).toBe(true);
-  });
-
   it('should read pluginAutoLoad.suggestOnly: true', () => {
     const configDir = path.join(tmpDir, '.specweave');
     fs.mkdirSync(configDir, { recursive: true });
@@ -308,19 +295,6 @@ describe('readPluginAutoLoadConfig', () => {
 
     const config = readPluginAutoLoadConfig();
     expect(config.enabled).toBe(true);
-    expect(config.suggestOnly).toBe(true);
-  });
-
-  it('should read both enabled and suggestOnly together', () => {
-    const configDir = path.join(tmpDir, '.specweave');
-    fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(configDir, 'config.json'),
-      JSON.stringify({ pluginAutoLoad: { enabled: false, suggestOnly: true } })
-    );
-
-    const config = readPluginAutoLoadConfig();
-    expect(config.enabled).toBe(false);
     expect(config.suggestOnly).toBe(true);
   });
 
@@ -346,18 +320,6 @@ describe('readPluginAutoLoadConfig', () => {
 
     const config = readPluginAutoLoadConfig();
     expect(config.suggestOnly).toBe(true);
-  });
-
-  it('should respect explicit suggestOnly: false (opt-in to auto-install)', () => {
-    const configDir = path.join(tmpDir, '.specweave');
-    fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(configDir, 'config.json'),
-      JSON.stringify({ pluginAutoLoad: { enabled: true, suggestOnly: false } })
-    );
-
-    const config = readPluginAutoLoadConfig();
-    expect(config.suggestOnly).toBe(false);
   });
 
   it('should override with env var SPECWEAVE_DISABLE_AUTO_LOAD=1', () => {

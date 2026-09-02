@@ -110,7 +110,7 @@ describe('init config.json ordering (AD-3)', () => {
       createMinimalConfig(targetDir, 'new-project');
 
       // Step 2: Write full config (simulating post-createDirectoryStructure step)
-      createConfigFile(targetDir, 'new-project', 'claude', 'en', true);
+      createConfigFile(targetDir, 'new-project', 'claude');
 
       const config = JSON.parse(
         await fs.readFile(path.join(targetDir, '.specweave', 'config.json'), 'utf-8'),
@@ -120,7 +120,8 @@ describe('init config.json ordering (AD-3)', () => {
       expect(config.version).toBe('2.0');
       expect(config.project.name).toBe('new-project');
       expect(config.adapters.default).toBe('claude');
-      expect(config.language).toBe('en');
+      expect(config.testing.mode).toBe('TDD');
+      expect(config.livingDocs).toBe(false);
     });
   });
 

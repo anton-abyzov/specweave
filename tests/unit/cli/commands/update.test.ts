@@ -7,7 +7,6 @@
  * - cleanupStaleAutoState: stale file detection/removal
  * - validateProjectHealth: config validation, increment counting
  * - migrateReflectConfig: reflect-config.json migration
- * - migrateDeepInterviewConfig: config.json deep interview section
  * - parseChangelogBetweenVersions / versionToNumber helpers
  * - fetchWhatsNew: changelog fetching
  * - registerUpdateCommand: Commander registration
@@ -133,7 +132,6 @@ vi.mock('chalk', () => {
 
 import {
   updateCommand,
-  migrateDeepInterviewConfig,
   registerUpdateCommand,
 } from '../../../../src/cli/commands/update.js';
 import { npmRegistryFlag } from '../../../../src/utils/npm-constants.js';
@@ -1019,102 +1017,7 @@ describe('update command', () => {
   });
 
   // ==========================================================================
-  // migrateDeepInterviewConfig (exported, direct testing)
   // ==========================================================================
-
-  describe('migrateDeepInterviewConfig', () => {
-    it('should add deepInterview section to config.json', () => {
-      setupSpecWeaveProject();
-      // Overwrite config without planning section
-      const configPath = path.join(tempDir, '.specweave', 'config.json');
-      fs.writeFileSync(
-        configPath,
-        JSON.stringify({ project: { name: 'test' } })
-      );
-
-      const result = migrateDeepInterviewConfig(tempDir);
-
-      expect(result).toBe(true);
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      expect(config.planning.deepInterview).toBeDefined();
-      expect(config.planning.deepInterview.enabled).toBe(false);
-      expect(config.planning.deepInterview.minQuestions).toBe(5);
-      expect(config.planning.deepInterview.categories).toHaveLength(6);
-    });
-
-    it('should not overwrite existing deepInterview config', () => {
-      setupSpecWeaveProject();
-      const configPath = path.join(tempDir, '.specweave', 'config.json');
-      fs.writeFileSync(
-        configPath,
-        JSON.stringify({
-          project: { name: 'test' },
-          planning: { deepInterview: { enabled: true, minQuestions: 10 } },
-        })
-      );
-
-      const result = migrateDeepInterviewConfig(tempDir);
-
-      expect(result).toBe(false);
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      expect(config.planning.deepInterview.minQuestions).toBe(10);
-    });
-
-    it('should return false if config.json does not exist', () => {
-      const result = migrateDeepInterviewConfig(tempDir);
-      expect(result).toBe(false);
-    });
-
-    it('should return false if config.json is invalid JSON', () => {
-      setupSpecWeaveProject();
-      const configPath = path.join(tempDir, '.specweave', 'config.json');
-      fs.writeFileSync(configPath, '{ invalid }');
-
-      const result = migrateDeepInterviewConfig(tempDir);
-      expect(result).toBe(false);
-    });
-
-    it('should initialize planning object if missing', () => {
-      setupSpecWeaveProject();
-      const configPath = path.join(tempDir, '.specweave', 'config.json');
-      fs.writeFileSync(configPath, JSON.stringify({ project: {} }));
-
-      migrateDeepInterviewConfig(tempDir);
-
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      expect(config.planning).toBeDefined();
-      expect(config.planning.deepInterview).toBeDefined();
-    });
-
-    it('should log verbose output when verbose is true', () => {
-      setupSpecWeaveProject();
-      const configPath = path.join(tempDir, '.specweave', 'config.json');
-      fs.writeFileSync(configPath, JSON.stringify({ project: {} }));
-
-      migrateDeepInterviewConfig(tempDir, true);
-
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('planning.deepInterview');
-    });
-
-    it('should skip migration in check mode via updateCommand', async () => {
-      setupSpecWeaveProject();
-      const configPath = path.join(tempDir, '.specweave', 'config.json');
-      fs.writeFileSync(
-        configPath,
-        JSON.stringify({ project: { name: 'test' }, auto: {} })
-      );
-
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        check: true,
-      });
-
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      expect(config.planning).toBeUndefined();
-    });
-  });
 
   // ==========================================================================
   // Skill memory pruning

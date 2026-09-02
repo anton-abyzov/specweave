@@ -222,8 +222,7 @@ export class IncrementCompletionValidator {
           const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
           if (await fs.pathExists(configPath)) {
             const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-            const configTarget = config?.testing?.coverageTargets?.unit
-              ?? config?.testing?.defaultCoverageTarget;
+            const configTarget = config?.testing?.coverage?.unit;
             if (typeof configTarget === 'number') {
               coverageTarget = configTarget;
             }

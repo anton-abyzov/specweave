@@ -153,13 +153,6 @@ vi.mock('../../../../src/core/project/project-resolution.js', () => ({
   },
 }));
 
-vi.mock('../../../../src/utils/image-generator.js', () => ({
-  generateLivingDocsImagesEnhanced: vi.fn().mockResolvedValue(undefined),
-  getRelativeImagePath: vi.fn().mockReturnValue(''),
-  markdownImage: vi.fn().mockReturnValue(''),
-  extractKeywordsFromContent: vi.fn().mockReturnValue([]),
-}));
-
 // ---------------------------------------------------------------------------
 // Import the class under test (after all mocks are in place)
 // ---------------------------------------------------------------------------

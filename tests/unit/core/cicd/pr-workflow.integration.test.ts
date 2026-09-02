@@ -60,16 +60,9 @@ describe('GitConfig type contracts', () => {
     expect(git.targetBranch).toBeUndefined();
   });
 
-  it('default branchPrefix is sw/ in DEFAULT_CONFIG', async () => {
+  it('cicd is absent from DEFAULT_CONFIG in 2.0 — the loader supplies its defaults', async () => {
     const { DEFAULT_CONFIG } = await import('../../../../src/core/config/types.js');
-    expect(DEFAULT_CONFIG.cicd?.git?.branchPrefix).toBe('sw/');
-    expect(DEFAULT_CONFIG.cicd?.git?.targetBranch).toBe('main');
-    expect(DEFAULT_CONFIG.cicd?.git?.deleteOnMerge).toBe(true);
-  });
-
-  it('default pushStrategy is direct in DEFAULT_CONFIG', async () => {
-    const { DEFAULT_CONFIG } = await import('../../../../src/core/config/types.js');
-    expect(DEFAULT_CONFIG.cicd?.pushStrategy).toBe('direct');
+    expect(DEFAULT_CONFIG.cicd).toBeUndefined();
   });
 });
 

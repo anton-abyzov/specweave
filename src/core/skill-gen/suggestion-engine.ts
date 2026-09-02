@@ -11,7 +11,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { SignalStore } from './types.js';
 import { SKILL_GEN_DEFAULTS } from './types.js';
-import type { SkillGenConfig } from '../config/types.js';
+import type { SkillGenConfig } from './types.js';
 import { loadSignalStore, saveSignalStore } from './utils.js';
 
 export class SuggestionEngine {

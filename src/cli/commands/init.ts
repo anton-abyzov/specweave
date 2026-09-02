@@ -487,7 +487,7 @@ export async function initCommand(
     }
 
     // Create config.json (simplified — no maturity, no structureDeferred)
-    createConfigFile(targetDir, finalProjectName, toolName, language, false);
+    createConfigFile(targetDir, finalProjectName, toolName);
     const configPath = path.join(targetDir, '.specweave', 'config.json');
     const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
 
@@ -507,10 +507,7 @@ export async function initCommand(
         }
 
         // Smart defaults
-        applySmartDefaults(config, { adapter: toolName, language, isGitRepo });
-        if (languageResult.keepEnglishOriginals && config.translation) {
-          config.translation.keepEnglishOriginals = true;
-        }
+        applySmartDefaults(config, { adapter: toolName, isGitRepo });
 
         // Always write workspace section — every workspace uses repositories/ structure
         if (umbrellaDiscovery) {
@@ -534,11 +531,7 @@ export async function initCommand(
 
         // LSP auto-enable (Claude only)
         if (toolName === 'claude') {
-          config.lsp = {
-            enabled: true,
-            autoInstallPlugins: true,
-            marketplace: 'boostvolt/claude-code-lsps',
-          };
+          config.lsp = { enabled: true };
         }
 
         fs.writeJsonSync(configPath, config, { spaces: 2 });
@@ -651,12 +644,10 @@ export async function initCommand(
       }
 
       const finalDefaults = {
-        testing: bannerConfig?.testing?.defaultTestMode || 'TDD',
-        qualityGates: bannerConfig?.qualityGates?.preset || 'standard',
+        testing: bannerConfig?.testing?.mode || 'TDD',
         lspEnabled: !!bannerConfig?.lsp?.enabled,
         gitHooksInstalled: isGitRepo,
-        translationEnabled: !!bannerConfig?.translation?.enabled,
-        coverageTargets: bannerConfig?.testing?.coverageTargets,
+        coverage: bannerConfig?.testing?.coverage,
       };
 
       displaySummaryBanner({

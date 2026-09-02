@@ -60,14 +60,6 @@ import {
   cleanupTempFiles,
   slugifyTitle,
 } from './sync-helpers/index.js';
-// Image generation for living docs (v1.0.148+)
-import {
-  generateLivingDocsImagesEnhanced,
-  getRelativeImagePath,
-  markdownImage,
-  extractKeywordsFromContent,
-  type DocContext,
-} from '../../utils/image-generator.js';
 
 // Re-export types for backward compatibility
 export type { SyncOptions, SyncResult, ParsedSpec, UserStoryData, AcceptanceCriterionData };
@@ -351,12 +343,6 @@ export class LivingDocsSync {
               featureContent += crossRefs;
             }
 
-            // Generate feature illustration image for cross-project (v1.0.148+)
-            const crossProjectFeatureFile = path.join(crossProjectPath, 'FEATURE.md');
-            featureContent = await this.generateAndInjectImage(
-              crossProjectPath, crossProjectFeatureFile, parsed.title, featureId, featureContent, result
-            );
-
             await fs.writeFile(path.join(crossProjectPath, 'FEATURE.md'), featureContent, 'utf-8');
             result.filesCreated.push(path.join(crossProjectPath, 'FEATURE.md'));
 
@@ -500,11 +486,6 @@ export class LivingDocsSync {
           }
         }
         let featureContent = generateFeatureFile(featureId, parsed, incrementId, undefined, existingFrontmatter);
-
-        // Generate feature illustration image (v1.0.148+)
-        featureContent = await this.generateAndInjectImage(
-          projectPath, featureFile, parsed.title, featureId, featureContent, result
-        );
 
         await fs.writeFile(featureFile, featureContent, 'utf-8');
         result.filesCreated.push(featureFile);
@@ -2187,54 +2168,6 @@ export class LivingDocsSync {
       // Non-blocking
       this.logger.warn(`      ⚠️ ${provider} metadata backfill failed: ${(error as Error).message}`);
     }
-  }
-
-  /**
-   * Generate feature illustration image and inject after TL;DR section
-   *
-   * Encapsulates SPECWEAVE_SKIP_IMAGE_GEN check, DocContext derivation,
-   * generateLivingDocsImagesEnhanced() call, TL;DR regex replacement,
-   * logging, and non-blocking error handling.
-   *
-   * @returns Modified content with image injected, or original content if skipped/failed
-   */
-  private async generateAndInjectImage(
-    featureFolderPath: string,
-    featureFilePath: string,
-    title: string,
-    featureId: string,
-    content: string,
-    result: SyncResult
-  ): Promise<string> {
-    const skipImageGen = process.env.SPECWEAVE_SKIP_IMAGE_GEN === 'true';
-    if (skipImageGen) {
-      return content;
-    }
-    try {
-      const docContext: DocContext = featureFolderPath.includes('/public/') ? 'public' : 'internal';
-      const imageResult = await generateLivingDocsImagesEnhanced(
-        featureFolderPath,
-        title,
-        featureId,
-        docContext
-      );
-      if (imageResult.featureImage && existsSync(imageResult.featureImage)) {
-        const imagePath = getRelativeImagePath(featureFilePath, imageResult.featureImage);
-        const imageMarkdown = markdownImage(`${title} illustration`, imagePath);
-        // Insert after ## TL;DR section
-        const modified = content.replace(
-          /^(## TL;DR\n\n(?:[^\n]+\n)*\n)/m,
-          `$1${imageMarkdown}\n\n`
-        );
-        const styleLabel = docContext === 'public' ? 'marketing-grade' : 'functional';
-        this.logger.log(`   🖼️  Generated ${styleLabel} feature illustration: ${path.basename(imageResult.featureImage)}`);
-        result.filesCreated.push(imageResult.featureImage);
-        return modified;
-      }
-    } catch (imgError) {
-      this.logger.log(`   ⚠️  Image generation skipped: ${imgError}`);
-    }
-    return content;
   }
 
   /**

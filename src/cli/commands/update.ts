@@ -354,16 +354,6 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Users who want LSP should run: specweave lsp enable
   // Removed: forced ensureLspSettingsOnUpdate, setupLspEnvVar, migrateLspConfig
 
-  // Step 2.10: Ensure Deep Interview config in .specweave/config.json (v1.0.195+)
-  // Projects initialized before v1.0.195 may not have the planning.deepInterview section
-  // This enables all existing clients to use deep interview for spec design
-  if (isSpecWeaveProject && !options.check) {
-    const deepInterviewMigrated = migrateDeepInterviewConfig(projectPath, options.verbose);
-    if (deepInterviewMigrated) {
-      console.log(chalk.green(`  ✓ Added Deep Interview config (disabled by default, enable in config.json)`));
-    }
-  }
-
   // Step 2.11: Clean up stale .specweave/ folders in parent directories (v1.0.262+)
   // These are created by bugs in hooks that use process.cwd() without config.json validation
   if (isSpecWeaveProject) {
@@ -1180,63 +1170,6 @@ function migrateReflectConfig(projectPath: string, verbose?: boolean): boolean {
   }
 }
 
-/**
- * Migrate config.json to add Deep Interview section if missing (v1.0.195+)
- * Projects initialized before v1.0.195 may not have the planning.deepInterview section
- * This enables all clients to use deep interview for spec design after running update
- *
- * @param projectPath - Path to the project root
- * @param verbose - Show detailed output
- * @returns true if migration was performed
- */
-export function migrateDeepInterviewConfig(projectPath: string, verbose?: boolean): boolean {
-  const configPath = path.join(projectPath, '.specweave', 'config.json');
-
-  if (!fs.existsSync(configPath)) {
-    return false;
-  }
-
-  try {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-    // Only migrate if planning.deepInterview is missing
-    if (config.planning?.deepInterview) {
-      // Already exists, don't overwrite user's settings
-      return false;
-    }
-
-    // Initialize planning object if missing
-    if (!config.planning) {
-      config.planning = {};
-    }
-
-    // Add deep interview with defaults (disabled by default per ADR-0232)
-    config.planning.deepInterview = {
-      enabled: false, // Opt-in, users can enable in config.json or during sw:increment
-      minQuestions: 5,  // Soft guideline - LLM should assess complexity
-      categories: [
-        'architecture',
-        'integrations',
-        'ui-ux',
-        'performance',
-        'security',
-        'edge-cases',
-      ],
-    };
-
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
-    if (verbose) {
-      console.log(chalk.gray(`    Added planning.deepInterview section to config.json`));
-    }
-    return true;
-  } catch (error) {
-    // If parsing fails, don't modify
-    if (verbose) {
-      console.log(chalk.yellow(`    ⚠ Could not migrate Deep Interview config: ${error}`));
-    }
-    return false;
-  }
-}
 
 // migrateLspConfig removed (v1.0.210) - LSP is opt-in only, not forced during update
 

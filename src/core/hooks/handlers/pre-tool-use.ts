@@ -1,9 +1,10 @@
 /**
- * PreToolUse hook handler (matcher: Write|Edit) — the hard rules:
- * 1. Status Completion Guard — no manual `status: completed` in an increment's
- *    metadata.json; closure goes through `/sw:done` / `specweave complete`.
- * 2. Interview Enforcement Guard — writing spec.md under
- *    `planning.deepInterview.enforcement: strict` requires a finished interview.
+ * PreToolUse hook handler (matcher: Write|Edit) — the hard rule:
+ * Status Completion Guard — no manual `status: completed` in an increment's
+ * metadata.json; closure goes through `/sw:done` / `specweave complete`.
+ *
+ * 2.0 removed the interview-enforcement guard: `planning.deepInterview` is
+ * advisory ('off' | 'warn') and enforced by the planning skill, not a hook.
  *
  * Output: `{}` (pass) or `hookSpecificOutput.permissionDecision: "deny"`.
  * Paths are backslash-normalized so the guards fire on Windows too.
@@ -25,29 +26,7 @@ import {
   readJsonSafe,
 } from './utils.js';
 
-const TEMPLATE_MARKERS = [
-  '[Story Title]',
-  '[user type]',
-  '[goal]',
-  '[benefit]',
-  '[Specific, testable criterion]',
-  '[Component 1]',
-  '[High-level description',
-  '{{RESOLVED_PROJECT}}',
-  'TEMPLATE FILE',
-];
-
-const DEFAULT_INTERVIEW_CATEGORIES = [
-  'architecture',
-  'integrations',
-  'ui-ux',
-  'performance',
-  'security',
-  'edge-cases',
-];
-
 const METADATA_RE = /\.specweave\/increments\/[^/]+\/metadata\.json$/;
-const SPEC_RE = /\.specweave\/increments\/\d{4}E?-[^/]+\/spec\.md$/;
 
 /** The text the tool is about to write (Edit: new_string, Write: content). */
 function newText(input: HookInput): string {
@@ -81,42 +60,6 @@ function checkStatusCompletionGuard(input: HookInput, context: HookContext, file
 }
 
 // ---------------------------------------------------------------------------
-// Guard: Interview Enforcement (Write spec.md with strict interview)
-// ---------------------------------------------------------------------------
-
-function checkInterviewGuard(input: HookInput, context: HookContext, filePath: string): HookResult {
-  if (!SPEC_RE.test(filePath)) return pass();
-
-  const content = newText(input);
-  if (TEMPLATE_MARKERS.some((m) => content.includes(m))) return pass();
-
-  const config = readJsonSafe<{ planning?: { deepInterview?: Record<string, unknown> } }>(context.configPath);
-  const di = config?.planning?.deepInterview ?? {};
-  const strict = di.enforcement === 'strict' && (di.enabled === true || di.enabled === undefined);
-  if (!strict) return pass();
-
-  const id = extractIncrementId(filePath);
-  const categories = Array.isArray(di.categories) ? (di.categories as string[]) : DEFAULT_INTERVIEW_CATEGORIES;
-  const statePath = path.join(context.stateDir, `interview-${id}.json`);
-  if (!fs.existsSync(statePath)) {
-    return deny(
-      `Strict Interview Enforcement: Interview Required. Deep Interview has not been started for ${id}. ` +
-        `Cover all categories (${categories.join(', ')}) before writing spec.md, ` +
-        `or set planning.deepInterview.enforcement to "warn" in .specweave/config.json.`,
-    );
-  }
-  const state = readJsonSafe<{ coveredCategories?: Record<string, unknown> }>(statePath);
-  const covered = Object.keys(state?.coveredCategories ?? {});
-  const missing = categories.filter((c) => !covered.includes(c));
-  if (missing.length > 0) {
-    return deny(
-      `Strict Interview Enforcement: Incomplete Interview for ${id}. Missing categories: ${missing.join(', ')}`,
-    );
-  }
-  return pass();
-}
-
-// ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
 
@@ -130,12 +73,5 @@ export const handle: HandlerFn = async (input, context) => {
   const statusResult = checkStatusCompletionGuard(input, context, filePath);
   if (statusResult.hookSpecificOutput) return statusResult;
 
-  if (toolName === 'Write') {
-    const interviewResult = checkInterviewGuard(input, context, filePath);
-    if (interviewResult.hookSpecificOutput) {
-      logHook(context, 'pre-tool-use', `interview guard: ${filePath}`, 'warn');
-      return interviewResult;
-    }
-  }
   return pass();
 };

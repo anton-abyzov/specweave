@@ -12,11 +12,11 @@ import {
   applySmartDefaults,
   type SmartDefaultsOptions,
 } from '../../../../../src/cli/helpers/init/smart-defaults.js';
+import { KNOWN_CONFIG_KEYS } from '../../../../../src/core/config/types.js';
 
 function makeOptions(overrides: Partial<SmartDefaultsOptions> = {}): SmartDefaultsOptions {
   return {
     adapter: 'claude',
-    language: 'en',
     isGitRepo: true,
     ...overrides,
   };
@@ -24,70 +24,58 @@ function makeOptions(overrides: Partial<SmartDefaultsOptions> = {}): SmartDefaul
 
 describe('smart-defaults', () => {
   describe('applySmartDefaults', () => {
-    // ─── Testing defaults ─────────────────────────────────────
+    // ─── Testing defaults (2.0 shape) ─────────────────────────
 
-    it('should set testing.defaultTestMode to TDD', () => {
+    it('should set testing.mode to TDD', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.testing.defaultTestMode).toBe('TDD');
+      expect(config.testing.mode).toBe('TDD');
     });
 
-    it('should set testing.defaultCoverageTarget to 80', () => {
+    it('should seed an empty testing.commands list', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.testing.defaultCoverageTarget).toBe(80);
+      expect(config.testing.commands).toEqual([]);
     });
 
-    it('should set testing.coverageTargets', () => {
+    it('should set testing.coverage', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.testing.coverageTargets).toEqual({ unit: 80, integration: 70, e2e: 100 });
+      expect(config.testing.coverage).toEqual({ unit: 80, integration: 70, e2e: 100 });
     });
 
     it('should preserve existing testing config', () => {
-      const existing = { testing: { defaultTestMode: 'test-after', customField: 'keep' } };
+      const existing = { testing: { mode: 'test-after', commands: ['npm test'] } };
       const config = applySmartDefaults(existing, makeOptions());
-      expect(config.testing.defaultTestMode).toBe('test-after');
-      expect(config.testing.customField).toBe('keep');
+      expect(config.testing.mode).toBe('test-after');
+      expect(config.testing.commands).toEqual(['npm test']);
     });
 
-    // ─── Quality gates defaults ───────────────────────────────
+    // ─── Planning / living docs ───────────────────────────────
 
-    it('should set qualityGates.preset to standard', () => {
+    it("should set planning.deepInterview to 'off'", () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.qualityGates.preset).toBe('standard');
+      expect(config.planning.deepInterview).toBe('off');
     });
 
-    it('should set qualityGates.enforcement', () => {
-      const config = applySmartDefaults({}, makeOptions());
-      expect(config.qualityGates.enforcement.testsRequired).toBe(true);
-      expect(config.qualityGates.enforcement.llmValidation).toBe(true);
-    });
-
-    it('should preserve existing quality gates config', () => {
-      const existing = { qualityGates: { preset: 'production', custom: true } };
-      const config = applySmartDefaults(existing, makeOptions());
-      expect(config.qualityGates.preset).toBe('production');
-      expect(config.qualityGates.custom).toBe(true);
-    });
-
-    // ─── Deep interview defaults ──────────────────────────────
-
-    it('should set planning.deepInterview.enabled to false', () => {
-      const config = applySmartDefaults({}, makeOptions());
-      expect(config.planning.deepInterview.enabled).toBe(false);
-    });
-
-    it('should preserve existing planning config', () => {
-      const existing = { planning: { deepInterview: { enabled: true }, roadmap: 'keep' } };
-      const config = applySmartDefaults(existing, makeOptions());
-      expect(config.planning.deepInterview.enabled).toBe(true);
+    it('should preserve an existing deepInterview setting', () => {
+      const config = applySmartDefaults({ planning: { deepInterview: 'warn', roadmap: 'keep' } }, makeOptions());
+      expect(config.planning.deepInterview).toBe('warn');
       expect(config.planning.roadmap).toBe('keep');
+    });
+
+    it('should default livingDocs to false', () => {
+      const config = applySmartDefaults({}, makeOptions());
+      expect(config.livingDocs).toBe(false);
+    });
+
+    it("should preserve livingDocs: 'onDone'", () => {
+      const config = applySmartDefaults({ livingDocs: 'onDone' }, makeOptions());
+      expect(config.livingDocs).toBe('onDone');
     });
 
     // ─── LSP defaults ─────────────────────────────────────────
 
     it('should enable LSP for Claude adapter', () => {
       const config = applySmartDefaults({}, makeOptions({ adapter: 'claude' }));
-      expect(config.lsp.enabled).toBe(true);
-      expect(config.lsp.autoInstallPlugins).toBe(true);
+      expect(config.lsp).toEqual({ enabled: true });
     });
 
     it('should NOT set LSP for cursor adapter', () => {
@@ -95,75 +83,27 @@ describe('smart-defaults', () => {
       expect(config.lsp).toBeUndefined();
     });
 
-    it('should NOT set LSP for generic adapter', () => {
-      const config = applySmartDefaults({}, makeOptions({ adapter: 'generic' }));
-      expect(config.lsp).toBeUndefined();
-    });
-
     it('should preserve existing LSP config for Claude', () => {
-      const existing = { lsp: { enabled: false, custom: true } };
-      const config = applySmartDefaults(existing, makeOptions({ adapter: 'claude' }));
-      // Existing values take precedence via spread order
+      const config = applySmartDefaults({ lsp: { enabled: false } }, makeOptions({ adapter: 'claude' }));
       expect(config.lsp.enabled).toBe(false);
-      expect(config.lsp.custom).toBe(true);
     });
 
-    // ─── Translation defaults ─────────────────────────────────
+    // ─── Sync defaults ────────────────────────────────────────
 
-    it('should enable translation for non-English language', () => {
-      const config = applySmartDefaults({}, makeOptions({ language: 'es' }));
-      expect(config.translation.enabled).toBe(true);
-      expect(config.translation.languages).toEqual(['en', 'es']);
-      expect(config.translation.primary).toBe('es');
-      expect(config.translation.method).toBe('auto');
+    it('should enable sync when a repository provider is configured', () => {
+      const config = applySmartDefaults({ repository: { provider: 'github' } }, makeOptions());
+      expect(config.sync.enabled).toBe(true);
+      expect(config.sync.settings.autoSyncOnCompletion).toBe(true);
     });
 
-    it('should disable translation for English', () => {
-      const config = applySmartDefaults({}, makeOptions({ language: 'en' }));
-      expect(config.translation.enabled).toBe(false);
+    it('should not write a hooks block (2.0: closure flags come from sync setup)', () => {
+      const config = applySmartDefaults({ repository: { provider: 'github' } }, makeOptions());
+      expect(config.hooks).toBeUndefined();
     });
 
-    it('should preserve existing translation config', () => {
-      const existing = { translation: { enabled: true, method: 'manual' } };
-      const config = applySmartDefaults(existing, makeOptions({ language: 'de' }));
-      expect(config.translation.method).toBe('manual');
-      expect(config.translation.enabled).toBe(true);
-    });
-
-    it('should NOT set incrementInterview (orphaned key removed)', () => {
+    it('should leave sync alone when no provider is configured', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.planning.incrementInterview).toBeUndefined();
-    });
-
-    // ─── Sync/hooks defaults ──────────────────────────────────
-
-    it('should set auto_create_github_issue in post_increment_planning when provider configured', () => {
-      const config = applySmartDefaults(
-        { repository: { provider: 'github' } },
-        makeOptions()
-      );
-      expect(config.hooks.post_increment_planning.auto_create_github_issue).toBe(true);
-    });
-
-    it('should NOT set sync_living_docs in post_increment_planning', () => {
-      const config = applySmartDefaults(
-        { repository: { provider: 'github' } },
-        makeOptions()
-      );
-      // sync_living_docs should NOT be set by smart defaults
-      // (it runs after agents finish, not at planning time)
-      expect(config.hooks.post_increment_planning.sync_living_docs).toBeUndefined();
-    });
-
-    it('should preserve existing post_increment_planning hooks', () => {
-      const config = applySmartDefaults(
-        {
-          repository: { provider: 'github' },
-          hooks: { post_increment_planning: { custom_hook: true } },
-        },
-        makeOptions()
-      );
-      expect(config.hooks.post_increment_planning.custom_hook).toBe(true);
+      expect(config.sync).toBeUndefined();
     });
 
     // ─── Overall behavior ─────────────────────────────────────
@@ -173,7 +113,6 @@ describe('smart-defaults', () => {
       const result = applySmartDefaults(input, makeOptions());
       expect(result).toBe(input); // Same reference
       expect(result.testing).toBeDefined();
-      expect(result.qualityGates).toBeDefined();
       expect(result.planning).toBeDefined();
     });
 
@@ -182,6 +121,13 @@ describe('smart-defaults', () => {
       const config = applySmartDefaults(existing, makeOptions());
       expect(config.sync).toEqual({ enabled: true });
       expect(config.custom).toBe('value');
+    });
+
+    it('writes only keys the 2.0 config surface knows about', () => {
+      const config = applySmartDefaults({ repository: { provider: 'github' } }, makeOptions());
+      for (const key of Object.keys(config)) {
+        expect(KNOWN_CONFIG_KEYS as readonly string[], key).toContain(key);
+      }
     });
   });
 
@@ -194,15 +140,11 @@ describe('smart-defaults', () => {
     const REPO_ROOT = join(__dirname, '../../../../..');
 
     function getConfigLeafKeys(): string[] {
-      const config = applySmartDefaults({}, {
-        adapter: 'claude',
-        language: 'de', // non-en to trigger translation branch
-        isGitRepo: true,
-      });
+      const config = applySmartDefaults({}, { adapter: 'claude', isGitRepo: true });
       // Also test with a provider to trigger sync/hooks branch
       const configWithProvider = applySmartDefaults(
         { repository: { provider: 'github' } },
-        { adapter: 'claude', language: 'en', isGitRepo: true },
+        { adapter: 'claude', isGitRepo: true },
       );
       const keys = new Set<string>();
       function walk(obj: Record<string, any>, prefix: string) {

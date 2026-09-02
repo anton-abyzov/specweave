@@ -95,50 +95,12 @@ describe('status completion guard', () => {
   });
 });
 
-describe('interview enforcement guard (Write spec.md)', () => {
-  const strict = { planning: { deepInterview: { enabled: true, enforcement: 'strict' } } };
-
-  it('passes when enforcement is not strict', async () => {
-    writeConfig({ planning: { deepInterview: { enabled: true, enforcement: 'warn' } } });
-    expect(await handle(write(WIN_SPEC, '# Real spec with AC-01'), ctx)).toEqual({});
-  });
-
-  it('passes template writes even under strict', async () => {
-    writeConfig(strict);
-    expect(await handle(write(WIN_SPEC, '# TEMPLATE FILE\n[Story Title]'), ctx)).toEqual({});
-  });
-
-  it('denies when the interview was never started (Windows path)', async () => {
-    writeConfig(strict);
-    const res = await handle(write(WIN_SPEC, '# Real spec'), ctx);
-    expect(res.hookSpecificOutput?.permissionDecision).toBe('deny');
-    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('0002-y');
-    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('Interview Required');
-  });
-
-  it('denies with the missing categories listed', async () => {
-    writeConfig(strict);
-    fs.writeFileSync(
-      path.join(ctx.stateDir, 'interview-0002-y.json'),
-      JSON.stringify({ coveredCategories: { architecture: {}, security: {} } }),
-    );
-    const res = await handle(write(WIN_SPEC, '# Real spec'), ctx);
-    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('Incomplete');
-    expect(res.hookSpecificOutput?.permissionDecisionReason).toContain('integrations');
-  });
-
-  it('passes when every category is covered', async () => {
-    writeConfig(strict);
-    const all = ['architecture', 'integrations', 'ui-ux', 'performance', 'security', 'edge-cases'];
-    fs.writeFileSync(
-      path.join(ctx.stateDir, 'interview-0002-y.json'),
-      JSON.stringify({ coveredCategories: Object.fromEntries(all.map((c) => [c, {}])) }),
-    );
-    expect(await handle(write(WIN_SPEC, '# Real spec'), ctx)).toEqual({});
-  });
-
-  it('Edit on spec.md is not subject to the interview guard', async () => {
-    writeConfig(strict);
-    expect(await handle(edit(WIN_SPEC, 'more text'), ctx)).toEqual({});
+describe('deep interview is advisory in 2.0 (no hook enforcement)', () => {
+  it('never blocks a spec.md write, whatever planning.deepInterview says', async () => {
+    for (const di of ['warn', 'off', { enabled: true, enforcement: 'strict' }]) {
+      writeConfig({ planning: { deepInterview: di } });
+      expect(await handle(write(WIN_SPEC, '# Real spec with AC-01'), ctx)).toEqual({});
+      expect(await handle(edit(WIN_SPEC, 'more text'), ctx)).toEqual({});
+    }
   });
 });

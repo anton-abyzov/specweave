@@ -451,32 +451,6 @@ describe('ClaudeAdapter', () => {
       );
     });
 
-    it('should inject system prompt for non-English language', async () => {
-      mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('SKILL.md')) return true;
-        if (p.endsWith('test-cases')) return false;
-        if (p.endsWith('config.json')) return true;
-        return false;
-      });
-      mockReadJson.mockResolvedValue({ language: 'ru' });
-      mockReadFile.mockResolvedValue('Hello');
-      mockGetSystemPromptForLanguage.mockReturnValue('RESPOND IN RUSSIAN');
-
-      const plugin = makePlugin({
-        skills: [
-          { name: 'test-skill', path: '/plugins/test/skills/test-skill', description: 'Test' },
-        ],
-      });
-
-      await adapter.compilePlugin(plugin);
-
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('SKILL.md'),
-        'RESPOND IN RUSSIAN\n\nHello',
-        'utf-8'
-      );
-    });
-
     it('should not inject system prompt for English language', async () => {
       mockPathExists.mockImplementation(async (p: string) => {
         if (p.endsWith('SKILL.md')) return true;

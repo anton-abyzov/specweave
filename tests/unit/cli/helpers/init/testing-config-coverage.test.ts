@@ -51,7 +51,7 @@ describe('100% coverage option (0189)', () => {
       const config = JSON.parse(
         fs.readFileSync(path.join(testDir, '.specweave', 'config.json'), 'utf-8'),
       );
-      expect(config.testing.coverageTargets).toEqual({
+      expect(config.testing.coverage).toEqual({
         unit: 100,
         integration: 100,
         e2e: 100,

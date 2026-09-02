@@ -77,12 +77,12 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   // Read testing config to pass testMode and coverageTarget
   let testMode: string | undefined;
   let coverageTarget: number | undefined;
-  let deepInterviewConfig: { enabled?: boolean; enforcement?: string; categories?: string[] } | undefined;
+  let deepInterview: 'off' | 'warn' | undefined;
   try {
     const config = await readConfig(projectRoot);
-    testMode = config?.testing?.defaultTestMode;
-    coverageTarget = config?.testing?.defaultCoverageTarget;
-    deepInterviewConfig = config?.planning?.deepInterview;
+    testMode = config?.testing?.mode;
+    coverageTarget = config?.testing?.coverage?.unit;
+    deepInterview = config?.planning?.deepInterview;
   } catch (error) {
     // Config reading can fail for missing file (expected) or malformed JSON (unexpected)
     const msg = error instanceof Error ? error.message : String(error);
@@ -122,21 +122,11 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     ? path.basename(result.incrementPath)
     : resolvedId;
 
-  // Auto-initialize interview state when deep interview is enabled.
-  // The interview-enforcement-guard blocks spec.md writes until all categories
-  // are covered. Without this, the guard fires "Interview Required" because
-  // no state file exists — the PM agent and increment skill each assumed the
-  // other would create it.
-  if (deepInterviewConfig?.enabled) {
+  // 2.0: deep interview is advisory. `warn` seeds the interview state file so
+  // the planning skill can track which categories it has covered; nothing blocks.
+  if (deepInterview === 'warn') {
     try {
-      const created = initInterviewStateFile(projectRoot, finalId);
-      if (created && !json && deepInterviewConfig.enforcement === 'strict') {
-        const categories = deepInterviewConfig.categories ||
-          ['architecture', 'integrations', 'ui-ux', 'performance', 'security', 'edge-cases'];
-        console.log(chalk.yellow(
-          `\n⚠️  Deep Interview (strict): Cover all ${categories.length} categories before spec.md`
-        ));
-      }
+      initInterviewStateFile(projectRoot, finalId);
     } catch (err) {
       console.error(chalk.yellow(
         `⚠️  Failed to initialize interview state: ${err instanceof Error ? err.message : err}`
