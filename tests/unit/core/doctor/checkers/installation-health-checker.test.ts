@@ -33,12 +33,20 @@ describe('InstallationHealthChecker', () => {
   let commandsDir: string;
   let cacheDir: string;
   let projectRoot: string;
+  /**
+   * Stand-in for the specweave package root. Empty by default (no
+   * marketplace.json), so bundled-plugin resolution falls back to whatever is
+   * installed — these tests must never reach the real repo on disk.
+   */
+  let pkgRoot: string;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-install-checker-'));
     commandsDir = path.join(tmpDir, 'commands');
     cacheDir = path.join(tmpDir, 'plugins', 'cache');
     projectRoot = path.join(tmpDir, 'project');
+    pkgRoot = path.join(tmpDir, 'pkg');
+    fs.mkdirSync(pkgRoot, { recursive: true });
     fs.mkdirSync(commandsDir, { recursive: true });
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.mkdirSync(projectRoot, { recursive: true });
@@ -64,7 +72,7 @@ describe('InstallationHealthChecker', () => {
     });
 
     it('TC-002: should pass when commands directory is empty', async () => {
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Legacy commands directories');
 
@@ -76,7 +84,7 @@ describe('InstallationHealthChecker', () => {
       fs.mkdirSync(path.join(commandsDir, 'sw'), { recursive: true });
       fs.writeFileSync(path.join(commandsDir, 'sw', 'SKILL.md'), '# Test');
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Legacy commands directories');
 
@@ -91,7 +99,7 @@ describe('InstallationHealthChecker', () => {
       fs.mkdirSync(path.join(legacyDir, 'do'), { recursive: true });
       fs.writeFileSync(path.join(legacyDir, 'do', 'SKILL.md'), '# Do');
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       await checker.check(projectRoot, { fix: true });
 
       expect(fs.existsSync(legacyDir)).toBe(false);
@@ -101,7 +109,7 @@ describe('InstallationHealthChecker', () => {
       fs.mkdirSync(path.join(commandsDir, 'sw'), { recursive: true });
       fs.writeFileSync(path.join(commandsDir, 'sw', 'SKILL.md'), '# Test');
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true });
       const check = result.checks.find(c => c.name === 'Legacy commands directories');
 
@@ -116,7 +124,7 @@ describe('InstallationHealthChecker', () => {
   // =========================================================================
   describe('checkStaleCacheDirs', () => {
     it('TC-005: should pass when cache dir is clean', async () => {
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const cacheCheck = result.checks.find(c => c.name === 'Stale cache directories');
 
@@ -127,7 +135,7 @@ describe('InstallationHealthChecker', () => {
     it('TC-006: should warn when temp_local dir present', async () => {
       fs.mkdirSync(path.join(cacheDir, 'temp_local_123_abc'), { recursive: true });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const cacheCheck = result.checks.find(c => c.name === 'Stale cache directories');
 
@@ -141,7 +149,7 @@ describe('InstallationHealthChecker', () => {
       fs.mkdirSync(tempDir2, { recursive: true });
       fs.writeFileSync(path.join(tempDir2, 'file.txt'), 'data');
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       await checker.check(projectRoot, { fix: true });
 
       expect(fs.existsSync(tempDir2)).toBe(false);
@@ -150,7 +158,7 @@ describe('InstallationHealthChecker', () => {
     it('TC-008: should NOT auto-delete unreferenced non-temp cache dirs', async () => {
       fs.mkdirSync(path.join(cacheDir, 'specweave', 'some-plugin'), { recursive: true });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       await checker.check(projectRoot, { fix: true });
 
       expect(fs.existsSync(path.join(cacheDir, 'specweave', 'some-plugin'))).toBe(true);
@@ -201,7 +209,7 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -239,7 +247,7 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -272,7 +280,7 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -302,7 +310,7 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -312,7 +320,7 @@ describe('InstallationHealthChecker', () => {
     });
 
     it('TC-012: should skip when no lockfile exists', async () => {
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -345,7 +353,7 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: false });
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -376,7 +384,7 @@ describe('InstallationHealthChecker', () => {
       };
       fs.writeFileSync(lockPath, JSON.stringify(lockfile, null, 2));
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true, quick: true });
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -409,7 +417,7 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true });
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -442,7 +450,7 @@ describe('InstallationHealthChecker', () => {
         throw new Error('command not found: specweave');
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true });
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
@@ -475,10 +483,180 @@ describe('InstallationHealthChecker', () => {
         JSON.stringify(lockfile, null, 2)
       );
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       await checker.check(projectRoot, { fix: false, quick: true });
 
       expect(mockExecSync).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // Regressions from the 2.0 release proofs: a FRESH `specweave init` must
+  // leave `specweave doctor` exiting 0.
+  // =========================================================================
+  describe('lockfile integrity after a real init (2.0 regressions)', () => {
+    /** Build a fake specweave package root with one bundled marketplace plugin. */
+    function writeFakePackage(skills: string[]): void {
+      const pluginSrc = path.join(pkgRoot, 'plugins', 'specweave');
+      fs.mkdirSync(path.join(pkgRoot, '.claude-plugin'), { recursive: true });
+      fs.writeFileSync(
+        path.join(pkgRoot, '.claude-plugin', 'marketplace.json'),
+        JSON.stringify({ plugins: [{ name: 'sw', source: './plugins/specweave' }] })
+      );
+      for (const skill of skills) {
+        fs.mkdirSync(path.join(pluginSrc, 'skills', skill), { recursive: true });
+        fs.writeFileSync(path.join(pluginSrc, 'skills', skill, 'SKILL.md'), `# ${skill}\n`);
+      }
+    }
+
+    /** Reproduce what `specweave init` actually leaves on disk. */
+    async function writeGlobalSwLock(): Promise<void> {
+      const { computePluginHash } = await import('../../../../../src/utils/plugin-copier.js');
+      mockReadGlobalLockfile.mockReturnValue({
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.593',
+            // init hashes the plugin SOURCE dir, not the install target
+            sha: computePluginHash(path.join(pkgRoot, 'plugins', 'specweave')),
+            tier: 'BUNDLED',
+            installedAt: new Date().toISOString(),
+            source: 'local:specweave',
+          },
+        },
+      });
+    }
+
+    afterEach(() => {
+      mockReadGlobalLockfile.mockReturnValue(null);
+    });
+
+    it('passes when init installed the sw skills PROJECT-LOCAL into .claude/skills/', async () => {
+      // init's own output: "Location: .claude/skills/ (project-local)". There is
+      // no dir named `sw` anywhere - the plugin is exploded skill-by-skill.
+      writeFakePackage(['do', 'done', 'increment']);
+      await writeGlobalSwLock();
+      for (const skill of ['do', 'done', 'increment']) {
+        fs.mkdirSync(path.join(projectRoot, '.claude', 'skills', skill), { recursive: true });
+        fs.writeFileSync(path.join(projectRoot, '.claude', 'skills', skill, 'SKILL.md'), `# ${skill}\n`);
+      }
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+      const check = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(check!.status).toBe('pass');
+      expect(result.status).not.toBe('fail');
+    });
+
+    it('does not fail on a vskill-managed skill whose 64-char digest is not ours', async () => {
+      // `specweave update` used to install skill-creator and record vskill's full
+      // sha256 - incomparable with computePluginHash's 12-char digest, so doctor
+      // reported a hash mismatch that no --fix could ever clear.
+      writeFakePackage(['do']);
+      await writeGlobalSwLock();
+      fs.mkdirSync(path.join(projectRoot, '.claude', 'skills', 'do'), { recursive: true });
+      fs.writeFileSync(path.join(projectRoot, '.claude', 'skills', 'do', 'SKILL.md'), '# do\n');
+
+      const skillDir = path.join(projectRoot, '.claude', 'skills', 'skill-creator');
+      fs.mkdirSync(skillDir, { recursive: true });
+      fs.writeFileSync(path.join(skillDir, 'SKILL.md'), '# skill-creator (content differs)\n');
+      fs.writeFileSync(
+        path.join(projectRoot, 'vskill.lock'),
+        JSON.stringify({
+          version: 1,
+          agents: ['claude-code'],
+          skills: {
+            'skill-creator': {
+              version: '1.0.0',
+              sha: 'dcd4803e61e913e6fc27294184cd3a71f09f5e924ff20c8a9a20173e7b3c2bcf',
+              tier: 'VERIFIED',
+              installedAt: new Date().toISOString(),
+              source: 'github:anthropics/skills',
+            },
+          },
+        })
+      );
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+      const check = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(check!.status).toBe('pass');
+      expect(check!.message).not.toContain('mismatch');
+    });
+
+    it('warns (never fails) when a vskill-managed skill is not installed', async () => {
+      writeFakePackage(['do']);
+      await writeGlobalSwLock();
+      fs.mkdirSync(path.join(projectRoot, '.claude', 'skills', 'do'), { recursive: true });
+      fs.writeFileSync(path.join(projectRoot, '.claude', 'skills', 'do', 'SKILL.md'), '# do\n');
+      fs.writeFileSync(
+        path.join(projectRoot, 'vskill.lock'),
+        JSON.stringify({
+          version: 1,
+          agents: ['claude-code'],
+          skills: {
+            'skill-creator': {
+              version: '1.0.0',
+              sha: 'dcd4803e61e913e6fc27294184cd3a71f09f5e924ff20c8a9a20173e7b3c2bcf',
+              tier: 'VERIFIED',
+              installedAt: new Date().toISOString(),
+              source: 'github:anthropics/skills',
+            },
+          },
+        })
+      );
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+      const check = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(check!.status).toBe('warn');
+      expect(check!.fixSuggestion).toContain('vskill install');
+    });
+
+    it('still fails when the bundled sw plugin is genuinely nowhere', async () => {
+      writeFakePackage(['do']);
+      await writeGlobalSwLock();
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+      const check = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(check!.status).toBe('fail');
+    });
+  });
+
+  describe('update health reports the RUNNING cli version (2.0 regression)', () => {
+    it('never shells out to whatever `specweave` is first on PATH', async () => {
+      // The old code ran `specweave --version`, which answered for a DIFFERENT
+      // install (or the marketplace plugin cache) and told users on the newest
+      // CLI that they were outdated.
+      const version = new InstallationHealthChecker({
+        packageRoot: pkgRoot,
+        commandsDir,
+        cacheDir,
+      }).runningCliVersion();
+
+      const own = JSON.parse(
+        fs.readFileSync(path.resolve(__dirname, '../../../../../package.json'), 'utf-8')
+      ) as { version: string };
+      expect(version).toBe(own.version);
+
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') throw new Error('should not be called');
+        if (cmd.includes('npm view specweave version')) return own.version;
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check!.status).toBe('pass');
+      expect(check!.message).toContain(own.version);
     });
   });
 
@@ -507,7 +685,7 @@ describe('InstallationHealthChecker', () => {
 
     it('passes when the cached hooks match the source', async () => {
       seedCache();
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
       const check = result.checks.find(c => c.name === 'Plugin cache hook freshness');
 
@@ -517,7 +695,7 @@ describe('InstallationHealthChecker', () => {
 
     it('warns (never skips) when a cached hook drifts from the source', async () => {
       seedCache((asset, content) => (asset === 'run.mjs' ? `${content}\n// stale\n` : content));
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
       const check = result.checks.find(c => c.name === 'Plugin cache hook freshness');
 
@@ -529,7 +707,7 @@ describe('InstallationHealthChecker', () => {
       seedCache((asset, content) => (asset === 'hooks.json' ? `${content}\n` : content));
       const cachedManifest = path.join(cacheDir, 'specweave', 'sw', '1.0.0', 'hooks', 'hooks.json');
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true, quick: true });
       const check = result.checks.find(c => c.name === 'Plugin cache hook freshness');
 
@@ -545,7 +723,7 @@ describe('InstallationHealthChecker', () => {
   // =========================================================================
   describe('check() integration', () => {
     it('TC-016: should return all 7 check categories', async () => {
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
 
       expect(result.category).toBe('Installation Health');
@@ -562,7 +740,7 @@ describe('InstallationHealthChecker', () => {
     });
 
     it('TC-016c: should return 6 checks when quick=true (skips update health)', async () => {
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
 
       expect(result.checks.length).toBe(6);
@@ -575,7 +753,7 @@ describe('InstallationHealthChecker', () => {
       fs.mkdirSync(path.join(commandsDir, 'sw'), { recursive: true });
       fs.writeFileSync(path.join(commandsDir, 'sw', 'SKILL.md'), '# Legacy');
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
 
       expect(result.status).toBe('warn');
@@ -588,13 +766,14 @@ describe('InstallationHealthChecker', () => {
   describe('checkUpdateHealth', () => {
     it('TC-UH-01: should pass when installed version matches npm latest', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
-        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'specweave --version') return 'SHOULD NOT BE CALLED';
         if (cmd === `npm view specweave version ${npmRegistryFlag()}`) return '1.0.394';
         if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.394');
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -605,14 +784,15 @@ describe('InstallationHealthChecker', () => {
 
     it('TC-UH-02: should warn when outdated but resolvable', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
-        if (cmd === 'specweave --version') return '1.0.390';
+        if (cmd === 'specweave --version') return 'SHOULD NOT BE CALLED';
         if (cmd === `npm view specweave version ${npmRegistryFlag()}`) return '1.0.394';
         if (cmd === `npm view specweave@1.0.394 version ${npmRegistryFlag()}`) return '1.0.394';
         if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.390');
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -635,7 +815,8 @@ describe('InstallationHealthChecker', () => {
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.390');
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -659,7 +840,8 @@ describe('InstallationHealthChecker', () => {
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.390');
       const result = await checker.check(projectRoot, { fix: true });
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -675,7 +857,8 @@ describe('InstallationHealthChecker', () => {
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue(null);
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -685,13 +868,14 @@ describe('InstallationHealthChecker', () => {
 
     it('TC-UH-06: should warn when npm registry unreachable', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
-        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'specweave --version') return 'SHOULD NOT BE CALLED';
         if (cmd === `npm view specweave version ${npmRegistryFlag()}`) throw new Error('ETIMEDOUT');
         if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.394');
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -702,7 +886,7 @@ describe('InstallationHealthChecker', () => {
 
     it('TC-UH-07: should retry with explicit registry on E401 from stale auth token', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
-        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'specweave --version') return 'SHOULD NOT BE CALLED';
         if (cmd === 'npm view specweave version') {
           const err = new Error('Command failed') as any;
           err.stderr = 'npm error code E401\nnpm error Unable to authenticate';
@@ -715,7 +899,8 @@ describe('InstallationHealthChecker', () => {
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.394');
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -726,7 +911,7 @@ describe('InstallationHealthChecker', () => {
 
     it('TC-UH-08: should warn when E401 retry also fails', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
-        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'specweave --version') return 'SHOULD NOT BE CALLED';
         if (cmd.includes('npm view specweave version')) {
           const err = new Error('Command failed') as any;
           err.stderr = 'npm error code E401\nnpm error Unable to authenticate';
@@ -736,7 +921,8 @@ describe('InstallationHealthChecker', () => {
         return '';
       });
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('1.0.394');
       const result = await checker.check(projectRoot, {});
       const check = result.checks.find(c => c.name === 'Update health');
 
@@ -772,7 +958,7 @@ describe('InstallationHealthChecker', () => {
       fs.writeFileSync(childLock, '{}');
       fs.utimesSync(childLock, oldTime, oldTime);
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: false, quick: true });
 
       const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
@@ -804,7 +990,7 @@ describe('InstallationHealthChecker', () => {
       fs.writeFileSync(childLock, '{}');
       fs.utimesSync(childLock, oldTime, oldTime);
 
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true, quick: true });
 
       const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
@@ -822,7 +1008,7 @@ describe('InstallationHealthChecker', () => {
 
     it('T-014: pass status when no stale lockfiles exist', async () => {
       // Clean project, no lockfiles at all
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: false, quick: true });
 
       const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
@@ -835,7 +1021,7 @@ describe('InstallationHealthChecker', () => {
     });
 
     it('T-015: check() returns entries named "Legacy lockfiles" and "Orphaned child lockfiles"', async () => {
-      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
 
       const checkNames = result.checks.map(c => c.name);
