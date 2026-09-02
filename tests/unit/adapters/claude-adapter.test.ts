@@ -203,9 +203,14 @@ describe('ClaudeAdapter', () => {
       expect(instructions).toContain('WHY CLAUDE CODE IS BEST');
     });
 
-    it('should mention slash commands', () => {
+    it('should mention slash commands that actually exist', () => {
       const instructions = adapter.getInstructions();
-      expect(instructions).toContain('/specweave');
+      // The banner used to advertise `/specweave inc` / `/specweave.inc`,
+      // which no 2.0 install has. Only the shipped `sw:` skills are real.
+      expect(instructions).not.toContain('/specweave');
+      expect(instructions).toContain('/sw:increment');
+      expect(instructions).toContain('/sw:do');
+      expect(instructions).toContain('/sw:done');
     });
 
     it('should mention documentation paths', () => {
