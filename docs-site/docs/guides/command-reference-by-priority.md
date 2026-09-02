@@ -193,7 +193,6 @@ Edge cases and specialized integrations.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `sw:revert-wip-limit` | Revert WIP limit adjustment | `sw:revert-wip-limit` |
 | `/sw` | Command reference/help | `/sw` |
 
 ---
