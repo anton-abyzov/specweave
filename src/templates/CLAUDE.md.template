@@ -50,7 +50,7 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 <!-- SECTION:conventions required -->
 ## Conventions
 
-- Secrets: check that config exists (`grep -q`), never print values, never commit `.env*`.
+- Secrets: confirm a key is present without printing its value (`grep -q NAME .env` or `Select-String -Quiet NAME .env`); never commit `.env*`.
 - Prefer deleting code over adapting it; change only what the task needs.
 - Check `.specweave/docs/` ADRs before architectural changes; record new decisions in `plan.md` or an ADR.
 - Nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
