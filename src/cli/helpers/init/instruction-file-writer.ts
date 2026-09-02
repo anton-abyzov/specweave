@@ -4,6 +4,7 @@
  * (via update-instructions) and the adapters that ship AGENTS.md.
  *
  * - detects the project's build/test/lint commands for the Commands table
+ * - resolves the conditional `umbrella` section from config.workspace.repos
  * - never writes when the merge result is byte-identical
  * - backs up the previous file to .specweave/backups/<file>.<timestamp>.bak
  */
@@ -30,6 +31,12 @@ export interface ApplyInstructionOptions {
   version?: string;
   /** Defaults to stack detection on projectPath. */
   commands?: StackCommands;
+  /**
+   * Condition flags for `when="…"` template sections. Defaults to
+   * `{ umbrella: <config.workspace.repos is non-empty> }` read from
+   * `.specweave/config.json`.
+   */
+  flags?: Record<string, boolean>;
   /** Compute the result without touching the disk. */
   dryRun?: boolean;
   /** Timestamp for the backup filename (tests). */
@@ -55,6 +62,22 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
   return path.join(projectPath, BACKUP_DIR, `${filename}.${stamp}.bak`);
 }
 
+/**
+ * Condition flags for the templates' `when="…"` sections.
+ * `umbrella` is on when the project's config lists workspace repos.
+ */
+export function detectTemplateFlags(projectPath: string): Record<string, boolean> {
+  let umbrella = false;
+  try {
+    const raw = fs.readFileSync(path.join(projectPath, '.specweave', 'config.json'), 'utf-8');
+    const repos = JSON.parse(raw)?.workspace?.repos;
+    umbrella = Array.isArray(repos) && repos.length > 0;
+  } catch {
+    // no config yet (init), or unreadable: single-repo layout
+  }
+  return { umbrella };
+}
+
 export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyInstructionResult {
   const filePath = path.join(opts.projectPath, opts.filename);
   const templatePath = path.join(opts.templatesDir, `${opts.filename}.template`);
@@ -72,7 +95,10 @@ export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyIn
     TEMPLATE_TYPES[opts.filename],
     opts.version ?? getPackageVersion(),
     opts.projectName,
-    { commands: opts.commands ?? detectStackCommands(opts.projectPath) }
+    {
+      commands: opts.commands ?? detectStackCommands(opts.projectPath),
+      flags: opts.flags ?? detectTemplateFlags(opts.projectPath),
+    }
   );
 
   let backupPath: string | null = null;
