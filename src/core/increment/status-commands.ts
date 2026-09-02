@@ -8,7 +8,8 @@
 
 import chalk from 'chalk';
 import { MetadataManager } from './metadata-manager.js';
-import { IncrementStatus, IncrementType, TYPE_LIMITS, computeTransitionPath } from '../types/increment-metadata.js';
+import { IncrementStatus, IncrementType, computeTransitionPath, countsTowardWipLimit } from '../types/increment-metadata.js';
+import { DisciplineChecker, buildWipNote } from './discipline-checker.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface PauseOptions {
@@ -19,7 +20,6 @@ export interface PauseOptions {
 
 export interface ResumeOptions {
   incrementId: string;
-  force?: boolean;
 }
 
 export interface AbandonOptions {
@@ -32,15 +32,6 @@ export interface StatusOptions {
   verbose?: boolean;
   type?: IncrementType;
 }
-
-/**
- * Helper: Get WIP limits for increment type
- */
-function getTypeLimits(type: IncrementType): { max: number } {
-  const limit = TYPE_LIMITS[type];
-  return { max: limit === null ? Infinity : limit };
-}
-
 
 /**
  * Pause an active increment
@@ -95,7 +86,7 @@ export async function pauseIncrement(options: PauseOptions): Promise<void> {
  * Resume a paused or abandoned increment
  */
 export async function resumeIncrement(options: ResumeOptions): Promise<void> {
-  const { incrementId, force } = options;
+  const { incrementId } = options;
 
   console.log(chalk.blue(`\n▶️  Resuming increment ${incrementId}...\n`));
 
@@ -121,21 +112,6 @@ export async function resumeIncrement(options: ResumeOptions): Promise<void> {
       console.log(chalk.red(`❌ Cannot resume increment ${incrementId}`));
       console.log(chalk.gray(`   Current status: ${metadata.status}`));
       console.log(chalk.gray(`   Only paused or abandoned increments can be resumed\n`));
-      process.exit(1);
-    }
-
-    // Check WIP limits (warn but don't block)
-    const activeCount = MetadataManager.getActive().length;
-    const type = metadata.type;
-    const limits = getTypeLimits(type);
-
-    if (activeCount >= limits.max && limits.max !== Infinity && !force) {
-      console.log(chalk.yellow(`\n⚠️  WARNING: WIP Limit Reached`));
-      console.log(chalk.gray(`   Current active: ${activeCount}`));
-      console.log(chalk.gray(`   Limit for ${type}: ${limits.max}`));
-      console.log(chalk.gray(`   Resuming will exceed limit`));
-      console.log(chalk.gray(`\n   Complete or pause another increment first`));
-      console.log(chalk.gray(`   Or use --force to bypass this warning\n`));
       process.exit(1);
     }
 
@@ -428,13 +404,11 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
       increments = increments.filter(m => m.type === type);
     }
 
-    // Group by status
-    // CRITICAL: "active" includes planning, active, and ready_for_review (all count towards WIP limits)
-    const active = increments.filter(m =>
-      m.status === IncrementStatus.PLANNING ||
-      m.status === IncrementStatus.ACTIVE ||
-      m.status === IncrementStatus.READY_FOR_REVIEW
-    );
+    // Group by status. "Active" is exactly what the advisory WIP note counts
+    // (countsTowardWipLimit) so `status` and `check-discipline` never disagree;
+    // planning is shown as its own group.
+    const planning = increments.filter(m => m.status === IncrementStatus.PLANNING);
+    const active = increments.filter(m => countsTowardWipLimit(m.status));
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
     const abandoned = increments.filter(m => m.status === IncrementStatus.ABANDONED);
@@ -447,6 +421,15 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     // Show overall progress (prominent)
     console.log(chalk.cyan.bold(`📈 Overall Progress: ${completedCount}/${totalIncrements} increments complete (${overallProgress}%)`));
     console.log('');
+
+    // Show planning increments (not counted as active)
+    if (planning.length > 0) {
+      console.log(chalk.magenta.bold(`📝 Planning (${planning.length}):`));
+      planning.forEach(m => {
+        console.log(`  ${chalk.magenta('○')} ${m.id} [${m.type}]`);
+      });
+      console.log('');
+    }
 
     // Show active increments
     if (active.length > 0) {
@@ -476,20 +459,16 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
       console.log('');
     }
 
-    // Show WIP limits status (simplified: just show total active vs limit)
-    const totalActive = active.length;
-    const overLimit = totalActive > 1;
-    const limitIcon = overLimit ? chalk.red('⚠️') : chalk.green('✅');
-
-    console.log(chalk.cyan.bold(`📈 WIP Limit:`));
-    console.log(`  ${limitIcon} Active increments: ${totalActive}/1 ${overLimit ? '(EXCEEDS LIMIT!)' : ''}`);
-    if (overLimit) {
-      console.log(chalk.yellow(`     💡 Run 'specweave pause <id>' to pause one before starting new work`));
+    // Advisory WIP note (never blocks)
+    const wipNote = buildWipNote(active.length, new DisciplineChecker(resolveEffectiveRoot()).getLimits().activeIncrements);
+    if (wipNote) {
+      console.log(chalk.blue(`ℹ️  ${wipNote.message}`));
+      console.log('');
     }
-    console.log('');
 
     // Show summary
     console.log(chalk.gray(`📊 Summary:`));
+    console.log(chalk.gray(`   Planning: ${planning.length}`));
     console.log(chalk.gray(`   Active: ${active.length}`));
     console.log(chalk.gray(`   Paused: ${paused.length}`));
     console.log(chalk.gray(`   Completed: ${completed.length}`));

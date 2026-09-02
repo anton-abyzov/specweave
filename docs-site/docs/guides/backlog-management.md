@@ -4,7 +4,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 ## Overview
 
-SpecWeave's backlog feature allows you to plan and organize future work without violating WIP (Work In Progress) limits. Backlog increments are planned but not yet started, providing a clear separation between active work and future plans.
+SpecWeave's backlog feature allows you to plan and organize future work without inflating the active (Work In Progress) count. Backlog increments are planned but not yet started, providing a clear separation between active work and future plans.
 
 ## When to Use Backlog
 
@@ -163,7 +163,7 @@ sw:status --backlog
 
 - **Don't use as procrastination**: Backlog ≠ avoiding work
 - **Don't confuse with paused**: Paused = blocked, Backlog = not started
-- **Don't abandon WIP discipline**: Backlog doesn't mean unlimited active work
+- **Keep WIP low anyway**: backlog doesn't mean unlimited active work
 - **Don't let it grow unbounded**: Review and clean up regularly
 - **Don't mix priorities**: Keep backlog ordered by value
 

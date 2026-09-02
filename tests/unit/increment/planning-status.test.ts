@@ -127,10 +127,6 @@ describe('PLANNING Status - WIP Limit Behavior', () => {
     expect(countsTowardWipLimit(IncrementStatus.ACTIVE)).toBe(true);
   });
 
-  it('should count PAUSED toward WIP limit', () => {
-    expect(countsTowardWipLimit(IncrementStatus.PAUSED)).toBe(true);
-  });
-
   it('should NOT count BACKLOG toward WIP limit', () => {
     expect(countsTowardWipLimit(IncrementStatus.BACKLOG)).toBe(false);
   });
@@ -143,11 +139,15 @@ describe('PLANNING Status - WIP Limit Behavior', () => {
     expect(countsTowardWipLimit(IncrementStatus.ABANDONED)).toBe(false);
   });
 
-  it('should have exactly 3 statuses that count toward WIP (including READY_FOR_REVIEW)', () => {
-    expect(WIP_COUNTED_STATUSES).toHaveLength(3);
+  it('should count exactly ACTIVE and READY_FOR_REVIEW toward WIP', () => {
+    expect(WIP_COUNTED_STATUSES).toHaveLength(2);
     expect(WIP_COUNTED_STATUSES).toContain(IncrementStatus.ACTIVE);
-    expect(WIP_COUNTED_STATUSES).toContain(IncrementStatus.PAUSED);
     expect(WIP_COUNTED_STATUSES).toContain(IncrementStatus.READY_FOR_REVIEW);
+  });
+
+  it('should NOT count PAUSED toward WIP (pausing is how you get under the limit)', () => {
+    expect(WIP_COUNTED_STATUSES).not.toContain(IncrementStatus.PAUSED);
+    expect(countsTowardWipLimit(IncrementStatus.PAUSED)).toBe(false);
   });
 
   it('should NOT include PLANNING in WIP counted statuses', () => {

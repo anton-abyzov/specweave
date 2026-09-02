@@ -10,8 +10,7 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
-
-const MIN_NODE_VERSION = 18;
+import { getMinNodeVersion } from '../../../cli/helpers/init/instruction-file-merger.js';
 
 interface ToolCheck {
   name: string;
@@ -79,14 +78,14 @@ export class EnvironmentChecker implements HealthChecker {
       checks.push(await this.checkTool(tool));
     }
 
-    // Additional Node.js version check
+    // Node.js floor comes from specweave's package.json engines.node
     const nodeCheck = checks.find((c) => c.name === 'Node.js');
     if (nodeCheck && nodeCheck.status === 'pass') {
-      const nodeVersion = this.parseNodeVersion(nodeCheck.message);
-      if (nodeVersion < MIN_NODE_VERSION) {
+      const minNode = getMinNodeVersion();
+      if (compareSemver(this.parseNodeVersion(nodeCheck.message), minNode) < 0) {
         nodeCheck.status = 'fail';
-        nodeCheck.message = `${nodeCheck.message} (minimum required: v${MIN_NODE_VERSION})`;
-        nodeCheck.fixSuggestion = `Upgrade Node.js to v${MIN_NODE_VERSION} or higher`;
+        nodeCheck.message = `${nodeCheck.message} (minimum required: v${minNode})`;
+        nodeCheck.fixSuggestion = `Upgrade Node.js to v${minNode} or higher`;
       }
     }
 
@@ -129,8 +128,18 @@ export class EnvironmentChecker implements HealthChecker {
     }
   }
 
-  private parseNodeVersion(message: string): number {
-    const match = message.match(/v(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
+  private parseNodeVersion(message: string): string {
+    const match = message.match(/v?(\d+(?:\.\d+){0,2})/);
+    return match ? match[1] : '0.0.0';
   }
+}
+
+function compareSemver(a: string, b: string): number {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < 3; i++) {
+    const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
 }

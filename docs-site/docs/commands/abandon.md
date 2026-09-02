@@ -206,13 +206,13 @@ graph LR
         \- metadata.json (status: abandoned)
 ```
 
-### WIP Limit Impact
+### Active-Count Impact
 
 ```bash
 # Before abandon
 $ specweave status
 Active (2): 0008-social-features, 0009-feature-z
-WIP Limit: 2/1 (EXCEEDS LIMIT!)
+ℹ️  2 active increments (recommended: 1). Prefer finishing before starting.
 
 # Abandon one increment (or say "abandon this")
 $ specweave abandon 0008 --reason "No longer needed"
@@ -220,9 +220,9 @@ $ specweave abandon 0008 --reason "No longer needed"
 # After abandon
 $ specweave status
 Active (1): 0009-feature-z
-WIP Limit: 1/1
+Active increments: 1 (advisory limit 1)
 
-WIP limit freed - can start new work
+Back within the advisory limit
 ```
 
 ## Error Handling

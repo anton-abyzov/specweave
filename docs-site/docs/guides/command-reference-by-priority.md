@@ -193,7 +193,6 @@ Edge cases and specialized integrations.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `sw:revert-wip-limit` | Revert WIP limit adjustment | `sw:revert-wip-limit` |
 | `/sw` | Command reference/help | `/sw` |
 
 ---
@@ -351,18 +350,15 @@ sw:resume 0031 --user-story US-001 --reason "AC not met"
 sw:resume 0031 --reason "Multiple issues in production"
 ```
 
-### WIP Limits Respected
+### WIP Is Advisory
 
-Reopening respects WIP limits:
+Reopening is never blocked. When the number of active increments exceeds
+`limits.activeIncrements`, SpecWeave prints one note and continues:
 ```
-⚠️  WIP LIMIT WARNING:
-   Current: 2/2 features active
-   Reopening will EXCEED limit!
-
-Options:
-1. Pause: sw:pause 0030
-2. Force: sw:resume 0031 --force --reason "Production critical"
+ℹ️  4 active increments (recommended: 3). Prefer finishing before starting.
 ```
+Pause something (`sw:pause 0030`) to bring the count down, or set
+`limits.activeIncrements` in `.specweave/config.json` (`0` silences the note).
 
 ---
 
@@ -377,9 +373,8 @@ Options:
 
 ### Don'ts ❌
 - Don't skip `sw:done` (breaks living docs sync)
-- Don't exceed WIP limits without good reason
+- Don't pile up active increments without good reason
 - Don't reopen old increments (>7 days) without investigation
-- Don't abuse `--force` flag
 - Don't create new increments for simple fixes (use reopen!)
 
 ---
@@ -496,10 +491,10 @@ Transitions JIRA: In Progress to Done.
 - Restart Claude Code
 - Check marketplace: `claude plugin marketplace list`
 
-**"WIP limit exceeded"**:
+**"N active increments (recommended: 3)"** (advisory note, nothing is blocked):
 - Check status: `sw:status`
 - Pause another: `sw:pause 0030 --reason "..."`
-- Or force: `--force` flag
+- Or change/silence it: `limits.activeIncrements` in `.specweave/config.json`
 
 **"Cannot reopen: status is active"**:
 - Increment already active, no need to reopen

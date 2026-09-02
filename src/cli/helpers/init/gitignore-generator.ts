@@ -417,7 +417,6 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
   specweave: [
     '# SpecWeave',
     '.specweave/cache/',
-    '.specweave/backups/',
     '.specweave/increments/*/logs/',
     '.specweave/increments/*/test-results/',
     '.specweave/docs-site-internal/',
@@ -427,6 +426,18 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '# Work handoff (secret-scrubbed, never auto-committed)',
     '.handoff/',
     '.specweave/state/handoff-latest.*',
+    '# Runtime state (machine-local, regenerated)',
+    '.specweave/state/',
+    '.specweave/logs/',
+    '.specweave/backups/',
+    '.specweave/jobs/',
+    '# Binary evidence in reports/ (videos, screenshots, app bundles)',
+    '**/reports/*.mp4',
+    '**/reports/*.png',
+    '**/reports/*.jpg',
+    '**/reports/*.aab',
+    '**/reports/*.ipa',
+    '**/reports/*.dSYM/',
   ],
 };
 

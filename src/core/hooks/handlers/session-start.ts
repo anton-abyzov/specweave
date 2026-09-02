@@ -2,12 +2,13 @@
  * Session-start hook handler — session initialization.
  *
  * Clears stale auto-mode files, resets context pressure,
- * and performs baseline prompt health check.
+ * purges junk state at most once per 24h, and performs a baseline prompt health check.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HandlerFn } from './types.js';
+import { isGcDue, purgeState, formatBytes } from '../../state/state-gc.js';
 
 const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
 const WARNING_THRESHOLD = 80000;
@@ -66,6 +67,22 @@ export const handle: HandlerFn = async (_input, context) => {
       );
     } catch {
       // Never throw from logging
+    }
+  }
+
+  // --- State GC: silent purge of known junk, at most once per 24h ---
+  if (isGcDue(stateDir)) {
+    try {
+      const gc = purgeState(stateDir, { apply: true });
+      if (gc.deleted.length > 0) {
+        fs.mkdirSync(logsDir, { recursive: true });
+        fs.appendFileSync(
+          path.join(logsDir, 'session.log'),
+          `[${timestamp}] SessionStart: gc removed ${gc.deleted.length} state entries (${formatBytes(gc.bytes)})\n`,
+        );
+      }
+    } catch {
+      // GC is best-effort
     }
   }
 

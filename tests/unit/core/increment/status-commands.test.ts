@@ -26,6 +26,19 @@ vi.mock('../../../../src/core/increment/metadata-manager.js', () => ({
   },
 }));
 
+// Advisory WIP limit is fixed for the display test; buildWipNote stays real.
+vi.mock('../../../../src/core/increment/discipline-checker.js', async (importActual) => {
+  const actual = await importActual<typeof import('../../../../src/core/increment/discipline-checker.js')>();
+  return {
+    ...actual,
+    DisciplineChecker: class {
+      getLimits() {
+        return { activeIncrements: 2 };
+      }
+    },
+  };
+});
+
 vi.mock('../../../../src/core/hooks/LifecycleHookDispatcher.js', () => ({
   LifecycleHookDispatcher: {
     onIncrementDone: (...args: unknown[]) => mockOnIncrementDone(...args),
@@ -59,13 +72,14 @@ const mockExit = vi.spyOn(process, 'exit').mockImplementation((code?: number) =>
 });
 
 // Suppress console output
-vi.spyOn(console, 'log').mockImplementation(() => {});
+const mockLog = vi.spyOn(console, 'log').mockImplementation(() => {});
 
 import {
   pauseIncrement,
   resumeIncrement,
   abandonIncrement,
   completeIncrement,
+  showStatus,
 } from '../../../../src/core/increment/status-commands.js';
 
 function makeMetadata(overrides: Record<string, unknown> = {}) {
@@ -85,6 +99,43 @@ describe('status-commands', () => {
   });
 
   // ─── pauseIncrement ─────────────────────────────────────────────
+
+  describe('showStatus', () => {
+    it('counts the same increments in the Active group and the advisory note', async () => {
+      mockGetAll.mockReturnValue([
+        makeMetadata({ id: '0001-a', status: IncrementStatus.ACTIVE }),
+        makeMetadata({ id: '0002-a', status: IncrementStatus.ACTIVE }),
+        makeMetadata({ id: '0003-r', status: IncrementStatus.READY_FOR_REVIEW }),
+        makeMetadata({ id: '0004-p', status: IncrementStatus.PLANNING }),
+        makeMetadata({ id: '0005-b', status: IncrementStatus.BACKLOG }),
+        makeMetadata({ id: '0006-z', status: IncrementStatus.PAUSED }),
+      ]);
+      mockGetExtended.mockReturnValue({ progress: 0, ageInDays: 1, daysPaused: 1 });
+
+      await showStatus();
+
+      const out = mockLog.mock.calls.map((c) => String(c[0])).join('\n');
+      // active + ready_for_review count; planning/backlog/paused do not
+      expect(out).toContain('Active (3)');
+      expect(out).toContain('Planning (1)');
+      expect(out).toContain('3 active increments (recommended: 2)');
+      expect(out).not.toMatch(/EXCEEDS LIMIT/);
+    });
+
+    it('prints no advisory note when within the limit', async () => {
+      mockGetAll.mockReturnValue([
+        makeMetadata({ id: '0001-a', status: IncrementStatus.ACTIVE }),
+        makeMetadata({ id: '0002-p', status: IncrementStatus.PLANNING }),
+      ]);
+      mockGetExtended.mockReturnValue({ progress: 0, ageInDays: 1, daysPaused: 1 });
+
+      await showStatus();
+
+      const out = mockLog.mock.calls.map((c) => String(c[0])).join('\n');
+      expect(out).toContain('Active (1)');
+      expect(out).not.toContain('active increments (recommended:');
+    });
+  });
 
   describe('pauseIncrement', () => {
     it('should pause an active increment', async () => {
@@ -184,34 +235,6 @@ describe('status-commands', () => {
       expect(mockExit).toHaveBeenCalledWith(1);
     });
 
-    it('should exit when WIP limit reached without force', async () => {
-      mockRead.mockReturnValue(makeMetadata({
-        status: IncrementStatus.PAUSED,
-        type: IncrementType.FEATURE,
-      }));
-      // Feature limit is 2, so 2 active = at limit
-      mockGetActive.mockReturnValue([makeMetadata(), makeMetadata()]);
-
-      await expect(resumeIncrement({ incrementId: '0001-test' }))
-        .rejects.toThrow(ProcessExitError);
-      expect(mockExit).toHaveBeenCalledWith(1);
-      expect(mockUpdateStatus).not.toHaveBeenCalled();
-    });
-
-    it('should bypass WIP limit with force', async () => {
-      mockRead.mockReturnValue(makeMetadata({
-        status: IncrementStatus.PAUSED,
-        type: IncrementType.FEATURE,
-      }));
-      mockGetActive.mockReturnValue([makeMetadata(), makeMetadata()]);
-
-      await resumeIncrement({ incrementId: '0001-test', force: true });
-
-      expect(mockUpdateStatus).toHaveBeenCalledWith(
-        '0001-test',
-        IncrementStatus.ACTIVE
-      );
-    });
   });
 
   // ─── abandonIncrement ──────────────────────────────────────────

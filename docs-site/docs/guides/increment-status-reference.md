@@ -352,29 +352,31 @@ SpecWeave **automatically transitions** statuses based on file activity and bloc
 
 ---
 
-## WIP Limit Rules
+## What Counts as "Active"
 
-**CRITICAL**: Only `active` status counts toward WIP limits!
+`active` and `ready_for_review` count toward the advisory
+`limits.activeIncrements` note. Nothing is ever blocked.
 
 | Status | Counts? | Reason |
 |--------|---------|--------|
 | planning | ❌ No | Planning ≠ active work |
 | **active** | ✅ **YES** | Actively executing |
+| **ready_for_review** | ✅ **YES** | Tasks done, awaiting approval |
 | backlog | ❌ No | Not started |
-| paused | ❌ No | Blocked, not active |
+| paused | ❌ No | Explicitly parked |
 | completed | ❌ No | Already done |
 | abandoned | ❌ No | Cancelled |
 
 **Example**:
 ```
 Increments:
-- 0007-docs (planning) → WIP: 0
-- 0008-auth (active) → WIP: 1
-- 0009-payments (active) → WIP: 1
-- 0010-search (backlog) → WIP: 0
-- 0011-analytics (paused) → WIP: 0
+- 0007-docs (planning) → not counted
+- 0008-auth (active) → counted
+- 0009-payments (active) → counted
+- 0010-search (backlog) → not counted
+- 0011-analytics (paused) → not counted
 
-Total WIP: 2/2 (hard cap reached) ⚠️
+ℹ️  2 active increments (recommended: 3) — no note, within the advisory limit
 ```
 
 ---
@@ -427,16 +429,16 @@ sw:done 0008
 
 ### 2. Understand WIP Counts
 
-✅ **DO**: Remember only ACTIVE counts toward WIP
+✅ **DO**: Remember only ACTIVE and READY_FOR_REVIEW count
 ```bash
-# Planning 3 increments = OK (WIP: 0)
-# Active 2 increments = At hard cap (WIP: 2)
+# Planning 3 increments = not counted
+# Active 2 increments   = counted (2)
 ```
 
 ❌ **DON'T**: Confuse PLANNING with ACTIVE
 ```bash
-# PLANNING doesn't block new work
-# ACTIVE does block new work (WIP limit)
+# PLANNING is not counted in the advisory note
+# ACTIVE is — but neither ever blocks new work
 ```
 
 ### 3. Complete Before Starting New

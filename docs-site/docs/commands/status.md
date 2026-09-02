@@ -82,8 +82,7 @@ Paused (1):
   - 0005-kubernetes-migration [feature]
      Reason: Waiting for DevOps approval
 
-WIP Limit:
-  Active increments: 1/1
+Active increments: 1 (advisory limit 1)
 
 Summary:
    Active: 1
@@ -117,9 +116,8 @@ Active (3):
   - 0008-notification-system [feature]
   - 0009-refactor [refactor]
 
-WIP Limit:
-  Active increments: 3/1 (EXCEEDS LIMIT!)
-  Run 'specweave pause <id>' (or say "pause this") to pause one before starting new work
+ℹ️  3 active increments (recommended: 1). Prefer finishing before starting.
+   Set limits.activeIncrements in .specweave/config.json to change or 0 to silence this note.
 
 Summary:
    Active: 3  # <- Too many!
@@ -172,8 +170,7 @@ Completed (4):
   0003-model-selection (completed 20 days ago)
   0004-plugin-architecture (completed 15 days ago)
 
-WIP Limit:
-  Active increments: 2/1 (EXCEEDS LIMIT!)
+ℹ️  2 active increments (recommended: 1). Prefer finishing before starting.
 
 Summary:
    Active: 2
@@ -253,16 +250,16 @@ const totalTasks = totalMatches ? totalMatches.length : 0;
 const progress = Math.round((completedTasks / totalTasks) * 100);
 ```
 
-### WIP Limit Checking
+### Advisory WIP Note
 
 ```typescript
 const activeCount = increments.filter(i => i.status === 'active').length;
-const limit = 1; // Default: 1 active increment
+const limit = config.limits?.activeIncrements ?? 3; // 0 disables the note
 
-if (activeCount > limit) {
-  console.log('Active increments:', activeCount, '/', limit, '(EXCEEDS LIMIT!)');
-  console.log('Run "specweave pause <id>" to pause one before starting new work');
+if (limit > 0 && activeCount > limit) {
+  console.log(`${activeCount} active increments (recommended: ${limit}). Prefer finishing before starting.`);
 }
+// Advisory only — nothing is ever blocked.
 ```
 
 ### Status Icons
@@ -361,9 +358,9 @@ Continue work with: specweave do (or say "start implementing")
 $ specweave status
 
 Active (1): 0007-payment-integration
-WIP Limit: 1/1
+Active increments: 1 (advisory limit 1)
 
-# At capacity! Complete current work first
+# Prefer finishing current work first
 $ specweave do
 
 # Or pause current work (or say "pause this")
@@ -430,7 +427,7 @@ $ specweave do  # Continue active work (or say "start implementing")
 ```bash
 $ specweave status
 Active (2): 0007-payment, 0008-notifications
-WIP Limit: 2/1 (EXCEEDS LIMIT!)
+ℹ️  2 active increments (recommended: 1). Prefer finishing before starting.
 
 $ specweave pause 0008 --reason "Focus on 0007"
 ```
@@ -503,8 +500,7 @@ Completed (N):
 Abandoned (N):
   increment-id (reason)
 
-WIP Limit:
-  Active increments: X/Y
+Active increments: X (advisory limit Y)
 
 Summary:
    Active: N

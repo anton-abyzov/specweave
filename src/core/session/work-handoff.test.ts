@@ -65,7 +65,7 @@ function makeSpecWeaveWorkspace(opts: {
     path.join(sw, 'config.json'),
     JSON.stringify({
       testing: { defaultTestMode: 'TDD', defaultCoverageTarget: 90 },
-      limits: { maxActiveIncrements: 7 },
+      limits: { activeIncrements: 7 },
     }),
   );
   fs.writeFileSync(

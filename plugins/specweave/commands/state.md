@@ -2,7 +2,7 @@
 description: |
   Unified increment state management. Change increment status: pause, resume, backlog, or reopen.
   Use when changing increment lifecycle state (blocked, deprioritized, ready to start, bug found).
-argument-hint: <increment-id> <pause|resume|backlog|reopen> [--reason="reason"] [--task T-XXX] [--force]
+argument-hint: <increment-id> <pause|resume|backlog|reopen> [--reason="reason"] [--task T-XXX]
 disable-model-invocation: true
 ---
 
@@ -19,7 +19,6 @@ sw:state <id> backlog [--reason="reason"]      # Move to backlog (planned, not s
 sw:state <id> reopen  [--reason="reason"]      # Reopen completed work
 sw:state <id> reopen  --task T-003 [--reason]  # Reopen specific task
 sw:state <id> reopen  --user-story US-001      # Reopen user story + related tasks
-sw:state <id> reopen  --force                  # Bypass WIP limit checks
 ```
 
 ## Actions
@@ -81,7 +80,7 @@ sw:state 0032 resume
 
 ### `backlog` - Move to Backlog
 
-For planned work not ready to start. Does NOT count toward WIP limits.
+For planned work not ready to start. Does NOT count as active.
 
 **Valid transitions**: active → backlog
 
@@ -111,7 +110,7 @@ When issues discovered after completion. Supports reopening entire increment, sp
 
 **Behavior:**
 1. Validate increment is "completed"
-2. Check WIP limits (unless --force)
+2. Print the advisory WIP note when active increments exceed `limits.activeIncrements`
 3. Update metadata.json: status → "active", add to reopened history
 4. Reopen tasks: [x] → [ ]
 5. Sync to external tools (GitHub/JIRA/ADO)
@@ -124,7 +123,6 @@ When issues discovered after completion. Supports reopening entire increment, sp
 | `--reason` | Why reopening (for audit trail). Natural language also works. |
 | `--task T-XXX` | Reopen specific task only |
 | `--user-story US-XXX` | Reopen user story + all related tasks |
-| `--force` | Bypass WIP limit checks (emergencies only) |
 
 **Examples:**
 ```bash
@@ -139,23 +137,16 @@ sw:state 0031 reopen --task T-003 --reason="API rate limiting not handled"
 
 # Reopen user story
 sw:state 0025 reopen --user-story US-002 --reason="Security requirements not satisfied"
-
-# Force reopen (bypass WIP limits)
-sw:state 0031 reopen --force --reason="Production down"
 ```
 
-**WIP Limit Validation:**
+**Advisory WIP note** (never blocks):
 ```
-WIP LIMIT WARNING:
-  Current active: 2 features
-  Limit: 2 features
-  Reopening 0031 will EXCEED the limit (3/2)!
+ℹ️  3 active increments (recommended: 2). Prefer finishing before starting.
+```
 
-Options:
-1. Pause another feature: sw:state 0030 pause --reason="Paused for fix"
-2. Complete another feature: sw:done 0029
-3. Force reopen: sw:state 0031 reopen --force --reason="Critical"
-```
+To bring the count down, pause (`sw:state 0030 pause --reason="..."`) or
+complete (`sw:done 0029`) another increment. Set `limits.activeIncrements`
+in `.specweave/config.json` to change the number, or `0` to silence the note.
 
 **Audit Trail** (metadata.json):
 ```json
@@ -205,5 +196,5 @@ Paused (1):
 - Always provide a reason (audit trail)
 - Review paused/backlog items weekly
 - Use `reopen --task` for surgical fixes (don't reopen entire increment)
-- Don't abuse `--force` (respect WIP limits)
+- Prefer finishing active increments before reopening more
 - After `resume`, review spec.md first (context may have changed)

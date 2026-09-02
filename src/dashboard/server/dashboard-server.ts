@@ -714,8 +714,8 @@ export class DashboardServer {
         }
         if (body.limits && typeof body.limits === 'object') {
           const limits = body.limits as Record<string, unknown>;
-          if (limits.maxActiveIncrements != null && (typeof limits.maxActiveIncrements !== 'number' || limits.maxActiveIncrements < 1)) {
-            errors.push({ path: 'limits.maxActiveIncrements', message: 'must be a positive number' });
+          if (limits.activeIncrements != null && (typeof limits.activeIncrements !== 'number' || limits.activeIncrements < 0)) {
+            errors.push({ path: 'limits.activeIncrements', message: 'must be a number >= 0 (0 disables the advisory note)' });
           }
         }
         sendJson(res, { ok: errors.length === 0, errors, currentConfig });

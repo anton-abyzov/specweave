@@ -167,14 +167,6 @@ SpecWeave v1.1.0 aligns the framework with Claude Opus 4.7 best practices.
 
 3. **State markers removed**: `skill-chain-*.json` and `interview-*.json` state files are no longer written. `pretooluse-guard.ts` uses TaskGet-based state with filesystem fallback.
 
-### Config Migration
-
-Run the migration script to add new config keys with defaults:
-
-```bash
-specweave migrate-config-0669
-```
-
 ### Deprecations
 
 See full list in [CHANGELOG.md](./CHANGELOG.md). Key migrations:

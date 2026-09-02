@@ -318,10 +318,9 @@ program
 program
   .command('resume <increment-id>')
   .description('Resume a paused or abandoned increment')
-  .option('-f, --force', 'Force resume (bypass WIP limit checks)')
-  .action(async (incrementId, options) => {
+  .action(async (incrementId) => {
     const { resumeCommand } = await import('../dist/src/cli/commands/resume.js');
-    await resumeCommand(incrementId, options);
+    await resumeCommand(incrementId);
   });
 
 program
@@ -749,7 +748,7 @@ program
 // Check discipline command - Validate increment discipline
 program
   .command('check-discipline')
-  .description('Validate increment discipline compliance (WIP limits, hard cap)')
+  .description('Report increment status counts, advisory WIP note and metadata consistency')
   .option('-v, --verbose', 'Show detailed increment information')
   .option('--json', 'Output results as JSON')
   .option('--project-root <path>', 'Project root directory')
@@ -762,13 +761,16 @@ program
     await checkDisciplineCommand(options);
   });
 
-// Revert WIP limit command - Restore original WIP limit after temporary adjustment
+// GC command - purge junk from .specweave/state (dry-run by default)
 program
-  .command('revert-wip-limit')
-  .description('Revert WIP limit to original value after temporary adjustment')
-  .action(async () => {
-    const { revertWipLimitCommand } = await import('../dist/src/cli/commands/revert-wip-limit.js');
-    await revertWipLimitCommand();
+  .command('gc')
+  .description('Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs')
+  .option('-y, --yes', 'Actually delete (default is dry-run)')
+  .option('--json', 'Output as JSON')
+  .option('--project-root <path>', 'Project root directory')
+  .action(async (options) => {
+    const { gcCommand } = await import('../dist/src/cli/commands/gc.js');
+    await gcCommand(options);
   });
 
 // QA command - Quality assessment
