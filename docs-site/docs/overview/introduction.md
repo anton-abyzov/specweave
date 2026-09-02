@@ -136,7 +136,7 @@ When you describe what you want, your AI routes internally to the right skill. Y
 | "Brainstorm with perspectives" | Parallel perspectives (brainstorm mode) |
 | "Plan X in parallel" | PM + Architect agents (planning mode) |
 | "Review the code" | 6 parallel reviewers |
-| "Grill the code" | Critical audit before close |
+| "Review the code" | Adversarial audit before close (`sw:review`) |
 
 For fine-grained control, invoke capabilities directly:
 

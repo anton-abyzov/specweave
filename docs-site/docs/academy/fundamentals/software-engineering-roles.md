@@ -239,7 +239,7 @@ Architect Agent stores ADRs permanently in [living docs](/docs/glossary/terms/li
 - Unblock developers
 - Track sprint progress
 
-**SpecWeave Agent: Architect Agent** (`architect`) + **Grill Agent** (`grill`)
+**SpecWeave skills**: `sw:increment` (Approach section) + `sw:review`
 
 **How These Agents Help**:
 

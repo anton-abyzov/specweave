@@ -13,7 +13,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 **SpecKit is mathematically equivalent to ONE SpecWeave increment** — with no lifecycle management afterward.
 
 ```
-SpecKit output    ≡  ONE SpecWeave increment (spec.md + plan.md + tasks.md)
+SpecKit output    ≡  ONE SpecWeave increment (spec.md + tasks.md + ledger.jsonl)
 SpecWeave         =  N increments + lifecycle + external sync + living docs + hooks
 ```
 

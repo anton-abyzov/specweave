@@ -287,7 +287,7 @@ Progress: 3/8 tasks (37%)
 
 ## Plan Is the Source of Truth
 
-During implementation, the plan (spec.md + plan.md + tasks.md) remains the **single source of truth**. Code is always a derivative of the plan:
+During implementation, `spec.md` (Problem, ACs, Approach) plus `tasks.md` remain the **single source of truth**; `ledger.jsonl` records what actually happened. Code is always a derivative of the spec:
 
 ```
 Plan → Code (always)

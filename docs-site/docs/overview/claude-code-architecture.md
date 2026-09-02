@@ -596,7 +596,7 @@ SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 │   ├── Increment lifecycle     (plan, do, validate, done, auto)      │
 │   ├── GitHub/JIRA/ADO sync    (push, pull, reconcile, close)        │
 │   ├── Testing & TDD           (red, green, refactor, e2e, qa)       │
-│   ├── Code review             (grill, judge-llm, code-reviewer)     │
+│   ├── Code review             (review)                              │
 │   ├── Release management      (RC, npm, platform, align)            │
 │   ├── Documentation           (living docs, Docusaurus)             │
 │   ├── Diagrams & media        (Mermaid, AI images/video)            │

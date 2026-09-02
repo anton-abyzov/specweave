@@ -49,7 +49,7 @@ Prefer watching? Start with the Complete Masterclass:
 | Lesson | What You'll Learn |
 |--------|-------------------|
 | [**1. Getting Started**](./01-getting-started) | Install SpecWeave, run your first command |
-| [**2. Three-File Structure**](./02-three-file-structure) | Understand spec.md, plan.md, tasks.md |
+| [**2. Three-File Structure**](./02-three-file-structure) | Understand spec.md, tasks.md, ledger.jsonl |
 | [**3. Your First Increment**](./03-your-first-increment) | Build a complete feature from scratch |
 
 ---
