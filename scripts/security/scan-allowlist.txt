@@ -1,0 +1,5 @@
+# Legitimate exceptions for scripts/security/scan-payload.mjs
+# Format: <path or glob> [check1,check2]   (no checks = all except padded-line)
+# Checks: long-line, base64-blob, eval-decode, test-require, padded-inline
+docs-site/remotion/scenes/Scene1Problem.tsx eval-decode   # demo string in the docs video
+docs-site/remotion/scenes/Scene2Scanner.tsx eval-decode   # demo string in the docs video

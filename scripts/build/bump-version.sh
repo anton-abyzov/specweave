@@ -67,13 +67,13 @@ fi
 # Determine new version
 case $BUMP_TYPE in
   patch|minor|major)
-    npm version $BUMP_TYPE --no-git-tag-version > /dev/null
+    npm version $BUMP_TYPE --no-git-tag-version --ignore-scripts=false > /dev/null
     NEW_VERSION=$(node -p "require('./package.json').version")
     ;;
   *)
     # Specific version provided
     NEW_VERSION=$BUMP_TYPE
-    npm version $NEW_VERSION --no-git-tag-version > /dev/null
+    npm version $NEW_VERSION --no-git-tag-version --ignore-scripts=false > /dev/null
     ;;
 esac
 
