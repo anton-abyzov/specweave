@@ -1,0 +1,68 @@
+name: Hooks cross-platform
+
+on:
+  push:
+    branches: [develop, main, 'codex/**']
+    paths:
+      - 'plugins/specweave/hooks/**'
+      - 'src/core/hooks/**'
+      - 'src/cli/commands/hook.ts'
+      - 'scripts/ci/hook-smoke.mjs'
+      - '.github/workflows/hooks-crossplatform.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    paths:
+      - 'plugins/specweave/hooks/**'
+      - 'src/core/hooks/**'
+      - 'src/cli/commands/hook.ts'
+      - 'scripts/ci/hook-smoke.mjs'
+      - 'tests/unit/hooks/**'
+      - 'tests/unit/core/hooks/**'
+      - '.github/workflows/hooks-crossplatform.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hook-smoke:
+    name: run.mjs smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (no lifecycle scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Rebuild the deps that need their install script
+        run: npm rebuild esbuild
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate hooks.json is exec-form node with timeouts in seconds
+        run: >-
+          node -e "const h=require('./plugins/specweave/hooks/hooks.json').hooks;
+          const bad=[];
+          for (const [ev,groups] of Object.entries(h)) for (const g of groups) for (const x of g.hooks) {
+            if (x.command!=='node'||!Array.isArray(x.args)||!x.args[0].includes('run.mjs')) bad.push(ev+': not exec-form node');
+            if (typeof x.timeout!=='number'||x.timeout>60) bad.push(ev+': timeout must be <=60 s');
+          }
+          if (bad.length) { console.error(bad.join('\n')); process.exit(1); }
+          console.log('hooks.json ok:', Object.keys(h).join(', '))"
+
+      - name: Run each hook event via run.mjs with sample stdin
+        run: node scripts/ci/hook-smoke.mjs
+
+      - name: Hook unit tests
+        run: npx vitest run tests/unit/hooks tests/unit/core/hooks --reporter=dot

@@ -1,67 +1,60 @@
 /**
- * Hook CLI Command — entry point for Claude Code hook delegation.
+ * Hook CLI Command — `specweave hook <event>`.
  *
- * Usage: specweave hook <event-type>
- *
- * Reads JSON from stdin, dispatches to the correct handler via hook-router,
- * writes JSON to stdout. Always exits 0 — never crashes Claude Code.
+ * Internal entry point used by tooling and tests; Claude Code itself runs the
+ * zero-dependency launcher `plugins/specweave/hooks/run.mjs`, which imports the
+ * same router. Reads JSON from stdin, dispatches via hook-router, writes exactly
+ * one JSON object to stdout. Always exits 0 — on any failure prints `{}`.
  *
  * @module cli/commands/hook
  */
 
 import { hookRouter } from '../../core/hooks/handlers/hook-router.js';
-import { getSafeDefault } from '../../core/hooks/handlers/types.js';
 
-/**
- * Read all of stdin as a string.
- */
+const STDIN_CAP_MS = 5000;
+
+/** Read all of stdin as a string (capped at STDIN_CAP_MS). */
 async function readStdin(): Promise<string> {
   return new Promise<string>((resolve) => {
     const chunks: Buffer[] = [];
-    const timeout = setTimeout(() => {
-      process.stdin.removeAllListeners();
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
       resolve(Buffer.concat(chunks).toString('utf-8'));
-    }, 5000);
-
-    process.stdin.on('data', (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
-
-    process.stdin.on('end', () => {
-      clearTimeout(timeout);
-      resolve(Buffer.concat(chunks).toString('utf-8'));
-    });
-
-    process.stdin.on('error', () => {
-      clearTimeout(timeout);
-      resolve('');
-    });
-
-    // If stdin is already ended (no pipe), resolve immediately
-    if (process.stdin.readableEnded) {
-      clearTimeout(timeout);
-      resolve(Buffer.concat(chunks).toString('utf-8'));
-    }
+    };
+    const timer = setTimeout(finish, STDIN_CAP_MS);
+    process.stdin.on('data', (chunk: Buffer) => chunks.push(chunk));
+    process.stdin.on('end', finish);
+    process.stdin.on('error', finish);
+    if (process.stdin.readableEnded) finish();
   });
 }
 
-/**
- * Main hook handler entry point.
- */
+let written = false;
+function emit(result: unknown): void {
+  if (written) return;
+  written = true;
+  let text = '{}';
+  try {
+    text = JSON.stringify(result ?? {});
+  } catch {
+    text = '{}';
+  }
+  process.stdout.write(text);
+}
+
+/** Main hook handler entry point. */
 export async function handleHook(eventType: string): Promise<void> {
-  // Crash prevention
   process.on('unhandledRejection', () => {
-    const fallback = getSafeDefault(eventType);
-    process.stdout.write(JSON.stringify(fallback));
+    emit({});
     process.exit(0);
   });
-
   try {
     const rawStdin = await readStdin();
-    const result = await hookRouter(eventType, rawStdin);
-    process.stdout.write(JSON.stringify(result));
+    emit(await hookRouter(eventType, rawStdin));
   } catch {
-    const fallback = getSafeDefault(eventType);
-    process.stdout.write(JSON.stringify(fallback));
+    emit({});
   }
 }

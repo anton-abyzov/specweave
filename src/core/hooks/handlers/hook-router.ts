@@ -1,134 +1,78 @@
 /**
- * Hook router — the central dispatcher for all hook events.
+ * Hook router — the central dispatcher for the four SpecWeave hook events.
  *
- * Reads stdin JSON, resolves the project root, dynamically imports the
- * correct handler, and returns JSON. Wraps everything in try/catch so
- * no hook can ever crash.
+ * Reads the stdin JSON, resolves the project root (from the hook's `cwd`,
+ * then process.cwd()), dynamically imports the matching handler and returns
+ * a schema-valid result. Wrapped end-to-end so no hook can ever crash:
+ * any failure returns `{}` (pass) and writes one JSONL log line.
  *
  * @module core/hooks/handlers/hook-router
  */
 
 import type { HandlerFn, HookResult } from './types.js';
-import { getSafeDefault } from './types.js';
+import { HOOK_EVENTS, pass } from './types.js';
 import { findProjectRoot, createContext, parseStdinJson, logHook } from './utils.js';
-import { HookLogger } from '../hook-logger.js';
 
-/** Dynamic import map — only the requested handler is loaded per invocation */
-const HANDLERS: Record<string, () => Promise<{ handle: HandlerFn }>> = {
-  'user-prompt-submit': () => import('./user-prompt-submit.js'),
-  'pre-tool-use': () => import('./pre-tool-use.js'),
-  // Auto-write a work-handoff at context exhaustion (0867, AC-US7-01).
-  'pre-compact': () => import('./pre-compact.js'),
-  // Gated Stop variant — fires only under an active auto session (AC-US7-02).
-  // Maps the module's `handleStop` export onto the router's `handle` contract.
-  'stop': () => import('./pre-compact.js').then((m) => ({ handle: m.handleStop })),
-  // Restored in 0870 — these were dead since 0f81519b1 (hooks.json invoked them
-  // but the router never registered them, so they silently no-op'd).
+/** Dynamic import map — only the requested handler is loaded per invocation. */
+const HANDLERS: Record<(typeof HOOK_EVENTS)[number], () => Promise<{ handle: HandlerFn }>> = {
   'session-start': () => import('./session-start.js'),
-  'post-tool-use': () => import('./post-tool-use.js'),
-  'post-tool-use-analytics': () => import('./post-tool-use-analytics.js'),
-  'stop-reflect': () => import('./stop-reflect.js'),
-  'stop-sync': () => import('./stop-sync.js'),
-  // Real blocking auto-loop driver (0870 rewrite — see stop-auto.ts).
-  'stop-auto': () => import('./stop-auto.js'),
+  'pre-tool-use': () => import('./pre-tool-use.js'),
+  'stop': () => import('./stop.js'),
+  'pre-compact': () => import('./pre-compact.js'),
 };
 
+/** Event names the router dispatches (for parity checks against hooks.json). */
+export function registeredHookEvents(): string[] {
+  return Object.keys(HANDLERS).sort();
+}
+
+function blockReason(result: HookResult): string | null {
+  if (result.decision === 'block') return result.reason ?? '';
+  if (result.hookSpecificOutput?.permissionDecision === 'deny') {
+    return result.hookSpecificOutput.permissionDecisionReason ?? '';
+  }
+  return null;
+}
+
 /**
- * Route a hook event to the correct handler.
+ * Route a hook event to its handler.
  *
- * @param eventType - The hook event type ('pre-tool-use' or 'user-prompt-submit')
+ * @param eventType - 'session-start' | 'pre-tool-use' | 'stop' | 'pre-compact'
  * @param rawStdin - Raw stdin string (JSON from Claude Code)
- * @returns HookResult — always valid JSON, never throws
+ * @returns HookResult — always schema-valid, never throws
  */
-export async function hookRouter(
-  eventType: string,
-  rawStdin: string,
-): Promise<HookResult> {
-  const safeDefault = getSafeDefault(eventType);
-
+export async function hookRouter(eventType: string, rawStdin: string): Promise<HookResult> {
+  let context: ReturnType<typeof createContext> | null = null;
   try {
-    // Global kill switch
-    if (process.env.SPECWEAVE_DISABLE_HOOKS === '1') {
-      return safeDefault;
-    }
+    if (process.env.SPECWEAVE_DISABLE_HOOKS === '1') return pass();
 
-    // Parse stdin
     const input = parseStdinJson(rawStdin);
+    const hintedCwd = typeof input.cwd === 'string' ? input.cwd : undefined;
+    const projectRoot = (hintedCwd && findProjectRoot(hintedCwd)) || findProjectRoot();
+    if (!projectRoot) return pass(); // not a SpecWeave project
 
-    // Resolve project root
-    const projectRoot = findProjectRoot();
-    if (!projectRoot) {
-      // Not a SpecWeave project — pass through
-      return safeDefault;
-    }
-
-    // Build context
-    const context = createContext(projectRoot);
-
-    // Find handler
-    const loader = HANDLERS[eventType];
+    context = createContext(projectRoot);
+    const loader = HANDLERS[eventType as (typeof HOOK_EVENTS)[number]];
     if (!loader) {
       logHook(context, 'router', `Unknown event type: ${eventType}`);
-      return safeDefault;
+      return pass();
     }
 
-    // Dynamic import + execute with timing
-    const startTime = Date.now();
-    const handlerModule = await loader();
-    const result = await handlerModule.handle(input, context);
-    const duration = Date.now() - startTime;
-
-    // Semantic prefix: intentional blocks get [GUARD] label
-    if (result.decision === 'block' && result.reason) {
-      result.reason = `[GUARD] ${result.reason}`;
-    }
-
-    // Claude Code's PreToolUse schema accepts decision values of "approve"|"block" only.
-    // Internal handlers use 'allow' for readability — translate to a schema-valid pass-through.
-    if (eventType === 'pre-tool-use' && result.decision === 'allow') {
-      delete result.decision;
-      result.continue = true;
-    }
-
-    // Structured logging via HookLogger
-    try {
-      const hooksLogDir = `${context.logsDir}/hooks`;
-      const logger = new HookLogger(hooksLogDir);
-      await logger.log({
-        hookName: eventType,
-        status: result.decision === 'block' ? 'warning' : 'success',
-        duration,
-        ...(result.decision === 'block' && result.reason ? { error: result.reason } : {}),
-      });
-    } catch { /* logging must never crash hooks */ }
-
+    const result = (await (await loader()).handle(input, context)) ?? pass();
+    const reason = blockReason(result);
+    if (reason !== null) logHook(context, eventType, reason, 'block');
     return result;
   } catch (error) {
-    // Never crash — log and return safe default
-    const duration = Date.now() - (0); // approximate
+    const msg = error instanceof Error ? error.message : String(error);
     try {
-      const projectRoot = findProjectRoot();
-      if (projectRoot) {
-        const context = createContext(projectRoot);
-        const msg = error instanceof Error ? error.message : String(error);
-        logHook(context, 'router', `[ERROR] Error in ${eventType}: ${msg}`);
-
-        // Structured error logging
-        try {
-          const hooksLogDir = `${context.logsDir}/hooks`;
-          const logger = new HookLogger(hooksLogDir);
-          await logger.log({
-            hookName: eventType,
-            status: 'error',
-            duration,
-            error: msg,
-          });
-        } catch { /* logging must never crash hooks */ }
+      if (!context) {
+        const root = findProjectRoot();
+        if (root) context = createContext(root);
       }
-    } catch (logErr) {
-      // Last-resort fallback when even logHook fails
-      try { process.stderr.write(`[specweave] hook-router: logging failed for ${eventType}: ${String(logErr)}\n`); } catch { /* truly nothing left */ }
+      if (context) logHook(context, eventType, `[ERROR] ${msg}`, 'error');
+    } catch {
+      // nothing left to do — fail open
     }
-    return safeDefault;
+    return pass();
   }
 }

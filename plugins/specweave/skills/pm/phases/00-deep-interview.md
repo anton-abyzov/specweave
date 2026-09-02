@@ -4,7 +4,7 @@
 
 ## Smart Interview Gate (v1.0.243+)
 
-The `user-prompt-submit.sh` hook now injects a **Smart Interview Gate** on every prompt when:
+The PreToolUse hook (`plugins/specweave/hooks/run.mjs pre-tool-use`) denies writing spec.md until the interview is complete when:
 1. `deepInterview.enabled: true` in config
 2. No active increment exists
 

@@ -589,22 +589,6 @@ export async function initCommand(
         console.log(chalk.yellow('   ⚠ Could not enable agent teams env var (non-critical)'));
       }
 
-      // Add DCI script permissions (project-level)
-      try {
-        const { enableDciPermissions } = await import('../helpers/init/claude-settings-permissions.js');
-        enableDciPermissions(targetDir);
-      } catch {
-        console.log(chalk.yellow('   ⚠ Could not enable DCI permissions (non-critical)'));
-      }
-
-      // Copy DCI scripts to .specweave/scripts/ so SKILL.md DCI blocks work
-      try {
-        const { installDciScripts } = await import('../helpers/init/dci-scripts-installer.js');
-        installDciScripts(targetDir);
-      } catch {
-        // Non-critical — DCI blocks use || true for graceful degradation
-      }
-
       setupLspEnvVar();
     }
 
