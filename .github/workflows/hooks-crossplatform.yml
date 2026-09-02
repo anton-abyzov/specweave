@@ -17,6 +17,8 @@ on:
       - 'src/core/hooks/**'
       - 'src/cli/commands/hook.ts'
       - 'scripts/ci/hook-smoke.mjs'
+      - 'tests/unit/hooks/**'
+      - 'tests/unit/core/hooks/**'
       - '.github/workflows/hooks-crossplatform.yml'
   workflow_dispatch:
 
@@ -42,6 +44,9 @@ jobs:
       - name: Install (no lifecycle scripts)
         run: npm ci --ignore-scripts
 
+      - name: Rebuild the deps that need their install script
+        run: npm rebuild esbuild
+
       - name: Build
         run: npm run build
 
@@ -60,4 +65,4 @@ jobs:
         run: node scripts/ci/hook-smoke.mjs
 
       - name: Hook unit tests
-        run: npx vitest run src/core/hooks/handlers tests/unit/core/hooks/handlers tests/unit/hooks/run-mjs.test.ts --reporter=dot
+        run: npx vitest run tests/unit/hooks tests/unit/core/hooks --reporter=dot
