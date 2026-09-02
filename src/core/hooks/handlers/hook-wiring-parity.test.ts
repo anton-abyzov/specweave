@@ -1,87 +1,151 @@
 /**
- * Hook wiring parity guard (0869).
+ * Hook wiring parity + output-schema guard (0869, extended for 2.0).
  *
- * Asserts that every `specweave hook <X>` the plugin's hooks.json invokes is either
- * registered in the Node router HANDLERS map OR explicitly listed as KNOWN_UNROUTED
- * (a currently-dead hook tracked for restoration). This catches the class of bug where
- * a hooks.json call-site targets an event the router no longer dispatches, so the hook
- * silently no-ops (returns the safe default) — as happened to 6 hooks after commit
- * 0f81519b1 "rework hooks: remove shell-based handlers".
- *
- * See .specweave/increments/0869-hook-wiring-audit/reports/hook-wiring-audit-2026-06-03.md
+ * 1. Every event plugins/specweave/hooks/hooks.json launches via
+ *    `node ${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs <event>` is registered in the
+ *    router, and vice versa (no silent no-op hooks, no dead handlers).
+ * 2. Every hooks.json entry is exec-form (`command: "node"` + `args`), never a
+ *    shell string (Windows without Git Bash), and every timeout is <= 60 s
+ *    (the unit is SECONDS — `15000` once meant 4.2 h).
+ * 3. Invoking the router with a sample payload for each event yields output
+ *    that is valid per the Claude Code hook schema for that event.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
+import { hookRouter, registeredHookEvents } from './hook-router.js';
+import { HOOK_EVENTS, validateHookOutput } from './types.js';
 
-/**
- * Hooks the router does NOT register today (dead since 0f81519b1), kept here so the
- * parity test stays green while the breakage is tracked. RESTORING a hook = add its key
- * to hook-router.ts HANDLERS AND remove it here (the stale-entry assertion enforces this).
- *
- * 0870 restored all 6 (the 5 non-blocking handlers + a real blocking stop-auto), so this
- * allowlist is now EMPTY: every `specweave hook X` the plugin invokes is registered in the
- * router. Re-adding a name here means a hook went dead again — fix the router, don't allowlist.
- */
-const KNOWN_UNROUTED = new Set<string>([]);
+interface HookEntry { type?: string; command?: string; args?: string[]; timeout?: number }
+interface HooksJson { hooks: Record<string, Array<{ matcher?: string; hooks: HookEntry[] }>> }
 
-/** The 4 events that MUST stay registered — a regression dropping one fails loudly. */
-const MUST_BE_REGISTERED = ['user-prompt-submit', 'pre-tool-use', 'pre-compact', 'stop'];
-
-function repoRoot(): string {
-  return process.cwd();
+function readHooksJson(): HooksJson {
+  const p = path.resolve(process.cwd(), 'plugins/specweave/hooks/hooks.json');
+  return JSON.parse(fs.readFileSync(p, 'utf-8')) as HooksJson;
 }
 
-/** Every `specweave hook X` event name invoked by the plugin hooks.json. */
-function invokedHookEvents(): string[] {
-  const p = path.resolve(repoRoot(), 'plugins/specweave/hooks/hooks.json');
-  const raw = fs.readFileSync(p, 'utf-8');
-  const names = new Set<string>();
-  for (const m of raw.matchAll(/specweave hook ([a-z][a-z-]*)/g)) names.add(m[1]);
-  return [...names].sort();
+function allEntries(): Array<{ event: string; matcher?: string; entry: HookEntry }> {
+  const out: Array<{ event: string; matcher?: string; entry: HookEntry }> = [];
+  for (const [event, groups] of Object.entries(readHooksJson().hooks)) {
+    for (const g of groups) for (const entry of g.hooks) out.push({ event, matcher: g.matcher, entry });
+  }
+  return out;
 }
 
-/** Keys of the HANDLERS map in hook-router.ts (parsed from source — no TS-dep import). */
-function registeredEvents(): string[] {
-  const p = path.resolve(repoRoot(), 'src/core/hooks/handlers/hook-router.ts');
-  const src = fs.readFileSync(p, 'utf-8');
-  const start = src.indexOf('HANDLERS');
-  const slice = start >= 0 ? src.slice(start) : src;
-  const names = new Set<string>();
-  for (const m of slice.matchAll(/'([a-z][a-z-]*)':\s*\(\)\s*=>/g)) names.add(m[1]);
-  return [...names].sort();
+/** The `<event>` argument each hooks.json entry passes to run.mjs. */
+function launchedEvents(): string[] {
+  return [...new Set(allEntries().map(({ entry }) => entry.args?.[1] ?? ''))].sort();
 }
 
-describe('hook wiring parity (hooks.json ↔ router HANDLERS)', () => {
-  it('every hooks.json hook is registered or explicitly known-unrouted (AC-US1-01)', () => {
-    const registered = new Set(registeredEvents());
-    const orphans = invokedHookEvents().filter(
-      (e) => !registered.has(e) && !KNOWN_UNROUTED.has(e),
-    );
-    expect(
-      orphans,
-      `hooks.json invokes \`specweave hook X\` for events the router does NOT register ` +
-        `and are NOT allowlisted — they silently no-op. Register a handler in hook-router.ts ` +
-        `HANDLERS, or add to KNOWN_UNROUTED with a tracking note. Orphans: ${orphans.join(', ')}`,
-    ).toEqual([]);
+describe('hooks.json ↔ router parity', () => {
+  it('registers exactly the four 2.0 events (SessionStart, PreToolUse, Stop, PreCompact)', () => {
+    expect(Object.keys(readHooksJson().hooks).sort()).toEqual(['PreCompact', 'PreToolUse', 'SessionStart', 'Stop']);
+    expect(launchedEvents()).toEqual([...HOOK_EVENTS].sort());
+    expect(registeredHookEvents()).toEqual([...HOOK_EVENTS].sort());
   });
 
-  it('the 4 live events are registered (regression guard, AC-US1-03)', () => {
-    const registered = new Set(registeredEvents());
-    for (const e of MUST_BE_REGISTERED) {
-      expect(registered.has(e), `router HANDLERS lost '${e}' — a live hook would go dead`).toBe(true);
+  it('every entry is exec-form node + run.mjs, no shell, no matcher_content', () => {
+    const raw = fs.readFileSync(path.resolve(process.cwd(), 'plugins/specweave/hooks/hooks.json'), 'utf-8');
+    expect(raw).not.toContain('bash');
+    expect(raw).not.toContain('matcher_content');
+    for (const { event, entry } of allEntries()) {
+      expect(entry.type, event).toBe('command');
+      expect(entry.command, event).toBe('node');
+      expect(entry.args?.[0], event).toBe('${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs');
+      expect(HOOK_EVENTS, event).toContain(entry.args?.[1]);
     }
   });
 
-  it('KNOWN_UNROUTED has no stale entries (AC-US1-02)', () => {
-    const invoked = new Set(invokedHookEvents());
-    const registered = new Set(registeredEvents());
-    const stale = [...KNOWN_UNROUTED].filter((e) => !invoked.has(e) || registered.has(e));
-    expect(
-      stale,
-      `KNOWN_UNROUTED contains names that are no longer dead (removed from hooks.json or now ` +
-        `registered). Remove them from the allowlist. Stale: ${stale.join(', ')}`,
-    ).toEqual([]);
+  it('PreToolUse is scoped to Write|Edit', () => {
+    const pre = readHooksJson().hooks.PreToolUse;
+    expect(pre).toHaveLength(1);
+    expect(pre[0].matcher).toBe('Write|Edit');
+  });
+
+  it('timeouts are in seconds and <= 60', () => {
+    for (const { event, entry } of allEntries()) {
+      expect(typeof entry.timeout, event).toBe('number');
+      expect(entry.timeout!, event).toBeGreaterThan(0);
+      expect(entry.timeout!, event).toBeLessThanOrEqual(60);
+    }
+  });
+});
+
+describe('per-event output schema (router invoked with sample payloads)', () => {
+  let repo = '';
+  const cwd0 = process.cwd();
+
+  afterEach(() => {
+    process.chdir(cwd0);
+    if (repo && fs.existsSync(repo)) fs.rmSync(repo, { recursive: true, force: true });
+    repo = '';
+  });
+
+  function mkProject(): string {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hook-schema-'));
+    fs.mkdirSync(path.join(root, '.specweave', 'state'), { recursive: true });
+    fs.writeFileSync(path.join(root, '.specweave', 'config.json'), '{}');
+    return root;
+  }
+
+  const samples: Record<(typeof HOOK_EVENTS)[number], Record<string, unknown>> = {
+    'session-start': { hook_event_name: 'SessionStart', source: 'startup' },
+    'pre-tool-use': {
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Edit',
+      tool_input: { file_path: 'C:\\p\\.specweave\\increments\\0001-x\\metadata.json', old_string: '"status": "active"', new_string: '"status": "completed"' },
+    },
+    'stop': { hook_event_name: 'Stop', stop_hook_active: false },
+    'pre-compact': { hook_event_name: 'PreCompact', trigger: 'auto' },
+  };
+
+  for (const event of HOOK_EVENTS) {
+    it(`${event}: valid output inside a SpecWeave project`, async () => {
+      repo = mkProject();
+      process.chdir(repo);
+      const out = await hookRouter(event, JSON.stringify({ ...samples[event], cwd: repo }));
+      expect(validateHookOutput(event, out)).toBeNull();
+      expect(JSON.stringify(out)).not.toMatch(/"decision":"(allow|approve)"/);
+    });
+
+    it(`${event}: {} outside a SpecWeave project`, async () => {
+      const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'hook-bare-'));
+      try {
+        process.chdir(bare);
+        expect(await hookRouter(event, JSON.stringify({ ...samples[event], cwd: bare }))).toEqual({});
+      } finally {
+        process.chdir(cwd0);
+        fs.rmSync(bare, { recursive: true, force: true });
+      }
+    });
+  }
+
+  it('pre-tool-use sample (status→completed on a Windows path) is a deny', async () => {
+    repo = mkProject();
+    process.chdir(repo);
+    const out = await hookRouter('pre-tool-use', JSON.stringify({ ...samples['pre-tool-use'], cwd: repo }));
+    expect(out.hookSpecificOutput?.permissionDecision).toBe('deny');
+    expect(out.hookSpecificOutput?.permissionDecisionReason).toContain('0001-x');
+  });
+
+  it('unknown events and SPECWEAVE_DISABLE_HOOKS=1 return {}', async () => {
+    repo = mkProject();
+    process.chdir(repo);
+    expect(await hookRouter('user-prompt-submit', '{}')).toEqual({});
+    process.env.SPECWEAVE_DISABLE_HOOKS = '1';
+    try {
+      expect(await hookRouter('stop', '{}')).toEqual({});
+    } finally {
+      delete process.env.SPECWEAVE_DISABLE_HOOKS;
+    }
+  });
+
+  it('never throws on garbage stdin', async () => {
+    repo = mkProject();
+    process.chdir(repo);
+    expect(await hookRouter('pre-compact', 'COMPLETELY_INVALID{{{{')).toEqual({});
+    expect(await hookRouter('stop', '[1,2,3]')).toEqual({});
   });
 });

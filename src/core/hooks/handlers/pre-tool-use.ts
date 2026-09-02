@@ -1,18 +1,29 @@
 /**
- * PreToolUse hook handler — inlines all guard logic:
- * 1. Status Completion Guard (Edit metadata.json → "completed")
- * 2. Interview Enforcement Guard (Write spec.md with strict interview)
- * 3. Increment Existence Guard (TeamCreate without valid spec)
+ * PreToolUse hook handler (matcher: Write|Edit) — the hard rules:
+ * 1. Status Completion Guard — no manual `status: completed` in an increment's
+ *    metadata.json; closure goes through `/sw:done` / `specweave complete`.
+ * 2. Interview Enforcement Guard — writing spec.md under
+ *    `planning.deepInterview.enforcement: strict` requires a finished interview.
+ *
+ * Output: `{}` (pass) or `hookSpecificOutput.permissionDecision: "deny"`.
+ * Paths are backslash-normalized so the guards fire on Windows too.
  *
  * @module core/hooks/handlers/pre-tool-use
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { HandlerFn, HookContext, HookInput } from './types.js';
-import { logHook } from './utils.js';
-
-const ALLOW = { decision: 'allow' as const };
+import type { HandlerFn, HookContext, HookInput, HookResult } from './types.js';
+import { deny, pass } from './types.js';
+import {
+  extractIncrementId,
+  getFilePath,
+  getToolInput,
+  getToolName,
+  isIncrementFile,
+  logHook,
+  readJsonSafe,
+} from './utils.js';
 
 const TEMPLATE_MARKERS = [
   '[Story Title]',
@@ -35,341 +46,74 @@ const DEFAULT_INTERVIEW_CATEGORIES = [
   'edge-cases',
 ];
 
-const NON_IMPL_PREFIXES = [
-  'review-',
-  'brainstorm-',
-  'analysis-',
-  'audit-',
-  'explore-',
-  'ideate-',
-  'research-',
-  'plan-',
-  'test-',
-  'debug-',
-  'investigate-',
-  'verify-',
-  'qa-',
-];
+const METADATA_RE = /\.specweave\/increments\/[^/]+\/metadata\.json$/;
+const SPEC_RE = /\.specweave\/increments\/\d{4}E?-[^/]+\/spec\.md$/;
 
-const NON_IMPL_KEYWORDS = [
-  'review',
-  'brainstorm',
-  'analyze',
-  'audit',
-  'explore',
-  'ideate',
-  'pull request',
-  'pr #',
-  'pr review',
-  'code review',
-  'architecture review',
-  'security audit',
-  'performance audit',
-  'code audit',
-  'ideation',
-  'exploration',
-  'research',
-  'planning',
-  'perspectives',
-  "devil's advocate",
-  'pros and cons',
-  'test',
-  'testing',
-  'verify',
-  'verification',
-  'debug',
-  'investigate',
-  'diagnose',
-  'troubleshoot',
-  'qa',
-  'quality',
-];
-
-function getToolName(input: HookInput): string {
-  return (input.tool_name ?? input.toolName ?? '') as string;
-}
-
-function getToolInput(input: HookInput): Record<string, unknown> {
-  return (input.tool_input ?? input.toolInput ?? {}) as Record<string, unknown>;
-}
-
-function getFilePath(input: HookInput): string {
+/** The text the tool is about to write (Edit: new_string, Write: content). */
+function newText(input: HookInput): string {
   const ti = getToolInput(input);
-  return (ti.file_path ?? '') as string;
-}
-
-function isIncrementFile(filePath: string): boolean {
-  return filePath.includes('.specweave/increments/');
-}
-
-function extractIncrementId(filePath: string): string {
-  const match = filePath.match(/(\d{4}[E]?-[^/]+)/);
-  return match ? match[1] : 'unknown';
-}
-
-function readJsonSafe(filePath: string, context?: HookContext): Record<string, unknown> {
-  try {
-    if (!fs.existsSync(filePath)) return {};
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  } catch (err) {
-    if (context) {
-      logHook(context, 'pre-tool-use', `readJsonSafe error (${filePath}): ${err instanceof Error ? err.message : String(err)}`);
-    }
-    return {};
-  }
+  const s = ti.new_string ?? ti.content ?? '';
+  return typeof s === 'string' ? s : '';
 }
 
 // ---------------------------------------------------------------------------
-// Guard: Status Completion (Edit metadata.json → "completed")
+// Guard: Status Completion (metadata.json → "completed")
 // ---------------------------------------------------------------------------
 
-function checkStatusCompletionGuard(
-  input: HookInput,
-  context: HookContext,
-): { decision: 'allow' | 'block'; reason?: string } {
-  const ti = getToolInput(input);
-  const filePath = getFilePath(input);
-  const newString = (ti.new_string ?? '') as string;
+function checkStatusCompletionGuard(input: HookInput, context: HookContext, filePath: string): HookResult {
+  if (!METADATA_RE.test(filePath)) return pass();
+  if (!/"status"\s*:\s*"completed"/.test(newText(input))) return pass();
 
-  // Only care about metadata.json in increments
-  if (!filePath.match(/\.specweave\/increments\/.*\/metadata\.json$/)) {
-    return ALLOW;
-  }
+  // Closure in progress (sw:done / specweave complete) — allowed.
+  if (fs.existsSync(path.join(context.stateDir, '.sw-done-in-progress'))) return pass();
 
-  // Check if setting status to "completed"
-  if (!/"status"\s*:\s*"completed"/.test(newString)) {
-    return ALLOW;
-  }
+  // Verified auto session — allowed.
+  const session = readJsonSafe<{ status?: string; testsVerified?: boolean }>(
+    path.join(context.stateDir, 'auto', 'session.json'),
+  );
+  if (session?.status === 'active' && session.testsVerified === true) return pass();
 
-  // Allow if sw-done marker exists
-  const doneMarker = path.join(context.stateDir, '.sw-done-in-progress');
-  if (fs.existsSync(doneMarker)) {
-    return ALLOW;
-  }
-
-  // Allow if auto-mode active with testsVerified
-  const autoSession = path.join(context.stateDir, 'auto', 'session.json');
-  if (fs.existsSync(autoSession)) {
-    const session = readJsonSafe(autoSession, context);
-    if (session.status === 'active' && session.testsVerified === true) {
-      return ALLOW;
-    }
-  }
-
-  const incrementId = extractIncrementId(filePath);
-  return {
-    decision: 'block',
-    reason: `Direct status change to 'completed' is blocked for ${incrementId}. Use /sw:done or /sw:auto instead.`,
-  };
+  const id = extractIncrementId(filePath);
+  return deny(
+    `Direct status change to 'completed' is blocked for ${id}. ` +
+      `Run /sw:done ${id} (or \`specweave complete ${id}\`) so the closure gates run.`,
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Guard: Interview Enforcement (Write spec.md with strict interview)
 // ---------------------------------------------------------------------------
 
-function checkInterviewGuard(
-  input: HookInput,
-  context: HookContext,
-): { decision: 'allow' | 'block'; reason?: string } {
-  const filePath = getFilePath(input);
-  const ti = getToolInput(input);
-  const content = (ti.content ?? '') as string;
+function checkInterviewGuard(input: HookInput, context: HookContext, filePath: string): HookResult {
+  if (!SPEC_RE.test(filePath)) return pass();
 
-  // Only care about spec.md in increments
-  if (!filePath.match(/\.specweave\/increments\/\d{4}-[^/]+\/spec\.md$/)) {
-    return ALLOW;
+  const content = newText(input);
+  if (TEMPLATE_MARKERS.some((m) => content.includes(m))) return pass();
+
+  const config = readJsonSafe<{ planning?: { deepInterview?: Record<string, unknown> } }>(context.configPath);
+  const di = config?.planning?.deepInterview ?? {};
+  const strict = di.enforcement === 'strict' && (di.enabled === true || di.enabled === undefined);
+  if (!strict) return pass();
+
+  const id = extractIncrementId(filePath);
+  const categories = Array.isArray(di.categories) ? (di.categories as string[]) : DEFAULT_INTERVIEW_CATEGORIES;
+  const statePath = path.join(context.stateDir, `interview-${id}.json`);
+  if (!fs.existsSync(statePath)) {
+    return deny(
+      `Strict Interview Enforcement: Interview Required. Deep Interview has not been started for ${id}. ` +
+        `Cover all categories (${categories.join(', ')}) before writing spec.md, ` +
+        `or set planning.deepInterview.enforcement to "warn" in .specweave/config.json.`,
+    );
   }
-
-  // Allow template writes through
-  for (const marker of TEMPLATE_MARKERS) {
-    if (content.includes(marker)) {
-      return ALLOW;
-    }
-  }
-
-  // Read config to check if strict interview enabled
-  const config = readJsonSafe(context.configPath, context);
-  const planning = (config.planning ?? {}) as Record<string, unknown>;
-  const di = (planning.deepInterview ?? {}) as Record<string, unknown>;
-
-  if (di.enabled !== true || di.enforcement !== 'strict') {
-    return ALLOW;
-  }
-
-  const incrementId = extractIncrementId(filePath);
-  const categories = (di.categories as string[]) ?? DEFAULT_INTERVIEW_CATEGORIES;
-
-  // Check interview state file
-  const interviewState = path.join(
-    context.stateDir,
-    `interview-${incrementId}.json`,
-  );
-
-  if (!fs.existsSync(interviewState)) {
-    return {
-      decision: 'block',
-      reason: `Strict Interview Enforcement: Interview Required. Deep Interview has not been started for ${incrementId}. Start and cover all categories before writing spec.md.`,
-    };
-  }
-
-  // Check covered categories
-  const state = readJsonSafe(interviewState, context);
-  const covered = state.coveredCategories as Record<string, unknown> | undefined;
-  const coveredKeys = covered ? Object.keys(covered) : [];
-  const missing = categories.filter((c) => !coveredKeys.includes(c));
-
+  const state = readJsonSafe<{ coveredCategories?: Record<string, unknown> }>(statePath);
+  const covered = Object.keys(state?.coveredCategories ?? {});
+  const missing = categories.filter((c) => !covered.includes(c));
   if (missing.length > 0) {
-    return {
-      decision: 'block',
-      reason: `Strict Interview Enforcement: Incomplete Interview for ${incrementId}. Missing categories: ${missing.join(', ')}`,
-    };
+    return deny(
+      `Strict Interview Enforcement: Incomplete Interview for ${id}. Missing categories: ${missing.join(', ')}`,
+    );
   }
-
-  return ALLOW;
-}
-
-// ---------------------------------------------------------------------------
-// Guard: Increment Existence (TeamCreate without valid spec)
-// ---------------------------------------------------------------------------
-
-function isNonImplTeam(input: HookInput): boolean {
-  const ti = getToolInput(input);
-  const teamName = ((ti.team_name ?? '') as string).toLowerCase();
-  const description = ((ti.description ?? '') as string).toLowerCase();
-
-  // Check team name prefix
-  for (const prefix of NON_IMPL_PREFIXES) {
-    if (teamName.startsWith(prefix)) return true;
-  }
-
-  // Check description keywords
-  for (const keyword of NON_IMPL_KEYWORDS) {
-    if (description.includes(keyword)) return true;
-  }
-
-  return false;
-}
-
-function hasValidSpec(specPath: string, context?: HookContext): boolean {
-  try {
-    if (!fs.existsSync(specPath)) return false;
-    const content = fs.readFileSync(specPath, 'utf-8');
-
-    // Min 500 bytes
-    if (Buffer.byteLength(content) <= 500) return false;
-
-    // No template markers
-    for (const marker of TEMPLATE_MARKERS) {
-      if (content.includes(marker)) return false;
-    }
-
-    // No {{UPPERCASE}} mustache placeholders
-    if (/\{\{[A-Z_]+\}\}/.test(content)) return false;
-
-    // Must have at least one acceptance criterion
-    if (!/AC-US\d+-\d+|AC-\d+/.test(content)) return false;
-
-    return true;
-  } catch (err) {
-    if (context) {
-      logHook(context, 'pre-tool-use', `hasValidSpec error (${specPath}): ${err instanceof Error ? err.message : String(err)}`);
-    }
-    return false;
-  }
-}
-
-function checkIncrementExistenceGuard(
-  _input: HookInput,
-  context: HookContext,
-): { decision: 'allow' | 'block'; reason?: string } {
-  // Env var bypass
-  if (process.env.SPECWEAVE_NO_INCREMENT === '1') {
-    return ALLOW;
-  }
-
-  // Scan increments for valid specs with active/in-progress status
-  const incDir = path.join(context.projectRoot, '.specweave', 'increments');
-  if (fs.existsSync(incDir)) {
-    try {
-      const entries = fs.readdirSync(incDir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const specPath = path.join(incDir, entry.name, 'spec.md');
-          if (!hasValidSpec(specPath, context)) continue;
-          // Check metadata.json for qualifying status
-          const metaPath = path.join(incDir, entry.name, 'metadata.json');
-          if (fs.existsSync(metaPath)) {
-            try {
-              const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-              const status = meta?.status ?? '';
-              const qualifying = ['active', 'in-progress', 'ready_for_review', 'planned'];
-              if (qualifying.includes(status)) return ALLOW;
-            } catch (err) {
-              logHook(context, 'pre-tool-use', `metadata parse error (${metaPath}): ${err instanceof Error ? err.message : String(err)}`);
-            }
-          } else {
-            // No metadata.json but valid spec — allow (legacy increments)
-            return ALLOW;
-          }
-        }
-      }
-    } catch (err) {
-      logHook(context, 'pre-tool-use', `increment scan error: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }
-
-  // Scan multi-repo increments
-  const reposDir = path.join(context.projectRoot, 'repositories');
-  if (fs.existsSync(reposDir)) {
-    try {
-      const orgs = fs.readdirSync(reposDir, { withFileTypes: true });
-      for (const org of orgs) {
-        if (!org.isDirectory()) continue;
-        const orgPath = path.join(reposDir, org.name);
-        const repos = fs.readdirSync(orgPath, { withFileTypes: true });
-        for (const repo of repos) {
-          if (!repo.isDirectory()) continue;
-          const repoIncDir = path.join(
-            orgPath,
-            repo.name,
-            '.specweave',
-            'increments',
-          );
-          if (!fs.existsSync(repoIncDir)) continue;
-          const incs = fs.readdirSync(repoIncDir, { withFileTypes: true });
-          for (const inc of incs) {
-            if (inc.isDirectory()) {
-              const specPath = path.join(repoIncDir, inc.name, 'spec.md');
-              if (!hasValidSpec(specPath, context)) continue;
-              // Check metadata.json for qualifying status (consistent with single-repo scan)
-              const metaPath = path.join(repoIncDir, inc.name, 'metadata.json');
-              if (fs.existsSync(metaPath)) {
-                try {
-                  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-                  const status = meta?.status ?? '';
-                  const qualifying = ['active', 'in-progress', 'ready_for_review', 'planned'];
-                  if (qualifying.includes(status)) return ALLOW;
-                } catch (err) {
-                  logHook(context, 'pre-tool-use', `metadata parse error (${metaPath}): ${err instanceof Error ? err.message : String(err)}`);
-                }
-              } else {
-                // No metadata.json but valid spec — allow (legacy increments)
-                return ALLOW;
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      logHook(context, 'pre-tool-use', `multi-repo scan error: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }
-
-  return {
-    decision: 'block',
-    reason:
-      'Increment Required Before Team Creation. No qualifying increment with a valid spec.md found. Run /sw:increment first, or use a mode-prefixed team name (review-*, brainstorm-*, research-*, test-*, debug-*, verify-*, qa-*) for non-implementation work.',
-  };
+  return pass();
 }
 
 // ---------------------------------------------------------------------------
@@ -378,36 +122,20 @@ function checkIncrementExistenceGuard(
 
 export const handle: HandlerFn = async (input, context) => {
   const toolName = getToolName(input);
+  if (toolName !== 'Edit' && toolName !== 'Write') return pass();
+
   const filePath = getFilePath(input);
+  if (!filePath || !isIncrementFile(filePath)) return pass();
 
-  // Fast path: not targeting increment files AND not TeamCreate
-  if (!isIncrementFile(filePath) && toolName !== 'TeamCreate') {
-    return ALLOW;
-  }
+  const statusResult = checkStatusCompletionGuard(input, context, filePath);
+  if (statusResult.hookSpecificOutput) return statusResult;
 
-  // Edit guard: status completion
-  if (toolName === 'Edit') {
-    return checkStatusCompletionGuard(input, context);
-  }
-
-  // Write guard: interview enforcement
   if (toolName === 'Write') {
-    return checkInterviewGuard(input, context);
-  }
-
-  // TeamCreate guard: increment existence
-  if (toolName === 'TeamCreate') {
-    if (isNonImplTeam(input)) {
-      logHook(context, 'pre-tool-use', `TeamCreate allowed: non-impl team`);
-      return ALLOW;
+    const interviewResult = checkInterviewGuard(input, context, filePath);
+    if (interviewResult.hookSpecificOutput) {
+      logHook(context, 'pre-tool-use', `interview guard: ${filePath}`, 'warn');
+      return interviewResult;
     }
-    const result = checkIncrementExistenceGuard(input, context);
-    if (result.decision === 'block') {
-      const ti = getToolInput(input);
-      logHook(context, 'pre-tool-use', `TeamCreate blocked: team_name="${ti.team_name}", description="${ti.description}"`);
-    }
-    return result;
   }
-
-  return ALLOW;
+  return pass();
 };

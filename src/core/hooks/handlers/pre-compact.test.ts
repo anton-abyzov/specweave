@@ -1,25 +1,17 @@
 /**
- * Unit tests for the PreCompact (+ gated Stop) hook handler (T-014, AC-US7-*).
- *
- * Verifies:
- * - PreCompact ALWAYS writes a handoff and returns the safe { continue: true }.
- * - Stop is GATED on an active auto session (auto-mode.json) (AC-US7-02).
- * - An agent-supplied `reason` flows through to the written doc, falling back
- *   to the hook-specific default when absent (AC-US7-04, regression guard for
- *   the dropped-reason bug F-002).
- * - A builder failure never breaks compaction (still returns continue:true).
+ * PreCompact handler: writes a handoff only when an increment is active,
+ * within a 5 s budget, never blocks compaction, always returns `{}`.
  */
-
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import { handle, handleStop } from './pre-compact.js';
-import type { HookContext } from './types.js';
+import { handle, writeAutoHandoff } from './pre-compact.js';
+import { createContext } from './utils.js';
 
 function mkRepo(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'precompact-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-'));
   execFileSync('git', ['init', '-q'], { cwd: root });
   execFileSync('git', ['config', 'user.email', 't@example.com'], { cwd: root });
   execFileSync('git', ['config', 'user.name', 'T'], { cwd: root });
@@ -27,82 +19,108 @@ function mkRepo(): string {
   fs.writeFileSync(path.join(root, 'a.txt'), 'one\n');
   execFileSync('git', ['add', 'a.txt'], { cwd: root });
   execFileSync('git', ['commit', '-q', '-m', 'init'], { cwd: root });
-  // Mark as a SpecWeave project so the builder takes the high-fidelity path.
   fs.mkdirSync(path.join(root, '.specweave', 'state'), { recursive: true });
   fs.writeFileSync(path.join(root, '.specweave', 'config.json'), '{}');
   return root;
 }
 
-function ctx(root: string): HookContext {
-  return {
-    projectRoot: root,
-    stateDir: path.join(root, '.specweave', 'state'),
-    logsDir: path.join(root, '.specweave', 'logs'),
-    configPath: path.join(root, '.specweave', 'config.json'),
-    timestamp: new Date().toISOString(),
-  };
+function mkActive(root: string, ...ids: string[]): void {
+  for (const id of ids) {
+    const d = path.join(root, '.specweave', 'increments', id);
+    fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, 'metadata.json'), JSON.stringify({ id, status: 'active', type: 'feature', created: new Date().toISOString() }));
+    fs.writeFileSync(path.join(d, 'spec.md'), `# ${id}\n\n- [ ] AC-01 x\n`);
+    fs.writeFileSync(path.join(d, 'tasks.md'), '### T-001: a\n**Status**: [ ] pending\n');
+  }
+  fs.writeFileSync(path.join(root, '.specweave', 'state', 'active-increment.json'), JSON.stringify({ ids }));
 }
 
-/** Read whichever handoff doc the builder wrote (root HANDOFF.md or .handoff/). */
-function readHandoffDoc(root: string): string {
+/** Any handoff doc the builder may write. */
+function handoffDocs(root: string): string[] {
   const candidates = [
+    path.join(root, '.specweave', 'state', 'handoff-latest.md'),
     path.join(root, 'HANDOFF.md'),
     path.join(root, '.handoff', 'HANDOFF.md'),
-    path.join(root, '.specweave', 'state', 'handoff-latest.md'),
   ];
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return fs.readFileSync(c, 'utf-8');
-  }
-  return '';
+  try {
+    for (const id of fs.readdirSync(path.join(root, '.specweave', 'increments'))) {
+      candidates.push(path.join(root, '.specweave', 'increments', id, 'handoff.md'));
+    }
+  } catch { /* none */ }
+  return candidates.filter((c) => fs.existsSync(c)).map((c) => fs.readFileSync(c, 'utf-8'));
 }
 
-describe('pre-compact handler', () => {
-  let repo: string;
-
+describe('pre-compact', () => {
+  let repo = '';
   afterEach(() => {
-    if (repo && fs.existsSync(repo)) fs.rmSync(repo, { recursive: true, force: true });
+    delete process.env.SPECWEAVE_HOOK_DRY_RUN;
+    if (repo) fs.rmSync(repo, { recursive: true, force: true });
+    repo = '';
   });
 
-  it('PreCompact always writes a handoff and returns continue:true', async () => {
+  it('returns {} and writes nothing when no increment is active', async () => {
     repo = mkRepo();
-    const res = await handle({}, ctx(repo));
-    expect(res).toEqual({ continue: true });
-    expect(readHandoffDoc(repo).length).toBeGreaterThan(0);
+    expect(await handle({}, createContext(repo))).toEqual({});
+    expect(handoffDocs(repo)).toEqual([]);
   });
 
-  it('honors an agent-supplied reason (AC-US7-04 — regression guard)', async () => {
+  it('writes a handoff for the active increment and honors the agent reason', async () => {
     repo = mkRepo();
-    await handle({ reason: 'out of subscription tokens' }, ctx(repo));
-    expect(readHandoffDoc(repo)).toContain('out of subscription tokens');
+    mkActive(repo, '0001-one');
+    expect(await handle({ reason: 'out of subscription tokens' }, createContext(repo))).toEqual({});
+    const docs = handoffDocs(repo);
+    expect(docs.length).toBeGreaterThan(0);
+    expect(docs.join('\n')).toContain('out of subscription tokens');
   });
 
-  it('falls back to the default reason when the agent supplies none', async () => {
+  it('uses the default reason when the agent supplies none', async () => {
     repo = mkRepo();
-    await handle({}, ctx(repo));
-    expect(readHandoffDoc(repo)).toContain('auto: pre-compact');
+    mkActive(repo, '0001-one');
+    await handle({}, createContext(repo));
+    expect(handoffDocs(repo).join('\n')).toContain('auto: pre-compact');
   });
 
-  it('Stop does NOT write without an active auto session (AC-US7-02)', async () => {
+  it('picks the first active increment when several are active (no ambiguity error)', async () => {
     repo = mkRepo();
-    const res = await handleStop({}, ctx(repo));
-    expect(res).toEqual({ continue: true });
-    expect(readHandoffDoc(repo)).toBe('');
+    mkActive(repo, '0001-one', '0002-two');
+    expect(await writeAutoHandoff(createContext(repo), {}, 'auto: pre-compact')).toBe(true);
+    expect(handoffDocs(repo).join('\n')).toContain('0001-one');
   });
 
-  it('Stop writes when auto-mode.json is present', async () => {
+  it('abandons the write when the budget is exceeded and still returns {}', async () => {
     repo = mkRepo();
-    fs.writeFileSync(path.join(repo, '.specweave', 'state', 'auto-mode.json'), '{}');
-    await handleStop({ reason: 'auto run paused' }, ctx(repo));
-    expect(readHandoffDoc(repo)).toContain('auto run paused');
-  });
-
-  it('never breaks compaction even if the builder cannot run', async () => {
-    // Point the project root at a path with no git + no .specweave; the builder
-    // degrades, but the handler must still return the safe shape.
-    const bogus = fs.mkdtempSync(path.join(os.tmpdir(), 'precompact-bogus-'));
+    mkActive(repo, '0001-one');
+    const ctx = createContext(repo);
+    vi.resetModules();
+    vi.doMock('../../session/work-handoff.js', () => ({
+      buildWorkHandoff: () => new Promise((resolve) => setTimeout(() => resolve({ docPath: 'slow' }), 300)),
+    }));
     try {
-      const res = await handle({}, ctx(bogus));
-      expect(res).toEqual({ continue: true });
+      const slow = await import('./pre-compact.js');
+      expect(await slow.writeAutoHandoff(ctx, {}, 'auto: pre-compact', 20)).toBe(false);
+      expect(await slow.handle({}, ctx)).toEqual({});
+    } finally {
+      vi.doUnmock('../../session/work-handoff.js');
+      vi.resetModules();
+    }
+    const log = fs.readFileSync(path.join(ctx.logsDir, 'hooks.jsonl'), 'utf8');
+    expect(log).toContain('abandoned after 20 ms budget');
+  });
+
+  it('SPECWEAVE_HOOK_DRY_RUN=1 skips the write (doctor dry-run)', async () => {
+    repo = mkRepo();
+    mkActive(repo, '0001-one');
+    process.env.SPECWEAVE_HOOK_DRY_RUN = '1';
+    expect(await handle({}, createContext(repo))).toEqual({});
+    expect(handoffDocs(repo)).toEqual([]);
+  });
+
+  it('never breaks compaction when the builder cannot run', async () => {
+    const bogus = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-bogus-'));
+    try {
+      fs.mkdirSync(path.join(bogus, '.specweave', 'increments', '0001-x'), { recursive: true });
+      fs.writeFileSync(path.join(bogus, '.specweave', 'increments', '0001-x', 'metadata.json'), '{"status":"active"}');
+      expect(await handle({}, createContext(bogus))).toEqual({});
     } finally {
       fs.rmSync(bogus, { recursive: true, force: true });
     }

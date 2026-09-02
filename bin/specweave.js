@@ -1367,15 +1367,8 @@ program
       const { handleHook } = await import('../dist/src/cli/commands/hook.js');
       await handleHook(eventType);
     } catch {
-      // Never crash — output safe default
-      const defaults = {
-        'user-prompt-submit': '{"decision":"approve"}',
-        'pre-tool-use': '{"decision":"allow"}',
-        'stop-reflect': '{"decision":"approve"}',
-        'stop-auto': '{"decision":"approve"}',
-        'stop-sync': '{"decision":"approve"}',
-      };
-      process.stdout.write(defaults[eventType] || '{"continue":true}');
+      // Never crash — `{}` is the schema-valid pass-through for every event
+      process.stdout.write('{}');
     }
     process.exit(0);
   });
@@ -1650,31 +1643,12 @@ program
     await dashboardCommand(options);
   });
 
-// Hooks command - Hook observability and management
-const hooksCmd = program.command('hooks').description('Hook observability and management');
-
-hooksCmd
-  .command('status')
-  .description('Check hook server status')
-  .action(async () => {
-    const { getHooksStatus, formatHooksStatus } = await import('../dist/src/hooks/hooks-status.js');
-    const result = await getHooksStatus(process.cwd());
-    console.log(formatHooksStatus(result));
-  });
-
-hooksCmd
-  .command('generate-settings')
-  .description('Generate .claude/settings.json hooks configuration')
-  .option('-p, --port <number>', 'Override port (default: 8340)')
-  .action(async (options) => {
-    const { writeSettings } = await import('../dist/src/hooks/generate-settings.js');
-    writeSettings(process.cwd(), options.port ? parseInt(options.port, 10) : undefined);
-    console.log('Hooks settings written to .claude/settings.json');
-  });
+// Hooks command - hook log viewer (hooks.json lives in the plugin; see `specweave doctor` for a dry-run)
+const hooksCmd = program.command('hooks').description('Hook observability');
 
 hooksCmd
   .command('log')
-  .description('View recent hook events')
+  .description('View recent hook warnings, errors and blocks (.specweave/logs/hooks.jsonl)')
   .option('--last <number>', 'Number of entries to show (default: 20)', '20')
   .option('--blocks-only', 'Show only block decisions')
   .option('--errors-only', 'Show only error entries')
@@ -1687,23 +1661,6 @@ hooksCmd
       errorsOnly: options.errorsOnly,
       hook: options.hook,
     });
-  });
-
-hooksCmd
-  .command('health')
-  .description('Show hook health summary')
-  .option('--json', 'Output as JSON')
-  .action(async (options) => {
-    const { hooksHealthCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
-    await hooksHealthCommand({ format: options.json ? 'json' : 'console' });
-  });
-
-hooksCmd
-  .command('ls')
-  .description('List registered hooks')
-  .action(async () => {
-    const { hooksLsCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
-    await hooksLsCommand();
   });
 
 // Context command - Show workspace project context for spec fields
