@@ -6,11 +6,14 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
 import { fileURLToPath } from 'url';
 import type { HealthChecker, CategoryResult, CheckResult, DoctorOptions } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
 import { HOOK_EVENTS, validateHookOutput } from '../../hooks/handlers/types.js';
+
+/** Per-event launcher budget: a hook that needs longer than this is broken. */
+export const DRY_RUN_TIMEOUT_MS = 10000;
 
 /** Sample payloads that must never trigger a block or a side effect. */
 export const SAMPLE_HOOK_INPUT: Record<(typeof HOOK_EVENTS)[number], Record<string, unknown>> = {
@@ -62,12 +65,14 @@ export class HooksChecker implements HealthChecker {
 
     checks.push(this.checkHooksJson(hooksJson));
 
-    for (const event of HOOK_EVENTS) {
-      if (options.quick) {
+    if (options.quick) {
+      for (const event of HOOK_EVENTS) {
         checks.push({ name: `${event} dry-run`, status: 'skip', message: 'skipped (quick mode)' });
-        continue;
       }
-      checks.push(this.dryRun(runner, event, projectRoot));
+    } else {
+      // The four launches are independent — run them concurrently so `doctor`
+      // costs one hook round-trip, not four.
+      checks.push(...(await Promise.all(HOOK_EVENTS.map((event) => this.dryRun(runner, event, projectRoot)))));
     }
 
     return { category: this.category, status: calculateOverallStatus(checks), checks };
@@ -96,40 +101,56 @@ export class HooksChecker implements HealthChecker {
     }
   }
 
-  private dryRun(runner: string, event: (typeof HOOK_EVENTS)[number], projectRoot: string): CheckResult {
+  private async dryRun(
+    runner: string,
+    event: (typeof HOOK_EVENTS)[number],
+    projectRoot: string,
+  ): Promise<CheckResult> {
     const start = Date.now();
     const name = `${event} dry-run`;
-    try {
-      const stdout = execFileSync(process.execPath, [runner, event], {
-        cwd: projectRoot,
-        input: JSON.stringify({ ...SAMPLE_HOOK_INPUT[event], cwd: projectRoot }),
-        encoding: 'utf8',
-        timeout: 15000,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, SPECWEAVE_HOME: packageRoot(), SPECWEAVE_HOOK_DRY_RUN: '1' },
-      });
-      const durationMs = Date.now() - start;
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(stdout.trim() || '{}');
-      } catch {
-        return { name, status: 'fail', message: `non-JSON output: ${stdout.trim().slice(0, 80)}`, durationMs };
-      }
-      const problem = validateHookOutput(event, parsed);
-      if (problem) return { name, status: 'fail', message: problem, durationMs };
-      if (event === 'session-start' && JSON.stringify(parsed).includes('hooks inactive')) {
-        return { name, status: 'warn', message: 'launcher could not locate the specweave CLI', durationMs,
-          fixSuggestion: 'npm i -g specweave (or set SPECWEAVE_HOME)' };
-      }
-      return { name, status: 'pass', message: `valid ${JSON.stringify(parsed).slice(0, 60)}`, durationMs };
-    } catch (err) {
+    const stdout = await new Promise<string>((resolve, reject) => {
+      const child = execFile(
+        process.execPath,
+        [runner, event],
+        {
+          cwd: projectRoot,
+          encoding: 'utf8',
+          timeout: DRY_RUN_TIMEOUT_MS,
+          env: { ...process.env, SPECWEAVE_HOME: packageRoot(), SPECWEAVE_HOOK_DRY_RUN: '1' },
+        },
+        (err, out) => (err ? reject(err) : resolve(out)),
+      );
+      child.stdin?.end(JSON.stringify({ ...SAMPLE_HOOK_INPUT[event], cwd: projectRoot }));
+    }).catch((err: unknown) => (err instanceof Error ? err : new Error(String(err))));
+
+    const durationMs = Date.now() - start;
+    if (stdout instanceof Error) {
       return {
         name,
         status: 'fail',
-        message: `launcher failed: ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`,
-        durationMs: Date.now() - start,
-        fixSuggestion: 'node must be on PATH; run: node <plugin>/hooks/run.mjs ' + event,
+        message: `launcher failed: ${stdout.message.split('\n')[0]}`,
+        durationMs,
+        fixSuggestion: `node must be on PATH; run: node <plugin>/hooks/run.mjs ${event}`,
       };
     }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(stdout.trim() || '{}');
+    } catch {
+      return { name, status: 'fail', message: `non-JSON output: ${stdout.trim().slice(0, 80)}`, durationMs };
+    }
+    const problem = validateHookOutput(event, parsed);
+    if (problem) return { name, status: 'fail', message: problem, durationMs };
+    if (event === 'session-start' && JSON.stringify(parsed).includes('hooks inactive')) {
+      return {
+        name,
+        status: 'warn',
+        message: 'launcher could not locate the specweave CLI',
+        durationMs,
+        fixSuggestion: 'npm i -g specweave (or set SPECWEAVE_HOME)',
+      };
+    }
+    return { name, status: 'pass', message: `valid ${JSON.stringify(parsed).slice(0, 60)}`, durationMs };
   }
 }
