@@ -767,63 +767,29 @@ function generateStandardTasksTemplate(title: string): string {
   TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL
 ====================================================================
 
-This is a TEMPLATE created by increment skill.
-DO NOT manually fill in the tasks below.
+Tell Claude: "Create tasks for increment [ID]".
 
-To complete this task list, run:
-  Tell Claude: "Create tasks for increment [ID]"
+FORMAT (2.0) — one heading + one field line per task:
 
-This will activate the test-aware planner which will:
-- Generate detailed implementation tasks
-- Add embedded test plans (BDD format)
-- Set task dependencies
-- Assign model hints
+  ### T-01 <short title>
+  - AC: AC-01, AC-02 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a
 
+  \`Files\` is the ownership unit: two agents never claim tasks that share a
+  file. \`Test\` is the command \`specweave task done T-01 --run\` executes as
+  evidence (or a Given/When/Then sentence when no command applies).
+
+STATE lives in ledger.jsonl, NOT here. Do not hand-edit the checkbox or the
+SW:BOARD table below — \`specweave task done|skip|render\` rewrites them.
 ====================================================================
 -->
 
-## Task Notation
+### T-01 [First task]
+- AC: AC-01 | Files: src/[file].ts | Test: [command or Given/When/Then]
+- [ ]
 
-- \`[T###]\`: Task ID
-- \`[P]\`: Parallelizable
-- \`[ ]\`: Not started
-- \`[x]\`: Completed
-- Model hints: haiku (simple), opus (default)
-
-## Phase 1: Setup
-
-- [ ] [T001] [P] haiku - Initialize project structure
-- [ ] [T002] haiku - Setup testing framework
-
-## Phase 2: Core Implementation
-
-### US-001: [User Story Title] (P1)
-
-#### T-003: Implement [component]
-
-**Description**: [What needs to be done]
-
-**References**: AC-US1-01, AC-US1-02
-
-**Implementation Details**:
-- [Step 1]
-- [Step 2]
-
-**Test Plan**:
-- **File**: \`tests/unit/component.test.ts\`
-- **Tests**:
-  - **TC-001**: [Test name]
-    - Given [precondition]
-    - When [action]
-    - Then [expected result]
-
-**Dependencies**: None
-**Status**: [ ] Not Started
-
-## Phase 3: Testing
-
-- [ ] [T050] Run integration tests
-- [ ] [T051] Verify all acceptance criteria
+### T-02 [Second task]
+- AC: AC-02 | Files: src/[file].ts, src/[file].test.ts | Test: [command]
+- [ ]
 `;
 }
 
@@ -944,45 +910,23 @@ function generateExternalTasksContent(options: {
   const { title, acceptanceCriteria } = options;
 
   const taskEntries = acceptanceCriteria.map((ac, i) => {
-    const taskNum = String(i + 1).padStart(3, '0');
-    return `#### T-${taskNum}: ${ac}
-
-**Description**: Implement and verify: ${ac}
-
-**References**: AC-US1-${String(i + 1).padStart(2, '0')}
-
-**Test Plan**:
-- **Tests**:
-  - **TC-${taskNum}**: Verify ${ac}
-    - Given the system is set up
-    - When the feature is implemented
-    - Then ${ac}
-
-**Status**: [ ] Not Started`;
+    const num = String(i + 1).padStart(2, '0');
+    return `### T-${num} ${ac}
+- AC: AC-US1-${num} | Files: [src/...] | Test: Given the system is set up, When the feature is implemented, Then ${ac}
+- [ ]`;
   }).join('\n\n');
 
   return `# Tasks: ${title}
 
-<!-- IMPORTED — Tasks derived from external acceptance criteria -->
-
-## Task Notation
-
-- \`[T###]\`: Task ID
-- \`[P]\`: Parallelizable
-- \`[ ]\`: Not started
-- \`[x]\`: Completed
-- Model hints: haiku (simple), opus (default)
-
-## Phase 1: Core Implementation
-
-### US-001: ${title} (P1)
+<!--
+IMPORTED — one task per external acceptance criterion.
+Format: T-NN headings + one field line "- AC: ... | Files: ... | Test: ...".
+Fill in Files (the ownership unit) and turn each Test into a real command
+where possible. State lives in ledger.jsonl — "specweave task done|skip|render"
+owns the checkboxes below.
+-->
 
 ${taskEntries}
-
-## Phase 2: Verification
-
-- [ ] [T${String(acceptanceCriteria.length + 1).padStart(3, '0')}] Run all tests
-- [ ] [T${String(acceptanceCriteria.length + 2).padStart(3, '0')}] Verify all acceptance criteria
 `;
 }
 
