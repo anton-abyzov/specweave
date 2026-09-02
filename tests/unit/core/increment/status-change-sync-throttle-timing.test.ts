@@ -230,7 +230,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
 
     await StatusChangeSyncTrigger.triggerIfNeeded(
       '0004-test',
-      IncrementStatus.PLANNING,
+      IncrementStatus.PLANNED,
       IncrementStatus.ACTIVE
     );
     await flushMicrotasks();

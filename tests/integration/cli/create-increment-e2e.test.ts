@@ -77,7 +77,9 @@ describe('create-increment CLI e2e', () => {
       fs.readFileSync(path.join(incPath, 'metadata.json'), 'utf-8')
     );
     expect(metadata.id).toBe('0001-cli-test');
-    expect(metadata.status).toBe('planning');
+    // 2.0: step 1 of the loop produces a workable increment, so
+    // create-increment writes `active` (use --planned for backlog work).
+    expect(metadata.status).toBe('active');
     expect(metadata.type).toBe('feature');
   });
 

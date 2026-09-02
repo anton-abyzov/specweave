@@ -348,6 +348,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // `reflect` has no reader in 2.0 and is a key the config migration deletes.
   if (isSpecWeaveProject) {
     const removedReflect = removeReflectState(projectPath, options.check);
+    // Counted in the summary too, so "State cleanup" cannot read
+    // "No stale files" right under the lines that removed some.
+    result.stateFilesCleaned += removedReflect.length;
     for (const relPath of removedReflect) {
       if (options.check) {
         console.log(chalk.yellow(`  ⚠️  ${relPath} will be removed (reflect was dropped in 2.0)`));
