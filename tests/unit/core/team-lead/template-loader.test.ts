@@ -3,7 +3,7 @@
  *
  * Behavior under test:
  * - loadTemplate reads an agent template from
- *   plugins/specweave/skills/team-lead/agents/ and auto-prepends the content
+ *   plugins/specweave/skills/team/agents/ and auto-prepends the content
  *   of _protocol.md when the requested name is not _protocol.md itself.
  * - When loadTemplate('_protocol.md') is called, no double-prepend occurs —
  *   the file is returned verbatim.

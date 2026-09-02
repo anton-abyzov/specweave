@@ -1,5 +1,5 @@
 ---
-description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment". IMPORTANT - Before starting, check task count and domain count. If 3+ domains or 15+ tasks, recommend sw:team-lead instead (ask user for confirmation, or auto-invoke in auto mode).
+description: Work an increment task by task through the ledger: task next, claim, implement, commit, task done with evidence. Use when saying "implement", "start working", or "continue increment".
 version: 2.0.0
 argument-hint: "<increment-id>"
 ---

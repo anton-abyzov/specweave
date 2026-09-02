@@ -1,9 +1,9 @@
 ---
-description: Phase-agnostic orchestrator for parallel multi-agent work — brainstorm, plan, implement, review, research, or test. Auto-detects mode from intent. Use for implementation (3+ domains or 15+ tasks), brainstorming (multiple perspectives), parallel planning (PM + Architect), code review (delegates to sw:code-reviewer), research (multiple topics), or testing (parallel test layers). Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "brainstorm with agents", "plan in parallel", "review code", "research this".
+description: Run one increment with several agents in parallel - a worktree each, claims through the ledger, one closure. Use when the work has 3+ disjoint lanes, or when saying "team" or "parallel agents".
 version: 2.0.0
 ---
 
-# Team Lead
+# Team
 
 Run one increment with N agents in parallel — **any vendor, any subscription**
 (Claude Code, Codex, OpenCode, Cursor, Gemini, a human). Coordination happens
@@ -71,7 +71,7 @@ Agent templates for common lanes live in `agents/` (backend, frontend, database,
 |---|---|---|
 | brainstorm | advocate / critic / pragmatist (see `agents/brainstorm-*.md`) | `reports/brainstorm.md`, then `sw:increment` |
 | plan | pm (spec.md) + architect (Approach/plan.md) in parallel | reviewed spec.md before any task is claimed |
-| review | security / logic / performance reviewers (`sw:code-reviewer` handles this) | `reports/review.md` |
+| review | correctness / security / spec-compliance lenses (`sw:review --full` runs these) | `reports/review.md` |
 | research | one topic per agent | `reports/research-<topic>.md` |
 | test | unit / integration / e2e | `specweave verify` commands in `testing.commands` |
 
@@ -86,4 +86,4 @@ Agent templates for common lanes live in `agents/` (backend, frontend, database,
 ## Resources
 
 - `specweave task --help`, `specweave verify --help`, `specweave handoff --help`
-- [Official Documentation](https://verified-skill.com/docs/reference/skills#team-lead)
+- [Official Documentation](https://verified-skill.com/docs/reference/skills#team)

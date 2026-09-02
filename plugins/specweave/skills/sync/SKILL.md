@@ -1,5 +1,5 @@
 ---
-description: One sync surface for GitHub, Jira and Azure DevOps. Push increment progress to issues, pull external changes or import them as increments, check tokens/health/gaps, run the setup wizard. Use when saying "sync", "push to GitHub", "pull issues", "import issues", "sync status", "connect GitHub/Jira/ADO".
+description: One sync surface for GitHub, Jira and Azure DevOps: push progress, pull or import issues, check health, run setup. Use when saying "sync", "push to GitHub", or "import issues".
 version: 2.0.0
 argument-hint: "push|pull|status|setup [increment-id]"
 ---
