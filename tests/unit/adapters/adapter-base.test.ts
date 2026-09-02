@@ -478,53 +478,6 @@ describe('AdapterBase', () => {
 
   // ─── getLanguageConfig() ───────────────────────────────────
 
-  describe('getLanguageConfig()', () => {
-    it('should return "en" when config file does not exist', async () => {
-      mockPathExists.mockResolvedValue(false);
-
-      const result = await adapter.testGetLanguageConfig();
-
-      expect(result).toBe('en');
-    });
-
-    it('should return language from config when present', async () => {
-      mockPathExists.mockResolvedValue(true);
-      mockReadJson.mockResolvedValue({ language: 'ru' });
-
-      const result = await adapter.testGetLanguageConfig();
-
-      expect(result).toBe('ru');
-    });
-
-    it('should return "en" when config has no language field', async () => {
-      mockPathExists.mockResolvedValue(true);
-      mockReadJson.mockResolvedValue({});
-
-      const result = await adapter.testGetLanguageConfig();
-
-      expect(result).toBe('en');
-    });
-
-    it('should return "en" when readJson throws', async () => {
-      mockPathExists.mockResolvedValue(true);
-      mockReadJson.mockRejectedValue(new Error('parse error'));
-
-      const result = await adapter.testGetLanguageConfig();
-
-      expect(result).toBe('en');
-    });
-
-    it('should check the correct config path', async () => {
-      mockPathExists.mockResolvedValue(false);
-
-      await adapter.testGetLanguageConfig();
-
-      const calledPath = mockPathExists.mock.calls[0][0] as string;
-      expect(calledPath).toContain('.specweave');
-      expect(calledPath).toContain('config.json');
-    });
-  });
-
   // ─── injectSystemPrompt() ─────────────────────────────────
 
   describe('injectSystemPrompt()', () => {
