@@ -16,6 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseTasksWithUSLinks, getAllTasks, type Task } from '../../generators/spec/task-parser.js';
+import { TASK_HEADER_RE } from './task-id.js';
 import {
   foldLedgerFile,
   ledgerPath,
@@ -35,30 +36,54 @@ export interface TaskBoard {
   tasks: BoardTask[];
   fold: LedgerFold;
   counts: { total: number; done: number; skipped: number; open: number; claimed: number; blocked: number; stale: number };
+  /** Task headings in tasks.md the parser could not read (never silently dropped). */
+  warnings: string[];
 }
 
 export const BOARD_BEGIN = '<!-- SW:BOARD -->';
 export const BOARD_END = '<!-- /SW:BOARD -->';
 
-/** Numeric part of a task id for ordering (`T-007` → 7). */
+/** Numeric part of a task id for ordering (`T-007` → 7, `T-007a` → 7). */
 export function taskIdNum(id: string): number {
   const m = id.match(/T-(\d+)/);
   return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
 }
 
-/** Normalize a user-typed task id: `1`, `T1`, `t-01` → the id used in tasks.md. */
+/** Letter suffix of a task id, lowercased (`T-007a` → 'a', `T-007` → ''). */
+export function taskIdSuffix(id: string): string {
+  return (id.match(/T-\d+([A-Za-z])$/)?.[1] ?? '').toLowerCase();
+}
+
+/** Board order: by number, then by letter suffix (`T-001` < `T-001a` < `T-001b`). */
+export function compareTaskIds(a: string, b: string): number {
+  const byNum = taskIdNum(a) - taskIdNum(b);
+  return byNum !== 0 ? byNum : taskIdSuffix(a).localeCompare(taskIdSuffix(b));
+}
+
+/**
+ * Normalize a user-typed task id: `1`, `T1`, `t-01`, `t-1a` → the id in tasks.md.
+ * Falls back to a case-insensitive exact match.
+ */
 export function normalizeTaskId(input: string, known: string[]): string | undefined {
-  const raw = input.trim().toUpperCase().replace(/^T-?/, '');
-  if (!/^\d+E?$/.test(raw)) return known.find((k) => k.toUpperCase() === input.trim().toUpperCase());
-  const n = parseInt(raw, 10);
-  return known.find((k) => taskIdNum(k) === n) ?? undefined;
+  const typed = input.trim();
+  const exact = known.find((k) => k.toUpperCase() === typed.toUpperCase());
+  if (exact) return exact;
+  const raw = typed.toUpperCase().replace(/^T-?/, '');
+  const m = raw.match(/^(\d+)([A-Z]?)$/);
+  if (!m) return undefined;
+  const n = parseInt(m[1], 10);
+  const suffix = m[2].toLowerCase();
+  return known.find((k) => taskIdNum(k) === n && taskIdSuffix(k) === suffix) ?? undefined;
 }
 
 /** Load the board for an increment directory. */
 export function loadTaskBoard(incrementDir: string, opts: FoldOptions = {}): TaskBoard {
   const tasksFile = path.join(incrementDir, 'tasks.md');
-  const defs = fs.existsSync(tasksFile) ? getAllTasks(parseTasksWithUSLinks(tasksFile)) : [];
-  defs.sort((a, b) => taskIdNum(a.id) - taskIdNum(b.id));
+  const warnings: string[] = [];
+  const defs = fs.existsSync(tasksFile)
+    ? getAllTasks(parseTasksWithUSLinks(tasksFile, { onWarning: (w) => warnings.push(w) }))
+    : [];
+  defs.sort((a, b) => compareTaskIds(a.id, b.id));
   const fold = foldLedgerFile(ledgerPath(incrementDir), opts);
 
   const tasks: BoardTask[] = defs.map((t) => {
@@ -84,7 +109,7 @@ export function loadTaskBoard(incrementDir: string, opts: FoldOptions = {}): Tas
       default: counts.open++;
     }
   }
-  return { incrementDir, tasks, fold, counts };
+  return { incrementDir, tasks, fold, counts, warnings };
 }
 
 /** Files currently held by live claims (claimed or blocked, not stale). */
@@ -171,7 +196,9 @@ function cell(value: string | undefined, max = 60): string {
   return oneLine((value ?? '').replace(/\|/g, '\\|'), max);
 }
 
-const HEADER_RE = /^###\s+(T-\d{2,}E?):?\s+(.+)$/;
+// Same grammar as the task parser — a mismatch here silently drops tasks from
+// the rendered board while `task list` still shows them (or vice versa).
+const HEADER_RE = TASK_HEADER_RE;
 const FIELD_LINE_RE = /^-?\s*\*{0,2}(?:AC|Files|Test)\*{0,2}:/;
 const STATE_LINE_RE = /^- \[([ x-])\](?:\s+(?:done|open|pending|claimed|stale|blocked|skipped)\b.*)?$/i;
 const LEGACY_STATUS_RE = /\*\*Status\*\*:\s*\[ \]\s*\w*/;
