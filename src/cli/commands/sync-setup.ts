@@ -2,7 +2,8 @@
  * sync-setup command
  *
  * Interactive terminal wizard to connect GitHub Issues, JIRA, or Azure DevOps.
- * This is the CLI counterpart of the sw:sync-setup Claude skill.
+ * Reached through `specweave sync setup` (the `sync-setup` verb is a
+ * deprecated hidden alias). CLI counterpart of the sw:sync skill.
  *
  * Thin wrapper around the existing setupIssueTracker() helper which handles
  * all credential collection, validation, and config writing.
@@ -82,7 +83,7 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
         if (failedChecks.length === 0) {
           console.log(chalk.green('✓ All health checks passed'));
         } else {
-          console.log(chalk.yellow(`⚠ ${failedChecks.length} health check(s) failed. Run specweave sync-setup interactively to fix.`));
+          console.log(chalk.yellow(`⚠ ${failedChecks.length} health check(s) failed. Run specweave sync setup interactively to fix.`));
         }
         return;
       }
@@ -90,7 +91,7 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
       // Config read failed, fall through to hint
     }
 
-    console.log(chalk.gray('⏭️  Run specweave sync-setup interactively to configure external sync.'));
+    console.log(chalk.gray('⏭️  Run specweave sync setup interactively to configure external sync.'));
     console.log(chalk.gray('   Supported providers: GitHub Issues, JIRA, Azure DevOps'));
     return;
   }
@@ -183,12 +184,12 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
     } catch (err) {
       // Health check failure should not block setup success
       const msg = err instanceof Error ? err.message : String(err);
-      console.log(chalk.gray('   ⚠ Could not run health checks. Run specweave sync-health manually.'));
+      console.log(chalk.gray('   ⚠ Could not run health checks. Run specweave sync status manually.'));
       console.log(chalk.gray(`     Reason: ${msg}`));
     }
 
-    console.log(chalk.gray('   Run specweave sync-health to re-check integration health.'));
-    console.log(chalk.gray('   Run specweave sync-progress to push increment progress to external tools.'));
+    console.log(chalk.gray('   Run specweave sync status to re-check integration health.'));
+    console.log(chalk.gray('   Run specweave sync push to push increment progress to external tools.'));
     console.log('');
   }
 }

@@ -38,7 +38,7 @@ export async function syncLivingDocs(
 
   if (!incrementId) {
     logger.error('No active increment found.');
-    logger.error('Usage: specweave sync-living-docs <increment-id>');
+    logger.error('Usage: specweave sync push <increment-id>');
     process.exit(1);
     return;
   }

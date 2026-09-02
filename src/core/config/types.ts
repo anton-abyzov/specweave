@@ -145,7 +145,7 @@ export interface SyncSettings {
   /**
    * GATE 3: Controls automatic sync on increment completion
    * When true, sync happens automatically when increment completes
-   * When false, user must manually trigger sync via sw:github-sync
+   * When false, user must manually trigger sync via `specweave sync push`
    * @default true (opt-in UX, as per ADR-0065)
    */
   autoSyncOnCompletion?: boolean;
