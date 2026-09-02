@@ -33,6 +33,12 @@ export const TEMPLATE_MARKERS = {
   BENEFIT: '[benefit]',
   /** Marker for unfilled criteria */
   CRITERION: '[Specific, testable criterion]',
+  /** 2.0 spec.md: unfilled Problem section */
+  PROBLEM: '[What is wrong today, for whom',
+  /** 2.0 spec.md: unfilled Scope section */
+  SCOPE_IN: '[what this increment ships]',
+  /** 2.0 spec.md: unfilled Approach section */
+  APPROACH_FILES: '**Files that change** (and in what order): [src/...]',
   /** Marker for unfilled component */
   COMPONENT: '[Component 1]',
   /** Marker for unfilled description */
@@ -482,6 +488,9 @@ export function isTemplateFile(specPath: string): boolean {
     content.includes(TEMPLATE_MARKERS.GOAL) ||
     content.includes(TEMPLATE_MARKERS.BENEFIT) ||
     content.includes(TEMPLATE_MARKERS.CRITERION) ||
+    content.includes(TEMPLATE_MARKERS.PROBLEM) ||
+    content.includes(TEMPLATE_MARKERS.SCOPE_IN) ||
+    content.includes(TEMPLATE_MARKERS.APPROACH_FILES) ||
     content.includes(TEMPLATE_MARKERS.PROJECT_PLACEHOLDER);
 
   // Check for placeholder patterns (mustache-style {{VAR}} only)
@@ -491,10 +500,11 @@ export function isTemplateFile(specPath: string): boolean {
   // and mostACsArePlaceholders (50%+ ACs still have bracket content).
   const hasPlaceholders = TEMPLATE_MARKERS.PLACEHOLDER_PATTERN.test(content);
 
-  // Check if acceptance criteria are still placeholders
-  const acMatches = content.match(/\*\*AC-US\d+-\d+\*\*:/g) || [];
+  // Check if acceptance criteria are still placeholders. Both AC shapes count:
+  // 2.0 `- [ ] AC-01: …` and the 1.x `- [ ] **AC-US1-01**: …`.
+  const acMatches = content.match(/^-\s+\[[ xX]\]\s+\*{0,2}AC-[A-Za-z0-9-]+\*{0,2}:/gm) || [];
   const acWithPlaceholders =
-    content.match(/\*\*AC-US\d+-\d+\*\*: \[/g) || [];
+    content.match(/^-\s+\[[ xX]\]\s+\*{0,2}AC-[A-Za-z0-9-]+\*{0,2}:\s*\[/gm) || [];
   const mostACsArePlaceholders =
     acMatches.length > 0 &&
     acWithPlaceholders.length >= acMatches.length * 0.5;
@@ -537,15 +547,23 @@ export function validateSpecCompletion(specPath: string): {
     issues.push('Acceptance criteria not specified');
   }
 
-  // Check minimum content
+  // Check minimum content. A 2.0 spec is Problem/Scope/AC/Approach with
+  // `- [ ] AC-01: …` and has NO user-story section; a 1.x spec has both.
+  const acceptanceCriteria =
+    content.match(/^-\s+\[[ xX]\]\s+\*{0,2}AC-[A-Za-z0-9-]+\*{0,2}:/gm) || [];
   const userStories = content.match(/### US-(?:[A-Z]+-)*\d+:/g) || [];
-  if (userStories.length < 1) {
-    issues.push('No user stories defined');
+  if (userStories.length < 1 && acceptanceCriteria.length < 1) {
+    issues.push('No user stories or acceptance criteria defined');
   }
 
-  const acceptanceCriteria = content.match(/\*\*AC-US\d+-\d+\*\*:/g) || [];
   if (acceptanceCriteria.length < 2) {
     issues.push('Insufficient acceptance criteria (need at least 2)');
+  }
+
+  for (const section of ['## Problem', '## Approach']) {
+    if (userStories.length < 1 && !content.includes(section)) {
+      issues.push(`Missing required section: ${section}`);
+    }
   }
 
   return {
@@ -590,79 +608,59 @@ type: ${type}
 priority: ${priority}
 status: planning
 created: ${date}
-structure: user-stories
 test_mode: ${testMode}
 coverage_target: ${coverageTarget}
 ---
 
-# Feature: ${title}
+# ${incrementId} — ${title}
 
-## Overview
-
-${description}
-
+**Project**: ${projectId}
+${boardLine}
 <!--
 ====================================================================
   TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS
 ====================================================================
 
-This is a TEMPLATE created by increment skill.
-DO NOT manually fill in the placeholders below.
+This is a TEMPLATE created by the increment skill.
+DO NOT ship it with the placeholders below still in place.
 
 To complete this specification, run:
   Tell Claude: "Complete the spec for increment ${incrementId}"
 
-This will activate the PM skill which will:
-- Define proper user stories with acceptance criteria
-- Conduct market research and competitive analysis
-- Create user personas
-- Define success metrics
-
+spec.md is ONE evolving document: Problem · Scope · Acceptance Criteria ·
+Approach · Open questions. \`plan.md\` is optional overflow for a genuinely
+large design (\`create-increment --with-plan\`); the Approach section is the
+default home.
 ====================================================================
 -->
 
-## User Stories
+## Problem
 
-### US-001: [Story Title] (P1)
-**Project**: ${projectId}
-${boardLine}
-**As a** [user type]
-**I want** [goal]
-**So that** [benefit]
+${description}
 
-**Acceptance Criteria**:
-- [ ] **AC-US1-01**: [Specific, testable criterion]
-- [ ] **AC-US1-02**: [Another criterion]
+[What is wrong today, for whom, and the evidence (issue, log, user quote). Not the solution.]
 
----
+## Scope
 
-### US-002: [Story Title] (P2)
-**Project**: ${projectId}
-${boardLine}
-**As a** [user type]
-**I want** [goal]
-**So that** [benefit]
+**In**: [what this increment ships]
 
-**Acceptance Criteria**:
-- [ ] **AC-US2-01**: [Specific, testable criterion]
-- [ ] **AC-US2-02**: [Another criterion]
+**Out**: [what it explicitly does not include — this list is what stops scope creep later]
 
-## Functional Requirements
+## Acceptance Criteria
 
-### FR-001: [Requirement]
-[Detailed description]
+- [ ] AC-01: [Specific, testable criterion]
+- [ ] AC-02: [Another criterion]
 
-## Success Criteria
+## Approach
 
-[Measurable outcomes - metrics, KPIs]
+- **Files that change** (and in what order): [src/...]
+- **Key decisions** (+ ADR links): [decision — why]
+- **Rejected alternatives**: [alternative — why not]
+- **Risks**: [risk — mitigation]
 
-## Out of Scope
+## Open questions
 
-[What this explicitly does NOT include]
-
-## Dependencies
-
-[Other features or systems this depends on]
+- [question] — blocking? who decides?
 `;
 }
 
@@ -849,8 +847,8 @@ function generateExternalSpecContent(options: {
   // Build acceptance criteria from external source
   const acs = externalSource.acceptanceCriteria ?? [];
   const acLines = acs.length > 0
-    ? acs.map((ac, i) => `- [ ] **AC-US1-${String(i + 1).padStart(2, '0')}**: ${ac}`).join('\n')
-    : `- [ ] **AC-US1-01**: [Review and define acceptance criteria from imported issue]`;
+    ? acs.map((ac, i) => `- [ ] AC-${String(i + 1).padStart(2, '0')}: ${ac}`).join('\n')
+    : `- [ ] AC-01: [Review and define acceptance criteria from imported issue]`;
 
   // Build labels section
   const labelsLine = externalSource.labels?.length
@@ -871,41 +869,37 @@ source_platform: ${externalSource.platform}
 external_ref: "${externalSource.externalId}"
 ---
 
-# Feature: ${title}
+# ${incrementId} — ${title}
 
-<!-- IMPORTED FROM ${platformLabel}: ${externalSource.externalUrl} -->
-
-## Overview
-
-${description || `Imported from ${platformLabel}. See original issue for full context.`}
-
-## External Source
-
-- **Platform**: ${platformLabel}
-- **URL**: ${externalSource.externalUrl}
-- **External ID**: ${externalSource.externalId}
-- **Import Date**: ${date}
-
-## User Stories
-
-### US-001: ${title} (${priority})
 **Project**: ${projectId}
 ${boardLine}
-**As a** user
-**I want** ${title.toLowerCase()}
-**So that** the issue tracked in ${platformLabel} is resolved${labelsLine}
+<!-- IMPORTED FROM ${platformLabel}: ${externalSource.externalUrl} -->
 
-**Acceptance Criteria**:
+## Problem
+
+${description || `Imported from ${platformLabel}. See the original issue for full context.`}
+
+**Source**: ${platformLabel} · ${externalSource.externalUrl} · id ${externalSource.externalId} · imported ${date}${labelsLine}
+
+## Scope
+
+**In**: resolve the imported ${platformLabel} issue.
+
+**Out**: [what this increment explicitly does not include]
+
+## Acceptance Criteria
+
 ${acLines}
 
-## Functional Requirements
+## Approach
 
-${description ? `### FR-001: ${title}\n${description}` : `### FR-001: [To be defined from imported issue]`}
+- **Files that change** (and in what order): [src/...]
+- **Key decisions** (+ ADR links): [decision — why]
+- **Risks**: [risk — mitigation]
 
-## Success Criteria
+## Open questions
 
-- All acceptance criteria from the imported ${platformLabel} issue are met
-- Original issue can be closed/resolved after verification
+- [question] — blocking? who decides?
 `;
 }
 
@@ -926,7 +920,7 @@ function generateExternalTasksContent(options: {
   const taskEntries = acceptanceCriteria.map((ac, i) => {
     const num = String(i + 1).padStart(2, '0');
     return `### T-${num} ${ac}
-- AC: AC-US1-${num} | Files: [src/...] | Test: Given the system is set up, When the feature is implemented, Then ${ac}
+- AC: AC-${num} | Files: [src/...] | Test: Given the system is set up, When the feature is implemented, Then ${ac}
 - [ ]`;
   }).join('\n\n');
 

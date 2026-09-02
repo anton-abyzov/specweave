@@ -56,10 +56,10 @@ describe('create-increment CLI e2e', () => {
     expect(output.success).toBe(true);
     expect(output.createdFiles).toContain('metadata.json');
     expect(output.createdFiles).toContain('spec.md');
-    expect(output.createdFiles).toContain('plan.md');
     expect(output.createdFiles).toContain('tasks.md');
-    // 2.0: create-increment scaffolds only the four root artifacts. rubric.md is
+    // 2.0: plan.md is an optional overflow behind --with-plan; rubric.md is
     // written later by the planner (ensureRubricFile) / `specweave generate-rubric`.
+    expect(output.createdFiles).not.toContain('plan.md');
     expect(output.createdFiles).not.toContain('rubric.md');
     expect(output.createdFiles).not.toContain('reports/rubric.md');
 
@@ -67,7 +67,7 @@ describe('create-increment CLI e2e', () => {
     const incPath = path.join(incrementsPath, '0001-cli-test');
     expect(fs.existsSync(path.join(incPath, 'metadata.json'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'spec.md'))).toBe(true);
-    expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(true);
+    expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(false);
     expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'rubric.md'))).toBe(false);
     expect(fs.existsSync(path.join(incPath, 'reports', 'rubric.md'))).toBe(false);
@@ -77,7 +77,7 @@ describe('create-increment CLI e2e', () => {
       fs.readFileSync(path.join(incPath, 'metadata.json'), 'utf-8')
     );
     expect(metadata.id).toBe('0001-cli-test');
-    expect(metadata.status).toBe('planned');
+    expect(metadata.status).toBe('planning');
     expect(metadata.type).toBe('feature');
   });
 
@@ -94,11 +94,12 @@ describe('create-increment CLI e2e', () => {
     const specPath = path.join(incrementsPath, '0001-template-check', 'spec.md');
     const content = fs.readFileSync(specPath, 'utf-8');
 
-    // Must be a template with markers
-    expect(content).toContain('[Story Title]');
-    expect(content).toContain('[user type]');
-    expect(content).toContain('[goal]');
-    expect(content).toContain('[benefit]');
+    // Must be the 2.0 shape, still a template with markers
+    expect(content).toContain('## Problem');
+    expect(content).toContain('## Scope');
+    expect(content).toContain('## Acceptance Criteria');
+    expect(content).toContain('## Approach');
+    expect(content).toContain('- [ ] AC-01: [Specific, testable criterion]');
     expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS');
 
     // Must NOT contain real user stories
