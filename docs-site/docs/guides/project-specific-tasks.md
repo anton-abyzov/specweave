@@ -180,7 +180,7 @@ After creating your increment spec and tasks:
 
 <CommandTabs
   natural="Update the docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 
@@ -202,8 +202,8 @@ Create GitHub issues with checkable task lists:
 
 <CommandTabs
   natural="Push to GitHub"
-  claude="sw-github:sync-spec specweave/FS-031"
-  other="sw-github:sync-spec specweave/FS-031"
+  claude="sw:sync specweave/FS-031"
+  other="sw:sync specweave/FS-031"
 />
 
 **Result**: GitHub issues have checkable task lists like this:
@@ -324,7 +324,7 @@ Re-run living docs sync to add `## Tasks` sections:
 
 <CommandTabs
   natural="Update the docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 
@@ -341,7 +341,7 @@ Tasks are automatically included:
 
 <CommandTabs
   natural="Update the docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 
@@ -391,7 +391,7 @@ Tasks are automatically included:
 
 <CommandTabs
   natural="Update the docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 - Update to the latest version
@@ -453,7 +453,7 @@ Tasks are automatically included:
 
 <CommandTabs
   natural="Update the docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 
@@ -488,8 +488,8 @@ Tasks are automatically included:
 ## Related Documentation
 
 - [Intelligent Living Docs Sync](./intelligent-living-docs-sync.md) - Overall sync architecture
-- [GitHub Integration](./github-integration.md) - GitHub sync setup
-- [Multi-Project Setup](./multi-project-setup.md) - Multi-project configuration
+- [GitHub Integration](/docs/guides/github-sync) - GitHub sync setup
+- [Workspace configuration](/docs/reference/configuration#workspace) - Multi-project configuration
 - [Bidirectional Linking](../../internal/specs/default/README.md) - AC-ID format
 
 ---

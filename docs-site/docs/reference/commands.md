@@ -1,660 +1,157 @@
 ---
 sidebar_position: 2
-title: Commands Reference
-description: Complete reference for all SpecWeave slash commands
+title: Commands
+description: Every specweave CLI command and every sw skill in SpecWeave 2.0.
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# Commands reference
 
-# Commands Reference
+Two surfaces, one behaviour:
 
-This page lists all SpecWeave commands organized by purpose. Every command can be invoked three ways:
+- **`specweave <cmd>`** — the CLI. Deterministic, scriptable, works in any tool or CI.
+- **`/sw:<skill>`** — Claude Code skills that wrap the CLI and add the judgement steps (writing the spec, reviewing the diff).
 
-1. **Natural language** -- just describe what you want (easiest)
-2. **Slash command** -- `sw:name` in Claude Code (precise)
-3. **Keyword** -- type `name` without prefix in Cursor, Copilot, and other AI tools
-
-:::info Commands vs Skills
-**Commands** are action-oriented (`sw:do`, `sw:done`) while **Skills** provide domain expertise (`sw:pm`, `sw:architect`). Both support all three invocation methods.
-
-For domain expertise, see [Skills Reference](./skills).
-:::
-
-## Quick Reference Card
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "let's build X" | `sw:increment "X"` | `increment "X"` | Start new work |
-| "ship while I sleep" | `sw:auto` | `auto` | Run autonomously (hours!) |
-| "what's the status?" | `sw:progress` | `progress` | Check status |
-| "review my work" | `sw:grill 0007` | `grill 0007` | Code review (MANDATORY) |
-| "what's next?" | `sw:next` | `next` | Complete and suggest next |
+The CLI is the source of truth. When a skill and the CLI disagree, the CLI is right.
 
 ---
 
-## 1. Planning Commands
+## The loop
 
-Start new work and create specifications.
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "let's build X", "I want to create X", "add feature X" | `sw:increment "X"` | `increment "X"` | Create new increment |
-| "what's in progress?" | `sw:status` | `status` | View/manage backlog |
-
-### sw:increment
-
-**The entry point for all new work.**
-
-<CommandTabs
-  natural="I want to build user authentication with JWT"
-  claude='sw:increment "User authentication with JWT"'
-  other='increment "User authentication with JWT"'
-/>
-
-```bash
-# With options
-sw:increment "Payment processing" --priority high
-```
-
-**What happens:**
-1. Tech stack detection (React, Node, etc.)
-2. PM-led spec creation (spec.md)
-3. Architecture planning (plan.md)
-4. Task breakdown (tasks.md)
-5. Strategic agent review (Architect, Security, QA)
-
-**Output:** Creates `.specweave/increments/XXXX-feature-name/` with all files.
+| Step | CLI | Skill |
+|------|-----|-------|
+| Plan | `specweave create-increment "<title>"` | `/sw:increment` |
+| Work | `specweave task next` / `claim` / `done` | `/sw:do` |
+| Verify | `specweave verify [id]` | — |
+| Review | — | `/sw:review` |
+| Close | `specweave complete <id>` | `/sw:done` |
+| Hand off | `specweave handoff [id]` | `/sw:handoff` |
 
 ---
 
-## 2. Execution Commands
+## Increment lifecycle
 
-Execute tasks and implement features.
+| Command | Does |
+|---------|------|
+| `specweave create-increment [title]` | Create the increment folder (`metadata.json`, `spec.md`, `tasks.md`). `--supersedes NNNN` abandons the increment it replaces. |
+| `specweave next-id` | Print the next free increment number. Prefer `create-increment`, which reserves it atomically. |
+| `specweave status` | Increment status overview (alias: `progress`). |
+| `specweave list` | List available and installed components. |
+| `specweave pause <id>` / `resume <id>` / `abandon <id>` | Status transitions. Never edit `metadata.json` by hand. |
+| `specweave complete [id] [more-ids…]` | Close one or more increments. Blocks without a green `verify.json` unless `--reason`. `--all --reason "<why>"` for batch triage. |
+| `specweave archive [increments…]` | Archive completed increments. |
+| `specweave check-discipline` | Status counts, the advisory WIP note, and metadata consistency. |
 
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "ship while I sleep", "autonomous mode" | `sw:auto` | `auto` | Hands-free work (hours) |
-| "start implementing", "execute tasks" | `sw:do` | `do` | Manual task execution |
-| "parallel agents" | `sw:auto-parallel` | `auto-parallel` | Multi-agent parallel |
-| "check auto progress" | `sw:auto-status` | `auto-status` | Monitoring |
-| "stop auto mode" | `sw:cancel-auto` | `cancel-auto` | Emergency stop |
+## Tasks and the ledger
 
-### sw:auto
+`specweave task <action> [task] [increment]` — the multi-vendor task ledger. State lives only in `ledger.jsonl`; every write re-renders the `SW:BOARD` block in `tasks.md`.
 
-**Ship features while you sleep.** The flagship command.
+| Action | Does |
+|--------|------|
+| `task whoami` | Print this agent's id. |
+| `task list` | Table: task, status, owner, evidence. `--json` for machines. |
+| `task next` | First open task with dependencies met and no `Files` overlap. |
+| `task claim T-01` | Append a claim. Exit 3 = lost race, exit 4 = `Files` overlap, exit 6 = unmet dependencies. `--force` overrides. |
+| `task done T-01 --run "<cmd>"` | Run the test command through the OS shell, store exit code and output tail as evidence, append `done`. Exit 5 when the command fails. Auto-claims when nobody holds a live claim. `--evidence "<text>"` if you already have proof. |
+| `task release T-01` / `task release --all-mine` | Drop claims. |
+| `task block T-01 --note "<why>"` | Mark blocked. |
+| `task skip T-01 --reason "<why>"` | Terminal, reason mandatory. |
+| `task render` | Rewrite the derived state lines and the `SW:BOARD` table in `tasks.md`. |
 
-<CommandTabs
-  natural="Ship it while I sleep"
-  claude="sw:auto"
-  other="auto"
-/>
+## Verification and quality
 
-```bash
-sw:auto --tdd     # With TDD enforcement
-```
+| Command | Does |
+|---------|------|
+| `specweave verify [id]` | Run `testing.commands[]` (or auto-detected test/lint/build), collect the AC table and ledger summary, write `reports/verify.md` + `reports/verify.json`. `verify.json.ok` is the only closure gate. |
+| `specweave qa <id>` | Risk-scored quality assessment. Not the review, not the gate. |
+| `specweave generate-rubric <id>` | Generate or refresh the AC-tied rubric under the increment's `reports/`. |
+| `specweave doctor` | Full project health check: config shape, instruction-file references, hooks, hygiene. |
+| `specweave health` | Quick deployment health check (config, plugins, sync connectivity). |
+| `specweave gc` | Purge stale `.specweave/state` files. Dry run by default; `--yes` to delete. |
 
-**What it does:**
-- Reads next task from tasks.md
-- Implements the code
-- Runs tests
-- If tests fail: analyzes, fixes, retries (max 3)
-- If tests pass: marks complete, moves to next
-- Syncs to GitHub/JIRA (if enabled)
-- Updates living documentation
+## Handoff and sessions
 
-**Stop conditions:**
-- All tasks complete + all tests passing
-- Max iterations reached (default: 2500)
-- 3 consecutive test failures → pauses for human
+| Command | Does |
+|---------|------|
+| `specweave handoff [id]` | Write a portable, secret-scrubbed handoff doc plus the diff. |
+| `specweave session start` / `session end` | Session lifecycle. |
+| `specweave status-line` | Current increment status line. |
+| `specweave decision-log` | Query the structured decision log. |
 
-**Duration:** Proven for 2-3 hour continuous sessions.
+## Autonomous execution
 
-### sw:do
+| Command | Does |
+|---------|------|
+| `specweave auto [increment-ids…]` | Start unattended execution. The Stop hook is the loop. |
+| `specweave auto-status` | Session status and progress. |
+| `specweave cancel-auto` | Cancel a running auto session. |
+| `specweave evaluate-completion <id>` | Decide whether an auto session should be considered complete. |
 
-**Manual task-by-task execution.**
+## Sync
 
-<CommandTabs
-  natural="Start implementing the tasks"
-  claude="sw:do"
-  other="do"
-/>
+`specweave sync push | pull | status | setup` — see the [`specweave sync` reference](/docs/reference/sync-cli).
 
-```bash
-sw:do 0007   # Specific increment
-```
+## Project and workspace
 
-**When to use:**
-- Architecture decisions requiring human judgment
-- Debugging complex issues
-- Learning the codebase
-- Exploratory work
+| Command | Does |
+|---------|------|
+| `specweave init [project-name]` | Initialise a SpecWeave project. |
+| `specweave update` | Update the CLI, instruction files, config and plugins. The 2.0 upgrade path. |
+| `specweave update-instructions` | Rewrite `CLAUDE.md` / `AGENTS.md` with a smart merge that preserves your content. |
+| `specweave refresh-plugins` | Refresh the plugins. |
+| `specweave get <source>` | Clone and register an existing repository into the workspace. |
+| `specweave context` / `context projects` | Workspace context; project and board values for `spec.md`. |
+| `specweave uninstall` | Remove SpecWeave from the current project. |
 
-### sw:auto-parallel
+## Git helpers
 
-**Multi-agent parallel execution in isolated git worktrees.**
+| Command | Does |
+|---------|------|
+| `specweave save [message]` | Auto-generate a commit message, commit and sync with the remote. |
+| `specweave commits` | Show the last two commits. |
+| `specweave branch-name <id>` | Print the computed branch name for an increment. |
+| `specweave link-pr` | Link a pull request to external tickets. |
 
-<CommandTabs
-  natural="Build this with parallel agents"
-  claude="sw:auto-parallel"
-  other="auto-parallel"
-/>
+## Docs
 
-**Spawns specialized agents:**
-- Frontend Agent (React, Vue)
-- Backend Agent (API, database)
-- Database Agent (migrations, queries)
-- DevOps Agent (CI/CD, infra)
-- QA Agent (tests, validation)
+| Command | Does |
+|---------|------|
+| `specweave docs preview` | Documentation preview server with hot reload. |
+| `specweave docs build` | Build the static documentation site. |
+| `specweave docs validate` | Validate documentation without starting a server. |
+| `specweave docs public` | Preview public-scope docs only. |
+| `specweave docs kill` | Stop all running documentation servers. |
+| `specweave docs status` | Documentation status. |
+| `specweave docs sync [id]` | Sync living documentation for an increment. |
+| `specweave living-docs` | Launch or resume the Living Docs Builder. |
 
-Each works in its own worktree - no merge conflicts during execution.
+## Observability
 
-### sw:auto-status
+| Command | Does |
+|---------|------|
+| `specweave dashboard` | Real-time observability dashboard in the browser. |
+| `specweave analytics` | Usage analytics (commands, skills, agents). |
+| `specweave hooks log` | Recent hook warnings, errors and blocks from `.specweave/logs/hooks.jsonl`. |
+| `specweave jobs` | Monitor background jobs. |
+| `specweave cache` | Manage the dashboard cache. |
 
-**Check autonomous execution progress from another terminal.**
+## Code intelligence
 
-<CommandTabs
-  natural="Check auto mode progress"
-  claude="sw:auto-status"
-  other="auto-status"
-/>
+`specweave lsp refs | def | hover | symbols | search | warmup | status | setup` — see [LSP integration](/docs/guides/lsp-integration).
 
-Shows: Current task, completion percentage, recent activity, errors.
+## Skills and security
 
-### sw:cancel-auto
-
-**Emergency stop for autonomous execution.**
-
-<CommandTabs
-  natural="Stop auto mode"
-  claude="sw:cancel-auto"
-  other="cancel-auto"
-/>
-
-:::warning Use Sparingly
-Only use if auto mode is stuck or producing bad results. Normal completion happens automatically.
-:::
-
----
-
-## 3. Monitoring Commands
-
-Track progress and status.
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "what's the status?", "show progress" | `sw:progress` | `progress` | Detailed progress report |
-| "list all increments" | `sw:status` | `status` | List all increments |
-| "show background jobs", "check jobs" | `sw:jobs` | `jobs` | View background jobs |
-
-### sw:progress
-
-**Detailed progress for an increment.**
-
-<CommandTabs
-  natural="How far along are we?"
-  claude="sw:progress"
-  other="progress"
-/>
-
-```bash
-sw:progress 0007    # Specific increment
-```
-
-**Shows:**
-- Task completion (e.g., 12/15 tasks, 80%)
-- Time tracking (started, elapsed)
-- Current phase (planning, implementing, testing)
-- Upcoming tasks
-- Blockers (if any)
-
-### sw:status
-
-**Overview of all increments.**
-
-```bash
-sw:status    # List all increments
-```
-
-**Shows:**
-- Active increments
-- Paused increments
-- Recently completed
-- Abandoned (in _abandoned/)
+| Command | Does |
+|---------|------|
+| `specweave scan-skill <file>` | Pattern-scan a skill file for security issues. |
+| `specweave scan-plugins` | Batch-scan every plugin `SKILL.md`. |
+| `specweave judge-skill <file>` | Pattern scan plus LLM judgement. |
+| `specweave export-skills` | Export skills to the Agent Skills open standard. |
+| `specweave install [component]` | Install agents/skills into `.claude/`. |
 
 ---
 
-## 4. Quality Commands
+## Removed in 2.0
 
-Validate quality before completion.
+The `commands/` plugin namespace (73 files) and the per-provider `sw-github:` / `sw-jira:` / `sw-ado:` namespaces are gone. The `specweave increment <action>` verb is retained for compatibility; new work should use `create-increment`, `status`, `pause`, `resume`, `abandon` and `complete` directly.
 
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "check quality", "validate it" | `sw:validate` | `validate` | Rule-based validation (120+ checks) |
-| "quality check", "assess quality" | `sw:qa` | `qa` | AI quality assessment |
-| "review my work", "critique the code" | `sw:grill` | `grill` | Implementation audit |
-
-### sw:validate
-
-**Fast rule-based validation.**
-
-<CommandTabs
-  natural="Validate the increment"
-  claude="sw:validate 0007"
-  other="validate 0007"
-/>
-
-```bash
-sw:validate 0007 --quality    # Include AI assessment
-```
-
-**Checks:**
-- Spec consistency (AC-IDs match)
-- Task completeness
-- Traceability (tasks → specs)
-- File structure
-
-### sw:qa
-
-**AI-powered quality gate using LLM-as-Judge pattern.**
-
-<CommandTabs
-  natural="Assess the quality of this increment"
-  claude="sw:qa 0007 --gate"
-  other="qa 0007 --gate"
-/>
-
-```bash
-sw:qa 0007 --pre    # Pre-implementation check
-```
-
-**Returns:** 🟢 PASS | 🟡 CONCERNS | 🔴 FAIL
-
-**Evaluates 7 dimensions:**
-1. Clarity (18%)
-2. Testability (22%)
-3. Completeness (18%)
-4. Feasibility (13%)
-5. Maintainability (9%)
-6. Edge Cases (9%)
-7. Risk (11%) - BMAD P×I scoring
-
-### sw:grill
-
-**Comprehensive implementation audit.**
-
-<CommandTabs
-  natural="Review my implementation for issues"
-  claude="sw:grill 0007"
-  other="grill 0007"
-/>
-
-```bash
-sw:grill src/auth           # Specific module
-sw:grill --focus security   # Focus area
-sw:grill --full             # Maximum depth
-```
-
-**Uses parallel subagents to audit:**
-- Structure and organization
-- Code quality patterns
-- Consistency across codebase
-- Documentation completeness
-- Dependency health
-- Test coverage
-- Security vulnerabilities
-
----
-
-## 5. Completion Commands
-
-Finish work and move on.
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "what's next?" | `sw:next` | `next` | Complete + suggest next (recommended) |
-| "we're done", "close it", "finish up" | `sw:done` | `done` | Close increment |
-
-### sw:next
-
-**Smart workflow transition.** (Recommended)
-
-<CommandTabs
-  natural="What should I work on next?"
-  claude="sw:next"
-  other="next"
-/>
-
-**What it does:**
-1. Validates quality gates
-2. Closes increment (moves to _archive/)
-3. Suggests next work (from backlog or new)
-
-### sw:done
-
-**Close specific increment.**
-
-<CommandTabs
-  natural="We're done with this increment"
-  claude="sw:done 0007"
-  other="done 0007"
-/>
-
-**Prerequisites:**
-- `sw:grill` must pass first (creates marker file)
-
-**Validations:**
-- All P1 tasks must be complete
-- Tests must pass
-- Acceptance criteria must be met
-- Grill marker file exists
-
-:::warning Grill Required
-`sw:done` is BLOCKED if `sw:grill` hasn't passed. Run `sw:grill 0007` first.
-:::
-
-:::tip Use sw:next
-`sw:next` does everything `sw:done` does, plus suggests what to work on next.
-:::
-
----
-
-## 6. State Management Commands
-
-Control increment lifecycle.
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "pause this", "put on hold" | `sw:pause 0007` | `pause 0007` | Pause increment |
-| "resume work", "continue where we left off" | `sw:resume 0007` | `resume 0007` | Resume paused / reopen completed |
-| "abandon this", "cancel increment" | `sw:abandon 0007` | `abandon 0007` | Abandon increment |
-| "restore the abandoned increment" | `sw:restore 0007` | `restore 0007` | Restore abandoned |
-| "archive the increment" | `sw:archive 0007` | `archive 0007` | Manual archive |
-
-### sw:pause
-
-**Pause active increment.**
-
-<CommandTabs
-  natural="Pause this work for now"
-  claude="sw:pause 0007"
-  other="pause 0007"
-/>
-
-Moves to `_paused/` folder. Resume with `sw:resume`.
-
-### sw:resume
-
-**Resume paused increment.**
-
-<CommandTabs
-  natural="Resume where we left off"
-  claude="sw:resume 0007"
-  other="resume 0007"
-/>
-
-### sw:abandon
-
-**Abandon increment (soft delete).**
-
-<CommandTabs
-  natural="Cancel this increment"
-  claude="sw:abandon 0007"
-  other="abandon 0007"
-/>
-
-Can be restored with `sw:restore`.
-
----
-
-## 7. External Sync Commands
-
-Integrate with GitHub, JIRA, Azure DevOps.
-
-| Command | Plugin | Purpose |
-|---------|--------|---------|
-| `sw-github:sync` | sw-github | Sync to GitHub Issues |
-| `sw-jira:sync` | sw-jira | Sync to JIRA |
-| `sw-ado:sync` | sw-ado | Sync to Azure DevOps |
-
-### sw-github:sync
-
-**Two-way sync with GitHub Issues.**
-
-```bash
-sw-github:sync 0007              # Sync increment
-sw-github:sync 0007 --dry-run    # Preview changes
-```
-
-**Maps:**
-- Feature → GitHub Milestone
-- User Story → GitHub Issue
-- Task → Issue checkbox
-
-**Requires:** `gh` CLI authenticated, config enabled.
-
-### sw-jira:sync
-
-**Bidirectional JIRA sync.**
-
-```bash
-sw-jira:sync 0007    # Sync to JIRA
-```
-
-**Maps:**
-- Feature → JIRA Epic
-- User Story → JIRA Story
-- Task → Sub-task
-
-### sw-ado:sync
-
-**Azure DevOps sync.**
-
-```bash
-sw-ado:sync 0007    # Sync to Azure DevOps
-```
-
----
-
-## 8. Documentation Commands
-
-Sync and manage documentation.
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "update the docs", "sync documentation" | `sw:sync-docs` | `sync-docs` | Sync living docs |
-| "sync specs" | `sw:sync-specs` | `sync-specs` | Sync specs only |
-| "import issues" | `sw:import` | `import` | Import external issues |
-| "load auth context" | `sw:docs auth` | `docs auth` | Load project context |
-
-### sw:sync-docs
-
-**Synchronize living documentation.**
-
-<CommandTabs
-  natural="Update the documentation"
-  claude="sw:sync-docs"
-  other="sync-docs"
-/>
-
-Syncs: ADRs, specs, runbooks to external systems.
-
-### sw:docs
-
-**Load relevant project context.**
-
-```bash
-sw:docs auth        # Load auth-related docs
-sw:docs database    # Load DB architecture
-```
-
----
-
-## 9. Utility Commands
-
-Maintenance and diagnostics.
-
-| Natural Language | Claude Code | Other AI | Purpose |
-|-----------------|-------------|----------|---------|
-| "save my work" | `sw:save` | `save` | Git commit current work |
-| "fix duplicate IDs" | `sw:fix-duplicates` | `fix-duplicates` | Fix ID collisions |
-| "check hooks" | `sw:check-hooks` | `check-hooks` | Verify hook setup |
-| "review learnings" | `sw:reflect` | `reflect` | Review learnings |
-| "show analytics" | `sw:analytics` | `analytics` | Usage analytics |
-
-### sw:save
-
-**Commit current work with proper message.**
-
-```bash
-sw:save    # Git add + commit
-```
-
-Scans for nested repositories and commits each appropriately.
-
-### sw:fix-duplicates
-
-**Fix increment ID collisions.**
-
-```bash
-sw:fix-duplicates    # Scan and fix
-```
-
----
-
-## 10. TDD Commands
-
-Test-Driven Development workflow.
-
-| Natural Language | Claude Code | Other AI | TDD Phase |
-|-----------------|-------------|----------|-----------|
-| "write failing tests first" | `sw:tdd-red` | `tdd-red` | RED |
-| "make the tests pass" | `sw:tdd-green` | `tdd-green` | GREEN |
-| "refactor the code" | `sw:tdd-refactor` | `tdd-refactor` | REFACTOR |
-| "TDD", "test-driven development" | `sw:tdd-cycle` | `tdd-cycle` | All |
-
-### sw:tdd-cycle
-
-**Complete TDD workflow.**
-
-<CommandTabs
-  natural="Let's do test-driven development"
-  claude="sw:tdd-cycle"
-  other="tdd-cycle"
-/>
-
-**Enforces:**
-1. Write failing test first
-2. Verify test fails for right reason
-3. Write minimal code to pass
-4. Verify test passes
-5. Refactor without breaking tests
-
----
-
-## CLI Commands (Terminal)
-
-Commands run directly in terminal (not slash commands).
-
-| Command | Purpose |
-|---------|---------|
-| `specweave init .` | Initialize project |
-| `specweave update` | Full update (CLI + plugins + instructions) |
-| `specweave refresh-plugins` | Plugin-only refresh |
-| `specweave lsp refs Symbol` | Find references (LSP workaround) |
-| `specweave lsp def Symbol` | Go to definition |
-
-### specweave init
-
-**Initialize SpecWeave in a project.**
-
-```bash
-specweave init .              # Current directory
-specweave init ./my-project   # Specific directory
-```
-
-Creates `.specweave/` folder with config and initial increment.
-
-### specweave update
-
-**Update everything.**
-
-```bash
-specweave update              # Full update
-specweave update --no-plugins # Skip plugin refresh
-```
-
-Updates: CLI version, plugins, CLAUDE.md instructions.
-
-### specweave refresh-plugins
-
-**Refresh skills/plugins for all AI tools.**
-
-```bash
-specweave refresh-plugins          # Refresh core plugin
-specweave refresh-plugins --all    # All plugins
-specweave refresh-plugins --force  # Force re-copy even if unchanged
-```
-
-Copies skills to tool-specific directories based on the configured adapter. For non-Claude tools (OpenCode, Cursor, Copilot, etc.), SKILL.md frontmatter is automatically normalized:
-
-- **`name:`** ensured (derived from skill directory name)
-- **`description:`** ensured (extracted from body if missing)
-- Claude-specific fields (`hooks`, `model`, `allowed-tools`, etc.) stripped
-
-This ensures non-Claude tools can discover and invoke skills correctly.
-
-### specweave lsp
-
-**Code navigation (workaround for Claude Code v2.1.0+ LSP bug).**
-
-```bash
-specweave lsp refs MyFunction       # Find references
-specweave lsp def MyClass           # Go to definition
-specweave lsp hover file.ts 42 10   # Type at position
-```
-
----
-
-## Command Cheat Sheet
-
-### Daily Workflow
-
-| Step | Natural Language | Claude Code | Other AI |
-|------|-----------------|-------------|----------|
-| Start new feature | "Build a user dashboard" | `sw:increment "Add user dashboard"` | `increment "Add user dashboard"` |
-| Autonomous execution | "Ship while I sleep" | `sw:auto` | `auto` |
-| Check progress | "How far along?" | `sw:auto-status` | `auto-status` |
-| Complete and move on | "What's next?" | `sw:next` | `next` |
-
-### Quality Check Before Release
-
-| Step | Natural Language | Claude Code | Other AI |
-|------|-----------------|-------------|----------|
-| Quick validation | "Validate it" | `sw:validate 0007` | `validate 0007` |
-| AI quality gate | "Assess quality" | `sw:qa 0007 --gate` | `qa 0007 --gate` |
-| Deep code audit | "Review the code" | `sw:grill 0007` | `grill 0007` |
-
-### Sync to External Tools
-
-| Platform | Claude Code | Other AI |
-|----------|-------------|----------|
-| GitHub | `sw-github:sync 0007` | `github-sync 0007` |
-| JIRA | `sw-jira:sync 0007` | `jira-sync 0007` |
-| Azure DevOps | `sw-ado:sync 0007` | `ado-sync 0007` |
-
-### State Management
-
-| Action | Natural Language | Claude Code | Other AI |
-|--------|-----------------|-------------|----------|
-| Pause | "Put this on hold" | `sw:pause 0007` | `pause 0007` |
-| Resume | "Continue working" | `sw:resume 0007` | `resume 0007` |
-| Abandon | "Cancel this" | `sw:abandon 0007` | `abandon 0007` |
-| Restore | "Bring it back" | `sw:restore 0007` | `restore 0007` |
-
----
-
-## Next Steps
-
-- [Skills Reference](./skills) - Domain expertise skills
-- [Auto Mode Deep Dive](/docs/commands/auto) - Autonomous execution details
-- [Quick Start](/docs/getting-started) - Get started in 5 minutes
+See [SpecWeave 2.0](/docs/guides/specweave-2#what-was-removed-and-why) for the full list and the evidence behind it.

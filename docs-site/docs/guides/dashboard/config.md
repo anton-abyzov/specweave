@@ -76,6 +76,6 @@ Run `specweave dashboard` to open the SpecWeave dashboard. Navigate to the **Con
 
 ## See Also
 
-- [Sync](./sync.md) -- sync platform settings that are edited through this config
+- [Sync](/docs/reference/sync-cli) -- sync platform settings that are edited through this config
 - [Plugins](./plugins.md) -- plugin configuration managed via config sections
 - [Services](./services.md) -- service definitions referenced from config

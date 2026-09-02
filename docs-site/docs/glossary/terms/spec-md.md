@@ -102,8 +102,8 @@ Follow the format:
 
 | File | Purpose | Who Creates |
 |------|---------|-------------|
-| **spec.md** | Requirements (WHAT/WHY) | [PM Agent](/docs/glossary/terms/pm-agent) |
-| plan.md | Architecture (HOW) | [Architect Agent](/docs/glossary/terms/architect-agent) |
+| **spec.md** | Requirements (WHAT/WHY) | [PM Agent](/docs/reference/skills) |
+| plan.md | Architecture (HOW) | [Architect Agent](/docs/reference/skills) |
 | tasks.md | Implementation checklist | Test-Aware Planner |
 
 ## Best Practices
@@ -124,4 +124,4 @@ Follow the format:
 - [Increments](/docs/glossary/terms/increments) - Contains spec.md
 - User Stories - Format for requirements
 - [AC-ID](/docs/glossary/terms/ac-id) - Traceability identifiers
-- [PM Agent](/docs/glossary/terms/pm-agent) - Creates spec.md
+- [PM Agent](/docs/reference/skills) - Creates spec.md

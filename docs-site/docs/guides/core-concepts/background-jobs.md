@@ -109,7 +109,7 @@ When external APIs hit rate limits:
 1. Worker detects rate limit response
 2. Job status changes to `paused`
 3. Worker exits gracefully with checkpoint saved
-4. User resumes later: `sw:jobs --resume <id>`
+4. User resumes later: `specweave jobs --resume <id>`
 
 ## Job Types
 
@@ -140,7 +140,7 @@ Clones multiple repositories from GitHub, GitLab, or Azure DevOps.
 
 Imports work items from GitHub Issues, JIRA, or Azure DevOps.
 
-**Triggered by**: `specweave init` with import enabled, or `sw:import-external`
+**Triggered by**: `specweave init` with import enabled, or `sw:sync`
 
 **Features**:
 - Dynamic imports (reduces startup overhead)
@@ -161,7 +161,7 @@ Imports work items from GitHub Issues, JIRA, or Azure DevOps.
 
 Bidirectional synchronization with external tools.
 
-**Triggered by**: `sw-github:sync`, `sw-jira:sync`, `sw-ado:sync`
+**Triggered by**: `sw:sync`, `sw:sync`, `sw:sync`
 
 **Features**:
 - Push progress to external tools
@@ -225,7 +225,7 @@ stateDiagram-v2
 
 <CommandTabs
   natural="Show background jobs"
-  claude="sw:jobs"
+  claude="specweave jobs"
   other="jobs"
 />
 
@@ -234,7 +234,7 @@ Shows all active jobs grouped by status.
 ### Follow Progress Live
 
 ```bash
-sw:jobs --follow abc12345
+specweave jobs --follow abc12345
 ```
 
 Polls every second for real-time progress updates.
@@ -242,7 +242,7 @@ Polls every second for real-time progress updates.
 ### View Worker Logs
 
 ```bash
-sw:jobs --logs abc12345
+specweave jobs --logs abc12345
 ```
 
 Shows timestamped worker output (last 50 lines).
@@ -250,7 +250,7 @@ Shows timestamped worker output (last 50 lines).
 ### Get Job Details
 
 ```bash
-sw:jobs --id abc12345
+specweave jobs --id abc12345
 ```
 
 Full details: config, progress, files, PID.
@@ -260,7 +260,7 @@ Full details: config, progress, files, PID.
 ### Kill Running Job
 
 ```bash
-sw:jobs --kill abc12345
+specweave jobs --kill abc12345
 ```
 
 Sends SIGTERM, marks as `paused` for later resume.
@@ -268,7 +268,7 @@ Sends SIGTERM, marks as `paused` for later resume.
 ### Resume Paused Job
 
 ```bash
-sw:jobs --resume abc12345
+specweave jobs --resume abc12345
 ```
 
 Spawns new worker that continues from last checkpoint.
@@ -324,13 +324,13 @@ Progress is saved before every item:
 The worker may have crashed. Check:
 
 ```bash
-sw:jobs --id <id>
+specweave jobs --id <id>
 ```
 
 If PID shows as "dead" but status is "running", the worker crashed. Use:
 
 ```bash
-sw:jobs --resume <id>
+specweave jobs --resume <id>
 ```
 
 ### Rate Limited?
@@ -338,7 +338,7 @@ sw:jobs --resume <id>
 Jobs auto-pause on rate limits. Wait for reset (usually 1-15 minutes), then:
 
 ```bash
-sw:jobs --resume <id>
+specweave jobs --resume <id>
 ```
 
 ### Can't Resume?
@@ -346,8 +346,8 @@ sw:jobs --resume <id>
 If config is corrupted or missing, start a fresh operation:
 
 ```bash
-sw:import-external    # For imports
-sw-ado:clone-repos    # For repo cloning
+sw:sync    # For imports
+sw:sync    # For repo cloning
 ```
 
 ### Too Many Old Jobs?
@@ -366,7 +366,7 @@ After `specweave init` with large imports:
 
 <CommandTabs
   natural="Check jobs"
-  claude="sw:jobs"
+  claude="specweave jobs"
   other="jobs"
 />
 
@@ -375,7 +375,7 @@ After `specweave init` with large imports:
 For imports >1000 items:
 
 ```bash
-sw:jobs --follow <id>
+specweave jobs --follow <id>
 ```
 
 ### 3. Don't Close Claude Immediately
@@ -431,8 +431,8 @@ const result = await launchImportJob({
 
 ## Related Documentation
 
-- [Commands: sw:jobs](/docs/commands/jobs) - Full command reference
-- [ADO Repo Cloning](/docs/guides/ado-multi-project-migration) - Enterprise setup
-- [External Import](/docs/commands/import-external) - Issue import guide
+- [Commands: specweave jobs](/docs/reference/commands) - Full command reference
+- [ADO Repo Cloning](/docs/guides/jira-ado-sync) - Enterprise setup
+- [GitHub sync](/docs/guides/github-sync) — `specweave sync pull --create-increments` imports issues
 - [Living Docs Sync Strategy](/docs/guides/core-concepts/living-docs-sync-strategy) - When and how docs sync
 - [Living Documentation](/docs/guides/core-concepts/living-documentation) - Core concepts

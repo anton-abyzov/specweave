@@ -422,7 +422,7 @@ graph TB
 
 <CommandTabs
   natural="Validate the increment"
-  claude="sw:validate"
+  claude="sw:review"
   other="validate"
 />
 
@@ -1084,7 +1084,7 @@ sw:do
 **Phase 4: Testing**
 ```bash
 # Validate test coverage
-sw:validate
+sw:review
 
 # Output:
 # ✅ T-001: 92% coverage (target: 90%)
@@ -1194,7 +1194,7 @@ Result: Clear traceability from requirement to test
 **Benefits**
 - Understand test purpose (AC-US1-01 explains why this test exists)
 - Safe refactoring (if requirement changes, update linked tests)
-- Coverage analysis (sw:validate shows AC-ID coverage)
+- Coverage analysis (sw:review shows AC-ID coverage)
 
 ### 4. Living Documentation (Auto-Sync)
 

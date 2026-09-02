@@ -68,8 +68,8 @@ Every command works with natural language or slash commands. Here's the most imp
 | "Let's build a payment system" | `sw:increment "feature"` | Plan new work |
 | "Ship it while I sleep" | `sw:auto` | Autonomous execution |
 | "Start implementing" | `sw:do` | Execute one task at a time |
-| "What should I do next?" | `sw:next` | Smart continuation |
-| "What's the status?" | `sw:progress` | Check status |
+| "What should I do next?" | `specweave task next` | Smart continuation |
+| "What's the status?" | `specweave status` | Check status |
 | "We're done" | `sw:done` | Close increment |
 
 ### What You'll Build

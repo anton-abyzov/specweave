@@ -147,7 +147,7 @@ A skill registry implementation conforms to this specification if it:
 
 - **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** -- Getting started, examples, FAQ
 - **[Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)** -- How skills work under the hood
-- **[Self-Improving Skills](/docs/skills/extensible/self-improving-skills)** -- The Reflect auto-learning system
+- **[Self-Improving Skills](/docs/skills/extensible/extensible-skills)** -- The Reflect auto-learning system
 - **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Best practices for skill authoring
 
 ---

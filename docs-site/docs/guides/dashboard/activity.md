@@ -67,7 +67,7 @@ The activity stream captures several categories of events:
 
 | Category | Examples |
 |----------|----------|
-| Commands | CLI command executions (`specweave do`, `specweave validate`, etc.) |
+| Commands | CLI command executions (`specweave task next`, `specweave validate`, etc.) |
 | Hooks | Hook triggers and their outcomes (allow, deny, block) |
 | Notifications | Generated alerts from sync, validation, or marketplace |
 | Cost | Token usage and API cost tracking events |

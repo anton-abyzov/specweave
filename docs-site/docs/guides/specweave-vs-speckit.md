@@ -90,13 +90,13 @@ Real enterprise projects don't live in vacuum — they have JIRA epics, GitHub i
 
 ```bash
 # Bidirectional sync with your tools
-sw:sync-progress
+sw:sync
 
 # Creates GitHub issue from increment
-sw-github:create-issue
+sw:sync
 
 # Syncs JIRA epic/story hierarchy
-sw-jira:sync
+sw:sync
 ```
 
 ### 3. Multi-Project Support
@@ -122,10 +122,10 @@ sw:increment "User authentication"
 specweave init . --brownfield
 
 # Import from existing tools
-sw:import-external --source jira --days 90
+sw:sync --source jira --days 90
 
 # Import documentation
-sw:import
+sw:sync
 ```
 
 ### 5. Quality Gates
@@ -223,5 +223,5 @@ SpecKit is the foundation. SpecWeave is the system built on top of it.
 - [GitHub SpecKit Repository](https://github.com/github/spec-kit)
 - [SpecWeave Quickstart](/docs/guides/getting-started/quickstart)
 - [Living Documentation Guide](/docs/guides/intelligent-living-docs-sync)
-- [External Tool Sync](/docs/guides/external-tool-sync)
-- [Multi-Project Setup](/docs/guides/multi-project-setup)
+- [External Tool Sync](/docs/guides/github-sync)
+- [Multi-Project Setup](/docs/reference/configuration)

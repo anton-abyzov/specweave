@@ -164,7 +164,7 @@ Tasks include **embedded test plans** using BDD format:
 
 ## Who Creates It
 
-The **Test-Aware Planner** generates tasks.md based on [spec.md](/docs/glossary/terms/spec-md) and [plan.md](/docs/glossary/terms/plan-md):
+The **Test-Aware Planner** generates tasks.md based on [spec.md](/docs/glossary/terms/spec-md) and [plan.md](/docs/glossary/terms/spec-md):
 
 ```mermaid
 graph LR
@@ -175,11 +175,11 @@ graph LR
 
 ## Progress Tracking
 
-Track progress by saying "what's the status?", using `sw:progress` in Claude Code, or typing `progress` in other AI tools.
+Track progress by saying "what's the status?", using `specweave status` in Claude Code, or typing `progress` in other AI tools.
 
 <CommandTabs
   natural="What's the status?"
-  claude="sw:progress"
+  claude="specweave status"
   other="progress"
 />
 
@@ -204,7 +204,7 @@ Progress: 6/8 tasks (75%)
 
 - [Increments](/docs/glossary/terms/increments) - Contains tasks.md
 - [spec.md](/docs/glossary/terms/spec-md) - User stories and ACs
-- [plan.md](/docs/glossary/terms/plan-md) - Architecture
+- [plan.md](/docs/glossary/terms/spec-md) - Architecture
 - BDD - Test format
 - TDD - Test-first approach
 - [AC-ID](/docs/glossary/terms/ac-id) - Traceability

@@ -157,7 +157,7 @@ Ask for the status, or use the progress command:
 
 <CommandTabs
   natural="What's the status?"
-  claude="sw:progress"
+  claude="specweave status"
   other="progress"
 />
 
@@ -181,7 +181,7 @@ Tell SpecWeave you're done, and it will validate and close:
 
 <CommandTabs
   natural="We're done, finish up"
-  claude="sw:next"
+  claude="specweave task next"
   other="next"
 />
 
@@ -289,8 +289,8 @@ You just completed a full cycle:
 | 1 | "I want to add a dark mode toggle" | `sw:increment` | Created spec, plan, tasks |
 | 2 | *(Review specs)* | | Verified requirements |
 | 3 | "Start implementing" | `sw:do` | Implemented all tasks |
-| 4 | "What's the status?" | `sw:progress` | Checked status |
-| 5 | "We're done" | `sw:next` | Validated and closed |
+| 4 | "What's the status?" | `specweave status` | Checked status |
+| 5 | "We're done" | `specweave task next` | Validated and closed |
 
 **Total time**: ~30 minutes
 **Result**: Working feature + full documentation + tests
@@ -314,7 +314,7 @@ Choose a simple feature for your project:
 # Option B: Slash commands
 sw:increment "Your feature here"
 sw:do
-sw:next
+specweave task next
 ```
 
 ---
@@ -356,7 +356,7 @@ npm test -- --verbose
 1. **Describe what you want** -- say "I want to add X" or use `sw:increment`
 2. **Review** before implementing
 3. **Execute** -- say "start implementing" or use `sw:do`
-4. **Close** -- say "we're done" or use `sw:next` (validates quality gates)
+4. **Close** -- say "we're done" or use `specweave task next` (validates quality gates)
 5. **Everything documented** automatically
 
 ---

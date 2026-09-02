@@ -31,7 +31,7 @@ graph LR
 
 Before deploying:
 
-- [ ] `sw:validate` passed
+- [ ] `sw:review` passed
 - [ ] Code reviewed and approved
 - [ ] All tests passing
 - [ ] Documentation updated
@@ -350,7 +350,7 @@ Sync to external tools:
 
 <CommandTabs
   natural="Sync progress to all tools"
-  claude="sw:sync-progress"
+  claude="sw:sync"
   other="sync-progress"
 />
 

@@ -1,81 +1,65 @@
 ---
 sidebar_position: 1
 title: Enterprise Overview
-description: "SpecWeave for enterprise teams — compliance audit trails, brownfield analysis, multi-repo coordination, and bidirectional sync with GitHub, JIRA, and Azure DevOps."
+description: SpecWeave for enterprise teams — audit trails, brownfield work, multi-repo workspaces, and tracker sync.
 ---
 
 # SpecWeave for Enterprise
 
-SpecWeave is built for the reality of enterprise development: legacy codebases, distributed teams, compliance requirements, and complex release cycles.
+SpecWeave is built for the reality of enterprise development: legacy codebases, distributed teams, compliance requirements and complex release cycles.
 
-## Why Enterprise Teams Choose SpecWeave
+## Audit trails that are actually true
 
-### Compliance-Ready Audit Trails
+Every decision lives in a version-controlled file, and the evidence for every task is recorded by the tool that produced it — not asserted afterwards.
 
-Every decision is tracked in version-controlled spec files. When auditors ask "why was this built this way?" — you point them to `spec.md` and `plan.md` in your git history.
+| Question an auditor asks | Where the answer lives |
+|---|---|
+| Why was this built this way? | `spec.md` — Problem, Scope, ACs, Approach (with rejected alternatives and ADR links) |
+| Who did what, and when? | `ledger.jsonl` — an append-only event per claim, done, skip and block, with agent id and timestamp |
+| What proves it works? | `reports/verify.json` — the commands that ran, their exit codes, and the AC tally |
+| Why was this closed without a green verify? | `metadata.json.closeReason` — mandatory when the gate is bypassed |
+| Who reviewed it? | `reports/review.md` — findings with `path:line`, produced in a fresh context |
 
-- SOC 2, HIPAA, FDA audit-ready — full decision trail in git
-- Approval workflows via spec reviews before implementation
-- Change tracking at the task level — who did what, when, why
-- Living documentation updates automatically — no manual sync
+The ledger is append-only and never rewritten, so an audit trail cannot be quietly tidied up after the fact.
 
-**[Compliance standards guide →](./compliance-standards)**
+**[Compliance standards guide →](/docs/guides/compliance-standards)**
 
-### Brownfield Excellence
+## Brownfield work
 
-90%+ of enterprise work is brownfield. SpecWeave excels here:
+Most enterprise work is brownfield. The increment folder is designed for it: `spec.md` records the *existing* behaviour under Problem before anything changes, and `--supersedes` lets a replacement increment abandon its predecessor with a recorded reason instead of leaving a graveyard of half-open work.
 
-- **Automated analysis** — scan existing codebases, get effort estimates
-- **Strangler Fig pattern** — incremental migration without big-bang rewrites
-- **Knowledge preservation** — specs capture existing behavior before changes
-- **Risk mitigation** — small increments with quality gates at every step
+**[Brownfield workflow →](/docs/workflows/brownfield)**
 
-**[Brownfield workflow →](../workflows/brownfield)**
+## Multi-repo workspaces
 
-### Multi-Repo Coordination
+One umbrella repository coordinating child repositories, each with its own user-story prefix and its own sync targets:
 
-Enterprise projects span multiple repositories. SpecWeave coordinates across all of them:
-
-- Specs reference cross-repo dependencies
-- Agent teams work across repos without conflicts
-- Progress syncs to the correct GitHub/JIRA project per repo
-- Umbrella repo support for monorepo and polyrepo architectures
-
-### Bidirectional External Sync
-
-SpecWeave syncs with the tools your teams already use:
-
-| Platform | What Syncs | Direction |
-|----------|-----------|-----------|
-| **GitHub** | Issues, PRs, milestones, labels | Bidirectional |
-| **JIRA** | Epics, stories, status, sprint tracking | Bidirectional |
-| **Azure DevOps** | Work items, area paths, iterations | Bidirectional |
-
-Local-first architecture — works offline, syncs when ready. No vendor lock-in.
-
-## Migration Guides
-
-Already using GitHub, JIRA, or Azure DevOps? Start here:
-
-- **[GitHub Migration](./github-migration)** — issues, milestones, and labels
-- **[JIRA Migration](./jira-migration)** — epics, stories, and sprints
-- **[Azure DevOps Migration](./azure-devops-migration)** — work items and area paths
-- **[Knowledge Transfer](./knowledge-transfer-migration)** — onboard existing projects
-
-## Enterprise Patterns
-
-- **[Multi-Environment Deployment](./multi-environment-deployment)** — dev → QA → staging → prod
-- **[Release Management](./release-management)** — weekly sprints, monthly releases, quarterly planning
-- **[Monolith to Microservices](./monolith-to-microservices)** — incremental decomposition
-- **[Case Study: Full Migration](./case-study-migration)** — real-world enterprise adoption
-
-## Getting Started
-
-```bash
-npm install -g specweave
-cd your-enterprise-project
-specweave init .
-# Select your tracker (GitHub/JIRA/ADO) during init
+```json
+{
+  "workspace": {
+    "name": "acme",
+    "repos": [
+      { "id": "web-ui", "path": "repositories/acme/web-ui", "prefix": "FE", "role": "frontend",
+        "sync": { "github": { "owner": "acme", "repo": "web-ui" } } },
+      { "id": "api", "path": "repositories/acme/api", "prefix": "BE", "role": "backend",
+        "sync": { "jira": { "projectKey": "API" } } }
+    ]
+  }
+}
 ```
 
-SpecWeave detects your project structure and configures accordingly. Multi-repo? It handles that too.
+`specweave get <source>` clones and registers a repository into the workspace. See [Configuration](/docs/reference/configuration#workspace).
+
+## Tracker integration
+
+- **[GitHub sync](/docs/guides/github-sync)** — first-class. Push, pull, import, health.
+- **[Jira and Azure DevOps](/docs/guides/jira-ado-sync)** — opt-in and community-maintained: push and close work, nothing beyond that is guaranteed.
+- **[`specweave sync` reference](/docs/reference/sync-cli)** — every verb and flag.
+
+## Parallel delivery
+
+Several agents — or several people, or a mix — on one increment, coordinating only through committed files. No message bus, no shared memory, no vendor lock: see [Agent teams and swarms](/docs/guides/agent-teams-and-swarms).
+
+## Before you roll it out
+
+Read **[SpecWeave 2.0](/docs/guides/specweave-2)** first. 2.0 deliberately removed the enterprise-shaped surface that nobody used — the Jira/ADO multi-project and hierarchy-mapping stacks, the three-report closure pipeline, the auto-generated documentation tree. If your rollout plan depends on one of those, plan around the 2.0 shape rather than the 1.x docs.

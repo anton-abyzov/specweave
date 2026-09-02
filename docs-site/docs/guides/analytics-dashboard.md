@@ -23,12 +23,12 @@ This starts a local web server and opens the dashboard in your browser.
 SpecWeave records three types of events:
 
 - **Commands** -- every `sw:do`, `sw:increment`, `sw:auto`, `sw:done`, etc.
-- **Skills** -- skill activations like `sw:increment`, `sw:grill`, `sw:do`, `sw:done`
+- **Skills** -- skill activations like `sw:increment`, `sw:review`, `sw:do`, `sw:done`
 - **Agents** -- agent spawns (Explore, general-purpose, Plan, etc.)
 
 ### Implicit Tracking
 
-Analytics captures **all** invocations, including implicit ones. When `sw:team-lead` orchestrates parallel agents and those agents internally invoke skills like `sw:do` or spawn sub-agents, every call is tracked automatically via PostToolUse hooks. This means the dashboard shows the true volume of work -- not just what the user types, but everything the AI agents do behind the scenes.
+Analytics captures **all** invocations, including implicit ones. When `sw:team` orchestrates parallel agents and those agents internally invoke skills like `sw:do` or spawn sub-agents, every call is tracked automatically via PostToolUse hooks. This means the dashboard shows the true volume of work -- not just what the user types, but everything the AI agents do behind the scenes.
 
 Each event includes:
 
@@ -67,7 +67,7 @@ Token usage and cost estimates broken down by increment and command.
 | Page | What It Shows |
 |------|--------------|
 | [Error Tracing](./dashboard/errors) | Error grouping, classification, investigation workflow |
-| [Sync Audit](./dashboard/sync) | GitHub/JIRA/ADO sync status and audit log |
+| [Sync Audit](/docs/reference/sync-cli) | GitHub/JIRA/ADO sync status and audit log |
 | [Activity Stream](./dashboard/activity) | Real-time SSE event feed with category filters |
 | [Config Editor](./dashboard/config) | Visual JSON editor for `.specweave/config.json` |
 | [Service Management](./dashboard/services) | Running services, port detection, start/stop controls |

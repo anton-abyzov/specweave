@@ -33,7 +33,7 @@ Just say "what should I do next?" or "let's move forward" -- or use the slash co
 
 <CommandTabs
   natural="What should I do next?"
-  claude="sw:next"
+  claude="specweave task next"
   other="next"
 />
 
@@ -50,7 +50,7 @@ That's it. The system:
 ## The Decision Tree
 
 ```
-                    sw:next
+                    specweave task next
                           │
            ┌──────────────┴──────────────┐
            │                              │
@@ -78,7 +78,7 @@ Suggest next
 **Situation**: Work complete, tests pass, docs updated.
 
 ```bash
-sw:next
+specweave task next
 ```
 
 ```
@@ -123,7 +123,7 @@ Next: sw:do 0002
 **Situation**: Some tasks incomplete.
 
 ```bash
-sw:next
+specweave task next
 ```
 
 ```
@@ -165,7 +165,7 @@ What would you like to do? [A/B/C]
 **Situation**: No [increment](/docs/glossary/terms/increments) in progress.
 
 ```bash
-sw:next
+specweave task next
 ```
 
 ```
@@ -198,7 +198,7 @@ C. Create new → sw:increment "description"
 **Situation**: Multiple increments in progress.
 
 ```bash
-sw:next
+specweave task next
 ```
 
 ```
@@ -230,9 +230,9 @@ C. Cancel (continue as-is)
 | "What should I work on?" | ✅ Yes |
 | "Let's move forward" | ✅ Yes |
 | "Just finished that task" | ✅ Yes |
-| "Need to check status" | Use `sw:progress` or say "what's the status?" |
+| "Need to check status" | Use `specweave status` or say "what's the status?" |
 | "Want to start specific feature" | Use `sw:increment` or say "let's build X" |
-| "Need to pause work" | Use `sw:pause` or say "pause this" |
+| "Need to pause work" | Use `specweave pause` or say "pause this" |
 
 ---
 
@@ -251,7 +251,7 @@ It will either:
 
 ```bash
 # Try :next on your current project
-sw:next
+specweave task next
 
 # Observe what happens based on your state
 ```

@@ -17,7 +17,7 @@ This guide is based on the [official Claude Code documentation](https://docs.ant
 **SpecWeave works on all platforms** (macOS, Linux, Windows) and with multiple AI tools:
 - **Claude Code** — Native integration (best experience)
 - **Cursor, Windsurf, GitHub Copilot** — Via CLAUDE.md instructions
-- **Any AI IDE** — Via `specweave generate --template=md`
+- **Any AI IDE** — Via `specweave create-increment --template=md`
 
 While Claude Code provides the deepest integration with native hooks and skills, SpecWeave's core workflow (`spec.md`, `plan.md`, `tasks.md`) works with any AI coding assistant.
 :::
@@ -85,7 +85,7 @@ flowchart TB
 │   ┌──────────────────────────────────────┐                          │
 │   │  SKILL MATCHING (Auto)               │                          │
 │   │  "security" keyword detected         │                          │
-│   │  → sw:security skill activates       │                          │
+│   │  → sw:review skill activates       │                          │
 │   └──────────────────────────────────────┘                          │
 │                      │                                               │
 │                      ▼                                               │
@@ -138,21 +138,21 @@ SpecWeave ships as a **single bundled plugin** (`specweave`) that installs autom
 | Component | Count | Details |
 |-----------|-------|---------|
 | **Skills** | 44 | Auto-activating expertise (increment, PM, architect, TDD, grill, sync...) |
-| **Commands** | 72 | Slash commands (`sw:increment`, `sw:do`, `sw:done`, `sw-github:push`...) |
+| **Commands** | 72 | Slash commands (`sw:increment`, `sw:do`, `sw:done`, `sw:sync`...) |
 | **Agents** | 3 + 21 | 3 top-level (PM, Architect, Planner) + 21 sub-agents (team-lead, code-reviewer) |
 
 Key functional areas within the plugin:
 
 | Area | Examples |
 |------|----------|
-| **Increment lifecycle** | `sw:increment`, `sw:do`, `sw:done`, `sw:validate`, `sw:auto` |
-| **GitHub/JIRA/ADO sync** | `sw-github:push`, `sw-jira:sync`, `sw-ado:create`, reconcile, close |
-| **Testing & TDD** | `sw:tdd-cycle`, `sw:tdd-red`, `sw:tdd-green`, `sw:e2e`, `sw:qa` |
-| **Code review** | `sw:grill`, `sw:judge-llm`, `sw:code-reviewer`, `sw:pr-review` |
-| **Release management** | `sw:release-init`, `sw:release-rc`, `sw:release-npm`, `sw:npm` |
-| **Documentation** | `sw:docs`, `sw:living-docs`, `sw:docs-build`, `sw:docs-view` |
-| **Diagrams & media** | `sw:diagrams`, `sw:image`, `sw:video`, `sw:remotion` |
-| **Team orchestration** | `sw:team-lead`, `sw:team-build`, `sw:team-merge` |
+| **Increment lifecycle** | `sw:increment`, `sw:do`, `sw:done`, `sw:review`, `sw:auto` |
+| **GitHub/JIRA/ADO sync** | `sw:sync`, `sw:sync`, `sw:sync`, reconcile, close |
+| **Testing & TDD** | `sw:do`, `sw:do`, `sw:do`, `sw:do`, `sw:qa` |
+| **Code review** | `sw:review`, `sw:review`, `sw:review`, `sw:review` |
+| **Release management** | `specweave save`, `specweave save`, `specweave save`, `specweave save` |
+| **Documentation** | `specweave docs`, `specweave living-docs`, `specweave docs build`, `specweave docs preview` |
+| **Diagrams & media** | `specweave docs`, `specweave docs`, `specweave docs`, `specweave docs` |
+| **Team orchestration** | `sw:team`, `sw:team`, `sw:team` |
 
 Additional domain-specific skills are available via the [vskill CLI](https://verified-skill.com) and the community registry (see [Skills & Capabilities](/docs/overview/skills-and-capabilities)).
 
@@ -338,7 +338,7 @@ argument-hint: [optional message]
 | Type | Location | Example |
 |------|----------|---------|
 | Built-in | Claude Code core | `/compact`, `/clear`, `/help` |
-| Plugin | `.claude/plugins/*/commands/` | `sw:increment`, `sw-github:sync` |
+| Plugin | `.claude/plugins/*/skills/` | `sw:increment`, `sw:sync` |
 | Project | `.claude/commands/` | Custom project commands |
 | Personal | `~/.claude/commands/` | Your global commands |
 
@@ -429,7 +429,7 @@ SpecWeave uses **both** global and skill-scoped hooks for optimal performance:
 │  Command-specific logic that fires only when skill active:          │
 │  • sw:do → Task-AC sync guard (PostToolUse on Edit/Write)         │
 │  • sw:done → Completion guard (Stop)                               │
-│  • sw:validate → Spec validation guard (Stop)                      │
+│  • sw:review → Spec validation guard (Stop)                      │
 │  • sw:increment → Duplicate guard (PostToolUse)                    │
 │                                                                      │
 │  ~50% fewer hook invocations vs all-global approach                 │
@@ -578,7 +578,7 @@ SpecWeave now leverages these Claude Code 2.1.x features:
 |--------------|-----------------|---------|
 | **`context: fork`** | pm, architect, increment | Prevents context pollution in main conversation |
 | **`model: opus`** | pm, architect, increment | Ensures highest quality for critical decisions |
-| **Skill-scoped hooks** | sw:do, sw:done, sw:validate, sw:increment | ~50% fewer hook invocations (only fire when skill active) |
+| **Skill-scoped hooks** | sw:do, sw:done, sw:review, sw:increment | ~50% fewer hook invocations (only fire when skill active) |
 | **Agent-type init** | SessionStart hook | Agent-specific startup messages and context |
 
 ---

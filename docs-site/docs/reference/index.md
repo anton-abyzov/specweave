@@ -14,11 +14,11 @@ Complete reference for all SpecWeave skills, commands, and capabilities.
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| **Skills** | Domain expertise and best practices | `sw:architect`, `/mobile:appstore` |
-| **Commands** | Execute specific actions | `sw:auto`, `sw:done`, `sw:validate` |
+| **Skills** | Domain expertise and best practices | `sw:increment`, `/mobile:appstore` |
+| **Commands** | Execute specific actions | `sw:auto`, `sw:done`, `sw:review` |
 
 :::tip Both Are Slash Commands Now
-In Claude Code, skills and commands are invoked the same way - with `sw:name`. Skills provide domain knowledge; commands perform actions.
+In Claude Code, skills and commands are invoked the same way - with `sw:&lt;name&gt;`. Skills provide domain knowledge; commands perform actions.
 :::
 
 ## Quick Navigation
@@ -39,10 +39,10 @@ In Claude Code, skills and commands are invoked the same way - with `sw:name`. S
 
 **All slash commands** organized by purpose:
 - **Planning**: `sw:increment`
-- **Execution**: `sw:auto`, `sw:do`, `sw:auto-parallel`
-- **Quality**: `sw:validate`, `sw:qa`, `sw:grill`
-- **Completion**: `sw:next`, `sw:done`
-- **Sync**: `sw-github:sync`, `sw-jira:sync`, `sw-ado:sync`
+- **Execution**: `sw:auto`, `sw:do`, `sw:team`
+- **Quality**: `sw:review`, `sw:qa`, `sw:review`
+- **Completion**: `specweave task next`, `sw:done`
+- **Sync**: `sw:sync`, `sw:sync`, `sw:sync`
 
 ### [Configuration Reference](./configuration)
 
@@ -52,7 +52,7 @@ In Claude Code, skills and commands are invoked the same way - with `sw:name`. S
 - metadata.json fields for per-increment overrides
 - Environment variables for runtime control
 
-### [Use Case Guide](./use-case-guide)
+### [Use Case Guide](/docs/reference/commands)
 
 **Find the right tool** for your task:
 - "I want to..." quick lookup tables
@@ -73,8 +73,8 @@ In Claude Code, skills and commands are invoked the same way - with `sw:name`. S
 />
 
 ```bash
-sw:pm                                 # Product management
-sw:architect                          # System design
+sw:increment                                 # Product management
+sw:increment                          # System design
 ```
 
 ### Execution
@@ -87,28 +87,28 @@ sw:architect                          # System design
 
 ```bash
 sw:do                                # Manual task-by-task
-sw:progress                          # Check status
+specweave status                          # Check status
 ```
 
 ### Quality
 
 <CommandTabs
   natural="Check the quality of my work"
-  claude="sw:validate"
+  claude="sw:review"
   other="validate"
 />
 
-Additional: `sw:qa --gate` (AI quality gate), `sw:grill` (deep audit).
+Additional: `sw:qa --gate` (AI quality gate), `sw:review` (deep audit).
 
 ### Completion
 
 <CommandTabs
   natural="What's next?"
-  claude="sw:next"
+  claude="specweave task next"
   other="next"
 />
 
-Additional: `sw-github:sync 0007` (sync to GitHub).
+Additional: `sw:sync 0007` (sync to GitHub).
 
 ---
 
@@ -142,4 +142,4 @@ npx vskill install --repo anton-abyzov/specweave --plugin sw
 - [Skills Reference](./skills) - All skills by domain
 - [Commands Reference](./commands) - All commands by purpose
 - [Configuration Reference](./configuration) - All config properties
-- [Use Case Guide](./use-case-guide) - Find the right tool
+- [Use Case Guide](/docs/reference/commands) - Find the right tool

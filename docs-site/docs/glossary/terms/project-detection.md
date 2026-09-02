@@ -611,9 +611,9 @@ specweave detect-project /tmp/test-content.md
 
 ## Related Terms
 
-- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Full sync system
+- [Intelligent Living Docs Sync](/docs/guides/core-concepts/living-documentation) - Full sync system
 - Content Classification - 9-category system
-- [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync
+- [Profile-Based Sync](/docs/reference/sync-cli) - Multi-repo sync
 - Cross-Linking - Automatic document linking
 
 ---

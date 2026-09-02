@@ -1,3 +1,72 @@
+## [2.0.0] - 2026-09-02
+
+SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and deletes the rest. Full narrative: https://spec-weave.com/docs/guides/specweave-2
+
+### Breaking changes
+
+**Skills: 51 → 10.** The `sw` plugin now ships `increment`, `do`, `done`, `review`, `team`, `handoff`, `sync`, `auto`, `brainstorm`, `qa`. 34 of the 51 1.x skills were never invoked once; 11 more were deprecated stubs.
+
+- `sw:grill`, `sw:code-reviewer`, `sw:judge-llm`, `sw:pr-review`, `sw:validate` → **`sw:review`** (one fresh-context adversarial pass; every finding cites `path:line`).
+- `sw:team-lead`, `sw:team-merge`, `sw:team-build` → **`sw:team`**.
+- `sw:pm`, `sw:architect`, `sw:plan` → **`sw:increment`** (the Approach section absorbed `plan.md`).
+- `sw:tdd-cycle`, `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor` → **`sw:do`**.
+- `sw:sync-docs`, `sw:progress-sync`, `sw:sync-setup`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync` → **`sw:sync`**.
+- `sw:next`, `sw:progress`, `sw:close-all`, `sw:doctor`, `sw:jobs`, `sw:analytics`, `sw:lsp`, `sw:docs`, `sw:living-docs`, `sw:help`, `sw:framework`, `sw:reflect` → the CLI (`specweave task next`, `specweave status`, `specweave doctor`, …).
+- `sw:e2e`, `sw:debug`, `sw:image`, `sw:video`, `sw:remotion`, `sw:npm`, `sw:release-*`, `sw:skill-gen`, `sw:skill-refine`, `sw:diagrams` → removed from the core plugin; available as optional vskill-distributed skills.
+- The whole `commands/` plugin namespace (73 `.md` files) is gone.
+- The per-provider `sw-github:`, `sw-jira:` and `sw-ado:` namespaces are gone. Use `sw:sync` / `specweave sync --provider <name>`.
+
+**New: five standalone skills.** `sw-increment`, `sw-do`, `sw-task`, `sw-review`, `sw-handoff` under `skills/`, distributed through vskill for non-Claude tools. Each spells out the file formats and a manual shell/PowerShell procedure, so they work with no CLI installed.
+
+**Closure: `verify.json` replaces the three-report pipeline.** 1.x blocked `complete` on `grill-report.json` + `code-review-report.json` + `judge-llm-report.json`; all three were present for 33% of closed increments in practice. The only blocking check is now `reports/verify.json` with `ok: true`, written by `specweave verify` from the project's own commands. Grill/judge/rubric reports are optional evidence and never block. A missing `reports/review.md` produces a one-line notice.
+
+**Config: exact key surface.** Accepted top-level keys are `version`, `project`, `adapters`, `workspace`, `testing`, `limits`, `planning`, `auto`, `sync`, `livingDocs`, plus `lsp`, `cicd`, `repository`, `issueTracker`, `hooks`, `plugins` (kept because live code still reads them). Anything else warns once and is ignored.
+
+- Removed outright: `contextBudget`, `quality`, `cache`, `deduplication`, `archiving`, `apiDocs`, `statusLine`, `incrementAssist`, `billing`, `translation`, `language`, `documentation`, `reflect`, `pluginAutoLoad`, `grill`, `codeReview`, `qualityGates`, `skillGen`.
+- Removed `hooks` sub-keys: `banner`, `post_increment_planning`, `post_task_completion`.
+- Removed `testing` sub-keys: `defaultTestMode`, `defaultCoverageTarget`, `coverageTargets`, `tddEnforcement`, `playwright`.
+- Removed `sync.mode` — the queued event-queue path dropped events on a partial flush.
+- Renamed: `testing.defaultTestMode` → `testing.mode`; `testing.coverageTargets` → `testing.coverage`; `limits.maxActiveIncrements` → `limits.activeIncrements`; `hooks.*.sync_living_docs` → `livingDocs`; `planning.deepInterview.{enabled,enforcement}` → `planning.deepInterview` (`off` | `warn`); `umbrella` / `multiProject` / `projectMappings` → `workspace`.
+
+**Hooks: new exec-form format.** Four hooks (`SessionStart`, `PreToolUse` on `Write|Edit`, `Stop`, `PreCompact`), all `"command": "node"` with `args`, no shell. 1.x wrapped every hook in `bash -c '…'`, which made them dead on Windows without a POSIX shell. Removed: the `UserPromptSubmit` banner hook, the `PostToolUse` hooks, the `TeamCreate` matcher and the no-op Stop handlers. `Stop` is now the `sw:auto` loop driver and nothing else; handoff automation moved to `PreCompact`.
+
+**WIP cap is advisory.** `limits.activeIncrements` (default 3) prints one info note when exceeded and blocks nothing. The 1.x hard cap is gone. `0` disables the note.
+
+**Living docs off by default.** `livingDocs: false`. Set `"onDone"` to regenerate on closure. The diagram and JPG generators were removed — the generated tree was never read.
+
+**Templates rewritten.** The 328-line and 460-line increment templates are gone. `spec.md` is Problem / Scope / ACs / Approach / Open questions; `tasks.md` is `### T-01 Title` plus one field line (`- AC: … | Files: … | Test: …`). `plan.md` is optional overflow (`create-increment --with-plan`) and still recognised on legacy increments. `CLAUDE.md` and `AGENTS.md` templates fit on one page.
+
+**Jira and Azure DevOps are opt-in and limited.** Push and close work. The multi-project, board-import, hierarchy-mapping and per-project field-mapping stacks are removed.
+
+### Added
+
+- `specweave task <action>` — the multi-vendor append-only ledger: `whoami`, `list`, `next`, `claim`, `done`, `release`, `block`, `skip`, `render`. Every write re-renders the `<!-- SW:BOARD -->` table in `tasks.md`.
+- `specweave verify [id]` — runs `testing.commands[]` (or auto-detects test/lint/build), writes `reports/verify.md` + `reports/verify.json`.
+- `specweave create-increment --supersedes NNNN` — abandons the increment it replaces with a matching `closeReason`.
+- `specweave complete --all --reason "<why>"` — batch triage closure.
+- `specweave hooks log` — recent hook warnings, errors and blocks from `.specweave/logs/hooks.jsonl`.
+- `specweave gc` — purge stale `.specweave/state` files (dry run by default).
+- `specweave update` now writes `.gitattributes` (`**/ledger.jsonl merge=union`) and the 2.0 `.gitignore` entries.
+- `specweave doctor` gained config-shape, instruction-file-reference and hygiene checks (leftover `{{` placeholders, tracked files over 5 MB under `increments/`, tracked files under `.specweave/state`, `node` on PATH).
+- `npm run lint:skills` — fails on a `name:` frontmatter field, on model/effort/context pins, and on any `specweave <cmd>` or `sw:<name>` reference that does not resolve.
+- `npm run lint:docs-refs` — the same guarantee for the documentation site.
+
+### Migration
+
+```bash
+npm i -g specweave@2
+specweave update
+specweave doctor
+```
+
+1. `specweave update` is idempotent. It rewrites the managed sections of `CLAUDE.md` and `AGENTS.md`, strips the 1.x sections by their known headings, and preserves your `## Commands` and `## Project notes`. Backups land in `.specweave/backups/`.
+2. The config migration runs in one pass on load and rewrites the file at most once. What it deleted is recorded in `.specweave/state/config-migration-2.json`.
+3. Fill in `testing.commands[]` — it is what `specweave verify` runs and therefore what the closure gate checks. Leave it empty to auto-detect.
+4. Replace any scripted references to removed skills using the mapping above. `npm run lint:skills` and `specweave doctor` will find the ones you miss.
+5. If you used `sync.mode: "queued"`, the key is deleted; sync is now a direct call. Re-run `specweave sync status` to see the real state of the tracker.
+6. If you relied on generated living docs, set `"livingDocs": "onDone"` explicitly.
+7. Existing increments keep working: legacy `plan.md` is still read, and a task with a ticked checkbox but no ledger events still counts as done.
+
 ## [1.0.593] - 2026-07-15
 
 - Patch release

@@ -217,7 +217,7 @@ const config: Config = {
           },
           {
             from: '/docs/guides/self-improving-skills',
-            to: '/docs/skills/extensible/self-improving-skills',
+            to: '/docs/skills/extensible/extensible-skills',
           },
           {
             from: ['/docs/guides/skill-development-guidelines', '/docs/skills/skill-development-guidelines'],
@@ -319,12 +319,121 @@ const config: Config = {
             to: '/docs/guides/core-concepts/living-documentation',
           },
           {
+            from: '/docs/guides/core-concepts/who-benefits-from-living-docs',
+            to: '/docs/guides/core-concepts/living-documentation',
+          },
+          {
+            from: '/docs/skills/extensible/self-improving-skills',
+            to: '/docs/skills/extensible/extensible-skills',
+          },
+          {
+            from: '/docs/skills/extensible/skill-generation',
+            to: '/docs/skills/extensible/extensible-skills',
+          },
+          {
+            from: '/docs/guides/multilingual-guide',
+            to: '/docs/guides/specweave-2',
+          },
+          {
             from: '/docs/guides/intelligent-living-docs-sync',
             to: '/docs/guides/core-concepts/living-documentation',
           },
           {
             from: '/docs/commands/command-decision-tree',
-            to: '/docs/reference/command-decision-tree',
+            to: '/docs/reference/commands',
+          },
+          // 2.0: the commands/ namespace and the sync deep dives collapsed
+          {
+            from: '/docs/commands/overview',
+            to: '/docs/reference/commands',
+          },
+          {
+            from: '/docs/reference/command-decision-tree',
+            to: '/docs/reference/commands',
+          },
+          {
+            from: '/docs/guides/command-reference-by-priority',
+            to: '/docs/reference/commands',
+          },
+          {
+            from: '/docs/reference/use-case-guide',
+            to: '/docs/reference/commands',
+          },
+          {
+            from: '/docs/guides/github-integration',
+            to: '/docs/guides/github-sync',
+          },
+          {
+            from: '/docs/guides/external-tool-sync',
+            to: '/docs/guides/github-sync',
+          },
+          {
+            from: '/docs/guides/sync-strategies',
+            to: '/docs/reference/sync-cli',
+          },
+          {
+            from: '/docs/guides/sync-configuration',
+            to: '/docs/reference/sync-cli',
+          },
+          {
+            from: '/docs/guides/spec-bidirectional-sync',
+            to: '/docs/reference/sync-cli',
+          },
+          {
+            from: '/docs/guides/spec-commit-sync',
+            to: '/docs/reference/sync-cli',
+          },
+          {
+            from: '/docs/guides/status-sync-guide',
+            to: '/docs/reference/sync-cli',
+          },
+          {
+            from: '/docs/guides/status-sync-migration',
+            to: '/docs/reference/sync-cli',
+          },
+          {
+            from: '/docs/guides/multi-project-sync-architecture',
+            to: '/docs/guides/jira-ado-sync',
+          },
+          {
+            from: '/docs/guides/umbrella-sync-routing',
+            to: '/docs/guides/jira-ado-sync',
+          },
+          {
+            from: '/docs/guides/hierarchy-mapping',
+            to: '/docs/guides/jira-ado-sync',
+          },
+          {
+            from: '/docs/guides/ado-multi-project-migration',
+            to: '/docs/guides/jira-ado-sync',
+          },
+          {
+            from: '/docs/guides/multi-project-setup',
+            to: '/docs/reference/configuration',
+          },
+          {
+            from: '/docs/guides/repository-selection',
+            to: '/docs/reference/configuration',
+          },
+          {
+            from: '/docs/guides/migration-v024',
+            to: '/docs/guides/specweave-2',
+          },
+          {
+            from: '/docs/guides/migration-v031-project-fields',
+            to: '/docs/guides/specweave-2',
+          },
+          {
+            from: '/docs/enterprise/github-migration',
+            to: '/docs/guides/github-sync',
+          },
+          {
+            from: '/docs/enterprise/jira-migration',
+            to: '/docs/guides/jira-ado-sync',
+          },
+          {
+            from: '/docs/enterprise/azure-devops-migration',
+            to: '/docs/guides/jira-ado-sync',
           },
           {
             from: '/docs/guides/agent-teams-setup',
@@ -332,7 +441,15 @@ const config: Config = {
           },
           {
             from: '/docs/integrations/issue-trackers',
-            to: '/docs/guides/integrations/issue-trackers',
+            to: '/docs/guides/github-sync',
+          },
+          {
+            from: '/docs/guides/integrations/issue-trackers',
+            to: '/docs/guides/github-sync',
+          },
+          {
+            from: '/docs/guides/integrations/external-tools-overview',
+            to: '/docs/guides/github-sync',
           },
           {
             from: '/docs/skills/extensible/extensible-skills-guide',
