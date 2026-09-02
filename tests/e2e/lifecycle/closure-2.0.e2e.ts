@@ -294,6 +294,23 @@ describe('livingDocs config gate', () => {
 });
 
 describe('metadata.updated', () => {
+  it('is written by create-increment', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-closure-created-'));
+    tmpDirs.push(root);
+    fs.mkdirSync(path.join(root, '.home'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'package.json'), '{"name":"greetco"}\n');
+    git(root, 'init', '-q');
+    git(root, 'config', 'user.email', 'e2e@example.com');
+    git(root, 'config', 'user.name', 'E2E');
+    expect(sw(root, ['init']).code).toBe(0);
+    expect(sw(root, ['create-increment', 'greeting cli']).code).toBe(0);
+
+    const dir = path.join(root, '.specweave', 'increments');
+    const created = fs.readdirSync(dir).find((d) => /^0001/.test(d))!;
+    const meta = JSON.parse(fs.readFileSync(path.join(dir, created, 'metadata.json'), 'utf-8'));
+    expect(typeof meta.updated).toBe('string');
+  });
+
   it('is stamped by ledger activity, not only by status transitions', () => {
     const { root, incDir } = makeProject('updated');
     const before = readMeta(incDir);

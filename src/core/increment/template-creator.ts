@@ -245,6 +245,10 @@ export async function createIncrementTemplates(
       type,
       priority,
       created: new Date().toISOString(),
+      // 2.0 shape: `updated` is the documented field; `lastActivity` stays as
+      // the legacy alias so the increments already on disk keep working. Both
+      // are kept in step by MetadataManager and by every ledger append.
+      updated: new Date().toISOString(),
       lastActivity: new Date().toISOString(),
       testMode,
       coverageTarget,
