@@ -107,6 +107,12 @@ export interface CreateTemplateOptions {
   parallel?: boolean;
   /** Increment name suffix (used with autoId) */
   name?: string;
+  /**
+   * Scaffold the optional `plan.md` overflow document (2.0 `--with-plan`).
+   * Off by default: spec.md carries the Approach, and readers stay tolerant of
+   * a plan.md that already exists (legacy increments).
+   */
+  withPlan?: boolean;
 }
 
 /**
@@ -169,6 +175,7 @@ export async function createIncrementTemplates(
     autoId,
     name,
     parallel = false,
+    withPlan = false,
   } = options;
 
   const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
@@ -345,11 +352,14 @@ export async function createIncrementTemplates(
     fs.writeFileSync(specPath, specContent);
     createdFiles.push('spec.md');
 
-    // 3. Create plan.md TEMPLATE
-    const planPath = path.join(incrementPath, 'plan.md');
-    const planContent = generatePlanTemplate({ title });
-    fs.writeFileSync(planPath, planContent);
-    createdFiles.push('plan.md');
+    // 3. Create plan.md TEMPLATE — only on --with-plan. In 2.0 spec.md carries
+    // the Approach; plan.md is an optional overflow, recognized when present.
+    if (withPlan) {
+      const planPath = path.join(incrementPath, 'plan.md');
+      const planContent = generatePlanTemplate({ title });
+      fs.writeFileSync(planPath, planContent);
+      createdFiles.push('plan.md');
+    }
 
     // 4. Create tasks.md — derived from external ACs or template
     const tasksPath = path.join(incrementPath, 'tasks.md');

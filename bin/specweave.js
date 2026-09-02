@@ -390,6 +390,7 @@ program
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
   .option('--project-root <path>', 'Override project root directory')
   .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
+  .option('--with-plan', 'Also scaffold plan.md (optional overflow; spec.md carries the Approach)')
   .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
   .option('--parent <increment-id>', 'Parent increment (recorded as metadata.parent)')
   .option('--json', 'Output result as JSON (for programmatic use)')

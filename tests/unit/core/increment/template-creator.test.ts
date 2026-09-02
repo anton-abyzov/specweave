@@ -56,15 +56,30 @@ describe('template-creator', () => {
       expect(result.success).toBe(true);
       expect(result.createdFiles).toContain('metadata.json');
       expect(result.createdFiles).toContain('spec.md');
-      expect(result.createdFiles).toContain('plan.md');
       expect(result.createdFiles).toContain('tasks.md');
+      // 2.0: plan.md is an optional overflow, not part of the default set.
+      expect(result.createdFiles).not.toContain('plan.md');
 
       // Verify files exist
       const incrementPath = path.join(incrementsPath, '0001-test-feature');
       expect(fs.existsSync(path.join(incrementPath, 'metadata.json'))).toBe(true);
       expect(fs.existsSync(path.join(incrementPath, 'spec.md'))).toBe(true);
-      expect(fs.existsSync(path.join(incrementPath, 'plan.md'))).toBe(true);
       expect(fs.existsSync(path.join(incrementPath, 'tasks.md'))).toBe(true);
+      expect(fs.existsSync(path.join(incrementPath, 'plan.md'))).toBe(false);
+    });
+
+    it('scaffolds plan.md only with withPlan (the --with-plan flag)', async () => {
+      const result = await createIncrementTemplates({
+        incrementId: '0002-with-plan',
+        title: 'With Plan',
+        description: 'Large design needs the overflow doc',
+        projectId: 'test-project',
+        projectRoot: tempDir,
+        withPlan: true,
+      });
+
+      expect(result.createdFiles).toContain('plan.md');
+      expect(fs.existsSync(path.join(incrementsPath, '0002-with-plan', 'plan.md'))).toBe(true);
     });
 
     it('should create spec.md as a TEMPLATE with markers', async () => {
@@ -90,13 +105,14 @@ describe('template-creator', () => {
       expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS');
     });
 
-    it('should create plan.md as a TEMPLATE with markers', async () => {
+    it('should create plan.md as a TEMPLATE with markers (--with-plan)', async () => {
       await createIncrementTemplates({
         incrementId: '0001-test-feature',
         title: 'Test Feature',
         description: 'A test feature description',
         projectId: 'test-project',
         projectRoot: tempDir,
+        withPlan: true,
       });
 
       const planPath = path.join(incrementsPath, '0001-test-feature', 'plan.md');

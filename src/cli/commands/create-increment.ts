@@ -54,6 +54,12 @@ export interface CreateIncrementOptions {
 
   /** Parent increment (split-off / follow-up work), recorded as `parent`. */
   parent?: string;
+
+  /**
+   * Also scaffold `plan.md`. Off by default: in 2.0 spec.md carries the
+   * Approach and plan.md is an optional overflow for large designs.
+   */
+  withPlan?: boolean;
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -68,6 +74,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     parallel = false,
     supersedes,
     parent,
+    withPlan = false,
   } = options;
 
   if (id && options.autoId) {
@@ -125,6 +132,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     autoId,
     name,
     parallel,
+    withPlan,
   });
 
   if (!result.success) {
