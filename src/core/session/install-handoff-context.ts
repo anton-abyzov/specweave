@@ -129,40 +129,31 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       category: 'workflow',
     },
     {
-      name: 'sw:status',
-      description: 'View all increment statuses',
+      name: 'sw:review',
+      description: 'Adversarial fresh-context review before shipping',
       category: 'workflow',
     },
     {
-      name: 'sw:progress',
-      description: 'Show progress for active increments',
+      name: 'sw:sync',
+      description: 'Sync increments with GitHub, Jira or Azure DevOps',
+      category: 'sync',
+    },
+    {
+      name: 'sw:handoff',
+      description: 'Write a portable handoff doc for another AI tool',
+      category: 'workflow',
+    },
+    {
+      name: 'sw:auto',
+      description: 'Run the increment autonomously until tasks are done',
       category: 'workflow',
     },
   ],
   // Domain skills (frontend:*, backend:*) are optional vskill plugins.
   // Only include them in handoff if the plugin is actually installed.
   // The core sw:architect skill handles all domains by default.
-  'sw-github': [
-    {
-      name: 'sw-github:sync',
-      description: 'Sync increments with GitHub issues',
-      category: 'sync',
-    },
-  ],
-  'sw-jira': [
-    {
-      name: 'sw-jira:sync',
-      description: 'Sync increments with JIRA issues',
-      category: 'sync',
-    },
-  ],
-  'sw-ado': [
-    {
-      name: 'sw-ado:sync',
-      description: 'Sync increments with Azure DevOps',
-      category: 'sync',
-    },
-  ],
+  // NOTE: the per-provider sw-github / sw-jira / sw-ado plugins were removed in
+  // 2.0 - external tracker sync is the single sw:sync skill / `specweave sync`.
   'payments': [
     {
       name: 'payments:payment-core',
