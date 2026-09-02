@@ -6,7 +6,6 @@
  * - selfUpdateSpecWeave: version checking, npm install, error handling
  * - cleanupStaleAutoState: stale file detection/removal
  * - validateProjectHealth: config validation, increment counting
- * - migrateReflectConfig: reflect-config.json migration
  * - parseChangelogBetweenVersions / versionToNumber helpers
  * - fetchWhatsNew: changelog fetching
  * - registerUpdateCommand: Commander registration
@@ -25,8 +24,6 @@ const {
   mockUpdateInstructionsCommand,
   mockRefreshPluginsCommand,
   mockGetPackageVersion,
-  mockPruneSkillMemories,
-  mockListSkillMemoryFiles,
   mockExecSync,
   mockOraInstance,
   mockAccessSync,
@@ -34,12 +31,6 @@ const {
   mockUpdateInstructionsCommand: vi.fn().mockResolvedValue(undefined),
   mockRefreshPluginsCommand: vi.fn().mockResolvedValue(undefined),
   mockGetPackageVersion: vi.fn().mockReturnValue('1.0.100'),
-  mockPruneSkillMemories: vi.fn().mockReturnValue({
-    prunedCount: 0,
-    skillsAffected: [],
-    errors: [],
-  }),
-  mockListSkillMemoryFiles: vi.fn().mockReturnValue([]),
   mockExecSync: vi.fn(),
   mockOraInstance: {
     start: vi.fn().mockReturnThis(),
@@ -66,11 +57,6 @@ vi.mock('../../../../src/cli/commands/refresh-plugins.js', () => ({
 
 vi.mock('../../../../src/cli/helpers/init/instruction-file-merger.js', () => ({
   getPackageVersion: mockGetPackageVersion,
-}));
-
-vi.mock('../../../../src/core/reflection/skill-memories.js', () => ({
-  pruneSkillMemories: mockPruneSkillMemories,
-  listSkillMemoryFiles: mockListSkillMemoryFiles,
 }));
 
 vi.mock('child_process', async (importOriginal) => {
@@ -205,12 +191,6 @@ describe('update command', () => {
     mockGetPackageVersion.mockReturnValue('1.0.100');
     mockUpdateInstructionsCommand.mockResolvedValue(undefined);
     mockRefreshPluginsCommand.mockResolvedValue(undefined);
-    mockListSkillMemoryFiles.mockReturnValue([]);
-    mockPruneSkillMemories.mockReturnValue({
-      prunedCount: 0,
-      skillsAffected: [],
-      errors: [],
-    });
   });
 
   afterEach(() => {
@@ -260,7 +240,7 @@ describe('update command', () => {
         verbose: undefined,
       });
       expect(mockOraInstance.succeed).toHaveBeenCalledWith(
-        'Instructions and config updated'
+        'Instructions updated'
       );
     });
 
@@ -369,12 +349,13 @@ describe('update command', () => {
         expect(output).toContain('Not a SpecWeave project');
       });
 
-      it('should still refresh plugins for non-SpecWeave projects', async () => {
-        // No .specweave directory
-
+      it('should not refresh plugins outside a SpecWeave project', async () => {
+        // No .specweave directory — plugin refresh needs a project context and
+        // can hang when run from an arbitrary directory, so update bails out.
         await updateCommand({ noSelf: true });
 
-        expect(mockRefreshPluginsCommand).toHaveBeenCalled();
+        expect(mockRefreshPluginsCommand).not.toHaveBeenCalled();
+        expect(consoleLogs.join('\n')).toContain('Not a SpecWeave project');
       });
 
       it('should return early if noPlugins and not SpecWeave project', async () => {
@@ -878,255 +859,11 @@ describe('update command', () => {
   });
 
   // ==========================================================================
-  // migrateReflectConfig
-  // ==========================================================================
-
-  describe('reflect config migration', () => {
-    it('should create reflect-config.json if it does not exist', async () => {
-      setupSpecWeaveProject();
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      const reflectPath = path.join(
-        tempDir,
-        '.specweave',
-        'state',
-        'reflect-config.json'
-      );
-      expect(fs.existsSync(reflectPath)).toBe(true);
-      const config = JSON.parse(fs.readFileSync(reflectPath, 'utf-8'));
-      expect(config.autoReflect).toBe(true);
-      expect(config.enabled).toBe(true);
-    });
-
-    it('should enable autoReflect if set to false', async () => {
-      setupSpecWeaveProject();
-
-      const reflectPath = path.join(
-        tempDir,
-        '.specweave',
-        'state',
-        'reflect-config.json'
-      );
-      fs.writeFileSync(
-        reflectPath,
-        JSON.stringify({ enabled: true, autoReflect: false })
-      );
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      const config = JSON.parse(fs.readFileSync(reflectPath, 'utf-8'));
-      expect(config.autoReflect).toBe(true);
-    });
-
-    it('should enable autoReflect if undefined', async () => {
-      setupSpecWeaveProject();
-
-      const reflectPath = path.join(
-        tempDir,
-        '.specweave',
-        'state',
-        'reflect-config.json'
-      );
-      fs.writeFileSync(
-        reflectPath,
-        JSON.stringify({ enabled: true })
-      );
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      const config = JSON.parse(fs.readFileSync(reflectPath, 'utf-8'));
-      expect(config.autoReflect).toBe(true);
-    });
-
-    it('should not overwrite autoReflect if already true', async () => {
-      setupSpecWeaveProject();
-
-      const reflectPath = path.join(
-        tempDir,
-        '.specweave',
-        'state',
-        'reflect-config.json'
-      );
-      const original = {
-        enabled: true,
-        autoReflect: true,
-        customField: 'preserved',
-      };
-      fs.writeFileSync(reflectPath, JSON.stringify(original));
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      const config = JSON.parse(fs.readFileSync(reflectPath, 'utf-8'));
-      expect(config.customField).toBe('preserved');
-      expect(config.autoReflect).toBe(true);
-    });
-
-    it('should recreate reflect-config.json if invalid JSON', async () => {
-      setupSpecWeaveProject();
-
-      const reflectPath = path.join(
-        tempDir,
-        '.specweave',
-        'state',
-        'reflect-config.json'
-      );
-      fs.writeFileSync(reflectPath, '{ invalid json }');
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      const config = JSON.parse(fs.readFileSync(reflectPath, 'utf-8'));
-      expect(config.autoReflect).toBe(true);
-      expect(config.enabled).toBe(true);
-    });
-
-    it('should skip reflect migration in check mode', async () => {
-      setupSpecWeaveProject();
-
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        check: true,
-      });
-
-      const reflectPath = path.join(
-        tempDir,
-        '.specweave',
-        'state',
-        'reflect-config.json'
-      );
-      // Should not have been created in check mode
-      expect(fs.existsSync(reflectPath)).toBe(false);
-    });
-
-    it('should create state directory if missing', async () => {
-      const specweaveDir = path.join(tempDir, '.specweave');
-      fs.mkdirSync(specweaveDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(specweaveDir, 'config.json'),
-        JSON.stringify({ project: { name: 'test' }, auto: {} })
-      );
-      // Deliberately don't create state directory
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      expect(
-        fs.existsSync(path.join(specweaveDir, 'state'))
-      ).toBe(true);
-    });
-  });
-
-  // ==========================================================================
-  // ==========================================================================
-
-  // ==========================================================================
-  // Skill memory pruning
-  // ==========================================================================
-
-  describe('skill memory pruning', () => {
-    it('should skip pruning if no skill memory files exist', async () => {
-      setupSpecWeaveProject();
-      mockListSkillMemoryFiles.mockReturnValue([]);
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      expect(mockPruneSkillMemories).not.toHaveBeenCalled();
-    });
-
-    it('should prune skill memories when files exist', async () => {
-      setupSpecWeaveProject();
-      mockListSkillMemoryFiles.mockReturnValue(['pm', 'architect']);
-      mockPruneSkillMemories.mockReturnValue({
-        prunedCount: 3,
-        skillsAffected: ['pm', 'architect'],
-        errors: [],
-      });
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      expect(mockPruneSkillMemories).toHaveBeenCalledWith(tempDir, {
-        retentionDays: 90,
-        maxLearningsPerSkill: 10,
-      });
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('Pruned 3 old learning(s) from 2 skill(s)');
-    });
-
-    it('should show affected skills in verbose mode', async () => {
-      setupSpecWeaveProject();
-      mockListSkillMemoryFiles.mockReturnValue(['pm']);
-      mockPruneSkillMemories.mockReturnValue({
-        prunedCount: 1,
-        skillsAffected: ['pm'],
-        errors: [],
-      });
-
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        verbose: true,
-      });
-
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('pm');
-    });
-
-    it('should show errors in verbose mode', async () => {
-      setupSpecWeaveProject();
-      mockListSkillMemoryFiles.mockReturnValue(['broken']);
-      mockPruneSkillMemories.mockReturnValue({
-        prunedCount: 0,
-        skillsAffected: [],
-        errors: ['parse error in broken.md'],
-      });
-
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        verbose: true,
-      });
-
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('parse error in broken.md');
-    });
-
-    it('should report prunable files in check mode', async () => {
-      setupSpecWeaveProject();
-      mockListSkillMemoryFiles.mockReturnValue(['pm', 'grill']);
-
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        check: true,
-      });
-
-      expect(mockPruneSkillMemories).not.toHaveBeenCalled();
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('2 skill memory file(s) will be checked');
-    });
-
-    it('should not log pruning when prunedCount is 0', async () => {
-      setupSpecWeaveProject();
-      mockListSkillMemoryFiles.mockReturnValue(['pm']);
-      mockPruneSkillMemories.mockReturnValue({
-        prunedCount: 0,
-        skillsAffected: [],
-        errors: [],
-      });
-
-      await updateCommand({ noSelf: true, noPlugins: true });
-
-      const output = consoleLogs.join('\n');
-      expect(output).not.toContain('Pruned');
-    });
-  });
-
-  // ==========================================================================
   // validateProjectHealth (tested via updateCommand)
   // ==========================================================================
 
   describe('project health validation', () => {
-    it('should report missing auto section in config', async () => {
+    it('should fill in the missing auto section before health validation', async () => {
       setupSpecWeaveProject();
       const configPath = path.join(tempDir, '.specweave', 'config.json');
       fs.writeFileSync(
@@ -1137,7 +874,11 @@ describe('update command', () => {
       await updateCommand({ noSelf: true, noPlugins: true });
 
       const output = consoleLogs.join('\n');
-      expect(output).toContain('Missing "auto" section');
+      expect(output).toContain('Added missing section(s): auto');
+      // Migration runs first, so health no longer reports it as missing.
+      expect(output).not.toContain('Missing "auto" section');
+      const written = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      expect(written.auto).toBeDefined();
     });
 
     it('should report missing project.name in config', async () => {
