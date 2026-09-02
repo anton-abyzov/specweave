@@ -31,9 +31,26 @@ Several active → list them and ask which. None → run `sw-increment` first.
 6. **Commit** — subject starts with the increment id: `git commit -m "0042: fold the ledger"`.
 7. **Done with evidence** — `specweave task done T-01 <inc> --run "npm test -- a"`
    (exit 5 = the command failed, task stays open). No `Test:` → `--evidence "<sha> + what you ran"`.
-   Manual: append `{"t":"T-01","e":"done","by":"<agent>","at":"<ISO>","evidence":"npm test -- a → exit 0 | <sha>"}`.
+   Manual: append `{"t":"T-01","e":"done","by":"<agent>","at":"<ISO>","evidence":"npm test -- a → exit 0 / <sha>"}`.
 8. **Stuck / not needed** — `task block T-01 --note "<what is missing>"` or `task skip T-01 --note "<why>"` (skip is terminal and needs a reason).
 9. Back to 1.
+
+## No CLI? Same loop, appended by hand
+
+`ledger.jsonl` is the only state; append one line per event (full protocol in `sw-task`):
+
+```bash
+printf '%s\n' '{"t":"T-01","e":"claim","by":"codex@mbp","at":"2026-09-02T10:00:00Z"}' \
+  >> .specweave/increments/0042-slug/ledger.jsonl
+```
+
+```powershell
+$L = '.specweave\increments\0042-slug\ledger.jsonl'
+$line = '{"t":"T-01","e":"done","by":"codex@win","at":"2026-09-02T11:30:00Z","evidence":"npm test -- a → exit 0 / a1b2c3d"}'
+[IO.File]::AppendAllText($L, $line + "`n", [Text.UTF8Encoding]::new($false))
+```
+
+PowerShell never uses `>>` here: it writes UTF-16 with a BOM and the line is unreadable to every other tool.
 
 ## Finish (do not stop to ask)
 

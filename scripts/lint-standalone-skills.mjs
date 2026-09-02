@@ -126,8 +126,11 @@ export function lintSkill(dir) {
     }
   }
   const hasPsBlock = blocks.some((b) => /^(powershell|pwsh|ps1)$/i.test(b.lang));
-  if (hasPsBlock && !/\[IO\.File\]::(AppendAllText|WriteAllText)/.test(content)) {
-    add('has a PowerShell block without the [IO.File]:: write form');
+  const hasIoWrite = /\[IO\.File\]::(AppendAllText|WriteAllText)/.test(content);
+  if (hasPsBlock && !hasIoWrite) add('has a PowerShell block without the [IO.File]:: write form');
+  // A skill that tells you to append to the ledger must show the Windows form too.
+  if (/ledger\.jsonl/.test(content) && /\bappend\b/i.test(content) && !hasIoWrite) {
+    add('documents appending to ledger.jsonl without the PowerShell [IO.File]::AppendAllText form');
   }
 
   // Ledger examples must be real, foldable events with the canonical key order.
