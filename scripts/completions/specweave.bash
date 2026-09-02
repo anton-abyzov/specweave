@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall install scan-skill scan-plugins judge-skill list pause resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric reflect-stop detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella"
+    local main_commands="init uninstall install scan-skill scan-plugins judge-skill list pause resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella"
 
     case "${prev}" in
         specweave)
@@ -218,10 +218,6 @@ _specweave_completions() {
             ;;
         generate-rubric)
             COMPREPLY=( $(compgen -W "--refresh --silent --help" -- "${cur}") )
-            return 0
-            ;;
-        reflect-stop)
-            COMPREPLY=( $(compgen -W "-s --silent -m --model --migrate --help" -- "${cur}") )
             return 0
             ;;
         detect-project)

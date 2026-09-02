@@ -572,7 +572,7 @@ Examples:
 program
   .command('decision-log')
   .description('Query structured decision logs from hooks')
-  .option('--hook <name>', 'Filter by hook name (stop-auto, stop-reflect)')
+  .option('--hook <name>', 'Filter by hook name (e.g. stop-auto)')
   .option('--decision <type>', 'Filter by decision type (approve, block)')
   .option('--since <window>', 'Filter by time window (1h, 24h, 7d)')
   .option('--limit <number>', 'Number of entries to show (default: 20)', '20')
@@ -1357,7 +1357,7 @@ sessionCmd
 
 sessionCmd
   .command('end')
-  .description('End session: reflect check, auto scan, sync flush (replaces Stop hooks)')
+  .description('End session: auto scan, sync flush (replaces Stop hooks)')
   .option('--json', 'Output as JSON')
   .option('--silent', 'Suppress output')
   .action(async (options) => {
@@ -1451,19 +1451,6 @@ program
     const { generateRubricCommand } = await import('../dist/src/cli/commands/generate-rubric.js');
     const result = await generateRubricCommand(incrementId, options);
     process.exit(result.success ? 0 : 1);
-  });
-
-// Reflect stop command - Extract learnings at session end (internal, called by stop hook)
-program
-  .command('reflect-stop <transcript-path>')
-  .description('Extract learnings from session transcript (called by stop hook)')
-
-  .option('-s, --silent', 'Silent mode - output JSON only')
-  .option('-m, --model <model>', 'Model to use (haiku, sonnet, opus)')
-  .option('--migrate', 'Run migration of old memory files first')
-  .action(async (transcriptPath, options) => {
-    const { reflectStopCommand } = await import('../dist/src/cli/commands/reflect-stop.js');
-    await reflectStopCommand(transcriptPath, options);
   });
 
 // Detect project command - Analyze project files and suggest plugins (internal)
@@ -1699,7 +1686,7 @@ program
   await checkForDuplicates();
 
   // Hide internal-only commands from --help (still callable by hooks)
-  for (const name of ['hook', 'detect-intent', 'evaluate-completion', 'reflect-stop', 'detect-project']) {
+  for (const name of ['hook', 'detect-intent', 'evaluate-completion', 'detect-project']) {
     const cmd = program.commands.find(c => c.name() === name);
     if (cmd) cmd._hidden = true;
   }
