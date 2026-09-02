@@ -85,7 +85,7 @@ export function generateRubric(
         const id = criterionIdForAC(ac.id);
         lines.push(`### ${id}: ${ac.description} [blocking]`);
         lines.push(`- **Source**: ${ac.id}`);
-        lines.push('- **Evaluator**: sw:grill');
+        lines.push('- **Evaluator**: sw:review');
         lines.push(`- **Verify**: ${ac.description}`);
         lines.push('- **Threshold**: AC passes');
         lines.push('- **Result**: [ ] PENDING');
@@ -118,9 +118,9 @@ export function generateRubric(
   lines.push('');
   lines.push('### R-D02: No critical, high, or medium code review findings [blocking]');
   lines.push('- **Source**: project-default');
-  lines.push('- **Evaluator**: sw:code-reviewer');
-  lines.push('- **Verify**: code-review-report.json summary');
-  lines.push('- **Threshold**: critical === 0 AND high === 0 AND medium === 0');
+  lines.push('- **Evaluator**: sw:review');
+  lines.push('- **Verify**: reports/review.json findings');
+  lines.push('- **Threshold**: critical === 0 AND high === 0');
   lines.push('- **Result**: [ ] PENDING');
   lines.push('');
 
@@ -128,18 +128,11 @@ export function generateRubric(
   lines.push('');
   lines.push('## Independent Evaluation');
   lines.push('');
-  lines.push('### R-D03: Ship readiness verified [blocking]');
+  lines.push('### R-D03: Adversarial review found nothing blocking [blocking]');
   lines.push('- **Source**: project-default');
-  lines.push('- **Evaluator**: sw:grill');
-  lines.push('- **Verify**: grill-report.json shipReadiness');
-  lines.push('- **Threshold**: shipReadiness !== "NOT READY"');
-  lines.push('- **Result**: [ ] PENDING');
-  lines.push('');
-  lines.push('### R-D04: LLM judge verdict acceptable [blocking]');
-  lines.push('- **Source**: project-default');
-  lines.push('- **Evaluator**: sw:judge-llm');
-  lines.push('- **Verify**: judge-llm-report.json verdict');
-  lines.push('- **Threshold**: verdict !== "REJECTED"');
+  lines.push('- **Evaluator**: sw:review');
+  lines.push('- **Verify**: reports/review.json (ok + findings)');
+  lines.push('- **Threshold**: ok !== false AND no critical/high findings');
   lines.push('- **Result**: [ ] PENDING');
   lines.push('');
 

@@ -117,7 +117,7 @@ export class IncrementCompletionValidator {
           `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
           coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
           `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
-          `  Run: sw:validate ${incrementId} for detailed coverage report.`
+          `  Run: specweave verify ${incrementId} for a detailed coverage report.`
         );
       }
 

@@ -205,7 +205,7 @@ function generateTips(): string {
   lines.push('💡 Tips:');
   lines.push('   • .specweave/ is your source of truth (commit it!)');
   lines.push('   • .env contains secrets (DO NOT commit!)');
-  lines.push('   • Use sw:progress to track increment progress');
+  lines.push('   • Run `specweave status` to track increment progress');
   lines.push('   • Increments sync to GitHub automatically');
 
   lines.push('');

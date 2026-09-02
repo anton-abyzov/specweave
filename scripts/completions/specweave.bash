@@ -61,11 +61,11 @@ _specweave_completions() {
             return 0
             ;;
         complete)
-            COMPREPLY=( $(compgen -W "-s --silent -y --yes --skip-validation -r --reason --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-s --silent -y --yes --skip-validation -r --reason --all --help" -- "${cur}") )
             return 0
             ;;
         task)
-            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --all-mine --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --json --help" -- "${cur}") )
             return 0
             ;;
         verify)
@@ -73,7 +73,7 @@ _specweave_completions() {
             return 0
             ;;
         create-increment)
-            COMPREPLY=( $(compgen -W "--id --auto-id --name --board --type --priority --project-root --parallel --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--id --auto-id --name --title --description --project --board --type --priority --project-root --parallel --supersedes --parent --json --help" -- "${cur}") )
             return 0
             ;;
         handoff)

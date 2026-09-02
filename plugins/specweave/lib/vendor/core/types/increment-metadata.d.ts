@@ -98,11 +98,41 @@ export interface IncrementMetadata {
     approvedAt?: string;
     /**
      * Why the increment was closed without a passing `reports/verify.json`
-     * (`specweave complete --reason "<text>"`). Present only when the 2.0
-     * closure gate was overridden.
+     * (`specweave complete --reason "<text>"`), or why it was abandoned in
+     * favour of another increment. Present only when the 2.0 closure gate was
+     * overridden or the increment was superseded.
      */
     closeReason?: string;
+    /**
+     * Increment id this one replaces (`specweave create-increment --supersedes NNNN`).
+     * The superseded increment is moved to `abandoned` with
+     * `closeReason: "superseded by <this id>"`.
+     */
+    supersedes?: string;
+    /** Parent increment id when this increment is a split-off / follow-up child. */
+    parent?: string;
 }
+/**
+ * Statuses seen in the wild that never existed in the enum, mapped to the
+ * status 2.0 uses instead. `superseded` was written by hand (and by older
+ * skills) whenever an increment was replaced by a newer one.
+ */
+export declare const LEGACY_STATUS_MAP: Record<string, IncrementStatus>;
+export interface LegacyStatusMigration {
+    /** The patched metadata (a copy; unchanged input when nothing matched). */
+    metadata: Record<string, unknown>;
+    /** True when a legacy status was rewritten. */
+    changed: boolean;
+    /** Human-readable note for the caller's warning channel. */
+    note?: string;
+}
+/**
+ * One-shot migration for `metadata.json` files carrying a status that is not
+ * in {@link IncrementStatus}. `superseded` becomes `abandoned` and records the
+ * intent in `closeReason` (+ `supersedes` when the file names a successor).
+ * Idempotent: metadata already using enum statuses is returned untouched.
+ */
+export declare function migrateLegacyStatus(raw: Record<string, unknown>): LegacyStatusMigration;
 /**
  * Increment metadata with additional computed fields
  * Used for rich status displays

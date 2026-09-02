@@ -137,7 +137,9 @@ describe('create-increment --auto-id', () => {
       fs.readFileSync(path.join(incrementsPath, '0002-second-try', 'metadata.json'), 'utf-8')
     );
     expect(oldMeta.status).toBe('abandoned');
-    expect(oldMeta.abandonedReason).toContain('Superseded by 0002-second-try');
+    // 2.0: the supersede link is recorded as metadata.closeReason (lower-case
+    // "superseded by <id>"); `abandonedReason` was the 1.x field name.
+    expect(oldMeta.closeReason).toContain('superseded by 0002-second-try');
     expect(newMeta.supersedes).toBe('0001-first-try');
   });
 
