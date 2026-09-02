@@ -1,15 +1,14 @@
 /**
  * Smart defaults for init flow
  *
- * Applies sensible defaults for testing, quality gates, deep interview,
- * LSP, and translation without asking interactive questions.
+ * Applies the 2.0 config defaults without asking interactive questions.
+ * Only keys that SpecWeave 2.0 actually reads are written.
  *
  * Part of 0200-init-two-phase-redesign
  */
 
 export interface SmartDefaultsOptions {
   adapter: string;    // 'claude' | 'cursor' | 'generic'
-  language: string;   // Language code e.g. 'en', 'es', 'de'
   isGitRepo: boolean;
 }
 
@@ -22,46 +21,31 @@ export function applySmartDefaults(
   config: Record<string, any>,
   options: SmartDefaultsOptions
 ): Record<string, any> {
-  // Testing: default to TDD
+  // Testing: TDD by default.
   // Coverage semantics: unit/integration = Istanbul line coverage %;
-  // e2e = % of written e2e tests that must pass (not line coverage — Playwright has no Istanbul reporter)
+  // e2e = % of written e2e tests that must pass (Playwright has no Istanbul reporter).
   config.testing = {
-    defaultTestMode: 'TDD',
-    defaultCoverageTarget: 80,
-    coverageTargets: { unit: 80, integration: 70, e2e: 100 },
+    mode: 'TDD',
+    commands: [],
+    coverage: { unit: 80, integration: 70, e2e: 100 },
     ...config.testing,
   };
 
-  // Quality gates: default to standard
-  config.qualityGates = {
-    preset: 'standard',
-    enforcement: {
-      testsRequired: true,
-      llmValidation: true,
-      specCompliance: true,
-    },
-    ...config.qualityGates,
-  };
-
-  // Deep interview: default to off (init-time, quick setup)
+  // Planning: deep interview off at init (quick setup).
   config.planning = {
     ...config.planning,
-    deepInterview: {
-      enabled: false,
-      ...config.planning?.deepInterview,
-    },
+    deepInterview: config.planning?.deepInterview ?? 'off',
   };
 
-  // LSP: auto-enable for Claude
+  // Living docs: off unless the user opts in.
+  config.livingDocs = config.livingDocs ?? false;
+
+  // LSP: auto-enable for Claude.
   if (options.adapter === 'claude') {
-    config.lsp = {
-      enabled: true,
-      autoInstallPlugins: true,
-      ...config.lsp,
-    };
+    config.lsp = { enabled: true, ...config.lsp };
   }
 
-  // Sync: ensure enabled by default when a provider is configured
+  // Sync: on by default once a provider/tracker is configured.
   const hasProvider = config.repository?.provider && config.repository.provider !== 'local';
   const hasTracker = config.issueTracker?.provider && config.issueTracker.provider !== 'none';
   if (hasProvider || hasTracker) {
@@ -77,34 +61,6 @@ export function applySmartDefaults(
       ...config.sync,
       // Force enabled if provider/tracker detected (don't let stale false override)
       ...(config.sync?.enabled === false ? { enabled: true } : {}),
-    };
-    // Ensure auto-create GitHub issue is on
-    // Note: sync_living_docs intentionally omitted — runs after agents finish, not at planning time
-    config.hooks = {
-      ...config.hooks,
-      post_increment_planning: {
-        auto_create_github_issue: true,
-        ...config.hooks?.post_increment_planning,
-      },
-    };
-  }
-
-  // Translation: based on language
-  if (options.language && options.language !== 'en') {
-    config.translation = {
-      enabled: true,
-      languages: ['en', options.language],
-      primary: options.language,
-      method: 'auto',
-      preserveFrameworkTerms: true,
-      scope: { incrementSpecs: true, livingDocs: true, externalSync: false },
-      keepEnglishOriginals: true,
-      ...config.translation,
-    };
-  } else {
-    config.translation = {
-      enabled: false,
-      ...config.translation,
     };
   }
 

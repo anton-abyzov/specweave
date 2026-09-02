@@ -8,6 +8,7 @@
 
 import {
   existsSync,
+  mkdirSync,
   readdirSync,
   statSync,
   readFileSync,
@@ -33,6 +34,9 @@ interface InstallationHealthOptions {
   cacheDir?: string;
 }
 
+/** How long a `npm view specweave version` answer stays good for. */
+export const NPM_VERSION_CACHE_MS = 24 * 60 * 60 * 1000;
+
 export class InstallationHealthChecker implements HealthChecker {
   category = 'Installation Health';
   private commandsDir: string;
@@ -56,7 +60,7 @@ export class InstallationHealthChecker implements HealthChecker {
     checks.push(this.checkPluginCacheHookFreshness(options.fix ?? false));
     checks.push(...await this.checkStaleLockfiles(projectRoot, options.fix ?? false));
     if (!options.quick) {
-      checks.push(this.checkUpdateHealth(options.fix ?? false));
+      checks.push(this.checkUpdateHealth(options.fix ?? false, projectRoot));
     }
 
     return {
@@ -625,7 +629,35 @@ export class InstallationHealthChecker implements HealthChecker {
     }).trim();
   }
 
-  private checkUpdateHealth(fix: boolean): CheckResult {
+  /**
+   * Latest published version, cached for 24 h under
+   * `.specweave/state/npm-version-check.json`. `npm view` is a network round
+   * trip; doctor runs often enough that hitting the registry every time is
+   * the single slowest check in the report.
+   */
+  private latestPublishedVersion(projectRoot: string): string {
+    const cachePath = join(projectRoot, '.specweave', 'state', 'npm-version-check.json');
+    try {
+      const cached = JSON.parse(readFileSync(cachePath, 'utf-8')) as { version?: string; checkedAt?: number };
+      if (cached.version && typeof cached.checkedAt === 'number'
+        && Date.now() - cached.checkedAt < NPM_VERSION_CACHE_MS) {
+        return cached.version;
+      }
+    } catch {
+      // no cache / unreadable — fall through to the network
+    }
+
+    const version = this.npmPublicExec('npm view specweave version', 15000);
+    try {
+      mkdirSync(join(projectRoot, '.specweave', 'state'), { recursive: true });
+      writeFileSync(cachePath, JSON.stringify({ version, checkedAt: Date.now() }, null, 2), 'utf-8');
+    } catch {
+      // caching is best-effort
+    }
+    return version;
+  }
+
+  private checkUpdateHealth(fix: boolean, projectRoot: string): CheckResult {
     // Get installed version
     let installedVersion: string;
     try {
@@ -647,7 +679,7 @@ export class InstallationHealthChecker implements HealthChecker {
     // Get latest version from npm — always use clean env to avoid E401 from stale tokens
     let latestVersion: string;
     try {
-      latestVersion = this.npmPublicExec('npm view specweave version', 15000);
+      latestVersion = this.latestPublishedVersion(projectRoot);
     } catch {
       return {
         name: 'Update health',

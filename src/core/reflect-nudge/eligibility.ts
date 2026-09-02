@@ -78,16 +78,10 @@ export async function checkNudgeEligibility(
 
 // ── Internals ────────────────────────────────────────────────────────
 
-function readAutoNudge(root: string): boolean {
-  try {
-    const configPath = path.join(root, '.specweave', 'config.json');
-    if (!fs.existsSync(configPath)) return true;
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    if (config?.reflect?.autoNudge === false) return false;
-    return true;
-  } catch {
-    return true;
-  }
+function readAutoNudge(_root: string): boolean {
+  // 2.0 removed the `reflect` config key — the nudge is always eligible and
+  // callers suppress it with `opts.autoNudge: false`.
+  return true;
 }
 
 /**

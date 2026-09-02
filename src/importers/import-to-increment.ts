@@ -156,8 +156,8 @@ export class ImportToIncrementConverter {
     let coverageTarget: number | undefined;
     try {
       const config = await readConfig(this.projectRoot);
-      testMode = config?.testing?.defaultTestMode;
-      coverageTarget = config?.testing?.defaultCoverageTarget;
+      testMode = config?.testing?.mode;
+      coverageTarget = config?.testing?.coverage?.unit;
     } catch {
       // Fallback to template-creator defaults if config reading fails
     }

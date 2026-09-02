@@ -13,8 +13,8 @@ import { buildClosureConfigFromHooks } from '../../../src/core/closure-dispatche
 import { DEFAULT_CONFIG } from '../../../src/core/config/types.js';
 
 describe('closure hook config types and defaults', () => {
-  it('DEFAULT_CONFIG has post_increment_done with close_github_issue: true', () => {
-    expect(DEFAULT_CONFIG.hooks?.post_increment_done?.close_github_issue).toBe(true);
+  it('DEFAULT_CONFIG ships no closure hook flags — they are opt-in (2.0)', () => {
+    expect(DEFAULT_CONFIG.hooks).toBeUndefined();
   });
 
   it('all provider flags default to true when post_increment_done exists', () => {

@@ -52,10 +52,6 @@ const {
   mockFindExistingUserStoryFile,
   mockCleanupDuplicateFiles,
   mockCleanupTempFiles,
-  mockGenerateLivingDocsImagesEnhanced,
-  mockGetRelativeImagePath,
-  mockMarkdownImage,
-  mockExtractKeywordsFromContent,
   mockGetProfilesByProvider,
   mockGetGitHubAuthFromProject,
   mockTaskGeneratorInstance,
@@ -124,10 +120,6 @@ const {
   const mockCleanupDuplicateFiles = vi.fn().mockResolvedValue(undefined);
   const mockCleanupTempFiles = vi.fn().mockResolvedValue(undefined);
 
-  const mockGenerateLivingDocsImagesEnhanced = vi.fn().mockResolvedValue({ success: true });
-  const mockGetRelativeImagePath = vi.fn().mockReturnValue('images/feature.png');
-  const mockMarkdownImage = vi.fn().mockReturnValue('![alt](images/feature.png)');
-  const mockExtractKeywordsFromContent = vi.fn().mockReturnValue([]);
 
   const mockGetProfilesByProvider = vi.fn().mockReturnValue([]);
   const mockGetGitHubAuthFromProject = vi.fn().mockReturnValue({ token: '' });
@@ -158,11 +150,7 @@ const {
     mockFindExistingUserStoryFile,
     mockCleanupDuplicateFiles,
     mockCleanupTempFiles,
-    mockGenerateLivingDocsImagesEnhanced,
-    mockGetRelativeImagePath,
-    mockMarkdownImage,
-    mockExtractKeywordsFromContent,
-    mockGetProfilesByProvider,
+            mockGetProfilesByProvider,
     mockGetGitHubAuthFromProject,
     mockTaskGeneratorInstance,
   };
@@ -233,13 +221,6 @@ vi.mock('../../../../src/core/living-docs/sync-helpers/index.js', async () => {
     extractFirstSentence: actual.extractFirstSentence,
   };
 });
-
-vi.mock('../../../../src/utils/image-generator.js', () => ({
-  generateLivingDocsImagesEnhanced: mockGenerateLivingDocsImagesEnhanced,
-  getRelativeImagePath: mockGetRelativeImagePath,
-  markdownImage: mockMarkdownImage,
-  extractKeywordsFromContent: mockExtractKeywordsFromContent,
-}));
 
 vi.mock('../../../../src/core/types/sync-profile.js', () => ({
   getProfilesByProvider: mockGetProfilesByProvider,
@@ -368,14 +349,12 @@ describe('LivingDocsSync', () => {
     });
 
     // Set env to skip image generation in tests
-    process.env.SPECWEAVE_SKIP_IMAGE_GEN = 'true';
     process.env.SKIP_EXTERNAL_SYNC = 'true';
 
     sync = new LivingDocsSync(testDir, { logger: silentLogger });
   });
 
   afterEach(async () => {
-    delete process.env.SPECWEAVE_SKIP_IMAGE_GEN;
     delete process.env.SKIP_EXTERNAL_SYNC;
     await fsPromises.rm(testDir, { recursive: true, force: true });
   });
@@ -1158,77 +1137,6 @@ title: Skip External
   // syncIncrement - image generation
   // =========================================================================
 
-  describe('syncIncrement - image generation', () => {
-    const incrementId = '0009-image-gen';
-
-    beforeEach(async () => {
-      const incDir = path.join(testDir, '.specweave', 'increments', incrementId);
-      await fsPromises.mkdir(incDir, { recursive: true });
-      await fsPromises.writeFile(
-        path.join(incDir, 'spec.md'),
-        `---
-title: Image Gen Feature
----
-# Image Gen Feature
-## Overview
-Feature with images.
-`,
-        'utf-8'
-      );
-      await fsPromises.writeFile(
-        path.join(incDir, 'metadata.json'),
-        JSON.stringify({ status: 'in-progress' }),
-        'utf-8'
-      );
-      await fsPromises.writeFile(
-        path.join(testDir, '.specweave', 'config.json'),
-        JSON.stringify({ project: { name: 'test-project' } }),
-        'utf-8'
-      );
-
-      mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('spec.md') || p.endsWith('metadata.json')) return true;
-        return false;
-      });
-      mockReadJson.mockImplementation(async (p: string) => {
-        if (p.endsWith('metadata.json')) return { status: 'in-progress' };
-        return {};
-      });
-    });
-
-    it('should skip image generation when SPECWEAVE_SKIP_IMAGE_GEN is true', async () => {
-      process.env.SPECWEAVE_SKIP_IMAGE_GEN = 'true';
-
-      await sync.syncIncrement(incrementId);
-
-      expect(mockGenerateLivingDocsImagesEnhanced).not.toHaveBeenCalled();
-    });
-
-    it('should attempt image generation when SPECWEAVE_SKIP_IMAGE_GEN is not set', async () => {
-      delete process.env.SPECWEAVE_SKIP_IMAGE_GEN;
-
-      mockGenerateLivingDocsImagesEnhanced.mockResolvedValue({
-        success: true,
-        featureImage: '/tmp/images/feature.png',
-      });
-      mockGenerateFeatureFile.mockReturnValue('# Feature\n\n## TL;DR\n\nSome overview.\n\n## Details\n');
-
-      await sync.syncIncrement(incrementId);
-
-      expect(mockGenerateLivingDocsImagesEnhanced).toHaveBeenCalled();
-    });
-
-    it('should handle image generation errors gracefully', async () => {
-      delete process.env.SPECWEAVE_SKIP_IMAGE_GEN;
-
-      mockGenerateLivingDocsImagesEnhanced.mockRejectedValue(new Error('Image gen failed'));
-
-      const result = await sync.syncIncrement(incrementId);
-
-      // Image generation failure should not prevent sync success
-      expect(result.success).toBe(true);
-    });
-  });
 
   // =========================================================================
   // parseIncrementSpec - tested indirectly via syncIncrement

@@ -93,12 +93,12 @@ async function detectFromName(
   const config = await configManager.loadAsync();
 
   const project = detectProjectFromIncrement(incrementName, description, config);
-  const projectConfig = config.specs?.projects?.[project];
+  const projectConfig = config.workspace?.repos?.find((r) => r.id === project);
 
   // Calculate confidence
   const text = `${incrementName} ${description}`.toLowerCase();
   let confidence = 0;
-  const keywords = projectConfig?.keywords || [];
+  const keywords = projectConfig?.techStack || [];
 
   for (const keyword of keywords) {
     if (text.includes(keyword.toLowerCase())) {
@@ -123,7 +123,7 @@ async function detectFromName(
     types: [project],
     plugins: [],
     project,
-    projectName: projectConfig?.displayName || project,
+    projectName: projectConfig?.name || project,
     confidence,
   };
 }

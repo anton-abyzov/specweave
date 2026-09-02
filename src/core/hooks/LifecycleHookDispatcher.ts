@@ -15,7 +15,7 @@
 import { appendFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import { ConfigManager } from '../config/config-manager.js';
-import type { HookConfiguration } from '../config/types.js';
+import type { HookConfiguration, SpecWeaveConfig } from '../config/types.js';
 import type { IncrementMetadataV2 } from '../types/increment-metadata.js';
 
 /**
@@ -45,51 +45,15 @@ export class LifecycleHookDispatcher {
   /**
    * Dispatch post-increment-planning hooks.
    *
-   * Checks hooks.post_increment_planning.auto_create_github_issue
-   * and calls autoCreateExternalIssue if true.
+   * 2.0: no-op. Kept so callers (create-increment) need no change.
    */
   static async onIncrementPlanned(
-    projectRoot: string,
-    incrementId: string,
-    options: DispatchOptions = {},
+    _projectRoot: string,
+    _incrementId: string,
+    _options: DispatchOptions = {},
   ): Promise<void> {
-    if (LifecycleHookDispatcher.shouldSkip(options)) return;
-
-    try {
-      const hooks = await LifecycleHookDispatcher.readHooksConfig(projectRoot);
-      const planningConfig = hooks?.post_increment_planning;
-      if (!planningConfig) return;
-
-      // Living docs sync FIRST (creates us-*.md files for proper sync pipeline)
-      if (planningConfig.sync_living_docs) {
-        try {
-          const { LivingDocsSync } = await import(
-            '../living-docs/living-docs-sync.js'
-          );
-          const sync = new LivingDocsSync(projectRoot);
-          await sync.syncIncrement(incrementId);
-        } catch (error) {
-          // Living docs failure should not block external issue creation
-          LifecycleHookDispatcher.logError('onIncrementPlanned:livingDocs', error);
-        }
-      }
-
-      // (0348) GitHub issue creation now handled by LivingDocsSync → GitHubFeatureSync.
-      // If auto_create_github_issue is set but sync_living_docs wasn't, ensure living docs sync runs.
-      if (planningConfig.auto_create_github_issue && !planningConfig.sync_living_docs) {
-        try {
-          const { LivingDocsSync } = await import(
-            '../living-docs/living-docs-sync.js'
-          );
-          const sync = new LivingDocsSync(projectRoot);
-          await sync.syncIncrement(incrementId);
-        } catch (error) {
-          LifecycleHookDispatcher.logError('onIncrementPlanned:autoCreateFallback', error);
-        }
-      }
-    } catch (error) {
-      LifecycleHookDispatcher.logError('onIncrementPlanned', error);
-    }
+    // 2.0: nothing runs at planning time. Living docs are `livingDocs: 'onDone'`
+    // only, and external issues are created explicitly (`specweave sync push`).
   }
 
   /**
@@ -171,8 +135,8 @@ export class LifecycleHookDispatcher {
   /**
    * Dispatch post-increment-done hooks.
    *
+   * Living docs run when config `livingDocs` is 'onDone'.
    * Checks hooks.post_increment_done for:
-   * - sync_living_docs: triggers LivingDocsSync.syncIncrement
    * - sync_to_github_project: triggers GitHubFeatureSync for the increment's feature
    * - close_github_issue: triggers SyncCoordinator.syncIncrementClosure
    * - update_living_docs_first: if true, living docs sync runs before closure
@@ -192,13 +156,16 @@ export class LifecycleHookDispatcher {
       if (!doneConfig) return result;
 
       // Global skip: autoSyncOnCompletion flag (defaults to true)
+      // Living docs run only when `livingDocs: 'onDone'` (2.0 default: false).
       let autoSync = true;
+      let livingDocs: SpecWeaveConfig['livingDocs'] = false;
       try {
         const configManager = new ConfigManager(projectRoot);
         const fullConfig = await configManager.read();
         autoSync = fullConfig.sync?.settings?.autoSyncOnCompletion ?? true;
+        livingDocs = fullConfig.livingDocs ?? false;
       } catch {
-        // Default: sync enabled
+        // Default: sync enabled, living docs off
       }
 
       // Per-increment skip: skipLivingDocsSync flag in metadata.json
@@ -217,7 +184,7 @@ export class LifecycleHookDispatcher {
         }
       }
 
-      const shouldSyncLivingDocs = doneConfig.sync_living_docs === true && autoSync && !perIncrementSkip;
+      const shouldSyncLivingDocs = livingDocs === 'onDone' && autoSync && !perIncrementSkip;
       // v1.0.357 + 0696: Support closing issues for ALL providers (JIRA/ADO/GitHub).
       // close_github_issue is the legacy flag; close_external_issue is the new generic one.
       // SyncCoordinator.syncIncrementClosure() closes every enabled provider using a

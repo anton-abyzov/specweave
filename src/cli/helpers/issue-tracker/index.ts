@@ -235,12 +235,8 @@ async function writeSyncConfigHelper(
   const config = await configManager.read();
 
   config.hooks = {
-    post_task_completion: {
-      sync_tasks_md: true,
-      external_tracker_sync: true
-    },
-    post_increment_planning: {
-      auto_create_github_issue: false
+    post_increment_done: {
+      close_external_issue: true
     }
   };
 

@@ -24,11 +24,9 @@ export function checkReflectConfig(configPath: string): ReflectCheckResult {
     if (!fs.existsSync(configPath)) {
       return { enabled: true, reason: 'No config file — default enabled' };
     }
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    if (config.reflect?.enabled === false) {
-      return { enabled: false, reason: 'Reflection disabled in config' };
-    }
-    return { enabled: true, reason: 'Reflection enabled in config' };
+    JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    // 2.0 dropped the `reflect` config key — reflection is always available.
+    return { enabled: true, reason: 'Reflection enabled' };
   } catch {
     return { enabled: true, reason: 'Config read error — default enabled' };
   }

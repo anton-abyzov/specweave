@@ -59,16 +59,15 @@ function refinement(targetSkill: string, severity: 'low' | 'medium' | 'high' = '
 }
 
 describe('checkNudgeEligibility', () => {
-  it('returns shouldNudge=false when autoNudge is disabled in config (AC-US3-02)', async () => {
+  it('2.0 has no reflect config key — a stale reflect block no longer disables the nudge', async () => {
     await writeConfig({ reflect: { autoNudge: false } });
     await writeSignals([refinement('sw:architect'), refinement('sw:architect'), refinement('sw:architect')]);
 
     const result = await checkNudgeEligibility({ projectRoot: root, incrementId: '0671' });
-    expect(result.shouldNudge).toBe(false);
-    expect(result.reason).toBe('disabled');
+    expect(result.shouldNudge).toBe(true);
   });
 
-  it('defaults autoNudge to true when config is missing (AC-US3-02 default)', async () => {
+  it('nudges when config is missing (AC-US3-02 default)', async () => {
     await writeSignals([refinement('sw:architect')]);
 
     const result = await checkNudgeEligibility({ projectRoot: root, incrementId: '0671' });
@@ -76,7 +75,7 @@ describe('checkNudgeEligibility', () => {
     expect(result.reason).toBe('has-refinement');
   });
 
-  it('defaults autoNudge to true when the reflect block is absent', async () => {
+  it('nudges when the config carries no nudge settings', async () => {
     await writeConfig({ project: { name: 'test' } });
     await writeSignals([refinement('sw:architect')]);
 

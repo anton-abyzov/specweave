@@ -198,9 +198,8 @@ function isPluginAutoLoadEnabled(): boolean {
     return true; // Default to enabled if no config
   }
 
-  // Only return false if explicitly set to false
-  const pluginAutoLoad = config.pluginAutoLoad as { enabled?: boolean } | undefined;
-  return pluginAutoLoad?.enabled !== false;
+  // 2.0: plugin auto-load is always on when a config exists.
+  return true;
 }
 
 /**
@@ -219,9 +218,8 @@ function isIncrementAssistEnabled(): boolean {
     return true; // Default to enabled if no config
   }
 
-  // Only return false if explicitly set to false
-  const incrementAssist = config.incrementAssist as { enabled?: boolean } | undefined;
-  return incrementAssist?.enabled !== false;
+  // 2.0: increment assist is always on when a config exists.
+  return true;
 }
 
 /**
@@ -234,14 +232,7 @@ function getIncrementConfidenceThreshold(): number {
     return 0.7; // Default threshold
   }
 
-  const incrementAssist = config.incrementAssist as { confidenceThreshold?: number } | undefined;
-  const threshold = incrementAssist?.confidenceThreshold;
-
-  if (typeof threshold === 'number' && threshold >= 0 && threshold <= 1) {
-    return threshold;
-  }
-
-  return 0.7; // Default threshold
+  return 0.7; // 2.0: fixed threshold (no incrementAssist config key)
 }
 
 /**

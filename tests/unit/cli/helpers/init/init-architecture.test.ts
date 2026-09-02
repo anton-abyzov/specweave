@@ -83,14 +83,10 @@ describe('init-architecture (integration)', () => {
 
     it('applySmartDefaults works without any other phase', () => {
       const config: Record<string, any> = {};
-      const result = applySmartDefaults(config, {
-        adapter: 'claude',
-        language: 'en',
-        isGitRepo: true,
-      });
+      const result = applySmartDefaults(config, { adapter: 'claude', isGitRepo: true });
 
-      expect(result.testing.defaultTestMode).toBe('TDD');
-      expect(result.qualityGates.preset).toBe('standard');
+      expect(result.testing.mode).toBe('TDD');
+      expect(result.planning.deepInterview).toBe('off');
       expect(result.lsp.enabled).toBe(true);
     });
 
@@ -163,8 +159,8 @@ describe('init-architecture (integration)', () => {
 
       // Phase 4: Apply smart defaults
       const config: Record<string, any> = {};
-      applySmartDefaults(config, { adapter: 'claude', language: 'en', isGitRepo: true });
-      expect(config.testing.defaultTestMode).toBe('TDD');
+      applySmartDefaults(config, { adapter: 'claude', isGitRepo: true });
+      expect(config.testing.mode).toBe('TDD');
 
       // Phase 5: Generate summary banner (simplified - no tracker/greenfield/repoCount)
       const banner = formatSummaryBanner({
@@ -173,11 +169,9 @@ describe('init-architecture (integration)', () => {
         adapter: 'claude',
         language: 'en',
         defaults: {
-          testing: config.testing.defaultTestMode,
-          qualityGates: config.qualityGates.preset,
+          testing: config.testing.mode,
           lspEnabled: !!config.lsp?.enabled,
           gitHooksInstalled: true,
-          translationEnabled: false,
         },
       });
 
@@ -214,8 +208,8 @@ describe('init-architecture (integration)', () => {
       expect(greenfield).toBe(false); // Has source code
 
       const config: Record<string, any> = {};
-      applySmartDefaults(config, { adapter: 'claude', language: 'es', isGitRepo: true });
-      expect(config.translation.enabled).toBe(true);
+      applySmartDefaults(config, { adapter: 'claude', isGitRepo: true });
+      expect(config.livingDocs).toBe(false);
 
       const banner = formatSummaryBanner({
         projectName: 'backend',
@@ -223,16 +217,14 @@ describe('init-architecture (integration)', () => {
         adapter: 'claude',
         language: 'es',
         defaults: {
-          testing: config.testing.defaultTestMode,
-          qualityGates: config.qualityGates.preset,
+          testing: config.testing.mode,
           lspEnabled: true,
           gitHooksInstalled: true,
-          translationEnabled: config.translation.enabled,
         },
       });
 
       const stripped = banner.replace(/\x1B\[[0-9;]*m/g, '');
-      expect(stripped).toContain('Auto-translation (es)');
+      expect(stripped).toContain('TDD');
     });
 
     it('full pipeline: ADO repo with no credentials', () => {

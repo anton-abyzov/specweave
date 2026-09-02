@@ -144,9 +144,9 @@ export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
  * Testing configuration for config.json
  */
 export interface TestingConfig {
-  defaultTestMode: TestMode;
-  defaultCoverageTarget: number;
-  coverageTargets: {
+  mode: TestMode;
+  commands: string[];
+  coverage: {
     unit: number;
     integration: number;
     e2e: number;

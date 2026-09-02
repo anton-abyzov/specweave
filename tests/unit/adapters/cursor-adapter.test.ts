@@ -398,32 +398,6 @@ describe('CursorAdapter', () => {
       );
     });
 
-    it('should inject system prompt for non-English language', async () => {
-      mockPathExists.mockImplementation(async (p: string) => {
-        if (p.endsWith('SKILL.md')) return true;
-        if (p.endsWith('config.json')) return true;
-        return false;
-      });
-      mockReadJson.mockResolvedValue({ language: 'es' });
-      mockReadFile.mockImplementation(async (p: string) => {
-        if (p.endsWith('SKILL.md')) return 'Skill content';
-        return '';
-      });
-      mockGetSystemPromptForLanguage.mockReturnValue('RESPOND IN SPANISH');
-
-      const plugin = makePlugin({
-        skills: [
-          { name: 'test-skill', path: '/plugins/test/skills/test-skill', description: 'Test' },
-        ],
-      });
-
-      await adapter.compilePlugin(plugin);
-
-      const writeCall = mockWriteFile.mock.calls[0];
-      const content = writeCall[1] as string;
-      expect(content).toContain('RESPOND IN SPANISH');
-    });
-
     it('should log installation messages', async () => {
       await adapter.compilePlugin(makePlugin());
 

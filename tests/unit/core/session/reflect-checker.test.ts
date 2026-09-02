@@ -25,13 +25,6 @@ describe('core/session/reflect-checker', () => {
   });
 
   // TC-007
-  it('should return enabled:false when reflect.enabled is false', () => {
-    fs.writeFileSync(configPath, JSON.stringify({ reflect: { enabled: false } }));
-    const result = checkReflectConfig(configPath);
-    expect(result.enabled).toBe(false);
-    expect(result.reason).toContain('disabled');
-  });
-
   it('should default to enabled when config file does not exist', () => {
     const result = checkReflectConfig(path.join(tmpDir, 'nonexistent.json'));
     expect(result.enabled).toBe(true);

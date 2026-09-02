@@ -78,7 +78,7 @@ export const EMPTY_SIGNAL_STORE: SignalStore = {
 };
 
 /**
- * Default SkillGen config values (applied when config.skillGen is absent)
+ * Default SkillGen values (2.0 has no `skillGen` config key)
  */
 export const SKILL_GEN_DEFAULTS = {
   detection: 'on-close' as const,
@@ -87,3 +87,26 @@ export const SKILL_GEN_DEFAULTS = {
   declinedSuggestions: [] as string[],
   maxSignals: 100,
 };
+
+/**
+ * Skill generation configuration (v1.0.XXX+)
+ *
+ * Controls automatic detection of recurring patterns from living docs
+ * and on-demand generation of project-local skills.
+ */
+/**
+ * 2.0 removed the `skillGen` config key; these values come from
+ * SKILL_GEN_DEFAULTS unless a caller passes overrides explicitly.
+ */
+export interface SkillGenConfig {
+  /** Pattern detection trigger: "on-close" runs on increment completion, "off" disables. Default: "on-close" */
+  detection?: 'on-close' | 'off';
+  /** Whether to print suggestions when patterns qualify. Default: true */
+  suggest?: boolean;
+  /** Minimum number of increments a pattern must appear in before qualifying. Default: 3 */
+  minSignalCount?: number;
+  /** Pattern IDs permanently excluded from suggestions (still visible in sw:skill-gen). Default: [] */
+  declinedSuggestions?: string[];
+  /** Maximum number of signals to retain (prunes lowest-confidence when exceeded). Default: 100 */
+  maxSignals?: number;
+}

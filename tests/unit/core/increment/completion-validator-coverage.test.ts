@@ -76,7 +76,7 @@ describe('completion-validator coverage enforcement', () => {
       '/mock-root/.specweave/increments/0001-test/spec.md': specOk,
       '/mock-root/.specweave/increments/0001-test/tasks.md': tasksOk,
       '/mock-root/.specweave/config.json': JSON.stringify({
-        testing: { coverageTargets: { unit: 90 }, defaultCoverageTarget: 80 },
+        testing: { coverage: { unit: 90 } },
       }),
     });
 
@@ -130,7 +130,7 @@ describe('completion-validator coverage enforcement', () => {
     expect(coverageError).toBeUndefined();
   });
 
-  it('uses config.json coverageTargets.unit over metadata coverageTarget', async () => {
+  it('uses config.json testing.coverage.unit over metadata coverageTarget', async () => {
     buildFs({
       '/mock-root/.specweave/increments/0004-test/metadata.json': JSON.stringify({
         id: '0004-test', status: 'active', testMode: 'TDD', coverageTarget: 50,
@@ -138,7 +138,7 @@ describe('completion-validator coverage enforcement', () => {
       '/mock-root/.specweave/increments/0004-test/spec.md': specOk,
       '/mock-root/.specweave/increments/0004-test/tasks.md': tasksOk,
       '/mock-root/.specweave/config.json': JSON.stringify({
-        testing: { coverageTargets: { unit: 95 } },
+        testing: { coverage: { unit: 95 } },
       }),
     });
 
@@ -148,27 +148,6 @@ describe('completion-validator coverage enforcement', () => {
 
     expect(mockValidateCoverage).toHaveBeenCalledWith(
       expect.objectContaining({ coverageTarget: 95 }),
-    );
-  });
-
-  it('falls back to defaultCoverageTarget when coverageTargets.unit missing', async () => {
-    buildFs({
-      '/mock-root/.specweave/increments/0005-test/metadata.json': JSON.stringify({
-        id: '0005-test', status: 'active', testMode: 'TDD', coverageTarget: 50,
-      }),
-      '/mock-root/.specweave/increments/0005-test/spec.md': specOk,
-      '/mock-root/.specweave/increments/0005-test/tasks.md': tasksOk,
-      '/mock-root/.specweave/config.json': JSON.stringify({
-        testing: { defaultCoverageTarget: 85 },
-      }),
-    });
-
-    mockValidateCoverage.mockResolvedValue({ passed: true, actual: 90 });
-
-    await IncrementCompletionValidator.validateCompletion('0005-test');
-
-    expect(mockValidateCoverage).toHaveBeenCalledWith(
-      expect.objectContaining({ coverageTarget: 85 }),
     );
   });
 
