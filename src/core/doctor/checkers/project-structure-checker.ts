@@ -12,6 +12,10 @@ import type {
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
 import { RECOGNIZED_LIFECYCLE_FOLDERS } from '../../increment/increment-utils.js';
+import {
+  INCREMENT_ROOT_FILES,
+  INCREMENT_SUBFOLDERS,
+} from '../../increment/increment-artifacts.js';
 
 const REQUIRED_DIRS = [
   { name: '.specweave directory', path: '.specweave', required: true },
@@ -93,13 +97,13 @@ export class ProjectStructureChecker implements HealthChecker {
       };
     }
 
+    // Single source of truth: src/core/increment/increment-artifacts.ts.
+    // ledger.jsonl / handoff.md / handoff.diff / rubric.md are written to the
+    // increment ROOT by the 2.0 CLI itself and must never be flagged.
     const allowedInRoot = [
-      'metadata.json',
-      'spec.md',
-      'plan.md',
-      'tasks.md',
+      ...INCREMENT_ROOT_FILES,
       ...RECOGNIZED_LIFECYCLE_FOLDERS,
-    ];
+    ] as readonly string[];
     const orphanedFiles: string[] = [];
 
     try {
@@ -112,7 +116,7 @@ export class ProjectStructureChecker implements HealthChecker {
           for (const file of incEntries) {
             const isAllowed =
               allowedInRoot.includes(file) ||
-              ['reports', 'logs', 'scripts', 'backups'].includes(file);
+              (INCREMENT_SUBFOLDERS as readonly string[]).includes(file);
             if (!isAllowed && !file.startsWith('.')) {
               orphanedFiles.push(`${entry.name}/${file}`);
             }
