@@ -30,7 +30,7 @@ export class IncrementCompletionValidator {
    *
    * Checks:
    * 1. All acceptance criteria are checked (- [x] **AC-...)
-   * 2. All tasks are completed (**Status**: [x] completed)
+   * 2. All tasks are done or skipped (ledger.jsonl fold, tasks.md checkbox fallback)
    * 3. Required files exist (spec.md, tasks.md)
    * 4. NEW (v0.23.0): AC coverage validation
    *    - All P0 ACs have at least one implementing task
@@ -59,12 +59,15 @@ export class IncrementCompletionValidator {
    */
   static async validateCompletion(
     incrementId: string,
-    options: { logger?: Logger; blockOnP0Orphans?: boolean } = {}
+    options: { logger?: Logger; blockOnP0Orphans?: boolean; reason?: string } = {}
   ): Promise<ValidationResult> {
     const logger = options.logger ?? consoleLogger;
     const blockOnP0Orphans = options.blockOnP0Orphans ?? true; // Default: block for P0 orphans
+    const reason = options.reason?.trim();
     const errors: string[] = [];
     const warnings: string[] = [];
+    // With --reason, incomplete work is recorded, not blocked.
+    const blocking = (msg: string) => (reason ? warnings.push(`${msg} (closing anyway — reason: ${reason})`) : errors.push(msg));
     const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
 
     // Check that required files exist
@@ -94,13 +97,13 @@ export class IncrementCompletionValidator {
     // Count open acceptance criteria
     const openACs = await this.countOpenACs(incrementId);
     if (openACs > 0) {
-      errors.push(`${openACs} acceptance criteria still open`);
+      blocking(`${openACs} acceptance criteria still open`);
     }
 
     // Count pending tasks
     const pendingTasks = await this.countPendingTasks(incrementId);
     if (pendingTasks > 0) {
-      errors.push(`${pendingTasks} tasks still pending`);
+      blocking(`${pendingTasks} tasks still pending`);
     }
 
     // NEW (v0.23.0): Validate AC coverage
@@ -110,7 +113,7 @@ export class IncrementCompletionValidator {
 
       // CRITICAL: Block closure if P0 ACs are orphaned
       if (blockOnP0Orphans && coverageResult.orphanedP0.length > 0) {
-        errors.push(
+        blocking(
           `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
           coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
           `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
@@ -176,97 +179,30 @@ export class IncrementCompletionValidator {
       warnings.push('External tool drift detection skipped due to error');
     }
 
-    // NEW (v1.0.337): Quality gate report validation
-    // Checks that grill and judge-llm reports exist and passed before allowing closure.
-    // Grill report is required by default (config: grill.required, default: true).
-    // Judge-llm report is optional (warns if missing, blocks only on REJECTED).
+    // 2.0 closure gate: reports/verify.json (written by `specweave verify`) is
+    // the ONLY hard gate. Grill / judge-llm / code-review / rubric reports are
+    // optional evidence and never block. `--reason` downgrades every blocking
+    // finding to a warning (the reason is stored as metadata.closeReason).
     try {
-      const gateResult = await this.validateQualityGateReports(
-        incrementId, incrementPath, { logger }
-      );
-      errors.push(...gateResult.errors);
-      warnings.push(...gateResult.warnings);
+      const { checkClosureGate } = await import('../tasks/closure-gate.js');
+      const gate = checkClosureGate(incrementPath, incrementId, { reason: options.reason });
+      errors.push(...gate.errors);
+      warnings.push(...gate.notices);
     } catch (error) {
-      logger.warn(`Quality gate report validation failed: ${error instanceof Error ? error.message : String(error)}`);
-      warnings.push('Quality gate report validation skipped due to error');
+      logger.warn(`Closure gate check failed: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push('Closure gate check skipped due to error');
     }
 
-    // NEW (v1.0.663): Rubric-based quality contract validation
-    // Only runs if rubric.md exists in the increment directory.
-    // All [blocking] criteria must PASS for closure. Advisory failures are warnings.
-    // No rubric.md = zero behavior change (backward compatible).
+    // Optional evidence: a code-review report still feeds skill-refinement
+    // signals. Read-only — findings never block closure in 2.0.
     try {
-      const rubricPath = path.join(incrementPath, 'rubric.md');
-      const hasRubric = await fs.pathExists(rubricPath);
-
-      // Skip if no rubric.md in increment, or if rubric opt-out in config
-      let rubricRequired = true;
-      try {
-        const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
-        if (await fs.pathExists(configPath)) {
-          const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-          rubricRequired = config?.rubric?.required !== false;
-        }
-      } catch { /* config read failed — default to required */ }
-
-      // Also skip if rubric.md is still a template placeholder
-      // Check frontmatter specifically (between --- markers) to avoid false matches in criterion text
-      let isTemplate = false;
-      if (hasRubric) {
-        try {
-          const rubricContent = await fs.readFile(rubricPath, 'utf-8');
-          const fmMatch = rubricContent.match(/^---\n([\s\S]*?)\n---/);
-          isTemplate = fmMatch ? fmMatch[1].includes('status: template') : false;
-        } catch { /* read failed */ }
+      const codeReviewPath = path.join(incrementPath, 'reports', 'code-review-report.json');
+      if (await fs.pathExists(codeReviewPath)) {
+        const report = JSON.parse(await fs.readFile(codeReviewPath, 'utf-8'));
+        await this.emitCodeReviewRefinementSignals(report, incrementId, resolveEffectiveRoot());
       }
-
-      if (hasRubric && rubricRequired && !isTemplate) {
-        const { mergeRubricLayers } = await import('../rubric/rubric-merger.js');
-        const { evaluateRubric, summarizeResults } = await import('../rubric/rubric-evaluator.js');
-
-        const projectRoot = resolveEffectiveRoot();
-        const reportsDir = path.join(incrementPath, 'reports');
-        const merged = await mergeRubricLayers(projectRoot, incrementId, incrementPath);
-
-        if (merged) {
-          // Run `command`-evaluator probes from the project root so repo-wide
-          // grep/test invariants resolve. projectRoot also enables refinement
-          // signal attribution for failed criteria.
-          const evaluated = await evaluateRubric(merged, reportsDir, {
-            projectRoot,
-            incrementId,
-            commandCwd: projectRoot,
-          });
-          const summary = summarizeResults(evaluated);
-
-          // Report non-passing blocking criteria with distinct messages per status
-          const failedBlocking = evaluated.criteria.filter(
-            c => c.severity === 'blocking' && c.result?.status === 'fail',
-          );
-          if (failedBlocking.length > 0) {
-            const ids = failedBlocking.map(c => `${c.id} (${c.title})`).join(', ');
-            errors.push(`Rubric: ${failedBlocking.length} blocking criteria failed: ${ids}`);
-          }
-
-          const unevaluatedBlocking = evaluated.criteria.filter(
-            c => c.severity === 'blocking' && (!c.result || c.result.status === 'skip'),
-          );
-          if (unevaluatedBlocking.length > 0) {
-            const ids = unevaluatedBlocking.map(c => `${c.id} (${c.title})`).join(', ');
-            errors.push(`Rubric: ${unevaluatedBlocking.length} blocking criteria not yet evaluated: ${ids}`);
-          }
-
-          // Advisory failures → warnings
-          if (summary.advisory.failed > 0) {
-            warnings.push(`Rubric: ${summary.advisory.failed} advisory criteria failed (non-blocking)`);
-          }
-
-          logger.info(`Rubric validation: ${summary.verdict} (${summary.blocking.passed}/${summary.blocking.total} blocking passed)`);
-        }
-      }
-    } catch (error) {
-      logger.warn(`Rubric validation failed: ${error instanceof Error ? error.message : String(error)}`);
-      warnings.push('Rubric validation skipped due to error');
+    } catch {
+      // Best-effort: signal emission must never affect closure.
     }
 
     // NEW (v1.0.105): Test coverage validation for TDD increments
@@ -307,17 +243,17 @@ export class IncrementCompletionValidator {
           if (coverageResult.skipped) {
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.passed) {
-            // Coverage below target - BLOCKING error
+            // 2.0: coverage is evidence, not a gate — reports/verify.json is the
+            // only hard closure gate. Surface the shortfall as a warning.
             const details = coverageResult.details;
             let detailsStr = '';
             if (details) {
               detailsStr = `\n    Lines: ${details.lines.toFixed(1)}% | Functions: ${details.functions.toFixed(1)}% | Branches: ${details.branches.toFixed(1)}%`;
             }
-            errors.push(
-              `❌ Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
+            warnings.push(
+              `Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
               `    ${coverageResult.reason}\n` +
-              `    File: ${coverageResult.coverageFile || 'not found'}\n\n` +
-              `  Run tests with --coverage and improve coverage before closing.`
+              `    File: ${coverageResult.coverageFile || 'not found'}`
             );
           } else {
             // Coverage passed - log success
@@ -337,174 +273,6 @@ export class IncrementCompletionValidator {
     };
   }
 
-  /**
-   * Validate that quality gate reports exist and passed (NEW - v1.0.337)
-   *
-   * Checks for:
-   * 1. grill-report.json - Required by default (config: grill.required)
-   * 2. judge-llm-report.json - Optional (warns if missing, blocks on REJECTED)
-   *
-   * Skip conditions:
-   * - grill.required === false in config.json
-   * - auto.skipQualityGates === true in config.json
-   * - metadata.type === 'hotfix' or 'experiment'
-   *
-   * @param incrementId - The increment ID
-   * @param incrementPath - Path to increment directory
-   * @param options - Validation options
-   */
-  private static async validateQualityGateReports(
-    incrementId: string,
-    incrementPath: string,
-    options: { logger?: Logger } = {}
-  ): Promise<{ errors: string[]; warnings: string[] }> {
-    const logger = options.logger ?? consoleLogger;
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    const reportsDir = path.join(incrementPath, 'reports');
-
-    // Check if quality gates are globally disabled via auto config
-    let skipAll = false;
-    let grillRequired = true;
-    let codeReviewRequired = true;
-    try {
-      const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
-      if (await fs.pathExists(configPath)) {
-        const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-        if (config.auto?.skipQualityGates === true) {
-          skipAll = true;
-        }
-        if (config.grill?.required === false) {
-          grillRequired = false;
-        }
-        if (config.codeReview?.required === false) {
-          codeReviewRequired = false;
-        }
-      }
-    } catch {
-      // Fallback to defaults
-    }
-
-    if (skipAll) {
-      logger.info('Quality gate reports: skipped (auto.skipQualityGates=true)');
-      return { errors, warnings };
-    }
-
-    // Check if increment is hotfix/experiment (skip grill for those)
-    try {
-      const metadataPath = path.join(incrementPath, 'metadata.json');
-      if (await fs.pathExists(metadataPath)) {
-        const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
-        if (metadata.type === 'hotfix' || metadata.type === 'experiment') {
-          logger.info(`Quality gate reports: skipped for ${metadata.type} increment`);
-          return { errors, warnings };
-        }
-      }
-    } catch {
-      // Fallback: proceed with validation
-    }
-
-    // --- Grill report validation ---
-    if (grillRequired) {
-      const grillReportPath = path.join(reportsDir, 'grill-report.json');
-      if (!(await fs.pathExists(grillReportPath))) {
-        errors.push(
-          'Quality gate: grill-report.json not found.\n' +
-          `    Run sw:grill before closing, or set "grill": { "required": false } in config.json.\n` +
-          `    The grill report is written by sw:grill to .specweave/increments/${incrementId}/reports/grill-report.json`
-        );
-      } else {
-        try {
-          const report = JSON.parse(await fs.readFile(grillReportPath, 'utf-8'));
-          if (report.shipReadiness === 'NOT READY' || (report.summary?.critical ?? 0) > 0) {
-            errors.push(
-              `Quality gate: grill report verdict is NOT READY (${report.summary?.critical ?? 0} critical findings).\n` +
-              '    Fix critical issues and re-run sw:grill.'
-            );
-          } else if (report.shipReadiness === 'NEEDS REVIEW') {
-            warnings.push(
-              `Quality gate: grill report has concerns (${report.summary?.high ?? 0} high findings).\n` +
-              '    Consider addressing high-severity findings before shipping.'
-            );
-          }
-        } catch {
-          warnings.push('Quality gate: grill-report.json exists but could not be parsed.');
-        }
-      }
-    } else {
-      logger.info('Quality gate reports: grill report not required (grill.required=false)');
-    }
-
-    // --- Judge-LLM report validation ---
-    const judgeLlmReportPath = path.join(reportsDir, 'judge-llm-report.json');
-    if (await fs.pathExists(judgeLlmReportPath)) {
-      try {
-        const report = JSON.parse(await fs.readFile(judgeLlmReportPath, 'utf-8'));
-        if (report.verdict === 'REJECTED') {
-          errors.push(
-            'Quality gate: judge-llm verdict is REJECTED.\n' +
-            '    Fix critical issues identified by judge-llm and re-run sw:judge-llm.'
-          );
-        } else if (report.verdict === 'CONCERNS') {
-          warnings.push(
-            'Quality gate: judge-llm verdict has CONCERNS.\n' +
-            '    Review concerns and address if possible before shipping.'
-          );
-        }
-        // WAIVED and APPROVED are both acceptable — no action needed
-      } catch {
-        warnings.push('Quality gate: judge-llm-report.json exists but could not be parsed.');
-      }
-    } else {
-      warnings.push(
-        'Quality gate: judge-llm-report.json not found.\n' +
-        '    Consider running sw:judge-llm for independent validation.'
-      );
-    }
-
-    // --- Code-review report validation (v1.0.646) ---
-    if (codeReviewRequired) {
-      const codeReviewReportPath = path.join(reportsDir, 'code-review-report.json');
-      if (!(await fs.pathExists(codeReviewReportPath))) {
-        errors.push(
-          'Quality gate: code-review-report.json not found.\n' +
-          `    Run sw:code-reviewer --increment ${incrementId} before closing, or set "codeReview": { "required": false } in config.json.\n` +
-          `    The report is written to .specweave/increments/${incrementId}/reports/code-review-report.json`
-        );
-      } else {
-        try {
-          const report = JSON.parse(await fs.readFile(codeReviewReportPath, 'utf-8'));
-          const summary = report.summary ?? {};
-          const blockingSeverities = ['critical', 'high', 'medium'];
-          const blockingCount = blockingSeverities.reduce(
-            (acc: number, sev: string) => acc + (summary[sev] ?? 0), 0
-          );
-          if (blockingCount > 0) {
-            errors.push(
-              `Quality gate: code-review report has ${blockingCount} blocking findings ` +
-              `(${summary.critical ?? 0} critical, ${summary.high ?? 0} high, ${summary.medium ?? 0} medium).\n` +
-              `    Fix issues and re-run sw:code-reviewer --increment ${incrementId}.`
-            );
-          }
-
-          // 0671 T-006: emit refinement signals for critical/high findings
-          // whose evidence traces to a specific skill. Best-effort — never
-          // throws, so closure validation is not affected by signal I/O.
-          await IncrementCompletionValidator.emitCodeReviewRefinementSignals(
-            report,
-            incrementId,
-            resolveEffectiveRoot()
-          );
-        } catch {
-          warnings.push('Quality gate: code-review-report.json exists but could not be parsed.');
-        }
-      }
-    } else {
-      logger.info('Quality gate reports: code-review report not required (codeReview.required=false)');
-    }
-
-    return { errors, warnings };
-  }
 
   /**
    * 0671 T-006: emit refinement signals from code-reviewer findings.
@@ -746,24 +514,20 @@ export class IncrementCompletionValidator {
   }
 
   /**
-   * Count pending tasks in tasks.md
+   * Count tasks that are neither done nor skipped.
    *
-   * Searches for pattern: **Status**: [ ] pending
+   * Uses the task board (ledger.jsonl fold, falling back to the tasks.md
+   * checkbox / `**Status**` line for tasks without ledger events), so the
+   * closure gate and `specweave task list` never disagree.
    *
    * @param incrementId - The increment ID
    * @returns Number of pending tasks
    */
   static async countPendingTasks(incrementId: string): Promise<number> {
-    const tasksPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId, 'tasks.md');
-
-    const content = await fs.readFile(tasksPath, 'utf-8');
-
-    // Match pending tasks: **Status**: [ ] pending
-    // Case-insensitive, handles variations in whitespace
-    const pendingPattern = /\*\*Status\*\*:\s*\[\s*\]\s*pending/gi;
-    const matches = content.match(pendingPattern) || [];
-
-    return matches.length;
+    const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
+    const { loadTaskBoard } = await import('../tasks/task-board.js');
+    const board = loadTaskBoard(incrementPath);
+    return board.counts.total - board.counts.done - board.counts.skipped;
   }
 
 }

@@ -275,15 +275,40 @@ export async function copyTemplates(
     }
   }
 
-  // Copy .gitattributes
-  const gitattributesTemplate = path.join(templatesDir, '.gitattributes.template');
-  if (fs.existsSync(gitattributesTemplate)) {
-    fs.copyFileSync(gitattributesTemplate, path.join(targetDir, '.gitattributes'));
-  }
+  // .gitattributes: create from template, or append only what is missing.
+  ensureGitattributes(targetDir, path.join(templatesDir, '.gitattributes.template'));
 
   // LSP is OPT-IN only (v1.0.210+)
   // Users who want LSP should run: specweave lsp enable
   // See: specweave lsp status
+}
+
+// Required so concurrent agents never lose ledger lines on a merge.
+export const LEDGER_MERGE_ATTRIBUTE = '**/ledger.jsonl merge=union';
+
+/**
+ * Create `.gitattributes` from the template, or (when the user already has one)
+ * append only the lines SpecWeave needs. Idempotent: re-running init never
+ * duplicates a line and never clobbers user content.
+ */
+export function ensureGitattributes(targetDir: string, templatePath: string): void {
+  const target = path.join(targetDir, '.gitattributes');
+  if (!fs.existsSync(target)) {
+    if (fs.existsSync(templatePath)) {
+      fs.copyFileSync(templatePath, target);
+      return;
+    }
+    fs.writeFileSync(target, `${LEDGER_MERGE_ATTRIBUTE}\n`, 'utf-8');
+    return;
+  }
+  const existing = fs.readFileSync(target, 'utf-8');
+  if (existing.split(/\r?\n/).some((l) => l.trim() === LEDGER_MERGE_ATTRIBUTE)) return;
+  const prefix = existing.endsWith('\n') ? '' : '\n';
+  fs.writeFileSync(
+    target,
+    `${existing}${prefix}\n# Append-only task ledger: keep every line from both sides on a merge\n${LEDGER_MERGE_ATTRIBUTE}\n`,
+    'utf-8',
+  );
 }
 
 /**

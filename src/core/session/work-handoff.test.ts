@@ -11,7 +11,7 @@
  * - 2+ active without explicit id: throws listing candidates
  * - non-SpecWeave: .handoff/HANDOFF.md + .handoff/.gitignore='*'
  * - uncommitted edits: .diff written with combined diff, warning present
- * - secret scrub: planted sk-/ghp_/Bearer in free-text + diff → redacted, counts surfaced
+ * - secret scrub: planted openai/github/bearer tokens in free-text + diff → redacted, counted
  * - stale .specweave/ with empty active-increment.json → classified non-SpecWeave
  * - ownership sentinel: foreign ./HANDOFF.md → writes to .handoff/
  * - metadata NOT fabricated: exists() gate, no lazy-create side effect
@@ -138,7 +138,7 @@ afterEach(() => {
 });
 
 describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
-  it('assembles id/status/tasks/ACs/acSyncEvents/plan decisions/ambient rules', async () => {
+  it('assembles id/status/ledger table/ACs/decisions into the increment handoff.md', async () => {
     const root = makeSpecWeaveWorkspace({
       activeIds: ['0001-foo'],
       withIncrement: true,
@@ -147,27 +147,26 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
 
     const res = await buildWorkHandoff(root);
     expect(res.isSpecWeave).toBe(true);
-    expect(res.docPath).toContain(path.join('increments', '0001-foo', 'reports', 'handoff.md'));
+    expect(res.docPath).toBe(path.join(root, '.specweave', 'increments', '0001-foo', 'handoff.md'));
 
     const doc = res.docMarkdown;
     expect(doc).toContain('0001-foo');
-    expect(doc).toContain('status: active');
-    expect(doc).toContain('T-002: Second task'); // current pending task
-    expect(doc).toContain('T-003: Third task');  // next pending task
-    expect(doc).toContain('Tasks: 1/3 done (33%)');
-    expect(doc).toContain('ACs: 1/3 checked');
-    expect(doc).toContain('2 ACs updated, 0 conflicts');
-    expect(doc).toContain('Use the reused parsers'); // plan decision
-    expect(doc).toContain('Test mode: TDD');
-    expect(doc).toContain('Coverage target: 90%');
-    expect(doc).toContain('WIP limit: 7');
+    expect(doc).toContain('Increment 0001-foo (active)');
+    expect(doc).toContain('tasks 1/3 done');
+    expect(doc).toContain('ACs 1/3');
+    expect(doc).toContain('T-002 Second task'); // ledger table row
+    expect(doc).toContain('T-003 Third task');
+    expect(doc).toContain('Use the reused parsers'); // plan.md decision
+    expect(doc).toContain('active claims: none');
     expect(doc).toContain(DOC_FORMAT_MARKER);
 
-    // Stable convenience copy written too.
-    expect(fs.existsSync(path.join(root, '.specweave', 'state', 'handoff-latest.md'))).toBe(true);
+    // Single write location + a pointer file (no duplicate doc under state/).
+    expect(fs.existsSync(path.join(root, '.specweave', 'state', 'handoff-latest.md'))).toBe(false);
+    const pointer = path.join(root, '.specweave', 'state', 'handoff-latest.txt');
+    expect(fs.readFileSync(pointer, 'utf-8').trim()).toBe(res.docPath);
   });
 
-  it('picks current/next pending task by T-id, not user-story group order (G-001)', async () => {
+  it('orders the board by T-id, not user-story group order (G-001)', async () => {
     const root = makeSpecWeaveWorkspace({ activeIds: ['0001-foo'], withIncrement: true });
     // Interleaved per-US numbering: US-001 owns T-001(done) + T-005(pending),
     // US-002 owns T-002(pending) + T-003(pending). Flattening by US group would
@@ -188,8 +187,10 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
     );
 
     const doc = (await buildWorkHandoff(root)).docMarkdown;
-    expect(doc).toContain('T-002: Early US-002 task'); // lowest pending T-id = current
-    expect(doc).toContain('T-003: Mid US-002 task');   // next pending T-id
+    // Next step = lowest OPEN T-id, regardless of user-story grouping.
+    expect(doc).toMatch(/specweave task claim T-002 0001-foo/);
+    expect(doc).toContain('T-003 Mid US-002 task');
+    expect(doc).toContain('T-005 Late US-001 task');
   });
 
   it('merges agent --decision over plan.md decisions', async () => {
@@ -213,7 +214,7 @@ describe('buildWorkHandoff — 0 active increments', () => {
     const root = makeSpecWeaveWorkspace({ activeIds: [] });
     const res = await buildWorkHandoff(root);
     expect(res.isSpecWeave).toBe(true);
-    expect(res.docPath).toContain(path.join('state', 'handoff-latest.md'));
+    expect(res.docPath).toBe(path.join(root, '.handoff', 'HANDOFF.md'));
     expect(res.docMarkdown).toContain('No active SpecWeave increment');
   });
 });
@@ -250,7 +251,7 @@ describe('buildWorkHandoff — non-SpecWeave', () => {
     const gi = path.join(root, '.handoff', '.gitignore');
     expect(fs.existsSync(gi)).toBe(true);
     expect(fs.readFileSync(gi, 'utf-8').trim()).toBe('*');
-    expect(res.docMarkdown).toContain('git + interview handoff');
+    expect(res.docMarkdown).toContain('No active SpecWeave increment');
   });
 });
 
@@ -276,7 +277,9 @@ describe('buildWorkHandoff — secret scrub', () => {
     const root = mkTmp('handoff-secret-');
     initGitRepo(root);
     // Plant a secret in an uncommitted edit (lands in the diff).
-    fs.writeFileSync(path.join(root, 'README.md'), '# repo\nghp_0123456789abcdefABCDEF0123456789abcd\n');
+    // Assembled at runtime so repo secret scanners do not flag the fixture.
+    const fakeGithubToken = ['ghp', '0123456789abcdefABCDEF0123456789abcd'].join('_');
+    fs.writeFileSync(path.join(root, 'README.md'), `# repo\n${fakeGithubToken}\n`);
 
     const res = await buildWorkHandoff(root, {
       summary: 'leaked sk-abc123DEF456ghi789jkl here',
@@ -289,11 +292,10 @@ describe('buildWorkHandoff — secret scrub', () => {
     expect(res.docMarkdown).toContain('[REDACTED-bearer]');
     // Diff scrubbed on disk.
     const diff = fs.readFileSync(res.diffPath, 'utf-8');
-    expect(diff).not.toContain('ghp_0123456789abcdefABCDEF0123456789abcd');
+    expect(diff).not.toContain(fakeGithubToken);
     expect(diff).toContain('[REDACTED-github-token]');
-    // Counts surfaced in the Redaction section.
-    expect(res.docMarkdown).toMatch(/`github-token`/);
-    expect(res.docMarkdown).toMatch(/`openai-key`/);
+    // Redaction count surfaced in the header line.
+    expect(res.docMarkdown).toMatch(/redactions: [1-9]\d*/);
   });
 });
 
@@ -345,7 +347,7 @@ describe('buildWorkHandoff — ownership sentinel', () => {
 
     const res = await buildWorkHandoff(root);
     expect(res.docPath).toBe(prior);
-    expect(fs.readFileSync(prior, 'utf-8')).toContain('Work Handoff');
+    expect(fs.readFileSync(prior, 'utf-8')).toContain('# Handoff —');
   });
 });
 

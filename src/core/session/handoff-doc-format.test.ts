@@ -1,12 +1,9 @@
 /**
- * Tests for handoff-doc-format (T-001 + T-017 parity / section-order pinning)
+ * Tests for handoff-doc-format (2.0 — Doc format v2).
  *
- * Verifies the rendered doc contains every required section in canonical
- * order, the path/link/diff header lines, the per-tool resume matrix, the
- * Redaction section with counts + heuristic disclaimer, the Doc format v1
- * footer, and the --inline paste-prompt embedding the full body between
- * BEGIN/END HANDOFF markers. The cross-tool resume strings are pinned here so
- * they cannot silently drift.
+ * Pins: the canonical section order, the ≤1-page budget, the header (agent id,
+ * git, active claims), the ledger table, the footer marker, the per-tool resume
+ * strings, and the `--inline` paste-prompt embedding.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -24,30 +21,30 @@ import {
 
 function baseInput(overrides: Partial<HandoffDocInput> = {}): HandoffDocInput {
   return {
-    docPath: '/repo/.specweave/state/handoff-latest.md',
-    diffPath: '/repo/.specweave/state/handoff-latest.diff',
+    docPath: '/repo/.specweave/increments/0867-cross-tool-work-handoff/handoff.md',
+    diffPath: '/repo/.specweave/increments/0867-cross-tool-work-handoff/handoff.diff',
     repoRoot: '/repo',
     generatedAt: '2026-06-01T00:00:00.000Z',
     isSpecWeave: true,
+    agent: 'codex@mbp',
     reason: 'out of tokens',
     summary: 'mid-refactor of the parser',
-    next: 'finish T-005 then run vitest',
     gotcha: 'metadata read lazily creates files — gate with exists()',
     decisions: ['use execFileSync not shell', 'doc-format is the single source of truth'],
     increment: {
       id: '0867-cross-tool-work-handoff',
       status: 'active',
       title: 'Cross-Tool Work Handoff',
-      currentTask: 'T-004: workspace detection',
-      nextTask: 'T-005: increment assembly',
-      doneTasks: 3,
-      totalTasks: 18,
-      taskPercentage: 17,
+      tasks: [
+        { id: 'T-01', title: 'workspace detection', status: 'done', by: 'claude@mbp', evidence: 'npm test → exit 0' },
+        { id: 'T-02', title: 'increment assembly', status: 'claimed', by: 'codex@mbp' },
+        { id: 'T-03', title: 'renderer', status: 'open' },
+      ],
+      counts: { total: 3, done: 1, skipped: 0, claimed: 1, blocked: 0, stale: 0, open: 1 },
       doneAcs: 5,
       totalAcs: 40,
-      acSyncEvents: ['2026-05-30: 2 ACs updated, 0 conflicts'],
+      nextTask: { id: 'T-03', title: 'renderer', status: 'open' },
     },
-    ambient: { testMode: 'TDD', coverageTarget: 90, wipLimit: 7 },
     git: {
       isGitRepo: true,
       branch: 'main',
@@ -65,106 +62,116 @@ describe('renderHandoffDoc', () => {
   it('renders all canonical sections in order', () => {
     const doc = renderHandoffDoc(baseInput());
     const indices = HANDOFF_SECTION_ORDER.map((h) => doc.indexOf(`## ${h}`));
-    // Every section present.
     for (const idx of indices) expect(idx).toBeGreaterThan(-1);
-    // Monotonically increasing → canonical order preserved.
-    const sorted = [...indices].sort((a, b) => a - b);
-    expect(indices).toEqual(sorted);
+    expect(indices).toEqual([...indices].sort((a, b) => a - b));
   });
 
-  it('leads with the absolute doc path, a clickable link, and the diff path', () => {
+  it('stays within the one-page budget', () => {
     const doc = renderHandoffDoc(baseInput());
-    expect(doc).toContain('- Doc path: /repo/.specweave/state/handoff-latest.md');
-    expect(doc).toContain('[/repo/.specweave/state/handoff-latest.md](/repo/.specweave/state/handoff-latest.md)');
-    expect(doc).toContain('- Diff file: /repo/.specweave/state/handoff-latest.diff');
+    expect(doc.split('\n').length).toBeLessThanOrEqual(60);
   });
 
-  it('shows task/AC counts, percentage, acSyncEvents drift, and ambient rules', () => {
+  it('headers carry the agent id, git state, redaction count and active claims', () => {
     const doc = renderHandoffDoc(baseInput());
-    expect(doc).toContain('Tasks: 3/18 done (17%)');
-    expect(doc).toContain('ACs: 5/40 checked');
-    expect(doc).toContain('2026-05-30: 2 ACs updated, 0 conflicts');
-    expect(doc).toContain('Test mode: TDD');
-    expect(doc).toContain('Coverage target: 90%');
-    expect(doc).toContain('Active increments (advisory): 7');
+    expect(doc).toContain('# Handoff — 0867-cross-tool-work-handoff Cross-Tool Work Handoff');
+    expect(doc).toContain('agent: codex@mbp');
+    expect(doc).toContain('branch main @ abc1234');
+    expect(doc).toContain('1 uncommitted');
+    expect(doc).toContain('redactions: 3');
+    expect(doc).toContain('active claims: T-02 (claimed by codex@mbp)');
   });
 
-  it('shows an uncommitted warning + porcelain + diff-stat + diff path link', () => {
+  it('renders the ledger table with state, owner and evidence', () => {
+    const doc = renderHandoffDoc(baseInput());
+    expect(doc).toContain('| Task | State | By | Evidence / note |');
+    expect(doc).toContain('| T-01 workspace detection | done | claude@mbp | npm test → exit 0 |');
+    expect(doc).toContain('1/3 done · 0 skipped · 1 claimed');
+    expect(doc).toContain('tasks 1/3 done · ACs 5/40');
+  });
+
+  it('shows an uncommitted warning + porcelain + the diff path', () => {
     const doc = renderHandoffDoc(baseInput());
     expect(doc).toContain('UNCOMMITTED');
     expect(doc).toContain('src/core/session/work-handoff.ts');
-    expect(doc).toContain('/repo/.specweave/state/handoff-latest.diff');
-    expect(doc).toContain('git apply --check');
+    expect(doc).toContain('/repo/.specweave/increments/0867-cross-tool-work-handoff/handoff.diff');
   });
 
-  it('renders the Redaction section with counts and the heuristic disclaimer', () => {
+  it('reports a clean tree instead of a diff when nothing is uncommitted', () => {
+    const doc = renderHandoffDoc(
+      baseInput({ git: { ...baseInput().git, statusPorcelain: '', diffStat: '', hasUncommittedChanges: false } }),
+    );
+    expect(doc).toContain('Working tree clean.');
+    expect(doc).not.toContain('UNCOMMITTED');
+  });
+
+  it('falls back to `task claim <next>` when no explicit next step was given', () => {
     const doc = renderHandoffDoc(baseInput());
-    expect(doc).toMatch(/2 `openai-key` strings masked/);
-    expect(doc).toMatch(/1 `bearer` string masked/);
-    expect(doc).toContain('Scrubbing is heuristic');
-    expect(doc).toContain('NOT a');
+    expect(doc).toContain('specweave task claim T-03 0867-cross-tool-work-handoff');
   });
 
-  it('notes a clean redaction list when nothing was masked', () => {
-    const doc = renderHandoffDoc(baseInput({ redactionCounts: {} }));
-    expect(doc).toContain('No token-like strings were detected');
+  it('prefers an explicit next step', () => {
+    const doc = renderHandoffDoc(baseInput({ next: 'finish T-03 then run vitest' }));
+    expect(doc).toContain('finish T-03 then run vitest');
   });
 
-  it('stamps the Doc format v1 footer marker last', () => {
+  it('stamps the Doc format v2 footer marker last', () => {
     const doc = renderHandoffDoc(baseInput());
-    expect(doc).toContain(DOC_FORMAT_MARKER);
+    expect(DOC_FORMAT_MARKER).toBe('Doc format v2');
     expect(doc.trimEnd().endsWith(`<!-- ${DOC_FORMAT_MARKER} -->`)).toBe(true);
   });
 
-  it('degrades to git+interview wording when there is no increment', () => {
+  it('degrades gracefully when there is no increment', () => {
     const doc = renderHandoffDoc(baseInput({ increment: undefined }));
-    expect(doc).toContain('git + interview handoff');
-    expect(doc).toContain('No increment task/AC state available');
+    expect(doc).toContain('# Handoff — no active increment');
+    expect(doc).toContain('No active SpecWeave increment');
+    expect(doc).toContain('_No task state available._');
   });
 });
 
 describe('per-tool resume matrix (pinned strings)', () => {
-  it('contains the exact verified resume commands', () => {
-    const doc = renderHandoffDoc(baseInput());
-    expect(doc).toContain('claude -r <uuid>');
-    expect(doc).toContain('codex resume <uuid>');
-    expect(doc).toContain('codex resume --last');
-    expect(doc).not.toContain('codex --continue');
-    expect(doc).toContain('opencode -s <id>');
-    expect(doc).toContain('opencode --session <id>');
-    expect(doc).toContain('/chat resume <tag>');
-    expect(doc).toContain('Antigravity Agent Manager');
-    expect(doc).toContain('aider --restore-chat-history');
+  it('pins the exact verified resume commands', () => {
+    const byTool = new Map(TOOL_RESUME_MATRIX.map((e) => [e.tool, e.resumeCmd]));
+    expect(byTool.get('Claude Code')).toBe('claude -r <uuid>');
+    expect(byTool.get('Codex')).toContain('codex resume <uuid>');
+    expect(byTool.get('Codex')).toContain('codex resume --last');
+    expect(byTool.get('Codex')).not.toContain('codex --continue');
+    expect(byTool.get('OpenCode')).toContain('opencode -s <id>');
+    expect(byTool.get('Gemini CLI')).toBe('/chat resume <tag>');
+    expect(byTool.get('Aider')).toBe('aider --restore-chat-history');
   });
 
-  it('documents the Claude double-dash munge with an explicit example', () => {
-    const doc = renderHandoffDoc(baseInput());
+  it('documents the Claude munge with an explicit example', () => {
     expect(CLAUDE_MUNGE_EXAMPLE).toContain('specweave-umb--claude-worktrees');
-    expect(doc).toContain('specweave-umb--claude-worktrees');
   });
 
   it('covers all six tools', () => {
-    const tools = TOOL_RESUME_MATRIX.map((e) => e.tool);
-    expect(tools).toEqual(['Claude Code', 'Codex', 'OpenCode', 'Gemini CLI', 'Antigravity', 'Aider']);
+    expect(TOOL_RESUME_MATRIX.map((e) => e.tool)).toEqual([
+      'Claude Code', 'Codex', 'OpenCode', 'Gemini CLI', 'Antigravity', 'Aider',
+    ]);
+  });
+
+  it('lists the first three resume commands in the Resume section', () => {
+    const doc = renderHandoffDoc(baseInput());
+    expect(doc).toContain('claude -r <uuid>');
+    expect(doc).toContain('codex resume <uuid>');
+    expect(doc).toContain('opencode -s <id>');
   });
 });
 
 describe('renderPastePrompt', () => {
   it('default mode points at the doc path and fails safe when missing', () => {
     const p = renderPastePrompt(baseInput());
-    expect(p).toContain('/repo/.specweave/state/handoff-latest.md');
+    expect(p).toContain('/repo/.specweave/increments/0867-cross-tool-work-handoff/handoff.md');
     expect(p).toContain('STOP and ask me to paste the handoff');
+    expect(p).toContain('specweave task next 0867-cross-tool-work-handoff');
     expect(p).not.toContain(INLINE_BEGIN_MARKER);
   });
 
-  it('--inline mode embeds the full scrubbed body between BEGIN/END markers', () => {
+  it('--inline mode embeds the full body between BEGIN/END markers', () => {
     const p = renderPastePrompt(baseInput(), { inline: true });
     expect(p).toContain(INLINE_BEGIN_MARKER);
     expect(p).toContain(INLINE_END_MARKER);
-    // The full doc (with its footer marker) is embedded.
     expect(p).toContain(`<!-- ${DOC_FORMAT_MARKER} -->`);
-    const begin = p.indexOf(INLINE_BEGIN_MARKER);
-    const end = p.indexOf(INLINE_END_MARKER);
-    expect(begin).toBeLessThan(end);
+    expect(p.indexOf(INLINE_BEGIN_MARKER)).toBeLessThan(p.indexOf(INLINE_END_MARKER));
   });
 });

@@ -29,8 +29,14 @@ export interface Task {
     dependencies?: string[];
     /** Full task description */
     description?: string;
-    /** Files affected by this task */
+    /** Files owned by this task (2.0 `Files:` field, legacy `**Files Affected**:` list). */
     filesAffected?: string[];
+    /** All AC ids referenced (2.0 `AC:` field or legacy `**Satisfies ACs**`), any AC id format. */
+    acs?: string[];
+    /** Verification command (2.0 `Test:` field, or legacy `**Test**:` value). */
+    test?: string;
+    /** True when a rendered state checkbox (`- [x] done …`) was found (2.0 format). */
+    hasStateLine?: boolean;
     /** Line number in tasks.md (for error reporting) */
     lineNumber?: number;
 }

@@ -196,6 +196,8 @@ export interface CompleteOptions {
   incrementId: string;
   silent?: boolean;  // For auto mode - suppress output
   skipValidation?: boolean;  // DANGEROUS: Skip quality gates
+  /** Close despite a missing/failing reports/verify.json (stored as metadata.closeReason). */
+  reason?: string;
 }
 
 /**
@@ -214,6 +216,7 @@ export interface CompleteOptions {
  */
 export async function completeIncrement(options: CompleteOptions): Promise<boolean> {
   const { incrementId, silent = false, skipValidation = false } = options;
+  const closeReason = options.reason?.trim() || undefined;
 
   const log = (msg: string) => !silent && console.log(msg);
 
@@ -241,27 +244,11 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       return false;
     }
 
-    // Walk intermediate transitions (all states before the final COMPLETED)
-    const intermediateSteps = path.slice(0, -1);
-    for (const intermediateStatus of intermediateSteps) {
-      log(chalk.gray(`   Transitioning: ${metadata.status} → ${intermediateStatus}`));
-      try {
-        MetadataManager.updateStatus(incrementId, intermediateStatus);
-        Object.assign(metadata, MetadataManager.read(incrementId));
-      } catch (error) {
-        const errMsg = error instanceof Error ? error.message : String(error);
-        log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
-        log(chalk.gray(`   ${errMsg}`));
-        process.stderr.write(`[completeIncrement] Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}\n`);
-        return false;
-      }
-    }
-
     // Run quality gate validation unless skipped
     if (!skipValidation) {
       // Dynamic import to avoid circular dependency
       const { IncrementCompletionValidator } = await import('./completion-validator.js');
-      const validation = await IncrementCompletionValidator.validateCompletion(incrementId);
+      const validation = await IncrementCompletionValidator.validateCompletion(incrementId, { reason: closeReason });
 
       if (!validation.isValid) {
         log(chalk.red(`❌ Increment ${incrementId} failed quality gates:\n`));
@@ -281,13 +268,38 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
         validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
       }
     } else {
-      log(chalk.yellow(`⚠️  Validation skipped — quality gate reports (grill, judge-llm) not checked`));
+      log(chalk.yellow(`⚠️  Validation skipped — reports/verify.json not checked`));
       log(chalk.gray(`   Run: specweave complete ${incrementId} --yes (without --skip-validation) for enforced closure`));
+    }
+
+    // Walk intermediate transitions (all states before the final COMPLETED)
+    const intermediateSteps = path.slice(0, -1);
+    for (const intermediateStatus of intermediateSteps) {
+      log(chalk.gray(`   Transitioning: ${metadata.status} → ${intermediateStatus}`));
+      try {
+        MetadataManager.updateStatus(incrementId, intermediateStatus);
+        Object.assign(metadata, MetadataManager.read(incrementId));
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
+        log(chalk.gray(`   ${errMsg}`));
+        process.stderr.write(`[completeIncrement] Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}\n`);
+        return false;
+      }
     }
 
     // Living docs sync is handled by LifecycleHookDispatcher.onIncrementDone()
     // after status is set to COMPLETED. Suppress StatusChangeSyncTrigger so
     // sync runs exactly once (via onIncrementDone, not twice).
+    if (closeReason) {
+      try {
+        const current = MetadataManager.read(incrementId);
+        MetadataManager.write(incrementId, { ...current, closeReason });
+      } catch {
+        // best-effort: never block closure on the audit field
+      }
+    }
+
     const { StatusChangeSyncTrigger } = await import('./status-change-sync-trigger.js');
     StatusChangeSyncTrigger.suppressForCompletion = true;
     try {
