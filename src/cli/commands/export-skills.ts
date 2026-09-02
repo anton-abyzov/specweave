@@ -15,7 +15,11 @@ import { consoleLogger as logger } from '../../utils/logger.js';
  * SpecWeave skill frontmatter structure
  */
 interface SpecWeaveSkill {
-  name: string;
+  /**
+   * Optional since 2.0: skills no longer carry a `name:` key — the directory
+   * name IS the command. Legacy skills may still carry `sw/<name>`.
+   */
+  name?: string;
   description: string;
   'allowed-tools'?: string;
   visibility?: string;
@@ -78,21 +82,45 @@ function parseFrontmatter(content: string): { frontmatter: SpecWeaveSkill | null
 }
 
 /**
+ * Resolve the exported skill name.
+ *
+ * SpecWeave 2.0 skills have no `name:` frontmatter key — the directory name is
+ * the command. Legacy skills may still declare either a bare `handoff` or the
+ * namespaced `sw/handoff` form; in both cases only the last path segment is the
+ * skill name.
+ *
+ * @param declaredName raw `name:` frontmatter value, if any
+ * @param skillDirName the SKILL.md's parent directory name (always present)
+ */
+export function resolveSkillName(declaredName: string | undefined, skillDirName: string): string {
+  const raw = (declaredName ?? '').trim();
+  if (raw === '') return skillDirName;
+  // Strip a `sw/`-style namespace prefix: only the final segment names the skill.
+  const segments = raw.split('/').filter((segment) => segment.trim() !== '');
+  return segments.length > 0 ? segments[segments.length - 1].trim() : skillDirName;
+}
+
+/**
  * Convert SpecWeave skill to Agent Skills format
  */
-function convertSkill(specweave: SpecWeaveSkill, pluginName: string): { agentSkill: AgentSkill; warnings: string[] } {
+export function convertSkill(
+  specweave: SpecWeaveSkill,
+  pluginName: string,
+  skillDirName: string
+): { agentSkill: AgentSkill; warnings: string[] } {
   const warnings: string[] = [];
 
-  // Validate and sanitize name
-  let name = specweave.name.toLowerCase();
+  // Validate and sanitize name (2.0: derived from the directory when absent)
+  const resolved = resolveSkillName(specweave.name, skillDirName);
+  let name = resolved.toLowerCase();
   if (!/^[a-z][a-z0-9-]*[a-z0-9]$/.test(name) && name.length > 1) {
     // Try to fix common issues
     name = name.replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '');
-    warnings.push(`Name sanitized from "${specweave.name}" to "${name}"`);
+    warnings.push(`Name sanitized from "${resolved}" to "${name}"`);
   }
 
   // Validate description length
-  let description = specweave.description;
+  let description = specweave.description ?? '';
   if (description.length > 1024) {
     description = description.slice(0, 1021) + '...';
     warnings.push(`Description truncated from ${specweave.description.length} to 1024 chars`);
@@ -256,7 +284,7 @@ export async function exportSkills(options: ExportSkillsOptions = {}): Promise<E
     }
 
     // Convert to Agent Skills format
-    const { agentSkill, warnings } = convertSkill(frontmatter, pluginName);
+    const { agentSkill, warnings } = convertSkill(frontmatter, pluginName, skillName);
 
     // Validate if requested
     if (options.validate) {
