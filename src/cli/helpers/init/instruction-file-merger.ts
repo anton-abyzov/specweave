@@ -306,13 +306,15 @@ export function parseTemplateSections(content: string): TemplateSection[] {
   return secs;
 }
 
-export function getPackageVersion(): string {
-  // Use createRequire to resolve specweave's package.json reliably,
-  // even with symlinked installs (nvm, pnpm, npm link)
+/**
+ * Read specweave's own package.json (not the user's project).
+ * Resolves reliably with symlinked installs (nvm, pnpm, npm link); falls back to a directory walk.
+ */
+export function readSpecweavePackageJson(): Record<string, any> {
   try {
     const require = createRequire(import.meta.url);
     const pkgPath = require.resolve('specweave/package.json');
-    return JSON.parse(fs.readFileSync(pkgPath, 'utf-8')).version;
+    return JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
   } catch {
     // createRequire failed — fall back to directory walk
   }
@@ -322,12 +324,26 @@ export function getPackageVersion(): string {
       const p = path.join(d, 'package.json');
       if (fs.existsSync(p)) {
         const j = JSON.parse(fs.readFileSync(p, 'utf-8'));
-        if (j.name === 'specweave') return j.version;
+        if (j.name === 'specweave') return j;
       }
       d = path.dirname(d);
     }
   } catch {
     // ignore
   }
-  return '0.0.0';
+  return {};
+}
+
+export function getPackageVersion(): string {
+  return readSpecweavePackageJson().version ?? '0.0.0';
+}
+
+/**
+ * Minimum Node.js version from specweave's package.json `engines.node` (e.g. ">=20.12.0" → "20.12.0").
+ */
+export function getMinNodeVersion(): string {
+  const engines = readSpecweavePackageJson().engines?.node;
+  const m = typeof engines === 'string' ? engines.match(/(\d+)(?:\.(\d+))?(?:\.(\d+))?/) : null;
+  if (!m) return '20.0.0';
+  return `${m[1]}.${m[2] ?? '0'}.${m[3] ?? '0'}`;
 }

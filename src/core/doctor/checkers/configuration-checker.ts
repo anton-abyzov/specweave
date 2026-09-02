@@ -11,9 +11,11 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
+import { getPackageVersion } from '../../../cli/helpers/init/instruction-file-merger.js';
 
-// Current version - should match CLAUDE.md template
-const CURRENT_VERSION = '1.0.183';
+function majorOf(version: string): number {
+  return parseInt(version.split('.')[0], 10) || 0;
+}
 
 export class ConfigurationChecker implements HealthChecker {
   category = 'Configuration';
@@ -36,67 +38,10 @@ export class ConfigurationChecker implements HealthChecker {
     // Check .env presence (for configured integrations)
     checks.push(this.checkEnvFile(projectRoot));
 
-    // Check Opus 4.7 config keys (0669 Wave 2)
-    checks.push(this.checkOpus47Keys(projectRoot));
-
     return {
       category: this.category,
       status: calculateOverallStatus(checks),
       checks,
-    };
-  }
-
-  private checkOpus47Keys(projectRoot: string): CheckResult {
-    const configPath = path.join(projectRoot, '.specweave', 'config.json');
-
-    if (!fs.existsSync(configPath)) {
-      return {
-        name: 'Opus 4.7 config keys',
-        status: 'skip',
-        message: 'config.json missing (separate check)',
-      };
-    }
-
-    let config: Record<string, Record<string, unknown> | undefined>;
-    try {
-      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    } catch {
-      return {
-        name: 'Opus 4.7 config keys',
-        status: 'skip',
-        message: 'config.json invalid JSON (separate check)',
-      };
-    }
-
-    const missing: string[] = [];
-    const expectedKeys: Array<{ section: string; key: string; defaultValue: string }> = [
-      { section: 'quality', key: 'thinkingBudget', defaultValue: '"xhigh"' },
-      { section: 'quality', key: 'grillConfidenceThreshold', defaultValue: '50' },
-      { section: 'quality', key: 'tokenBudgets', defaultValue: '{ pm.interview: 1500, brainstorm.idea: 1800 }' },
-      { section: 'cache', key: 'staticContextFiles', defaultValue: '["CLAUDE.md", ...]' },
-    ];
-
-    for (const entry of expectedKeys) {
-      const section = config[entry.section];
-      if (!section || section[entry.key] === undefined) {
-        missing.push(`${entry.section}.${entry.key} (default: ${entry.defaultValue})`);
-      }
-    }
-
-    if (missing.length === 0) {
-      return {
-        name: 'Opus 4.7 config keys',
-        status: 'pass',
-        message: 'all present',
-      };
-    }
-
-    return {
-      name: 'Opus 4.7 config keys',
-      status: 'warn',
-      message: `missing ${missing.length} key${missing.length === 1 ? '' : 's'}`,
-      details: missing.map((m) => `Missing config key '${m.split(' ')[0]}'`),
-      fixSuggestion: 'Run: node scripts/migrate-config-0669.ts .specweave/config.json',
     };
   }
 
@@ -156,30 +101,22 @@ export class ConfigurationChecker implements HealthChecker {
       }
 
       const fileVersion = versionMatch[1];
-      const comparison = this.compareVersions(fileVersion, CURRENT_VERSION);
+      const cliVersion = getPackageVersion();
 
-      if (comparison === 0) {
+      // Template major must match CLI major; minor/patch drift is fine.
+      if (majorOf(fileVersion) === majorOf(cliVersion)) {
         return {
           name: 'CLAUDE.md',
           status: 'pass',
-          message: `v${fileVersion} (current)`,
+          message: `v${fileVersion} (CLI v${cliVersion})`,
         };
       }
 
-      if (comparison < 0) {
-        return {
-          name: 'CLAUDE.md',
-          status: 'warn',
-          message: `v${fileVersion} (current: v${CURRENT_VERSION})`,
-          fixSuggestion: 'Run: specweave update',
-        };
-      }
-
-      // Newer version somehow
       return {
         name: 'CLAUDE.md',
-        status: 'pass',
-        message: `v${fileVersion}`,
+        status: 'warn',
+        message: `v${fileVersion} (CLI v${cliVersion}, major mismatch)`,
+        fixSuggestion: 'Run: specweave update',
       };
     } catch {
       return {
@@ -270,18 +207,5 @@ export class ConfigurationChecker implements HealthChecker {
       status: 'pass',
       message: 'present',
     };
-  }
-
-  private compareVersions(a: string, b: string): number {
-    const partsA = a.split('.').map(Number);
-    const partsB = b.split('.').map(Number);
-
-    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-      const numA = partsA[i] || 0;
-      const numB = partsB[i] || 0;
-      if (numA < numB) return -1;
-      if (numA > numB) return 1;
-    }
-    return 0;
   }
 }

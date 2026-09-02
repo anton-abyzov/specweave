@@ -1,12 +1,9 @@
 /**
- * Tests for ConfigurationChecker Opus 4.7 key reporting (0669 Wave 2c, T-041/T-042)
+ * Tests for ConfigurationChecker
  *
- * Behavior under test:
- * - When .specweave/config.json is missing `quality.thinkingBudget`,
- *   `quality.grillConfidenceThreshold`, `quality.tokenBudgets`, or
- *   `cache.staticContextFiles`, the configuration checker emits a warning
- *   for each missing key and suggests the migrate-config-0669 script.
- * - A config that already has all four keys produces no such warnings.
+ * - CLAUDE.md freshness compares the SW:META template MAJOR against the CLI major
+ *   (read from specweave's own package.json); minor/patch drift passes.
+ * - The dead "Opus 4.7 config keys" check is gone.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -14,80 +11,61 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { ConfigurationChecker } from '../../../../../src/core/doctor/checkers/configuration-checker.js';
+import { getPackageVersion } from '../../../../../src/cli/helpers/init/instruction-file-merger.js';
 
 let projectRoot: string;
 
 beforeEach(() => {
   projectRoot = mkdtempSync(join(tmpdir(), 'doctor-config-'));
   mkdirSync(join(projectRoot, '.specweave'), { recursive: true });
-  writeFileSync(
-    join(projectRoot, 'CLAUDE.md'),
-    '# Test\nSpecWeave framework **version 1.0.183**\n'
-  );
+  writeFileSync(join(projectRoot, '.specweave', 'config.json'), JSON.stringify({ version: '2.0' }));
 });
 
 afterEach(() => {
   rmSync(projectRoot, { recursive: true, force: true });
 });
 
-describe('ConfigurationChecker — Opus 4.7 key reporting', () => {
-  it('warns about missing quality.thinkingBudget when absent', async () => {
-    writeFileSync(join(projectRoot, '.specweave', 'config.json'), JSON.stringify({ version: '2.0' }));
+function claudeMdWith(version: string): void {
+  writeFileSync(
+    join(projectRoot, 'CLAUDE.md'),
+    `<!-- SW:META template=CLAUDE.md version="${version}" sections="a" -->\n# Test\n`
+  );
+}
 
-    const result = await new ConfigurationChecker().check(projectRoot, {});
+async function claudeCheck() {
+  const result = await new ConfigurationChecker().check(projectRoot, {});
+  return result.checks.find((c) => c.name === 'CLAUDE.md')!;
+}
 
-    const allMessages = result.checks.flatMap((c) => [c.message, ...(c.details ?? [])]).join('\n');
-    expect(allMessages).toContain('quality.thinkingBudget');
+describe('ConfigurationChecker — CLAUDE.md freshness', () => {
+  it('passes when the template major matches the CLI major (minor/patch drift ok)', async () => {
+    const major = getPackageVersion().split('.')[0];
+    claudeMdWith(`${major}.0.1`);
+    const check = await claudeCheck();
+    expect(check.status).toBe('pass');
+    expect(check.message).toContain(`CLI v${getPackageVersion()}`);
   });
 
-  it('warns about missing cache.staticContextFiles when absent', async () => {
-    writeFileSync(join(projectRoot, '.specweave', 'config.json'), JSON.stringify({ version: '2.0' }));
-
-    const result = await new ConfigurationChecker().check(projectRoot, {});
-
-    const allMessages = result.checks.flatMap((c) => [c.message, ...(c.details ?? [])]).join('\n');
-    expect(allMessages).toContain('cache.staticContextFiles');
+  it('warns when the template major differs from the CLI major', async () => {
+    const major = parseInt(getPackageVersion().split('.')[0], 10);
+    claudeMdWith(`${major + 1}.0.0`);
+    const check = await claudeCheck();
+    expect(check.status).toBe('warn');
+    expect(check.fixSuggestion).toContain('specweave update');
   });
 
-  it('warns about missing quality.grillConfidenceThreshold and quality.tokenBudgets', async () => {
-    writeFileSync(join(projectRoot, '.specweave', 'config.json'), JSON.stringify({ version: '2.0' }));
-
-    const result = await new ConfigurationChecker().check(projectRoot, {});
-
-    const allMessages = result.checks.flatMap((c) => [c.message, ...(c.details ?? [])]).join('\n');
-    expect(allMessages).toContain('quality.grillConfidenceThreshold');
-    expect(allMessages).toContain('quality.tokenBudgets');
+  it('warns when CLAUDE.md is not managed by SpecWeave', async () => {
+    writeFileSync(join(projectRoot, 'CLAUDE.md'), '# plain\n');
+    const check = await claudeCheck();
+    expect(check.status).toBe('warn');
+    expect(check.message).toContain('not managed');
   });
 
-  it('suggests the migrate-config-0669 script when keys are missing', async () => {
-    writeFileSync(join(projectRoot, '.specweave', 'config.json'), JSON.stringify({ version: '2.0' }));
-
+  it('does not emit the removed Opus 4.7 config keys check', async () => {
+    claudeMdWith(getPackageVersion());
     const result = await new ConfigurationChecker().check(projectRoot, {});
-
-    const fixSuggestions = result.checks
-      .map((c) => c.fixSuggestion ?? '')
-      .filter((s) => s.length > 0)
-      .join('\n');
-    expect(fixSuggestions).toContain('migrate-config-0669');
-  });
-
-  it('does not warn about Opus 4.7 keys when all are present', async () => {
-    writeFileSync(
-      join(projectRoot, '.specweave', 'config.json'),
-      JSON.stringify({
-        version: '2.0',
-        quality: {
-          thinkingBudget: 'xhigh',
-          grillConfidenceThreshold: 50,
-          tokenBudgets: { 'pm.interview': 1500, 'brainstorm.idea': 1800 },
-        },
-        cache: { staticContextFiles: ['CLAUDE.md'] },
-      })
-    );
-
-    const result = await new ConfigurationChecker().check(projectRoot, {});
-
-    const opus47Check = result.checks.find((c) => c.name === 'Opus 4.7 config keys');
-    expect(opus47Check?.status).toBe('pass');
+    expect(result.checks.find((c) => c.name === 'Opus 4.7 config keys')).toBeUndefined();
+    const text = result.checks.map((c) => `${c.message} ${c.fixSuggestion ?? ''}`).join('\n');
+    expect(text).not.toContain('migrate-config-0669');
   });
 });
