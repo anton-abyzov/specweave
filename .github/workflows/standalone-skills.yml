@@ -1,0 +1,36 @@
+name: standalone-skills
+
+# The repo-root skills/ folder is installed into non-Claude tools by vskill.
+# Lint it (portability contract) and run the format-drift tests on every OS,
+# because the skills document Windows-safe commands.
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'scripts/lint-standalone-skills.mjs'
+      - 'tests/unit/skills/**'
+      - 'src/core/tasks/**'
+      - 'src/core/session/handoff-doc-format.ts'
+  push:
+    branches: [develop, main]
+    paths:
+      - 'skills/**'
+      - 'scripts/lint-standalone-skills.mjs'
+      - 'tests/unit/skills/**'
+
+jobs:
+  lint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci --ignore-scripts
+      - run: node scripts/lint-standalone-skills.mjs
+      - run: npx vitest run tests/unit/skills --reporter=dot
