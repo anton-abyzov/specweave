@@ -107,7 +107,7 @@ stateDiagram-v2
     abandoned --> [*]
 ```
 
-**WIP-counted**: active, paused, ready_for_review
+**WIP-counted** (advisory only): active, ready_for_review
 
 ---
 

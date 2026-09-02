@@ -175,7 +175,7 @@ Config: .specweave/config.json
 
 Active Increments: 0
 Completed: 0
-WIP Limit: 2/2 available
+Advisory limit: 3 active increments
 ```
 
 If you see this, you're ready!

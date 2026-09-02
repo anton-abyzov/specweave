@@ -58,9 +58,10 @@ sw:resume 0001
 
 ---
 
-### "WIP limit reached"
+### "N active increments (recommended: 3)"
 
-**Cause**: Too many increments active.
+**Cause**: More increments are active than `limits.activeIncrements`.
+This is an advisory note — nothing is blocked.
 
 **Solution**:
 
@@ -73,10 +74,10 @@ sw:resume 0001
 ```bash
 # Or pause one
 sw:pause 0002
-
-# Or override (with reason)
-sw:increment "urgent-fix" --override-wip "Critical bug"
 ```
+
+To change or silence the note, set `limits.activeIncrements` in
+`.specweave/config.json` (`0` turns it off).
 
 ---
 

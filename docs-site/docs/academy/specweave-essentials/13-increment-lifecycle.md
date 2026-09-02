@@ -73,7 +73,7 @@ sw:status
 SPECWEAVE STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ACTIVE (2/2 WIP slots used)
+ACTIVE (2, advisory limit 3)
   0042-user-authentication   ████████░░  75%  (3 days)
   0043-payment-processing    ██░░░░░░░░  20%  (1 day)
 
@@ -147,7 +147,7 @@ sw:pause 0042 --reason "Waiting for Stripe API credentials"
 
 **What happens**:
 1. Status changes to `PAUSED`
-2. WIP slot freed (allows new active increment)
+2. No longer counted as active (WIP note)
 3. Reason recorded in `metadata.json`
 4. External tools updated (GitHub label: "on-hold")
 
@@ -155,14 +155,14 @@ sw:pause 0042 --reason "Waiting for Stripe API credentials"
 
 ```bash
 sw:resume 0042
-
-# If WIP limit reached:
-# "Cannot resume: 2/2 WIP slots in use. Complete or pause another increment first."
 ```
+
+Resuming is never blocked. If this pushes the active count above
+`limits.activeIncrements`, SpecWeave prints one advisory note and continues.
 
 **What happens**:
 1. Status changes to `ACTIVE`
-2. WIP slot consumed
+2. Counted as active again
 3. Resume timestamp recorded
 4. External tools updated (GitHub label removed)
 

@@ -1059,7 +1059,7 @@ Active: 0001-user-registration
 🎯 Auto-closing increment 0001...
   ✓ Status: completed
   ✓ Completion report generated
-  ✓ WIP freed (1/2 → 0/2)
+  ✓ No longer counted as active (1 → 0)
 
 🎉 Increment 0001 closed successfully!
 
@@ -1107,7 +1107,7 @@ What would you like to do? [A/B/C]
 Recent work:
   ✅ 0001-user-registration (closed today)
 
-Current WIP: 0/2 (slots available)
+Active increments: 0 (advisory limit 2)
 
 🎯 Next Work Suggestions
 

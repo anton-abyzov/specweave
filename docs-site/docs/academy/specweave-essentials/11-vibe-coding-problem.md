@@ -155,7 +155,7 @@ Developer B: "Claude, add a customer model"
 
 **Real cost**: Team velocity drops. Conflicts waste hours. Inconsistent codebase emerges.
 
-**SpecWeave solution**: One increment = one source of truth. `sw:status --all` shows who's working on what. WIP limits prevent stepping on each other's toes.
+**SpecWeave solution**: One increment = one source of truth. `sw:status --all` shows who's working on what. An advisory WIP note keeps the active count visible.
 
 ---
 

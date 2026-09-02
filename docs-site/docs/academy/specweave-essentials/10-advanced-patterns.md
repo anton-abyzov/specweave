@@ -34,7 +34,7 @@ sw:status --all
 0002-payment-processing    ██████░░░░  50%  (Dev B)
 0003-notification-system   ████░░░░░░  35%  (Dev C)
 
-Total WIP: 3/5 (2 slots available)
+Active: 3 (advisory limit 5)
 ```
 
 ---
@@ -94,7 +94,7 @@ cd frontend && sw:do
 **When**: Production emergency
 
 ```bash
-# Create hotfix (bypasses WIP)
+# Create hotfix (advisory WIP note never blocks)
 # Say: "Critical hotfix needed: Fix CVE-2025-1234"
 sw:increment "Critical: Fix CVE-2025-1234" --type hotfix
 

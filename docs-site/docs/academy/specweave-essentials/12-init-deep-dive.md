@@ -294,17 +294,20 @@ Best for: Large teams (15+ people), multiple products, platform teams.
 
 ---
 
-## Phase 6: WIP Limits
+## Phase 6: Advisory WIP Note
 
 ```
-? Maximum active increments (WIP limit):
-  ❯ 1 (focused - recommended)
-    2 (parallel work allowed)
-    3 (large team)
-    No limit (not recommended)
+? Recommended active increments (advisory — never blocks):
+  ❯ 1 (focused)
+    2 (parallel work)
+    3 (large team - default)
+    0 (silence the note)
 ```
 
-### Why WIP Limits Matter
+Stored as `limits.activeIncrements`. Exceeding it prints one info note; no
+command is ever blocked.
+
+### Why Keeping WIP Low Helps
 
 ```
 WIP = 1:
@@ -324,7 +327,7 @@ WIP = 3+:
   - Requires discipline
 ```
 
-**The data**: Studies show developers are 40% more productive with WIP limits. Context switching is expensive.
+Context switching is expensive — but SpecWeave only advises, it never blocks.
 
 ---
 
@@ -480,7 +483,7 @@ specweave init .
 # Git provider: GitHub
 # External tracker: No (keep local)
 # Documentation: Simple
-# WIP limit: 1
+# Advisory active-increment note: 1
 # Testing: Vitest
 ```
 
@@ -496,7 +499,7 @@ specweave init .
 # External tracker: GitHub Issues
 # Team strategy: Repository-per-team
 # Documentation: Living docs
-# WIP limit: 2
+# Advisory active-increment note: 2
 # Testing: Vitest + Playwright
 ```
 
@@ -520,7 +523,7 @@ specweave init . --strategic
 # External tracker: JIRA
 # Team strategy: Project-per-team
 # Documentation: Multi-project
-# WIP limit: 3
+# Advisory active-increment note: 3
 ```
 
 **Result**: Enterprise-grade setup with compliance.
@@ -616,7 +619,7 @@ cat .specweave/config.json
 1. **Init is strategic** — Take 5 minutes to answer thoughtfully
 2. **Detection is automatic** — SpecWeave finds your stack
 3. **Team strategy matters** — Choose based on your org structure
-4. **WIP limits boost productivity** — Start with 1 or 2
+4. **Keeping WIP low helps** — the note is advisory; start with 1 or 2
 5. **Secrets stay local** — `.env` is gitignored
 
 ---
