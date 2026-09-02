@@ -2,8 +2,6 @@
 description: Systematic 4-phase debugging with escalation protocol. Use when saying "debug", "investigate bug", "find root cause", "why is this failing", or "fix this bug".
 version: 1.0.0
 argument-hint: "<bug-description>"
-allowed-tools: Read, Grep, Glob, Bash
-context: fork
 ---
 
 # Systematic Debugging
