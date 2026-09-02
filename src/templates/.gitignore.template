@@ -1,5 +1,6 @@
 # SpecWeave
 .specweave/cache/
+.specweave/backups/
 .specweave/increments/*/logs/       # Gitignored, but structure preserved
 .specweave/increments/*/test-results/
 .specweave/docs-site-internal/      # Generated Docusaurus site for internal docs

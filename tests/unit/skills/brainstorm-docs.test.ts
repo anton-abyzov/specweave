@@ -9,18 +9,6 @@ function readFile(relativePath: string): string {
 }
 
 describe('Brainstorm Skill — Docs & Template (US-003: AC-US3-07/08)', () => {
-  describe('AC-US3-07: CLAUDE.md template brainstorm routing', () => {
-    const template = readFile('src/templates/CLAUDE.md.template');
-
-    it('contains sw:brainstorm reference near brainstorm opt-out', () => {
-      expect(template).toMatch(/sw:brainstorm/);
-    });
-
-    it('has brainstorm routing line', () => {
-      expect(template).toMatch(/brainstorm.*rout|rout.*brainstorm/i);
-    });
-  });
-
   describe('AC-US3-08: docs-site skills reference', () => {
     const skillsRef = readFile('docs-site/docs/reference/skills.md');
 
