@@ -257,7 +257,7 @@ export class CostReporter {
 
     lines.push('═══════════════════════════════════════════════════════════════');
     lines.push('');
-    lines.push('💡 Tip: Use "/specweave.costs 0003" to see detailed report for increment 0003');
+    lines.push('💡 Tip: pass an increment id (e.g. 0003) for its detailed report');
     lines.push('');
 
     return lines.join('\n');

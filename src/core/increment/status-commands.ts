@@ -80,7 +80,7 @@ export async function pauseIncrement(options: PauseOptions): Promise<void> {
       console.log(chalk.gray(`   Current status: ${metadata.status}`));
       console.log(chalk.gray(`   Only active increments can be paused`));
       if (metadata.status === IncrementStatus.ABANDONED) {
-        console.log(chalk.gray(`\n   💡 Resume it first: /resume ${incrementId}`));
+        console.log(chalk.gray(`\n   💡 Resume it first: specweave resume ${incrementId}`));
       }
       process.exit(1);
     }
@@ -95,7 +95,7 @@ export async function pauseIncrement(options: PauseOptions): Promise<void> {
     console.log(chalk.green(`✅ Increment ${incrementId} paused`));
     console.log(chalk.gray(`📝 Reason: ${pauseReason}`));
     console.log(chalk.gray(`⏸️  No longer counts toward active limit`));
-    console.log(chalk.gray(`\n💡 Resume with: /resume ${incrementId}\n`));
+    console.log(chalk.gray(`\n💡 Resume with: specweave resume ${incrementId}\n`));
 
   } catch (error) {
     console.log(chalk.red(`\n❌ Failed to pause increment: ${error instanceof Error ? error.message : String(error)}\n`));
@@ -158,7 +158,7 @@ export async function resumeIncrement(options: ResumeOptions): Promise<void> {
       console.log(chalk.gray(`📝 Was abandoned for: ${metadata.abandonedReason}`));
     }
 
-    console.log(chalk.gray(`\n💡 Continue work with: /do ${incrementId}\n`));
+    console.log(chalk.gray(`\n💡 Continue work with: specweave task next ${incrementId}  (Claude Code: /sw:do)\n`));
 
   } catch (error) {
     console.log(chalk.red(`\n❌ Failed to resume increment: ${error instanceof Error ? error.message : String(error)}\n`));
@@ -254,7 +254,7 @@ export async function abandonIncrement(options: AbandonOptions): Promise<void> {
     console.log(chalk.green(`✅ Increment ${incrementId} abandoned`));
     console.log(chalk.gray(`📝 Reason: ${abandonReason}`));
     console.log(chalk.gray(`🗑️  No longer counts toward active limit`));
-    console.log(chalk.gray(`\n💡 Can be resumed later with: /resume ${incrementId}\n`));
+    console.log(chalk.gray(`\n💡 Can be resumed later with: specweave resume ${incrementId}\n`));
 
   } catch (error) {
     console.log(chalk.red(`\n❌ Failed to abandon increment: ${error instanceof Error ? error.message : String(error)}\n`));

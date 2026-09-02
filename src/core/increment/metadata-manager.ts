@@ -1051,11 +1051,11 @@ export class MetadataManager {
     }
 
     if (to === IncrementStatus.PAUSED && from === IncrementStatus.ABANDONED) {
-      return `Cannot pause an abandoned increment. Resume it first with /resume.`;
+      return `Cannot pause an abandoned increment. Resume it first with: specweave resume <id>`;
     }
 
     if (to === IncrementStatus.COMPLETED && from === IncrementStatus.ABANDONED) {
-      return `Cannot complete an abandoned increment. Resume it first with /resume.`;
+      return `Cannot complete an abandoned increment. Resume it first with: specweave resume <id>`;
     }
 
     return `Invalid transition: ${from} → ${to}`;
