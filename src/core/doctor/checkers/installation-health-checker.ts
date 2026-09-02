@@ -28,6 +28,12 @@ import { calculateOverallStatus } from '../types.js';
 import { computePluginHash, readGlobalLockfile } from '../../../utils/plugin-copier.js';
 import { npmRegistryFlag } from '../../../utils/npm-constants.js';
 
+/**
+ * The 2.0 plugin hook assets copied into Claude Code's plugin cache.
+ * The old shell hooks (user-prompt-submit.sh et al) were removed in 2.0.
+ */
+const PLUGIN_HOOK_ASSETS = ['hooks.json', 'run.mjs'] as const;
+
 interface InstallationHealthOptions {
   commandsDir?: string;
   cacheDir?: string;
@@ -370,7 +376,8 @@ export class InstallationHealthChecker implements HealthChecker {
    * Claude Code's plugin system copies hooks to its own cache directory when
    * `claude plugin install` runs. If the source (npm package) is updated but
    * the cache isn't refreshed, hooks run stale code. This check compares the
-   * UserPromptSubmit hook in the cache against the source and fixes mismatches.
+   * 2.0 plugin hook assets (hooks.json + the run.mjs launcher) in the cache
+   * against the source and fixes mismatches.
    *
    * @since 1.0.306
    */
@@ -385,40 +392,32 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
-    // Find the specweave npm package root (walk up from this file)
-    const sourceHookPath = this.findSourceHookPath();
-    if (!sourceHookPath) {
+    // Find the specweave npm package's hooks/ dir (walk up from this file)
+    const sourceHooksDir = this.findSourceHooksDir();
+    if (!sourceHooksDir) {
       return {
         name: 'Plugin cache hook freshness',
         status: 'skip',
-        message: 'could not locate source hook (npm package not found)',
+        message: 'could not locate source hooks (npm package not found)',
       };
     }
 
-    const staleHooks: string[] = [];
-    let sourceContent: string;
-    try {
-      sourceContent = readFileSync(sourceHookPath, 'utf-8');
-    } catch {
-      return {
-        name: 'Plugin cache hook freshness',
-        status: 'skip',
-        message: 'could not read source hook file',
-      };
-    }
+    /** [cachedPath, sourcePath] pairs whose contents differ. */
+    const staleHooks: Array<[string, string]> = [];
 
-    // Check each version dir in the cache (usually just one: 1.0.0)
     for (const versionDir of this.listDirs(pluginCacheBase)) {
-      const cachedHook = join(pluginCacheBase, versionDir, 'hooks', 'user-prompt-submit.sh');
-      if (!existsSync(cachedHook)) continue;
+      for (const asset of PLUGIN_HOOK_ASSETS) {
+        const sourcePath = join(sourceHooksDir, asset);
+        const cachedHook = join(pluginCacheBase, versionDir, 'hooks', asset);
+        if (!existsSync(sourcePath) || !existsSync(cachedHook)) continue;
 
-      try {
-        const cachedContent = readFileSync(cachedHook, 'utf-8');
-        if (cachedContent !== sourceContent) {
-          staleHooks.push(cachedHook);
+        try {
+          if (readFileSync(cachedHook, 'utf-8') !== readFileSync(sourcePath, 'utf-8')) {
+            staleHooks.push([cachedHook, sourcePath]);
+          }
+        } catch {
+          // Can't read = skip
         }
-      } catch {
-        // Can't read = skip
       }
     }
 
@@ -432,9 +431,9 @@ export class InstallationHealthChecker implements HealthChecker {
 
     if (fix) {
       let fixed = 0;
-      for (const hookPath of staleHooks) {
+      for (const [cachedHook, sourcePath] of staleHooks) {
         try {
-          copyFileSync(sourceHookPath, hookPath);
+          copyFileSync(sourcePath, cachedHook);
           fixed++;
         } catch {
           // Best effort
@@ -444,7 +443,7 @@ export class InstallationHealthChecker implements HealthChecker {
         name: 'Plugin cache hook freshness',
         status: fixed === staleHooks.length ? 'pass' : 'warn',
         message: `${fixed}/${staleHooks.length} stale hook(s) updated from source`,
-        details: staleHooks.map(h => `Updated: ${h}`),
+        details: staleHooks.map(([cachedHook]) => `Updated: ${cachedHook}`),
         fixSuggestion: 'Restart Claude Code to pick up updated hooks',
       };
     }
@@ -453,21 +452,23 @@ export class InstallationHealthChecker implements HealthChecker {
       name: 'Plugin cache hook freshness',
       status: 'warn',
       message: `${staleHooks.length} stale hook(s) in plugin cache`,
-      details: staleHooks.map(h => `Stale: ${h}`),
+      details: staleHooks.map(([cachedHook]) => `Stale: ${cachedHook}`),
       fixSuggestion: 'Run: specweave doctor --fix (or specweave update)',
     };
   }
 
   /**
-   * Locate the authoritative source of user-prompt-submit.sh.
+   * Locate the authoritative `plugins/specweave/hooks/` directory.
    *
    * Resolution order:
    * 1. Walk up from __dirname to find package.json with name "specweave"
    * 2. Global npm install via `npm root -g`
    * 3. ~/.claude/plugins/marketplaces/specweave/
    */
-  private findSourceHookPath(): string | null {
-    const hookRelPath = join('plugins', 'specweave', 'hooks', 'user-prompt-submit.sh');
+  private findSourceHooksDir(): string | null {
+    const hooksRelPath = join('plugins', 'specweave', 'hooks');
+    /** A hooks dir is only authoritative if it carries the manifest. */
+    const isHooksDir = (dir: string) => existsSync(join(dir, 'hooks.json'));
 
     // 1. Walk up from __dirname
     try {
@@ -478,8 +479,8 @@ export class InstallationHealthChecker implements HealthChecker {
           try {
             const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
             if (pkg.name === 'specweave') {
-              const hookPath = join(dir, hookRelPath);
-              if (existsSync(hookPath)) return hookPath;
+              const hooksDir = join(dir, hooksRelPath);
+              if (isHooksDir(hooksDir)) return hooksDir;
             }
           } catch { /* continue */ }
         }
@@ -492,14 +493,13 @@ export class InstallationHealthChecker implements HealthChecker {
     // 2. Global npm install
     try {
       const npmRoot = execSync('npm root -g', { encoding: 'utf-8', timeout: 5000 }).trim();
-      const globalPath = join(npmRoot, 'specweave', hookRelPath);
-      if (existsSync(globalPath)) return globalPath;
+      const globalPath = join(npmRoot, 'specweave', hooksRelPath);
+      if (isHooksDir(globalPath)) return globalPath;
     } catch { /* fallback */ }
 
     // 3. Marketplace path
-    const home = homedir();
-    const marketplacePath = join(home, '.claude', 'plugins', 'marketplaces', 'specweave', hookRelPath);
-    if (existsSync(marketplacePath)) return marketplacePath;
+    const marketplacePath = join(homedir(), '.claude', 'plugins', 'marketplaces', 'specweave', hooksRelPath);
+    if (isHooksDir(marketplacePath)) return marketplacePath;
 
     return null;
   }
