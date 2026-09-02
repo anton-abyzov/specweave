@@ -35,6 +35,7 @@ import { refreshPluginsCommand } from './refresh-plugins.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { npmRegistryFlag } from '../../utils/npm-constants.js';
 import { migrateConfigFile } from '../../core/config/migrate-config-file.js';
+import { CONFIG_SCHEMA_VERSION } from '../../core/config/schema-version.js';
 import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
 
@@ -170,7 +171,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       const projectName = path.basename(projectPath);
       if (!options.check) {
         fs.writeFileSync(configPath, JSON.stringify({
-          version: '2.0',
+          version: CONFIG_SCHEMA_VERSION,
           project: { name: projectName },
         }, null, 2) + '\n');
         isSpecWeaveProject = true;
