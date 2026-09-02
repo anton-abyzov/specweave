@@ -137,7 +137,7 @@ export function stateLine(state: TaskLedgerState): string {
   const when = state.since ? ` ${state.since}` : '';
   switch (state.status) {
     case 'done': return `- [x] done by ${state.by}${when}${state.evidence ? ` — ${oneLine(state.evidence)}` : ''}`;
-    case 'skipped': return `- [x] skipped by ${state.by}${when}${state.note ? ` — ${oneLine(state.note)}` : ''}`;
+    case 'skipped': return `- [-] skipped by ${state.by}${when}${state.note ? ` — ${oneLine(state.note)}` : ''}`;
     case 'claimed': return `- [ ] claimed by ${state.by} since${when}`;
     case 'stale': return `- [ ] stale claim by ${state.by} since${when} (re-claimable)`;
     case 'blocked': return `- [ ] blocked by ${state.by}${when}${state.note ? ` — ${oneLine(state.note)}` : ''}`;
@@ -154,22 +154,26 @@ function oneLine(s: string, max = 120): string {
 export function renderBoardTable(board: TaskBoard): string {
   const rows = board.tasks.map((t) => {
     const s = t.state;
-    const evidence = s.status === 'done' ? oneLine(s.evidence ?? '', 60) : oneLine(s.note ?? '', 60);
-    return `| ${t.id} | ${s.status} | ${s.by ?? ''} | ${evidence} |`;
+    return `| ${t.id} | ${s.status} | ${s.by ?? ''} | ${cell(s.evidence)} | ${cell(s.note)} |`;
   });
   const c = board.counts;
   return [
-    `| Task | State | By | Evidence / note |`,
-    `|---|---|---|---|`,
+    `| Task | State | By | Evidence | Note |`,
+    `|---|---|---|---|---|`,
     ...rows,
     ``,
     `${c.done}/${c.total} done · ${c.skipped} skipped · ${c.claimed} claimed · ${c.blocked} blocked · ${c.stale} stale · ${c.open} open`,
   ].join('\n');
 }
 
+/** Table cell: single line, pipe-escaped, capped. */
+function cell(value: string | undefined, max = 60): string {
+  return oneLine((value ?? '').replace(/\|/g, '\\|'), max);
+}
+
 const HEADER_RE = /^###\s+(T-\d{2,}E?):?\s+(.+)$/;
 const FIELD_LINE_RE = /^-?\s*\*{0,2}(?:AC|Files|Test)\*{0,2}:/;
-const STATE_LINE_RE = /^- \[([ x])\](?:\s+(?:done|open|pending|claimed|stale|blocked|skipped)\b.*)?$/i;
+const STATE_LINE_RE = /^- \[([ x-])\](?:\s+(?:done|open|pending|claimed|stale|blocked|skipped)\b.*)?$/i;
 const LEGACY_STATUS_RE = /\*\*Status\*\*:\s*\[ \]\s*\w*/;
 
 /**
