@@ -40,6 +40,17 @@ describe('detectTemplateFlags (umbrella section)', () => {
     expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
   });
 
+  it('falls back to the repositories/ scan while init has not written workspace yet', () => {
+    // init writes a minimal config (no workspace key) before the instruction files
+    writeConfig({ version: '2.0', project: { name: 'demo' } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    fs.mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true });
+    // an explicit empty workspace list still wins over the scan
+    writeConfig({ version: '2.0', workspace: { name: 'demo', repos: [] } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+  });
+
   it('is on when the workspace lists repos', () => {
     writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
     expect(detectTemplateFlags(dir)).toEqual({ umbrella: true });

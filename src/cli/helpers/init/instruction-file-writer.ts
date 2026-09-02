@@ -19,6 +19,7 @@ import {
   type TemplateType,
 } from './instruction-file-merger.js';
 import { detectStackCommands, type StackCommands } from './stack-detector.js';
+import { scanWorkspaceRepos } from './path-utils.js';
 
 export type InstructionFileName = 'CLAUDE.md' | 'AGENTS.md';
 
@@ -64,18 +65,27 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
 
 /**
  * Condition flags for the templates' `when="…"` sections.
- * `umbrella` is on when the project's config lists workspace repos.
+ *
+ * `umbrella` is on when `config.workspace.repos` is non-empty. During `init` the
+ * instruction files are written before the workspace section exists, so a config
+ * without a `workspace` key falls back to the same `repositories/<org>/<repo>`
+ * scan that init uses to build it.
  */
 export function detectTemplateFlags(projectPath: string): Record<string, boolean> {
-  let umbrella = false;
+  let workspace: unknown;
   try {
     const raw = fs.readFileSync(path.join(projectPath, '.specweave', 'config.json'), 'utf-8');
-    const repos = JSON.parse(raw)?.workspace?.repos;
-    umbrella = Array.isArray(repos) && repos.length > 0;
+    workspace = JSON.parse(raw)?.workspace;
   } catch {
-    // no config yet (init), or unreadable: single-repo layout
+    // no config yet, or unreadable: fall through to the filesystem scan
   }
-  return { umbrella };
+  const repos = (workspace as { repos?: unknown } | undefined)?.repos;
+  if (Array.isArray(repos)) return { umbrella: repos.length > 0 };
+  try {
+    return { umbrella: scanWorkspaceRepos(projectPath) !== null };
+  } catch {
+    return { umbrella: false };
+  }
 }
 
 export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyInstructionResult {
