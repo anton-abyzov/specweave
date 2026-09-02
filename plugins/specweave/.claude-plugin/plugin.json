@@ -1,6 +1,6 @@
 {
   "name": "sw",
-  "description": "SpecWeave unified plugin. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, brownfield support, GitHub/JIRA/ADO bidirectional sync, documentation generation, release management, architecture diagrams, and AI media generation.",
+  "description": "SpecWeave: increment lifecycle for any AI tool. 10 skills (increment, do, done, review, team, handoff, sync, auto, brainstorm, qa), 4 exec-form hooks, and the specweave CLI for everything deterministic.",
   "version": "1.0.593",
   "author": {
     "name": "SpecWeave Team",
@@ -11,20 +11,15 @@
   "license": "MIT",
   "keywords": [
     "specweave",
-    "core",
-    "help",
-    "increment-planning",
-    "specifications",
-    "tdd",
-    "pm",
-    "architect",
-    "living-docs",
+    "increment",
+    "spec-driven",
+    "tasks",
+    "ledger",
+    "review",
+    "multi-agent",
+    "handoff",
     "github",
     "jira",
-    "azure-devops",
-    "sync",
-    "release",
-    "diagrams",
-    "media"
+    "azure-devops"
   ]
 }
