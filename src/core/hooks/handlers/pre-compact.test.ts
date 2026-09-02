@@ -43,13 +43,16 @@ function ctx(root: string): HookContext {
   };
 }
 
-/** Read whichever handoff doc the builder wrote (root HANDOFF.md or .handoff/). */
+/** Read whichever handoff doc the builder wrote (increment handoff.md, root, or .handoff/). */
 function readHandoffDoc(root: string): string {
   const candidates = [
     path.join(root, 'HANDOFF.md'),
     path.join(root, '.handoff', 'HANDOFF.md'),
-    path.join(root, '.specweave', 'state', 'handoff-latest.md'),
   ];
+  // 2.0: the canonical location is next to the active increment; the state dir
+  // only holds a pointer to it.
+  const pointer = path.join(root, '.specweave', 'state', 'handoff-latest.txt');
+  if (fs.existsSync(pointer)) candidates.unshift(fs.readFileSync(pointer, 'utf-8').trim());
   for (const c of candidates) {
     if (fs.existsSync(c)) return fs.readFileSync(c, 'utf-8');
   }
