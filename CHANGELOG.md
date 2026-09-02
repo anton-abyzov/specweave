@@ -9,12 +9,13 @@ SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and delete
 - `sw:grill`, `sw:code-reviewer`, `sw:judge-llm`, `sw:pr-review`, `sw:validate` → **`sw:review`** (one fresh-context adversarial pass; every finding cites `path:line`).
 - `sw:team-lead`, `sw:team-merge`, `sw:team-build` → **`sw:team`**.
 - `sw:pm`, `sw:architect`, `sw:plan` → **`sw:increment`** (the Approach section absorbed `plan.md`).
-- `sw:tdd-cycle`, `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor` → **`sw:do`**.
+- `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor` (deprecated stubs, 0 invocations) → deleted; the RED → GREEN → REFACTOR loop is described inside **`sw:do`**. `sw:tdd-cycle` itself moved to `skills-optional/`.
 - `sw:sync-docs`, `sw:progress-sync`, `sw:sync-setup`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync` → **`sw:sync`**.
 - `sw:next`, `sw:progress`, `sw:close-all`, `sw:doctor`, `sw:jobs`, `sw:analytics`, `sw:lsp`, `sw:docs`, `sw:living-docs`, `sw:help`, `sw:framework` → the CLI (`specweave task next`, `specweave status`, `specweave doctor`, …).
-- `sw:e2e`, `sw:debug`, `sw:image`, `sw:video`, `sw:remotion`, `sw:npm`, `sw:release-*`, `sw:skill-gen`, `sw:skill-refine`, `sw:diagrams` → removed from the core plugin; available as optional vskill-distributed skills.
+- `sw:e2e`, `sw:debug`, `sw:diagrams`, `sw:release-expert` (with `sw:tdd-cycle`) → out of the core plugin and into `skills-optional/`, installable on their own: `npx vskill install anton-abyzov/specweave/skills-optional/<name>`.
+- `sw:image`, `sw:video`, `sw:remotion`, `sw:npm`, `sw:skill-gen`, `sw:skill-refine` and the Jira/ADO mapper + resource-validator skills → deleted outright, not redistributed.
 - The whole `commands/` plugin namespace (73 `.md` files) is gone.
-- The per-provider `sw-github:`, `sw-jira:` and `sw-ado:` namespaces are gone. Use `sw:sync` / `specweave sync --provider <name>`.
+- The per-provider `sw-github:`, `sw-jira:` and `sw-ado:` namespaces are gone. Use `sw:sync` / `specweave sync push --provider <name>`.
 
 **New: five standalone skills.** `sw-increment`, `sw-do`, `sw-task`, `sw-review`, `sw-handoff` under `skills/`, distributed through vskill for non-Claude tools. Each spells out the file formats and a manual shell/PowerShell procedure, so they work with no CLI installed.
 
@@ -30,6 +31,12 @@ SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and delete
 - Renamed: `testing.defaultTestMode` → `testing.mode`; `testing.coverageTargets` → `testing.coverage`; `limits.maxActiveIncrements` → `limits.activeIncrements`; `hooks.*.sync_living_docs` → `livingDocs`; `planning.deepInterview.{enabled,enforcement}` → `planning.deepInterview` (`off` | `warn`); `umbrella` / `multiProject` / `projectMappings` → `workspace`.
 
 **Hooks: new exec-form format.** Four hooks (`SessionStart`, `PreToolUse` on `Write|Edit`, `Stop`, `PreCompact`), all `"command": "node"` with `args`, no shell. 1.x wrapped every hook in `bash -c '…'`, which made them dead on Windows without a POSIX shell. Removed: the `UserPromptSubmit` banner hook, the `PostToolUse` hooks, the `TeamCreate` matcher and the no-op Stop handlers. `Stop` is now the `sw:auto` loop driver and nothing else; handoff automation moved to `PreCompact`.
+
+**Increment status vocabulary.** The 2.0 set is `planned`, `active`, `paused`, `completed`, `abandoned` (`backlog` and `ready_for_review` are still read for 1.x increments). `planning` — what 1.x `create-increment` wrote — is now `planned`, and 20+ hand-written spellings (`in-progress`, `superseded`, `done`, `blocked`, …) are migrated on read instead of vanishing from `specweave status`. An unrecognised status is surfaced, not silently coerced.
+
+**`create-increment` now starts an increment `active`.** `task next|claim`, `verify` and `handoff` all resolve the single active increment, so creating in any other state stranded every bare-id command behind a hand-edit of `metadata.json`. Pass `--planned` for backlog-style creation and `specweave start <id>` when you pick it up.
+
+**Removed CLI commands.** `specweave logs` (superseded by `hooks log`), `reflect-stop`, `revert-wip-limit` (the cap it reverted is gone), `set-sync-target` (folded into `sync push`), `sync-flush` / `sync-scheduled` / `sync-task` (removed with queued sync mode) and `validate-jira` (folded into `sync setup --validate`).
 
 **WIP cap is advisory.** `limits.activeIncrements` (default 3) prints one info note when exceeded and blocks nothing. The 1.x hard cap is gone. `0` disables the note.
 
@@ -47,10 +54,14 @@ SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and delete
 - `specweave complete --all --reason "<why>"` — batch triage closure.
 - `specweave hooks log` — recent hook warnings, errors and blocks from `.specweave/logs/hooks.jsonl`.
 - `specweave gc` — purge stale `.specweave/state` files (dry run by default).
+- `specweave sync <push|pull|status|setup>` — one command group replacing the per-provider commands; `push --provider github|jira|ado` narrows it to one tracker.
+- `specweave start <id>` — move a planned, backlog or paused increment to `active`.
 - `specweave update` now writes `.gitattributes` (`**/ledger.jsonl merge=union`) and the 2.0 `.gitignore` entries.
 - `specweave doctor` gained config-shape, instruction-file-reference and hygiene checks (leftover `{{` placeholders, tracked files over 5 MB under `increments/`, tracked files under `.specweave/state`, `node` on PATH).
 - `npm run lint:skills` — fails on a `name:` frontmatter field, on model/effort/context pins, and on any `specweave <cmd>` or `sw:<name>` reference that does not resolve.
 - `npm run lint:docs-refs` — the same guarantee for the documentation site.
+- Supply-chain guard on the repo itself: `.npmrc` sets `ignore-scripts=true`, `npm run setup` rebuilds the few packages that legitimately need install scripts, `npm run security:scan` looks for the obfuscated-payload signature, and CI installs with `--ignore-scripts`. `specweave doctor` reports whether a project's own `.npmrc` does the same. Contributor-facing only — npm never publishes `.npmrc`, so installing `specweave` is unchanged.
+- `npm run release` / `npm run release:preflight` — the publish path no longer depends on `prepublishOnly`, which the repo's own `ignore-scripts=true` suppresses. The preflight inspects the tarball `npm pack` would upload and refuses a publish whose `bin/`+`dist/` are missing or older than `src/`.
 
 ### Migration
 
