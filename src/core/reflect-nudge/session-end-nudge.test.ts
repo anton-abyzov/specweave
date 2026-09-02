@@ -8,7 +8,7 @@
  *   Then a single-line prompt is printed; no command is auto-executed
  *
  * BDD (T-014 AC-US3-02):
- *   Given reflect.autoNudge: false
+ *   Given autoNudge: false is passed by the caller
  *   When /sw:done closes
  *   Then no nudge is printed
  */
@@ -84,14 +84,14 @@ describe('runSessionEndNudge', () => {
     expect(output).toMatch(/\(y\/N\)$/m);
   });
 
-  it('skips when config sets reflect.autoNudge: false (T-014, AC-US3-02)', async () => {
-    await writeConfig({ reflect: { autoNudge: false } });
+  it('skips when the caller passes autoNudge: false (T-014, AC-US3-02)', async () => {
     await writeSignals([refinement('sw:architect'), refinement('sw:pm'), refinement('sw:tdd')]);
     const { stdin, stdout, chunks } = makeStreams();
 
     const result = await runSessionEndNudge({
       projectRoot: root,
       incrementId: '0671',
+      autoNudge: false,
       prompt: { stdin, stdout, timeoutMs: 50 },
     });
 
