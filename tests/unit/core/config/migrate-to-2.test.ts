@@ -51,6 +51,7 @@ function umbrellaConfig(): Record<string, unknown> {
     quality: { thinkingBudget: 'xhigh', grillConfidenceThreshold: 50 },
     cache: { staticContextFiles: ['CLAUDE.md'] },
     reflect: { enabled: true },
+    banner: { enabled: true, style: 'compact' },
     lsp: { enabled: true },
     hooks: {
       post_task_completion: { sync_tasks_md: true, external_tracker_sync: true },
@@ -84,9 +85,13 @@ describe('migrateTo2', () => {
       'language', 'translation', 'statusLine', 'deduplication', 'archiving', 'apiDocs',
       'documentation', 'pluginAutoLoad', 'incrementAssist', 'contextBudget', 'grill',
       'codeReview', 'qualityGates', 'skillGen', 'quality', 'cache', 'reflect',
+      // top-level `banner`: 1.x wrote it both here and under hooks, and only
+      // the hooks copy was dropped — leaving an unknown-key warning forever.
+      'banner',
     ]) {
       expect(config[dead], dead).toBeUndefined();
     }
+    expect(result.removedKeys).toContain('banner');
   });
 
   it('renames the limits, testing, livingDocs and planning shapes', () => {
