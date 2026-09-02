@@ -184,34 +184,6 @@ describe('status-commands', () => {
       expect(mockExit).toHaveBeenCalledWith(1);
     });
 
-    it('should exit when WIP limit reached without force', async () => {
-      mockRead.mockReturnValue(makeMetadata({
-        status: IncrementStatus.PAUSED,
-        type: IncrementType.FEATURE,
-      }));
-      // Feature limit is 2, so 2 active = at limit
-      mockGetActive.mockReturnValue([makeMetadata(), makeMetadata()]);
-
-      await expect(resumeIncrement({ incrementId: '0001-test' }))
-        .rejects.toThrow(ProcessExitError);
-      expect(mockExit).toHaveBeenCalledWith(1);
-      expect(mockUpdateStatus).not.toHaveBeenCalled();
-    });
-
-    it('should bypass WIP limit with force', async () => {
-      mockRead.mockReturnValue(makeMetadata({
-        status: IncrementStatus.PAUSED,
-        type: IncrementType.FEATURE,
-      }));
-      mockGetActive.mockReturnValue([makeMetadata(), makeMetadata()]);
-
-      await resumeIncrement({ incrementId: '0001-test', force: true });
-
-      expect(mockUpdateStatus).toHaveBeenCalledWith(
-        '0001-test',
-        IncrementStatus.ACTIVE
-      );
-    });
   });
 
   // ─── abandonIncrement ──────────────────────────────────────────

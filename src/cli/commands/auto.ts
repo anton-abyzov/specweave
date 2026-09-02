@@ -21,7 +21,7 @@ import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { isSpecWeaveInitialized } from '../../utils/fs-native.js';
-import { DisciplineChecker } from '../../core/increment/discipline-checker.js';
+import { DisciplineChecker, buildWipNote } from '../../core/increment/discipline-checker.js';
 import { DEFAULT_SUCCESS_CRITERIA, type SuccessCriterion } from '../../core/auto/types.js';
 
 export interface AutoCommandOptions {
@@ -165,9 +165,17 @@ export async function handleAutoCommand(
     return;
   }
 
-  // Check WIP discipline BEFORE starting auto mode
+  // Advisory WIP note (never blocks)
   const disciplineChecker = new DisciplineChecker(projectPath);
   const disciplineResult = await disciplineChecker.validate();
+  const advisoryLimit = disciplineResult.config.activeIncrements;
+  const printWipNote = (count: number): void => {
+    const note = buildWipNote(count, advisoryLimit);
+    if (note) {
+      console.log(chalk.blue('ℹ️  ' + note.message));
+      console.log('');
+    }
+  };
 
   // Find active and backlog increments
   const activeIncrements = findIncrementsByStatus(incrementsDir, ['active', 'in-progress']);
@@ -180,24 +188,6 @@ export async function handleAutoCommand(
       return;
     }
 
-    // WIP discipline check: Warn if activating backlog would exceed limits
-    const wouldHaveActive = activeIncrements.length + backlogIncrements.length;
-
-    if (wouldHaveActive > (disciplineResult.config.hardCap || 3)) {
-      console.log(chalk.red('❌ Cannot activate backlog: Would exceed hard cap'));
-      console.log('');
-      console.log(`Current active: ${activeIncrements.length}`);
-      console.log(`Backlog to activate: ${backlogIncrements.length}`);
-      console.log(`Total would be: ${wouldHaveActive}`);
-      console.log(`Hard cap: ${disciplineResult.config.hardCap}`);
-      console.log('');
-      console.log('Complete some work first:');
-      for (const inc of activeIncrements) {
-        console.log('  • ' + chalk.cyan(inc));
-      }
-      return;
-    }
-
     if (options.dryRun) {
       console.log(chalk.blue('🔍 Dry Run - Would activate:'));
       for (const inc of backlogIncrements) {
@@ -206,13 +196,7 @@ export async function handleAutoCommand(
       return;
     }
 
-    // Show WIP warning if applicable
-    if (wouldHaveActive > (disciplineResult.config.maxActiveIncrements || 1)) {
-      console.log(chalk.yellow('⚠️  WIP Warning'));
-      console.log(`Will have ${wouldHaveActive} active (recommended: ${disciplineResult.config.maxActiveIncrements})`);
-      console.log(chalk.gray('Research shows 2+ concurrent tasks reduces productivity by 20-40%'));
-      console.log('');
-    }
+    printWipNote(activeIncrements.length + backlogIncrements.length);
 
     // Activate backlog increments
     for (const inc of backlogIncrements) {
@@ -241,21 +225,6 @@ export async function handleAutoCommand(
       process.exit(1);
     }
 
-    // WIP discipline check: Warn if activating would exceed limits
-    const wouldHaveActive = activeIncrements.length + toActivate.length;
-
-    if (wouldHaveActive > (disciplineResult.config.hardCap || 3)) {
-      console.log(chalk.red('❌ Cannot activate: Would exceed hard cap'));
-      console.log('');
-      console.log(`Current active: ${activeIncrements.length}`);
-      console.log(`Trying to activate: ${toActivate.length}`);
-      console.log(`Total would be: ${wouldHaveActive}`);
-      console.log(`Hard cap: ${disciplineResult.config.hardCap}`);
-      console.log('');
-      console.log('Complete some work first or increase hard cap in config.json');
-      return;
-    }
-
     if (options.dryRun) {
       console.log(chalk.blue('🔍 Dry Run - Would activate:'));
       for (const inc of toActivate) {
@@ -264,13 +233,7 @@ export async function handleAutoCommand(
       return;
     }
 
-    // Show WIP warning if applicable
-    if (wouldHaveActive > (disciplineResult.config.maxActiveIncrements || 1)) {
-      console.log(chalk.yellow('⚠️  WIP Warning'));
-      console.log(`Will have ${wouldHaveActive} active (recommended: ${disciplineResult.config.maxActiveIncrements})`);
-      console.log(chalk.gray('Research shows 2+ concurrent tasks reduces productivity by 20-40%'));
-      console.log('');
-    }
+    printWipNote(activeIncrements.length + toActivate.length);
 
     // Activate the specified increments
     for (const inc of toActivate) {
@@ -288,20 +251,7 @@ export async function handleAutoCommand(
     console.log(chalk.blue('ℹ️  Continuing with existing active increments'));
     console.log('');
 
-    // Show discipline status for awareness, but don't block
-    if (!disciplineResult.compliant) {
-      const hardCapViolation = disciplineResult.violations.find(v => v.type === 'hard_cap_exceeded');
-      const wipViolation = disciplineResult.violations.find(v => v.type === 'wip_limit_exceeded');
-
-      if (hardCapViolation) {
-        console.log(chalk.red('⚠️  Hard cap exceeded: ' + activeIncrements.length + ' active'));
-        console.log(chalk.gray('   WIP limits apply to STARTING new work, not completing existing work'));
-      } else if (wipViolation) {
-        console.log(chalk.yellow('⚠️  WIP limit: ' + activeIncrements.length + ' active (recommended: ' + disciplineResult.config.maxActiveIncrements + ')'));
-        console.log(chalk.gray('   Will complete all active increments before stopping'));
-      }
-      console.log('');
-    }
+    printWipNote(activeIncrements.length);
 
     await printStartMessage(activeIncrements, configPath, projectPath);
   } else if (backlogIncrements.length > 0) {

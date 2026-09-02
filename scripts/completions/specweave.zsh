@@ -40,7 +40,7 @@ commands=(
     'update-instructions:Update CLAUDE.md and AGENTS.md'
     'update:Update SpecWeave CLI and project files'
     'check-discipline:Validate increment discipline'
-    'revert-wip-limit:Revert WIP limit to original'
+    'gc:Purge stale .specweave/state files (dry-run by default)'
     'qa:Run quality assessment'
     'validate-jira:Validate Jira configuration'
     'jobs:Monitor background jobs'

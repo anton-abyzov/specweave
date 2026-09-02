@@ -1,14 +1,12 @@
 /**
  * CLI command: check-discipline
  *
- * Validates increment discipline compliance:
- * - Hard cap: Never > 2 active increments
- * - WIP limit: Recommended max 1 active
- * - Emergency rules: hotfix/bug can interrupt
+ * Reports increment status counts, the advisory WIP note (limits.activeIncrements)
+ * and metadata inconsistencies.
  *
  * Exit codes:
- * - 0: Compliant (all rules passed)
- * - 1: Non-compliant (violations found)
+ * - 0: Compliant (no error-severity violations; warnings/notes are informational)
+ * - 1: Non-compliant (error-severity violation found)
  * - 2: Error (command execution failed)
  */
 
@@ -40,9 +38,7 @@ export async function checkDisciplineCommand(options: DisciplineCheckOptions): P
 
       // Configuration
       console.log(chalk.dim('Configuration:'));
-      console.log(`  Max Active Increments: ${result.config.maxActiveIncrements} (recommended)`);
-      console.log(`  Hard Cap: ${result.config.hardCap} (absolute maximum)`);
-      console.log(`  Emergency Interrupt: ${result.config.allowEmergencyInterrupt ? 'Enabled' : 'Disabled'}`);
+      console.log(`  Active increments (advisory): ${result.config.activeIncrements === 0 ? 'off' : result.config.activeIncrements}`);
       console.log('');
 
       // Status summary
@@ -54,36 +50,33 @@ export async function checkDisciplineCommand(options: DisciplineCheckOptions): P
       console.log(`  Abandoned: ${result.increments.abandoned}`);
       console.log('');
 
-      // Compliance status
+      // Violations and notes
+      result.violations.forEach((violation, index) => {
+        const icon = violation.severity === 'error' ? '🚫' : violation.severity === 'warning' ? '⚠️' : 'ℹ️';
+        const color = violation.severity === 'error' ? chalk.red : violation.severity === 'warning' ? chalk.yellow : chalk.blue;
+
+        console.log(color(`${icon} ${index + 1}: ${violation.type}`));
+        console.log(color(`   ${violation.message}`));
+        console.log(chalk.dim(`   💡 ${violation.suggestion}`));
+
+        if (violation.incrementId) {
+          console.log(chalk.dim(`   📋 Increment: ${violation.incrementId}`));
+        }
+
+        if (options.verbose && violation.context) {
+          console.log(chalk.dim(`   📊 Context: ${JSON.stringify(violation.context, null, 2)}`));
+        }
+
+        console.log('');
+      });
+
       if (result.compliant) {
         console.log(chalk.green('✅ COMPLIANT'));
-        console.log(chalk.dim('All discipline rules are satisfied.'));
         console.log('');
         process.exit(0);
       } else {
         console.log(chalk.red('❌ NON-COMPLIANT'));
-        console.log(chalk.dim(`Found ${result.violations.length} violation(s):\n`));
-
-        // Display violations
-        result.violations.forEach((violation, index) => {
-          const icon = violation.severity === 'error' ? '🚫' : '⚠️';
-          const color = violation.severity === 'error' ? chalk.red : chalk.yellow;
-
-          console.log(color(`${icon} Violation ${index + 1}: ${violation.type}`));
-          console.log(color(`   ${violation.message}`));
-          console.log(chalk.dim(`   💡 Suggestion: ${violation.suggestion}`));
-
-          if (violation.incrementId) {
-            console.log(chalk.dim(`   📋 Increment: ${violation.incrementId}`));
-          }
-
-          if (options.verbose && violation.context) {
-            console.log(chalk.dim(`   📊 Context: ${JSON.stringify(violation.context, null, 2)}`));
-          }
-
-          console.log('');
-        });
-
+        console.log('');
         process.exit(1);
       }
     } catch (error) {

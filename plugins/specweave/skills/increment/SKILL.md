@@ -18,11 +18,11 @@ effort: xhigh
 
 ## CRITICAL: Plan Mode Required (BLOCKING)
 
-**You MUST be in plan mode before proceeding.** If not, call `EnterPlanMode` now and wait for confirmation before continuing to Step 0A.
+**You MUST be in plan mode before proceeding.** If not, call `EnterPlanMode` now and wait for confirmation before continuing to Step 0.
 
 1. Call `EnterPlanMode` immediately
 2. Wait for plan mode confirmation
-3. Then proceed to Step 0A
+3. Then proceed to Step 0
 
 Increment planning produces specs, plans, and task breakdowns that require user review. Do not skip plan mode or defer it — the user must approve the plan before any implementation begins.
 
@@ -39,9 +39,7 @@ Increment planning produces specs, plans, and task breakdowns that require user 
 ## Workflow Overview
 
 ```
-STEP 0A: Discipline Check (BLOCKING)
-STEP 0B: WIP Enforcement
-STEP 0C: Tech Stack Detection
+STEP 0:  Tech Stack Detection
 STEP 1:  Pre-flight (TDD mode, multi-project, Deep Interview check)
 STEP 2:  Project Context (resolve project/board)
 STEP 3:  Create Increment (via Template API) ← folder + ID exist after this
@@ -57,48 +55,9 @@ The interview state file is written to `.specweave/state/interview-{increment-id
 and the enforcement guard looks for it by increment ID. If the interview runs before the
 increment folder exists, the guard cannot find the state file and blocks spec.md writing.
 
-## Step 0A: Discipline Check (MANDATORY)
+**WIP (advisory, never blocking):** prefer finishing active increments before starting new ones; the CLI prints one info note when active increments exceed `limits.activeIncrements` (default 3, `0` = off) and never blocks.
 
-**Cannot start N+1 until N is DONE.**
-
-```bash
-if ! specweave check-discipline; then
-  echo "Cannot create new increment! Close existing work first."
-  echo "Run: sw:done <id>"
-  exit 1
-fi
-```
-
-## Step 0B: WIP Enforcement
-
-Default: 1 active increment (focus). Allow 2 for emergencies.
-
-```typescript
-const active = MetadataManager.getAllActive();
-const limits = config.limits || { maxActiveIncrements: 1, hardCap: 3 };
-
-if (active.length >= limits.hardCap) {
-  // BLOCK - ask user to complete/pause existing
-  console.log("WIP LIMIT REACHED");
-  console.log("Options: sw:done <id> | sw:pause <id>");
-}
-
-if (active.length >= limits.maxActiveIncrements) {
-  // SOFT WARNING - hotfix/bug can bypass
-  const isEmergency = ['hotfix', 'bug'].includes(incrementType);
-  if (!isEmergency) {
-    // Prompt: complete, pause, or continue anyway
-  }
-}
-```
-
-**Type-Based Limits:**
-- Hotfix/Bug: Unlimited (emergency)
-- Feature/Change-Request: Max 2
-- Refactor: Max 1
-- Experiment: Unlimited
-
-## Step 0C: Tech Stack Detection
+## Step 0: Tech Stack Detection
 
 Auto-detect from project files:
 

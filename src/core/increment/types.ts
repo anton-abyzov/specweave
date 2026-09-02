@@ -1,8 +1,7 @@
 /**
  * Types for increment discipline validation
  *
- * These types support the strict enforcement of increment discipline,
- * preventing multiple active increments and ensuring completion tracking.
+ * 2.0: WIP limits are advisory. There is no hard cap.
  */
 
 /**
@@ -14,10 +13,8 @@ export type ViolationSeverity = 'error' | 'warning' | 'info';
  * Type of validation violation detected
  */
 export type ViolationType =
-  | 'hard_cap_exceeded'          // More than 2 active increments
-  | 'wip_limit_exceeded'         // More than maxActiveIncrements
+  | 'wip_limit_exceeded'         // More active increments than limits.activeIncrements (info)
   | 'incomplete_work'            // Increments not completed
-  | 'emergency_violation'        // 2 active without hotfix/bug
   | 'metadata_inconsistency'     // metadata.json vs reality mismatch
   | 'github_sync_failed';        // GitHub issue not closed
 
@@ -48,10 +45,10 @@ export interface ValidationViolation {
  * Result of discipline validation check
  */
 export interface ValidationResult {
-  /** Whether the project is compliant with discipline rules */
+  /** False only when an error-severity violation exists */
   compliant: boolean;
 
-  /** List of violations found (empty if compliant) */
+  /** Violations and advisory notes found */
   violations: ValidationViolation[];
 
   /** Summary of increment statuses */
@@ -66,9 +63,7 @@ export interface ValidationResult {
 
   /** Configuration used for validation */
   config: {
-    maxActiveIncrements: number;
-    hardCap: number;
-    allowEmergencyInterrupt: boolean;
+    activeIncrements: number;
   };
 
   /** Timestamp when check was performed */
@@ -96,21 +91,6 @@ export interface DisciplineCheckOptions {
  * Configuration for increment discipline limits
  */
 export interface DisciplineLimits {
-  /** Recommended maximum active increments (default: 1) */
-  maxActiveIncrements: number;
-
-  /** Absolute maximum active increments (default: 2, never exceeded) */
-  hardCap: number;
-
-  /** Allow hotfix/bug to interrupt and create 2nd active (default: true) */
-  allowEmergencyInterrupt: boolean;
-
-  /** Type-specific behaviors */
-  typeBehaviors?: {
-    /** Types that can interrupt to create 2nd active */
-    canInterrupt: string[];
-
-    /** Auto-abandon after N days of inactivity */
-    autoAbandonDays?: Record<string, number>;
-  };
+  /** Advisory maximum active increments (default: 3, 0 = off) */
+  activeIncrements: number;
 }

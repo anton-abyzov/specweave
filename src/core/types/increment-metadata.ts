@@ -234,22 +234,6 @@ export function computeTransitionPath(
 }
 
 /**
- * Type-based limits
- * Maximum active increments per type
- *
- * null = unlimited (no limit enforcement)
- * User can configure per-project in .specweave/config.json
- */
-export const TYPE_LIMITS: Record<IncrementType, number | null> = {
-  [IncrementType.HOTFIX]: null,          // Unlimited (emergency work)
-  [IncrementType.FEATURE]: 2,            // Max 2 active (context switching cost)
-  [IncrementType.BUG]: null,             // Unlimited (production issues)
-  [IncrementType.CHANGE_REQUEST]: 2,     // Max 2 active (stakeholder-driven)
-  [IncrementType.REFACTOR]: 1,           // Max 1 active (needs focus)
-  [IncrementType.EXPERIMENT]: null       // Unlimited (exploratory work)
-};
-
-/**
  * Staleness thresholds (days)
  * When to warn about stale increments
  */
@@ -321,22 +305,18 @@ export function shouldAutoAbandon(metadata: IncrementMetadata): boolean {
 }
 
 /**
- * Statuses that count toward WIP (Work In Progress) limits
+ * Statuses that count as "active" for the advisory WIP note (limits.activeIncrements).
  *
- * ACTIVE: Currently executing tasks, consumes team capacity
- * PAUSED: Temporarily blocked but still holding resources/context
- * READY_FOR_REVIEW: Tasks done, awaiting approval (still blocks capacity)
+ * ACTIVE: currently executing tasks
+ * READY_FOR_REVIEW: tasks done, awaiting approval (still in progress)
  *
- * Statuses that do NOT count:
- * - PLANNING: Lightweight spec/planning work, parallel-safe
- * - BACKLOG: Not started yet
- * - COMPLETED: Already done (user approved)
- * - ABANDONED: Cancelled
+ * Not counted: PLANNING (lightweight, parallel-safe), BACKLOG (not started),
+ * PAUSED (explicitly parked — pausing is how you get under the limit),
+ * COMPLETED, ABANDONED.
  */
 export const WIP_COUNTED_STATUSES: IncrementStatus[] = [
   IncrementStatus.ACTIVE,
-  IncrementStatus.PAUSED,          // Paused work still blocks team capacity
-  IncrementStatus.READY_FOR_REVIEW // Awaiting user approval, still in progress
+  IncrementStatus.READY_FOR_REVIEW
 ];
 
 /**
