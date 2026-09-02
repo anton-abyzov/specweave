@@ -31,12 +31,12 @@ export class AutoTransitionManager {
             const metadata = MetadataManager.read(incrementId);
             // Only transition from BACKLOG to PLANNING
             if (metadata.status === IncrementStatus.BACKLOG) {
-                validateTransition(metadata.status, IncrementStatus.PLANNING);
-                MetadataManager.updateStatus(incrementId, IncrementStatus.PLANNING);
+                validateTransition(metadata.status, IncrementStatus.PLANNED);
+                MetadataManager.updateStatus(incrementId, IncrementStatus.PLANNED);
                 return {
                     transitioned: true,
                     from: IncrementStatus.BACKLOG,
-                    to: IncrementStatus.PLANNING,
+                    to: IncrementStatus.PLANNED,
                     reason: 'spec.md created - planning phase started'
                 };
             }
@@ -65,7 +65,7 @@ export class AutoTransitionManager {
         try {
             const metadata = MetadataManager.read(incrementId);
             // Transition to ACTIVE from PLANNING or BACKLOG
-            if (metadata.status === IncrementStatus.PLANNING || metadata.status === IncrementStatus.BACKLOG) {
+            if (metadata.status === IncrementStatus.PLANNED || metadata.status === IncrementStatus.BACKLOG) {
                 const from = metadata.status;
                 validateTransition(from, IncrementStatus.ACTIVE);
                 MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
@@ -136,12 +136,12 @@ export class AutoTransitionManager {
         try {
             const metadata = MetadataManager.read(incrementId);
             // Force transition to ACTIVE if still in PLANNING
-            if (metadata.status === IncrementStatus.PLANNING) {
+            if (metadata.status === IncrementStatus.PLANNED) {
                 validateTransition(metadata.status, IncrementStatus.ACTIVE);
                 MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
                 return {
                     transitioned: true,
-                    from: IncrementStatus.PLANNING,
+                    from: IncrementStatus.PLANNED,
                     to: IncrementStatus.ACTIVE,
                     reason: 'task execution started - moved to active'
                 };
@@ -171,7 +171,7 @@ export class AutoTransitionManager {
             return IncrementStatus.ACTIVE; // Tasks exist → execution phase
         }
         else if (hasSpec || hasPlan) {
-            return IncrementStatus.PLANNING; // Spec/plan exist → planning phase
+            return IncrementStatus.PLANNED; // Spec/plan exist → planning phase
         }
         else {
             return IncrementStatus.BACKLOG; // Nothing exists → backlog

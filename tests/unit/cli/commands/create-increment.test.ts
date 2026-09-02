@@ -119,7 +119,7 @@ describe('create-increment CLI command', () => {
     const metadata = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
     expect(metadata.type).toBe('hotfix');
     expect(metadata.priority).toBe('P1');
-    expect(metadata.status).toBe('planning');
+    expect(metadata.status).toBe('active');
   });
 
   it('should pass board option for 2-level structures', async () => {

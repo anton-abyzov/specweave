@@ -212,7 +212,7 @@ type: feature
       // Verify default values
       // NOTE: Default status is PLANNING (not ACTIVE) - increments auto-transition to ACTIVE
       // when tasks.md is created or first task starts (see auto-transition-manager.ts)
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
       expect(metadata.type).toBe(IncrementType.FEATURE); // Default
     } finally {
       process.chdir(oldCwd);
@@ -369,7 +369,7 @@ feature: FS-038
 
       // Verify defaults were used
       // NOTE: Default status is PLANNING (not ACTIVE) per createDefaultMetadata()
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
       expect(metadata.type).toBe(IncrementType.FEATURE);
     } finally {
       process.chdir(oldCwd);

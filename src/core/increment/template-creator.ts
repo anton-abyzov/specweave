@@ -119,6 +119,12 @@ export interface CreateTemplateOptions {
    * a plan.md that already exists (legacy increments).
    */
   withPlan?: boolean;
+  /**
+   * Create the increment in the `planned` state instead of `active`
+   * (`create-increment --planned`) — for backlog / not-started-yet work.
+   * `specweave start <id>` (or the first `task claim`) moves it to `active`.
+   */
+  planned?: boolean;
 }
 
 /**
@@ -182,6 +188,7 @@ export async function createIncrementTemplates(
     name,
     parallel = false,
     withPlan = false,
+    planned = false,
   } = options;
 
   const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
@@ -237,11 +244,12 @@ export async function createIncrementTemplates(
     const metadataPath = path.join(incrementPath, 'metadata.json');
     const metadata: Record<string, unknown> = {
       id: incrementId,
-      // Must be an IncrementStatus member: MetadataManager.validate() throws on
-      // anything else, so writing the legacy 'planned' made `complete`/`read`
-      // fail on every freshly created increment. 'planned' is the 1.x spelling
-      // that status-auto-transition migrates away.
-      status: IncrementStatus.PLANNING,
+      // 2.0: step 1 of the loop MUST produce an increment the rest of the loop
+      // can work on. `task next|list|claim`, `verify` and `handoff` all resolve
+      // the single ACTIVE increment, so creating in any other state stranded
+      // every bare-form command behind a hand-edit of metadata.json (which the
+      // skills explicitly forbid). `--planned` opts into backlog-style creation.
+      status: planned ? IncrementStatus.PLANNED : IncrementStatus.ACTIVE,
       type,
       priority,
       created: new Date().toISOString(),
@@ -343,6 +351,7 @@ export async function createIncrementTemplates(
           testMode,
           coverageTarget,
           externalSource,
+          status: planned ? IncrementStatus.PLANNED : IncrementStatus.ACTIVE,
         })
       : generateSpecTemplate({
           incrementId,
@@ -354,6 +363,7 @@ export async function createIncrementTemplates(
           priority,
           testMode,
           coverageTarget,
+          status: planned ? IncrementStatus.PLANNED : IncrementStatus.ACTIVE,
         });
     fs.writeFileSync(specPath, specContent);
     createdFiles.push('spec.md');
@@ -402,9 +412,11 @@ export async function createIncrementTemplates(
           `Start working: sw:auto ${incrementId}`,
         ]
       : [
-          `Complete product specification: Tell Claude "Complete the spec for increment ${incrementId}"`,
-          `Design architecture: Tell Claude "Design architecture for increment ${incrementId}"`,
-          `Generate tasks: Tell Claude "Create tasks for increment ${incrementId}"`,
+          `Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …) and Approach`,
+          `Fill in tasks.md — "### T-01 <title>" + "- AC: … | Files: … | Test: …"`,
+          ...(planned ? [`Start it: specweave start ${incrementId}`] : []),
+          `Work it: specweave task next → task claim T-01 → task done T-01 --run "<test>"`,
+          `Close it: specweave verify ${incrementId} → specweave complete ${incrementId}`,
         ];
 
     return {
@@ -585,6 +597,8 @@ function generateSpecTemplate(options: {
   priority: string;
   testMode: string;
   coverageTarget: number;
+  /** Must mirror metadata.json (an IncrementStatus value). */
+  status: string;
 }): string {
   const {
     incrementId,
@@ -596,6 +610,7 @@ function generateSpecTemplate(options: {
     priority,
     testMode,
     coverageTarget,
+    status,
   } = options;
 
   const date = new Date().toISOString().split('T')[0];
@@ -606,7 +621,7 @@ increment: ${incrementId}
 title: "${title}"
 type: ${type}
 priority: ${priority}
-status: planning
+status: ${status}
 created: ${date}
 test_mode: ${testMode}
 coverage_target: ${coverageTarget}
@@ -824,6 +839,8 @@ function generateExternalSpecContent(options: {
   testMode: string;
   coverageTarget: number;
   externalSource: ExternalSourceInfo;
+  /** Must mirror metadata.json (an IncrementStatus value). */
+  status: string;
 }): string {
   const {
     incrementId,
@@ -836,6 +853,7 @@ function generateExternalSpecContent(options: {
     testMode,
     coverageTarget,
     externalSource,
+    status,
   } = options;
 
   const date = new Date().toISOString().split('T')[0];
@@ -860,7 +878,7 @@ increment: ${incrementId}
 title: "${title}"
 type: ${type}
 priority: ${priority}
-status: planning
+status: ${status}
 created: ${date}
 structure: user-stories
 test_mode: ${testMode}

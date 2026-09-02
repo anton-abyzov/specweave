@@ -106,7 +106,7 @@ describe('status-commands', () => {
         makeMetadata({ id: '0001-a', status: IncrementStatus.ACTIVE }),
         makeMetadata({ id: '0002-a', status: IncrementStatus.ACTIVE }),
         makeMetadata({ id: '0003-r', status: IncrementStatus.READY_FOR_REVIEW }),
-        makeMetadata({ id: '0004-p', status: IncrementStatus.PLANNING }),
+        makeMetadata({ id: '0004-p', status: IncrementStatus.PLANNED }),
         makeMetadata({ id: '0005-b', status: IncrementStatus.BACKLOG }),
         makeMetadata({ id: '0006-z', status: IncrementStatus.PAUSED }),
       ]);
@@ -115,9 +115,9 @@ describe('status-commands', () => {
       await showStatus();
 
       const out = mockLog.mock.calls.map((c) => String(c[0])).join('\n');
-      // active + ready_for_review count; planning/backlog/paused do not
+      // active + ready_for_review count; planned/backlog/paused do not
       expect(out).toContain('Active (3)');
-      expect(out).toContain('Planning (1)');
+      expect(out).toContain('Planned (2)');
       expect(out).toContain('3 active increments (recommended: 2)');
       expect(out).not.toMatch(/EXCEEDS LIMIT/);
     });
@@ -125,7 +125,7 @@ describe('status-commands', () => {
     it('prints no advisory note when within the limit', async () => {
       mockGetAll.mockReturnValue([
         makeMetadata({ id: '0001-a', status: IncrementStatus.ACTIVE }),
-        makeMetadata({ id: '0002-p', status: IncrementStatus.PLANNING }),
+        makeMetadata({ id: '0002-p', status: IncrementStatus.PLANNED }),
       ]);
       mockGetExtended.mockReturnValue({ progress: 0, ageInDays: 1, daysPaused: 1 });
 
@@ -411,7 +411,7 @@ describe('status-commands', () => {
 
     it('should auto-walk PLANNING through ACTIVE, READY_FOR_REVIEW to COMPLETED', async () => {
       mockRead
-        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.PLANNING }))
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.PLANNED }))
         .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
         .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
 
@@ -427,7 +427,7 @@ describe('status-commands', () => {
     });
 
     it('should return false if intermediate transition fails', async () => {
-      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.PLANNING }));
+      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.PLANNED }));
       mockUpdateStatus.mockImplementationOnce(() => {
         throw new Error('spec.md write failed');
       });

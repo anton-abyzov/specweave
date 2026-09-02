@@ -51,7 +51,7 @@ describe('IncrementDetector', () => {
     it('should detect single PLANNING increment', async () => {
       setupMockFileSystem(['0039-ultra-smart-next-command']);
       setupMockMetadata({
-        '0039-ultra-smart-next-command': IncrementStatus.PLANNING
+        '0039-ultra-smart-next-command': IncrementStatus.PLANNED
       });
 
       const result = await detector.detect();
@@ -82,7 +82,7 @@ describe('IncrementDetector', () => {
       ]);
       setupMockMetadata({
         '0037-project-specific-tasks': IncrementStatus.ACTIVE,
-        '0039-ultra-smart-next-command': IncrementStatus.PLANNING
+        '0039-ultra-smart-next-command': IncrementStatus.PLANNED
       });
 
       const result = await detector.detect();
@@ -98,8 +98,8 @@ describe('IncrementDetector', () => {
         '0041-feature-b'
       ]);
       setupMockMetadata({
-        '0040-feature-a': IncrementStatus.PLANNING,
-        '0041-feature-b': IncrementStatus.PLANNING
+        '0040-feature-a': IncrementStatus.PLANNED,
+        '0041-feature-b': IncrementStatus.PLANNED
       });
 
       const result = await detector.detect();
@@ -139,7 +139,7 @@ describe('IncrementDetector', () => {
         if (incrementId === '0040-invalid-increment') {
           throw new Error('Invalid metadata');
         }
-        return { status: IncrementStatus.PLANNING };
+        return { status: IncrementStatus.PLANNED };
       });
 
       const result = await detector.detect();
@@ -155,7 +155,7 @@ describe('IncrementDetector', () => {
       ]);
       setupMockMetadata({
         '0035-old-feature': IncrementStatus.COMPLETED,
-        '0039-ultra-smart-next-command': IncrementStatus.PLANNING
+        '0039-ultra-smart-next-command': IncrementStatus.PLANNED
       });
 
       const result = await detector.detect();
@@ -171,7 +171,7 @@ describe('IncrementDetector', () => {
       ]);
       setupMockMetadata({
         '0036-abandoned': IncrementStatus.ABANDONED,
-        '0039-ultra-smart-next-command': IncrementStatus.PLANNING
+        '0039-ultra-smart-next-command': IncrementStatus.PLANNED
       });
 
       const result = await detector.detect();
@@ -187,7 +187,7 @@ describe('IncrementDetector', () => {
       ]);
       setupMockMetadata({
         '0042-future-feature': IncrementStatus.BACKLOG,
-        '0039-ultra-smart-next-command': IncrementStatus.PLANNING
+        '0039-ultra-smart-next-command': IncrementStatus.PLANNED
       });
 
       const result = await detector.detect();
@@ -202,7 +202,7 @@ describe('IncrementDetector', () => {
       const incrementId = '0039-ultra-smart-next-command';
       setupMockFileSystem([incrementId]);
       setupMockMetadata({
-        [incrementId]: IncrementStatus.PLANNING
+        [incrementId]: IncrementStatus.PLANNED
       });
 
       const result = await detector.validate(incrementId);
@@ -252,7 +252,7 @@ describe('IncrementDetector', () => {
       const incrementId = '0039-ultra-smart-next-command';
       setupMockFileSystem([incrementId]);
       setupMockMetadata({
-        [incrementId]: IncrementStatus.PLANNING
+        [incrementId]: IncrementStatus.PLANNED
       });
 
       const result = await detector.validate(incrementId);

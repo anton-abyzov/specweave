@@ -625,7 +625,7 @@ export class DashboardDataAggregator {
   private extractStatusBreakdown(summary: any): Record<string, number> {
     if (!summary) return {};
     const result: Record<string, number> = {};
-    for (const key of ['active', 'completed', 'paused', 'planning', 'backlog', 'ready_for_review', 'abandoned']) {
+    for (const key of ['active', 'completed', 'paused', 'planned', 'planning', 'backlog', 'ready_for_review', 'abandoned']) {
       if (summary[key] != null) result[key] = summary[key];
     }
     return result;

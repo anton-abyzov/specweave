@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric reflect-stop detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
+set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric reflect-stop detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -17,7 +17,8 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a scan-plu
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a judge-skill -d "Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a list -d "List available and installed components"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pause -d "Pause an active increment"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resume -d "Resume a paused or abandoned increment"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a start -d "Start a planned/backlog/paused increment (status -> active)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resume -d "Resume a paused, abandoned or not-yet-started increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a abandon -d "Abandon an increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete -d "Complete one or more increments (triggers GitHub/JIRA/ADO sync)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
@@ -149,6 +150,7 @@ complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l prior
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l project-root -d "Override project root directory"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parallel -d "Opt into 3-agent fan-out planning (default: single-agent)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l with-plan -d "Also scaffold plan.md (optional overflow; spec.md carries the Approach)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l planned -d "Create as \"planned\" instead of \"active\" (backlog work; start it with specweave start <id>)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l supersedes -d "Increment this one replaces (the old one is abandoned with a closeReason)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parent -d "Parent increment (recorded as metadata.parent)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l json -d "Output result as JSON (for programmatic use)"

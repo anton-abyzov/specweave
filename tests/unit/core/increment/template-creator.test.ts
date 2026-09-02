@@ -228,7 +228,7 @@ describe('template-creator', () => {
       const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
 
       expect(metadata.id).toBe('0001-test-feature');
-      expect(metadata.status).toBe('planning');
+      expect(metadata.status).toBe('active');
       expect(metadata.type).toBe('hotfix');
       expect(metadata.priority).toBe('P1');
       expect(metadata.testMode).toBe('TDD');
@@ -267,10 +267,12 @@ describe('template-creator', () => {
         projectRoot: tempDir,
       });
 
-      expect(result.nextSteps).toHaveLength(3);
-      expect(result.nextSteps[0]).toContain('Complete product specification');
-      expect(result.nextSteps[1]).toContain('Design architecture');
-      expect(result.nextSteps[2]).toContain('Generate tasks');
+      // The 2.0 loop, in order: write the spec, write the tasks, work them, close.
+      expect(result.nextSteps).toHaveLength(4);
+      expect(result.nextSteps[0]).toContain('spec.md');
+      expect(result.nextSteps[1]).toContain('tasks.md');
+      expect(result.nextSteps[2]).toContain('specweave task next');
+      expect(result.nextSteps[3]).toContain('specweave complete');
     });
 
     it('should fail if increment already exists', async () => {

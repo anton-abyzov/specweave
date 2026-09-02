@@ -55,6 +55,9 @@ const PLUGIN_DEPENDENCIES = {
     'dist/src/core/increment/status-auto-transition.js',
     'dist/src/core/types/increment-metadata.js',
     'dist/src/generators/spec/task-parser.js',
+    // Canonical task-id grammar — task-parser imports it, so the vendored
+    // copy is unloadable without it (hooks die with ERR_MODULE_NOT_FOUND).
+    'dist/src/core/tasks/task-id.js',
     'dist/src/utils/logger.js',
     'dist/src/utils/credential-masker.js',
     'dist/src/utils/translation.js',

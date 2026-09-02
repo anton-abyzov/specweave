@@ -60,6 +60,12 @@ export interface CreateIncrementOptions {
    * Approach and plan.md is an optional overflow for large designs.
    */
   withPlan?: boolean;
+
+  /**
+   * Create the increment as `planned` instead of `active` (backlog work).
+   * `specweave start <id>` — or the first `specweave task claim` — activates it.
+   */
+  planned?: boolean;
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -75,6 +81,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     supersedes,
     parent,
     withPlan = false,
+    planned = false,
   } = options;
 
   if (id && options.autoId) {
@@ -133,6 +140,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     name,
     parallel,
     withPlan,
+    planned,
   });
 
   if (!result.success) {
@@ -187,7 +195,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
       ...(relations.length ? { relations } : {}),
     }));
   } else {
-    console.log(chalk.green(`\nIncrement created: ${finalId}`));
+    console.log(chalk.green(`\nIncrement created: ${finalId} (${planned ? 'planned' : 'active'})`));
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
     for (const r of relations) console.log(`  ${r}`);

@@ -152,7 +152,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
   it('calls SyncThrottle.record() BEFORE LivingDocsSync.syncIncrement()', async () => {
     await StatusChangeSyncTrigger.triggerIfNeeded(
       '0001-test',
-      IncrementStatus.PLANNING,
+      IncrementStatus.PLANNED,
       IncrementStatus.ACTIVE
     );
     // triggerIfNeeded fires spawnAsyncSync without await -- wait for it
@@ -173,7 +173,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
     mockShouldSkip.mockReturnValueOnce(false);
     await StatusChangeSyncTrigger.triggerIfNeeded(
       '0002-test',
-      IncrementStatus.PLANNING,
+      IncrementStatus.PLANNED,
       IncrementStatus.ACTIVE
     );
     await flushMicrotasks();
@@ -186,7 +186,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
     mockShouldSkip.mockReturnValueOnce(true);
     await StatusChangeSyncTrigger.triggerIfNeeded(
       '0002-test',
-      IncrementStatus.PLANNING,
+      IncrementStatus.PLANNED,
       IncrementStatus.ACTIVE
     );
     await flushMicrotasks();
@@ -200,7 +200,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
 
     await StatusChangeSyncTrigger.triggerIfNeeded(
       '0003-test',
-      IncrementStatus.PLANNING,
+      IncrementStatus.PLANNED,
       IncrementStatus.ACTIVE
     );
     await flushMicrotasks();

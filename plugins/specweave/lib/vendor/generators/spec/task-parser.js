@@ -8,6 +8,10 @@
  * Supports hierarchical task structure grouped by User Story.
  */
 import { readFileSync } from 'fs';
+import { TASK_ID_PATTERN, TASK_ID_RE, TASK_HEADER_RE, TASK_HEADER_LOOSE_RE, } from '../../core/tasks/task-id.js';
+// The task-id grammar lives in one dependency-free module so this parser and
+// core/tasks/task-board can never disagree about which ids exist.
+export { TASK_ID_PATTERN, TASK_ID_RE, TASK_HEADER_RE, TASK_HEADER_LOOSE_RE, } from '../../core/tasks/task-id.js';
 /**
  * Parse task status from checkbox and status text
  */
@@ -29,7 +33,8 @@ function parseTaskStatus(checkbox, statusText) {
  * @returns Map of User Story ID → Tasks
  * @throws Error if tasks.md cannot be read or is malformed
  */
-export function parseTasksWithUSLinks(tasksPath) {
+export function parseTasksWithUSLinks(tasksPath, options = {}) {
+    const warn = options.onWarning ?? ((message) => process.stderr.write(`${message}\n`));
     try {
         const content = readFileSync(tasksPath, 'utf-8');
         const tasks = {};
@@ -53,9 +58,10 @@ export function parseTasksWithUSLinks(tasksPath) {
         // The multi-line format (each `**Field**:` on its own line) still parses
         // because each line is a single segment.
         // 2.0 header is `### T-01 Title` (no colon, 2+ digits); legacy is `### T-001: Title`.
-        const taskHeaderRegex = /^###\s+(T-\d{2,}E?):?\s+(.+)$/;
+        const taskHeaderRegex = TASK_HEADER_RE;
         const userStoryRegex = /\*\*User Story\*\*:\s*(US-\d{3,}E?)/;
-        const satisfiesACsRegex = /\*\*Satisfies ACs\*\*:\s*(AC-US\d+E?-\d{2}(?:,\s*AC-US\d+E?-\d{2})*)/;
+        // Any AC id shape: the 2.0 spec numbers ACs `AC-01`, 1.x used `AC-US1-01`.
+        const satisfiesACsRegex = /\*\*Satisfies ACs\*\*:\s*(AC-[A-Za-z0-9-]+(?:\s*,\s*AC-[A-Za-z0-9-]+)*)/;
         // Trailing status word is OPTIONAL: a checkbox-only `**Status**: [x]` is a
         // valid completed task. The checkbox is the source of truth (see
         // parseTaskStatus), so requiring `(\w+)` here would silently under-report a
@@ -82,6 +88,10 @@ export function parseTasksWithUSLinks(tasksPath) {
             const lineNumber = i + 1;
             // Check for task header (### T-XXX: Title)
             const taskHeaderMatch = line.match(taskHeaderRegex);
+            if (!taskHeaderMatch && TASK_HEADER_LOOSE_RE.test(line)) {
+                warn(`${tasksPath}:${lineNumber}: skipped unparseable task heading "${line.trim()}" ` +
+                    `(expected "### T-01 Title", ids match ${TASK_ID_PATTERN})`);
+            }
             if (taskHeaderMatch) {
                 // Save previous task if exists
                 if (currentTask) {
@@ -146,7 +156,7 @@ export function parseTasksWithUSLinks(tasksPath) {
                 currentTask.dependencies = dependenciesMatch[1]
                     .split(',')
                     .map(dep => dep.trim())
-                    .filter(dep => dep.match(/^T-\d{2,}E?$/));
+                    .filter(dep => TASK_ID_RE.test(dep));
                 matchedAnyField = true;
             }
             const acFieldMatch = line.match(acFieldRegex);
@@ -154,9 +164,12 @@ export function parseTasksWithUSLinks(tasksPath) {
                 const acs = acFieldMatch[1].split(',').map(a => a.trim()).filter(a => /^AC-[A-Z0-9-]+$/i.test(a));
                 if (acs.length > 0) {
                     currentTask.acs = acs;
-                    const usAcs = acs.filter(a => /^AC-US\d+E?-\d{2}$/.test(a));
-                    if (usAcs.length > 0 && !currentTask.satisfiesACs)
-                        currentTask.satisfiesACs = usAcs;
+                    // Traceability keys off `satisfiesACs`, so EVERY AC id shape has to
+                    // land there. Mirroring only `AC-US1-01` made the design's own
+                    // `AC-01` format read as an orphan task and closure told the user to
+                    // go back to the 1.x `**Satisfies ACs**` field.
+                    if (!currentTask.satisfiesACs)
+                        currentTask.satisfiesACs = [...acs];
                     matchedAnyField = true;
                 }
             }

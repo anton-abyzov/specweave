@@ -7,6 +7,16 @@
  *
  * Supports hierarchical task structure grouped by User Story.
  */
+export { TASK_ID_PATTERN, TASK_ID_RE, TASK_HEADER_RE, TASK_HEADER_LOOSE_RE, } from '../../core/tasks/task-id.js';
+/** Options for {@link parseTasksWithUSLinks}. */
+export interface ParseTasksOptions {
+    /**
+     * Called for every `### T-…` heading that does not match the task-id grammar.
+     * Defaults to a stderr warning — an unparseable heading must never vanish
+     * silently, because every counter downstream trusts this parse.
+     */
+    onWarning?: (message: string) => void;
+}
 /**
  * Task metadata extracted from tasks.md
  */
@@ -67,7 +77,7 @@ export interface TaskLinkageError {
  * @returns Map of User Story ID → Tasks
  * @throws Error if tasks.md cannot be read or is malformed
  */
-export declare function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory;
+export declare function parseTasksWithUSLinks(tasksPath: string, options?: ParseTasksOptions): TasksByUserStory;
 /**
  * Validate task US and AC linkage
  *

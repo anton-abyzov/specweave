@@ -21,15 +21,15 @@ import {
   VALID_TRANSITIONS
 } from '../../../src/core/types/increment-metadata.js';
 
-describe('PLANNING Status - Enum Definition', () => {
-  it('should include PLANNING in enum', () => {
-    expect(IncrementStatus.PLANNING).toBe('planning');
+describe('PLANNED Status - Enum Definition', () => {
+  it('should include PLANNED in enum', () => {
+    expect(IncrementStatus.PLANNED).toBe('planned');
   });
 
-  it('should have 7 total statuses (including READY_FOR_REVIEW)', () => {
+  it('should keep the 2.0 vocabulary plus the two deprecated 1.x states', () => {
     const statuses = Object.values(IncrementStatus);
     expect(statuses).toHaveLength(7);
-    expect(statuses).toContain('planning');
+    expect(statuses).toContain('planned');
     expect(statuses).toContain('active');
     expect(statuses).toContain('backlog');
     expect(statuses).toContain('paused');
@@ -38,34 +38,34 @@ describe('PLANNING Status - Enum Definition', () => {
     expect(statuses).toContain('abandoned');
   });
 
-  it('should define PLANNING as first status in enum', () => {
+  it('should define PLANNED as first status in enum', () => {
     const statuses = Object.values(IncrementStatus);
-    expect(statuses[0]).toBe('planning');
+    expect(statuses[0]).toBe('planned');
   });
 });
 
-describe('PLANNING Status - State Transitions', () => {
+describe('PLANNED Status - State Transitions', () => {
   describe('Valid Transitions FROM PLANNING', () => {
     it('should allow PLANNING → ACTIVE', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.ACTIVE);
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.ACTIVE);
       }).not.toThrow();
     });
 
     it('should allow PLANNING → BACKLOG (deprioritize)', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.BACKLOG);
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.BACKLOG);
       }).not.toThrow();
     });
 
     it('should allow PLANNING → ABANDONED (cancel)', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.ABANDONED);
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.ABANDONED);
       }).not.toThrow();
     });
 
     it('should have exactly 3 valid transitions from PLANNING', () => {
-      const validTransitions = VALID_TRANSITIONS[IncrementStatus.PLANNING];
+      const validTransitions = VALID_TRANSITIONS[IncrementStatus.PLANNED];
       expect(validTransitions).toHaveLength(3);
       expect(validTransitions).toContain(IncrementStatus.ACTIVE);
       expect(validTransitions).toContain(IncrementStatus.BACKLOG);
@@ -76,51 +76,51 @@ describe('PLANNING Status - State Transitions', () => {
   describe('Invalid Transitions FROM PLANNING', () => {
     it('should reject PLANNING → COMPLETED (invalid)', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.COMPLETED);
-      }).toThrow('Invalid transition: planning → completed');
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.COMPLETED);
+      }).toThrow('Invalid transition: planned → completed');
     });
 
     it('should reject PLANNING → PAUSED (invalid)', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.PAUSED);
-      }).toThrow('Invalid transition: planning → paused');
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.PAUSED);
+      }).toThrow('Invalid transition: planned → paused');
     });
 
-    it('should reject PLANNING → PLANNING (no self-loop)', () => {
+    it('should reject PLANNED → PLANNED (no self-loop)', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.PLANNING);
-      }).toThrow('Invalid transition: planning → planning');
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.PLANNED);
+      }).toThrow('Invalid transition: planned → planned');
     });
   });
 
   describe('Valid Transitions TO PLANNING', () => {
-    it('should allow BACKLOG → PLANNING', () => {
+    it('should allow BACKLOG → PLANNED', () => {
       expect(() => {
-        validateTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNING);
+        validateTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNED);
       }).not.toThrow();
     });
 
-    it('should check if BACKLOG → PLANNING is valid', () => {
-      expect(isValidTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNING)).toBe(true);
+    it('should check if BACKLOG → PLANNED is valid', () => {
+      expect(isValidTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNED)).toBe(true);
     });
 
-    it('should reject ACTIVE → PLANNING (can only move forward)', () => {
+    it('should reject ACTIVE → PLANNED (can only move forward)', () => {
       expect(() => {
-        validateTransition(IncrementStatus.ACTIVE, IncrementStatus.PLANNING);
-      }).toThrow('Invalid transition: active → planning');
+        validateTransition(IncrementStatus.ACTIVE, IncrementStatus.PLANNED);
+      }).toThrow('Invalid transition: active → planned');
     });
 
-    it('should reject COMPLETED → PLANNING', () => {
+    it('should reject COMPLETED → PLANNED', () => {
       expect(() => {
-        validateTransition(IncrementStatus.COMPLETED, IncrementStatus.PLANNING);
-      }).toThrow('Invalid transition: completed → planning');
+        validateTransition(IncrementStatus.COMPLETED, IncrementStatus.PLANNED);
+      }).toThrow('Invalid transition: completed → planned');
     });
   });
 });
 
-describe('PLANNING Status - WIP Limit Behavior', () => {
+describe('PLANNED Status - WIP Limit Behavior', () => {
   it('should NOT count PLANNING toward WIP limit', () => {
-    expect(countsTowardWipLimit(IncrementStatus.PLANNING)).toBe(false);
+    expect(countsTowardWipLimit(IncrementStatus.PLANNED)).toBe(false);
   });
 
   it('should count ACTIVE toward WIP limit', () => {
@@ -151,21 +151,21 @@ describe('PLANNING Status - WIP Limit Behavior', () => {
   });
 
   it('should NOT include PLANNING in WIP counted statuses', () => {
-    expect(WIP_COUNTED_STATUSES).not.toContain(IncrementStatus.PLANNING);
+    expect(WIP_COUNTED_STATUSES).not.toContain(IncrementStatus.PLANNED);
   });
 });
 
-describe('PLANNING Status - Validation Functions', () => {
+describe('PLANNED Status - Validation Functions', () => {
   describe('validateTransition', () => {
     it('should throw error with clear message for invalid transition', () => {
       expect(() => {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.COMPLETED);
-      }).toThrow(/Invalid transition: planning → completed/);
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.COMPLETED);
+      }).toThrow(/Invalid transition: planned → completed/);
     });
 
     it('should include valid transitions in error message', () => {
       try {
-        validateTransition(IncrementStatus.PLANNING, IncrementStatus.COMPLETED);
+        validateTransition(IncrementStatus.PLANNED, IncrementStatus.COMPLETED);
         fail('Should have thrown error');
       } catch (error) {
         expect(error instanceof Error).toBe(true);
@@ -176,36 +176,36 @@ describe('PLANNING Status - Validation Functions', () => {
     });
 
     it('should not throw for valid transitions', () => {
-      expect(() => validateTransition(IncrementStatus.PLANNING, IncrementStatus.ACTIVE)).not.toThrow();
-      expect(() => validateTransition(IncrementStatus.PLANNING, IncrementStatus.BACKLOG)).not.toThrow();
-      expect(() => validateTransition(IncrementStatus.PLANNING, IncrementStatus.ABANDONED)).not.toThrow();
+      expect(() => validateTransition(IncrementStatus.PLANNED, IncrementStatus.ACTIVE)).not.toThrow();
+      expect(() => validateTransition(IncrementStatus.PLANNED, IncrementStatus.BACKLOG)).not.toThrow();
+      expect(() => validateTransition(IncrementStatus.PLANNED, IncrementStatus.ABANDONED)).not.toThrow();
     });
   });
 
   describe('isValidTransition', () => {
     it('should return true for valid PLANNING transitions', () => {
-      expect(isValidTransition(IncrementStatus.PLANNING, IncrementStatus.ACTIVE)).toBe(true);
-      expect(isValidTransition(IncrementStatus.PLANNING, IncrementStatus.BACKLOG)).toBe(true);
-      expect(isValidTransition(IncrementStatus.PLANNING, IncrementStatus.ABANDONED)).toBe(true);
+      expect(isValidTransition(IncrementStatus.PLANNED, IncrementStatus.ACTIVE)).toBe(true);
+      expect(isValidTransition(IncrementStatus.PLANNED, IncrementStatus.BACKLOG)).toBe(true);
+      expect(isValidTransition(IncrementStatus.PLANNED, IncrementStatus.ABANDONED)).toBe(true);
     });
 
     it('should return false for invalid PLANNING transitions', () => {
-      expect(isValidTransition(IncrementStatus.PLANNING, IncrementStatus.COMPLETED)).toBe(false);
-      expect(isValidTransition(IncrementStatus.PLANNING, IncrementStatus.PAUSED)).toBe(false);
-      expect(isValidTransition(IncrementStatus.PLANNING, IncrementStatus.PLANNING)).toBe(false);
+      expect(isValidTransition(IncrementStatus.PLANNED, IncrementStatus.COMPLETED)).toBe(false);
+      expect(isValidTransition(IncrementStatus.PLANNED, IncrementStatus.PAUSED)).toBe(false);
+      expect(isValidTransition(IncrementStatus.PLANNED, IncrementStatus.PLANNED)).toBe(false);
     });
 
-    it('should return true for BACKLOG → PLANNING', () => {
-      expect(isValidTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNING)).toBe(true);
+    it('should return true for BACKLOG → PLANNED', () => {
+      expect(isValidTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNED)).toBe(true);
     });
   });
 });
 
-describe('PLANNING Status - Lifecycle Scenarios', () => {
-  it('should support happy path: BACKLOG → PLANNING → ACTIVE → READY_FOR_REVIEW → COMPLETED', () => {
+describe('PLANNED Status - Lifecycle Scenarios', () => {
+  it('should support happy path: BACKLOG → PLANNED → ACTIVE → READY_FOR_REVIEW → COMPLETED', () => {
     expect(() => {
-      validateTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNING);
-      validateTransition(IncrementStatus.PLANNING, IncrementStatus.ACTIVE);
+      validateTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNED);
+      validateTransition(IncrementStatus.PLANNED, IncrementStatus.ACTIVE);
       validateTransition(IncrementStatus.ACTIVE, IncrementStatus.READY_FOR_REVIEW);
       validateTransition(IncrementStatus.READY_FOR_REVIEW, IncrementStatus.COMPLETED);
     }).not.toThrow();
@@ -213,13 +213,13 @@ describe('PLANNING Status - Lifecycle Scenarios', () => {
 
   it('should support deprioritization: PLANNING → BACKLOG', () => {
     expect(() => {
-      validateTransition(IncrementStatus.PLANNING, IncrementStatus.BACKLOG);
+      validateTransition(IncrementStatus.PLANNED, IncrementStatus.BACKLOG);
     }).not.toThrow();
   });
 
   it('should support cancellation during planning: PLANNING → ABANDONED', () => {
     expect(() => {
-      validateTransition(IncrementStatus.PLANNING, IncrementStatus.ABANDONED);
+      validateTransition(IncrementStatus.PLANNED, IncrementStatus.ABANDONED);
     }).not.toThrow();
   });
 
