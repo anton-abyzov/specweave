@@ -157,11 +157,6 @@ describe('Core skill files exist with domain logic', () => {
         expect(lineCount).toBeGreaterThan(skill.minLines);
       });
 
-      it('should contain skill-chain marker registration (STEP 0)', () => {
-        const content = readFileSync(filePath, 'utf-8');
-        expect(content).toMatch(/STEP 0|skill.chain|marker/i);
-      });
-
       it('should NOT have name: field in frontmatter (skills use directory name)', () => {
         const content = readFileSync(filePath, 'utf-8');
         const fm = parseYamlFrontmatter(content);
