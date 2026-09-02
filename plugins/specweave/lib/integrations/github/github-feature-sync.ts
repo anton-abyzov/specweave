@@ -142,7 +142,7 @@ export class GitHubFeatureSync {
       if (rateLimit.remaining < RATE_LIMIT_THRESHOLD) {
         console.log(`\n⚠️  GitHub API rate limit low: ${rateLimit.remaining}/${rateLimit.limit} remaining`);
         console.log(`   ⏭️  Skipping sync for ${featureId} — will retry after ${rateLimit.reset.toISOString()}`);
-        console.log(`   💡 Run /sw:progress-sync to retry when rate limit resets`);
+        console.log(`   💡 Run 'specweave sync push' to retry when the rate limit resets`);
         return {
           milestoneNumber: 0,
           milestoneUrl: '',
@@ -206,7 +206,7 @@ export class GitHubFeatureSync {
     const featureFolder = await this.findFeatureFolder(featureId, projectName);
     if (!featureFolder) {
       console.log(`   ⚠️  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
-      console.log(`   💡 Run sw:sync-docs or sw:living-docs to generate living docs first`);
+      console.log(`   💡 Run 'specweave docs sync <id>' to generate living docs first`);
       return {
         milestoneNumber: 0,
         milestoneUrl: '',
