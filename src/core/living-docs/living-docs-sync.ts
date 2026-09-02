@@ -28,7 +28,7 @@ import { CrossProjectSync } from './cross-project-sync.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { ProjectResolutionService } from '../project/project-resolution.js';
-import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
+import { resolveGitHubToken, describeGitHubAuth } from '../../utils/auth-helpers.js';
 import { resolveSyncTarget } from '../../sync/sync-target-resolver.js';
 // NOTE: findNextAvailableInternalIdSync no longer used - collision detection moved inline
 // to fix chain shift bug (2025-12-04). See getFeatureIdForIncrement() for details.
@@ -1785,11 +1785,21 @@ export class LivingDocsSync {
       let owner = process.env.GITHUB_OWNER || '';
       let repo = process.env.GITHUB_REPO || '';
 
-      // CRITICAL FIX (2025-11-26): Use getGitHubAuthFromProject for full fallback chain
-      // Priority: .env GITHUB_TOKEN → .env GH_TOKEN → process.env → gh auth token → gh config
-      // This ensures sync works even if user only has gh CLI authenticated (no .env)
-      const auth = getGitHubAuthFromProject(this.projectRoot);
+      // One resolver, one order: config → process.env → .env → gh CLI.
+      let configToken: string | undefined;
+      if (existsSync(configPath)) {
+        try {
+          const cfg = await readJson(configPath);
+          configToken = cfg.sync?.github?.token
+            || (Object.values(cfg.sync?.profiles ?? {}) as Array<{ provider?: string; config?: { token?: string } }>)
+              .find((p) => p?.provider === 'github' && p?.config?.token)?.config?.token;
+        } catch {
+          // handled below
+        }
+      }
+      const auth = resolveGitHubToken(this.projectRoot, { configToken });
       const token = auth.token;
+      this.logger.log(`   🔑 ${describeGitHubAuth(auth)}`);
 
       if (existsSync(configPath)) {
         try {
