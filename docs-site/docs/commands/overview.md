@@ -423,6 +423,28 @@ sw:abandon 0007 --reason "Requirements changed"
 | "Abandon this" | `sw:abandon` | `abandon` | Abandon incomplete increment |
 | "Show status" | `sw:status` | `status` | Show increment status overview |
 
+### Maintenance
+
+Run these from a terminal (CLI only — no skill wrapper):
+
+```bash
+# Report stale runtime state, .worktrees size and nested .specweave dirs
+specweave gc
+
+# Actually delete the reported junk
+specweave gc --yes
+
+# Machine-readable output
+specweave gc --json
+```
+
+`specweave gc` is a **dry run by default** and only ever removes known-junk
+patterns from `.specweave/state/`. Coordination files (`event-queue/pending.jsonl`,
+`sync-throttle.json`, `sessions/`, `.locks/`, `active-increment.json`,
+`auto-mode.json`, `handoff-latest.*`, `projects.json`, `analytics/`) are never
+touched, and nested `.specweave/` directories are reported only, never deleted.
+The same purge runs silently at session start, at most once every 24 hours.
+
 ---
 
 ## Workflow Example: Standard Feature Development
