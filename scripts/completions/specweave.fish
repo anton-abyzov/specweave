@@ -344,7 +344,6 @@ complete -c specweave -n "__fish_seen_subcommand_from evaluate-completion" -l si
 complete -c specweave -n "__fish_seen_subcommand_from generate-rubric" -l refresh -d "Regenerate from current ACs, overwriting an existing non-template rubric"
 complete -c specweave -n "__fish_seen_subcommand_from generate-rubric" -l silent -d "Minimal output"
 
-
 # detect-project
 complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l name -d "Increment name for legacy name-based detection"
 complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l description -d "Description for legacy name-based detection"
