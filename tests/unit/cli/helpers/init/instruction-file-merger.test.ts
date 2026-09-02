@@ -288,6 +288,30 @@ describe('mergeInstructionFile — (c) legacy file without markers', () => {
     expect(r.migration).toEqual({ fromVersion: 'legacy (no markers)', removed: [] });
   });
 
+  it('keeps a user H1 (and its body) that follows a stripped 1.x block', () => {
+    const withH1 = [
+      '## Docs',
+      '',
+      '[verified-skill.com](https://verified-skill.com)',
+      '',
+      '---',
+      '',
+      '# AI Assistant Instructions for My Platform',
+      '',
+      '## House rules',
+      '',
+      'Never deploy on Friday.',
+      '',
+    ].join('\n');
+
+    const r = mergeInstructionFile(withH1, claudeTemplate(), 'claude', V, NAME, { commands: CMDS });
+
+    expect(r.content).not.toContain('verified-skill.com');
+    expect(r.content).toContain('# AI Assistant Instructions for My Platform');
+    expect(r.content).toContain('## House rules');
+    expect(r.content).toContain('Never deploy on Friday.');
+  });
+
   it('collapses "↓ ORIGINAL ↓" stacks and de-duplicates identical user blocks', () => {
     const stacked =
       '<!-- SW:META template="claude" version="1.0.539" sections="rules" -->\n\n' +

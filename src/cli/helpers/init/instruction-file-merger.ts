@@ -371,18 +371,30 @@ function stripLegacyMarkers(text: string): { text: string; found: boolean } {
 
 interface Block {
   heading: string | null;
+  /** Heading level (1 or 2); meaningless when `heading` is null. */
+  level: 1 | 2;
   lines: string[];
 }
 
+/**
+ * Split markdown into heading blocks. BOTH `#` and `##` start a new block, so a
+ * user's own H1 that follows a 1.x template section is never swallowed when
+ * that section is stripped.
+ */
 function splitBlocks(text: string): Block[] {
   const blocks: Block[] = [];
-  let cur: Block = { heading: null, lines: [] };
+  let cur: Block = { heading: null, level: 2, lines: [] };
   let inFence = false;
   for (const line of text.split('\n')) {
     if (FENCE_RE.test(line)) inFence = !inFence;
-    if (!inFence && H2_RE.test(line)) {
+    if (!inFence && (H2_RE.test(line) || H1_RE.test(line))) {
+      const level: 1 | 2 = H2_RE.test(line) ? 2 : 1;
       blocks.push(cur);
-      cur = { heading: line.slice(3).replace(/\s*\{#[^}]*\}\s*$/, '').trim(), lines: [] };
+      cur = {
+        heading: line.slice(level + 1).replace(/\s*\{#[^}]*\}\s*$/, '').trim(),
+        level,
+        lines: [],
+      };
       continue;
     }
     cur.lines.push(line);
@@ -393,7 +405,12 @@ function splitBlocks(text: string): Block[] {
 
 function joinBlocks(blocks: Block[]): string {
   return blocks
-    .map(b => (b.heading === null ? b.lines.join('\n') : ['## ' + b.heading, ...b.lines].join('\n')).trim())
+    .map(b =>
+      (b.heading === null
+        ? b.lines.join('\n')
+        : ['#'.repeat(b.level) + ' ' + b.heading, ...b.lines].join('\n')
+      ).trim()
+    )
     .filter(Boolean)
     .join('\n\n');
 }
@@ -434,14 +451,14 @@ function stripLegacyBlocks(text: string, type: TemplateType, projectName: string
   const blocks = splitBlocks(stripLegacyLines(text, projectName));
   const kept: Block[] = [];
   for (const b of blocks) {
-    if (b.heading === null) {
+    if (b.heading === null || b.level !== 2) {
       kept.push(b);
       continue;
     }
     if (b.heading === SKILL_MEMORIES_HEADING) {
       const lines = b.lines.filter(l => !SKILL_MEMORIES_BOILERPLATE.some(re => re.test(l)));
       const hasContent = lines.some(l => l.trim() && !l.trim().startsWith('<!--'));
-      if (hasContent) kept.push({ heading: b.heading, lines });
+      if (hasContent) kept.push({ heading: b.heading, level: b.level, lines });
       continue;
     }
     const sigs = known[b.heading];
