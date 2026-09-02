@@ -137,11 +137,16 @@ export class GitChecker implements HealthChecker {
       }
     }
 
+    // FAIL, not warn: this hook rejects `ledger.jsonl` at the increment root and
+    // reports a false duplicate id for any increment with a `reports/` folder,
+    // so the user's next commit is BLOCKED. A check whose failure stops work is
+    // not a warning, and `doctor` must exit non-zero so CI and the upgrade path
+    // notice it.
     return {
       name: 'Pre-commit hook',
-      status: 'warn',
-      message: `stale v${installed} (blocks 2.0 increments; current v${PRE_COMMIT_HOOK_VERSION})`,
-      fixSuggestion: 'Run: specweave doctor --fix',
+      status: 'fail',
+      message: `stale v${installed} — blocks commits in 2.0 increments (current v${PRE_COMMIT_HOOK_VERSION})`,
+      fixSuggestion: 'Run: specweave doctor --fix (or specweave update)',
     };
   }
 

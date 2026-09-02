@@ -37,7 +37,12 @@ import { npmRegistryFlag } from '../../utils/npm-constants.js';
 import { migrateConfigFile } from '../../core/config/migrate-config-file.js';
 import { CONFIG_SCHEMA_VERSION } from '../../core/config/schema-version.js';
 import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
+import { refreshManagedGitHook } from '../helpers/init/git-hooks-installer.js';
+import { findSourceDir } from '../helpers/init/path-utils.js';
+import { getDirname } from '../../utils/esm-helpers.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
+
+const __dirname = getDirname(import.meta.url);
 
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (`--no-plugins`; Commander sets plugins=false) */
@@ -64,6 +69,8 @@ interface UpdateResult {
   configMigrated: boolean;
   instructionsUpdated: boolean;
   pluginsRefreshed: boolean;
+  /** Result of the managed pre-commit hook refresh (see refreshManagedGitHook). */
+  hookRefresh: string;
   selfUpdated: boolean;
   stateFilesCleaned: number;
   newVersion?: string;
@@ -96,6 +103,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     configMigrated: false,
     instructionsUpdated: false,
     pluginsRefreshed: false,
+    hookRefresh: 'not-a-repo',
     selfUpdated: false,
     stateFilesCleaned: 0,
     errors: [],
@@ -241,6 +249,34 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     } catch (error) {
       spinner.fail('Failed to update instructions');
       result.errors.push(`Instructions update failed: ${error}`);
+    }
+  }
+
+  // Step 1c: Refresh the SpecWeave-managed git pre-commit hook.
+  // The 1.x hook body rejects `ledger.jsonl` at the increment root and reports
+  // a false duplicate id for any increment with a `reports/` folder, so an
+  // upgraded project's FIRST 2.0 commit is blocked until the hook is rewritten.
+  // Only OUR hook is touched: a hand-written one is reported, never replaced.
+  if (isSpecWeaveProject) {
+    try {
+      const templatesDir = findSourceDir('templates', __dirname);
+      const hook = refreshManagedGitHook(projectPath, templatesDir, { dryRun: options.check });
+      result.hookRefresh = hook.outcome;
+      if (hook.outcome === 'refreshed') {
+        console.log(chalk.green(`  \u2713 ${hook.message}`));
+      } else if (hook.outcome === 'would-refresh') {
+        console.log(chalk.yellow(`  \u26a0\ufe0f  ${hook.message}`));
+      } else if (hook.outcome === 'foreign') {
+        console.log(chalk.yellow(`  \u26a0\ufe0f  ${hook.message}`));
+        result.warnings.push(hook.message);
+      } else if (hook.outcome === 'failed') {
+        console.log(chalk.yellow(`  \u26a0\ufe0f  ${hook.message}`));
+        result.warnings.push(hook.message);
+      } else if (options.verbose) {
+        console.log(chalk.gray(`  \u2139 ${hook.message}`));
+      }
+    } catch (error) {
+      result.warnings.push(`Pre-commit hook refresh failed: ${error}`);
     }
   }
 
@@ -465,6 +501,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     console.log(`  Config:       ${result.configMigrated ? chalk.green('✓ Migrated to 2.0 shape') : chalk.gray('Already 2.0 shape')}`);
     console.log(`  Instructions: ${result.instructionsUpdated ? chalk.green('✓ Updated') : chalk.gray('No changes')}`);
     console.log(`  State cleanup: ${result.stateFilesCleaned > 0 ? chalk.green(`✓ Cleaned ${result.stateFilesCleaned} file(s)`) : chalk.gray('No stale files')}`);
+    console.log(`  Git hook:     ${describeHookRefresh(result.hookRefresh)}`);
   }
 
   if (!skipPlugins) {
@@ -507,6 +544,26 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Set non-zero exit code if any errors occurred (CI/CD friendly)
   if (result.errors.length > 0) {
     process.exitCode = 1;
+  }
+}
+
+/** One-line summary of the pre-commit hook refresh for the update summary. */
+function describeHookRefresh(outcome: string): string {
+  switch (outcome) {
+    case 'refreshed':
+      return chalk.green('✓ Refreshed to the 2.0 hook');
+    case 'would-refresh':
+      return chalk.yellow('Stale (would refresh)');
+    case 'current':
+      return chalk.gray('Already current');
+    case 'foreign':
+      return chalk.yellow('Custom hook left untouched');
+    case 'absent':
+      return chalk.gray('Not installed');
+    case 'failed':
+      return chalk.yellow('Refresh failed');
+    default:
+      return chalk.gray('Not a git repository');
   }
 }
 

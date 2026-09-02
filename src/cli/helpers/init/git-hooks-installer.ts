@@ -64,6 +64,99 @@ export function needsHookRefresh(existingContent: string): boolean {
   return isOlder(installed, PRE_COMMIT_HOOK_VERSION);
 }
 
+/** Outcome of {@link refreshManagedGitHook}. */
+export type HookRefreshOutcome =
+  /** No `.git/hooks/pre-commit` at all — nothing to refresh. */
+  | 'absent'
+  /** Not a git repository (or no `.git` directory). */
+  | 'not-a-repo'
+  /** A hand-written / third-party hook. Never touched. */
+  | 'foreign'
+  /** A SpecWeave hook already at the shipped version. */
+  | 'current'
+  /** A stale SpecWeave hook that was rewritten to the shipped template. */
+  | 'refreshed'
+  /** A stale SpecWeave hook that WOULD be rewritten (`--check` / dry run). */
+  | 'would-refresh'
+  /** The refresh was attempted and failed (permissions, missing template). */
+  | 'failed';
+
+export interface HookRefreshResult {
+  outcome: HookRefreshOutcome;
+  /** Version stamped in the hook found on disk (null when foreign/absent). */
+  installedVersion: string | null;
+  /** Version this build ships. */
+  shippedVersion: string;
+  /** Human-readable one-liner for CLI output. */
+  message: string;
+}
+
+/**
+ * Refresh an ALREADY-INSTALLED SpecWeave pre-commit hook to the shipped
+ * template. Used by `specweave update` so an upgraded 1.x project does not keep
+ * a hook body that rejects `ledger.jsonl` at the increment root and reports a
+ * false duplicate id for every increment that has a `reports/` folder.
+ *
+ * Deliberately conservative:
+ *   - a hook the USER wrote (no `SpecWeave Pre-Commit Hook` marker) is left
+ *     alone and reported, never rewritten;
+ *   - a project with no hook at all is left alone (installing one is `init`'s
+ *     job, not an upgrade side effect).
+ */
+export function refreshManagedGitHook(
+  projectPath: string,
+  templatesDir: string,
+  options: { dryRun?: boolean } = {}
+): HookRefreshResult {
+  const shippedVersion = PRE_COMMIT_HOOK_VERSION;
+  const base = (outcome: HookRefreshOutcome, installedVersion: string | null, message: string): HookRefreshResult =>
+    ({ outcome, installedVersion, shippedVersion, message });
+
+  const gitDir = path.join(projectPath, '.git');
+  if (!fs.existsSync(gitDir)) {
+    return base('not-a-repo', null, 'not a git repository — pre-commit hook not refreshed');
+  }
+
+  const hookPath = path.join(gitDir, 'hooks', 'pre-commit');
+  if (!fs.existsSync(hookPath)) {
+    return base('absent', null, 'no pre-commit hook installed');
+  }
+
+  let existing: string;
+  try {
+    existing = fs.readFileSync(hookPath, 'utf-8');
+  } catch (error) {
+    return base('failed', null, `could not read .git/hooks/pre-commit: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  const installedVersion = readInstalledHookVersion(existing);
+  if (installedVersion === null) {
+    return base(
+      'foreign',
+      null,
+      'custom pre-commit hook left untouched — if it came from SpecWeave 1.x, delete it and run `specweave init` (or `specweave doctor --fix`) to install the 2.0 hook'
+    );
+  }
+
+  if (!needsHookRefresh(existing)) {
+    return base('current', installedVersion, `pre-commit hook already v${installedVersion}`);
+  }
+
+  if (options.dryRun) {
+    return base('would-refresh', installedVersion, `pre-commit hook is stale (v${installedVersion} → v${shippedVersion}) and would be refreshed`);
+  }
+
+  try {
+    const templatePath = path.join(templatesDir, 'git-hooks', 'pre-commit.template');
+    const rendered = renderPreCommitHook(fs.readFileSync(templatePath, 'utf-8'));
+    fs.writeFileSync(hookPath, rendered, 'utf-8');
+    chmodSync(hookPath, 0o755);
+    return base('refreshed', installedVersion, `pre-commit hook refreshed (v${installedVersion} → v${shippedVersion})`);
+  } catch (error) {
+    return base('failed', installedVersion, `could not refresh pre-commit hook: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 /**
  * Install git pre-commit hook in user project
  *
