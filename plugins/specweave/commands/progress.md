@@ -11,7 +11,7 @@ argument-hint: "[incrementId]"
 
 ## Hook Execution (Default)
 
-This command is intercepted by the **UserPromptSubmit hook** for instant execution (<10ms). The hook reads from `.specweave/state/dashboard.json` cache.
+This command runs `node ${CLAUDE_PLUGIN_ROOT}/scripts/progress.js`, which reads the `.specweave/state/dashboard.json` cache directly (<10ms, no model round-trip).
 
 **CRITICAL**: The hook output in `<system-reminder>` is ALREADY FORMATTED for the user. You MUST:
 1. Present the hook output VERBATIM — copy it exactly as-is
