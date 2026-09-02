@@ -125,3 +125,101 @@ if (!built) {
     expect(built).toBe(false);
   });
 }
+
+/**
+ * Security: the CLI-root cache is what run.mjs `import()`s, so it must never
+ * live in the shared OS temp dir and must never be followed through a symlink.
+ */
+describe('run.mjs CLI-root cache is per-user and symlink-proof', () => {
+  let home = '';
+  let fakeCli = '';
+  let marker = '';
+  let bare = '';
+
+  const isolatedEnv = () => ({
+    SPECWEAVE_HOME: '',
+    CLAUDE_PLUGIN_ROOT: path.join(bare, 'plugin'),
+    CLAUDE_PROJECT_DIR: bare,
+    HOME: home,
+    USERPROFILE: home,
+    PATH: '',
+  });
+
+  function launch(): { status: number | null; out: string } {
+    const res = spawnSync(process.execPath, [runner, 'session-start'], {
+      cwd: bare,
+      input: JSON.stringify({ hook_event_name: 'SessionStart', cwd: bare }),
+      encoding: 'utf8',
+      timeout: 20000,
+      env: { ...process.env, ...isolatedEnv() },
+    });
+    return { status: res.status, out: (res.stdout ?? '').trim() };
+  }
+
+  beforeAll(() => {
+    home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-home-'));
+    bare = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-bare-'));
+    fakeCli = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-fakecli-'));
+    marker = path.join(fakeCli, 'marker.txt');
+    fs.writeFileSync(path.join(fakeCli, 'package.json'), JSON.stringify({ name: 'specweave' }));
+    const routerDir = path.join(fakeCli, 'dist', 'src', 'core', 'hooks', 'handlers');
+    fs.mkdirSync(routerDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(routerDir, 'hook-router.js'),
+      `import { writeFileSync } from 'node:fs';\n` +
+        `export async function hookRouter() {\n` +
+        `  writeFileSync(${JSON.stringify(marker)}, 'LOADED');\n` +
+        `  return { hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: 'cache-hit' } };\n` +
+        `}\n`,
+    );
+  });
+
+  afterAll(() => {
+    for (const dir of [home, bare, fakeCli]) fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('never reads or writes the legacy world-writable temp cache file', () => {
+    const legacy = path.join(os.tmpdir(), 'specweave-hook-cli-root.txt');
+    fs.rmSync(legacy, { force: true });
+    fs.writeFileSync(legacy, fakeCli);
+    fs.rmSync(marker, { force: true });
+    try {
+      const r = launch();
+      expect(r.status).toBe(0);
+      expect(fs.existsSync(marker)).toBe(false);
+      expect(r.out).toContain('SpecWeave hooks inactive');
+    } finally {
+      fs.rmSync(legacy, { force: true });
+    }
+  });
+
+  it('honors a regular cache file owned by the user under $HOME/.specweave', () => {
+    const cacheFile = path.join(home, '.specweave', 'hook-cli-root');
+    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+    fs.rmSync(cacheFile, { force: true });
+    fs.writeFileSync(cacheFile, fakeCli);
+    fs.rmSync(marker, { force: true });
+    const r = launch();
+    expect(r.status).toBe(0);
+    expect(r.out).toContain('cache-hit');
+    expect(fs.readFileSync(marker, 'utf8')).toBe('LOADED');
+  });
+
+  it('ignores the cache when it is a symlink (planted-path attack)', () => {
+    const cacheFile = path.join(home, '.specweave', 'hook-cli-root');
+    const planted = path.join(home, 'planted.txt');
+    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+    fs.writeFileSync(planted, fakeCli);
+    fs.rmSync(cacheFile, { force: true });
+    fs.symlinkSync(planted, cacheFile);
+    fs.rmSync(marker, { force: true });
+    try {
+      const r = launch();
+      expect(r.status).toBe(0);
+      expect(fs.existsSync(marker)).toBe(false);
+      expect(r.out).toContain('SpecWeave hooks inactive');
+    } finally {
+      fs.rmSync(cacheFile, { force: true });
+    }
+  });
+});

@@ -16,22 +16,49 @@
  *   1. $SPECWEAVE_HOME
  *   2. <plugin root>/../..  (plugin shipped inside the npm package / repo checkout)
  *   3. require.resolve('specweave/package.json') from $CLAUDE_PROJECT_DIR / cwd
- *   4. `npm root -g` (result cached in the OS temp dir)
+ *   4. `npm root -g` (result cached in a per-user private file under ~/.specweave)
  *
  * Fast path: PreToolUse for a file outside `.specweave/increments/` prints `{}`
  * without loading the CLI at all (the guards only concern increment files).
  */
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const EVENTS = new Set(['session-start', 'pre-tool-use', 'stop', 'pre-compact']);
 const STDIN_CAP_MS = 5000;
 const ROUTER_REL = path.join('dist', 'src', 'core', 'hooks', 'handlers', 'hook-router.js');
-const CACHE_FILE = path.join(tmpdir(), 'specweave-hook-cli-root.txt');
+/**
+ * Per-user cache path. NEVER the shared OS temp dir: run.mjs `import()`s the
+ * path it reads back, so a world-writable cache is arbitrary code execution on
+ * every SessionStart/Stop/PreCompact of every session on the machine.
+ */
+const CACHE_DIR = safeHomeDir() ? path.join(safeHomeDir(), '.specweave') : null;
+const CACHE_FILE = CACHE_DIR ? path.join(CACHE_DIR, 'hook-cli-root') : null;
+
+function safeHomeDir() {
+  try {
+    const home = homedir();
+    return home && path.isAbsolute(home) ? home : null;
+  } catch {
+    return null;
+  }
+}
+
+/** True only for a regular file (not a symlink) owned by the current user. */
+function isPrivateOwnedFile(file) {
+  try {
+    const st = lstatSync(file);
+    if (!st.isFile()) return false;
+    const uid = typeof process.getuid === 'function' ? process.getuid() : null;
+    return uid === null || st.uid === uid;
+  } catch {
+    return false;
+  }
+}
 
 const event = process.argv[2] ?? '';
 
@@ -122,11 +149,24 @@ function pluginRoot() {
 }
 
 function fromCache() {
+  if (!CACHE_FILE || !isPrivateOwnedFile(CACHE_FILE)) return null;
   try {
     const cached = readFileSync(CACHE_FILE, 'utf8').trim();
     return isCliRoot(cached) ? cached : null;
   } catch {
     return null;
+  }
+}
+
+function writeCache(dir) {
+  if (!CACHE_DIR || !CACHE_FILE) return;
+  try {
+    mkdirSync(CACHE_DIR, { recursive: true, mode: 0o700 });
+    // Drop whatever is there (possibly a planted symlink) before writing.
+    rmSync(CACHE_FILE, { force: true });
+    writeFileSync(CACHE_FILE, dir, { flag: 'wx', mode: 0o600 });
+  } catch {
+    // cache is best-effort
   }
 }
 
@@ -137,7 +177,7 @@ function fromNpmGlobal() {
     if (!root) return null;
     const dir = path.join(root, 'specweave');
     if (!isCliRoot(dir)) return null;
-    try { writeFileSync(CACHE_FILE, dir); } catch { /* cache is best-effort */ }
+    writeCache(dir);
     return dir;
   } catch {
     return null;
