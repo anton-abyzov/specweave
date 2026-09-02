@@ -41,12 +41,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     // Create minimal config
     await fs.writeJSON(path.join(testDir, '.specweave/config.json'), {
       limits: {
-        maxActiveIncrements: 1,
-        hardCap: 2,
-        allowEmergencyInterrupt: true,
-        typeBehaviors: {
-          canInterrupt: ['hotfix', 'bug'],
-        },
+        activeIncrements: 1,
       },
     });
 

@@ -331,7 +331,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         {
           pluginAutoLoad: { enabled: false },
           incrementAssist: { enabled: false },
-          limits: { maxActiveIncrements: 1, hardCap: 3 }
+          limits: { activeIncrements: 1 }
         },
         { spaces: 2 }
       );
