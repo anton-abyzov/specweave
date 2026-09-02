@@ -3268,7 +3268,7 @@ After `sw:done`, sync docs automatically:
 
 <CommandTabs
   natural="Update the living docs"
-  claude="sw:sync-docs update"
+  claude="sw:sync update"
   other="sync-docs update"
 />
 

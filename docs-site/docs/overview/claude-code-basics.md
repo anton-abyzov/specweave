@@ -79,18 +79,18 @@ You: "Design the authentication architecture"
                     ↓
 Claude Code detects: "architecture" keyword
                     ↓
-sw:architect skill activates → System design expertise loads
+sw:increment skill activates → System design expertise loads
 ```
 
 **Slash commands** -- for explicit control:
 
 <CommandTabs
   natural="Design the authentication architecture"
-  claude="sw:architect"
+  claude="sw:increment"
   other="architect"
 />
 
-Other examples: `sw:pm` (product management), `sw:security` (security audit).
+Other examples: `sw:increment` (product management), `sw:review` (security audit).
 
 Most users never need slash commands. Describing what you want is enough -- SpecWeave routes to the right skill automatically.
 
@@ -142,7 +142,7 @@ All three trigger the same underlying skills and produce identical results.
 |--------------|-----------------|---------------|
 | Plan a feature | "Let's build [feature]" | `sw:increment` |
 | Start building | "Start implementing" | `sw:do` |
-| Check progress | "What's the status?" | `sw:progress` |
+| Check progress | "What's the status?" | `specweave status` |
 | Go autonomous | "Ship while I sleep" | `sw:auto` |
 | Finish up | "We're done" | `sw:done` |
 | Brainstorm | "Let's brainstorm ideas" | `sw:brainstorm` |

@@ -64,9 +64,8 @@ Control auto-loading in `.specweave/config.json`:
 
 ```json
 {
-  "pluginAutoLoad": {
-    "enabled": true,       // Master switch for auto-loading
-    "suggestOnly": false   // If true: suggest but don't install
+  "plugins": {
+    "enabled": ["sw"]
   }
 }
 ```
@@ -303,7 +302,7 @@ For "React + .NET + Stripe" type requests, auto-activation is unreliable. Use ex
 
 ```typescript
 // More reliable than auto-activation
-Skill({ skill: "sw:architect" })
+Skill({ skill: "sw:increment" })
 Skill({ skill: "backend:dotnet" })
 Skill({ skill: "payments:payment-core" })
 ```
@@ -325,10 +324,7 @@ Let the system install others when you actually need them.
 1. **Standardize config** in `.specweave/config.json`:
    ```json
    {
-     "pluginAutoLoad": {
-       "enabled": true,
-       "suggestOnly": false
-     }
+     "plugins": { "enabled": ["sw"] }
    }
    ```
 

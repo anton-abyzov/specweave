@@ -132,7 +132,7 @@ Check progress and close when ready:
 
 <CommandTabs
   natural="What's the status?"
-  claude="sw:progress"
+  claude="specweave status"
   other="progress"
 />
 
@@ -142,7 +142,7 @@ For features spanning multiple domains, SpecWeave can split work across parallel
 
 <CommandTabs
   natural="Build user auth with login, signup, and OAuth — use parallel agents"
-  claude='sw:team-lead "Build user auth with login, signup, and OAuth"'
+  claude='sw:team "Build user auth with login, signup, and OAuth"'
   other='team-lead "Build user auth with login, signup, and OAuth"'
 />
 
@@ -188,7 +188,7 @@ SpecWeave works everywhere:
 | **Cursor** | Via CLAUDE.md instructions |
 | **Windsurf** | Via CLAUDE.md instructions |
 | **GitHub Copilot** | Via CLAUDE.md instructions |
-| **Any AI IDE** | Via `specweave generate --template=md` |
+| **Any AI IDE** | Via `specweave create-increment --template=md` |
 
 > **Best Experience**: Claude Code provides the deepest integration with native hooks, skills, and autonomous execution. Other tools work via instruction files.
 

@@ -520,7 +520,7 @@ specweave sync-living-docs 0031-external-tool-status-sync
 
 - [Living Docs Sync Guide](intelligent-living-docs-sync.md) - Complete living docs architecture
 - [Test-Aware Planning](../../../increments/0003-intelligent-model-selection/reports/TEST-AWARE-PLANNING.md) - AC-ID format explanation
-- [Multi-Project Setup](multi-project-setup.md) - Multi-project configuration
+- [Multi-Project Setup](/docs/reference/configuration) - Multi-project configuration
 
 ---
 

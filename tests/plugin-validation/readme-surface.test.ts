@@ -6,6 +6,8 @@
  * `sw:code-reviewer` and "100+ Skills" because scripts/lint-skills.mjs only owns
  * plugin files — nothing checked the one document every new user reads first.
  * These tests close that gap by running the same reference rules over README.
+ * The headings are named once, at the top: the rules are about the surface, not
+ * about any particular landing-page layout, so a rewrite re-points them here.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -36,9 +38,14 @@ const removed = new Set(
   Object.keys(marketplace.removedIn2_0.map).map((slug: string) => slug.replace(/^sw:/, '')),
 );
 
-/** Everything except the "Upgrading from 1.x" table, which names dead slugs on purpose. */
+/** Heading of the section that must advertise exactly the shipped skill directories. */
+const SKILLS_SECTION = '## The ten skills';
+/** Heading of the migration section, the one place dead slugs are allowed. */
+const UPGRADE_SECTION = '## Upgrade to 2.0';
+
+/** Everything except the migration table, which names dead slugs on purpose. */
 function liveProse(): string {
-  const start = readme.indexOf('## Upgrading from 1.x');
+  const start = readme.indexOf(UPGRADE_SECTION);
   if (start === -1) return readme;
   const end = readme.indexOf('\n## ', start + 1);
   return readme.slice(0, start) + (end === -1 ? '' : readme.slice(end));
@@ -65,8 +72,8 @@ describe('README surface', () => {
     expect(errors).toEqual([]);
   });
 
-  it('sells exactly the 10 shipped skills in Core Commands', () => {
-    const advertised = [...new Set(slugsIn(section('## Core Commands')))].sort();
+  it(`sells exactly the ${coreSkills.length} shipped skills in "${SKILLS_SECTION}"`, () => {
+    const advertised = [...new Set(slugsIn(section(SKILLS_SECTION)))].sort();
     expect(advertised).toEqual(coreSkills);
   });
 
@@ -74,7 +81,7 @@ describe('README surface', () => {
     for (const slug of new Set(slugsIn(readme))) {
       if (shipped.has(slug)) continue;
       expect(removed.has(slug), `sw:${slug} is neither shipped nor listed in removedIn2_0`).toBe(true);
-      expect(section('## Upgrading from 1.x')).toContain(`sw:${slug}`);
+      expect(section(UPGRADE_SECTION)).toContain(`sw:${slug}`);
     }
   });
 });

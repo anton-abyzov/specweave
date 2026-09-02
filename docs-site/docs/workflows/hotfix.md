@@ -313,7 +313,7 @@ After hotfix is stable:
 sw:done 0015
 
 # Sync progress
-sw:sync-progress
+sw:sync
 
 # The hotfix is now documented for future reference
 ```

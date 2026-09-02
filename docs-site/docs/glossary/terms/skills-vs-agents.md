@@ -28,13 +28,13 @@ SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, 
 
 ## Skills
 
-**Skills** are markdown instructions that AI assistants follow. They can be invoked three ways: natural language (auto-activation on keywords), slash commands (`sw:name`) in Claude Code, or CLI keywords (`name`) in other AI tools. Skills can also be preloaded by subagents.
+**Skills** are markdown instructions that AI assistants follow. They can be invoked three ways: natural language (auto-activation on keywords), slash commands (`sw:&lt;name&gt;`) in Claude Code, or CLI keywords (`name`) in other AI tools. Skills can also be preloaded by subagents.
 
 ### How They Work
 
 ```mermaid
 graph LR
-    A["User: sw:pm"] --> B[PM Skill loaded]
+    A["User: sw:increment"] --> B[PM Skill loaded]
     B --> C[Instructions injected into context]
     C --> D[AI follows skill instructions]
     D --> E["Output: spec.md"]
@@ -77,9 +77,9 @@ The most common entry point — starting a new feature:
 Other frequently used skills:
 
 ```
-sw:pm                 # Product management domain logic (preloaded by sw-pm subagent)
-sw:architect          # Architecture domain logic (preloaded by sw-architect subagent)
-sw:grill              # Code review (standalone, context: fork)
+sw:increment                 # Product management domain logic (preloaded by sw-pm subagent)
+sw:increment          # Architecture domain logic (preloaded by sw-architect subagent)
+sw:review              # Code review (standalone, context: fork)
 sw:brainstorm         # Multi-perspective ideation (standalone, context: fork)
 ```
 
@@ -93,9 +93,9 @@ sw:brainstorm         # Multi-perspective ideation (standalone, context: fork)
 
 ```mermaid
 graph LR
-    A[Increment Skill] --> B["Agent&#40;subagent_type: sw:sw-pm&#41;"]
+    A[Increment Skill] --> B["Agent&#40;subagent_type: sw:increment&#41;"]
     B --> C[PM Subagent spawned]
-    C --> D["Preloads sw:pm skill"]
+    C --> D["Preloads sw:increment skill"]
     D --> E[Isolated context + persistent memory]
     E --> F[Writes spec.md]
     F --> G[Returns result to caller]
@@ -120,21 +120,21 @@ description: Product Manager for writing spec.md
 model: opus
 memory: project
 skills:
-  - sw:pm
+  - sw:increment
 ---
 
 # Product Manager Subagent
 
 You are a PM specializing in spec-driven development.
-The sw:pm skill is preloaded with full domain logic.
+The sw:increment skill is preloaded with full domain logic.
 ```
 
 ### SpecWeave Core Subagents
 
 | Subagent | Preloads Skill | Writes | Model |
 |----------|---------------|--------|-------|
-| `sw-pm` | `sw:pm` | spec.md | Opus |
-| `sw-architect` | `sw:architect` | plan.md | Opus |
+| `sw-pm` | `sw:increment` | spec.md | Opus |
+| `sw-architect` | `sw:increment` | plan.md | Opus |
 | `sw-planner` | (inline BDD logic) | tasks.md | Sonnet |
 
 ---
@@ -146,8 +146,8 @@ The most powerful pattern combines both: **subagents own isolation and memory, s
 ```
 plugins/specweave/
 ├── agents/
-│   ├── sw-pm.md            # Subagent: memory, model, skills: [sw:pm]
-│   ├── sw-architect.md     # Subagent: memory, model, skills: [sw:architect]
+│   ├── sw-pm.md            # Subagent: memory, model, skills: [sw:increment]
+│   ├── sw-architect.md     # Subagent: memory, model, skills: [sw:increment]
 │   └── sw-planner.md       # Subagent: memory, model, inline BDD task logic
 ├── skills/
 │   ├── pm/
@@ -162,13 +162,13 @@ plugins/specweave/
 
 ```javascript
 // PM writes spec.md
-Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment..." })
+Agent({ subagent_type: "sw:increment", prompt: "Write spec for increment..." })
 
 // Architect writes plan.md
-Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture..." })
+Agent({ subagent_type: "sw:increment", prompt: "Design architecture..." })
 
 // Planner writes tasks.md
-Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks..." })
+Agent({ subagent_type: "sw:increment", prompt: "Generate tasks..." })
 ```
 
 ---
@@ -178,8 +178,8 @@ Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks..." })
 ### Use Skills When:
 
 - **Reference knowledge** — conventions, patterns, style guides that enrich the main conversation
-- **Standalone tasks** — one-shot work like code review (`sw:grill`), brainstorming, validation
-- **User-invocable commands** — `sw:pm`, `sw:grill`, `sw:brainstorm`
+- **Standalone tasks** — one-shot work like code review (`sw:review`), brainstorming, validation
+- **User-invocable commands** — `sw:increment`, `sw:review`, `sw:brainstorm`
 - **Repetitive instructions** — the DRY principle for AI instructions
 
 ### Use Custom Subagents When:
@@ -300,6 +300,6 @@ Main Context
 
 ## Related Terms
 
-- [Role Orchestrator](/docs/glossary/terms/role-orchestrator)
+- [Role Orchestrator](/docs/reference/skills)
 - Hooks
 - [Increments](/docs/glossary/terms/increments)

@@ -123,7 +123,7 @@ Executes one task at a time. Check progress:
 
 <CommandTabs
   natural="What's the status?"
-  claude="sw:progress"
+  claude="specweave status"
   other="progress"
 />
 
@@ -144,7 +144,7 @@ Before closing, run validation:
 
 <CommandTabs
   natural="Check quality on increment 0001"
-  claude="sw:validate 0001"
+  claude="sw:review 0001"
   other="validate 0001"
 />
 
@@ -250,9 +250,9 @@ Implementation tasks with embedded tests.
 | Goal | How |
 |------|-----|
 | **Start next feature** | Say "Let's build [next feature]" or `sw:increment "next feature"` |
-| **Check all progress** | Say "What's the status?" or `sw:status` |
+| **Check all progress** | Say "What's the status?" or `specweave status` |
 | **Learn TDD workflow** | [Lesson 6: TDD](/docs/academy/specweave-essentials/06-tdd-workflow) |
-| **Connect GitHub** | [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) |
+| **Connect GitHub** | [GitHub Integration](/docs/guides/github-sync) |
 | **Full curriculum** | [SpecWeave Essentials](/docs/academy/specweave-essentials/) |
 
 ---

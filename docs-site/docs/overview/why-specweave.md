@@ -193,10 +193,10 @@ SpecWeave isn't one AI assistant - it's a **team of 68+ specialized agents** pow
 |-------|------|-------------------|
 | **PM** | Requirements, user stories, acceptance criteria | "Let's build [feature]" or `sw:increment` |
 | **Architect** | System design, ADRs, tech stack decisions | Complex features |
-| **QA Lead** | Test strategy, quality gates, validation | "Check quality" or `sw:validate` |
+| **QA Lead** | Test strategy, quality gates, validation | "Check quality" or `sw:review` |
 | **Security** | OWASP review, vulnerability detection | Mention "security" |
 | **DevOps** | CI/CD, infrastructure, deployment | Infrastructure work |
-| **Tech Lead** | Code quality, patterns, refactoring | "Review the code" or `sw:grill` |
+| **Tech Lead** | Code quality, patterns, refactoring | "Review the code" or `sw:review` |
 | **Frontend** | React/Vue/Angular architecture | Frontend work |
 | **Backend** | .NET/Node.js/Python patterns | Backend work |
 

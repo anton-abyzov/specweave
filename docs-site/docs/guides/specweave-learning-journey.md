@@ -20,7 +20,7 @@ Welcome to the SpecWeave Learning Journey — a comprehensive educational path t
 - Practical workflow mastery with hands-on exercises
 
 **Navigation System:**
-Throughout this journey, use `:next` to advance to the next lesson. This mirrors SpecWeave's `sw:next` command — your constant companion in real-world development.
+Throughout this journey, use `:next` to advance to the next lesson. This mirrors SpecWeave's `specweave task next` command — your constant companion in real-world development.
 
 ```
 :next → Proceed to next lesson
@@ -98,7 +98,7 @@ Today's best teams combine:
 
 SpecWeave is **spec-driven but agile** — you get the rigor of documented specs with the flexibility of incremental delivery. Every increment is:
 - **Planned** ([spec.md](/docs/glossary/terms/spec-md))
-- **Designed** ([plan.md](/docs/glossary/terms/plan-md))
+- **Designed** ([plan.md](/docs/glossary/terms/spec-md))
 - **Executed** ([tasks.md](/docs/glossary/terms/tasks-md))
 - **Validated** ([quality gates](/docs/glossary/terms/quality-gate))
 - **Delivered** ([living docs](/docs/glossary/terms/living-docs))
@@ -655,17 +655,17 @@ planning → in-progress → completed
 |---------|------------|---------|
 | `sw:increment "feature"` | → planning | Create new |
 | `sw:do` | planning → in-progress | Start work |
-| `sw:pause 0001` | in-progress → paused | Temporary stop |
-| `sw:resume 0001` | paused → in-progress | Continue |
-| `sw:status 0001` | any → backlog | Defer |
+| `specweave pause 0001` | in-progress → paused | Temporary stop |
+| `specweave resume 0001` | paused → in-progress | Continue |
+| `specweave status 0001` | any → backlog | Defer |
 | `sw:done 0001` | in-progress → completed | Finish |
-| `sw:abandon 0001` | any → abandoned | Cancel |
-| `sw:archive 0001` | completed → archived | Clean up |
+| `specweave abandon 0001` | any → abandoned | Cancel |
+| `specweave archive 0001` | completed → archived | Clean up |
 
-**The Magic of `sw:next`:**
+**The Magic of `specweave task next`:**
 
 ```
-sw:next
+specweave task next
 
 What it does:
 1. Finds active increment
@@ -692,7 +692,7 @@ sw:do
   → Hooks update living docs
 
 # Day 5: Completion
-sw:next
+specweave task next
   → Validates: ✓ Tasks ✓ Tests ✓ Docs
   → Closes 0001
   → Runs QA assessment
@@ -1018,7 +1018,7 @@ export ADO_ORGANIZATION=your-org
 **Monitoring Progress:**
 
 ```bash
-sw:progress
+specweave status
 
 0001-user-registration [████████░░░░] 67%
 ├── T-001 ✓ AuthService
@@ -1032,7 +1032,7 @@ sw:progress
 
 ---
 
-### Lesson 4.4: The `sw:next` Command
+### Lesson 4.4: The `specweave task next` Command
 
 **The Central Workflow Command**
 
@@ -1040,7 +1040,7 @@ When you're done working (or think you are):
 
 <CommandTabs
   natural="What's next?"
-  claude="sw:next"
+  claude="specweave task next"
   other="next"
 />
 
@@ -1138,7 +1138,7 @@ Status    ────────────────→ Issue state
 **GitHub Sync:**
 
 ```bash
-sw-github:sync 0001
+sw:sync 0001
 
 Syncing 0001-user-registration to GitHub...
   ✓ Issue #42 created
@@ -1150,7 +1150,7 @@ Syncing 0001-user-registration to GitHub...
 **JIRA Sync:**
 
 ```bash
-sw-jira:sync 0001
+sw:sync 0001
 
 Syncing to JIRA...
   ✓ Epic PROJ-123 created
@@ -1162,7 +1162,7 @@ Syncing to JIRA...
 **Sync Progress Command:**
 
 ```bash
-sw:sync-progress
+sw:sync
 
 Syncing to all configured tools...
   ✓ tasks.md → Living docs
@@ -1220,10 +1220,10 @@ Completed Feature
 sw:qa 0001
 
 # TDD workflow
-sw:tdd-cycle
+sw:do
 
 # Architecture planning
-sw:plan 0001
+sw:increment 0001
 ```
 
 > **:next** → *Lesson 5.2: TDD Workflow*
@@ -1235,25 +1235,25 @@ sw:plan 0001
 **Red-Green-Refactor with SpecWeave:**
 
 ```
-sw:tdd-cycle
+sw:do
 
 Phase 1: RED (Write Failing Tests)
   ↓
-sw:tdd-red
+sw:do
   → Writes comprehensive failing tests
   → Tests define expected behavior
   → All tests RED (failing)
 
 Phase 2: GREEN (Make Tests Pass)
   ↓
-sw:tdd-green
+sw:do
   → Implements minimal code
   → Focus on making tests pass
   → All tests GREEN (passing)
 
 Phase 3: REFACTOR (Improve Code)
   ↓
-sw:tdd-refactor
+sw:do
   → Improves code quality
   → Applies design patterns
   → Tests remain GREEN
@@ -1292,7 +1292,7 @@ SpecWeave isn't just for new projects. Import existing documentation:
 specweave init .
 
 # Import issues from external tools
-sw:import
+sw:sync
 ```
 
 **Auto-Classification:**
@@ -1351,7 +1351,7 @@ With SpecWeave:
 
 2. **Selective Context Loading**
    ```bash
-   sw:docs authentication
+   specweave docs authentication
 
    Searching living docs...
    Found 3 relevant files:
@@ -1520,7 +1520,7 @@ Knowledge persists
 Week 1: Fundamentals
   → Install SpecWeave
   → Create first increment
-  → Complete with sw:next
+  → Complete with specweave task next
   → Experience full cycle
 
 Week 2: Workflow Mastery
@@ -1589,7 +1589,7 @@ You've completed the SpecWeave Learning Journey. You now understand:
 ✅ **Practical Workflow**
 - Installation and setup
 - Creating increments
-- The power of `sw:next`
+- The power of `specweave task next`
 - External tool sync
 
 ✅ **Advanced Topics**
@@ -1611,7 +1611,7 @@ sw:increment "Your first feature"
 
 <CommandTabs
   natural="What's next?"
-  claude="sw:next"
+  claude="specweave task next"
   other="next"
 />
 
@@ -1631,24 +1631,24 @@ It will guide you through the entire cycle.
 │  sw:do                  → Execute tasks         │
 │                                                         │
 │  FLOW CONTROL                                           │
-│  sw:next     → Smart transition (THE KEY!)      │
-│  sw:progress → Check status                     │
+│  specweave task next     → Smart transition (THE KEY!)      │
+│  specweave status → Check status                     │
 │  sw:done ID  → Manual close                     │
 │                                                         │
 │  QUALITY                                                │
-│  sw:validate ID → Run checks                    │
+│  sw:review ID → Run checks                    │
 │  sw:qa ID       → Quality assessment            │
-│  sw:tdd-cycle   → TDD workflow                  │
+│  sw:do   → TDD workflow                  │
 │                                                         │
 │  SYNC                                                   │
-│  sw:sync-progress → Sync all systems            │
-│  sw:sync-docs     → Sync living docs            │
+│  sw:sync → Sync all systems            │
+│  sw:sync     → Sync living docs            │
 │                                                         │
 │  LIFECYCLE                                              │
-│  sw:pause ID   → Pause work                     │
-│  sw:resume ID  → Resume work                    │
-│  sw:status ID → Move to backlog                │
-│  sw:abandon ID → Cancel increment               │
+│  specweave pause ID   → Pause work                     │
+│  specweave resume ID  → Resume work                    │
+│  specweave status ID → Move to backlog                │
+│  specweave abandon ID → Cancel increment               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```

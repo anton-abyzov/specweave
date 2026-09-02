@@ -93,6 +93,6 @@ The **`metadata.json`** file tracks [increment](/docs/glossary/terms/increments)
 
 - [Increments](/docs/glossary/terms/increments) - Work units
 - [spec.md](/docs/glossary/terms/spec-md) - Specifications
-- [plan.md](/docs/glossary/terms/plan-md) - Architecture plans
+- [plan.md](/docs/glossary/terms/spec-md) - Architecture plans
 - [tasks.md](/docs/glossary/terms/tasks-md) - Task tracking
 - WIP Limits - Work-in-progress limits

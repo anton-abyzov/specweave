@@ -49,9 +49,10 @@ describe('docs-site link checker (T-018)', () => {
       'workflows/overview',
       'workflows/planning',
       'workflows/implementation',
-      // Integrations
-      'guides/integrations/external-tools-overview',
-      'guides/github-integration',
+      // Integrations (2.0: the ~22 sync pages collapsed to three)
+      'guides/github-sync',
+      'guides/jira-ado-sync',
+      'reference/sync-cli',
       // Agent Teams
       'guides/agent-teams-and-swarms',
       'guides/autonomous-execution',
@@ -70,9 +71,9 @@ describe('docs-site link checker (T-018)', () => {
       'reference/commands',
       'reference/skills',
       'reference/cost-tracking',
-      'commands/overview',
-      'commands/do',
-      'commands/auto',
+      'reference/configuration',
+      // 2.0 concept page
+      'guides/specweave-2',
       // Standalone
       'faq',
       'metrics',
@@ -80,7 +81,6 @@ describe('docs-site link checker (T-018)', () => {
       'academy/index',
       // Enterprise
       'enterprise/index',
-      'enterprise/github-migration',
       // Glossary
       'glossary/overview',
     ];

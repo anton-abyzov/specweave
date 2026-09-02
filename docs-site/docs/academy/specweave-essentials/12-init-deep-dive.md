@@ -444,10 +444,10 @@ After init, you'll have `.specweave/config.json`:
     }
   },
   "testing": {
-    "framework": "vitest",
-    "coverageThreshold": 80
-  },
-  "language": "en"
+    "mode": "TDD",
+    "commands": ["npm test"],
+    "coverage": { "unit": 95, "integration": 90, "e2e": 100 }
+  }
 }
 ```
 

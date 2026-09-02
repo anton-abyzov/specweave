@@ -139,10 +139,10 @@ stateDiagram-v2
     [*] --> Planning : sw:increment
     Planning --> Active : sw:do
     Active --> Active : Complete tasks
-    Active --> Paused : sw:pause
-    Paused --> Active : sw:resume
+    Active --> Paused : specweave pause
+    Paused --> Active : specweave resume
     Active --> Completed : All tasks done
-    Active --> Abandoned : sw:abandon
+    Active --> Abandoned : specweave abandon
     Completed --> [*]
     Abandoned --> [*]
 ```

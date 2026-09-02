@@ -3,7 +3,7 @@ id: software-engineering-roles
 title: Software Engineering Roles & SpecWeave AI Agents
 sidebar_label: Engineering Roles
 description: How SpecWeave's AI agents map to traditional software engineering roles and perform specialized tasks in your development workflow
-keywords: [specweave agents, pm agent, architect agent, tech lead, qa lead, security agent, performance agent, AI agents, engineering roles, software development]
+keywords: [specweave list, pm agent, architect agent, tech lead, qa lead, security agent, performance agent, AI agents, engineering roles, software development]
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';
@@ -60,7 +60,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: TDD (Test-Driven Development) Workflow Leader
 - **Expertise**: Red-Green-Refactor cycle, test-first development
 - **Activates**: When using TDD workflow
-- **Commands**: `sw:tdd-cycle`, `sw:tdd-red`, `sw:tdd-green`, `sw:tdd-refactor`
+- **Commands**: `sw:do` (TDD loop), `specweave verify`
 - **Output**: TDD workflow guidance, test implementation
 
 **6. Planner Agent** (`sw-planner`)
@@ -95,7 +95,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: Translation Specialist
 - **Expertise**: Multilingual support, content translation
 - **Activates**: When translating specs/docs to English (multilingual workflow)
-- **Commands**: `sw:translate`
+- **Commands**: `sw:increment`
 - **Output**: Translated content (maintains code blocks, technical terms)
 
 **11. Code Reviewer Agent** (`code-reviewer`)
@@ -226,7 +226,7 @@ Use PostgreSQL for transactional data, Redis for session cache.
 - MySQL: Weaker JSON support than PostgreSQL (rejected)
 ```
 
-Architect Agent stores ADRs permanently in [living docs](/docs/glossary/terms/living-docs), updated via `sw:sync-docs`.
+Architect Agent stores ADRs permanently in [living docs](/docs/glossary/terms/living-docs), updated via `sw:sync`.
 
 ---
 
@@ -239,7 +239,7 @@ Architect Agent stores ADRs permanently in [living docs](/docs/glossary/terms/li
 - Unblock developers
 - Track sprint progress
 
-**SpecWeave Agent: Architect Agent** (`architect`) + **Grill Agent** (`grill`)
+**SpecWeave skills**: `sw:increment` (Approach section) + `sw:review`
 
 **How These Agents Help**:
 
@@ -478,7 +478,7 @@ sw:qa 0008
 
 ```markdown
 # Docs Writer updates documentation after feature completion
-# Invoked via sw:sync-docs or manually
+# Invoked via sw:sync or manually
 
 1. [Living Docs](/docs/glossary/terms/living-docs) Sync:
    - Updates .specweave/docs/internal/ (architecture, ADRs)
@@ -499,7 +499,7 @@ sw:qa 0008
 
 ```bash
 # After implementing authentication feature
-sw:sync-docs update
+sw:sync update
 
 # Docs Writer Agent:
 1. Copies increment spec.md → living docs spec-0008-user-authentication.md
@@ -606,7 +606,7 @@ sw:sync-docs update
 ### Step 7: Implementation & Testing
 
 **Developer implements** tasks from tasks.md:
-1. Uses TDD workflow (`sw:tdd-cycle`)
+1. Uses TDD workflow (`sw:do`)
 2. TDD Orchestrator guides red-green-refactor cycle
 3. Runs tests via `npx vitest run`
 
@@ -633,7 +633,7 @@ sw:sync-docs update
 ### Step 9: Documentation (Docs Writer Agent)
 
 ```bash
-sw:sync-docs update
+sw:sync update
 ```
 
 **Docs Writer Agent**:
@@ -736,7 +736,7 @@ sw:done 0008         # PM validation + closure
 After completing tasks, sync living docs:
 
 ```bash
-sw:sync-docs update
+sw:sync update
 ```
 
 This keeps `.specweave/docs/internal/` permanently up-to-date.
@@ -765,7 +765,7 @@ Acceptance Criteria IDs (AC-US1-01) enable traceability:
 **Advanced**:
 1. **Agent Orchestration** (coming soon) - How agents collaborate on complex features
 2. Learn [Living Documentation](../../guides/core-concepts/living-documentation.md) (Docs Writer + Sync)
-3. Read [Multilingual Workflow](../../guides/multilingual-guide.md) (Translator Agent for international teams)
+3. Read [Multilingual Workflow](/docs/guides/specweave-2) (Translator Agent for international teams)
 
 ---
 
