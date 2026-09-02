@@ -754,11 +754,21 @@ npm run release:patch --release
 
 | Script | Description |
 |--------|-------------|
-| `npm run release` | Show release tool help |
+| `npm run release` | Publish to npm by hand (`npm publish --ignore-scripts=false`) |
+| `npm run release:preflight` | Check the tarball npm would upload, without publishing |
+| `npm run release:bump` | Show release tool help |
 | `npm run release:patch` | Bump patch version (0.0.X) |
 | `npm run release:minor` | Bump minor version (0.X.0) |
 | `npm run release:major` | Bump major version (X.0.0) |
 | `npm run setup:hooks` | Install git hooks (includes CHANGELOG validation) |
+
+> **Never run bare `npm publish`.** The committed `.npmrc` sets
+> `ignore-scripts=true`, which npm applies to this package's own
+> `prepublishOnly` as well as to dependencies — a bare publish runs no rebuild
+> and no version check. `npm run release` passes `--ignore-scripts=false` so the
+> hook fires; `npm run release:preflight` is the backstop that inspects the
+> actual tarball. Normal releases go through CI: push a `vX.Y.Z` tag and
+> `.github/workflows/release.yml` publishes via OIDC trusted publishing.
 
 ---
 

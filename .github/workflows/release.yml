@@ -65,6 +65,12 @@ jobs:
       - name: Validate version alignment
         run: npm run validate:versions
 
+      # ...and the tarball gate, for the same reason: this inspects what
+      # `npm pack` would actually upload, so a build that silently produced
+      # nothing cannot reach `npm publish` two steps below.
+      - name: Preflight the publish tarball
+        run: npm run release:preflight
+
       - name: Extract version
         id: package_version
         run: |
