@@ -23,6 +23,9 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+# ...but tests/unit/build/ holds build/release GUARD TESTS, not build output.
+# Without this every new file there is silently uncommittable.
+!tests/unit/build/
 *.pyc
 __pycache__/
 

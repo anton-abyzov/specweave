@@ -1,0 +1,91 @@
+name: Publish Guard
+
+# The committed .npmrc sets `ignore-scripts=true`, which npm applies to THIS
+# package's own lifecycle hooks as well as to dependencies. `prepublishOnly` is
+# therefore dead on the publish path, and a bare `npm publish` would upload a
+# tarball with no dist/ in it without a warning.
+#
+# `npm run release:preflight` is the replacement gate. A gate that never fails
+# is worthless, so this workflow exercises BOTH directions: it must refuse an
+# unbuilt tree and accept a built one.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'package.json'
+      - '.npmrc'
+      - 'bin/**'
+      - 'scripts/release/**'
+      - '.github/workflows/publish-guard.yml'
+      - '.github/workflows/release.yml'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'package.json'
+      - '.npmrc'
+      - 'bin/**'
+      - 'scripts/release/**'
+      - '.github/workflows/publish-guard.yml'
+      - '.github/workflows/release.yml'
+
+jobs:
+  preflight:
+    name: Publish preflight refuses unbuilt, accepts built
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      # Supply-chain guard: dependency install scripts never run in CI.
+      - name: Install dependencies (no install scripts)
+        run: npm ci --ignore-scripts && npm run setup
+
+      # Negative case FIRST, on a deliberately unbuilt tree (dist/ is
+      # gitignored, so a fresh checkout has none). The preflight has to REFUSE.
+      # If this step ever exits 0, the guard has gone vacuous.
+      - name: Preflight refuses to publish an unbuilt tree
+        run: |
+          if npm run release:preflight; then
+            echo "::error::release:preflight passed with no build — the publish guard is vacuous"
+            exit 1
+          fi
+          echo "preflight correctly refused an unbuilt tree"
+
+      - name: Build project
+        run: npm run build
+
+      - name: Preflight passes on a built tree
+        run: npm run release:preflight
+
+      # And the tarball npm would upload really does carry the entrypoints —
+      # asserted here independently of the script, so a bug that made the
+      # preflight check nothing would still be caught.
+      - name: Tarball carries bin, dist and the plugin manifests
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e "
+            const files = JSON.parse(require('fs').readFileSync('pack.json','utf8'))[0].files.map(f => f.path);
+            const required = [
+              'bin/specweave.js',
+              'dist/src/cli/commands/init.js',
+              '.claude-plugin/marketplace.json',
+              'plugins/specweave/.claude-plugin/plugin.json',
+            ];
+            const missing = required.filter(r => !files.includes(r));
+            if (!files.some(f => f.startsWith('dist/dashboard/'))) missing.push('dist/dashboard/**');
+            if (missing.length) { console.error('missing from tarball:', missing.join(', ')); process.exit(1); }
+            console.log('tarball ok —', files.length, 'entries');
+          "
+
+      # The wiring itself: prepublishOnly and `npm run release` must keep
+      # pointing at the preflight, or the guard silently stops being on the path.
+      - name: Publish-path wiring guard
+        run: npx vitest run tests/unit/build/publish-path-guard.test.ts

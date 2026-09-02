@@ -59,6 +59,12 @@ CI agent that ran `npm ci` with scripts enabled and then `git add -A && git push
   The few packages that need a build step are rebuilt explicitly with
   `npm run setup` (`npm rebuild --ignore-scripts=false <allowlist>`). The
   published npm package does not carry `.npmrc`, so end-user installs are unaffected.
+  Side effect worth knowing: npm applies `ignore-scripts` to this package's own
+  hooks too, so `prepublishOnly` never fires on the publish path. The build and
+  version-alignment gates therefore run as explicit steps in
+  `.github/workflows/release.yml`, `npm run release` forces hooks back on for a
+  hand-publish, and `npm run release:preflight` refuses a tarball that is missing
+  `dist/` or older than `src/`.
 - **Payload scan on every PR and push.** `.github/workflows/supply-chain-scan.yml`
   runs `scripts/security/scan-payload.mjs` (zero dependencies) and fails on:
   whitespace-padded payload lines (`^[\s});]{0,6}\s{800,}\S` — the July-2026
