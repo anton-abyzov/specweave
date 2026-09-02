@@ -79,7 +79,7 @@ describe('MetadataManager', () => {
       const result = MetadataManager.read(testIncrementId);
 
       expect(result.id).toBe(testIncrementId);
-      expect(result.status).toBe(IncrementStatus.PLANNING); // NEW: Default status is PLANNING
+      expect(result.status).toBe(IncrementStatus.PLANNED); // NEW: Default status is PLANNING
       expect(result.type).toBe(IncrementType.FEATURE);
     });
 
@@ -91,7 +91,7 @@ describe('MetadataManager', () => {
 
       // Should create default metadata with PLANNING status
       expect(result.id).toBe(testIncrementId);
-      expect(result.status).toBe(IncrementStatus.PLANNING); // NEW: Default status is PLANNING
+      expect(result.status).toBe(IncrementStatus.PLANNED); // NEW: Default status is PLANNING
       expect(fs.existsSync(testMetadataPath)).toBe(true);
     });
 
@@ -108,7 +108,7 @@ describe('MetadataManager', () => {
 
       // Should create default metadata with PLANNING status
       expect(result.id).toBe(testIncrementId);
-      expect(result.status).toBe(IncrementStatus.PLANNING);
+      expect(result.status).toBe(IncrementStatus.PLANNED);
 
       // **CHANGED**: PLANNING increments do NOT get added to active-increment.json
       // Only ACTIVE status increments count toward WIP limits
@@ -138,7 +138,7 @@ describe('MetadataManager', () => {
       fs.writeJsonSync(testMetadataPath, { id: testIncrementId });
 
       const metadata = MetadataManager.read(testIncrementId);
-      expect(metadata.status).toBe('planning');
+      expect(metadata.status).toBe('planned');
       expect(metadata.type).toBe('feature');
       expect(metadata.created).toBeDefined();
       expect(metadata.lastActivity).toBeDefined();
@@ -265,7 +265,7 @@ describe('MetadataManager', () => {
       it('PLANNING → ACTIVE transition is valid', () => {
         // Create increment in PLANNING
         const metadata = createDefaultMetadata(testIncrementId);
-        expect(metadata.status).toBe(IncrementStatus.PLANNING);
+        expect(metadata.status).toBe(IncrementStatus.PLANNED);
         fs.writeJsonSync(testMetadataPath, metadata);
 
         // Transition to ACTIVE
@@ -314,9 +314,9 @@ describe('MetadataManager', () => {
         fs.writeJsonSync(testMetadataPath, metadata);
 
         // Resume planning
-        const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.PLANNING);
+        const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.PLANNED);
 
-        expect(result.status).toBe(IncrementStatus.PLANNING);
+        expect(result.status).toBe(IncrementStatus.PLANNED);
       });
     });
   });

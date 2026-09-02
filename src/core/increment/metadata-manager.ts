@@ -63,6 +63,12 @@ const TYPE_ALIAS_MAP: Record<string, IncrementType> = {
  *
  * Provides CRUD operations and queries for increment metadata
  */
+/** Schema-repair diagnostics are opt-in (SPECWEAVE_DEBUG=1). */
+function isMetadataDebug(): boolean {
+  const v = process.env.SPECWEAVE_DEBUG;
+  return !!v && v !== '0' && v.toLowerCase() !== 'false';
+}
+
 export class MetadataManager {
   /**
    * Logger instance (injectable for testing)
@@ -135,8 +141,10 @@ export class MetadataManager {
       // Create default metadata and run through schema validation
       const raw = createDefaultMetadata(incrementId) as any;
       const { metadata: defaultMetadata, warnings } = this.validateMetadataSchema(raw, incrementId);
-      for (const w of warnings) {
-        this.logger.warn(`metadata(${incrementId}): ${w}`);
+      if (isMetadataDebug()) {
+        for (const w of warnings) {
+          this.logger.warn(`metadata(${incrementId}): ${w}`);
+        }
       }
       this.write(incrementId, defaultMetadata, rootDir);
 
@@ -161,9 +169,14 @@ export class MetadataManager {
         incrementId
       );
 
-      // Emit warnings to stderr so they are visible but non-blocking
-      for (const w of warnings) {
-        this.logger.warn(`metadata(${incrementId}): ${w}`);
+      // Schema repairs are auto-applied AND persisted, so they are diagnostics,
+      // not user-actionable warnings — printing them mid-command corrupted the
+      // output of `specweave status` (and anything parsing it). Behind
+      // SPECWEAVE_DEBUG they are still available.
+      if (warnings.length > 0 && isMetadataDebug()) {
+        for (const w of warnings) {
+          this.logger.warn(`metadata(${incrementId}): ${w}`);
+        }
       }
 
       // Validate hard constraints (id, status enum, type enum, required fields)
@@ -627,7 +640,14 @@ export class MetadataManager {
         try {
           return this.read(folder);
         } catch (error) {
-          // Skip increments with invalid/missing metadata
+          // An increment that cannot be read must never vanish silently: before
+          // 2.0 a metadata.json with an unrecognised status dropped out of every
+          // total and the project read as "100% complete". Legacy statuses are
+          // migrated in validateMetadataSchema; anything left here is corrupt
+          // JSON or a missing folder, and the user has to know.
+          this.logger.warn(
+            `metadata(${folder}): excluded from status — ${error instanceof Error ? error.message : String(error)}`,
+          );
           return null;
         }
       })
@@ -911,8 +931,8 @@ export class MetadataManager {
 
     // --- sensible defaults ---
     if (!metadata.status) {
-      metadata.status = IncrementStatus.PLANNING;
-      warnings.push(`Missing 'status' — defaulted to '${IncrementStatus.PLANNING}'`);
+      metadata.status = IncrementStatus.PLANNED;
+      warnings.push(`Missing 'status' — defaulted to '${IncrementStatus.PLANNED}'`);
       corrected = true;
     }
 

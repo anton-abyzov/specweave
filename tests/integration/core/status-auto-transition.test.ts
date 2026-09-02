@@ -72,10 +72,10 @@ describe('Status Auto-Transition E2E', () => {
     const incrementId = '0001-user-authentication';
 
     // Step 1: Create increment (PLANNING)
-    createIncrementStructure(incrementId, IncrementStatus.PLANNING);
+    createIncrementStructure(incrementId, IncrementStatus.PLANNED);
 
     let metadata = MetadataManager.read(incrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // Step 2: Write spec.md (simulate sw:increment planning phase)
     const specPath = path.join(testIncrementsPath, incrementId, 'spec.md');
@@ -97,7 +97,7 @@ status: planning
     // Auto-transition check (should still be PLANNING)
     autoTransitionStatus(incrementId);
     metadata = MetadataManager.read(incrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // Step 3: Write plan.md (still PLANNING)
     const planPath = path.join(testIncrementsPath, incrementId, 'plan.md');
@@ -110,7 +110,7 @@ status: planning
 
     autoTransitionStatus(incrementId);
     metadata = MetadataManager.read(incrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // Step 4: Write tasks.md with in-progress tasks (should auto-transition to ACTIVE)
     // Note: PLANNING → ACTIVE requires tasks with in-progress markers ([⏳], [🔄], or [x])
@@ -151,7 +151,7 @@ status: planning
     expect(transitioned).toBe(true);
 
     metadata = MetadataManager.read(incrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // Step 3: Complete planning - create tasks.md with in-progress task
     // Note: PLANNING → ACTIVE requires tasks with in-progress markers ([⏳], [🔄], or [x])
@@ -170,7 +170,7 @@ status: planning
     const incrementId = '0003-dashboard-widgets';
 
     // Create increment in PLANNING with tasks.md
-    createIncrementStructure(incrementId, IncrementStatus.PLANNING);
+    createIncrementStructure(incrementId, IncrementStatus.PLANNED);
 
     const tasksPath = path.join(testIncrementsPath, incrementId, 'tasks.md');
     fs.writeFileSync(tasksPath, `# Tasks
@@ -180,7 +180,7 @@ status: planning
 `);
 
     let metadata = MetadataManager.read(incrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // User starts work - marks task as in-progress
     const updatedTasks = `# Tasks
@@ -198,15 +198,15 @@ status: planning
     expect(metadata.status).toBe(IncrementStatus.ACTIVE);
   });
 
-  it('Migration: Legacy "planned" status → "planning"', async () => {
-    // Simulate legacy increment with "planned" status
+  it('Migration: Legacy "planning" status → "planned"', async () => {
+    // Simulate a 1.x increment carrying the old "planning" spelling
     const legacyIncrementId = '0004-legacy-increment';
     const incrementPath = path.join(testIncrementsPath, legacyIncrementId);
     fs.ensureDirSync(incrementPath);
 
     const legacyMetadata = {
       id: legacyIncrementId,
-      status: 'planned', // ❌ Invalid (not in enum)
+      status: 'planning', // ❌ Not in the 2.0 vocabulary
       type: 'feature',
       created: '2025-11-15T10:00:00Z',
       lastActivity: '2025-11-15T10:00:00Z'
@@ -220,7 +220,7 @@ status: planning
 
     // Verify migration
     const metadata = MetadataManager.read(legacyIncrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING); // ✅ Valid
+    expect(metadata.status).toBe(IncrementStatus.PLANNED); // ✅ Valid
   });
 
   it('WIP Limit: PLANNING increments do NOT count toward WIP limit', async () => {
@@ -229,12 +229,12 @@ status: planning
     createIncrementStructure('0006-active-2', IncrementStatus.ACTIVE);
 
     // Create 2 PLANNING increments (should NOT count toward WIP)
-    createIncrementStructure('0007-planning-1', IncrementStatus.PLANNING);
-    createIncrementStructure('0008-planning-2', IncrementStatus.PLANNING);
+    createIncrementStructure('0007-planning-1', IncrementStatus.PLANNED);
+    createIncrementStructure('0008-planning-2', IncrementStatus.PLANNED);
 
     // Query active increments (for WIP limit check)
     const activeIncrements = MetadataManager.getByStatus(IncrementStatus.ACTIVE);
-    const planningIncrements = MetadataManager.getByStatus(IncrementStatus.PLANNING);
+    const planningIncrements = MetadataManager.getByStatus(IncrementStatus.PLANNED);
 
     expect(activeIncrements.length).toBe(2); // Only ACTIVE count
     expect(planningIncrements.length).toBe(2); // PLANNING are separate
@@ -247,7 +247,7 @@ status: planning
     // Simulate real project state
     createIncrementStructure('0009-completed-feature', IncrementStatus.COMPLETED);
     createIncrementStructure('0010-active-work', IncrementStatus.ACTIVE);
-    createIncrementStructure('0011-planning-next', IncrementStatus.PLANNING);
+    createIncrementStructure('0011-planning-next', IncrementStatus.PLANNED);
     createIncrementStructure('0012-backlog-future', IncrementStatus.BACKLOG);
     createIncrementStructure('0013-paused-blocked', IncrementStatus.PAUSED);
 
@@ -259,7 +259,7 @@ status: planning
     expect(active.status).toBe(IncrementStatus.ACTIVE);
 
     const planning = MetadataManager.read('0011-planning-next');
-    expect(planning.status).toBe(IncrementStatus.PLANNING);
+    expect(planning.status).toBe(IncrementStatus.PLANNED);
 
     const backlog = MetadataManager.read('0012-backlog-future');
     expect(backlog.status).toBe(IncrementStatus.BACKLOG);
@@ -284,7 +284,7 @@ status: planning
     autoTransitionStatus(incrementId);
 
     let metadata = MetadataManager.read(incrementId);
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // Create tasks.md with in-progress task → PLANNING → ACTIVE
     // Note: PLANNING → ACTIVE requires tasks with in-progress markers ([⏳], [🔄], or [x])

@@ -21,7 +21,7 @@ import { MetadataManager } from '../../../../src/core/increment/metadata-manager
  */
 function createTestMetadata(
   incrementId: string,
-  status: IncrementStatus = IncrementStatus.PLANNING,
+  status: IncrementStatus = IncrementStatus.PLANNED,
   type: IncrementType = IncrementType.FEATURE
 ): IncrementMetadata {
   const now = new Date().toISOString();
@@ -73,7 +73,7 @@ describe('Plan Command Integration Tests', () => {
       fs.mkdirSync(incrementDir, { recursive: true });
 
       // Create metadata.json
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -138,7 +138,7 @@ As a developer, I want input validation.
       expect(result.filesCreated).toContain('plan.md');
       expect(result.filesCreated).toContain('tasks.md');
       expect(result.statusTransition).toEqual({
-        from: IncrementStatus.PLANNING,
+        from: IncrementStatus.PLANNED,
         to: IncrementStatus.ACTIVE
       });
 
@@ -168,7 +168,7 @@ As a developer, I want input validation.
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -232,7 +232,7 @@ increment: 0002-extraction-test
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -271,7 +271,7 @@ increment: 0003-auto-detect
           id,
           name: id.split('-').slice(1).join('-'),
           number: parseInt(id.split('-')[0]),
-          status: IncrementStatus.PLANNING,
+          status: IncrementStatus.PLANNED,
           created: new Date().toISOString(),
           updated: new Date().toISOString()
         };
@@ -305,7 +305,7 @@ increment: 0003-auto-detect
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -333,7 +333,7 @@ increment: 0003-auto-detect
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -367,7 +367,7 @@ increment: 0003-auto-detect
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -403,7 +403,7 @@ increment: 0003-auto-detect
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -441,7 +441,7 @@ increment: 0003-auto-detect
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -458,7 +458,7 @@ increment: 0003-auto-detect
 
       // Assert: Metadata updated
       expect(result.statusTransition).toEqual({
-        from: IncrementStatus.PLANNING,
+        from: IncrementStatus.PLANNED,
         to: IncrementStatus.ACTIVE
       });
 
@@ -513,7 +513,7 @@ increment: 0003-auto-detect
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -566,7 +566,7 @@ increment: 0012-performance-test
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -605,7 +605,7 @@ Just technical details, no user stories.
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)
@@ -629,7 +629,7 @@ Just technical details, no user stories.
       const incrementDir = path.join(specweaveDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
 
-      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNING);
+      const metadata = createTestMetadata(incrementId, IncrementStatus.PLANNED);
       fs.writeFileSync(
         path.join(incrementDir, 'metadata.json'),
         JSON.stringify(metadata, null, 2)

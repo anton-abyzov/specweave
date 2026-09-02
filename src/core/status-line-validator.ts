@@ -147,7 +147,7 @@ export class StatusLineValidator {
       const status = statusMatch ? statusMatch[1] : null;
 
       // Only validate active/planning increments
-      if (status === 'active' || status === 'planning') {
+      if (status === 'active' || status === 'planned' || status === 'planning') {
         try {
           const result = await this.validateIncrement(projectRoot, entry.name);
           results.push(result);
