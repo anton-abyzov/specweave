@@ -24,8 +24,6 @@ import type { IncrementMetadataV2 } from '../types/increment-metadata.js';
 export interface DispatchOptions {
   /** Bypass the test environment guard (for unit testing the dispatcher itself) */
   _bypassTestGuard?: boolean;
-  /** When true, run direct sync regardless of sync.mode (used by specweave complete) */
-  directSync?: boolean;
 }
 
 /**
@@ -113,23 +111,6 @@ export class LifecycleHookDispatcher {
       const taskConfig = hooks?.post_task_completion;
       if (!taskConfig) return;
 
-      // Check sync.mode: "queued" (default) vs "immediate" (legacy)
-      const syncMode = await LifecycleHookDispatcher.getSyncMode(projectRoot);
-
-      if (syncMode === 'queued') {
-        // Queue event instead of direct sync
-        const { queueSyncEvent } = await import('../sync/event-queue.js');
-        await queueSyncEvent(
-          projectRoot,
-          incrementId,
-          'task.completed',
-          options.taskId ? { taskId: options.taskId } : undefined,
-        );
-        return;
-      }
-
-      // IMMEDIATE MODE (legacy): direct sync calls below
-
       // AC Gate: determine if external sync should fire
       // Living docs sync always fires (internal, cheap). External sync only fires
       // when a NEW AC transitions from unchecked to fully satisfied.
@@ -210,20 +191,6 @@ export class LifecycleHookDispatcher {
       const doneConfig = hooks?.post_increment_done;
       if (!doneConfig) return result;
 
-      // Check sync.mode: "queued" (default) vs "immediate" (legacy)
-      // If directSync is set (called from specweave complete), always use direct sync
-      const syncMode = await LifecycleHookDispatcher.getSyncMode(projectRoot);
-
-      if (syncMode === 'queued' && !options.directSync) {
-        // Queue event instead of direct sync
-        const { queueSyncEvent } = await import('../sync/event-queue.js');
-        await queueSyncEvent(projectRoot, incrementId, 'increment.done');
-        result.syncSuccess.push('Event queued for deferred sync');
-        return result;
-      }
-
-      // DIRECT SYNC: either immediate mode or explicit directSync from CLI
-
       // Global skip: autoSyncOnCompletion flag (defaults to true)
       let autoSync = true;
       try {
@@ -282,13 +249,20 @@ export class LifecycleHookDispatcher {
           // This ensures FEATURE-CATALOG, module docs, and specs README contain links
           // to the newly created feature spec files. Without this, the link update is
           // deferred to the done step which may not always run.
+          // Issue #1925: cross-project increments write specs under per-US project
+          // paths, not the umbrella project id — loop over what the sync resolved.
           if (syncResult.success && syncResult.featureId) {
             try {
-              await LifecycleHookDispatcher.updateDocsLinks(
-                projectRoot,
-                syncResult.featureId,
-                sync.getProjectId(),
-              );
+              const targets = syncResult.projectIds && syncResult.projectIds.length > 0
+                ? syncResult.projectIds
+                : [sync.getProjectId()];
+              for (const target of targets) {
+                await LifecycleHookDispatcher.updateDocsLinks(
+                  projectRoot,
+                  syncResult.featureId,
+                  target,
+                );
+              }
               result.syncSuccess.push('Docs links updated');
             } catch (linkError) {
               const linkMsg = linkError instanceof Error ? linkError.message : String(linkError);
@@ -434,23 +408,6 @@ export class LifecycleHookDispatcher {
     }
 
     return exactPath; // Fall through — caller checks existence
-  }
-
-  /**
-   * Read sync.mode from config.json.
-   * Returns 'queued' (default) or 'immediate' (legacy).
-   */
-  private static async getSyncMode(
-    projectRoot: string,
-  ): Promise<'queued' | 'immediate'> {
-    try {
-      const configManager = new ConfigManager(projectRoot);
-      const config = await configManager.read();
-      const mode = config.sync?.mode;
-      return mode === 'immediate' ? 'immediate' : 'queued';
-    } catch {
-      return 'queued';
-    }
   }
 
   /**

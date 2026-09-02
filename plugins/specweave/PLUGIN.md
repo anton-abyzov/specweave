@@ -27,7 +27,7 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | translator | LLM-native translation skill for SpecWeave content |
 | framework | Expert on SpecWeave framework structure, rules, and conventions |
 | detector | Detects SpecWeave context and provides workflow documentation |
-| progress-sync | Progress synchronization for multi-system sync |
+| sync | One sync surface for GitHub/Jira/ADO (push, pull, status, setup) |
 | grill | Critical code review before increment completion |
 | self-validating-example | Example skill demonstrating self-validating REST API generation |
 | lsp | Language Server Protocol support for code navigation |
@@ -66,10 +66,9 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | sw:tdd-green | Implement minimal code to make tests pass (TDD green phase) |
 | sw:tdd-refactor | Refactor code with comprehensive test safety net |
 | sw:sync-docs | Strategic documentation sync (review or export) |
-| sw:sync-progress | Comprehensive progress sync to all systems |
-| sw:sync-status | Detect and fix status desyncs |
+| sw:sync | Sync with GitHub/Jira/ADO: push, pull, status, setup |
 | sw:living-docs | Launch Living Docs Builder independently |
-| sw:import-external | Auto-import external work items (GitHub/JIRA/ADO) |
+| sw:sync (pull --create-increments) | Import external work items (GitHub/JIRA/ADO) |
 | sw:discrepancies | View and manage code-to-spec discrepancies |
 | sw:discrepancy-to-increment | Convert discrepancies into new increment |
 | sw:fix-duplicates | Detect and resolve duplicate increments |

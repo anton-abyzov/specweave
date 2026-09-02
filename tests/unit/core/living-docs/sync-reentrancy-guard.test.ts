@@ -108,6 +108,8 @@ vi.mock('../../../../src/utils/project-detection.js', () => ({
 
 vi.mock('../../../../src/utils/auth-helpers.js', () => ({
   getGitHubAuthFromProject: mocks.getGitHubAuthFromProject,
+  resolveGitHubToken: mocks.getGitHubAuthFromProject,
+  describeGitHubAuth: () => 'GitHub token: mock',
 }));
 
 vi.mock('../../../../src/sync/sync-target-resolver.js', () => ({

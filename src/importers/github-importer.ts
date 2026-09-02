@@ -8,6 +8,7 @@
 import { Octokit } from '@octokit/rest';
 import type { Importer, ExternalItem, ImportConfig } from './external-importer.js';
 import { sanitizeHtmlForMdx } from '../utils/html-to-mdx.js';
+import { resolveGitHubToken, describeGitHubAuth } from '../utils/auth-helpers.js';
 
 interface GitHubIssue {
   number: number;
@@ -35,10 +36,11 @@ export class GitHubImporter implements Importer {
     this.owner = owner;
     this.repo = repo;
 
-    // Token handling - avoid logging sensitive information
-    const effectiveToken = token || process.env.GITHUB_TOKEN;
-    const tokenSource = token ? 'parameter' : (process.env.GITHUB_TOKEN ? 'env' : 'none');
-    console.log(`   🔑 GitHubImporter: ${owner}/${repo} (auth: ${tokenSource !== 'none' ? 'configured' : 'none'})`);
+    // One resolver, one order: config → process.env → .env → gh CLI.
+    // Never log the token itself, only where it came from.
+    const auth = resolveGitHubToken(process.cwd(), { configToken: token });
+    const effectiveToken = auth.token || undefined;
+    console.log(`   🔑 GitHubImporter: ${owner}/${repo} (${describeGitHubAuth(auth)})`);
 
     // Note: OAuth tokens (gho_*) may lack repo scope for private repos
     // Warning will be shown if 404 error occurs during import

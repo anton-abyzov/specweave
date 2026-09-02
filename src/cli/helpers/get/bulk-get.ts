@@ -4,10 +4,10 @@
  * Wires fetchGitHubRepos + matchByGlob + launchCloneJob into a bulk clone path.
  */
 
-import { execFileNoThrow } from '../../../utils/execFileNoThrow.js';
 import { fetchGitHubRepos } from '../init/github-repo-cloning.js';
 import { matchByGlob } from '../selection-strategy.js';
 import { REPO_FETCH_LIMITS } from '../init/types.js';
+import { resolveGitHubToken } from '../../../utils/auth-helpers.js';
 
 export interface BulkSource {
   org: string;
@@ -77,20 +77,16 @@ export function parseBulkSource(
 }
 
 /**
- * Resolve GitHub auth token.
- * Priority: GH_TOKEN env → `gh auth token` CLI → throw helpful error.
+ * Resolve the GitHub auth token through the single resolver
+ * (config → process.env → .env → gh CLI).
  */
-export async function getAuthToken(): Promise<string> {
-  if (process.env.GH_TOKEN?.trim()) return process.env.GH_TOKEN.trim();
-
-  const result = await execFileNoThrow('gh', ['auth', 'token'], {});
-  if (result.exitCode === 0 && result.stdout.trim()) {
-    return result.stdout.trim();
-  }
+export async function getAuthToken(projectRoot: string = process.cwd()): Promise<string> {
+  const auth = resolveGitHubToken(projectRoot);
+  if (auth.token) return auth.token;
 
   throw new Error(
     'GitHub auth required for bulk clone.\n' +
-    'Fix: run `gh auth login` or set the GH_TOKEN environment variable.',
+    'Fix: run `gh auth login` or set the GITHUB_TOKEN environment variable.',
   );
 }
 

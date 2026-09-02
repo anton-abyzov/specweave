@@ -158,6 +158,13 @@ export interface SyncResult {
   filesCreated: string[];
   filesUpdated: string[];
   errors: string[];
+  /**
+   * Resolved living-docs target paths (project or project/board) that this sync
+   * wrote to. One entry for single-project increments, one per target for
+   * cross-project increments. Consumers must NOT fall back to the umbrella
+   * project id when this is present (issue #1925).
+   */
+  projectIds?: string[];
 }
 
 export interface ParsedSpec {

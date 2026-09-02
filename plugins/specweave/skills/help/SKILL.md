@@ -48,13 +48,9 @@ By default, `sw:help` **HIDES** skills with `"deprecated": true` in `plugins/spe
 3. When `--deprecated` is passed, after Section C render an extra section:
    ```
    DEPRECATED — Scheduled for removal
-     sw:github-sync       → Use sw-github:sync-spec (removal: v1.3.0)
-     sw:jira-sync         → Use sw-jira:push / sw-jira:pull (removal: v1.3.0)
-     sw:ado-sync          → Use sw-ado:push / sw-ado:pull (removal: v1.3.0)
      sw:tdd-red           → Use sw:tdd-cycle --phase red (removal: v1.3.0)
      sw:tdd-green         → Use sw:tdd-cycle --phase green (removal: v1.3.0)
      sw:tdd-refactor      → Use sw:tdd-cycle --phase refactor (removal: v1.3.0)
-     sw:github-issue-standard → See .specweave/docs/internal/specs/github-issue-standard.md
    ```
 4. Deprecated skills are still invokable directly (alias-routed in marketplace.json) — the filter only affects discovery listing, not invocation.
 
@@ -138,9 +134,7 @@ CLOSE — Ship it
   sw:pr            Create pull request from increment branch
 
 SYNC — Connect external tools
-  sw:progress-sync  Sync progress to GitHub/JIRA/ADO
-  sw:sync-setup     Configure GitHub, JIRA, or ADO integration
-  sw:import         Import issues from external tools
+  sw:sync           Push, pull, status and setup for GitHub/JIRA/ADO
 
 EXPLORE — Understand your project
   sw:docs          Browse and search living docs

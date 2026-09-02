@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob
 
 # Multi-Project Management Skill
 
-Unified skill for organizing SpecWeave specs and increments across multiple projects or repositories. Supersedes the tool-specific `sw:github-multi-project` and `sw:ado-multi-project` skills, and adds Jira multi-project support.
+Unified skill for organizing SpecWeave specs and increments across multiple projects or repositories. Supersedes the tool-specific per-provider multi-project skills, and adds Jira multi-project support.
 
 ## `--tool` Flag
 
@@ -120,7 +120,7 @@ Organization: enterprise
 
 ## GitHub (`--tool github`)
 
-Merges the logic of the deprecated `sw:github-multi-project` skill.
+Covers the GitHub side of multi-project routing.
 
 ### Task Splitting Example
 
@@ -178,7 +178,7 @@ jobs:
 
 ## Azure DevOps (`--tool ado`)
 
-Merges the logic of the deprecated `sw:ado-multi-project` skill.
+Covers the Azure DevOps side of multi-project routing.
 
 ### Intelligent Project Detection
 
@@ -263,19 +263,15 @@ New in v1.2. Provides Jira-specific multi-project support using the `sw-jira` pl
 
 ### Creating Jira Epics and Stories
 
-Use the `sw-jira` plugin. The skill coordinates which project/component the Epic lands in:
+Configure the per-project Jira profiles in `.specweave/config.json` (`sync.profiles`),
+then push — the profile decides which project/component each user story lands in:
 
 ```bash
-# Epic for an increment (primary project)
-sw:jira-create --type epic --project PAY --summary "Checkout payment processing"
-
-# Stories for each user story in the increment
-sw:jira-create --type story --project PAY --epic-link PAY-101 --summary "US-001 Shopping cart API"
-sw:jira-create --type story --project USR --epic-link PAY-101 --summary "US-002 User cart state"
-sw:jira-create --type story --project NOT --epic-link PAY-101 --summary "US-003 Order notification email"
+specweave sync push <increment-id> --provider jira
 ```
 
-Each Story becomes a Jira issue in the right project; `--epic-link` preserves the cross-project relationship.
+Each Story becomes a Jira issue in the project its profile names; the epic link
+preserves the cross-project relationship.
 
 ### metadata.yml example
 
@@ -361,11 +357,10 @@ async function getIncrementWorkItems(incrementId: string, tool: 'github' | 'ado'
 
 ## Related Skills
 
-- `sw:github-sync`, `sw:ado-sync`, `sw:jira-sync` — per-tool sync engines
-- `sw:github-issue-standard` — GitHub issue formatting
-- `sw:ado-mapper`, `sw:jira-mapper` — ID mapping utilities
+- `sw:sync` — the one sync surface (`specweave sync push|pull|status|setup`)
+- `plugins/specweave/reference/{github,jira,ado}/*-specweave-mapping.md` — concept mapping tables
 
 ---
 
-**Skill Version**: 2.0.0 — unified multi-project skill (replaces `sw:github-multi-project` and `sw:ado-multi-project`)
+**Skill Version**: 2.0.0 — unified multi-project skill
 **Introduced**: SpecWeave v1.2.0 (0669 Wave 4)

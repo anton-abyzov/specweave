@@ -37,6 +37,8 @@ export interface DoctorOptions {
   verbose?: boolean;
   json?: boolean;
   fix?: boolean;
+  /** Fix metadata.json <-> spec.md status desyncs before running checks (formerly sw:sync-status). */
+  fixStatus?: boolean;
   quick?: boolean;
   skipExternal?: boolean;
   /**

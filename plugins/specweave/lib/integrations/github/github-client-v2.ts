@@ -60,13 +60,14 @@ export class GitHubClientV2 {
   }
 
   /**
-   * Turn a failed `gh` create result into a clear error.
+   * Turn a failed `gh` write (create/edit/close/comment/label) into a clear error.
    *
    * When the failure looks like an auth/access problem (notably a 404 masking a
-   * wrong-account token in .env), resolve the token's account + write access and
-   * explain exactly what to fix; otherwise fall back to the raw gh error.
+   * wrong-account token), resolve the token's account + write access and
+   * explain exactly what to fix ("token has no write access to owner/repo");
+   * otherwise fall back to the raw gh error.
    */
-  private async buildCreateError(action: string, rawError: string): Promise<Error> {
+  private async buildWriteError(action: string, rawError: string): Promise<Error> {
     try {
       const facts = await resolveGitHubAccessFacts(
         execFileNoThrow,
@@ -245,7 +246,7 @@ export class GitHubClientV2 {
     const result = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw await this.buildCreateError('create milestone', result.stderr || result.stdout);
+      throw await this.buildWriteError('create milestone', result.stderr || result.stdout);
     }
 
     return JSON.parse(result.stdout);
@@ -459,7 +460,7 @@ export class GitHubClientV2 {
     const createResult = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (createResult.exitCode !== 0) {
-      throw await this.buildCreateError('create issue', createResult.stderr || createResult.stdout);
+      throw await this.buildWriteError('create issue', createResult.stderr || createResult.stdout);
     }
 
     const issueUrl = createResult.stdout.trim();
@@ -511,9 +512,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to get issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw new Error(`Failed to get issue #${issueNumber}: ${result.stderr || result.stdout}`);
     }
 
     const issue = JSON.parse(result.stdout);
@@ -605,9 +604,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to edit issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw await this.buildWriteError(`edit issue #${issueNumber}`, result.stderr || result.stdout);
     }
   }
 
@@ -626,9 +623,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to update issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw await this.buildWriteError(`update issue #${issueNumber}`, result.stderr || result.stdout);
     }
   }
 
@@ -649,9 +644,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to close issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw await this.buildWriteError(`close issue #${issueNumber}`, result.stderr || result.stdout);
     }
   }
 
@@ -675,9 +668,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to reopen issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw await this.buildWriteError(`reopen issue #${issueNumber}`, result.stderr || result.stdout);
     }
   }
 
@@ -696,9 +687,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to add comment to issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw await this.buildWriteError(`add comment to issue #${issueNumber}`, result.stderr || result.stdout);
     }
   }
 
@@ -813,9 +802,7 @@ export class GitHubClientV2 {
     const result = await this.execWithBudget('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to add labels to issue #${issueNumber}: ${result.stderr || result.stdout}`
-      );
+      throw await this.buildWriteError(`add labels to issue #${issueNumber}`, result.stderr || result.stdout);
     }
   }
 
@@ -928,9 +915,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to list issues: ${result.stderr || result.stdout}`
-      );
+      throw new Error(`Failed to list issues: ${result.stderr || result.stdout}`);
     }
 
     const issues = JSON.parse(result.stdout);
@@ -1014,9 +999,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to check rate limit: ${result.stderr || result.stdout}`
-      );
+      throw new Error(`Failed to check rate limit: ${result.stderr || result.stdout}`);
     }
 
     const data = JSON.parse(result.stdout);
@@ -1129,9 +1112,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to fetch recent changes: ${result.stderr || result.stdout}`
-      );
+      throw new Error(`Failed to fetch recent changes: ${result.stderr || result.stdout}`);
     }
 
     // Parse NDJSON output (one JSON object per line)
@@ -1183,9 +1164,7 @@ export class GitHubClientV2 {
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to get issue events: ${result.stderr || result.stdout}`
-      );
+      throw new Error(`Failed to get issue events: ${result.stderr || result.stdout}`);
     }
 
     // Parse NDJSON output
