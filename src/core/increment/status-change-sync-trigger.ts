@@ -35,7 +35,6 @@ import { SyncCircuitBreaker } from './sync-circuit-breaker.js';
 import { SyncThrottle } from '../sync-throttle.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
-import { ConfigManager } from '../config/config-manager.js';
 
 export class StatusChangeSyncTrigger {
   private static circuitBreaker = new SyncCircuitBreaker();
@@ -217,24 +216,6 @@ export class StatusChangeSyncTrigger {
   ): Promise<void> {
     const projectRoot = resolveEffectiveRoot();
 
-    // Check sync.mode: "queued" (default) vs "immediate" (legacy)
-    const syncMode = await this.getSyncMode(projectRoot);
-
-    if (syncMode === 'queued') {
-      // Queue event instead of direct sync
-      const { queueSyncEvent } = await import('../sync/event-queue.js');
-      await queueSyncEvent(
-        projectRoot,
-        incrementId,
-        'status.changed',
-        newStatus ? { newStatus } : undefined,
-      );
-      this.logger.log(`📋 Queued sync event for ${incrementId} (status.changed)`);
-      return;
-    }
-
-    // IMMEDIATE MODE (legacy): direct sync calls below
-
     // Dynamic import to avoid circular dependency
     const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
 
@@ -268,23 +249,6 @@ export class StatusChangeSyncTrigger {
     // before the process exits. The previous setTimeout(0) pattern
     // caused sync to be lost when the process exited quickly.
     await syncFn();
-  }
-
-  /**
-   * Read sync.mode from config.json.
-   * Returns 'queued' (default) or 'immediate' (legacy).
-   */
-  private static async getSyncMode(
-    projectRoot: string,
-  ): Promise<'queued' | 'immediate'> {
-    try {
-      const configManager = new ConfigManager(projectRoot);
-      const config = await configManager.read();
-      const mode = config.sync?.mode;
-      return mode === 'immediate' ? 'immediate' : 'queued';
-    } catch {
-      return 'queued';
-    }
   }
 
   /**
