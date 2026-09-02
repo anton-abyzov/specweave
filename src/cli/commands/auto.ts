@@ -166,9 +166,8 @@ export async function handleAutoCommand(
   }
 
   // Advisory WIP note (never blocks)
-  const disciplineChecker = new DisciplineChecker(projectPath);
-  const disciplineResult = await disciplineChecker.validate();
-  const advisoryLimit = disciplineResult.config.activeIncrements;
+  // getLimits() only reads config; no metadata scan needed for an advisory note.
+  const advisoryLimit = new DisciplineChecker(projectPath).getLimits().activeIncrements;
   const printWipNote = (count: number): void => {
     const note = buildWipNote(count, advisoryLimit);
     if (note) {
