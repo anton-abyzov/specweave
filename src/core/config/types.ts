@@ -203,14 +203,6 @@ export interface SyncConfiguration {
   provider?: string;  // Exclusive provider (jira, github, ado)
 
   /**
-   * Sync trigger mode (0618):
-   * - "queued" (default): Triggers queue events to pending.jsonl; drained by CLI commands
-   * - "immediate" (legacy): Triggers call LivingDocsSync/SyncCoordinator directly
-   * @default 'queued'
-   */
-  mode?: 'queued' | 'immediate';
-
-  /**
    * Default profile (fallback when increment doesn't specify one)
    */
   defaultProfile?: string;

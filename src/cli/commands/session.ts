@@ -18,7 +18,6 @@ import {
 } from '../../core/session/session-lifecycle.js';
 import { checkReflectConfig } from '../../core/session/reflect-checker.js';
 import { scanAutoSession } from '../../core/session/auto-scanner.js';
-import { flushEventQueue } from '../../core/sync/event-queue-ops.js';
 import { createSessionDir } from '../../core/session/session-state-manager.js';
 
 export interface SessionCommandResult {
@@ -145,14 +144,6 @@ export async function sessionEndCommand(
     details.auto = { error: String(err) };
   }
 
-  // 3. Event queue flush — errors do not abort other operations
-  try {
-    const flushResult = flushEventQueue(stateDir);
-    details.sync = flushResult;
-  } catch (err) {
-    details.sync = { error: String(err) };
-  }
-
   const result: SessionCommandResult = { success: true, action: 'end', details };
 
   if (!options.silent) {
@@ -166,8 +157,6 @@ export async function sessionEndCommand(
       if (auto?.active && auto?.pendingTasks?.pending) {
         console.log(`  Auto-mode: ${auto.pendingTasks.pending} pending tasks`);
       }
-      const sync = details.sync as { flushed?: number } | undefined;
-      if (sync?.flushed) console.log(`  Flushed ${sync.flushed} unique increment(s)`);
     }
   }
 

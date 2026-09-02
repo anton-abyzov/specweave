@@ -327,13 +327,11 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       const { LifecycleHookDispatcher } = await import(
         '../hooks/LifecycleHookDispatcher.js'
       );
-      // 0696: `specweave complete` is an explicit user-invoked closure —
-      // pass directSync:true so the closure hook runs inline instead of
-      // being queued. Without this, JIRA/ADO closure would be deferred.
+      // `specweave complete` is an explicit user-invoked closure — the
+      // closure hook runs inline (living docs → external close → retry drain).
       const hookResult = await LifecycleHookDispatcher.onIncrementDone(
         resolveEffectiveRoot(),
         incrementId,
-        { directSync: true },
       );
       hookSyncErrors = hookResult.syncErrors;
       hookSyncSuccess = hookResult.syncSuccess;

@@ -142,30 +142,6 @@ describe('cli/commands/session', () => {
       expect(auto.pendingTasks.pending).toBe(2);
     });
 
-    // TC-003: event queue flushed
-    it('should flush pending events', async () => {
-      const queueDir = path.join(stateDir, 'event-queue');
-      fs.mkdirSync(queueDir, { recursive: true });
-      const lines = [
-        JSON.stringify({ event: 'task.updated', incrementId: '0001' }),
-        JSON.stringify({ event: 'spec.updated', incrementId: '0001' }),
-        JSON.stringify({ event: 'task.updated', incrementId: '0002' }),
-        JSON.stringify({ event: 'task.updated', incrementId: '0003' }),
-        JSON.stringify({ event: 'spec.updated', incrementId: '0003' }),
-      ];
-      fs.writeFileSync(path.join(queueDir, 'pending.jsonl'), lines.join('\n') + '\n');
-
-      const result = await sessionEndCommand({ projectRoot, silent: true });
-      expect(result.success).toBe(true);
-      const sync = result.details.sync as { flushed: number; incrementIds: string[] };
-      expect(sync.flushed).toBe(3);
-      expect(sync.incrementIds).toHaveLength(3);
-
-      // pending.jsonl should be empty
-      const remaining = fs.readFileSync(path.join(queueDir, 'pending.jsonl'), 'utf8');
-      expect(remaining).toBe('');
-    });
-
     // TC-004: exits 0 on success
     it('should return success:true when all operations complete', async () => {
       const result = await sessionEndCommand({ projectRoot, silent: true });
@@ -180,9 +156,8 @@ describe('cli/commands/session', () => {
       expect(result.success).toBe(true);
       // reflect should still have a result (default enabled on error)
       expect(result.details.reflect).toBeDefined();
-      // auto and sync should still run
+      // auto scan should still run
       expect(result.details.auto).toBeDefined();
-      expect(result.details.sync).toBeDefined();
     });
 
     it('should return failure for non-specweave project', async () => {

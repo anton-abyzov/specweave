@@ -998,30 +998,6 @@ program
     await commitsCommand();
   });
 
-// Sync flush command - Flush or queue sync events (replaces PostToolUse/stop-sync hooks)
-const syncFlushCmd = program
-  .command('sync')
-  .description('Sync operations');
-
-syncFlushCmd
-  .command('flush')
-  .description('Flush pending sync events or queue new ones (replaces PostToolUse hook)')
-  .option('--queue <json>', 'Queue a new event instead of flushing')
-  .option('--dry-run', 'Report what would be flushed without clearing')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { syncFlushCommand } = await import('../dist/src/cli/commands/sync-flush.js');
-    const result = await syncFlushCommand({
-      projectRoot: process.cwd(),
-      queue: options.queue,
-      dryRun: options.dryRun,
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
-
 // Sync-scheduled command - Execute due scheduled sync jobs (for cron/CI)
 program
   .command('sync-scheduled')
@@ -1072,15 +1048,6 @@ program
     if (options.dryRun) args.push('--dry-run');
     if (options.force) args.push('--force');
     await syncLivingDocs(args);
-  });
-
-// Sync-task command - Lightweight hook for task-ac-sync-guard.sh
-program
-  .command('sync-task <increment-id>')
-  .description('Trigger post-task-completion hooks (called by shell hook, not for manual use)')
-  .action(async (incrementId) => {
-    const { syncTask } = await import('../dist/src/cli/commands/sync-task.js');
-    await syncTask([incrementId]);
   });
 
 // Sync-retry command - Process retry queue for failed syncs
