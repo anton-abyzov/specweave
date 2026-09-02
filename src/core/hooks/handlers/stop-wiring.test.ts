@@ -51,10 +51,13 @@ function mkRepo(): string {
 
 function readHandoffDoc(root: string): string {
   const candidates = [
-    path.join(root, '.specweave', 'state', 'handoff-latest.md'),
     path.join(root, 'HANDOFF.md'),
     path.join(root, '.handoff', 'HANDOFF.md'),
   ];
+  // 2.0: the canonical location is next to the active increment; the state dir
+  // only holds a pointer to it.
+  const pointer = path.join(root, '.specweave', 'state', 'handoff-latest.txt');
+  if (fs.existsSync(pointer)) candidates.unshift(fs.readFileSync(pointer, 'utf-8').trim());
   for (const c of candidates) {
     if (fs.existsSync(c)) return fs.readFileSync(c, 'utf-8');
   }
