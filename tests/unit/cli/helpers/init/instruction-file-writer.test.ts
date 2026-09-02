@@ -5,6 +5,7 @@ import * as path from 'path';
 import {
   applyInstructionTemplate,
   backupFilePath,
+  detectTemplateFlags,
 } from '../../../../../src/cli/helpers/init/instruction-file-writer.js';
 
 const TEMPLATES_DIR = path.join(process.cwd(), 'src/templates');
@@ -24,6 +25,38 @@ afterEach(() => {
 const apply = (filename: 'CLAUDE.md' | 'AGENTS.md', extra: Partial<Parameters<typeof applyInstructionTemplate>[0]> = {}) =>
   applyInstructionTemplate({ projectPath: dir, templatesDir: TEMPLATES_DIR, filename, projectName: 'demo', version: '2.0.0', now: NOW, ...extra });
 
+
+const writeConfig = (config: unknown): void => {
+  fs.mkdirSync(path.join(dir, '.specweave'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), JSON.stringify(config));
+};
+
+describe('detectTemplateFlags (umbrella section)', () => {
+  it('is off without a config, with an empty repo list, or on unreadable JSON', () => {
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    writeConfig({ workspace: { name: 'w', repos: [] } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), '{ broken');
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+  });
+
+  it('falls back to the repositories/ scan while init has not written workspace yet', () => {
+    // init writes a minimal config (no workspace key) before the instruction files
+    writeConfig({ version: '2.0', project: { name: 'demo' } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    fs.mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true });
+    // an explicit empty workspace list still wins over the scan
+    writeConfig({ version: '2.0', workspace: { name: 'demo', repos: [] } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+  });
+
+  it('is on when the workspace lists repos', () => {
+    writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true });
+  });
+});
+
 describe('applyInstructionTemplate', () => {
   it('creates both files with detected commands and no backup', () => {
     const c = apply('CLAUDE.md');
@@ -33,7 +66,7 @@ describe('applyInstructionTemplate', () => {
     expect(c.backupPath).toBeNull();
     const claude = fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf-8');
     expect(claude).toContain('| Build | `npm run build` |');
-    expect(claude).toContain('| Lint | <!-- TODO: add lint command --> |');
+    expect(claude).toContain('| Lint | TODO: not detected \u2014 fill in the lint command |');
     expect(fs.existsSync(path.join(dir, '.specweave', 'backups'))).toBe(false);
   });
 
@@ -73,6 +106,22 @@ describe('applyInstructionTemplate', () => {
   it('skips when the template is missing', () => {
     const r = apply('AGENTS.md', { templatesDir: dir });
     expect(r.action).toBe('skipped');
+  });
+
+  it('emits the umbrella section only for a workspace with repos, and drops it when it empties', () => {
+    const plain = apply('CLAUDE.md');
+    expect(plain.content).not.toContain('Umbrella projects only');
+
+    writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
+    const umbrella = apply('CLAUDE.md');
+    expect(umbrella.action).toBe('merged');
+    expect(umbrella.added).toEqual(['umbrella']);
+    expect(umbrella.content).toContain('Umbrella projects only');
+
+    writeConfig({ workspace: { name: 'w', repos: [] } });
+    const shrunk = apply('CLAUDE.md');
+    expect(shrunk.removed).toEqual(['umbrella']);
+    expect(shrunk.content).not.toContain('Umbrella projects only');
   });
 
   it('backup filenames contain no colons', () => {

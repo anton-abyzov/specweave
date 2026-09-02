@@ -4,6 +4,7 @@
  * (via update-instructions) and the adapters that ship AGENTS.md.
  *
  * - detects the project's build/test/lint commands for the Commands table
+ * - resolves the conditional `umbrella` section from config.workspace.repos
  * - never writes when the merge result is byte-identical
  * - backs up the previous file to .specweave/backups/<file>.<timestamp>.bak
  */
@@ -18,6 +19,7 @@ import {
   type TemplateType,
 } from './instruction-file-merger.js';
 import { detectStackCommands, type StackCommands } from './stack-detector.js';
+import { scanWorkspaceRepos } from './path-utils.js';
 
 export type InstructionFileName = 'CLAUDE.md' | 'AGENTS.md';
 
@@ -30,6 +32,12 @@ export interface ApplyInstructionOptions {
   version?: string;
   /** Defaults to stack detection on projectPath. */
   commands?: StackCommands;
+  /**
+   * Condition flags for `when="…"` template sections. Defaults to
+   * `{ umbrella: <config.workspace.repos is non-empty> }` read from
+   * `.specweave/config.json`.
+   */
+  flags?: Record<string, boolean>;
   /** Compute the result without touching the disk. */
   dryRun?: boolean;
   /** Timestamp for the backup filename (tests). */
@@ -55,6 +63,31 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
   return path.join(projectPath, BACKUP_DIR, `${filename}.${stamp}.bak`);
 }
 
+/**
+ * Condition flags for the templates' `when="…"` sections.
+ *
+ * `umbrella` is on when `config.workspace.repos` is non-empty. During `init` the
+ * instruction files are written before the workspace section exists, so a config
+ * without a `workspace` key falls back to the same `repositories/<org>/<repo>`
+ * scan that init uses to build it.
+ */
+export function detectTemplateFlags(projectPath: string): Record<string, boolean> {
+  let workspace: unknown;
+  try {
+    const raw = fs.readFileSync(path.join(projectPath, '.specweave', 'config.json'), 'utf-8');
+    workspace = JSON.parse(raw)?.workspace;
+  } catch {
+    // no config yet, or unreadable: fall through to the filesystem scan
+  }
+  const repos = (workspace as { repos?: unknown } | undefined)?.repos;
+  if (Array.isArray(repos)) return { umbrella: repos.length > 0 };
+  try {
+    return { umbrella: scanWorkspaceRepos(projectPath) !== null };
+  } catch {
+    return { umbrella: false };
+  }
+}
+
 export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyInstructionResult {
   const filePath = path.join(opts.projectPath, opts.filename);
   const templatePath = path.join(opts.templatesDir, `${opts.filename}.template`);
@@ -72,7 +105,10 @@ export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyIn
     TEMPLATE_TYPES[opts.filename],
     opts.version ?? getPackageVersion(),
     opts.projectName,
-    { commands: opts.commands ?? detectStackCommands(opts.projectPath) }
+    {
+      commands: opts.commands ?? detectStackCommands(opts.projectPath),
+      flags: opts.flags ?? detectTemplateFlags(opts.projectPath),
+    }
   );
 
   let backupPath: string | null = null;

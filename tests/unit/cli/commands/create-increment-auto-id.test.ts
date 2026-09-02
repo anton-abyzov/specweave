@@ -95,35 +95,69 @@ describe('create-increment --auto-id', () => {
     ).rejects.toThrow(/Cannot use both --id and --auto-id/);
   });
 
-  it('should error when neither --id nor --auto-id is provided', async () => {
+  it('defaults to auto-id with a slug of the title when no --id is given', async () => {
     const { createIncrementCommand } = await import(
       '../../../../src/cli/commands/create-increment.js'
     );
 
-    await expect(
-      createIncrementCommand({
-        title: 'No ID Test',
-        description: 'Should fail',
-        project: 'test-project',
-        projectRoot: tempDir,
-      } as any)
-    ).rejects.toThrow(/Either --id or \(--auto-id \+ --name\) is required/);
+    await createIncrementCommand({
+      title: 'Add Login Form',
+      projectRoot: tempDir,
+    } as any);
+
+    expect(fs.existsSync(path.join(incrementsPath, '0001-add-login-form'))).toBe(true);
   });
 
-  it('should error when --auto-id is used without --name', async () => {
+  it('derives the name from the title when --auto-id has no --name', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({
+      autoId: true,
+      title: 'No Name Test',
+      projectRoot: tempDir,
+    } as any);
+
+    expect(fs.existsSync(path.join(incrementsPath, '0001-no-name-test'))).toBe(true);
+  });
+
+  it('--supersedes abandons the old increment and links the new one', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({ title: 'First Try', projectRoot: tempDir } as any);
+    await createIncrementCommand({ title: 'Second Try', supersedes: '0001', projectRoot: tempDir } as any);
+
+    const oldMeta = JSON.parse(
+      fs.readFileSync(path.join(incrementsPath, '0001-first-try', 'metadata.json'), 'utf-8')
+    );
+    const newMeta = JSON.parse(
+      fs.readFileSync(path.join(incrementsPath, '0002-second-try', 'metadata.json'), 'utf-8')
+    );
+    expect(oldMeta.status).toBe('abandoned');
+    expect(oldMeta.abandonedReason).toContain('Superseded by 0002-second-try');
+    expect(newMeta.supersedes).toBe('0001-first-try');
+  });
+
+  it('--supersedes with an unknown id warns and still creates the increment', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({ title: 'Solo', supersedes: '9999', projectRoot: tempDir } as any);
+    expect(fs.existsSync(path.join(incrementsPath, '0001-solo'))).toBe(true);
+  });
+
+  it('errors when no title is given', async () => {
     const { createIncrementCommand } = await import(
       '../../../../src/cli/commands/create-increment.js'
     );
 
     await expect(
-      createIncrementCommand({
-        autoId: true,
-        title: 'No Name Test',
-        description: 'Should fail',
-        project: 'test-project',
-        projectRoot: tempDir,
-      } as any)
-    ).rejects.toThrow(/--auto-id requires --name/);
+      createIncrementCommand({ autoId: true, projectRoot: tempDir } as any)
+    ).rejects.toThrow(/title is required/);
   });
 
   it('should retry on EEXIST and get unique ID (atomic reservation)', async () => {

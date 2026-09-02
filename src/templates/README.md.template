@@ -1,13 +1,13 @@
 # {{PROJECT_NAME}}
 
-A [SpecWeave](https://verified-skill.com) project: work happens in increments under `.specweave/increments/NNNN-slug/`, each with a `spec.md` (what + acceptance criteria), an optional `plan.md` (how), `tasks.md`, and a `ledger.jsonl` that records who did what.
+A [SpecWeave](https://verified-skill.com) project: work happens in increments under `.specweave/increments/NNNN-slug/`, each with a `spec.md` (Problem, acceptance criteria, Approach), a `tasks.md`, and an append-only `ledger.jsonl` that records who claimed and finished what.
 
 ## Working on this project
 
 | Step | Command |
 |---|---|
 | Plan a feature | `specweave create-increment "title"` (Claude Code: `/sw:increment`) |
-| Work the tasks | `specweave task next` → `task claim T-NN` → implement → `task done T-NN --run "<test cmd>"` |
+| Work the tasks | `specweave task next` → `specweave task claim T-NN` → implement → `specweave task done T-NN --run "<test cmd>"` |
 | Verify | `specweave verify` |
 | Close | `specweave complete NNNN` |
 | Stop / hand off | `specweave handoff` |
@@ -18,7 +18,7 @@ Agent instructions live in `CLAUDE.md` (Claude Code) and `AGENTS.md` (Codex, Ope
 
 ```
 .specweave/
-  increments/NNNN-slug/   spec.md · plan.md · tasks.md · ledger.jsonl · handoff.md · reports/
+  increments/NNNN-slug/   spec.md · tasks.md · ledger.jsonl · handoff.md · reports/
   docs/                    ADRs and hand-written docs
   config.json
 ```

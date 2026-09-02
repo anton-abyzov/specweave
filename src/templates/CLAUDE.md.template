@@ -1,7 +1,7 @@
 <!-- SECTION:header required -->
 # {PROJECT_NAME}
 
-SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-slug/`. Spec + plan are the source of truth; the ledger records who did what. Keep this file under one page; project-specific notes go in **Project notes** at the bottom.
+SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-slug/`. `spec.md` (Problem, ACs, Approach) is the source of truth; the ledger records who did what. Keep this file under one page; project-specific notes go in **Project notes** at the bottom.
 <!-- /SECTION -->
 
 <!-- SECTION:structure -->
@@ -9,11 +9,13 @@ SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-
 
 ```
 .specweave/
-  increments/NNNN-slug/   spec.md (WHAT + ACs) · plan.md (HOW, optional) · tasks.md (task list) · ledger.jsonl (claims/done) · handoff.md · reports/
+  increments/NNNN-slug/   spec.md (Problem · ACs · Approach) · tasks.md (tasks + rendered board) · ledger.jsonl (claims/done, CLI-written) · handoff.md · reports/ (evidence; binaries in reports/artifacts/, gitignored)
   docs/                    ADRs and hand-written docs (read before changing architecture)
   config.json
 ```
-Only those files live in an increment root; everything else goes in `reports/`. Commit messages start with the increment id: `0042: add login form`.
+Only those files (plus optional `plan.md` when Approach outgrows a page, and `scripts/`) live in an increment root; everything else goes in `reports/`. Commit messages start with the increment id: `0042: add login form`.
+
+`tasks.md` format (the CLI parses it): `### T-01 Title` followed by one line `- AC: AC-01, AC-02 | Files: src/login.ts, src/login.test.ts | Test: npm test -- login`. `ledger.jsonl` is one JSON object per line, append-only: `{"t":"T-01","e":"claim|done|skip|release|block","by":"<tool>@<host>","at":"<ISO>","evidence":"<sha>"}`.
 <!-- /SECTION -->
 
 <!-- SECTION:loop required -->
@@ -21,10 +23,10 @@ Only those files live in an increment root; everything else goes in `reports/`. 
 
 | Step | Command |
 |---|---|
-| Plan a feature (spec + plan, in plan mode) | `/sw:increment "title"` |
-| Work the tasks (claim → implement → done with evidence) | `/sw:do` |
+| Plan a feature (spec.md with ACs + Approach, in plan mode; approved before any code) | `/sw:increment "title"` |
+| Work the tasks (claim → implement → commit → done with evidence) | `/sw:do` (loops `specweave task next` / `claim` / `done --run`) |
 | Verify the whole increment | `specweave verify` |
-| Review before closing (optional, recommended for user-facing work) | `/sw:review` |
+| Review before closing (recommended for anything that ships: fresh context, findings cite path:line and are re-verified) | `/sw:review` |
 | Close (needs a green verify or `--reason`) | `/sw:done` |
 | Stop for any reason (context, tokens, switching tools) | `/sw:handoff` |
 
@@ -40,11 +42,13 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 <!-- SECTION:parallel required -->
 ## Working in parallel (any tool, any account)
 
-1. One worktree per agent (`git worktree add ../NNNN-me -b inc/NNNN-me`).
-2. Claim before editing: `specweave task claim T-NN` (or `specweave task next`). Edit only that task's **Files**.
-3. Never edit ledger lines or another task's status; append only.
-4. `done` needs the task's **Test** command exit 0 and a commit sha.
-5. When you stop: `specweave task release --all-mine` then `/sw:handoff`. Read the latest `handoff.md` before resuming someone else's increment.
+1. One worktree per agent, named after the agent: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>` (e.g. `../0042-claude -b inc/0042-claude`) or `claude --worktree NNNN-<agent>`. The branch name must contain the increment id.
+2. Claim before editing: `specweave task claim T-NN` (or `specweave task next`). Edit only that task's **Files**; need another file → claim its task or add a task. A claim older than 2h with no `done` is stale and may be re-claimed.
+3. Never edit ledger lines or another task's status; append only. On a git conflict in `ledger.jsonl` keep every line from both sides.
+4. `done` needs the task's **Test** command exit 0 and a commit sha. A task that turns out unnecessary is closed with `specweave task skip T-NN --reason "..."`, never ticked.
+5. When you stop: `specweave task release --all-mine` then `/sw:handoff`.
+
+Resuming: find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `/sw:do`.
 <!-- /SECTION -->
 
 <!-- SECTION:conventions required -->
@@ -52,8 +56,11 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 
 - Secrets: confirm a key is present without printing its value (`grep -q NAME .env` or `Select-String -Quiet NAME .env`); never commit `.env*`.
 - Prefer deleting code over adapting it; change only what the task needs.
-- Check `.specweave/docs/` ADRs before architectural changes; record new decisions in `plan.md` or an ADR.
-- Nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
+- Check `.specweave/docs/` ADRs before architectural changes; record new decisions in spec.md **Approach** or an ADR. When a new increment replaces an old one, create it with `--supersedes NNNN` instead of leaving the old one open.
+<!-- /SECTION -->
+
+<!-- SECTION:umbrella when="umbrella" -->
+- Umbrella projects only: nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
 <!-- /SECTION -->
 
 <!-- SECTION:troubleshooting -->
@@ -61,7 +68,7 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 
 | Issue | Fix |
 |---|---|
-| Skills or hooks missing | `specweave doctor`, then restart Claude Code |
+| Skills or hooks missing | `specweave doctor`, then `/reload-plugins` (restart if still missing) |
 | Instructions out of date after upgrade | `specweave update` |
 | Unsure who owns a task | `specweave task list` |
 <!-- /SECTION -->
@@ -73,6 +80,8 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 | Build | `{{BUILD_CMD}}` |
 | Test | `{{TEST_CMD}}` |
 | Lint | `{{LINT_CMD}}` |
+
+If a cell still says TODO, fill it in from `package.json`/`Makefile` and commit; `specweave verify` runs these rows.
 
 ## Project notes
 
