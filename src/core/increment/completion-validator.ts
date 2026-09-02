@@ -15,6 +15,8 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings?: string[];
+  /** Informational results (e.g. a PASSING verify). Never a problem report. */
+  info?: string[];
 }
 
 /**
@@ -66,6 +68,7 @@ export class IncrementCompletionValidator {
     const reason = options.reason?.trim();
     const errors: string[] = [];
     const warnings: string[] = [];
+    const info: string[] = [];
     // With --reason, incomplete work is recorded, not blocked.
     const blocking = (msg: string) => (reason ? warnings.push(`${msg} (closing anyway — reason: ${reason})`) : errors.push(msg));
     const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
@@ -188,6 +191,7 @@ export class IncrementCompletionValidator {
       const gate = checkClosureGate(incrementPath, incrementId, { reason: options.reason });
       errors.push(...gate.errors);
       warnings.push(...gate.notices);
+      info.push(...gate.info);
     } catch (error) {
       logger.warn(`Closure gate check failed: ${error instanceof Error ? error.message : String(error)}`);
       warnings.push('Closure gate check skipped due to error');
@@ -268,7 +272,8 @@ export class IncrementCompletionValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
+      info
     };
   }
 
