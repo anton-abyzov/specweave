@@ -6,10 +6,6 @@ argument-hint: "--generate|--run|--a11y <increment-id>"
 
 # E2E Testing — Playwright + AC Traceability
 
-## Project Overrides
-
-**Skill Memories**: If `.specweave/skill-memories/e2e.md` exists, read and apply its learnings.
-
 Generate Playwright E2E tests from spec.md acceptance criteria, run them, and produce a structured report that maps pass/fail results to AC-IDs. The report is evidence for whatever closure step you run.
 
 ## Modes

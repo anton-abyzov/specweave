@@ -6,10 +6,6 @@ argument-hint: "<bug-description>"
 
 # Systematic Debugging
 
-## Project Overrides
-
-**Skill Memories**: If `.specweave/skill-memories/debug.md` exists, read and apply its learnings.
-
 ## Iron Law
 
 **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST.**
