@@ -47,8 +47,9 @@ function oneX(sections: Array<[string, string]>, user: string[] = [], version = 
 describe('parseTemplate', () => {
   it('splits sections and keeps the user-owned tail', () => {
     const t = claudeTemplate();
-    expect(t.sections.map(s => s.id)).toEqual(['header', 'structure', 'loop', 'verify', 'parallel', 'conventions', 'troubleshooting']);
+    expect(t.sections.map(s => s.id)).toEqual(['header', 'structure', 'loop', 'verify', 'parallel', 'conventions', 'umbrella', 'troubleshooting']);
     expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header', 'loop', 'verify', 'parallel', 'conventions']);
+    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella']]);
     expect(t.tail).toMatch(/^## Commands/);
     expect(t.tail).toContain('## Project notes');
     expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'CLAUDE.md.template'), 'utf-8'))).toEqual(t.sections);
@@ -73,12 +74,12 @@ describe('mergeInstructionFile — (a) fresh file', () => {
 
   it('leaves a TODO comment when a command is unknown, and fills it on a later run', () => {
     const r1 = mergeInstructionFile(null, MINI, 'claude', V, NAME, { commands: { stack: 'unknown' } });
-    expect(r1.content).toContain('| Build | <!-- TODO: add build command --> |');
+    expect(r1.content).toContain('| Build | TODO: not detected \u2014 fill in the build command |');
     expect(r1.content).not.toContain('{{');
     const r2 = mergeInstructionFile(r1.content, MINI, 'claude', V, NAME, { commands: CMDS });
     expect(r2.action).toBe('merged');
     expect(r2.content).toContain('| Build | `npm run build` |');
-    expect(r2.content).not.toContain('TODO: add');
+    expect(r2.content).not.toContain('TODO: not detected');
   });
 
   it('never overwrites a user-edited command row', () => {
@@ -412,10 +413,66 @@ describe('mergeInstructionFile — (d) broken markers', () => {
   });
 });
 
+describe('mergeInstructionFile — conditional (when=) sections', () => {
+  const COND: ParsedTemplate = {
+    sections: [
+      ...MINI.sections,
+      { id: 'umbrella', order: 3, required: false, when: 'umbrella', content: '- Nested repos live under `repositories/<org>/<repo>/`.' },
+    ],
+    tail: MINI.tail,
+  };
+
+  it('omits the section when the flag is off', () => {
+    const r = mergeInstructionFile(null, COND, 'claude', V, NAME, { commands: CMDS });
+    expect(r.content).not.toContain('SW:SECTION:umbrella');
+    expect(r.content).not.toContain('Nested repos live under');
+    expect(r.added).not.toContain('umbrella');
+    expect(r.content).toContain('sections="header,loop,tips"');
+  });
+
+  it('renders the section when the flag is on', () => {
+    const r = mergeInstructionFile(null, COND, 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    expect(r.content).toContain('<!-- SW:SECTION:umbrella version="2.0.0" -->');
+    expect(r.content).toContain('Nested repos live under');
+    expect(r.content).toContain('sections="header,loop,tips,umbrella"');
+  });
+
+  it('adds the section on update when the workspace gains repos, and is idempotent', () => {
+    const single = mergeInstructionFile(null, COND, 'claude', V, NAME, { commands: CMDS });
+    const grown = mergeInstructionFile(single.content, COND, 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    expect(grown.action).toBe('merged');
+    expect(grown.added).toEqual(['umbrella']);
+    expect(grown.content).toContain('Nested repos live under');
+    const again = mergeInstructionFile(grown.content, COND, 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    expect(again.action).toBe('unchanged');
+  });
+
+  it('removes the section on update when the workspace becomes single-repo, keeping user content', () => {
+    const umb = mergeInstructionFile(null, COND, 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    const withUser = umb.content + '\n## Mine\n\nkeep me\n';
+    const shrunk = mergeInstructionFile(withUser, COND, 'claude', V, NAME, { commands: CMDS, flags: { umbrella: false } });
+    expect(shrunk.action).toBe('merged');
+    expect(shrunk.removed).toEqual(['umbrella']);
+    expect(shrunk.content).not.toContain('SW:SECTION:umbrella');
+    expect(shrunk.content).not.toContain('Nested repos live under');
+    expect(shrunk.content).toContain('## Mine');
+    expect(shrunk.content).toContain('keep me');
+    const again = mergeInstructionFile(shrunk.content, COND, 'claude', V, NAME, { commands: CMDS, flags: { umbrella: false } });
+    expect(again.action).toBe('unchanged');
+  });
+
+  it('drives the real templates from config.workspace.repos', () => {
+    const on = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    const off = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS });
+    expect(on.content).toContain('Umbrella projects only');
+    expect(off.content).not.toContain('Umbrella projects only');
+  });
+});
+
 describe('fillCommandPlaceholders', () => {
   it('fills only placeholders that are present', () => {
     expect(fillCommandPlaceholders('`{{TEST_CMD}}` and {{LINT_CMD}}', CMDS)).toBe('`npm test` and npm run lint');
-    expect(fillCommandPlaceholders('| Build | `{{BUILD_CMD}}` |', { stack: 'unknown' })).toBe('| Build | <!-- TODO: add build command --> |');
+    expect(fillCommandPlaceholders('| Build | `{{BUILD_CMD}}` |', { stack: 'unknown' })).toBe('| Build | TODO: not detected \u2014 fill in the build command |');
     expect(fillCommandPlaceholders('nothing here', CMDS)).toBe('nothing here');
   });
 });
