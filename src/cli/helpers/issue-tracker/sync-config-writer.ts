@@ -131,7 +131,11 @@ export async function writeSyncConfig(
   logger.log(chalk.gray(`   Auto-sync: enabled`));
   logger.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
   logger.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
-  logger.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning, post_increment_done`));
+  // Only post_increment_done is written (see the config.hooks block above).
+  // Per-task and per-planning sync were dropped in 2.0 — announcing them here
+  // told users work was syncing automatically when nothing fired.
+  logger.log(chalk.gray(`   Hooks: post_increment_done (close_external_issue, sync_to_github_project)`));
+  logger.log(chalk.gray(`   Per-task sync is manual: specweave sync push [incrementId]`));
 }
 
 /**
