@@ -208,6 +208,11 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       // Auto-claim: a single agent needs one command, not claim+done.
       const heldByMe = (task.state.status === 'claimed' || task.state.status === 'blocked') && task.state.by === agent;
       if (!heldByMe) {
+        // Same rule as `claim`: an auto-claim is still a claim, so it starts
+        // the increment. Without this, `task done` (the one-command path the
+        // docs recommend) recorded work against a still-`planned` increment.
+        const autoStarted = ensureIncrementStarted(inc.dir);
+        if (autoStarted && !opts.json) out(autoStarted);
         append('claim', taskId);
         if (!opts.json) out(`Auto-claimed ${taskId} as ${agent}`);
       }

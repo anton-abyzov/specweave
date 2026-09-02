@@ -206,7 +206,9 @@ describe('2.0 closure gate — acceptance criteria are the definition of done', 
     const blocked = sw(root, ['complete', '0001-greet']);
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain('acceptance criteria unchecked');
-    expect(readMeta(incDir).status).toBe('planning');
+    // Still open: `task done` started it (planning → active) and the blocked
+    // `complete` must not have advanced it any further.
+    expect(readMeta(incDir).status).toBe('active');
 
     // --reason is the documented escape hatch and must still work.
     tickAcs(incDir);

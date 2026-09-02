@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as path from 'path';
 
 // Mock dependencies via vi.hoisted + vi.mock (ESM pattern)
@@ -19,7 +19,7 @@ vi.mock('../../../src/utils/execFileNoThrow.js', () => ({
 }));
 
 // Import after mocks are set up
-const { ensureSkillCreator } = await import('../../../src/cli/helpers/init/skill-creator-installer.js');
+const { ensureSkillCreator, SKILL_CREATOR_OPT_IN_ENV } = await import('../../../src/cli/helpers/init/skill-creator-installer.js');
 
 const VSKILL_ARGS = ['install', 'anthropics/skills/skill-creator', '--yes', '--agent', 'claude-code', '--copy'];
 const NPX_ARGS = ['--yes', '--registry', 'https://registry.npmjs.org', '--userconfig', '/dev/null', '--cache', expect.stringContaining('specweave-npm-cache-'), '--ignore-scripts', '--package', 'vskill@^0.5.0', 'vskill', ...VSKILL_ARGS];
@@ -32,8 +32,19 @@ describe('ensureSkillCreator', () => {
   const projectRoot = '/tmp/test-project';
   const expectedLocalPath = path.join(projectRoot, '.claude/skills/skill-creator/SKILL.md');
 
+  const previousOptIn = process.env[SKILL_CREATOR_OPT_IN_ENV];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // The download is opt-in since 2.0; these specs cover the tiers that run
+    // AFTER the gate, so they opt in explicitly. The gate itself is covered by
+    // its own spec below.
+    process.env[SKILL_CREATOR_OPT_IN_ENV] = '1';
+  });
+
+  afterEach(() => {
+    if (previousOptIn === undefined) delete process.env[SKILL_CREATOR_OPT_IN_ENV];
+    else process.env[SKILL_CREATOR_OPT_IN_ENV] = previousOptIn;
   });
 
   it('skips when skill-creator already exists locally', async () => {
@@ -41,7 +52,7 @@ describe('ensureSkillCreator', () => {
 
     const result = await ensureSkillCreator(projectRoot);
 
-    expect(result).toEqual({ installed: false, skipped: true });
+    expect(result).toEqual({ installed: false, skipped: true, reason: 'already-installed' });
     expect(mocks.existsSync).toHaveBeenCalledWith(expectedLocalPath);
     expect(mocks.isCommandAvailable).not.toHaveBeenCalled();
     expect(mocks.execFileNoThrow).not.toHaveBeenCalled();
@@ -52,7 +63,20 @@ describe('ensureSkillCreator', () => {
 
     const result = await ensureSkillCreator(projectRoot);
 
-    expect(result).toEqual({ installed: false, skipped: true });
+    expect(result).toEqual({ installed: false, skipped: true, reason: 'already-installed' });
+    expect(mocks.execFileNoThrow).not.toHaveBeenCalled();
+  });
+
+  // --- Opt-in gate ---
+
+  it('does not reach the network unless the opt-in env var is set', async () => {
+    delete process.env[SKILL_CREATOR_OPT_IN_ENV];
+    mocks.existsSync.mockReturnValue(false);
+
+    const result = await ensureSkillCreator(projectRoot);
+
+    expect(result).toEqual({ installed: false, skipped: true, reason: 'opt-in-required' });
+    expect(mocks.isCommandAvailable).not.toHaveBeenCalled();
     expect(mocks.execFileNoThrow).not.toHaveBeenCalled();
   });
 
