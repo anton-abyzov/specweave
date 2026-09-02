@@ -238,6 +238,8 @@ plugins/**/lib/integrations/**/*.js
 plugins/**/lib/integrations/**/*.js.map
 plugins/**/lib/integrations/**/*.d.ts
 plugins/**/lib/integrations/**/*.d.ts.map
+# esbuild emits an empty <name>.d.js next to every transpiled .d.ts
+plugins/**/lib/**/*.d.js
 
 # Compiled TypeScript files in src/ (should only exist in dist/)
 # TypeScript outDir is ./dist, so .js files in src/ are build artifacts
