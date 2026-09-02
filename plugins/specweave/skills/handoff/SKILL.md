@@ -27,7 +27,7 @@ spec ACs, decisions, git diff) — any agent from any vendor resumes from it.
 
 ## What is written
 
-- `.specweave/increments/<id>/handoff.md` (+ `handoff.diff` with the full uncommitted diff, gitignored) — the single location; `.specweave/state/handoff-latest.txt` points at it.
+- `.specweave/increments/<id>/handoff.md` (+ `handoff.diff` with the full uncommitted diff) — the single location; `.specweave/state/handoff-latest.txt` points at it.
 - Sections: **Where I left off · Done / Pending (ledger table) · Decisions · Files touched · Next steps · Resume**. Header line = agent id, branch @ sha, uncommitted count, redaction count, active claims.
 - Secrets are scrubbed heuristically — review before sharing. Nothing is committed for you; commit `handoff.md` if the next agent works from another clone.
 

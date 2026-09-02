@@ -20,7 +20,9 @@ async function getIssueNumberFromMetadata(incrementsDir, featureId, userStoryId)
     }
     const oldFormat = metadata?.github?.issues;
     if (Array.isArray(oldFormat)) {
-      const entry = oldFormat.find((i) => i.userStory === userStoryId);
+      const entry = oldFormat.find(
+        (i) => i.userStory === userStoryId
+      );
       if (entry?.number) return entry.number;
     }
     return null;
