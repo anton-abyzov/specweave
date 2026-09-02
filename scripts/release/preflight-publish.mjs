@@ -54,10 +54,29 @@ try {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, npm_config_ignore_scripts: 'true' }, // no nested hooks
   });
-  // Some npm versions print a notice before the JSON payload; take the array.
+  // npm prints notices around the JSON payload, and those notices can contain
+  // brackets, so lastIndexOf(']') overshoots the array and JSON.parse then
+  // reports trailing content. Scan for the bracket that actually closes the
+  // array, tracking string literals and escapes.
   const start = raw.indexOf('[');
-  const end = raw.lastIndexOf(']');
-  if (start === -1 || end === -1) throw new Error(`no JSON array in npm pack output:\n${raw}`);
+  if (start === -1) throw new Error(`no JSON array in npm pack output:\n${raw}`);
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let end = -1;
+  for (let i = start; i < raw.length; i++) {
+    const ch = raw[i];
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\') { escaped = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '[' || ch === '{') depth++;
+    else if (ch === ']' || ch === '}') {
+      depth--;
+      if (depth === 0) { end = i; break; }
+    }
+  }
+  if (end === -1) throw new Error(`unterminated JSON array in npm pack output:\n${raw}`);
   entries = new Set(JSON.parse(raw.slice(start, end + 1))[0].files.map((f) => f.path));
 } catch (err) {
   console.error('[preflight] `npm pack --dry-run --json` failed:');
