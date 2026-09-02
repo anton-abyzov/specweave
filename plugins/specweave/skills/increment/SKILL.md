@@ -32,11 +32,14 @@ confirmation. Do not create files, do not implement, until the plan is approved.
 3. **Create the folder** — the CLI owns id allocation (atomic, retried):
    ```
    specweave create-increment --auto-id --name "<kebab-slug>" --title "<Title>" \
-     --description "<one line>" --project "<project id from config>" [--type feature|bug|hotfix|refactor]
+     --description "<one line>" --project "<project id from config>" \
+     [--type feature|bug|hotfix|refactor] [--supersedes <old-id>]
    ```
-   Superseding an older increment (`--supersedes <old-id>` once the CLI ships it): create the
-   new one, then `specweave abandon <old-id> --reason "superseded by <new-id>"` and name the
-   old id in the new spec's Problem section.
+   Superseding an older increment: pass `--supersedes <old-id>`. That one command abandons the
+   old increment with `closeReason: "superseded by <new-id>"` and records `supersedes` on the new
+   one — do not split it into two steps. Name the old id in the new spec's Problem section.
+   No CLI: create the folder by hand, put `"supersedes": "<old-id>"` in the new `metadata.json`
+   and set the old one to `"status": "abandoned"` with the same `closeReason`.
 4. **Write `spec.md`** — one evolving document, these sections:
 
    ```markdown
