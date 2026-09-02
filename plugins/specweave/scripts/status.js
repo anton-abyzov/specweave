@@ -2,7 +2,7 @@
 /**
  * Instant Increment Status Overview
  *
- * Executed by UserPromptSubmit hook for sw:status
+ * Prints the increment status overview. CLI equivalent: `specweave status`.
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node status.js [--help]

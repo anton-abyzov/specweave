@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference for mapping Jira concepts to SpecWeave architecture
 
-**Source of Truth**: [.specweave/docs/internal/delivery/guides/tool-concept-mapping.md](../../../.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)
+**Source of Truth**: this file (the 1.x `tool-concept-mapping.md` guide was removed in 2.0)
 
 **Last Synced**: 2025-11-04
 
@@ -503,8 +503,8 @@ AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
 
 ## Related Documentation
 
-- **Full Mapping Guide**: [.specweave/docs/internal/delivery/guides/tool-concept-mapping.md](../../../.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)
-- **Jira Sync Skill**: [../skills/jira-sync/SKILL.md](../skills/jira-sync/SKILL.md)
+- **Sync Skill**: [../../skills/sync/SKILL.md](../../skills/sync/SKILL.md)
+- **CLI**: `specweave sync push | pull | status | setup`
 
 ---
 
