@@ -761,6 +761,18 @@ program
     await checkDisciplineCommand(options);
   });
 
+// GC command - purge junk from .specweave/state (dry-run by default)
+program
+  .command('gc')
+  .description('Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs')
+  .option('-y, --yes', 'Actually delete (default is dry-run)')
+  .option('--json', 'Output as JSON')
+  .option('--project-root <path>', 'Project root directory')
+  .action(async (options) => {
+    const { gcCommand } = await import('../dist/src/cli/commands/gc.js');
+    await gcCommand(options);
+  });
+
 // QA command - Quality assessment
 program
   .command('qa <increment-id>')
