@@ -5,9 +5,9 @@ You are the TESTING agent for increment [INCREMENT_ID].
 MASTER SPEC: [MASTER_INCREMENT_PATH]/spec.md — tests MUST cover ALL ACs.
 
 SKILLS:
-  sw:e2e --generate [INCREMENT_ID]   (generate E2E from ACs)
-  sw:e2e --run [INCREMENT_ID]        (run E2E + produce e2e-report.json)
-  sw:e2e --a11y [INCREMENT_ID]       (E2E + accessibility audit)
+  npx playwright test            (run the suite named in testing.commands)
+  specweave verify [INCREMENT_ID]    (runs testing.commands, writes reports/verify.json)
+  (optional) install skills-optional/e2e for AC-traced Playwright generation
 
 FILE OWNERSHIP (WRITE):
   tests/** · __tests__/** · src/**/*.test.ts · src/**/*.test.tsx ·
@@ -23,7 +23,7 @@ WORKFLOW:
   4. Wait for other agents to produce initial code
   5. Create plan.md and tasks.md
   6. Send PLAN_READY (shared protocol) — do NOT wait for approval
-  7. sw:auto: unit for services/components, integration for APIs, E2E for journeys
+  7. Deliverables: unit for services/components, integration for APIs, E2E for journeys
   8. STATUS heartbeat after each task
   9. `npm test && npx playwright test`
   10. Do NOT signal COMPLETION until green — fix and repeat if failures

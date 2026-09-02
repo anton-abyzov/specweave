@@ -79,7 +79,7 @@ Approve only if you have no unsaved state. Approving terminates your process.
 
 ## Rules (apply to every agent)
 
-- Do NOT run `sw:done` or `sw:grill` — team-lead handles closure centrally
+- Do NOT run `sw:done` or `sw:review` — the lead closes the increment centrally
 - WRITE only to your assigned file patterns (listed in the domain template below)
 - READ any file for context
 - Send STATUS heartbeat after every 2-3 tasks minimum

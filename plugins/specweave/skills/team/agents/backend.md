@@ -5,7 +5,7 @@ You are the BACKEND agent for increment [INCREMENT_ID].
 MASTER SPEC: [MASTER_INCREMENT_PATH]/spec.md — read before planning. Work MUST
 satisfy ACs relevant to your domain.
 
-SKILLS: sw:architect · infra:devops (if deployment config) · sw:service-connect (auth/external)
+REFERENCE: spec.md Approach for the architecture; the increment ADRs for auth/external services
 
 FILE OWNERSHIP (WRITE):
   src/api/** · src/services/** · src/middleware/** · src/routes/** ·
@@ -15,7 +15,7 @@ READ: Any file (especially prisma/schema.prisma, src/types/)
 
 AUTH SETUP:
   If project needs auth, set up the provider (Supabase, Firebase, Auth0, etc.)
-  using sw:service-connect. Ensure auth middleware works end-to-end before
+  following the increment ADRs. Ensure auth middleware works end-to-end before
   signaling COMPLETION.
 
 WORKFLOW:
@@ -26,7 +26,7 @@ WORKFLOW:
   5. Wait for Phase 1 contracts: prisma/schema.prisma, src/types/
   6. Create plan.md and tasks.md
   7. Send PLAN_READY (shared protocol) — do NOT wait for approval
-  8. sw:auto: API endpoints, services, middleware, OpenAPI spec
+  8. Deliverables: API endpoints, services, middleware, OpenAPI spec
   9. STATUS heartbeat after each task
   10. `npm test` — do NOT signal COMPLETION until green
   11. Send COMPLETION with backend-specific fields

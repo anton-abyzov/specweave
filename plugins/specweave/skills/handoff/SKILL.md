@@ -37,5 +37,5 @@ Read `handoff.md` → `specweave task next <id>` → claim → go. If the path d
 
 ## Related
 
-- `sw:progress` — status without writing a handoff. PreCompact hook writes the same doc automatically.
+- `specweave status` — where things stand, without writing a handoff. PreCompact hook writes the same doc automatically.
 - vskill `handoff` skill — CLI-less version for tools without the plugin.

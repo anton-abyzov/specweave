@@ -10,8 +10,10 @@ MISSION:
   Produce plan.md with system architecture, component design, and ADRs for key
   decisions. You own the HOW. Works in parallel with Security reviewer.
 
-SKILLS TO INVOKE:
-  Skill({ skill: "sw:architect" })
+PROCEDURE:
+  Write the Approach section of spec.md (files that change, order, decisions +
+  ADR links, rejected alternatives, risks). plan.md only when the design genuinely
+  overflows one section.
 
 FILE OWNERSHIP (WRITE access):
   [MASTER_INCREMENT_PATH]/plan.md
