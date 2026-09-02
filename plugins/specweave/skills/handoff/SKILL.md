@@ -28,7 +28,7 @@ spec ACs, decisions, git diff) — any agent from any vendor resumes from it.
 ## What is written
 
 - `.specweave/increments/<id>/handoff.md` (+ `handoff.diff` with the full uncommitted diff) — the single location; `.specweave/state/handoff-latest.txt` points at it.
-- Sections: **Where I left off · Done / Pending (ledger table) · Decisions · Files touched · Next steps · Resume**. Header line = agent id, branch @ sha, uncommitted count, redaction count, active claims.
+- Sections: **Where I left off · Done / Pending (ledger table) · Decisions · Files touched · Next steps · Resume**, ending with the `Doc format v2` marker. Header line = agent id, branch @ sha, uncommitted count, redaction count, active claims. The doc format is specified once, in the standalone `sw-handoff` skill (`skills/sw-handoff/SKILL.md`) — read it there when writing or checking a handoff by hand.
 - Secrets are scrubbed heuristically — review before sharing. Nothing is committed for you; commit `handoff.md` if the next agent works from another clone.
 
 ## Resuming from a handoff
@@ -38,4 +38,4 @@ Read `handoff.md` → `specweave task next <id>` → claim → go. If the path d
 ## Related
 
 - `sw:progress` — status without writing a handoff. PreCompact hook writes the same doc automatically.
-- vskill `handoff` skill — CLI-less version for tools without the plugin.
+- `skills/sw-handoff/SKILL.md` — the standalone, CLI-less version (vskill: `npx vskill install anton-abyzov/specweave/sw-handoff`) and the single source of truth for the document format.
