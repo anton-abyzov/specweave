@@ -153,13 +153,11 @@ Commands are shown as `sw:<name>`. How you invoke them depends on your AI tool:
 | `sw:done 0001` | Close increment (validates gates) |
 | `sw:progress` | Show task completion status |
 | `sw:validate 0001` | Quality check before closing |
-| `sw:progress-sync` | Sync tasks.md with reality |
+| `sw:sync` | Sync increments with GitHub/Jira/ADO |
 | `sw:sync-docs update` | Sync to living docs |
-| `sw-github:sync 0001` | Sync increment to GitHub issue |
-| `sw-jira:sync 0001` | Sync to Jira |
-| `sw-ado:sync 0001` | Sync to Azure DevOps |
-| `sw:sync-setup` | Connect GitHub/Jira/ADO integration |
-| `sw:import` | Import issues from external tools |
+| `specweave sync push 0001` | Push increment to the configured tracker |
+| `specweave sync setup` | Connect GitHub/Jira/ADO integration |
+| `specweave sync pull --create-increments` | Import issues from external tools |
 <!-- /SECTION -->
 
 ---
@@ -188,8 +186,7 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 1. Update tasks.md: `[ ] pending` → `[x] completed`
 2. Update spec.md ACs if satisfied: `[ ] AC` → `[x] AC`
 3. Review code quality: check for duplication, readability, performance issues (Claude Code: `/simplify`)
-4. Run `sw:progress-sync`
-5. Run `sw-github:sync <id>` (if GitHub configured)
+4. Run `specweave sync push <id>` (if a tracker is configured)
 
 **After all ACs for a User Story are done:**
 - Run `sw:sync-docs update`
@@ -197,7 +194,7 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **After increment completion:**
 1. `sw:validate <id>`
 2. `sw:sync-docs update`
-3. `sw-github:close-issue <id>`
+3. `specweave sync push <id>`
 
 **Session start:**
 1. `specweave jobs` (check background jobs)
@@ -218,20 +215,16 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 |-------|----------|---------------|
 | **Source** | tasks.md + spec.md | Edit directly |
 | **Derived** | .specweave/docs/internal/specs/ | `sw:sync-docs update` |
-| **Mirror** | GitHub/Jira/ADO | `sw-github:sync`, `sw-jira:sync`, `sw-ado:sync` |
+| **Mirror** | GitHub/Jira/ADO | `specweave sync push <id>` |
 
-**Update order**: ALWAYS tasks.md/spec.md FIRST → progress-sync → sync-docs → external tools
+**Update order**: ALWAYS tasks.md/spec.md FIRST → `sw:sync-docs` → `specweave sync push`
 
 ### Sync Commands
 
 | Command | When to Run |
 |---------|-------------|
-| `sw:progress-sync` | After editing tasks.md |
+| `specweave sync push <id>` | After editing tasks.md |
 | `sw:sync-docs update` | After US complete |
-| `sw-github:sync <id>` | After each task |
-| `sw-github:close-issue <id>` | On increment done |
-| `sw-jira:sync <id>` | After each task |
-| `sw-ado:sync <id>` | After each task |
 <!-- /SECTION -->
 
 ---
@@ -432,9 +425,9 @@ specweave context projects
 | Issue | Fix |
 |-------|-----|
 | Commands not working (non-Claude) | Read `plugins/specweave/commands/<name>.md`, follow manually |
-| GitHub/Jira not updating | `sw:progress-sync` → `sw:sync-docs update` → `sw-github:sync <id>` |
+| GitHub/Jira not updating | `specweave sync status` → `specweave sync push <id>` |
 | .md files in project root | `mv *.md .specweave/increments/<current>/reports/` |
-| Progress % wrong | Update tasks.md manually or `sw:progress-sync` |
+| Progress % wrong | Update tasks.md manually or `specweave sync push <id>` |
 | Tool crashes on start | Load only active increment's spec.md + tasks.md, not entire docs/ |
 | Missing **Project**: field | `specweave context projects`, add `**Project**:` to every US |
 | Skills not activating (non-Claude) | Expected — read SKILL.md from `plugins/specweave*/skills/` |

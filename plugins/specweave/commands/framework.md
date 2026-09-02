@@ -457,8 +457,7 @@ SpecWeave works with multiple AI coding assistants:
 - `sw:sync-docs update` - Update living docs from completed increments
 
 ### External Platform Sync
-- `sw-github:sync` - Bidirectional GitHub sync
-- `sw-jira:sync` - Bidirectional Jira sync
+- `sw:sync` - GitHub / Jira / ADO sync (`specweave sync push|pull|status|setup`)
 
 ## Common Questions
 

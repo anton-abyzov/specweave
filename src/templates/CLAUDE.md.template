@@ -12,7 +12,7 @@
 
 **"SKILL FIRST" is mandatory** — "simple", "quick", "basic" are NOT opt-out phrases. The ONLY exception: user explicitly says "don't create an increment" or similar. Perceived simplicity never overrides hook instructions.
 
-**Setup actions are NOT implementation** — "connect github", "setup sync", "import issues" → route to the matching setup skill (`sw:sync-setup`, `sw:import`, `sw:progress-sync`), NOT `/sw:increment`.
+**Setup actions are NOT implementation** — "connect github", "setup sync", "import issues" → route to `sw:sync` (`specweave sync setup|pull|push`), NOT `/sw:increment`.
 <!-- /SECTION -->
 
 <!-- SECTION:header required -->
@@ -68,7 +68,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 **NOT opt-out phrases**: "simple" | "quick" | "basic" | "small" — these still require `/sw:increment`
 
-**Setup/config requests bypass auto-detection** → route directly to the matching skill (e.g., `sw:sync-setup`, `sw:import`)
+**Setup/config requests bypass auto-detection** → route directly to the matching skill (e.g., `sw:sync`)
 <!-- /SECTION -->
 
 <!-- SECTION:metarule required -->
@@ -147,10 +147,9 @@ Good: npm run build → node script.js → Success
 | `/sw:cancel-auto` | EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
-| `/sw:progress-sync` | Sync progress to all external tools |
-| `/sw-github:push` | Push progress to GitHub |
-| `/sw:sync-setup` | Connect GitHub/Jira/ADO integration |
-| `/sw:import` | Import issues from external tools |
+| `/sw:sync` | Sync with GitHub/Jira/ADO (push, pull, status, setup) |
+| `specweave sync setup` | Connect GitHub/Jira/ADO integration |
+| `specweave sync pull --create-increments` | Import issues from external tools |
 
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 
@@ -213,7 +212,7 @@ Before CLI tools, check existing config (`grep -q` only — never display values
 <!-- SECTION:syncing -->
 ## External Sync
 
-Primary: `/sw:progress-sync`. Individual: `/sw-github:push`, `/sw-github:close`. Mapping: Feature→Milestone | Story→Issue | Task→Checkbox.
+Primary: `specweave sync push`. See `/sw:sync`. Mapping: Feature→Milestone | Story→Issue | Task→Checkbox.
 <!-- /SECTION -->
 
 <!-- SECTION:testing -->
@@ -268,7 +267,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 |-------|-----|
 | Skills missing | Restart Claude Code |
 | Plugins outdated | `specweave refresh-plugins` |
-| Out of sync | `/sw:sync-progress` |
+| Out of sync | `specweave sync push` |
 | Session stuck | `rm -f .specweave/state/*.lock` + restart |
 | npm E401 on update | `npm i -g specweave --registry https://registry.npmjs.org --userconfig /dev/null` |
 <!-- /SECTION -->

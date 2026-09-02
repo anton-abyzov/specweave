@@ -175,7 +175,7 @@ References updated: 7
 💡 Next steps:
   1. Review the changes
   2. git add . && git commit -m "reconcile: fix ID collisions"
-  3. Run sw-github:sync or sw-jira:sync to update external tools
+  3. Run `specweave sync push` to update external tools
 ```
 
 ### Example 2: Dry-Run Preview
@@ -326,7 +326,7 @@ Warning: Could not update GitHub milestone
   Milestone "FS-001E" not found on remote
 
 The increment was renumbered locally.
-Run sw-github:sync to recreate the milestone.
+Run `specweave sync push` to recreate the milestone.
 ```
 
 ## Reconcile Report Format
@@ -414,14 +414,14 @@ The reconcile command should:
 - `sw:fix-duplicates` - Remove actual duplicates (same increment in multiple locations)
 - `sw:status` - View all increments
 - `sw:sync-docs` - Sync living docs after reconciliation
-- `sw-github:sync` - Update GitHub references after reconciliation
+- `sw:sync` - Update external references after reconciliation
 
 ## Best Practices
 
 1. **Always run after multi-branch merge** - Make it a habit
 2. **Use dry-run first** - Preview changes before applying
 3. **Commit the reconciliation** - The renumbering should be a separate commit
-4. **Sync external tools** - Run `sw-github:sync` or `sw-jira:sync` after reconcile
+4. **Sync external tools** - Run `specweave sync push` after reconcile
 
 ```bash
 # Recommended post-merge workflow
@@ -429,7 +429,7 @@ git merge feature-branch
 sw:reconcile --dry-run    # Preview
 sw:reconcile              # Apply
 git add . && git commit -m "reconcile: fix ID collisions after merge"
-sw-github:sync            # Update external tools
+specweave sync push       # Update external tools
 ```
 
 ## Safety Notes

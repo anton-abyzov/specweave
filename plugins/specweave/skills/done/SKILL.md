@@ -227,7 +227,7 @@ After the CLI completes, display the sync result summary:
 | Issue closure            | OK / SKIPPED              |
 ```
 
-If any operation failed, display: "Run `sw:progress-sync` to retry failed sync operations."
+If any operation failed, display: "Run `specweave sync push <increment-id>` to retry failed sync operations."
 
 **Supplemental closure** (not handled by hooks — run manually if applicable):
 
