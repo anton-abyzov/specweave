@@ -1,5 +1,9 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import {
+  INCREMENT_ROOT_FILES,
+  INCREMENT_SUBFOLDERS,
+} from '../increment/increment-artifacts.js';
 
 /**
  * Increment Structure Validator
@@ -9,7 +13,8 @@ import * as path from 'path';
  *
  * Critical Rules:
  * 1. Only ONE tasks.md file per increment (no tasks-detailed.md, tasks-final.md, etc.)
- * 2. Only core files allowed at root: spec.md, plan.md, tasks.md, metadata.json, README.md
+ * 2. Only the canonical increment-root artifacts are allowed at root
+ *    (INCREMENT_ROOT_FILES in src/core/increment/increment-artifacts.ts)
  * 3. Supporting files go in subdirectories: reports/, scripts/, logs/, diagrams/
  * 4. Unknown root-level files are rejected
  *
@@ -31,23 +36,12 @@ export interface IncrementStructureValidationResult {
 /**
  * Allowed root-level files in an increment directory
  */
-const ALLOWED_ROOT_FILES = new Set([
-  'spec.md',
-  'plan.md',
-  'tasks.md',
-  'metadata.json',
-  'README.md'
-]);
+const ALLOWED_ROOT_FILES = new Set<string>(INCREMENT_ROOT_FILES);
 
 /**
  * Allowed subdirectories in an increment directory
  */
-const ALLOWED_SUBDIRECTORIES = new Set([
-  'reports',
-  'scripts',
-  'logs',
-  'diagrams'
-]);
+const ALLOWED_SUBDIRECTORIES = new Set<string>(INCREMENT_SUBFOLDERS);
 
 /**
  * Validates increment directory structure
