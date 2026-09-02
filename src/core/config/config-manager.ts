@@ -12,11 +12,12 @@ import path from 'path';
 import {
   SpecWeaveConfig,
   DEFAULT_CONFIG,
+  KNOWN_CONFIG_KEYS,
   ValidationResult,
   ValidationError
 } from './types.js';
 import { migrateToWorkspace } from './workspace-migrator.js';
-import { migrateLimits } from './limits-migrator.js';
+import { migrateTo2, buildMigrationNote, unknownKeys, type MigrateResult } from './migrate-to-2.js';
 import { consoleLogger, type Logger } from '../../utils/logger.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 
@@ -70,9 +71,16 @@ export class ConfigManager {
       }
 
       const hadLegacyConfig = this.hasLegacyConfig(parsed);
-      const limitsChanged = migrateLimits(parsed);
-      if (limitsChanged && !hadLegacyConfig) {
+      const fromVersion = typeof parsed.version === 'string' ? parsed.version : '';
+
+      // One migration pass for the whole file (limits included).
+      const migration = migrateTo2(parsed);
+      this.warnUnknownKeys(parsed);
+      if (migration.changed && !hadLegacyConfig) {
         await this.rewriteRaw(parsed);
+      }
+      if (migration.changed) {
+        await this.writeMigrationNote(migration, fromVersion);
       }
 
       // Merge with defaults (for backward compatibility)
@@ -81,12 +89,6 @@ export class ConfigManager {
       // Strip deprecated syncStrategy from umbrella config (removed in v1.0.366)
       if (config.umbrella && 'syncStrategy' in config.umbrella) {
         delete (config.umbrella as Record<string, unknown>).syncStrategy;
-      }
-
-      // Strip sync.mode (2.0): the queued event queue was removed — every
-      // trigger now pushes directly through one SyncThrottle.
-      if (config.sync && 'mode' in config.sync) {
-        delete (config.sync as Record<string, unknown>).mode;
       }
 
       // Auto-migrate legacy umbrella/multiProject/projectMappings → workspace
@@ -137,9 +139,15 @@ export class ConfigManager {
       }
 
       const hadLegacyConfig = this.hasLegacyConfig(parsed);
-      const limitsChanged = migrateLimits(parsed);
-      if (limitsChanged && !hadLegacyConfig) {
+      const fromVersion = typeof parsed.version === 'string' ? parsed.version : '';
+
+      const migration = migrateTo2(parsed);
+      this.warnUnknownKeys(parsed);
+      if (migration.changed && !hadLegacyConfig) {
         this.rewriteRawSync(parsed);
+      }
+      if (migration.changed) {
+        this.writeMigrationNoteSync(migration, fromVersion);
       }
 
       // Merge with defaults
@@ -446,6 +454,42 @@ export class ConfigManager {
     } catch (error: unknown) {
       const err = error as { message?: string };
       this.logger.warn(`Could not persist migrated config: ${err.message || String(error)}`);
+    }
+  }
+
+  /** One warning line naming every top-level key 2.0 does not read. */
+  private warnUnknownKeys(parsed: Record<string, unknown>): void {
+    const unknown = unknownKeys(parsed, KNOWN_CONFIG_KEYS as readonly string[]);
+    if (unknown.length > 0) {
+      this.logger.warn(
+        `config.json: ignoring unknown key(s): ${unknown.join(', ')} — see \`specweave doctor\``,
+      );
+    }
+  }
+
+  private migrationNotePath(): string {
+    return path.join(this.projectRoot, '.specweave', 'state', 'config-migration-2.json');
+  }
+
+  private async writeMigrationNote(migration: MigrateResult, fromVersion: string): Promise<void> {
+    if (migration.removedKeys.length === 0 && migration.renamedKeys.length === 0) return;
+    const notePath = this.migrationNotePath();
+    try {
+      await fs.mkdir(path.dirname(notePath), { recursive: true });
+      await fs.writeFile(notePath, JSON.stringify(buildMigrationNote(migration, fromVersion), null, 2), 'utf-8');
+    } catch {
+      // The note is informational — never fail a config read over it.
+    }
+  }
+
+  private writeMigrationNoteSync(migration: MigrateResult, fromVersion: string): void {
+    if (migration.removedKeys.length === 0 && migration.renamedKeys.length === 0) return;
+    const notePath = this.migrationNotePath();
+    try {
+      mkdirSync(path.dirname(notePath), { recursive: true });
+      writeFileSync(notePath, JSON.stringify(buildMigrationNote(migration, fromVersion), null, 2), 'utf-8');
+    } catch {
+      // The note is informational — never fail a config read over it.
     }
   }
 

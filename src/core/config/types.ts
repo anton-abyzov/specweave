@@ -8,6 +8,7 @@
 
 import type { SyncOrchestrationConfig } from '../types/sync-config.js';
 import type { PluginConfig } from '../types/plugin.js';
+import type { AutoConfig } from '../auto/types.js';
 
 /**
  * Repository provider types
@@ -259,40 +260,9 @@ export interface HookConfiguration {
     close_external_issue?: boolean;
     update_living_docs_first?: boolean;
   };
-  /**
-   * Session-start banner that surfaces plugin/skill update warnings
-   * (increment 0796). The banner runs as a UserPromptSubmit hook on every
-   * Claude Code prompt; results are throttled to once per the configured
-   * window so it never spams the user.
-   */
-  banner?: BannerHookConfig;
 }
 
-export interface BannerHookConfig {
-  /** Disable the session-start banner entirely. Default: false (enabled). */
-  disabled?: boolean;
-  /**
-   * Throttle window in hours between banner re-checks. Allowed range
-   * [1, 168] (1 hour to 1 week). Default: 24.
-   */
-  throttleHours?: number;
-}
 
-/**
- * Documentation configuration
- */
-export interface DocumentationConfig {
-  /** Directories to search for documentation (default: [".specweave/docs"]) */
-  directories?: string[];
-  preview?: {
-    enabled?: boolean;
-    autoInstall?: boolean;
-    port?: number;
-    openBrowser?: boolean;
-    theme?: string;
-    excludeFolders?: string[];
-  };
-}
 
 /**
  * Project metadata
@@ -312,30 +282,6 @@ export interface AdapterConfiguration {
   default: string;
 }
 
-/**
- * Status line configuration
- */
-export interface StatusLineConfiguration {
-  /**
-   * Enable status line display
-   */
-  enabled: boolean;
-
-  /**
-   * Maximum age of cache before showing stale warning (ms)
-   */
-  maxCacheAge: number;
-
-  /**
-   * Width of progress bar (characters)
-   */
-  progressBarWidth: number;
-
-  /**
-   * Maximum length for increment name
-   */
-  maxNameLength: number;
-}
 
 /**
  * Child repo configuration for umbrella mode
@@ -516,87 +462,6 @@ export type GitHubMapping = GitHubProjectMapping;
 export type JiraMapping = JiraProjectMapping;
 export type AdoMapping = AdoProjectMapping;
 
-/**
- * Supported languages for SpecWeave
- * Re-exported here for config type completeness
- */
-export type SupportedLanguage =
-  | 'en'
-  | 'ru'
-  | 'es'
-  | 'zh'
-  | 'de'
-  | 'fr'
-  | 'ja'
-  | 'ko'
-  | 'pt';
-
-/**
- * Translation scope - what gets auto-translated
- *
- * CRITICAL: Translation can ~2x token usage
- * User MUST explicitly opt-in during init
- */
-export interface TranslationScope {
-  /** Auto-translate spec.md, plan.md, tasks.md after creation */
-  incrementSpecs: boolean;
-  /** Auto-translate living docs on update */
-  livingDocs: boolean;
-  /** Auto-translate GitHub/JIRA/ADO issues on sync */
-  externalSync: boolean;
-}
-
-/**
- * Translation configuration
- *
- * Controls automatic translation of SpecWeave content.
- * English is always the source language (for maintainability).
- * User's configured language is the output language.
- */
-export interface TranslationConfiguration {
-  /**
-   * Master switch for auto-translation
-   * When false, user must use sw:translate manually
-   */
-  enabled: boolean;
-
-  /**
-   * Enabled languages for this project
-   * Always includes 'en' as source language
-   */
-  languages: SupportedLanguage[];
-
-  /**
-   * Primary output language for user
-   * This is the language content will be translated TO
-   */
-  primary: SupportedLanguage;
-
-  /**
-   * Translation method
-   * - 'auto': Hooks trigger translation automatically
-   * - 'manual': User must run sw:translate
-   * - 'none': Translation disabled entirely
-   */
-  method: 'auto' | 'manual' | 'none';
-
-  /**
-   * Keep SpecWeave framework terms in English
-   * e.g., increment, spec.md, tasks.md, sw:*
-   */
-  preserveFrameworkTerms: boolean;
-
-  /**
-   * What to auto-translate (only when method='auto')
-   */
-  scope: TranslationScope;
-
-  /**
-   * Keep English originals as .en.md files
-   * Safer option but uses more storage
-   */
-  keepEnglishOriginals: boolean;
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // Workspace Configuration (v3.0 — replaces umbrella + multiProject)
@@ -686,14 +551,17 @@ export interface PlaywrightConfig {
 }
 
 /**
- * Testing configuration
+ * Testing configuration (2.0)
+ *
+ * `mode`     — how tests are written for new work (TDD | test-after | manual | none).
+ * `commands` — the project's verification commands, run in order by
+ *              `specweave verify` (falls back to stack auto-detection when empty).
+ * `coverage` — coverage/pass-rate targets used by the closure validator.
  */
 export interface TestingConfig {
-  defaultTestMode: TestMode;
-  defaultCoverageTarget: number;
-  coverageTargets: CoverageTargets;
-  tddEnforcement?: TDDEnforcement;
-  playwright?: PlaywrightConfig;
+  mode?: TestMode;
+  commands?: string[];
+  coverage?: CoverageTargets;
 }
 
 /**
@@ -707,93 +575,27 @@ export interface LimitsConfig {
   activeIncrements?: number;
 }
 
-/**
- * Global command deduplication configuration (v0.17.18+)
- */
-export interface DeduplicationConfig {
-  enabled?: boolean;
-  windowMs?: number;
-  maxCacheSize?: number;
-  debug?: boolean;
-  cleanupIntervalMs?: number;
-}
+
+
+
+
+
 
 /**
- * Archiving Configuration
+ * Deep-interview policy (2.0).
+ *
+ * 'off'  — never prompt for a structured interview before spec.md.
+ * 'warn' — the planning skill asks the interview questions and notes gaps.
+ *
+ * Enforcement is skill-side only: no hook blocks a write in 2.0.
  */
-export interface ArchivingConfig {
-  keepLast?: number;
-  autoArchive?: boolean;
-  autoArchiveThreshold?: number;
-  archiveAfterDays?: number;
-  preserveActive?: boolean;
-  archiveCompleted?: boolean;
-  archivePatterns?: string[];
-  preserveList?: string[];
-}
+export type DeepInterviewMode = 'off' | 'warn';
 
 /**
- * Living Docs Configuration (v0.21.4+)
- */
-export interface LivingDocsConfig {
-  copyBasedSync?: {
-    enabled?: boolean;
-    autoGenerate?: boolean;
-  };
-  threeLayerSync?: {
-    enabled?: boolean;
-    autoSync?: boolean;
-  };
-}
-
-/**
- * API Documentation Configuration (v1.0.58+)
- */
-export interface ApiDocsConfig {
-  enabled?: boolean;
-  openApiPath?: string;
-  autoGenerateOpenApi?: boolean;
-  generatePostman?: boolean;
-  postmanPath?: string;
-  postmanEnvPath?: string;
-  generateOn?: 'on-increment-done' | 'on-api-change' | 'manual';
-  watchPatterns?: string[];
-  baseUrl?: string;
-}
-
-/**
- * Plugin Auto-Load Configuration (v1.0.140+)
- */
-export interface PluginAutoLoadConfig {
-  enabled?: boolean;
-  suggestOnly?: boolean;
-}
-
-/**
- * Increment Assist Configuration (v1.0.141+)
- */
-export interface IncrementAssistConfig {
-  enabled?: boolean;
-  suggestNewIncrement?: boolean;
-  suggestReopen?: boolean;
-  confidenceThreshold?: number;
-  mandatory?: boolean;
-}
-
-/**
- * Deep Interview Mode Configuration (v1.0.195+)
- */
-export interface DeepInterviewConfig {
-  enabled?: boolean;
-  minQuestions?: number;
-  categories?: Array<'architecture' | 'integrations' | 'ui-ux' | 'performance' | 'security' | 'edge-cases'>;
-}
-
-/**
- * Planning Configuration (v1.0.195+)
+ * Planning configuration
  */
 export interface PlanningConfig {
-  deepInterview?: DeepInterviewConfig;
+  deepInterview?: DeepInterviewMode;
 }
 
 /**
@@ -895,129 +697,13 @@ export interface AdapterConfig {
   [key: string]: any;
 }
 
-/**
- * Context budget level for hook output size
- */
-export type ContextBudgetLevel = 'full' | 'compact' | 'minimal' | 'off';
 
-/**
- * Context budget configuration (v1.0.262+)
- *
- * Controls how much context the UserPromptSubmit hook injects per turn.
- * Reduces "Prompt is too long" errors, especially with image attachments.
- */
-export interface ContextBudgetConfig {
-  /** Base context budget level. Default: 'full' (2500 chars) */
-  level?: ContextBudgetLevel;
-  /** Auto-reduce budget when PreCompact fires (context pressure). Default: true */
-  autoAdapt?: boolean;
-}
 
-/**
- * Grill quality gate configuration
- * Controls whether a grill report is required before increment closure.
- * @since v1.0.337
- */
-export interface GrillConfig {
-  /** Whether grill report is required before closure. Default: true */
-  required?: boolean;
-}
 
-/**
- * Code review quality gate configuration
- * Controls whether a code-review report is required before increment closure
- * and configures the fix loop behavior within sw:done.
- * @since v1.0.646
- */
-export interface CodeReviewConfig {
-  /** Whether code-review report is required before closure. Default: true */
-  required?: boolean;
-  /** Maximum fix-and-rerun iterations in the sw:done pipeline. Default: 3 */
-  maxFixIterations?: number;
-  /** Severity levels that block closure. Default: ["critical", "high", "medium"] */
-  blockingSeverities?: string[];
-}
 
-/**
- * Thinking-budget level for Opus 4.7+ adaptive thinking (0669 Wave 2).
- *
- * - "low" / "medium" / "high" / "xhigh" / "max": adaptive-thinking tiers,
- *   mapped to prompt-hint strength by each skill. "xhigh" is the default
- *   for high-stakes skills (judge-llm, grill).
- * - "legacy": pre-4.7 behavior — passes the retired `thinking` API param
- *   on models that still accept it. Emergency escape hatch only.
- */
-export type ThinkingBudgetLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'legacy';
 
-/**
- * Quality-gate configuration (0669 Wave 2).
- *
- * Governs how SpecWeave's quality gates (judge-llm, grill, PM interview)
- * spend thinking tokens and interpret model confidence.
- */
-export interface QualityConfig {
-  /**
-   * Default thinking-budget tier for 4.7-family skills.
-   * Skills override per-call when a specific tier is required.
-   * @default "xhigh"
-   */
-  thinkingBudget?: ThinkingBudgetLevel;
 
-  /**
-   * Minimum model-reported confidence (0–100) a grill finding must clear
-   * before it blocks closure. Values below the threshold are demoted to
-   * warnings.
-   * @default 50
-   */
-  grillConfidenceThreshold?: number;
 
-  /**
-   * Per-stage token budgets keyed by stage ID
-   * (e.g., "pm.interview", "brainstorm.idea"). Callers read this map to
-   * size their `max_tokens` request field.
-   * @default { "pm.interview": 1500, "brainstorm.idea": 1800 }
-   */
-  tokenBudgets?: Record<string, number>;
-}
-
-/**
- * Prompt-caching configuration (0669 Wave 2).
- *
- * Lists the long-lived project files that should be wrapped in an
- * Anthropic SDK `cache_control: { type: "ephemeral" }` block when
- * building API requests. See `src/core/cache/static-context-loader.ts`.
- */
-export interface CacheConfig {
-  /**
-   * Paths (relative to project root) of static files to include in the
-   * prompt-cache breakpoint. Missing files are silently skipped. The
-   * token `<active>` in a path is expanded to the currently-active
-   * increment ID by the caller when appropriate.
-   * @default ["CLAUDE.md", ".specweave/config.json",
-   *           ".specweave/increments/<active>/spec.md",
-   *           ".specweave/increments/<active>/rubric.md"]
-   */
-  staticContextFiles?: string[];
-}
-
-/**
- * Skill generation configuration (v1.0.XXX+)
- *
- * Controls automatic detection of recurring patterns from living docs
- * and on-demand generation of project-local skills.
- */
-export interface SkillGenConfig {
-  /** Pattern detection trigger: "on-close" runs on increment completion, "off" disables. Default: "on-close" */
-  detection?: 'on-close' | 'off';
-  /** Whether to print suggestions when patterns qualify. Default: true */
-  suggest?: boolean;
-  /** Minimum number of increments a pattern must appear in before qualifying. Default: 3 */
-  minSignalCount?: number;
-  /** Pattern IDs permanently excluded from suggestions (still visible in sw:skill-gen). Default: [] */
-  declinedSuggestions?: string[];
-  /** Maximum number of signals to retain (prunes lowest-confidence when exceeded). Default: 100 */
-  maxSignals?: number;
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // End consolidated interfaces
@@ -1027,144 +713,84 @@ export interface SkillGenConfig {
  * Main SpecWeave configuration
  */
 export interface SpecWeaveConfig {
-  /**
-   * Config version for migration support
-   */
+  /** Config schema version. 2.0 configs carry "2.0". */
   version: string;
 
-  /**
-   * Project display language
-   * Content will be translated TO this language if translation is enabled
-   * @default 'en'
-   */
-  language?: SupportedLanguage;
-
-  /**
-   * Translation configuration
-   * Controls automatic translation of specs, living docs, and external sync
-   *
-   * CRITICAL: Translation can ~2x token usage
-   * User MUST explicitly opt-in during init
-   */
-  translation?: TranslationConfiguration;
-
-  /**
-   * Project metadata (optional, for backward compatibility)
-   */
+  /** Project metadata (name is the only field SpecWeave itself reads). */
   project?: ProjectMetadata;
 
-  /**
-   * Adapter configuration (optional, for backward compatibility)
-   */
+  /** Which instruction-file flavour this project generates (claude | codex | generic). */
   adapters?: AdapterConfiguration;
 
-  /**
-   * Hook configuration (optional)
-   */
-  hooks?: HookConfiguration;
+  /** Multi-repo workspace: the umbrella repo + its child repos. */
+  workspace?: WorkspaceConfig;
+
+  /** Test mode, verification commands and coverage targets. */
+  testing?: TestingConfig;
+
+  /** Advisory WIP note (never blocks). */
+  limits?: LimitsConfig;
+
+  /** Planning policy — deep-interview mode. */
+  planning?: PlanningConfig;
+
+  /** Autonomous-run settings (`specweave auto`). */
+  auto?: AutoConfig;
+
+  /** External tracker sync (GitHub first-class; Jira/ADO community). */
+  sync?: SyncConfiguration;
 
   /**
-   * Repository provider configuration
+   * Living documentation generation.
+   *
+   * `false` (default) — never generated.
+   * `'onDone'`        — regenerated when an increment is completed.
    */
+  livingDocs?: false | 'onDone';
+
+  // ───────────────────────────────────────────────────────────────────
+  // Kept beyond the advertised 2.0 surface because real code still reads
+  // them. Each line names the reader that keeps the key alive; delete the
+  // key when its reader goes.
+  // ───────────────────────────────────────────────────────────────────
+
+  /** core/lsp/lsp-config.ts, core/lazy-loading/llm-plugin-detector.ts */
+  lsp?: { enabled?: boolean };
+
+  /** cli/commands/branch-name.ts, core/cicd/config-loader.ts */
+  cicd?: CiCdConfig;
+
+  /** sync/external-issue-auto-creator.ts, cli/commands/sync-health.ts */
   repository?: RepositoryConfiguration;
 
   /**
-   * Issue tracker configuration
+   * 1.x issue-tracker block. Still written by the `specweave sync setup`
+   * wizard (cli/helpers/issue-tracker/**) and read by the Jira/ADO paths.
+   * Not part of the 2.0 surface; collapsing it into `sync.{github,jira,ado}`
+   * is its own increment.
    */
   issueTracker?: IssueTrackerConfiguration;
 
   /**
-   * Sync configuration
+   * Closure-time external-tracker flags (close_github_issue, …).
+   * Read by core/hooks/LifecycleHookDispatcher.ts and the sync gap reports.
+   * The living-docs flags were removed in 2.0 — see `livingDocs`.
    */
-  sync?: SyncConfiguration;
+  hooks?: HookConfiguration;
 
-  /**
-   * Status line configuration (optional)
-   */
-  statusLine?: StatusLineConfiguration;
-
-  /**
-   * Unified workspace configuration (v3.0+)
-   * Replaces umbrella, multiProject, and projectMappings
-   */
-  workspace?: WorkspaceConfig;
-
-  /**
-   * Umbrella/multi-repo configuration (optional)
-   * @deprecated Use `workspace` instead. Will be auto-migrated on load.
-   */
-  umbrella?: UmbrellaConfig;
-
-  /**
-   * Project mappings for cross-project targeting (v0.34.0+)
-   * @deprecated Use `workspace.repos[].sync` instead. Will be auto-migrated on load.
-   */
-  projectMappings?: ProjectMappings;
-
-  // Fields consolidated from src/core/types/config.ts (0188)
-
-  /** Plugin configuration */
+  /** adapters/claude/adapter.ts (`plugins.enabled` list). */
   plugins?: PluginConfig;
 
-  /**
-   * Multi-project configuration (v1.0.0+)
-   * @deprecated Use `workspace` instead. Will be auto-migrated on load.
-   */
+  // ───────────────────────────────────────────────────────────────────
+  // Legacy shapes. Read once by the migrator, then removed from disk.
+  // ───────────────────────────────────────────────────────────────────
+
+  /** @deprecated migrated to `workspace` on load */
+  umbrella?: UmbrellaConfig;
+  /** @deprecated migrated to `workspace` on load */
   multiProject?: MultiProjectConfig;
-
-  /** Testing configuration */
-  testing?: TestingConfig;
-
-  /** WIP limits configuration */
-  limits?: LimitsConfig;
-
-  /** Global command deduplication configuration (v0.17.18+) */
-  deduplication?: DeduplicationConfig;
-
-  /** Archiving configuration for increment management */
-  archiving?: ArchivingConfig;
-
-  /** Living docs configuration (v0.21.4+) */
-  livingDocs?: LivingDocsConfig;
-
-  /** API documentation configuration (v1.0.58+) */
-  apiDocs?: ApiDocsConfig;
-
-  /** Documentation configuration — directories, preview (v1.0.258+) */
-  documentation?: DocumentationConfig;
-
-  /** Plugin auto-load configuration (v1.0.140+) */
-  pluginAutoLoad?: PluginAutoLoadConfig;
-
-  /** Increment assist configuration (v1.0.141+) */
-  incrementAssist?: IncrementAssistConfig;
-
-  /** Planning configuration including deep interview mode (v1.0.195+) */
-  planning?: PlanningConfig;
-
-  /** CI/CD configuration (v1.0.231+) */
-  cicd?: CiCdConfig;
-
-  /** Context budget configuration for hook output size (v1.0.262+) */
-  contextBudget?: ContextBudgetConfig;
-
-  /** Grill quality gate configuration (v1.0.337+) */
-  grill?: GrillConfig;
-
-  /** Code review quality gate configuration (v1.0.646+) */
-  codeReview?: CodeReviewConfig;
-
-  /** Skill generation configuration — pattern detection + on-demand skill creation (v1.0.XXX+) */
-  skillGen?: SkillGenConfig;
-
-  /** Quality-gate configuration — thinking budget, grill threshold, per-stage token budgets (0669 Wave 2) */
-  quality?: QualityConfig;
-
-  /** Prompt-caching configuration — list of static files to wrap in cache_control blocks (0669 Wave 2) */
-  cache?: CacheConfig;
-
-  /** Allow additional properties for forward compatibility */
-  [key: string]: any;
+  /** @deprecated migrated to `workspace.repos[].sync` on load */
+  projectMappings?: ProjectMappings;
 }
 
 /**
@@ -1174,105 +800,50 @@ export interface SpecWeaveConfig {
 export type SpecweaveConfig = SpecWeaveConfig;
 
 /**
- * Default configuration values
+ * The exact top-level keys a 2.0 config may carry.
+ * Anything else produces one warning line on load (see config-manager).
+ */
+export const KNOWN_CONFIG_KEYS = [
+  'version',
+  'project',
+  'adapters',
+  'workspace',
+  'testing',
+  'limits',
+  'planning',
+  'auto',
+  'sync',
+  'livingDocs',
+  'lsp',
+  'cicd',
+  'repository',
+  'issueTracker',
+  'hooks',
+  'plugins',
+] as const;
+
+/**
+ * Default configuration values (2.0)
  */
 export const DEFAULT_CONFIG: SpecWeaveConfig = {
   version: '2.0',
-  language: 'en',
-  translation: {
-    enabled: false,
-    languages: ['en'],
-    primary: 'en',
-    method: 'auto',
-    preserveFrameworkTerms: true,
-    scope: {
-      incrementSpecs: false,
-      livingDocs: false,
-      externalSync: false,
-    },
-    keepEnglishOriginals: false,
-  },
   adapters: {
     default: 'claude',
   },
-  repository: {
-    provider: 'local',
-  },
-  issueTracker: {
-    provider: 'none',
-  },
   testing: {
-    defaultTestMode: 'TDD',
-    defaultCoverageTarget: 90,
-    coverageTargets: {
+    mode: 'TDD',
+    commands: [],
+    coverage: {
       unit: 95,
       integration: 90,
       e2e: 100,
-    },
-    playwright: {
-      preferCli: true,
     },
   },
   limits: {
     activeIncrements: 3,
   },
-  deduplication: {
-    enabled: true,
-    windowMs: 1000,
-    maxCacheSize: 1000,
-    debug: false,
-    cleanupIntervalMs: 60000,
-  },
-  archiving: {
-    keepLast: 5,
-    autoArchive: false,
-    autoArchiveThreshold: 10,
-    archiveAfterDays: 60,
-    preserveActive: true,
-    archiveCompleted: false,
-    archivePatterns: [],
-    preserveList: [],
-  },
-  livingDocs: {
-    copyBasedSync: {
-      enabled: true,
-      autoGenerate: true,
-    },
-    threeLayerSync: {
-      enabled: true,
-      autoSync: true,
-    },
-  },
-  apiDocs: {
-    enabled: false,
-    openApiPath: 'openapi.yaml',
-    autoGenerateOpenApi: true,
-    generatePostman: true,
-    postmanPath: 'postman-collection.json',
-    postmanEnvPath: 'postman-environment.json',
-    generateOn: 'on-increment-done',
-    watchPatterns: [
-      '**/routes/**',
-      '**/controllers/**',
-      '**/api/**',
-      '**/endpoints/**',
-    ],
-    baseUrl: 'http://localhost:3000',
-  },
-  hooks: {
-    post_task_completion: {
-      sync_tasks_md: true,
-      external_tracker_sync: true,
-    },
-    post_increment_planning: {
-      auto_create_github_issue: true,
-      sync_living_docs: true,
-    },
-    post_increment_done: {
-      sync_living_docs: true,
-      sync_to_github_project: true,
-      close_github_issue: true,
-    },
+  planning: {
+    deepInterview: 'off',
   },
   sync: {
     enabled: false,
@@ -1281,71 +852,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     includeStatus: true,
     autoApplyLabels: true,
   },
-  statusLine: {
-    enabled: true,
-    maxCacheAge: 30000,
-    progressBarWidth: 8,
-    maxNameLength: 30,
-  },
-  pluginAutoLoad: {
-    enabled: true,
-    suggestOnly: true,
-  },
-  incrementAssist: {
-    enabled: true,
-    suggestNewIncrement: true,
-    suggestReopen: true,
-    confidenceThreshold: 0.7,
-    mandatory: true,
-  },
-  planning: {
-    deepInterview: {
-      enabled: false,
-      minQuestions: 5,
-      categories: [
-        'architecture',
-        'integrations',
-        'ui-ux',
-        'performance',
-        'security',
-        'edge-cases',
-      ],
-    },
-  },
-  cicd: {
-    pushStrategy: 'direct',
-    git: {
-      branchPrefix: 'sw/',
-      targetBranch: 'main',
-      deleteOnMerge: true,
-      includeExternalKey: false,
-    },
-    autoFix: {
-      enabled: true,
-      maxRetries: 1,
-      allowedBranches: ['develop', 'main'],
-    },
-  },
-  contextBudget: {
-    level: 'full',
-    autoAdapt: true,
-  },
-  quality: {
-    thinkingBudget: 'xhigh',
-    grillConfidenceThreshold: 50,
-    tokenBudgets: {
-      'pm.interview': 1500,
-      'brainstorm.idea': 1800,
-    },
-  },
-  cache: {
-    staticContextFiles: [
-      'CLAUDE.md',
-      '.specweave/config.json',
-      '.specweave/increments/<active>/spec.md',
-      '.specweave/increments/<active>/rubric.md',
-    ],
-  },
+  livingDocs: false,
 };
 
 /**
