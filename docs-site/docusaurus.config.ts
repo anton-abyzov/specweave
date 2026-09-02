@@ -201,6 +201,11 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
+          // Docs root has no index doc — land on the introduction
+          {
+            from: '/docs',
+            to: '/docs/overview/introduction',
+          },
           // Extensible Skills — old paths → new pillar location
           {
             from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills'],

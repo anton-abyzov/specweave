@@ -138,6 +138,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/github-integration', label: 'GitHub Integration'},
         {type: 'doc', id: 'guides/external-tool-sync', label: 'External Tool Sync'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Other AI Tools'},
+        {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Cross-Tool Handoff'},
         {
           type: 'category',
           label: 'Sync Deep Dives',
