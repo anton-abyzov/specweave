@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric reflect-stop detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
+set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -60,7 +60,6 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a hook -d 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a detect-intent -d "Detect SpecWeave intent from a prompt and optionally install plugins"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a evaluate-completion -d "Evaluate whether an auto mode session should be considered complete"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a generate-rubric -d "Generate or refresh the AC-tied rubric.md quality contract at the increment root"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a reflect-stop -d "Extract learnings from session transcript (called by stop hook)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a detect-project -d "Detect project type from files and suggest plugins to install"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resolve-structure -d "[REMOVED] All workspaces now use the repositories/ structure"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a export-skills -d "Export SpecWeave skills to Agent Skills open standard format (agentskills.io)"
@@ -199,7 +198,7 @@ complete -c specweave -n "__fish_seen_subcommand_from status" -l verbose -s v -d
 complete -c specweave -n "__fish_seen_subcommand_from status" -l type -s t -d "Filter by increment type (feature, hotfix, bug, etc.)"
 
 # decision-log
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l hook -d "Filter by hook name (stop-auto, stop-reflect)"
+complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l hook -d "Filter by hook name (e.g. stop-auto)"
 complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l decision -d "Filter by decision type (approve, block)"
 complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l since -d "Filter by time window (1h, 24h, 7d)"
 complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l limit -d "Number of entries to show (default: 20)"
@@ -346,11 +345,6 @@ complete -c specweave -n "__fish_seen_subcommand_from evaluate-completion" -l si
 # generate-rubric
 complete -c specweave -n "__fish_seen_subcommand_from generate-rubric" -l refresh -d "Regenerate from current ACs, overwriting an existing non-template rubric"
 complete -c specweave -n "__fish_seen_subcommand_from generate-rubric" -l silent -d "Minimal output"
-
-# reflect-stop
-complete -c specweave -n "__fish_seen_subcommand_from reflect-stop" -l silent -s s -d "Silent mode - output JSON only"
-complete -c specweave -n "__fish_seen_subcommand_from reflect-stop" -l model -s m -d "Model to use (haiku, sonnet, opus)"
-complete -c specweave -n "__fish_seen_subcommand_from reflect-stop" -l migrate -d "Run migration of old memory files first"
 
 # detect-project
 complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l name -d "Increment name for legacy name-based detection"
