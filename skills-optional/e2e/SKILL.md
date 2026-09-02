@@ -2,9 +2,6 @@
 description: Generate, run, and report Playwright E2E tests traced to spec.md acceptance criteria. Supports accessibility auditing via --a11y. Use when saying "e2e tests", "playwright tests", "run e2e", "generate e2e", "accessibility audit", "a11y test".
 version: 1.0.0
 argument-hint: "--generate|--run|--a11y <increment-id>"
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash
-context: fork
-model: sonnet
 ---
 
 # E2E Testing — Playwright + AC Traceability
@@ -13,7 +10,7 @@ model: sonnet
 
 **Skill Memories**: If `.specweave/skill-memories/e2e.md` exists, read and apply its learnings.
 
-Generate Playwright E2E tests from spec.md acceptance criteria, run them, and produce a structured report that maps pass/fail results to AC-IDs. Consumed by sw:done Gate 2a for automated closure gating.
+Generate Playwright E2E tests from spec.md acceptance criteria, run them, and produce a structured report that maps pass/fail results to AC-IDs. The report is evidence for whatever closure step you run.
 
 ## Modes
 
@@ -172,7 +169,7 @@ Generated E2E tests:
   {TEST_DIR}/us-002.spec.ts (2 ACs: AC-US2-01, AC-US2-02)
 
 Total: 5 tests across 2 files
-Next: Implement test steps, then run with sw:e2e --run <id>
+Next: Implement test steps, then run with e2e --run <id>
 ```
 
 ---
@@ -277,7 +274,7 @@ If not installed:
 @axe-core/playwright is not installed. Install it:
   npm install -D @axe-core/playwright axe-core
 
-Then re-run: sw:e2e --a11y <id>
+Then re-run: e2e --a11y <id>
 ```
 
 ### 6b. Inject A11y Scans
@@ -389,10 +386,10 @@ Default: `['wcag2a', 'wcag2aa', 'wcag21aa']` (covers standard compliance).
 }
 ```
 
-**Consumption by sw:done Gate 2a**:
+**Consuming the report at closure**:
 1. Read `.specweave/increments/<id>/reports/e2e-report.json`
 2. If `summary.failed > 0` → **BLOCK closure**
-3. If report missing → **BLOCK closure** (report must exist after sw:e2e invocation)
+3. If the report is missing, the E2E evidence is absent — re-run before closing.
 4. If `summary.failed === 0` → **PASS gate**
 
 ---
@@ -401,7 +398,7 @@ Default: `['wcag2a', 'wcag2aa', 'wcag21aa']` (covers standard compliance).
 
 | Scenario | Behavior |
 |----------|----------|
-| No spec.md | "spec.md not found at increment path. Run sw:increment first." |
+| No spec.md | "spec.md not found at increment path. Create the increment first." |
 | spec.md with no ACs | "No acceptance criteria found in spec.md — nothing to generate." Exit cleanly. |
 | ACs without GWT format | Generate test stub with `// TODO: implement` comment |
 | Duplicate AC-IDs | Warn, append `-dup1` suffix |

@@ -1,9 +1,6 @@
 ---
 description: Multi-repo release expert - version alignment, semantic versioning, release coordination, dependency management, release waves, RC lifecycle (alpha/beta/rc), brownfield detection, rollback planning. Use for synchronized releases, version alignment, or release strategy.
 version: 1.0.0
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
-context: fork
 ---
 
 # Release Expert
@@ -430,13 +427,13 @@ shared-lib v3.0.0 -> Incompatible (MAJOR change)
 
 ```bash
 # 1. Plan release increment
-sw:increment "0025-product-v3-release"
+specweave create-increment "product-v3-release"
 
 # 2. Execute wave-by-wave
-sw:do
+specweave task next 0025   # then claim / implement / task done
 
 # 3. Complete release
-sw:done 0025
+specweave verify 0025 && specweave complete 0025
 ```
 
 ## Commands
