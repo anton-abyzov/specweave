@@ -15,7 +15,7 @@
  */
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
-import { IncrementStatus } from '../types/increment-metadata.js';
+import { IncrementStatus, migrateLegacyStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 /**
@@ -152,14 +152,14 @@ export function autoTransitionStatus(incrementId, triggerFile) {
             return true;
         }
         // Rule 1: PLANNING → ACTIVE (when tasks.md created AND tasks in-progress)
-        if (currentStatus === IncrementStatus.PLANNING && hasFile(incrementId, TRANSITION_TRIGGERS.TASKS_FILE) && hasInProgressTasks(incrementId)) {
+        if (currentStatus === IncrementStatus.PLANNED && hasFile(incrementId, TRANSITION_TRIGGERS.TASKS_FILE) && hasInProgressTasks(incrementId)) {
             MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
             console.log(`✅ Auto-transitioned ${incrementId}: PLANNING → ACTIVE (tasks in-progress)`);
             return true;
         }
         // Rule 2: BACKLOG → PLANNING (when spec.md created)
         if (currentStatus === IncrementStatus.BACKLOG && hasFile(incrementId, TRANSITION_TRIGGERS.SPEC_FILE)) {
-            MetadataManager.updateStatus(incrementId, IncrementStatus.PLANNING);
+            MetadataManager.updateStatus(incrementId, IncrementStatus.PLANNED);
             console.log(`✅ Auto-transitioned ${incrementId}: BACKLOG → PLANNING (spec.md created)`);
             return true;
         }
@@ -260,7 +260,7 @@ export function shouldTransitionToActive(incrementId) {
             return false;
         }
         // Planning with tasks.md → should transition
-        if (metadata.status === IncrementStatus.PLANNING && hasFile(incrementId, TRANSITION_TRIGGERS.TASKS_FILE)) {
+        if (metadata.status === IncrementStatus.PLANNED && hasFile(incrementId, TRANSITION_TRIGGERS.TASKS_FILE)) {
             return true;
         }
         // Any status with in-progress tasks → should transition
@@ -274,10 +274,14 @@ export function shouldTransitionToActive(incrementId) {
     }
 }
 /**
- * Validate and fix "planned" vs "planning" inconsistency
+ * Rewrite every metadata.json whose `status` is not in the 2.0 vocabulary.
  *
- * Legacy increments may have "planned" status (not in enum).
- * This migrates them to "planning" (valid enum value).
+ * 2.0 canonical statuses are planned | active | paused | completed | abandoned;
+ * 1.x wrote `planning` (and hand edits produced `closed`, `complete`,
+ * `superseded`, …). Left alone, those increments failed `MetadataManager.read`
+ * and disappeared from `specweave status` totals entirely.
+ *
+ * @returns number of metadata.json files rewritten
  */
 export function migrateLegacyStatuses() {
     let migratedCount = 0;
@@ -296,11 +300,11 @@ export function migrateLegacyStatuses() {
             }
             try {
                 const metadata = fs.readJsonSync(metadataPath);
-                // Migrate "planned" → "planning"
-                if (metadata.status === 'planned') {
-                    metadata.status = IncrementStatus.PLANNING;
-                    fs.writeJsonSync(metadataPath, metadata, { spaces: 2 });
-                    console.log(`✅ Migrated ${incrementId}: "planned" → "planning"`);
+                const before = metadata.status;
+                const migration = migrateLegacyStatus(metadata);
+                if (migration.changed) {
+                    fs.writeJsonSync(metadataPath, migration.metadata, { spaces: 2 });
+                    console.log(`✅ Migrated ${incrementId}: "${before}" → "${migration.metadata.status}"`);
                     migratedCount++;
                 }
             }

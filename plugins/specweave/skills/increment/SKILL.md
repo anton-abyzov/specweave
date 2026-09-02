@@ -85,7 +85,9 @@ confirmation. Do not create files, do not implement, until the plan is approved.
 
 ## Rules
 
-- **Never hand-edit `metadata.json` status** — CLI transitions own it.
+- **Never hand-edit `metadata.json` status** — CLI transitions own it. The vocabulary is
+  `planned | active | paused | completed | abandoned`; `create-increment` writes `active`
+  (use `--planned` for backlog work, then `specweave start <id>` when you pick it up).
 - **WIP is advisory.** The CLI prints one note when active increments exceed
   `limits.activeIncrements` (`0` = off). It never blocks; do not invent a cap.
 - **One agent plans.** No planning fan-out — a second opinion on a spec costs more than it adds.
