@@ -82,7 +82,7 @@ Resuming: find the active increment with `specweave status` (or the `NNNN-*` fol
 | Test | `{{TEST_CMD}}` |
 | Lint | `{{LINT_CMD}}` |
 
-If a cell still shows `{{…}}`, fill it from `package.json`/`Makefile` and commit; `specweave verify` runs these rows.
+If a cell still says TODO, fill it in from `package.json`/`Makefile` and commit; `specweave verify` runs these rows.
 
 ## Project notes
 

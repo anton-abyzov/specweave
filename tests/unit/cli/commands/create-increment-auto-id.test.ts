@@ -122,6 +122,34 @@ describe('create-increment --auto-id', () => {
     expect(fs.existsSync(path.join(incrementsPath, '0001-no-name-test'))).toBe(true);
   });
 
+  it('--supersedes abandons the old increment and links the new one', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({ title: 'First Try', projectRoot: tempDir } as any);
+    await createIncrementCommand({ title: 'Second Try', supersedes: '0001', projectRoot: tempDir } as any);
+
+    const oldMeta = JSON.parse(
+      fs.readFileSync(path.join(incrementsPath, '0001-first-try', 'metadata.json'), 'utf-8')
+    );
+    const newMeta = JSON.parse(
+      fs.readFileSync(path.join(incrementsPath, '0002-second-try', 'metadata.json'), 'utf-8')
+    );
+    expect(oldMeta.status).toBe('abandoned');
+    expect(oldMeta.abandonedReason).toContain('Superseded by 0002-second-try');
+    expect(newMeta.supersedes).toBe('0001-first-try');
+  });
+
+  it('--supersedes with an unknown id warns and still creates the increment', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({ title: 'Solo', supersedes: '9999', projectRoot: tempDir } as any);
+    expect(fs.existsSync(path.join(incrementsPath, '0001-solo'))).toBe(true);
+  });
+
   it('errors when no title is given', async () => {
     const { createIncrementCommand } = await import(
       '../../../../src/cli/commands/create-increment.js'

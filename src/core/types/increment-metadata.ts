@@ -131,6 +131,13 @@ export interface IncrementMetadata {
    * closure gate was overridden.
    */
   closeReason?: string;
+
+  /**
+   * Id of the increment this one replaces
+   * (`specweave create-increment "…" --supersedes NNNN`). The superseded
+   * increment is abandoned with a matching `abandonedReason`.
+   */
+  supersedes?: string;
 }
 
 /**
