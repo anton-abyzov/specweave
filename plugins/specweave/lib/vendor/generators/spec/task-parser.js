@@ -33,8 +33,13 @@ export function parseTasksWithUSLinks(tasksPath) {
     try {
         const content = readFileSync(tasksPath, 'utf-8');
         const tasks = {};
-        // Split content into lines for line number tracking
-        const lines = content.split('\n');
+        // Split content into lines for line number tracking.
+        // Windows writes tasks.md with CRLF (git core.autocrlf=true, PowerShell
+        // Set-Content/Out-File) and sometimes a UTF-8 BOM. Splitting on '\n' alone
+        // would leave a trailing '\r' on every line, which none of the `$`-anchored
+        // regexes below can match (JS `.` excludes '\r') — the whole file would
+        // parse as ZERO tasks. Normalize both before splitting.
+        const lines = content.replace(/^\uFEFF/, '').split(/\r?\n/);
         // Regex patterns for task parsing (T-029: Support E suffix for external IDs)
         // Updated: Support 3+ digits for T-XXX and US-XXX (Y2K fix)
         //
