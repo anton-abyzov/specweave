@@ -42,7 +42,9 @@ export function getEnabledProviders(config: any): Array<'github' | 'jira' | 'ado
   };
 
   // Check sync section
-  if (config.sync?.github?.enabled !== false && (config.sync?.github?.enabled || config.repository?.provider === 'github')) {
+  const legacyGitHub = config.sync?.github;
+  const hasGitHubTarget = Boolean(legacyGitHub?.owner && legacyGitHub?.repo);
+  if (legacyGitHub?.enabled !== false && (legacyGitHub?.enabled || hasGitHubTarget || config.repository?.provider === 'github')) {
     add('github');
   }
   if (config.sync?.jira?.enabled || config.issueTracker?.provider === 'jira') {

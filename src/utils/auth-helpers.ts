@@ -159,7 +159,9 @@ export function describeGitHubAuth(auth: GitHubAuth, login?: string | null): str
   if (!auth.token) return 'GitHub token: none (set GITHUB_TOKEN, add it to .env, or run `gh auth login`)';
   const where = auth.origin === 'process.env' || auth.origin === '.env'
     ? `${auth.origin} ${auth.source}`
-    : auth.origin ?? auth.source;
+    : auth.origin === 'config'
+      ? '.specweave/config.json'
+      : auth.origin ?? auth.source;
   const kind = auth.isOAuthToken ? 'oauth' : 'pat';
   return `GitHub token: ${where} (${kind}${login ? `, account ${login}` : ''})`;
 }
