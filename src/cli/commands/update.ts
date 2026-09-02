@@ -7,7 +7,8 @@
  *
  * What it does (by default):
  * 1. Self-updates SpecWeave CLI via npm (npm i -g specweave@latest)
- * 2. Migrates config.json (adds missing sections like 'auto')
+ * 2. Migrates config.json to the 2.0 shape (dead 1.x keys dropped, renames
+ *    applied, dropped keys recorded in .specweave/state/config-migration-2.json)
  * 3. Updates instruction files (CLAUDE.md, AGENTS.md)
  * 4. Validates project health
  * 5. Refreshes ALL marketplace plugins (DEFAULT - keeps all skills up to date)
@@ -32,14 +33,17 @@ import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshPluginsCommand } from './refresh-plugins.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
-import { pruneSkillMemories, listSkillMemoryFiles } from '../../core/reflection/skill-memories.js';
 import { npmRegistryFlag } from '../../utils/npm-constants.js';
+import { migrateConfigFile } from '../../core/config/migrate-config-file.js';
+import { CONFIG_SCHEMA_VERSION } from '../../core/config/schema-version.js';
 import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
 
 interface UpdateOptions {
-  /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
+  /** Skip marketplace plugins refresh (`--no-plugins`; Commander sets plugins=false) */
   noPlugins?: boolean;
+  /** Commander maps --no-plugins to plugins=false */
+  plugins?: boolean;
   /** Install all plugins (default: true). Kept for backward compat — update always refreshes all plugins. */
   all?: boolean;
   /** Minimal mode: remove marketplace for clean /plugin output */
@@ -104,6 +108,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Commander maps --no-self to options.self=false (not options.noSelf=true)
   // Also respect env guard to prevent infinite recursion from spawned child
   const skipSelf = options.self === false || options.noSelf === true || process.env.SPECWEAVE_UPDATE_NO_SELF === '1';
+  // Same Commander convention: --no-plugins arrives as options.plugins === false.
+  const skipPlugins = options.plugins === false || options.noPlugins === true;
   if (!skipSelf) {
     const selfUpdateResult = await selfUpdateSpecWeave(version, options, spinner);
     result.selfUpdated = selfUpdateResult.updated;
@@ -119,7 +125,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
       // Build command with same flags, but add --no-self to skip re-updating
       const flags: string[] = ['--no-self'];
-      if (options.noPlugins) flags.push('--no-plugins');
+      if (skipPlugins) flags.push('--no-plugins');
       if (options.all) flags.push('--all');
       if (options.minimal) flags.push('--minimal');
       if (options.verbose) flags.push('--verbose');
@@ -165,7 +171,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       const projectName = path.basename(projectPath);
       if (!options.check) {
         fs.writeFileSync(configPath, JSON.stringify({
-          version: '2.0',
+          version: CONFIG_SCHEMA_VERSION,
           project: { name: projectName },
         }, null, 2) + '\n');
         isSpecWeaveProject = true;
@@ -194,9 +200,36 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 1: Update instructions & migrate config
+  // Step 1: Migrate config.json to the 2.0 shape (README promises `update`
+  // does this in one pass — it used to be reached only by a later command).
   if (isSpecWeaveProject) {
-    spinner.start('Updating instructions and config...');
+    try {
+      const migration = migrateConfigFile(projectPath, { dryRun: options.check });
+      result.configMigrated = migration.changed;
+      if (migration.changed) {
+        const verb = options.check ? 'would migrate' : 'migrated';
+        console.log(chalk.green(`  ✓ config.json ${verb} to the 2.0 shape`));
+        if (migration.removedKeys.length > 0) {
+          console.log(chalk.gray(`    Removed ${migration.removedKeys.length} dead 1.x key(s): ${migration.removedKeys.join(', ')}`));
+        }
+        if (migration.renamedKeys.length > 0) {
+          console.log(chalk.gray(`    Renamed: ${migration.renamedKeys.join('; ')}`));
+        }
+        if (migration.sectionsAdded.length > 0) {
+          console.log(chalk.gray(`    Added missing section(s): ${migration.sectionsAdded.join(', ')}`));
+        }
+        if (migration.notePath) {
+          console.log(chalk.gray(`    Note written: .specweave/state/config-migration-2.json`));
+        }
+      }
+    } catch (error) {
+      result.errors.push(`Config migration failed: ${error}`);
+    }
+  }
+
+  // Step 1b: Update instructions (CLAUDE.md / AGENTS.md)
+  if (isSpecWeaveProject) {
+    spinner.start('Updating instructions...');
 
     try {
       await updateInstructionsCommand({
@@ -204,8 +237,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
         verbose: options.verbose,
       });
       result.instructionsUpdated = true;
-      result.configMigrated = true; // updateInstructionsCommand now handles this
-      spinner.succeed('Instructions and config updated');
+      spinner.succeed('Instructions updated');
     } catch (error) {
       spinner.fail('Failed to update instructions');
       result.errors.push(`Instructions update failed: ${error}`);
@@ -312,40 +344,15 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 2.6: Migrate reflect-config.json to enable autoReflect by default (v1.0.173+)
-  // Projects initialized before v1.0.96 may have autoReflect: false
-  if (isSpecWeaveProject && !options.check) {
-    const reflectMigrated = migrateReflectConfig(projectPath, options.verbose);
-    if (reflectMigrated) {
-      console.log(chalk.green(`  ✓ Enabled autoReflect in reflect-config.json (self-improving AI)`));
-    }
-  }
-
-  // Step 2.7: Prune old skill memories (v1.0.228+)
-  // Removes learnings older than 90 days or exceeding 10 per skill
+  // Step 2.6: Remove the dropped reflect subsystem's state (2.0).
+  // `reflect` has no reader in 2.0 and is a key the config migration deletes.
   if (isSpecWeaveProject) {
-    const skillMemoryFiles = listSkillMemoryFiles(projectPath);
-    if (skillMemoryFiles.length > 0) {
+    const removedReflect = removeReflectState(projectPath, options.check);
+    for (const relPath of removedReflect) {
       if (options.check) {
-        console.log(chalk.yellow(`  ⚠️  ${skillMemoryFiles.length} skill memory file(s) will be checked for pruning`));
+        console.log(chalk.yellow(`  ⚠️  ${relPath} will be removed (reflect was dropped in 2.0)`));
       } else {
-        const pruneResult = pruneSkillMemories(projectPath, {
-          retentionDays: 90,
-          maxLearningsPerSkill: 10,
-        });
-        if (pruneResult.prunedCount > 0) {
-          console.log(chalk.green(`  ✓ Pruned ${pruneResult.prunedCount} old learning(s) from ${pruneResult.skillsAffected.length} skill(s)`));
-          if (options.verbose) {
-            pruneResult.skillsAffected.forEach(skill => {
-              console.log(chalk.gray(`    - ${skill}`));
-            });
-          }
-        }
-        if (pruneResult.errors.length > 0 && options.verbose) {
-          pruneResult.errors.forEach(err => {
-            console.log(chalk.yellow(`    ⚠️ ${err}`));
-          });
-        }
+        console.log(chalk.green(`  ✓ Removed ${relPath} (reflect was dropped in 2.0)`));
       }
     }
   }
@@ -398,20 +405,18 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     const installChecker = new InstallationHealthChecker();
     const installResult = await installChecker.check(projectPath, { fix: !options.check });
 
+    // Anything still warn/fail AFTER the fix pass was, by definition, NOT fixed:
+    // a repaired check reports `pass`. Never claim otherwise.
     const installIssues = installResult.checks.filter(c => c.status === 'warn' || c.status === 'fail');
-    if (installIssues.length > 0) {
-      for (const issue of installIssues) {
-        if (options.check) {
-          console.log(chalk.yellow(`  ⚠️  ${issue.name}: ${issue.message}`));
-        } else {
-          console.log(chalk.green(`  ✓ Fixed: ${issue.name} (${issue.message})`));
-        }
-      }
+    for (const issue of installIssues) {
+      const suffix = issue.fixSuggestion ? ` — ${issue.fixSuggestion}` : '';
+      console.log(chalk.yellow(`  ⚠️  ${issue.name}: ${issue.message}${suffix}`));
+      result.warnings.push(`${issue.name}: ${issue.message}`);
     }
   }
 
   // Step 4: Refresh plugins (DEFAULT - unless --no-plugins specified)
-  if (!options.noPlugins) {
+  if (!skipPlugins) {
     console.log('');
     spinner.start('Refreshing marketplace plugins...');
     spinner.stop();
@@ -454,12 +459,12 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
   if (isSpecWeaveProject) {
-    console.log(`  Config:       ${result.configMigrated ? chalk.green('✓ Updated') : chalk.gray('No changes')}`);
+    console.log(`  Config:       ${result.configMigrated ? chalk.green('✓ Migrated to 2.0 shape') : chalk.gray('Already 2.0 shape')}`);
     console.log(`  Instructions: ${result.instructionsUpdated ? chalk.green('✓ Updated') : chalk.gray('No changes')}`);
     console.log(`  State cleanup: ${result.stateFilesCleaned > 0 ? chalk.green(`✓ Cleaned ${result.stateFilesCleaned} file(s)`) : chalk.gray('No stale files')}`);
   }
 
-  if (!options.noPlugins) {
+  if (!skipPlugins) {
     console.log(`  Plugins:      ${result.pluginsRefreshed ? chalk.green('✓ Refreshed') : chalk.red('Failed')}`);
   } else {
     console.log(chalk.gray(`  Plugins:      Skipped (--no-plugins specified)`));
@@ -482,7 +487,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Next steps
   console.log(chalk.blue('\n  Next steps:'));
 
-  if (!options.noPlugins) {
+  if (!skipPlugins) {
     console.log(chalk.gray('    1. Restart Claude Code for plugin changes'));
     if (result.warnings.length > 0) {
       console.log(chalk.gray('    2. Review warnings above'));
@@ -1095,79 +1100,39 @@ async function selfUpdateSpecWeave(
 }
 
 /**
- * Migrate reflect-config.json to enable autoReflect by default
- * Projects initialized before v1.0.96 may have autoReflect: false or missing
+ * Delete the dropped reflect subsystem's leftovers from .specweave/.
+ *
+ * 2.0 removed reflect entirely (no reader for `autoReflect`, `reflect` is a
+ * key the config migration deletes), so an upgraded project should not keep
+ * its state file or empty log directory around.
  *
  * @param projectPath - Path to the project root
- * @param verbose - Show detailed output
- * @returns true if migration was performed
+ * @param dryRun - Only report what would be removed
+ * @returns Project-relative paths removed (or that would be removed)
  */
-function migrateReflectConfig(projectPath: string, verbose?: boolean): boolean {
-  const reflectConfigPath = path.join(projectPath, '.specweave', 'state', 'reflect-config.json');
+function removeReflectState(projectPath: string, dryRun?: boolean): string[] {
+  const removed: string[] = [];
+  const targets = [
+    path.join('.specweave', 'state', 'reflect-config.json'),
+    path.join('.specweave', 'logs', 'reflect'),
+  ];
 
-  // Create state directory if missing
-  const stateDir = path.join(projectPath, '.specweave', 'state');
-  if (!fs.existsSync(stateDir)) {
-    fs.mkdirSync(stateDir, { recursive: true });
+  for (const relPath of targets) {
+    const fullPath = path.join(projectPath, relPath);
+    if (!fs.existsSync(fullPath)) continue;
+    if (dryRun) {
+      removed.push(relPath);
+      continue;
+    }
+    try {
+      fs.rmSync(fullPath, { recursive: true, force: true });
+      removed.push(relPath);
+    } catch {
+      // Best effort — leftover state never fails an update.
+    }
   }
 
-  // If reflect-config.json doesn't exist, create it with defaults
-  if (!fs.existsSync(reflectConfigPath)) {
-    const defaultConfig = {
-      enabled: true,
-      autoReflect: true,
-      enabledAt: new Date().toISOString(),
-      confidenceThreshold: 'medium',
-      maxLearningsPerSession: 10,
-      gitCommit: false,
-      gitPush: false,
-    };
-    fs.writeFileSync(reflectConfigPath, JSON.stringify(defaultConfig, null, 2));
-    if (verbose) {
-      console.log(chalk.gray(`    Created reflect-config.json with autoReflect: true`));
-    }
-    return true;
-  }
-
-  // If it exists, check if autoReflect needs to be enabled
-  try {
-    const config = JSON.parse(fs.readFileSync(reflectConfigPath, 'utf-8'));
-
-    // Only migrate if autoReflect is explicitly false or missing
-    if (config.autoReflect === false || config.autoReflect === undefined) {
-      config.autoReflect = true;
-
-      // Also ensure other defaults are present
-      if (config.enabled === undefined) config.enabled = true;
-      if (config.confidenceThreshold === undefined) config.confidenceThreshold = 'medium';
-      if (config.maxLearningsPerSession === undefined) config.maxLearningsPerSession = 10;
-
-      fs.writeFileSync(reflectConfigPath, JSON.stringify(config, null, 2));
-      if (verbose) {
-        console.log(chalk.gray(`    Updated reflect-config.json: autoReflect: false → true`));
-      }
-      return true;
-    }
-
-    // autoReflect is already true, no migration needed
-    return false;
-  } catch (error) {
-    // If parsing fails, recreate with defaults
-    if (verbose) {
-      console.log(chalk.yellow(`    ⚠ reflect-config.json was invalid, recreating with defaults`));
-    }
-    const defaultConfig = {
-      enabled: true,
-      autoReflect: true,
-      enabledAt: new Date().toISOString(),
-      confidenceThreshold: 'medium',
-      maxLearningsPerSession: 10,
-      gitCommit: false,
-      gitPush: false,
-    };
-    fs.writeFileSync(reflectConfigPath, JSON.stringify(defaultConfig, null, 2));
-    return true;
-  }
+  return removed;
 }
 
 

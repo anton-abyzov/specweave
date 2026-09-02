@@ -114,14 +114,12 @@ describe('cli/commands/session', () => {
   });
 
   describe('session end', () => {
-    // TC-001: reflect check runs
-    it('should check reflect config', async () => {
+    // TC-001: session end reports without the dropped reflect subsystem (2.0)
+    it('should end the session and report no reflect details', async () => {
       const result = await sessionEndCommand({ projectRoot, silent: true });
       expect(result.success).toBe(true);
       expect(result.action).toBe('end');
-      expect(result.details.reflect).toBeDefined();
-      const reflect = result.details.reflect as { enabled: boolean };
-      expect(typeof reflect.enabled).toBe('boolean');
+      expect(result.details.reflect).toBeUndefined();
     });
 
     // TC-002: auto-mode scan runs with pending tasks
@@ -148,14 +146,12 @@ describe('cli/commands/session', () => {
       expect(result.success).toBe(true);
     });
 
-    // TC-005: reflect error doesn't abort other operations
-    it('should continue when reflect config is corrupt', async () => {
+    // TC-005: a corrupt config doesn't abort the remaining operations
+    it('should continue when config.json is corrupt', async () => {
       fs.writeFileSync(path.join(projectRoot, '.specweave', 'config.json'), 'not json');
 
       const result = await sessionEndCommand({ projectRoot, silent: true });
       expect(result.success).toBe(true);
-      // reflect should still have a result (default enabled on error)
-      expect(result.details.reflect).toBeDefined();
       // auto scan should still run
       expect(result.details.auto).toBeDefined();
     });

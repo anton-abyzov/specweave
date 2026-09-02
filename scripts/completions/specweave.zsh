@@ -59,7 +59,6 @@ commands=(
     'detect-intent:Detect SpecWeave intent from a prompt and optionally install plugins'
     'evaluate-completion:Evaluate whether an auto mode session should be considered complete'
     'generate-rubric:Generate or refresh the AC-tied rubric.md quality contract at the increment root'
-    'reflect-stop:Extract learnings from session transcript (called by stop hook)'
     'detect-project:Detect project type from files and suggest plugins to install'
     'resolve-structure:[REMOVED] All workspaces now use the repositories/ structure'
     'export-skills:Export SpecWeave skills to Agent Skills open standard format (agentskills.io)'
@@ -259,7 +258,7 @@ _specweave() {
                     ;;
                 decision-log)
                     _arguments \
-                        '--hook[Filter by hook name (stop-auto, stop-reflect)]' \
+                        '--hook[Filter by hook name (e.g. stop-auto)]' \
                         '--decision[Filter by decision type (approve, block)]' \
                         '--since[Filter by time window (1h, 24h, 7d)]' \
                         '--limit[Number of entries to show (default\: 20)]' \
@@ -470,13 +469,6 @@ _specweave() {
                     _arguments \
                         '--refresh[Regenerate from current ACs, overwriting an existing non-template rubric]' \
                         '--silent[Minimal output]' \
-                        '--help[Show help]'
-                    ;;
-                reflect-stop)
-                    _arguments \
-                        '--silent[Silent mode - output JSON only]' \
-                        '--model[Model to use (haiku, sonnet, opus)]' \
-                        '--migrate[Run migration of old memory files first]' \
                         '--help[Show help]'
                     ;;
                 detect-project)

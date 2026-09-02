@@ -3,7 +3,7 @@
  *
  * Replaces SessionStart and Stop hooks with explicit CLI subcommands:
  *   specweave session start  — session initialization
- *   specweave session end    — session cleanup (reflect + auto + sync flush)
+ *   specweave session end    — session cleanup (auto scan + sync flush)
  *
  * @module cli/commands/session
  */
@@ -16,7 +16,6 @@ import {
   writeBaselineHealth,
   cleanOrphaned,
 } from '../../core/session/session-lifecycle.js';
-import { checkReflectConfig } from '../../core/session/reflect-checker.js';
 import { scanAutoSession } from '../../core/session/auto-scanner.js';
 import { createSessionDir } from '../../core/session/session-state-manager.js';
 
@@ -128,15 +127,7 @@ export async function sessionEndCommand(
   const configPath = path.join(projectRoot, '.specweave', 'config.json');
   const details: Record<string, unknown> = {};
 
-  // 1. Reflect check — errors do not abort other operations
-  try {
-    const reflectResult = checkReflectConfig(configPath);
-    details.reflect = reflectResult;
-  } catch (err) {
-    details.reflect = { error: String(err) };
-  }
-
-  // 2. Auto-mode scan — errors do not abort other operations
+  // 1. Auto-mode scan — errors do not abort other operations
   try {
     const autoResult = scanAutoSession(stateDir, projectRoot, configPath);
     details.auto = autoResult;
@@ -151,8 +142,6 @@ export async function sessionEndCommand(
       console.log(JSON.stringify(result, null, 2));
     } else {
       console.log('Session ended');
-      const reflect = details.reflect as { enabled?: boolean } | undefined;
-      if (reflect?.enabled) console.log('  Reflection requested');
       const auto = details.auto as { active?: boolean; pendingTasks?: { pending?: number } } | undefined;
       if (auto?.active && auto?.pendingTasks?.pending) {
         console.log(`  Auto-mode: ${auto.pendingTasks.pending} pending tasks`);

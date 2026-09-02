@@ -23,12 +23,13 @@
  */
 
 import { migrateLimits } from './limits-migrator.js';
+import { CONFIG_SCHEMA_VERSION } from './schema-version.js';
 
 /**
  * 1.x keys with no reader in 2.0. Removed without replacement.
  *
- * `banner` is a *hook* sub-key rather than a top-level one; it is handled
- * separately because the UserPromptSubmit banner hook no longer exists.
+ * `banner` appears both as a top-level object and as a `hooks` sub-key in 1.x
+ * configs; both are dropped because the UserPromptSubmit banner hook is gone.
  */
 export const DEAD_KEYS = [
   'contextBudget',
@@ -45,6 +46,7 @@ export const DEAD_KEYS = [
   'documentation',
   'reflect',
   'pluginAutoLoad',
+  'banner',
   'grill',
   'codeReview',
   'qualityGates',
@@ -189,8 +191,8 @@ export function migrateTo2(config: Record<string, unknown>): MigrateResult {
   // Everything above may have produced renames without deletions.
   if (renamedKeys.length > 0) changed = true;
 
-  if (changed && config.version !== '2.0') {
-    config.version = '2.0';
+  if (changed && config.version !== CONFIG_SCHEMA_VERSION) {
+    config.version = CONFIG_SCHEMA_VERSION;
   }
 
   return { changed, removedKeys, renamedKeys };
@@ -201,7 +203,7 @@ export function buildMigrationNote(result: MigrateResult, fromVersion: string): 
   return {
     migratedAt: new Date().toISOString(),
     from: fromVersion || 'unknown',
-    to: '2.0',
+    to: CONFIG_SCHEMA_VERSION,
     removedKeys: result.removedKeys,
     renamedKeys: result.renamedKeys,
   };
