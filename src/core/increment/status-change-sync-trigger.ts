@@ -35,6 +35,7 @@ import { SyncCircuitBreaker } from './sync-circuit-breaker.js';
 import { SyncThrottle } from '../sync-throttle.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { livingDocsEnabled } from '../living-docs/living-docs-enabled.js';
 
 export class StatusChangeSyncTrigger {
   private static circuitBreaker = new SyncCircuitBreaker();
@@ -73,7 +74,10 @@ export class StatusChangeSyncTrigger {
     // This handles the case where increment was created directly with "active" status
     // but living docs sync never ran (no FS-XXX folder created)
     let forceSync = false;
-    if (newStatus === IncrementStatus.ACTIVE) {
+    if (newStatus === IncrementStatus.ACTIVE && livingDocsEnabled(resolveEffectiveRoot())) {
+      // Only meaningful when living docs are switched on: with the 2.0 default
+      // (`livingDocs: false`) there is no FS-xxx folder to back-fill, and
+      // announcing a "forced living docs sync" was a straight lie.
       forceSync = await this.hasMissingFeatureId(incrementId);
       if (forceSync) {
         this.logger.log(`📚 Increment ${incrementId} missing feature_id - forcing living docs sync...`);
@@ -230,12 +234,16 @@ export class StatusChangeSyncTrigger {
       // v1.0.19: Check if we need to auto-create external issues
       await this.autoCreateIfNeeded(projectRoot, incrementId);
 
-      // Run living docs sync
-      const sync = new LivingDocsSync(projectRoot, {
-        logger: this.logger
-      });
+      // Run living docs sync — 2.0 generates docs only on `livingDocs: 'onDone'`.
+      // (This trigger is how `livingDocs: false` projects still ended up with a
+      // freshly written FEATURE.md at the moment of closure.)
+      if (livingDocsEnabled(projectRoot)) {
+        const sync = new LivingDocsSync(projectRoot, {
+          logger: this.logger
+        });
 
-      await sync.syncIncrement(incrementId);
+        await sync.syncIncrement(incrementId);
+      }
 
       // v1.0.19: Auto-close issues on completion
       if (newStatus === IncrementStatus.COMPLETED) {
@@ -313,7 +321,7 @@ export class StatusChangeSyncTrigger {
       // Close GitHub/JIRA/ADO issues with proper completion comments
       const result = await coordinator.syncIncrementClosure();
 
-      if (result.success) {
+      if (result.success && result.closedIssues.length > 0) {
         this.logger.log(
           `🎉 Auto-closed external issues for ${incrementId} (${result.closedIssues.length} closed)`
         );

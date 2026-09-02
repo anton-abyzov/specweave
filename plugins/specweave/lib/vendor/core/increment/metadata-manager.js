@@ -13,6 +13,7 @@ import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { consoleLogger } from '../../utils/logger.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { validateIncrementId } from '../../utils/increment-id-validator.js';
+import { livingDocsEnabled } from '../living-docs/living-docs-enabled.js';
 /**
  * Error thrown when metadata operations fail
  */
@@ -216,6 +217,12 @@ export class MetadataManager {
         // when the file ALREADY EXISTS (for updates, not creation)
         const isNewFile = !fs.existsSync(metadataPath);
         const isActiveStatus = metadata.status === IncrementStatus.ACTIVE;
+        const withUpdated = metadata;
+        if (!withUpdated.updated) {
+            // 2.0 shape: `updated` is the documented field. Back-fill it from the
+            // legacy `lastActivity` so old increments gain it on their next write.
+            withUpdated.updated = metadata.lastActivity ?? new Date().toISOString();
+        }
         try {
             // Validate before writing
             this.validate(metadata);
@@ -233,7 +240,7 @@ export class MetadataManager {
         // CRITICAL FIX (2025-11-24): Only trigger if spec.md EXISTS
         // In single-prompt scenarios, metadata.json is created BEFORE spec.md
         // Triggering sync before spec.md exists causes "Spec file not found" error
-        if (isNewFile && isActiveStatus) {
+        if (isNewFile && isActiveStatus && livingDocsEnabled(rootDir || resolveEffectiveRoot())) {
             const specPath = path.join(incrementPath, 'spec.md');
             const specExists = fs.existsSync(specPath);
             if (!specExists) {
@@ -304,6 +311,9 @@ export class MetadataManager {
         // Update status
         metadata.status = newStatus;
         metadata.lastActivity = new Date().toISOString();
+        // 2.0 metadata shape uses `updated`; `lastActivity` is kept as the legacy
+        // alias so the 261 increments already on disk keep working.
+        metadata.updated = metadata.lastActivity;
         // Update status-specific fields
         if (newStatus === IncrementStatus.BACKLOG) {
             metadata.backlogReason = reason || 'Planned for future work';
@@ -325,7 +335,9 @@ export class MetadataManager {
         else if (newStatus === IncrementStatus.READY_FOR_REVIEW) {
             // v0.28.63+: All tasks completed, awaiting user approval
             metadata.readyForReviewAt = new Date().toISOString();
-            this.logger.log(`📋 Increment ${incrementId} ready for review - run sw:done to close`);
+            if (!this.suppressTransitionNotices) {
+                this.logger.log(`📋 Increment ${incrementId} ready for review - run sw:done to close`);
+            }
         }
         else if (newStatus === IncrementStatus.COMPLETED) {
             // v0.28.63+: User explicitly approved completion via sw:done
@@ -944,6 +956,15 @@ export class MetadataManager {
  * Logger instance (injectable for testing)
  */
 MetadataManager.logger = consoleLogger;
+/**
+ * When true, updateStatus() stays quiet about intermediate transitions.
+ *
+ * `specweave complete` auto-walks planning → active → ready_for_review →
+ * completed. Announcing "ready for review - run sw:done to close" in the
+ * middle of that walk contradicted the "completed!" line printed two lines
+ * later. Set by completeIncrement() for the duration of the closure.
+ */
+MetadataManager.suppressTransitionNotices = false;
 /**
  * Reserved increment IDs that cannot be used
  * These are status values, special folders, and state files

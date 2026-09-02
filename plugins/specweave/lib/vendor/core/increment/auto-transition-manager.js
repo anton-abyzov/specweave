@@ -12,6 +12,7 @@ import { IncrementStatus, validateTransition } from '../types/increment-metadata
 import { MetadataManager } from './metadata-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import { livingDocsEnabled } from '../living-docs/living-docs-enabled.js';
 /**
  * Manages automatic status transitions based on increment artifacts
  */
@@ -108,8 +109,9 @@ export class AutoTransitionManager {
             }
             const content = fs.readFileSync(metadataPath, 'utf-8');
             const metadata = JSON.parse(content);
-            // Only sync if feature_id is missing
-            if (!metadata.feature_id) {
+            // Only sync if feature_id is missing AND generated docs are switched on
+            // (2.0: `livingDocs: 'onDone'`; the default is off).
+            if (!metadata.feature_id && livingDocsEnabled(this.projectRoot)) {
                 console.log(`📚 Increment ${incrementId} missing feature_id - triggering living docs sync...`);
                 // Dynamic import to avoid circular dependency
                 const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');

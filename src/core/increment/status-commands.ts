@@ -285,6 +285,30 @@ export interface CompleteOptions {
  * @since v4.0 - Auto mode stop hook integration
  */
 export async function completeIncrement(options: CompleteOptions): Promise<boolean> {
+  // Sync suppression must span the ENTIRE closure, not just the final
+  // updateStatus() call. MetadataManager.updateStatus() fires the status-change
+  // trigger from a floating async IIFE, so a flag toggled around that one call
+  // is already back to `false` by the time the trigger actually looks at it —
+  // which is why a single `complete` used to print "Auto-synced …" twice and
+  // run the auto-close path from two places. onIncrementDone() is the single
+  // sync point during completion.
+  const { StatusChangeSyncTrigger } = await import('./status-change-sync-trigger.js');
+  const previouslySuppressed = StatusChangeSyncTrigger.suppressForCompletion;
+  StatusChangeSyncTrigger.suppressForCompletion = true;
+  // Intermediate auto-walk transitions (planning → active → ready_for_review)
+  // are bookkeeping, not milestones: their notices contradicted the
+  // "completed!" line printed seconds later.
+  const previouslySilentTransitions = MetadataManager.suppressTransitionNotices;
+  MetadataManager.suppressTransitionNotices = true;
+  try {
+    return await runCompleteIncrement(options);
+  } finally {
+    StatusChangeSyncTrigger.suppressForCompletion = previouslySuppressed;
+    MetadataManager.suppressTransitionNotices = previouslySilentTransitions;
+  }
+}
+
+async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> {
   const { silent = false, skipValidation = false } = options;
   const incrementId = expandIncrementId(options.incrementId);
   const closeReason = options.reason?.trim() || undefined;
@@ -371,13 +395,8 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       }
     }
 
-    const { StatusChangeSyncTrigger } = await import('./status-change-sync-trigger.js');
-    StatusChangeSyncTrigger.suppressForCompletion = true;
-    try {
-      MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
-    } finally {
-      StatusChangeSyncTrigger.suppressForCompletion = false;
-    }
+    // Suppression is held for the whole of completeIncrement() (see above).
+    MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
     // Dispatch post-increment-done hooks (awaited, error-isolated)
     let hookSyncErrors: string[] = [];

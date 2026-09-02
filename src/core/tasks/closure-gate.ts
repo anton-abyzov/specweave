@@ -11,7 +11,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { readVerifyReport } from './verify-runner.js';
+import { readVerifyReport, describeUncheckedAcs } from './verify-runner.js';
 import { loadTaskBoard } from './task-board.js';
 
 export interface ClosureGateResult {
@@ -35,14 +35,27 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
       notices.push(`closing without verify.json — reason: ${reason}`);
     }
   } else if (!verify.ok) {
+    // Say WHY it is not ok: failing commands and/or unticked acceptance
+    // criteria. "not ok (failed)" sent people hunting for a broken test that
+    // did not exist when the real blocker was 0 of 2 ACs.
+    const parts: string[] = [];
     const failed = verify.commands.filter((c) => c.exit !== 0).map((c) => `${c.cmd} (exit ${c.exit})`).join(', ');
+    if (failed) parts.push(failed);
+    const unchecked = describeUncheckedAcs(verify.acs);
+    if (unchecked) parts.push(unchecked);
+    const why = parts.join('; ') || 'failed';
     if (!reason) {
-      errors.push(`verify.json is not ok (${failed || 'failed'}) — fix and re-run \`specweave verify ${incrementId}\`, or pass --reason`);
+      errors.push(`verify.json is not ok (${why}) — fix and re-run \`specweave verify ${incrementId}\`, or pass --reason`);
     } else {
-      notices.push(`closing with failed verify (${failed}) — reason: ${reason}`);
+      notices.push(`closing with failed verify (${why}) — reason: ${reason}`);
     }
   } else {
     notices.push(`verify ok (${verify.ranAt}; ${verify.commands.length} command(s); ACs ${verify.acs.done}/${verify.acs.total})`);
+    // An `ok` report that still has open ACs can only come from a spec with no
+    // AC lines at all, or a hand-edited verify.json. Say so out loud.
+    const unchecked = describeUncheckedAcs(verify.acs);
+    if (unchecked) notices.push(`${unchecked} — verify.json still reports ok; check reports/verify.json`);
+    if (verify.acs.total === 0) notices.push('spec.md declares no acceptance criteria — nothing was verified against');
   }
 
   try {

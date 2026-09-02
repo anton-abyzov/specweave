@@ -15,7 +15,7 @@ SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-
 ```
 Only those files (plus optional `plan.md` when Approach outgrows a page, and `scripts/`) live in an increment root; everything else goes in `reports/`. Commit messages start with the increment id: `0042: add login form`.
 
-`tasks.md` format (the CLI parses it): `### T-01 Title` followed by one line `- AC: AC-01, AC-02 | Files: src/login.ts, src/login.test.ts | Test: npm test -- login`. `ledger.jsonl` is one JSON object per line, append-only: `{"t":"T-01","e":"claim|done|skip|release|block","by":"<tool>@<host>","at":"<ISO>","evidence":"<sha>"}`.
+`tasks.md` format (the CLI parses it): `### T-01 Title` followed by one line `- AC: AC-01, AC-02 | Files: src/login.ts, src/login.test.ts | Test: npm test -- login`. `ledger.jsonl` is one JSON object per line, append-only: `{"t":"T-01","e":"claim|done|skip|release|block","by":"<tool>@<host>","at":"<ISO>","evidence":"<sha>","note":"<why>"}` (`evidence` required for `done`, `note` required for `skip`, both optional elsewhere).
 <!-- /SECTION -->
 
 <!-- SECTION:loop required -->

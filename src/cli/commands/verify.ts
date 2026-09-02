@@ -7,7 +7,7 @@
 
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
-import { runVerify } from '../../core/tasks/verify-runner.js';
+import { runVerify, describeUncheckedAcs } from '../../core/tasks/verify-runner.js';
 
 export interface VerifyCommandOptions {
   json?: boolean;
@@ -43,6 +43,11 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     if (result.results.length === 0) out(`No verification commands (${result.source}). Set testing.commands in .specweave/config.json.`);
     const { report } = result;
     out(`ACs ${report.acs.done}/${report.acs.total} · tasks ${report.tasks.done}/${report.tasks.total} done (${report.tasks.skipped} skipped)`);
+    const unchecked = describeUncheckedAcs(report.acs);
+    if (unchecked) {
+      out(`  ${unchecked} — tick them in spec.md (\`- [x] AC-01 …\`) or close with \`specweave complete ${inc.id} --reason "<why>"\``);
+      for (const a of result.acs.filter((x) => !x.done)) out(`    [ ] ${a.id} ${a.text}`.trimEnd());
+    }
     for (const s of report.skipped) out(`  skipped ${s.id}: ${s.reason ?? '(no reason recorded)'}`);
     if (report.ledgerMalformed) out(`  ${report.ledgerMalformed} malformed ledger line(s) skipped`);
     out(`${report.ok ? 'PASS' : 'FAIL'} → ${result.mdPath}`);

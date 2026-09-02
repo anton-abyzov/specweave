@@ -47,6 +47,17 @@ vi.mock('../../../../src/core/living-docs/living-docs-sync.js', () => ({
   },
 }));
 
+// ─── Mock the livingDocs config gate ────────────────────────────
+// 2.0 only generates living docs when `config.livingDocs === 'onDone'`.
+// These tests are about throttle-vs-sync ordering, so the gate is open here;
+// the closed-gate behaviour has its own test at the bottom of this file.
+const { mockLivingDocsEnabled } = vi.hoisted(() => ({
+  mockLivingDocsEnabled: vi.fn().mockReturnValue(true),
+}));
+vi.mock('../../../../src/core/living-docs/living-docs-enabled.js', () => ({
+  livingDocsEnabled: (...args: unknown[]) => mockLivingDocsEnabled(...args),
+}));
+
 // ─── Mock SyncCircuitBreaker ────────────────────────────────────
 vi.mock('../../../../src/core/increment/sync-circuit-breaker.js', () => ({
   SyncCircuitBreaker: class {
@@ -128,6 +139,7 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
     vi.clearAllMocks();
     mockShouldSkip.mockReturnValue(false);
     mockCanSync.mockReturnValue(true);
+    mockLivingDocsEnabled.mockReturnValue(true);
 
     // The SUT early-returns when NODE_ENV=test or VITEST is set.
     // Temporarily remove both so triggerIfNeeded executes the real path.
@@ -209,6 +221,40 @@ describe('StatusChangeSyncTrigger throttle timing', () => {
     expect(mockShouldSkip).toHaveBeenCalledWith('0003-test');
 
     // Sync was never spawned
+    expect(mockSyncIncrement).not.toHaveBeenCalled();
+    expect(mockRecord).not.toHaveBeenCalled();
+  });
+
+  it('never generates living docs when config.livingDocs is off (2.0 default)', async () => {
+    mockLivingDocsEnabled.mockReturnValue(false);
+
+    await StatusChangeSyncTrigger.triggerIfNeeded(
+      '0004-test',
+      IncrementStatus.PLANNING,
+      IncrementStatus.ACTIVE
+    );
+    await flushMicrotasks();
+
+    // The status-change trigger is how `livingDocs: false` projects still got a
+    // freshly generated FEATURE.md written at the moment of closure.
+    expect(mockSyncIncrement).not.toHaveBeenCalled();
+    // External sync still runs — only doc GENERATION is gated.
+    expect(mockRecord).toHaveBeenCalledWith('0004-test');
+  });
+
+  it('is a no-op while a closure is in progress (single sync point)', async () => {
+    StatusChangeSyncTrigger.suppressForCompletion = true;
+    try {
+      await StatusChangeSyncTrigger.triggerIfNeeded(
+        '0005-test',
+        IncrementStatus.ACTIVE,
+        IncrementStatus.READY_FOR_REVIEW
+      );
+      await flushMicrotasks();
+    } finally {
+      StatusChangeSyncTrigger.suppressForCompletion = false;
+    }
+
     expect(mockSyncIncrement).not.toHaveBeenCalled();
     expect(mockRecord).not.toHaveBeenCalled();
   });
