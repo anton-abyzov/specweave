@@ -153,17 +153,19 @@ describe('copyPluginSkillsToProject with targetSkillsDir', () => {
     expect(hasOpencode).toBe(true);
   });
 
-  it('copies hooks when targetSkillsDir is not set (Claude default)', () => {
+  it('never copies hooks into the project (Claude loads hooks.json from the plugin)', () => {
     setupBasicMocks();
 
     copyPluginSkillsToProject('sw', SPECWEAVE_ROOT, PROJECT_ROOT, {
       force: true,
     });
 
-    // Hook copy calls should target .claude/hooks
+    // SpecWeave 2.0 registers its four hooks in plugins/specweave/hooks/hooks.json,
+    // which Claude Code reads from the plugin cache. Nothing is written to
+    // <project>/.claude/hooks — copying hook scripts there would leave stale copies.
     const mkdirCalls = mocks.mkdirSync.mock.calls.map((c: string[][]) => c[0].toString());
     const hasHooksDir = mkdirCalls.some((p: string) => p.includes(join('.claude', 'hooks')));
-    expect(hasHooksDir).toBe(true);
+    expect(hasHooksDir).toBe(false);
   });
 
   it('should NOT write vskill.lock to projectRoot — uses global plugins-lock.json', () => {

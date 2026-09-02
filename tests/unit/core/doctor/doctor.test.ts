@@ -262,6 +262,24 @@ describe('Doctor Command', () => {
       expect(dryRuns).toHaveLength(4);
       expect(dryRuns.every((c) => c.status === 'skip')).toBe(true);
     });
+
+    it('dry-runs all four events through run.mjs and validates their output', async () => {
+      setupValidProject(tempDir);
+
+      const checker = new HooksChecker();
+      const result = await checker.check(tempDir, {});
+
+      const dryRuns = result.checks.filter((c) => c.name.endsWith('dry-run'));
+      expect(dryRuns.map((c) => c.name).sort()).toEqual([
+        'pre-compact dry-run',
+        'pre-tool-use dry-run',
+        'session-start dry-run',
+        'stop dry-run',
+      ]);
+      // A schema violation or a launcher crash is a 'fail'; 'warn' only means
+      // the CLI could not be located, which is environment-dependent.
+      expect(dryRuns.filter((c) => c.status === 'fail')).toEqual([]);
+    }, 30000);
   });
 
   describe('PluginsChecker', () => {
