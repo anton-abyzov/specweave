@@ -483,6 +483,64 @@ describe('InstallationHealthChecker', () => {
   });
 
   // =========================================================================
+  // Plugin cache hook freshness (2.0: hooks.json + run.mjs, no shell hooks)
+  // =========================================================================
+  describe('checkPluginCacheHookFreshness', () => {
+    const repoRoot = path.resolve(__dirname, '..', '..', '..', '..', '..');
+    const sourceHooksDir = path.join(repoRoot, 'plugins', 'specweave', 'hooks');
+
+    /** Write a cached copy of every 2.0 hook asset. */
+    function seedCache(mutate?: (asset: string, content: string) => string): void {
+      const cachedHooks = path.join(cacheDir, 'specweave', 'sw', '1.0.0', 'hooks');
+      fs.mkdirSync(cachedHooks, { recursive: true });
+      for (const asset of ['hooks.json', 'run.mjs']) {
+        const content = fs.readFileSync(path.join(sourceHooksDir, asset), 'utf-8');
+        fs.writeFileSync(path.join(cachedHooks, asset), mutate ? mutate(asset, content) : content);
+      }
+    }
+
+    it('ships the 2.0 hook assets it keys off (no deleted shell hooks)', () => {
+      expect(fs.existsSync(path.join(sourceHooksDir, 'hooks.json'))).toBe(true);
+      expect(fs.existsSync(path.join(sourceHooksDir, 'run.mjs'))).toBe(true);
+      expect(fs.existsSync(path.join(sourceHooksDir, 'user-prompt-submit.sh'))).toBe(false);
+    });
+
+    it('passes when the cached hooks match the source', async () => {
+      seedCache();
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+      const check = result.checks.find(c => c.name === 'Plugin cache hook freshness');
+
+      expect(check?.status).toBe('pass');
+      expect(check?.message).toContain('up to date');
+    });
+
+    it('warns (never skips) when a cached hook drifts from the source', async () => {
+      seedCache((asset, content) => (asset === 'run.mjs' ? `${content}\n// stale\n` : content));
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+      const check = result.checks.find(c => c.name === 'Plugin cache hook freshness');
+
+      expect(check?.status).toBe('warn');
+      expect(check?.details?.some(d => d.includes('run.mjs'))).toBe(true);
+    });
+
+    it('rewrites the stale cached hook with fix=true', async () => {
+      seedCache((asset, content) => (asset === 'hooks.json' ? `${content}\n` : content));
+      const cachedManifest = path.join(cacheDir, 'specweave', 'sw', '1.0.0', 'hooks', 'hooks.json');
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true, quick: true });
+      const check = result.checks.find(c => c.name === 'Plugin cache hook freshness');
+
+      expect(check?.status).toBe('pass');
+      expect(fs.readFileSync(cachedManifest, 'utf-8')).toBe(
+        fs.readFileSync(path.join(sourceHooksDir, 'hooks.json'), 'utf-8')
+      );
+    });
+  });
+
+  // =========================================================================
   // Full check() method
   // =========================================================================
   describe('check() integration', () => {

@@ -1274,19 +1274,6 @@ docsCmd.action(async () => {
 });
 
 
-// Refresh marketplace command - Update marketplace with lazy loading support
-program
-  .command('refresh-marketplace')
-  .description('Refresh SpecWeave marketplace (lazy mode by default - router only)')
-  .option('--all', 'Install ALL plugins (legacy mode, ~60K tokens)')
-  .option('--minimal', 'Remove marketplace, install only core plugins (clean /plugin output, no lazy loading)')
-  .option('-f, --force', 'Force reinstall all plugins (clears cache, ensures fresh copy)')
-  .option('-v, --verbose', 'Show detailed error messages')
-  .action(async (options) => {
-    const { refreshMarketplaceCommand } = await import('../dist/src/cli/commands/refresh-marketplace.js');
-    await refreshMarketplaceCommand(options);
-  });
-
 // Refresh plugins command - Copy first-party plugins to ~/.claude/commands/
 program
   .command('refresh-plugins')
@@ -1570,9 +1557,9 @@ program.on('--help', () => {
   console.log('  $ specweave docs status                     # Show docs status');
   console.log('  $ specweave docs kill                       # Stop all docs servers');
   console.log('  $ specweave doctor --fix-status             # Fix metadata/spec status desyncs');
-  console.log('  $ specweave refresh-marketplace             # Lazy mode: router only (~500 chars)');
-  console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K chars)');
-  console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
+  console.log('  $ specweave refresh-plugins                 # Refresh core SpecWeave plugin');
+  console.log('  $ specweave refresh-plugins --all           # Refresh every installed plugin');
+  console.log('  $ specweave refresh-plugins --force         # Force reinstall (skip hash check)');
   console.log('  $ specweave update                          # Update CLI + instructions + config');
   console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
   console.log('  $ specweave update --no-self                # Skip CLI update, only project files');

@@ -162,7 +162,7 @@ export function validateSyncConfigConsistency(
       issues.push({
         type: 'warning',
         message: 'GitHub sync enabled but github.owner and github.repo are not configured.',
-        suggestedFix: 'Set sync.github.owner and sync.github.repo in config.json, or run sw:sync-setup.',
+        suggestedFix: 'Set sync.github.owner and sync.github.repo in config.json, or run specweave sync setup.',
       });
     }
     if (config.jira?.enabled && !config.jira.domain && !profileProviders.has('jira')) {
@@ -188,7 +188,7 @@ export function validateSyncConfigConsistency(
         issues.push({
           type: 'failure',
           message: `${platform} sync last result was "failed" with ${meta.lastImportCount ?? 0} imports.`,
-          suggestedFix: `Check ${platform} credentials and configuration. Run sw:sync-setup to reconfigure.`,
+          suggestedFix: `Check ${platform} credentials and configuration. Run specweave sync setup to reconfigure.`,
         });
       }
     }

@@ -3,6 +3,7 @@
  * Instant Background Jobs Status
  *
  * Prints background job status. Run directly: node scripts/jobs.js
+ * CLI equivalent: `specweave jobs`.
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node jobs.js [--all] [--id <jobId>] [--help]

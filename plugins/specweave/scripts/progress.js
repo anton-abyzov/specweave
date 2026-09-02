@@ -3,7 +3,8 @@
  * Instant Increment Progress (Node.js fallback)
  *
  * Prints task-completion progress. Run directly: node scripts/progress.js
- * Reads files directly (no cache needed). Bypasses LLM entirely.
+ * Reads tasks.md directly (no cache, no CLI round-trip) and bypasses the LLM
+ * entirely. The CLI equivalent is `specweave task list`.
  *
  * Usage: node progress.js [incrementId] [--help]
  */

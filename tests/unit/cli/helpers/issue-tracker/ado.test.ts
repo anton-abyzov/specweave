@@ -809,8 +809,8 @@ describe('ado.ts - Azure DevOps Issue Tracker', () => {
       expect(consoleSpy).toHaveBeenCalled();
       const allOutput = consoleSpy.mock.calls.map(c => c[0]).join('\n');
       expect(allOutput).toContain('Azure DevOps integration complete');
-      expect(allOutput).toContain('sw:ado-sync');
-      expect(allOutput).toContain('sw:ado-status');
+      expect(allOutput).toContain('specweave sync push');
+      expect(allOutput).toContain('specweave sync status');
     });
 
     it('should call getLocaleManager with language', () => {

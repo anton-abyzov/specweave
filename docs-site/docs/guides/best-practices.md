@@ -405,4 +405,4 @@ Is this a small, clear task?
 - [Claude Code Best Practices](https://code.claude.com/docs/en/best-practices) - Original source
 - [SpecWeave Workflows](/docs/workflows/overview) - Complete workflow guide
 - [Increment Lifecycle](/docs/guides/core-concepts/what-is-an-increment) - Core concepts
-- [Plugin Index](/plugins/PLUGINS-INDEX.md) - All available plugins
+- [Skills Reference](/docs/reference/skills) - All available skills
