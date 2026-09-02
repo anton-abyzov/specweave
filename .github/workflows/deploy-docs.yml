@@ -46,10 +46,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'docs-site/package-lock.json'
 
-      - name: Install dependencies
+      - name: Install dependencies (no install scripts)
         run: |
           cd docs-site
-          npm ci
+          npm ci --ignore-scripts
+          npm run setup
 
       - name: Sync root README to docs-site
         run: |
