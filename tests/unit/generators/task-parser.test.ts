@@ -419,4 +419,41 @@ describe('Task Parser - E Suffix Support (T-029)', () => {
       expect(t11.status).toBe('pending');
     });
   });
+  describe('Windows line endings and BOM (2.0 cross-platform)', () => {
+    // Git for Windows defaults to core.autocrlf=true and PowerShell
+    // Set-Content/Out-File write CRLF (+ often a UTF-8 BOM). Splitting on '\n'
+    // alone left a trailing '\r' on every line, which none of the `$`-anchored
+    // regexes can match — the whole file parsed as ZERO tasks, taking
+    // `task next/claim/done/render`, verify.json and the Stop loop with it.
+    const LF = [
+      '# Tasks',
+      '',
+      '### T-01 First',
+      '- AC: AC-01 | Files: a.ts | Test: npm test',
+      '- [x] done by claude@mbp — abc123',
+      '',
+      '### T-02 Second',
+      '- AC: AC-02 | Files: b.ts | Test: npm test',
+      '- [-] skipped by claude@mbp — not needed',
+      '',
+    ].join('\n');
+
+    it('parses a CRLF tasks.md identically to an LF one', () => {
+      fs.writeFileSync(tasksPath, LF.replace(/\n/g, '\r\n'), 'utf-8');
+      const tasks = parseTasksWithUSLinks(tasksPath);
+      const all = Object.values(tasks).flat();
+      expect(all.map(t => t.id)).toEqual(['T-01', 'T-02']);
+      expect(all[0].title).toBe('First');
+      expect(all[0].test).toBe('npm test');
+      expect(all[0].filesAffected).toEqual(['a.ts']);
+      expect(all[0].status).toBe('completed');
+      expect(all[1].status).toBe('canceled');
+    });
+
+    it('parses a tasks.md that starts with a UTF-8 BOM', () => {
+      fs.writeFileSync(tasksPath, '\uFEFF' + LF.replace(/\n/g, '\r\n'), 'utf-8');
+      const all = Object.values(parseTasksWithUSLinks(tasksPath)).flat();
+      expect(all.map(t => t.id)).toEqual(['T-01', 'T-02']);
+    });
+  });
 });

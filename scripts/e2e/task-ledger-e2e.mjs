@@ -229,6 +229,32 @@ try {
   const meta3 = JSON.parse(fs.readFileSync(path.join(inc3Dir, 'metadata.json'), 'utf-8'));
   check('complete --all closes task-complete increments', batch.code === 0 && meta3.status === 'completed', `${batch.code} ${meta3.status}`);
 
+  // ── Windows-shaped tasks.md: CRLF + UTF-8 BOM must parse identically ───
+  // Git for Windows (core.autocrlf=true) and PowerShell Set-Content/Out-File
+  // write exactly this. A '\n'-only split left a trailing '\r' on every line
+  // and the whole file parsed as ZERO tasks — every task verb died on Windows.
+  const INC5 = '0005-crlf-windows';
+  const inc5Dir = path.join(tmp, '.specweave', 'increments', INC5);
+  fs.mkdirSync(inc5Dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(inc5Dir, 'metadata.json'),
+    JSON.stringify({ id: INC5, status: 'active', type: 'feature', created: new Date().toISOString(), lastActivity: new Date().toISOString() }, null, 2),
+  );
+  fs.writeFileSync(path.join(inc5Dir, 'spec.md'), '# CRLF\r\n\r\n- [x] **AC-01**: parses on Windows\r\n');
+  fs.writeFileSync(
+    path.join(inc5Dir, 'tasks.md'),
+    '\uFEFF' + ['# Tasks', '', '### T-01 Windows task', '- AC: AC-01 | Files: src/w.ts | Test: -', ''].join('\r\n'),
+  );
+
+  const crlfList = sw(tmp, ['task', 'list', INC5]);
+  check('task list parses a CRLF+BOM tasks.md', crlfList.code === 0 && /T-01/.test(crlfList.out), crlfList.out.trim().split('\n')[0]);
+
+  const crlfNext = sw(tmp, ['task', 'next', INC5]);
+  check('task next offers T-01 from a CRLF+BOM tasks.md', crlfNext.code === 0 && /T-01/.test(crlfNext.out), crlfNext.out.trim().split('\n')[0]);
+
+  const crlfDone = sw(tmp, ['task', 'done', 'T-01', INC5, '--evidence', 'crlf ok']);
+  check('task done resolves a task id from a CRLF+BOM tasks.md', crlfDone.code === 0, crlfDone.out.trim().split('\n')[0]);
+
   log('');
   log(failures === 0 ? 'E2E PASS — all checks green' : `E2E FAIL — ${failures} check(s) failed`);
 } finally {
