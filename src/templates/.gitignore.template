@@ -1,10 +1,23 @@
 # SpecWeave
 .specweave/cache/
+.specweave/state/                   # Runtime state (machine-local, regenerated)
+.specweave/logs/
+.specweave/backups/
+.specweave/jobs/
 .specweave/increments/*/logs/       # Gitignored, but structure preserved
 .specweave/increments/*/test-results/
 .specweave/docs-site-internal/      # Generated Docusaurus site for internal docs
 .claude-plugin/                     # Plugin marketplace (framework files)
 plugins/                            # Plugin implementations (framework files)
+.handoff/                           # Work handoff (secret-scrubbed, never auto-committed)
+
+# Binary evidence in reports/ (videos, screenshots, app bundles)
+**/reports/*.mp4
+**/reports/*.png
+**/reports/*.jpg
+**/reports/*.aab
+**/reports/*.ipa
+**/reports/*.dSYM/
 
 # Dependencies (framework-agnostic)
 node_modules/          # JavaScript/TypeScript

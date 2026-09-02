@@ -68,6 +68,30 @@ describe('gitignore-generator', () => {
       expect(result).toContain('.specweave/state/handoff-latest.*');
     });
 
+    it('should gitignore runtime state dirs and binary report evidence (2.0)', () => {
+      const detection: TechStackDetection = {
+        detected: [],
+        primary: null,
+        categories: new Map(),
+      };
+      const result = generateGitignore(detection);
+      for (const entry of [
+        '.specweave/state/',
+        '.specweave/logs/',
+        '.specweave/cache/',
+        '.specweave/backups/',
+        '.specweave/jobs/',
+        '**/reports/*.mp4',
+        '**/reports/*.png',
+        '**/reports/*.jpg',
+        '**/reports/*.aab',
+        '**/reports/*.ipa',
+        '**/reports/*.dSYM/',
+      ]) {
+        expect(result).toContain(entry);
+      }
+    });
+
     it('should exclude common when includeCommon=false', () => {
       const detection: TechStackDetection = {
         detected: [],
