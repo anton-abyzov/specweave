@@ -23,6 +23,10 @@ export interface VerifyCommandResult {
 }
 
 export interface VerifyReport {
+  /**
+   * Ready to close: every verification command exited 0 AND every acceptance
+   * criterion in spec.md is ticked. Consulted by the closure gate.
+   */
   ok: boolean;
   ranAt: string;
   increment: string;
@@ -36,6 +40,13 @@ export interface VerifyReport {
 }
 
 export interface AcEntry { id: string; done: boolean; text: string }
+
+/** One-line human summary of unchecked ACs, or undefined when nothing is open. */
+export function describeUncheckedAcs(acs: { total: number; done: number }): string | undefined {
+  const open = acs.total - acs.done;
+  if (!Number.isFinite(open) || open <= 0) return undefined;
+  return `${open} of ${acs.total} acceptance criteria unchecked in spec.md`;
+}
 
 /** Parse `- [ ] AC-01 …` / `- [x] **AC-US1-01**: …` lines from spec.md. */
 export function parseSpecAcs(specContent: string): AcEntry[] {
@@ -113,8 +124,17 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   const acs = fs.existsSync(specPath) ? parseSpecAcs(fs.readFileSync(specPath, 'utf-8')) : [];
   const board = loadTaskBoard(incrementDir, { leaseHours: opts.leaseHours });
 
+  // `ok` means "this increment is ready to close", and in 2.0 the acceptance
+  // criteria in spec.md ARE the definition of done. A green (or empty) command
+  // list with unticked ACs used to report PASS and let `complete` close the
+  // increment with 0 of N criteria met — the gate was measuring the test
+  // commands only. Specs with no AC lines at all stay non-blocking (legacy
+  // increments); they are surfaced as a notice by the closure gate instead.
+  const commandsOk = results.every((r) => r.exit === 0);
+  const acsOk = acs.length === 0 || acs.every((a) => a.done);
+
   const report: VerifyReport = {
-    ok: results.every((r) => r.exit === 0),
+    ok: commandsOk && acsOk,
     ranAt: new Date().toISOString(),
     increment: incrementId,
     commands: results.map((r) => ({ cmd: r.cmd, exit: r.exit })),
