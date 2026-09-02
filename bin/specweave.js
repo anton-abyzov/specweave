@@ -536,22 +536,15 @@ Examples:
   specweave interview status 0021-auth-feature
 `);
 
-// Logs command - View hook execution logs
+// Logs command - alias of `specweave hooks log` (single JSONL log per project)
 program
   .command('logs')
-  .description('View hook execution logs')
+  .description('View recent hook warnings, errors and blocks (alias of `hooks log`)')
   .option('--tail <number>', 'Number of log entries to show (default: 50)', '50')
   .option('--hook <name>', 'Filter by hook name')
-  .option('--format <type>', 'Output format: json or table (default: table)', 'table')
-  .option('--follow', 'Follow new log entries (not yet implemented)')
   .action(async (options) => {
-    const { logsCommand } = await import('../dist/src/cli/commands/logs.js');
-    await logsCommand({
-      tail: parseInt(options.tail, 10),
-      hook: options.hook,
-      format: options.format,
-      follow: options.follow
-    });
+    const { hooksLogCommand } = await import('../dist/src/cli/commands/hooks-cmd.js');
+    await hooksLogCommand({ last: parseInt(options.tail, 10), hook: options.hook });
   });
 
 // Decision log command - Query structured decision logs
