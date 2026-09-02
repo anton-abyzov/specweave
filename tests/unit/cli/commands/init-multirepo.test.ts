@@ -231,6 +231,8 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   createConfigFile: mockCreateConfigFile,
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
+  // Real behaviour: init scaffolds repositories/ only for an actual workspace.
+  shouldScaffoldWorkspaceDir: () => true,
   ensureSkillCreator: mockEnsureSkillCreator,
   promptProjectSetup: mockPromptProjectSetup,
   promptRepoUrls: mockPromptRepoUrls,

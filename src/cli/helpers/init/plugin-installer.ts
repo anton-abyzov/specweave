@@ -146,7 +146,12 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     console.log('');
     console.log(chalk.green.bold('Plugin Installation Complete'));
     console.log(chalk.white(`   Installed: ${successCount}/${allPlugins.length} plugins`));
-    console.log(chalk.gray(`   Location: .claude/skills/ (project-local)`));
+    // Be honest about EVERY location this writes: telling users the install is
+    // "project-local" while rewriting their global Claude config is not okay.
+    console.log(chalk.gray(`   Skills:  ${path.join('.claude', 'skills')}${path.sep} (project-local)`));
+    console.log(chalk.gray('   Also writes (global, outside this project):'));
+    console.log(chalk.gray('     ~/.claude/settings.json        enables the plugins for Claude Code'));
+    console.log(chalk.gray('     ~/.specweave/plugins-lock.json records the installed plugin versions'));
 
     if (failCount > 0) {
       console.log(chalk.yellow(`   Failed: ${failCount} plugins`));

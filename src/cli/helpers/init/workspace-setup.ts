@@ -532,3 +532,35 @@ export function showRestructureWarnings(scan: WorkspaceContentScan): void {
   console.log(chalk.gray('    - Relative imports from outside the repository will fail'));
   console.log('');
 }
+
+/**
+ * Should `init` scaffold an (empty) `repositories/` workspace directory here?
+ *
+ * It used to do so unconditionally, which meant a plain single-repo project got
+ * umbrella structure it never asked for — and, worse, `repositories/` is itself
+ * a marker `detectIncrementLocation` reads as "this is an umbrella", so the
+ * scaffolding mislabels the project from then on.
+ *
+ * Scaffold only when the directory is NOT already somebody's single repo:
+ *   - it already has a `repositories/` dir (already a workspace), or
+ *   - it is empty / greenfield (nothing but SpecWeave's own files).
+ */
+export function shouldScaffoldWorkspaceDir(targetDir: string): boolean {
+  if (fs.existsSync(path.join(targetDir, 'repositories'))) return true;
+
+  /** SpecWeave's own scaffolding — present in every freshly-inited dir. */
+  const ownFiles = new Set([
+    '.specweave', '.claude', '.git', '.gitignore', '.gitattributes',
+    'CLAUDE.md', 'AGENTS.md', 'README.md', 'vskill.lock', '.DS_Store',
+  ]);
+
+  let entries: string[];
+  try {
+    entries = fs.readdirSync(targetDir) as string[];
+  } catch {
+    return true; // unreadable — keep the old behaviour
+  }
+
+  const userContent = entries.filter(name => !ownFiles.has(name));
+  return userContent.length === 0;
+}

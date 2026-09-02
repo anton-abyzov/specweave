@@ -44,6 +44,7 @@ import {
   ensureSkillCreator,
   promptProjectSetup,
   promptRepoUrlsLoop,
+  shouldScaffoldWorkspaceDir,
 } from '../helpers/init/index.js';
 import {
   scanWorkspaceContent,
@@ -419,8 +420,12 @@ export async function initCommand(
       await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
     }
 
-    // Post-scaffold: Always create repositories/ directory (unified workspace model)
-    fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
+    // Post-scaffold: create repositories/ ONLY for an actual workspace.
+    // A plain single-repo project must not be given umbrella structure it never
+    // asked for (repositories/ is itself an "this is an umbrella" marker).
+    if (shouldScaffoldWorkspaceDir(targetDir)) {
+      fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
+    }
 
     // Post-scaffold: Project setup question — ask which repos to connect
     // Skip if: CI mode, reinit, or repos already cloned via migration sub-menu

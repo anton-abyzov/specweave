@@ -140,6 +140,7 @@ export {
   showRestructureWarnings,
   detectOrgRepo,
   promptOrgRepo,
+  shouldScaffoldWorkspaceDir,
   type WorkspaceContentScan,
   type MigrationChoice,
   type RestructureResult,
