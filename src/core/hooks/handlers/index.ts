@@ -4,7 +4,17 @@
  * @module core/hooks/handlers
  */
 
-export type { HandlerFn, HookContext, HookInput, HookResult, HookEventType } from './types.js';
-export { getSafeDefault, SAFE_DEFAULTS } from './types.js';
-export { hookRouter } from './hook-router.js';
-export { findProjectRoot, createContext, parseStdinJson, logHook } from './utils.js';
+export type { HandlerFn, HookContext, HookInput, HookResult, HookEventType, HookSpecificOutput } from './types.js';
+export { HOOK_EVENTS, getSafeDefault, pass, deny, warn, sessionContext, stopBlock, validateHookOutput } from './types.js';
+export { hookRouter, registeredHookEvents } from './hook-router.js';
+export {
+  findProjectRoot,
+  createContext,
+  parseStdinJson,
+  logHook,
+  normalizePath,
+  getFilePath,
+  isIncrementFile,
+  extractIncrementId,
+  readActiveIncrements,
+} from './utils.js';

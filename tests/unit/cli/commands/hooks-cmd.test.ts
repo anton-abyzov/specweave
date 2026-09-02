@@ -1,201 +1,130 @@
+/**
+ * `specweave hooks log` — reads the single per-project JSONL hook log
+ * (.specweave/logs/hooks.jsonl + one rotated predecessor) and prints the
+ * newest entries first, with --hook / --blocks-only / --errors-only filters.
+ */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { tmpdir } from 'os';
+import { hooksLogCommand, readHookLog } from '../../../../src/cli/commands/hooks-cmd.js';
 
-// We test the functions directly by importing and overriding process.cwd()
+interface Entry { t: string; hook: string; level: string; msg: string }
+
 describe('hooks-cmd CLI', () => {
   let testDir: string;
-  let hooksLogDir: string;
+  let logsDir: string;
   let origCwd: string;
 
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(tmpdir(), 'sw-hooks-cmd-'));
-    hooksLogDir = path.join(testDir, '.specweave', 'logs', 'hooks');
-    fs.mkdirSync(hooksLogDir, { recursive: true });
+    logsDir = path.join(testDir, '.specweave', 'logs');
+    fs.mkdirSync(logsDir, { recursive: true });
     origCwd = process.cwd();
     process.chdir(testDir);
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     process.chdir(origCwd);
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
+    fs.rmSync(testDir, { recursive: true, force: true });
   });
 
-  function writeLogEntries(hookName: string, entries: Record<string, unknown>[]) {
-    const logFile = path.join(hooksLogDir, `${hookName}.log`);
-    const lines = entries.map((e) => JSON.stringify(e)).join('\n') + '\n';
-    fs.writeFileSync(logFile, lines);
+  function write(file: string, entries: Partial<Entry>[]): void {
+    fs.writeFileSync(
+      path.join(logsDir, file),
+      entries.map((e) => JSON.stringify(e)).join('\n') + '\n',
+    );
   }
 
-  describe('hooksLogCommand', () => {
-    it('displays last 20 entries by default', async () => {
-      const entries = Array.from({ length: 25 }, (_, i) => ({
-        hookName: 'pre-tool-use',
-        status: 'success',
-        duration: i,
-        timestamp: `2026-04-06T00:${String(i).padStart(2, '0')}:00.000Z`,
-      }));
-      writeLogEntries('pre-tool-use', entries);
+  function entry(i: number, over: Partial<Entry> = {}): Partial<Entry> {
+    return {
+      t: `2026-04-06T00:${String(i).padStart(2, '0')}:00.000Z`,
+      hook: 'pre-tool-use',
+      level: 'warn',
+      msg: `event ${i}`,
+      ...over,
+    };
+  }
 
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
+  function capture(): string[] {
+    const logs: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((msg?: unknown) => { logs.push(String(msg)); });
+    return logs;
+  }
 
-      const { hooksLogCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
+  describe('readHookLog', () => {
+    it('reads the rotated file before the current one and skips malformed lines', () => {
+      write('hooks.jsonl.1', [entry(1, { msg: 'old' })]);
+      fs.writeFileSync(
+        path.join(logsDir, 'hooks.jsonl'),
+        `${JSON.stringify(entry(2, { msg: 'new' }))}\nNOT JSON\n\n`,
       );
+      expect(readHookLog(testDir).map((e) => e.msg)).toEqual(['old', 'new']);
+    });
+
+    it('returns [] when nothing was ever logged', () => {
+      expect(readHookLog(testDir)).toEqual([]);
+    });
+  });
+
+  describe('hooksLogCommand', () => {
+    it('displays the last 20 entries by default, newest first', async () => {
+      write('hooks.jsonl', Array.from({ length: 25 }, (_, i) => entry(i)));
+      const logs = capture();
       await hooksLogCommand({});
 
       const dataLines = logs.filter((l) => l.includes('pre-tool-use'));
-      expect(dataLines.length).toBe(20);
+      expect(dataLines).toHaveLength(20);
+      expect(dataLines[0]).toContain('event 24');
+      expect(dataLines[19]).toContain('event 5');
+    });
 
-      vi.restoreAllMocks();
+    it('respects --last N', async () => {
+      write('hooks.jsonl', Array.from({ length: 25 }, (_, i) => entry(i)));
+      const logs = capture();
+      await hooksLogCommand({ last: 5 });
+      expect(logs.filter((l) => l.includes('pre-tool-use'))).toHaveLength(5);
     });
 
     it('filters with --blocks-only', async () => {
-      writeLogEntries('pre-tool-use', [
-        { hookName: 'pre-tool-use', status: 'success', timestamp: '2026-04-06T00:01:00.000Z' },
-        { hookName: 'pre-tool-use', status: 'warning', error: '[GUARD] Blocked', timestamp: '2026-04-06T00:02:00.000Z' },
-        { hookName: 'pre-tool-use', status: 'success', timestamp: '2026-04-06T00:03:00.000Z' },
+      write('hooks.jsonl', [
+        entry(1),
+        entry(2, { level: 'block', msg: 'guard blocked 0001-x' }),
+        entry(3, { level: 'error' }),
       ]);
-
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksLogCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
+      const logs = capture();
       await hooksLogCommand({ blocksOnly: true });
 
       const dataLines = logs.filter((l) => l.includes('pre-tool-use'));
-      expect(dataLines.length).toBe(1);
-      expect(dataLines[0]).toContain('warning');
-
-      vi.restoreAllMocks();
+      expect(dataLines).toHaveLength(1);
+      expect(dataLines[0]).toContain('block');
+      expect(dataLines[0]).toContain('guard blocked 0001-x');
     });
 
     it('filters with --errors-only', async () => {
-      writeLogEntries('pre-tool-use', [
-        { hookName: 'pre-tool-use', status: 'success', timestamp: '2026-04-06T00:01:00.000Z' },
-        { hookName: 'pre-tool-use', status: 'error', error: '[ERROR] Crash', timestamp: '2026-04-06T00:02:00.000Z' },
-      ]);
-
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksLogCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
+      write('hooks.jsonl', [entry(1), entry(2, { level: 'error', msg: 'boom' })]);
+      const logs = capture();
       await hooksLogCommand({ errorsOnly: true });
 
       const dataLines = logs.filter((l) => l.includes('pre-tool-use'));
-      expect(dataLines.length).toBe(1);
-
-      vi.restoreAllMocks();
+      expect(dataLines).toHaveLength(1);
+      expect(dataLines[0]).toContain('boom');
     });
 
-    it('respects --last N limit', async () => {
-      const entries = Array.from({ length: 10 }, (_, i) => ({
-        hookName: 'pre-tool-use',
-        status: 'success',
-        timestamp: `2026-04-06T00:${String(i).padStart(2, '0')}:00.000Z`,
-      }));
-      writeLogEntries('pre-tool-use', entries);
+    it('filters by hook name', async () => {
+      write('hooks.jsonl', [entry(1), entry(2, { hook: 'stop', msg: 'auto loop released' })]);
+      const logs = capture();
+      await hooksLogCommand({ hook: 'stop' });
 
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksLogCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
-      await hooksLogCommand({ last: 5 });
-
-      const dataLines = logs.filter((l) => l.includes('pre-tool-use'));
-      expect(dataLines.length).toBe(5);
-
-      vi.restoreAllMocks();
+      expect(logs.filter((l) => l.includes('pre-tool-use'))).toHaveLength(0);
+      expect(logs.filter((l) => l.includes('auto loop released'))).toHaveLength(1);
     });
 
-    it('filters by --hook name', async () => {
-      writeLogEntries('pre-tool-use', [
-        { hookName: 'pre-tool-use', status: 'success', timestamp: '2026-04-06T00:01:00.000Z' },
-      ]);
-      writeLogEntries('user-prompt-submit', [
-        { hookName: 'user-prompt-submit', status: 'success', timestamp: '2026-04-06T00:02:00.000Z' },
-      ]);
-
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksLogCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
-      await hooksLogCommand({ hook: 'pre-tool-use' });
-
-      const promptLines = logs.filter((l) => l.includes('user-prompt-submit'));
-      expect(promptLines.length).toBe(0);
-
-      vi.restoreAllMocks();
-    });
-
-    it('shows empty state when no logs exist', async () => {
-      // Remove the hooks log dir
-      fs.rmSync(hooksLogDir, { recursive: true, force: true });
-
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksLogCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
+    it('shows an empty state when nothing is logged', async () => {
+      const logs = capture();
       await hooksLogCommand({});
-
-      expect(logs.some((l) => l.includes('No hook logs found'))).toBe(true);
-
-      vi.restoreAllMocks();
-    });
-  });
-
-  describe('hooksHealthCommand', () => {
-    it('shows health report with OK status for healthy hooks', async () => {
-      const entries = Array.from({ length: 10 }, (_, i) => ({
-        hookName: 'pre-tool-use',
-        status: 'success',
-        duration: 5,
-        timestamp: `2026-04-06T00:${String(i).padStart(2, '0')}:00.000Z`,
-      }));
-      writeLogEntries('pre-tool-use', entries);
-
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksHealthCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
-      await hooksHealthCommand({});
-
-      expect(logs.some((l) => l.includes('Hook Health Report'))).toBe(true);
-      expect(logs.some((l) => l.includes('pre-tool-use'))).toBe(true);
-
-      vi.restoreAllMocks();
-    });
-
-    it('shows empty state when no data available', async () => {
-      fs.rmSync(hooksLogDir, { recursive: true, force: true });
-
-      const logs: string[] = [];
-      vi.spyOn(console, 'log').mockImplementation((msg: string) => logs.push(msg));
-
-      const { hooksHealthCommand } = await import(
-        '../../../../src/cli/commands/hooks-cmd.js'
-      );
-      await hooksHealthCommand({});
-
-      expect(logs.some((l) => l.includes('No hook data available'))).toBe(true);
-
-      vi.restoreAllMocks();
+      expect(logs.some((l) => l.includes('No hook events logged'))).toBe(true);
     });
   });
 });

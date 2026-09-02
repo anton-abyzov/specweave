@@ -20,7 +20,7 @@ import { preToolUseHandler } from './hooks/handlers/pre-tool-use.js';
 import { createSubagentStartHandler, createSubagentStopHandler } from './hooks/handlers/subagent-lifecycle.js';
 import { passthroughHandler } from './hooks/handlers/passthrough.js';
 import { createWorkspaceRouteHandlers } from './routes/workspace-routes.js';
-import { isPortReachable } from '../../hooks/hooks-status.js';
+import { isPortReachable } from '../../utils/port-reachable.js';
 import { hasSpecweaveIncrements, findUmbrellaRoot } from '../../utils/find-project-root.js';
 import { SCOPE_PORTS } from '../../utils/docs-preview/types.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';

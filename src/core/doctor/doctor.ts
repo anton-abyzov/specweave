@@ -155,7 +155,7 @@ function determineFix(categories: CategoryResult[]): string {
   }
 
   if (hasHookIssues) {
-    return 'specweave hooks health';
+    return 'specweave doctor';
   }
 
   return 'specweave update';

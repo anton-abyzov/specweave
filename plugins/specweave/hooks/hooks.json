@@ -1,73 +1,27 @@
 {
+  "description": "SpecWeave 2.0 hooks: session context, status-completion guard, auto-loop driver, compaction handoff. Exec-form node launcher (no shell), Windows-safe.",
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "matcher_content": "\"file_path\"\\s*:\\s*\"[^\"]*\\.specweave/increments/",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
-          }
-        ]
-      },
-      {
-        "matcher": "TeamCreate",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-tool-use || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook session-start || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "session-start"],
+            "timeout": 10
           }
         ]
       }
     ],
-    "UserPromptSubmit": [
+    "PreToolUse": [
       {
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook user-prompt-submit || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook pre-compact || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "matcher_content": "\"file_path\"\\s*:\\s*\"[^\"]*\\.specweave/increments/",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook post-tool-use || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
-          }
-        ]
-      },
-      {
-        "matcher": "Skill|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook post-tool-use-analytics || { cat >/dev/null; echo \"{\\\"continue\\\":true}\"; }'"
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "pre-tool-use"],
+            "timeout": 10
           }
         ]
       }
@@ -77,23 +31,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-reflect || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
-            "timeout": 15000
-          },
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "stop"],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-auto || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
-            "timeout": 15000
-          },
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop-sync || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
-            "timeout": 15000
-          },
-          {
-            "type": "command",
-            "command": "bash -c 'command -v specweave &>/dev/null && specweave hook stop || { cat >/dev/null; echo \"{\\\"decision\\\":\\\"approve\\\"}\"; }'",
-            "timeout": 15000
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "pre-compact"],
+            "timeout": 10
           }
         ]
       }

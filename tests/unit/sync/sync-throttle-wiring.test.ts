@@ -76,34 +76,4 @@ describe('SyncThrottle wiring in trigger paths', () => {
     });
   });
 
-  describe('auto-create-external-issue.ts', () => {
-    it('should import SyncThrottle', () => {
-      const source = readFileSync(
-        path.join(REPO, 'src/hooks/auto-create-external-issue.ts'),
-        'utf-8'
-      );
-      expect(source).toContain('SyncThrottle');
-      expect(source).toMatch(/import.*SyncThrottle/);
-    });
-
-    it('should call shouldSkip before autoCreateExternalIssue', () => {
-      const source = readFileSync(
-        path.join(REPO, 'src/hooks/auto-create-external-issue.ts'),
-        'utf-8'
-      );
-      const shouldSkipPos = source.indexOf('shouldSkip');
-      const createPos = source.indexOf('autoCreateExternalIssue(');
-      expect(shouldSkipPos).toBeGreaterThan(-1);
-      expect(createPos).toBeGreaterThan(-1);
-      expect(shouldSkipPos).toBeLessThan(createPos);
-    });
-
-    it('should call record after successful create', () => {
-      const source = readFileSync(
-        path.join(REPO, 'src/hooks/auto-create-external-issue.ts'),
-        'utf-8'
-      );
-      expect(source).toContain('.record(');
-    });
-  });
 });

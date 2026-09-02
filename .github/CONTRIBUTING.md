@@ -173,7 +173,7 @@ npm run build  # Compile TypeScript
 SpecWeave has a **dual compilation strategy**:
 
 1. **`tsc`** compiles `src/` → `dist/src/` (TypeScript compiler)
-2. **`esbuild`** compiles `plugins/**/lib/hooks/*.ts` → `plugins/**/lib/hooks/*.js` (in-place)
+2. Claude Code hooks are `plugins/specweave/hooks/run.mjs` (zero-dep launcher) → `dist/src/core/hooks/handlers/hook-router.js`
 
 **Why separate compilation?**
 - Hooks must import from `dist/src/` (compiled output)
@@ -201,7 +201,7 @@ node scripts/fix-js-extensions.js  # Add missing .js extensions
 npm run rebuild
 
 # Verify:
-node plugins/specweave/lib/hooks/update-ac-status.js 0001
+node plugins/specweave/hooks/run.mjs pre-tool-use < sample.json
 ```
 
 **Missing .js Extensions in Imports**
@@ -249,7 +249,7 @@ find dist/src -name "*.ts" -not -name "*.d.ts"
 npm run clean && npm run build
 
 # 3. Test hook execution
-node plugins/specweave/lib/hooks/update-ac-status.js --help
+specweave doctor   # dry-runs all four hook events
 ```
 
 #### CI Build

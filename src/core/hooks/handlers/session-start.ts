@@ -1,138 +1,171 @@
 /**
- * Session-start hook handler — session initialization.
+ * SessionStart hook handler — the single context-injection point.
  *
- * Clears stale auto-mode files, resets context pressure,
- * purges junk state at most once per 24h, and performs a baseline prompt health check.
+ * Emits one `additionalContext` string: the active increment (id + title),
+ * the next pending task (from ledger.jsonl when present, else tasks.md) and
+ * the latest handoff pointer. No banner, no doctor, no network — a few small
+ * file reads, well under 300 ms. Returns `{}` when there is nothing to say.
+ *
+ * Side effects: clears auto-mode session files older than 24 h so a crashed
+ * `/sw:auto` run cannot trap the next session, resets per-session pressure
+ * alerts, and purges junk state at most once per 24 h.
+ *
+ * @module core/hooks/handlers/session-start
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HandlerFn } from './types.js';
+import { pass, sessionContext } from './types.js';
+import { readActiveIncrements, readJsonSafe } from './utils.js';
 import { isGcDue, purgeState, formatBytes } from '../../state/state-gc.js';
 
-const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
-const WARNING_THRESHOLD = 80000;
-const CRITICAL_THRESHOLD = 120000;
-const SYSTEM_ESTIMATE = 12000;
-const SKILL_BUDGET = 15000;
-const HOOK_PER_TURN = 3000;
+const STALE_AUTO_MS = 24 * 60 * 60 * 1000;
+const MAX_INCREMENTS_LISTED = 3;
 
-function isStale(filePath: string): boolean {
+function safeRemove(p: string): void {
+  try { fs.unlinkSync(p); } catch { /* absent */ }
+}
+
+function clearStaleAutoSession(stateDir: string): void {
+  const autoFile = path.join(stateDir, 'auto-mode.json');
   try {
-    const stat = fs.statSync(filePath);
-    return Date.now() - stat.mtimeMs > STALE_THRESHOLD_MS;
+    if (Date.now() - fs.statSync(autoFile).mtimeMs <= STALE_AUTO_MS) return;
   } catch {
-    return false;
+    return;
+  }
+  safeRemove(autoFile);
+  safeRemove(path.join(stateDir, '.stop-auto-turns'));
+}
+
+/** Silent purge of known junk state, at most once per 24 h. Best-effort. */
+function runStateGc(stateDir: string, logsDir: string, timestamp: string): void {
+  try {
+    if (!isGcDue(stateDir)) return;
+    const gc = purgeState(stateDir, { apply: true });
+    if (gc.deleted.length === 0) return;
+    fs.mkdirSync(logsDir, { recursive: true });
+    fs.appendFileSync(
+      path.join(logsDir, 'session.log'),
+      `[${timestamp}] SessionStart: gc removed ${gc.deleted.length} state entries (${formatBytes(gc.bytes)})\n`,
+    );
+  } catch {
+    // GC is best-effort — never fail the hook
   }
 }
 
-function safeRemove(filePath: string): void {
-  try {
-    fs.unlinkSync(filePath);
-  } catch {
-    // Ignore
-  }
+function readText(p: string): string {
+  try { return fs.readFileSync(p, 'utf8'); } catch { return ''; }
 }
 
-function fileSize(filePath: string): number {
-  try {
-    return fs.statSync(filePath).size;
-  } catch {
-    return 0;
+/** Title: metadata.title → spec.md frontmatter `title:` → first `# ` heading. */
+function readTitle(incDir: string): string {
+  const meta = readJsonSafe<{ title?: string }>(path.join(incDir, 'metadata.json'));
+  if (meta?.title && typeof meta.title === 'string') return meta.title.trim();
+  const spec = readText(path.join(incDir, 'spec.md'));
+  const fm = spec.match(/^---[\s\S]*?\ntitle:\s*["']?(.+?)["']?\s*\n[\s\S]*?---/);
+  if (fm) return fm[1].trim();
+  const h1 = spec.match(/^#\s+(.+)$/m);
+  return h1 ? h1[1].replace(/^(Increment|Spec(ification)?)\s*:\s*/i, '').trim() : '';
+}
+
+/** Task ids marked done in ledger.jsonl (`{t:"T-01", e:"done"}` lines). */
+function ledgerDone(incDir: string): Set<string> | null {
+  const raw = readText(path.join(incDir, 'ledger.jsonl'));
+  if (!raw) return null;
+  const done = new Set<string>();
+  for (const line of raw.split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      const ev = JSON.parse(line) as { t?: string; e?: string };
+      if (typeof ev.t === 'string' && ev.e === 'done') done.add(ev.t);
+    } catch { /* skip malformed line */ }
   }
+  return done;
+}
+
+/**
+ * First task that is not done. Supports both the 1.x layout
+ * (`### T-001: Title` + `**Status**: [x] completed`) and the 2.0 layout
+ * (`### T-01 Title` with status derived from ledger.jsonl).
+ */
+function nextPendingTask(incDir: string): { pending: number; total: number; next: string } | null {
+  const tasks = readText(path.join(incDir, 'tasks.md'));
+  if (!tasks) return null;
+  const done = ledgerDone(incDir);
+  const headerRe = /^###\s+(T-\d+)\s*:?\s*(.*)$/;
+  const lines = tasks.split('\n');
+  const items: Array<{ id: string; title: string; done: boolean }> = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(headerRe);
+    if (!m) continue;
+    let block = '';
+    for (let j = i + 1; j < lines.length && !headerRe.test(lines[j]); j++) block += lines[j] + '\n';
+    const statusDone =
+      /\*\*Status\*\*:\s*\[x\]/i.test(block) || /^\s*-\s*\[x\]\s*(Status|Done)/im.test(block);
+    items.push({ id: m[1], title: m[2].trim(), done: done ? done.has(m[1]) : statusDone });
+  }
+  if (items.length === 0) return null;
+  const next = items.find((t) => !t.done);
+  return {
+    pending: items.filter((t) => !t.done).length,
+    total: items.length,
+    next: next ? `${next.id}${next.title ? ' ' + next.title : ''}` : '',
+  };
+}
+
+function ageLabel(mtimeMs: number): string {
+  const min = Math.max(0, Math.round((Date.now() - mtimeMs) / 60000));
+  if (min < 60) return `${min}m ago`;
+  const h = Math.round(min / 60);
+  return h < 48 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+}
+
+function handoffPointer(projectRoot: string, incDirs: string[]): string {
+  const candidates = [
+    ...incDirs.map((d) => path.join(d, 'handoff.md')),
+    path.join(projectRoot, '.specweave', 'state', 'handoff-latest.md'),
+  ];
+  let best: { p: string; mtime: number } | null = null;
+  for (const p of candidates) {
+    try {
+      const mtime = fs.statSync(p).mtimeMs;
+      if (!best || mtime > best.mtime) best = { p, mtime };
+    } catch { /* absent */ }
+  }
+  if (!best) return '';
+  return `Last handoff: ${path.relative(projectRoot, best.p).replace(/\\/g, '/')} (${ageLabel(best.mtime)})`;
 }
 
 export const handle: HandlerFn = async (_input, context) => {
   const { projectRoot, stateDir, logsDir, timestamp } = context;
-
-  try {
-    fs.mkdirSync(stateDir, { recursive: true });
-  } catch {
-    return { continue: true };
-  }
-
-  // --- Auto-mode cleanup: remove stale session files (>24h) ---
-  const autoFile = path.join(stateDir, 'auto-mode.json');
-  if (fs.existsSync(autoFile) && isStale(autoFile)) {
-    safeRemove(autoFile);
-    safeRemove(path.join(stateDir, '.stop-auto-dedup'));
-    safeRemove(path.join(stateDir, '.stop-auto-dedup-prev'));
-    safeRemove(path.join(stateDir, '.stop-auto-turns'));
-
-    try {
-      fs.mkdirSync(logsDir, { recursive: true });
-      fs.appendFileSync(
-        path.join(logsDir, 'session.log'),
-        `[${timestamp}] SessionStart: Cleared stale auto-mode session files (>24h)\n`,
-      );
-    } catch {
-      // Never throw from logging
-    }
-  }
-
-  // --- State GC: silent purge of known junk, at most once per 24h ---
-  if (isGcDue(stateDir)) {
-    try {
-      const gc = purgeState(stateDir, { apply: true });
-      if (gc.deleted.length > 0) {
-        fs.mkdirSync(logsDir, { recursive: true });
-        fs.appendFileSync(
-          path.join(logsDir, 'session.log'),
-          `[${timestamp}] SessionStart: gc removed ${gc.deleted.length} state entries (${formatBytes(gc.bytes)})\n`,
-        );
-      }
-    } catch {
-      // GC is best-effort
-    }
-  }
-
-  // --- Context pressure reset ---
+  clearStaleAutoSession(stateDir);
+  runStateGc(stateDir, logsDir, timestamp);
+  // A pressure/health alert belongs to the session that raised it.
   safeRemove(path.join(stateDir, 'context-pressure.json'));
   safeRemove(path.join(stateDir, 'prompt-health-alert.json'));
 
-  // --- Baseline health check ---
-  try {
-    const claudeMdSize = fileSize(path.join(projectRoot, 'CLAUDE.md'));
-    const memoryDir = path.join(projectRoot, '.claude', 'projects');
-    let memoryMdSize = 0;
-    try {
-      // Find MEMORY.md in any project subdirectory
-      if (fs.existsSync(memoryDir)) {
-        const entries = fs.readdirSync(memoryDir, { withFileTypes: true });
-        for (const entry of entries) {
-          if (entry.isDirectory()) {
-            const memPath = path.join(memoryDir, entry.name, 'memory', 'MEMORY.md');
-            memoryMdSize += fileSize(memPath);
-          }
-        }
-      }
-    } catch {
-      // Best-effort
+  const ids = readActiveIncrements(projectRoot);
+  const incDirs = ids.map((id) => path.join(projectRoot, '.specweave', 'increments', id));
+  const lines: string[] = [];
+
+  ids.slice(0, MAX_INCREMENTS_LISTED).forEach((id, i) => {
+    const title = readTitle(incDirs[i]);
+    const tasks = nextPendingTask(incDirs[i]);
+    let line = `Active increment: ${id}${title ? ` — ${title}` : ''}`;
+    if (tasks) {
+      line += tasks.next
+        ? ` (${tasks.pending}/${tasks.total} tasks pending; next: ${tasks.next})`
+        : ` (all ${tasks.total} tasks done — run /sw:done ${id})`;
     }
-    const baseline = claudeMdSize + memoryMdSize + SYSTEM_ESTIMATE + SKILL_BUDGET + HOOK_PER_TURN;
+    line += `. Spec: .specweave/increments/${id}/spec.md`;
+    lines.push(line);
+  });
+  if (ids.length > MAX_INCREMENTS_LISTED) lines.push(`(+${ids.length - MAX_INCREMENTS_LISTED} more active increments)`);
 
-    let warningLevel = 'normal';
-    if (baseline > CRITICAL_THRESHOLD) {
-      warningLevel = 'critical';
-    } else if (baseline > WARNING_THRESHOLD) {
-      warningLevel = 'warning';
-    }
+  const handoff = handoffPointer(projectRoot, incDirs);
+  if (handoff) lines.push(handoff);
 
-    const health = {
-      baseline,
-      claudeMdSize,
-      memoryMdSize,
-      skillBudget: SKILL_BUDGET,
-      systemEstimate: SYSTEM_ESTIMATE,
-      hookPerTurn: HOOK_PER_TURN,
-      warningLevel,
-      checkedAt: timestamp,
-    };
-
-    fs.writeFileSync(path.join(stateDir, 'prompt-health.json'), JSON.stringify(health));
-  } catch {
-    // Health check is best-effort
-  }
-
-  return { continue: true };
+  if (lines.length === 0) return pass();
+  return sessionContext(`SpecWeave: ${lines.join('\n')}`);
 };

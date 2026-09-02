@@ -1,7 +1,7 @@
 /**
  * Tests for sw:jobs command
  *
- * Tests both read-jobs.sh (bash) and jobs.js (Node) implementations
+ * Tests the jobs.js (Node) implementation
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -319,117 +319,6 @@ describe('sw:jobs command', () => {
     });
   });
 
-  describe('read-jobs.sh (Bash implementation)', () => {
-    it('should show current work status with increments', () => {
-      const dashboard = {
-        increments: {
-          '0001-test-feature': {
-            status: 'active',
-            tasks: { completed: 5, total: 10 }
-          }
-        },
-        summary: {
-          total: 1,
-          active: 1,
-          completed: 0
-        }
-      };
-      fs.writeFileSync(dashboardFile, JSON.stringify(dashboard, null, 2));
-
-      const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
-      const result = execSync(`bash ${scriptPath}`, {
-        cwd: tempDir,
-        encoding: 'utf-8',
-        env: getCleanEnv()
-      });
-
-      expect(result).toContain('Current Work Status');
-      expect(result).toContain('In Progress:');
-      expect(result).toContain('0001-test-feature');
-      expect(result).toContain('Tasks: 5/10 (50%)');
-    });
-
-    it('should show auto session status when running', () => {
-      const autoSession = {
-        sessionId: 'auto-2025-12-31-test123',
-        status: 'running',
-        iteration: 10,
-        maxIterations: 50,
-        currentIncrement: '0001-test-feature'
-      };
-      fs.writeFileSync(autoSessionFile, JSON.stringify(autoSession, null, 2));
-
-      const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
-      const result = execSync(`bash ${scriptPath}`, {
-        cwd: tempDir,
-        encoding: 'utf-8',
-        env: getCleanEnv()
-      });
-
-      expect(result).toContain('Auto Mode: RUNNING');
-      expect(result).toContain('Session: auto-2025-12-31-test123');
-      expect(result).toContain('Iteration: 10 / 50');
-      expect(result).toContain('Current: 0001-test-feature');
-    });
-
-    it('should show background jobs section', () => {
-      const jobs = {
-        jobs: [
-          {
-            id: 'test-job-123',
-            type: 'import-issues',
-            status: 'running',
-            startedAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            progress: { current: 100, total: 1000 }
-          }
-        ]
-      };
-      fs.writeFileSync(jobsFile, JSON.stringify(jobs, null, 2));
-
-      const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
-      const result = execSync(`bash ${scriptPath}`, {
-        cwd: tempDir,
-        encoding: 'utf-8',
-        env: getCleanEnv()
-      });
-
-      expect(result).toContain('Background Jobs');
-      expect(result).toContain('Running (1)');
-      expect(result).toContain('[test-job] import-issues');
-      expect(result).toContain('Progress: 100/1000 (10%)');
-    });
-
-    it('should show helpful commands at the end', () => {
-      const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
-      const result = execSync(`bash ${scriptPath}`, {
-        cwd: tempDir,
-        encoding: 'utf-8',
-        env: getCleanEnv()
-      });
-
-      expect(result).toContain('Commands:');
-      expect(result).toContain('sw:do');
-      expect(result).toContain('sw:progress');
-      expect(result).toContain('sw:done <id>');
-      expect(result).toContain('sw:jobs --id <id>');
-      expect(result).toContain('sw:jobs --all');
-    });
-
-    it('should handle missing dashboard gracefully', () => {
-      fs.unlinkSync(dashboardFile);
-
-      const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
-      const result = execSync(`bash ${scriptPath}`, {
-        cwd: tempDir,
-        encoding: 'utf-8',
-        env: getCleanEnv()
-      });
-
-      expect(result).toContain('No increment data available');
-      expect(result).toMatch(/Run \/?sw:status to rebuild cache/);
-    });
-  });
 
   describe('Edge cases', () => {
     it('should handle jobs with missing progress fields', () => {

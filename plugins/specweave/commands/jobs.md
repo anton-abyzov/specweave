@@ -17,7 +17,7 @@ Shows background job information including:
 
 ## Hook Execution (Default)
 
-This command is intercepted by the **UserPromptSubmit hook** for instant execution (<100ms). The hook runs `read-jobs.sh` or `jobs.js` directly.
+This command runs `node ${CLAUDE_PLUGIN_ROOT}/scripts/jobs.js` directly (no model round-trip).
 
 **No action needed** — the hook output appears automatically in `<system-reminder>` tags.
 
