@@ -52,11 +52,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Install dependencies
-        run: npm install --ignore-scripts
+      - name: Install dependencies (no install scripts)
+        run: |
+          npm install --ignore-scripts
+          npm run setup
 
       - name: Build project
         run: npm run build
+
+      # prepublishOnly is skipped under the committed .npmrc (ignore-scripts),
+      # so run the version-alignment gate explicitly.
+      - name: Validate version alignment
+        run: npm run validate:versions
 
       - name: Extract version
         id: package_version
@@ -138,9 +145,9 @@ jobs:
         run: |
           # If specific version provided, use it; otherwise bump
           if [ -n "$VERSION" ] && [ "$VERSION" != "" ]; then
-            npm version "$VERSION" --no-git-tag-version
+            npm version "$VERSION" --no-git-tag-version --ignore-scripts=false
           else
-            npm version "$VERSION_TYPE" --no-git-tag-version
+            npm version "$VERSION_TYPE" --no-git-tag-version --ignore-scripts=false
           fi
           NEW_VERSION=$(node -p "require('./package.json').version")
           git add package.json package-lock.json

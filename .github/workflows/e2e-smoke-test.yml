@@ -113,7 +113,7 @@ jobs:
   #         node-version: '20'
   #
   #     - name: Install Dependencies
-  #       run: npm install
+  #       run: npm install --ignore-scripts
   #
   #     - name: Create Test Directory
   #       run: |
@@ -156,7 +156,7 @@ jobs:
   #     - name: Run Tests
   #       working-directory: ${{ env.TEST_DIR }}
   #       run: |
-  #         npm install
+  #         npm install --ignore-scripts
   #         npm test
   #
   #     - name: Build Project
