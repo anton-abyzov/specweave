@@ -15,6 +15,8 @@ export interface USProgress {
   totalTasks: number;
   completedTasks: number;
   inProgressTasks: number;
+  /** Terminal-but-not-completed (`skip`ped / canceled). Never counted as pending. */
+  canceledTasks: number;
   pendingTasks: number;
   percentage: number;
   tasks: Task[];
@@ -27,6 +29,8 @@ export interface AggregateProgress {
   totalTasks: number;
   completedTasks: number;
   inProgressTasks: number;
+  /** Terminal-but-not-completed (`skip`ped / canceled). Never counted as pending. */
+  canceledTasks: number;
   pendingTasks: number;
   percentage: number;
   byUserStory: Map<string, USProgress>;
@@ -47,10 +51,14 @@ export function calculateUSProgress(usId: string, tasks: Task[]): USProgress {
   const totalTasks = tasks.length;
   const completedTasks = countByStatus(tasks, t => t.status === 'completed');
   const inProgressTasks = countByStatus(tasks, t => t.status === 'in_progress');
-  const pendingTasks = totalTasks - completedTasks - inProgressTasks;
+  // `skip` is terminal (design 2.0): a skipped/canceled task is finished work,
+  // not remaining work. Counting it as pending is what kept the `/sw:auto` Stop
+  // hook blocking forever on any increment with a skipped task.
+  const canceledTasks = countByStatus(tasks, t => t.status === 'canceled');
+  const pendingTasks = totalTasks - completedTasks - inProgressTasks - canceledTasks;
   const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  return { usId, totalTasks, completedTasks, inProgressTasks, pendingTasks, percentage, tasks };
+  return { usId, totalTasks, completedTasks, inProgressTasks, canceledTasks, pendingTasks, percentage, tasks };
 }
 
 /**
@@ -61,6 +69,7 @@ export function calculateAggregateProgress(tasksByUS: TasksByUserStory): Aggrega
   let totalTasks = 0;
   let completedTasks = 0;
   let inProgressTasks = 0;
+  let canceledTasks = 0;
   let pendingTasks = 0;
 
   for (const [usId, tasks] of Object.entries(tasksByUS)) {
@@ -72,6 +81,7 @@ export function calculateAggregateProgress(tasksByUS: TasksByUserStory): Aggrega
     totalTasks += usProgress.totalTasks;
     completedTasks += usProgress.completedTasks;
     inProgressTasks += usProgress.inProgressTasks;
+    canceledTasks += usProgress.canceledTasks;
     pendingTasks += usProgress.pendingTasks;
   }
 
@@ -81,12 +91,13 @@ export function calculateAggregateProgress(tasksByUS: TasksByUserStory): Aggrega
     totalTasks += orphanProgress.totalTasks;
     completedTasks += orphanProgress.completedTasks;
     inProgressTasks += orphanProgress.inProgressTasks;
+    canceledTasks += orphanProgress.canceledTasks;
     pendingTasks += orphanProgress.pendingTasks;
   }
 
   const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  return { totalTasks, completedTasks, inProgressTasks, pendingTasks, percentage, byUserStory, orphanTasks };
+  return { totalTasks, completedTasks, inProgressTasks, canceledTasks, pendingTasks, percentage, byUserStory, orphanTasks };
 }
 
 /**

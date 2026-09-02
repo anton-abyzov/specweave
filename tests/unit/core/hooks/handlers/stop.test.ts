@@ -93,6 +93,39 @@ describe('stop (auto loop driver)', () => {
     expect(fs.existsSync(stateFile(repo, '.stop-auto-turns'))).toBe(false);
   });
 
+  it('a skipped task is terminal -> the loop still reaches closure', async () => {
+    // Regression: `skip` is terminal, but the legacy tasks.md counter treated a
+    // skipped task as pending, so `/sw:auto` could never emit
+    // all_complete_needs_closure on any increment containing one — it blocked
+    // with "1 task(s) remain" until the maxTurns safety stop.
+    repo = mkRepo();
+    writeAutoMode(repo, { active: true, incrementIds: ['0001-demo'] });
+    mkIncrement(repo, '0001-demo', { tasksDone: 1, tasksPending: 1, acsTotal: 1, acsDone: 1 });
+    const dir = path.join(repo, '.specweave', 'increments', '0001-demo');
+    fs.writeFileSync(
+      path.join(dir, 'ledger.jsonl'),
+      '{"t":"T-002","e":"skip","by":"a","at":"2026-09-02T10:00:00Z","note":"not needed"}\n',
+    );
+    process.chdir(repo);
+    const res = await stop();
+    expect(res.reason).toContain('all_complete_needs_closure');
+  });
+
+  it('a task claimed by another agent still counts as remaining work', async () => {
+    repo = mkRepo();
+    writeAutoMode(repo, { active: true, incrementIds: ['0001-demo'] });
+    mkIncrement(repo, '0001-demo', { tasksDone: 1, tasksPending: 1, acsTotal: 1, acsDone: 1 });
+    const dir = path.join(repo, '.specweave', 'increments', '0001-demo');
+    fs.writeFileSync(
+      path.join(dir, 'ledger.jsonl'),
+      `{"t":"T-002","e":"claim","by":"other","at":"${new Date().toISOString()}"}\n`,
+    );
+    process.chdir(repo);
+    const res = await stop();
+    expect(res.reason).toContain('1 task(s)');
+    expect(res.reason).not.toContain('all_complete_needs_closure');
+  });
+
   it('tasks done but an AC unsatisfied -> block-continue, not closure', async () => {
     repo = mkRepo();
     writeAutoMode(repo, { active: true, incrementIds: ['0001-demo'] });
