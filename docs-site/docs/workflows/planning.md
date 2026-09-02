@@ -40,7 +40,7 @@ SpecWeave places human review at the highest-leverage checkpoints — **after re
 graph LR
     A["Feature Idea"] --> B["Research Phase<br/>sw:brainstorm"]
     B --> C{{"HUMAN REVIEW<br/>Approach OK?"}}
-    C -->|Yes| D["Planning Phase<br/>sw:increment<br/>(spec + plan + tasks)"]
+    C -->|Yes| D["Planning Phase<br/>sw:increment<br/>(spec + tasks)"]
     D --> E{{"HUMAN REVIEW<br/>Plan OK?"}}
     E -->|Yes| F["Implementation<br/>sw:do or sw:auto"]
     E -->|Edit| D
