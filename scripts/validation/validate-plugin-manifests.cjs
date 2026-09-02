@@ -19,7 +19,12 @@ const pluginsDir = 'plugins';
 const requiredFields = ['name', 'description', 'version', 'author', 'repository', 'homepage', 'license', 'keywords'];
 
 function validatePlugins() {
-  const plugins = fs.readdirSync(pluginsDir);
+  // A plugin is a DIRECTORY under plugins/; loose files there (PLUGINS-INDEX.md)
+  // are documentation, not manifests to validate.
+  const plugins = fs
+    .readdirSync(pluginsDir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name);
   let hasErrors = false;
   let validCount = 0;
   let warningCount = 0;

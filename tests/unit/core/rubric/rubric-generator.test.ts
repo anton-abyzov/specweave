@@ -77,12 +77,13 @@ describe('generateRubric', () => {
     expect(md).toContain('## Independent Evaluation');
   });
 
-  it('TC-008: criterion IDs are sequential R-001, R-002, ...', () => {
+  it('TC-008: criterion IDs mirror their source AC (AC-US1-03 -> R-US1-03)', () => {
+    // Sequential R-001/R-002 ids were dropped: they broke traceability the
+    // moment an AC was inserted or removed. The generator now derives the id
+    // from the AC id so a criterion always names the AC it grades.
     const md = generateRubric('0663-test', SPEC_WITH_ACS);
     const doc = parseRubric(md);
     const specCriteria = doc.criteria.filter(c => c.id.startsWith('R-') && !c.id.startsWith('R-D'));
-    for (let i = 0; i < specCriteria.length; i++) {
-      expect(specCriteria[i].id).toBe(`R-${String(i + 1).padStart(3, '0')}`);
-    }
+    expect(specCriteria.map(c => c.id)).toEqual(['R-US1-01', 'R-US1-02', 'R-US1-03']);
   });
 });
