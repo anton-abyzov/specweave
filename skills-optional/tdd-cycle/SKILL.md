@@ -26,10 +26,6 @@ tdd-cycle --phase all "user authentication"
 
 ---
 
-## Project Overrides
-
-**Skill Memories**: If `.specweave/skill-memories/tdd-cycle.md` exists, read and apply its learnings.
-
 Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-green-refactor discipline:
 
 [Extended thinking: This workflow enforces test-first development through coordinated agent orchestration. Each phase of the TDD cycle is strictly enforced with fail-first verification, incremental implementation, and continuous refactoring. The workflow supports both single test and test suite approaches with configurable coverage thresholds.]
