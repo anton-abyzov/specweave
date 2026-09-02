@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { syncGapsCommand } from '../../../../src/cli/commands/sync-gaps.js';
+import { detectSyncGaps } from '../../../../src/cli/commands/sync-gaps.js';
 
-describe('syncGapsCommand', () => {
+describe('detectSyncGaps', () => {
   let tempDir: string;
 
   beforeEach(() => {
@@ -37,9 +37,8 @@ describe('syncGapsCommand', () => {
 
   it('returns empty when no providers configured', async () => {
     fs.writeFileSync(path.join(tempDir, '.specweave', 'config.json'), '{}');
-    const result = await syncGapsCommand(tempDir);
-    expect(result.gaps).toEqual([]);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 
   it('returns empty when all increments fully synced', async () => {
@@ -49,9 +48,8 @@ describe('syncGapsCommand', () => {
       status: 'active',
       externalLinks: { github: { url: 'https://github.com' }, jira: { key: 'TEST-1' } },
     });
-    const result = await syncGapsCommand(tempDir);
-    expect(result.gaps).toEqual([]);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 
   it('detects gaps when increment missing a provider', async () => {
@@ -61,44 +59,23 @@ describe('syncGapsCommand', () => {
       status: 'active',
       externalLinks: { github: { url: 'https://github.com' } },
     });
-    const result = await syncGapsCommand(tempDir);
-    expect(result.gaps).toHaveLength(1);
-    expect(result.gaps[0].incrementId).toBe('0001-gap');
-    expect(result.gaps[0].missingProviders).toContain('jira');
-    expect(result.exitCode).toBe(1);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toHaveLength(1);
+    expect(gaps[0].incrementId).toBe('0001-gap');
+    expect(gaps[0].missingProviders).toContain('jira');
+    expect(gaps[0].syncedProviders).toEqual(['github']);
   });
 
-  it('outputs JSON with --json flag', async () => {
-    writeConfig({ github: true });
-    writeIncrement('0002-json', {
-      id: '0002-json',
+  it('reports every missing provider for an unsynced increment', async () => {
+    writeConfig({ github: true, jira: true });
+    writeIncrement('0002-none', {
+      id: '0002-none',
       status: 'in-progress',
       externalLinks: {},
     });
-    const logSpy = vi.spyOn(console, 'log');
-    const result = await syncGapsCommand(tempDir, { json: true });
-    expect(result.gaps).toHaveLength(1);
-    // Verify JSON was logged
-    const jsonOutput = logSpy.mock.calls.find(
-      (call) => typeof call[0] === 'string' && call[0].startsWith('['),
-    );
-    expect(jsonOutput).toBeTruthy();
-    const parsed = JSON.parse(jsonOutput![0] as string);
-    expect(parsed).toHaveLength(1);
-    expect(parsed[0].incrementId).toBe('0002-json');
-  });
-
-  it('calls fixFn for each gap with --fix', async () => {
-    writeConfig({ github: true, jira: true });
-    writeIncrement('0003-fix', {
-      id: '0003-fix',
-      status: 'active',
-      externalLinks: { github: { url: 'https://github.com' } },
-    });
-    const fixFn = vi.fn().mockResolvedValue(undefined);
-    const result = await syncGapsCommand(tempDir, { fix: true }, { fixFn });
-    expect(fixFn).toHaveBeenCalledWith('0003-fix', 'jira');
-    expect(result.fixed).toBe(1);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toHaveLength(1);
+    expect(gaps[0].missingProviders).toEqual(['github', 'jira']);
   });
 
   it('skips non-active increments', async () => {
@@ -108,22 +85,20 @@ describe('syncGapsCommand', () => {
       status: 'completed',
       externalLinks: {},
     });
-    const result = await syncGapsCommand(tempDir);
-    expect(result.gaps).toEqual([]);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 
   it('exits 0 when no gaps', async () => {
     writeConfig({ github: true });
     // No increments
-    const result = await syncGapsCommand(tempDir);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 
   it('gracefully handles missing config', async () => {
     // No config file at all
-    const result = await syncGapsCommand(tempDir);
-    expect(result.gaps).toEqual([]);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 });

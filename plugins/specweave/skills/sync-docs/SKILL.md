@@ -65,7 +65,7 @@ In review mode, prefix with: `[DRY RUN] No files were modified.`
 If sync fails:
 - Display the error message
 - Suggest: "Check that spec.md has valid frontmatter and user stories are properly formatted"
-- Suggest: "Run `sw:progress-sync` for full external tool sync"
+- Suggest: "Run `specweave sync push` for full external tool sync"
 
 ## Resources
 

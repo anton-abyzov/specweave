@@ -83,6 +83,12 @@ export class ConfigManager {
         delete (config.umbrella as Record<string, unknown>).syncStrategy;
       }
 
+      // Strip sync.mode (2.0): the queued event queue was removed — every
+      // trigger now pushes directly through one SyncThrottle.
+      if (config.sync && 'mode' in config.sync) {
+        delete (config.sync as Record<string, unknown>).mode;
+      }
+
       // Auto-migrate legacy umbrella/multiProject/projectMappings → workspace
       config = migrateToWorkspace(config, {
         info: (msg: string) => this.logger.info(msg),

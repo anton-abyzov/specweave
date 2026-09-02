@@ -20,7 +20,7 @@ sw:team-merge --skip-sync          # Merge without GitHub/JIRA sync
 1. **Verify all teammates completed** -- block if any are still running
 2. **Run quality gates per domain** -- `sw:grill` for each increment
 3. **Close increments in dependency order** -- `sw:done` per increment
-4. **Trigger sync** -- pushes to GitHub (`sw-github:sync`) or JIRA (`sw-jira:push`)
+4. **Trigger sync** -- `specweave sync push <increment-id>` (GitHub / Jira / ADO)
 
 ## Workflow
 
@@ -119,11 +119,8 @@ This ensures:
 For each closed increment, trigger external sync:
 
 ```bash
-# GitHub Issues sync
-sw-github:sync <increment-id>
-
-# JIRA sync (if configured)
-sw-jira:push <increment-id>
+# Push to whatever provider is configured (GitHub / Jira / ADO)
+specweave sync push <increment-id>
 ```
 
 ### Step 6: Execution Summary

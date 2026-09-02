@@ -4,14 +4,13 @@
  * Detects increments with partial external sync coverage.
  * Optionally attempts missing syncs with --fix.
  *
- * Usage: specweave sync-gaps [--json] [--fix]
+ * Used by `specweave sync status` (partial-coverage report). [--json] [--fix]
  *
  * @module cli/commands/sync-gaps
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { consoleLogger as logger } from '../../utils/logger.js';
 
 export interface SyncGapItem {
   incrementId: string;
@@ -20,75 +19,7 @@ export interface SyncGapItem {
   lastSyncTimestamp?: string;
 }
 
-export interface SyncGapsOptions {
-  json?: boolean;
-  fix?: boolean;
-}
-
-export interface SyncGapsResult {
-  gaps: SyncGapItem[];
-  fixed: number;
-  exitCode: number;
-}
-
-export async function syncGapsCommand(
-  projectRoot: string,
-  options: SyncGapsOptions = {},
-  deps?: {
-    fixFn?: (incrementId: string, provider: string) => Promise<void>;
-  },
-): Promise<SyncGapsResult> {
-  const gaps = await detectSyncGaps(projectRoot);
-  const result: SyncGapsResult = { gaps, fixed: 0, exitCode: gaps.length > 0 ? 1 : 0 };
-
-  if (gaps.length === 0) {
-    if (options.json) {
-      logger.log('[]');
-    } else {
-      logger.log('No sync gaps detected. All increments are fully synced.');
-    }
-    return result;
-  }
-
-  if (options.json) {
-    logger.log(JSON.stringify(gaps, null, 2));
-    return result;
-  }
-
-  logger.log(`Found ${gaps.length} increment(s) with partial sync coverage:\n`);
-  for (const gap of gaps) {
-    logger.log(`  ${gap.incrementId}`);
-    logger.log(`    Synced:  ${gap.syncedProviders.join(', ') || 'none'}`);
-    logger.log(`    Missing: ${gap.missingProviders.join(', ')}`);
-    if (gap.lastSyncTimestamp) {
-      logger.log(`    Last activity: ${gap.lastSyncTimestamp}`);
-    }
-    logger.log('');
-  }
-
-  if (options.fix && deps?.fixFn) {
-    logger.log('Attempting to fix sync gaps...\n');
-    for (const gap of gaps) {
-      for (const provider of gap.missingProviders) {
-        try {
-          await deps.fixFn(gap.incrementId, provider);
-          result.fixed++;
-          logger.log(`  [ok] ${gap.incrementId} → ${provider}`);
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          logger.log(`  [fail] ${gap.incrementId} → ${provider}: ${msg}`);
-        }
-      }
-    }
-    logger.log(`\nFixed ${result.fixed} of ${gaps.reduce((n, g) => n + g.missingProviders.length, 0)} missing syncs.`);
-  } else if (options.fix) {
-    logger.log('No sync function available — run with full SpecWeave context to fix gaps.');
-  }
-
-  return result;
-}
-
-async function detectSyncGaps(projectRoot: string): Promise<SyncGapItem[]> {
+export async function detectSyncGaps(projectRoot: string): Promise<SyncGapItem[]> {
   const gaps: SyncGapItem[] = [];
 
   // Read config to find configured providers

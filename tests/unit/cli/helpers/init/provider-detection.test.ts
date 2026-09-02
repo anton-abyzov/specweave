@@ -9,12 +9,13 @@ import * as fsPromises from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-// Mock execFileNoThrowSync for gh auth token tests
-const { mockExecFileNoThrowSync } = vi.hoisted(() => ({
-  mockExecFileNoThrowSync: vi.fn(),
-}));
-vi.mock('../../../../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrowSync: mockExecFileNoThrowSync,
+// GitHub detection goes through resolveGitHubToken, whose last resort is
+// `gh auth token` via child_process.execSync — mock it so the developer's own
+// gh login never leaks into these assertions.
+const { mockExecSync } = vi.hoisted(() => ({ mockExecSync: vi.fn() }));
+vi.mock('child_process', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('child_process')>()),
+  execSync: mockExecSync,
 }));
 
 import {
@@ -144,7 +145,8 @@ describe('provider-detection', () => {
     beforeEach(() => {
       dir = tmpPath('creds');
       mkdirSync(dir, { recursive: true });
-      mockExecFileNoThrowSync.mockReset();
+      mockExecSync.mockReset();
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
 
       // Save and clear relevant env vars
       for (const key of ['GITHUB_TOKEN', 'GH_TOKEN', 'AZURE_DEVOPS_PAT', 'ADO_PAT', 'BITBUCKET_TOKEN', 'BITBUCKET_APP_PASSWORD']) {
@@ -162,44 +164,44 @@ describe('provider-detection', () => {
     });
 
     // GitHub credentials
-    it('should detect GitHub token from gh auth token', () => {
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: 'ghp_test123\n', exitCode: 0 });
+    it('should fall back to gh auth token when nothing else is configured', () => {
+      mockExecSync.mockReturnValue('ghp_test123\n');
       const result = detectCredentials(dir, 'github');
       expect(result).toBe('ghp_test123');
     });
 
     it('should detect GitHub token from .env', () => {
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
       writeFileSync(path.join(dir, '.env'), 'GITHUB_TOKEN=env-token-abc\n');
       const result = detectCredentials(dir, 'github');
       expect(result).toBe('env-token-abc');
     });
 
     it('should detect GH_TOKEN from .env', () => {
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
       writeFileSync(path.join(dir, '.env'), 'GH_TOKEN=gh-tok-456\n');
       const result = detectCredentials(dir, 'github');
       expect(result).toBe('gh-tok-456');
     });
 
     it('should detect GitHub token from process.env', () => {
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
       process.env.GITHUB_TOKEN = 'proc-env-token';
       const result = detectCredentials(dir, 'github');
       expect(result).toBe('proc-env-token');
     });
 
     it('should return null when no GitHub credentials found', () => {
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: '', exitCode: 1 });
+      mockExecSync.mockImplementation(() => { throw new Error('gh: not logged in'); });
       const result = detectCredentials(dir, 'github');
       expect(result).toBeNull();
     });
 
-    it('should prefer gh auth over .env', () => {
-      mockExecFileNoThrowSync.mockReturnValue({ stdout: 'ghp_preferred\n', exitCode: 0 });
+    it('should prefer .env over gh auth (single documented order)', () => {
+      mockExecSync.mockReturnValue('ghp_last_resort\n');
       writeFileSync(path.join(dir, '.env'), 'GITHUB_TOKEN=env-fallback\n');
       const result = detectCredentials(dir, 'github');
-      expect(result).toBe('ghp_preferred');
+      expect(result).toBe('env-fallback');
     });
 
     // ADO credentials

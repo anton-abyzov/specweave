@@ -9,6 +9,7 @@ import { Command } from 'commander';
 import { runDoctor, formatDoctorReport } from '../../core/doctor/doctor.js';
 import type { DoctorOptions, DoctorReport } from '../../core/doctor/types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
+import { DesyncDetector } from '../../core/increment/desync-detector.js';
 
 /**
  * Execute doctor command
@@ -21,6 +22,10 @@ export async function doctor(
   projectRoot: string = process.cwd(),
   options: DoctorOptions = {}
 ): Promise<DoctorReport> {
+  if (options.fixStatus) {
+    await fixStatusDesyncs(projectRoot, options);
+  }
+
   const report = await runDoctor(projectRoot, options);
 
   // 0796 / T-001 — `--quiet` suppresses all stdout but preserves exit code.
@@ -35,6 +40,37 @@ export async function doctor(
   }
 
   return report;
+}
+
+export interface FixStatusResult {
+  scanned: number;
+  desyncs: string[];
+  fixed: string[];
+}
+
+/**
+ * `doctor --fix-status`: metadata.json is the source of truth; spec.md
+ * frontmatter is rewritten to match for every increment where they differ.
+ */
+export async function fixStatusDesyncs(
+  projectRoot: string,
+  options: Pick<DoctorOptions, 'quiet' | 'json'> = {},
+  detector: DesyncDetector = new DesyncDetector({ projectRoot, logger: { ...logger, log: () => undefined } })
+): Promise<FixStatusResult> {
+  const report = await detector.scanAll();
+  const desyncs = report.desyncs.map((d) => d.incrementId);
+  const fixed: string[] = [];
+  for (const incrementId of desyncs) {
+    if (await detector.fixDesync(incrementId)) fixed.push(incrementId);
+  }
+  if (!options.quiet && !options.json) {
+    if (desyncs.length === 0) {
+      console.log(`Status sync: ${report.totalScanned} increment(s) scanned, no metadata/spec desyncs.`);
+    } else {
+      console.log(`Status sync: fixed ${fixed.length}/${desyncs.length} desync(s): ${fixed.join(', ') || 'none'}`);
+    }
+  }
+  return { scanned: report.totalScanned, desyncs, fixed };
 }
 
 /**
@@ -52,6 +88,7 @@ export function registerDoctorCommand(program: Command): void {
     .option('--quiet', 'Suppress all stdout (exit code still reflects failures)')
     .option('--skip-external', 'Skip external tool connectivity checks')
     .option('--fix', 'Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)')
+    .option('--fix-status', 'Fix metadata.json <-> spec.md status desyncs (formerly sw:sync-status)')
     .action(async (options: Record<string, unknown>) => {
       try {
         const report = await doctor(process.cwd(), {
@@ -61,6 +98,7 @@ export function registerDoctorCommand(program: Command): void {
           quiet: options.quiet as boolean,
           skipExternal: options.skipExternal as boolean,
           fix: options.fix as boolean,
+          fixStatus: options.fixStatus as boolean,
         });
 
         // Exit with appropriate code

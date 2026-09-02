@@ -35,14 +35,16 @@ export interface SyncHealthOptions {
 /**
  * Determine which providers are enabled from config
  */
-function getEnabledProviders(config: any): Array<'github' | 'jira' | 'ado'> {
+export function getEnabledProviders(config: any): Array<'github' | 'jira' | 'ado'> {
   const providers: Array<'github' | 'jira' | 'ado'> = [];
   const add = (provider: 'github' | 'jira' | 'ado') => {
     if (!providers.includes(provider)) providers.push(provider);
   };
 
   // Check sync section
-  if (config.sync?.github?.enabled !== false && (config.sync?.github?.enabled || config.repository?.provider === 'github')) {
+  const legacyGitHub = config.sync?.github;
+  const hasGitHubTarget = Boolean(legacyGitHub?.owner && legacyGitHub?.repo);
+  if (legacyGitHub?.enabled !== false && (legacyGitHub?.enabled || hasGitHubTarget || config.repository?.provider === 'github')) {
     add('github');
   }
   if (config.sync?.jira?.enabled || config.issueTracker?.provider === 'jira') {

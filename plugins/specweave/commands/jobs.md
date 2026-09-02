@@ -48,5 +48,4 @@ specweave jobs
 ## Related Commands
 
 - `sw:progress` — Increment task/AC completion
-- `sw-github:clone` — Trigger GitHub repo cloning
-- `sw-ado:clone` — Trigger ADO repo cloning
+- `sw:sync` — GitHub / Jira / ADO sync (`specweave sync push|pull|status|setup`)

@@ -550,7 +550,8 @@ export class DashboardServer {
 
         if (platform === 'github') {
           const { Octokit } = await import('@octokit/rest');
-          const token = syncConfig.token || process.env.GITHUB_TOKEN || '';
+          const { resolveGitHubToken } = await import('../../utils/auth-helpers.js');
+          const token = resolveGitHubToken(childRepoPath ?? project.root, { configToken: syncConfig.token }).token;
           const octokit = new Octokit({ auth: token });
           try {
             const resp = await octokit.rest.repos.get({ owner: syncConfig.owner, repo: syncConfig.repo });

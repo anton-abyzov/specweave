@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { syncRetryCommand } from '../../../../src/cli/commands/sync-retry.js';
-import { syncGapsCommand } from '../../../../src/cli/commands/sync-gaps.js';
+import { detectSyncGaps } from '../../../../src/cli/commands/sync-gaps.js';
 import { syncStatusCommand } from '../../../../src/cli/commands/sync-status.js';
 
 describe('Sync CLI Commands — missing-file guards (T-013)', () => {
@@ -35,9 +35,8 @@ describe('Sync CLI Commands — missing-file guards (T-013)', () => {
 
   it('sync-gaps exits gracefully with no increments directory', async () => {
     // No config = no configured providers = no gaps
-    const result = await syncGapsCommand(tempDir, {});
-    expect(result.gaps).toEqual([]);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 
   it('sync-gaps exits gracefully with empty increments directory', async () => {
@@ -46,9 +45,8 @@ describe('Sync CLI Commands — missing-file guards (T-013)', () => {
       path.join(tempDir, '.specweave', 'config.json'),
       JSON.stringify({ sync: { github: { owner: 'test', repo: 'test' } } }),
     );
-    const result = await syncGapsCommand(tempDir, {});
-    expect(result.gaps).toEqual([]);
-    expect(result.exitCode).toBe(0);
+    const gaps = await detectSyncGaps(tempDir);
+    expect(gaps).toEqual([]);
   });
 
   it('sync-status exits gracefully with no state directory', async () => {

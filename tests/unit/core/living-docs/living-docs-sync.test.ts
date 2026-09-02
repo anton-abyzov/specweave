@@ -247,6 +247,8 @@ vi.mock('../../../../src/core/types/sync-profile.js', () => ({
 
 vi.mock('../../../../src/utils/auth-helpers.js', () => ({
   getGitHubAuthFromProject: mockGetGitHubAuthFromProject,
+  resolveGitHubToken: mockGetGitHubAuthFromProject,
+  describeGitHubAuth: () => 'GitHub token: mock',
 }));
 
 vi.mock('../../../../src/core/living-docs/task-project-specific-generator.js', () => ({

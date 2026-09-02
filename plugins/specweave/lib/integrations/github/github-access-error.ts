@@ -56,13 +56,13 @@ export function explainGitHubAccessError(
   if (canPush === true) return null;
 
   const who = login
-    ? `The GitHub token in .env belongs to account '${login}', which has no write access to ${owner}/${repo}.`
-    : `The GitHub token in .env is invalid or expired — its account could not be resolved.`;
+    ? `The GitHub token belongs to account '${login}', which has no write access to ${owner}/${repo}.`
+    : `The GitHub token is invalid or expired — its account could not be resolved.`;
 
   return [
     who,
     `GitHub returns 404 (not 403) when a token's account cannot see a repo, which is why this looked like "Not Found".`,
-    `Fix: point GITHUB_TOKEN / GH_TOKEN in .env at a token whose account can write ${owner}/${repo}, or run \`gh auth login\` with the right account.`,
+    `Fix: point GITHUB_TOKEN / GH_TOKEN (config, shell env or .env — resolved in that order) at a token whose account can write ${owner}/${repo}, or run \`gh auth login\` with the right account. Run \`specweave sync status\` to see which token is active.`,
     `Original error: ${rawError.trim()}`,
   ].join('\n');
 }

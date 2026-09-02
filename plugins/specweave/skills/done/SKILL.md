@@ -33,7 +33,7 @@ Report in one paragraph: verify result, review verdict (or "skipped"), commit sh
 - Never ask "should I close?" — closure follows automatically when tasks are done; the user can re-open.
 - `--skip-validation` exists for emergencies only; prefer `--reason` so the reason is recorded.
 - Multi-agent sessions (`sw:team-lead`): only the lead runs `sw:done`, after every agent has released and handed off.
-- Failed sync after completion: `sw:progress-sync <id>` retries; closure itself already succeeded.
+- Failed sync after completion: `specweave sync push <id>` retries; closure itself already succeeded.
 
 ## Resources
 

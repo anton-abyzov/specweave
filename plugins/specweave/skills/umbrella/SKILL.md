@@ -280,7 +280,7 @@ Umbrella workspace created: {NAME}
   Next steps:
     cd {TARGET} && claude
     sw:get <more-repos>           # add more repos
-    sw:sync-setup                 # configure GitHub/JIRA/ADO sync
+    specweave sync setup          # configure GitHub/JIRA/ADO sync
 ```
 
 ---
