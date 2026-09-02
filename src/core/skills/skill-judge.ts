@@ -21,7 +21,6 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { loadStaticContext, type CacheBlock } from '../cache/static-context-loader.js';
-import { readConfig } from '../config/config-manager.js';
 import { emitRefinementIfAttributable } from '../skill-signal-emit.js';
 import type { SignalSeverity } from '../../types/skill-signals.js';
 
@@ -188,13 +187,22 @@ export function buildJudgeApiRequest(input: BuildApiRequestInput): Record<string
  * Returns an empty array when prompt caching is disabled or the config
  * doesn't include any static files.
  */
+/**
+ * Files wrapped in cache_control blocks for every judge call.
+ * 2.0 removed the `cache.staticContextFiles` config key — this is the list.
+ */
+const STATIC_CONTEXT_FILES = [
+  'CLAUDE.md',
+  '.specweave/config.json',
+  '.specweave/increments/<active>/spec.md',
+];
+
 export async function resolveCacheFilePaths(
   projectRoot: string,
   incrementId?: string,
 ): Promise<string[]> {
   try {
-    const config = await readConfig(projectRoot);
-    const files = config.cache?.staticContextFiles ?? [];
+    const files = STATIC_CONTEXT_FILES;
     if (!incrementId) {
       return files.filter((f) => !f.includes('<active>'));
     }

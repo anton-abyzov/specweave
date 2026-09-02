@@ -342,8 +342,6 @@ export function createConfigFile(
   targetDir: string,
   projectName: string,
   adapter: string,
-  language: SupportedLanguage,
-  enableDocsPreview: boolean = true,
   testMode?: TestMode,
   coverageTarget?: number,
 ): void {
@@ -359,25 +357,26 @@ export function createConfigFile(
       default: adapter,
     },
     repository: {
-      provider: 'local' as const
+      provider: 'local' as const,
     },
-    hooks: {
-      post_task_completion: {
-        sync_tasks_md: true,
-        external_tracker_sync: true
-      },
-      post_increment_planning: {
-        // Only create external issue at planning time.
-        // Living docs sync runs AFTER agents finish (Step 5 of sw:increment).
-        auto_create_github_issue: true,
-      },
-      post_increment_done: {
-        // Living docs sync runs FIRST (chains to external tools),
-        // then closure runs in parallel. 30s sync lock prevents races.
-        sync_living_docs: true,
-        sync_to_github_project: true,
-        close_github_issue: true
-      }
+    testing: {
+      mode: testMode ?? 'TDD',
+      // `specweave verify` falls back to stack auto-detection while this is empty.
+      commands: [],
+      coverage: coverageTarget
+        ? {
+            unit: Math.min(coverageTarget + 5, 95),
+            integration: coverageTarget,
+            e2e: Math.min(coverageTarget + 10, 100),
+          }
+        : { unit: 95, integration: 90, e2e: 100 },
+    },
+    // Advisory WIP note only — nothing blocks on it.
+    limits: {
+      activeIncrements: 3,
+    },
+    planning: {
+      deepInterview: 'off',
     },
     // Auto mode configuration (stop hook behavior)
     auto: {
@@ -388,56 +387,13 @@ export function createConfigFile(
       requireJudgeLLM: false,   // Require LLM judge validation
       skipQualityGates: false,  // Skip quality gates (not recommended)
     },
-    // LSP configuration (v1.0.193+)
-    // Enables language server integration for code intelligence
+    // Living docs are opt-in: set to 'onDone' to regenerate them at closure.
+    livingDocs: false,
+    // LSP configuration — language server integration for code intelligence
     lsp: {
       enabled: true,
-      autoInstallPlugins: true,
-      marketplace: 'boostvolt/claude-code-lsps',  // Official plugins are broken (Issue #15148)
     },
   };
-
-  // Add testing configuration if provided
-  if (testMode && coverageTarget) {
-    config.testing = {
-      defaultTestMode: testMode,
-      defaultCoverageTarget: coverageTarget,
-      coverageTargets: {
-        unit: Math.min(coverageTarget + 5, 95),
-        integration: coverageTarget,
-        e2e: Math.min(coverageTarget + 10, 100)
-      }
-    };
-  }
-
-  // Add documentation preview for Claude
-  if (adapter === 'claude') {
-    config.documentation = {
-      preview: {
-        enabled: enableDocsPreview,
-        autoInstall: false,
-        port: 3015,
-        openBrowser: true,
-        theme: 'default',
-        excludeFolders: ['legacy', 'node_modules']
-      }
-    };
-  }
-
-  // Always add language field (tests expect it to be present)
-  config.language = language;
-
-  // Add translation config if non-English
-  if (language !== 'en') {
-    config.translation = {
-      method: 'in-session',
-      autoTranslateLivingDocs: false,
-      keepFrameworkTerms: true,
-      keepTechnicalTerms: true,
-      translateCodeComments: true,
-      translateVariableNames: false,
-    };
-  }
 
   fs.writeJsonSync(configPath, config, { spaces: 2 });
 }

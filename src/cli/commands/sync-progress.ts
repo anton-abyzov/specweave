@@ -432,13 +432,13 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
                 ? resolved.ado.project : undefined;
 
               const resolvedJira = (jiraConfigured && !parsedArgs.noJira) ? {
-                domain: config.jira?.domain || config.sync?.jira?.domain || jiraProfile?.domain || config.issueTracker?.domain || envVars.JIRA_DOMAIN || process.env.JIRA_DOMAIN || '',
+                domain: config.sync?.jira?.domain || jiraProfile?.domain || config.issueTracker?.domain || envVars.JIRA_DOMAIN || process.env.JIRA_DOMAIN || '',
                 email: envVars.JIRA_EMAIL || process.env.JIRA_EMAIL || '',
                 apiToken: envVars.JIRA_API_TOKEN || process.env.JIRA_API_TOKEN || '',
-                projectKey: distributedJiraProjectKey || config.jira?.projectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
+                projectKey: distributedJiraProjectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
               } : undefined;
 
-              const resolvedAdo = config.ado || config.sync?.ado || {};
+              const resolvedAdo = config.sync?.ado || {};
               const adoPat = envVars.AZURE_DEVOPS_PAT
                 || envVars.AZURE_DEVOPS_TOKEN
                 || envVars.ADO_PAT
@@ -475,7 +475,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
                   jira: (jiraConfigured && !parsedArgs.noJira) ? { enabled: true } : undefined,
                   ado: (adoConfigured && !parsedArgs.noAdo) ? { enabled: true } : undefined,
                 },
-                github: effectiveConfig.sync?.github || config.github || config.sync?.github,
+                github: effectiveConfig.sync?.github || config.sync?.github,
                 jira: resolvedJira,
                 ado: effectiveAdo,
                 externalLinks,
