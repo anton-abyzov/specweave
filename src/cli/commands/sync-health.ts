@@ -35,7 +35,7 @@ export interface SyncHealthOptions {
 /**
  * Determine which providers are enabled from config
  */
-function getEnabledProviders(config: any): Array<'github' | 'jira' | 'ado'> {
+export function getEnabledProviders(config: any): Array<'github' | 'jira' | 'ado'> {
   const providers: Array<'github' | 'jira' | 'ado'> = [];
   const add = (provider: 'github' | 'jira' | 'ado') => {
     if (!providers.includes(provider)) providers.push(provider);

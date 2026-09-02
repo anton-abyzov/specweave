@@ -88,7 +88,7 @@ export async function syncGapsCommand(
   return result;
 }
 
-async function detectSyncGaps(projectRoot: string): Promise<SyncGapItem[]> {
+export async function detectSyncGaps(projectRoot: string): Promise<SyncGapItem[]> {
   const gaps: SyncGapItem[] = [];
 
   // Read config to find configured providers
