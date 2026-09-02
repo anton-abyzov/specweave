@@ -372,6 +372,35 @@ function parseFile(raw: string): ParsedFile {
   return result;
 }
 
+/** A file split into the region SpecWeave manages and the region the user owns. */
+export interface ManagedRegions {
+  /** False when the file carries no SW:META / SW:SECTION markers at all. */
+  hasMarkers: boolean;
+  /** Concatenated bodies of the SW:SECTION regions SpecWeave generates. */
+  managed: string;
+  /** Everything else — the user's own writing, preserved verbatim by the merger. */
+  user: string;
+}
+
+/**
+ * Split an instruction file into managed vs user-owned content, using the very
+ * same marker parser the merger uses to preserve user content (`parseFile`), so
+ * there is exactly one implementation of the SW marker grammar.
+ *
+ * A file with no markers (a legacy 1.x file `update` has not touched yet) is
+ * entirely user-owned.
+ */
+export function splitManagedRegions(raw: string): ManagedRegions {
+  const parsed = parseFile(raw);
+  const hasMarkers = parsed.meta !== null || parsed.sections.length > 0;
+  if (!hasMarkers) return { hasMarkers: false, managed: '', user: raw };
+  return {
+    hasMarkers: true,
+    managed: parsed.sections.map(s => s.body).join('\n'),
+    user: [...parsed.preMeta, ...parsed.segments.map(s => s.content)].join('\n'),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // User-content cleanup
 // ---------------------------------------------------------------------------
