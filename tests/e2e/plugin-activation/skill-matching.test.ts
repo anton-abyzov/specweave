@@ -15,7 +15,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { SkillTriggerIndexManager } from '../../../src/core/plugins/skill-trigger-index.js';
 import { SkillTriggersIndex } from '../../../src/core/plugins/skill-trigger-extractor.js';
 import * as path from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 
 // Domain skills (Kubernetes, Mobile, ML, etc.) live in the vskill repo.
 // In CI, only specweave is checked out, so domain tests must be skipped.
@@ -75,9 +75,19 @@ describe('Plugin Activation E2E Tests', () => {
       index = localResult.index;
     }
 
-    // Sanity check - local specweave alone has 20+ skills
-    expect(index.skillCount).toBeGreaterThan(15);
-    expect(index.keywordCount).toBeGreaterThan(30);
+    // Sanity check — the index must cover every skill the plugin actually ships
+    // (2.0 culled the surface to ten, so a fixed floor drifts).
+    const shippedSkills = readdirSync(path.join(projectRoot, 'plugins', 'specweave', 'skills'), {
+      withFileTypes: true,
+    }).filter((d) => d.isDirectory()).length;
+    expect(index.skillCount).toBeGreaterThanOrEqual(shippedSkills);
+    // The old ">30 keywords" floor was calibrated to the 51-skill 1.x surface.
+    // What matters is that extraction produced a usable map pointing only at
+    // skills the index actually knows.
+    expect(index.keywordCount).toBeGreaterThan(0);
+    for (const names of Object.values(index.keywords)) {
+      expect(names.every((n) => n in index.skills)).toBe(true);
+    }
   });
 
   describe('T-005: E2E Test Infrastructure', () => {
@@ -87,14 +97,16 @@ describe('Plugin Activation E2E Tests', () => {
       expect(index.keywords).toBeDefined();
     });
 
-    it('should have skills from multiple plugins', () => {
+    it('attributes every skill to a plugin', () => {
       const plugins = new Set<string>();
       Object.values(index.skills).forEach(skill => {
         plugins.add(skill.plugin);
       });
 
-      // Should have skills from multiple plugins (fewer in CI without vskill)
-      expect(plugins.size).toBeGreaterThan(2);
+      // 2.0 ships exactly one plugin here; the domain plugins live in the
+      // sibling vskill repo, which is absent in CI.
+      expect(plugins.has('specweave')).toBe(true);
+      expect(plugins.size).toBeGreaterThanOrEqual(hasVskill ? 2 : 1);
     });
 
     it('should match prompts and return scored results', async () => {

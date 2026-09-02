@@ -33,6 +33,9 @@ function makeSpec(acCount: number): string {
   return lines.join('\n');
 }
 
+/** Inherited project defaults the generator always appends: R-D01, R-D02, R-D03. */
+const DEFAULT_CRITERIA = 3;
+
 describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
   let dir: string;
 
@@ -44,7 +47,7 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     await fsp.rm(dir, { recursive: true, force: true });
   });
 
-  it('TC-005: N ACs → root rubric.md non-template with exactly N+4 criteria (round-trips)', async () => {
+  it('TC-005: N ACs → root rubric.md non-template with exactly N+3 criteria (round-trips)', async () => {
     const N = 5;
     await fsp.writeFile(path.join(dir, 'spec.md'), makeSpec(N), 'utf-8');
 
@@ -57,11 +60,11 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     // Not a template placeholder.
     expect(content).not.toMatch(/status:\s*template/);
 
-    // Parser round-trips and yields exactly N + 4 criteria.
+    // Parser round-trips and yields exactly N + 3 criteria.
     const parsed = parseRubric(content);
-    expect(parsed.criteria.length).toBe(N + 4);
+    expect(parsed.criteria.length).toBe(N + DEFAULT_CRITERIA);
 
-    // Exactly N AC-tied blocking criteria + the 4 inherited defaults.
+    // Exactly N AC-tied blocking criteria + the inherited defaults.
     const acTied = parsed.criteria.filter(c =>
       c.sourceACs.some(s => s.startsWith('AC-')),
     );
@@ -71,7 +74,7 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     expect(acTied.every(c => /^R-US\d+-\d+$/.test(c.id))).toBe(true);
 
     const defaults = parsed.criteria.filter(c => /^R-D0\d$/.test(c.id));
-    expect(defaults.length).toBe(4);
+    expect(defaults.length).toBe(DEFAULT_CRITERIA);
   });
 
   it('TC-006: no-clobber without --refresh; regenerate with --refresh', async () => {
