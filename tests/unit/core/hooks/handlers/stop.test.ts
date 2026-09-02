@@ -6,9 +6,9 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { hookRouter } from './hook-router.js';
-import { MAX_NO_PROGRESS_TURNS } from './stop.js';
-import { validateHookOutput } from './types.js';
+import { hookRouter } from '../../../../../src/core/hooks/handlers/hook-router.js';
+import { MAX_NO_PROGRESS_TURNS } from '../../../../../src/core/hooks/handlers/stop.js';
+import { validateHookOutput } from '../../../../../src/core/hooks/handlers/types.js';
 
 function mkRepo(config = '{}'): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-stop-'));

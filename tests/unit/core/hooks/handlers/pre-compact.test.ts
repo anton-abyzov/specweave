@@ -7,8 +7,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import { handle, writeAutoHandoff } from './pre-compact.js';
-import { createContext } from './utils.js';
+import { handle, writeAutoHandoff } from '../../../../../src/core/hooks/handlers/pre-compact.js';
+import { createContext } from '../../../../../src/core/hooks/handlers/utils.js';
 
 function mkRepo(): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-'));
@@ -92,15 +92,15 @@ describe('pre-compact', () => {
     mkActive(repo, '0001-one');
     const ctx = createContext(repo);
     vi.resetModules();
-    vi.doMock('../../session/work-handoff.js', () => ({
+    vi.doMock('../../../../../src/core/session/work-handoff.js', () => ({
       buildWorkHandoff: () => new Promise((resolve) => setTimeout(() => resolve({ docPath: 'slow' }), 300)),
     }));
     try {
-      const slow = await import('./pre-compact.js');
+      const slow = await import('../../../../../src/core/hooks/handlers/pre-compact.js');
       expect(await slow.writeAutoHandoff(ctx, {}, 'auto: pre-compact', 20)).toBe(false);
       expect(await slow.handle({}, ctx)).toEqual({});
     } finally {
-      vi.doUnmock('../../session/work-handoff.js');
+      vi.doUnmock('../../../../../src/core/session/work-handoff.js');
       vi.resetModules();
     }
     const log = fs.readFileSync(path.join(ctx.logsDir, 'hooks.jsonl'), 'utf8');

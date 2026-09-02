@@ -138,8 +138,11 @@ export function validateHookOutput(eventType: string, output: unknown): string |
   switch (eventType) {
     case 'pre-tool-use':
       if ('decision' in o) return 'PreToolUse must not use top-level decision';
-      if (hso && !['allow', 'deny', 'ask'].includes(String(hso.permissionDecision))) {
+      if (hso && 'permissionDecision' in hso && !['allow', 'deny', 'ask'].includes(String(hso.permissionDecision))) {
         return 'PreToolUse hookSpecificOutput.permissionDecision must be allow|deny|ask';
+      }
+      if (hso && !('permissionDecision' in hso) && typeof hso.additionalContext !== 'string') {
+        return 'PreToolUse hookSpecificOutput needs permissionDecision or additionalContext';
       }
       if (hso && hso.permissionDecision === 'deny' && typeof hso.permissionDecisionReason !== 'string') {
         return 'PreToolUse deny requires permissionDecisionReason';
