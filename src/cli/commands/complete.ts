@@ -6,6 +6,8 @@ interface CompleteCommandOptions {
   silent?: boolean;
   skipValidation?: boolean;
   yes?: boolean;
+  /** Close without a passing reports/verify.json (stored as metadata.closeReason). */
+  reason?: string;
 }
 
 /**
@@ -62,6 +64,7 @@ export async function completeCommand(
         incrementId: resolved,
         silent: options.silent || options.yes,
         skipValidation: options.skipValidation,
+        reason: options.reason,
       });
     } catch (err) {
       console.error(`Error completing "${resolved}": ${err instanceof Error ? err.message : String(err)}`);

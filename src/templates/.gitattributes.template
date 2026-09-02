@@ -33,3 +33,6 @@
 *.zip binary
 *.tar.gz binary
 *.tgz binary
+
+# Append-only task ledger: keep every line from both sides on a merge
+**/ledger.jsonl merge=union

@@ -42,8 +42,17 @@ export interface Task {
   /** Full task description */
   description?: string;
 
-  /** Files affected by this task */
+  /** Files owned by this task (2.0 `Files:` field, legacy `**Files Affected**:` list). */
   filesAffected?: string[];
+
+  /** All AC ids referenced (2.0 `AC:` field or legacy `**Satisfies ACs**`), any AC id format. */
+  acs?: string[];
+
+  /** Verification command (2.0 `Test:` field, or legacy `**Test**:` value). */
+  test?: string;
+
+  /** True when a rendered state checkbox (`- [x] done …`) was found (2.0 format). */
+  hasStateLine?: boolean;
 
   /** Line number in tasks.md (for error reporting) */
   lineNumber?: number;
@@ -110,7 +119,8 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
     // making every combined-format task read as `pending` (whole-codebase bug).
     // The multi-line format (each `**Field**:` on its own line) still parses
     // because each line is a single segment.
-    const taskHeaderRegex = /^###\s+(T-\d{3,}E?):\s*(.+)$/;
+    // 2.0 header is `### T-01 Title` (no colon, 2+ digits); legacy is `### T-001: Title`.
+    const taskHeaderRegex = /^###\s+(T-\d{2,}E?):?\s+(.+)$/;
     const userStoryRegex = /\*\*User Story\*\*:\s*(US-\d{3,}E?)/;
     const satisfiesACsRegex = /\*\*Satisfies ACs\*\*:\s*(AC-US\d+E?-\d{2}(?:,\s*AC-US\d+E?-\d{2})*)/;
     // Trailing status word is OPTIONAL: a checkbox-only `**Status**: [x]` is a
@@ -121,6 +131,15 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
     const priorityRegex = /\*\*Priority\*\*:\s*([^|]+)/;
     const estimatedEffortRegex = /\*\*Estimated Effort\*\*:\s*([^|]+)/;
     const dependenciesRegex = /\*\*Dependencies\*\*:\s*([^|]+)/;
+    // 2.0 one-line field form: `- AC: AC-01, AC-02 | Files: src/a.ts, src/b.ts | Test: <cmd>`
+    // (bold `**AC**:` / `**Files**:` / `**Test**:` accepted too). `Test:` MUST be
+    // the last segment — its value runs to end of line so shell pipes survive.
+    const acFieldRegex = /(?:^-?\s*|\|\s*)\*{0,2}AC\*{0,2}:\s*([^|]+)/;
+    const filesFieldRegex = /(?:^-?\s*|\|\s*)\*{0,2}Files\*{0,2}:\s*([^|]+)/;
+    const testFieldRegex = /(?:^-?\s*|\|\s*)\*{0,2}Test\*{0,2}:\s*(.+)$/;
+    // Rendered state line written by `specweave task render` (2.0). Restricted to
+    // known state words so BDD sub-checkboxes (`- [ ] Given …`) never match.
+    const stateLineRegex = /^- \[([ x])\](?:\s+(?:done|open|pending|claimed|stale|blocked|skipped)\b.*)?$/i;
 
     let currentTask: Task | null = null;
     let currentDescription: string[] = [];
@@ -172,6 +191,7 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
         currentTask.satisfiesACs = satisfiesACsMatch[1]
           .split(',')
           .map(ac => ac.trim());
+        if (!currentTask.acs) currentTask.acs = [...currentTask.satisfiesACs];
         matchedAnyField = true;
       }
 
@@ -203,7 +223,43 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
         currentTask.dependencies = dependenciesMatch[1]
           .split(',')
           .map(dep => dep.trim())
-          .filter(dep => dep.match(/^T-\d{3,}$/));
+          .filter(dep => dep.match(/^T-\d{2,}E?$/));
+        matchedAnyField = true;
+      }
+
+      const acFieldMatch = line.match(acFieldRegex);
+      if (acFieldMatch) {
+        const acs = acFieldMatch[1].split(',').map(a => a.trim()).filter(a => /^AC-[A-Z0-9-]+$/i.test(a));
+        if (acs.length > 0) {
+          currentTask.acs = acs;
+          const usAcs = acs.filter(a => /^AC-US\d+E?-\d{2}$/.test(a));
+          if (usAcs.length > 0 && !currentTask.satisfiesACs) currentTask.satisfiesACs = usAcs;
+          matchedAnyField = true;
+        }
+      }
+
+      const filesFieldMatch = line.match(filesFieldRegex);
+      if (filesFieldMatch) {
+        const files = filesFieldMatch[1].split(',').map(f => f.trim().replace(/^`|`$/g, '')).filter(Boolean);
+        if (files.length > 0 && files[0] !== '-') {
+          currentTask.filesAffected = files;
+          matchedAnyField = true;
+        }
+      }
+
+      const testFieldMatch = line.match(testFieldRegex);
+      if (testFieldMatch) {
+        const test = testFieldMatch[1].trim().replace(/^`(.+)`$/, '$1');
+        if (test && test !== '-') {
+          currentTask.test = test;
+          matchedAnyField = true;
+        }
+      }
+
+      const stateLineMatch = line.match(stateLineRegex);
+      if (stateLineMatch) {
+        currentTask.hasStateLine = true;
+        currentTask.status = stateLineMatch[1] === 'x' ? 'completed' : currentTask.status === 'completed' ? 'completed' : 'pending';
         matchedAnyField = true;
       }
 

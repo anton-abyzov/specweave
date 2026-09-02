@@ -120,9 +120,9 @@ describe('template-creator', () => {
       const tasksPath = path.join(incrementsPath, '0001-test-feature', 'tasks.md');
       const content = fs.readFileSync(tasksPath, 'utf-8');
 
-      // CRITICAL: tasks.md must contain template markers
-      expect(content).toContain('[User Story Title]');
-      expect(content).toContain('[component]');
+      // CRITICAL: tasks.md must be the 2.0 skeleton with template placeholders
+      expect(content).toContain('### T-01 [First task]');
+      expect(content).toContain('- AC: AC-01 | Files: src/[file].ts | Test:');
 
       // Must contain the template warning comment
       expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
