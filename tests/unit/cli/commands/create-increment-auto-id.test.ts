@@ -95,35 +95,41 @@ describe('create-increment --auto-id', () => {
     ).rejects.toThrow(/Cannot use both --id and --auto-id/);
   });
 
-  it('should error when neither --id nor --auto-id is provided', async () => {
+  it('defaults to auto-id with a slug of the title when no --id is given', async () => {
     const { createIncrementCommand } = await import(
       '../../../../src/cli/commands/create-increment.js'
     );
 
-    await expect(
-      createIncrementCommand({
-        title: 'No ID Test',
-        description: 'Should fail',
-        project: 'test-project',
-        projectRoot: tempDir,
-      } as any)
-    ).rejects.toThrow(/Either --id or \(--auto-id \+ --name\) is required/);
+    await createIncrementCommand({
+      title: 'Add Login Form',
+      projectRoot: tempDir,
+    } as any);
+
+    expect(fs.existsSync(path.join(incrementsPath, '0001-add-login-form'))).toBe(true);
   });
 
-  it('should error when --auto-id is used without --name', async () => {
+  it('derives the name from the title when --auto-id has no --name', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({
+      autoId: true,
+      title: 'No Name Test',
+      projectRoot: tempDir,
+    } as any);
+
+    expect(fs.existsSync(path.join(incrementsPath, '0001-no-name-test'))).toBe(true);
+  });
+
+  it('errors when no title is given', async () => {
     const { createIncrementCommand } = await import(
       '../../../../src/cli/commands/create-increment.js'
     );
 
     await expect(
-      createIncrementCommand({
-        autoId: true,
-        title: 'No Name Test',
-        description: 'Should fail',
-        project: 'test-project',
-        projectRoot: tempDir,
-      } as any)
-    ).rejects.toThrow(/--auto-id requires --name/);
+      createIncrementCommand({ autoId: true, projectRoot: tempDir } as any)
+    ).rejects.toThrow(/title is required/);
   });
 
   it('should retry on EEXIST and get unique ID (atomic reservation)', async () => {

@@ -39,7 +39,7 @@ const cmdSource = readFileSync(CMD_PATH, 'utf-8');
 describe('create-increment --parallel flag (0669 T-019/T-020)', () => {
   it('bin/specweave.js registers a --parallel boolean option on create-increment', () => {
     // Locate the create-increment command block and assert the option exists.
-    const createIncBlock = binSource.split(".command('create-increment')")[1];
+    const createIncBlock = binSource.split(".command('create-increment [title]')")[1];
     expect(createIncBlock).toBeDefined();
     const block = createIncBlock.slice(0, 2000);
     expect(block).toMatch(/\.option\(['"]--parallel['"]/);

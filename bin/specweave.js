@@ -375,21 +375,22 @@ program
 
 // Create Increment command - Create template files for a new increment
 program
-  .command('create-increment')
-  .description('Create increment template files (metadata.json, spec.md, plan.md, tasks.md)')
+  .command('create-increment [title]')
+  .description('Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment "Add login form"')
   .option('--id <increment-id>', 'Increment ID (e.g., "0042-my-feature")')
-  .option('--auto-id', 'Auto-generate next available increment ID')
-  .option('--name <name>', 'Increment name suffix (used with --auto-id)')
-  .requiredOption('--title <title>', 'Feature title')
-  .requiredOption('--description <description>', 'Feature description')
-  .requiredOption('--project <project-id>', 'Project ID (from .specweave/config.json)')
+  .option('--auto-id', 'Auto-generate next available increment ID (default when --id is absent)')
+  .option('--name <name>', 'Increment name suffix (defaults to a slug of the title)')
+  .option('--title <title>', 'Feature title (defaults to the positional argument)')
+  .option('--description <description>', 'Feature description (defaults to the title)')
+  .option('--project <project-id>', 'Project ID (defaults to config project.name, else the folder name)')
   .option('--board <board-id>', 'Board ID for 2-level structures')
   .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
   .option('--project-root <path>', 'Override project root directory')
   .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
   .option('--json', 'Output result as JSON (for programmatic use)')
-  .action(async (options) => {
+  .action(async (title, options) => {
+    if (title && !options.title) options.title = title;
     if (options.projectRoot) {
       const configPath = (await import('path')).join(options.projectRoot, '.specweave', 'config.json');
       const fs = await import('fs');

@@ -4,8 +4,10 @@
  * CLI bridge for createIncrementTemplates() - creates template files
  * for new increments that must be completed via PM/Architect skills.
  *
- * This command is invoked by the increment SKILL.md:
- *   specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"
+ * Short form (what CLAUDE.md/AGENTS.md document):
+ *   specweave create-increment "Add login form"
+ * Long form (explicit id / project):
+ *   specweave create-increment --id "0042-login" --title "Login" --description "..." --project "my-app"
  *
  * @module create-increment
  */
@@ -17,6 +19,7 @@ import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatche
 import { readConfig } from '../../core/config/config-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { initInterviewStateFile } from './interview.js';
+import { slugify } from '../../utils/string-utils.js';
 
 
 export interface CreateIncrementOptions {
@@ -24,8 +27,10 @@ export interface CreateIncrementOptions {
   autoId?: boolean;
   name?: string;
   title: string;
-  description: string;
-  project: string;
+  /** Defaults to the title. */
+  description?: string;
+  /** Defaults to config `project.name`, else the project folder name. */
+  project?: string;
   board?: string;
   type?: string;
   priority?: string;
@@ -44,11 +49,7 @@ export interface CreateIncrementOptions {
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
   const {
     id,
-    autoId,
-    name,
     title,
-    description,
-    project,
     board,
     type,
     priority,
@@ -57,16 +58,21 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     parallel = false,
   } = options;
 
-  // Validate: either --id OR (--auto-id + --name) must be provided
-  if (id && autoId) {
+  if (id && options.autoId) {
     throw new Error('Cannot use both --id and --auto-id. Use one or the other.');
   }
-  if (!id && !autoId) {
-    throw new Error('Either --id or (--auto-id + --name) is required.');
+  if (!title || !title.trim()) {
+    throw new Error('A title is required: specweave create-increment "Add login form"');
   }
+
+  // `specweave create-increment "Add login form"` is the short form: no --id means
+  // auto-id, and the folder suffix is a slug of the title.
+  const autoId = id ? false : true;
+  const name = options.name ?? (autoId ? slugify(title) : undefined);
   if (autoId && !name) {
-    throw new Error('--auto-id requires --name to generate the increment ID.');
+    throw new Error('Could not derive an increment name from the title; pass --name.');
   }
+  const description = options.description ?? title;
 
   // Resolve effective root: umbrella root in multi-repo, local root in single-repo
   const projectRoot = rawProjectRoot || resolveEffectiveRoot(process.cwd());
@@ -74,15 +80,16 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   // Resolve increment ID: explicit or placeholder (template-creator handles atomic ID when autoId=true)
   const resolvedId = autoId ? '' : id!;
 
-  // Read testing config to pass testMode and coverageTarget
   let testMode: string | undefined;
   let coverageTarget: number | undefined;
   let deepInterviewConfig: { enabled?: boolean; enforcement?: string; categories?: string[] } | undefined;
+  let configProjectName: string | undefined;
   try {
     const config = await readConfig(projectRoot);
     testMode = config?.testing?.defaultTestMode;
     coverageTarget = config?.testing?.defaultCoverageTarget;
     deepInterviewConfig = config?.planning?.deepInterview;
+    configProjectName = config?.project?.name;
   } catch (error) {
     // Config reading can fail for missing file (expected) or malformed JSON (unexpected)
     const msg = error instanceof Error ? error.message : String(error);
@@ -96,7 +103,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     incrementId: resolvedId,
     title,
     description,
-    projectId: project,
+    projectId: options.project ?? configProjectName ?? path.basename(projectRoot),
     boardId: board,
     type,
     priority,
