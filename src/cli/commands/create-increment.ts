@@ -17,6 +17,7 @@ import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatche
 import { readConfig } from '../../core/config/config-manager.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { initInterviewStateFile } from './interview.js';
+import { supersedeIncrement, setParentIncrement } from '../../core/tasks/supersede.js';
 
 
 export interface CreateIncrementOptions {
@@ -39,6 +40,15 @@ export interface CreateIncrementOptions {
    * the plan off to the team-lead skill for multi-agent authoring.
    */
   parallel?: boolean;
+
+  /**
+   * Increment this one replaces. The old increment moves to `abandoned` with
+   * `closeReason: "superseded by <new id>"`, the new one records `supersedes`.
+   */
+  supersedes?: string;
+
+  /** Parent increment (split-off / follow-up work), recorded as `parent`. */
+  parent?: string;
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -55,6 +65,8 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     json = false,
     projectRoot: rawProjectRoot,
     parallel = false,
+    supersedes,
+    parent,
   } = options;
 
   // Validate: either --id OR (--auto-id + --name) must be provided
@@ -122,6 +134,15 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     ? path.basename(result.incrementPath)
     : resolvedId;
 
+  // Relationships: --supersedes abandons the old increment, --parent links up.
+  const relations: string[] = [];
+  const record = (result: { ok: boolean; message: string }) => {
+    if (result.ok) relations.push(result.message);
+    else console.error(chalk.yellow(`⚠️  ${result.message}`));
+  };
+  if (supersedes) record(supersedeIncrement(projectRoot, supersedes, finalId));
+  if (parent) record(setParentIncrement(projectRoot, finalId, parent));
+
   // Auto-initialize interview state when deep interview is enabled.
   // The interview-enforcement-guard blocks spec.md writes until all categories
   // are covered. Without this, the guard fires "Interview Required" because
@@ -158,11 +179,13 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
       incrementPath: result.incrementPath,
       createdFiles: result.createdFiles,
       nextSteps: result.nextSteps,
+      ...(relations.length ? { relations } : {}),
     }));
   } else {
     console.log(chalk.green(`\nIncrement created: ${finalId}`));
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
+    for (const r of relations) console.log(`  ${r}`);
     console.log(chalk.blue('\nNext steps:'));
     result.nextSteps.forEach((step, i) => {
       console.log(`  ${i + 1}. ${step}`);

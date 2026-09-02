@@ -354,7 +354,8 @@ program
   .option('-f, --force', 'Override a live claim, unmet deps or a Files overlap')
   .option('-e, --evidence <text>', 'Evidence for `done` (commit sha, test output)')
   .option('--run <cmd>', 'Run <cmd> through the OS shell; exit 0 required, output stored as evidence')
-  .option('-n, --note <text>', 'Note (required for block / skip)')
+  .option('-n, --note <text>', 'Note (alias of --reason)')
+  .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
@@ -388,6 +389,8 @@ program
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
   .option('--project-root <path>', 'Override project root directory')
   .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
+  .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
+  .option('--parent <increment-id>', 'Parent increment (recorded as metadata.parent)')
   .option('--json', 'Output result as JSON (for programmatic use)')
   .action(async (options) => {
     if (options.projectRoot) {

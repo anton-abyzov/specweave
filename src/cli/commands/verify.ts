@@ -43,6 +43,8 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     if (result.results.length === 0) out(`No verification commands (${result.source}). Set testing.commands in .specweave/config.json.`);
     const { report } = result;
     out(`ACs ${report.acs.done}/${report.acs.total} · tasks ${report.tasks.done}/${report.tasks.total} done (${report.tasks.skipped} skipped)`);
+    for (const s of report.skipped) out(`  skipped ${s.id}: ${s.reason ?? '(no reason recorded)'}`);
+    if (report.ledgerMalformed) out(`  ${report.ledgerMalformed} malformed ledger line(s) skipped`);
     out(`${report.ok ? 'PASS' : 'FAIL'} → ${result.mdPath}`);
     if (report.ok) out(`Next: specweave complete ${inc.id}`);
   }
