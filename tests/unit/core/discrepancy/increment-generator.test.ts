@@ -258,7 +258,7 @@ describe('Increment Generator', () => {
       const metadata = JSON.parse(
         fs.readFileSync(path.join(result.incrementPath, 'metadata.json'), 'utf-8')
       );
-      expect(metadata.status).toBe('planning');
+      expect(metadata.status).toBe('planned');
       expect(metadata.linkedDiscrepancies).toContain('DISC-0001');
     });
 

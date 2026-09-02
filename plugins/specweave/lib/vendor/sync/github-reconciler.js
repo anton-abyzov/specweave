@@ -35,7 +35,7 @@ function hasAnyGitHubSyncData(metadata) {
 }
 // Statuses that warrant GitHub search — allowlist so unknown values default to "skip" (safe for rate limiting)
 const SEARCHABLE_STATUSES = new Set([
-    'active', 'planning', 'in-progress', 'backlog', 'ready_for_review', 'paused',
+    'active', 'planned', 'planning', 'in-progress', 'backlog', 'ready_for_review', 'paused',
 ]);
 export class GitHubReconciler {
     constructor(options) {
@@ -142,7 +142,7 @@ export class GitHubReconciler {
         const status = inc.metadataStatus;
         // Determine expected GitHub state
         const shouldBeClosed = status === 'completed' || status === 'abandoned';
-        const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review' || status === 'paused';
+        const shouldBeOpen = status === 'active' || status === 'planned' || status === 'planning' || status === 'backlog' || status === 'ready_for_review' || status === 'paused';
         if (!shouldBeClosed && !shouldBeOpen) {
             this.logger.log(`  ⚠️ Unknown increment status '${status}' for ${inc.incrementId} — skipping`);
             return;

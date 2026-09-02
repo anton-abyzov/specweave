@@ -135,10 +135,10 @@ export interface IncrementMetadata {
  */
 export declare const LEGACY_STATUS_MAP: Record<string, IncrementStatus>;
 /**
- * Fallback for a status that is neither an {@link IncrementStatus} nor in
- * {@link LEGACY_STATUS_MAP}. Surfacing such an increment as `planned` keeps it
- * visible (and fixable) in `specweave status`; before 2.0 it threw on read and
- * the increment vanished from every total.
+ * What `metadata.json` falls back to when its status is neither an
+ * {@link IncrementStatus} nor in {@link LEGACY_STATUS_MAP}. Surfacing such an
+ * increment as `planned` keeps it visible (and fixable) in `specweave status`;
+ * before 2.0 the read threw and the increment vanished from every total.
  */
 export declare const UNKNOWN_STATUS_FALLBACK = IncrementStatus.PLANNED;
 export interface LegacyStatusMigration {
