@@ -1,8 +1,6 @@
 import axios from "axios";
 import { detectDeploymentType, getApiBaseUrl } from "./jira-deployment-detector.js";
 import { toCommentBody } from "./content-format-adapter.js";
-import { CircuitBreakerRegistry } from "../../../../../src/core/sync/circuit-breaker-registry.js";
-import { SyncRetryQueue } from "../../../../../src/core/sync/sync-retry-queue.js";
 import { SyncError } from "../../../../../src/core/errors/sync-error.js";
 import { LockManager } from "../../../../../src/utils/lock-manager.js";
 class JiraStatusSync {
@@ -30,6 +28,9 @@ class JiraStatusSync {
       }
     });
   }
+  /**
+   * Execute fn under file lock (if lockManager configured).
+   */
   async withLock(fn) {
     if (!this.lockManager) return fn();
     const acquired = await this.lockManager.acquire();
@@ -42,6 +43,10 @@ class JiraStatusSync {
       await this.lockManager.release();
     }
   }
+  /**
+   * Check circuit breaker before making API calls.
+   * Throws if breaker is open.
+   */
   checkCircuitBreaker() {
     if (!this.circuitBreakerRegistry) return;
     const breaker = this.circuitBreakerRegistry.get("jira");
@@ -49,10 +54,16 @@ class JiraStatusSync {
       throw new SyncError("jira", 0, "", "Circuit breaker open for jira");
     }
   }
+  /**
+   * Record success on circuit breaker.
+   */
   recordSuccess() {
     if (!this.circuitBreakerRegistry) return;
     this.circuitBreakerRegistry.get("jira").recordSuccess();
   }
+  /**
+   * Handle API error: record failure on circuit breaker, enqueue retry, throw SyncError.
+   */
   async handleApiError(error, operation) {
     const httpStatus = error?.response?.status ?? 0;
     const responseBody = JSON.stringify(error?.response?.data ?? "");
@@ -72,6 +83,9 @@ class JiraStatusSync {
     }
     throw new SyncError("jira", httpStatus, responseBody, detail);
   }
+  /**
+   * Initialize: detect deployment type and update client baseURL
+   */
   async init() {
     const deployment = await detectDeploymentType(this.domain, {
       email: this.client.defaults.auth?.username || "",
@@ -79,6 +93,12 @@ class JiraStatusSync {
     });
     this.client.defaults.baseURL = deployment.baseUrl;
   }
+  /**
+   * Get current status from JIRA issue
+   *
+   * @param issueKey - JIRA issue key (e.g., PROJ-123)
+   * @returns Current issue status
+   */
   async getStatus(issueKey) {
     return this.withLock(async () => {
       this.checkCircuitBreaker();
@@ -93,6 +113,19 @@ class JiraStatusSync {
       }
     });
   }
+  /**
+   * Update JIRA issue status via transitions
+   *
+   * JIRA requires using transitions to change status.
+   * Cannot directly set status field.
+   *
+   * Handles missing transitions gracefully by logging a warning
+   * instead of throwing an error.
+   *
+   * @param issueKey - JIRA issue key (e.g., PROJ-123)
+   * @param status - Desired status
+   * @returns true if transition succeeded, false if not available
+   */
   async updateStatus(issueKey, status) {
     return this.withLock(async () => {
       this.checkCircuitBreaker();
@@ -120,6 +153,13 @@ class JiraStatusSync {
       }
     });
   }
+  /**
+   * Post comment about status change to JIRA issue
+   *
+   * @param issueKey - JIRA issue key (e.g., PROJ-123)
+   * @param oldStatus - Previous SpecWeave status
+   * @param newStatus - New SpecWeave status
+   */
   async postStatusComment(issueKey, oldStatus, newStatus) {
     return this.withLock(async () => {
       this.checkCircuitBreaker();
@@ -142,6 +182,18 @@ _Synced from SpecWeave_`;
       }
     });
   }
+  /**
+   * Post AC progress comment with proper ADF formatting and dedup.
+   *
+   * Builds native ADF with:
+   * - Bold header showing completion percentage
+   * - Bullet list with checkmark/cross emojis per AC
+   * - Fingerprint marker to prevent duplicate comments
+   *
+   * @param issueKey - JIRA issue key (e.g., PROJ-123)
+   * @param acStates - Array of AC states with id, description, completed
+   * @returns true if comment was posted, false if skipped (duplicate)
+   */
   async postProgressComment(issueKey, acStates) {
     return this.withLock(async () => {
       this.checkCircuitBreaker();

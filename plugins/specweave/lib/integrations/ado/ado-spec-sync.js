@@ -624,7 +624,6 @@ ${acList}
         }
       }
       if (existingParentId === updates.parentId) {
-        // Parent already correct — no-op
       } else if (existingParentId !== null && existingParentId !== updates.parentId) {
         await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
           { op: "remove", path: `/relations/${existingParentIndex}` },

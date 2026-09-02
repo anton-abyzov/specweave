@@ -96,6 +96,12 @@ export interface IncrementMetadata {
      * (v0.28.63+)
      */
     approvedAt?: string;
+    /**
+     * Why the increment was closed without a passing `reports/verify.json`
+     * (`specweave complete --reason "<text>"`). Present only when the 2.0
+     * closure gate was overridden.
+     */
+    closeReason?: string;
 }
 /**
  * Increment metadata with additional computed fields

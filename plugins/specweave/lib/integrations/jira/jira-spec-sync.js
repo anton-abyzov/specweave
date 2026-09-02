@@ -9,8 +9,6 @@ import { toDescription } from "./content-format-adapter.js";
 import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
 import { searchAllIssues } from "./jira-paginated-search.js";
 import axios from "axios";
-import { CircuitBreakerRegistry } from "../../../../../src/core/sync/circuit-breaker-registry.js";
-import { SyncRetryQueue } from "../../../../../src/core/sync/sync-retry-queue.js";
 import { SyncError } from "../../../../../src/core/errors/sync-error.js";
 import { LockManager } from "../../../../../src/utils/lock-manager.js";
 function buildStoryDescription(us) {
@@ -55,6 +53,9 @@ class JiraSpecSync {
       }
     });
   }
+  /**
+   * Execute fn under file lock (if lockManager configured).
+   */
   async withLock(fn) {
     if (!this.lockManager) return fn();
     const acquired = await this.lockManager.acquire();
@@ -67,6 +68,9 @@ class JiraSpecSync {
       await this.lockManager.release();
     }
   }
+  /**
+   * Check circuit breaker before making API calls.
+   */
   checkCircuitBreaker() {
     if (!this.circuitBreakerRegistry) return;
     const breaker = this.circuitBreakerRegistry.get("jira");
@@ -74,10 +78,16 @@ class JiraSpecSync {
       throw new SyncError("jira", 0, "", "Circuit breaker open for jira");
     }
   }
+  /**
+   * Record success on circuit breaker.
+   */
   recordApiSuccess() {
     if (!this.circuitBreakerRegistry) return;
     this.circuitBreakerRegistry.get("jira").recordSuccess();
   }
+  /**
+   * Record failure on circuit breaker and optionally enqueue retry.
+   */
   async recordApiFailure(error, operation) {
     const httpStatus = error?.response?.status ?? 0;
     if (this.circuitBreakerRegistry) {
@@ -111,56 +121,56 @@ class JiraSpecSync {
     console.log(`
 \u{1F504} Syncing spec ${specId} to Jira Epic...`);
     return this.withLock(async () => {
-    this.checkCircuitBreaker();
-    try {
-      const spec = await this.specManager.loadSpec(specId);
-      if (!spec) {
+      this.checkCircuitBreaker();
+      try {
+        const spec = await this.specManager.loadSpec(specId);
+        if (!spec) {
+          return {
+            success: false,
+            specId,
+            provider: "jira",
+            error: `Spec ${specId} not found`
+          };
+        }
+        const existingLink = spec.metadata.externalLinks?.jira;
+        let epic;
+        if (existingLink?.epicKey) {
+          console.log(`   Found existing Jira Epic ${existingLink.epicKey}`);
+          epic = await this.updateJiraEpic(existingLink.epicKey, spec);
+        } else {
+          console.log("   Creating new Jira Epic...");
+          epic = await this.createJiraEpic(spec);
+          await this.specManager.linkToExternal(specId, "jira", {
+            id: epic.key,
+            url: epic.url,
+            projectKey: this.config.projectKey,
+            domain: this.config.domain
+          });
+        }
+        const changes = await this.syncUserStories(epic.key, spec);
+        this.recordApiSuccess();
+        console.log("\u2705 Sync complete!");
+        return {
+          success: true,
+          specId,
+          provider: "jira",
+          externalId: epic.key,
+          url: epic.url,
+          changes
+        };
+      } catch (error) {
+        await this.recordApiFailure(error, "syncSpecToJira");
+        const axiosData = error?.response?.data;
+        const detail = axiosData ? JSON.stringify(axiosData) : "";
+        console.error("\u274C Error syncing to Jira:", error?.message || error, detail ? `
+   Response: ${detail}` : "");
         return {
           success: false,
           specId,
           provider: "jira",
-          error: `Spec ${specId} not found`
+          error: error instanceof Error ? error.message : "Unknown error"
         };
       }
-      const existingLink = spec.metadata.externalLinks?.jira;
-      let epic;
-      if (existingLink?.epicKey) {
-        console.log(`   Found existing Jira Epic ${existingLink.epicKey}`);
-        epic = await this.updateJiraEpic(existingLink.epicKey, spec);
-      } else {
-        console.log("   Creating new Jira Epic...");
-        epic = await this.createJiraEpic(spec);
-        await this.specManager.linkToExternal(specId, "jira", {
-          id: epic.key,
-          url: epic.url,
-          projectKey: this.config.projectKey,
-          domain: this.config.domain
-        });
-      }
-      const changes = await this.syncUserStories(epic.key, spec);
-      this.recordApiSuccess();
-      console.log("\u2705 Sync complete!");
-      return {
-        success: true,
-        specId,
-        provider: "jira",
-        externalId: epic.key,
-        url: epic.url,
-        changes
-      };
-    } catch (error) {
-      await this.recordApiFailure(error, "syncSpecToJira");
-      const axiosData = error?.response?.data;
-      const detail = axiosData ? JSON.stringify(axiosData) : "";
-      console.error("\u274C Error syncing to Jira:", error?.message || error, detail ? `
-   Response: ${detail}` : "");
-      return {
-        success: false,
-        specId,
-        provider: "jira",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
     });
   }
   /**
@@ -170,60 +180,60 @@ class JiraSpecSync {
     console.log(`
 \u{1F504} Syncing FROM Jira to spec ${specId}...`);
     return this.withLock(async () => {
-    this.checkCircuitBreaker();
-    try {
-      const spec = await this.specManager.loadSpec(specId);
-      if (!spec) {
-        return {
-          success: false,
-          specId,
-          provider: "jira",
-          error: `Spec ${specId} not found`
-        };
-      }
-      const jiraLink = spec.metadata.externalLinks?.jira;
-      if (!jiraLink?.epicKey) {
-        return {
-          success: false,
-          specId,
-          provider: "jira",
-          error: "Spec not linked to Jira Epic"
-        };
-      }
-      const epic = await this.fetchJiraEpic(jiraLink.epicKey);
-      const conflicts = await this.detectConflicts(spec, epic);
-      if (conflicts.length === 0) {
-        console.log("\u2705 No conflicts - spec and Jira in sync");
+      this.checkCircuitBreaker();
+      try {
+        const spec = await this.specManager.loadSpec(specId);
+        if (!spec) {
+          return {
+            success: false,
+            specId,
+            provider: "jira",
+            error: `Spec ${specId} not found`
+          };
+        }
+        const jiraLink = spec.metadata.externalLinks?.jira;
+        if (!jiraLink?.epicKey) {
+          return {
+            success: false,
+            specId,
+            provider: "jira",
+            error: "Spec not linked to Jira Epic"
+          };
+        }
+        const epic = await this.fetchJiraEpic(jiraLink.epicKey);
+        const conflicts = await this.detectConflicts(spec, epic);
+        if (conflicts.length === 0) {
+          console.log("\u2705 No conflicts - spec and Jira in sync");
+          return {
+            success: true,
+            specId,
+            provider: "jira",
+            externalId: epic.key,
+            url: epic.url
+          };
+        }
+        console.log(`\u26A0\uFE0F  Detected ${conflicts.length} conflict(s)`);
+        await this.writeConflictReport(specId, conflicts);
+        await this.resolveConflicts(spec, conflicts);
+        console.log("\u2705 Sync FROM Jira complete!");
         return {
           success: true,
           specId,
           provider: "jira",
           externalId: epic.key,
-          url: epic.url
+          url: epic.url,
+          conflicts
+        };
+      } catch (error) {
+        await this.recordApiFailure(error, "syncFromJira");
+        console.error("\u274C Error syncing FROM Jira:", error);
+        return {
+          success: false,
+          specId,
+          provider: "jira",
+          error: error instanceof Error ? error.message : "Unknown error"
         };
       }
-      console.log(`\u26A0\uFE0F  Detected ${conflicts.length} conflict(s)`);
-      await this.writeConflictReport(specId, conflicts);
-      await this.resolveConflicts(spec, conflicts);
-      console.log("\u2705 Sync FROM Jira complete!");
-      return {
-        success: true,
-        specId,
-        provider: "jira",
-        externalId: epic.key,
-        url: epic.url,
-        conflicts
-      };
-    } catch (error) {
-      await this.recordApiFailure(error, "syncFromJira");
-      console.error("\u274C Error syncing FROM Jira:", error);
-      return {
-        success: false,
-        specId,
-        provider: "jira",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
     });
   }
   /**
