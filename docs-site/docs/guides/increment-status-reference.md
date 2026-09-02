@@ -125,7 +125,7 @@ Total WIP: 1 ✅
 
 **Example**:
 ```bash
-sw:status 0009 --reason="waiting for API design"
+specweave status 0009 --reason="waiting for API design"
 # Moves increment to backlog
 # Doesn't count toward WIP
 # Can resume later
@@ -166,7 +166,7 @@ sw:status 0009 --reason="waiting for API design"
 
 **Manual Pause**:
 ```bash
-sw:pause 0008 --reason="waiting for DevOps approval"
+specweave pause 0008 --reason="waiting for DevOps approval"
 ```
 
 ---
@@ -215,12 +215,12 @@ This validates all gates, marks the increment complete, and syncs living docs.
 - Long-term deprioritization
 
 **Transitions**:
-- ✅ **Any → ABANDONED**: Via `sw:abandon`
+- ✅ **Any → ABANDONED**: Via `specweave abandon`
 - ✅ **ABANDONED → ACTIVE**: Can un-abandon if needed (rare)
 
 **Example**:
 ```bash
-sw:abandon 0008 --reason="Pivot to enterprise, consumer features on hold"
+specweave abandon 0008 --reason="Pivot to enterprise, consumer features on hold"
 # Marks increment abandoned
 # Documents reason
 # Status: abandoned
@@ -279,7 +279,7 @@ AUTO-TRANSITION ✨
      ↓
 Business priorities change
      ↓
-sw:status
+specweave status
      ↓
 [BACKLOG] ← Not started yet
      ↓
@@ -386,7 +386,7 @@ Increments:
 ### View Status
 
 ```bash
-sw:status
+specweave status
 # Shows all increments with statuses
 ```
 
@@ -394,16 +394,16 @@ sw:status
 
 ```bash
 # Pause (usually automatic)
-sw:pause 0008 --reason="waiting for approval"
+specweave pause 0008 --reason="waiting for approval"
 
 # Resume (usually automatic)
-sw:resume 0008
+specweave resume 0008
 
 # Move to backlog
-sw:status 0008 --reason="low priority"
+specweave status 0008 --reason="low priority"
 
 # Abandon
-sw:abandon 0008 --reason="requirements changed"
+specweave abandon 0008 --reason="requirements changed"
 
 # Complete
 sw:done 0008
@@ -547,7 +547,7 @@ stateDiagram-v2
 
 - [Increments](/docs/glossary/terms/increments) - Complete increment guide
 - WIP Limits - Work in progress limits
-- [Status Command](/docs/commands/status) - Status monitoring
+- [Status Command](/docs/reference/commands) - Status monitoring
 - [Workflow Guide](/docs/guides/workflow) - Development workflow
 
 ---

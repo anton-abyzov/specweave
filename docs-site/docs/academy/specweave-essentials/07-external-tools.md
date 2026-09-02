@@ -14,9 +14,9 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 :::tip Deep-Dive Guides Available
 This lesson provides an overview. For comprehensive setup guides, see:
-- [Lesson 14: GitHub Integration Guide](./14-github-integration)
-- [Lesson 15: JIRA Integration Guide](./15-jira-integration)
-- [Lesson 16: Azure DevOps Integration Guide](./16-ado-integration)
+- [Lesson 14: GitHub Integration Guide](/docs/guides/github-sync)
+- [Lesson 15: JIRA Integration Guide](/docs/guides/jira-ado-sync)
+- [Lesson 16: Azure DevOps Integration Guide](/docs/guides/jira-ado-sync)
 :::
 
 ---
@@ -94,7 +94,7 @@ specweave init .
 ### Step 3: Verify
 
 ```bash
-sw-github:status
+sw:sync
 ```
 
 ```
@@ -108,7 +108,7 @@ Ready for sync!
 ### Creating Issues
 
 ```bash
-sw-github:create-issue 0001
+sw:sync 0001
 ```
 
 Creates:
@@ -129,7 +129,7 @@ Creates:
 ### Syncing Progress
 
 ```bash
-sw-github:sync 0001
+sw:sync 0001
 ```
 
 ```
@@ -174,7 +174,7 @@ Task (T-XXX)      →    Sub-task
 ### Creating JIRA Items
 
 ```bash
-sw-jira:sync 0001 --create
+sw:sync 0001 --create
 ```
 
 Creates:
@@ -208,7 +208,7 @@ ADO_PROJECT=your-project
 ### Syncing
 
 ```bash
-sw-ado:sync 0001
+sw:sync 0001
 ```
 
 ---
@@ -218,7 +218,7 @@ sw-ado:sync 0001
 The master command syncs everything:
 
 ```bash
-sw:sync-progress
+sw:sync
 ```
 
 ```
@@ -293,7 +293,7 @@ External → SpecWeave only.
 ### Authentication Failed
 
 ```bash
-sw-github:status
+sw:sync
 # Check if token valid/expired
 ```
 
@@ -301,16 +301,16 @@ sw-github:status
 
 ```bash
 # Force from SpecWeave
-sw-github:sync 0001 --force
+sw:sync 0001 --force
 
 # Force from external
-sw:sync-progress --from-external
+sw:sync --from-external
 ```
 
 ### Rate Limit
 
 ```bash
-sw:sync-diagnostics
+sw:sync
 # Wait for reset or use different token
 ```
 
@@ -495,20 +495,20 @@ During `specweave init`, you'll be asked:
 
 ```bash
 # Status & Diagnostics
-sw-github:status          # Check GitHub connection
-sw-jira:status            # Check JIRA connection
-sw-ado:status             # Check ADO connection
-sw:sync-diagnostics       # Rate limits, errors
+sw:sync          # Check GitHub connection
+sw:sync            # Check JIRA connection
+sw:sync             # Check ADO connection
+sw:sync       # Rate limits, errors
 
 # Syncing
-sw:sync-progress          # Full sync (all systems)
-sw-github:sync 0001       # GitHub sync (one increment)
-sw-jira:sync 0001         # JIRA sync (one increment)
-sw-ado:sync 0001          # ADO sync (one increment)
+sw:sync          # Full sync (all systems)
+sw:sync 0001       # GitHub sync (one increment)
+sw:sync 0001         # JIRA sync (one increment)
+sw:sync 0001          # ADO sync (one increment)
 
 # Issue Management
-sw-github:create-issue 0001   # Create GitHub issue
-sw-github:close-issue 0001    # Close GitHub issue
+sw:sync 0001   # Create GitHub issue
+sw:sync 0001    # Close GitHub issue
 ```
 
 ---
@@ -517,9 +517,9 @@ sw-github:close-issue 0001    # Close GitHub issue
 
 This lesson gave you the overview. For complete setup instructions:
 
-- **GitHub users** → [Lesson 14: GitHub Integration Guide](./14-github-integration)
-- **JIRA users** → [Lesson 15: JIRA Integration Guide](./15-jira-integration)
-- **Azure DevOps users** → [Lesson 16: Azure DevOps Integration Guide](./16-ado-integration)
+- **GitHub users** → [Lesson 14: GitHub Integration Guide](/docs/guides/github-sync)
+- **JIRA users** → [Lesson 15: JIRA Integration Guide](/docs/guides/jira-ado-sync)
+- **Azure DevOps users** → [Lesson 16: Azure DevOps Integration Guide](/docs/guides/jira-ado-sync)
 
 Or continue to learn about AI model selection:
 

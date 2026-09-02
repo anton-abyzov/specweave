@@ -16,6 +16,7 @@
     "stamp:plugin-version": "node scripts/build/stamp-plugin-version.cjs",
     "validate:versions": "node scripts/validation/validate-versions.cjs",
     "lint:skills": "node scripts/lint-skills.mjs",
+    "lint:docs-refs": "node scripts/lint-docs-refs.mjs",
     "build:dashboard": "npx vite build --config src/dashboard/client/vite.config.ts",
     "copy:adapters": "node scripts/build/copy-adapters.js",
     "rebuild": "npm run clean && npm run build",

@@ -37,7 +37,7 @@ A script that executes automatically at specific points in the SpecWeave workflo
 A specific, actionable work item within an increment. Tasks are defined in `tasks.md` and link to acceptance criteria.
 
 ### TDD (Test-Driven Development)
-A development approach where tests are written before implementation code. SpecWeave supports TDD by saying "test-driven development", using `sw:tdd-cycle` in Claude Code, or typing `tdd-cycle` in other AI tools.
+A development approach where tests are written before implementation code. SpecWeave supports TDD by saying "test-driven development", using `sw:do` in Claude Code, or typing `tdd-cycle` in other AI tools.
 
 ## AI and Automation
 

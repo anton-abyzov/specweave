@@ -20,19 +20,19 @@ When something isn't working:
 
 <CommandTabs
   natural="What's the current status?"
-  claude="sw:status"
+  claude="specweave status"
   other="status"
 />
 
 ```bash
 # Step 2: Validate structure
-sw:validate 0001
+sw:review 0001
 
 # Step 3: Sync everything
-sw:sync-progress
+sw:sync
 
 # Step 4: Check workflow
-sw:workflow
+sw:do
 ```
 
 ---
@@ -53,7 +53,7 @@ sw:workflow
 
 ```bash
 # Or resume existing (say "resume work" or use the command)
-sw:resume 0001
+specweave resume 0001
 ```
 
 ---
@@ -73,7 +73,7 @@ This is an advisory note — nothing is blocked.
 
 ```bash
 # Or pause one
-sw:pause 0002
+specweave pause 0002
 ```
 
 To change or silence the note, set `limits.activeIncrements` in
@@ -88,7 +88,7 @@ To change or silence the note, set `limits.activeIncrements` in
 **Solution**:
 ```bash
 # Check what's missing
-sw:validate 0001
+sw:review 0001
 
 # Complete missing work
 sw:do --task T-005
@@ -111,13 +111,13 @@ sw:done 0001 --force --reason "CVE fix"
 **Solution**:
 ```bash
 # Check status
-sw-github:status
+sw:sync
 
 # If expired: regenerate token in .env
 # GITHUB_TOKEN=ghp_newtoken
 
 # Force re-sync
-sw-github:sync 0001 --force
+sw:sync 0001 --force
 ```
 
 ---
@@ -143,7 +143,7 @@ sw-github:sync 0001 --force
 **Solution**:
 ```bash
 # Check hooks
-sw:check-hooks
+specweave doctor
 
 # Verify hooks.json exists
 ls plugins/specweave/hooks/hooks.json
@@ -220,7 +220,7 @@ In `.specweave/config.json`:
 **Solution**:
 ```bash
 # Pause complex increments
-sw:pause 0001
+specweave pause 0001
 
 # Use smaller model
 "Using Haiku: find all TODO comments"
@@ -234,11 +234,11 @@ sw:done 0001
 ## Diagnostic Commands
 
 ```bash
-sw:status          # Overall status
-sw:validate 0001   # Validate increment
-sw:check-hooks     # Hook health
-sw:sync-diagnostics # Sync issues
-sw:workflow        # Current state
+specweave status          # Overall status
+sw:review 0001   # Validate increment
+specweave doctor     # Hook health
+sw:sync # Sync issues
+sw:do        # Current state
 ```
 
 ---
@@ -252,7 +252,7 @@ sw:workflow        # Current state
 cp -r .specweave/increments/0001 0001.bak
 
 # Try fix
-sw:validate 0001 --fix
+sw:review 0001 --fix
 
 # Or restore from git
 git checkout HEAD -- .specweave/increments/0001/
@@ -282,13 +282,13 @@ git checkout abc123 -- .specweave/increments/0001/tasks.md
 
 | Issue | Quick Fix |
 |-------|-----------|
-| No active increment | `sw:status` → create or resume |
+| No active increment | `specweave status` → create or resume |
 | WIP limit | Complete or pause an increment |
-| Gate failed | `sw:validate` → fix issues |
-| Sync broken | `sw:sync-progress --force` |
+| Gate failed | `sw:review` → fix issues |
+| Sync broken | `sw:sync --force` |
 | Hooks crashing | `export SPECWEAVE_DISABLE_HOOKS=1` |
 
-**Golden rule**: When stuck, run `sw:workflow`
+**Golden rule**: When stuck, run `sw:do`
 
 ---
 

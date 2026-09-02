@@ -11,7 +11,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 There's a lot of confusion around skills, plugins, and marketplaces in Claude Code. This guide clears it up with a practical lens — including how SpecWeave uses all three at scale.
 
 :::tip TL;DR
-**Skill** = a markdown file with instructions for Claude. **Plugin** = a package of skills + agents + hooks. **Marketplace** = a catalog of plugins. **Command** = the old name for skills. Every skill can be invoked three ways: **natural language**, **slash command** (`sw:name`), or **CLI keyword** (`name`).
+**Skill** = a markdown file with instructions for Claude. **Plugin** = a package of skills + agents + hooks. **Marketplace** = a catalog of plugins. **Command** = the old name for skills. Every skill can be invoked three ways: **natural language**, **slash command** (`sw:&lt;name&gt;`), or **CLI keyword** (`name`).
 :::
 
 ---
@@ -112,7 +112,7 @@ Skills can be triggered three ways:
 
 <CommandTabs
   natural="Let's design the authentication architecture"
-  claude='sw:architect'
+  claude='sw:increment'
   other='architect'
 />
 
@@ -405,8 +405,8 @@ Skills invoke other skills for multi-step workflows:
 
 ```
 sw:increment "user auth"
-    → sw:pm skill activates (Product Manager writes spec)
-        → sw:architect skill activates (designs the system)
+    → sw:increment skill activates (Product Manager writes spec)
+        → sw:increment skill activates (designs the system)
             → backend:nodejs activates (implements)
 ```
 
@@ -440,7 +440,7 @@ Domain plugins load based on what you're working on:
 3. **Marketplace = a catalog** -- lists plugins and where to download them via `marketplace.json`
 4. **Commands = old name for skills** -- `.claude/commands/` still works, but skills are the current standard
 5. **Namespacing prevents conflicts** -- plugin skills become `/plugin:skill`
-6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:name`), or CLI keyword (`name` in other AI tools)
+6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or CLI keyword (`name` in other AI tools)
 7. **Real scale** -- SpecWeave ships 44 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
 
 ---

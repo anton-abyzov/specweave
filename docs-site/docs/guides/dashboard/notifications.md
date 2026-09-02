@@ -85,6 +85,6 @@ Run `specweave dashboard` to open the SpecWeave dashboard. Navigate to the **Not
 
 ## See Also
 
-- [Sync](./sync.md) -- sync failures and import completions generate notifications
+- [Sync](/docs/reference/sync-cli) -- sync failures and import completions generate notifications
 - [Activity](./activity.md) -- notification events also appear in the activity stream
 - [Errors](./errors.md) -- error-level events may generate corresponding notifications

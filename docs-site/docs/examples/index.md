@@ -296,6 +296,6 @@ All repos: [github.com/anton-abyzov](https://github.com/anton-abyzov?tab=reposit
 ## Next Steps
 
 - **Try an example**: Pick one from above and run it
-- **Read the guides**: [Multi-project setup](/docs/guides/multi-project-setup) · [Autonomous execution](/docs/guides/autonomous-execution)
+- **Read the guides**: [Multi-project setup](/docs/reference/configuration) · [Autonomous execution](/docs/guides/autonomous-execution)
 - **Watch videos**: [YouTube tutorials](https://www.youtube.com/@antonabyzov)
 - **Join community**: [Discord](https://discord.gg/UYg4BGJ65V)

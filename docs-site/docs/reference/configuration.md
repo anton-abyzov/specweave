@@ -1,889 +1,223 @@
 ---
-sidebar_position: 3
-title: Configuration Reference
-description: Complete reference for all SpecWeave config.json properties, increment metadata, and environment variables
+sidebar_position: 4
+title: Configuration
+description: Every key SpecWeave 2.0 reads from .specweave/config.json, plus increment metadata.
 ---
 
-# Configuration Reference
+# Configuration reference
 
-SpecWeave uses three configuration surfaces: **project config** (`config.json`), **increment metadata** (`metadata.json`), and **environment variables**. This page documents every property, its type, default value, and purpose.
+SpecWeave 2.0 has an **exact** config surface. Every key listed here has a reader in the code; anything else in `.specweave/config.json` produces one warning line on load and is ignored.
 
-## Config File Locations
-
-| File | Location | Scope |
-|------|----------|-------|
-| Project config | `.specweave/config.json` | Per-project settings |
-| Increment metadata | `.specweave/increments/{id}/metadata.json` | Per-increment state |
-
-SpecWeave creates `config.json` during `specweave init`. Edit it directly or use CLI commands that modify it on your behalf.
+`specweave init` writes the file. `specweave update` migrates a 1.x file to this shape in a single pass.
 
 ---
 
-## Quick Reference: Disableable Features
-
-The most common configuration need is turning features on or off. This table shows every disableable feature at a glance.
-
-| Feature | Config Path | Value to Disable | Default |
-|---------|-------------|-----------------|---------|
-| Living docs (copy-based sync) | `livingDocs.copyBasedSync.enabled` | `false` | `true` |
-| Living docs (three-layer sync) | `livingDocs.threeLayerSync.enabled` | `false` | `true` |
-| Living docs auto-generation | `livingDocs.copyBasedSync.autoGenerate` | `false` | `true` |
-| TDD enforcement | `testing.tddEnforcement` | `"off"` | _(not set)_ |
-| Deep interview mode | `planning.deepInterview.enabled` | `false` | `false` |
-| Plugin auto-loading | `pluginAutoLoad.enabled` | `false` | `true` |
-| Reflection / skill learning | `reflect.enabled` | `false` | `true` |
-| Grill quality gate | `grill.required` | `false` | `true` |
-| External sync | `sync.enabled` | `false` | `false` |
-| Auto-sync on completion | `sync.autoSync` | `false` | `false` |
-| Auto-create external issues | `hooks.post_increment_planning.auto_create_github_issue` | `false` | `true` |
-| Close external issue on done | `hooks.post_increment_done.close_github_issue` | `false` | `true` |
-| Living docs sync on done | `hooks.post_increment_done.sync_living_docs` | `false` | `true` |
-| Increment assist | `incrementAssist.enabled` | `false` | `true` |
-| Increment assist (mandatory) | `incrementAssist.mandatory` | `false` | `true` |
-| Status line | `statusLine.enabled` | `false` | `true` |
-| Auto-archive | `archiving.autoArchive` | `false` | `false` |
-| API docs generation | `apiDocs.enabled` | `false` | `false` |
-| Translation | `translation.enabled` | `false` | `false` |
-| Context budget auto-adapt | `contextBudget.autoAdapt` | `false` | `true` |
-| CI/CD auto-fix | `cicd.autoFix.enabled` | `false` | `true` |
-| Deduplication | `deduplication.enabled` | `false` | `true` |
-| Multi-repo workspace | `workspace.repos` | `[]` (empty array = single-project) | — |
-| All hooks at once | env: `SPECWEAVE_DISABLE_HOOKS` | `1` | _(not set)_ |
-
-:::tip Living Docs Trade-off
-Living docs generate Architecture Decision Records (ADRs), API specs, and project knowledge that LLMs use to make better decisions in future increments. Disabling them speeds up increment closure but removes this accumulated context. Consider keeping them enabled if you use AI-assisted development across multiple sessions.
-:::
-
----
-
-## config.json Reference
-
-### Core
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `version` | `string` | `"2.0"` | Config schema version. Used for automatic migrations |
-| `language` | `string` | `"en"` | Display language. Values: `en`, `ru`, `es`, `zh`, `de`, `fr`, `ja`, `ko`, `pt` |
+## A complete 2.0 config
 
 ```json
 {
   "version": "2.0",
-  "language": "en"
-}
-```
-
-### project
-
-Project metadata used for display and sync routing.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `name` | `string` | — | Project display name |
-| `version` | `string` | — | Project version |
-| `description` | `string` | — | Project description |
-| `techStack` | `string[]` | — | Technology keywords (e.g., `["typescript", "react"]`) |
-| `team` | `string` | — | Team identifier |
-
-```json
-{
-  "project": {
-    "name": "my-app",
-    "version": "1.0.0",
-    "techStack": ["typescript", "nextjs", "postgresql"]
-  }
-}
-```
-
-### adapters
-
-Controls which LLM adapter SpecWeave uses for instruction generation.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `default` | `string` | `"claude"` | Default adapter. Values: `claude`, `cursor`, `generic` |
-
-```json
-{
-  "adapters": { "default": "claude" }
-}
-```
-
-### testing
-
-Testing mode, coverage targets, and TDD enforcement.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `defaultTestMode` | `string` | `"TDD"` | Test strategy. Values: `TDD`, `test-after`, `manual`, `none` |
-| `defaultCoverageTarget` | `number` | `90` | Default coverage percentage (0-100) |
-| `coverageTargets.unit` | `number` | `95` | Unit test coverage target |
-| `coverageTargets.integration` | `number` | `90` | Integration test coverage target |
-| `coverageTargets.e2e` | `number` | `100` | E2E test coverage target |
-| `tddEnforcement` | `string` | _(not set)_ | TDD enforcement level. Values: `strict`, `warn`, `off` |
-| `playwright.preferCli` | `boolean` | `true` | Use Playwright CLI for E2E tests |
-| `playwright.cliFlags` | `string[]` | — | Additional Playwright CLI flags |
-
-```json
-{
+  "project": { "name": "my-app" },
+  "adapters": { "default": "claude" },
   "testing": {
-    "defaultTestMode": "TDD",
-    "coverageTargets": { "unit": 95, "integration": 90, "e2e": 100 },
-    "tddEnforcement": "strict",
-    "playwright": { "preferCli": true }
-  }
+    "mode": "TDD",
+    "commands": ["npm test", "npm run lint"],
+    "coverage": { "unit": 95, "integration": 90, "e2e": 100 }
+  },
+  "limits": { "activeIncrements": 3 },
+  "planning": { "deepInterview": "off" },
+  "livingDocs": false,
+  "sync": { "enabled": false }
 }
 ```
 
-### grill
-
-Quality gate requiring a grill report before increment closure.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `required` | `boolean` | `true` | Require grill report before `sw:done` |
-
-```json
-{
-  "grill": { "required": true }
-}
-```
-
-### limits
-
-Advisory work-in-progress note. There is no hard cap: exceeding the number prints one info note and never blocks.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `activeIncrements` | `number` | `3` | Recommended max concurrent active increments (`0` disables the note) |
-
-```json
-{
-  "limits": {
-    "activeIncrements": 3
-  }
-}
-```
-
-1.x keys (`maxActiveIncrements`, `hardCap`, `allowEmergencyInterrupt`, `typeBehaviors`, `staleness`) are migrated automatically on first read: `maxActiveIncrements` becomes `activeIncrements`, the rest are dropped.
-
-### planning
-
-Controls the deep interview feature during increment planning.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `deepInterview.enabled` | `boolean` | `false` | Enable deep interview during `sw:increment` |
-| `deepInterview.enforcement` | `string` | — | Enforcement level. Values: `strict`, `warn`, `off` |
-| `deepInterview.minQuestions` | `number` | `5` | Minimum questions to ask |
-| `deepInterview.categories` | `string[]` | _(all 6)_ | Question categories: `architecture`, `integrations`, `ui-ux`, `performance`, `security`, `edge-cases` |
-
-```json
-{
-  "planning": {
-    "deepInterview": {
-      "enabled": true,
-      "enforcement": "strict",
-      "minQuestions": 5
-    }
-  }
-}
-```
-
-### incrementAssist
-
-Controls whether SpecWeave proactively suggests creating or reopening increments.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable increment assist |
-| `suggestNewIncrement` | `boolean` | `true` | Suggest creating new increments |
-| `suggestReopen` | `boolean` | `true` | Suggest reopening closed increments |
-| `confidenceThreshold` | `number` | `0.7` | Confidence required to trigger suggestion (0-1) |
-| `mandatory` | `boolean` | `true` | Make increment creation mandatory for implementation work |
-
-```json
-{
-  "incrementAssist": {
-    "enabled": true,
-    "mandatory": false
-  }
-}
-```
-
-### livingDocs
-
-Controls automatic living documentation synchronization.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `copyBasedSync.enabled` | `boolean` | `true` | Enable copy-based sync (spec copies to docs) |
-| `copyBasedSync.autoGenerate` | `boolean` | `true` | Auto-generate doc copies on increment done |
-| `threeLayerSync.enabled` | `boolean` | `true` | Enable three-layer sync (specs, ADRs, API docs) |
-| `threeLayerSync.autoSync` | `boolean` | `true` | Auto-sync on changes |
-
-```json
-{
-  "livingDocs": {
-    "copyBasedSync": { "enabled": true, "autoGenerate": true },
-    "threeLayerSync": { "enabled": true, "autoSync": true }
-  }
-}
-```
-
-:::info Why Living Docs Matter
-Living docs build up project knowledge over time — ADRs, API specifications, and increment history. LLMs use this context to make better architectural decisions in future increments. Disabling living docs removes this feedback loop but makes increment closure faster.
-:::
-
-### documentation
-
-Controls documentation preview and directory scanning.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `directories` | `string[]` | `[".specweave/docs"]` | Directories to scan for documentation |
-| `publicSitePath` | `string` | — | Path to public documentation site |
-| `preview.enabled` | `boolean` | `false` | Enable documentation preview server |
-| `preview.autoInstall` | `boolean` | — | Auto-install preview dependencies |
-| `preview.port` | `number` | `3015` | Preview server port |
-| `preview.openBrowser` | `boolean` | — | Auto-open browser on preview start |
-| `preview.theme` | `string` | — | Preview theme name |
-| `preview.excludeFolders` | `string[]` | — | Folders to exclude from preview |
-
-```json
-{
-  "documentation": {
-    "directories": [".specweave/docs"],
-    "preview": { "enabled": true, "port": 3015 }
-  }
-}
-```
-
-### apiDocs
-
-API documentation auto-generation from code.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `false` | Enable API docs generation |
-| `openApiPath` | `string` | `"openapi.yaml"` | Path to OpenAPI spec file |
-| `autoGenerateOpenApi` | `boolean` | `true` | Auto-generate OpenAPI spec from code |
-| `generatePostman` | `boolean` | `true` | Generate Postman collection |
-| `postmanPath` | `string` | `"postman-collection.json"` | Postman collection output path |
-| `postmanEnvPath` | `string` | `"postman-environment.json"` | Postman environment output path |
-| `generateOn` | `string` | `"on-increment-done"` | When to generate. Values: `on-increment-done`, `on-api-change`, `manual` |
-| `watchPatterns` | `string[]` | `["**/routes/**", ...]` | File patterns to watch for API changes |
-| `baseUrl` | `string` | `"http://localhost:3000"` | API base URL |
-
-```json
-{
-  "apiDocs": {
-    "enabled": true,
-    "generateOn": "on-api-change",
-    "watchPatterns": ["**/routes/**", "**/controllers/**"]
-  }
-}
-```
-
-### sync
-
-External tool synchronization (GitHub, JIRA, Azure DevOps).
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `false` | Master sync switch |
-| `direction` | `string` | `"bidirectional"` | Sync direction. Values: `import`, `export`, `bidirectional` |
-| `autoSync` | `boolean` | `false` | Auto-sync on increment changes |
-| `includeStatus` | `boolean` | `true` | Sync status fields |
-| `autoApplyLabels` | `boolean` | `true` | Auto-apply labels during sync |
-| `provider` | `string` | — | Exclusive provider: `jira`, `github`, `ado` |
-| `defaultProfile` | `string` | — | Fallback sync profile name |
-| `autoCreateOnIncrement` | `boolean` | — | Auto-create external issues on increment creation |
-| `settings.canUpsertInternalItems` | `boolean` | — | Allow creating internal items from external |
-| `settings.canUpdateExternalItems` | `boolean` | — | Allow updating external items |
-| `settings.canUpdateStatus` | `boolean` | — | Allow status sync |
-| `settings.autoSyncOnCompletion` | `boolean` | — | Auto-sync when increment completes |
-| `github.enabled` | `boolean` | — | Enable GitHub sync |
-| `github.owner` | `string` | — | GitHub org/user |
-| `github.repo` | `string` | — | GitHub repository name |
-| `jira.enabled` | `boolean` | — | Enable JIRA sync |
-| `jira.domain` | `string` | — | JIRA instance domain |
-| `jira.projectKey` | `string` | — | JIRA project key |
-| `ado.enabled` | `boolean` | — | Enable Azure DevOps sync |
-| `ado.organization` | `string` | — | ADO organization |
-| `ado.project` | `string` | — | ADO project |
-| `profiles` | `object` | — | Named sync profiles (keyed by profile ID) |
-
-```json
-{
-  "sync": {
-    "enabled": true,
-    "direction": "bidirectional",
-    "autoSync": true,
-    "github": { "enabled": true, "owner": "my-org", "repo": "my-app" }
-  }
-}
-```
-
-:::tip Use `sw:sync-setup` to configure sync interactively instead of editing config.json manually.
-:::
-
-### hooks
-
-Lifecycle hooks that trigger actions on increment events.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `post_task_completion.sync_tasks_md` | `boolean` | `true` | Sync tasks.md after task completion |
-| `post_task_completion.external_tracker_sync` | `boolean` | `true` | Sync to external tracker after task completion |
-| `post_increment_planning.auto_create_github_issue` | `boolean` | `true` | Auto-create external issue after planning |
-| `post_increment_planning.sync_living_docs` | `boolean` | `true` | Sync living docs after planning |
-| `post_increment_done.sync_living_docs` | `boolean` | `true` | Sync living docs on increment done |
-| `post_increment_done.sync_to_github_project` | `boolean` | `true` | Sync to GitHub project on done |
-| `post_increment_done.close_github_issue` | `boolean` | `true` | Close GitHub issue on done |
-| `post_increment_done.close_jira_issue` | `boolean` | — | Close JIRA issue on done |
-| `post_increment_done.close_ado_work_item` | `boolean` | — | Close ADO work item on done |
-
-```json
-{
-  "hooks": {
-    "post_task_completion": { "sync_tasks_md": true, "external_tracker_sync": true },
-    "post_increment_planning": { "auto_create_github_issue": false },
-    "post_increment_done": { "sync_living_docs": true, "close_github_issue": true }
-  }
-}
-```
-
-### issueTracker
-
-Issue tracking system provider configuration.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `provider` | `string` | `"none"` | Provider. Values: `none`, `jira`, `github`, `ado` |
-| `domain` | `string` | — | JIRA domain (JIRA only) |
-| `instanceType` | `string` | — | JIRA instance type. Values: `cloud`, `server` |
-| `strategy` | `string` | — | JIRA organization strategy. Values: `single-project`, `project-per-team`, `component-based`, `board-based` |
-| `projects` | `array` | — | JIRA project configurations |
-
-```json
-{
-  "issueTracker": {
-    "provider": "jira",
-    "domain": "myteam.atlassian.net",
-    "strategy": "single-project",
-    "projects": [{ "key": "MYAPP", "name": "My Application" }]
-  }
-}
-```
-
-### repository
-
-Repository provider and Git configuration.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `provider` | `string` | `"local"` | Provider. Values: `local`, `github`, `bitbucket`, `ado`, `gitlab`, `generic` |
-| `organization` | `string` | — | Organization or team identifier |
-| `gitUrlFormat` | `string` | — | Git URL format. Values: `ssh`, `https` |
-| `repos` | `array` | — | Repository configurations |
-
-```json
-{
-  "repository": {
-    "provider": "github",
-    "organization": "my-org",
-    "gitUrlFormat": "ssh"
-  }
-}
-```
-
-### cicd
-
-CI/CD pipeline and Git branching configuration.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `pushStrategy` | `string` | `"direct"` | Push strategy. Values: `direct`, `pr-based` |
-| `git.branchPrefix` | `string` | `"sw/"` | Feature branch prefix |
-| `git.targetBranch` | `string` | `"main"` | PR target branch |
-| `git.deleteOnMerge` | `boolean` | `true` | Delete branch after merge |
-| `git.includeExternalKey` | `boolean` | `false` | Include JIRA/ADO key in branch name |
-| `release.strategy` | `string` | — | Release strategy. Values: `trunk`, `gitflow`, `env-promotion` |
-| `release.environments` | `array` | — | Environment configs (for `env-promotion`) |
-| `autoFix.enabled` | `boolean` | `true` | Enable auto-fix on CI failure |
-| `autoFix.maxRetries` | `number` | `1` | Max retry attempts |
-| `autoFix.allowedBranches` | `string[]` | `["develop", "main"]` | Branches where auto-fix is allowed |
-| `monitoring.pollInterval` | `number` | — | CI poll interval (ms) |
-| `monitoring.autoNotify` | `boolean` | — | Auto-notify on CI completion |
-
-```json
-{
-  "cicd": {
-    "pushStrategy": "pr-based",
-    "git": { "branchPrefix": "sw/", "targetBranch": "develop" },
-    "autoFix": { "enabled": true, "maxRetries": 2 }
-  }
-}
-```
-
-### auto
-
-Autonomous execution mode (`sw:auto`) configuration.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | — | Enable auto mode |
-| `maxRetries` | `number` | `20` | Max retries before escalating |
-| `maxTurns` | `number` | `50` | Max total turns in auto session |
-| `maxIterations` | `number` | `2500` | Safety limit for iterations |
-| `maxHours` | `number` | — | Max session hours |
-| `requireTests` | `boolean` | `false` | Require tests pass before closure |
-| `requireValidation` | `boolean` | `true` | Require `sw:validate` |
-| `requireJudgeLLM` | `boolean` | `false` | Require `sw:judge-llm` |
-| `skipQualityGates` | `boolean` | `false` | Skip all quality gates |
-| `testCommand` | `string` | — | Custom test command |
-| `coverageThreshold` | `number` | — | Coverage requirement (%) |
-| `enforceTestFirst` | `boolean` | — | TDD enforcement in auto mode |
-
-```json
-{
-  "auto": {
-    "enabled": true,
-    "maxRetries": 20,
-    "requireTests": true,
-    "requireValidation": true
-  }
-}
-```
-
-### reflect
-
-Controls automatic skill learning from session corrections.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable reflection and skill memory extraction |
-| `model` | `string` | `"haiku"` | Model for extraction. Values: `haiku`, `sonnet`, `opus` |
-| `maxLearningsPerSession` | `number` | `3` | Max learnings saved per session |
-
-```json
-{
-  "reflect": { "enabled": false }
-}
-```
-
-### contextBudget
-
-Controls how much context SpecWeave injects into LLM prompts.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `level` | `string` | `"full"` | Budget level. Values: `full` (2500 chars), `compact`, `minimal`, `off` |
-| `autoAdapt` | `boolean` | `true` | Auto-reduce when context pressure detected |
-
-```json
-{
-  "contextBudget": { "level": "compact", "autoAdapt": true }
-}
-```
-
-### skillGen
-
-Automatic skill generation from detected project patterns.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `detection` | `string` | `"on-close"` | When to detect patterns. Values: `on-close`, `off` |
-| `suggest` | `boolean` | `true` | Show skill suggestions on increment closure |
-| `minSignalCount` | `number` | `3` | Min pattern occurrences to qualify |
-| `maxSignals` | `number` | `100` | Max signals to retain |
-| `declinedSuggestions` | `string[]` | `[]` | Permanently excluded patterns |
-
-```json
-{
-  "skillGen": { "detection": "off" }
-}
-```
-
-### translation
-
-Multi-language translation configuration.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `false` | Enable auto-translation |
-| `languages` | `string[]` | `["en"]` | Enabled languages (always includes `en`) |
-| `primary` | `string` | `"en"` | Primary output language |
-| `method` | `string` | `"auto"` | Trigger method. Values: `auto`, `manual`, `none` |
-| `preserveFrameworkTerms` | `boolean` | `true` | Keep SpecWeave terms in English |
-| `scope.incrementSpecs` | `boolean` | `false` | Translate increment specs |
-| `scope.livingDocs` | `boolean` | `false` | Translate living docs |
-| `scope.externalSync` | `boolean` | `false` | Translate external sync content |
-| `keepEnglishOriginals` | `boolean` | `false` | Keep `.en.md` originals alongside translations |
-
-```json
-{
-  "translation": {
-    "enabled": true,
-    "languages": ["en", "de"],
-    "primary": "de"
-  }
-}
-```
-
-### workspace
-
-Unified workspace configuration for single and multi-repository projects. Replaces the deprecated `umbrella`, `multiProject`, and `projectMappings` settings (v3.0+).
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `name` | `string` | _(required)_ | Workspace display name |
-| `rootRepo` | `object` | — | Sync targets for the umbrella/root repo itself |
-| `rootRepo.github.owner` | `string` | — | GitHub org/user for the root repo |
-| `rootRepo.github.repo` | `string` | — | GitHub repo name for the root repo |
-| `rootRepo.github.direction` | `string` | — | Sync direction override |
-| `rootRepo.jira.projectKey` | `string` | — | JIRA project key for the root repo |
-| `rootRepo.jira.domain` | `string` | — | JIRA domain override |
-| `rootRepo.ado.organization` | `string` | — | ADO organization |
-| `rootRepo.ado.project` | `string` | — | ADO project name |
-| `repos` | `array` | _(required)_ | List of child repositories |
-| `repos[].id` | `string` | _(required)_ | Unique identifier; used as **Project** value in user stories |
-| `repos[].path` | `string` | _(required)_ | Relative path to the repo (e.g., `repositories/my-org/frontend`) |
-| `repos[].prefix` | `string` | _(required)_ | Short prefix for US/AC IDs (e.g., `FE`, `BE`) |
-| `repos[].name` | `string` | — | Display name (defaults to `id`) |
-| `repos[].techStack` | `string[]` | — | Tech keywords for story routing (e.g., `["typescript", "react"]`) |
-| `repos[].role` | `string` | — | Repo role: `frontend`, `backend`, `mobile`, `infra`, `shared`, `other` |
-| `repos[].sync` | `object` | — | Per-repo sync targets (same structure as `rootRepo`) |
-| `repos[].sync.github` | `object` | — | `{ owner, repo, direction? }` |
-| `repos[].sync.jira` | `object` | — | `{ projectKey, domain? }` |
-| `repos[].sync.ado` | `object` | — | `{ organization?, project }` |
-
-#### Complete example
+That is the whole default. Everything below is optional.
+
+---
+
+## Core keys
+
+### `version`
+
+Config schema version. 2.0 configs carry `"2.0"`. The migrator sets it.
+
+### `project`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | string | The only field SpecWeave itself reads. |
+| `version`, `description`, `techStack`, `team` | — | Metadata for your own use. |
+
+### `adapters`
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `default` | `"claude"` \| `"codex"` \| `"generic"` | `"claude"` | Which instruction-file flavour `specweave update-instructions` generates. |
+
+### `testing`
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `mode` | `"TDD"` \| `"test-after"` \| `"manual"` \| `"none"` | `"TDD"` | How tests are written for new work. |
+| `commands` | `string[]` | `[]` | The project's verification commands, run **in order** by `specweave verify`. Empty means auto-detect from `package.json` scripts (`test` → `lint` → `build`), Cargo, pytest or go. |
+| `coverage.unit` | number | `95` | Line coverage target (%). |
+| `coverage.integration` | number | `90` | Line coverage target (%). |
+| `coverage.e2e` | number | `100` | Pass-rate of written e2e tests, not line coverage. |
+
+`testing.commands` is the single most valuable key in the file: it is exactly what `verify.json` records, and therefore what the closure gate is checking.
+
+### `limits`
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `activeIncrements` | number | `3` | **Advisory.** Exceeding it prints one info note. Nothing blocks. `0` disables the note. |
+
+The 1.x hard WIP cap is gone.
+
+### `planning`
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `deepInterview` | `"off"` \| `"warn"` | `"off"` | `"warn"` makes the planning skill ask the structured interview questions and note the gaps. Enforcement is skill-side only — no hook blocks a write in 2.0. |
+
+### `livingDocs`
+
+| Value | Effect |
+|-------|--------|
+| `false` (default) | Living docs are never generated. |
+| `"onDone"` | Regenerated when an increment is completed. |
+
+Off by default because the 1.x auto-generated tree was never read. The diagram/JPG generators were removed entirely.
+
+### `workspace`
+
+Multi-repo workspaces (the umbrella repo plus its children). Replaces the 1.x `umbrella`, `multiProject` and `projectMappings` blocks, which the migrator folds in automatically.
 
 ```json
 {
   "workspace": {
-    "name": "my-platform",
-    "rootRepo": {
-      "github": { "owner": "my-org", "repo": "platform-umbrella" }
-    },
+    "name": "acme",
     "repos": [
-      {
-        "id": "frontend-app",
-        "path": "repositories/my-org/frontend-app",
-        "prefix": "FE",
-        "name": "Frontend Application",
-        "techStack": ["typescript", "react", "nextjs"],
-        "role": "frontend",
-        "sync": {
-          "github": { "owner": "my-org", "repo": "frontend-app" },
-          "jira": { "projectKey": "FE" }
-        }
-      },
-      {
-        "id": "backend-api",
-        "path": "repositories/my-org/backend-api",
-        "prefix": "BE",
-        "name": "Backend API",
-        "techStack": ["typescript", "nodejs", "postgresql"],
-        "role": "backend",
-        "sync": {
-          "github": { "owner": "my-org", "repo": "backend-api" },
-          "jira": { "projectKey": "BE" }
-        }
-      }
+      { "id": "web-ui", "path": "repositories/acme/web-ui", "prefix": "FE", "role": "frontend" },
+      { "id": "api",    "path": "repositories/acme/api",    "prefix": "BE", "role": "backend" }
     ]
   }
 }
 ```
 
-:::info Single-Project Workspaces
-Single-project workspaces have `workspace.repos: []` — the `workspace.name` IS the project. No additional flags are needed. The workspace section activates automatically when present; there is no `enabled` flag.
-:::
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | string | Workspace display name. |
+| `rootRepo` | object | Sync targets for the umbrella repo itself. |
+| `repos[].id` | string | Must match the canonical source name (GitHub repo name, Jira key lowercased, ADO project kebab-cased). |
+| `repos[].path` | string | Relative or absolute path. |
+| `repos[].prefix` | string | User-story prefix — `US-FE-001`. |
+| `repos[].techStack`, `repos[].role` | — | Story routing hints. |
+| `repos[].sync` | object | Per-repo `github` / `jira` / `ado` targets. |
 
-#### ID strategy
+The umbrella section of `CLAUDE.md` is emitted only when `workspace.repos` is non-empty.
 
-The `id` field should match the canonical name from your source of truth:
+### `sync`
 
-| Scenario | ID Source | Example |
-|----------|----------|---------|
-| GitHub repo | Exact repo name | `sw-qr-menu-fe` |
-| JIRA project | Project key (lowercase) | `WEBAPP` → `webapp` |
-| ADO project | Project name (kebab-case) | `Frontend Team` → `frontend-team` |
-| ADO area path | Last segment (kebab-case) | `Product\Web` → `web` |
-| Monorepo package | Package name | `@acme/frontend` → `frontend` |
+See the [`specweave sync` reference](/docs/reference/sync-cli) for the full block. The essentials:
 
-IDs should be predictable from the source — no arbitrary abbreviations.
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `enabled` | boolean | `false` | Master switch. Nothing talks to a tracker until this is true. |
+| `github` / `jira` / `ado` | object | — | Per-provider `{ enabled, … }`. GitHub is first-class; Jira and ADO are opt-in and community-maintained. |
+| `settings.autoSyncOnCompletion` | boolean | `true` | Push on `specweave complete`. |
+| `defaultProfile` | string | — | Fallback profile when an increment names none. |
 
-### archiving
+`sync.mode` was removed: the queued event-queue path dropped events on a partial flush.
 
-Increment archiving and cleanup rules.
+### `auto`
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `keepLast` | `number` | `5` | Keep last N completed increments |
-| `autoArchive` | `boolean` | `false` | Auto-archive when threshold reached |
-| `autoArchiveThreshold` | `number` | `10` | Archive when count exceeds this |
-| `archiveAfterDays` | `number` | `60` | Archive after N days of inactivity |
-| `preserveActive` | `boolean` | `true` | Never archive active increments |
-| `archiveCompleted` | `boolean` | `false` | Archive completed increments |
-| `archivePatterns` | `string[]` | `[]` | Glob patterns to auto-archive |
-| `preserveList` | `string[]` | `[]` | Increment IDs to never archive |
+Settings for `specweave auto`.
 
-```json
-{
-  "archiving": {
-    "autoArchive": true,
-    "archiveAfterDays": 30,
-    "keepLast": 10
-  }
-}
-```
-
-### deduplication
-
-Prevents duplicate command execution within a time window.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable command deduplication |
-| `windowMs` | `number` | `1000` | Deduplication window (milliseconds) |
-| `maxCacheSize` | `number` | `1000` | Max cached command entries |
-| `debug` | `boolean` | `false` | Enable debug logging |
-| `cleanupIntervalMs` | `number` | `60000` | Cache cleanup interval (ms) |
-
-```json
-{
-  "deduplication": { "enabled": true, "windowMs": 2000 }
-}
-```
-
-### statusLine
-
-Controls the status line displayed in Claude Code.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable status line |
-| `maxCacheAge` | `number` | `30000` | Max cache age before refresh (ms) |
-| `progressBarWidth` | `number` | `8` | Progress bar width (characters) |
-| `maxNameLength` | `number` | `30` | Max increment name display length |
-
-```json
-{
-  "statusLine": { "enabled": false }
-}
-```
-
-### pluginAutoLoad
-
-Controls automatic detection and loading of plugins.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable plugin auto-loading |
-| `suggestOnly` | `boolean` | `true` | Only suggest plugins, don't auto-install |
-
-```json
-{
-  "pluginAutoLoad": { "enabled": false }
-}
-```
-
-### lsp
-
-Language Server Protocol integration for code intelligence.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable LSP support |
-| `autoInstallPlugins` | `boolean` | `true` | Auto-install LSP plugins |
-| `marketplace` | `string` | `"boostvolt/claude-code-lsps"` | Plugin marketplace source |
-
-```json
-{
-  "lsp": { "enabled": true, "autoInstallPlugins": true }
-}
-```
-
-### projectMappings _(removed)_
-
-:::warning Migration Note
-`projectMappings` was removed in v3.0. Existing configs auto-migrate to the `workspace` format on first load. Per-project sync targets are now configured via `workspace.repos[].sync`. See the [workspace](#workspace) section above.
-:::
-
-### multiProject _(removed)_
-
-:::warning Migration Note
-`multiProject` was removed in v3.0. Existing configs auto-migrate to the `workspace` format on first load. Define your projects as entries in `workspace.repos[]` instead. See the [workspace](#workspace) section above.
-:::
-
-### billing
-
-Optional billing metadata.
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `planType` | `string` | — | Plan type (e.g., `subscription`, `enterprise`) |
-| `monthlyAmount` | `number` | — | Monthly cost |
+| Field | Type | Default |
+|-------|------|---------|
+| `enabled` | boolean | — |
+| `maxIterations` | number | `2500` |
+| `maxTurns` | number | `50` |
+| `maxRetries` | number | `20` |
+| `requireTests` | boolean | `false` |
 
 ---
 
-## metadata.json Reference
+## Kept beyond the advertised surface
 
-Each increment has a `metadata.json` file at `.specweave/increments/{id}/metadata.json`. Most fields are managed automatically by SpecWeave — you rarely need to edit them directly.
+These keys are not part of the 2.0 story, but real code still reads them, so they are accepted without a warning:
 
-### Core Fields
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `id` | `string` | Increment identifier (e.g., `"0042-user-auth"`) |
-| `type` | `string` | Increment type. Values: `feature`, `hotfix`, `bug`, `change-request`, `refactor`, `experiment` |
-| `status` | `string` | Lifecycle status. Values: `planning`, `active`, `backlog`, `paused`, `ready_for_review`, `completed`, `abandoned` |
-| `priority` | `string` | Priority level (e.g., `P0`, `P1`, `P2`) |
-| `created` | `string` | ISO 8601 creation timestamp |
-| `lastActivity` | `string` | ISO 8601 last modification timestamp |
-| `testMode` | `string` | Per-increment test mode override. Values: `TDD`, `test-after`, `manual`, `none` |
-| `coverageTarget` | `number` | Per-increment coverage target (0-100) |
-
-### Lifecycle Fields
-
-These fields are set automatically as the increment moves through its lifecycle.
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `backlogReason` | `string` | Why moved to backlog |
-| `backlogAt` | `string` | ISO 8601 when moved to backlog |
-| `pausedReason` | `string` | Why paused |
-| `pausedAt` | `string` | ISO 8601 when paused |
-| `abandonedReason` | `string` | Why abandoned |
-| `abandonedAt` | `string` | ISO 8601 when abandoned |
-| `readyForReviewAt` | `string` | ISO 8601 when all tasks completed |
-| `approvedAt` | `string` | ISO 8601 when approved via `sw:done` |
-
-### External Integration Fields
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `externalLinks.jira.epicKey` | `string` | JIRA epic key (e.g., `MYAPP-123`) |
-| `externalLinks.jira.epicUrl` | `string` | JIRA epic URL |
-| `externalLinks.jira.projectKey` | `string` | JIRA project key |
-| `externalLinks.jira.domain` | `string` | JIRA domain |
-| `externalLinks.jira.syncedAt` | `string` | Last sync timestamp |
-| `externalLinks.ado.featureId` | `string` | ADO feature ID |
-| `externalLinks.ado.featureUrl` | `string` | ADO feature URL |
-| `externalLinks.ado.organization` | `string` | ADO organization |
-| `externalLinks.ado.project` | `string` | ADO project |
-| `externalLinks.ado.syncedAt` | `string` | Last sync timestamp |
-| `externalRefs` | `object` | Per-user-story external references mapping |
-| `syncTarget` | `object` | Which external tool this increment syncs with |
-| `syncTarget.profileId` | `string` | Sync profile ID from `config.sync.profiles` |
-| `syncTarget.provider` | `string` | Provider: `github`, `jira`, `ado` |
-| `syncTarget.derivedFrom` | `string` | How target was determined: `user-selection`, `project-mapping`, `default-profile`, `auto-detected` |
-
-### Multi-Project and CI/CD Fields
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `projectId` | `string` | Single project ID (backward compatible) |
-| `multiProject.projects` | `array` | List of projects this increment spans |
-| `multiProject.primaryProject` | `string` | Primary project for main spec |
-| `multiProject.syncStrategy` | `string` | Sync strategy: `linked`, `primary-only`, `all` |
-| `epicId` | `string` | Epic this increment belongs to |
-| `skipLivingDocsSync` | `boolean` | Skip living docs sync for this increment |
-| `prRefs` | `array` | PR references for pr-based push strategy |
-| `prRefs[].branch` | `string` | Branch name |
-| `prRefs[].prNumber` | `number` | PR number |
-| `prRefs[].prUrl` | `string` | PR URL |
-| `prRefs[].state` | `string` | PR state: `open`, `merged`, `closed` |
-
-### Status Transitions
-
-Not all status transitions are valid. The lifecycle enforces these paths:
-
-```mermaid
-stateDiagram-v2
-    [*] --> planning
-    planning --> active
-    planning --> backlog
-    planning --> abandoned
-    active --> backlog
-    active --> paused
-    active --> ready_for_review
-    active --> abandoned
-    backlog --> active
-    backlog --> abandoned
-    paused --> active
-    paused --> abandoned
-    ready_for_review --> completed
-    ready_for_review --> active
-    ready_for_review --> abandoned
-    completed --> [*]
-    abandoned --> [*]
-```
-
-:::warning
-`active` cannot transition directly to `completed`. An increment must pass through `ready_for_review` first (triggered by `sw:done`).
-:::
+| Key | Reader |
+|-----|--------|
+| `lsp` | LSP config and the plugin detector. |
+| `cicd` | `specweave branch-name` and the CI/CD config loader. Carries `pushStrategy`, `git.*`, `release.*`. |
+| `repository` | The external-issue auto-creator and `specweave sync` health. |
+| `issueTracker` | The 1.x tracker block, still written by the `specweave sync setup` wizard and read by the Jira/ADO paths. |
+| `hooks` | Closure-time tracker flags (`close_github_issue`, `close_jira_issue`, `close_ado_work_item`, `close_external_issue`) read by the lifecycle dispatcher. The living-docs flags were removed — use `livingDocs`. |
+| `plugins` | The Claude adapter's `plugins.enabled` list. |
 
 ---
 
-## Environment Variables
+## Removed keys
 
-Environment variables provide runtime overrides and credential configuration. Set them in your shell profile, `.env` file, or CI/CD pipeline.
+The migrator deletes these outright and records what it dropped in `.specweave/state/config-migration-2.json`:
 
-### SpecWeave Control Variables
+`contextBudget` · `quality` · `cache` · `deduplication` · `archiving` · `apiDocs` · `statusLine` · `incrementAssist` · `billing` · `translation` · `language` · `documentation` · `reflect` · `pluginAutoLoad` · `grill` · `codeReview` · `qualityGates` · `skillGen`
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `SPECWEAVE_DISABLE_HOOKS` | Disable all SpecWeave hooks | `SPECWEAVE_DISABLE_HOOKS=1` |
-| `SPECWEAVE_DEBUG` | Enable debug logging (issue tracker, sync) | `SPECWEAVE_DEBUG=1` |
-| `SPECWEAVE_DEBUG_SKILLS` | Log skill activation decisions | `SPECWEAVE_DEBUG_SKILLS=1` |
-| `SPECWEAVE_DISABLE_AUTO_LOAD` | Disable automatic plugin loading | `SPECWEAVE_DISABLE_AUTO_LOAD=1` |
-| `SPECWEAVE_AUTO_INSTALL` | Control auto-install behavior | `SPECWEAVE_AUTO_INSTALL=false` |
-| `SPECWEAVE_SHELL` | Override shell detection | `SPECWEAVE_SHELL=bash` |
-| `SPECWEAVE_SKIP_IMAGE_GEN` | Skip image generation in living docs | `SPECWEAVE_SKIP_IMAGE_GEN=true` |
-| `SPECWEAVE_UPDATE_NO_SELF` | Skip self-update in `specweave update` | `SPECWEAVE_UPDATE_NO_SELF=1` |
-| `SPECWEAVE_DISABLE_GUARD` | Disable project scope guard | `SPECWEAVE_DISABLE_GUARD=1` |
-| `SPECWEAVE_DISABLE_LOCKS` | Disable lock enforcement | `SPECWEAVE_DISABLE_LOCKS=1` |
-| `SPECWEAVE_FORCE_LOCKS` | Force lock enforcement | `SPECWEAVE_FORCE_LOCKS=1` |
-| `SPECWEAVE_NO_INCREMENT` | Skip increment requirement for current operation | `SPECWEAVE_NO_INCREMENT=1` |
-| `SPECWEAVE_BACKGROUND_PROCESS` | Internal: marks process as background hook | _(set by SpecWeave)_ |
-| `SPECWEAVE_BACKGROUND_JOB` | Internal: marks process as background job | _(set by SpecWeave)_ |
+Removed `hooks` sub-keys: `banner`, `post_increment_planning`, `post_task_completion`.
 
-### Import Configuration
+Removed `testing` sub-keys (after the renames below): `defaultTestMode`, `defaultCoverageTarget`, `coverageTargets`, `tddEnforcement`, `playwright`.
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `SPECWEAVE_IMPORT_ENABLED` | Enable import feature | `SPECWEAVE_IMPORT_ENABLED=true` |
-| `SPECWEAVE_IMPORT_TIME_RANGE_MONTHS` | Import time range in months | `SPECWEAVE_IMPORT_TIME_RANGE_MONTHS=6` |
-| `SPECWEAVE_IMPORT_PAGE_SIZE` | Pagination size for imports | `SPECWEAVE_IMPORT_PAGE_SIZE=50` |
+## Renames applied by the migrator
 
-### External Tool Credentials
+| 1.x | 2.0 |
+|-----|-----|
+| `testing.defaultTestMode` | `testing.mode` |
+| `testing.coverageTargets` | `testing.coverage` |
+| `limits.maxActiveIncrements` | `limits.activeIncrements` (advisory) |
+| `hooks.*.sync_living_docs` | `livingDocs: "onDone"` \| `false` |
+| `planning.deepInterview.{enabled,enforcement}` | `planning.deepInterview: "off"` \| `"warn"` |
+| `umbrella`, `multiProject`, `projectMappings` | `workspace` |
+| `sync.mode` | removed |
 
-| Variable | Purpose |
-|----------|---------|
-| `GITHUB_TOKEN` or `GH_TOKEN` | GitHub API authentication |
-| `JIRA_API_TOKEN` | JIRA API token |
-| `JIRA_EMAIL` | JIRA user email |
-| `JIRA_DOMAIN` | JIRA instance domain |
-| `JIRA_PROJECT` | Default JIRA project key |
-| `JIRA_PROJECTS` | Comma-separated JIRA projects |
-| `JIRA_STRATEGY` | JIRA organization strategy |
-| `JIRA_BOARDS` | Comma-separated JIRA boards |
-| `AZURE_DEVOPS_PAT` | Azure DevOps personal access token |
-| `AZURE_DEVOPS_ORG` | ADO organization |
-| `AZURE_DEVOPS_PROJECT` | ADO project |
-| `AZURE_DEVOPS_TEAMS` | Comma-separated ADO teams |
+---
 
-### CI/CD Variables
+## Increment metadata
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `CICD_POLL_INTERVAL` | CI poll interval (ms) | `CICD_POLL_INTERVAL=30000` |
-| `CICD_WEBHOOK_URL` | Webhook for CI notifications | `CICD_WEBHOOK_URL=https://...` |
-| `CICD_AUTO_NOTIFY` | Auto-notify on workflow completion | `CICD_AUTO_NOTIFY=true` |
+`.specweave/increments/NNNN-slug/metadata.json`:
 
-:::tip Credential Management
-SpecWeave reads credentials from environment variables. Set them in your `.env` file or use `sw:sync-setup` for interactive configuration. Never commit credentials to version control.
-:::
+| Field | Notes |
+|-------|-------|
+| `id` | The four-digit increment number. |
+| `status` | `planned` \| `active` \| `completed` \| `abandoned` \| `paused`. **Set only by CLI transitions** — never edit it by hand. |
+| `type` | feature, bug, hotfix, refactor, … |
+| `created`, `updated` | ISO timestamps. |
+| `externalLinks` | Tracker keys and URLs written by `specweave sync push`. Never hand-edit. |
+| `closeReason` | Why an increment was closed or abandoned without a green verify. |
+| `supersedes` | Set by `create-increment --supersedes NNNN`, which abandons the old increment with a matching `closeReason`. |
+| `parent` | Parent increment, when one exists. |
+
+---
+
+## Git configuration written by init and update
+
+`.gitignore`:
+
+```
+.specweave/state/
+.specweave/logs/
+.specweave/jobs/
+.specweave/cache/
+.specweave/backups/
+.specweave/increments/**/reports/artifacts/
+.claude/worktrees/
+```
+
+`.gitattributes`:
+
+```
+**/ledger.jsonl merge=union
+```
+
+The `merge=union` line is required for multi-agent work: it makes a ledger conflict concatenate both sides instead of forcing a manual merge, and the fold is order-independent.

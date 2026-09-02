@@ -76,7 +76,7 @@ SpecWeave picks automatically:
 sw:increment    → Opus (complex planning)
 sw:do           → Sonnet (balanced execution)
 sw:qa           → Opus (deep analysis)
-sw:sync-progress → Haiku (fast sync)
+sw:sync → Haiku (fast sync)
 ```
 
 ---

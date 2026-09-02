@@ -2,46 +2,85 @@
 
 <p align="center">
   <strong>AI-assisted development, under control.</strong><br/>
-  Stop prompting. Start specifying.
+  One folder per unit of work. Six commands. An append-only ledger any tool can write to.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/increments-600+-blue" alt="600+ increments" />
+  <img src="https://img.shields.io/badge/skills-10-8B5CF6" alt="10 skills" />
   <img src="https://img.shields.io/badge/production_apps-10+-green" alt="10+ production apps" />
-  <img src="https://img.shields.io/badge/core_skills-10-8B5CF6" alt="10 core skills" />
-  <img src="https://img.shields.io/badge/agent_platforms-49-orange" alt="49 platforms" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
 
 <br/>
 
-## The Problem
+## Install
 
-**36.82% of AI skills have security flaws** ([Snyk ToxicSkills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/)). In May 2025, 170 out of 1,645 vibe-coded apps had security vulnerabilities exposing personal data. No specs. No tests. No review. Just vibes.
-
-Every alternative is an instruction layer — Cursor Rules, Copilot Instructions, Windsurf Rules, CLAUDE.md. They tell the AI *how* to write code but never *what* to build, never *how* to test it, and never *when* it's done.
-
-SpecWeave is a spec-first development layer. Configuration, not prompting. Enforced, not hoped for.
-
-<br/>
-
-## The Solution
-
-```
-You: "Build a checkout flow with Stripe"
-  ↓
-  spec.md (ACs + Approach) → tasks.md ← you review the plan
-  ↓
-  Autonomous execution for hours      ← AI claims a task, builds, tests, commits
-  ↓
-  specweave verify + sw:review        ← evidence, then an adversarial pass
-  ↓
-  Synced to GitHub/JIRA/ADO           ← closed, documented, shipped
+```bash
+npm install -g specweave        # Node.js 20.12.0+
+cd your-project
+specweave init .
 ```
 
-Every feature starts as a specification — problem, scope, numbered acceptance criteria, approach — before a single line of code is written. Tasks close on a passing test command and a commit sha. A fresh-context review catches what tests miss.
+## The loop
+
+| # | Command | Claude Code skill | What it does |
+|---|---------|-------------------|--------------|
+| 1 | `specweave create-increment "<title>"` | `/sw:increment` | `spec.md` with Problem, Scope, numbered ACs and an Approach. Approved before any code. |
+| 2 | `specweave task next` → `claim` → `done --run "<test>"` | `/sw:do` | Work the tasks. `done` refuses a failing test command. |
+| 3 | `specweave verify` | — | Runs your test/lint/build; writes `reports/verify.json`. |
+| 4 | — | `/sw:review` | Fresh-context adversarial review; every finding cites `path:line`. |
+| 5 | `specweave complete <id>` | `/sw:done` | Closes. Blocks only on a green `verify.json` (or `--reason`). |
+| 6 | `specweave handoff` | `/sw:handoff` | A portable one-page doc so any other tool can pick the work up. |
+
+Everything lives in `.specweave/increments/NNNN-slug/`: `spec.md`, `tasks.md` (+ the rendered `SW:BOARD`), `ledger.jsonl`, `handoff.md`, `reports/`.
+
+## The ten skills
+
+The CLI is the product and it runs in any AI tool or in CI. These ten skills are the Claude Code wrappers over it — nothing else ships in the plugin, so nothing goes stale.
+
+| Skill | Use it for |
+|-------|------------|
+| `sw:brainstorm` | Framed alternatives, ending in a pick. |
+| `sw:increment` | Plan the work: `spec.md` with ACs, plus `tasks.md`. |
+| `sw:do` | Claim a task, implement it, close it with evidence. |
+| `sw:auto` | The same loop, unattended, until the tasks run out. |
+| `sw:team` | A worktree per agent, claims arbitrated by the ledger. |
+| `sw:review` | Fresh-context adversarial pass; findings cite `path:line`. |
+| `sw:qa` | Risk-scored assessment, blockers, verdict. |
+| `sw:done` | Verify, review check, `specweave complete`. |
+| `sw:sync` | GitHub, Jira and Azure DevOps: push, pull, status, setup. |
+| `sw:handoff` | A one-page, secret-scrubbed continuation doc. |
+
+Five longer procedures (tdd-cycle, e2e, debug, diagrams, release-expert) live in `skills-optional/` and install on demand with [vskill](https://www.npmjs.com/package/vskill).
+
+## Upgrade to 2.0
+
+```bash
+npm i -g specweave@2
+specweave update
+```
+
+`specweave update` is idempotent: it rewrites the managed sections of `CLAUDE.md`/`AGENTS.md` while preserving your own, migrates `config.json` in one pass, writes the `.gitignore`/`.gitattributes` entries 2.0 needs, and keeps backups under `.specweave/backups/`. Then run `specweave doctor`.
+
+2.0 removed a lot on purpose — the three-report closure pipeline, auto-generated living docs, 34 never-invoked skills, the queued sync mode. See **[What was removed, and why](https://spec-weave.com/docs/guides/specweave-2#what-was-removed-and-why)**.
+
+There is no alias routing: an old slug simply has no skill behind it, so use the replacement.
+
+| 1.x | 2.0 |
+|-----|-----|
+| `sw:grill`, `sw:code-reviewer`, `sw:judge-llm`, `sw:pr-review` | `sw:review` |
+| `sw:team-lead`, `sw:team-merge`, `sw:team-build` | `sw:team` |
+| `sw:pm`, `sw:architect`, `sw:plan` | `sw:increment` |
+| `sw:validate` | `sw:qa` |
+| `sw:progress-sync`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync` | `sw:sync` |
+| `sw:progress`, `sw:close-all`, `sw:analytics`, `sw:help` | `specweave status`, `specweave complete --all`, `specweave analytics`, `specweave help` |
+| `sw:tdd-cycle`, `sw:e2e`, `sw:debug`, `sw:diagrams`, `sw:npm` | `npx vskill install anton-abyzov/specweave/skills-optional/<name>` |
+| `sw:skill-gen`, `sw:skill-refine` | the vskill skill-creator |
+
+The full map, including the CLI replacements, is `removedIn2_0` in
+[`plugins/specweave/marketplace.json`](plugins/specweave/marketplace.json).
 
 <br/>
 
@@ -68,58 +107,46 @@ Every feature starts as a specification — problem, scope, numbered acceptance 
 
 <br/>
 
-## Quick Start
-
-```bash
-npm install -g specweave       # Node.js 20.12.0+
-cd your-project
-specweave init .
-# Then in Claude Code, Cursor, Copilot, or any AI tool:
-# "Build me a user authentication system"
-```
-
-<br/>
-
 ## How It Compares
 
 | Capability | Cursor Rules | Copilot Instructions | Windsurf | Cline | Vibe Coding | **SpecWeave** |
 |------------|:---:|:---:|:---:|:---:|:---:|:---:|
-| Structured specs (ACs + approach + tasks) | — | — | — | — | — | **Yes** |
-| Quality gates (verify + adversarial review) | — | — | — | — | — | **Yes** |
+| Structured specs (Problem, ACs, Approach) | — | — | — | — | — | **Yes** |
+| One closure gate you can actually see (`verify.json`) | — | — | — | — | — | **Yes** |
 | Autonomous execution (hours, unattended) | — | — | — | — | — | **Yes** |
 | Multi-agent teams (parallel, contract-first) | — | — | — | — | — | **Yes** |
 | External sync (GitHub / JIRA / ADO) | — | — | — | — | — | **Yes** |
-| Evidence-backed task closure (test exit + sha) | — | — | — | — | — | **Yes** |
+| Append-only ledger (claims, evidence, no lost work) | — | — | — | — | — | **Yes** |
 | LSP code intelligence (198x faster) | — | — | — | — | — | **Yes** |
-| Append-only task ledger (conflict-free merges) | — | — | — | — | — | **Yes** |
+| Cross-tool handoff (any vendor, any subscription) | — | — | — | — | — | **Yes** |
 
-Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow with 5 acceptance criteria, test it, review it, sync to JIRA, and close."
+Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow against these five acceptance criteria, prove the tests pass, review the diff, then close."
 
 <br/>
 
 ## Key Features
 
-**Spec-First Planning** — Every feature starts as spec.md (problem, scope, numbered ACs, approach) plus tasks.md. Configuration, not prompting.
+**Spec-First Planning** — Every feature starts as `spec.md` (Problem, Scope, ACs, Approach) plus `tasks.md`. Configuration, not prompting.
 
-**Evidence, Not Claims** — A task closes only with its test command exit 0 and the commit sha, recorded in an append-only ledger. Optional strict red-green-refactor via the `tdd-cycle` skill.
+**Evidence, not vibes** — `specweave task done --run "<test>"` refuses a failing command and stores the exit code and output tail in the ledger.
 
-**Agent Swarms** — Run parallel agents across iTerm/tmux panes. `sw:team` gives each agent its own worktree; the ledger arbitrates who owns which task.
+**Multi-agent, any vendor** — A worktree per agent, claims through `ledger.jsonl`, one closure. Coordination happens only through committed files.
 
 ```
 ┌──────────────────┬──────────────────┬──────────────────┐
 │  Agent 1 (auth)  │ Agent 2 (payments)│ Agent 3 (catalog)│
-│  sw:auto         │  sw:auto         │  sw:auto         │
+│  T-01..T-04      │  T-05..T-08      │  T-09..T-12      │
 │  ████████░░ 80%  │  ██████░░░░ 60%  │  ████░░░░░░ 40%  │
 └──────────────────┴──────────────────┴──────────────────┘
 ```
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**10 Core Skills** — increment, do, done, review, team, handoff, sync, auto, brainstorm, qa. Nothing else ships in the plugin, so nothing goes stale. Longer procedures (tdd-cycle, e2e, debug, diagrams, release-expert) live in `skills-optional/` and install on demand with [vskill](https://www.npmjs.com/package/vskill).
+**10 skills, not 51** — see [The ten skills](#the-ten-skills) above. Plus five standalone skills for non-Claude tools.
 
-**External Sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time. Close an increment, external tools update automatically.
+**External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in.
 
-**Enterprise Ready** — Compliance audit trails (SOC 2, HIPAA, FDA). Brownfield analysis. Multi-repo coordination. Multi-environment deployment.
+**Enterprise Ready** — Compliance audit trails. Brownfield analysis. Multi-repo workspaces.
 
 **Dashboard** — Built-in web dashboard for increment progress, analytics, cost tracking, and multi-project monitoring.
 
@@ -141,58 +168,9 @@ npx vskill eval run my-skill                  # Run eval suite
 
 <br/>
 
-## Core Commands
-
-| You say | SpecWeave runs |
-|---------|---------------|
-| "What are our options?" | `sw:brainstorm` → framed alternatives, ends in a pick |
-| "Build me X" | `sw:increment` → spec.md with ACs + approach, plus tasks.md |
-| "Start working" | `sw:do` → claim a task, implement, commit, close it with evidence |
-| "Go ahead" | `sw:auto` → the same loop, unattended, until the tasks run out |
-| "Split this across agents" | `sw:team` → a worktree per agent, claims through the ledger |
-| "Review the code" | `sw:review` → fresh-context adversarial pass, every finding cites path:line |
-| "How risky is this?" | `sw:qa` → risk-scored assessment, blockers, verdict |
-| "Ship it" | `sw:done` → verify, review check, `specweave complete` |
-| "Push it to the tracker" | `sw:sync` → GitHub, Jira and Azure DevOps: push, pull, status, setup |
-| "I'm stopping here" | `sw:handoff` → a one-page, secret-scrubbed continuation doc |
-
-Every skill is a thin wrapper over a CLI command, so the same loop runs in Cursor, Copilot,
-Codex or a bare terminal: `specweave create-increment` → `specweave task next` → `specweave task claim`
-→ `specweave task done --run "<test cmd>"` → `specweave verify` → `specweave complete`.
-
-[Full command reference](https://spec-weave.com/docs/commands/overview)
-
-<br/>
-
-## Upgrading from 1.x to 2.0
-
-```bash
-npm i -g specweave@2
-specweave update       # rewrites the managed sections, keeps everything you wrote
-```
-
-2.0 replaces the 51-skill surface with the 10 above. There is no alias routing — an old slug
-simply has no skill behind it, so use the replacement:
-
-| 1.x | 2.0 |
-|-----|-----|
-| `sw:grill`, `sw:code-reviewer`, `sw:judge-llm`, `sw:pr-review` | `sw:review` |
-| `sw:team-lead`, `sw:team-merge`, `sw:team-build` | `sw:team` |
-| `sw:pm`, `sw:architect`, `sw:plan` | `sw:increment` |
-| `sw:validate` | `sw:qa` |
-| `sw:progress-sync`, `sw:import`, `sw:github-sync`, `sw:jira-sync`, `sw:ado-sync`, `sw:multi-project` | `sw:sync` |
-| `sw:progress`, `sw:close-all`, `sw:analytics`, `sw:help` | `specweave status`, `specweave complete --all`, `specweave analytics`, `specweave help` |
-| `sw:tdd-cycle`, `sw:tdd-red`, `sw:e2e`, `sw:debug`, `sw:diagrams`, `sw:npm` | `npx vskill install anton-abyzov/specweave/skills-optional/<name>` |
-| `sw:skill-gen`, `sw:skill-refine` | the vskill skill-creator |
-
-The full map, including the CLI replacements, is `removedIn2_0` in
-[`plugins/specweave/marketplace.json`](plugins/specweave/marketplace.json).
-
-<br/>
-
 ## Documentation
 
-**[spec-weave.com](https://spec-weave.com)** — guides, reference, and enterprise docs.
+**[spec-weave.com](https://spec-weave.com)** — [SpecWeave 2.0](https://spec-weave.com/docs/guides/specweave-2) · [commands](https://spec-weave.com/docs/reference/commands) · [skills](https://spec-weave.com/docs/reference/skills) · [configuration](https://spec-weave.com/docs/reference/configuration)
 
 ## Contributing
 

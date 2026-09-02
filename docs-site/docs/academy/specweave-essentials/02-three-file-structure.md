@@ -7,6 +7,13 @@ description: "Understand spec.md, plan.md, and tasks.md with a simple example"
 
 # Lesson 2: The Three-File Structure
 
+:::info Updated in SpecWeave 2.0
+The increment folder now holds **`spec.md`, `tasks.md` and `ledger.jsonl`**. `plan.md` became optional: the planning content it carried (files that change, order of work, risks, decisions, rejected alternatives) is the **Approach** section of `spec.md`. Create one explicitly with `specweave create-increment --with-plan` when Approach outgrows a page; legacy increments that already have a `plan.md` keep working.
+
+`ledger.jsonl` is the new third file — append-only task state (claim, done, skip, block, release), written by `specweave task …`. See [SpecWeave 2.0](/docs/guides/specweave-2#the-unit-of-work).
+:::
+
+
 **Time**: 30 minutes
 **Goal**: Understand what goes in each file and why
 

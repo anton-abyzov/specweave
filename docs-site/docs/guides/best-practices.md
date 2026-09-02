@@ -34,10 +34,10 @@ SpecWeave's task format enforces this naturally:
 
 | Claude Code Phase | SpecWeave Equivalent | Command |
 |-------------------|----------------------|---------|
-| **Explore** | Research/brownfield analysis | `sw:docs`, `sw:discrepancies` |
+| **Explore** | Research/brownfield analysis | `specweave docs`, `specweave sync status` |
 | **Plan** | Increment planning | `sw:increment "feature"` |
 | **Code** | Task execution | `sw:do` |
-| **Commit** | Validation + closure | `sw:validate`, `sw:done` |
+| **Commit** | Validation + closure | `sw:review`, `sw:done` |
 
 ### When to Skip Planning
 
@@ -60,7 +60,7 @@ For these, just ask Claude directly.
 /clear
 
 # Then start fresh with SpecWeave
-sw:status  # See where you are
+specweave status  # See where you are
 sw:do      # Continue or start new work
 ```
 
@@ -90,7 +90,7 @@ SpecWeave automatically spawns subagents for specialized tasks:
 
 ```markdown
 # When you run sw:do, SpecWeave may spawn:
-- sw:architect → For React/Vue/Next.js
+- sw:increment → For React/Vue/Next.js
 - backend:database-optimizer → For API/database work
 - testing:qa → For E2E tests
 ```
@@ -99,7 +99,7 @@ These run in **isolated context**, keeping your main conversation clean.
 
 ## CLAUDE.md Best Practices
 
-SpecWeave generates comprehensive `CLAUDE.md` via `specweave update` (or `sw:update-instructions` skill). Keep it lean:
+SpecWeave generates comprehensive `CLAUDE.md` via `specweave update` (or `specweave update-instructions` skill). Keep it lean:
 
 ### Include
 
@@ -218,7 +218,7 @@ Claude auto-checkpoints before changes:
 /rewind  # Restore conversation, code, or both
 ```
 
-**SpecWeave equivalent**: Increment metadata tracks all changes. You can always see what was done via `sw:progress`.
+**SpecWeave equivalent**: Increment metadata tracks all changes. You can always see what was done via `specweave status`.
 
 ## Effective Prompting with SpecWeave
 
@@ -327,7 +327,7 @@ K8s work → k8s:kubernetes-architect (auto-activates)
 ### When Skills Auto-Activate
 
 Skills trigger on keywords in their descriptions:
-- "React dashboard" → `sw:architect`
+- "React dashboard" → `sw:increment`
 - ".NET API" → `backend:dotnet`
 - "Stripe checkout" → `payments:payment-core`
 - "database optimization" → `backend:database-optimizer`
@@ -366,14 +366,14 @@ Execute tasks:
 Check status:
 <CommandTabs
   natural="What's the status?"
-  claude="sw:progress"
+  claude="specweave status"
   other="progress"
 />
 
 Additional commands:
 ```bash
 # Quality check
-sw:validate
+sw:review
 
 # Close increment
 sw:done

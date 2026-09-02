@@ -28,7 +28,7 @@ quadrantChart
 | Just talk to AI | Copy changes, small fixes | No SpecWeave needed |
 | Make a simple plan, work the plan | Small features across 3-5 files | `sw:increment` + `sw:do` |
 | Research → Plan → Implement phase by phase | Medium features across projects and repos | `sw:brainstorm` → `sw:increment` → `sw:auto` |
-| Multiple research steps, multiple plans, many sessions | Big refactors, whole new features | `sw:brainstorm` → `sw:increment` → `sw:team-lead` |
+| Multiple research steps, multiple plans, many sessions | Big refactors, whole new features | `sw:brainstorm` → `sw:increment` → `sw:team` |
 
 The more you invest in planning, the harder the problems you can tackle. SpecWeave scales with you — from a quick increment for simple features to full agent teams for complex multi-repo work.
 
@@ -40,7 +40,7 @@ SpecWeave places human review at the highest-leverage checkpoints — **after re
 graph LR
     A["Feature Idea"] --> B["Research Phase<br/>sw:brainstorm"]
     B --> C{{"HUMAN REVIEW<br/>Approach OK?"}}
-    C -->|Yes| D["Planning Phase<br/>sw:increment<br/>(spec + plan + tasks)"]
+    C -->|Yes| D["Planning Phase<br/>sw:increment<br/>(spec + tasks)"]
     D --> E{{"HUMAN REVIEW<br/>Plan OK?"}}
     E -->|Yes| F["Implementation<br/>sw:do or sw:auto"]
     E -->|Edit| D
@@ -102,7 +102,7 @@ This produces a persistent brainstorm document with a comparison matrix and reco
 
 **Cognitive lenses available:** Default (parallel generation), Six Thinking Hats, SCAMPER, TRIZ/Constraint Inversion, Adjacent Possible.
 
-See [Skills Reference: brainstorm](/docs/reference/skills#brainstorm) for full details.
+See [Skills Reference: brainstorm](/docs/reference/skills) for full details.
 
 ### Step 1: Describe Your Feature
 

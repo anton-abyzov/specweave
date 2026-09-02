@@ -794,7 +794,7 @@ mindmap
 
 - [SpecWeave Quickstart](/docs/guides/getting-started/quickstart) — Get started with your first increment
 - [Quality Gates](/docs/academy/specweave-essentials/05-quality-gates) — Ensure code is ready before deployment
-- [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) — Auto-deploy via GitHub webhooks
+- [GitHub Integration](/docs/guides/github-sync) — Auto-deploy via GitHub webhooks
 
 ---
 

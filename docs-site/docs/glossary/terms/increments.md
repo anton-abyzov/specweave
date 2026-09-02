@@ -392,7 +392,7 @@ graph TB
 
 **What Happens**:
 1. PM agent generates spec.md (user stories, AC)
-2. Architect agent generates plan.md (architecture, tech decisions) — **optional**, use `sw:plan` for complex features
+2. Architect agent generates plan.md (architecture, tech decisions) — **optional**, use `sw:increment` for complex features
 3. Test-aware planner generates tasks.md (task checklist with tests)
 4. Hooks fire (GitHub issue auto-created if configured)
 
@@ -416,7 +416,7 @@ graph TB
 
 ### Phase 3: Validation
 
-**Invoke**: Say "check quality", use `sw:validate 0008` or `sw:qa 0008` in Claude Code, or type `validate 0008` in other AI tools.
+**Invoke**: Say "check quality", use `sw:review 0008` or `sw:qa 0008` in Claude Code, or type `validate 0008` in other AI tools.
 
 **What Happens**:
 1. Rule-based validation:
@@ -506,25 +506,25 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 | "Let's build X" | `sw:increment "X"` | `increment "X"` | Plan new increment |
 | "Start implementing" | `sw:do` | `do` | Execute tasks |
 | "We're done" | `sw:done 0008` | `done 0008` | Close increment |
-| "Check quality" | `sw:validate 0008` | `validate 0008` | Validate increment |
+| "Check quality" | `sw:review 0008` | `validate 0008` | Validate increment |
 | "Assess quality" | `sw:qa 0008` | `qa 0008` | Quality assessment |
-| "What's the status?" | `sw:progress` | `progress` | Check progress |
-| "List all increments" | `sw:status` | `status` | Show all increments |
+| "What's the status?" | `specweave status` | `progress` | Check progress |
+| "List all increments" | `specweave status` | `status` | Show all increments |
 
 ### State Management
 
 | Natural Language | Claude Code | Other AI | Purpose |
 |-----------------|-------------|----------|---------|
-| "Pause this" | `sw:pause 0008` | `pause 0008` | Pause active increment |
-| "Resume work" | `sw:resume 0008` | `resume 0008` | Resume paused increment |
-| "Cancel this" | `sw:abandon 0008` | `abandon 0008` | Abandon increment |
+| "Pause this" | `specweave pause 0008` | `pause 0008` | Pause active increment |
+| "Resume work" | `specweave resume 0008` | `resume 0008` | Resume paused increment |
+| "Cancel this" | `specweave abandon 0008` | `abandon 0008` | Abandon increment |
 
 ### Documentation
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `sw:sync-docs` | Sync living docs | `sw:sync-docs update` |
-| `sw:increment (to update spec)` | Log scope changes | `sw:increment (to update spec) "Added dark mode"` |
+| `specweave docs sync` | Sync living docs (opt-in) | `specweave docs sync 0042` |
+| `sw:increment` | Log scope changes in spec.md | `sw:increment "Added dark mode"` |
 | `npx vitest run` | Validate test coverage | `npx vitest run 0008` |
 
 ---
@@ -554,7 +554,7 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 ### Status Overview
 
 ```bash
-sw:status
+specweave status
 
 # Output:
 ✅ 0001-core-framework (100% complete)
@@ -638,8 +638,8 @@ Previous increments are incomplete:
 
 💡 What would you like to do?
 
-1️⃣  Close incomplete increments: sw:close
-2️⃣  Check status: sw:status
+1️⃣  Close incomplete increments: sw:done
+2️⃣  Check status: specweave status
 3️⃣  Force create (DANGEROUS): Add --force flag
 ```
 
@@ -656,7 +656,7 @@ sw:increment "new feature"  # ✅ Now works!
 **Option 2: Close Interactively**
 
 ```bash
-sw:close
+sw:done
 
 # You'll be asked to choose:
 # - Force complete (mark all tasks done)

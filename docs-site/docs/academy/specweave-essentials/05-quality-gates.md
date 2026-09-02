@@ -197,7 +197,7 @@ Gate 3 checks checkboxes in spec.md:
 
 <CommandTabs
   natural="Sync the acceptance criteria"
-  claude="sw:sync-acs"
+  claude="sw:sync"
   other="sync-acs"
 />
 
@@ -207,27 +207,19 @@ Gate 3 checks checkboxes in spec.md:
 
 ### In config.json
 
+The 1.x `quality` block is gone. The gate is your own verification commands:
+
 ```json
 {
-  "quality": {
-    "gates": {
-      "tasks": {
-        "p1Required": true,
-        "p2Required": true,
-        "p3Required": false
-      },
-      "tests": {
-        "minCoverage": 80,
-        "allowSkipped": false
-      },
-      "docs": {
-        "requireAcSync": true,
-        "requireLivingDocs": true
-      }
-    }
+  "testing": {
+    "mode": "TDD",
+    "commands": ["npm test", "npm run lint", "npm run build"],
+    "coverage": { "unit": 95, "integration": 90, "e2e": 100 }
   }
 }
 ```
+
+`specweave verify` runs `testing.commands` in order and writes `reports/verify.json`. `verify.json.ok` is the only thing `specweave complete` blocks on.
 
 ### Per-Increment Override
 

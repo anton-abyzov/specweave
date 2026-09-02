@@ -62,7 +62,7 @@ Multi-agent review before shipping.
 |-------|-------------|
 | `code-reviewer` | Parallel specialized reviewers for logic, security, performance, and more |
 | `grill` | Critical code review and quality interrogation |
-| `judge-llm` | Deep validation using extended thinking |
+| `review` | Adversarial fresh-context review; findings cite `path:line` |
 | `pr-review` | Pull request review against spec acceptance criteria |
 
 ### Team & Parallel Work (3 skills)

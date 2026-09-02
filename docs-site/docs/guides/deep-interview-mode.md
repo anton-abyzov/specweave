@@ -230,8 +230,8 @@ Or enable for a specific prompt:
 | Command | Description |
 |---------|-------------|
 | `sw:increment` | Creates increment (triggers interview if enabled) |
-| `sw:pm` | PM skill with interview capabilities |
-| `sw:architect` | Architect skill for technical questions |
+| `sw:increment` | PM skill with interview capabilities |
+| `sw:increment` | Architect skill for technical questions |
 
 ## Troubleshooting
 

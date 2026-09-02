@@ -66,7 +66,7 @@ npx tsc --init
 claude
 
 # Initialize SpecWeave
-sw:init
+specweave init
 ```
 
 SpecWeave creates:
@@ -111,7 +111,7 @@ my-new-app/
 
 ```bash
 # Use architect agent
-sw:agent architect
+sw:team architect
 "Design architecture for [product description].
 Consider: scalability, security, maintainability."
 ```
@@ -193,7 +193,7 @@ Task T-003: Set up linting
 
 ```bash
 # Verify everything works
-sw:validate 0001
+sw:review 0001
 
 # Complete the increment
 sw:done 0001
@@ -246,7 +246,7 @@ sw:done 0002
 
 ```bash
 # Create ADR for important decisions
-sw:agent architect
+sw:team architect
 "Create ADR for choosing PostgreSQL
 over MongoDB for this project."
 ```
