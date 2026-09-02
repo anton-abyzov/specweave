@@ -362,7 +362,7 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       log(chalk.green(`   GitHub sync: ${parts.join(', ')}`));
     }
     for (const err of ghErrors) {
-      log(chalk.yellow(`   GitHub sync: failed (${err}) — run sw:progress-sync to retry`));
+      log(chalk.yellow(`   GitHub sync: failed (${err}) — run specweave sync push to retry`));
     }
 
     // Hook-level sync results (living docs, GitHub project, closure coordinator)
@@ -370,7 +370,7 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       log(chalk.green(`   Sync: ${s}`));
     }
     for (const e of hookSyncErrors) {
-      log(chalk.yellow(`   Sync: ${e} — run sw:progress-sync to retry`));
+      log(chalk.yellow(`   Sync: ${e} — run specweave sync push to retry`));
     }
 
     // Session-end nudge (T-013/T-014). Never blocks closure.

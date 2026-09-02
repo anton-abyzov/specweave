@@ -815,8 +815,8 @@ export function showAzureDevOpsSetupComplete(language: SupportedLanguage): void 
 
   console.log(chalk.green.bold('\n✅ Azure DevOps integration complete!\n'));
   console.log(chalk.white('Available commands:'));
-  console.log(chalk.gray('  sw:ado-sync'));
-  console.log(chalk.gray('  sw:ado-status\n'));
+  console.log(chalk.gray('  specweave sync push'));
+  console.log(chalk.gray('  specweave sync status\n'));
   console.log(chalk.cyan('💡 Tip: Use sw:increment "feature" to create an increment'));
   console.log(chalk.gray('   It will automatically sync to Azure DevOps Work Items!\n'));
 }

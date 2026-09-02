@@ -84,7 +84,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
 
   if (!incrementId) {
     logger.error('❌ No active increment found.');
-    logger.error('   Usage: npx specweave sync-progress <increment-id>');
+    logger.error('   Usage: npx specweave sync push <increment-id>');
     logger.error('   Or set an active increment first.');
     process.exit(1);
     return;

@@ -640,7 +640,7 @@ export async function promptAndRunExternalImport(
     });
 
     if (!continueWithOAuth) {
-      console.log(chalk.gray('   → Skipping import. Add a PAT to .env and run sw:import-external'));
+      console.log(chalk.gray('   → Skipping import. Add a PAT to .env and run specweave sync pull --create-increments'));
       return emptyResult();
     }
   }

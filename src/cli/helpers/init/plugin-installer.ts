@@ -157,9 +157,9 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     console.log(chalk.cyan('Available capabilities:'));
     console.log(chalk.gray('   sw:increment - Plan new features'));
     console.log(chalk.gray('   sw:do - Execute tasks'));
-    console.log(chalk.gray('   sw:github-sync - GitHub integration'));
-    console.log(chalk.gray('   sw:jira-sync - JIRA integration'));
-    console.log(chalk.gray('   sw:docs preview - Documentation preview'));
+    console.log(chalk.gray('   sw:done - Close an increment'));
+    console.log(chalk.gray('   sw:sync - GitHub / Jira / Azure DevOps sync'));
+    console.log(chalk.gray('   sw:handoff - Hand work to another AI tool'));
     console.log(chalk.gray('   ...and more!'));
 
     const corePluginFailed = failedPlugins.includes('sw');

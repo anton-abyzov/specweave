@@ -1884,7 +1884,7 @@ export class LivingDocsSync {
 
       // FS-609: Surface rate limit skip clearly instead of misleading success message
       if (result.rateLimitSkipped) {
-        this.logger.warn(`   ⚠️  GitHub sync skipped — API rate limit too low. Run /sw:progress-sync to retry`);
+        this.logger.warn(`   ⚠️  GitHub sync skipped — API rate limit too low. Run specweave sync push to retry`);
       } else {
         this.logger.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
       }

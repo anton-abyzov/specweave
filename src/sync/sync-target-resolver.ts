@@ -130,7 +130,7 @@ export function validateSyncTargets(config: SpecWeaveConfig): string[] {
     if (!repo.sync) {
       warnings.push(
         `Workspace repo "${repo.id}" has no sync config — it will fall back to global defaults. ` +
-        `Run sw:sync-setup to configure per-repo sync targets.`,
+        `Run specweave sync setup to configure per-repo sync targets.`,
       );
     }
   }

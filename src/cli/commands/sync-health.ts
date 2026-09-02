@@ -85,7 +85,7 @@ function loadProjectEnv(projectPath: string): Record<string, string> {
 
 /**
  * Run health checks for all enabled providers based on config.
- * Shared between sync-setup (post-setup) and sync-health (on-demand).
+ * Shared between `specweave sync setup` (post-setup) and `specweave sync status` (on-demand).
  */
 export async function runHealthChecksForConfig(
   config: any,
@@ -220,7 +220,7 @@ export async function syncHealthCommand(options: SyncHealthOptions = {}): Promis
         }));
       } else {
         console.error(chalk.red(`✗ Provider ${options.provider} is not configured.`));
-        console.error(chalk.gray('  Run specweave sync-setup to configure it.'));
+        console.error(chalk.gray('  Run specweave sync setup to configure it.'));
       }
       return 2;
     }
@@ -238,7 +238,7 @@ export async function syncHealthCommand(options: SyncHealthOptions = {}): Promis
       console.log(JSON.stringify({ results: [], healthy: false, error: 'No providers configured' }));
     } else {
       console.log(chalk.yellow('⚠ No external sync providers configured.'));
-      console.log(chalk.gray('  Run specweave sync-setup to connect GitHub, JIRA, or ADO.'));
+      console.log(chalk.gray('  Run specweave sync setup to connect GitHub, JIRA, or ADO.'));
     }
     return 2;
   }
