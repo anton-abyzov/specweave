@@ -7,13 +7,12 @@
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
-import { ClaudeMdGenerator } from '../../../adapters/claude-md-generator.js';
-import { AgentsMdGenerator } from '../../../adapters/agents-md-generator.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import type { TestMode } from './types.js';
-import { findSourceDir, findPackageRoot } from './path-utils.js';
-import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
+import { findPackageRoot } from './path-utils.js';
+import { applyInstructionTemplate, type InstructionFileName } from './instruction-file-writer.js';
+import { detectStackCommands } from './stack-detector.js';
 import { generateSmartGitignore } from './gitignore-generator.js';
 // ensureClaudeSettingsWithLsp removed (v1.0.210) - LSP is opt-in only
 import {
@@ -189,7 +188,7 @@ export async function copyTemplates(
   targetDir: string,
   projectName: string,
   language: SupportedLanguage = 'en',
-  adapter: string = 'claude'
+  _adapter: string = 'claude'
 ): Promise<void> {
   const locale = getLocaleManager(language);
 
@@ -222,94 +221,29 @@ export async function copyTemplates(
     fs.writeFileSync(path.join(targetDir, 'README.md'), readme);
   }
 
-  // Generate/Merge CLAUDE.md with smart preservation of user content
-  const claudeMdPath = path.join(targetDir, 'CLAUDE.md');
-  const claudeMdTemplatePath = path.normalize(path.join(templatesDir, 'CLAUDE.md.template'));
-
-  if (fs.existsSync(claudeMdTemplatePath)) {
-    const templateContent = fs.readFileSync(claudeMdTemplatePath, 'utf-8');
-    const sections = parseTemplateSections(templateContent);
-    const existingContent = fs.existsSync(claudeMdPath)
-      ? fs.readFileSync(claudeMdPath, 'utf-8')
-      : null;
-
-    const mergeResult = mergeInstructionFile(
-      existingContent,
-      sections,
-      'claude',
-      getPackageVersion(),
-      projectName
-    );
-
-    fs.writeFileSync(claudeMdPath, mergeResult.content);
-
-    // Log merge action for user visibility
-    if (mergeResult.action === 'merged') {
-      console.log(chalk.blue('   ✓ CLAUDE.md merged (preserved ' + mergeResult.preserved + ' user sections)'));
-      if (mergeResult.updated.length > 0) {
-        console.log(chalk.gray('     Updated: ' + mergeResult.updated.join(', ')));
-      }
-      if (mergeResult.warnings.length > 0) {
-        mergeResult.warnings.forEach(w => console.log(chalk.yellow('     ⚠ ' + w)));
-      }
-    } else if (mergeResult.action === 'created') {
-      console.log(chalk.green('   ✓ CLAUDE.md created'));
-    }
-  } else {
-    // Fallback to old generator if template not found
-    const skillsDir = findSourceDir('skills', templatesDir);
-    const agentsDir = findSourceDir('agents', templatesDir);
-    const commandsDir = findSourceDir('commands', templatesDir);
-    const claudeGen = new ClaudeMdGenerator(skillsDir, agentsDir, commandsDir);
-    const claudeMd = await claudeGen.generate({
-      projectName,
+  // Generate/Merge CLAUDE.md (Claude Code) and AGENTS.md (every other tool)
+  // through the same merger. User content outside SW markers is preserved.
+  const commands = detectStackCommands(targetDir);
+  const instructionFiles: InstructionFileName[] = ['CLAUDE.md', 'AGENTS.md'];
+  for (const filename of instructionFiles) {
+    const result = applyInstructionTemplate({
       projectPath: targetDir,
-      templatePath: undefined
+      templatesDir,
+      filename,
+      projectName,
+      commands,
     });
-    fs.writeFileSync(claudeMdPath, claudeMd);
-  }
 
-  // Generate/Merge AGENTS.md only for non-Claude adapters
-  // Claude Code reads CLAUDE.md natively; AGENTS.md is for other AI tools
-  if (adapter !== 'claude') {
-    const agentsMdPath = path.join(targetDir, 'AGENTS.md');
-    const agentsMdTemplatePath = path.normalize(path.join(templatesDir, 'AGENTS.md.template'));
-
-    if (fs.existsSync(agentsMdTemplatePath)) {
-      const templateContent = fs.readFileSync(agentsMdTemplatePath, 'utf-8');
-      const sections = parseTemplateSections(templateContent);
-      const existingContent = fs.existsSync(agentsMdPath)
-        ? fs.readFileSync(agentsMdPath, 'utf-8')
-        : null;
-
-      const mergeResult = mergeInstructionFile(
-        existingContent,
-        sections,
-        'agents',
-        getPackageVersion(),
-        projectName
-      );
-
-      fs.writeFileSync(agentsMdPath, mergeResult.content);
-
-      if (mergeResult.action === 'merged') {
-        console.log(chalk.blue('   ✓ AGENTS.md merged (preserved ' + mergeResult.preserved + ' user sections)'));
-      } else if (mergeResult.action === 'created') {
-        console.log(chalk.green('   ✓ AGENTS.md created'));
-      }
-    } else {
-      // Fallback to old generator
-      const skillsDir = findSourceDir('skills', templatesDir);
-      const agentsDir = findSourceDir('agents', templatesDir);
-      const commandsDir = findSourceDir('commands', templatesDir);
-      const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
-      const agentsMd = await agentsGen.generate({
-        projectName,
-        projectPath: targetDir,
-        templatePath: undefined
-      });
-      fs.writeFileSync(agentsMdPath, agentsMd);
+    if (result.action === 'created') {
+      console.log(chalk.green(`   ✓ ${filename} created`));
+    } else if (result.action === 'merged') {
+      console.log(chalk.blue(`   ✓ ${filename} merged (preserved ${result.preserved} user section(s))`));
+      if (result.updated.length > 0) console.log(chalk.gray('     Updated: ' + result.updated.join(', ')));
+      if (result.removed.length > 0) console.log(chalk.gray('     Removed: ' + result.removed.join(', ')));
+    } else if (result.action === 'unchanged') {
+      console.log(chalk.gray(`   ⊘ ${filename} already up to date`));
     }
+    result.warnings.forEach(w => console.log(chalk.yellow('     ⚠ ' + w)));
   }
 
   // Generate smart .gitignore based on detected tech stack (v1.0.130+)

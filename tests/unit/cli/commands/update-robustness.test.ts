@@ -52,15 +52,21 @@ describe('Update Robustness - Source Code Verification', () => {
   });
 
   describe('instruction file backup', () => {
-    it('should create .bak before overwriting instruction files', () => {
-      const content = fs.readFileSync(updateInstructionsTsPath, 'utf-8');
+    it('should back up to .specweave/backups before overwriting instruction files', () => {
+      const writerPath = path.join(process.cwd(), 'src/cli/helpers/init/instruction-file-writer.ts');
+      const content = fs.readFileSync(writerPath, 'utf-8');
 
-      // Should write .bak file before the main writeFileSync
-      const bakIndex = content.indexOf("filePath + '.bak'");
+      // Backup is written under .specweave/backups (never a root-level .bak) before the main write
+      const bakIndex = content.indexOf('fs.writeFileSync(backupPath, existing)');
       const writeIndex = content.indexOf('fs.writeFileSync(filePath, result.content)');
 
+      expect(content).toContain("path.join('.specweave', 'backups')");
       expect(bakIndex).toBeGreaterThan(0);
       expect(writeIndex).toBeGreaterThan(bakIndex);
+      // update-instructions goes through the writer, not its own .bak
+      const updateInstructions = fs.readFileSync(updateInstructionsTsPath, 'utf-8');
+      expect(updateInstructions).not.toContain(".bak");
+      expect(updateInstructions).toContain('applyInstructionTemplate');
     });
   });
 

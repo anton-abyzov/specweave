@@ -16,7 +16,8 @@ import * as path from 'path';
 import * as fs from '../../utils/fs-native.js';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
-import { AgentsMdGenerator } from '../agents-md-generator.js';
+import { applyInstructionTemplate } from '../../cli/helpers/init/instruction-file-writer.js';
+import { findSourceDir } from '../../cli/helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import type { Plugin } from '../../core/types/plugin.js';
 
@@ -80,20 +81,19 @@ export class AntigravityAdapter extends AdapterBase {
   /**
    * Generate AGENTS.md file
    */
-  private async generateAgentsMd(targetPath: string, options: AdapterOptions): Promise<void> {
-    const generator = new AgentsMdGenerator(
-      path.join(__dirname, '../../skills'),
-      path.join(__dirname, '../../agents'),
-      path.join(__dirname, '../../commands')
-    );
-
-    const content = await generator.generate({
+  private async generateAgentsMd(_targetPath: string, options: AdapterOptions): Promise<void> {
+    const result = applyInstructionTemplate({
+      projectPath: options.projectPath,
+      templatesDir: findSourceDir('templates', __dirname),
+      filename: 'AGENTS.md',
       projectName: options.projectName,
-      projectPath: options.projectPath
     });
-
-    await fs.writeFile(targetPath, content);
-    console.log('  ✅ AGENTS.md - Universal SpecWeave instructions');
+    if (result.action === 'skipped') {
+      console.log('  ⚠ AGENTS.md - template not found, skipped');
+      return;
+    }
+    console.log(`  ✅ AGENTS.md - Universal SpecWeave instructions (${result.action})`);
+    result.warnings.forEach(w => console.log('     ⚠ ' + w));
   }
 
   /**
