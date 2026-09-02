@@ -55,9 +55,36 @@ describe('session-start', () => {
   it('derives task state from ledger.jsonl when present (2.0 layout)', async () => {
     mkIncrement('0001-two', {
       tasks: '### T-01 First\n- AC: AC-01 | Files: a.ts | Test: npm test\n\n### T-02 Second\n- AC: AC-01 | Files: b.ts | Test: npm test\n',
-      ledger: '{"t":"T-01","e":"claim","by":"a"}\n{"t":"T-01","e":"done","by":"a","evidence":"abc"}\n\nnot json\n',
+      ledger:
+        '{"t":"T-01","e":"claim","by":"a","at":"2026-09-02T10:00:00Z"}\n' +
+        '{"t":"T-01","e":"done","by":"a","at":"2026-09-02T10:05:00Z","evidence":"abc"}\n\nnot json\n',
     });
     expect(text(await handle({}, ctx()))).toContain('1/2 tasks pending; next: T-02 Second');
+  });
+
+  it('keeps the tasks.md checkbox for tasks the ledger says nothing about', async () => {
+    // Regression: a single ledger line used to switch the WHOLE file to
+    // "ledger only", reporting every already-completed legacy task as pending.
+    mkIncrement('0042-legacy', {
+      tasks:
+        '### T-001: Parser\n**Status**: [x] completed\n\n' +
+        '### T-002: Error handling\n**Status**: [x] completed\n\n' +
+        '### T-003: Docs\n**Status**: [ ] pending\n',
+      ledger: '{"t":"T-001","e":"done","by":"a","at":"2026-09-02T10:00:00Z","evidence":"abc"}\n',
+    });
+    expect(text(await handle({}, ctx()))).toContain('1/3 tasks pending; next: T-003 Docs');
+  });
+
+  it('treats a skipped task as terminal, not pending', async () => {
+    mkIncrement('0043-skip', {
+      tasks:
+        '### T-01 First\n- AC: AC-01 | Files: a.ts | Test: npm test\n\n' +
+        '### T-02 Second\n- AC: AC-01 | Files: b.ts | Test: npm test\n',
+      ledger:
+        '{"t":"T-01","e":"done","by":"a","at":"2026-09-02T10:00:00Z","evidence":"abc"}\n' +
+        '{"t":"T-02","e":"skip","by":"a","at":"2026-09-02T10:01:00Z","note":"not needed"}\n',
+    });
+    expect(text(await handle({}, ctx()))).toContain('all 2 tasks done — run /sw:done 0043-skip');
   });
 
   it('suggests /sw:done when all tasks are done', async () => {

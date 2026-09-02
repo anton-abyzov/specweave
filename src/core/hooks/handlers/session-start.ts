@@ -2,7 +2,7 @@
  * SessionStart hook handler — the single context-injection point.
  *
  * Emits one `additionalContext` string: the active increment (id + title),
- * the next pending task (from ledger.jsonl when present, else tasks.md) and
+ * the next claimable task (from the shared tasks.md + ledger.jsonl fold) and
  * the latest handoff pointer. No banner, no doctor, no network — a few small
  * file reads, well under 300 ms. Returns `{}` when there is nothing to say.
  *
@@ -19,6 +19,7 @@ import type { HandlerFn } from './types.js';
 import { pass, sessionContext } from './types.js';
 import { readActiveIncrements, readJsonSafe } from './utils.js';
 import { isGcDue, purgeState, formatBytes } from '../../state/state-gc.js';
+import { loadTaskBoard, nextTask } from '../../tasks/task-board.js';
 
 const STALE_AUTO_MS = 24 * 60 * 60 * 1000;
 const MAX_INCREMENTS_LISTED = 3;
@@ -69,47 +70,29 @@ function readTitle(incDir: string): string {
   return h1 ? h1[1].replace(/^(Increment|Spec(ification)?)\s*:\s*/i, '').trim() : '';
 }
 
-/** Task ids marked done in ledger.jsonl (`{t:"T-01", e:"done"}` lines). */
-function ledgerDone(incDir: string): Set<string> | null {
-  const raw = readText(path.join(incDir, 'ledger.jsonl'));
-  if (!raw) return null;
-  const done = new Set<string>();
-  for (const line of raw.split('\n')) {
-    if (!line.trim()) continue;
-    try {
-      const ev = JSON.parse(line) as { t?: string; e?: string };
-      if (typeof ev.t === 'string' && ev.e === 'done') done.add(ev.t);
-    } catch { /* skip malformed line */ }
-  }
-  return done;
-}
-
 /**
- * First task that is not done. Supports both the 1.x layout
- * (`### T-001: Title` + `**Status**: [x] completed`) and the 2.0 layout
- * (`### T-01 Title` with status derived from ledger.jsonl).
+ * Task summary for an increment, from the SAME fold every other 2.0 counter
+ * uses (`specweave task list`, verify.json, the closure gate): ledger state per
+ * task, falling back to the tasks.md checkbox for tasks with no ledger events.
+ *
+ * Hand-rolling this here was a bug: an all-or-nothing `ledger.jsonl exists?`
+ * switch made every legacy `**Status**: [x] completed` task read as pending the
+ * moment one ledger line was appended, and it ignored `skip` (terminal) events.
  */
-function nextPendingTask(incDir: string): { pending: number; total: number; next: string } | null {
-  const tasks = readText(path.join(incDir, 'tasks.md'));
-  if (!tasks) return null;
-  const done = ledgerDone(incDir);
-  const headerRe = /^###\s+(T-\d+)\s*:?\s*(.*)$/;
-  const lines = tasks.split('\n');
-  const items: Array<{ id: string; title: string; done: boolean }> = [];
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(headerRe);
-    if (!m) continue;
-    let block = '';
-    for (let j = i + 1; j < lines.length && !headerRe.test(lines[j]); j++) block += lines[j] + '\n';
-    const statusDone =
-      /\*\*Status\*\*:\s*\[x\]/i.test(block) || /^\s*-\s*\[x\]\s*(Status|Done)/im.test(block);
-    items.push({ id: m[1], title: m[2].trim(), done: done ? done.has(m[1]) : statusDone });
+function taskSummary(incDir: string): { pending: number; total: number; next: string } | null {
+  if (!fs.existsSync(path.join(incDir, 'tasks.md'))) return null;
+  let board;
+  try {
+    board = loadTaskBoard(incDir);
+  } catch {
+    return null; // unparseable tasks.md — say nothing rather than lie
   }
-  if (items.length === 0) return null;
-  const next = items.find((t) => !t.done);
+  if (board.counts.total === 0) return null;
+  const pending = Math.max(0, board.counts.total - board.counts.done - board.counts.skipped);
+  const next = nextTask(board);
   return {
-    pending: items.filter((t) => !t.done).length,
-    total: items.length,
+    pending,
+    total: board.counts.total,
     next: next ? `${next.id}${next.title ? ' ' + next.title : ''}` : '',
   };
 }
@@ -151,12 +134,14 @@ export const handle: HandlerFn = async (_input, context) => {
 
   ids.slice(0, MAX_INCREMENTS_LISTED).forEach((id, i) => {
     const title = readTitle(incDirs[i]);
-    const tasks = nextPendingTask(incDirs[i]);
+    const tasks = taskSummary(incDirs[i]);
     let line = `Active increment: ${id}${title ? ` — ${title}` : ''}`;
     if (tasks) {
-      line += tasks.next
-        ? ` (${tasks.pending}/${tasks.total} tasks pending; next: ${tasks.next})`
-        : ` (all ${tasks.total} tasks done — run /sw:done ${id})`;
+      if (tasks.pending === 0) {
+        line += ` (all ${tasks.total} tasks done — run /sw:done ${id})`;
+      } else {
+        line += ` (${tasks.pending}/${tasks.total} tasks pending${tasks.next ? `; next: ${tasks.next}` : ''})`;
+      }
     }
     line += `. Spec: .specweave/increments/${id}/spec.md`;
     lines.push(line);
