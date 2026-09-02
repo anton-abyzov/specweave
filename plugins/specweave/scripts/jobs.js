@@ -2,7 +2,7 @@
 /**
  * Instant Background Jobs Status
  *
- * Executed by UserPromptSubmit hook for sw:jobs
+ * Prints background job status. CLI equivalent: `specweave jobs`.
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node jobs.js [--all] [--id <jobId>] [--help]

@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference for mapping Azure DevOps work items to SpecWeave architecture
 
-**Source of Truth**: [.specweave/docs/internal/delivery/guides/tool-concept-mapping.md](../../../.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)
+**Source of Truth**: this file (the 1.x `tool-concept-mapping.md` guide was removed in 2.0)
 
 **Last Synced**: 2025-11-04
 
@@ -541,9 +541,8 @@ AUTH=$(echo -n ":$AZURE_DEVOPS_PAT" | base64)
 
 ## Related Documentation
 
-- **Full Mapping Guide**: [.specweave/docs/internal/delivery/guides/tool-concept-mapping.md](../../../.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)
-- **ADO Sync Skill**: [../skills/ado-sync/SKILL.md](../skills/ado-sync/SKILL.md)
-- **ADO Manager Agent**: [../agents/ado-manager/AGENT.md](../agents/ado-manager/AGENT.md)
+- **Sync Skill**: [../../skills/sync/SKILL.md](../../skills/sync/SKILL.md)
+- **CLI**: `specweave sync push | pull | status | setup`
 
 ---
 

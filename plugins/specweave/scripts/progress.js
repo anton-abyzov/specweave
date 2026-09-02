@@ -2,8 +2,9 @@
 /**
  * Instant Increment Progress (Node.js fallback)
  *
- * Executed by UserPromptSubmit hook for sw:progress when jq is unavailable.
- * Reads files directly (no cache needed). Bypasses LLM entirely.
+ * Reads tasks.md directly (no cache, no CLI round-trip) and prints task
+ * completion for one increment. The CLI equivalent is `specweave task list`.
+ * Bypasses the LLM entirely.
  *
  * Usage: node progress.js [incrementId] [--help]
  */
