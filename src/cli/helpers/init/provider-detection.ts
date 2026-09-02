@@ -10,7 +10,7 @@
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import { parseEnvFile } from '../../../utils/env-file.js';
-import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
+import { resolveGitHubToken } from '../../../utils/auth-helpers.js';
 
 export interface ProviderInfo {
   provider: 'github' | 'ado' | 'bitbucket';
@@ -111,27 +111,15 @@ function getEnvVar(targetDir: string, ...varNames: string[]): string | undefined
 }
 
 /**
- * Detect existing credentials for a given provider
+ * Detect existing credentials for a given provider.
  *
- * Priority: gh auth token → .env → process.env
+ * GitHub goes through the single resolver (config → process.env → .env → gh CLI)
+ * so init sees the same token every sync path will use.
  * Returns the token string or null if not found.
  */
 export function detectCredentials(targetDir: string, provider: string): string | null {
   if (provider === 'github') {
-    // Try gh auth token first (fastest path for GitHub users)
-    try {
-      const result = execFileNoThrowSync('gh', ['auth', 'token']);
-      const token = result.stdout?.trim();
-      if (token && result.exitCode === 0) {
-        return token;
-      }
-    } catch {
-      // gh not installed or not authenticated
-    }
-
-    // Check .env and process.env
-    const envToken = getEnvVar(targetDir, 'GITHUB_TOKEN', 'GH_TOKEN');
-    return envToken || null;
+    return resolveGitHubToken(targetDir).token || null;
   }
 
   if (provider === 'ado') {
