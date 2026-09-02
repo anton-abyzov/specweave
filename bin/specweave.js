@@ -790,16 +790,6 @@ program
     await qaCommand(incrementId, options);
   });
 
-// Validate Jira command - Jira resource validation
-program
-  .command('validate-jira')
-  .description('Validate Jira connection, project, and issue-type configuration; create missing issue types if needed')
-  .option('--env <path>', 'Path to .env file', '.env')
-  .action(async (options) => {
-    const { runJiraValidation } = await import('../dist/src/cli/commands/validate-jira.js');
-    await runJiraValidation(options);
-  });
-
 // Link PR - Link pull requests to external tickets (JIRA remote links, ADO hyperlinks)
 program
   .command('link-pr')
@@ -998,114 +988,148 @@ program
     await commitsCommand();
   });
 
-// Sync-scheduled command - Execute due scheduled sync jobs (for cron/CI)
-program
-  .command('sync-scheduled')
-  .description('Execute due scheduled sync jobs (for cron/CI use)')
-  .option('--dry-run', 'Show what would run without executing')
-  .option('--force', 'Run all sync jobs regardless of schedule')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output (for cron)')
-  .action(async (options) => {
-    const { createSyncScheduledCommand } = await import('../dist/src/cli/commands/sync-scheduled.js');
-    const syncCmd = createSyncScheduledCommand();
-    await syncCmd.parseAsync(['node', 'sync-scheduled', ...process.argv.slice(3)], { from: 'user' });
+// Sync command group - the ONE external tracker sync surface (GitHub / Jira / ADO)
+const syncCmd = program
+  .command('sync')
+  .description('Sync increments with GitHub, Jira or Azure DevOps: push | pull | status | setup');
+
+syncCmd
+  .command('push [increment-id]')
+  .description('Push local progress (tasks -> ACs -> living docs -> issues) to the configured tracker(s)')
+  .option('--reconcile', 'Reconcile stale/duplicate GitHub milestones before pushing')
+  .option('--dry-run', 'Preview without making changes')
+  .option('--no-create', 'Skip auto-creating missing external issues')
+  .option('--provider <name>', 'Only push to one provider (github|jira|ado)')
+  .option('--force', 'Force sync even if no changes detected')
+  .action(async (incrementId, opts) => {
+    const { syncPush, parseProvider } = await import('../dist/src/cli/commands/sync.js');
+    await syncPush({
+      incrementId,
+      reconcile: opts.reconcile,
+      dryRun: opts.dryRun,
+      create: opts.create,
+      provider: parseProvider(opts.provider),
+      force: opts.force,
+    });
   });
 
-// Sync-progress command - Comprehensive progress sync with auto-create
+syncCmd
+  .command('pull')
+  .description('Report external changes since --since (default 7 days); --create-increments imports issues as increments')
+  .option('--create-increments', 'Create SpecWeave increments from external issues (interactive)')
+  .option('--provider <name>', 'Only pull from one provider (github|jira|ado)')
+  .option('--since <date|days>', 'ISO date or number of days to look back', '7')
+  .action(async (opts) => {
+    const { syncPull, parseProvider } = await import('../dist/src/cli/commands/sync.js');
+    await syncPull({ createIncrements: opts.createIncrements, provider: parseProvider(opts.provider), since: opts.since });
+  });
+
+syncCmd
+  .command('status')
+  .description('Token source + account + can-push, provider health, retry queue, circuit breakers, sync gaps')
+  .option('--json', 'Output as JSON')
+  .option('--provider <name>', 'Only report one provider (github|jira|ado)')
+  .option('--quick', 'Skip network probes')
+  .action(async (opts) => {
+    const { syncStatus, parseProvider } = await import('../dist/src/cli/commands/sync.js');
+    const report = await syncStatus({ json: opts.json, provider: parseProvider(opts.provider), quick: opts.quick });
+    process.exitCode = report.exitCode;
+  });
+
+syncCmd
+  .command('setup')
+  .description('Interactive wizard to connect GitHub Issues, Jira or Azure DevOps (--validate checks the existing config)')
+  .option('--provider <name>', 'Provider to configure (github|jira|ado) - skips selection prompt')
+  .option('--validate', 'Validate existing configuration and credentials instead of running the wizard')
+  .option('--quick', 'Non-interactive mode: print hint and exit (for CI environments)')
+  .action(async (opts) => {
+    const { syncSetup, parseProvider } = await import('../dist/src/cli/commands/sync.js');
+    process.exitCode = await syncSetup({ provider: parseProvider(opts.provider), validate: opts.validate, quick: opts.quick });
+  });
+
+// Deprecated top-level sync verbs: hidden aliases that print a one-line notice and delegate
+async function deprecatedSync(oldVerb) {
+  const { deprecationNotice } = await import('../dist/src/cli/commands/sync.js');
+  console.error(deprecationNotice(oldVerb));
+}
+
 program
-  .command('sync-progress [increment-id]')
-  .description('Comprehensive progress sync: tasks → ACs → living docs → AUTO-CREATE external issues → sync')
-  .option('--dry-run', 'Preview without making changes')
-  .option('--no-create', 'Skip auto-creating external issues')
-  .option('--no-github', 'Skip GitHub sync')
-  .option('--no-jira', 'Skip JIRA sync')
-  .option('--no-ado', 'Skip Azure DevOps sync')
-  .option('--force', 'Force sync even if no changes detected')
-  .action(async (incrementId, options) => {
+  .command('sync-progress [increment-id]', { hidden: true })
+  .option('--dry-run')
+  .option('--no-create')
+  .option('--no-github')
+  .option('--no-jira')
+  .option('--no-ado')
+  .option('--force')
+  .action(async (incrementId, opts) => {
+    await deprecatedSync('sync-progress');
     const { syncProgress } = await import('../dist/src/cli/commands/sync-progress.js');
     const args = [];
     if (incrementId) args.push(incrementId);
-    if (options.dryRun) args.push('--dry-run');
-    if (!options.create) args.push('--no-create');
-    if (!options.github) args.push('--no-github');
-    if (!options.jira) args.push('--no-jira');
-    if (!options.ado) args.push('--no-ado');
-    if (options.force) args.push('--force');
+    if (opts.dryRun) args.push('--dry-run');
+    if (!opts.create) args.push('--no-create');
+    if (!opts.github) args.push('--no-github');
+    if (!opts.jira) args.push('--no-jira');
+    if (!opts.ado) args.push('--no-ado');
+    if (opts.force) args.push('--force');
     await syncProgress(args);
   });
 
-// Sync-living-docs command - Sync living docs for a specific increment
 program
-  .command('sync-living-docs [increment-id]')
-  .description('Sync living documentation for an increment (feature spec + user story files)')
-  .option('--dry-run', 'Preview without making changes')
-  .option('--force', 'Force sync even if no changes detected')
-  .action(async (incrementId, options) => {
+  .command('sync-living-docs [increment-id]', { hidden: true })
+  .option('--dry-run')
+  .option('--force')
+  .action(async (incrementId, opts) => {
+    await deprecatedSync('sync-living-docs');
     const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
     const args = [];
     if (incrementId) args.push(incrementId);
-    if (options.dryRun) args.push('--dry-run');
-    if (options.force) args.push('--force');
+    if (opts.dryRun) args.push('--dry-run');
+    if (opts.force) args.push('--force');
     await syncLivingDocs(args);
   });
 
-// Sync-retry command - Process retry queue for failed syncs
 program
-  .command('sync-retry')
-  .description('Process the sync retry queue (retry failed external syncs with backoff)')
-  .option('--dry-run', 'Show what would be retried without executing')
-  .option('--force', 'Retry all entries regardless of backoff timing')
-  .option('--clear', 'Clear the entire retry queue')
-  .action(async (options) => {
+  .command('sync-retry', { hidden: true })
+  .option('--dry-run')
+  .option('--force')
+  .option('--clear')
+  .action(async (opts) => {
+    await deprecatedSync('sync-retry');
     const { syncRetryCommand } = await import('../dist/src/cli/commands/sync-retry.js');
-    const result = await syncRetryCommand(process.cwd(), options);
+    const result = await syncRetryCommand(process.cwd(), opts);
     if (result.failed > 0) process.exitCode = 1;
   });
 
-// Sync-gaps command - Detect increments with partial external sync
+for (const oldVerb of ['sync-status', 'sync-health', 'sync-gaps']) {
+  program
+    .command(oldVerb, { hidden: true })
+    .option('--json')
+    .option('--provider <name>')
+    .action(async (opts) => {
+      await deprecatedSync(oldVerb);
+      const { syncStatus, parseProvider } = await import('../dist/src/cli/commands/sync.js');
+      const report = await syncStatus({ json: opts.json, provider: parseProvider(opts.provider) });
+      process.exitCode = report.exitCode;
+    });
+}
+
 program
-  .command('sync-gaps')
-  .description('Detect increments with partial external sync coverage')
-  .option('--json', 'Output as JSON')
-  .option('--fix', 'Attempt missing syncs for each gap')
-  .action(async (options) => {
-    const { syncGapsCommand } = await import('../dist/src/cli/commands/sync-gaps.js');
-    const result = await syncGapsCommand(process.cwd(), options);
-    process.exitCode = result.exitCode;
+  .command('sync-setup', { hidden: true })
+  .option('--provider <name>')
+  .option('--quick')
+  .action(async (opts) => {
+    await deprecatedSync('sync-setup');
+    const { syncSetup, parseProvider } = await import('../dist/src/cli/commands/sync.js');
+    process.exitCode = await syncSetup({ provider: parseProvider(opts.provider), quick: opts.quick });
   });
 
-// Sync-status command - Overall sync health report
 program
-  .command('sync-status')
-  .description('Show sync health: retry queue, circuit breakers, rate limits, recent errors')
+  .command('validate-jira', { hidden: true })
   .action(async () => {
-    const { syncStatusCommand } = await import('../dist/src/cli/commands/sync-status.js');
-    const result = await syncStatusCommand(process.cwd());
-    process.exitCode = result.exitCode;
-  });
-
-// Sync-setup command - Interactive wizard to connect GitHub Issues, JIRA, or ADO
-program
-  .command('sync-setup')
-  .description('Interactive wizard to connect GitHub Issues, JIRA, or Azure DevOps')
-  .option('--provider <name>', 'Provider to configure (github|jira|ado) — skips selection prompt')
-  .option('--quick', 'Non-interactive mode: print hint and exit (for CI environments)')
-  .action(async (opts) => {
-    const { syncSetupCommand } = await import('../dist/src/cli/commands/sync-setup.js');
-    await syncSetupCommand({ provider: opts.provider, quick: opts.quick });
-  });
-
-// Sync-health command - Validate external integration health
-program
-  .command('sync-health')
-  .description('Validate external integration health (GitHub, JIRA, ADO)')
-  .option('--json', 'Output results as JSON for CI pipelines')
-  .option('--provider <name>', 'Check only a specific provider (github|jira|ado)')
-  .action(async (opts) => {
-    const { syncHealthCommand } = await import('../dist/src/cli/commands/sync-health.js');
-    const exitCode = await syncHealthCommand({ json: opts.json, provider: opts.provider });
-    process.exitCode = exitCode;
+    await deprecatedSync('validate-jira');
+    const { syncSetup } = await import('../dist/src/cli/commands/sync.js');
+    process.exitCode = await syncSetup({ provider: 'jira', validate: true });
   });
 
 // Docs command - Documentation preview, build, validation
@@ -1212,6 +1236,21 @@ docsCmd
   });
 
 // Default action for 'specweave docs' without subcommand — launches internal preview
+docsCmd
+  .command('sync [increment-id]')
+  .description('Sync living documentation for an increment (feature spec + user story files)')
+  .option('--dry-run', 'Preview without making changes')
+  .option('--force', 'Force sync even if no changes detected')
+  .action(async (incrementId, options) => {
+    const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
+    const args = [];
+    if (incrementId) args.push(incrementId);
+    if (options.dryRun) args.push('--dry-run');
+    if (options.force) args.push('--force');
+    await syncLivingDocs(args);
+  });
+
+
 docsCmd.action(async () => {
   const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
   await docsPreviewCommand({ scope: 'internal' });
@@ -1254,6 +1293,7 @@ program
   .option('--quick', 'Skip slow checks (network, hook execution)')
   .option('--skip-external', 'Skip external tool connectivity checks')
   .option('--fix', 'Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)')
+  .option('--fix-status', 'Fix metadata.json <-> spec.md status desyncs (formerly sw:sync-status)')
   .action(async (options) => {
     const { doctor } = await import('../dist/src/cli/commands/doctor.js');
     const report = await doctor(process.cwd(), {
@@ -1262,6 +1302,7 @@ program
       quick: options.quick,
       skipExternal: options.skipExternal,
       fix: options.fix,
+      fixStatus: options.fixStatus,
     });
 
     // Exit with appropriate code (failures = 1)
@@ -1475,26 +1516,6 @@ program
     });
   });
 
-// Set sync target command - Set external tool sync target for increment (ADR-0211)
-program
-  .command('set-sync-target <increment-id>')
-  .description('Set external tool sync target for an increment (v1.0.31+)')
-  .option('-p, --project <project-id>', 'Project ID for project-based resolution')
-  .option('-v, --verbose', 'Show resolution path and details')
-  .option('--dry-run', 'Show what would be set without making changes')
-  .option('--validate-only', 'Only validate configuration, do not set')
-  .action(async (incrementId, options) => {
-    const { createSetSyncTargetCommand } = await import('../dist/src/cli/commands/set-sync-target.js');
-    const cmd = createSetSyncTargetCommand();
-    // Execute the action by parsing with the increment ID and options
-    const args = ['node', 'set-sync-target', incrementId];
-    if (options.project) args.push('-p', options.project);
-    if (options.verbose) args.push('-v');
-    if (options.dryRun) args.push('--dry-run');
-    if (options.validateOnly) args.push('--validate-only');
-    await cmd.parseAsync(args, { from: 'user' });
-  });
-
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -1516,7 +1537,7 @@ program.on('--help', () => {
   console.log('  $ specweave qa 0008                         # Quick quality check');
   console.log('  $ specweave qa 0008 --pre                   # Pre-implementation check');
   console.log('  $ specweave qa 0008 --gate --export         # Quality gate + export to tasks');
-  console.log('  $ specweave validate-jira                   # Validate Jira configuration');
+  console.log('  $ specweave sync status                     # Token/account, provider health, sync gaps');
   console.log('  $ specweave jobs                            # Show active background jobs');
   console.log('  $ specweave jobs --follow <jobId>           # Follow job progress live');
   console.log('  $ specweave jobs --logs <jobId>             # View worker logs');
@@ -1525,12 +1546,12 @@ program.on('--help', () => {
   console.log('  $ specweave living-docs --depth deep-native # AI-powered analysis (FREE w/ MAX)');
   console.log('  $ specweave living-docs --full-scan         # Full deep scan (all phases)');
   console.log('  $ specweave living-docs --resume <jobId>    # Resume orphaned job');
-  console.log('  $ specweave sync-scheduled                  # Execute due sync jobs');
-  console.log('  $ specweave sync-scheduled --force          # Force sync all jobs');
+  console.log('  $ specweave sync push 0008                  # Push increment progress to GitHub/Jira/ADO');
+  console.log('  $ specweave sync pull --since 3             # Show external changes from the last 3 days');
   console.log('  $ specweave cache                           # Show cache status');
   console.log('  $ specweave cache --rebuild                 # Rebuild dashboard cache');
   console.log('  $ specweave cache --debug                   # Show cache debug info');
-  console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
+  console.log('  $ specweave sync setup --validate           # Validate tracker configuration + credentials');
   console.log('  $ specweave docs                            # Preview internal docs (port 3015)');
   console.log('  $ specweave docs public                     # Preview public docs (port 3016)');
   console.log('  $ specweave docs build                      # Build internal site');
@@ -1538,9 +1559,7 @@ program.on('--help', () => {
   console.log('  $ specweave docs validate                   # Check for docs errors');
   console.log('  $ specweave docs status                     # Show docs status');
   console.log('  $ specweave docs kill                       # Stop all docs servers');
-  console.log('  $ specweave set-sync-target 0008            # Set sync target for increment');
-  console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
-  console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
+  console.log('  $ specweave doctor --fix-status             # Fix metadata/spec status desyncs');
   console.log('  $ specweave refresh-marketplace             # Lazy mode: router only (~500 chars)');
   console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K chars)');
   console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
