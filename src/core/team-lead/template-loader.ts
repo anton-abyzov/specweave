@@ -28,7 +28,7 @@ const AGENTS_DIR = resolve(
   'plugins',
   'specweave',
   'skills',
-  'team-lead',
+  'team',
   'agents'
 );
 

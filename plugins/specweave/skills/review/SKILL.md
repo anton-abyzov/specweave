@@ -1,5 +1,5 @@
 ---
-description: Adversarial fresh-context review of an increment before it ships. Findings cite path:line and are re-verified before reporting. Use when saying "review", "grill this", or "critique the implementation".
+description: Adversarial fresh-context review of an increment before it ships. Every finding cites path:line and is re-verified. Use when saying "review", "grill this", or "critique the implementation".
 version: 2.0.0
 argument-hint: "<increment-id> [--full]"
 ---

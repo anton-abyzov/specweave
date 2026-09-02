@@ -1,5 +1,5 @@
 ---
-description: Expand the solution space before committing to one - several framed options, compared on the criteria that matter, ending in a pick. Use when saying "brainstorm", "ideate", "what are our options", or "compare approaches".
+description: Expand the solution space before committing - framed options compared on stated criteria, ending in a pick. Use when saying "brainstorm", "ideate", or "what are our options".
 version: 2.0.0
 argument-hint: "<topic> [--depth quick|standard|deep]"
 ---

@@ -1,6 +1,6 @@
 ---
-name: sw/handoff
-description: Write a portable, secret-scrubbed work handoff doc so you can continue this work in any AI tool. Use when saying "handoff", "running out of tokens", "switch to Codex/OpenCode/Gemini/Cursor", "continue elsewhere", or "continue on another machine".
+disable-model-invocation: true
+description: Write a portable, secret-scrubbed handoff doc so this work can continue in any AI tool or on any machine. Use when saying "handoff", "running out of tokens", or "continue elsewhere".
 version: 2.0.0
 argument-hint: "[incrementId] [--reason ...] [--summary ...] [--next ...] [--gotcha ...] [--decision ...] [--inline]"
 ---
