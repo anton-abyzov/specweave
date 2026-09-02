@@ -64,6 +64,7 @@ import {
 // Re-export types for backward compatibility
 export type { SyncOptions, SyncResult, ParsedSpec, UserStoryData, AcceptanceCriterionData };
 
+
 export class LivingDocsSync {
   // Reentrancy guard: prevents concurrent syncs for the same increment.
   // Without this, metadata writes during sync (backfillExternalLinks) can
@@ -130,7 +131,15 @@ export class LivingDocsSync {
   }
 
   /**
-   * Sync an increment to living docs
+   * Sync an increment to living docs.
+   *
+   * POLICY NOTE (2.0): generated living docs are opt-in
+   * (`config.livingDocs: 'onDone'`). This method is the mechanism, not the
+   * policy — every AUTOMATIC caller (status transitions, task-completion
+   * hooks, closure) must first consult
+   * {@link livingDocsEnabled} from `./living-docs-enabled.js`. Explicit,
+   * user-invoked callers (`specweave sync-living-docs`, `sw:sync-docs`,
+   * archiving) call it unconditionally.
    */
   async syncIncrement(incrementId: string, options: SyncOptions = {}): Promise<SyncResult> {
     const result: SyncResult = {
