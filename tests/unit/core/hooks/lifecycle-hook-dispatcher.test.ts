@@ -70,61 +70,21 @@ describe('LifecycleHookDispatcher', () => {
     vi.restoreAllMocks();
   });
 
-  // ─── TC-001 ─────────────────────────────────────────────────────────
-  describe('onIncrementPlanned', () => {
-    it('TC-001: routes to LivingDocsSync when auto_create_github_issue=true (0348)', async () => {
+  // ─── TC-001..004 ────────────────────────────────────────────────────
+  describe('onIncrementPlanned (2.0: no-op)', () => {
+    it('TC-001: never syncs living docs or creates issues at planning time', async () => {
       mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            auto_create_github_issue: true,
-          },
-        },
-      });
-      mocks.mockSyncIncrement.mockResolvedValue({ success: true });
-
-      await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass);
-
-      // GitHub issue creation now routes through LivingDocsSync → GitHubFeatureSync
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
-      expect(mocks.mockAutoCreateExternalIssue).not.toHaveBeenCalled();
-    });
-
-    // ─── TC-002 ───────────────────────────────────────────────────────
-    it('TC-002: skips when auto_create_github_issue=false', async () => {
-      mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            auto_create_github_issue: false,
-          },
-        },
+        livingDocs: 'onDone',
+        hooks: { post_increment_planning: { auto_create_github_issue: true } },
       });
 
       await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass);
 
+      expect(mocks.mockSyncIncrement).not.toHaveBeenCalled();
       expect(mocks.mockAutoCreateExternalIssue).not.toHaveBeenCalled();
     });
 
-    // ─── TC-003 ───────────────────────────────────────────────────────
-    it('TC-003: skips when hooks config is missing', async () => {
-      mocks.mockConfigRead.mockResolvedValue({});
-
-      await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass);
-
-      expect(mocks.mockAutoCreateExternalIssue).not.toHaveBeenCalled();
-    });
-
-    // ─── TC-004 ───────────────────────────────────────────────────────
-    it('TC-004: catches and logs errors (non-blocking)', async () => {
-      mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            auto_create_github_issue: true,
-          },
-        },
-      });
-      mocks.mockAutoCreateExternalIssue.mockRejectedValue(new Error('GitHub API down'));
-
-      // Should not throw
+    it('TC-004: resolves without throwing', async () => {
       await expect(
         LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass),
       ).resolves.toBeUndefined();
@@ -186,20 +146,28 @@ describe('LifecycleHookDispatcher', () => {
 
   // ─── TC-008..010 ────────────────────────────────────────────────────
   describe('onIncrementDone', () => {
-    it('TC-008: dispatches living docs sync when sync_living_docs=true', async () => {
+    it("TC-008: dispatches living docs sync when livingDocs='onDone'", async () => {
       mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_done: {
-            sync_living_docs: true,
-          },
-        },
-        sync: { mode: 'immediate' },
+        livingDocs: 'onDone',
+        hooks: { post_increment_done: {} },
       });
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
 
       await LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass);
 
       expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
+    });
+
+    it('TC-008b: never syncs living docs when livingDocs is false (2.0 default)', async () => {
+      mocks.mockConfigRead.mockResolvedValue({
+        hooks: { post_increment_done: { close_github_issue: true } },
+      });
+      mocks.mockSyncIncrementClosure.mockResolvedValue({ success: true, closedIssues: [] });
+
+      await LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass);
+
+      expect(mocks.mockSyncIncrement).not.toHaveBeenCalled();
+      expect(mocks.mockSyncIncrementClosure).toHaveBeenCalled();
     });
 
     it('TC-009: dispatches issue closure when close_github_issue=true', async () => {
@@ -224,12 +192,8 @@ describe('LifecycleHookDispatcher', () => {
 
     it('TC-021: GitHub sync runs only via LivingDocsSync chain, not directly', async () => {
       mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_done: {
-            sync_living_docs: true,
-          },
-        },
-        sync: { mode: 'immediate' },
+        livingDocs: 'onDone',
+        hooks: { post_increment_done: {} },
       });
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
 
@@ -244,14 +208,13 @@ describe('LifecycleHookDispatcher', () => {
       const callOrder: string[] = [];
 
       mocks.mockConfigRead.mockResolvedValue({
+        livingDocs: 'onDone',
         hooks: {
           post_increment_done: {
-            sync_living_docs: true,
             close_github_issue: true,
             update_living_docs_first: true,
           },
         },
-        sync: { mode: 'immediate' },
       });
 
       mocks.mockSyncIncrement.mockImplementation(async () => {
@@ -298,82 +261,6 @@ describe('LifecycleHookDispatcher', () => {
     });
   });
 
-  // ─── TC-013..015: Living docs sync in onIncrementPlanned (0304) ────
-  describe('onIncrementPlanned: living docs sync', () => {
-    it('TC-013: calls LivingDocsSync.syncIncrement when sync_living_docs=true', async () => {
-      mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            sync_living_docs: true,
-          },
-        },
-      });
-      mocks.mockSyncIncrement.mockResolvedValue({ success: true });
-
-      await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass);
-
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
-    });
-
-    it('TC-014: both sync_living_docs and auto_create_github_issue call syncIncrement once (0348)', async () => {
-      mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            sync_living_docs: true,
-            auto_create_github_issue: true,
-          },
-        },
-      });
-
-      mocks.mockSyncIncrement.mockResolvedValue({ success: true });
-
-      await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass);
-
-      // sync_living_docs runs syncIncrement; auto_create_github_issue fallback is skipped
-      // because sync_living_docs is already set
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledTimes(1);
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
-      expect(mocks.mockAutoCreateExternalIssue).not.toHaveBeenCalled();
-    });
-
-    it('TC-015: auto_create_github_issue fallback calls syncIncrement when sync_living_docs=false (0348)', async () => {
-      mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            sync_living_docs: false,
-            auto_create_github_issue: true,
-          },
-        },
-      });
-      mocks.mockSyncIncrement.mockResolvedValue({ success: true });
-
-      await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass);
-
-      // sync_living_docs is falsy, so the fallback for auto_create_github_issue runs
-      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
-      expect(mocks.mockAutoCreateExternalIssue).not.toHaveBeenCalled();
-    });
-
-    it('TC-016: living docs failure is caught and does not throw (0348)', async () => {
-      mocks.mockConfigRead.mockResolvedValue({
-        hooks: {
-          post_increment_planning: {
-            sync_living_docs: true,
-            auto_create_github_issue: true,
-          },
-        },
-      });
-      mocks.mockSyncIncrement.mockRejectedValue(new Error('Living docs sync failed'));
-
-      // Should not throw despite living docs failure
-      await expect(
-        LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incrementId, bypass),
-      ).resolves.toBeUndefined();
-
-      // autoCreateExternalIssue is no longer called (GitHub routes through LivingDocsSync)
-      expect(mocks.mockAutoCreateExternalIssue).not.toHaveBeenCalled();
-    });
-  });
 
   // ─── TC-012 ─────────────────────────────────────────────────────────
   describe('partial config handling', () => {
