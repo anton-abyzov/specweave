@@ -163,11 +163,13 @@ describe('summary-banner', () => {
 
     // ─── Project structure ──────────────────────────────────────
 
-    it('should show "Workspace (0 repositories)" when no umbrella discovery', () => {
+    it('should show "Single repo" when no repositories were discovered', () => {
+      // 2.0: a plain project is not a "Workspace (0 repositories)" — reporting
+      // it that way told users they had umbrella structure they never asked for.
       const output = strip(formatSummaryBanner(makeOptions()));
       expect(output).toContain('Structure:');
-      expect(output).toContain('Workspace (0 repositories)');
-      expect(output).not.toContain('Single repository');
+      expect(output).toContain('Single repo');
+      expect(output).not.toContain('Workspace (0');
     });
 
     it('should show "Workspace" with repo count when repos discovered', () => {

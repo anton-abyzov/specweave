@@ -55,10 +55,17 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
     lines.push(chalk.cyan('  Provider:  ') + `${options.provider.name} ${providerDetail}`.trim());
   }
 
-  // Project structure — always "Workspace (N repositories)"
+  // Project structure. A project with no repositories under repositories/ is a
+  // plain single repo — calling it a "Workspace (0 repositories)" told users
+  // they had umbrella structure they never asked for.
   {
     const repoCount = options.umbrellaDiscovery?.totalRepoCount ?? 0;
-    lines.push(chalk.cyan('  Structure: ') + `Workspace (${repoCount} ${repoCount === 1 ? 'repository' : 'repositories'})`);
+    lines.push(
+      chalk.cyan('  Structure: ') +
+        (repoCount === 0
+          ? 'Single repo'
+          : `Workspace (${repoCount} ${repoCount === 1 ? 'repository' : 'repositories'})`)
+    );
     if (options.umbrellaDiscovery) {
       const displayRepos = options.umbrellaDiscovery.repos.slice(0, 10);
       for (const repo of displayRepos) {
