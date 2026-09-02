@@ -36,6 +36,7 @@ import { SyncThrottle } from '../sync-throttle.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { livingDocsEnabled } from '../living-docs/living-docs-enabled.js';
+import { externalSyncConfigured } from '../../sync/external-sync-configured.js';
 
 export class StatusChangeSyncTrigger {
   private static circuitBreaker = new SyncCircuitBreaker();
@@ -86,6 +87,15 @@ export class StatusChangeSyncTrigger {
 
     // Check if this transition needs sync (or force sync for missing feature_id)
     if (!forceSync && !this.isSyncWorthy(oldStatus, newStatus)) {
+      return;
+    }
+
+    // Nothing to sync TO. With the 2.0 defaults (livingDocs: false, no tracker
+    // configured) there is no destination at all, and running the pipeline only
+    // produced the line `✅ Auto-synced increment … to external tools` in a
+    // project whose own `doctor` reports "no external sync enabled".
+    const projectRoot = resolveEffectiveRoot();
+    if (!livingDocsEnabled(projectRoot) && !externalSyncConfigured(projectRoot)) {
       return;
     }
 
@@ -224,6 +234,9 @@ export class StatusChangeSyncTrigger {
     // Dynamic import to avoid circular dependency
     const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
 
+    const externalConfigured = externalSyncConfigured(projectRoot);
+    const synced: string[] = [];
+
     const syncFn = async () => {
       // Record throttle BEFORE sync to prevent reentrancy.
       // Syncs take 10-30s but the throttle window is 5s — recording after
@@ -232,7 +245,10 @@ export class StatusChangeSyncTrigger {
       new SyncThrottle(projectRoot).record(incrementId);
 
       // v1.0.19: Check if we need to auto-create external issues
-      await this.autoCreateIfNeeded(projectRoot, incrementId);
+      if (externalConfigured) {
+        await this.autoCreateIfNeeded(projectRoot, incrementId);
+        synced.push('external tools');
+      }
 
       // Run living docs sync — 2.0 generates docs only on `livingDocs: 'onDone'`.
       // (This trigger is how `livingDocs: false` projects still ended up with a
@@ -243,15 +259,21 @@ export class StatusChangeSyncTrigger {
         });
 
         await sync.syncIncrement(incrementId);
+        synced.push('living docs');
       }
 
       // v1.0.19: Auto-close issues on completion
-      if (newStatus === IncrementStatus.COMPLETED) {
+      if (externalConfigured && newStatus === IncrementStatus.COMPLETED) {
         await this.autoCloseExternalIssues(projectRoot, incrementId);
       }
 
       this.circuitBreaker.recordSuccess();
-      this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
+      // Name only the destinations that were actually written to. Claiming
+      // "external tools" in a project with no tracker configured taught users
+      // to distrust every sync line the CLI prints.
+      if (synced.length > 0) {
+        this.logger.log(`✅ Auto-synced increment ${incrementId} to ${synced.join(' and ')}`);
+      }
     };
 
     // All transitions run synchronously to ensure sync completes
