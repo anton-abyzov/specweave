@@ -288,6 +288,37 @@ describe('mergeInstructionFile — (c) legacy file without markers', () => {
     expect(r.migration).toEqual({ fromVersion: 'legacy (no markers)', removed: [] });
   });
 
+  it('strips pre-1.0.233 AGENTS blocks (Quick Start, Plugin Commands, old orchestration)', () => {
+    const oldAgents = [
+      '## Quick Start',
+      '',
+      '1. **Get Project Context FIRST**: `specweave context projects` (save the output!)',
+      '',
+      '## Workflow Orchestration',
+      '',
+      '**Claude Code has built-in orchestration features. Non-Claude tools must implement these manually.**',
+      '',
+      '## Plugin Commands',
+      '',
+      '| Command | Plugin |',
+      '|---------|--------|',
+      '| `/sw-github:sync` | GitHub sync |',
+      '',
+      '## Our deployment',
+      '',
+      'Deploy with `make ship`.',
+      '',
+    ].join('\n');
+
+    const r = mergeInstructionFile(oldAgents, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+
+    expect(r.content).not.toContain('## Quick Start');
+    expect(r.content).not.toContain('## Plugin Commands');
+    expect(r.content).not.toContain('built-in orchestration features');
+    expect(r.content).toContain('## Our deployment');
+    expect(r.content).toContain('Deploy with `make ship`.');
+  });
+
   it('keeps a user H1 (and its body) that follows a stripped 1.x block', () => {
     const withH1 = [
       '## Docs',

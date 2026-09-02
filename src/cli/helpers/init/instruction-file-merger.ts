@@ -140,7 +140,13 @@ const LEGACY_HEADINGS: Record<TemplateType, Record<string, string[]>> = {
   },
   agents: {
     'Essential Rules': ['NEVER pollute project root', 'ONLY 4 files in increment root'],
-    'Workflow Orchestration': ['Plan Before Code', 'Verify Before Done', 'Dependencies First'],
+    'Workflow Orchestration': [
+      'Plan Before Code',
+      'Verify Before Done',
+      'Dependencies First',
+      'Claude Code has built-in orchestration',
+      'EnterPlanMode',
+    ],
     'Core Principles (Quality)': [],
     'Commands Reference': ['sw:increment', '| Tool | Invocation |'],
     'Non-Claude Tools (Cursor, Copilot, etc.)': [],
@@ -166,6 +172,8 @@ const LEGACY_HEADINGS: Record<TemplateType, Record<string, string[]>> = {
     'Available Agents (Specialized Roles)': [],
     'Available Skills (Specialized Capabilities)': [],
     'Finding the Right Agent or Skill': [],
+    'Quick Start': ['specweave context projects', '/sw:increment', 'Create Your First Increment'],
+    'Plugin Commands': ['| Command | Plugin |', 'sw-github:sync'],
   },
 };
 
