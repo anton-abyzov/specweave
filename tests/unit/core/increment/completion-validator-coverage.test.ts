@@ -68,7 +68,7 @@ describe('completion-validator coverage enforcement', () => {
     mockValidateCoverage.mockResolvedValue({ skipped: true, reason: 'no coverage file' });
   });
 
-  it('coverage below target produces a blocking error and isValid=false', async () => {
+  it('coverage below target produces a warning, never a blocking error', async () => {
     buildFs({
       '/mock-root/.specweave/increments/0001-test/metadata.json': JSON.stringify({
         id: '0001-test', status: 'active', testMode: 'TDD', coverageTarget: 80,
@@ -89,14 +89,11 @@ describe('completion-validator coverage enforcement', () => {
 
     const result = await IncrementCompletionValidator.validateCompletion('0001-test');
 
-    expect(result.isValid).toBe(false);
-    const coverageError = result.errors.find((e: string) => e.includes('coverage below target'));
-    expect(coverageError).toBeDefined();
-    expect(coverageError).toContain('72.5%');
-    expect(coverageError).toContain('90%'); // config target, not metadata's 80
-    // Should NOT be in warnings
-    const coverageWarning = (result.warnings ?? []).find((w: string) => w.includes('coverage below target'));
-    expect(coverageWarning).toBeUndefined();
+    const coverageWarning = result.warnings.find((w: string) => w.includes('coverage below target'));
+    expect(coverageWarning).toBeDefined();
+    expect(coverageWarning).toContain('72.5%');
+    expect(coverageWarning).toContain('90%'); // config target, not metadata's 80
+    expect(result.errors.some((e: string) => e.includes('coverage'))).toBe(false);
   });
 
   it('testMode=none skips coverage validation', async () => {

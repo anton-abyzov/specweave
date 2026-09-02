@@ -113,7 +113,7 @@ export class IncrementCompletionValidator {
 
       // CRITICAL: Block closure if P0 ACs are orphaned
       if (blockOnP0Orphans && coverageResult.orphanedP0.length > 0) {
-        errors.push(
+        blocking(
           `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
           coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
           `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
@@ -243,17 +243,17 @@ export class IncrementCompletionValidator {
           if (coverageResult.skipped) {
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.passed) {
-            // Coverage below target - BLOCKING error
+            // 2.0: coverage is evidence, not a gate — reports/verify.json is the
+            // only hard closure gate. Surface the shortfall as a warning.
             const details = coverageResult.details;
             let detailsStr = '';
             if (details) {
               detailsStr = `\n    Lines: ${details.lines.toFixed(1)}% | Functions: ${details.functions.toFixed(1)}% | Branches: ${details.branches.toFixed(1)}%`;
             }
-            errors.push(
-              `❌ Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
+            warnings.push(
+              `Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
               `    ${coverageResult.reason}\n` +
-              `    File: ${coverageResult.coverageFile || 'not found'}\n\n` +
-              `  Run tests with --coverage and improve coverage before closing.`
+              `    File: ${coverageResult.coverageFile || 'not found'}`
             );
           } else {
             // Coverage passed - log success

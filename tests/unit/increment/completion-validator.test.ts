@@ -463,7 +463,7 @@ increment: ${incrementId}
   });
 
   describe('coverage validation (v1.0.105)', () => {
-    it('should warn when coverage is below target', async () => {
+    it('warns (never blocks) when coverage is below target', async () => {
       // Arrange: Create complete increment with coverage target
       const specContent = `---
 increment: ${incrementId}
@@ -518,9 +518,10 @@ increment: ${incrementId}
       // Act
       const result = await IncrementCompletionValidator.validateCompletion(incrementId);
 
-      // Assert: Coverage below target is a BLOCKING error (not warning-only)
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e: string) => e.includes('coverage below target'))).toBe(true);
+      // Assert: 2.0 — coverage is evidence, never a closure gate.
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+      expect(result.warnings.some((w: string) => w.includes('coverage below target'))).toBe(true);
     });
 
     it('should not warn when coverage meets target', async () => {

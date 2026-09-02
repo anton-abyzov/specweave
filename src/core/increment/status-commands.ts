@@ -268,22 +268,6 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       return false;
     }
 
-    // Walk intermediate transitions (all states before the final COMPLETED)
-    const intermediateSteps = path.slice(0, -1);
-    for (const intermediateStatus of intermediateSteps) {
-      log(chalk.gray(`   Transitioning: ${metadata.status} → ${intermediateStatus}`));
-      try {
-        MetadataManager.updateStatus(incrementId, intermediateStatus);
-        Object.assign(metadata, MetadataManager.read(incrementId));
-      } catch (error) {
-        const errMsg = error instanceof Error ? error.message : String(error);
-        log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
-        log(chalk.gray(`   ${errMsg}`));
-        process.stderr.write(`[completeIncrement] Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}\n`);
-        return false;
-      }
-    }
-
     // Run quality gate validation unless skipped
     if (!skipValidation) {
       // Dynamic import to avoid circular dependency
@@ -310,6 +294,22 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     } else {
       log(chalk.yellow(`⚠️  Validation skipped — reports/verify.json not checked`));
       log(chalk.gray(`   Run: specweave complete ${incrementId} --yes (without --skip-validation) for enforced closure`));
+    }
+
+    // Walk intermediate transitions (all states before the final COMPLETED)
+    const intermediateSteps = path.slice(0, -1);
+    for (const intermediateStatus of intermediateSteps) {
+      log(chalk.gray(`   Transitioning: ${metadata.status} → ${intermediateStatus}`));
+      try {
+        MetadataManager.updateStatus(incrementId, intermediateStatus);
+        Object.assign(metadata, MetadataManager.read(incrementId));
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
+        log(chalk.gray(`   ${errMsg}`));
+        process.stderr.write(`[completeIncrement] Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}\n`);
+        return false;
+      }
     }
 
     // Living docs sync is handled by LifecycleHookDispatcher.onIncrementDone()
