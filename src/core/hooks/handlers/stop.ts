@@ -23,7 +23,7 @@ import * as path from 'path';
 import type { HandlerFn, HookContext } from './types.js';
 import { pass, stopBlock } from './types.js';
 import { logHook, readActiveIncrements, readJsonSafe } from './utils.js';
-import { calculateProgressFromTasksFile } from '../../../progress/us-progress-tracker.js';
+import { loadTaskBoard } from '../../tasks/task-board.js';
 
 const TURNS_FILE = '.stop-auto-turns';
 
@@ -115,20 +115,22 @@ function findIncrementDir(projectRoot: string, id: string): string | null {
   return null;
 }
 
-async function computeRemaining(
+function computeRemaining(
   projectRoot: string,
   incrementIds: string[],
-): Promise<{ pendingTasks: number; pendingAcs: number }> {
+): { pendingTasks: number; pendingAcs: number } {
   let pendingTasks = 0;
   let pendingAcs = 0;
   for (const id of incrementIds) {
     const dir = findIncrementDir(projectRoot, id);
     if (!dir) continue;
-    const tasksPath = path.join(dir, 'tasks.md');
-    if (fs.existsSync(tasksPath)) {
+    if (fs.existsSync(path.join(dir, 'tasks.md'))) {
       try {
-        const progress = await calculateProgressFromTasksFile(tasksPath);
-        pendingTasks += progress.pendingTasks + progress.inProgressTasks;
+        // The ledger fold is the one counter (same source as `specweave task
+        // list` / verify.json / the closure gate). done and skipped are both
+        // terminal; everything else (open/claimed/blocked/stale) is work left.
+        const { total, done, skipped } = loadTaskBoard(dir).counts;
+        pendingTasks += Math.max(0, total - done - skipped);
       } catch { /* unparseable tasks file — skip */ }
     }
     const { total, satisfied } = countAcs(path.join(dir, 'spec.md'));
@@ -167,7 +169,7 @@ export const handle: HandlerFn = async (input, context) => {
     const incrementIds = resolveIncrementIds(session, projectRoot);
     if (incrementIds.length === 0) return exitLoop(context, 'no increment to work on');
 
-    const { pendingTasks, pendingAcs } = await computeRemaining(projectRoot, incrementIds);
+    const { pendingTasks, pendingAcs } = computeRemaining(projectRoot, incrementIds);
     const idLabel = incrementIds[0];
 
     if (pendingTasks === 0 && pendingAcs === 0) {

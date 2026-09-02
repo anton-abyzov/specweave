@@ -84,9 +84,40 @@ describe('US Progress Tracker', () => {
       expect(progress.pendingTasks).toBe(1);
       expect(progress.percentage).toBe(25); // Only completed count toward percentage
     });
+
+    it('never counts a canceled (skipped) task as pending', () => {
+      // `skip` is terminal in 2.0. Counting a skipped task as pending kept the
+      // Stop hook blocking `/sw:auto` forever on any increment with a skip.
+      const tasks: Task[] = [
+        { id: 'T-01', title: 'Task 1', status: 'completed', userStory: 'US-001' },
+        { id: 'T-02', title: 'Task 2', status: 'canceled', userStory: 'US-001' },
+      ];
+
+      const progress = calculateUSProgress('US-001', tasks);
+
+      expect(progress.canceledTasks).toBe(1);
+      expect(progress.pendingTasks).toBe(0);
+      expect(progress.inProgressTasks).toBe(0);
+    });
   });
 
   describe('calculateAggregateProgress', () => {
+    it('excludes canceled tasks from the aggregate pending count', () => {
+      const tasksByUS: TasksByUserStory = {
+        'US-001': [
+          { id: 'T-01', title: 'a', status: 'completed', userStory: 'US-001' },
+          { id: 'T-02', title: 'b', status: 'canceled', userStory: 'US-001' },
+        ],
+        'US-002': [{ id: 'T-03', title: 'c', status: 'canceled', userStory: 'US-002' }],
+      };
+
+      const aggregate = calculateAggregateProgress(tasksByUS);
+
+      expect(aggregate.totalTasks).toBe(3);
+      expect(aggregate.canceledTasks).toBe(2);
+      expect(aggregate.pendingTasks).toBe(0);
+    });
+
     it('should aggregate progress from multiple USs', () => {
       const tasksByUS: TasksByUserStory = {
         'US-001': [
@@ -168,6 +199,7 @@ describe('US Progress Tracker', () => {
         totalTasks: 11,
         completedTasks: 8,
         inProgressTasks: 1,
+        canceledTasks: 0,
         pendingTasks: 2,
         percentage: 73,
         tasks: [],
@@ -184,6 +216,7 @@ describe('US Progress Tracker', () => {
         totalTasks: 3,
         completedTasks: 3,
         inProgressTasks: 0,
+        canceledTasks: 0,
         pendingTasks: 0,
         percentage: 100,
         tasks: [],
@@ -201,6 +234,7 @@ describe('US Progress Tracker', () => {
         totalTasks: 18,
         completedTasks: 13,
         inProgressTasks: 2,
+        canceledTasks: 0,
         pendingTasks: 3,
         percentage: 72,
         byUserStory: new Map(),
@@ -272,6 +306,7 @@ describe('US Progress Tracker', () => {
             totalTasks: 10,
             completedTasks: 5,
             inProgressTasks: 0,
+            canceledTasks: 0,
             pendingTasks: 5,
             percentage: 50,
             tasks: [],
@@ -284,6 +319,7 @@ describe('US Progress Tracker', () => {
             totalTasks: 5,
             completedTasks: 5,
             inProgressTasks: 0,
+            canceledTasks: 0,
             pendingTasks: 0,
             percentage: 100,
             tasks: [],
@@ -296,6 +332,7 @@ describe('US Progress Tracker', () => {
             totalTasks: 10,
             completedTasks: 7,
             inProgressTasks: 0,
+            canceledTasks: 0,
             pendingTasks: 3,
             percentage: 70,
             tasks: [],
@@ -320,6 +357,7 @@ describe('US Progress Tracker', () => {
             totalTasks: 10,
             completedTasks: 7,
             inProgressTasks: 0,
+            canceledTasks: 0,
             pendingTasks: 3,
             percentage: 70,
             tasks: [],
@@ -332,6 +370,7 @@ describe('US Progress Tracker', () => {
             totalTasks: 10,
             completedTasks: 5,
             inProgressTasks: 0,
+            canceledTasks: 0,
             pendingTasks: 5,
             percentage: 50,
             tasks: [],
@@ -344,6 +383,7 @@ describe('US Progress Tracker', () => {
             totalTasks: 5,
             completedTasks: 5,
             inProgressTasks: 0,
+            canceledTasks: 0,
             pendingTasks: 0,
             percentage: 100,
             tasks: [],
