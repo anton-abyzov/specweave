@@ -206,8 +206,10 @@ async function runRuleBasedValidation(
 
   const errors = [];
 
-  // Basic file existence checks
-  const requiredFiles = ['spec.md', 'plan.md', 'tasks.md'];
+  // Basic file existence checks. plan.md is OPTIONAL in 2.0 (`--with-plan`
+  // overflow) — spec.md carries the Approach, so requiring it here would fail
+  // every increment created by the default path.
+  const requiredFiles = ['spec.md', 'tasks.md'];
   let totalChecks = requiredFiles.length;
   let passedChecks = 0;
 

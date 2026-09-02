@@ -41,7 +41,7 @@ describe('create-increment CLI command', () => {
     expect(typeof mod.createIncrementCommand).toBe('function');
   });
 
-  it('should create all four increment files via CLI command', async () => {
+  it('should create the default increment file set via CLI command', async () => {
     const { createIncrementCommand } = await import(
       '../../../../src/cli/commands/create-increment.js'
     );
@@ -57,8 +57,26 @@ describe('create-increment CLI command', () => {
     const incPath = path.join(incrementsPath, '0001-test-feature');
     expect(fs.existsSync(path.join(incPath, 'metadata.json'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'spec.md'))).toBe(true);
-    expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(true);
+    // plan.md is an optional overflow in 2.0 — only with --with-plan.
+    expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(false);
+  });
+
+  it('should create plan.md when --with-plan is passed', async () => {
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({
+      id: '0003-overflow',
+      title: 'Overflow',
+      description: 'Needs the optional plan',
+      project: 'test-project',
+      projectRoot: tempDir,
+      withPlan: true,
+    });
+
+    expect(fs.existsSync(path.join(incrementsPath, '0003-overflow', 'plan.md'))).toBe(true);
   });
 
   it('should create spec.md as a template with markers', async () => {
@@ -100,7 +118,7 @@ describe('create-increment CLI command', () => {
     const metadata = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
     expect(metadata.type).toBe('hotfix');
     expect(metadata.priority).toBe('P1');
-    expect(metadata.status).toBe('planned');
+    expect(metadata.status).toBe('planning');
   });
 
   it('should pass board option for 2-level structures', async () => {

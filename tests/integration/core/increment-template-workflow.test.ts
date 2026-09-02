@@ -82,13 +82,14 @@ describe('Increment Template Workflow Integration', () => {
       expect(isTemplateFile(specPath)).toBe(true);
     });
 
-    it('should create plan.md with template markers, NOT full architecture', async () => {
+    it('should create plan.md with template markers, NOT full architecture (--with-plan)', async () => {
       const result = await createIncrementTemplates({
         incrementId: '0001-stripe-dashboard',
         title: 'Stripe Dashboard MVP',
         description: 'React dashboard with Stripe checkout',
         projectId: 'test-project',
         projectRoot: tempDir,
+        withPlan: true,
       });
 
       expect(result.success).toBe(true);

@@ -46,6 +46,7 @@ describe('createIncrementTemplates rubric scaffolding (0865 AC-US1-05)', () => {
     // Core scaffolding remains intact.
     expect(existsSync(path.join(incrementPath, 'spec.md'))).toBe(true);
     expect(existsSync(path.join(incrementPath, 'tasks.md'))).toBe(true);
-    expect(existsSync(path.join(incrementPath, 'plan.md'))).toBe(true);
+    // plan.md is opt-in (`--with-plan`) in 2.0.
+    expect(existsSync(path.join(incrementPath, 'plan.md'))).toBe(false);
   });
 });
