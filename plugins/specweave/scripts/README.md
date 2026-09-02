@@ -25,9 +25,8 @@ Supporting helpers: `detect-project-type.js`, `get-default-conditions.js`,
 ## Equivalent CLI commands
 
 ```bash
-specweave status
-specweave status
-specweave jobs
+specweave status   # increments + task progress
+specweave jobs     # background jobs
 ```
 
 ## Hooks
