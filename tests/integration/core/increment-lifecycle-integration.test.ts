@@ -38,10 +38,10 @@ describe('Full Increment Lifecycle Integration', () => {
     });
 
     let specStatus = await SpecFrontmatterUpdater.readStatus('0001-test');
-    expect(specStatus).toBe(IncrementStatus.PLANNING);
+    expect(specStatus).toBe(IncrementStatus.PLANNED);
 
     let metadata = MetadataManager.read('0001-test');
-    expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
     // PHASE 2: Start work (activate)
     MetadataManager.updateStatus('0001-test', IncrementStatus.ACTIVE);

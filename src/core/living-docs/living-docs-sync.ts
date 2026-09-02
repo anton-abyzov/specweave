@@ -1314,11 +1314,11 @@ export class LivingDocsSync {
       incrementId,
       'metadata.json'
     );
-    let incrementStatus = 'planning'; // Default fallback
+    let incrementStatus = 'planned'; // Default fallback
     if (await pathExists(metadataPath)) {
       try {
         const metadata = await readJson(metadataPath);
-        incrementStatus = metadata.status || 'planning';
+        incrementStatus = metadata.status || 'planned';
       } catch (error) {
         this.logger.warn(`Failed to read metadata.json for ${incrementId}, using fallback status`);
       }

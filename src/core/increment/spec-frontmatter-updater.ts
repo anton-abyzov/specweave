@@ -13,7 +13,7 @@
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
-import { IncrementStatus } from '../types/increment-metadata.js';
+import { IncrementStatus, migrateLegacyStatus } from '../types/increment-metadata.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
@@ -162,12 +162,20 @@ export class SpecFrontmatterUpdater {
         return null;
       }
 
-      // Validate status is valid enum value
+      // 1.x spec.md files carry the old spellings (`planning`, `closed`, …).
+      // Reading one must not throw — that killed the whole lifecycle on any
+      // project written before 2.0. Map it the same way metadata.json is
+      // mapped, and only reject something we cannot interpret at all.
       if (!Object.values(IncrementStatus).includes(status as IncrementStatus)) {
-        throw new SpecUpdateError(
-          `Invalid status value in spec.md: "${status}". Must be one of: ${Object.values(IncrementStatus).join(', ')}`,
-          incrementId
-        );
+        const migration = migrateLegacyStatus({ status });
+        const mapped = migration.changed ? (migration.metadata.status as IncrementStatus) : undefined;
+        if (!mapped) {
+          throw new SpecUpdateError(
+            `Invalid status value in spec.md: "${status}". Must be one of: ${Object.values(IncrementStatus).join(', ')}`,
+            incrementId
+          );
+        }
+        return mapped;
       }
 
       return status as IncrementStatus;

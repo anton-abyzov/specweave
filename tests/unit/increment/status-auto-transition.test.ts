@@ -58,7 +58,7 @@ describe('Status Auto-Transition', () => {
   /**
    * Helper: Create increment with specific status
    */
-  function createTestIncrement(incrementId: string, status: IncrementStatus = IncrementStatus.PLANNING): string {
+  function createTestIncrement(incrementId: string, status: IncrementStatus = IncrementStatus.PLANNED): string {
     const incrementPath = path.join(testIncrementsPath, incrementId);
     fs.ensureDirSync(incrementPath);
 
@@ -87,7 +87,7 @@ describe('Status Auto-Transition', () => {
     describe('Rule 1: PLANNING → ACTIVE when tasks.md created', () => {
       it('transitions from PLANNING to ACTIVE when tasks.md exists with in-progress task', () => {
         const incrementId = '0001-test';
-        createTestIncrement(incrementId, IncrementStatus.PLANNING);
+        createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
         // Create tasks.md with in-progress task
         createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Test task in progress');
@@ -102,14 +102,14 @@ describe('Status Auto-Transition', () => {
 
       it('does not transition if tasks.md does not exist', () => {
         const incrementId = '0002-test';
-        createTestIncrement(incrementId, IncrementStatus.PLANNING);
+        createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
         const result = autoTransitionStatus(incrementId);
 
         expect(result).toBe(false);
 
         const metadata = MetadataManager.read(incrementId);
-        expect(metadata.status).toBe(IncrementStatus.PLANNING);
+        expect(metadata.status).toBe(IncrementStatus.PLANNED);
       });
 
       it('does not transition if already ACTIVE', () => {
@@ -139,7 +139,7 @@ describe('Status Auto-Transition', () => {
         expect(result).toBe(true);
 
         const metadata = MetadataManager.read(incrementId);
-        expect(metadata.status).toBe(IncrementStatus.PLANNING);
+        expect(metadata.status).toBe(IncrementStatus.PLANNED);
       });
 
       it('does not transition if spec.md does not exist', () => {
@@ -158,7 +158,7 @@ describe('Status Auto-Transition', () => {
     describe('Rule 3: Any status → ACTIVE when tasks in-progress', () => {
       it('transitions from PLANNING to ACTIVE when tasks in-progress', () => {
         const incrementId = '0006-test';
-        createTestIncrement(incrementId, IncrementStatus.PLANNING);
+        createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
         // Create tasks.md with in-progress task
         createFile(incrementId, 'tasks.md', `# Tasks
@@ -197,7 +197,7 @@ describe('Status Auto-Transition', () => {
 
       it('does not transition if all tasks pending', () => {
         const incrementId = '0008-test';
-        createTestIncrement(incrementId, IncrementStatus.PLANNING);
+        createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
         // Create tasks.md with only pending tasks
         createFile(incrementId, 'tasks.md', `# Tasks
@@ -211,7 +211,7 @@ describe('Status Auto-Transition', () => {
         expect(result).toBe(false);
 
         const metadata = MetadataManager.read(incrementId);
-        expect(metadata.status).toBe(IncrementStatus.PLANNING);
+        expect(metadata.status).toBe(IncrementStatus.PLANNED);
       });
     });
 
@@ -232,12 +232,12 @@ describe('Status Auto-Transition', () => {
       onFileCreated(incrementId, specPath);
 
       const metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
     });
 
     it('triggers auto-transition when tasks.md created', () => {
       const incrementId = '0010-test';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       const tasksPath = path.join(testIncrementsPath, incrementId, 'tasks.md');
       createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Task in progress');
@@ -250,7 +250,7 @@ describe('Status Auto-Transition', () => {
 
     it('ignores non-trigger files', () => {
       const incrementId = '0011-test';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       const randomPath = path.join(testIncrementsPath, incrementId, 'random.txt');
       createFile(incrementId, 'random.txt', 'Random content');
@@ -258,14 +258,14 @@ describe('Status Auto-Transition', () => {
       onFileCreated(incrementId, randomPath);
 
       const metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING); // Unchanged
+      expect(metadata.status).toBe(IncrementStatus.PLANNED); // Unchanged
     });
   });
 
   describe('shouldTransitionToActive()', () => {
     it('returns true for PLANNING with tasks.md', () => {
       const incrementId = '0012-test';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
       createFile(incrementId, 'tasks.md', '# Tasks');
 
       expect(shouldTransitionToActive(incrementId)).toBe(true);
@@ -273,7 +273,7 @@ describe('Status Auto-Transition', () => {
 
     it('returns true for PLANNING with in-progress tasks', () => {
       const incrementId = '0013-test';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
       createFile(incrementId, 'tasks.md', '- [⏳] **T-001**: In-progress');
 
       expect(shouldTransitionToActive(incrementId)).toBe(true);
@@ -289,7 +289,7 @@ describe('Status Auto-Transition', () => {
 
     it('returns false for PLANNING without tasks.md', () => {
       const incrementId = '0015-test';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       expect(shouldTransitionToActive(incrementId)).toBe(false);
     });
@@ -300,7 +300,7 @@ describe('Status Auto-Transition', () => {
   });
 
   describe('migrateLegacyStatuses()', () => {
-    it('migrates "planned" to "planning"', () => {
+    it('migrates the 1.x "planning" spelling to "planned"', () => {
       const incrementId = '0016-test';
       const incrementPath = path.join(testIncrementsPath, incrementId);
       fs.ensureDirSync(incrementPath);
@@ -308,7 +308,7 @@ describe('Status Auto-Transition', () => {
       // Create metadata with legacy "planned" status
       const legacyMetadata = {
         id: incrementId,
-        status: 'planned', // ❌ Invalid (not in enum)
+        status: 'planning', // 1.x spelling, not in the 2.0 vocabulary
         type: 'feature',
         created: new Date().toISOString(),
         lastActivity: new Date().toISOString()
@@ -321,7 +321,7 @@ describe('Status Auto-Transition', () => {
       expect(migratedCount).toBe(1);
 
       const metadata = fs.readJsonSync(path.join(incrementPath, 'metadata.json'));
-      expect(metadata.status).toBe('planning'); // ✅ Valid
+      expect(metadata.status).toBe('planned'); // ✅ 2.0 vocabulary
     });
 
     it('migrates multiple increments', () => {
@@ -333,7 +333,7 @@ describe('Status Auto-Transition', () => {
 
         const legacyMetadata = {
           id: incrementId,
-          status: 'planned',
+          status: 'planning',
           type: 'feature',
           created: new Date().toISOString(),
           lastActivity: new Date().toISOString()
@@ -349,14 +349,14 @@ describe('Status Auto-Transition', () => {
 
     it('skips increments with valid status', () => {
       const incrementId = '0020-test';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       const migratedCount = migrateLegacyStatuses();
 
       expect(migratedCount).toBe(0);
 
       const metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING); // Unchanged
+      expect(metadata.status).toBe(IncrementStatus.PLANNED); // Unchanged
     });
 
     it('skips _archive folder', () => {
@@ -583,7 +583,7 @@ describe('Status Auto-Transition', () => {
 
     it('does NOT transition directly to READY_FOR_REVIEW if not ACTIVE status', () => {
       const incrementId = '0042-not-active';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       // Tasks are all completed but status is PLANNING
       // The only way to get to READY_FOR_REVIEW is from ACTIVE
@@ -602,7 +602,7 @@ describe('Status Auto-Transition', () => {
 
       const metadata = MetadataManager.read(incrementId);
       // Status remains PLANNING - would need to go to ACTIVE first (via in-progress task)
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
     });
 
     it('prevents direct transition to COMPLETED (must go through READY_FOR_REVIEW)', () => {
@@ -679,7 +679,7 @@ describe('Status Auto-Transition', () => {
 
     it('does not transition when not ACTIVE', () => {
       const incrementId = '0052-check-not-active';
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       createFile(incrementId, 'tasks.md', `# Tasks
 
@@ -693,7 +693,7 @@ describe('Status Auto-Transition', () => {
       expect(result.message).toContain('not active');
 
       const metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING); // Unchanged
+      expect(metadata.status).toBe(IncrementStatus.PLANNED); // Unchanged
     });
 
     it('handles missing tasks.md gracefully', () => {
@@ -719,17 +719,17 @@ describe('Status Auto-Transition', () => {
       const incrementId = '0022-full-lifecycle';
 
       // Step 1: Create increment (starts in PLANNING)
-      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+      createTestIncrement(incrementId, IncrementStatus.PLANNED);
 
       let metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
       // Step 2: Create spec.md (still PLANNING)
       createFile(incrementId, 'spec.md', '# Spec');
       autoTransitionStatus(incrementId);
 
       metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
       // Step 3: Create tasks.md with in-progress task (auto-transition to ACTIVE)
       createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Test in progress');
@@ -753,7 +753,7 @@ describe('Status Auto-Transition', () => {
       autoTransitionStatus(incrementId);
 
       metadata = MetadataManager.read(incrementId);
-      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+      expect(metadata.status).toBe(IncrementStatus.PLANNED);
 
       // Step 3: Create tasks.md with in-progress task (PLANNING → ACTIVE)
       createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Task in progress');

@@ -72,7 +72,7 @@ describe.skip('validate-status-sync', () => {
     });
 
     it('should return LOW for other combinations', () => {
-      const result = calculateSeverity(IncrementStatus.PLANNING, IncrementStatus.BACKLOG);
+      const result = calculateSeverity(IncrementStatus.PLANNED, IncrementStatus.BACKLOG);
 
       expect(result.severity).toBe(DesyncSeverity.LOW);
       expect(result.impact).toContain('Minor status inconsistency');
@@ -171,7 +171,7 @@ describe.skip('validate-status-sync', () => {
 
     it('should sort desyncs by severity (CRITICAL > HIGH > MEDIUM > LOW)', async () => {
       mockGetAll.mockReturnValue([
-        { id: '0001-low', status: IncrementStatus.PLANNING, type: 'feature', created: '2024-01-01', lastActivity: '2024-01-01' },
+        { id: '0001-low', status: IncrementStatus.PLANNED, type: 'feature', created: '2024-01-01', lastActivity: '2024-01-01' },
         { id: '0002-critical', status: IncrementStatus.COMPLETED, type: 'feature', created: '2024-01-02', lastActivity: '2024-01-02' },
         { id: '0003-high', status: IncrementStatus.ACTIVE, type: 'feature', created: '2024-01-03', lastActivity: '2024-01-03' },
         { id: '0004-medium', status: IncrementStatus.PAUSED, type: 'feature', created: '2024-01-04', lastActivity: '2024-01-04' },

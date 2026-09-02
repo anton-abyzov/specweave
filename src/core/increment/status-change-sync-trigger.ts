@@ -179,8 +179,8 @@ export class StatusChangeSyncTrigger {
     const transition = `${oldStatus} → ${newStatus}`;
 
     const SYNC_WORTHY = [
-      'planning → active',            // Work started
-      'planned → active',             // Work started (alternate status value)
+      'planned → active',             // Work started
+      'planning → active',            // 1.x spelling, still seen on disk
       'active → completed',           // Work finished (legacy direct completion)
       'active → ready_for_review',    // All tasks complete, pending user confirmation
       'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
@@ -190,7 +190,8 @@ export class StatusChangeSyncTrigger {
       // Defense-in-depth: catch-up sync for direct-to-completed transitions.
       // Auto-walk goes through intermediates, but if metadata is edited
       // directly these ensure sync still happens.
-      'planning → completed',         // Direct completion (bypassed CLI)
+      'planned → completed',          // Direct completion (bypassed CLI)
+      'planning → completed',         // 1.x spelling, still seen on disk
       'backlog → completed',          // Direct completion (bypassed CLI)
       'paused → completed',           // Direct completion (bypassed CLI)
       'paused → ready_for_review'     // Paused -> review (valid transition)

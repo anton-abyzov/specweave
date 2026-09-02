@@ -1032,11 +1032,11 @@ describe('IncrementReopener edge cases', () => {
     expect(result.errors[0]).toContain('Cannot reopen: increment status is paused, not completed');
   });
 
-  it('should handle planning status correctly (not completed)', async () => {
+  it('should handle planned status correctly (not completed)', async () => {
     mockMetadataExists.mockReturnValue(true);
     mockMetadataRead.mockReturnValue({
       id: '0010-feature',
-      status: IncrementStatus.PLANNING,
+      status: IncrementStatus.PLANNED,
       type: IncrementType.FEATURE,
       created: '2025-01-01T00:00:00Z',
       lastActivity: '2025-06-01T00:00:00Z',
@@ -1049,7 +1049,7 @@ describe('IncrementReopener edge cases', () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.errors[0]).toContain('planning, not completed');
+    expect(result.errors[0]).toContain('planned, not completed');
   });
 });
 

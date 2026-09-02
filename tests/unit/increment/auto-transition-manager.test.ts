@@ -46,7 +46,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
       });
 
       const phase = await manager.detectPhase('0001-test');
-      expect(phase).toBe(IncrementStatus.PLANNING);
+      expect(phase).toBe(IncrementStatus.PLANNED);
     });
 
     it('should detect PLANNING when plan.md exists but no tasks.md', async () => {
@@ -55,7 +55,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
       });
 
       const phase = await manager.detectPhase('0001-test');
-      expect(phase).toBe(IncrementStatus.PLANNING);
+      expect(phase).toBe(IncrementStatus.PLANNED);
     });
 
     it('should detect BACKLOG when no artifacts exist', async () => {
@@ -88,7 +88,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
       });
 
       const phase = await manager.detectPhase('0001-test');
-      expect(phase).toBe(IncrementStatus.PLANNING);
+      expect(phase).toBe(IncrementStatus.PLANNED);
     });
   });
 
@@ -96,13 +96,13 @@ describe('AutoTransitionManager - Phase Detection', () => {
     it('should create transition event with all fields', () => {
       const event = manager.createTransitionEvent(
         '0001-test',
-        IncrementStatus.PLANNING,
+        IncrementStatus.PLANNED,
         IncrementStatus.ACTIVE,
         'tasks-created'
       );
 
       expect(event.incrementId).toBe('0001-test');
-      expect(event.from).toBe(IncrementStatus.PLANNING);
+      expect(event.from).toBe(IncrementStatus.PLANNED);
       expect(event.to).toBe(IncrementStatus.ACTIVE);
       expect(event.trigger).toBe('tasks-created');
       expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
@@ -112,7 +112,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
       const event = manager.createTransitionEvent(
         '0001-test',
         IncrementStatus.BACKLOG,
-        IncrementStatus.PLANNING,
+        IncrementStatus.PLANNED,
         'spec-created'
       );
 
@@ -132,7 +132,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
         const event = manager.createTransitionEvent(
           '0001-test',
           IncrementStatus.BACKLOG,
-          IncrementStatus.PLANNING,
+          IncrementStatus.PLANNED,
           trigger
         );
 
