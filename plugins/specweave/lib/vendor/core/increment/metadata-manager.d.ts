@@ -20,6 +20,15 @@ export declare class MetadataManager {
      */
     private static logger;
     /**
+     * When true, updateStatus() stays quiet about intermediate transitions.
+     *
+     * `specweave complete` auto-walks planning → active → ready_for_review →
+     * completed. Announcing "ready for review - run sw:done to close" in the
+     * middle of that walk contradicted the "completed!" line printed two lines
+     * later. Set by completeIncrement() for the duration of the closure.
+     */
+    static suppressTransitionNotices: boolean;
+    /**
      * Set logger instance (primarily for testing with silentLogger)
      *
      * @param logger - Logger instance to use

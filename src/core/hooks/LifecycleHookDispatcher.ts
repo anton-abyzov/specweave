@@ -153,8 +153,11 @@ export class LifecycleHookDispatcher {
     try {
       const hooks = await LifecycleHookDispatcher.readHooksConfig(projectRoot);
       const doneConfig = hooks?.post_increment_done;
-      if (!doneConfig) return result;
 
+      // NOTE: `hooks.post_increment_done` is a 1.x config key that 2.0 `init`
+      // no longer writes. Returning early on its absence made `livingDocs:
+      // 'onDone'` a dead setting in every 2.0 project. The config key itself is
+      // now the switch; the hook block only adds the external-closure steps.
       // Global skip: autoSyncOnCompletion flag (defaults to true)
       // Living docs run only when `livingDocs: 'onDone'` (2.0 default: false).
       let autoSync = true;
@@ -185,6 +188,7 @@ export class LifecycleHookDispatcher {
       }
 
       const shouldSyncLivingDocs = livingDocs === 'onDone' && autoSync && !perIncrementSkip;
+      if (!doneConfig && !shouldSyncLivingDocs) return result;
       // v1.0.357 + 0696: Support closing issues for ALL providers (JIRA/ADO/GitHub).
       // close_github_issue is the legacy flag; close_external_issue is the new generic one.
       // SyncCoordinator.syncIncrementClosure() closes every enabled provider using a
@@ -195,9 +199,9 @@ export class LifecycleHookDispatcher {
       //   4. metadata.externalLinks.{jira.epicKey | ado.workItemId|featureId} (current standard)
       // Per-provider closure errors are pushed into the returned SyncResult.errors[]
       // and forwarded into result.syncErrors (and .specweave/logs/hooks.log) below.
-      const shouldCloseIssue = doneConfig.close_github_issue === true
-        || doneConfig.close_external_issue === true
-        || doneConfig.close_jira_issue === true;
+      const shouldCloseIssue = doneConfig?.close_github_issue === true
+        || doneConfig?.close_external_issue === true
+        || doneConfig?.close_jira_issue === true;
 
       // STEP 1: Living docs sync MUST run first.
       // It updates living docs files AND chains to GitHub via syncToExternalTools().

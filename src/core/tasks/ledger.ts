@@ -22,6 +22,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { touchIncrementUpdated } from './increment-updated.js';
 
 export type LedgerEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
 
@@ -106,10 +107,15 @@ export function formatLedgerLine(event: LedgerEvent): string {
 
 /**
  * Append one event. Single-line O_APPEND write; creates the file on first use.
+ *
+ * Also stamps `metadata.updated` for the increment (best-effort, never fatal)
+ * so "when did this increment last move" reflects ledger activity and not just
+ * status transitions.
  */
 export function appendEvent(ledgerFile: string, event: LedgerEvent): void {
   fs.mkdirSync(path.dirname(ledgerFile), { recursive: true });
   fs.appendFileSync(ledgerFile, formatLedgerLine(event), { encoding: 'utf-8', flag: 'a' });
+  touchIncrementUpdated(path.dirname(ledgerFile), event.at);
 }
 
 /** Parse a ledger file. Missing file → no events. Malformed lines are counted, never fatal. */
