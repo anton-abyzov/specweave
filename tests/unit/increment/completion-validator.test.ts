@@ -20,10 +20,17 @@ describe('IncrementCompletionValidator', () => {
     incrementPath = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
 
-    // Disable grill report requirement so these tests focus on their specific checks.
-    // Quality gate report validation has its own dedicated test file.
     const configDir = path.join(testRoot, '.specweave');
-    await fs.writeFile(path.join(configDir, 'config.json'), JSON.stringify({ grill: { required: false } }));
+    await fs.writeFile(path.join(configDir, 'config.json'), JSON.stringify({}));
+
+    // 2.0: reports/verify.json is the only hard closure gate. Satisfy it here so
+    // these tests exercise their own checks; the gate itself is covered by
+    // completion-validator-quality-gates.test.ts.
+    await fs.ensureDir(path.join(incrementPath, 'reports'));
+    await fs.writeFile(
+      path.join(incrementPath, 'reports', 'verify.json'),
+      JSON.stringify({ ok: true, ranAt: new Date().toISOString(), commands: [{ cmd: 'npm test', exit: 0 }], acs: { total: 1, done: 1 } })
+    );
 
     // Mock process.cwd() to return test root
     vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
