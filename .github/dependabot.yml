@@ -2,8 +2,11 @@
 # Automated dependency updates for security and maintenance
 # See: https://docs.github.com/en/code-security/dependabot
 #
-# NOTE: Failed PRs are auto-fixed by .github/workflows/dependabot-autofix.yml
-# which uses Claude to analyze failures and push fixes.
+# Supply-chain policy (SECURITY.md): no auto-fix agents, no auto-merge.
+# Required checks before a dependabot PR is merged by a human:
+#   Supply-chain scan (supply-chain-scan.yml) + Test & Validate.
+# `cooldown` delays new versions by 7 days so a poisoned release is usually
+# pulled from the registry before we ever open a PR for it.
 
 version: 2
 updates:
@@ -16,6 +19,8 @@ updates:
       time: "09:00"
       timezone: "UTC"
     open-pull-requests-limit: 5  # Max concurrent PRs
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
       - "automated"
@@ -96,6 +101,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"  # Less frequent (actions change slowly)
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
       - "ci/cd"
