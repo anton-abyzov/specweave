@@ -15,8 +15,8 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { hookRouter, registeredHookEvents } from './hook-router.js';
-import { HOOK_EVENTS, validateHookOutput } from './types.js';
+import { hookRouter, registeredHookEvents } from '../../../src/core/hooks/handlers/hook-router.js';
+import { HOOK_EVENTS, deny, pass, sessionContext, stopBlock, validateHookOutput, warn } from '../../../src/core/hooks/handlers/types.js';
 
 interface HookEntry { type?: string; command?: string; args?: string[]; timeout?: number }
 interface HooksJson { hooks: Record<string, Array<{ matcher?: string; hooks: HookEntry[] }>> }
@@ -147,5 +147,34 @@ describe('per-event output schema (router invoked with sample payloads)', () => 
     process.chdir(repo);
     expect(await hookRouter('pre-compact', 'COMPLETELY_INVALID{{{{')).toEqual({});
     expect(await hookRouter('stop', '[1,2,3]')).toEqual({});
+  });
+});
+
+describe('validateHookOutput accepts every shape the helpers produce', () => {
+  it('accepts pass() for all four events', () => {
+    for (const event of HOOK_EVENTS) expect(validateHookOutput(event, pass())).toBeNull();
+  });
+
+  it('accepts deny() and warn() for pre-tool-use', () => {
+    expect(validateHookOutput('pre-tool-use', deny('nope'))).toBeNull();
+    expect(validateHookOutput('pre-tool-use', warn('heads up'))).toBeNull();
+  });
+
+  it('accepts sessionContext() for session-start and stopBlock() for stop', () => {
+    expect(validateHookOutput('session-start', sessionContext('hello'))).toBeNull();
+    expect(validateHookOutput('stop', stopBlock('keep going'))).toBeNull();
+  });
+
+  it('rejects the invalid shapes issue #1847 was about', () => {
+    expect(validateHookOutput('pre-tool-use', { decision: 'allow' })).not.toBeNull();
+    expect(validateHookOutput('pre-tool-use', { decision: 'approve' })).not.toBeNull();
+    expect(validateHookOutput('session-start', { decision: 'block', reason: 'x' })).not.toBeNull();
+    expect(validateHookOutput('stop', { decision: 'block' })).not.toBeNull();
+    expect(validateHookOutput('pre-tool-use', { hookSpecificOutput: { hookEventName: 'Stop' } })).not.toBeNull();
+    expect(validateHookOutput('pre-tool-use', { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'yes' } })).not.toBeNull();
+    expect(validateHookOutput('pre-tool-use', { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny' } })).not.toBeNull();
+    expect(validateHookOutput('pre-tool-use', { hookSpecificOutput: { hookEventName: 'PreToolUse' } })).not.toBeNull();
+    expect(validateHookOutput('unknown-event', {})).not.toBeNull();
+    expect(validateHookOutput('stop', null)).not.toBeNull();
   });
 });

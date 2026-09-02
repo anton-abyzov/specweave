@@ -6,9 +6,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { handle } from './session-start.js';
-import { createContext } from './utils.js';
-import { validateHookOutput } from './types.js';
+import { handle } from '../../../../../src/core/hooks/handlers/session-start.js';
+import { createContext } from '../../../../../src/core/hooks/handlers/utils.js';
+import { validateHookOutput } from '../../../../../src/core/hooks/handlers/types.js';
 
 let root = '';
 const ctx = () => createContext(root);
