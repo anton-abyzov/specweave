@@ -20,6 +20,8 @@ import { detectStackCommands } from '../helpers/init/stack-detector.js';
 import { findSourceDir } from '../helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { ensureSkillCreator } from '../helpers/init/skill-creator-installer.js';
+import { ensureGitattributes } from '../helpers/init/directory-structure.js';
+import { ensureSpecweaveGitignoreEntries } from '../helpers/init/gitignore-generator.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -77,6 +79,15 @@ export async function updateInstructionsCommand(
     )
   );
 
+  // Repo hygiene: ledger merge=union + the runtime-state ignores (idempotent).
+  const hygiene: string[] = [];
+  if (!options.dryRun) {
+    ensureGitattributes(projectPath, path.join(templatesDir, '.gitattributes.template'));
+    hygiene.push('.gitattributes: ledger merge=union');
+    const { added } = ensureSpecweaveGitignoreEntries(projectPath);
+    if (added.length) hygiene.push(`.gitignore: added ${added.length} entr${added.length === 1 ? 'y' : 'ies'}`);
+  }
+
   // Summary
   console.log(chalk.blue('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.blue('  Summary'));
@@ -94,6 +105,8 @@ export async function updateInstructionsCommand(
       console.log(chalk.gray('    Preserved ' + r.preserved + ' user section(s)'));
     }
   });
+
+  for (const line of hygiene) console.log('  ' + line);
 
   if (options.dryRun) {
     console.log(chalk.yellow('\n  ⚠ Dry run - no files were modified'));
