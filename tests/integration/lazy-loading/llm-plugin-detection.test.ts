@@ -591,7 +591,7 @@ describe('Error Handling', () => {
 
   it('should validate plugin names against known list', () => {
     const unknownPlugin = 'sw-unknown-plugin';
-    const knownSpecweavePlugin = 'sw-github';
+    const knownSpecweavePlugin = 'sw';
 
     expect(SPECWEAVE_PLUGINS.includes(unknownPlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(false);
     expect(SPECWEAVE_PLUGINS.includes(knownSpecweavePlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(true);
@@ -600,9 +600,9 @@ describe('Error Handling', () => {
 
 describe('Plugin List Validation', () => {
   it('should have all expected core plugins', () => {
-    // Core specweave plugins use sw-* prefix
+    // 2.0 ships ONE plugin: `sw`. The tracker plugins (sw-github/jira/ado)
+    // are gone — sync lives in the `sw:sync` skill + the `specweave sync` CLI.
     expect(SPECWEAVE_PLUGINS).toContain('sw');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-github');
   });
 
   // ============================================================================
@@ -643,10 +643,11 @@ describe('Plugin List Validation', () => {
     expect(ALL_KNOWN_PLUGINS).not.toContain('ml');
   });
 
-  it('should have all expected integration plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-github');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-jira');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-ado');
+  it('should not advertise the removed 1.x tracker plugins', () => {
+    // 2.0 removed sw-github / sw-jira / sw-ado from the capability surface.
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-github');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-jira');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-ado');
   });
 
   it('should have all expected integration plugins in SPECWEAVE_PLUGINS', () => {

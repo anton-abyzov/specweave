@@ -48,20 +48,12 @@ describe('Rubric Pipeline Integration', () => {
     // Summarize
     const summary = summarizeResults(evaluated);
 
-    // All grill-evaluated criteria should pass (reports have passing AC data)
-    const grillCriteria = evaluated.criteria.filter(c => c.evaluator === 'sw:grill');
-    for (const c of grillCriteria) {
+    // 2.0: the generator emits a single `sw:review` gate (grill + code-reviewer
+    // + judge-llm merged). review.json has no blocking findings, so all pass.
+    const reviewCriteria = evaluated.criteria.filter(c => c.evaluator === 'sw:review');
+    expect(reviewCriteria.length).toBeGreaterThan(0);
+    for (const c of reviewCriteria) {
       expect(c.result).not.toBeNull();
-    }
-
-    // Code reviewer and judge-llm criteria should pass
-    const crCriteria = evaluated.criteria.filter(c => c.evaluator === 'sw:code-reviewer');
-    for (const c of crCriteria) {
-      expect(c.result!.status).toBe('pass');
-    }
-
-    const jlCriteria = evaluated.criteria.filter(c => c.evaluator === 'sw:judge-llm');
-    for (const c of jlCriteria) {
       expect(c.result!.status).toBe('pass');
     }
   });
@@ -70,15 +62,15 @@ describe('Rubric Pipeline Integration', () => {
     const rubricMd = generateRubric('0663-fail-test', SPEC_CONTENT);
     const doc = parseRubric(rubricMd);
 
-    // Evaluate with failing code review report
+    // Evaluate with a review report carrying critical/high findings
     const evaluated = await evaluateRubric(doc, REPORTS_DIR, {
-      codeReviewReport: 'code-review-report-critical.json',
+      reviewReport: 'review-blocking.json',
     });
 
     const summary = summarizeResults(evaluated);
-    // Code reviewer criterion should fail
-    const crCriteria = evaluated.criteria.filter(c => c.evaluator === 'sw:code-reviewer');
-    expect(crCriteria.some(c => c.result?.status === 'fail')).toBe(true);
+    expect(summary).toBeDefined();
+    const reviewCriteria = evaluated.criteria.filter(c => c.evaluator === 'sw:review');
+    expect(reviewCriteria.some(c => c.result?.status === 'fail')).toBe(true);
   });
 
   it('TC-003: backward compat — no rubric files at any tier → null', async () => {

@@ -159,7 +159,8 @@ describe('SpecWeave CLI Commands', { timeout: CLI_TIMEOUT }, () => {
       const configPath = path.join(workDir, '.specweave', 'config.json');
       const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
       expect(config.adapters?.default).toBe('claude');
-      expect(config.language).toBe('en');
+      // 2.0 config carries only keys with readers — `language` was dropped.
+      expect(config.language).toBeUndefined();
     });
 
     it('should not hang in CI mode (non-interactive)', async () => {
