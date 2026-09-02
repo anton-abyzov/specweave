@@ -67,7 +67,8 @@ export function parseTasksWithUSLinks(tasksPath) {
         const testFieldRegex = /(?:^-?\s*|\|\s*)\*{0,2}Test\*{0,2}:\s*(.+)$/;
         // Rendered state line written by `specweave task render` (2.0). Restricted to
         // known state words so BDD sub-checkboxes (`- [ ] Given …`) never match.
-        const stateLineRegex = /^- \[([ x])\](?:\s+(?:done|open|pending|claimed|stale|blocked|skipped)\b.*)?$/i;
+        // `[-]` = skipped (rendered by `specweave task skip`), `[x]` = done.
+        const stateLineRegex = /^- \[([ x-])\](?:\s+(?:done|open|pending|claimed|stale|blocked|skipped)\b.*)?$/i;
         let currentTask = null;
         let currentDescription = [];
         let currentSection = 'none';
@@ -173,7 +174,11 @@ export function parseTasksWithUSLinks(tasksPath) {
             const stateLineMatch = line.match(stateLineRegex);
             if (stateLineMatch) {
                 currentTask.hasStateLine = true;
-                currentTask.status = stateLineMatch[1] === 'x' ? 'completed' : currentTask.status === 'completed' ? 'completed' : 'pending';
+                currentTask.status =
+                    stateLineMatch[1] === 'x' ? 'completed'
+                        : stateLineMatch[1] === '-' ? 'canceled'
+                            : currentTask.status === 'completed' ? 'completed'
+                                : 'pending';
                 matchedAnyField = true;
             }
             if (matchedAnyField)

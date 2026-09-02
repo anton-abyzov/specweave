@@ -31,7 +31,7 @@ export function renderNudgePrompt(inputs: NudgeInputs): string | null {
   }
 
   if (hasHighConfidenceLearning) {
-    return 'Detected: new learning worth persisting — run `sw:reflect`? (y/N)';
+    return 'Detected: new learning worth persisting — record it in the increment notes? (y/N)';
   }
 
   return null;

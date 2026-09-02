@@ -21,7 +21,7 @@ commands=(
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
     'verify:'
-    'create-increment:Create increment template files (metadata.json, spec.md, plan.md, tasks.md)'
+    'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
     'handoff:Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -155,6 +155,7 @@ _specweave() {
                         '--yes[Assume yes (silent confirmation)]' \
                         '--skip-validation[Skip quality gate validation (DANGEROUS)]' \
                         '--reason[Close without a passing reports/verify.json (stored as metadata.closeReason)]' \
+                        '--all[Close every active increment whose tasks are all done or skipped (requires --reason)]' \
                         '--help[Show help]'
                     ;;
                 task)
@@ -162,7 +163,8 @@ _specweave() {
                         '--force[Override a live claim, unmet deps or a Files overlap]' \
                         '--evidence[Evidence for `done` (commit sha, test output)]' \
                         '--run[Run <cmd> through the OS shell; exit 0 required, output stored as evidence]' \
-                        '--note[Note (required for block / skip)]' \
+                        '--note[Note (alias of --reason)]' \
+                        '--reason[Reason (required for skip / block)]' \
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
                         '--json[Machine-readable output]' \
                         '--help[Show help]'
@@ -176,13 +178,18 @@ _specweave() {
                 create-increment)
                     _arguments \
                         '--id[Increment ID (e.g., "0042-my-feature")]' \
-                        '--auto-id[Auto-generate next available increment ID]' \
-                        '--name[Increment name suffix (used with --auto-id)]' \
+                        '--auto-id[Auto-generate next available increment ID (default when --id is absent)]' \
+                        '--name[Increment name suffix (defaults to a slug of the title)]' \
+                        '--title[Feature title (defaults to the positional argument)]' \
+                        '--description[Feature description (defaults to the title)]' \
+                        '--project[Project ID (defaults to config project.name, else the folder name)]' \
                         '--board[Board ID for 2-level structures]' \
                         '--type[Increment type (feature, hotfix, bug, refactor, experiment)]' \
                         '--priority[Priority (P1, P2, P3)]' \
                         '--project-root[Override project root directory]' \
                         '--parallel[Opt into 3-agent fan-out planning (default\: single-agent)]' \
+                        '--supersedes[Increment this one replaces (the old one is abandoned with a closeReason)]' \
+                        '--parent[Parent increment (recorded as metadata.parent)]' \
                         '--json[Output result as JSON (for programmatic use)]' \
                         '--help[Show help]'
                     ;;

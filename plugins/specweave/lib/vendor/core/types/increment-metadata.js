@@ -56,6 +56,48 @@ export var IncrementType;
     IncrementType["EXPERIMENT"] = "experiment";
 })(IncrementType || (IncrementType = {}));
 /**
+ * Statuses seen in the wild that never existed in the enum, mapped to the
+ * status 2.0 uses instead. `superseded` was written by hand (and by older
+ * skills) whenever an increment was replaced by a newer one.
+ */
+export const LEGACY_STATUS_MAP = {
+    superseded: IncrementStatus.ABANDONED,
+    cancelled: IncrementStatus.ABANDONED,
+    canceled: IncrementStatus.ABANDONED,
+    done: IncrementStatus.COMPLETED,
+    closed: IncrementStatus.COMPLETED,
+    complete: IncrementStatus.COMPLETED,
+    in_progress: IncrementStatus.ACTIVE,
+    'in-progress': IncrementStatus.ACTIVE,
+};
+/**
+ * One-shot migration for `metadata.json` files carrying a status that is not
+ * in {@link IncrementStatus}. `superseded` becomes `abandoned` and records the
+ * intent in `closeReason` (+ `supersedes` when the file names a successor).
+ * Idempotent: metadata already using enum statuses is returned untouched.
+ */
+export function migrateLegacyStatus(raw) {
+    const status = typeof raw.status === 'string' ? raw.status : undefined;
+    if (!status || Object.values(IncrementStatus).includes(status)) {
+        return { metadata: raw, changed: false };
+    }
+    const mapped = LEGACY_STATUS_MAP[status.toLowerCase()];
+    if (!mapped)
+        return { metadata: raw, changed: false };
+    const metadata = { ...raw, status: mapped };
+    if (mapped === IncrementStatus.ABANDONED) {
+        // `supersedes` points forward (new → old), so a superseded increment records
+        // its successor in closeReason, never in its own `supersedes` field.
+        const successor = typeof raw.supersededBy === 'string' ? raw.supersededBy : undefined;
+        if (!metadata.closeReason) {
+            metadata.closeReason = successor ? `superseded by ${successor}` : `migrated from legacy status "${status}"`;
+        }
+        if (!metadata.abandonedAt)
+            metadata.abandonedAt = raw.lastActivity || new Date().toISOString();
+    }
+    return { metadata, changed: true, note: `Legacy status '${status}' migrated to '${mapped}'` };
+}
+/**
  * Valid status transitions
  * Enforces increment lifecycle rules
  *

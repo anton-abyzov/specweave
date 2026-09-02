@@ -22,7 +22,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a abandon 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete -d "Complete one or more increments (triggers GitHub/JIRA/ADO sync)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, plan.md, tasks.md)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
@@ -121,12 +121,14 @@ complete -c specweave -n "__fish_seen_subcommand_from complete" -l silent -s s -
 complete -c specweave -n "__fish_seen_subcommand_from complete" -l yes -s y -d "Assume yes (silent confirmation)"
 complete -c specweave -n "__fish_seen_subcommand_from complete" -l skip-validation -d "Skip quality gate validation (DANGEROUS)"
 complete -c specweave -n "__fish_seen_subcommand_from complete" -l reason -s r -d "Close without a passing reports/verify.json (stored as metadata.closeReason)"
+complete -c specweave -n "__fish_seen_subcommand_from complete" -l all -d "Close every active increment whose tasks are all done or skipped (requires --reason)"
 
 # task
 complete -c specweave -n "__fish_seen_subcommand_from task" -l force -s f -d "Override a live claim, unmet deps or a Files overlap"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l evidence -s e -d "Evidence for `done` (commit sha, test output)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l run -d "Run <cmd> through the OS shell; exit 0 required, output stored as evidence"
-complete -c specweave -n "__fish_seen_subcommand_from task" -l note -s n -d "Note (required for block / skip)"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l note -s n -d "Note (alias of --reason)"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l reason -d "Reason (required for skip / block)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With `release`: release every task claimed by this agent"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 
@@ -136,13 +138,18 @@ complete -c specweave -n "__fish_seen_subcommand_from verify" -l json -d "Print 
 
 # create-increment
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l id -d "Increment ID (e.g., \"0042-my-feature\")"
-complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l auto-id -d "Auto-generate next available increment ID"
-complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l name -d "Increment name suffix (used with --auto-id)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l auto-id -d "Auto-generate next available increment ID (default when --id is absent)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l name -d "Increment name suffix (defaults to a slug of the title)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l title -d "Feature title (defaults to the positional argument)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l description -d "Feature description (defaults to the title)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l project -d "Project ID (defaults to config project.name, else the folder name)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l board -d "Board ID for 2-level structures"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l type -d "Increment type (feature, hotfix, bug, refactor, experiment)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l priority -d "Priority (P1, P2, P3)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l project-root -d "Override project root directory"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parallel -d "Opt into 3-agent fan-out planning (default: single-agent)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l supersedes -d "Increment this one replaces (the old one is abandoned with a closeReason)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parent -d "Parent increment (recorded as metadata.parent)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l json -d "Output result as JSON (for programmatic use)"
 
 # handoff

@@ -389,7 +389,6 @@ program
   .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
   .option('--project-root <path>', 'Override project root directory')
-  .option('--supersedes <increment-id>', 'Abandon the increment this one replaces and record the link')
   .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
   .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
   .option('--parent <increment-id>', 'Parent increment (recorded as metadata.parent)')
