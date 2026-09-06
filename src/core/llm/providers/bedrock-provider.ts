@@ -57,7 +57,7 @@ export class BedrockProvider implements LLMProvider {
 
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    // Resolve model alias (opus → anthropic.claude-opus-4-6-v1:0)
+    // Resolve model alias (opus → anthropic.claude-opus-4-8-v1:0)
     const model = resolveModelAlias(options.model || this.defaultModel, 'bedrock');
 
     const client = await this.getClient();
@@ -170,11 +170,14 @@ Return ONLY the JSON object.`;
   }
 
   private getPricing(modelId: string): { input: number; output: number } {
-    if (modelId.includes('claude-opus-4')) return { input: 15, output: 75 };
+    // Claude 3 generation first — those rates differ from the 4.x models below
+    if (modelId.includes('claude-3-opus')) return { input: 15, output: 75 };
+    if (modelId.includes('claude-3-haiku')) return { input: 0.25, output: 1.25 };
+    if (modelId.includes('claude-opus-4')) return { input: 5, output: 25 };
     if (modelId.includes('claude-sonnet-4') || modelId.includes('claude-3-5-sonnet')) return { input: 3, output: 15 };
-    if (modelId.includes('claude-3-haiku') || modelId.includes('claude-haiku')) return { input: 0.25, output: 1.25 };
+    if (modelId.includes('claude-haiku')) return { input: 1, output: 5 };
     if (modelId.includes('titan')) return { input: 0.8, output: 1.6 };
-    return { input: 15, output: 75 }; // Default to opus
+    return { input: 5, output: 25 }; // Default to opus
   }
 
   async isAvailable(): Promise<boolean> {

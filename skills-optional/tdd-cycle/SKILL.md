@@ -9,6 +9,8 @@ version: 1.0.0
 
 Run the full RED → GREEN → REFACTOR cycle, or one phase at a time with `--phase red|green|refactor` (`--phase all` is the default).
 
+Each numbered step below runs in a fresh context (a subagent, or a new session), so reasoning from an earlier step cannot leak into the next one.
+
 ### Examples
 
 ```bash
@@ -28,8 +30,6 @@ tdd-cycle --phase all "user authentication"
 
 Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-green-refactor discipline:
 
-[Extended thinking: This workflow enforces test-first development through coordinated agent orchestration. Each phase of the TDD cycle is strictly enforced with fail-first verification, incremental implementation, and continuous refactoring. The workflow supports both single test and test suite approaches with configurable coverage thresholds.]
-
 ## Configuration
 
 ### Coverage Thresholds
@@ -46,13 +46,11 @@ Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-g
 ## Phase 1: Test Specification and Design
 
 ### 1. Requirements Analysis
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Analyze requirements for: $ARGUMENTS. Define acceptance criteria, identify edge cases, and create test scenarios. Output a comprehensive test specification."
 - Output: Test specification, acceptance criteria, edge case matrix
 - Validation: Ensure all requirements have corresponding test scenarios
 
 ### 2. Test Architecture Design
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Design test architecture for: $ARGUMENTS based on test specification. Define test structure, fixtures, mocks, and test data strategy. Ensure testability and maintainability."
 - Output: Test architecture, fixture design, mock strategy
 - Validation: Architecture supports isolated, fast, reliable tests
@@ -60,13 +58,11 @@ Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-g
 ## Phase 2: RED - Write Failing Tests
 
 ### 3. Write Unit Tests (Failing)
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Write FAILING unit tests for: $ARGUMENTS. Tests must fail initially. Include edge cases, error scenarios, and happy paths. DO NOT implement production code."
 - Output: Failing unit tests, test documentation
 - **CRITICAL**: Verify all tests fail with expected error messages
 
 ### 4. Verify Test Failure
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Verify that all tests for: $ARGUMENTS are failing correctly. Ensure failures are for the right reasons (missing implementation, not test errors). Confirm no false positives."
 - Output: Test failure verification report
 - **GATE**: Do not proceed until all tests fail appropriately
@@ -74,13 +70,11 @@ Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-g
 ## Phase 3: GREEN - Make Tests Pass
 
 ### 5. Minimal Implementation
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Implement MINIMAL code to make tests pass for: $ARGUMENTS. Focus only on making tests green. Do not add extra features or optimizations. Keep it simple."
 - Output: Minimal working implementation
 - Constraint: No code beyond what's needed to pass tests
 
 ### 6. Verify Test Success
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Run all tests for: $ARGUMENTS and verify they pass. Check test coverage metrics. Ensure no tests were accidentally broken."
 - Output: Test execution report, coverage metrics
 - **GATE**: All tests must pass before proceeding
@@ -88,13 +82,11 @@ Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-g
 ## Phase 4: REFACTOR - Improve Code Quality
 
 ### 7. Code Refactoring
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Refactor implementation for: $ARGUMENTS while keeping tests green. Apply SOLID principles, remove duplication, improve naming, and optimize performance. Run tests after each refactoring."
 - Output: Refactored code, refactoring report
 - Constraint: Tests must remain green throughout
 
 ### 8. Test Refactoring
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Refactor tests for: $ARGUMENTS. Remove test duplication, improve test names, extract common fixtures, and enhance test readability. Ensure tests still provide same coverage."
 - Output: Refactored tests, improved test structure
 - Validation: Coverage metrics unchanged or improved
@@ -102,13 +94,11 @@ Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-g
 ## Phase 5: Integration and System Tests
 
 ### 9. Write Integration Tests (Failing First)
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Write FAILING integration tests for: $ARGUMENTS. Test component interactions, API contracts, and data flow. Tests must fail initially."
 - Output: Failing integration tests
 - Validation: Tests fail due to missing integration logic
 
 ### 10. Implement Integration
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Implement integration code for: $ARGUMENTS to make integration tests pass. Focus on component interaction and data flow."
 - Output: Integration implementation
 - Validation: All integration tests pass
@@ -116,13 +106,11 @@ Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-g
 ## Phase 6: Continuous Improvement Cycle
 
 ### 11. Performance and Edge Case Tests
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Add performance tests and additional edge case tests for: $ARGUMENTS. Include stress tests, boundary tests, and error recovery tests."
 - Output: Extended test suite
 - Metric: Increased test coverage and scenario coverage
 
 ### 12. Final Code Review
-- Run this step in a fresh context (a subagent, or a new session) so earlier reasoning cannot leak into it.
 - Prompt: "Perform comprehensive review of: $ARGUMENTS. Verify TDD process was followed, check code quality, test quality, and coverage. Suggest improvements."
 - Output: Review report, improvement suggestions
 - Action: Implement critical suggestions while maintaining green tests

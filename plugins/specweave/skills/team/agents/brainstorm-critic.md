@@ -49,8 +49,10 @@ YOUR ANALYSIS MUST INCLUDE:
   ### Red Lines
   Absolute dealbreakers — conditions under which an approach should be rejected outright.
 
-PROGRESS UPDATES (MANDATORY — prevents false stuck detection):
-  After completing each APPROACH step, send a brief heartbeat:
+PROGRESS UPDATES:
+  Your plain text output is not visible to team-lead, so send a heartbeat as you
+  finish each APPROACH step — a silent stretch is otherwise indistinguishable
+  from a stalled agent:
   SendMessage({
     to: "team-lead",
     message: "STATUS: [Step N/4] [what you just finished]. Proceeding to [next step].",

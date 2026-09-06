@@ -47,7 +47,6 @@ Never mark a task complete without proving it works:
 - Code compiles/builds successfully
 - Tests pass
 - Acceptance criteria actually satisfied
-- Ask: "Would a staff engineer approve this?"
 
 ### 3. Dependencies First
 
@@ -62,13 +61,7 @@ Good: npm run build → node script.js → Success
 <!-- SW:SECTION:principles version="1.0.326" -->
 ## Core Principles (Quality)
 
-### Simplicity First
-- Write the simplest code that solves the problem
-- Avoid over-engineering and premature optimization
-- One function = one responsibility
-- If you can delete code and tests still pass, delete it
-
-### No Laziness
+### Root Causes
 - Don't leave TODO comments for "later"
 - Don't skip error handling because "it probably won't fail"
 - Don't copy-paste without understanding
@@ -80,23 +73,11 @@ Good: npm run build → node script.js → Success
 - Keep PRs focused and reviewable
 - Preserve existing patterns unless improving them is the task
 
-### Demand Elegance (Balanced)
-- Code should be readable by humans first
-- Names should reveal intent
-- BUT: Don't over-abstract for hypothetical futures
-- Pragmatic > Perfect
-
 ### DRY (Don't Repeat Yourself)
 - Flag repetitions aggressively — duplicated logic, config, or patterns
 - Extract shared code into reusable functions/modules
 - If you see the same block twice, refactor before adding a third
 - Applies to code, config, tests, and documentation alike
-
-### Plan Review Before Code
-- Review the full plan thoroughly before writing any code
-- Verify plan covers all ACs and edge cases before implementation
-- If the plan has gaps, fix the plan first — don't discover them mid-coding
-- Re-read the plan between tasks to stay aligned
 <!-- SW:END:principles -->
 
 <!-- SW:SECTION:commands version="1.0.326" -->
@@ -104,16 +85,17 @@ Good: npm run build → node script.js → Success
 
 | Command | Purpose |
 |---------|---------|
-| `sw:increment "name"` | Plan new feature (PM-led) |
+| `sw:increment "name"` | Plan new feature |
 | `sw:do` | Execute tasks from active increment |
-| `sw:done 0001` | Close increment (validates gates) |
-| `sw:progress` | Show task completion status |
-| `sw:validate 0001` | Quality check before closing |
-| `sw:progress-sync` | Sync tasks.md with reality |
-| `sw:sync-docs update` | Sync to living docs |
-| `sw-github:sync 0001` | Sync increment to GitHub issue |
-| `sw-jira:sync 0001` | Sync to Jira |
-| `sw-ado:sync 0001` | Sync to Azure DevOps |
+| `sw:review 0001` | Adversarial review before closing |
+| `sw:done 0001` | Close increment (needs a green `verify.json`) |
+| `sw:sync` | Sync to GitHub / Jira / Azure DevOps |
+| `sw:handoff` | Hand off to another tool or machine |
+| `specweave status` | Show task completion status |
+| `specweave verify 0001` | Run build/test/lint, write `reports/verify.json` |
+| `specweave sync push 0001` | Push progress to the configured tracker(s) |
+
+The per-provider `sw-github:` / `sw-jira:` / `sw-ado:` namespaces were removed in 2.0 — one `sw:sync` skill covers all three, and `specweave sync push --provider <name>` targets one.
 <!-- SW:END:commands -->
 
 <!-- SW:SECTION:nonclaudetools version="1.0.326" -->
@@ -125,7 +107,7 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 
 | Capability | Claude Code | Non-Claude Tools |
 |------------|-------------|------------------|
-| **Plan Mode** | `EnterPlanMode` → `sw:increment` | Manual: Create spec.md + plan.md + tasks.md |
+| **Plan Mode** | `EnterPlanMode` → `sw:increment` | Manual: create spec.md + tasks.md (plan.md only if Approach overflows) |
 | **Subagents** | `Task` tool for parallel work | Split into multiple chat sessions |
 | **Verification** | PostToolUse hooks auto-validate | Manual: Run tests, check ACs |
 | **Hooks** | Auto-run on events | YOU must mimic (see below) |
@@ -137,20 +119,20 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **After EVERY task completion:**
 1. Update tasks.md: `[ ] pending` → `[x] completed`
 2. Update spec.md ACs if satisfied: `[ ] AC` → `[x] AC`
-3. Run `sw:progress-sync`
-4. Run `sw-github:sync <id>` (if GitHub configured)
+3. Run `specweave sync-progress`
+4. Run `specweave sync push <id>` (if a tracker is configured)
 
 **After all ACs for a User Story are done:**
-- Run `sw:sync-docs update`
+- Run `specweave sync-living-docs`
 
 **After increment completion:**
-1. `sw:validate <id>`
-2. `sw:sync-docs update`
-3. `sw-github:close-issue <id>`
+1. `specweave verify <id>`
+2. `specweave sync-living-docs`
+3. `specweave sync push <id>` (closes the tracker issue)
 
 **Session start:**
 1. `specweave jobs` (check background jobs)
-2. `sw:progress` (check current state)
+2. `specweave status` (check current state)
 3. `sw:do` (continue work)
 
 **Background jobs**: Monitor with `specweave jobs` (clone-repos, import-issues, living-docs-builder, sync-external).
@@ -218,7 +200,7 @@ Replaces the former PostToolUse analytics hook. Call after skill or agent invoca
 
 Examples:
 ```bash
-specweave analytics push --type skill --name sw:pm
+specweave analytics push --type skill --name sw:increment
 specweave analytics push --type agent --name general
 ```
 
@@ -236,10 +218,12 @@ SpecWeave uses specialized subagents for different phases of the increment workf
 
 | Subagent | Purpose | When to Use |
 |----------|---------|-------------|
-| `sw:sw-closer` | Runs full `sw:done` closure pipeline in fresh context | After team-lead/team-merge completes, prevents context overflow |
-| `sw:sw-pm` | Writes spec.md with user stories and acceptance criteria | During `sw:increment` planning phase |
-| `sw:sw-architect` | Writes plan.md with architecture decisions | During `sw:increment` planning phase |
-| `sw:sw-planner` | Writes tasks.md with BDD test plans | During `sw:increment` planning phase |
+| `sw:sw-closer` | Runs the full `sw:done` closure pipeline in a fresh context | After `sw:team` completes, to keep closure out of a bloated context |
+
+`sw-closer` is the only agent the plugin ships. The 1.x `sw-pm` / `sw-architect` /
+`sw-planner` agents were folded into `sw:increment`, which writes spec.md (Problem,
+Scope, ACs, Approach) and tasks.md in one pass. `sw:team`'s per-domain templates live in
+`plugins/specweave/skills/team/agents/` and are not addressable as `sw:` agents.
 
 Agent definitions live in `plugins/specweave/agents/`. The team-lead orchestrator spawns these automatically when needed.
 
@@ -251,8 +235,8 @@ Agent definitions live in `plugins/specweave/agents/`. The team-lead orchestrato
 | Level | Location | Update Method |
 |-------|----------|---------------|
 | **Source** | tasks.md + spec.md | Edit directly |
-| **Derived** | .specweave/docs/internal/specs/ | `sw:sync-docs update` |
-| **Mirror** | GitHub/Jira/ADO | `sw-github:sync`, `sw-jira:sync`, `sw-ado:sync` |
+| **Derived** | .specweave/docs/internal/specs/ | `specweave sync-living-docs` |
+| **Mirror** | GitHub/Jira/ADO | `sw:sync` (or `specweave sync push`) |
 
 **Update order**: ALWAYS tasks.md/spec.md FIRST → progress-sync → sync-docs → external tools
 
@@ -260,12 +244,10 @@ Agent definitions live in `plugins/specweave/agents/`. The team-lead orchestrato
 
 | Command | When to Run |
 |---------|-------------|
-| `sw:progress-sync` | After editing tasks.md |
-| `sw:sync-docs update` | After US complete |
-| `sw-github:sync <id>` | After each task |
-| `sw-github:close-issue <id>` | On increment done |
-| `sw-jira:sync <id>` | After each task |
-| `sw-ado:sync <id>` | After each task |
+| `specweave sync-progress` | After editing tasks.md |
+| `specweave sync-living-docs` | After US complete |
+| `specweave sync push <id>` | After each task, and on increment done |
+| `specweave sync status` | When a push looks stuck (queue, breakers, gaps) |
 <!-- SW:END:syncworkflow -->
 
 <!-- SW:SECTION:contextloading version="1.0.326" -->
@@ -415,7 +397,7 @@ specweave context projects
 4. Sync to external trackers if enabled
 
 ### Closing Increment
-1. `sw:done 0001` — PM validates 3 gates (tasks, tests, docs)
+1. `sw:done 0001` — needs `reports/verify.json` with `ok: true` (or an explicit `--reason`)
 2. Living docs synced automatically
 3. GitHub/Jira issue closed if enabled
 <!-- SW:END:workflows -->
@@ -426,9 +408,9 @@ specweave context projects
 | Issue | Fix |
 |-------|-----|
 | Commands not working (non-Claude) | Read `plugins/specweave/commands/<name>.md`, follow manually |
-| GitHub/Jira not updating | `sw:progress-sync` → `sw:sync-docs update` → `sw-github:sync <id>` |
+| GitHub/Jira not updating | `specweave sync status`, then `specweave sync push <id>` |
 | .md files in project root | `mv *.md .specweave/increments/<current>/reports/` |
-| Progress % wrong | Update tasks.md manually or `sw:progress-sync` |
+| Progress % wrong | Update tasks.md manually or `specweave sync-progress` |
 | Tool crashes on start | Load only active increment's spec.md + tasks.md, not entire docs/ |
 | Missing **Project**: field | `specweave context projects`, add `**Project**:` to every US |
 | Skills not activating (non-Claude) | Expected — read SKILL.md from `plugins/specweave*/skills/` |
