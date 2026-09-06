@@ -9,7 +9,7 @@
  * - No LLM: tasks_complete, acs_satisfied (grep-based)
  * - No LLM: tests_pass, build_succeeds (the command's exit code decides; an
  *   enabled Jev noul may only downgrade a green run, never rescue a red one)
- * - Opus: llm_evaluate, custom criteria (semantic understanding with ultrathink)
+ * - Opus: llm_evaluate, custom criteria (extended reasoning over spec + task state)
  *
  * @module core/auto/completion-evaluator
  */

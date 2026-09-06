@@ -263,26 +263,5 @@ describe.skip('Session Warning CLI Command', () => {
       expect(result.success).toBe(true);
       expect(result.shouldHalt).toBe(true);
     });
-
-    it('should work with plugin install flags', async () => {
-      // Given: Install flags created
-      const { createPluginInstallFlag } = await import(
-        '../../../src/cli/helpers/init/plugin-install-flags.js'
-      );
-      createPluginInstallFlag(tempDir, {
-        plugins: ['sw'],
-        trigger: 'specweave-init',
-      });
-
-      // When: session-warning command runs
-      const args: SessionWarningArgs = {
-        plugins: ['sw'],
-        projectPath: tempDir,
-      };
-      const result = runSessionWarningCommand(args);
-
-      // Then: should show warning
-      expect(result.success).toBe(true);
-    });
   });
 });

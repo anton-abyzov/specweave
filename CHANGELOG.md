@@ -1,3 +1,87 @@
+## [Unreleased]
+
+A prompt audit of the whole instruction surface against the repo's own target model
+(`claude-opus-4-8`), plus the dead-code sweep it turned into. Three of the findings were
+live defects, not style.
+
+### Fixed
+
+**The Anthropic provider could not complete a request.** Every call sent `temperature`
+(default `0.3`), which Opus 4.7+ and Sonnet 5 reject with a 400 — and `analyze()`
+re-throws on 400 without retrying, so the path was dead rather than degraded. Sampling
+params are now forwarded only to models that still accept them (`sonnet` → Sonnet 4.6 and
+`haiku` → Haiku 4.5 both do), decided by a new `src/core/llm/model-capabilities.ts`.
+
+**`AnthropicProvider.isAvailable()` always returned `false`.** `getStatus()` called
+`client.messages.count_tokens`, the Python spelling; the TypeScript SDK exposes
+`countTokens`.
+
+**The LLM judge ran with thinking switched off.** Increment 0669's "Opus 4.7 alignment"
+recorded that 4.7 "no longer benefits from the `thinking` API parameter — adaptive
+thinking is triggered by a prompt hint". What 4.7 removed is `budget_tokens`; adaptive
+thinking *is* the parameter (`thinking: {type: "adaptive"}`), and depth is
+`output_config.effort`. Omitting `thinking` on 4.7/4.8 means no thinking at all. The judge
+now always sends adaptive thinking plus an effort level (default `high`), and
+`max_tokens` rose from 2000 to 8000 so thinking tokens do not crowd out the verdict.
+`isOpus47Family()` and the `ThinkingBudget` type are gone; `quality.thinkingBudget` is
+replaced by an `effort` option.
+
+**`SkillJudge` sent `'opus'` as a model id.** It never called `resolveModelAlias`, so the
+request failed and `judge()` silently fell back to keyword pattern-matching.
+
+**Bedrock priced Opus 4.x at $15/$75 and Haiku at $0.25/$1.25** — those are Opus 3 and
+Haiku 3 rates. Both corrected to $5/$25 and $1/$5. The dashboard cost map had no
+`claude-opus-4-8` row, so sessions on the default model were left unpriced.
+
+**A suggestion pointed at a deleted skill.** `skill-gen` still printed "Run sw:skill-gen
+to generate project skills"; that skill was removed in 2.0.
+
+### Changed
+
+**Structured outputs replace the "respond with ONLY valid JSON" scaffolding** in
+`analyzeStructured`, the security judge, the skill-refine diff proposer and the skill-gen
+signal collector — where the model supports them. Schemas are normalised to the strict
+shape the API requires (`additionalProperties: false`, every property required), and the
+prompt-based fallback is kept for models that cannot do structured outputs, notably
+Sonnet 4.6, which the `sonnet` alias resolves to.
+
+**The retired-phrase linter now runs in CI.** `plugins/specweave/.lint/skill-lint.ts` was
+imported by nothing but its own test, which is how `[Extended thinking: …]` survived in
+`skills-optional/tdd-cycle`. Its two checks are ported into the zero-dependency
+`scripts/lint-skills.mjs`, extended to `skills/` and `skills-optional/`, made
+case-insensitive, and taught to ignore fenced blocks and lines that document the
+retirement. Coverage went from 37 files to 43.
+
+**Instruction files no longer name a surface 2.0 deleted.** `CLAUDE.md` and `AGENTS.md`
+still advertised `sw:validate`, `sw:progress`, `sw:progress-sync`, `sw:sync-docs`,
+`sw:docs`, the whole `sw-github:` / `sw-jira:` / `sw-ado:` namespace, and three subagents
+(`sw-pm`, `sw-architect`, `sw-planner`) that do not exist — 19 of 24 references were
+dangling. They also documented the removed `reflect`, `apiDocs`,
+`testing.defaultTestMode` and `testing.tddEnforcement` config keys. (The shipped
+`src/templates/*.template` files were already correct; this was the repo's own copy.)
+
+**Dated prompt patterns removed across the instruction surface.** Pressure language
+("BRUTAL HONESTY", "You MUST Check", "BE STRICT", "No Laziness", "Be thorough and
+strict"), over-planning prose, strategy coaching ("use subagents liberally", "would a
+staff engineer approve this?"), a required-reading gate in the diagrams skill pointing at
+a file that does not exist, an activation-keyword list inside a skill body that only loads
+after the skill triggers, and one sentence repeated twelve times in `tdd-cycle`. The team
+agent protocol lost a 42-line "Workflow Mode" section gated on `quality.workflows.*` — a
+config key 2.0 strips, so the gate could never be true — and its fixed STATUS cadence
+became an event trigger. Prompts that claimed mechanisms the code does not implement
+("team-lead's stuck detection reads these", "`/sw:increment` is blocked without it") now
+describe what actually happens.
+
+### Removed
+
+**3,285 lines of unreachable code**, verified by import-graph analysis and an adversarial
+refute pass, then by a clean `tsc` and full test run:
+`src/cli/helpers/init/` — `api-docs-config` (which wrote the removed `apiDocs` key),
+`brownfield-analysis`, `testing-config`, `bitbucket-repo-cloning`, `claude-settings-lsp`,
+`plugin-install-flags`, `ado-repo-cloning`, `prompt-flow`, `umbrella-cloning`,
+`multi-project-folders`; and `src/core/fabric/contradiction-detector`. Each was reachable
+only from its own test file. Those tests are removed with them.
+
 ## [2.2.1] - 2026-09-21
 
 ### Fixed

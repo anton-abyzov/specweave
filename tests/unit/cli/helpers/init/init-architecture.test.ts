@@ -280,14 +280,5 @@ describe('init-architecture (integration)', () => {
       const lines = content.split('\n').length;
       expect(lines).toBeLessThan(200);
     });
-
-    it('prompt-flow.ts functions are within limit', async () => {
-      const content = await fsPromises.readFile(
-        path.join(process.cwd(), 'src/cli/helpers/init/prompt-flow.ts'),
-        'utf-8'
-      );
-      const lines = content.split('\n').length;
-      expect(lines).toBeLessThan(200);
-    });
   });
 });

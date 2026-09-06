@@ -4,6 +4,7 @@ import {
   parseHaikuJson,
   buildUserPrompt,
   HAIKU_MODEL,
+  HAIKU_DIFF_SCHEMA,
   type HaikuClientLike,
 } from './haiku-diff';
 import type { AggregateResult } from './aggregator';
@@ -134,6 +135,30 @@ describe('haiku-diff proposeDiff', () => {
     expect(calls[0].model).toBe(HAIKU_MODEL);
     expect(calls[0].system).toContain('SKILL.md');
     expect(calls[0].messages[0].role).toBe('user');
+  });
+
+  it('sends the {diff, rationale} json_schema as output_config', async () => {
+    const { client, calls } = mockClient(
+      JSON.stringify({ diff: 'd', rationale: 'r' }),
+    );
+    await proposeDiff({ client, skillMd: '#', aggregate: makeAggregate() });
+    expect(calls[0].output_config).toEqual({
+      format: { type: 'json_schema', schema: HAIKU_DIFF_SCHEMA },
+    });
+    expect(HAIKU_DIFF_SCHEMA.required).toEqual(['diff', 'rationale']);
+  });
+
+  it('does not police response formatting in the system prompt', async () => {
+    const { client, calls } = mockClient(
+      JSON.stringify({ diff: 'd', rationale: 'r' }),
+    );
+    await proposeDiff({ client, skillMd: '#', aggregate: makeAggregate() });
+    // Format is carried by output_config now, not by prose instructions.
+    expect(calls[0].system).not.toContain('markdown fences');
+    expect(calls[0].system).not.toContain('No commentary');
+    // The substantive constraints stay.
+    expect(calls[0].system).toContain('git apply');
+    expect(calls[0].system).toContain('Never edit frontmatter');
   });
 
   it('produces identical output for identical inputs (determinism)', async () => {

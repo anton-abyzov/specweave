@@ -105,7 +105,7 @@ export interface SkillGenConfig {
   suggest?: boolean;
   /** Minimum number of increments a pattern must appear in before qualifying. Default: 3 */
   minSignalCount?: number;
-  /** Pattern IDs permanently excluded from suggestions (still visible in sw:skill-gen). Default: [] */
+  /** Pattern IDs permanently excluded from suggestions. Default: [] */
   declinedSuggestions?: string[];
   /** Maximum number of signals to retain (prunes lowest-confidence when exceeded). Default: 100 */
   maxSignals?: number;
