@@ -1,5 +1,13 @@
 ## [2.0.0] - 2026-09-02
 
+## [2.0.2] - 2026-09-06
+
+### Fixed
+- Use quoted hook command strings compatible with Codex instead of ignored argument fields.
+- Enforce hook deadlines in a supervisor process, terminate stalled workers, and preserve streamed UTF-8.
+- Capture handoffs through a private Git index with a shared execution budget, preserving user staging even during interruption.
+
+
 SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and deletes the rest. Full narrative: https://spec-weave.com/docs/guides/specweave-2
 
 ### Breaking changes

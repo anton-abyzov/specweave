@@ -4,8 +4,8 @@
  * 1. Every event plugins/specweave/hooks/hooks.json launches via
  *    `node ${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs <event>` is registered in the
  *    router, and vice versa (no silent no-op hooks, no dead handlers).
- * 2. Every hooks.json entry is exec-form (`command: "node"` + `args`), never a
- *    shell string (Windows without Git Bash), and every timeout is <= 60 s
+ * 2. Every hooks.json entry uses a portable command string with a quoted
+ *    launcher path (Codex ignores separate args), and every timeout is <= 60 s
  *    (the unit is SECONDS — `15000` once meant 4.2 h).
  * 3. Invoking the router with a sample payload for each event yields output
  *    that is valid per the Claude Code hook schema for that event.
@@ -36,7 +36,7 @@ function allEntries(): Array<{ event: string; matcher?: string; entry: HookEntry
 
 /** The `<event>` argument each hooks.json entry passes to run.mjs. */
 function launchedEvents(): string[] {
-  return [...new Set(allEntries().map(({ entry }) => entry.args?.[1] ?? ''))].sort();
+  return [...new Set(allEntries().map(({ entry }) => entry.command?.split(' ').at(-1) ?? ''))].sort();
 }
 
 describe('hooks.json ↔ router parity', () => {
@@ -46,15 +46,15 @@ describe('hooks.json ↔ router parity', () => {
     expect(registeredHookEvents()).toEqual([...HOOK_EVENTS].sort());
   });
 
-  it('every entry is exec-form node + run.mjs, no shell, no matcher_content', () => {
+  it('every entry uses a portable command string with quoted launcher', () => {
     const raw = fs.readFileSync(path.resolve(process.cwd(), 'plugins/specweave/hooks/hooks.json'), 'utf-8');
     expect(raw).not.toContain('bash');
     expect(raw).not.toContain('matcher_content');
     for (const { event, entry } of allEntries()) {
       expect(entry.type, event).toBe('command');
-      expect(entry.command, event).toBe('node');
-      expect(entry.args?.[0], event).toBe('${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs');
-      expect(HOOK_EVENTS, event).toContain(entry.args?.[1]);
+      expect(entry.command, event).toMatch(/^node \"\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/run\.mjs\" [a-z-]+$/);
+      expect(entry.args, event).toBeUndefined();
+      expect(HOOK_EVENTS, event).toContain(entry.command?.split(' ').at(-1));
     }
   });
 

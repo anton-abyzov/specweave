@@ -50,12 +50,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Validate hooks.json is exec-form node with timeouts in seconds
+      - name: Validate portable hook commands and timeouts
         run: >-
           node -e "const h=require('./plugins/specweave/hooks/hooks.json').hooks;
           const bad=[];
           for (const [ev,groups] of Object.entries(h)) for (const g of groups) for (const x of g.hooks) {
-            if (x.command!=='node'||!Array.isArray(x.args)||!x.args[0].includes('run.mjs')) bad.push(ev+': not exec-form node');
+            if (!x.command?.startsWith('node ')||!x.command.includes('/hooks/run.mjs')||x.args) bad.push(ev+': invalid command string');
             if (typeof x.timeout!=='number'||x.timeout>60) bad.push(ev+': timeout must be <=60 s');
           }
           if (bad.length) { console.error(bad.join('\n')); process.exit(1); }
