@@ -1,13 +1,12 @@
 {
-  "description": "SpecWeave 2.0 hooks: session context, status-completion guard, auto-loop driver, compaction handoff. Exec-form node launcher (no shell), Windows-safe.",
+  "description": "SpecWeave hooks: portable command strings and bounded worker execution.",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "session-start"],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" session-start",
             "timeout": 10
           }
         ]
@@ -19,8 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "pre-tool-use"],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" pre-tool-use",
             "timeout": 10
           }
         ]
@@ -31,8 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "stop"],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" stop",
             "timeout": 30
           }
         ]
@@ -43,8 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs", "pre-compact"],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" pre-compact",
             "timeout": 10
           }
         ]
