@@ -1,9 +1,9 @@
 ## [2.0.0] - 2026-09-02
 
-## [2.0.2] - 2026-09-06
+## [2.0.3] - 2026-09-06
 
 ### Fixed
-- Use quoted hook command strings compatible with Codex instead of ignored argument fields.
+- Use quoted hook command strings compatible with Codex instead of ignored argument fields, and validate the same format in doctor.
 - Enforce hook deadlines in a supervisor process, terminate stalled workers, and preserve streamed UTF-8.
 - Capture handoffs through a private Git index with a shared execution budget, preserving user staging even during interruption.
 
