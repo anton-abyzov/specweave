@@ -1,7 +1,7 @@
 <!-- SECTION:header required -->
 # {PROJECT_NAME}
 
-SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-slug/`. `spec.md` (Problem, ACs, Approach) is the source of truth; the ledger records who did what. Keep this file under one page; project-specific notes go in **Project notes** at the bottom.
+SpecWeave project. Small requests live in the intent board; scoped work lives in increments under `.specweave/increments/NNNN-slug/`. `spec.md` (Problem, ACs, Approach) is the source of truth; the ledger records who did what. Keep this file under one page; project-specific notes go in **Project notes** at the bottom.
 <!-- /SECTION -->
 
 <!-- SECTION:structure -->
@@ -9,6 +9,7 @@ SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-
 
 ```
 .specweave/
+  intents/board.jsonl       append-only intent history (latest revision per id; planning state, not verification)
   increments/NNNN-slug/   spec.md (Problem · ACs · Approach) · tasks.md (tasks + rendered board) · ledger.jsonl (claims/done, CLI-written) · handoff.md · reports/ (evidence; binaries in reports/artifacts/, gitignored)
   docs/                    ADRs and hand-written docs (read before changing architecture)
   config.json
@@ -48,7 +49,7 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 4. `done` needs the task's **Test** command exit 0 and a commit sha. A task that turns out unnecessary is closed with `specweave task skip T-NN --reason "..."`, never ticked.
 5. When you stop: `specweave task release --all-mine` then `/sw:handoff`.
 
-Resuming: find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `/sw:do`.
+Resuming: check `.specweave/intents/board.jsonl` (latest revision per id) or `specweave dashboard` for unfinished intents, including work without an increment. Then find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `/sw:do`.
 <!-- /SECTION -->
 
 <!-- SECTION:conventions required -->
