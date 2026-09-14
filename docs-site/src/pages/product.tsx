@@ -1,0 +1,21 @@
+import React from 'react';
+import Layout from '@theme/Layout';
+import Link from '@docusaurus/Link';
+import ContinuityBoard from '../components/sections/ContinuityBoard';
+import styles from './continuity.module.css';
+
+export default function Product() {
+  return <Layout title="The work model" description="How SpecWeave connects user intent, optional specifications, task evidence, and execution context across coding agents."><main className={styles.page}>
+    <header className={styles.articleHero}><span className={styles.eyebrow}>Product / Work continuity</span><h1>The work outlives<br /><em>the session.</em></h1><p>SpecWeave keeps a durable record of what you wanted, what changed, and what remains. Your agent does the work. Your repository keeps the evidence.</p></header>
+    <div className={styles.articleBody}><ContinuityBoard />
+      <h2>Start with an intent.</h2><p>An intent describes a requested outcome. It can move through backlog, in progress, blocked, review, and done. A small change can stand alone. Attach an increment when the work benefits from a specification, acceptance criteria, and a task ledger.</p><p>A session is a conversation with a tool. One intent can span several sessions; one session can contain several requests. Keeping these separate makes a handoff understandable.</p>
+      <h2>Progress you can inspect.</h2><table><thead><tr><th>Layer</th><th>Question answered</th><th>Evidence</th></tr></thead><tbody><tr><td>Intent</td><td>What outcome matters?</td><td>Title, summary, board state</td></tr><tr><td>Increment</td><td>What does done mean?</td><td>Specification and acceptance criteria</td></tr><tr><td>Task</td><td>What was completed, and by whom?</td><td>Append-only claims and completion records</td></tr><tr><td>Verification</td><td>Did the required checks pass?</td><td>Command output and verification report</td></tr><tr><td>Execution</td><td>Which tools participated?</td><td>Recorded harness, model, effort, and handoffs</td></tr></tbody></table>
+      <p>Moving a card is a planning action. It does not invent a passing test or complete a linked increment. The CLI closes an increment after verification; the board lets you inspect that distinction.</p>
+      <h2 id="portability">Built around files, not a model.</h2><p>The specification, task ledger, and handoff live in your project. Coding tools that can read files and run the CLI can use the same record. Native hooks are conveniences; they are not required to understand the work.</p><pre>{'specweave dashboard\n\n# At a tool change\nspecweave handoff\n\n# In the next session\nspecweave task next <increment-id>'}</pre>
+      <p>The dashboard projects local files into a live view. Reading task state and refreshing the board requires no language-model inference. Writing a useful specification and implementing the work still use the agent you choose.</p>
+      <h2>Measure context before comparing tools.</h2><p>Record harness, model, reasoning effort, provider, and surface separately. Codex is a harness; Astra is a model. OpenRouter is a provider gateway. A terminal or editor is the surface where the harness runs.</p><p>Observed tokens and estimated cost are supporting metrics. Different tasks, permissions, context, and acceptance checks prevent a fair quality ranking from raw totals. Missing telemetry stays unknown. Reliable forecasts need enough comparable completed work, not an invented finish date.</p>
+      <h2>Less background machinery.</h2><p>The default plugin supplies a compact session-start pointer and a Stop hook for explicitly enabled auto mode. Ordinary Stop events return without loading the CLI worker. Automatic compaction Git snapshots and edit interception are removed from the default manifest.</p><p>Use <code>specweave handoff</code> when moving work. Use the harness's own persistence features when they already do what you need. <Link to="/integrations">Tracker integrations</Link> are optional.</p>
+      <div className={styles.note}>SpecWeave is useful when continuity costs you time. If your work stays inside one short session, a clear request and your existing coding tool may already be enough.</div>
+      <Link className={styles.primary} to="/docs/getting-started">Try it in a project ↗</Link>
+    </div></main></Layout>;
+}

@@ -364,3 +364,23 @@ div[class*="announcementBar"] {
     --sw-grid-margin: 48px;
   }
 }
+
+/* Shared product identity; documentation retains its own readable layout. */
+:root {
+  --ifm-font-family-base: 'IBM Plex Sans', sans-serif;
+  --ifm-color-primary: #596b45;
+  --ifm-color-primary-dark: #4a5939;
+  --ifm-color-primary-darker: #40502e;
+  --ifm-color-primary-darkest: #303e22;
+  --ifm-color-primary-light: #6d8057;
+  --ifm-color-primary-lighter: #7e9364;
+  --ifm-color-primary-lightest: #94a97c;
+}
+.navbar { background: #f6f4ee; color: #252820; box-shadow: none; border-bottom: 1px solid #d9dcd0; padding-inline: 3rem; }
+.navbar__link { color: #535a49; font-size: 13px; font-weight: 500; }
+.navbar__title { font-size: 20px; font-weight: 500; letter-spacing: -.04em; }
+.navbar__logo img { height: 27px; }
+[data-theme='dark'] .navbar { background: #23271f; color: #edf1e5; }
+[data-theme='dark'] .navbar__link { color: #d7decc; }
+.footer--dark { background: #252820; --ifm-footer-color: #c9cfbf; --ifm-footer-link-color: #c9cfbf; }
+@media(max-width:760px){ .navbar { padding-inline: 20px; } }

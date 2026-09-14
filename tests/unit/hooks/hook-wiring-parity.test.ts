@@ -40,9 +40,9 @@ function launchedEvents(): string[] {
 }
 
 describe('hooks.json ↔ router parity', () => {
-  it('registers exactly the four 2.0 events (SessionStart, PreToolUse, Stop, PreCompact)', () => {
-    expect(Object.keys(readHooksJson().hooks).sort()).toEqual(['PreCompact', 'PreToolUse', 'SessionStart', 'Stop']);
-    expect(launchedEvents()).toEqual([...HOOK_EVENTS].sort());
+  it('registers only context and the explicit auto loop; compatibility handlers remain callable', () => {
+    expect(Object.keys(readHooksJson().hooks).sort()).toEqual(['SessionStart', 'Stop']);
+    expect(launchedEvents()).toEqual(['session-start', 'stop']);
     expect(registeredHookEvents()).toEqual([...HOOK_EVENTS].sort());
   });
 
@@ -58,10 +58,9 @@ describe('hooks.json ↔ router parity', () => {
     }
   });
 
-  it('PreToolUse is scoped to Write|Edit', () => {
-    const pre = readHooksJson().hooks.PreToolUse;
-    expect(pre).toHaveLength(1);
-    expect(pre[0].matcher).toBe('Write|Edit');
+  it('does not add model coaching or compaction Git capture to ordinary work', () => {
+    expect(readHooksJson().hooks.PreToolUse).toBeUndefined();
+    expect(readHooksJson().hooks.PreCompact).toBeUndefined();
   });
 
   it('timeouts are in seconds and <= 60', () => {
