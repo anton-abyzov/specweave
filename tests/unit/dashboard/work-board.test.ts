@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -77,6 +77,52 @@ import { localRequestError } from '../../../src/dashboard/server/local-request.j
 import { readLocalSessions } from '../../../src/dashboard/server/data/local-sessions.js';
 
 describe('intent, evidence and continuation', () => {
+  it('isolates malformed snapshots and execution timestamps without breaking valid work', () => {
+    const store = new IntentStore(root);
+    const valid = store.create({ title: 'Valid work' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    fs.appendFileSync(file, [
+      JSON.stringify({ ...valid, id: 'missing-time', updatedAt: undefined }),
+      JSON.stringify({ ...valid, id: 'bad-execution', executions: [{ startedAt: '2026-09-14T00:00:00Z' }, { startedAt: null }] }),
+      JSON.stringify({ ...valid, id: 'bad-summary', summary: { nested: true } }),
+      JSON.stringify({ ...valid, id: 'bad-refs', sessionRefs: 'codex:session' }),
+      JSON.stringify({ ...valid, id: 'projection-override', tasks: { total: 'not-a-number' } }),
+    ].join('\n') + '\n');
+    const board = store.board();
+    expect(board.items.filter(item => item.source === 'intent').map(item => item.id)).toEqual([valid.id]);
+    expect(board.warnings).toHaveLength(5);
+    expect(store.update(valid.id, { revision: valid.revision, state: 'active' }).state).toBe('active');
+  });
+  it('blocks edits over a corrupt newer revision while keeping the last valid snapshot visible', () => {
+    const store = new IntentStore(root);
+    const valid = store.create({ title: 'Keep history' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    fs.appendFileSync(file, JSON.stringify({ ...valid, revision: 8, updatedAt: null }) + '\n');
+    const before = fs.readFileSync(file, 'utf8');
+    expect(store.board().items.find(item => item.id === valid.id)?.revision).toBe(1);
+    expect(store.board().warnings).toHaveLength(1);
+    expect(() => store.update(valid.id, { revision: 1, state: 'done' })).toThrow(/corrupt/i);
+    expect(() => store.addExecution(valid.id, { revision: 1, harness: 'Codex' })).toThrow(/corrupt/i);
+    expect(fs.readFileSync(file, 'utf8')).toBe(before);
+  });
+  it('reports an unreadable history and refuses all writes instead of assuming it is empty', () => {
+    const store = new IntentStore(root);
+    const valid = store.create({ title: 'Unreadable work' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    const before = fs.readFileSync(file, 'utf8');
+    const read = fs.readFileSync;
+    const spy = vi.spyOn(fs, 'readFileSync').mockImplementation(((target: any, ...args: any[]) => {
+      if (target === file) throw new Error('permission denied');
+      return (read as any)(target, ...args);
+    }) as typeof fs.readFileSync);
+    try {
+      expect(store.board().warnings).toContain('Intent history could not be read. Changes are blocked until it is readable.');
+      expect(() => store.update(valid.id, { revision: 1, state: 'done' })).toThrow(/unreadable/i);
+      expect(() => store.addExecution(valid.id, { revision: 1, harness: 'Codex' })).toThrow(/unreadable/i);
+      expect(() => store.create({ title: 'New work' })).toThrow(/unreadable/i);
+    } finally { spy.mockRestore(); }
+    expect(fs.readFileSync(file, 'utf8')).toBe(before);
+  });
   it('preserves the last valid snapshot when appending after a missing newline', () => {
     const store = new IntentStore(root);
     const item = store.create({ title: 'Keep work' });
