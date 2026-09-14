@@ -21,6 +21,7 @@ import { readActiveIncrements, readJsonSafe } from './utils.js';
 import { isGcDue, purgeState, formatBytes } from '../../state/state-gc.js';
 import { loadTaskBoard, nextTask } from '../../tasks/task-board.js';
 import { readIntentContext } from '../../intent/portable-context.js';
+import { resolveHandoffPointer } from '../../session/handoff-pointer.js';
 
 const STALE_AUTO_MS = 24 * 60 * 60 * 1000;
 const MAX_INCREMENTS_LISTED = 3;
@@ -110,11 +111,17 @@ function handoffPointer(projectRoot: string, incDirs: string[]): string {
     ...incDirs.map((d) => path.join(d, 'handoff.md')),
     path.join(projectRoot, '.specweave', 'state', 'handoff-latest.md'),
   ];
+  // Canonical owned docs recover older absolute pointers after a project move.
+  for (const relative of ['.handoff/HANDOFF.md', 'HANDOFF.md']) {
+    const owned = resolveHandoffPointer(projectRoot, relative);
+    if (owned) candidates.push(owned);
+  }
   // Explicit handoffs without an increment live under .handoff/. The writer
   // records their actual path here, including custom --out destinations.
   try {
     const pointer = fs.readFileSync(path.join(projectRoot, '.specweave/state/handoff-latest.txt'), 'utf8').trim();
-    if (pointer && pointer.length <= 4096) candidates.push(path.resolve(projectRoot, pointer));
+    const resolved = resolveHandoffPointer(projectRoot, pointer);
+    if (resolved) candidates.push(resolved);
   } catch { /* no explicit handoff */ }
   let best: { p: string; mtime: number } | null = null;
   for (const p of candidates) {
