@@ -5,12 +5,14 @@ import * as readline from 'readline';
 export interface SessionTokenSummary {
   sessionId: string;
   model: string;
+  models: string[];
+  pricingStatus: 'legacy-api-estimate' | 'unknown';
   inputTokens: number;
   outputTokens: number;
   cacheWriteTokens: number;
   cacheReadTokens: number;
-  cost: number;
-  savings: number;
+  cost: number | null;
+  savings: number | null;
   timestamp: string;
   duration?: number;
 }
@@ -21,12 +23,15 @@ export interface BillingContext {
 }
 
 export interface CostsSummaryPayload {
-  totalCost: number;
-  totalSavings: number;
+  totalCost: number | null;
+  totalSavings: number | null;
+  estimatedSubtotal: number;
+  unpricedSessionCount: number;
+  pricingAsOf: string;
   totalTokens: number;
   sessionCount: number;
   sessions: SessionTokenSummary[];
-  modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }>;
+  modelBreakdown: Record<string, { cost: number | null; tokens: number; sessions: number }>;
   billingContext: BillingContext;
 }
 
@@ -51,20 +56,10 @@ export function getModelDisplayName(modelId: string): string {
   return MODEL_DISPLAY_NAMES[modelId] || modelId;
 }
 
-// Resolve raw model ID from logs to a known pricing key.
-// Checks exact match first, then falls back to family pattern matching.
-// Order of pattern checks matters: more specific before more generic.
-function resolveModel(raw: string): string {
-  if (!raw) return 'unknown';
-  if (PRICING[raw]) return raw;
-  if (raw.includes('opus')) return 'claude-opus-4-6';
-  if (raw.includes('sonnet')) return 'claude-sonnet-4-6';
-  if (raw.includes('haiku')) return 'claude-haiku-4-5-20251001';
-  return raw;
-}
-
+// Rates are matched only by exact model ID. Unrecognized and mixed-model
+// sessions remain unpriced; a model family is not a billing identity.
 function getPricing(model: string) {
-  return PRICING[model] || PRICING[resolveModel(model)] || PRICING['claude-sonnet-4-6'];
+  return PRICING[model];
 }
 
 /** Per-file cache entry: mtime + parsed summary */
@@ -94,7 +89,7 @@ export class CostAggregator {
     const recent = fileInfos.slice(-limit);
 
     // 2. Compute a hash from file paths + mtimes for response cache invalidation
-    const hash = recent.map(f => `${f.path}:${f.mtimeMs}`).join('|');
+    const hash = recent.map(f => `${f.path}:${f.mtimeMs}`).join('|') + JSON.stringify(billingConfig ?? {});
     if (this.responseCache && this.responseCacheHash === hash) {
       return this.responseCache;
     }
@@ -138,7 +133,7 @@ export class CostAggregator {
 
     // 6. Rebuild aggregates from all per-file cached summaries
     const sessions: SessionTokenSummary[] = [];
-    const modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }> = {};
+    const modelBreakdown: Record<string, { cost: number | null; tokens: number; sessions: number }> = {};
 
     for (const info of recent) {
       const cached = this.fileCache.get(info.path);
@@ -147,15 +142,18 @@ export class CostAggregator {
       sessions.push(summary);
       const model = summary.model || 'unknown';
       if (!modelBreakdown[model]) modelBreakdown[model] = { cost: 0, tokens: 0, sessions: 0 };
-      modelBreakdown[model].cost += summary.cost;
+      const previousCost = modelBreakdown[model].cost;
+      modelBreakdown[model].cost = previousCost === null || summary.cost === null ? null : previousCost + summary.cost;
       modelBreakdown[model].tokens += summary.inputTokens + summary.outputTokens;
       modelBreakdown[model].sessions++;
     }
 
     sessions.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
-    const totalCost = sessions.reduce((s, x) => s + x.cost, 0);
-    const totalSavings = sessions.reduce((s, x) => s + x.savings, 0);
+    const unpricedSessionCount = sessions.filter(s => s.cost === null).length;
+    const estimatedSubtotal = sessions.reduce((s, x) => s + (x.cost ?? 0), 0);
+    const totalCost = unpricedSessionCount ? null : estimatedSubtotal;
+    const totalSavings = unpricedSessionCount ? null : sessions.reduce((s, x) => s + (x.savings ?? 0), 0);
     const totalTokens = sessions.reduce((s, x) => s + x.inputTokens + x.outputTokens, 0);
 
     const planType = billingConfig?.planType === 'subscription' ? 'subscription' as const : 'api' as const;
@@ -169,6 +167,9 @@ export class CostAggregator {
     const result: CostsSummaryPayload = {
       totalCost,
       totalSavings,
+      estimatedSubtotal,
+      unpricedSessionCount,
+      pricingAsOf: '2026-03',
       totalTokens,
       sessionCount: sessions.length,
       sessions,
@@ -190,7 +191,7 @@ export class CostAggregator {
     let outputTokens = 0;
     let cacheWriteTokens = 0;
     let cacheReadTokens = 0;
-    let model = '';
+    const models = new Set<string>();
     let startTime = '';
     let endTime = '';
 
@@ -202,14 +203,14 @@ export class CostAggregator {
         if (!startTime && ts) startTime = ts;
         if (ts) endTime = ts;
 
-        // Extract model from assistant messages
-        if (entry.type === 'assistant' && entry.message?.model && !model) {
-          model = entry.message.model;
-        }
-
-        // Extract token usage
+        // Keep exact observed model IDs. Usage without its own model metadata
+        // cannot safely borrow a previous message's identity.
+        const rawModel = entry.type === 'assistant' && typeof entry.message?.model === 'string'
+          ? entry.message.model.trim() : '';
+        if (rawModel && rawModel !== '<synthetic>') models.add(rawModel);
         const usage = entry.message?.usage || entry.usage;
         if (usage) {
+          if (!rawModel || rawModel === '<synthetic>') models.add('unknown');
           inputTokens += usage.input_tokens || 0;
           outputTokens += usage.output_tokens || 0;
           cacheWriteTokens += usage.cache_creation_input_tokens || 0;
@@ -220,17 +221,18 @@ export class CostAggregator {
 
     if (!startTime || (inputTokens + outputTokens === 0)) return null;
 
-    const resolvedModel = resolveModel(model);
-    const pricing = getPricing(resolvedModel);
-    const cost = (
+    const observedModels = [...models];
+    const model = observedModels.length > 1 ? 'mixed' : observedModels[0] || 'unknown';
+    const pricing = getPricing(model);
+    const cost = pricing ? (
       (inputTokens * pricing.input) +
       (outputTokens * pricing.output) +
       (cacheWriteTokens * pricing.cacheWrite) +
       (cacheReadTokens * pricing.cacheRead)
-    ) / 1_000_000;
+    ) / 1_000_000 : null;
 
     // Savings from cache hits (difference between full input price and cache read price)
-    const savings = (cacheReadTokens * (pricing.input - pricing.cacheRead)) / 1_000_000;
+    const savings = pricing ? (cacheReadTokens * (pricing.input - pricing.cacheRead)) / 1_000_000 : null;
 
     const duration = startTime && endTime
       ? (new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000
@@ -238,7 +240,9 @@ export class CostAggregator {
 
     return {
       sessionId,
-      model: getModelDisplayName(resolvedModel),
+      model,
+      models: observedModels,
+      pricingStatus: pricing ? 'legacy-api-estimate' : 'unknown',
       inputTokens,
       outputTokens,
       cacheWriteTokens,

@@ -75,7 +75,8 @@ beforeEach(() => {
   // print nothing about sync no matter what the code did.
   for (const key of ['VITEST', 'VITEST_WORKER_ID', 'VITEST_POOL_ID', 'NODE_ENV']) delete env[key];
   execFileSync('git', ['init', '-q', '.'], { cwd: workDir, env });
-  expect(sw('init', '--quick').code).toBe(0);
+  // This disposable project intentionally lives under the guarded system temp directory.
+  expect(sw('init', '--quick', '--force').code).toBe(0);
   expect(sw('create-increment', 'output honesty').code).toBe(0);
 });
 

@@ -444,7 +444,7 @@ The validate command includes security checks.
 
 - [OWASP Top 10](https://owasp.org/Top10/) — Most critical security risks
 - [OWASP Cheat Sheets](https://cheatsheetseries.owasp.org/) — Practical guides
-- [Security Reference](/docs/reference/compliance-standards) — Compliance standards
+- [Security Reference](/docs/guides/compliance-standards) — Compliance standards
 
 ---
 

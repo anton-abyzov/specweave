@@ -434,5 +434,5 @@ const result = await launchImportJob({
 - [Commands: specweave jobs](/docs/reference/commands) - Full command reference
 - [ADO Repo Cloning](/docs/guides/jira-ado-sync) - Enterprise setup
 - [GitHub sync](/docs/guides/github-sync) — `specweave sync pull --create-increments` imports issues
-- [Living Docs Sync Strategy](/docs/guides/core-concepts/living-docs-sync-strategy) - When and how docs sync
+- [Living Docs Sync Strategy](/docs/guides/core-concepts/living-documentation) - When and how docs sync
 - [Living Documentation](/docs/guides/core-concepts/living-documentation) - Core concepts

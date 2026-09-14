@@ -12,7 +12,7 @@ tags: ["extensible-skills", "specification", "dynamic-context-injection", "skill
 
 Built on Claude Code's native skill system, this document defines the formal specification for skill extensibility classification. It specifies category definitions, detection mechanisms, and the context injection specification.
 
-For practical how-to guidance, see the [Implementation Guide](/docs/skills/extensible/extensible-skills-guide).
+For a category summary, see the [extensibility overview](/docs/skills/extensible/extensible-skills). The separate historical implementation guide is not published.
 
 ---
 
@@ -145,9 +145,9 @@ A skill registry implementation conforms to this specification if it:
 
 ## See Also
 
-- **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** -- Getting started, examples, FAQ
-- **[Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)** -- How skills work under the hood
-- **[Self-Improving Skills](/docs/skills/extensible/extensible-skills)** -- The Reflect auto-learning system
+- **[Extensibility Overview](/docs/skills/extensible/extensible-skills)** -- Category summary and quick reference
+- **Claude Skills Deep Dive (historical reference; not published)** -- How skills work under the hood
+- **Self-Improving Skills (historical reference; not published)** -- Earlier Reflect design
 - **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Best practices for skill authoring
 
 ---

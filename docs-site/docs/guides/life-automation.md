@@ -197,7 +197,7 @@ The opportunities are vast. Any structured work you do repeatedly — or any amb
 
 Ready to automate beyond code?
 
-1. [Install SpecWeave](/docs/getting-started/index) — takes under 2 minutes
+1. [Install SpecWeave](/docs/getting-started) — takes under 2 minutes
 2. [Build your first increment](/docs/getting-started/first-increment) — the workflow is the same for code and non-code tasks
 3. [Browse real-world examples](/docs/examples) — see what others have built
 4. [Join the Discord](https://discord.gg/specweave) — share your automation scenarios with the community

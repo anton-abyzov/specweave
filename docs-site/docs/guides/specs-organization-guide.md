@@ -44,16 +44,16 @@
 
 ## 📚 Complete Documentation
 
-1. **[REVISED-ORGANIZATION-STRATEGY.md](./REVISED-ORGANIZATION-STRATEGY.md)** - Full v2.0 architecture
-2. **[V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md)** - Visual comparison
-3. **[COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md)** - Full example
-4. **[FINAL-DECISION.md](./FINAL-DECISION.md)** - Implementation plan
+1. **REVISED-ORGANIZATION-STRATEGY.md (historical reference; not published)** - Full v2.0 architecture
+2. **V2-BROWNFIELD-FIRST.md (historical reference; not published)** - Visual comparison
+3. **COMPLETE-ARCHITECTURE.md (historical reference; not published)** - Full example
+4. **FINAL-DECISION.md (historical reference; not published)** - Implementation plan
 
 ## 🚀 Next Steps
 
-1. Read [FINAL-DECISION.md](./FINAL-DECISION.md) for complete implementation plan
-2. Review [V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md) for visual comparison
-3. Check [COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md) for example spec
+1. Read FINAL-DECISION.md (historical reference; not published) for complete implementation plan
+2. Review V2-BROWNFIELD-FIRST.md (historical reference; not published) for visual comparison
+3. Check COMPLETE-ARCHITECTURE.md (historical reference; not published) for example spec
 
 ---
 

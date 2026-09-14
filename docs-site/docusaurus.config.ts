@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'SpecWeave',
-  tagline: 'The Development Loom — Weave Specs into Shipping Software',
+  tagline: 'Change agents. Keep the thread.',
   // Use proper favicon.ico for broad compatibility (Teams, etc.)
   favicon: 'favicon.ico',
 
@@ -89,7 +89,7 @@ const config: Config = {
       tagName: 'link',
       attributes: {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,450;0,500;1,400&display=swap',
       },
     },
     // Additional favicon links for broad compatibility (Apple, Android, etc.)
@@ -125,7 +125,7 @@ const config: Config = {
   organizationName: 'anton-abyzov',
   projectName: 'specweave',
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
@@ -508,35 +508,12 @@ const config: Config = {
         srcDark: 'img/logo-dark.svg',
       },
       items: [
-        {
-          type: 'docSidebar',
-          sidebarId: 'docsSidebar',
-          position: 'left',
-          label: 'Docs',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'academySidebar',
-          position: 'left',
-          label: 'Learn',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'enterpriseSidebar',
-          position: 'left',
-          label: 'Enterprise',
-        },
-        {to: '/blog', label: 'Blog', position: 'left'},
-        {
-          type: 'search',
-          position: 'right',
-        },
-        {
-          href: 'https://github.com/anton-abyzov/specweave',
-          position: 'right',
-          className: 'header-github-link',
-          'aria-label': 'GitHub repository',
-        },
+        {to: '/product', label: 'Product', position: 'left'},
+        {to: '/integrations', label: 'Integrations', position: 'left'},
+        {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
+        {href: 'https://verified-skill.com', label: 'Verified Skills ↗', position: 'left'},
+        {type: 'search', position: 'right'},
+        {href: 'https://github.com/anton-abyzov/specweave', label: 'GitHub ↗', position: 'right'},
       ],
     },
 
@@ -556,7 +533,7 @@ const config: Config = {
               to: '/docs/getting-started',
             },
             {
-              label: 'Skills Reference (~48)',
+              label: 'Skills Reference',
               to: '/docs/reference/skills',
             },
             {
@@ -568,10 +545,6 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            {
-              label: 'GitHub Discussions',
-              href: 'https://github.com/anton-abyzov/specweave/discussions',
-            },
             {
               label: 'GitHub Issues',
               href: 'https://github.com/anton-abyzov/specweave/issues',
@@ -623,14 +596,7 @@ const config: Config = {
     },
 
     // Announcement bar (for important updates)
-    announcementBar: {
-      id: 'announcement-bar',
-      content:
-        'If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!',
-      backgroundColor: '#eeeafc',
-      textColor: '#4a3d8f',
-      isCloseable: true,
-    },
+
   } satisfies Preset.ThemeConfig,
 };
 

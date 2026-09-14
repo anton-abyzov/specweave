@@ -278,6 +278,8 @@ import { initCommand } from '../../../../src/cli/commands/init.js';
 const CWD = '/test/my-project';
 
 function setupDefaultMocks() {
+  // These scenarios deliberately simulate an interactive terminal, even in CI.
+  for (const key of ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'CIRCLECI', 'JENKINS_URL']) vi.stubEnv(key, undefined);
   vi.spyOn(process, 'exit').mockImplementation((() => {}) as any);
   vi.spyOn(console, 'error').mockImplementation(() => {});
   vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -378,6 +380,7 @@ describe('0643: Init repo clone flow fixes', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 

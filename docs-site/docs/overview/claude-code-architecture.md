@@ -10,7 +10,7 @@ keywords: [claude code, plugins, skills, agents, hooks, commands, architecture, 
 Understanding Claude Code's architecture helps you leverage SpecWeave's full power. This guide explains how the core components work and relate to each other.
 
 :::info Official Documentation
-This guide is based on the [official Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) and the [Claude Agent SDK](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/sdk-overview).
+This guide is based on the [official Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) and the [Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview).
 :::
 
 :::tip Cross-Platform Compatibility
@@ -625,7 +625,7 @@ SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 
 ### Anthropic Documentation
 - **[Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)** — Official Claude Code guide
-- **[Claude Agent SDK](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/sdk-overview)** — Programmatic usage
+- **[Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview)** — Programmatic usage
 - **[Claude API Reference](https://docs.anthropic.com/en/api)** — API documentation
 - **[Claude Models](https://docs.anthropic.com/en/docs/about-claude/models)** — Model capabilities and selection
 

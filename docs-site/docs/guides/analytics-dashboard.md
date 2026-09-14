@@ -1,123 +1,49 @@
 ---
 sidebar_position: 25
-title: Analytics Dashboard
-description: Monitor command usage, skill activations, and agent spawns with SpecWeave's built-in analytics dashboard
+title: Work board and dashboard
+description: Track user intent, task evidence and cross-tool execution history from local project state
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# Work board and dashboard
 
-# Analytics Dashboard
+The SpecWeave 2.1 dashboard opens on the **Work board**. Start with the work that matters: what is in progress, what needs attention, which tasks are complete, and which linked increments have current passing verification.
 
-SpecWeave tracks every command invocation, skill activation, and agent spawn in a local JSONL file. The built-in dashboard gives you a visual overview of your usage patterns.
+## Launch
 
-## Launching the Dashboard
+Run from an initialized SpecWeave project:
 
 ```bash
 specweave dashboard
+specweave dashboard --no-browser
+specweave dashboard --port 3457 --no-browser
 ```
 
-This starts a local web server and opens the dashboard in your browser.
+The command starts or reuses the local dashboard. It normally opens a browser; `--no-browser` prints the URL without opening one. The default starting port is 3456, with nearby ports tried if needed. The server binds to loopback. Run the command from another project to register it, then choose the workspace in the sidebar.
 
-## What Gets Tracked
+## From intent to evidence
 
-SpecWeave records three types of events:
+Create a short title and summary with **New intent**. A small task can stay independent; linking an increment is optional. Existing increments also appear on the board.
 
-- **Commands** -- every `sw:do`, `sw:increment`, `sw:auto`, `sw:done`, etc.
-- **Skills** -- skill activations like `sw:increment`, `sw:review`, `sw:do`, `sw:done`
-- **Agents** -- agent spawns (Explore, general-purpose, Plan, etc.)
+Move cards through **Backlog, In progress, Blocked, Review and Done** by dragging them or using the state selector. This is the intent's planning state. Moving a card to Done does not complete its linked increment or replace verification.
 
-### Implicit Tracking
+Open a card to read its summary, follow its increment link, inspect task and acceptance-criteria progress, and review the recorded executions. **Evidence** opens the increment view. The task ledger supplies task state; the specification supplies acceptance criteria. A verification report can be missing, failed, current or stale. A stale passing report is not counted as current verification.
 
-Analytics captures **all** invocations, including implicit ones. When `sw:team` orchestrates parallel agents and those agents internally invoke skills like `sw:do` or spawn sub-agents, every call is tracked automatically via PostToolUse hooks. This means the dashboard shows the true volume of work -- not just what the user types, but everything the AI agents do behind the scenes.
+The top counters distinguish active intents, blocked work, completed tasks and verified linked increments. They do not turn token consumption or activity volume into proof of completion.
 
-Each event includes:
+## Sessions and continuation
 
-| Field | Description |
-|-------|-------------|
-| `timestamp` | When the event occurred (ISO 8601) |
-| `type` | `command`, `skill`, or `agent` |
-| `name` | The command/skill/agent name |
-| `plugin` | Source plugin (e.g., `specweave`) |
-| `increment` | Active increment context, if any |
-| `duration` | Execution time in milliseconds |
-| `success` | Whether the execution succeeded |
+**Sessions** shows project-scoped local Codex and Claude Code metadata when available. Link a session to its intent explicitly, or add an execution setup yourself. Harness, exact model identifier, effort, provider and surface remain separate fields. Unavailable facts stay Unknown; bounded reads can miss intermediate model changes and are labeled partial.
 
-## Dashboard Pages
+An intent can span several sessions and tools. Use `specweave handoff` to write context the next tool can read. [Models and execution context](/docs/guides/model-selection) explains the dimensions and their limits.
 
-The dashboard provides 16 specialized pages. The core pages are described below; detailed documentation for each capability page is linked.
+## Local updates
 
-### Overview
+Intent snapshots persist in `.specweave/intents/board.jsonl`. Increment documents and the append-only task ledger remain in `.specweave/increments/`. The board refreshes on filesystem events and reconciles every 15 seconds; session metadata refreshes while its view is open. Invalid snapshots produce warnings rather than silently replacing valid state.
 
-Shows increment progress, task completion rates, and acceptance criteria status at a glance. Live-updates via SSE as work progresses.
+These reads and projections make **no model API calls**. They do not require an agent to spend tokens rewriting a status summary on every tool call.
 
-### Analytics
+## Secondary views
 
-Displays aggregated usage data: KPI cards (total events, success rate, top commands), daily breakdown over 30 days, top commands/skills/agents ranked by invocation count, and success/failure rates.
+Connections and evidence remain in the main navigation. Expand **Diagnostics & settings** for Usage & estimates, analytics, hooks, errors and configuration. These views show available records, not a guaranteed transcript of every agent action. The default hook set does not capture every tool invocation.
 
-### Increments
-
-Browse all increments with filters by status and type. Click any row to see the full detail view with specs, tasks, and progress.
-
-### Costs
-
-Token usage and cost estimates broken down by increment and command.
-
-### Additional Dashboard Pages
-
-| Page | What It Shows |
-|------|--------------|
-| [Error Tracing](./dashboard/errors) | Error grouping, classification, investigation workflow |
-| [Sync Audit](/docs/reference/sync-cli) | GitHub/JIRA/ADO sync status and audit log |
-| [Activity Stream](./dashboard/activity) | Real-time SSE event feed with category filters |
-| [Config Editor](./dashboard/config) | Visual JSON editor for `.specweave/config.json` |
-| [Service Management](./dashboard/services) | Running services, port detection, start/stop controls |
-| [Notifications](./dashboard/notifications) | Notification feed with severity filters |
-| [Marketplace Scanner](./dashboard/marketplace) | Skill discovery pipeline, approve/reject workflow |
-| [Plugins](./dashboard/plugins) | Installed plugins, usage stats, health status |
-| [Agents](./dashboard/agents) | Agent lifecycle tracking and spawn history |
-| [Hooks](./dashboard/hooks) | Hook execution log and event type filters |
-
-## Multi-Project Support
-
-When working with multiple projects, the dashboard uses the `?project=` query parameter to scope all views to a specific project. Navigating between pages preserves the active project context automatically.
-
-Switch projects via the project selector in the header.
-
-## Data Storage
-
-All analytics data is stored locally at:
-
-```
-.specweave/state/analytics/events.jsonl
-```
-
-- Append-only JSONL format (one JSON object per line)
-- Automatic log rotation at 10MB
-- 30-day retention by default
-- Old events archived to `.specweave/state/analytics/archive/`
-- Nothing is sent externally -- all data stays on your machine
-
-## CLI Analytics Command
-
-View analytics from the terminal without the dashboard:
-
-```bash
-specweave analytics              # Summary for last 7 days
-specweave analytics --since 30d  # Last 30 days
-specweave analytics --type skill # Filter by event type
-specweave analytics --export csv # Export as CSV
-```
-
-## Configuration
-
-Analytics is enabled by default. To disable:
-
-```json
-{
-  "analytics": {
-    "enabled": false
-  }
-}
-```
-
-Add this to your `.specweave/config.json`.
+[Usage & estimates](/docs/reference/cost-tracking) distinguishes token records from estimated API costs. [Hooks](/docs/guides/dashboard/hooks) explains the two default lifecycle hooks.

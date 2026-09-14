@@ -17,11 +17,14 @@ import {
 } from '../../../../src/core/validation/three-file-validator.js';
 
 describe('Project field validation (T-011 / T-012 / T-013)', () => {
+  let fixtureRoot: string;
   let tempDir: string;
   let validator: ThreeFileValidator;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-proj-val-'));
+    fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-proj-val-'));
+    tempDir = path.join(fixtureRoot, '.specweave', 'increments', '0001-test');
+    fs.mkdirSync(tempDir, { recursive: true });
     validator = new ThreeFileValidator();
 
     // Write minimal valid files
@@ -43,33 +46,11 @@ Overview
   });
 
   afterEach(() => {
-    fs.rmSync(tempDir, { recursive: true, force: true });
-    // Clean up any .specweave/ written to the parent of os.tmpdir() (two levels up from tempDir).
-    // These tests simulate an umbrella root by writing to path.resolve(tempDir, '..', '..'),
-    // which lands outside os.tmpdir() and must be cleaned up explicitly.
-    try {
-      const parentConfigDir = path.resolve(tempDir, '..', '..', '.specweave');
-      if (fs.existsSync(parentConfigDir)) {
-        const configFile = path.join(parentConfigDir, 'config.json');
-        if (fs.existsSync(configFile)) fs.unlinkSync(configFile);
-        // Only remove the directory if it's now empty (other tests may still need it)
-        try { fs.rmdirSync(parentConfigDir); } catch { /* not empty, skip */ }
-      }
-    } catch { /* non-critical cleanup */ }
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
   });
 
   function writeMetadata(data: Record<string, unknown>): void {
     fs.writeFileSync(path.join(tempDir, 'metadata.json'), JSON.stringify(data, null, 2));
-  }
-
-  function writeConfig(data: Record<string, unknown>): void {
-    // Config is in the parent .specweave directory
-    const specweaveDir = path.dirname(tempDir);
-    const configPath = path.join(specweaveDir, 'config.json');
-    if (!fs.existsSync(path.dirname(configPath))) {
-      fs.mkdirSync(path.dirname(configPath), { recursive: true });
-    }
-    fs.writeFileSync(configPath, JSON.stringify(data, null, 2));
   }
 
   // T-011/T-012: METADATA_MISSING_PROJECT
@@ -77,7 +58,7 @@ Overview
   it('should emit METADATA_MISSING_PROJECT when umbrella enabled and no project', () => {
     writeMetadata({ id: '0001-test', status: 'active' });
     // Write config in parent .specweave/ dir
-    const configDir = path.resolve(tempDir, '..', '..');
+    const configDir = fixtureRoot;
     const configPath = path.join(configDir, '.specweave', 'config.json');
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify({
@@ -102,7 +83,7 @@ Overview
   // AC-US4-02: no umbrella + no project → NO warning
   it('should NOT emit warning for single-repo project without project field', () => {
     writeMetadata({ id: '0002-test', status: 'active' });
-    const configDir = path.resolve(tempDir, '..', '..');
+    const configDir = fixtureRoot;
     const configPath = path.join(configDir, '.specweave', 'config.json');
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify({
@@ -131,7 +112,7 @@ Overview
   // AC-US4-03: project = "unknown-repo" → WARNING
   it('should emit METADATA_UNKNOWN_PROJECT for unrecognized project name', () => {
     writeMetadata({ id: '0004-test', status: 'active', project: 'unknown-repo' });
-    const configDir = path.resolve(tempDir, '..', '..');
+    const configDir = fixtureRoot;
     const configPath = path.join(configDir, '.specweave', 'config.json');
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify({
@@ -156,7 +137,7 @@ Overview
 
   it('should NOT emit METADATA_UNKNOWN_PROJECT when project matches a childRepo', () => {
     writeMetadata({ id: '0005-test', status: 'active', project: 'repo-a' });
-    const configDir = path.resolve(tempDir, '..', '..');
+    const configDir = fixtureRoot;
     const configPath = path.join(configDir, '.specweave', 'config.json');
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify({
@@ -179,7 +160,7 @@ Overview
 
   it('should NOT emit METADATA_UNKNOWN_PROJECT when project matches umbrella.projectName', () => {
     writeMetadata({ id: '0006-test', status: 'active', project: 'ws' });
-    const configDir = path.resolve(tempDir, '..', '..');
+    const configDir = fixtureRoot;
     const configPath = path.join(configDir, '.specweave', 'config.json');
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify({

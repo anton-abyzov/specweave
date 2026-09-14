@@ -13,6 +13,9 @@ interface Task {
   status: string;
   userStory?: string;
   acs?: string[];
+  evidence?: string;
+  actor?: string;
+  note?: string;
 }
 
 interface AC {
@@ -37,6 +40,10 @@ interface IncrementDetail {
   acs: AC[];
   acSummary: { total: number; completed: number };
   dirName: string;
+  spec?: string;
+  handoff?: string;
+  verify?: Record<string, unknown>;
+  verification?: { status: string; ranAt: string | null };
 }
 
 export function IncrementDetailPage() {
@@ -92,6 +99,15 @@ export function IncrementDetailPage() {
         <ProgressBar label="Tasks" completed={data.taskSummary.completed} total={data.taskSummary.total} color="indigo" />
         <ProgressBar label="Acceptance Criteria" completed={data.acSummary.completed} total={data.acSummary.total} color="emerald" />
       </div>
+
+      <section className="work-evidence">
+        <h3>Verification and specification</h3>
+        <p>Verification {data.verification?.status || 'missing'}{data.verification?.ranAt ? ` · ${data.verification.ranAt}` : ''}</p>
+        <details className="work-handoff"><summary>Read specification</summary><pre>{data.spec || 'No specification found.'}</pre></details>
+        {data.verify && Object.keys(data.verify).length > 0 && <details className="work-handoff"><summary>Verification report</summary><pre>{JSON.stringify(data.verify, null, 2)}</pre></details>}
+        {data.handoff && <details className="work-handoff"><summary>Latest handoff</summary><pre>{data.handoff}</pre></details>}
+        <details className="work-handoff"><summary>Task evidence</summary>{data.tasks.map(task => <div key={task.id} className="py-3"><strong>{task.id} · {task.status}</strong><p>{task.actor || 'Actor unknown'}</p><pre>{task.evidence || task.note || 'No ledger evidence recorded.'}</pre></div>)}</details>
+      </section>
 
       {/* Tasks */}
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">

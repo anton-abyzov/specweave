@@ -100,16 +100,18 @@ describe('Docusaurus navbar items (T-017)', () => {
     expect(navItems.length).toBeLessThanOrEqual(4);
   });
 
-  it('includes Docs and Learn nav items', () => {
-    const labels = navItems.map((item: any) => item.label);
-    expect(labels).toContain('Docs');
-    expect(labels).toContain('Learn');
+  it('links Product and Integrations to the product layers', () => {
+    expect(navItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({label: 'Product', to: '/product'}),
+      expect.objectContaining({label: 'Integrations', to: '/integrations'}),
+    ]));
   });
 
-  it('includes Enterprise and Blog nav items', () => {
-    const labels = navItems.map((item: any) => item.label);
-    expect(labels).toContain('Enterprise');
-    expect(labels).toContain('Blog');
+  it('keeps Docs and Verified Skills available in primary navigation', () => {
+    expect(navItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({label: 'Docs', sidebarId: 'docsSidebar'}),
+      expect.objectContaining({label: 'Verified Skills ↗', href: 'https://verified-skill.com'}),
+    ]));
   });
 
   it('does not include Skills or Reference as separate nav items', () => {

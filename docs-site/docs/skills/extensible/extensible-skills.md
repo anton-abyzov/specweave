@@ -10,7 +10,7 @@ tags: ["extensible-skills", "skill-memories", "dynamic-context-injection", "cust
 
 **Making AI tools transparent, customizable, and extensible**
 
-The Extensible Skills documentation has been split into two documents for clarity:
+This overview summarizes the extensibility categories and links to the published specification.
 
 ---
 
@@ -25,15 +25,9 @@ The **[Extensible Skills Specification](/docs/skills/extensible/extensible-skill
 
 ---
 
-## Implementation Guide (Informative)
+## Historical implementation guide
 
-The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** covers:
-
-- **Getting started** -- For Claude Code users and SpecWeave users
-- **Architecture** -- Instruction-based loading, `.specweave/skill-memories/` lookup, and the Reflect system
-- **Real-world examples** -- How corrections become persistent preferences
-- **Skill memory format** -- Structured Markdown for customizations
-- **FAQ** -- Common questions and troubleshooting
+A separate implementation guide for the earlier skill-memories and Reflect architecture is not available in the published documentation. This overview does not provide its promised setup instructions or FAQ. For current SpecWeave commands, use the [skills reference](/docs/reference/skills).
 
 ---
 
@@ -50,8 +44,8 @@ The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** 
 ## See Also
 
 - **[Skills Overview](/docs/skills/)** -- Both skill layers at a glance
-- **[Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)** -- How skills work under the hood
-- **[Self-Improving Skills](/docs/skills/extensible/extensible-skills)** -- The Reflect auto-learning system
+- **Claude Skills Deep Dive (historical reference; not published)** -- How skills work under the hood
+- **Self-Improving Skills (historical reference; not published)** -- Earlier Reflect design; not a current SpecWeave lifecycle guarantee
 - **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Design principles for skill authoring
 - **[Verified Skills Standard](/docs/skills/verified/verified-skills)** -- How skills earn trust through 3-tier security certification
 

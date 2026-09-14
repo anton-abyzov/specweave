@@ -12,7 +12,7 @@ You've been using AI to write code. The output is... fine. Generic. It works, bu
 **Skills fix this.** A skill injects domain knowledge into the AI so the same prompt produces dramatically different — and dramatically better — results.
 
 :::tip Video version
-A video walkthrough of these concepts is coming soon. Subscribe to the [SpecWeave YouTube channel](https://youtube.com/@specweave) to get notified.
+A video walkthrough of these concepts is coming soon. Subscribe to the [Anton Abyzov: AI Power](https://www.youtube.com/@antonabyzov) to get notified.
 :::
 
 ## What is a Skill?

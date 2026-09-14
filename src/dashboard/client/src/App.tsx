@@ -1,3 +1,4 @@
+import { WorkPage } from './pages/WorkPage';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -29,14 +30,16 @@ export default function App() {
   return (
     <ProjectContext.Provider value={projectManager}>
       <SSEProvider>
-      <div className="flex min-h-screen bg-gray-950 text-gray-100">
+      <div className="work-shell flex min-h-screen text-gray-100">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
           <main className="flex-1 overflow-y-auto">
             <ErrorBoundary resetKey={location.pathname}>
             <Routes>
-              <Route path="/" element={<OverviewPage />} />
+              <Route path="/" element={<WorkPage />} />
+              <Route path="/sessions" element={<WorkPage sessionsOnly />} />
+              <Route path="/overview" element={<OverviewPage />} />
               <Route path="/increments" element={<IncrementsPage />} />
               <Route path="/increments/:id" element={<IncrementDetailPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />

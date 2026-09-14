@@ -313,7 +313,7 @@ When you close an increment, external tools update automatically. Sync is resili
 
 SpecWeave builds itself. Every feature, bug fix, and release across 2,500+ commits and 400+ versions is spec-driven — proving the methodology works at the scale and complexity it's designed for.
 
-**[Browse increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — see how SpecWeave develops SpecWeave.
+**Development increments** live in the project’s `.specweave/increments/` directory; the historical archive is not published on this site.
 
 ---
 

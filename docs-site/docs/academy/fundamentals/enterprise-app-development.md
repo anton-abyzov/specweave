@@ -1626,7 +1626,7 @@ Deepen your understanding of key concepts:
    - Living docs sync automatically
 
 4. **Join the Community**
-   - [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
+   - [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
    - [Discord Community](https://discord.gg/specweave)
    - [Documentation](https://spec-weave.com)
 
@@ -1689,4 +1689,4 @@ Enterprise application development is fundamentally different from building pers
 
 **Document Version**: 1.0
 **Last Updated**: 2025-11-04
-**Feedback**: [Open an issue](https://github.com/anton-abyzov/specweave/issues) or [join discussions](https://github.com/anton-abyzov/specweave/discussions)
+**Feedback**: [Open an issue](https://github.com/anton-abyzov/specweave/issues)

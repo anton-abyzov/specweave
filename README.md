@@ -1,14 +1,13 @@
 <h1 align="center">SpecWeave</h1>
 
 <p align="center">
-  <strong>AI-assisted development, under control.</strong><br/>
-  One folder per unit of work. Six commands. An append-only ledger any tool can write to.
+  <strong>Change agents. Keep the thread.</strong><br/>
+  Portable intent, linked specifications, and verified progress across coding agents.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
   <img src="https://img.shields.io/badge/skills-10-8B5CF6" alt="10 skills" />
-  <img src="https://img.shields.io/badge/production_apps-10+-green" alt="10+ production apps" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
@@ -23,11 +22,21 @@ cd your-project
 specweave init .
 ```
 
+## See the work
+
+```bash
+specweave dashboard
+```
+
+Start with a short intent, see what is in progress, and open the linked specification and evidence. Small work can stay lightweight. The dashboard reads local project state without model calls; card movement does not manufacture verified completion.
+
+[Explore the product](https://spec-weave.com/product) · [Optional integrations](https://spec-weave.com/integrations)
+
 ## The loop
 
 | # | Command | Claude Code skill | What it does |
 |---|---------|-------------------|--------------|
-| 1 | `specweave create-increment "<title>"` | `/sw:increment` | `spec.md` with Problem, Scope, numbered ACs and an Approach. Approved before any code. |
+| 1 | `specweave create-increment "<title>"` | `/sw:increment` | `spec.md` with Problem, Scope, numbered ACs and an Approach. Resolve scope; continue within your authorization. |
 | 2 | `specweave task next` → `claim` → `done --run "<test>"` | `/sw:do` | Work the tasks. `done` refuses a failing test command. |
 | 3 | `specweave verify` | — | Runs your test/lint/build; writes `reports/verify.json`. |
 | 4 | — | `/sw:review` | Fresh-context adversarial review; every finding cites `path:line`. |
@@ -38,7 +47,7 @@ Everything lives in `.specweave/increments/NNNN-slug/`: `spec.md`, `tasks.md` (+
 
 ## The ten skills
 
-The CLI is the product and it runs in any AI tool or in CI. These ten skills are the Claude Code wrappers over it — nothing else ships in the plugin, so nothing goes stale.
+The CLI is the product and it runs in any AI tool or in CI. These ten focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
 
 | Skill | Use it for |
 |-------|------------|
@@ -69,13 +78,13 @@ specweave update
 There is no alias routing: a 1.x slug simply has no skill behind it. The old-to-new map —
 every removed skill, the skill or CLI command that replaced it, and the ones that moved to
 `skills-optional/` — is `removedIn2_0` in
-[`plugins/specweave/marketplace.json`](plugins/specweave/marketplace.json).
+[`plugins/specweave/marketplace.json`](https://github.com/anton-abyzov/specweave/blob/develop/plugins/specweave/marketplace.json).
 
 <br/>
 
 ## Built With SpecWeave
 
-12 production projects shipped in 3 months. 5 in the App Store.
+Examples from the maintainer's portfolio. These are usage examples, not controlled productivity measurements.
 
 | App | Platform | What It Does |
 |-----|----------|-------------|
@@ -163,7 +172,7 @@ npx vskill eval run my-skill                  # Run eval suite
 
 ## Contributing
 
-Inside this repo dependency install scripts are disabled (`.npmrc`): run `npm ci`, then `npm run setup` (rebuilds the allowlisted native deps), and `npm run security:scan` before pushing — see [SECURITY.md](SECURITY.md).
+Inside this repo dependency install scripts are disabled (`.npmrc`): run `npm ci`, then `npm run setup` (rebuilds the allowlisted native deps), and `npm run security:scan` before pushing — see [SECURITY.md](https://github.com/anton-abyzov/specweave/blob/develop/SECURITY.md).
 
 ## Community
 

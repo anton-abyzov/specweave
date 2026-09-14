@@ -439,7 +439,7 @@ Common culprits:
 2. Add providers ONE BY ONE until crash
 3. Check imports of the crashing provider
 
-**See**: [React Native Crash Troubleshooting](../troubleshooting/react-native-expo-crashes.md)
+**See**: React Native Crash Troubleshooting (historical reference; not published)
 
 #### Issue: "Cannot read property 'getLocales' of null"
 
@@ -633,7 +633,7 @@ Fast Refresh is enabled by default. To manually trigger:
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Navigation](https://reactnavigation.org/docs/getting-started)
 - [React Native Directory](https://reactnative.directory/) - Find libraries
-- [SpecWeave Mobile Plugin](../../../README.md) - SpecWeave integration guide
+- SpecWeave Mobile Plugin (historical reference; not published) - SpecWeave integration guide
 
 ---
 
@@ -652,5 +652,5 @@ If you encounter issues not covered in this guide:
 **Tested With**: React Native 0.83, Expo SDK 54
 
 **Related Guides**:
-- [React Native Crash Troubleshooting](../troubleshooting/react-native-expo-crashes.md) - Module-level crashes, white screens
-- [Mobile Architecture Patterns](../../patterns/mobile-architecture.md) - Architecture patterns
+- React Native Crash Troubleshooting (historical reference; not published) - Module-level crashes, white screens
+- Mobile Architecture Patterns (historical reference; not published) - Architecture patterns

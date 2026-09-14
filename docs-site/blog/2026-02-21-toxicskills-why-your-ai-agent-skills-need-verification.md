@@ -9,7 +9,7 @@ keywords: [ToxicSkills, Snyk, AI agent security, skill verification, supply chai
 
 # 36% of AI Agent Skills Have Security Flaws
 
-On February 5, 2026, Snyk Labs published the [ToxicSkills study](https://snyk.io/blog/toxicskills) — the first large-scale security audit of AI agent skills. They scanned **3,984 publicly listed skills** across every major registry. The results should concern every developer using AI agents.
+On February 5, 2026, Snyk Labs published the [ToxicSkills study](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) — the first large-scale security audit of AI agent skills. They scanned **3,984 publicly listed skills** across every major registry. The results should concern every developer using AI agents.
 
 **1,467 skills (36.82%)** contained at least one security flaw. Of those, **76 contained confirmed malicious payloads** — not accidental overpermissions, but deliberate credential theft, reverse shells, and data exfiltration.
 
@@ -67,7 +67,7 @@ SpecWeave's [Verified Skills Standard](/docs/skills/verified/verified-skills) de
 
 Every skill published to [verifiedskill.com](https://verifiedskill.com) passes at least Tier 1 before it reaches any developer. Skills that fail are rejected with detailed findings explaining exactly what was flagged and why.
 
-The scanning methodology is fully transparent. The [52 patterns](docs/skills/secure-skill-factory-standard) are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.
+The scanning methodology is fully transparent. The [52 patterns](/docs/skills/verified/secure-skill-factory-standard) are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.
 
 ## What You Should Do
 
@@ -83,4 +83,4 @@ The skill ecosystem is growing fast. Making sure it grows safely is not optional
 
 ---
 
-*The Snyk ToxicSkills study is available at [snyk.io/blog/toxicskills](https://snyk.io/blog/toxicskills). SpecWeave's scanner test results are based on samples from [snyk-labs/toxicskills-goof](https://github.com/snyk-labs/toxicskills-goof). The verified skills registry is at [verifiedskill.com](https://verifiedskill.com).*
+*The Snyk ToxicSkills study is available at [snyk.io/blog/toxicskills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/). SpecWeave's scanner test results are based on samples from [snyk-labs/toxicskills-goof](https://github.com/snyk-labs/toxicskills-goof). The verified skills registry is at [verifiedskill.com](https://verifiedskill.com).*

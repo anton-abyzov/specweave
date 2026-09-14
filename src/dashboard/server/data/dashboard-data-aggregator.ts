@@ -1,3 +1,5 @@
+import { loadDashboardTaskBoard } from './dashboard-task-board.js';
+import { parseSpecAcs } from '../../../core/tasks/verify-runner.js';
 import * as fs from 'fs';
 import { readFile, access, readdir, stat } from 'fs/promises';
 import * as path from 'path';
@@ -68,8 +70,8 @@ export class DashboardDataAggregator {
         last24hEvents: analytics.last24hEvents,
       },
       costs: {
-        totalCost: costData?.totalCost ?? 0,
-        totalSavings: costData?.totalSavings ?? 0,
+        totalCost: costData?.totalCost ?? null,
+        totalSavings: costData?.totalSavings ?? null,
         totalTokens: costData?.totalTokens ?? 0,
         sessionCount: costData?.sessionCount ?? 0,
         billingContext: costData?.billingContext ?? { planType: 'api' },
@@ -99,24 +101,12 @@ export class DashboardDataAggregator {
     const dashboard = await this.readDashboardJson();
     let increments: IncrementSummary[] = [];
 
-    if (dashboard?.increments) {
+    increments = await this.scanIncrementsFromFilesystem();
+    // Legacy cache is a fallback only; authoritative files always win.
+    if (increments.length === 0 && dashboard?.increments) {
       for (const [id, data] of Object.entries(dashboard.increments) as [string, any][]) {
-        increments.push({
-          id,
-          title: data.title || id,
-          status: data.status || 'unknown',
-          type: data.type || 'feature',
-          priority: data.priority || 'P2',
-          project: data.project,
-          tasks: data.tasks || { total: 0, completed: 0 },
-          acs: data.acs || { total: 0, completed: 0 },
-          createdAt: data.createdAt || '',
-          lastActivity: data.lastActivity || '',
-        });
+        increments.push({ id, title: data.title || id, status: data.status || 'unknown', type: data.type || 'feature', priority: data.priority || 'P2', project: data.project, tasks: data.tasks || { total: 0, completed: 0 }, acs: data.acs || { total: 0, completed: 0 }, createdAt: data.createdAt || '', lastActivity: data.lastActivity || '' });
       }
-    } else {
-      // Fallback: scan filesystem directly when cache is missing
-      increments = await this.scanIncrementsFromFilesystem();
     }
 
     // Sort: active first, then by last activity descending
@@ -128,7 +118,7 @@ export class DashboardDataAggregator {
       return (b.lastActivity || '').localeCompare(a.lastActivity || '');
     });
 
-    const summary = dashboard?.summary ?? this.buildSummaryFromIncrements(increments);
+    const summary = this.buildSummaryFromIncrements(increments);
 
     const result: IncrementListPayload = { increments, summary };
     this.incrementsCache = result;
@@ -534,53 +524,18 @@ export class DashboardDataAggregator {
 
   /** Count tasks from tasks.md file (async) */
   private async countTasksFromFile(tasksPath: string): Promise<{ total: number; completed: number }> {
-    try { await access(tasksPath); } catch { return { total: 0, completed: 0 }; }
     try {
-      const content = await readFile(tasksPath, 'utf-8');
-      const lines = content.split('\n');
-      let total = 0;
-      let completed = 0;
-
-      for (const line of lines) {
-        // Heading-based: ## T-001, ### T-001, #### T-001
-        if (/^#{2,}\s+T-\d/.test(line)) {
-          total++;
-        }
-        // Checklist-based: - [x] T-001 or - [ ] T-001
-        if (/^- \[[x ]\] T-\d/.test(line)) {
-          total++;
-          if (/^- \[x\] T-\d/.test(line)) completed++;
-        }
-        // Status checkbox: **Status**: [x]
-        if (/\*\*Status\*\*:\s*\[x\]/.test(line)) {
-          completed++;
-        }
-      }
-      return { total, completed };
-    } catch {
-      return { total: 0, completed: 0 };
-    }
+      const content = await readFile(tasksPath, 'utf8').catch(() => undefined);
+      const board = loadDashboardTaskBoard(path.dirname(tasksPath), content);
+      return { total: board.counts.total, completed: board.counts.done };
+    } catch { return { total: 0, completed: 0 }; }
   }
 
-  /** Count acceptance criteria from spec.md file (async) */
   private async countAcsFromFile(specPath: string): Promise<{ total: number; completed: number }> {
-    try { await access(specPath); } catch { return { total: 0, completed: 0 }; }
     try {
-      const content = await readFile(specPath, 'utf-8');
-      const lines = content.split('\n');
-      let total = 0;
-      let completed = 0;
-
-      for (const line of lines) {
-        if (/- \[.\] \*\*AC-/.test(line)) {
-          total++;
-          if (/- \[x\] \*\*AC-/.test(line)) completed++;
-        }
-      }
-      return { total, completed };
-    } catch {
-      return { total: 0, completed: 0 };
-    }
+      const acs = parseSpecAcs(await readFile(specPath, 'utf8'));
+      return { total: acs.length, completed: acs.filter(a => a.done).length };
+    } catch { return { total: 0, completed: 0 }; }
   }
 
   /** Build summary counts from increment list */

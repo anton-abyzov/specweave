@@ -25,8 +25,8 @@ interface OverviewData {
     last24hEvents: number;
   };
   costs: {
-    totalCost: number;
-    totalSavings: number;
+    totalCost: number | null;
+    totalSavings: number | null;
     totalTokens: number;
     sessionCount: number;
     billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
@@ -174,11 +174,11 @@ export function OverviewPage() {
         </Link>
         <Link to="/costs" className="group">
           <KpiCard
-            title={isSubscriptionPlan(data.costs) ? 'Usage Value' : 'Total Cost'}
-            value={`$${data.costs.totalCost.toFixed(2)}`}
+            title="Estimated API Value"
+            value={data.costs.totalCost == null ? 'Unknown' : `$${data.costs.totalCost.toFixed(2)}`}
             subtitle={isSubscriptionPlan(data.costs)
               ? `via Claude Code · $${data.costs.billingContext?.monthlyAmount ?? '?'}/mo plan`
-              : `via Claude Code · ${data.costs.sessionCount.toLocaleString()} sessions`}
+              : `Claude Code · ${data.costs.sessionCount.toLocaleString()} sessions · legacy estimates`}
             color="amber"
           />
         </Link>
@@ -200,7 +200,7 @@ export function OverviewPage() {
         <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
           <Badge label="Subscription" variant="info" />
           <span className="text-xs text-gray-300">
-            Costs shown as API-equivalent usage value.
+            Legacy rate estimates from Claude Code logs; actual bills may differ.
           </span>
         </div>
       )}

@@ -1,246 +1,38 @@
-import CommandTabs from '@site/src/components/CommandTabs';
-
-# Cost Tracking Reference
-
-**Technical reference for SpecWeave cost tracking system**
-
+---
+title: Usage and cost estimates
+description: Understand exact model identities, unknown costs and the limits of local usage telemetry
 ---
 
-## specweave analytics Command
+# Usage and cost estimates
 
-### Syntax
+Open `specweave dashboard`, expand **Diagnostics & settings**, then choose **Usage & estimates**. Work progress and verification remain on the [Work board](/docs/guides/analytics-dashboard); this view provides secondary usage context.
 
-<CommandTabs
-  natural="How much did this increment cost?"
-  claude='specweave analytics'
-  other='costs'
-/>
+## What 2.1 reads
 
-With options:
+The dashboard's cost aggregator reads available Claude Code JSONL session usage for the current project. It caches unchanged files and considers up to the most recent 200 session files. Recorded input, output and cache token fields supply its totals. This is not universal usage coverage across Codex, local models, providers or all of your accounts.
 
-```bash
-specweave analytics [incrementId] [--export json|csv|both]
-```
+The broader Sessions view can record Codex and Claude Code execution context. That does not mean the cost view has equivalent token or billing support for both. Linking a session or manually entering a model does not create a bill.
 
-### Parameters
+## Exact identities, explicit unknowns
 
-- `incrementId` (optional): Specific increment ID (e.g., "0003"). Defaults to current increment.
-- `--export` (optional): Export format. Options: json, csv, both.
+| Observation | Display and estimate behavior |
+|---|---|
+| One exact model ID matching the bundled rate table | A labeled legacy API estimate |
+| An unrecognized model ID | Original ID retained; cost Unknown |
+| Usage without model metadata | Unknown; no previous-message model is assumed |
+| Several model IDs in one session | Mixed, with observed IDs retained; session cost Unknown |
+| At least one unpriced session | Total estimate Unknown; priced subtotal shown separately |
 
-### Examples
+Unknown is not zero. The aggregator does not map a newer model to an older family member or charge a whole mixed session at its first model's rate.
 
-```bash
-# View all increments
-specweave analytics
+## Estimates are not bills
 
-# View specific increment
-specweave analytics 0003
+The bundled table is labeled **March 2026 legacy API estimates**. It is not a current pricing recommendation. Where an exact match exists, the estimate multiplies recorded input, output and cache tokens by those stored rates. Cache savings are also estimates against that table.
 
-# Export to JSON
-specweave analytics 0003 --export json
+Provider invoices, subscription allowances, negotiated rates, credits and actual payment history are not imported. Configured API or subscription billing context does not make an estimate an invoice. Check your provider for actual charges.
 
-# Export to CSV
-specweave analytics 0003 --export csv
+## Privacy and refresh
 
-# Export both formats
-specweave analytics 0003 --export both
-```
+Usage parsing runs locally and makes **no model API calls**. Its output contains session identifiers, timestamps, model identifiers and usage counts; those are operational metadata, not a claim of anonymous data. The source session files may contain sensitive transcripts. The cost API returns summaries rather than prompts or responses.
 
----
-
-## Cost Data Storage
-
-### Location
-
-```
-.specweave/logs/costs.json
-```
-
-### Format
-
-```json
-{
-  "version": "1.0",
-  "savedAt": "2025-10-31T14:32:15.123Z",
-  "sessions": [
-    {
-      "sessionId": "session_1730386335123_abc123",
-      "agent": "pm",
-      "model": "opus",
-      "increment": "0003",
-      "command": "sw:do",
-      "startedAt": "2025-10-31T14:30:00.000Z",
-      "endedAt": "2025-10-31T14:32:00.000Z",
-      "tokenUsage": {
-        "inputTokens": 5000,
-        "outputTokens": 2000,
-        "totalTokens": 7000
-      },
-      "cost": 0.045,
-      "savings": 0.105
-    }
-  ]
-}
-```
-
----
-
-## Pricing Constants
-
-### Current Rates (as of 2025-10-31)
-
-```typescript
-{
-  sonnet: {
-    input: $3 per 1M tokens,
-    output: $15 per 1M tokens
-  },
-  haiku: {
-    input: $1 per 1M tokens,
-    output: $5 per 1M tokens
-  },
-  opus: {
-    input: $15 per 1M tokens,
-    output: $75 per 1M tokens
-  }
-}
-```
-
-### Cost Calculation
-
-```typescript
-cost = (inputTokens / 1_000_000) * inputRate +
-       (outputTokens / 1_000_000) * outputRate
-```
-
-### Savings Calculation
-
-```typescript
-baselineCost = calculateCost('sonnet', inputTokens, outputTokens)
-actualCost = calculateCost(usedModel, inputTokens, outputTokens)
-savings = baselineCost - actualCost
-```
-
----
-
-## Export Formats
-
-### JSON Export
-
-**Location**: `.specweave/increments/{incrementId}/reports/cost-analysis.json`
-
-**Structure**:
-```json
-{
-  "incrementId": "0003",
-  "totalCost": 22.50,
-  "totalSavings": 22.50,
-  "totalTokens": 1250000,
-  "sessionCount": 42,
-  "costByModel": {
-    "sonnet": 12.00,
-    "haiku": 10.50
-  },
-  "costByAgent": {
-    "pm": 8.00,
-    "frontend": 6.50,
-    "backend": 5.00,
-    "devops": 3.00
-  }
-}
-```
-
-### CSV Export
-
-**Location**: `.specweave/increments/{incrementId}/reports/cost-history.csv`
-
-**Columns**:
-```csv
-Session ID,Agent,Model,Command,Started At,Ended At,Input Tokens,Output Tokens,Total Tokens,Cost ($),Savings ($)
-session_123,pm,sonnet,sw:increment,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
-```
-
----
-
-## Privacy & Security
-
-### Data Tracked
-
-✅ **Safe data** (non-sensitive):
-- Session IDs (random)
-- Agent names (public)
-- Model names (public)
-- Token counts (integers)
-- Costs (calculated)
-- Timestamps
-
-❌ **Never tracked**:
-- User prompts
-- Agent responses
-- API keys
-- File paths
-- Personal information
-
-### GDPR Compliance
-
-- ✅ No PII stored
-- ✅ Local-only data
-- ✅ User-controlled
-- ✅ Deletable anytime
-
----
-
-## API (TypeScript)
-
-### CostTracker
-
-```typescript
-import { CostTracker } from '@specweave/core';
-
-const tracker = new CostTracker({
-  logPath: '.specweave/logs/costs.json',
-  autoSave: true
-});
-
-// Start session
-const sessionId = tracker.startSession('pm', 'opus', '0003', 'sw:increment');
-
-// Record tokens
-tracker.recordTokens(5000, 2000, sessionId);
-
-// End session
-tracker.endSession(sessionId);
-
-// Get report
-const report = tracker.getIncrementCost('0003');
-console.log(report.totalCost, report.totalSavings);
-```
-
-### CostReporter
-
-```typescript
-import { CostReporter } from '@specweave/utils';
-
-const reporter = new CostReporter(tracker);
-
-// Generate dashboard
-const dashboard = reporter.generateDashboard('0003');
-console.log(dashboard);
-
-// Export to JSON
-await reporter.exportToJSON('0003', 'cost-analysis.json');
-
-// Export to CSV
-await reporter.exportToCSV('0003', 'cost-history.csv');
-```
-
----
-
-## Related Documents
-
-- [Cost Optimization Guide](../guides/cost-optimization)
-- [Model Selection Guide](../guides/model-selection)
-
----
-
-*Last updated: 2025-10-31 | SpecWeave v0.4.0*
+`specweave analytics` is a separate command for recorded command, skill and agent events. It is not an increment billing export. See [models and execution context](/docs/guides/model-selection) for interpreting harness, model, effort, provider and surface alongside task evidence.

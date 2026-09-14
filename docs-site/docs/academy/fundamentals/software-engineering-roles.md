@@ -753,7 +753,7 @@ Acceptance Criteria IDs (AC-US1-01) enable traceability:
 ## Learning Path: Understanding SpecWeave Agents
 
 **Beginner**:
-1. Read [Getting Started](../../guides/getting-started/quickstart.md)
+1. Read [Getting Started](/docs/getting-started)
 2. Understand [What is an Increment](../../guides/core-concepts/what-is-an-increment.md)
 3. Try `sw:increment "simple feature"` to see PM Agent in action
 
@@ -795,7 +795,7 @@ SpecWeave provides **11 specialized AI agents** that perform the roles tradition
 These agents collaborate automatically to deliver complete, tested, documented features while maintaining living documentation that stays current throughout the project lifecycle.
 
 **Next Steps**:
-- [Try SpecWeave](../../guides/getting-started/installation.md) - Install and create your first increment
+- [Try SpecWeave](/docs/getting-started/installation) - Install and create your first increment
 - [Explore Workflows](../../workflows/overview.md) - Learn how agents collaborate
 - [Read Core Concepts](../../guides/core-concepts/what-is-an-increment.md) - Understand increments and living docs
 

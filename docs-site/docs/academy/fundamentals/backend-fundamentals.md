@@ -3303,4 +3303,4 @@ After `sw:done`, sync docs automatically:
 
 ---
 
-**Questions or feedback?** [Open an issue](https://github.com/specweave/specweave/issues) or [join discussions](https://github.com/specweave/specweave/discussions).
+**Questions or feedback?** [Open an issue](https://github.com/anton-abyzov/specweave/issues).

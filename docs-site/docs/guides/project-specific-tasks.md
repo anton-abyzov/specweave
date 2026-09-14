@@ -487,10 +487,10 @@ Tasks are automatically included:
 
 ## Related Documentation
 
-- [Intelligent Living Docs Sync](./intelligent-living-docs-sync.md) - Overall sync architecture
+- [Intelligent Living Docs Sync](/docs/guides/core-concepts/living-documentation) - Overall sync architecture
 - [GitHub Integration](/docs/guides/github-sync) - GitHub sync setup
 - [Workspace configuration](/docs/reference/configuration#workspace) - Multi-project configuration
-- [Bidirectional Linking](../../internal/specs/default/README.md) - AC-ID format
+- Bidirectional Linking (historical reference; not published) - AC-ID format
 
 ---
 
