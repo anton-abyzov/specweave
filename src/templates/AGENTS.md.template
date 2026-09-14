@@ -49,7 +49,6 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 3. Never edit ledger lines or another task's status; append only. On a git conflict in `ledger.jsonl` keep every line from both sides.
 4. `done` needs the task's **Test** command exit 0 and a commit sha. A task that turns out unnecessary is closed with `specweave task skip T-NN --reason "..."` (no CLI: append a `skip` ledger line with a reason), never ticked.
 5. When you stop: `specweave task release --all-mine` then `specweave handoff`.
-
 Resuming: check `.specweave/intents/board.jsonl` (latest revision per id) or `specweave dashboard` for unfinished intents, including work without an increment. Then find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `specweave task next`.
 <!-- /SECTION -->
 
