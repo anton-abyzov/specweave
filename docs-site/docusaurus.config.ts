@@ -18,16 +18,8 @@ const config: Config = {
 
   // SEO: Schema.org structured data for search engines
   headTags: [
-    // Cloudflare Web Analytics
-    {
-      tagName: 'script',
-      attributes: {
-        defer: 'true',
-        src: 'https://static.cloudflareinsights.com/beacon.min.js',
-        'data-cf-beacon': '{"token": "a08755392f8d4369acfb5775e954080c"}',
-      },
-      innerHTML: '',
-    },
+    // Cloudflare injects its same-origin analytics beacon at the production edge.
+    // A second manual snippet sends duplicate reports to the cross-origin endpoint.
     {
       tagName: 'script',
       attributes: {
@@ -197,6 +189,19 @@ const config: Config = {
   ],
 
   plugins: [
+    function preserveDocumentationExamples() {
+      return {
+        name: 'preserve-documentation-examples',
+        injectHtmlTags() {
+          // Keep email-like command examples intact at Cloudflare's edge.
+          // https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/
+          return {
+            preBodyTags: ['<!--email_off-->'],
+            postBodyTags: ['<!--/email_off-->'],
+          };
+        },
+      };
+    },
     [
       '@docusaurus/plugin-client-redirects',
       {
