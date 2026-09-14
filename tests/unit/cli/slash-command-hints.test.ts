@@ -108,6 +108,9 @@ function bareRe(atStart: boolean): RegExp {
   return new RegExp(`${lineStart}[ \\t]*\\/${NAME}|[:|][ \\t]*\\/${NAME}`, 'g');
 }
 
+const BARE_AT_START = bareRe(true);
+const BARE_AFTER_INTERPOLATION = bareRe(false);
+
 function collectHits(): Hit[] {
   const hits: Hit[] = [];
 
@@ -115,10 +118,17 @@ function collectHits(): Hit[] {
     const source = ts.createSourceFile(file, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
 
     const record = (node: ts.Node, text: string, atStart: boolean) => {
+      // node.text is decoded, so escaped slashes still reach both matchers.
+      if (!text.includes('/')) return;
+      const matches = [
+        ...text.matchAll(NAMESPACED),
+        ...text.matchAll(atStart ? BARE_AT_START : BARE_AFTER_INTERPOLATION),
+      ];
+      if (matches.length === 0) return;
+      // Source positions are only needed for actual command hits.
       const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
       const rel = path.relative(REPO_ROOT, file);
-      for (const m of text.matchAll(NAMESPACED)) hits.push({ token: `/${m[1]}`, file: rel, line });
-      for (const m of text.matchAll(bareRe(atStart))) hits.push({ token: `/${m[1] ?? m[2]}`, file: rel, line });
+      for (const m of matches) hits.push({ token: `/${m[1] ?? m[2]}`, file: rel, line });
     };
 
     const literalsIn = (node: ts.Node): void => {
