@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadTaskBoard } from '../../../core/tasks/task-board.js';
+import { loadDashboardTaskBoard } from './dashboard-task-board.js';
 import { readLedger } from '../../../core/tasks/ledger.js';
 import { parseSpecAcs } from '../../../core/tasks/verify-runner.js';
 import type { ExecutionSegment, WorkItem, WorkState } from '../../work-types.js';
@@ -46,7 +46,7 @@ export function projectIncrement(root: string, id: string): WorkItem | null {
   if (!dir) return null;
   const metadata = readJson(path.join(dir, 'metadata.json'));
   const spec = readText(path.join(dir, 'spec.md'));
-  const board = loadTaskBoard(dir);
+  const board = loadDashboardTaskBoard(dir);
   const acs = parseSpecAcs(spec);
   const reportPath = path.join(dir, 'reports/verify.json');
   const report = readJson(reportPath);
@@ -133,7 +133,7 @@ export async function getIncrementDetail(root: string, id: string): Promise<Reco
   const dir = incrementDirectory(root, id);
   const projected = projectIncrement(root, id);
   if (!dir || !projected) return null;
-  const board = loadTaskBoard(dir);
+  const board = loadDashboardTaskBoard(dir);
   const acs = parseSpecAcs(readText(path.join(dir, 'spec.md'))).map((a) => ({
     id: a.id,
     text: a.text,

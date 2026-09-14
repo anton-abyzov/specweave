@@ -41,6 +41,34 @@ describe('authoritative dashboard progress', () => {
     expect(data.increments[0].tasks).toMatchObject({ total: 2, completed: 1 });
     expect(data.increments[0].acs).toEqual({ total: 2, completed: 1 });
   });
+  it('keeps checklist-only legacy increments readable without a ledger', async () => {
+    fs.rmSync(path.join(inc, 'ledger.jsonl'));
+    fs.writeFileSync(path.join(inc, 'tasks.md'), '# Tasks\n- [x] T-001: Done\n- [ ] T-002: Open\n- [x] T-003: Done\n');
+    const data = await new DashboardDataAggregator(root).getIncrements();
+    expect(data.increments[0].tasks).toEqual({ total: 3, completed: 2 });
+    expect(projectIncrement(root, '0001')?.tasks).toMatchObject({ total: 3, done: 2, open: 1 });
+    const detail: any = await getIncrementDetail(root, '0001');
+    expect(detail.tasks.map((task: any) => [task.id, task.status])).toEqual([
+      ['T-001', 'completed'], ['T-002', 'pending'], ['T-003', 'completed'],
+    ]);
+  });
+  it('does not use checklist summaries when modern task definitions exist', async () => {
+    fs.appendFileSync(path.join(inc, 'tasks.md'), '\n- [x] T-99: Stale summary entry\n');
+    const data = await new DashboardDataAggregator(root).getIncrements();
+    expect(data.increments[0].tasks).toEqual({ total: 2, completed: 1 });
+  });
+  it('does not turn stale checklist text into evidence when the ledger has no definitions', async () => {
+    fs.writeFileSync(path.join(inc, 'tasks.md'), '# Stale summary\n- [x] T-001: Done\n');
+    const data = await new DashboardDataAggregator(root).getIncrements();
+    expect(data.increments[0].tasks).toEqual({ total: 0, completed: 0 });
+  });
+  it('does not fall back when an empty ledger explicitly owns task state', async () => {
+    fs.writeFileSync(path.join(inc, 'tasks.md'), '# Stale summary\n- [x] T-001: Done\n');
+    fs.writeFileSync(path.join(inc, 'ledger.jsonl'), '');
+    const data = await new DashboardDataAggregator(root).getIncrements();
+    expect(data.increments[0].tasks).toEqual({ total: 0, completed: 0 });
+    expect(projectIncrement(root, '0001')?.tasks.total).toBe(0);
+  });
 });
 
 import { getIncrementDetail, projectIncrement } from '../../../src/dashboard/server/data/work-projection.js';
@@ -49,6 +77,25 @@ import { localRequestError } from '../../../src/dashboard/server/local-request.j
 import { readLocalSessions } from '../../../src/dashboard/server/data/local-sessions.js';
 
 describe('intent, evidence and continuation', () => {
+  it('preserves the last valid snapshot when appending after a missing newline', () => {
+    const store = new IntentStore(root);
+    const item = store.create({ title: 'Keep work' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').trimEnd());
+    store.update(item.id, { revision: 1, state: 'active' });
+    expect(store.board().items.find((entry) => entry.id === item.id)).toMatchObject({ state: 'active', revision: 2 });
+    expect(fs.readFileSync(file, 'utf8').trim().split('\n')).toHaveLength(2);
+  });
+  it('retains successful updates after an interrupted trailing JSON record', () => {
+    const store = new IntentStore(root);
+    const item = store.create({ title: 'Keep work' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    fs.appendFileSync(file, '{"id":"interrupted');
+    store.update(item.id, { revision: 1, state: 'active' });
+    const board = store.board();
+    expect(board.items.find((entry) => entry.id === item.id)).toMatchObject({ state: 'active', revision: 2 });
+    expect(board.warnings).toHaveLength(1);
+  });
   it('uses task boundaries and ledger evidence in the modern detail route', async () => {
     const detail: any = await getIncrementDetail(root, '0001');
     expect(detail.tasks).toHaveLength(2);

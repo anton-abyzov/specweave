@@ -67,16 +67,19 @@ export function WorkPage({ sessionsOnly = false }: { sessionsOnly?: boolean }) {
   const [failure, setFailure] = useState('');
   const [dropTarget, setDropTarget] = useState<WorkState | null>(null);
   const sessionQuery = activeProject ? `?project=${encodeURIComponent(activeProject.id)}` : '';
-  const { data: localSessions, loading: sessionsLoading } = useApi<LocalSession[]>(
+  const { data: localSessions, loading: sessionsLoading, refetch: refetchSessions } = useApi<LocalSession[]>(
     sessionsOnly || selectedId ? `/api/work/sessions${sessionQuery}` : '',
   );
   const sse = useSSEStatus();
   useSSEEvent('increment-update', refetch);
   // A reconciliation poll covers missed filesystem notifications and expired claims, without model calls.
   useEffect(() => {
-    const timer = setInterval(refetch, 15000);
+    const timer = setInterval(() => {
+      refetch();
+      if (sessionsOnly || selectedId) refetchSessions();
+    }, 15000);
     return () => clearInterval(timer);
-  }, [refetch]);
+  }, [refetch, refetchSessions, sessionsOnly, selectedId]);
   useEffect(() => {
     setSelectedId(null);
     setCreating(false);
