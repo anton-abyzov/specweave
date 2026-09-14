@@ -729,13 +729,13 @@ function validateStructure(skillContent: string): Finding[] {
 
 6. **vskill Security Scanner**. Reference implementation of Tier 1 pattern-based scanning. Available via `vskill scan` in the [vskill CLI](https://www.npmjs.com/package/vskill).
 
-7. **Agent Security Best Practices** (SpecWeave Docs). Complementary guide covering prompt injection prevention, plugin vetting, and safe autonomous execution. [Agent Security Best Practices](../guides/agent-security-best-practices.md)
+7. **Agent Security Best Practices** (SpecWeave Docs). Complementary guide covering prompt injection prevention, plugin vetting, and safe autonomous execution. [Agent Security Best Practices](/docs/guides/agent-security-best-practices)
 
-8. **Skill Discovery and Evaluation** (SpecWeave Docs). Guide to finding quality AI agent skills with a 6-dimension quality scoring rubric. [Skill Discovery and Evaluation](./skill-discovery-evaluation.md)
+8. **Skill Discovery and Evaluation** (SpecWeave Docs). Guide to finding quality AI agent skills with a 6-dimension quality scoring rubric. [Skill Discovery and Evaluation](/docs/skills/skill-discovery-evaluation)
 
-9. **Agent Skills Extensibility Analysis** (SpecWeave Docs). Compatibility matrix for the Agent Skills format across 39 AI coding platforms. [Agent Skills Extensibility Analysis](../guides/agent-skills-extensibility-analysis.md)
+9. **Agent Skills Extensibility Analysis** (SpecWeave Docs). Compatibility matrix for the Agent Skills format across 39 AI coding platforms. [Agent Skills Extensibility Analysis](/docs/guides/agent-skills-extensibility-analysis)
 
-10. **Skill Contradiction Resolution** (SpecWeave Docs). System design for detecting and resolving contradicting instructions from multiple skill sources. [Skill Contradiction Resolution](./skill-contradiction-resolution.md)
+10. **Skill Contradiction Resolution** (SpecWeave Docs). System design for detecting and resolving contradicting instructions from multiple skill sources. [Skill Contradiction Resolution](/docs/skills/skill-contradiction-resolution)
 
 ---
 

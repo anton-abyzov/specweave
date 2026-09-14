@@ -432,7 +432,7 @@ You've completed the SpecWeave Academy core curriculum.
 - [Full Documentation](/)
 - [Commands Reference](/docs/reference/commands)
 - [Glossary](/docs/glossary)
-- [GitHub Repository](https://github.com/specweave/specweave)
+- [GitHub Repository](https://github.com/anton-abyzov/specweave)
 
 ---
 

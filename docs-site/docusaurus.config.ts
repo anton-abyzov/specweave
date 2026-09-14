@@ -546,10 +546,6 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'GitHub Discussions',
-              href: 'https://github.com/anton-abyzov/specweave/discussions',
-            },
-            {
               label: 'GitHub Issues',
               href: 'https://github.com/anton-abyzov/specweave/issues',
             },

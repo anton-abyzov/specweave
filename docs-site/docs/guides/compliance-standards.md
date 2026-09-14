@@ -500,8 +500,8 @@ Total: ~$25K/month (salaries + consultant)
 ## Learn More
 
 - [Strategic Init Guide](./strategic-init.md) - How compliance detection works
-- [Team Recommendations](../internal/architecture/team-structure.md) - Compliance-driven team structures
-- [Architecture Decisions](../internal/architecture/adr/) - How compliance affects architecture
+- Team Recommendations (historical reference; not published) - Compliance-driven team structures
+- Architecture Decisions (historical reference; not published) - How compliance affects architecture
 
 ---
 

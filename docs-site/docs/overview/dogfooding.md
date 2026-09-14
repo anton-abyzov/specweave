@@ -224,7 +224,7 @@ pie title Code Distribution by Module (lines of TypeScript)
 1. **[GitHub Repository](https://github.com/anton-abyzov/specweave)** — Every commit visible
 2. **[DORA Metrics](/docs/metrics)** — Real-time dashboard
 3. **[Changelog](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md)** — 621 releases documented
-4. **[Increments Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — 550+ features built with SpecWeave
+4. **Increments Archive (historical reference; not published)** — 550+ features built with SpecWeave
 
 ---
 

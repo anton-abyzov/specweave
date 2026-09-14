@@ -32,7 +32,7 @@ Practical how-to — getting started, architecture, cascading lookup, real-world
 ### [Customization Without Modification](/docs/skills/extensible/extensible-skills)
 Overview page with quick reference table and links to the specification and guide.
 
-### [Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)
+### Claude Skills Deep Dive (historical reference; not published)
 How skills work under the hood — progressive disclosure architecture, comparison with other AI tool systems, and the evolution from prompts to programs.
 
 ### [Self-Improving Skills (Reflect)](/docs/skills/extensible/extensible-skills)

@@ -392,7 +392,7 @@ specweave init --quick \
 - [Workspace configuration](/docs/reference/configuration#workspace) - Organizing multiple projects
 - [Compliance Standards Reference](./compliance-standards.md) - All 30+ supported standards
 - [Repository Selection Guide](/docs/reference/configuration) - Advanced selection patterns
-- [Architecture Decisions](../../internal/architecture/adr/) - How Strategic Init makes decisions
+- Architecture Decisions (historical reference; not published) - How Strategic Init makes decisions
 
 ---
 

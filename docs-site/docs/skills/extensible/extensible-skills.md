@@ -50,7 +50,7 @@ The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** 
 ## See Also
 
 - **[Skills Overview](/docs/skills/)** -- Both skill layers at a glance
-- **[Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)** -- How skills work under the hood
+- **Claude Skills Deep Dive (historical reference; not published)** -- How skills work under the hood
 - **[Self-Improving Skills](/docs/skills/extensible/extensible-skills)** -- The Reflect auto-learning system
 - **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Design principles for skill authoring
 - **[Verified Skills Standard](/docs/skills/verified/verified-skills)** -- How skills earn trust through 3-tier security certification

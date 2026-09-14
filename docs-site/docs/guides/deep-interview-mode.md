@@ -271,6 +271,6 @@ Lower the minimum or reduce categories:
 
 ## See Also
 
-- [ADR-0232: Deep Interview Mode](../../internal/architecture/adr/0232-deep-interview-mode.md)
+- ADR-0232: Deep Interview Mode (historical reference; not published)
 - [Getting Started Guide](./getting-started/)
 - [Best Practices](./best-practices.md)
