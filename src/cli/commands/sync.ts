@@ -223,15 +223,30 @@ export async function syncPull(options: SyncPullOptions = {}, deps: SyncDeps = {
   }
 
   const since = parseSince(options.since);
-  const { ExternalChangePuller } = await import('../../sync/external-change-puller.js');
-  const puller = new ExternalChangePuller({ projectRoot, logger, platforms });
-  const changes = await puller.fetchRecentChanges(since);
+  const { ExternalChangePuller, ExternalPullError } = await import('../../sync/external-change-puller.js');
+  const github = readGitHubConfig(config);
+  const puller = new ExternalChangePuller({
+    projectRoot, logger, platforms,
+    ...(github.owner && github.repo ? { github: { owner: github.owner, repo: github.repo, token: github.token } } : {}),
+  });
+  let changes;
+  let incomplete = false;
+  try {
+    changes = await puller.fetchRecentChanges(since);
+  } catch (error) {
+    if (!(error instanceof ExternalPullError)) throw error;
+    incomplete = true;
+    changes = error.changes;
+    process.exitCode = 1;
+    logger.error(`Pull incomplete: ${error.failures.map(f => `${f.platform}: ${f.message}`).join('; ')}`);
+    logger.error('No synchronization checkpoint was advanced. Fix the provider and retry with the same --since value.');
+  }
 
   if (changes.length === 0) {
-    logger.log(`No external changes since ${since.toISOString()} (${platforms.join(', ')}).`);
+    if (!incomplete) logger.log(`No external changes since ${since.toISOString()} (${platforms.join(', ')}).`);
     return;
   }
-  logger.log(`${changes.length} external change(s) since ${since.toISOString()}:`);
+  logger.log(`${changes.length} external change(s)${incomplete ? ' (partial results from successful providers)' : ''} since ${since.toISOString()}:`);
   for (const c of changes) {
     const fields = c.changedFields.map((f) => `${f.field}: ${String(f.oldValue)} → ${String(f.newValue)}`).join(', ');
     logger.log(`  ${c.platform} ${c.externalId}  ${c.currentState.status}  by ${c.changedBy}  ${fields}`);

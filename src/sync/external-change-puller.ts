@@ -15,6 +15,7 @@
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { AdoExternalChange } from '../integrations/ado/ado-client.js';
 import { JiraExternalChange } from '../integrations/jira/jira-client.js';
+import { maskCredentials } from '../utils/credential-masker.js';
 
 /**
  * Generic external change interface
@@ -37,6 +38,23 @@ export interface ExternalChange {
   };
 }
 
+export interface ExternalPullFailure {
+  platform: ExternalChange['platform'];
+  message: string;
+}
+
+/** A rejected fetch must not be mistaken for a complete synchronization. */
+export class ExternalPullError extends Error {
+  constructor(
+    public readonly changes: ExternalChange[],
+    public readonly failures: ExternalPullFailure[],
+    public readonly completedPlatforms: ExternalChange['platform'][],
+  ) {
+    super(`External pull incomplete: ${failures.map(f => f.platform).join(', ')}.`);
+    this.name = 'ExternalPullError';
+  }
+}
+
 /**
  * External change puller options
  */
@@ -55,6 +73,8 @@ export interface ExternalChangePullerOptions {
    * Platforms to pull from
    */
   platforms?: Array<'ado' | 'jira' | 'github'>;
+  /** Explicit tracker repository; takes precedence over the checkout remote. */
+  github?: { owner: string; repo: string; token?: string };
 }
 
 /**
@@ -67,11 +87,13 @@ export class ExternalChangePuller {
   private readonly projectRoot: string;
   private readonly logger: Logger;
   private readonly platforms: Array<'ado' | 'jira' | 'github'>;
+  private readonly github?: ExternalChangePullerOptions['github'];
 
   constructor(options: ExternalChangePullerOptions) {
     this.projectRoot = options.projectRoot;
     this.logger = options.logger ?? consoleLogger;
     this.platforms = options.platforms ?? ['ado', 'jira', 'github'];
+    this.github = options.github;
   }
 
   /**
@@ -80,6 +102,7 @@ export class ExternalChangePuller {
    * @param since - Timestamp to query changes from
    * @param linkedItems - Optional map of platform -> item IDs to filter
    * @returns Array of external changes from all platforms
+   * @throws ExternalPullError with successful results when any provider fails
    */
   async fetchRecentChanges(
     since: Date,
@@ -90,6 +113,12 @@ export class ExternalChangePuller {
     }
   ): Promise<ExternalChange[]> {
     const allChanges: ExternalChange[] = [];
+    const failures: ExternalPullFailure[] = [];
+    const recordFailure = (platform: ExternalChange['platform'], error: unknown) => {
+      const message = maskCredentials(error instanceof Error ? error.message : String(error));
+      failures.push({ platform, message });
+      this.logger.warn(`${platform} fetch failed: ${message}`);
+    };
 
     this.logger.log(`⬇️  Fetching changes since ${since.toISOString()}`);
 
@@ -100,7 +129,7 @@ export class ExternalChangePuller {
       fetchPromises.push(
         this.fetchAdoChanges(since, linkedItems?.ado)
           .then(changes => { allChanges.push(...changes); })
-          .catch(err => { this.logger.warn(`ADO fetch failed: ${err.message}`); })
+          .catch(err => { recordFailure('ado', err); })
       );
     }
 
@@ -108,7 +137,7 @@ export class ExternalChangePuller {
       fetchPromises.push(
         this.fetchJiraChanges(since, linkedItems?.jira)
           .then(changes => { allChanges.push(...changes); })
-          .catch(err => { this.logger.warn(`JIRA fetch failed: ${err.message}`); })
+          .catch(err => { recordFailure('jira', err); })
       );
     }
 
@@ -116,7 +145,7 @@ export class ExternalChangePuller {
       fetchPromises.push(
         this.fetchGitHubChanges(since, linkedItems?.github)
           .then(changes => { allChanges.push(...changes); })
-          .catch(err => { this.logger.warn(`GitHub fetch failed: ${err.message}`); })
+          .catch(err => { recordFailure('github', err); })
       );
     }
 
@@ -127,6 +156,11 @@ export class ExternalChangePuller {
       new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime()
     );
 
+    if (failures.length > 0) {
+      failures.sort((a, b) => a.platform.localeCompare(b.platform));
+      const completed = this.platforms.filter(platform => !failures.some(f => f.platform === platform));
+      throw new ExternalPullError(allChanges, failures, completed);
+    }
     this.logger.log(`📥 Fetched ${allChanges.length} changes from external tools`);
 
     return allChanges;
@@ -139,30 +173,25 @@ export class ExternalChangePuller {
     since: Date,
     linkedItemIds?: number[]
   ): Promise<ExternalChange[]> {
-    try {
-      // Dynamic import to avoid initialization errors when ADO is not configured
-      const { AdoClient } = await import('../integrations/ado/ado-client.js');
-      const client = new AdoClient();
+    // Dynamic import to avoid initialization errors when ADO is not configured
+    const { AdoClient } = await import('../integrations/ado/ado-client.js');
+    const client = new AdoClient();
 
-      const adoChanges: AdoExternalChange[] = await client.fetchRecentChanges(since, linkedItemIds);
+    const adoChanges: AdoExternalChange[] = await client.fetchRecentChanges(since, linkedItemIds);
 
-      // Map to unified format
-      return adoChanges.map(change => ({
-        platform: 'ado' as const,
-        externalId: change.externalId,
-        changedAt: change.changedAt,
-        changedBy: change.changedBy,
-        changedFields: change.changedFields,
-        currentState: {
-          status: change.currentState.status,
-          priority: change.currentState.priority,
-          assignee: change.currentState.assignee,
-        },
-      }));
-    } catch (err: any) {
-      this.logger.debug(`ADO not configured or error: ${err.message}`);
-      return [];
-    }
+    // Map to unified format
+    return adoChanges.map(change => ({
+      platform: 'ado' as const,
+      externalId: change.externalId,
+      changedAt: change.changedAt,
+      changedBy: change.changedBy,
+      changedFields: change.changedFields,
+      currentState: {
+        status: change.currentState.status,
+        priority: change.currentState.priority,
+        assignee: change.currentState.assignee,
+      },
+    }));
   }
 
   /**
@@ -172,30 +201,25 @@ export class ExternalChangePuller {
     since: Date,
     linkedIssueKeys?: string[]
   ): Promise<ExternalChange[]> {
-    try {
-      // Dynamic import to avoid initialization errors when JIRA is not configured
-      const { JiraClient } = await import('../integrations/jira/jira-client.js');
-      const client = new JiraClient();
+    // Dynamic import to avoid initialization errors when JIRA is not configured
+    const { JiraClient } = await import('../integrations/jira/jira-client.js');
+    const client = new JiraClient();
 
-      const jiraChanges: JiraExternalChange[] = await client.fetchRecentChanges(since, linkedIssueKeys);
+    const jiraChanges: JiraExternalChange[] = await client.fetchRecentChanges(since, linkedIssueKeys);
 
-      // Map to unified format
-      return jiraChanges.map(change => ({
-        platform: 'jira' as const,
-        externalId: change.externalId,
-        changedAt: change.changedAt,
-        changedBy: change.changedBy,
-        changedFields: change.changedFields,
-        currentState: {
-          status: change.currentState.status,
-          priority: change.currentState.priority,
-          assignee: change.currentState.assignee,
-        },
-      }));
-    } catch (err: any) {
-      this.logger.debug(`JIRA not configured or error: ${err.message}`);
-      return [];
-    }
+    // Map to unified format
+    return jiraChanges.map(change => ({
+      platform: 'jira' as const,
+      externalId: change.externalId,
+      changedAt: change.changedAt,
+      changedBy: change.changedBy,
+      changedFields: change.changedFields,
+      currentState: {
+        status: change.currentState.status,
+        priority: change.currentState.priority,
+        assignee: change.currentState.assignee,
+      },
+    }));
   }
 
   /**
@@ -205,37 +229,36 @@ export class ExternalChangePuller {
     since: Date,
     linkedIssueNumbers?: number[]
   ): Promise<ExternalChange[]> {
-    try {
-      // Dynamic import to avoid initialization errors when GitHub is not configured
-      const { GitHubClientV2 } = await import('../../plugins/specweave/lib/integrations/github/github-client-v2.js');
+    // Dynamic import to avoid initialization errors when GitHub is not configured
+    const { GitHubClientV2 } = await import('../../plugins/specweave/lib/integrations/github/github-client-v2.js');
 
-      // Detect repo from git remote
-      const detected = await GitHubClientV2.detectRepo(this.projectRoot);
-      if (!detected) {
-        this.logger.debug('GitHub: No git remote detected');
-        return [];
-      }
-
-      const client = GitHubClientV2.fromRepo(detected.owner, detected.repo);
-      const githubChanges = await client.fetchRecentChanges(since, linkedIssueNumbers);
-
-      // Map to unified format (GitHub returns slightly different format)
-      return githubChanges.map(change => ({
-        platform: 'github' as const,
-        externalId: change.externalId,
-        changedAt: change.changedAt,
-        changedBy: change.changedBy,
-        changedFields: change.changedFields,
-        currentState: {
-          status: change.currentState.status,
-          priority: null as string | number | null, // GitHub doesn't have priority
-          assignee: change.currentState.assignee,
-        },
-      }));
-    } catch (err: any) {
-      this.logger.debug(`GitHub not configured or error: ${err.message}`);
-      return [];
+    // Detect repo from git remote
+    const detected = this.github ?? await GitHubClientV2.detectRepo(this.projectRoot);
+    if (!detected) {
+      throw new Error('No GitHub repository configured and no GitHub remote detected. Run specweave sync setup.');
     }
+
+    const client = new GitHubClientV2({
+      provider: 'github',
+      displayName: `${detected.owner}/${detected.repo}`,
+      config: { owner: detected.owner, repo: detected.repo, ...(this.github?.token ? { token: this.github.token } : {}) },
+      timeRange: { default: '1M', max: '6M' },
+    }, this.projectRoot);
+    const githubChanges = await client.fetchRecentChanges(since, linkedIssueNumbers);
+
+    // Map to unified format (GitHub returns slightly different format)
+    return githubChanges.map(change => ({
+      platform: 'github' as const,
+      externalId: change.externalId,
+      changedAt: change.changedAt,
+      changedBy: change.changedBy,
+      changedFields: change.changedFields,
+      currentState: {
+        status: change.currentState.status,
+        priority: null as string | number | null, // GitHub doesn't have priority
+        assignee: change.currentState.assignee,
+      },
+    }));
   }
 
   /**
