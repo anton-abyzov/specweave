@@ -85,8 +85,8 @@ For the full methodology, see [Philosophy](./philosophy). For why this matters, 
 
 SpecWeave covers the vast majority of workflows out of the box. You might want to dig deeper if you:
 
-- Want to **create custom skills** for your team — see [Skill Development Guidelines](../skills/skill-development-guidelines)
-- Need to **customize existing skills** — see [Extensible Skills](../skills/extensible-skills)
+- Want to **create custom skills** for your team — see [Skill Development Guidelines](/docs/skills/extensible/skill-development-guidelines)
+- Need to **customize existing skills** — see [Extensible Skills](/docs/skills/extensible/extensible-skills)
 - Are debugging **unexpected behavior** — see [Troubleshooting](../guides/troubleshooting/common-errors)
 
 But for building features? Describe what you want and let SpecWeave handle the rest.

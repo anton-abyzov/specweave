@@ -396,4 +396,4 @@ After greenfield setup:
 
 - [Brownfield Workflow](/docs/workflows/brownfield)
 - [Planning Workflow](/docs/workflows/planning)
-- [Quick Start Guide](/docs/guides/getting-started/quickstart)
+- [Quick Start Guide](/docs/getting-started)

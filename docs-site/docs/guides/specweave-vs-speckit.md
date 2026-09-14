@@ -221,7 +221,7 @@ SpecKit is the foundation. SpecWeave is the system built on top of it.
 ## Learn More
 
 - [GitHub SpecKit Repository](https://github.com/github/spec-kit)
-- [SpecWeave Quickstart](/docs/guides/getting-started/quickstart)
-- [Living Documentation Guide](/docs/guides/intelligent-living-docs-sync)
+- [SpecWeave Quickstart](/docs/getting-started)
+- [Living Documentation Guide](/docs/guides/core-concepts/living-documentation)
 - [External Tool Sync](/docs/guides/github-sync)
 - [Multi-Project Setup](/docs/reference/configuration)

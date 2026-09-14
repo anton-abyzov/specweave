@@ -642,7 +642,7 @@ See `/docs/auth-design.md` for existing system details.
 ## Still Have Questions?
 
 **Resources**:
-- **User Guide**: [Getting Started](./guides/getting-started)
+- **User Guide**: [Getting Started](/docs/getting-started)
 - **GitHub Sync**: [GitHub Integration](./guides/github-sync)
 - **Architecture**: System Architecture (historical reference; not published)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
