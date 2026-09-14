@@ -78,7 +78,7 @@ specweave update
 There is no alias routing: a 1.x slug simply has no skill behind it. The old-to-new map —
 every removed skill, the skill or CLI command that replaced it, and the ones that moved to
 `skills-optional/` — is `removedIn2_0` in
-[`plugins/specweave/marketplace.json`](plugins/specweave/marketplace.json).
+[`plugins/specweave/marketplace.json`](https://github.com/anton-abyzov/specweave/blob/develop/plugins/specweave/marketplace.json).
 
 <br/>
 
@@ -172,7 +172,7 @@ npx vskill eval run my-skill                  # Run eval suite
 
 ## Contributing
 
-Inside this repo dependency install scripts are disabled (`.npmrc`): run `npm ci`, then `npm run setup` (rebuilds the allowlisted native deps), and `npm run security:scan` before pushing — see [SECURITY.md](SECURITY.md).
+Inside this repo dependency install scripts are disabled (`.npmrc`): run `npm ci`, then `npm run setup` (rebuilds the allowlisted native deps), and `npm run security:scan` before pushing — see [SECURITY.md](https://github.com/anton-abyzov/specweave/blob/develop/SECURITY.md).
 
 ## Community
 
