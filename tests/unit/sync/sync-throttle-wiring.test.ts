@@ -11,8 +11,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
 
-const REPO = '/Users/antonabyzov/Projects/github/specweave-umb/repositories/anton-abyzov/specweave';
+const REPO = fileURLToPath(new URL('../../../', import.meta.url));
 
 describe('SyncThrottle wiring in trigger paths', () => {
   describe('status-change-sync-trigger.ts', () => {

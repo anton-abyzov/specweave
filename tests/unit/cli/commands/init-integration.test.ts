@@ -283,6 +283,8 @@ import { initCommand, isNonInteractive } from '../../../../src/cli/commands/init
  * Tests override specific mocks as needed.
  */
 function setupDefaultMocks() {
+  // These scenarios deliberately simulate an interactive terminal, even in CI.
+  for (const key of ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'CIRCLECI', 'JENKINS_URL']) vi.stubEnv(key, undefined);
   // Prevent process.exit from throwing in tests (Vitest intercepts it)
   vi.spyOn(process, 'exit').mockImplementation((() => {}) as any);
   vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -387,6 +389,7 @@ describe('T-009: Restructure here path with confirm gate', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -473,6 +476,7 @@ describe('T-013: Root repo prompt at early position', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -554,6 +558,7 @@ describe('T-018: promptRepoUrlsLoop uses validation', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 

@@ -312,6 +312,8 @@ let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 let originalIsTTY: boolean | undefined;
 
 beforeEach(() => {
+  // Keep interactive fixtures independent of the CI runner's own environment.
+  for (const key of ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'CIRCLECI', 'JENKINS_URL']) vi.stubEnv(key, undefined);
   vi.clearAllMocks();
   consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -336,6 +338,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   consoleLogSpy.mockRestore();
   Object.defineProperty(process.stdin, 'isTTY', { value: originalIsTTY, writable: true, configurable: true });
 });
