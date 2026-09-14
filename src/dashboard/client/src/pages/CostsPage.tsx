@@ -11,13 +11,16 @@ import { ProviderBreakdown } from '../components/charts/ProviderBreakdown.js';
 import { BudgetIndicator } from '../components/charts/BudgetIndicator.js';
 
 interface CostsData {
-  totalCost: number;
-  totalSavings: number;
+  totalCost: number | null;
+  estimatedSubtotal?: number;
+  unpricedSessionCount?: number;
+  pricingAsOf?: string;
+  totalSavings: number | null;
   totalTokens: number;
   sessionCount: number;
   billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
   sessions?: SessionCost[];
-  modelBreakdown?: Record<string, { cost: number; tokens: number; sessions: number }>;
+  modelBreakdown?: Record<string, { cost: number | null; tokens: number; sessions: number }>;
   trends?: Array<{
     date: string;
     total_cost: number;
@@ -41,12 +44,13 @@ interface CostsData {
 interface SessionCost {
   sessionId: string;
   model: string;
+  models?: string[];
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens?: number;
   cacheWriteTokens?: number;
-  cost: number;
-  savings?: number;
+  cost: number | null;
+  savings?: number | null;
   timestamp: string;
   duration?: number;
 }
@@ -71,7 +75,7 @@ export function CostsPage() {
   const modelBreakdown = data.modelBreakdown
     ? Object.entries(data.modelBreakdown)
         .map(([model, stats]) => ({ model, ...stats }))
-        .sort((a, b) => b.cost - a.cost)
+        .sort((a, b) => (b.cost ?? -1) - (a.cost ?? -1))
     : computeModelBreakdown(sessions);
 
   // Token type breakdown from sessions
@@ -102,6 +106,14 @@ export function CostsPage() {
         </div>
       </div>
 
+      <p className="text-xs text-gray-400 border border-gray-800 rounded-lg px-4 py-3">
+        Local Claude Code logs only. Prices use exact matches in the {data.pricingAsOf || '2026-03'} legacy rate table.
+        These are API estimates, not bills. Unknown or mixed-model sessions are unpriced.
+        {!!data.unpricedSessionCount && <span className="block mt-1 text-amber-300">
+          {data.unpricedSessionCount} unpriced session{data.unpricedSessionCount === 1 ? '' : 's'} · Priced subtotal: {formatCost(data.estimatedSubtotal)}
+        </span>}
+      </p>
+
       {/* Subscription Banner */}
       {isSubscription && (
         <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
@@ -118,16 +130,16 @@ export function CostsPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          title={isSubscription ? 'API-Equivalent Value' : 'Total Cost'}
-          value={`$${data.totalCost.toFixed(2)}`}
+          title='Estimated API Value'
+          value={formatCost(data.totalCost)}
           subtitle={isSubscription && data.billingContext?.monthlyAmount
             ? `Your plan: $${data.billingContext.monthlyAmount}/mo`
             : undefined}
           color="amber"
         />
         <KpiCard
-          title={isSubscription ? 'Cache Efficiency' : 'Cache Savings'}
-          value={`$${data.totalSavings.toFixed(2)}`}
+          title='Estimated Cache Savings'
+          value={formatCost(data.totalSavings)}
           subtitle={isSubscription ? 'API-equivalent savings from cache' : undefined}
           color="emerald"
         />
@@ -168,18 +180,18 @@ export function CostsPage() {
           {/* Model Breakdown Chart */}
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
             <h3 className="text-sm font-medium text-gray-300 mb-4">
-              {isSubscription ? 'Usage Value by Model' : 'Cost by Model'}
+              Priced Model Estimates
             </h3>
-            {modelBreakdown.length > 0 ? (
+            {modelBreakdown.some(m => m.cost != null) ? (
               <BarChart
-                items={modelBreakdown.map(m => ({
+                items={modelBreakdown.filter(m => m.cost != null).map(m => ({
                   label: m.model,
-                  value: parseFloat(m.cost.toFixed(2)),
+                  value: Number(m.cost?.toFixed(2)),
                   color: '#f59e0b',
                 }))}
               />
             ) : (
-              <p className="text-gray-600 text-xs">No model data</p>
+              <p className="text-gray-600 text-xs">No priced model estimates</p>
             )}
           </div>
 
@@ -210,7 +222,7 @@ export function CostsPage() {
                     <th className="text-left px-4 py-2 text-xs text-gray-500">Model</th>
                     <th className="text-right px-4 py-2 text-xs text-gray-500">Sessions</th>
                     <th className="text-right px-4 py-2 text-xs text-gray-500">Tokens</th>
-                    <th className="text-right px-4 py-2 text-xs text-gray-500">Cost</th>
+                    <th className="text-right px-4 py-2 text-xs text-gray-500">Estimate</th>
                     <th className="text-right px-4 py-2 text-xs text-gray-500">Avg/Session</th>
                   </tr>
                 </thead>
@@ -220,9 +232,9 @@ export function CostsPage() {
                       <td className="px-4 py-2 text-sm text-gray-300">{m.model}</td>
                       <td className="px-4 py-2 text-xs text-gray-500 text-right">{m.sessions.toLocaleString()}</td>
                       <td className="px-4 py-2 text-xs text-gray-500 text-right">{formatTokens(m.tokens)}</td>
-                      <td className="px-4 py-2 text-xs text-amber-400 text-right">${m.cost.toFixed(2)}</td>
+                      <td className="px-4 py-2 text-xs text-amber-400 text-right">{formatCost(m.cost)}</td>
                       <td className="px-4 py-2 text-xs text-gray-500 text-right">
-                        ${m.sessions > 0 ? (m.cost / m.sessions).toFixed(4) : '0'}
+                        {formatCost(m.cost != null && m.sessions > 0 ? m.cost / m.sessions : null, 4)}
                       </td>
                     </tr>
                   ))}
@@ -265,7 +277,7 @@ export function CostsPage() {
 
 /** Row height constants for virtualization */
 const ROW_HEIGHT = 37;        // collapsed row height in px
-const EXPANDED_HEIGHT = 160;  // expanded row height in px
+const EXPANDED_HEIGHT = 210;  // expanded row height in px
 const BUFFER_ROWS = 5;        // extra rows above/below viewport
 
 /**
@@ -388,7 +400,7 @@ function VirtualSessionsTable({ sessions, expandedSession, onToggle }: {
             <th className="text-right px-4 py-2 text-xs text-gray-500">Input</th>
             <th className="text-right px-4 py-2 text-xs text-gray-500">Output</th>
             <th className="text-right px-4 py-2 text-xs text-gray-500">Cache</th>
-            <th className="text-right px-4 py-2 text-xs text-gray-500">Cost</th>
+            <th className="text-right px-4 py-2 text-xs text-gray-500">Estimate</th>
             <th className="text-right px-4 py-2 text-xs text-gray-500">Duration</th>
             <th className="text-left px-4 py-2 text-xs text-gray-500">When</th>
           </tr>
@@ -426,7 +438,7 @@ function VirtualSessionsTable({ sessions, expandedSession, onToggle }: {
                       <td className="px-4 py-2 text-xs text-gray-400 font-mono">
                         {id.slice(0, 8)}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2" title={s.models?.join(' → ')}>
                         <Badge label={s.model || 'unknown'} variant="default" />
                       </td>
                       <td className="px-4 py-2 text-xs text-gray-500 text-right">{formatTokens(s.inputTokens)}</td>
@@ -434,7 +446,7 @@ function VirtualSessionsTable({ sessions, expandedSession, onToggle }: {
                       <td className="px-4 py-2 text-xs text-gray-500 text-right">
                         {totalCache > 0 ? formatTokens(totalCache) : '-'}
                       </td>
-                      <td className="px-4 py-2 text-xs text-amber-400 text-right">${s.cost?.toFixed(4) || '0.0000'}</td>
+                      <td className="px-4 py-2 text-xs text-amber-400 text-right">{formatCost(s.cost, 4)}</td>
                       <td className="px-4 py-2 text-xs text-gray-500 text-right">
                         {s.duration ? formatDuration(s.duration) : '-'}
                       </td>
@@ -444,6 +456,7 @@ function VirtualSessionsTable({ sessions, expandedSession, onToggle }: {
                       <tr className="border-b border-gray-800/50">
                         <td colSpan={9} className="px-6 py-3 bg-gray-800/20">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                            <div className="col-span-full"><span className="text-gray-500 block mb-1">Observed model IDs</span><span className="text-gray-300 font-mono break-all">{s.models?.join(' → ') || s.model || 'unknown'}</span></div>
                             <div>
                               <span className="text-gray-500 block mb-1">Input Tokens</span>
                               <span className="text-gray-300 font-mono">{s.inputTokens.toLocaleString()}</span>
@@ -461,8 +474,8 @@ function VirtualSessionsTable({ sessions, expandedSession, onToggle }: {
                               <span className="text-gray-300 font-mono">{(s.cacheReadTokens || 0).toLocaleString()}</span>
                             </div>
                             <div>
-                              <span className="text-gray-500 block mb-1">Cost</span>
-                              <span className="text-amber-400 font-mono">${s.cost?.toFixed(6) || '0'}</span>
+                              <span className="text-gray-500 block mb-1">API Estimate</span>
+                              <span className="text-amber-400 font-mono">{formatCost(s.cost, 6)}</span>
                             </div>
                             {s.savings != null && s.savings > 0 && (
                               <div>
@@ -517,18 +530,18 @@ function TokenBar({ label, value, total, color }: { label: string; value: number
 }
 
 function computeModelBreakdown(sessions: SessionCost[]) {
-  const modelStats = new Map<string, { cost: number; tokens: number; sessions: number }>();
+  const modelStats = new Map<string, { cost: number | null; tokens: number; sessions: number }>();
   for (const s of sessions) {
     const model = s.model || 'unknown';
     const existing = modelStats.get(model) || { cost: 0, tokens: 0, sessions: 0 };
-    existing.cost += s.cost || 0;
+    existing.cost = existing.cost == null || s.cost == null ? null : existing.cost + s.cost;
     existing.tokens += (s.inputTokens || 0) + (s.outputTokens || 0);
     existing.sessions++;
     modelStats.set(model, existing);
   }
   return Array.from(modelStats.entries())
     .map(([model, stats]) => ({ model, ...stats }))
-    .sort((a, b) => b.cost - a.cost);
+    .sort((a, b) => (b.cost ?? -1) - (a.cost ?? -1));
 }
 
 function formatTokens(n: number): string {
@@ -567,4 +580,8 @@ function timeAgo(ts: string): string {
   } catch {
     return '-';
   }
+}
+
+function formatCost(value: number | null | undefined, digits = 2): string {
+  return value == null ? 'Unknown' : `$${value.toFixed(digits)}`;
 }

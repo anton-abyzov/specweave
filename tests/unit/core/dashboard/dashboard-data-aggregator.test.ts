@@ -65,6 +65,17 @@ describe('DashboardDataAggregator', () => {
     vi.restoreAllMocks();
   });
 
+  it('keeps unknown usage estimates null in the overview', async () => {
+    const overview = await aggregator.getOverview({
+      totalCost: null, totalSavings: null, totalTokens: 1500, sessionCount: 1,
+      estimatedSubtotal: 0, unpricedSessionCount: 1, pricingAsOf: '2026-03',
+      sessions: [], modelBreakdown: {}, billingContext: { planType: 'api' },
+    });
+    expect(overview.costs.totalCost).toBeNull();
+    expect(overview.costs.totalSavings).toBeNull();
+    expect(overview.costs.totalTokens).toBe(1500);
+  });
+
   // --- Helper to set up a dashboard.json cache (async) ---
   function setupDashboardCache(data: Record<string, unknown>) {
     mockFsp.access.mockImplementation(async (p: string) => {

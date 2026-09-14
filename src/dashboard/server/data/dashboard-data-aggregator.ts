@@ -70,8 +70,8 @@ export class DashboardDataAggregator {
         last24hEvents: analytics.last24hEvents,
       },
       costs: {
-        totalCost: costData?.totalCost ?? 0,
-        totalSavings: costData?.totalSavings ?? 0,
+        totalCost: costData?.totalCost ?? null,
+        totalSavings: costData?.totalSavings ?? null,
         totalTokens: costData?.totalTokens ?? 0,
         sessionCount: costData?.sessionCount ?? 0,
         billingContext: costData?.billingContext ?? { planType: 'api' },

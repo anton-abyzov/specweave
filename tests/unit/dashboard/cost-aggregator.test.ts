@@ -100,6 +100,46 @@ describe('CostAggregator - billing context', () => {
   });
 
   describe('cost calculation accuracy', () => {
+    it('preserves new model IDs and reports unmatched pricing as unknown', async () => {
+      writeSession('new-model', [makeAssistantEntry('claude-opus-5', { input: 1000, output: 500 }, '2026-09-14T10:00:00Z')]);
+      const result = await aggregator.getTokenSummaries();
+      expect(result.sessions[0].model).toBe('claude-opus-5');
+      expect(result.sessions[0].cost).toBeNull();
+      expect(result.totalCost).toBeNull();
+      expect(result.totalSavings).toBeNull();
+      expect(result.unpricedSessionCount).toBe(1);
+    });
+
+    it('does not borrow a newer Sonnet rate for an unmatched historical ID', async () => {
+      writeSession('historical-model', [makeAssistantEntry('claude-sonnet-4-5-20250929', { input: 1000, output: 500 }, '2026-09-14T10:00:00Z')]);
+      const result = await aggregator.getTokenSummaries();
+      expect(result.sessions[0].model).toBe('claude-sonnet-4-5-20250929');
+      expect(result.sessions[0].cost).toBeNull();
+    });
+
+    it('never prices a mixed-model session under its first model', async () => {
+      writeSession('mixed-model', [
+        makeAssistantEntry('claude-opus-4-6', { input: 1000, output: 500 }, '2026-09-14T10:00:00Z'),
+        makeAssistantEntry('claude-sonnet-4-6', { input: 2000, output: 1000 }, '2026-09-14T10:01:00Z'),
+      ]);
+      const result = await aggregator.getTokenSummaries();
+      expect(result.sessions[0].model).toBe('mixed');
+      expect(result.sessions[0].models).toEqual(['claude-opus-4-6', 'claude-sonnet-4-6']);
+      expect(result.sessions[0].cost).toBeNull();
+      expect(result.totalTokens).toBe(4500);
+      expect(result.modelBreakdown.mixed.cost).toBeNull();
+    });
+
+    it('keeps a priced subtotal separate from an unknown total', async () => {
+      writeSession('known-model', [makeAssistantEntry('claude-opus-4-6', { input: 1000, output: 500 }, '2026-09-14T10:00:00Z')]);
+      writeSession('missing-model', [makeAssistantEntry('', { input: 1000, output: 500 }, '2026-09-14T10:00:00Z')]);
+      const result = await aggregator.getTokenSummaries();
+      expect(result.totalCost).toBeNull();
+      expect(result.estimatedSubtotal).toBeCloseTo(0.0175);
+      expect(result.sessions.find(s => s.sessionId === 'missing-model')?.model).toBe('unknown');
+      expect(result.sessions.find(s => s.sessionId === 'missing-model')?.cost).toBeNull();
+    });
+
     it('should calculate Opus costs correctly with all token types', async () => {
       writeSession('session-001', [
         makeAssistantEntry('claude-opus-4-6', {
@@ -121,9 +161,9 @@ describe('CostAggregator - billing context', () => {
       expect(result.totalSavings).toBeCloseTo(4.50, 4);
     });
 
-    it('should calculate Sonnet costs correctly', async () => {
+    it('should calculate exact-table Sonnet costs correctly', async () => {
       writeSession('session-001', [
-        makeAssistantEntry('claude-sonnet-4-5-20250929', {
+        makeAssistantEntry('claude-sonnet-4-6', {
           input: 100000,
           output: 50000,
         }, '2026-02-15T10:00:00Z'),
