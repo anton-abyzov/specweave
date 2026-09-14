@@ -25,6 +25,7 @@ export class FileWatcher {
     private debounceMs = 300,
   ) {
     this.fileTargets = [
+      { relativePath: '.specweave/intents/board.jsonl', eventType: 'increment-update' },
       { relativePath: '.specweave/state/dashboard.json', eventType: 'increment-update' },
       { relativePath: '.specweave/state/notifications.json', eventType: 'notification' },
       { relativePath: '.specweave/state/analytics/events.jsonl', eventType: 'analytics-event' },
@@ -53,7 +54,7 @@ export class FileWatcher {
     if (fs.existsSync(incDir)) {
       try {
         const watcher = fs.watch(incDir, { recursive: true }, (_event, filename) => {
-          if (filename && (filename.endsWith('metadata.json') || filename.endsWith('tasks.md'))) {
+          if (filename && (['metadata.json', 'tasks.md', 'spec.md', 'ledger.jsonl', 'verify.json', 'handoff.md'].some(name => filename.endsWith(name)))) {
             const incrementId = filename.split(path.sep)[0] || filename.split('/')[0];
             this.debouncedEmit('increment-update', incDir, {
               incrementId,

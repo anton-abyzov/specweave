@@ -1,3 +1,30 @@
+## [2.1.0] - 2026-09-14
+
+### Added
+- Local intent board with optional increment links, persistent state, drag-and-drop and keyboard controls, current ledger evidence, and live file refresh.
+- Execution history separates declared setups, ledger actors, and observed Codex/Claude Code metadata. Sessions can be explicitly associated with intents; unavailable facts remain unknown. Reading the board makes no model calls.
+- Redesigned product website and guides centered on portable intent, evidence, and optional enterprise integrations.
+
+### Fixed
+- Read modern task ledger state and acceptance criteria in the dashboard instead of relying on stale rendered checkboxes.
+- Bind the dashboard to loopback and reject mismatched browser origins/hosts.
+- Report incomplete external-provider pulls, preserve successful partial results, return failure status, and honor the configured GitHub target.
+- Preserve supported session IDs in the auto-mode hook fast path.
+- Keep exact model identities and display unknown or incomplete usage estimates without inventing totals.
+- Isolate corrupt intent records and share validation between the dashboard, startup context, and handoffs.
+- Carry lightweight intents into startup context and preserve owned handoff pointers when project folders move.
+
+### Changed
+- Default hooks are SessionStart and Stop. Ordinary Stop events exit before loading the CLI; explicit auto mode retains its continuation hook. PreToolUse and PreCompact remain callable compatibility handlers, without default registration.
+- Small self-contained work can use a lightweight intent. Existing user authorization carries through planning and implementation.
+
+## [2.0.3] - 2026-09-06
+
+### Fixed
+- Use quoted hook command strings compatible with Codex instead of ignored argument fields, and validate the same format in doctor.
+- Enforce hook deadlines in a supervisor process, terminate stalled workers, and preserve streamed UTF-8.
+- Capture handoffs through a private Git index with a shared execution budget, preserving user staging even during interruption.
+
 ## [2.0.0] - 2026-09-02
 
 SpecWeave 2.0 keeps the parts of 1.x the evidence showed people used, and deletes the rest. Full narrative: https://spec-weave.com/docs/guides/specweave-2

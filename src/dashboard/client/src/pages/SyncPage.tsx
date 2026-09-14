@@ -340,7 +340,7 @@ function UmbrellaHealthView({
   auditSummary?: AuditSummary | null;
   verifying: string | null;
   onVerify: (platform: string, repoId?: string) => void;
-  execute: (cmd: string, params?: Record<string, string>) => void;
+  execute: (cmd: string, options?: { queryParams?: Record<string, string>; timeoutMs?: number }) => void;
   running: boolean;
 }) {
   if (repos.length === 0) {

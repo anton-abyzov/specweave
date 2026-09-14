@@ -440,6 +440,6 @@ cclsp provides:
 
 ## Related
 
-- [Living Docs Guide](/docs/guides/intelligent-living-docs-sync)
+- [Living Docs Guide](/docs/guides/core-concepts/living-documentation)
 - [Getting Started](/docs/getting-started)
 - [Command Reference](/docs/reference/commands)

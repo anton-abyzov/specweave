@@ -82,7 +82,7 @@ The only mutable task state, one JSON object per line, append-only:
 
 ### handoff.md
 
-A one-page, secret-scrubbed document built from durable state (the ledger fold, spec ACs, decisions, the git diff) — not from any tool's private transcript. Write it whenever you stop; the PreCompact hook writes one automatically before context is compacted.
+A one-page, secret-scrubbed document built from durable state (the ledger fold, spec ACs, decisions, the git diff) — not from any tool's private transcript. Write it when handing work to another tool. Default hooks no longer capture Git state during compaction.
 
 ### reports/verify.json
 
@@ -101,7 +101,7 @@ Every step is a CLI command, so any tool — Claude Code, Codex, Cursor, Gemini,
 | 3 | `specweave verify [id]` | — | Runs `testing.commands[]` (or auto-detects test/lint/build), writes `reports/verify.json`. |
 | 4 | — | `sw:review` | Fresh-context adversarial review. Every finding cites `path:line` and is re-verified before it is reported. Writes `reports/review.md`. Recommended for anything that ships; never blocking. |
 | 5 | `specweave complete <id>` | `sw:done` | Refuses without a green `verify.json` unless you pass `--reason`. Syncs GitHub if configured. |
-| 6 | `specweave handoff [id]` | `sw:handoff` | Portable handoff doc. Also fires automatically on PreCompact. |
+| 6 | `specweave handoff [id]` | `sw:handoff` | Portable handoff doc, written explicitly when switching tools. |
 
 Extra verbs you will actually use:
 
@@ -133,20 +133,14 @@ Parallel work is vendor-agnostic and subscription-agnostic. Coordination happens
 
 ## Hooks
 
-The plugin ships four hooks, all exec-form (`node` + args, no shell). 1.x wrapped every hook in `bash -c '…'`, which meant they were dead on Windows without a POSIX shell.
+The default plugin ships two bounded hooks using quoted portable Node commands:
 
-| Hook | Timeout | Purpose |
-|------|---------|---------|
-| `SessionStart` | 10s | Injects the active increment and next task as session context. |
-| `PreToolUse` (`Write\|Edit`) | 10s | Guards writes under `.specweave/increments/`. Returns `{}` immediately for every other path. |
-| `Stop` | 30s | The `sw:auto` loop driver, and nothing else. Stop fires every turn, so it must stay cheap and honour `stop_hook_active`. |
-| `PreCompact` | 10s | Writes `handoff.md` before context is compacted. |
+| Event | Purpose |
+|---|---|
+| `SessionStart` | Supplies a compact pointer to active project work. |
+| `Stop` | Drives explicitly enabled auto mode; ordinary turns return without loading the CLI worker. |
 
-`hooks/run.mjs` normalises backslashes, resolves the CLI via `require.resolve('specweave')` from `CLAUDE_PROJECT_DIR` and then the global npm root, and exits 0 silently when the CLI is absent. Hooks accelerate the loop; they are never required for it.
-
-Inspect what they did with `specweave hooks log`.
-
----
+Edit interception and automatic compaction Git snapshots are no longer default hooks. Verification and completion remain portable CLI boundaries. Use `specweave handoff` at a tool change. Compatibility handlers remain available for existing integrations, but are not registered in the default manifest.
 
 ## Skills
 

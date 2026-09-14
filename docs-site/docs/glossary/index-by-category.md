@@ -59,6 +59,6 @@ Initialization, detection, and quality enforcement.
 
 ## Navigation
 
-- **[Alphabetical Index](./README)** - Browse A-Z
-- **[Learning Guides](/docs/learn/)** - Deep dives
+- **[Alphabetical Index](/docs/glossary/overview)** - Browse A-Z
+- **[Learning Guides](/docs/academy)** - Deep dives
 - **[Core Concepts](/docs/guides/core-concepts/what-is-an-increment)** - SpecWeave fundamentals

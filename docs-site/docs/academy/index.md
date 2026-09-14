@@ -108,7 +108,7 @@ Prefer watching? Check out the Complete Masterclass:
 
 - **Discord**: [Join our community](https://discord.gg/UYg4BGJ65V)
 - **YouTube**: [Video tutorials](https://www.youtube.com/@antonabyzov)
-- **GitHub**: [Report issues](https://github.com/specweave/specweave/issues)
+- **GitHub**: [Report issues](https://github.com/anton-abyzov/specweave/issues)
 
 ---
 

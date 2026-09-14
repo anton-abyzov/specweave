@@ -152,7 +152,7 @@ describe('CostAggregator - per-file mtime cache', () => {
 
       const result2 = await aggregator.getTokenSummaries();
       expect(Object.keys(result2.modelBreakdown).length).toBe(1);
-      expect(result2.modelBreakdown['Opus 4.6']).toBeDefined();
+      expect(result2.modelBreakdown['claude-opus-4-6']).toBeDefined();
     });
   });
 

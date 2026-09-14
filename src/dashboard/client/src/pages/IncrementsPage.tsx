@@ -37,7 +37,7 @@ export function IncrementsPage() {
   const navigate = useProjectNavigate();
 
   // Debounced SSE handler (500ms window)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useSSEEvent('increment-update', () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setRefreshKey((k) => k + 1), 500);

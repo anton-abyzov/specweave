@@ -43,8 +43,8 @@ export interface OverviewPayload {
     last24hEvents: number;
   };
   costs: {
-    totalCost: number;
-    totalSavings: number;
+    totalCost: number | null;
+    totalSavings: number | null;
     totalTokens: number;
     sessionCount: number;
     billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
@@ -95,7 +95,7 @@ export interface IncrementDetailPayload {
     satisfiesACs?: string[];
   }>;
   taskSummary: { total: number; completed: number; pending: number; inProgress: number };
-  costs?: { totalCost: number; totalTokens: number; sessionCount: number };
+  costs?: { totalCost: number | null; totalTokens: number; sessionCount: number };
 }
 
 // Sync

@@ -1,6 +1,6 @@
 /**
  * Hooks Checker — dry-runs the SpecWeave 2.0 hook launcher for each of the
- * four registered events with a sample stdin and validates the JSON output
+ * four supported events (including compatibility-only handlers) with a sample stdin and validates the JSON output
  * against the per-event Claude Code schema.
  */
 
@@ -78,7 +78,7 @@ export class HooksChecker implements HealthChecker {
     return { category: this.category, status: calculateOverallStatus(checks), checks };
   }
 
-  /** hooks.json must be exec-form (command + args), node-based, with sane timeouts. */
+  /** hooks.json uses a quoted node command string (Codex ignores separate args). */
   private checkHooksJson(hooksJson: string): CheckResult {
     try {
       const data = JSON.parse(fs.readFileSync(hooksJson, 'utf8')) as {
@@ -88,13 +88,15 @@ export class HooksChecker implements HealthChecker {
       for (const [event, groups] of Object.entries(data.hooks ?? {})) {
         for (const group of groups) {
           for (const h of group.hooks ?? []) {
-            if (h.command !== 'node' || !Array.isArray(h.args)) problems.push(`${event}: not exec-form node`);
+            if (!/^node \"\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/run\.mjs\" [a-z-]+$/.test(h.command ?? '') || h.args !== undefined) {
+              problems.push(`${event}: expected quoted node hook command without separate args`);
+            }
             if (typeof h.timeout === 'number' && h.timeout > 60) problems.push(`${event}: timeout ${h.timeout}s > 60s`);
           }
         }
       }
       return problems.length === 0
-        ? { name: 'hooks.json', status: 'pass', message: 'exec-form node launcher, timeouts <= 60s' }
+        ? { name: 'hooks.json', status: 'pass', message: 'portable node launcher, timeouts <= 60s' }
         : { name: 'hooks.json', status: 'fail', message: problems.join('; ') };
     } catch (err) {
       return { name: 'hooks.json', status: 'fail', message: `unreadable: ${err instanceof Error ? err.message : String(err)}` };

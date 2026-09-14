@@ -2,12 +2,17 @@
 sidebar_position: 9
 slug: 08-ai-model-selection
 title: "Lesson 8: AI Model Selection"
-description: "Choose the right model for each task"
+description: "Historical 1.x model-routing lesson; see the current execution-context guide"
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';
 
 # Lesson 8: AI Model Selection
+
+:::warning Historical 1.x material
+This article preserves the earlier model-routing design and dated model comparisons. It does not describe SpecWeave 2.1 defaults or current model capabilities and prices. In 2.1, choose a model in your harness and record its execution context; the Work board does not automatically route requests or require a particular plan mode. Use [Models and execution context](/docs/guides/model-selection) for current behavior and [Usage and cost estimates](/docs/reference/cost-tracking) for telemetry limits.
+:::
+
 
 **Time**: 25 minutes
 **Goal**: Optimize cost and quality by choosing the right model

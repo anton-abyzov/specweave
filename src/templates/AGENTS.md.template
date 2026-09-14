@@ -1,7 +1,7 @@
 <!-- SECTION:header required -->
 # {PROJECT_NAME}
 
-SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-slug/`. `spec.md` (Problem, ACs, Approach) is the source of truth; the ledger records who did what. This file is for Codex, OpenCode, Cursor, Gemini, Aider and humans; Claude Code reads CLAUDE.md (same content). Keep it under one page; project-specific notes go in **Project notes** at the bottom.
+SpecWeave project. Small requests live in the intent board; scoped work lives in increments under `.specweave/increments/NNNN-slug/`. `spec.md` (Problem, ACs, Approach) is the source of truth; the ledger records who did what. This file is for Codex, OpenCode, Cursor, Gemini, Aider and humans; Claude Code reads CLAUDE.md (same content). Keep it under one page; project-specific notes go in **Project notes** at the bottom.
 <!-- /SECTION -->
 
 <!-- SECTION:structure -->
@@ -9,6 +9,7 @@ SpecWeave project. Work happens in increments under `.specweave/increments/NNNN-
 
 ```
 .specweave/
+  intents/board.jsonl       append-only intent history (latest revision per id; planning state, not verification)
   increments/NNNN-slug/   spec.md (Problem · ACs · Approach) · tasks.md (tasks + rendered board) · ledger.jsonl (claims/done, CLI-written) · handoff.md · reports/ (evidence; binaries in reports/artifacts/, gitignored)
   docs/                    ADRs and hand-written docs (read before changing architecture)
   config.json
@@ -23,7 +24,7 @@ Only those files (plus optional `plan.md` when Approach outgrows a page, and `sc
 
 | Step | Command (each step is also a standalone skill you can install into any tool with `npx vskill install anton-abyzov/specweave/sw-do` — same for `sw-increment`, `sw-review`, `sw-handoff`, `sw-task`) |
 |---|---|
-| Plan a feature: write `spec.md` (Problem, Scope, `AC-01…` checkboxes, Approach: files that change, order of work, risks, decisions), get approval before any code | `specweave create-increment "title"` |
+| Plan a feature: write `spec.md` (Problem, Scope, `AC-01…` checkboxes, Approach: files that change, order of work, risks, decisions), resolve material scope questions before implementation | `specweave create-increment "title"` |
 | Work the tasks | `specweave task next` → `specweave task claim T-NN` → implement → commit (`NNNN: …`) → `specweave task done T-NN --run "<test cmd>"` (the command runs through your OS shell: cmd.exe on Windows, sh elsewhere) |
 | Verify the whole increment | `specweave verify` |
 | Review before closing (recommended for anything that ships) | in a fresh session: read spec.md, list findings by severity citing path:line, re-verify each before writing `reports/review.md`; the authoring session never approves its own work |
@@ -31,7 +32,7 @@ Only those files (plus optional `plan.md` when Approach outgrows a page, and `sc
 | Stop for any reason | `specweave handoff` |
 
 Without the `specweave` CLI: create the folder by hand (id = highest existing 4-digit prefix + 1, zero-padded); append one JSON line per event to `ledger.jsonl` as UTF-8 without BOM, LF-terminated, e.g. `{"t":"T-01","e":"claim","by":"<tool>@<host>","at":"<ISO>"}` (bash: `>>`; PowerShell: `[IO.File]::AppendAllText('ledger.jsonl', $line + "`n")`, never `>>`, it writes UTF-16); mark done with the same line using `"e":"done","evidence":"<commit sha>"` after the Test command exits 0; write `reports/verify.md` with the real test output and say the increment is ready to close (closing itself needs the CLI).
-Start every feature with an increment, even a small one, unless the user says "no increment". Fix a bug by writing the failing test first, then fixing the code without touching the test.
+Use an increment for work that needs shared scope, acceptance criteria, or a handoff. Small self-contained fixes can remain a lightweight intent. For bugs, reproduce the failure and add a regression test when it protects behavior. User authorization carries through routine implementation and verification.
 <!-- /SECTION -->
 
 <!-- SECTION:verify required -->
@@ -48,8 +49,7 @@ Run the project's build/test/lint (see **Commands**) before reporting any task c
 3. Never edit ledger lines or another task's status; append only. On a git conflict in `ledger.jsonl` keep every line from both sides.
 4. `done` needs the task's **Test** command exit 0 and a commit sha. A task that turns out unnecessary is closed with `specweave task skip T-NN --reason "..."` (no CLI: append a `skip` ledger line with a reason), never ticked.
 5. When you stop: `specweave task release --all-mine` then `specweave handoff`.
-
-Resuming: find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `specweave task next`.
+Resuming: check `.specweave/intents/board.jsonl` (latest revision per id) or `specweave dashboard` for unfinished intents, including work without an increment. Then find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `specweave task next`.
 <!-- /SECTION -->
 
 <!-- SECTION:conventions required -->

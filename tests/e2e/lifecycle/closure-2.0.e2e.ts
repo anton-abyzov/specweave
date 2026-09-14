@@ -179,8 +179,12 @@ describe('2.0 loop — a just-created increment is resolvable', () => {
     // …and the pointer the design specifies.
     const pointer = path.join(root, '.specweave', 'state', 'handoff-latest.txt');
     expect(fs.existsSync(pointer)).toBe(true);
+    // In-project pointers are relative so they survive moving the project.
+    const destination = fs.readFileSync(pointer, 'utf-8').trim();
+    expect(path.isAbsolute(destination)).toBe(false);
+    // Resolve against the fixture project, not the test runner's checkout.
     // fs.realpathSync: macOS temp dirs are symlinked (/var → /private/var).
-    expect(fs.realpathSync(fs.readFileSync(pointer, 'utf-8').trim())).toBe(
+    expect(fs.realpathSync(path.resolve(root, destination))).toBe(
       fs.realpathSync(path.join(incDir, 'handoff.md')),
     );
 
@@ -304,7 +308,8 @@ describe('metadata.updated', () => {
     git(root, 'init', '-q');
     git(root, 'config', 'user.email', 'e2e@example.com');
     git(root, 'config', 'user.name', 'E2E');
-    expect(sw(root, ['init']).code).toBe(0);
+    // The fixture intentionally initializes a disposable system-temp project.
+    expect(sw(root, ['init', '--quick', '--force']).code).toBe(0);
     expect(sw(root, ['create-increment', 'greeting cli']).code).toBe(0);
 
     const dir = path.join(root, '.specweave', 'increments');

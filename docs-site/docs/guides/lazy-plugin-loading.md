@@ -5,7 +5,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 **99% token reduction** for non-SpecWeave work through conditional plugin activation.
 
 :::info Status
-This feature is **planned for v1.1**. The specification is complete and approved. Track progress in [increment 0171](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0171-lazy-plugin-loading).
+This feature is **planned for v1.1**. The specification is complete and approved. The original plan was recorded in increment 0171 (historical reference; not published).
 :::
 
 ## The Problem
@@ -230,7 +230,7 @@ If hot-reload fails:
 
 ## Related Features
 
-- **[MCP Tool Search](/docs/guides/getting-started/quickstart#what-you-get)** - Current built-in Claude Code feature for tool deferred loading
+- **[Getting Started](/docs/getting-started)** - Current SpecWeave installation and first steps
 - **[AI Agents and Skills](/docs/overview/features#ai-agents-and-skills)** - Claude Code 2.1.0+ feature for isolated sub-agents
 - **[Context Precision](/docs/overview/features#context-precision-70-token-reduction)** - Current progressive disclosure approach
 

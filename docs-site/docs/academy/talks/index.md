@@ -31,4 +31,4 @@ Subscribe for notifications when new talks are published.
 
 ## Suggest a Topic
 
-Have a topic you'd like covered? [Open a discussion on GitHub](https://github.com/specweave/specweave/discussions).
+Have a topic you'd like covered? [Suggest a topic on GitHub](https://github.com/anton-abyzov/specweave/issues).

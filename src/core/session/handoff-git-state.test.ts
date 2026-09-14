@@ -170,3 +170,37 @@ describe('captureGitState', () => {
     expect(state.isGitRepo).toBe(false);
   });
 });
+
+it('preserves index bytes and captures quoted Unicode filenames', () => {
+  const repo = mkTmp('handoff-index-bytes-');
+  const out = path.join(os.tmpdir(), `handoff-index-${Date.now()}.diff`);
+  try {
+    git(repo, 'init', '-q');
+    fs.writeFileSync(path.join(repo, 'tracked'), 'base');
+    git(repo, 'add', 'tracked');
+    const index = path.join(repo, '.git', 'index');
+    const before = fs.readFileSync(index);
+    fs.writeFileSync(path.join(repo, 'é "quoted" file.txt'), 'unique untracked content');
+    captureGitState(repo, out);
+    expect(fs.readFileSync(index)).toEqual(before);
+    expect(fs.readFileSync(out, 'utf8')).toContain('unique untracked content');
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+    fs.rmSync(out, { force: true });
+  }
+});
+
+it.skipIf(process.platform === 'win32')('bounds stalled Git by the total capture budget', () => {
+  const repo = mkTmp('handoff-slow-git-');
+  const oldPath = process.env.PATH;
+  try {
+    fs.writeFileSync(path.join(repo, 'git'), '#!/bin/sh\nexec /bin/sleep 12\n', { mode: 0o755 });
+    process.env.PATH = repo + path.delimiter + oldPath;
+    const start = Date.now();
+    expect(captureGitState(repo, path.join(repo, 'out.diff')).isGitRepo).toBe(false);
+    expect(Date.now() - start).toBeLessThan(4500);
+  } finally {
+    process.env.PATH = oldPath;
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}, 6000);

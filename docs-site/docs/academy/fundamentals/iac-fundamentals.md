@@ -2685,7 +2685,7 @@ Congratulations! You now understand Infrastructure as Code fundamentals.
 ### Kubernetes
 - Kubernetes guide - Complete K8s reference
 - Helm guide - K8s package manager
-- [Kubernetes Patterns](https://k8spatterns.io/) - Design patterns for K8s
+- [Kubernetes Patterns](https://k8spatterns.com/) - Design patterns for K8s
 
 ### Docker
 - Docker guide - Complete Docker reference

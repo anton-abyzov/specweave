@@ -1,0 +1,161 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, cpSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { IntentStore } from '../../../src/dashboard/server/data/intent-store.js';
+import { handle } from '../../../src/core/hooks/handlers/session-start.js';
+import { createContext } from '../../../src/core/hooks/handlers/utils.js';
+import { buildWorkHandoff } from '../../../src/core/session/work-handoff.js';
+
+const roots: string[] = [];
+function project() {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'sw-intent-context-'));
+  roots.push(root);
+  mkdirSync(path.join(root, '.specweave/state'), { recursive: true });
+  writeFileSync(path.join(root, '.specweave/config.json'), '{}');
+  return root;
+}
+afterEach(() => roots.splice(0).forEach(root => rmSync(root, { recursive: true, force: true })));
+
+describe('lightweight intent continuity', () => {
+  it('discovers pending intents at SessionStart with no active increment', async () => {
+    const root = project();
+    const store = new IntentStore(root);
+    const pending = store.create({ title: 'Keep exported dates readable', state: 'active' });
+    const done = store.create({ title: 'Completed old request' });
+    store.update(done.id, { revision: done.revision, state: 'done' });
+    const before = readFileSync(path.join(root, '.specweave/intents/board.jsonl'), 'utf8');
+    const result = await handle({}, createContext(root));
+    const text = result.hookSpecificOutput?.additionalContext ?? '';
+    expect(text).toContain('1 open intent');
+    expect(text).toContain(pending.id);
+    expect(text).toContain('Keep exported dates readable');
+    expect(text).toContain('.specweave/intents/board.jsonl');
+    expect(text).not.toContain('Completed old request');
+    expect(readFileSync(path.join(root, '.specweave/intents/board.jsonl'), 'utf8')).toBe(before);
+  });
+
+  it('carries intent context into the scrubbed inline handoff and discovers the saved handoff', async () => {
+    const root = project();
+    const secret = 'ghp_' + 'a'.repeat(36);
+    const pending = new IntentStore(root).create({ title: 'Fix export ' + secret, state: 'blocked' });
+    const handoff = await buildWorkHandoff(root, { summary: 'Waiting for the sample file.', inline: true });
+    expect(handoff.docMarkdown).toContain('Waiting for the sample file.');
+    expect(handoff.docMarkdown).toContain(pending.id);
+    expect(handoff.docMarkdown).toContain('board.jsonl');
+    expect(handoff.docMarkdown).not.toContain(secret);
+    expect(handoff.docMarkdown).toMatch(/redactions: [1-9]/);
+    expect(handoff.pastePrompt).toContain(pending.id);
+    expect(handoff.pastePrompt).not.toContain(secret);
+    const session = await handle({}, createContext(root));
+    expect(session.hookSpecificOutput?.additionalContext).toContain('Last handoff: .handoff/HANDOFF.md');
+    expect(session.hookSpecificOutput?.additionalContext).not.toContain(secret);
+  });
+
+  it('keeps startup context bounded while pointing to remaining intents', async () => {
+    const root = project();
+    const store = new IntentStore(root);
+    for (let i = 0; i < 8; i++) store.create({ title: `Request ${i} ` + 'x'.repeat(150), state: 'backlog' });
+    const result = await handle({}, createContext(root));
+    const text = result.hookSpecificOutput?.additionalContext ?? '';
+    expect(text).toContain('8 open intents');
+    expect(text).toContain('+5 more');
+    expect(text.length).toBeLessThan(1000);
+  });
+});
+
+
+describe('intent discovery fallbacks', () => {
+  it('writes relative in-project handoff pointers that survive relocation', async () => {
+    const root = project();
+    await buildWorkHandoff(root, { summary: 'Continue after moving the project' });
+    expect(readFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), 'utf8').trim()).toBe('.handoff/HANDOFF.md');
+    const moved = project();
+    cpSync(root, moved, { recursive: true });
+    rmSync(root, { recursive: true, force: true });
+    const result = await handle({}, createContext(moved));
+    expect(result.hookSpecificOutput?.additionalContext).toContain('Last handoff: .handoff/HANDOFF.md');
+  });
+  it('recovers an owned canonical handoff after an old absolute pointer becomes stale', async () => {
+    const root = project();
+    const handoff = await buildWorkHandoff(root);
+    writeFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), handoff.docPath + '\n');
+    const moved = project();
+    cpSync(root, moved, { recursive: true });
+    rmSync(root, { recursive: true, force: true });
+    const result = await handle({}, createContext(moved));
+    expect(result.hookSpecificOutput?.additionalContext).toContain('Last handoff: .handoff/HANDOFF.md');
+  });
+  it('preserves an explicit external handoff destination', async () => {
+    const root = project();
+    const external = project();
+    const output = path.join(external, 'custom.md');
+    await buildWorkHandoff(root, { out: output });
+    expect(readFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), 'utf8').trim()).toBe(output);
+    const result = await handle({}, createContext(root));
+    expect(result.hookSpecificOutput?.additionalContext).toContain(path.relative(root, output).replace(/\\/g, '/'));
+  });
+  it('does not follow escaping relative pointers or unrelated root handoff files', async () => {
+    const root = project();
+    const external = project();
+    const handoff = await buildWorkHandoff(external);
+    writeFileSync(path.join(root, 'HANDOFF.md'), 'A handoff owned by another tool');
+    writeFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), path.relative(root, handoff.docPath));
+    const result = await handle({}, createContext(root));
+    expect(result.hookSpecificOutput?.additionalContext).toBeUndefined();
+  });
+  it('keeps the same last valid state as the dashboard after a corrupt completion snapshot', async () => {
+    const root = project();
+    const store = new IntentStore(root);
+    const intent = store.create({ title: 'Still unfinished', state: 'active' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    writeFileSync(file, readFileSync(file, 'utf8') + JSON.stringify({
+      ...intent, revision: 2, state: 'done', updatedAt: null,
+    }) + '\n');
+    const board = store.board();
+    expect(board.items.find(item => item.id === intent.id)?.state).toBe('active');
+    expect(board.warnings).toHaveLength(1);
+    const result = await handle({}, createContext(root));
+    const text = result.hookSpecificOutput?.additionalContext ?? '';
+    expect(text).toContain('1 open intent');
+    expect(text).toContain(intent.id);
+    expect(text).toContain('counts may be incomplete');
+    const handoff = await buildWorkHandoff(root, { inline: true });
+    expect(handoff.docMarkdown).toContain('1 open intent');
+    expect(handoff.pastePrompt).toContain(intent.id);
+  });
+  it('rejects malformed execution metadata consistently in startup context', async () => {
+    const root = project();
+    const store = new IntentStore(root);
+    const intent = store.create({ title: 'Needs execution evidence', state: 'review' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    writeFileSync(file, readFileSync(file, 'utf8') + JSON.stringify({
+      ...intent, revision: 2, state: 'done', executions: [{ startedAt: null }],
+    }) + '\n');
+    expect(store.board().items.find(item => item.id === intent.id)?.state).toBe('review');
+    const result = await handle({}, createContext(root));
+    expect(result.hookSpecificOutput?.additionalContext).toContain('1 open intent');
+    expect(result.hookSpecificOutput?.additionalContext).toContain('counts may be incomplete');
+  });
+  it('preserves valid history around interrupted records without claiming a complete count', async () => {
+    const root = project();
+    const intent = new IntentStore(root).create({ title: 'Still actionable' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    writeFileSync(file, readFileSync(file, 'utf8') + '{interrupted');
+    const result = await handle({}, createContext(root));
+    const text = result.hookSpecificOutput?.additionalContext ?? '';
+    expect(text).toContain(intent.id);
+    expect(text).toContain('counts may be incomplete');
+  });
+
+  it('points to an oversized board without scanning or inventing empty progress', async () => {
+    const root = project();
+    mkdirSync(path.join(root, '.specweave/intents'));
+    writeFileSync(path.join(root, '.specweave/intents/board.jsonl'), 'x'.repeat(2 * 1024 * 1024 + 1));
+    const result = await handle({}, createContext(root));
+    const text = result.hookSpecificOutput?.additionalContext ?? '';
+    expect(text).toContain('.specweave/intents/board.jsonl');
+    expect(text).toContain('summary unavailable');
+    expect(text).not.toContain('0 open');
+  });
+});

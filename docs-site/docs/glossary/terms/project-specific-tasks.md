@@ -1,7 +1,7 @@
 # Project-Specific Tasks
 
 **Category**: Organization
-**Related Terms**: [COPIED ACs and Tasks](copied-acs-and-tasks.md), [User Story](user-story.md), [Living Docs](living-docs.md), [Three-Layer Architecture](three-layer-architecture.md)
+**Related Terms**: COPIED ACs and Tasks (historical reference; not published), User Story (historical reference; not published), [Living Docs](living-docs.md), Three-Layer Architecture (historical reference; not published)
 
 ---
 
@@ -552,9 +552,9 @@ export class TaskProjectSpecificGenerator {
 
 ## Related Concepts
 
-- **[COPIED ACs and Tasks](copied-acs-and-tasks.md)**: How tasks are copied to User Stories
-- **[Three-Layer Architecture](three-layer-architecture.md)**: Synchronization pattern
-- **[User Story](user-story.md)**: Container for project-specific tasks
+- **COPIED ACs and Tasks (historical reference; not published)**: How tasks are copied to User Stories
+- **Three-Layer Architecture (historical reference; not published)**: Synchronization pattern
+- **User Story (historical reference; not published)**: Container for project-specific tasks
 - **[Living Docs](living-docs.md)**: Destination for User Story files
 - **[AC-ID](ac-id.md)**: Identifier used for task filtering
 
@@ -578,4 +578,4 @@ export class TaskProjectSpecificGenerator {
 ---
 
 **Last Updated**: 2025-11-16
-**Related Increment**: [0037-project-specific-tasks](../../../increments/0037-project-specific-tasks/)
+**Related Increment**: 0037-project-specific-tasks (historical reference; not published)

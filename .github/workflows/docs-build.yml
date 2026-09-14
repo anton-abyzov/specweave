@@ -88,6 +88,19 @@ jobs:
 
       - name: Serve and check links
         run: |
-          npx serve docs-site-build -l 3000 &
-          sleep 5
-          npx linkinator http://localhost:3000 --recurse --verbosity error --skip "github.com/anton-abyzov/specweave/edit"
+          npx --yes serve@14.2.6 docs-site-build -l tcp://127.0.0.1:3000 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            echo "Documentation server did not become ready within 60 seconds"
+            exit 1
+          fi
+          npx --yes linkinator@8.1.0 http://127.0.0.1:3000 --recurse --verbosity error --skip "github.com/anton-abyzov/specweave/edit"
