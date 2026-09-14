@@ -66,6 +66,39 @@ describe('lightweight intent continuity', () => {
 
 
 describe('intent discovery fallbacks', () => {
+  it('keeps the same last valid state as the dashboard after a corrupt completion snapshot', async () => {
+    const root = project();
+    const store = new IntentStore(root);
+    const intent = store.create({ title: 'Still unfinished', state: 'active' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    writeFileSync(file, readFileSync(file, 'utf8') + JSON.stringify({
+      ...intent, revision: 2, state: 'done', updatedAt: null,
+    }) + '\n');
+    const board = store.board();
+    expect(board.items.find(item => item.id === intent.id)?.state).toBe('active');
+    expect(board.warnings).toHaveLength(1);
+    const result = await handle({}, createContext(root));
+    const text = result.hookSpecificOutput?.additionalContext ?? '';
+    expect(text).toContain('1 open intent');
+    expect(text).toContain(intent.id);
+    expect(text).toContain('counts may be incomplete');
+    const handoff = await buildWorkHandoff(root, { inline: true });
+    expect(handoff.docMarkdown).toContain('1 open intent');
+    expect(handoff.pastePrompt).toContain(intent.id);
+  });
+  it('rejects malformed execution metadata consistently in startup context', async () => {
+    const root = project();
+    const store = new IntentStore(root);
+    const intent = store.create({ title: 'Needs execution evidence', state: 'review' });
+    const file = path.join(root, '.specweave/intents/board.jsonl');
+    writeFileSync(file, readFileSync(file, 'utf8') + JSON.stringify({
+      ...intent, revision: 2, state: 'done', executions: [{ startedAt: null }],
+    }) + '\n');
+    expect(store.board().items.find(item => item.id === intent.id)?.state).toBe('review');
+    const result = await handle({}, createContext(root));
+    expect(result.hookSpecificOutput?.additionalContext).toContain('1 open intent');
+    expect(result.hookSpecificOutput?.additionalContext).toContain('counts may be incomplete');
+  });
   it('preserves valid history around interrupted records without claiming a complete count', async () => {
     const root = project();
     const intent = new IntentStore(root).create({ title: 'Still actionable' });

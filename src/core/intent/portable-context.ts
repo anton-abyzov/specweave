@@ -1,19 +1,13 @@
 /** Read-only, bounded discovery of the portable intent board. No session scans or model calls. */
 import fs from 'node:fs';
 import path from 'node:path';
+import { isValidWorkIntent } from './validation.js';
+import type { WorkIntent } from './types.js';
 import { scrubSecrets } from '../session/handoff-secret-scrub.js';
 
 export const INTENT_BOARD_PATH = '.specweave/intents/board.jsonl';
 const MAX_BOARD_BYTES = 2 * 1024 * 1024;
 const MAX_ITEMS = 3;
-const STATES = ['backlog', 'active', 'blocked', 'review', 'done'];
-interface Snapshot {
-  id: string;
-  title: string;
-  state: string;
-  revision: number;
-  updatedAt?: string;
-}
 function text(value: string, max: number, counts?: Record<string, number>): string {
   const result = scrubSecrets(value);
   if (counts) for (const [kind, count] of Object.entries(result.counts)) counts[kind] = (counts[kind] ?? 0) + count;
@@ -39,14 +33,13 @@ export function readIntentContext(root: string, redactions?: Record<string, numb
     } finally { fs.closeSync(fd); }
   } catch { return `${pointer} — could not read the history; inspect it directly.`; }
 
-  const latest = new Map<string, Snapshot>();
+  const latest = new Map<string, WorkIntent>();
   let invalid = 0;
   for (const line of raw.replace(/^\uFEFF/, '').split(/\r?\n/)) {
     if (!line.trim()) continue;
     try {
       const item = JSON.parse(line);
-      if (!item || typeof item.id !== 'string' || !item.id || typeof item.title !== 'string'
-        || !STATES.includes(item.state) || !Number.isInteger(item.revision) || !Array.isArray(item.executions))
+      if (!isValidWorkIntent(item))
         throw new Error('Invalid intent snapshot');
       if (item.revision > (latest.get(item.id)?.revision ?? 0)) latest.set(item.id, item);
     } catch { invalid++; }
