@@ -251,4 +251,4 @@ We built verified-skill.com so the skills ecosystem doesn't have to follow this 
 - [Snyk ToxicSkills Report](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) — Full security audit
 - [mcp-scan](https://github.com/invariantlabs-ai/mcp-scan) — Open-source skill scanner
 - [SpecWeave](https://spec-weave.com) — Spec-driven development framework
-- [Video: ClawHub Postmortem](../academy/videos/003-clawhub-postmortem.md) — Full video walkthrough
+- Video: ClawHub Postmortem (historical reference; not published) — Full video walkthrough

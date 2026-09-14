@@ -264,5 +264,5 @@ Answer: Read living docs
 
 **Learn More:**
 - [Increment Planning Workflow](/docs/workflows/planning)
-- [Increment Discipline (WIP Limits)](/docs/guides/core-concepts/increment-discipline)
+- Increment Discipline (WIP Limits) (historical reference; not published)
 - Test-Aware Planning

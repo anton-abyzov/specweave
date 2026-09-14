@@ -292,4 +292,4 @@ Before running an agent swarm, verify:
 - [Security Fundamentals](/docs/academy/fundamentals/security-fundamentals) — OWASP, authentication, input validation
 - [Compliance Standards](/docs/reference/compliance-standards) — HIPAA, GDPR, SOC 2, PCI-DSS
 - [OpenClaw Security Risks (BitSight)](https://www.bitsight.com/blog/openclaw-ai-security-risks-exposed-instances) — External analysis of OpenClaw exposure
-- [Anthropic's Responsible AI Practices](https://www.anthropic.com/responsible-ai) — Claude's safety architecture
+- [Anthropic's Responsible Scaling Policy](https://www.anthropic.com/responsible-scaling-policy) — capability safeguards and risk governance

@@ -52,7 +52,7 @@ sw-url-shortener/
 - ✅ **Multi-package coordination** — SpecWeave respects dependency order (common → backend → frontend)
 - ✅ **Test isolation** — Each package has its own Vitest config and test suite
 
-**Source**: [github.com/anton-abyzov/sw-url-shortener](https://github.com/anton-abyzov/sw-url-shortener)
+**Source**: `github.com/anton-abyzov/sw-url-shortener` (historical reference; not published)
 
 ---
 
@@ -108,7 +108,7 @@ Each user story in spec.md targets a specific project:
 - ✅ **Cross-project user stories** — One increment spans multiple projects
 - ✅ **Sync routing** — GitHub Issues / JIRA tickets created per-project based on `**Project**:` field
 
-**Source**: [github.com/anton-abyzov/sw-meeting-cost](https://github.com/anton-abyzov/sw-meeting-cost)
+**Source**: `github.com/anton-abyzov/sw-meeting-cost` (historical reference; not published)
 
 ---
 
@@ -171,7 +171,7 @@ sw-wc26-travel/
 - ✅ **AI integration** — Workers AI (Llama 3.1) for content parsing and travel planning
 - ✅ **Production deployment** — Live at wc-26.net with real users
 
-**Source**: [github.com/anton-abyzov/sw-wc26-travel](https://github.com/anton-abyzov/sw-wc26-travel)
+**Source**: `github.com/anton-abyzov/sw-wc26-travel` (historical reference; not published)
 
 ---
 

@@ -157,8 +157,8 @@ The DORA (DevOps Research and Assessment) metrics are industry-standard KPIs for
 ### Implementation
 
 **Code**: [`src/metrics/`](https://github.com/anton-abyzov/specweave/tree/develop/src/metrics)
-**Increment**: [`.specweave/increments/0010-dora-metrics-mvp/`](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0010-dora-metrics-mvp)
-**Architecture Decision**: [Why No Database](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/increments/0010-dora-metrics-mvp/reports/ARCHITECTURE-DECISION.md)
+**Increment**: `.specweave/increments/0010-dora-metrics-mvp/` (historical reference; not published)
+**Architecture Decision**: Why No Database (historical reference; not published)
 
 ---
 

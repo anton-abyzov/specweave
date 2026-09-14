@@ -785,9 +785,9 @@ Before modifying ANY existing code:
 ## Next Steps
 
 **New to brownfield?** Start here:
-- [Brownfield Analyzer](/docs/skills/brownfield-analyzer)
-- [Brownfield Onboarder](/docs/skills/brownfield-onboarder)
-- [Creating Baseline Tests](/docs/guides/testing/baseline-tests)
+- Brownfield Analyzer (historical reference; not published)
+- Brownfield Onboarder (historical reference; not published)
+- Creating Baseline Tests (historical reference; not published)
 
 **Ready to start?**
 ```bash

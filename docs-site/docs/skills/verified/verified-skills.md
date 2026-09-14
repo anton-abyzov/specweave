@@ -14,7 +14,7 @@ keywords: [verified-skills, v-skills, security, certification, trust, SKILL.md, 
 
 AI agent skills execute with the full privileges of their host agent — filesystem access, terminal execution, and credential visibility. Yet skills are published to open registries with zero review.
 
-Snyk's [ToxicSkills study](https://snyk.io/blog/toxicskills) (February 5, 2026) quantified the risk: scanning 3,984 skills from public registries, they found **1,467 (36.82%)** containing at least one security flaw, including **76 confirmed malicious payloads**. Real attacks include credential exfiltration (SSH keys, AWS tokens, crypto wallets), crypto miners, and prompt injection designed to persist across sessions via memory poisoning.
+Snyk's [ToxicSkills study](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) (February 5, 2026) quantified the risk: scanning 3,984 skills from public registries, they found **1,467 (36.82%)** containing at least one security flaw, including **76 confirmed malicious payloads**. Real attacks include credential exfiltration (SSH keys, AWS tokens, crypto wallets), crypto miners, and prompt injection designed to persist across sessions via memory poisoning.
 
 No existing platform had comprehensive security scanning. The Verified Skills Standard fills this gap.
 

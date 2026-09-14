@@ -307,7 +307,7 @@ Skill({ skill: "backend:dotnet" })
 Skill({ skill: "payments:payment-core" })
 ```
 
-See [Skill Truncation Troubleshooting](../troubleshooting/skill-truncation-budget.md) for details.
+The former Skill Truncation Troubleshooting document is a historical reference and is not published.
 
 ## Best Practices
 
@@ -344,6 +344,6 @@ Let the system install others when you actually need them.
 
 ## Related Documentation
 
-- [Plugin Naming Conventions](../troubleshooting/plugin-naming-conventions.md)
-- [Cost Optimization Guide](./cost-optimization.md) - Token savings with lazy loading
-- [Claude CLI Automation](../development/claude-cli-automation.md)
+- Plugin Naming Conventions (historical reference; not published)
+- [Cost Optimization Guide](/docs/reference/cost-tracking) - Token savings with lazy loading
+- Claude CLI Automation (historical reference; not published)

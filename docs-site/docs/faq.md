@@ -644,14 +644,14 @@ See `/docs/auth-design.md` for existing system details.
 **Resources**:
 - **User Guide**: [Getting Started](./guides/getting-started)
 - **GitHub Sync**: [GitHub Integration](./guides/github-sync)
-- **Architecture**: [System Architecture](./architecture/overview)
+- **Architecture**: System Architecture (historical reference; not published)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
 - **Discord**: [Join Community](https://discord.gg/specweave) *(coming soon)*
 
 **Common Follow-Ups**:
-- "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync)
-- "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support)
-- "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle)
+- "How do I sync with Jira?" → See [Jira Plugin](/docs/guides/jira-ado-sync)
+- "Can I use SpecWeave with Cursor?" → See [Tool Support](/docs/integrations/generic-ai-tools)
+- "What's the increment lifecycle?" → See [Increment Guide](/docs/guides/increment-status-reference)
 
 ---
 

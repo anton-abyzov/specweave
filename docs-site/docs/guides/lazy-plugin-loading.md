@@ -5,7 +5,7 @@ import CommandTabs from '@site/src/components/CommandTabs';
 **99% token reduction** for non-SpecWeave work through conditional plugin activation.
 
 :::info Status
-This feature is **planned for v1.1**. The specification is complete and approved. Track progress in [increment 0171](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0171-lazy-plugin-loading).
+This feature is **planned for v1.1**. The specification is complete and approved. The original plan was recorded in increment 0171 (historical reference; not published).
 :::
 
 ## The Problem

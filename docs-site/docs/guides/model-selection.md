@@ -67,11 +67,11 @@ Claude Code provides a hybrid model alias that works perfectly with SpecWeave's 
 
 This sets Opus 4.6 for plan mode (specs, architecture, analysis) and Sonnet 4.6 for execution (implementation, tests). Since SpecWeave mandates plan mode for all non-trivial work, you automatically get Opus reasoning where it matters most and Sonnet speed+savings during implementation.
 
-See the [Cost Optimization Guide](./cost-optimization.md#4-use-model-opusplan-for-optimal-cost-quality-balance) for detailed savings estimates.
+See the [Cost Tracking Reference](/docs/reference/cost-tracking) for usage reporting.
 
 ---
 
-**See full content at**: https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/public/guides/model-selection.md
+**Historical source**: `.specweave/docs/public/guides/model-selection.md` (not published).
 
 *Due to length, truncating here. File contains complete guide with agent classifications, phase detection algorithm, decision examples, troubleshooting, and FAQ.*
 

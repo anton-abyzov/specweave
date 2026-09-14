@@ -27,7 +27,6 @@ const COLUMNS = [
   {
     title: 'Community',
     links: [
-      {label: 'GitHub Discussions', href: 'https://github.com/anton-abyzov/specweave/discussions'},
       {label: 'GitHub Issues', href: 'https://github.com/anton-abyzov/specweave/issues'},
       {label: 'Stack Overflow', href: 'https://stackoverflow.com/questions/tagged/specweave'},
       {label: 'Blog', to: '/blog'},
@@ -51,7 +50,7 @@ function GitHubIcon() {
   );
 }
 
-function DiscussionsIcon() {
+function SupportIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
@@ -70,7 +69,7 @@ function XTwitterIcon() {
 
 const SOCIAL_LINKS = [
   {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave', icon: GitHubIcon},
-  {label: 'Discussions', href: 'https://github.com/anton-abyzov/specweave/discussions', icon: DiscussionsIcon},
+  {label: 'GitHub Issues', href: 'https://github.com/anton-abyzov/specweave/issues', icon: SupportIcon},
   {label: 'X / Twitter', href: 'https://x.com/aabyzov', icon: XTwitterIcon},
 ];
 
