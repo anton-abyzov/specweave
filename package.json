@@ -1,7 +1,7 @@
 {
   "name": "specweave",
-  "version": "2.0.3",
-  "description": "100+ domain-expert AI skills — PM, Architect, Frontend, QA, Security and more. Skills learn your team's patterns permanently. Spec-first planning, autonomous execution, multi-agent teams, synced to GitHub/JIRA. Claude Code, Cursor, Copilot & more.",
+  "version": "2.1.0",
+  "description": "Keep intent, specifications, and verified progress portable across AI coding tools. A local live work board, append-only task evidence, explicit handoffs, and optional GitHub/Jira/Azure DevOps integrations.",
   "type": "module",
   "bin": {
     "specweave": "./bin/specweave.js"
@@ -10,7 +10,7 @@
     "preinstall": "node scripts/check-node-version.js || exit 0",
     "preuninstall": "node scripts/preuninstall.cjs",
     "version": "node scripts/build/auto-changelog.js && node scripts/build/stamp-plugin-version.cjs && git add CHANGELOG.md plugins/specweave/.claude-plugin/plugin.json .claude-plugin/marketplace.json",
-    "postversion": "echo '✅ Version bumped with CHANGELOG entry'",
+    "postversion": "echo '\u2705 Version bumped with CHANGELOG entry'",
     "clean": "rm -rf dist/",
     "build": "tsc && npm run build:dashboard && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps && npm run copy:adapters && npm run stamp:plugin-version",
     "stamp:plugin-version": "node scripts/build/stamp-plugin-version.cjs",

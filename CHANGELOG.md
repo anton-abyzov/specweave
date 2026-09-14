@@ -1,3 +1,20 @@
+## [2.1.0] - 2026-09-14
+
+### Added
+- Local intent board with optional increment links, persistent state, drag-and-drop and keyboard controls, current ledger evidence, and live file refresh.
+- Execution history separates declared setups, ledger actors, and observed Codex/Claude Code metadata. Sessions can be explicitly associated with intents; unavailable facts remain unknown. Reading the board makes no model calls.
+- Redesigned product website and guides centered on portable intent, evidence, and optional enterprise integrations.
+
+### Fixed
+- Read modern task ledger state and acceptance criteria in the dashboard instead of relying on stale rendered checkboxes.
+- Bind the dashboard to loopback and reject mismatched browser origins/hosts.
+- Report incomplete external-provider pulls, preserve successful partial results, return failure status, and honor the configured GitHub target.
+- Preserve supported session IDs in the auto-mode hook fast path.
+
+### Changed
+- Default hooks are SessionStart and Stop. Ordinary Stop events exit before loading the CLI; explicit auto mode retains its continuation hook. PreToolUse and PreCompact remain callable compatibility handlers, without default registration.
+- Small self-contained work can use a lightweight intent. Existing user authorization carries through planning and implementation.
+
 ## [2.0.0] - 2026-09-02
 
 ## [2.0.3] - 2026-09-06
