@@ -11,11 +11,13 @@ An increment is one folder — `.specweave/increments/NNNN-slug/` — holding
 `ledger.jsonl` (state, written by the CLI) and `metadata.json`. It is the unit of
 work and the tracker; every commit for it carries its id in the subject.
 
-## Plan mode first (blocking)
+## Scope before implementation
 
-Planning produces a document the user approves before any code is written. If your
-tool has a plan mode, enter it now (Claude Code: `EnterPlanMode`) and wait for
-confirmation. Do not create files, do not implement, until the plan is approved.
+Write a concise plan for work that needs shared acceptance criteria. Ask only about
+material ambiguity or actions beyond the user's authorization. When the user has
+asked for autonomous execution, make routine decisions and continue through
+implementation and verification. A small self-contained fix can remain a
+lightweight intent without this workflow.
 
 ## Steps
 
@@ -79,7 +81,7 @@ confirmation. Do not create files, do not implement, until the plan is approved.
    least one task; every task needs a `Test:` that a machine can run (or an explicit
    "manual: <what to check>"). Shared contracts (types, schema, migrations) go in an early
    task everything else depends on.
-6. **Present the plan** (problem, ACs, task list, risks) and get approval. Then leave plan mode.
+6. **Share the plan** (problem, ACs, tasks, material risks). Resolve any remaining decision that needs the user; otherwise continue within existing authorization.
 7. **Hand off to execution**: `sw:do <id>` for one agent; `sw:team <id>` when the work has
    3+ disjoint lanes or 15+ tasks.
 

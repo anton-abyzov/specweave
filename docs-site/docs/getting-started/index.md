@@ -1,262 +1,82 @@
 ---
 sidebar_position: 1
-title: "Getting Started"
-description: "Start shipping features with SpecWeave in 5 minutes"
+title: Getting Started
+description: Track intent and verified progress in your own project, then continue with another coding agent.
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# Start with your project
 
-# Getting Started with SpecWeave
+SpecWeave keeps your requested outcome, task evidence, and handoff in your repository. Use your preferred coding agent to implement the work. No account or external tracker is required for the local workflow.
 
-**From zero to shipping in 5 minutes.**
+## Install and initialize
 
-SpecWeave is the spec-driven Skill Fabric for AI coding agents. Skills extend what AI coding agents can do — describe what you want, AI asks the right questions, builds it while you sleep.
-
-![Increment Lifecycle](/img/diagrams/increment-lifecycle.svg)
-
-:::tip Watch it in action
-See the full workflow in 4 minutes: [SpecWeave + OpenCode Demo](/docs/academy/videos/opencode-web-calculator) | [YouTube](https://youtu.be/WVwyqsHS8dc)
-:::
-
-:::tip Enterprise teams
-Building for enterprise? See [compliance, brownfield, and multi-repo guides](/docs/enterprise).
-:::
-
----
-
-## Three Ways to Work
-
-SpecWeave understands what you want. Pick the style that feels right:
-
-| Style | How It Works | Best For |
-|-------|-------------|----------|
-| **Natural language** | Just describe what you want — SpecWeave detects your intent and activates the right skill | Everyone, especially new users |
-| **Slash commands** | Type `sw:increment`, `sw:do`, `sw:done` for precise control | Power users on Claude Code |
-| **CLI keywords** | Type `increment`, `do`, `done` without the `sw:` prefix | Cursor, Copilot, and other AI tools |
-
-All three methods trigger the same workflow. Here is what it looks like:
-
-<CommandTabs
-  natural="I want to add user authentication with OAuth support"
-  claude='sw:increment "Add user authentication with OAuth"'
-  other='increment "Add user authentication with OAuth"'
-/>
-
----
-
-## What You Can Build
-
-SpecWeave has been used to ship **production applications in weeks, not months**:
-
-| Application | Type | Result |
-|-------------|------|--------|
-| **Mobile Apps** | React Native + Expo | iOS & Android builds with offline sync |
-| **Web Platforms** | Next.js + Supabase | Full-stack with auth, payments, real-time |
-| **APIs** | Node.js + PostgreSQL | OpenAPI specs, Postman collections auto-generated |
-| **Infrastructure** | Terraform + K8s | IaC with GitOps, monitoring dashboards |
-| **ML Systems** | Python + MLOps | Training pipelines, model deployment |
-| **Microservices** | Multi-repo | 20+ services with cross-repo coordination |
-
-### Real-World Examples
-
-> **"10 production projects — not 10x faster, 100x faster."**
-
-| App | Description | Tech Stack |
-|-----|-------------|------------|
-| [**SpecWeave**](https://github.com/anton-abyzov/specweave) | Spec-driven development framework — 550+ increments, built with itself | Node.js, TypeScript, 255K+ LOC |
-| [**VerifiedSkill**](https://verified-skill.com) | Skill registry & marketplace for AI coding agents | Next.js 15, Cloudflare Workers, Prisma |
-| [**EasyChamp**](https://easychamp.com) | Sports league platform with 18+ microservices, ArgoCD GitOps | .NET, React, Python, Terraform |
-| [**WC26**](https://wc-26.net/) | World Cup 2026 travel & ticket companion — 5 services, 35 increments | React Router, React Native/Expo, Cloudflare Workers |
-| [**Lulla**](https://lulla-app.pages.dev/) | Baby cry classifier with iOS + Apple Watch — 28 increments | Swift, Core ML, Cloudflare Workers |
-| [**JobWeave**](https://jobweave.ai) | AI career platform with resume builder, interview prep, Gmail smart reply | Next.js 15, Prisma, Supabase, Multi-AI |
-| [**SkillUp**](https://skillup-football.com/) | Football coaching platform with Stripe monetization | React Native, Cloudflare Workers |
-| [**BizZone**](https://apps.apple.com/us/app/business-zone/id6756091030) | Student & business events with AI news generation | React Native, AI |
-| [**SketchMate**](https://sketchmate.net/) | AI drawing party game | Web, AI vision |
-| [**EduFeed**](https://edufeed-jet.vercel.app/) | AI learning platform (NotebookLM-style) | Next.js, Supabase, LLM integration |
-
----
-
-## Quick Start (5 Minutes)
-
-### 1. Install SpecWeave
+Requires Node.js 20.12 or later.
 
 ```bash
 npm install -g specweave
-```
-
-**Requirements**: Node.js 20.12.0+ (we recommend Node.js 22 LTS)
-
-### 2. Initialize Your Project
-
-```bash
 cd your-project
-specweave init .
+specweave init
 ```
 
-Answer the prompts — SpecWeave auto-detects your tech stack and configures accordingly.
+Initialization configures your project. Choose only the tools and optional integrations you use.
 
-### 3. Create Your First Feature
-
-Describe what you want to build:
-
-<CommandTabs
-  natural="Build a user authentication system with OAuth and social login"
-  claude='sw:increment "Add user authentication with OAuth"'
-  other='increment "Add user authentication with OAuth"'
-/>
-
-SpecWeave creates three permanent files:
-- `spec.md` — WHAT (user stories, acceptance criteria)
-- `plan.md` — HOW (architecture, ADRs)
-- `tasks.md` — DO (implementation tasks with tests)
-
-### 4. Build It
-
-**Option A: Ship While You Sleep**
-
-<CommandTabs
-  natural="Ship it while I sleep"
-  claude="sw:auto"
-  other="auto"
-/>
-
-**Option B: Step-by-Step Control**
-
-<CommandTabs
-  natural="Start implementing the tasks"
-  claude="sw:do"
-  other="do"
-/>
-
-Check progress and close when ready:
-
-<CommandTabs
-  natural="What's the status?"
-  claude="specweave status"
-  other="progress"
-/>
-
-### 5. Parallelize Complex Features
-
-For features spanning multiple domains, SpecWeave can split work across parallel agents:
-
-<CommandTabs
-  natural="Build user auth with login, signup, and OAuth — use parallel agents"
-  claude='sw:team "Build user auth with login, signup, and OAuth"'
-  other='team-lead "Build user auth with login, signup, and OAuth"'
-/>
-
-Just describe a complex feature — SpecWeave auto-detects when parallel agents are needed and spawns a coordinated team. Built on [Claude Code's Agent Teams](https://code.claude.com/docs/en/agent-teams), made accessible via a single command. See the [Agent Teams guide](/docs/guides/agent-teams-and-swarms) for details.
-
-### 6. Quality Gates
-
-Before closing, SpecWeave validates:
-- All tasks complete
-- 60%+ test coverage (configurable)
-- Living docs updated
-
----
-
-## What Makes SpecWeave Different
-
-| Before | After SpecWeave |
-|--------|-----------------|
-| Specs in chat history | **Permanent, searchable specs** |
-| Manual JIRA/GitHub updates | **Auto-sync on every task** |
-| Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
-| Architecture in your head | **ADRs captured automatically** |
-| "Ask John, he knows" | **Living docs, always current** |
-| Onboarding: 2 weeks | **Onboarding: 1 day** |
-
----
-
-## Platform Support
-
-SpecWeave works everywhere:
-
-| Platform | Support |
-|----------|---------|
-| **macOS** | Full support (primary development) |
-| **Linux** | Full support |
-| **Windows** | Full support (WSL recommended for best experience) |
-
-### AI Tool Compatibility
-
-| Tool | Integration Level |
-|------|-------------------|
-| **Claude Code** | Native (hooks, skills, agents) |
-| **Cursor** | Via CLAUDE.md instructions |
-| **Windsurf** | Via CLAUDE.md instructions |
-| **GitHub Copilot** | Via CLAUDE.md instructions |
-| **Any AI IDE** | Via `specweave create-increment --template=md` |
-
-> **Best Experience**: Claude Code provides the deepest integration with native hooks, skills, and autonomous execution. Other tools work via instruction files.
-
----
-
-## Explore the Skill Ecosystem
-
-SpecWeave ships with 44 built-in skills across 8 bundled plugins, and you can install from 100,000+ community skills on the [verified-skill.com](https://verified-skill.com) registry:
+## Open the work board
 
 ```bash
-# Search for skills
-npx vskill find "react"
-
-# Install a verified skill
-npx vskill install auth-guard
+specweave dashboard
 ```
 
-Skills work across 49 AI coding agents — not just Claude Code. See the [Installing Skills](/docs/skills/installation) guide for the full walkthrough.
-
-Want to build your own skills? [Skill Studio](/docs/skills/skill-studio) is a local browser-based IDE for developing, testing, and benchmarking skills.
-
----
-
-## Choose Your Path
-
-| Your Goal | Next Step |
-|-----------|-----------|
-| **Quick hands-on** | [Your First Increment](./first-increment) |
-| **Understand concepts** | [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment) |
-| **Install skills** | [Installing Skills](/docs/skills/installation) |
-| **Build skills** | [Skill Studio](/docs/skills/skill-studio) |
-| **Full curriculum** | [SpecWeave Essentials](/docs/academy/specweave-essentials/) |
-| **Existing codebase** | [Brownfield Projects](/docs/workflows/brownfield) |
-| **External tools** | [GitHub/JIRA/ADO Integration](/docs/academy/specweave-essentials/07-external-tools) |
-
----
-
-## Troubleshooting
-
-### Node.js Version Error
-
-If you see `SyntaxError: Unexpected token 'with'`:
+This starts the local dashboard and opens it in your browser. For automation or a server without a display, use:
 
 ```bash
-node --version  # Must be 20.12.0+
+specweave dashboard --no-browser
 ```
 
-[Upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error)
+Start with a short intent: what outcome should change? A small change can stay as an intent. When the work needs explicit acceptance criteria, create and attach an increment. The board's state is planning information; it does not replace verification of the linked increment.
 
-### Commands Not Working
-
-After Claude Code updates:
+## Add structure when the work needs it
 
 ```bash
-specweave update      # Full update: CLI + instructions + config + plugins
+specweave create-increment "Preserve checkout when a customer returns"
 ```
 
-Then restart Claude Code.
+Fill `spec.md` with the problem, scope, acceptance criteria, and approach. Define tasks in `tasks.md`. Your agent can do this from your request; use `sw:increment` where the skill is installed.
 
----
+```bash
+specweave task next <increment-id>
+specweave task claim T-01 <increment-id>
+```
 
-## Community
+Implement the task, commit the change, and record the actual verification command:
 
-- **[Documentation](https://spec-weave.com)** — Full guides and tutorials
-- **[Discord](https://discord.gg/UYg4BGJ65V)** — Get help, share tips
-- **[YouTube](https://www.youtube.com/@antonabyzov)** — Video tutorials
-- **[GitHub](https://github.com/anton-abyzov/specweave)** — Star the repo, contribute
+```bash
+specweave task done T-01 <increment-id> --run "npm test"
+```
 
----
+Choose your project's real test command. The append-only ledger records who claimed and completed each task. The dashboard reads that record without a model call.
 
-**Ready?** → [Create Your First Increment](./first-increment)
+## Change agents without losing the thread
+
+```bash
+specweave handoff
+```
+
+Open the project in your next coding tool. Read the specification and handoff, then use `specweave task next <increment-id>`. The shared record survives the conversation. A handoff is an explicit action; default hooks do not run a Git snapshot during compaction.
+
+[How cross-tool handoffs work](/docs/guides/cross-tool-handoff)
+
+## Close with evidence
+
+```bash
+specweave verify <increment-id>
+specweave complete <increment-id>
+```
+
+Verification checks the increment against the project's configured commands. A passing report supports closure. A green board card alone does not prove acceptance criteria passed.
+
+## Choose your next layer
+
+- [Understand intent, sessions, and evidence](/product)
+- [Connect an existing tracker when useful](/integrations)
+- [Explore CLI commands](/docs/reference/commands)
+- [Find and evaluate focused skills](https://verified-skill.com)

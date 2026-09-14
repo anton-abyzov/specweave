@@ -10,12 +10,12 @@ vi.mock('@docusaurus/Link', () => ({
 import Footer from '../index';
 
 describe('Footer', () => {
-  it('renders 4 column headings: Product, Docs, Community, Company', () => {
+  it('renders 4 column headings: Product, Docs, Community, Open source', () => {
     render(<Footer />);
     expect(screen.getByText('Product')).toBeInTheDocument();
     expect(screen.getByText('Docs')).toBeInTheDocument();
     expect(screen.getByText('Community')).toBeInTheDocument();
-    expect(screen.getByText('Company')).toBeInTheDocument();
+    expect(screen.getByText('Open source')).toBeInTheDocument();
   });
 
   it('renders social icon links', () => {
@@ -42,6 +42,6 @@ describe('Footer', () => {
     render(<Footer />);
     expect(screen.getByText('Introduction')).toBeInTheDocument();
     expect(screen.getByText('Getting Started')).toBeInTheDocument();
-    expect(screen.getByText('Skills (100+)')).toBeInTheDocument();
+    expect(screen.getByText('Skills reference')).toBeInTheDocument();
   });
 });

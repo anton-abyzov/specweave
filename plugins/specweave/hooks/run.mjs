@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SpecWeave hook supervisor: parent deadline remains live while the worker blocks in Git.
 import { spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,26 @@ const worker = path.join(path.dirname(fileURLToPath(import.meta.url)), 'run-work
 const budget = event === 'stop' ? 25000 : 7500;
 let child, finished = false, input = '', output = '', size = 0;
 const started = Date.now();
+// Ordinary turns should not resolve npm, import the CLI, or start a second Node
+// process. Auto mode is explicit and its small local marker is authoritative.
+function hasActiveAutoSession(data) {
+  let current = path.resolve(typeof data.cwd === 'string' ? data.cwd : process.cwd());
+  for (let depth = 0; depth < 100; depth++) {
+    const state = path.join(current, '.specweave', 'state');
+    if (existsSync(path.join(current, '.specweave', 'config.json'))) {
+      const sessionId = process.env.CLAUDE_SESSION_ID;
+      const scoped = sessionId && /^[a-zA-Z0-9_-]+$/.test(sessionId)
+        ? path.join(state, 'sessions', sessionId, 'auto-mode.json') : null;
+      const marker = scoped && existsSync(scoped) ? scoped : path.join(state, 'auto-mode.json');
+      try { return JSON.parse(readFileSync(marker, 'utf8')).active === true; }
+      catch { return false; }
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return false;
+}
 function record(reason) {
   try {
     const dir = path.join(homedir(), '.specweave', 'logs');
@@ -49,6 +69,8 @@ process.stdin.on('end',()=>{
   try {data=JSON.parse(input);if(!data || typeof data!=='object'||Array.isArray(data))throw Error();}
   catch {return finish({},'invalid_input');}
   if(!['session-start','pre-tool-use','pre-compact','stop'].includes(event))return finish({});
+  if(process.env.SPECWEAVE_DISABLE_HOOKS === '1')return finish({});
+  if(event === 'stop' && !hasActiveAutoSession(data))return finish({});
   const env={...process.env};
   child=spawn(process.execPath,[worker,event],{env,detached:process.platform !== 'win32',stdio:['pipe','pipe','pipe']});
   child.stdout.setEncoding('utf8');

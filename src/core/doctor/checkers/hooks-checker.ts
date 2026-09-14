@@ -1,6 +1,6 @@
 /**
  * Hooks Checker — dry-runs the SpecWeave 2.0 hook launcher for each of the
- * four registered events with a sample stdin and validates the JSON output
+ * four supported events (including compatibility-only handlers) with a sample stdin and validates the JSON output
  * against the per-event Claude Code schema.
  */
 

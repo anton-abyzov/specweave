@@ -23,14 +23,14 @@ Only those files (plus optional `plan.md` when Approach outgrows a page, and `sc
 
 | Step | Command |
 |---|---|
-| Plan a feature (spec.md with ACs + Approach, in plan mode; approved before any code) | `/sw:increment "title"` |
+| Plan a feature (spec.md with ACs + Approach; resolve material scope questions) | `/sw:increment "title"` |
 | Work the tasks (claim → implement → commit → done with evidence) | `/sw:do` (loops `specweave task next` / `claim` / `done --run`) |
 | Verify the whole increment | `specweave verify` |
 | Review before closing (recommended for anything that ships: fresh context, findings cite path:line and are re-verified) | `/sw:review` |
 | Close (needs a green verify or `--reason`) | `/sw:done` |
 | Stop for any reason (context, tokens, switching tools) | `/sw:handoff` |
 
-Start every feature with the increment, even a small one, unless the user says "no increment". Fix a bug by writing the failing test first, then fixing the code without touching the test.
+Use an increment for work that needs shared scope, acceptance criteria, or a handoff. Small self-contained fixes can remain a lightweight intent. For bugs, reproduce the failure and add a regression test when it protects behavior. User authorization carries through routine implementation and verification.
 <!-- /SECTION -->
 
 <!-- SECTION:verify required -->

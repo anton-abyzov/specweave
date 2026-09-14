@@ -29,14 +29,14 @@ specweave handoff --reason "out of tokens" --next "wire the CLI command"
 specweave handoff --inline               # embed the full doc for a different machine
 ```
 
-It works on **any** project, SpecWeave or not. A `PreCompact` hook auto-writes a handoff so one survives even a token crash before you ever run the command.
+It works on **any** project, SpecWeave or not. Write the handoff explicitly before changing tools. Default hooks do not capture Git state during compaction.
 
 ## What makes it different
 
 These four moats are why a handoff document beats "just summarize where we are":
 
 - **Captures uncommitted edits — not just filenames.** The full `git diff` (working tree + staged) is dumped to a sibling `.diff` file for free, no tokens spent. The next agent reads the exact edits or runs `git apply --check` against them.
-- **Survives a token crash.** A `PreCompact` (and gated `Stop`) hook auto-writes a handoff with whatever short context was last stated, so a resumable artifact exists even if your session dies at context exhaustion.
+- **Durable after it is written.** The handoff remains on disk after the session ends. The specification and ledger retain recorded progress even if the conversation is lost.
 - **Secret-scrubbed and gitignored by default.** A regex scrub runs over both the free-text fields and the captured diff before any write; the doc and diff are gitignored (`.handoff/.gitignore` = `*`) and never auto-committed.
 - **Cross-machine `--inline` mode.** When the file is unreachable on the machine you are resuming on, `--inline` embeds the full scrubbed doc body inside the paste-prompt so the context travels in the prompt itself.
 

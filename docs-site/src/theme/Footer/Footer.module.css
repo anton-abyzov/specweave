@@ -1,5 +1,5 @@
 .footer {
-  background: var(--sw-surface-dark, #0b0816);
+  background: #252820;
   color: var(--sw-color-text-on-dark, rgba(255, 255, 255, 0.7));
   padding: var(--sw-space-12, 48px) 0 var(--sw-space-6, 24px);
 }
@@ -85,7 +85,7 @@
 
 .copyright {
   font-size: var(--sw-font-size-xs, 13px);
-  color: var(--sw-color-text-faint-on-dark, rgba(255, 255, 255, 0.4));
+  color: var(--sw-color-text-faint-on-dark, rgba(255, 255, 255, 0.65));
 }
 
 @media (max-width: 768px) {
@@ -101,6 +101,6 @@
 
 @media (max-width: 480px) {
   .columns {
-    grid-template-columns: 1fr;
+    gap: 30px 20px;
   }
 }

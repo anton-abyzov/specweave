@@ -9,9 +9,9 @@ const COLUMNS = [
   {
     title: 'Product',
     links: [
-      {label: 'Features', to: '/docs/overview/features'},
-      {label: 'Enterprise', to: '/docs/enterprise'},
-      {label: 'Pricing', to: '/docs/overview/introduction'},
+      {label: 'Work model', to: '/product'},
+      {label: 'Integrations', to: '/integrations'},
+      {label: 'Verified Skills', href: 'https://verified-skill.com'},
       {label: 'Changelog', to: '/docs/reference/changelog'},
     ],
   },
@@ -20,7 +20,7 @@ const COLUMNS = [
     links: [
       {label: 'Introduction', to: '/docs/overview/introduction'},
       {label: 'Getting Started', to: '/docs/getting-started'},
-      {label: 'Skills (100+)', to: '/docs/reference/skills'},
+      {label: 'Skills reference', to: '/docs/reference/skills'},
       {label: 'Commands', to: '/docs/reference/commands'},
     ],
   },
@@ -34,7 +34,7 @@ const COLUMNS = [
     ],
   },
   {
-    title: 'Company',
+    title: 'Open source',
     links: [
       {label: 'About', to: '/docs/overview/introduction'},
       {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
@@ -124,7 +124,7 @@ function Footer(): ReactNode {
             ))}
           </div>
           <div className={styles.copyright}>
-            &copy; {new Date().getFullYear()} SpecWeave. All rights reserved.
+            &copy; {new Date().getFullYear()} SpecWeave. MIT licensed.
           </div>
         </div>
       </div>

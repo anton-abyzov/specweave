@@ -1,5 +1,5 @@
 {
-  "description": "SpecWeave hooks: portable command strings and bounded worker execution.",
+  "description": "Minimal hooks: compact session context and an opt-in auto loop. Handoffs are explicit CLI actions.",
   "hooks": {
     "SessionStart": [
       {
@@ -12,18 +12,6 @@
         ]
       }
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" pre-tool-use",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
@@ -31,17 +19,6 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" stop",
             "timeout": 30
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" pre-compact",
-            "timeout": 10
           }
         ]
       }
