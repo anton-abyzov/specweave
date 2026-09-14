@@ -18,7 +18,8 @@ function hasActiveAutoSession(data) {
     const state = path.join(current, '.specweave', 'state');
     if (existsSync(path.join(current, '.specweave', 'config.json'))) {
       const sessionId = process.env.CLAUDE_SESSION_ID;
-      const scoped = sessionId && /^[a-zA-Z0-9_-]+$/.test(sessionId)
+      // Match session-state-manager's path-safe IDs, including dots and spaces.
+      const scoped = sessionId && !/[/\\]|\.\.|\0/.test(sessionId)
         ? path.join(state, 'sessions', sessionId, 'auto-mode.json') : null;
       const marker = scoped && existsSync(scoped) ? scoped : path.join(state, 'auto-mode.json');
       try { return JSON.parse(readFileSync(marker, 'utf8')).active === true; }
