@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="What changed in SpecWeave 2.1 and vskill 1.1.1: portable intent, clearer evidence, fewer hooks, safer skill maintenance, and redesigned websites.">
+  <title>SpecWeave 2.1 — What changed, and why</title>
+  <style>
+    :root{color-scheme:light;--paper:#f6f4ee;--ink:#252820;--muted:#59604f;--line:#d4d9c9;--olive:#45543c;--orange:#a9401e}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--olive);text-underline-offset:4px}a:hover{color:var(--orange)}a:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:5px}.wrap{max-width:1060px;margin:auto;padding:0 36px}.top{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:28px 0;border-bottom:1px solid var(--line)}.brand{font-weight:750;text-decoration:none;letter-spacing:-.03em}.date,.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase}.date{color:var(--muted)}nav{display:flex;gap:24px;flex-wrap:wrap;margin:22px 0;font-size:13px}header{padding:52px 0 38px}.eyebrow{color:var(--orange);font-weight:650}h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em;line-height:1.05}h1{font-size:clamp(48px,7.3vw,82px);margin:18px 0 24px}h1 em{color:#667058;font-weight:400}h2{font-size:35px;margin:0 0 20px}h3{font-size:18px;margin:0 0 10px}p{margin:0 0 18px}.lead{max-width:680px;font-size:19px;color:var(--muted)}.pills,.actions{display:flex;gap:12px;flex-wrap:wrap}.pills{margin:26px 0}.pill{border:1px solid #b9c5ab;border-radius:99px;padding:5px 12px;font-size:12px;color:#3d4d32;background:#eef2e7}.button{padding:12px 18px;border:1px solid var(--ink);border-radius:4px;text-decoration:none;font-size:14px;font-weight:600}.button.primary{background:var(--ink);color:white}.button:hover{border-color:var(--orange)}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:4px 0 46px;border:1px solid var(--line);border-radius:5px;overflow:hidden}.flow div{padding:21px 22px;border-right:1px solid var(--line)}.flow div:last-child{border:0}.flow b{display:block;font-size:15px}.flow span{display:block;color:var(--muted);font-size:12px}.flow small{display:block;color:var(--orange);margin-bottom:10px;font-size:10px}section{padding:40px 0;border-top:1px solid var(--line)}.changes{display:grid;grid-template-columns:1fr 1fr;gap:28px 40px}.changes article p{color:var(--muted);font-size:14px;margin:0}.why{font-weight:650;color:var(--ink)}.note{background:#e9eddf;padding:22px 25px;border-left:3px solid #78876a;margin:26px 0 0;font-size:14px}.note p:last-child{margin-bottom:0}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.87em;overflow-wrap:anywhere}details{border:1px solid var(--line);border-radius:4px;padding:16px 20px;margin-top:18px}summary{cursor:pointer;font-weight:600}.detail-body{padding-top:18px;color:var(--muted);font-size:14px}ul{padding-left:20px;margin:0}li{margin:7px 0}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:25px 0}.metrics strong{display:block;font-size:32px;font-weight:500;letter-spacing:-.04em}.metrics span{font-size:12px;color:var(--muted)}.links{display:flex;gap:13px 24px;flex-wrap:wrap;font-size:14px}.small{font-size:13px;color:var(--muted)}footer{padding:28px 0 45px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.skip{position:absolute;left:16px;top:-80px;background:white;padding:10px}.skip:focus{top:8px}
+    @media(max-width:650px){.wrap{padding:0 22px}.top{align-items:flex-start}.date{text-align:right;font-size:9px;max-width:130px}nav{gap:13px 20px}header{padding:30px 0}.lead{font-size:17px}.flow{grid-template-columns:1fr 1fr;margin-bottom:30px}.flow div{border-bottom:1px solid var(--line);padding:18px}.flow div:nth-child(2){border-right:0}.flow div:nth-child(3){border-bottom:0}.changes{grid-template-columns:1fr;gap:24px}section{padding:30px 0}.metrics{gap:10px}.metrics strong{font-size:27px}.metrics span{font-size:11px}.button{padding:11px 14px;font-size:13px}h2{font-size:31px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{nav,.actions,.skip{display:none}.wrap{max-width:none}details{break-inside:avoid}details .detail-body{display:block}a{color:inherit}.flow,.changes{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to report</a>
+  <div class="wrap">
+    <header class="top"><a class="brand" href="/">SpecWeave / Release notes</a><span class="date">14 September 2026 · Open source</span></header>
+    <nav aria-label="Report sections"><a href="#changes">What changed</a><a href="#cleanup">What we simplified</a><a href="#evidence">Evidence &amp; limits</a><a href="#products">Open the products</a></nav>
+    <main id="main">
+      <header>
+        <span class="eyebrow">One record, across coding tools</span>
+        <h1>Change tools.<br><em>Keep the work.</em></h1>
+        <p class="lead">SpecWeave preserves what you asked for, what was verified, and what comes next. Verified Skills helps you keep expertise that earns its place.</p>
+        <div class="pills"><span class="pill">SpecWeave 2.1.0 published</span><span class="pill">vskill 1.1.1 published</span><span class="pill">Both websites redesigned</span></div>
+        <div class="actions"><a class="button primary" href="/product">Explore SpecWeave ↗</a><a class="button" href="https://verified-skill.com">Explore Verified Skills ↗</a></div>
+      </header>
+      <div class="flow" aria-label="The work model">
+        <div><small>01 / OUTCOME</small><b>Intent</b><span>What needs to change?</span></div>
+        <div><small>02 / SCOPE</small><b>Specification</b><span>Optional for small work.</span></div>
+        <div><small>03 / PROOF</small><b>Evidence</b><span>What actually passed?</span></div>
+        <div><small>04 / CONTINUITY</small><b>Handoff</b><span>Continue in another agent.</span></div>
+      </div>
+      <section id="changes">
+        <h2>What changed, and why.</h2>
+        <div class="changes">
+          <article><h3>A clearer work board</h3><p>Persistent intent cards, drag-and-drop, accessible move controls, linked increments and live task progress. <span class="why">See the outcome before opening the details.</span></p></article>
+          <article><h3>Evidence survives the session</h3><p>Portable handoffs and separate harness, model, effort and provider records. Local files refresh the dashboard without model calls. <span class="why">Switch tools without rebuilding context.</span></p></article>
+          <article><h3>Honest completion and costs</h3><p>Moving a card to Done does not invent verification. Unknown usage stays unknown; estimates remain distinct from bills. <span class="why">A green card should not hide unfinished checks.</span></p></article>
+          <article><h3>Focused skills and safer maintenance</h3><p>Source, security and usefulness get separate explanations. vskill cleanup now respects project and global ownership. <span class="why">Keep useful expertise and preserve unrelated plugins.</span></p></article>
+          <article><h3>Two redesigned websites</h3><p>Layered navigation, mobile layouts, original Kie.ai graphics, clearer documentation and repaired video seeking. <span class="why">Understand the product and reach the next action quickly.</span></p></article>
+          <article><h3>Optional enterprise connections</h3><p>GitHub, Jira and Azure DevOps remain available. Pull failures are visible and successful partial results survive. <span class="why">Fit an existing team workflow without requiring one.</span></p></article>
+        </div>
+        <div class="note"><p><strong>Start locally:</strong> install with <code>npm install -g specweave</code>, then run <code>specweave dashboard</code> from your project. Open Studio with <code>npx vskill@latest studio</code>. Restart existing processes after upgrading.</p></div>
+      </section>
+      <section id="cleanup">
+        <h2>Less machinery. Same durable record.</h2>
+        <p>Default hooks reduced to <strong>SessionStart and Stop</strong>. Routine Stop events return early; automatic continuation remains opt-in. The increment skill respects autonomous authorization instead of forcing a plan-mode interruption.</p>
+        <details><summary>48 obsolete installation locations removed, with backups</summary><div class="detail-body"><ul><li>13 unconditional greeting installations.</li><li>6 leaked test-fixture installations.</li><li>14 broken Postiz wrappers; working Postiz retained.</li><li>12 obsolete Obsidian overrides; current global workflow retained.</li><li>1 duplicate cold-email skill, 1 broken Remotion link and 1 discoverable archived Excalidraw installation.</li></ul><p>These are installation locations across multiple tools, not 48 distinct skills. Domain, App Store, release, design and other useful expertise remain.</p></div></details>
+      </section>
+      <section id="evidence">
+        <h2>Checked. With limits made visible.</h2>
+        <div class="metrics"><div><strong>16,495</strong><span>SpecWeave unit tests passed</span></div><div><strong>6,167</strong><span>vskill tests passed</span></div><div><strong>5,858</strong><span>Platform unit tests passed</span></div></div>
+        <p class="small">Release validation also includes independent review, headless desktop/mobile flows, accessibility checks and registry package verification. Counts describe recorded runs, with existing skips documented in their logs.</p>
+        <div class="links"><a href="https://github.com/anton-abyzov/specweave/pull/1940">SpecWeave changes</a><a href="https://github.com/anton-abyzov/vskill/pull/139">vskill changes</a><a href="https://github.com/anton-abyzov/vskill-platform/pull/69">Production playback fixes</a><a href="https://github.com/anton-abyzov/specweave/actions/workflows/deploy-docs.yml">Website deployments</a></div>
+        <details><summary>Known limits and what this release does not claim</summary><div class="detail-body"><p>The full docs suite still has 10 baseline failures. Five private-workspace E2E cases remain unresolved, and an LSP timing benchmark is intermittent. Existing repository-wide TypeScript diagnostics remain. Passing product checks do not mean every repository check is green.</p><p>Universal transcript-to-intent assignment, full conflict-resolving tracker synchronization, fair cross-harness quality rankings and calibrated completion forecasts are not shipped. The business hypothesis is less re-explaining and clearer evidence when switching tools; paid demand is not yet proven.</p></div></details>
+      </section>
+      <section id="products">
+        <h2>Explore one layer deeper.</h2>
+        <div class="links"><a href="/docs/guides/analytics-dashboard">Dashboard guide</a><a href="/docs/guides/cross-tool-handoff">Cross-tool handoff</a><a href="/integrations">Optional integrations</a><a href="/docs/overview/dogfooding">Projects using SpecWeave</a><a href="https://verified-skill.com/studio">Skill Studio</a><a href="https://verified-skill.com/methodology">Skill evidence</a></div>
+        <p class="small" style="margin-top:22px">Release packages: <a href="https://github.com/anton-abyzov/specweave/releases/tag/v2.1.0">SpecWeave 2.1.0</a> · <a href="https://github.com/anton-abyzov/vskill/releases/tag/v1.1.1">vskill 1.1.1</a></p>
+      </section>
+    </main>
+    <footer>A concise record of this release. Open state, inspectable evidence, and room to use your own tools.</footer>
+  </div>
+</body>
+</html>
