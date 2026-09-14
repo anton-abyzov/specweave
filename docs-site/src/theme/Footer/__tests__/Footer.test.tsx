@@ -21,7 +21,9 @@ describe('Footer', () => {
   it('renders social icon links', () => {
     render(<Footer />);
     expect(screen.getByLabelText('GitHub')).toBeInTheDocument();
-    expect(screen.getByLabelText('Discussions')).toBeInTheDocument();
+    expect(screen.getByLabelText('GitHub Issues')).toHaveAttribute(
+      'href', 'https://github.com/anton-abyzov/specweave/issues',
+    );
     expect(screen.getByLabelText('X / Twitter')).toBeInTheDocument();
   });
 

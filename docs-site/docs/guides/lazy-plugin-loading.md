@@ -230,7 +230,7 @@ If hot-reload fails:
 
 ## Related Features
 
-- **[MCP Tool Search](/docs/guides/getting-started/quickstart#what-you-get)** - Current built-in Claude Code feature for tool deferred loading
+- **[Getting Started](/docs/getting-started)** - Current SpecWeave installation and first steps
 - **[AI Agents and Skills](/docs/overview/features#ai-agents-and-skills)** - Claude Code 2.1.0+ feature for isolated sub-agents
 - **[Context Precision](/docs/overview/features#context-precision-70-token-reduction)** - Current progressive disclosure approach
 

@@ -240,7 +240,7 @@ specweave init .
 
 **Your first increment is 30 seconds away.**
 
-[Quick Start Guide →](/docs/guides/getting-started/quickstart)
+[Quick Start Guide →](/docs/getting-started)
 
 ---
 

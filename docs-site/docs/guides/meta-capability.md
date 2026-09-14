@@ -521,4 +521,4 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 **Ready to build factories that build factories?**
 
-👉 [Get Started with SpecWeave](./getting-started/quickstart)
+👉 [Get Started with SpecWeave](/docs/getting-started)

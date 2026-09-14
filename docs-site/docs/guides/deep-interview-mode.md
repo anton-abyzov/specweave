@@ -272,5 +272,5 @@ Lower the minimum or reduce categories:
 ## See Also
 
 - ADR-0232: Deep Interview Mode (historical reference; not published)
-- [Getting Started Guide](./getting-started/)
+- [Getting Started Guide](/docs/getting-started)
 - [Best Practices](./best-practices.md)

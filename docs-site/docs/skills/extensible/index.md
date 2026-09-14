@@ -17,7 +17,7 @@ Skills self-load their customizations through **plain LLM instructions** embedde
 
 This replaces the previous shell-based dynamic context injection (DCI) approach for skill memories. DCI (Claude Code's `` !`command` `` syntax) is still used for other purposes like loading skill context or PR diffs, but skill memories now use instruction-based loading for better cross-platform compatibility.
 
-The result: you correct Claude once ("use React Hook Form, not useState for forms"), and that preference is applied automatically in every future session.
+A skill that explicitly reads a project preference file can reuse those instructions. That depends on the skill and harness loading the file; this pattern does not guarantee automatic learning or application in every future session.
 
 ---
 
@@ -26,17 +26,17 @@ The result: you correct Claude once ("use React Hook Form, not useState for form
 ### [Extensible Skills Specification](/docs/skills/extensible/extensible-skills-standard)
 The formal specification — extensibility category definitions, dynamic context injection specification, detection algorithm, and conformance requirements.
 
-### [Implementation Guide](/docs/skills/extensible/extensible-skills-guide)
-Practical how-to — getting started, architecture, cascading lookup, real-world examples, skill memory format, and FAQ.
+### Implementation Guide (historical reference; not published)
+The separate how-to document for the earlier skill-memories architecture is unavailable. This section does not supply its setup instructions or FAQ.
 
 ### [Customization Without Modification](/docs/skills/extensible/extensible-skills)
-Overview page with quick reference table and links to the specification and guide.
+Overview page with a quick reference table and a link to the published specification.
 
 ### Claude Skills Deep Dive (historical reference; not published)
 How skills work under the hood — progressive disclosure architecture, comparison with other AI tool systems, and the evolution from prompts to programs.
 
-### [Self-Improving Skills (Reflect)](/docs/skills/extensible/extensible-skills)
-The Reflect system auto-learns from corrections and saves them to skill memories. Correct once, applied forever.
+### Self-Improving Skills (Reflect; historical reference, not published)
+Earlier auto-learning design. It is not a current SpecWeave 2.1 lifecycle guarantee; see the [current skills reference](/docs/reference/skills).
 
 ### [Development Guidelines](/docs/skills/extensible/skill-development-guidelines)
 Design principles for skill authoring — how to design skills that users can extend without modification.
