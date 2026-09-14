@@ -163,7 +163,7 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
     // Single write location + a pointer file (no duplicate doc under state/).
     expect(fs.existsSync(path.join(root, '.specweave', 'state', 'handoff-latest.md'))).toBe(false);
     const pointer = path.join(root, '.specweave', 'state', 'handoff-latest.txt');
-    expect(fs.readFileSync(pointer, 'utf-8').trim()).toBe(res.docPath);
+    expect(fs.readFileSync(pointer, 'utf-8').trim()).toBe('.specweave/increments/0001-foo/handoff.md');
   });
 
   it('orders the board by T-id, not user-story group order (G-001)', async () => {

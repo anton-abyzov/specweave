@@ -25,6 +25,7 @@ import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs } from '../tasks/verify-runner.js';
 import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
+import { serializeHandoffPointer } from './handoff-pointer.js';
 import {
   renderHandoffDoc,
   renderPastePrompt,
@@ -297,12 +298,12 @@ function writeDoc(docPath: string, markdown: string): void {
   fs.writeFileSync(docPath, markdown, 'utf-8');
 }
 
-/** `.specweave/state/handoff-latest.txt` → absolute path of the latest doc. */
+/** Keep in-project destinations relative so copying the project preserves its handoff. */
 function writePointer(effectiveRoot: string, docPath: string): void {
   try {
     const stateDir = path.join(effectiveRoot, '.specweave', 'state');
     fs.mkdirSync(stateDir, { recursive: true });
-    fs.writeFileSync(path.join(stateDir, HANDOFF_POINTER_FILE), docPath + '\n', 'utf-8');
+    fs.writeFileSync(path.join(stateDir, HANDOFF_POINTER_FILE), serializeHandoffPointer(effectiveRoot, docPath) + '\n', 'utf-8');
   } catch {
     // best-effort
   }

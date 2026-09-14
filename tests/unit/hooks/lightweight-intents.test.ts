@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, cpSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { IntentStore } from '../../../src/dashboard/server/data/intent-store.js';
@@ -66,6 +66,44 @@ describe('lightweight intent continuity', () => {
 
 
 describe('intent discovery fallbacks', () => {
+  it('writes relative in-project handoff pointers that survive relocation', async () => {
+    const root = project();
+    await buildWorkHandoff(root, { summary: 'Continue after moving the project' });
+    expect(readFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), 'utf8').trim()).toBe('.handoff/HANDOFF.md');
+    const moved = project();
+    cpSync(root, moved, { recursive: true });
+    rmSync(root, { recursive: true, force: true });
+    const result = await handle({}, createContext(moved));
+    expect(result.hookSpecificOutput?.additionalContext).toContain('Last handoff: .handoff/HANDOFF.md');
+  });
+  it('recovers an owned canonical handoff after an old absolute pointer becomes stale', async () => {
+    const root = project();
+    const handoff = await buildWorkHandoff(root);
+    writeFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), handoff.docPath + '\n');
+    const moved = project();
+    cpSync(root, moved, { recursive: true });
+    rmSync(root, { recursive: true, force: true });
+    const result = await handle({}, createContext(moved));
+    expect(result.hookSpecificOutput?.additionalContext).toContain('Last handoff: .handoff/HANDOFF.md');
+  });
+  it('preserves an explicit external handoff destination', async () => {
+    const root = project();
+    const external = project();
+    const output = path.join(external, 'custom.md');
+    await buildWorkHandoff(root, { out: output });
+    expect(readFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), 'utf8').trim()).toBe(output);
+    const result = await handle({}, createContext(root));
+    expect(result.hookSpecificOutput?.additionalContext).toContain(path.relative(root, output).replace(/\\/g, '/'));
+  });
+  it('does not follow escaping relative pointers or unrelated root handoff files', async () => {
+    const root = project();
+    const external = project();
+    const handoff = await buildWorkHandoff(external);
+    writeFileSync(path.join(root, 'HANDOFF.md'), 'A handoff owned by another tool');
+    writeFileSync(path.join(root, '.specweave/state/handoff-latest.txt'), path.relative(root, handoff.docPath));
+    const result = await handle({}, createContext(root));
+    expect(result.hookSpecificOutput?.additionalContext).toBeUndefined();
+  });
   it('keeps the same last valid state as the dashboard after a corrupt completion snapshot', async () => {
     const root = project();
     const store = new IntentStore(root);
