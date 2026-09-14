@@ -1,80 +1,39 @@
-# Model Selection Guide
-
-**Understanding SpecWeave's intelligent model routing**
-
+---
+title: Models and execution context
+description: Record the harness, model, effort, provider and surface that carried an intent forward
 ---
 
-## Overview
+# Models and execution context
 
-SpecWeave uses a two-tier model strategy:
-1. **Opus 4.6** - Default for all complex work (planning, analysis, architecture, code review)
-2. **Haiku** - For simple/cheap operations (translations, mechanical tasks)
+In SpecWeave 2.1, choose the model in your coding tool. The work board records execution context; it does not route model requests, select a universal default, or require a particular harness's plan mode.
 
----
+The durable record is the **intent, specification, task evidence and handoff**. These let the next session continue the work even when the tool or model changes.
 
-## The Models
+## Keep the dimensions separate
 
-### Opus 4.6 (Default - Planning, Analysis & Complex Work)
+| Dimension | What it records |
+|---|---|
+| Harness | The agent application running the work, such as Codex or Claude Code |
+| Model | The exact reported model identifier |
+| Effort | The reported reasoning setting, when available |
+| Provider | The service serving the model; a provider is not automatically a harness |
+| Surface | Where the session originated, when its metadata reports this |
+| Session | One tool conversation; an intent can continue through several sessions |
 
-**Use for**:
-- Strategic planning
-- Architecture design
-- Complex problem solving
-- Security analysis
-- Code review
-- Quality assessment
+An execution entry also has a timestamp, actor, source and optional note. Missing facts display **Unknown**. A task claim identifies the recorded actor; it is not proof of a model or effort setting.
 
-**Pricing**: $5 per 1M input tokens, $25 per 1M output tokens
+## Record a continuation
 
-**Characteristics**:
-- Deepest reasoning
-- Highest quality analysis
-- Best for complex tasks
-- Default for all agents
+1. Open `specweave dashboard` and select the intent on the Work board.
+2. Add the execution setup explicitly, or use **Sessions** to link an available local session to that intent.
+3. When switching tools, write `specweave handoff` and give the resulting document to the next session. Link its session or add its setup to the same intent.
 
-### Haiku 4.5 (Simple & Cheap Operations)
+The local session reader supports Codex and Claude Code metadata associated with the project. It reads bounded windows, caches unchanged files, and marks partial coverage when intermediate changes may be missing. It does not expose transcript prompts, responses or tool payloads in the session API. Unsupported formats or absent metadata remain unavailable; sessions are never assigned to an intent just because they share a project.
 
-**Use for**:
-- Translations
-- Mechanical execution
-- Simple data processing
-- Configuration generation
-- Routine tasks
+## Compare outcomes with evidence
 
-**Pricing**: $1 per 1M input tokens, $5 per 1M output tokens
+Execution history shows which setups worked on an intent. Inspect the linked specification, task evidence and current verification report to assess the result. A model name, completed card or token count alone is not a quality score, and the dashboard does not produce a causal model ranking or delivery forecast.
 
-**Characteristics**:
-- Fast execution
-- Cost-effective
-- Good for repetitive tasks
-- Used when task has detailed spec
+Reading the board and local session metadata requires **no model API calls**. It does not consume inference tokens to infer task status. [Usage & estimates](/docs/reference/cost-tracking) has a narrower data source and explicitly leaves unsupported or mixed-model costs unknown.
 
-### Sonnet 4.6 (Balanced)
-
-**Use for balanced speed and quality** - Good middle ground between Opus and Haiku.
-
-**Pricing**: $3 per 1M input tokens, $15 per 1M output tokens
-
----
-
-## Recommended: `/model opusplan`
-
-Claude Code provides a hybrid model alias that works perfectly with SpecWeave's plan-mode-first workflow:
-
-```bash
-/model opusplan
-```
-
-This sets Opus 4.6 for plan mode (specs, architecture, analysis) and Sonnet 4.6 for execution (implementation, tests). Since SpecWeave mandates plan mode for all non-trivial work, you automatically get Opus reasoning where it matters most and Sonnet speed+savings during implementation.
-
-See the [Cost Tracking Reference](/docs/reference/cost-tracking) for usage reporting.
-
----
-
-**Historical source**: `.specweave/docs/public/guides/model-selection.md` (not published).
-
-*Due to length, truncating here. File contains complete guide with agent classifications, phase detection algorithm, decision examples, troubleshooting, and FAQ.*
-
----
-
-*Last updated: 2026-03-01 | SpecWeave v1.0.342*
+See the [Work board guide](/docs/guides/analytics-dashboard) and [cross-tool handoff guide](/docs/guides/cross-tool-handoff) for the daily workflow.
