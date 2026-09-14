@@ -47,7 +47,8 @@ describe('minimal default hooks', () => {
     expect(run(true, true)).toEqual({ workerLoaded: true });
   });
 
-  it.each(['conversation.01', 'conversation:01', 'conversation 01'])('preserves supported scoped session ID %s', (id) => {
+  // Each fixture must also be a valid directory name on Windows.
+  it.each(['conversation.01', 'conversationé01', 'conversation 01'])('preserves supported scoped session ID %s', (id) => {
     expect(run(false, true, id)).toEqual({ workerLoaded: true });
   });
 });
