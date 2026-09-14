@@ -1,3 +1,6 @@
+import { registerWorkRoutes } from './routes/work-routes.js';
+import { localRequestError } from './local-request.js';
+import { getIncrementDetail } from './data/work-projection.js';
 import * as http from 'http';
 import * as net from 'net';
 import * as fs from 'fs';
@@ -91,6 +94,7 @@ export class DashboardServer {
     }
 
     this.registerRoutes();
+    registerWorkRoutes(this.router, req => this.resolveProject(req)?.root, this.sseManager);
   }
 
   /** Add a new project to the dashboard */
@@ -183,7 +187,7 @@ export class DashboardServer {
         reject(err);
       });
 
-      this.server.listen(this.options.port, () => {
+      this.server.listen(this.options.port, '127.0.0.1', () => {
         const actualPort = (this.server!.address() as net.AddressInfo)?.port ?? this.options.port;
         const url = `http://localhost:${actualPort}`;
 
@@ -240,6 +244,10 @@ export class DashboardServer {
     res: http.ServerResponse,
   ): Promise<void> {
     const url = req.url || '/';
+    const address = this.server?.address();
+    const port = address && typeof address !== 'string' ? address.port : this.options.port;
+    const rejected = localRequestError(req, port);
+    if (rejected) return sendJson(res, { ok: false, error: rejected }, 403);
 
     // CORS preflight — only allow localhost origins
     if (req.method === 'OPTIONS') {
@@ -1322,94 +1330,6 @@ function deepMerge(target: Record<string, unknown>, source: Record<string, unkno
 }
 
 /** Get increment detail by reading metadata.json, tasks.md, and spec.md */
-async function getIncrementDetail(projectRoot: string, incrementId: string): Promise<Record<string, unknown> | null> {
-  // Search for increment directory
-  const incrementsDir = path.join(projectRoot, '.specweave/increments');
-  if (!fs.existsSync(incrementsDir)) return null;
-
-  let incDir: string | null = null;
-  try {
-    const dirs = fs.readdirSync(incrementsDir, { withFileTypes: true });
-    for (const d of dirs) {
-      if (!d.isDirectory()) continue;
-      if (d.name === incrementId || d.name.startsWith(incrementId)) {
-        incDir = path.join(incrementsDir, d.name);
-        break;
-      }
-    }
-  } catch { return null; }
-  if (!incDir) return null;
-
-  // Read metadata
-  let metadata: Record<string, unknown> = {};
-  const metadataPath = path.join(incDir, 'metadata.json');
-  if (fs.existsSync(metadataPath)) {
-    try { metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8')); } catch { /* */ }
-  }
-
-  // Parse tasks from tasks.md
-  const tasks: Array<{ id: string; title: string; status: string; userStory?: string; acs?: string[] }> = [];
-  const tasksPath = path.join(incDir, 'tasks.md');
-  if (fs.existsSync(tasksPath)) {
-    const content = fs.readFileSync(tasksPath, 'utf-8');
-    const taskRegex = /###\s+(T-\d+):\s*(.+)/g;
-    let match;
-    while ((match = taskRegex.exec(content)) !== null) {
-      const id = match[1];
-      const title = match[2].trim();
-      // Find status: look for [x] or [ ] nearby
-      const afterMatch = content.slice(match.index, match.index + 500);
-      const statusMatch = afterMatch.match(/\*\*Status\*\*:\s*\[([ x])\]/);
-      const usMatch = afterMatch.match(/\*\*User Story\*\*:\s*(US-\d+)/);
-      const acMatch = afterMatch.match(/\*\*(?:Satisfies ACs?|AC)\*\*:\s*(AC-[^\n]+)/);
-      tasks.push({
-        id,
-        title,
-        status: statusMatch?.[1] === 'x' ? 'completed' : 'pending',
-        userStory: usMatch?.[1],
-        acs: acMatch?.[1]?.split(',').map(s => s.trim()),
-      });
-    }
-  }
-
-  // Parse ACs from spec.md
-  const acs: Array<{ id: string; text: string; completed: boolean }> = [];
-  const specPath = path.join(incDir, 'spec.md');
-  if (fs.existsSync(specPath)) {
-    const content = fs.readFileSync(specPath, 'utf-8');
-    const acRegex = /- \[([ x])\] \*\*(AC-[^*]+)\*\*:\s*(.+)/g;
-    let match;
-    while ((match = acRegex.exec(content)) !== null) {
-      acs.push({
-        id: match[2].trim(),
-        text: match[3].trim(),
-        completed: match[1] === 'x',
-      });
-    }
-  }
-
-  const taskSummary = {
-    total: tasks.length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    pending: tasks.filter(t => t.status === 'pending').length,
-  };
-
-  const acSummary = {
-    total: acs.length,
-    completed: acs.filter(a => a.completed).length,
-  };
-
-  return {
-    id: incrementId,
-    metadata,
-    tasks,
-    taskSummary,
-    acs,
-    acSummary,
-    dirName: path.basename(incDir),
-  };
-}
-
 /** Scan repositories/ directory for cloned repos, with single-repo git fallback */
 export function scanRepositories(projectRoot: string): Array<{
   name: string;
