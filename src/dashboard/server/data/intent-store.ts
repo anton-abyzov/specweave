@@ -236,7 +236,18 @@ export class IntentStore {
 
   private append(intent: WorkIntent): WorkIntent {
     fs.mkdirSync(path.dirname(this.file), { recursive: true });
-    fs.appendFileSync(this.file, JSON.stringify(intent) + '\n', 'utf8');
+    // An interrupted append or a text editor may leave the final record unterminated.
+    // Preserve it verbatim, but keep the next acknowledged snapshot on its own line.
+    const fd = fs.openSync(this.file, 'a+');
+    try {
+      const size = fs.fstatSync(fd).size;
+      const last = Buffer.alloc(1);
+      const separator = size > 0 && fs.readSync(fd, last, 0, 1, size - 1) === 1 && last[0] !== 10
+        ? '\n' : '';
+      fs.appendFileSync(fd, separator + JSON.stringify(intent) + '\n', 'utf8');
+    } finally {
+      fs.closeSync(fd);
+    }
     return intent;
   }
 }

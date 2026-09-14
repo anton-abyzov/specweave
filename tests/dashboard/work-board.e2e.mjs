@@ -175,6 +175,32 @@ try {
     body: JSON.stringify({ title: 'Forbidden' }),
   });
   assert.equal(rejected.status, 403);
+  await page.goto(`${instance.url}/sessions`);
+  const localSessions = page.locator('.work-local-sessions');
+  await localSessions.getByText('observed-model', { exact: true }).waitFor();
+  // Native session stores are outside the project watcher: reconcile them while the page stays open.
+  fs.appendFileSync(
+    path.join(process.env.CODEX_HOME, 'sessions/observed.jsonl'),
+    '\n' + JSON.stringify({
+      type: 'turn_context',
+      timestamp: new Date().toISOString(),
+      payload: { model: 'continued-model', effort: 'medium' },
+    }) + '\n',
+  );
+  fs.writeFileSync(
+    path.join(process.env.CODEX_HOME, 'sessions/new.jsonl'),
+    [
+      JSON.stringify({ type: 'session_meta', payload: { id: 'new-session', cwd: root } }),
+      JSON.stringify({
+        type: 'turn_context',
+        timestamp: new Date().toISOString(),
+        payload: { model: 'new-session-model', effort: 'low' },
+      }),
+    ].join('\n'),
+  );
+  await localSessions.getByText('continued-model', { exact: true }).waitFor({ timeout: 35000 });
+  await localSessions.getByText('new-session-model', { exact: true }).waitFor({ timeout: 35000 });
+  await page.screenshot({ path: path.join(artifacts, 'native-session-live-refresh.png'), fullPage: true });
   await page.goto(instance.url);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '+ New intent', exact: true }).waitFor();
@@ -200,6 +226,7 @@ try {
           'live ledger/spec/verification refresh',
           'evidence detail',
           'origin rejection',
+          'native session continuation and discovery without reload',
           'mobile overflow',
           'no browser errors',
         ],

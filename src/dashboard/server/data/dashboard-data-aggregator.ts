@@ -1,4 +1,4 @@
-import { loadTaskBoard } from '../../../core/tasks/task-board.js';
+import { loadDashboardTaskBoard } from './dashboard-task-board.js';
 import { parseSpecAcs } from '../../../core/tasks/verify-runner.js';
 import * as fs from 'fs';
 import { readFile, access, readdir, stat } from 'fs/promises';
@@ -525,7 +525,8 @@ export class DashboardDataAggregator {
   /** Count tasks from tasks.md file (async) */
   private async countTasksFromFile(tasksPath: string): Promise<{ total: number; completed: number }> {
     try {
-      const board = loadTaskBoard(path.dirname(tasksPath));
+      const content = await readFile(tasksPath, 'utf8').catch(() => undefined);
+      const board = loadDashboardTaskBoard(path.dirname(tasksPath), content);
       return { total: board.counts.total, completed: board.counts.done };
     } catch { return { total: 0, completed: 0 }; }
   }
