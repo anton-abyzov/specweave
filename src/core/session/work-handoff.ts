@@ -24,6 +24,7 @@ import { getAgentId } from '../tasks/ledger.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs } from '../tasks/verify-runner.js';
+import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
 import {
   renderHandoffDoc,
   renderPastePrompt,
@@ -110,13 +111,17 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
 
   // ── Git + scrub ────────────────────────────────────────────────────────
   const git = captureGitState(effectiveRoot, diffPath);
+  const intentRedactions: Record<string, number> = {};
+  const intents = isSpecWeave ? readIntentContext(effectiveRoot, intentRedactions) : undefined;
+  const intentLink = intents ? `[Open the intent board](${path.relative(path.dirname(docPath), path.join(effectiveRoot, INTENT_BOARD_PATH)).replace(/\\/g, '/')})` : undefined;
   const scrubbed = scrubFields({
     reason: opts.reason,
-    summary: opts.summary,
+    summary: [opts.summary, intents, intentLink].filter(Boolean).join('\n\n') || undefined,
     next: opts.next,
     gotcha: opts.gotcha,
     decisions: [...fileDecisions, ...(opts.decisions ?? [])],
   });
+  for (const [kind, count] of Object.entries(intentRedactions)) scrubbed.counts[kind] = (scrubbed.counts[kind] ?? 0) + count;
   scrubDiffFileInPlace(diffPath, scrubbed.counts);
 
   const docInput: HandoffDocInput = {
