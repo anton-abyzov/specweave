@@ -304,7 +304,8 @@ describe('metadata.updated', () => {
     git(root, 'init', '-q');
     git(root, 'config', 'user.email', 'e2e@example.com');
     git(root, 'config', 'user.name', 'E2E');
-    expect(sw(root, ['init']).code).toBe(0);
+    // The fixture intentionally initializes a disposable system-temp project.
+    expect(sw(root, ['init', '--quick', '--force']).code).toBe(0);
     expect(sw(root, ['create-increment', 'greeting cli']).code).toBe(0);
 
     const dir = path.join(root, '.specweave', 'increments');

@@ -89,7 +89,8 @@ afterEach(() => {
 
 describe('e2e: ledger evidence is trackable', () => {
   it('init: the log a done event cites is not ignored and lands in the commit', () => {
-    expect(sw('init', '--quick').code).toBe(0);
+    // The fixture intentionally initializes a disposable system-temp project.
+    expect(sw('init', '--quick', '--force').code).toBe(0);
     expect(sw('create-increment', 'evidence check').code).toBe(0);
     expect(sw('task', 'done', 'T-01', '--run', 'echo evidence-line').code).toBe(0);
 
@@ -111,7 +112,7 @@ describe('e2e: ledger evidence is trackable', () => {
   });
 
   it('init: reports/artifacts/ IS still ignored (only binaries are excluded)', () => {
-    expect(sw('init', '--quick').code).toBe(0);
+    expect(sw('init', '--quick', '--force').code).toBe(0);
     const artifact = '.specweave/increments/0001-x/reports/artifacts/screen.bin';
     fs.mkdirSync(path.dirname(path.join(workDir, artifact)), { recursive: true });
     fs.writeFileSync(path.join(workDir, artifact), 'binary');
