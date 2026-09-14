@@ -41,6 +41,45 @@ function state(value: unknown): WorkState {
   return value as WorkState;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+function textField(value: unknown, max: number, required = false): value is string {
+  return typeof value === 'string' && value.length <= max && (!required || value.trim().length > 0);
+}
+function nullableText(value: unknown, max: number): boolean {
+  return value === null || textField(value, max);
+}
+function timestamp(value: unknown): value is string {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value));
+}
+function validExecution(value: unknown): value is ExecutionSegment {
+  return isRecord(value) && textField(value.id, 300, true) &&
+    nullableText(value.sessionId, 200) && nullableText(value.harness, 120) &&
+    nullableText(value.model, 120) && nullableText(value.effort, 80) &&
+    nullableText(value.provider, 120) && nullableText(value.surface, 120) &&
+    textField(value.actor, 120, true) && timestamp(value.startedAt) &&
+    ['ledger', 'declared', 'session'].includes(value.source as string) && textField(value.note, 500);
+}
+function validIntent(value: unknown): value is WorkIntent {
+  if (!isRecord(value)) return false;
+  const keys = ['id', 'title', 'summary', 'state', 'incrementId', 'updatedAt', 'revision', 'executions', 'sessionRefs'];
+  return Object.keys(value).every(key => keys.includes(key)) &&
+    textField(value.id, 300, true) && textField(value.title, 180, true) &&
+    textField(value.summary, 2000) && nullableText(value.incrementId, 180) &&
+    WORK_STATES.includes(value.state as WorkState) && timestamp(value.updatedAt) &&
+    Number.isSafeInteger(value.revision) && (value.revision as number) > 0 &&
+    Array.isArray(value.executions) && value.executions.every(validExecution) &&
+    (value.sessionRefs === undefined ||
+      (Array.isArray(value.sessionRefs) && value.sessionRefs.every(ref => textField(ref, 300, true))));
+}
+interface IntentHistory {
+  intents: Map<string, WorkIntent>;
+  warnings: string[];
+  corruptIds: Set<string>;
+  unreadable: boolean;
+}
+
 /** Portable append-only intent snapshots. Synchronous compare-and-append prevents lost browser updates. */
 export class IntentStore {
   private file: string;
@@ -48,32 +87,41 @@ export class IntentStore {
     this.file = path.join(root, '.specweave/intents/board.jsonl');
   }
 
-  private read(): { intents: Map<string, WorkIntent>; warnings: string[] } {
+  private read(): IntentHistory {
     const intents = new Map<string, WorkIntent>();
     const warnings: string[] = [];
-    if (!fs.existsSync(this.file)) return { intents, warnings };
-    for (const [index, line] of fs
-      .readFileSync(this.file, 'utf8')
+    const corruptIds = new Set<string>();
+    const history = { intents, warnings, corruptIds, unreadable: false };
+    if (!fs.existsSync(this.file)) return history;
+    let contents: string;
+    try { contents = fs.readFileSync(this.file, 'utf8'); }
+    catch {
+      warnings.push('Intent history could not be read. Changes are blocked until it is readable.');
+      return { ...history, unreadable: true };
+    }
+    for (const [index, line] of contents
       .replace(/^\uFEFF/, '')
       .split(/\r?\n/)
       .entries()) {
       if (!line.trim()) continue;
       try {
-        const value = JSON.parse(line) as WorkIntent;
-        if (
-          !value.id ||
-          typeof value.title !== 'string' ||
-          !WORK_STATES.includes(value.state) ||
-          !Number.isInteger(value.revision) ||
-          !Array.isArray(value.executions)
-        )
+        const value: unknown = JSON.parse(line);
+        if (!validIntent(value)) {
+          if (isRecord(value) && textField(value.id, 300, true)) corruptIds.add(value.id);
           throw new Error('invalid record');
+        }
         if (value.revision > (intents.get(value.id)?.revision ?? 0)) intents.set(value.id, value);
       } catch {
         warnings.push(`Intent history line ${index + 1} could not be read.`);
       }
     }
-    return { intents, warnings };
+    return history;
+  }
+
+  private assertWritable(history: IntentHistory, id?: string): void {
+    if (history.unreadable || (id && history.corruptIds.has(id))) {
+      throw new WorkError('Intent history is corrupt or unreadable. Inspect board.jsonl before changing this work.', 409);
+    }
   }
 
   board(): WorkBoardPayload {
@@ -147,6 +195,7 @@ export class IntentStore {
 
   create(input: unknown): WorkIntent {
     const data = object(input);
+    this.assertWritable(this.read());
     const incrementId = field(data.incrementId, 'Increment', 180) || null;
     const increment = incrementId ? projectIncrement(this.root, incrementId) : null;
     if (incrementId && !increment) throw new WorkError('Linked increment does not exist');
@@ -164,7 +213,9 @@ export class IntentStore {
 
   update(id: string, input: unknown): WorkIntent {
     const data = object(input);
-    const stored = this.read().intents.get(id);
+    const history = this.read();
+    this.assertWritable(history, id);
+    const stored = history.intents.get(id);
     const projected =
       stored ??
       (id.startsWith('increment:') ? projectIncrement(this.root, id.slice('increment:'.length)) : null);
@@ -203,7 +254,10 @@ export class IntentStore {
 
   addExecution(id: string, input: unknown): WorkIntent {
     const data = object(input);
-    const current = this.read().intents.get(id) ?? this.board().items.find((i) => i.id === id);
+    const history = this.read();
+    this.assertWritable(history, id);
+    const stored = history.intents.get(id);
+    const current = stored ?? this.board().items.find((i) => i.id === id);
     if (!current) throw new WorkError('Intent not found', 404);
     if (data.revision !== current.revision)
       throw new WorkError('Work changed in another window. Refresh and try again.', 409);
@@ -220,7 +274,6 @@ export class IntentStore {
       startedAt: new Date().toISOString(),
       note: field(data.note, 'Note', 500),
     };
-    const stored = this.read().intents.get(id);
     return this.append({
       id: current.id,
       title: current.title,
