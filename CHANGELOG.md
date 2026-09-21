@@ -1,3 +1,8 @@
+## [Unreleased]
+
+### Fixed
+- `specweave refresh-plugins` no longer walks the filesystem when run outside a project. The command resolved its root with `getProjectRoot()`, which falls back to `process.cwd()` when no `.specweave/config.json` exists upward, and then scanned that whole tree for legacy `skills-lock.json` files, following symlinks with no depth bound. From `$HOME` (with `Google Drive -> Library/CloudStorage/...` and similar links) that pinned a core for six minutes with no output. The command now stops with `No SpecWeave project found: no .specweave/config.json in <cwd> or any parent directory` (exit code 1, silent under `--quiet`), the scan skips symlinks and stops at depth 6 (`maxDepth`), and the `doctor`/`update` stale-lockfile check skips the scan outside a project.
+
 ## [2.2.2] - 2026-09-21
 
 A prompt audit of the whole instruction surface against the repo's own target model

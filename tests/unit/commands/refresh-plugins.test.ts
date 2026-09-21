@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   installPlugin: vi.fn(() => ({ success: true, skipped: false })),
   findSpecweaveRoot: vi.fn(() => '/mock/specweave'),
   getProjectRoot: vi.fn(() => '/mock/project'),
+  findProjectRoot: vi.fn(() => '/mock/project'),
   enablePluginsInSettings: vi.fn(() => true),
   readFileSync: vi.fn(),
   existsSync: vi.fn(() => true),
@@ -31,6 +32,7 @@ vi.mock('../../../src/utils/plugin-copier.js', () => ({
 
 vi.mock('../../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mocks.getProjectRoot,
+  findProjectRoot: mocks.findProjectRoot,
 }));
 
 vi.mock('../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
