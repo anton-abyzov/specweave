@@ -1,4 +1,4 @@
-## [Unreleased]
+## [2.2.2] - 2026-09-21
 
 A prompt audit of the whole instruction surface against the repo's own target model
 (`claude-opus-4-8`), plus the dead-code sweep it turned into. Four of the findings were
