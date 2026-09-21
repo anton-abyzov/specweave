@@ -171,12 +171,18 @@ export function guardVerdict(
   scopeConf: number,
   destructive: number,
   t: JevConfig['thresholds'],
+  /** p(local_irreversible) + p(destructive_remote): the two scopes that both mean "data is gone". */
+  irreversibleMass = 0,
 ): 'allow' | 'warn' | 'deny' {
   const irreversible = scope === 'local_irreversible' || scope === 'destructive_remote';
   const confident = Number.isFinite(scopeConf) && scopeConf >= t.guardDeny;
   if (scope === 'destructive_remote' && confident) return 'deny';
   if (destructive >= t.guardDeny && irreversible) return 'deny';
   if (scope === 'local_irreversible' && confident && destructive >= t.guardWarn) return 'deny';
+  // (d) Jev is sure the command destroys data but splits the scope between "local
+  // irreversible" and "destructive remote" (e.g. a deleteMany against a database
+  // whose location it cannot see). Neither scope alone clears guardDeny; together they do.
+  if (Number.isFinite(irreversibleMass) && irreversibleMass >= t.guardDeny && destructive >= t.guardWarn) return 'deny';
   if (destructive >= t.guardWarn) return 'warn';
   if (scope === 'shared_or_remote' || irreversible) return 'warn';
   return 'allow';
@@ -368,11 +374,14 @@ export async function guardCommand(
     );
     const scope = choiceOf<CommandScope>(response.answers.COMMAND_SCOPE, COMMAND_SCOPES, 'read_only');
     const destructive = noulOf(response.answers.COMMAND_DESTRUCTIVE);
+    const irreversibleMass =
+      (scope.probabilities.local_irreversible ?? 0) + (scope.probabilities.destructive_remote ?? 0);
     const verdict = guardVerdict(
       scope.value,
       scope.confidence,
       destructive,
       client.config.thresholds,
+      irreversibleMass,
     );
     return {
       available: true,

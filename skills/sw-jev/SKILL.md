@@ -96,13 +96,13 @@ scripts are trusted by the guard**.
 Manual path: same POST with `state` = the command, its `cwd` and a description, and two
 questions — a `choice` over `read_only` / `local_reversible` / `local_irreversible` /
 `shared_or_remote` / `destructive_remote`, and a `noul` for "would this destroy data that
-cannot be recovered from git or by re-running a build?". **Deny** on any of three arms:
+cannot be recovered from git or by re-running a build?". **Deny** on any of four arms:
 `destructive_remote` at confidence ≥ `guardDeny` (0.85); destructiveness ≥ `guardDeny`
-with an irreversible scope; or `local_irreversible` at confidence ≥ `guardDeny` *and*
-destructiveness ≥ `guardWarn` (0.5). **Warn** when destructiveness ≥ `guardWarn` or the
-scope is `shared_or_remote`, `local_irreversible` or `destructive_remote` — a
-low-confidence remote-destruction reading can never fall through to allow. A denied
-command is the user's to approve, never yours to reword around.
+with an irreversible scope; `local_irreversible` at confidence ≥ `guardDeny` *and*
+destructiveness ≥ `guardWarn` (0.5); or p(`local_irreversible`) + p(`destructive_remote`)
+≥ `guardDeny` with destructiveness ≥ `guardWarn`. **Warn** when destructiveness ≥
+`guardWarn` or the scope is `shared_or_remote`, `local_irreversible` or `destructive_remote`
+(a low-confidence remote reading never falls to allow). A denied command is the user's to approve.
 
 ## Screen pulled text, triage a red run
 

@@ -131,13 +131,17 @@ the agent should continue with its own judgement.
 scope and a `noul` for "would this destroy data that cannot be recovered from git or by
 re-running a build?" — and turns the pair into one verdict.
 
-It **denies** on any of three arms:
+It **denies** on any of four arms:
 
 1. scope `destructive_remote` with confidence at or above `guardDeny` (0.85);
 2. destructiveness at or above `guardDeny` with scope `local_irreversible` or
    `destructive_remote`;
 3. scope `local_irreversible` with confidence at or above `guardDeny` **and**
-   destructiveness at or above `guardWarn` (0.5).
+   destructiveness at or above `guardWarn` (0.5);
+4. the probabilities of `local_irreversible` and `destructive_remote` **summed** at or
+   above `guardDeny`, with destructiveness at or above `guardWarn` — a `deleteMany`
+   against a database Jev cannot place splits the scope 0.50 / 0.45 and would otherwise
+   fall to a warn.
 
 The third arm exists because a near-certain local wipe scores its *scope* high and its
 *destructiveness* only moderately: `rm -rf ~/Projects` comes back `local_irreversible` at

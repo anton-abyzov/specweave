@@ -125,6 +125,17 @@ describe('guardVerdict', () => {
     expect(guardVerdict(scope as string, conf as number, destructive as number, THRESHOLDS)).toBe(expected);
   });
 
+  it('(d) denies when the two irreversible scopes together clear guardDeny and destructive clears guardWarn', () => {
+    // mongosh … deleteMany: local_irreversible 0.50 + destructive_remote 0.45, destructive 0.82
+    expect(guardVerdict('local_irreversible', 0.37, 0.82, THRESHOLDS, 0.95)).toBe('deny');
+    // same split but Jev does not think data is destroyed → stays a warn
+    expect(guardVerdict('local_irreversible', 0.37, 0.3, THRESHOLDS, 0.95)).toBe('warn');
+    // mass below guardDeny → the existing arms decide (warn here)
+    expect(guardVerdict('local_irreversible', 0.37, 0.82, THRESHOLDS, 0.6)).toBe('warn');
+    // omitted mass behaves as before
+    expect(guardVerdict('local_irreversible', 0.37, 0.82, THRESHOLDS)).toBe('warn');
+  });
+
   it('honours custom thresholds', () => {
     const strict = { route: 0.7, guardDeny: 0.5, guardWarn: 0.1 };
     expect(guardVerdict('destructive_remote', 0.6, 0, strict)).toBe('deny');
