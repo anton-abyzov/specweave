@@ -7,7 +7,8 @@
  *
  * Model Selection:
  * - No LLM: tasks_complete, acs_satisfied (grep-based)
- * - Haiku: tests_pass, build_succeeds (binary checks)
+ * - No LLM: tests_pass, build_succeeds (the command's exit code decides; an
+ *   enabled Jev noul may only downgrade a green run, never rescue a red one)
  * - Opus: llm_evaluate, custom criteria (semantic understanding with ultrathink)
  *
  * @module core/auto/completion-evaluator
@@ -125,10 +126,19 @@ function countOpenACs(specContent: string): number {
   return matches ? matches.length : 0;
 }
 
+/** Outcome of a spawned build/test command. */
+interface CommandRun {
+  /** True only when the process exited with status 0. */
+  success: boolean;
+  output: string;
+  /** Exit status, or null when the process was killed (timeout/signal) or never started. */
+  exitCode: number | null;
+}
+
 /**
  * Run a command and return whether it succeeded
  */
-function runCommand(command: string, projectPath: string): { success: boolean; output: string } {
+function runCommand(command: string, projectPath: string): CommandRun {
   try {
     const cleanEnv = getCleanEnv();
     const result = spawnSync(command, [], {
@@ -142,11 +152,13 @@ function runCommand(command: string, projectPath: string): { success: boolean; o
     return {
       success: result.status === 0,
       output: (result.stdout || '') + (result.stderr || ''),
+      exitCode: result.status ?? null,
     };
   } catch (error) {
     return {
       success: false,
       output: error instanceof Error ? error.message : String(error),
+      exitCode: null,
     };
   }
 }
@@ -206,21 +218,114 @@ function evaluateACsSatisfied(context: EvaluationContext): CriterionEvaluationRe
 }
 
 /**
+ * Jev verdict for a command's output (AC-07).
+ *
+ * When `jev.enabled` and a key are present, ask System One whether the output
+ * shows a clean run. A confident `false` lets the caller downgrade a green exit
+ * code (a suite that "passed" while printing failures); a confident `true` is
+ * only ever corroborating — see {@link combineCommandVerdict}. Anything in
+ * between (and every failure: disabled, no key, timeout, transport, schema)
+ * returns null so the caller keeps its plain exit-code behaviour.
+ *
+ * Never throws.
+ *
+ * @param output - captured stdout+stderr of the test or build command
+ * @param kind - which binary check is being evaluated
+ * @param projectPath - root whose `.specweave/config.json` holds the `jev.enabled`
+ *                      consent and provider settings; omit only when the caller has
+ *                      no project context (then the effective root is resolved)
+ * @returns true (passed), false (failed), or null (fall through)
+ */
+export async function jevTestOutputVerdict(
+  output: string,
+  kind: 'tests' | 'build',
+  projectPath?: string
+): Promise<boolean | null> {
+  try {
+    const jev = await import('../jev/index.js');
+    if (!jev.isJevEnabled(projectPath)) return null;
+
+    const client = jev.createJevClient(projectPath);
+    if (!client) return null;
+
+    const verdict = await jev.testOutputPassed(client, output, kind);
+    if (!verdict.available) return null;
+    if (verdict.passed >= JEV_PASS_THRESHOLD) return true;
+    if (verdict.passed <= JEV_FAIL_THRESHOLD) return false;
+    return null;
+  } catch (error) {
+    logger.debug(`Jev output verdict unavailable: ${error}`);
+    return null;
+  }
+}
+
+/** Noul at or above this means "the run succeeded". */
+const JEV_PASS_THRESHOLD = 0.8;
+/** Noul at or below this means "the run failed". */
+const JEV_FAIL_THRESHOLD = 0.2;
+
+/** Human-readable exit status, recorded in every reason so a flip is auditable. */
+function describeExit(exitCode: number | null): string {
+  return exitCode === null ? 'no exit code (killed or never started)' : `exit ${exitCode}`;
+}
+
+/**
+ * Combine the command's real exit status with an optional Jev verdict.
+ *
+ * Jev may only **downgrade**. The exit code is the ground truth for "did this
+ * run succeed"; a non-zero status is never talked back up to satisfied, because
+ * the text Jev reads is test/build stdout — attacker- and fixture-controlled,
+ * and Jev is documented as literal-reading and injection-susceptible. A
+ * confident `false` on a green run is still useful (a suite that swallows its
+ * own failures), so that direction is honoured and labelled `(jev)`.
+ */
+function combineCommandVerdict(
+  run: CommandRun,
+  jevVerdict: boolean | null,
+  labels: { passed: string; failed: string }
+): { satisfied: boolean; reason: string } {
+  const satisfied = run.success && jevVerdict !== false;
+  const exit = describeExit(run.exitCode);
+
+  if (satisfied) {
+    return { satisfied: true, reason: `${labels.passed} (${exit})` };
+  }
+
+  const downgraded = run.success && jevVerdict === false;
+  const cause = downgraded ? `jev, despite ${exit}` : exit;
+  // A "looks green" output on a red exit stays advisory: it never flips the verdict,
+  // but it is worth saying out loud (often a wrapper swallowing the real status).
+  const advisory =
+    !run.success && jevVerdict === true
+      ? ' [advisory: the output reads as a pass - check for a wrapper that swallows the exit status]'
+      : '';
+  return {
+    satisfied: false,
+    reason: `${labels.failed} (${cause}): ${run.output.slice(0, 200)}${advisory}`,
+  };
+}
+
+/**
  * Evaluate tests_pass criterion
  */
-function evaluateTestsPass(
+async function evaluateTestsPass(
   criterion: SuccessCriterion,
   projectPath: string
-): CriterionEvaluationResult {
+): Promise<CriterionEvaluationResult> {
   const command = criterion.command || 'npm test';
   const startTime = performance.now();
 
   const result = runCommand(command, projectPath);
+  const jevVerdict = await jevTestOutputVerdict(result.output, 'tests', projectPath);
+  const { satisfied, reason } = combineCommandVerdict(result, jevVerdict, {
+    passed: 'Tests passed',
+    failed: 'Tests failed',
+  });
 
   return {
     criterion,
-    satisfied: result.success,
-    reason: result.success ? 'Tests passed' : `Tests failed: ${result.output.slice(0, 200)}`,
+    satisfied,
+    reason,
     durationMs: performance.now() - startTime,
   };
 }
@@ -228,19 +333,24 @@ function evaluateTestsPass(
 /**
  * Evaluate build_succeeds criterion
  */
-function evaluateBuildSucceeds(
+async function evaluateBuildSucceeds(
   criterion: SuccessCriterion,
   projectPath: string
-): CriterionEvaluationResult {
+): Promise<CriterionEvaluationResult> {
   const command = criterion.command || 'npm run build';
   const startTime = performance.now();
 
   const result = runCommand(command, projectPath);
+  const jevVerdict = await jevTestOutputVerdict(result.output, 'build', projectPath);
+  const { satisfied, reason } = combineCommandVerdict(result, jevVerdict, {
+    passed: 'Build succeeded',
+    failed: 'Build failed',
+  });
 
   return {
     criterion,
-    satisfied: result.success,
-    reason: result.success ? 'Build succeeded' : `Build failed: ${result.output.slice(0, 200)}`,
+    satisfied,
+    reason,
     durationMs: performance.now() - startTime,
   };
 }
@@ -355,10 +465,10 @@ async function evaluateCriterion(
       return evaluateACsSatisfied(context);
 
     case 'tests_pass':
-      return evaluateTestsPass(criterion, projectPath);
+      return await evaluateTestsPass(criterion, projectPath);
 
     case 'build_succeeds':
-      return evaluateBuildSucceeds(criterion, projectPath);
+      return await evaluateBuildSucceeds(criterion, projectPath);
 
     case 'llm_evaluate':
     case 'custom_command':

@@ -63,6 +63,28 @@ Resuming: check `.specweave/intents/board.jsonl` (latest revision per id) or `sp
 - Umbrella projects only: nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
 <!-- /SECTION -->
 
+<!-- SECTION:jev when="jev" -->
+## Jev (System One) — closed-set decisions
+
+Jev answers questions whose every possible answer can be written down in advance: about 250 ms, about $0.00002, calibrated probabilities, no generation. Delegate the decision, then act on it yourself.
+
+| Moment | Command |
+|---|---|
+| Before choosing a skill or a subagent model tier | `specweave jev route "<prompt>"` |
+| Picking the tier for one task already in the ledger | `specweave jev task T-NN` — a suggestion you act on; nothing re-routes models behind you |
+| Before an unattended risky shell command | `specweave jev guard "<command>"` — exit 0 allow, 2 warn, 3 deny |
+| Pulled issue / PR / web text, a red test run | `specweave jev screen <file>` · `specweave jev failure <file>` |
+| Any other closed set of your own | `specweave jev ask --state @state.json --questions @q.json` |
+| Mechanical browser navigation (headless only) | `specweave jev browse --goal "<goal>" --url "<url>"` |
+| Is it configured here, what has it cost | `specweave jev doctor` · `specweave jev usage` |
+
+Exit 4 means Jev is unavailable — continue without it. Never send Jev code, prose, compaction, counting or date maths, another model's free-text output, or a question whose answers you cannot enumerate. Below `jev.thresholds.route` treat the answer as no answer.
+
+Every call sends its state — prompt text, task titles and ACs, the shell command, test-output tails, screened text, page text and element names — to the configured provider under the user's own key; secret-shaped values are masked heuristically first, best-effort only.
+
+The Bash guard is per project (`specweave jev setup --guard-bash` writes the config flag, the `.specweave/state/jev-guard.enabled` marker and a project-level `PreToolUse` hook; `--no-guard-bash` removes all three). A regex prefilter skips Jev for `npm test`, `npm run build|test|lint`, `pnpm/yarn test`, `cargo test`, `go test` and plain read commands, so project-defined scripts are trusted by the guard. A denied command is the user's to approve — stop and ask; do not reword it, wrap it or edit config around it.
+<!-- /SECTION -->
+
 <!-- SECTION:troubleshooting -->
 ## Troubleshooting
 

@@ -19,7 +19,9 @@
  *   4. `npm root -g` (result cached in a per-user private file under ~/.specweave)
  *
  * Fast path: PreToolUse for a file outside `.specweave/increments/` prints `{}`
- * without loading the CLI at all (the guards only concern increment files).
+ * without loading the CLI at all (the guards only concern increment files), and
+ * PreToolUse for Bash prints `{}` unless the project opted into the Jev command
+ * guard with a `.specweave/state/jev-guard.enabled` marker.
  */
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
@@ -61,6 +63,34 @@ function isPrivateOwnedFile(file) {
 }
 
 const event = process.argv[2] ?? '';
+
+/** Opt-in marker for the Jev Bash guard, searched upward from cwd / project dir. */
+const JEV_GUARD_MARKER = path.join('.specweave', 'state', 'jev-guard.enabled');
+const JEV_GUARD_MAX_DEPTH = 8;
+
+function hasJevGuardMarker(input) {
+  const starts = [typeof input.cwd === 'string' ? input.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
+  for (const start of starts) {
+    if (!start) continue;
+    let current;
+    try {
+      current = path.resolve(start);
+    } catch {
+      continue;
+    }
+    for (let depth = 0; depth < JEV_GUARD_MAX_DEPTH; depth++) {
+      try {
+        if (existsSync(path.join(current, JEV_GUARD_MARKER))) return true;
+      } catch {
+        break;
+      }
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+  }
+  return false;
+}
 
 function inactiveOutput() {
   if (event === 'session-start') {
@@ -123,7 +153,12 @@ function normalizeInput(raw) {
         filePath = ti.file_path;
       }
       if (typeof input.cwd === 'string') input.cwd = input.cwd.replace(/\\/g, '/');
-      const skip = event === 'pre-tool-use' && !filePath.includes('.specweave/increments/');
+      const tool = typeof input.tool_name === 'string' ? input.tool_name : '';
+      const skip =
+        event === 'pre-tool-use' &&
+        (tool === 'Bash'
+          ? !hasJevGuardMarker(input)
+          : !filePath.includes('.specweave/increments/'));
       return { raw: JSON.stringify(input), skip };
     }
   } catch {

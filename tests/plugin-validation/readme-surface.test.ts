@@ -39,7 +39,7 @@ const removed = new Set(
 );
 
 /** Heading of the section that must advertise exactly the shipped skill directories. */
-const SKILLS_SECTION = '## The ten skills';
+const SKILLS_SECTION = '## The eleven skills';
 /** Heading of the migration section, the one place dead slugs are allowed. */
 const UPGRADE_SECTION = '## Upgrade to 2.0';
 

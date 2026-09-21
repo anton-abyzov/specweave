@@ -723,6 +723,34 @@ export interface TasksConfig {
 /**
  * Main SpecWeave configuration
  */
+/**
+ * Jev (TypeSafe System One) settings, as written in `.specweave/config.json`.
+ *
+ * Every field is optional: `src/core/jev/config.ts` merges this over
+ * `JEV_DEFAULTS`. Jev stays off until `enabled` is explicitly true.
+ * Only env var NAMES live here — never a key value.
+ */
+export interface JevConfigInput {
+  /** Explicit opt-in. Default false. */
+  enabled?: boolean;
+  /** 'openrouter' (default) or 'typesafe'. */
+  provider?: 'openrouter' | 'typesafe';
+  /** Model id, e.g. 'jev-1.13' (openrouter) or 'jev-latest' (typesafe). */
+  model?: string;
+  /** NAME of the environment variable holding the API key. Never the key. */
+  apiKeyEnv?: string;
+  /** Per-request timeout in ms. Default 4000. */
+  timeoutMs?: number;
+  /** Confidence cut-offs for routing and the Bash guard. */
+  thresholds?: { route?: number; guardDeny?: number; guardWarn?: number };
+  /** Opt-in guards. `bash` also needs `.specweave/state/jev-guard.enabled`. */
+  guards?: { bash?: boolean };
+  /** Use Jev for model-tier selection. Default true (only matters when enabled). */
+  modelRouting?: boolean;
+  /** Headless browse loop limits. */
+  browse?: { allowDomains?: string[]; maxSteps?: number };
+}
+
 export interface SpecWeaveConfig {
   /** Config schema version. 2.0 configs carry "2.0". */
   version: string;
@@ -795,6 +823,9 @@ export interface SpecWeaveConfig {
   /** adapters/claude/adapter.ts (`plugins.enabled` list). */
   plugins?: PluginConfig;
 
+  /** Jev (TypeSafe System One) opt-in. Read by core/jev/config.ts. */
+  jev?: JevConfigInput;
+
   // ───────────────────────────────────────────────────────────────────
   // Legacy shapes. Read once by the migrator, then removed from disk.
   // ───────────────────────────────────────────────────────────────────
@@ -835,6 +866,7 @@ export const KNOWN_CONFIG_KEYS = [
   'issueTracker',
   'hooks',
   'plugins',
+  'jev',
 ] as const;
 
 /**

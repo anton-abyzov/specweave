@@ -140,17 +140,17 @@ The default plugin ships two bounded hooks using quoted portable Node commands:
 | `SessionStart` | Supplies a compact pointer to active project work. |
 | `Stop` | Drives explicitly enabled auto mode; ordinary turns return without loading the CLI worker. |
 
-Edit interception and automatic compaction Git snapshots are no longer default hooks. Verification and completion remain portable CLI boundaries. Use `specweave handoff` at a tool change. Compatibility handlers remain available for existing integrations, but are not registered in the default manifest.
+Every hook fails open: any error, timeout or missing configuration returns `{}` and the turn continues. Edit interception and automatic compaction Git snapshots are no longer default hooks. The optional Jev Bash guard is registered per project by `specweave jev setup --guard-bash` (a `PreToolUse` entry for `Bash` in that project's `.claude/settings.json`), never in the default manifest; see [Jev (System One)](/docs/guides/jev-system-one). Verification and completion remain portable CLI boundaries. Use `specweave handoff` at a tool change. Compatibility handlers remain available for existing integrations, but are not registered in the default manifest.
 
 ## Skills
 
-Ten skills ship in the `sw` plugin:
+Eleven skills ship in the `sw` plugin:
 
-`increment` · `do` · `done` · `review` · `team` · `handoff` · `sync` · `auto` · `brainstorm` · `qa`
+`increment` · `do` · `done` · `review` · `team` · `handoff` · `sync` · `auto` · `brainstorm` · `qa` · `jev`
 
-`review` is the merge of the old `grill`, `code-reviewer` and `judge-llm`. `team` is the merge of `team-lead` and `team-merge`. `done`, `handoff` and `auto` carry `disable-model-invocation: true` so the model cannot fire them on its own.
+`review` is the merge of the old `grill`, `code-reviewer` and `judge-llm`. `team` is the merge of `team-lead` and `team-merge`. `done`, `handoff` and `auto` carry `disable-model-invocation: true` so the model cannot fire them on its own. `jev` arrived in 2.2 and delegates closed-set decisions — routing, command safety, text screening, failure triage — to TypeSafe's System One model; see [Jev (System One)](/docs/guides/jev-system-one).
 
-Five standalone skills under `skills/` are distributed through vskill for non-Claude tools, and carry the full manual procedure so they work with no CLI at all: `sw-increment`, `sw-do`, `sw-task`, `sw-review`, `sw-handoff`.
+Six standalone skills under `skills/` are distributed through vskill for non-Claude tools, and carry the full manual procedure so they work with no CLI at all: `sw-increment`, `sw-do`, `sw-task`, `sw-review`, `sw-handoff`, `sw-jev`.
 
 ---
 
@@ -171,11 +171,12 @@ Five standalone skills under `skills/` are distributed through vskill for non-Cl
   "limits": { "activeIncrements": 3 },
   "planning": { "deepInterview": "off" },
   "livingDocs": false,
-  "sync": { "enabled": false }
+  "sync": { "enabled": false },
+  "jev": { "enabled": false }
 }
 ```
 
-`limits.activeIncrements` is **advisory**: exceeding it prints one info note and blocks nothing. `livingDocs` is `false` by default; `"onDone"` regenerates docs when an increment completes. Full key list: [Configuration reference](/docs/reference/configuration).
+`limits.activeIncrements` is **advisory**: exceeding it prints one info note and blocks nothing. `livingDocs` is `false` by default; `"onDone"` regenerates docs when an increment completes. `jev` was added in 2.2 and is off until `specweave jev setup` writes it — see [Jev (System One)](/docs/guides/jev-system-one). Full key list: [Configuration reference](/docs/reference/configuration).
 
 ---
 
@@ -219,7 +220,7 @@ The cuts came out of an audit of 17 auditors across 9 projects and 3 repositorie
 
 The plugin shipped 51 skills. **34 of them were never invoked once** across the audited history, alongside 11 deprecated stubs and 73 legacy command files in a parallel `commands/` namespace. Every one of those was a surface the model had to consider on every turn and a page the docs had to keep true.
 
-2.0 ships 10 skills and no `commands/` namespace. Genuinely optional capabilities (TDD cycles, e2e, debugging, media, releases, skill generation) move to vskill-distributed optional skills rather than sitting in the core plugin.
+2.0 shipped 10 skills and no `commands/` namespace (2.2 added an eleventh, `jev`; the live roster is in [Skills](#skills)). Genuinely optional capabilities (TDD cycles, e2e, debugging, media, releases, skill generation) move to vskill-distributed optional skills rather than sitting in the core plugin.
 
 ### The queued sync mode
 

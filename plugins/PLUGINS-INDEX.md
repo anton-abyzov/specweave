@@ -1,13 +1,13 @@
 # SpecWeave plugins index
 
-**Plugins**: 1 (`sw`) · **Skills**: 10 · **Commands**: 0 · **Hooks**: 4
+**Plugins**: 1 (`sw`) · **Skills**: 11 · **Commands**: 0 · **Hooks**: 2 default
 
 The 1.x `commands/` namespace is gone: anything deterministic is a `specweave`
-CLI subcommand, and the model-judgement procedures are the 10 skills below.
+CLI subcommand, and the model-judgement procedures are the 11 skills below.
 
 | Plugin | Triggers | Description |
 |---|---|---|
-| **specweave** (`sw`) | increment, spec, tasks, plan, implement, close, review, team, handoff, sync, GitHub, Jira, ADO, auto, brainstorm, qa | Increment lifecycle: plan → work the ledger → verify → review → complete, with cross-tool handoff and tracker sync |
+| **specweave** (`sw`) | increment, spec, tasks, plan, implement, close, review, team, handoff, sync, GitHub, Jira, ADO, auto, brainstorm, qa, jev, system one | Increment lifecycle: plan → work the ledger → verify → review → complete, with cross-tool handoff, tracker sync and closed-set decisions delegated to Jev |
 
 ## Quick lookup
 
@@ -23,6 +23,16 @@ CLI subcommand, and the model-judgement procedures are the 10 skills below.
 | "Run until done" | `sw:auto` |
 | "What are our options" | `sw:brainstorm` |
 | "Quality check" / "risk assessment" | `sw:qa` |
+| "Jev" / "system one" / a decision whose answers can all be enumerated first | `sw:jev` |
+
+## Hooks
+
+Two by default, registered in `specweave/hooks/hooks.json` as exec-form
+`node hooks/run.mjs <event>`: `SessionStart` and `Stop`. Each one fails open.
+`PreToolUse` is not a default hook — the Jev Bash guard is turned on per project by
+`specweave jev setup --guard-bash`, which writes `jev.guards.bash`, the marker
+`.specweave/state/jev-guard.enabled`, and a `PreToolUse` entry (matcher `Bash`) in that
+project's `.claude/settings.json`. `--no-guard-bash` removes all three.
 
 ## Not in the plugin
 
@@ -30,4 +40,4 @@ CLI subcommand, and the model-judgement procedures are the 10 skills below.
 and install per-project with vskill. See `skills-optional/README.md`.
 
 Deterministic operations are CLI: `specweave status | task | verify | complete | qa |
-handoff | sync | docs | doctor | gc`.
+handoff | sync | docs | doctor | gc | jev`.

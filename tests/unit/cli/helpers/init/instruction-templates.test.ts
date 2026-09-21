@@ -68,16 +68,23 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     const a = parseTemplate(agents).sections.map(s => `${s.id}${s.required ? '!' : ''}`);
     expect(a).toEqual(c);
     expect(c).toEqual([
-      'header!', 'structure', 'loop!', 'verify!', 'parallel!', 'conventions!', 'umbrella', 'troubleshooting',
+      'header!', 'structure', 'loop!', 'verify!', 'parallel!', 'conventions!', 'umbrella', 'jev', 'troubleshooting',
     ]);
   });
 
-  it('the umbrella section is conditional on the workspace flag in both templates', () => {
+  it.each([['umbrella'], ['jev']])('the %s section is conditional on its own flag in both templates', (id) => {
     for (const [name, content] of [['CLAUDE.md.template', claude], ['AGENTS.md.template', agents]] as const) {
-      const umbrella = parseTemplate(content).sections.find(s => s.id === 'umbrella');
-      expect(umbrella?.when, name).toBe('umbrella');
-      expect(umbrella?.required, name).toBe(false);
+      const section = parseTemplate(content).sections.find(s => s.id === id);
+      expect(section?.when, `${name} ${id}`).toBe(id);
+      expect(section?.required, `${name} ${id}`).toBe(false);
     }
+  });
+
+  it('the conditional jev section is byte-identical in both templates', () => {
+    const body = (content: string): string | undefined =>
+      parseTemplate(content).sections.find(s => s.id === 'jev')?.content;
+    expect(body(claude)).toBeDefined();
+    expect(body(agents)).toBe(body(claude));
   });
 
   it.each([
@@ -106,7 +113,11 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     ['CLAUDE.md.template', claude],
     ['AGENTS.md.template', agents],
   ])('%s keeps the managed block under one page and the Commands/Project notes outside it', (_name, content) => {
-    expect(content.split('\n').length).toBeLessThanOrEqual(90);
+    // "One page" is the page a project actually renders: `umbrella` and `jev` are
+    // opt-in sections and do not count against the budget.
+    const unconditional = parseTemplate(content).sections.filter(s => !s.when);
+    const rendered = [...unconditional.map(s => s.content), parseTemplate(content).tail].join('\n\n');
+    expect(rendered.split('\n').length).toBeLessThanOrEqual(90);
     const t = parseTemplate(content);
     expect(t.tail).toMatch(/^## Commands\n/);
     expect(t.tail).toContain('## Project notes');

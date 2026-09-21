@@ -1,7 +1,7 @@
 {
   "name": "sw",
-  "description": "Portable intent and verified progress across coding tools. Ten focused workflow skills, two default lifecycle hooks, and a deterministic CLI and live local dashboard.",
-  "version": "2.1.0",
+  "description": "Portable intent and verified progress across coding tools. Eleven focused workflow skills, two default lifecycle hooks, and a deterministic CLI and live local dashboard.",
+  "version": "2.2.0",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -20,6 +20,8 @@
     "handoff",
     "github",
     "jira",
-    "azure-devops"
+    "azure-devops",
+    "jev",
+    "system-one"
   ]
 }
