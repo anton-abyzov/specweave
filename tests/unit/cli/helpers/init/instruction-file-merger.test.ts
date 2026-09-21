@@ -47,9 +47,9 @@ function oneX(sections: Array<[string, string]>, user: string[] = [], version = 
 describe('parseTemplate', () => {
   it('splits sections and keeps the user-owned tail', () => {
     const t = claudeTemplate();
-    expect(t.sections.map(s => s.id)).toEqual(['header', 'structure', 'loop', 'verify', 'parallel', 'conventions', 'umbrella', 'troubleshooting']);
+    expect(t.sections.map(s => s.id)).toEqual(['header', 'structure', 'loop', 'verify', 'parallel', 'conventions', 'umbrella', 'jev', 'troubleshooting']);
     expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header', 'loop', 'verify', 'parallel', 'conventions']);
-    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella']]);
+    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella'], ['jev', 'jev']]);
     expect(t.tail).toMatch(/^## Commands/);
     expect(t.tail).toContain('## Project notes');
     expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'CLAUDE.md.template'), 'utf-8'))).toEqual(t.sections);

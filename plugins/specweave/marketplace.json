@@ -62,6 +62,12 @@
       "path": "skills/qa/SKILL.md",
       "description": "Risk-scored quality assessment via specweave qa: verdict, blockers, optional export to tasks.md.",
       "deprecated": false
+    },
+    {
+      "name": "sw:jev",
+      "path": "skills/jev/SKILL.md",
+      "description": "Delegate closed-set decisions to Jev (TypeSafe System One) instead of a frontier turn: routing, command safety, text screening, failure triage.",
+      "deprecated": false
     }
   ],
   "optionalSkills": {

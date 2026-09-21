@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
+set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -25,6 +25,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a save -d "Smart save - auto-generate commit message, sync with remote, commit and push"
@@ -165,6 +166,27 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l clipboard -d "
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l non-specweave -d "Force the .handoff/ fallback even inside a SpecWeave workspace"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l out -d "Override the doc output path"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l json -d "Output the full result as JSON (for programmatic use)"
+
+# jev
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l provider -d "setup: openrouter | typesafe"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l model -d "setup: model id (defaults to the provider default)"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l guard-bash -d "setup: enable the opt-in PreToolUse Bash guard"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l no-guard-bash -d "setup: disable the Bash guard"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l disable -d "setup: turn Jev off for this project"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l state -d "ask: state as JSON, plain text, @file or - for stdin"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l questions -d "ask: questions as JSON or @file"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l choice -d "ask: shorthand for one choice question"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l option -d "ask: one --choice option (repeatable)"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l noul -d "ask: shorthand for one noul (true/false probability) question"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l increment -d "task: increment id (defaults to the active one)"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l goal -d "browse: what to accomplish"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l url -d "browse: starting URL"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l allow-domain -d "browse: allowed origin (repeatable)"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l input -d "browse: text the loop may type (repeatable)"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l max-steps -d "browse: step limit"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l screenshot-dir -d "browse: where to write screenshots"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l allow-sensitive -d "browse: allow clicking sensitive controls"
 
 # next-id
 complete -c specweave -n "__fish_seen_subcommand_from next-id" -l project -d "Project ID for per-project collision prevention"

@@ -1,7 +1,7 @@
 /**
  * Plugin surface guard (2.0).
  *
- * The `sw` plugin is exactly 10 skills, 1 closer agent and no commands/ namespace.
+ * The `sw` plugin is exactly 11 skills, 1 closer agent and no commands/ namespace.
  * Every 1.x validation suite in this folder asserted the opposite surface (51 skills,
  * 73 commands, per-provider sync skills, judge-llm, team-lead/team-build) and was
  * deleted with it; this file is the replacement. Reference-level checks
@@ -19,7 +19,7 @@ const pluginDir = join(projectRoot, 'plugins', 'specweave');
 const skillsDir = join(pluginDir, 'skills');
 
 const CORE_SKILLS = [
-  'auto', 'brainstorm', 'do', 'done', 'handoff', 'increment', 'qa', 'review', 'sync', 'team',
+  'auto', 'brainstorm', 'do', 'done', 'handoff', 'increment', 'jev', 'qa', 'review', 'sync', 'team',
 ];
 
 /** Skills whose side effects are too big to fire on a model's hunch. */
@@ -30,7 +30,7 @@ function skillBody(name: string): string {
 }
 
 describe('sw plugin surface', () => {
-  it('ships exactly the 10 core skills', () => {
+  it('ships exactly the 11 core skills', () => {
     const dirs = readdirSync(skillsDir, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)

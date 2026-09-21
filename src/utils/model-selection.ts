@@ -9,6 +9,9 @@
  * - Opus: Default for all complex work, architecture, creative problem-solving
  */
 
+import type { JevClient } from '../core/jev/client.js';
+import type { classifyTask } from '../core/jev/decide.js';
+
 export type ModelTier = 'haiku' | 'sonnet' | 'opus';
 
 export interface Task {
@@ -280,4 +283,125 @@ export function calculateCostSavings(
     savings,
     savingsPercent
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Jev-assisted tier selection (opt-in, falls back to the keyword heuristic)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Where a tier recommendation came from.
+ * - `jev`       — TypeSafe System One classified the task
+ * - `heuristic` — the keyword scorer in {@link detectModelForTask}
+ */
+export type ModelTierSource = 'jev' | 'heuristic';
+
+/** {@link DetectionResult} plus the decision's provenance. */
+export interface TierSelection extends DetectionResult {
+  source: ModelTierSource;
+  /** Latency of the Jev call, when one happened. */
+  latencyMs?: number;
+  /** Cost of the Jev call in USD, when reported. */
+  cost?: number;
+}
+
+/**
+ * Injection points for tests and callers that already hold a client/config.
+ * Nothing here is required: the defaults read the project config.
+ */
+export interface SelectModelTierDeps {
+  /** Project root used to load `.specweave/config.json`. */
+  projectRoot?: string;
+  /** Force the Jev path on/off (skips config loading when provided). */
+  enabled?: boolean;
+  /** Force modelRouting on/off (skips config loading when provided). */
+  modelRouting?: boolean;
+  /** Confidence floor below which the tier falls back to opus. */
+  routeThreshold?: number;
+  /** A ready client. `null` means "no client available" (heuristic path). */
+  client?: JevClient | null;
+  /** Override the classifier (tests). */
+  classify?: typeof classifyTask;
+}
+
+/**
+ * Pick a model tier for a task, preferring Jev when the project opted in.
+ *
+ * Behaviour (AC-07):
+ * - Jev off, no key, error, timeout → the keyword heuristic, `source: 'heuristic'`
+ * - Jev on → `{ model: tier, reasoning: 'jev:<complexity>', source: 'jev' }`
+ * - Jev on but confidence < `thresholds.route` → opus, `reasoning: 'jev:low-confidence'`
+ *
+ * Never throws: every failure path degrades to the heuristic.
+ */
+export async function selectModelTierForTask(
+  task: Task,
+  options: {
+    specDetailLevel?: number;
+    hasDetailedPlan?: boolean;
+    isArchitectural?: boolean;
+  } = {},
+  deps: SelectModelTierDeps = {}
+): Promise<TierSelection> {
+  const heuristic = (): TierSelection => ({
+    ...detectModelForTask(task, options),
+    source: 'heuristic',
+  });
+
+  try {
+    const [cfgMod, clientMod, decideMod] = await Promise.all([
+      import('../core/jev/config.js'),
+      import('../core/jev/client.js'),
+      import('../core/jev/decide.js'),
+    ]);
+
+    let enabled = deps.enabled;
+    let modelRouting = deps.modelRouting;
+    let routeThreshold = deps.routeThreshold;
+
+    if (enabled === undefined || modelRouting === undefined || routeThreshold === undefined) {
+      const cfg = cfgMod.loadJevConfig(deps.projectRoot);
+      if (enabled === undefined) enabled = cfg.enabled;
+      if (modelRouting === undefined) modelRouting = cfg.modelRouting;
+      if (routeThreshold === undefined) routeThreshold = cfg.thresholds.route;
+    }
+
+    if (!enabled || !modelRouting) return heuristic();
+
+    const client =
+      deps.client !== undefined ? deps.client : clientMod.createJevClient(deps.projectRoot);
+    if (!client) return heuristic();
+
+    const classify = deps.classify ?? decideMod.classifyTask;
+    const decision = await classify(client, {
+      id: task.id,
+      title: task.content,
+      body: task.description ?? '',
+      acs: task.acceptanceCriteria ?? [],
+    });
+
+    if (!decision.available) return heuristic();
+
+    if (decision.confidence < routeThreshold) {
+      return {
+        model: 'opus',
+        confidence: decision.confidence,
+        reasoning: 'jev:low-confidence',
+        source: 'jev',
+        latencyMs: decision.latencyMs,
+        cost: decision.cost,
+      };
+    }
+
+    return {
+      model: decision.tier,
+      confidence: decision.confidence,
+      reasoning: `jev:${decision.complexity}`,
+      source: 'jev',
+      latencyMs: decision.latencyMs,
+      cost: decision.cost,
+    };
+  } catch {
+    return heuristic();
+  }
 }

@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/skills-10-8B5CF6" alt="10 skills" />
+  <img src="https://img.shields.io/badge/skills-11-8B5CF6" alt="11 skills" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
@@ -45,9 +45,9 @@ Start with a short intent, see what is in progress, and open the linked specific
 
 Everything lives in `.specweave/increments/NNNN-slug/`: `spec.md`, `tasks.md` (+ the rendered `SW:BOARD`), `ledger.jsonl`, `handoff.md`, `reports/`.
 
-## The ten skills
+## The eleven skills
 
-The CLI is the product and it runs in any AI tool or in CI. These ten focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
+The CLI is the product and it runs in any AI tool or in CI. These eleven focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
 
 | Skill | Use it for |
 |-------|------------|
@@ -61,6 +61,7 @@ The CLI is the product and it runs in any AI tool or in CI. These ten focused sk
 | `sw:done` | Verify, review check, `specweave complete`. |
 | `sw:sync` | GitHub, Jira and Azure DevOps: push, pull, status, setup. |
 | `sw:handoff` | A one-page, secret-scrubbed continuation doc. |
+| `sw:jev` | Closed-set decisions in ~250 ms via Jev (TypeSafe System One). |
 
 Five longer procedures (tdd-cycle, e2e, debug, diagrams, release-expert) live in `skills-optional/` and install on demand with [vskill](https://www.npmjs.com/package/vskill).
 
@@ -140,7 +141,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**10 skills, not 51** — see [The ten skills](#the-ten-skills) above. Plus five standalone skills for non-Claude tools.
+**11 skills, not 51** — see [The eleven skills](#the-eleven-skills) above. Plus six standalone skills for non-Claude tools.
 
 **External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in.
 

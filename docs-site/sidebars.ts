@@ -132,6 +132,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {type: 'doc', id: 'guides/github-sync', label: 'GitHub Sync'},
         {type: 'doc', id: 'guides/jira-ado-sync', label: 'Jira & Azure DevOps'},
+        {type: 'doc', id: 'guides/jev-system-one', label: 'Jev (System One)'},
         {type: 'doc', id: 'reference/sync-cli', label: 'specweave sync (CLI)'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Other AI Tools'},
         {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Cross-Tool Handoff'},

@@ -2,9 +2,11 @@
 /**
  * lint-skills — zero-dependency guard for the shipped skill surface.
  *
- * The 2.0 plugin is 10 skills and nothing else. This linter keeps it that way and
- * keeps every reference inside a skill resolvable, because a skill that names a
- * command or a sibling skill that does not exist sends the model down a dead end.
+ * The plugin is a small set of skills and nothing else -- the roster is whatever
+ * lives in plugins/specweave/skills/, read fresh on every run so no count in a
+ * comment can go stale. This linter keeps every reference inside a skill
+ * resolvable, because a skill that names a command or a sibling skill that does
+ * not exist sends the model down a dead end.
  *
  * Rules
  *   1. no `name:` frontmatter in a shipped skill (the directory name IS the skill name)
