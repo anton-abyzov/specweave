@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.272" sections="header,lsp,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.272" sections="header,lsp,start,autodetect,metarule,rules,workflow,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:header version="1.0.272" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
@@ -31,24 +31,17 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 <!-- SW:SECTION:metarule version="1.0.272" -->
 ## Workflow Orchestration
 
-### 1. Plan Mode Default (MANDATORY)
-- **ALWAYS enter plan mode** for ANY non-trivial task (3+ steps or architectural decisions)
-- Call `EnterPlanMode` BEFORE writing specs, plans, or task breakdowns
-- Do NOT start implementation until the plan is reviewed and approved
-- If something goes sideways, **STOP and re-plan** -- do not keep pushing
-- Write detailed specs upfront to reduce ambiguity
-- `/sw:increment` REQUIRES plan mode -- never skip it
+### 1. Plan mode first
+
+Enter plan mode (`EnterPlanMode`) before writing a spec, plan, or task breakdown, or before starting any non-trivial task (3+ steps or an architectural decision), and wait for approval before implementing — the spec is what the user approves, so writing code first makes the approval meaningless. `/sw:increment` starts in plan mode; do not skip it. Write the spec in enough detail that the ambiguity is resolved on paper rather than mid-task. If the approach turns out wrong mid-task, stop and re-plan.
 
 ### 2. Subagent Strategy
-- Use subagents liberally to keep main context clean
-- Offload research, exploration, and parallel analysis to subagents
+- Offload research, exploration, and parallel analysis to subagents — it keeps the main context clean
 - One task per subagent for focused execution
-- Append "use subagents" to requests for safe parallelization
 - In team mode, sub-agents submit plans for team lead review before implementing
 
 ### 3. Verification Before Done
 - Never mark a task complete without proving it works
-- Ask yourself: **"Would a staff engineer approve this?"**
 - Run tests, check logs, demonstrate correctness
 
 ### 5. Auto-Closure After Implementation (MANDATORY)
@@ -84,37 +77,31 @@ Good: npm run build → node script.js → Success
 <!-- SW:SECTION:workflow version="1.0.272" -->
 ## Workflow
 
-`/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
+`/sw:increment "X"` → `/sw:do` → `specweave status` → `/sw:done 0001`
 
 | Cmd | Action |
 |-----|--------|
 | `/sw:increment` | Plan feature |
 | `/sw:do` | Execute tasks |
 | `/sw:auto` | Autonomous execution |
-| `/sw:auto-status` | Check auto session |
-| `/sw:cancel-auto` | EMERGENCY ONLY manual cancel |
-| `/sw:validate` | Quality check |
+| `/sw:review` | Adversarial review before closing |
 | `/sw:done` | Close |
-| `/sw:progress-sync` | Sync progress to all external tools |
-| `/sw-github:push` | Push progress to GitHub |
+| `/sw:sync` | Sync progress to GitHub / Jira / ADO |
+| `/sw:handoff` | Hand off to another tool or machine |
+| `/sw:qa` | Risk-scored quality assessment |
+| `specweave status` | Task completion overview |
+| `specweave verify <id>` | Run build/test/lint, write verify.json |
+| `specweave auto-status` / `cancel-auto` | Inspect / stop an auto session |
 
-**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
+**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `specweave status` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
-
-<!-- SW:SECTION:reflect version="1.0.272" -->
-## Skill Memories
-
-SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
-
-**Disable**: Set `"reflect": { "enabled": false }` in `.specweave/config.json`
-<!-- SW:END:reflect -->
 
 <!-- SW:SECTION:context version="1.0.272" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
 
-**Load context**: `/sw:docs <topic>` loads relevant living docs into conversation
+**Load context**: `specweave docs` previews and validates the living docs
 <!-- SW:END:context -->
 
 <!-- SW:SECTION:structure version="1.0.272" -->
@@ -151,7 +138,7 @@ Before CLI tools, check existing config (`grep -q` only — never display values
 <!-- SW:SECTION:syncing version="1.0.272" -->
 ## External Sync
 
-Primary: `/sw:progress-sync`. Individual: `/sw-github:push`, `/sw-github:close`. Mapping: Feature→Milestone | Story→Issue | Task→Checkbox.
+Primary: `/sw:sync`. Direct: `specweave sync push [id]`, `specweave sync status`, `specweave sync setup`. Mapping: Feature→Milestone | Story→Issue | Task→Checkbox.
 <!-- SW:END:syncing -->
 
 <!-- SW:SECTION:testing version="1.0.272" -->
@@ -163,11 +150,10 @@ BDD in tasks.md | Unit >80% | `.test.ts` (Vitest) | ESM mocking: `vi.hoisted()` 
 <!-- SW:SECTION:tdd version="1.0.272" -->
 ## TDD
 
-When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Use `/sw:tdd-cycle`. Enforcement via `testing.tddEnforcement` (strict|warn|off).
+When `testing.mode: "TDD"` in config.json: RED→GREEN→REFACTOR, described inside `/sw:do`. The standalone `tdd-cycle` skill moved to `skills-optional/` in 2.0: `npx vskill install anton-abyzov/specweave/skills-optional/tdd-cycle`.
 <!-- SW:END:tdd -->
 
 <!-- SW:SECTION:api version="1.0.272" -->
-<!-- API: Enable `apiDocs` in config.json. Commands: /sw:api-docs -->
 <!-- SW:END:api -->
 
 <!-- SW:SECTION:limits version="1.0.272" -->
@@ -183,7 +169,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 |-------|-----|
 | Skills missing | Restart Claude Code |
 | Plugins outdated | `specweave refresh-plugins` |
-| Out of sync | `/sw:sync-progress` |
+| Out of sync | `specweave sync push <id>` |
 | Session stuck | `rm -f .specweave/state/*.lock` + restart |
 <!-- SW:END:troubleshooting -->
 
@@ -199,9 +185,8 @@ Plugins load automatically. Manual: `specweave refresh-plugins` or `claude plugi
 1. **Spec-first**: `/sw:increment` before coding
 2. **Docs = truth**: Specs guide implementation
 3. **Simplicity First**: Minimal code, minimal impact
-4. **No Laziness**: Root causes, senior standards
+4. **Root causes**: fix the cause, not the symptom; no TODO-for-later
 5. **DRY**: Don't Repeat Yourself — flag and eliminate repetitions aggressively
-6. **Plan Review**: Review the plan thoroughly before making any code changes
 <!-- SW:END:principles -->
 
 <!-- SW:SECTION:linking version="1.0.272" -->
@@ -221,7 +206,7 @@ CLI tools first (`gh`, `wrangler`, `supabase`) → MCP for complex integrations.
 <!-- SW:SECTION:auto version="1.0.272" -->
 ## Auto Mode
 
-`/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency)
+`/sw:auto` (start) | `specweave auto-status` (check) | `specweave cancel-auto` (emergency)
 
 Pattern: IMPLEMENT → TEST → FAIL? → FIX → PASS → NEXT. STOP & ASK if spec conflicts or ambiguity.
 <!-- SW:END:auto -->

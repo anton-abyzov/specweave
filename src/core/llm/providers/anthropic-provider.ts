@@ -12,6 +12,11 @@ import type {
   StructuredOptions,
 } from '../types.js';
 import { MODEL_PRICING, MODEL_ALIASES, resolveModelAlias } from '../types.js';
+import {
+  acceptsSamplingParams,
+  buildOutputConfig,
+  supportsStructuredOutputs,
+} from '../model-capabilities.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
@@ -22,6 +27,7 @@ export interface AnthropicProviderConfig {
   apiKey: string;
   model?: string;
   maxTokens?: number;
+  /** Only forwarded to models that still accept sampling params - see model-capabilities.ts */
   temperature?: number;
   baseUrl?: string;
   logger?: Logger;
@@ -71,12 +77,18 @@ export class AnthropicProvider implements LLMProvider {
    */
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    // Resolve model alias (opus → claude-opus-4-6)
+    // Resolve model alias (opus → claude-opus-4-8)
     const model = resolveModelAlias(options.model || this.defaultModel);
     const maxTokens = options.maxTokens || this.maxTokens;
-    const temperature = options.temperature ?? this.temperature;
     const retries = options.retries ?? 2;
     const timeout = options.timeout ?? 60000;
+
+    // Normalise and gate `output_config` here so every caller is covered, not just
+    // analyzeStructured(). A `format` schema must pin `additionalProperties: false`
+    // on every object node or the API 400s, and structured outputs are unavailable
+    // on some current models (notably Sonnet 4.6) - drop the format there rather
+    // than sending a request that cannot succeed.
+    const outputConfig = buildOutputConfig(model, options.outputConfig);
 
     let lastError: Error | null = null;
     let wasRetry = false;
@@ -89,12 +101,18 @@ export class AnthropicProvider implements LLMProvider {
           { role: 'user', content: prompt },
         ];
 
+        // `temperature` is forwarded only where the model still accepts it. Opus
+        // 4.7+ and Sonnet 5 reject sampling params with a 400, but the `sonnet`
+        // and `haiku` aliases resolve to models that honour them, so dropping it
+        // unconditionally would silently discard a caller's determinism setting.
+        const temperature = options.temperature ?? this.temperature;
         const response = await client.messages.create({
           model,
           max_tokens: maxTokens,
-          temperature,
           system: options.systemPrompt,
           messages,
+          ...(acceptsSamplingParams(model) ? { temperature } : {}),
+          ...(outputConfig ? { output_config: outputConfig } : {}),
         });
 
         const content = response.content
@@ -149,17 +167,33 @@ export class AnthropicProvider implements LLMProvider {
     prompt: string,
     options: StructuredOptions<T>
   ): Promise<{ data: T; usage: AnalyzeResult['usage']; estimatedCost: number }> {
-    // Add JSON instruction to prompt
-    const jsonPrompt = `${prompt}
+    // Structured outputs enforce the schema server-side, but only where the model
+    // supports them - `MODEL_ALIASES.sonnet` resolves to Sonnet 4.6, which does
+    // not. Fall back to asking for JSON in the prompt there, since extractJson()
+    // below only rescues an unclean response body, never a rejected request.
+    const model = resolveModelAlias(options.model || this.defaultModel);
+    const structured = supportsStructuredOutputs(model);
 
-IMPORTANT: Respond with valid JSON matching this schema:
-${JSON.stringify(options.schema, null, 2)}
+    const jsonPrompt = structured
+      ? prompt
+      : `${prompt}
 
-Return ONLY the JSON object, no markdown formatting or explanation.`;
+Respond with JSON matching this schema:
+${JSON.stringify(options.schema, null, 2)}`;
 
     const result = await this.analyze(jsonPrompt, {
       ...options,
-      temperature: options.temperature ?? 0.1, // Lower temp for structured output
+      // Lower temperature for JSON output; analyze() drops it on models that
+      // reject sampling params, so no model guard is needed here.
+      temperature: options.temperature ?? 0.1,
+      ...(structured
+        ? {
+            outputConfig: {
+              ...options.outputConfig,
+              format: { type: 'json_schema' as const, schema: options.schema },
+            },
+          }
+        : {}),
     });
 
     // Extract required fields from schema for validation
@@ -223,7 +257,7 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
       const client = await this.getClient();
 
       // Simple ping - count tokens for minimal text
-      await client.messages.count_tokens({
+      await client.messages.countTokens({
         model: this.defaultModel,
         messages: [{ role: 'user', content: 'ping' }],
       });

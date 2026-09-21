@@ -20,6 +20,8 @@ import { appendFileSync } from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { resolveModelAlias } from '../llm/types.js';
+import { supportsAdaptiveThinking } from '../llm/model-capabilities.js';
 import { loadStaticContext, type CacheBlock } from '../cache/static-context-loader.js';
 import { emitRefinementIfAttributable } from '../skill-signal-emit.js';
 import type { SignalSeverity } from '../../types/skill-signals.js';
@@ -87,31 +89,7 @@ export interface JudgeOptions {
   logFile?: string;
   model?: string;  // Default opus
   projectRoot?: string;  // Project root for config lookup (defaults to cwd)
-  thinkingBudget?: ThinkingBudget;  // "adaptive" (default) — 4.7 uses prompt hint; "legacy" — pre-4.7 behavior
-}
-
-/**
- * Thinking-budget mode.
- * - "adaptive": no API `thinking` parameter; rely on prompt-hint adaptive thinking (4.7+ default)
- * - "legacy": pre-4.7 behavior, passes `thinking: { type: "enabled", budget_tokens }` on non-4.7 models
- */
-export type ThinkingBudget = 'adaptive' | 'legacy';
-
-/**
- * Check if a model ID belongs to the Opus 4.7 family or newer.
- * 4.7+ models drop the `thinking` API parameter in favor of adaptive thinking
- * triggered by prompt hints.
- */
-export function isOpus47Family(modelId: string): boolean {
-  if (!modelId) return false;
-  const m = /^claude-opus-(\d+)-(\d+)/.exec(modelId);
-  if (!m) return false;
-  const major = Number(m[1]);
-  const minor = Number(m[2]);
-  if (Number.isNaN(major) || Number.isNaN(minor)) return false;
-  if (major > 4) return true;
-  if (major === 4 && minor >= 7) return true;
-  return false;
+  effort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';  // Thinking depth, default "high"
 }
 
 /**
@@ -122,7 +100,7 @@ export interface BuildApiRequestInput {
   system: string;
   userPrompt: string;
   maxTokens: number;
-  thinkingBudget?: ThinkingBudget;
+  effort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
   /**
    * Optional ephemeral cache_control blocks to prepend to the user message
    * content. Populated from {@link loadStaticContext} so CLAUDE.md, config
@@ -134,9 +112,19 @@ export interface BuildApiRequestInput {
 /**
  * Construct the Anthropic API request body for a judge call.
  *
- * Model-version guard:
- * - Opus 4.7 family → never includes `thinking` (adaptive-thinking prompt hint carries the load)
- * - Legacy models  → includes `thinking` only when `thinkingBudget === "legacy"`
+ * Thinking:
+ * - Adaptive thinking IS an API parameter — `thinking: { type: "adaptive" }` is
+ *   sent on every model that accepts it (Opus and Sonnet 4.6+), so the judge
+ *   never runs with thinking off on the models it is meant for.
+ * - `thinking: { type: "enabled", budget_tokens }` is rejected (400) on 4.7+ and
+ *   is never sent. Depth is controlled by `output_config.effort`
+ *   ('low' | 'medium' | 'high' | 'xhigh' | 'max', default 'high').
+ * - Haiku 4.5 predates adaptive thinking and rejects both parameters, so they
+ *   are omitted there rather than turned into a 400 and a pattern-match fallback.
+ *
+ * Model:
+ * - `model` may be an alias ("opus"); it is resolved to a real model ID so the
+ *   request always carries something the API accepts.
  *
  * Prompt caching (0669 Wave 2):
  * - When `cacheBlocks` is non-empty, its entries are prepended to the user
@@ -149,7 +137,7 @@ export function buildJudgeApiRequest(input: BuildApiRequestInput): Record<string
     system,
     userPrompt,
     maxTokens,
-    thinkingBudget = 'adaptive',
+    effort = 'high',
     cacheBlocks = [],
   } = input;
 
@@ -166,15 +154,17 @@ export function buildJudgeApiRequest(input: BuildApiRequestInput): Record<string
       ? [{ role: 'user', content: userContent }]
       : [{ role: 'user', content: userPrompt }];
 
+  const resolvedModel = resolveModelAlias(model);
   const request: Record<string, unknown> = {
-    model,
+    model: resolvedModel,
     max_tokens: maxTokens,
     system,
     messages,
   };
 
-  if (!isOpus47Family(model) && thinkingBudget === 'legacy') {
-    request.thinking = { type: 'enabled', budget_tokens: Math.max(1024, Math.floor(maxTokens / 2)) };
+  if (supportsAdaptiveThinking(resolvedModel)) {
+    request.thinking = { type: 'adaptive' };
+    request.output_config = { effort };
   }
 
   return request;
@@ -295,7 +285,8 @@ const DOMAIN_CRITERIA: Record<string, DomainCriteria> = {
  */
 const JUDGE_SYSTEM_PROMPT = `You are an expert code reviewer acting as a JUDGE for SpecWeave's self-validating skills system.
 
-Your role: Evaluate code quality, spec alignment, and best practices with BRUTAL HONESTY.
+Evaluate code quality, spec alignment, and best practices. Score against the bar below, not
+against how much effort the work appears to have taken.
 
 ## Evaluation Framework
 
@@ -304,7 +295,7 @@ Score the work on a 0-100 scale:
 - 70-89: CONCERNS - Good but has issues that should be addressed
 - 0-69: FAIL - Significant problems, needs rework
 
-## You MUST Check
+## What to check
 
 1. **Spec Alignment**: Does the implementation match requirements?
 2. **Code Quality**: Clean, readable, maintainable?
@@ -328,7 +319,7 @@ Return ONLY valid JSON:
   ]
 }
 
-BE STRICT. Production code quality matters. Don't be afraid to FAIL subpar work.`;
+The score gates a release. Work that would not pass a production review scores below 70.`;
 
 /**
  * Progress logger for visibility
@@ -406,12 +397,14 @@ export class SkillJudge {
   private verbose: boolean;
   private logPath: string;
   private model: string;
+  private effort: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
   private projectRoot: string;
 
   constructor(options?: JudgeOptions) {
     this.timeout_ms = options?.timeout_ms ?? 60000;  // 60s default
     this.verbose = options?.verbose ?? false;
-    this.model = options?.model ?? 'opus';  // Use generic model name
+    this.model = options?.model ?? 'opus';  // Use generic model name (resolved at request time)
+    this.effort = options?.effort ?? 'high';
     this.projectRoot = options?.projectRoot ?? resolveEffectiveRoot();
 
     // Default log path
@@ -475,7 +468,10 @@ export class SkillJudge {
       model: this.model,
       system: JUDGE_SYSTEM_PROMPT,
       userPrompt,
-      maxTokens: 2000,
+      // Adaptive thinking bills its tokens against max_tokens, so the JSON verdict
+      // needs headroom beyond what the thinking itself consumes.
+      maxTokens: 8000,
+      effort: this.effort,
       cacheBlocks,
     });
 
@@ -539,6 +535,9 @@ export class SkillJudge {
    * Build the evaluation prompt
    */
   private buildPrompt(input: JudgeInput, criteria: DomainCriteria): string {
+    const CODE_CHANGES_LIMIT = 40000;
+    const omitted = Math.max(0, input.codeChanges.length - CODE_CHANGES_LIMIT);
+
     const parts: string[] = [
       `## Domain: ${input.domain.toUpperCase()}`,
       '',
@@ -547,9 +546,17 @@ export class SkillJudge {
       '',
       `## Code Changes`,
       '```',
-      input.codeChanges.slice(0, 10000),  // Limit to 10k chars
+      input.codeChanges.slice(0, CODE_CHANGES_LIMIT),
       '```',
     ];
+
+    // Never truncate silently — tell the judge it is scoring a partial diff.
+    if (omitted > 0) {
+      parts.push(
+        '',
+        `NOTE: the diff was truncated — ${omitted} character(s) were omitted after the first ${CODE_CHANGES_LIMIT}. You are scoring a partial diff.`,
+      );
+    }
 
     if (input.specRequirements) {
       parts.push('', '## Spec Requirements', input.specRequirements);
@@ -566,8 +573,6 @@ export class SkillJudge {
     for (const c of criteria.criteria) {
       parts.push(`- ${c}`);
     }
-
-    parts.push('', 'Evaluate the code against ALL criteria. Be thorough and strict.');
 
     return parts.join('\n');
   }
@@ -695,7 +700,7 @@ export class SkillJudge {
       timestamp: new Date().toISOString(),
       verdict: verdictMap[result.verdict] ?? result.verdict,
       score: result.score,
-      mode: this.client ? 'ultrathink' : 'pattern-match',
+      mode: this.client ? 'adaptive-thinking' : 'pattern-match',
       timedOut: result.timedOut,
       duration_ms: result.duration_ms,
       consentStatus,

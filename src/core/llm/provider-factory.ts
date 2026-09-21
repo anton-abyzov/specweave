@@ -152,7 +152,7 @@ async function createClaudeCodeProvider(
   }
 
   return new ClaudeCodeProvider({
-    model: config.model || 'opus',  // Opus 4.6 by default for best analysis quality
+    model: config.model || 'opus',  // Opus 4.8 by default for best analysis quality
     maxTokens: config.maxTokensPerRequest,
     logger,
   });
