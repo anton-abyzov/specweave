@@ -169,7 +169,7 @@ When `testing.mode: "TDD"` in config.json: RED→GREEN→REFACTOR, described ins
 |-------|-----|
 | Skills missing | Restart Claude Code |
 | Plugins outdated | `specweave refresh-plugins` |
-| Out of sync | `specweave sync-progress` |
+| Out of sync | `specweave sync push <id>` |
 | Session stuck | `rm -f .specweave/state/*.lock` + restart |
 <!-- SW:END:troubleshooting -->
 

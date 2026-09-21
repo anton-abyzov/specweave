@@ -119,16 +119,14 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **After EVERY task completion:**
 1. Update tasks.md: `[ ] pending` → `[x] completed`
 2. Update spec.md ACs if satisfied: `[ ] AC` → `[x] AC`
-3. Run `specweave sync-progress`
-4. Run `specweave sync push <id>` (if a tracker is configured)
+3. Run `specweave sync push <id>` (syncs progress and living docs, then the tracker if one is configured)
 
 **After all ACs for a User Story are done:**
-- Run `specweave sync-living-docs`
+- Run `specweave docs sync <id>`
 
 **After increment completion:**
 1. `specweave verify <id>`
-2. `specweave sync-living-docs`
-3. `specweave sync push <id>` (closes the tracker issue)
+2. `specweave sync push <id>` (syncs living docs and closes the tracker issue)
 
 **Session start:**
 1. `specweave jobs` (check background jobs)
@@ -175,8 +173,7 @@ Use `--session-id <id>` to create an isolated per-session state directory.
 specweave session end
 ```
 
-Replaces the former Stop hook (which had 3 sub-handlers: reflect, auto, sync). Call at the end of each AI session. Performs:
-- Checks reflect config and logs reflection intent (stop-reflect)
+Replaces the former Stop hook (auto and sync sub-handlers). Call at the end of each AI session. Performs:
 - Scans pending auto-mode tasks and logs progress (stop-auto)
 - Deduplicates and flushes pending sync events (stop-sync)
 
@@ -193,15 +190,15 @@ Use `--dry-run` to preview what would be flushed without clearing the queue.
 ### Analytics Push
 
 ```bash
-specweave analytics push --type <skill|agent> --name <name>
+specweave analytics-push --type <skill|agent> --name <name>
 ```
 
 Replaces the former PostToolUse analytics hook. Call after skill or agent invocations to record usage events.
 
 Examples:
 ```bash
-specweave analytics push --type skill --name sw:increment
-specweave analytics push --type agent --name general
+specweave analytics-push --type skill --name sw:increment
+specweave analytics-push --type agent --name general
 ```
 
 ### Session Compact
@@ -235,17 +232,16 @@ Agent definitions live in `plugins/specweave/agents/`. The team-lead orchestrato
 | Level | Location | Update Method |
 |-------|----------|---------------|
 | **Source** | tasks.md + spec.md | Edit directly |
-| **Derived** | .specweave/docs/internal/specs/ | `specweave sync-living-docs` |
+| **Derived** | .specweave/docs/internal/specs/ | `specweave docs sync` |
 | **Mirror** | GitHub/Jira/ADO | `sw:sync` (or `specweave sync push`) |
 
-**Update order**: ALWAYS tasks.md/spec.md FIRST → progress-sync → sync-docs → external tools
+**Update order**: ALWAYS tasks.md/spec.md FIRST, then `specweave sync push` (progress → living docs → external tools)
 
 ### Sync Commands
 
 | Command | When to Run |
 |---------|-------------|
-| `specweave sync-progress` | After editing tasks.md |
-| `specweave sync-living-docs` | After US complete |
+| `specweave docs sync <id>` | After a user story completes (also runs inside `sync push`) |
 | `specweave sync push <id>` | After each task, and on increment done |
 | `specweave sync status` | When a push looks stuck (queue, breakers, gaps) |
 <!-- SW:END:syncworkflow -->
@@ -410,7 +406,7 @@ specweave context projects
 | Commands not working (non-Claude) | Read `plugins/specweave/commands/<name>.md`, follow manually |
 | GitHub/Jira not updating | `specweave sync status`, then `specweave sync push <id>` |
 | .md files in project root | `mv *.md .specweave/increments/<current>/reports/` |
-| Progress % wrong | Update tasks.md manually or `specweave sync-progress` |
+| Progress % wrong | Update tasks.md manually, then `specweave sync push <id>` |
 | Tool crashes on start | Load only active increment's spec.md + tasks.md, not entire docs/ |
 | Missing **Project**: field | `specweave context projects`, add `**Project**:` to every US |
 | Skills not activating (non-Claude) | Expected — read SKILL.md from `plugins/specweave*/skills/` |

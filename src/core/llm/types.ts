@@ -81,8 +81,10 @@ export interface AnalyzeOptions {
   /**
    * Override temperature for this request.
    *
-   * Ignored by the Anthropic provider - Opus 4.7+ and Sonnet 5 reject sampling
-   * params with a 400. The other providers still honour it.
+   * The Anthropic provider forwards it only to models that still accept sampling
+   * params (Haiku, Sonnet before 5, Opus before 4.7 - see model-capabilities.ts)
+   * and drops it on Opus 4.7+ and Sonnet 5, which reject it with a 400. The
+   * other providers always honour it.
    */
   temperature?: number;
 

@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   acceptsSamplingParams,
+  supportsAdaptiveThinking,
   supportsStructuredOutputs,
   toStrictJsonSchema,
   buildOutputConfig,
@@ -31,6 +32,14 @@ describe('acceptsSamplingParams', () => {
   it('allows them on Sonnet 4.6 but not Sonnet 5', () => {
     expect(acceptsSamplingParams('claude-sonnet-4-6')).toBe(true);
     expect(acceptsSamplingParams('claude-sonnet-5-0')).toBe(false);
+  });
+
+  it('parses the real 5-generation ids, which carry no minor segment', () => {
+    expect(acceptsSamplingParams('claude-opus-5')).toBe(false);
+    expect(acceptsSamplingParams('claude-sonnet-5')).toBe(false);
+    // A trailing snapshot date is a date, not a minor version.
+    expect(acceptsSamplingParams('claude-opus-5-20260901')).toBe(false);
+    expect(acceptsSamplingParams('claude-opus-4-6-20250801')).toBe(true);
   });
 
   it('allows them on every Haiku', () => {
@@ -56,6 +65,12 @@ describe('supportsStructuredOutputs', () => {
     expect(supportsStructuredOutputs('claude-haiku-4-5-20251001')).toBe(true);
   });
 
+  it('is available on the real 5-generation ids, which carry no minor segment', () => {
+    expect(supportsStructuredOutputs('claude-opus-5')).toBe(true);
+    expect(supportsStructuredOutputs('claude-sonnet-5')).toBe(true);
+    expect(supportsStructuredOutputs('claude-opus-5-20260901')).toBe(true);
+  });
+
   it('is NOT available on Sonnet 4.6 — the repo default for the `sonnet` alias', () => {
     expect(supportsStructuredOutputs('claude-sonnet-4-6')).toBe(false);
     expect(supportsStructuredOutputs(MODEL_ALIASES.sonnet)).toBe(false);
@@ -63,6 +78,32 @@ describe('supportsStructuredOutputs', () => {
 
   it('is conservative about ids it cannot parse', () => {
     expect(supportsStructuredOutputs('opus')).toBe(false);
+  });
+});
+
+describe('supportsAdaptiveThinking', () => {
+  it('is available from Opus 4.6 and Sonnet 4.6 on', () => {
+    expect(supportsAdaptiveThinking('claude-opus-4-6')).toBe(true);
+    expect(supportsAdaptiveThinking('claude-opus-4-8')).toBe(true);
+    expect(supportsAdaptiveThinking('claude-opus-5')).toBe(true);
+    expect(supportsAdaptiveThinking('claude-sonnet-4-6')).toBe(true);
+    expect(supportsAdaptiveThinking('claude-sonnet-5')).toBe(true);
+  });
+
+  it('is NOT available on Haiku 4.5 or pre-4.6 Opus, which still take budget_tokens', () => {
+    expect(supportsAdaptiveThinking('claude-haiku-4-5-20251001')).toBe(false);
+    expect(supportsAdaptiveThinking('claude-opus-4-5-20251101')).toBe(false);
+  });
+
+  it('is conservative about ids it cannot parse', () => {
+    expect(supportsAdaptiveThinking('opus')).toBe(false);
+    expect(supportsAdaptiveThinking('')).toBe(false);
+  });
+
+  it('covers the repo aliases: opus and sonnet get adaptive thinking, haiku does not', () => {
+    expect(supportsAdaptiveThinking(MODEL_ALIASES.opus)).toBe(true);
+    expect(supportsAdaptiveThinking(MODEL_ALIASES.sonnet)).toBe(true);
+    expect(supportsAdaptiveThinking(MODEL_ALIASES.haiku)).toBe(false);
   });
 });
 

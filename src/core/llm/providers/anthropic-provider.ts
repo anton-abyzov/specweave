@@ -183,6 +183,9 @@ ${JSON.stringify(options.schema, null, 2)}`;
 
     const result = await this.analyze(jsonPrompt, {
       ...options,
+      // Lower temperature for JSON output; analyze() drops it on models that
+      // reject sampling params, so no model guard is needed here.
+      temperature: options.temperature ?? 0.1,
       ...(structured
         ? {
             outputConfig: {
