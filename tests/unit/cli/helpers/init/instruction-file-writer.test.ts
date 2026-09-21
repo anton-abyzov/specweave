@@ -31,29 +31,46 @@ const writeConfig = (config: unknown): void => {
   fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), JSON.stringify(config));
 };
 
-describe('detectTemplateFlags (umbrella section)', () => {
+describe('detectTemplateFlags (umbrella + jev sections)', () => {
   it('is off without a config, with an empty repo list, or on unreadable JSON', () => {
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
     writeConfig({ workspace: { name: 'w', repos: [] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
     fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), '{ broken');
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
   });
 
   it('falls back to the repositories/ scan while init has not written workspace yet', () => {
     // init writes a minimal config (no workspace key) before the instruction files
     writeConfig({ version: '2.0', project: { name: 'demo' } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
     fs.mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false });
     // an explicit empty workspace list still wins over the scan
     writeConfig({ version: '2.0', workspace: { name: 'demo', repos: [] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
   });
 
   it('is on when the workspace lists repos', () => {
     writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false });
+  });
+
+  it('jev is on only when jev.enabled is literally true', () => {
+    writeConfig({ workspace: { name: 'w', repos: [] }, jev: { enabled: true } });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: true });
+    for (const enabled of [false, 'true', 1, null, undefined]) {
+      writeConfig({ workspace: { name: 'w', repos: [] }, jev: { enabled } });
+      expect(detectTemplateFlags(dir), String(enabled)).toEqual({ umbrella: false, jev: false });
+    }
+  });
+
+  it('renders the jev section into both files only when the flag is on', () => {
+    const off = apply('CLAUDE.md', { flags: { umbrella: false, jev: false } });
+    expect(off.content).not.toContain('Jev (System One)');
+    const on = apply('AGENTS.md', { flags: { umbrella: false, jev: true } });
+    expect(on.content).toContain('## Jev (System One) — closed-set decisions');
+    expect(on.content).toContain('specweave jev guard');
   });
 });
 

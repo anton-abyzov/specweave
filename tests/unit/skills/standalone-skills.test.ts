@@ -1,7 +1,7 @@
 /**
  * The repo-root `skills/` folder is the vskill-distributable standalone core
- * (sw-increment, sw-do, sw-task, sw-review, sw-handoff) used by tools that do
- * not run the Claude Code plugin.
+ * (sw-increment, sw-do, sw-task, sw-review, sw-handoff, sw-jev) used by tools
+ * that do not run the Claude Code plugin.
  *
  * These tests pin two things:
  *  1. the portability contract (scripts/lint-standalone-skills.mjs);
@@ -24,7 +24,7 @@ import { HANDOFF_SECTION_ORDER, DOC_FORMAT_MARKER } from '../../../src/core/sess
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const SKILLS_DIR = path.join(REPO_ROOT, 'skills');
 const LINTER = path.join(REPO_ROOT, 'scripts', 'lint-standalone-skills.mjs');
-const EXPECTED_SKILLS = ['sw-do', 'sw-handoff', 'sw-increment', 'sw-review', 'sw-task'];
+const EXPECTED_SKILLS = ['sw-do', 'sw-handoff', 'sw-increment', 'sw-jev', 'sw-review', 'sw-task'];
 
 const read = (name: string): string => fs.readFileSync(path.join(SKILLS_DIR, name, 'SKILL.md'), 'utf-8');
 
@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 describe('standalone skills (skills/)', () => {
-  it('ships exactly the 2.0 standalone core plus a README', () => {
+  it('ships exactly the standalone core plus a README', () => {
     const dirs = fs.readdirSync(SKILLS_DIR, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
     expect(dirs).toEqual(EXPECTED_SKILLS);
     expect(fs.existsSync(path.join(SKILLS_DIR, 'README.md'))).toBe(true);

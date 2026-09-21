@@ -70,21 +70,26 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
  * instruction files are written before the workspace section exists, so a config
  * without a `workspace` key falls back to the same `repositories/<org>/<repo>`
  * scan that init uses to build it.
+ *
+ * `jev` is on only when `config.jev.enabled` is literally `true` — the Jev
+ * section is opt-in guidance for a paid external model, so a missing or
+ * unreadable config must never render it.
  */
 export function detectTemplateFlags(projectPath: string): Record<string, boolean> {
-  let workspace: unknown;
+  let config: { workspace?: unknown; jev?: { enabled?: unknown } } | undefined;
   try {
     const raw = fs.readFileSync(path.join(projectPath, '.specweave', 'config.json'), 'utf-8');
-    workspace = JSON.parse(raw)?.workspace;
+    config = JSON.parse(raw) ?? undefined;
   } catch {
     // no config yet, or unreadable: fall through to the filesystem scan
   }
-  const repos = (workspace as { repos?: unknown } | undefined)?.repos;
-  if (Array.isArray(repos)) return { umbrella: repos.length > 0 };
+  const jev = config?.jev?.enabled === true;
+  const repos = (config?.workspace as { repos?: unknown } | undefined)?.repos;
+  if (Array.isArray(repos)) return { umbrella: repos.length > 0, jev };
   try {
-    return { umbrella: scanWorkspaceRepos(projectPath) !== null };
+    return { umbrella: scanWorkspaceRepos(projectPath) !== null, jev };
   } catch {
-    return { umbrella: false };
+    return { umbrella: false, jev };
   }
 }
 

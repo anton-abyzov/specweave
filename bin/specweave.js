@@ -448,6 +448,34 @@ program
     });
   });
 
+// Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions
+program
+  .command('jev <action> [args...]')
+  .description('Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage')
+  .option('--json', 'Machine-readable JSON output')
+  .option('--provider <name>', 'setup: openrouter | typesafe')
+  .option('--model <model>', 'setup: model id (defaults to the provider default)')
+  .option('--guard-bash', 'setup: enable the opt-in PreToolUse Bash guard')
+  .option('--no-guard-bash', 'setup: disable the Bash guard')
+  .option('--disable', 'setup: turn Jev off for this project')
+  .option('--state <value>', 'ask: state as JSON, plain text, @file or - for stdin')
+  .option('--questions <value>', 'ask: questions as JSON or @file')
+  .option('--choice <instructions>', 'ask: shorthand for one choice question')
+  .option('--option <key=description>', 'ask: one --choice option (repeatable)', (val, acc) => { (acc || []).push(val); return acc || [val]; }, [])
+  .option('--noul <instructions>', 'ask: shorthand for one noul (true/false probability) question')
+  .option('--increment <id>', 'task: increment id (defaults to the active one)')
+  .option('--goal <goal>', 'browse: what to accomplish')
+  .option('--url <url>', 'browse: starting URL')
+  .option('--allow-domain <domain>', 'browse: allowed origin (repeatable)', (val, acc) => { (acc || []).push(val); return acc || [val]; }, [])
+  .option('--input <Label=value>', 'browse: text the loop may type (repeatable)', (val, acc) => { (acc || []).push(val); return acc || [val]; }, [])
+  .option('--max-steps <n>', 'browse: step limit')
+  .option('--screenshot-dir <path>', 'browse: where to write screenshots')
+  .option('--allow-sensitive', 'browse: allow clicking sensitive controls')
+  .action(async (action, args, options) => {
+    const { jevCommand } = await import('../dist/src/cli/commands/jev.js');
+    process.exitCode = await jevCommand(action, args, options);
+  });
+
 // Next ID command - Return the next available increment number
 program
   .command('next-id')

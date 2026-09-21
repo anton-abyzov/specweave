@@ -142,6 +142,53 @@ Settings for `specweave auto`.
 | `maxRetries` | number | `20` |
 | `requireTests` | boolean | `false` |
 
+### `jev`
+
+Delegation of closed-set decisions to [Jev (TypeSafe System One)](/docs/guides/jev-system-one). Off until you opt in — it is a paid external call.
+
+```json
+{
+  "jev": {
+    "enabled": true,
+    "provider": "openrouter",
+    "model": "jev-1.13",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "timeoutMs": 4000,
+    "thresholds": { "route": 0.7, "guardDeny": 0.85, "guardWarn": 0.5 },
+    "guards": { "bash": false },
+    "modelRouting": true,
+    "browse": { "allowDomains": [], "maxSteps": 20 }
+  }
+}
+```
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `enabled` | boolean | `false` | Master switch. Nothing is sent to a provider until this is literally `true`. Written by `specweave jev setup` after a live ping. |
+| `provider` | `"openrouter"` \| `"typesafe"` | `"openrouter"` | OpenRouter posts to `https://openrouter.ai/api/v1/systemone`; TypeSafe direct to `https://api.typesafe.ai/v1/systemone`. |
+| `model` | string | `"jev-1.13"` (openrouter) / `"jev-latest"` (typesafe) | The model id sent with every request. |
+| `apiKeyEnv` | string | — | Name of the environment variable holding the key, when it is not the provider default. Only the **name** is ever stored, printed or logged — never a key value. |
+| `timeoutMs` | number | `4000` | Per-request timeout. The Bash guard applies its own tighter budget on top. |
+| `thresholds.route` | number | `0.7` | Routing answers below this confidence fall back to `opus` and to the agent's own skill choice. |
+| `thresholds.guardDeny` | number | `0.85` | Deny band for the guard verdict. |
+| `thresholds.guardWarn` | number | `0.5` | Warn band for the guard verdict. |
+| `guards.bash` | boolean | `false` | The per-project Bash guard. Set it with `specweave jev setup --guard-bash`, which also writes `.specweave/state/jev-guard.enabled` and a project-level `PreToolUse` hook (matcher `Bash`) in `.claude/settings.json`. `--no-guard-bash` removes all three. |
+| `modelRouting` | boolean | `true` | Lets `selectModelTierForTask()` ask Jev, with the keyword heuristic as fallback. Only takes effect when `enabled` is true. |
+| `browse.allowDomains` | string[] | `[]` | Origins `specweave jev browse` may visit. Merged with the repeatable `--allow-domain` flag; the start URL must already be inside the result. |
+| `browse.maxSteps` | number | `20` | Hard cap on browse iterations. |
+
+All three thresholds are clamped to `0..1` on load, and `guardDeny` is never allowed below `guardWarn`.
+
+**Environment overrides**, read per process and never written to the file:
+
+| Variable | Effect |
+|----------|--------|
+| `SPECWEAVE_JEV` | `0` disables Jev for this process; `1` enables it ad hoc. |
+| `SPECWEAVE_JEV_PROVIDER` | Overrides `provider`. |
+| `SPECWEAVE_JEV_MODEL` | Overrides `model`. |
+
+The key itself lives only in the environment: `OPENROUTER_API_KEY`, `TYPESAFE_API_KEY`, or `JEV_API_KEY` for either.
+
 ---
 
 ## Kept beyond the advertised surface

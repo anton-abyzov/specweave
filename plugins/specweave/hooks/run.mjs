@@ -31,6 +31,35 @@ function hasActiveAutoSession(data) {
   }
   return false;
 }
+// PreToolUse fast path. Ordinary edits and ordinary shell commands must not
+// spawn a worker, resolve npm or import the CLI. Write|Edit only matter inside
+// `.specweave/increments/`; Bash only matters when the project opted into the
+// Jev guard with a local marker file.
+const JEV_GUARD_MARKER = path.join('.specweave', 'state', 'jev-guard.enabled');
+const JEV_GUARD_MAX_DEPTH = 8;
+function hasJevGuardMarker(data) {
+  const starts = [typeof data.cwd === 'string' ? data.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
+  for (const start of starts) {
+    if (!start) continue;
+    let current;
+    try { current = path.resolve(start); } catch { continue; }
+    for (let depth = 0; depth < JEV_GUARD_MAX_DEPTH; depth++) {
+      try { if (existsSync(path.join(current, JEV_GUARD_MARKER))) return true; } catch { break; }
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+  }
+  return false;
+}
+function skipPreToolUse(data) {
+  const tool = typeof data.tool_name === 'string' ? data.tool_name : '';
+  if (tool === 'Bash') return !hasJevGuardMarker(data);
+  const ti = data.tool_input;
+  const filePath = ti && typeof ti === 'object' && typeof ti.file_path === 'string'
+    ? ti.file_path.replace(/\\/g, '/') : '';
+  return !filePath.includes('.specweave/increments/');
+}
 function record(reason) {
   try {
     const dir = path.join(homedir(), '.specweave', 'logs');
@@ -72,6 +101,7 @@ process.stdin.on('end',()=>{
   if(!['session-start','pre-tool-use','pre-compact','stop'].includes(event))return finish({});
   if(process.env.SPECWEAVE_DISABLE_HOOKS === '1')return finish({});
   if(event === 'stop' && !hasActiveAutoSession(data))return finish({});
+  if(event === 'pre-tool-use' && skipPreToolUse(data))return finish({});
   const env={...process.env};
   child=spawn(process.execPath,[worker,event],{env,detached:process.platform !== 'win32',stdio:['pipe','pipe','pipe']});
   child.stdout.setEncoding('utf8');

@@ -13,6 +13,7 @@ npx vskill install anton-abyzov/specweave/sw-do
 npx vskill install anton-abyzov/specweave/sw-task
 npx vskill install anton-abyzov/specweave/sw-review
 npx vskill install anton-abyzov/specweave/sw-handoff
+npx vskill install anton-abyzov/specweave/sw-jev
 ```
 
 | Skill | Use it when | Writes |
@@ -22,6 +23,7 @@ npx vskill install anton-abyzov/specweave/sw-handoff
 | [sw-task](sw-task/SKILL.md) | claiming / finishing / skipping tasks, several agents on one increment | `ledger.jsonl` |
 | [sw-review](sw-review/SKILL.md) | adversarial review before shipping | `reports/review.md` |
 | [sw-handoff](sw-handoff/SKILL.md) | out of tokens, switching tools or machines | `handoff.md` + `handoff.diff` |
+| [sw-jev](sw-jev/SKILL.md) | a decision whose every answer can be enumerated in advance | nothing — it answers, you act |
 
 Typical loop: `sw-increment` → `sw-do` (which drives `sw-task`) → `sw-review` →
 `specweave complete <id>`. `sw-handoff` any time you stop.

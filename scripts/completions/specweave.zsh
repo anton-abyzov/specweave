@@ -24,6 +24,7 @@ commands=(
     'verify:'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
     'handoff:Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool'
+    'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
     'save:Smart save - auto-generate commit message, sync with remote, commit and push'
@@ -211,6 +212,29 @@ _specweave() {
                         '--non-specweave[Force the .handoff/ fallback even inside a SpecWeave workspace]' \
                         '--out[Override the doc output path]' \
                         '--json[Output the full result as JSON (for programmatic use)]' \
+                        '--help[Show help]'
+                    ;;
+                jev)
+                    _arguments \
+                        '--json[Machine-readable JSON output]' \
+                        '--provider[setup\: openrouter | typesafe]' \
+                        '--model[setup\: model id (defaults to the provider default)]' \
+                        '--guard-bash[setup\: enable the opt-in PreToolUse Bash guard]' \
+                        '--no-guard-bash[setup\: disable the Bash guard]' \
+                        '--disable[setup\: turn Jev off for this project]' \
+                        '--state[ask\: state as JSON, plain text, @file or - for stdin]' \
+                        '--questions[ask\: questions as JSON or @file]' \
+                        '--choice[ask\: shorthand for one choice question]' \
+                        '--option[ask\: one --choice option (repeatable)]' \
+                        '--noul[ask\: shorthand for one noul (true/false probability) question]' \
+                        '--increment[task\: increment id (defaults to the active one)]' \
+                        '--goal[browse\: what to accomplish]' \
+                        '--url[browse\: starting URL]' \
+                        '--allow-domain[browse\: allowed origin (repeatable)]' \
+                        '--input[browse\: text the loop may type (repeatable)]' \
+                        '--max-steps[browse\: step limit]' \
+                        '--screenshot-dir[browse\: where to write screenshots]' \
+                        '--allow-sensitive[browse\: allow clicking sensitive controls]' \
                         '--help[Show help]'
                     ;;
                 next-id)
