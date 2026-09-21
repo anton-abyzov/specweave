@@ -1028,5 +1028,31 @@ describe('InstallationHealthChecker', () => {
       expect(checkNames).toContain('Legacy lockfiles');
       expect(checkNames).toContain('Orphaned child lockfiles');
     });
+
+    // 0879: `specweave update` passes process.cwd(); outside a project that tree
+    // (e.g. $HOME) must not be scanned or cleaned at all.
+    it('T-016: skips the scan when projectRoot is not inside a SpecWeave project', async () => {
+      // No .specweave/config.json anywhere under or above projectRoot (tmpdir).
+      const legacyLock = path.join(projectRoot, 'skills-lock.json');
+      fs.writeFileSync(legacyLock, '{}');
+      const oldTime = new Date(Date.now() - 60_000);
+      fs.utimesSync(legacyLock, oldTime, oldTime);
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true, quick: true });
+
+      const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
+      expect(legacyCheck).toBeDefined();
+      expect(legacyCheck!.status).toBe('pass');
+      expect(legacyCheck!.message).toContain('scan skipped');
+
+      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
+      expect(orphanCheck).toBeDefined();
+      expect(orphanCheck!.status).toBe('pass');
+      expect(orphanCheck!.message).toContain('scan skipped');
+
+      // Nothing was deleted: the scan never ran.
+      expect(fs.existsSync(legacyLock)).toBe(true);
+    });
   });
 });

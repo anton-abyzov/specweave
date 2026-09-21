@@ -517,6 +517,8 @@ export interface StaleFileCleanupOptions {
   customFs?: typeof import('fs');
   /** Mtime threshold in ms — files modified more recently than this are skipped. Default: 5000. */
   mtimeThresholdMs?: number;
+  /** Maximum directory depth to descend when scanning (root = 0). Default: DEFAULT_MAX_WALK_DEPTH. */
+  maxDepth?: number;
 }
 
 /** Result of a stale lockfile cleanup operation. */
@@ -532,39 +534,60 @@ export interface StaleFileResult {
 /** Directories to skip during recursive walks. */
 const SKIP_DIRS = new Set(['node_modules', '.git', '.specweave']);
 
+/**
+ * Maximum directory depth for recursive walks (the root is depth 0).
+ * Legacy lockfiles only ever lived at a project root or at a nested repo root
+ * (`repositories/<org>/<repo>/`), so a small bound loses nothing and keeps the
+ * scan cheap even in a large monorepo.
+ */
+export const DEFAULT_MAX_WALK_DEPTH = 6;
+
 function makeEmptyResult(): StaleFileResult {
   return { success: true, removedCount: 0, skippedCount: 0, removedPaths: [], skippedPaths: [], errors: [] };
 }
 
 /**
  * Recursively find all files matching `fileName` under `root`, skipping excluded dirs.
+ *
+ * Bounded on purpose: symlinks are never followed (a link such as
+ * `~/Google Drive -> ~/Library/CloudStorage/...` or `link -> /` would otherwise
+ * pull the whole disk into the scan) and the descent stops at `maxDepth`.
  */
-function walkForFile(root: string, fileName: string, fsImpl: typeof import('fs')): string[] {
+function walkForFile(
+  root: string,
+  fileName: string,
+  fsImpl: typeof import('fs'),
+  maxDepth: number = DEFAULT_MAX_WALK_DEPTH,
+): string[] {
   const results: string[] = [];
 
-  function walk(dir: string): void {
+  function walk(dir: string, depth: number): void {
+    let names: string[];
     try {
-      const names = fsImpl.readdirSync(dir);
-      for (const name of names) {
-        if (SKIP_DIRS.has(name)) continue;
-        const fullPath = path.join(dir, name);
-        try {
-          const stat = fsImpl.statSync(fullPath);
-          if (stat.isDirectory()) {
-            walk(fullPath);
-          } else if (name === fileName) {
-            results.push(fullPath);
-          }
-        } catch {
-          // Can't stat — skip entry
-        }
-      }
+      names = fsImpl.readdirSync(dir);
     } catch {
-      // Can't read dir — skip
+      return; // Can't read dir — skip
+    }
+    for (const name of names) {
+      if (SKIP_DIRS.has(name)) continue;
+      const fullPath = path.join(dir, name);
+      let stat: nodeFs.Stats;
+      try {
+        // lstat, not stat: never follow symlinks out of the tree being scanned.
+        stat = fsImpl.lstatSync(fullPath);
+      } catch {
+        continue; // Can't stat — skip entry
+      }
+      if (stat.isSymbolicLink()) continue;
+      if (stat.isDirectory()) {
+        if (depth < maxDepth) walk(fullPath, depth + 1);
+      } else if (name === fileName) {
+        results.push(fullPath);
+      }
     }
   }
 
-  walk(root);
+  walk(root, 0);
   return results;
 }
 
@@ -583,7 +606,7 @@ export function cleanupLegacyLockfiles(
   const fsImpl = options.customFs || nodeFs;
   const threshold = options.mtimeThresholdMs ?? 5000;
 
-  const files = walkForFile(projectRoot, 'skills-lock.json', fsImpl);
+  const files = walkForFile(projectRoot, 'skills-lock.json', fsImpl, options.maxDepth);
 
   for (const filePath of files) {
     try {
