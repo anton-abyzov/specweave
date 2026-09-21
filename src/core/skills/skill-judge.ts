@@ -21,6 +21,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveModelAlias } from '../llm/types.js';
+import { supportsAdaptiveThinking } from '../llm/model-capabilities.js';
 import { loadStaticContext, type CacheBlock } from '../cache/static-context-loader.js';
 import { emitRefinementIfAttributable } from '../skill-signal-emit.js';
 import type { SignalSeverity } from '../../types/skill-signals.js';
@@ -113,10 +114,13 @@ export interface BuildApiRequestInput {
  *
  * Thinking:
  * - Adaptive thinking IS an API parameter — `thinking: { type: "adaptive" }` is
- *   always sent, so the judge never runs with thinking off.
+ *   sent on every model that accepts it (Opus and Sonnet 4.6+), so the judge
+ *   never runs with thinking off on the models it is meant for.
  * - `thinking: { type: "enabled", budget_tokens }` is rejected (400) on 4.7+ and
  *   is never sent. Depth is controlled by `output_config.effort`
  *   ('low' | 'medium' | 'high' | 'xhigh' | 'max', default 'high').
+ * - Haiku 4.5 predates adaptive thinking and rejects both parameters, so they
+ *   are omitted there rather than turned into a 400 and a pattern-match fallback.
  *
  * Model:
  * - `model` may be an alias ("opus"); it is resolved to a real model ID so the
@@ -150,14 +154,18 @@ export function buildJudgeApiRequest(input: BuildApiRequestInput): Record<string
       ? [{ role: 'user', content: userContent }]
       : [{ role: 'user', content: userPrompt }];
 
+  const resolvedModel = resolveModelAlias(model);
   const request: Record<string, unknown> = {
-    model: resolveModelAlias(model),
+    model: resolvedModel,
     max_tokens: maxTokens,
     system,
     messages,
-    thinking: { type: 'adaptive' },
-    output_config: { effort },
   };
+
+  if (supportsAdaptiveThinking(resolvedModel)) {
+    request.thinking = { type: 'adaptive' };
+    request.output_config = { effort };
+  }
 
   return request;
 }

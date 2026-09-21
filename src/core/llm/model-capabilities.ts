@@ -12,6 +12,9 @@
  * - Structured outputs (`output_config.format`) require a schema with
  *   `additionalProperties: false` on every object node, and are not available
  *   on every model that is otherwise current.
+ * - Adaptive thinking (`thinking: {type: "adaptive"}`) and `output_config.effort`
+ *   exist from the 4.6 generation on; Haiku 4.5 still takes `budget_tokens` and
+ *   rejects the adaptive shape.
  *
  * These helpers are deliberately allow-list shaped: an unrecognised model id
  * gets the conservative answer (no structured outputs, no sampling params),
@@ -24,15 +27,18 @@
 /**
  * Parse the family and version out of a first-party or Bedrock model id.
  *
- * Handles `claude-opus-4-8`, `claude-opus-4-8-20260101`,
- * `anthropic.claude-sonnet-4-6-v1:0` and the bare aliases.
+ * Handles `claude-opus-4-8`, `claude-opus-4-8-20260101`, `claude-opus-5` (no
+ * minor segment; a trailing 8-digit date is not mistaken for one) and Bedrock ids
+ * such as `anthropic.claude-sonnet-4-6-v1:0`. A bare alias (`opus`) does not
+ * parse: callers resolve aliases first, and an unparsed id gets the conservative
+ * answer from every gate below.
  */
 function parseModel(modelId: string): { family: string; major: number; minor: number } | null {
   if (!modelId) return null;
-  const m = /claude-(opus|sonnet|haiku)-(\d+)-(\d+)/.exec(modelId);
+  const m = /claude-(opus|sonnet|haiku)-(\d+)(?:-(\d{1,2})(?!\d))?/.exec(modelId);
   if (!m) return null;
   const major = Number(m[2]);
-  const minor = Number(m[3]);
+  const minor = m[3] === undefined ? 0 : Number(m[3]);
   if (Number.isNaN(major) || Number.isNaN(minor)) return null;
   return { family: m[1], major, minor };
 }
@@ -70,6 +76,22 @@ export function supportsStructuredOutputs(modelId: string): boolean {
   if (v.family === 'opus') return atLeast(v, 4, 7);
   if (v.family === 'sonnet') return atLeast(v, 5, 0);
   return atLeast(v, 4, 5);  // haiku
+}
+
+/**
+ * Does this model accept `thinking: { type: "adaptive" }` and `output_config.effort`?
+ *
+ * Both arrived with the 4.6 generation (Opus 4.6, Sonnet 4.6) and are on every
+ * newer Opus and Sonnet. Haiku 4.5 predates them and still uses
+ * `thinking: { type: "enabled", budget_tokens }`, so the adaptive shape is
+ * rejected there. Unknown ids get `false` so a caller omits both parameters
+ * rather than sending a request that cannot succeed.
+ */
+export function supportsAdaptiveThinking(modelId: string): boolean {
+  const v = parseModel(modelId);
+  if (!v) return false;
+  if (v.family === 'opus' || v.family === 'sonnet') return atLeast(v, 4, 6);
+  return false;  // haiku
 }
 
 /**

@@ -1,7 +1,7 @@
 ## [Unreleased]
 
 A prompt audit of the whole instruction surface against the repo's own target model
-(`claude-opus-4-8`), plus the dead-code sweep it turned into. Three of the findings were
+(`claude-opus-4-8`), plus the dead-code sweep it turned into. Four of the findings were
 live defects, not style.
 
 ### Fixed
@@ -21,8 +21,10 @@ recorded that 4.7 "no longer benefits from the `thinking` API parameter — adap
 thinking is triggered by a prompt hint". What 4.7 removed is `budget_tokens`; adaptive
 thinking *is* the parameter (`thinking: {type: "adaptive"}`), and depth is
 `output_config.effort`. Omitting `thinking` on 4.7/4.8 means no thinking at all. The judge
-now always sends adaptive thinking plus an effort level (default `high`), and
-`max_tokens` rose from 2000 to 8000 so thinking tokens do not crowd out the verdict.
+now sends adaptive thinking plus an effort level (default `high`) on every model that
+accepts them (Opus and Sonnet 4.6+; Haiku 4.5 predates adaptive thinking and gets
+neither), and `max_tokens` rose from 2000 to 8000 so thinking tokens do not crowd out
+the verdict.
 `isOpus47Family()` and the `ThinkingBudget` type are gone; `quality.thinkingBudget` is
 replaced by an `effort` option.
 
@@ -79,8 +81,8 @@ refute pass, then by a clean `tsc` and full test run:
 `src/cli/helpers/init/` — `api-docs-config` (which wrote the removed `apiDocs` key),
 `brownfield-analysis`, `testing-config`, `bitbucket-repo-cloning`, `claude-settings-lsp`,
 `plugin-install-flags`, `ado-repo-cloning`, `prompt-flow`, `umbrella-cloning`,
-`multi-project-folders`; and `src/core/fabric/contradiction-detector`. Each was reachable
-only from its own test file. Those tests are removed with them.
+`multi-project-folders`; and `src/core/fabric/contradiction-detector`. Nothing reached any
+of them except its own test file, where one existed; those tests are removed with them.
 
 ## [2.2.1] - 2026-09-21
 
