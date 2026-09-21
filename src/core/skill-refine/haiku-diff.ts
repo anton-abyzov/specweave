@@ -29,11 +29,27 @@ export interface HaikuClientLike {
       temperature: number;
       system?: string;
       messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+      output_config?: {
+        effort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+        format?: { type: 'json_schema'; schema: unknown };
+      };
     }) => Promise<{
       content: Array<{ type: string; text?: string }>;
     }>;
   };
 }
+
+/** Structured-output contract for the {diff, rationale} response. */
+export const HAIKU_DIFF_SCHEMA = {
+  type: 'object',
+  properties: {
+    diff: { type: 'string', description: 'Unified diff against SKILL.md, empty when no change is warranted' },
+    rationale: { type: 'string', description: 'One sentence explaining the change' },
+  },
+  required: ['diff', 'rationale'],
+  // Structured outputs reject an object schema that does not pin this.
+  additionalProperties: false,
+} as const;
 
 export interface ProposeDiffOptions {
   client: HaikuClientLike;
@@ -49,12 +65,11 @@ const SYSTEM_PROMPT = [
   'Propose a MINIMAL unified diff against the current SKILL.md that addresses the signals.',
   '',
   'Requirements:',
-  '- Output a single JSON object with keys "diff" (a unified-diff string) and "rationale" (one sentence).',
+  '- "diff" is the unified diff; "rationale" is one sentence explaining it.',
   '- The diff MUST be applicable with `git apply` (standard unified format, "--- a/SKILL.md" / "+++ b/SKILL.md").',
   '- Do not restructure the document; make targeted edits that address the cited evidence.',
-  '- If the signals do not warrant a change, return {"diff":"","rationale":"No change warranted — signals insufficient."}.',
+  '- If the signals do not warrant a change, return an empty diff with the rationale "No change warranted — signals insufficient.".',
   '- Never edit frontmatter unless signals specifically name it.',
-  '- No markdown fences around the JSON. No commentary.',
 ].join('\n');
 
 /**
@@ -107,6 +122,9 @@ export async function proposeDiff(
     temperature: 0,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: userPrompt }],
+    output_config: {
+      format: { type: 'json_schema', schema: HAIKU_DIFF_SCHEMA },
+    },
   });
 
   const text = (response.content ?? [])
@@ -119,8 +137,8 @@ export async function proposeDiff(
 }
 
 /**
- * Extract the JSON object from a Haiku completion. Tolerates ```json fences
- * in case the model slips past the system instruction.
+ * Extract the JSON object from a Haiku completion. Tolerates ```json fences and
+ * surrounding prose: `output_config.format` constrains the shape, not the framing.
  */
 export function parseHaikuJson(raw: string): HaikuDiffResult {
   const cleaned = stripFences(raw);

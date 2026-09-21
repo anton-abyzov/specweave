@@ -4,7 +4,7 @@
  * Pricing as of 2026-03-01 (verified against https://www.anthropic.com/pricing)
  *
  * Model Tier Mapping:
- * - opus → claude-opus-4-6 (latest Opus 4.6 - DEFAULT)
+ * - opus → claude-opus-4-8 (latest Opus 4.8 - DEFAULT)
  * - sonnet → claude-sonnet-4-6 (latest Sonnet 4.6)
  * - haiku → claude-haiku-4-5-20251001 (latest Haiku 4.5)
  *
@@ -24,6 +24,8 @@ export const PRICING = {
     output: 0.000005,  // $5 per 1M output tokens
   },
   opus: {
+    // Legacy Opus 4.0 tier, kept for backward compatibility with existing callers.
+    // Current Opus 4.6/4.7/4.8 rates are $5/$25 — see MODEL_PRICING in core/llm/types.ts.
     input: 0.000015,   // $15 per 1M input tokens
     output: 0.000075,  // $75 per 1M output tokens
   },

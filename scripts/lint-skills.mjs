@@ -14,6 +14,8 @@
  *   3. `description:` present and <= 200 characters
  *   4. every `specweave <cmd>` names a command registered in bin/specweave.js
  *   5. every `sw:<name>` resolves to plugins/specweave/skills/<name>/ (or an agent file)
+ *   6. no retired 4.x thinking/agent phrasing — see .specweave/docs/internal/specs/opus-47-migration.md
+ *   7. a SKILL.md that declares `allowed-tools` also explains why (## Tool-Use Rationale)
  *
  * Usage:
  *   node scripts/lint-skills.mjs            # lint, exit 1 on any error
@@ -36,6 +38,27 @@ const MAX_DESCRIPTION = 200;
 
 /** Commander gives these for free; they are never declared in bin/specweave.js. */
 const BUILTIN_COMMANDS = ['help', 'version'];
+
+/**
+ * Wording the 4.7 migration retired. Matched case-insensitively: the survivor that
+ * motivated this rule was "[Extended thinking: ...]", which a lowercase-only match missed.
+ */
+const RETIRED_PHRASES = [
+  'extended thinking',
+  'ULTRATHINK BY DEFAULT',
+  'ULTRATHINK',
+  'spawn agents anyway',
+  'thinking.budget_tokens',
+  'budget_tokens:',
+];
+
+/**
+ * A line that names the retirement is documenting it, not instructing with it — a
+ * "retired phrases" list, or a pointer at the migration guide. Fenced blocks get the
+ * same pass: they quote the old wording rather than tell the model to use it.
+ */
+const DOCUMENTS_RETIREMENT = /\bretired\b|opus-\d+-migration\.md/i;
+const FENCE = /^\s*(?:```|~~~)/;
 
 /** Words that follow a bare "specweave" in prose, not a subcommand. */
 const PROSE_AFTER_SPECWEAVE = new Set([
@@ -116,6 +139,7 @@ function parseFrontmatter(content) {
 export function lintContent(relPath, content, { commands, skills, isSkillFile }) {
   const errors = [];
   const add = (line, rule, message) => errors.push({ line, rule, message });
+  const lines = content.split(/\r?\n/);
 
   if (isSkillFile) {
     const fm = parseFrontmatter(content);
@@ -144,10 +168,36 @@ export function lintContent(relPath, content, { commands, skills, isSkillFile })
         );
       }
     }
+
+    const allowedTools = lines.findIndex((l) => /^allowed-tools\s*:/.test(l));
+    const hasRationale =
+      /^##\s*Tool-Use Rationale/m.test(content) || /^tool-use-rationale\s*:/m.test(content);
+    if (allowedTools !== -1 && !hasRationale) {
+      add(
+        allowedTools + 1,
+        'tool-use-rationale',
+        `SKILL.md declares allowed-tools but has no ## Tool-Use Rationale section (or tool-use-rationale frontmatter key). See skill-authoring-guide.md "Documenting Tool Use".`,
+      );
+    }
   }
 
-  const lines = content.split(/\r?\n/);
+  let inFence = false;
   lines.forEach((line, i) => {
+    const fenceLine = FENCE.test(line);
+    if (fenceLine) inFence = !inFence;
+    if (!fenceLine && !inFence && !DOCUMENTS_RETIREMENT.test(line)) {
+      const lower = line.toLowerCase();
+      const hits = RETIRED_PHRASES.filter((p) => lower.includes(p.toLowerCase()));
+      for (const phrase of hits) {
+        // "ULTRATHINK BY DEFAULT" also matches "ULTRATHINK" — report the most specific hit only.
+        if (hits.some((other) => other !== phrase && other.toLowerCase().includes(phrase.toLowerCase()))) continue;
+        add(
+          i + 1,
+          'retired-phrase',
+          `Retired phrase "${phrase}" found — see .specweave/docs/internal/specs/opus-47-migration.md`,
+        );
+      }
+    }
     for (const m of line.matchAll(/\bspecweave\s+([a-z][a-z0-9-]*)/g)) {
       const cmd = m[1];
       if (PROSE_AFTER_SPECWEAVE.has(cmd)) continue;
@@ -174,6 +224,7 @@ export function collectFiles(root = REPO_ROOT) {
     PLUGIN_AGENTS,
     path.join('plugins', 'specweave', 'reference'),
     path.join('plugins', 'specweave', 'defaults'),
+    path.join('skills'),
     path.join('skills-optional'),
   ]) {
     for (const abs of walk(path.join(root, rel))) files.push(path.relative(root, abs));

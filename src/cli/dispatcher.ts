@@ -3,7 +3,7 @@
  *
  * Currently exposes --effort <level> parsing. Propagate the returned EffortLevel
  * into the skill invocation options so skills can pick it up from
- * `quality.thinkingBudget` / `options.effort`.
+ * `options.effort`.
  */
 
 export const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;

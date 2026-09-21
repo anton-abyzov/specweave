@@ -52,7 +52,7 @@ const LLM_PATTERN_SCHEMA = {
   required: ['patterns'] as string[],
 };
 
-const SYSTEM_PROMPT = `You are a software architecture analyst. Given project documentation, identify recurring implementation patterns. Return structured JSON only.`;
+const SYSTEM_PROMPT = `You are a software architecture analyst. Given project documentation, identify recurring implementation patterns.`;
 
 export class SignalCollector {
   private projectRoot: string;

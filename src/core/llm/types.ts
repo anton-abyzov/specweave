@@ -78,7 +78,14 @@ export interface AnalyzeOptions {
   /** Override max tokens for this request */
   maxTokens?: number;
 
-  /** Override temperature for this request */
+  /**
+   * Override temperature for this request.
+   *
+   * The Anthropic provider forwards it only to models that still accept sampling
+   * params (Haiku, Sonnet before 5, Opus before 4.7 - see model-capabilities.ts)
+   * and drops it on Opus 4.7+ and Sonnet 5, which reject it with a 400. The
+   * other providers always honour it.
+   */
   temperature?: number;
 
   /** Override model for this request */
@@ -92,6 +99,16 @@ export interface AnalyzeOptions {
 
   /** Retry count on failure (default: 2) */
   retries?: number;
+
+  /**
+   * Anthropic-only: structured-output + effort config forwarded to output_config.
+   *
+   * Non-Anthropic providers ignore it.
+   */
+  outputConfig?: {
+    effort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+    format?: { type: 'json_schema'; schema: unknown };
+  };
 }
 
 /**
