@@ -88,11 +88,13 @@ Configured under `jev.thresholds` in `.specweave/config.json`:
   and to your own skill choice.
 - `guardWarn` (0.5) / `guardDeny` (0.85) — the bands behind the guard verdict.
 
-The guard **denies** on three arms: scope `destructive_remote` with confidence at or
+The guard **denies** on four arms: scope `destructive_remote` with confidence at or
 above `guardDeny`; destructiveness at or above `guardDeny` with scope
-`local_irreversible` or `destructive_remote`; or scope `local_irreversible` with
+`local_irreversible` or `destructive_remote`; scope `local_irreversible` with
 confidence at or above `guardDeny` *and* destructiveness at or above `guardWarn` (a
-near-certain local wipe scores its scope high and its destructiveness only moderately).
+near-certain local wipe scores its scope high and its destructiveness only moderately);
+or the two irreversible scopes *summed* at or above `guardDeny` with destructiveness at
+or above `guardWarn` (a `deleteMany` whose database Jev cannot place splits 0.50 / 0.45).
 It **warns** when destructiveness reaches `guardWarn`, or the scope is
 `shared_or_remote`, `local_irreversible` or `destructive_remote` — a low-confidence
 remote-destruction reading degrades to warn and never falls through to allow.

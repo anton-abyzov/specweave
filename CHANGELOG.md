@@ -1,3 +1,8 @@
+## [2.2.1] - 2026-09-21
+
+### Fixed
+- Jev Bash guard: a fourth deny arm. When Jev is confident a command destroys data (`destructive` at or above `guardWarn`) but splits the scope between `local_irreversible` and `destructive_remote` — a `deleteMany` against a database whose location it cannot see scored 0.50 / 0.45 — neither scope alone cleared `guardDeny` and the verdict fell to `warn`. The two irreversible scopes are now summed; at or above `guardDeny` the command is denied.
+
 ## [2.2.0] - 2026-09-21
 
 ### Added
