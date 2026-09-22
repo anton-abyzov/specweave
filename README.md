@@ -2,12 +2,12 @@
 
 <p align="center">
   <strong>Change agents. Keep the thread.</strong><br/>
-  Portable intent, linked specifications, and verified progress across coding agents.
+  Portable projects, shared context, and verified progress across AI tools.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/skills-11-8B5CF6" alt="11 skills" />
+  <img src="https://img.shields.io/badge/skills-12-8B5CF6" alt="12 skills" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
@@ -32,6 +32,22 @@ Start with a short intent, see what is in progress, and open the linked specific
 
 [Explore the product](https://spec-weave.com/product) · [Optional integrations](https://spec-weave.com/integrations)
 
+## Any project, any agent
+
+Code, research, content and operations can share the same portable project hub. Git is optional.
+
+```bash
+mkdir research-project && cd research-project
+specweave project init --name "Research" --goal "Produce a sourced decision brief"
+specweave project work-add --title "Compare options" --summary "Use primary sources"
+specweave project brief --harness codex
+specweave dashboard
+```
+
+The hub keeps goals, shared context, artifact references and reusable routines in `.specweave/project/hub.json`; assignments reuse the intent board. Fresh worker briefs carry current context into Codex, Claude Code or another tool. The host launches agents and schedules routines when authorized. Saving a routine does not start a schedule.
+
+Codex native skills install under `.agents/skills/sw-*`. Existing legacy skills remain in place, and changed native installations are backed up. See [portable projects](https://spec-weave.com/docs/guides/portable-projects) for migration, CLI examples and boundaries.
+
 ## The loop
 
 | # | Command | Claude Code skill | What it does |
@@ -45,12 +61,13 @@ Start with a short intent, see what is in progress, and open the linked specific
 
 Everything lives in `.specweave/increments/NNNN-slug/`: `spec.md`, `tasks.md` (+ the rendered `SW:BOARD`), `ledger.jsonl`, `handoff.md`, `reports/`.
 
-## The eleven skills
+## The twelve skills
 
-The CLI is the product and it runs in any AI tool or in CI. These eleven focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
+The CLI is the product and it runs in any AI tool or in CI. These twelve focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
 
 | Skill | Use it for |
 |-------|------------|
+| `sw:project` | Shared project context, artifacts, routines and worker briefs. |
 | `sw:brainstorm` | Framed alternatives, ending in a pick. |
 | `sw:increment` | Plan the work: `spec.md` with ACs, plus `tasks.md`. |
 | `sw:do` | Claim a task, implement it, close it with evidence. |
@@ -141,7 +158,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**11 skills, not 51** — see [The eleven skills](#the-eleven-skills) above. Plus six standalone skills for non-Claude tools.
+**12 focused skills** — see [The twelve skills](#the-twelve-skills) above. Plus six standalone skills for non-Claude tools.
 
 **External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in.
 

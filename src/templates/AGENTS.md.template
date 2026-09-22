@@ -109,3 +109,7 @@ If a cell still says TODO, fill it in from `package.json`/`Makefile` and commit;
 ## Project notes
 
 (architecture map, things agents get wrong here, recurring mistakes — keep it short)
+
+## Portable project hub
+
+When `.specweave/project/hub.json` exists, read its goal and shared context before starting work. `specweave project show` lists current work, artifacts and routine definitions; `specweave project brief --harness codex` exports a fresh assignment. Use native skills/task tools when available and authorized, or execute sequentially. Routines are definitions until configured in a native scheduler.

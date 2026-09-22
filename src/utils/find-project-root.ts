@@ -65,6 +65,10 @@ export function findProjectRoot(startDir: string = process.cwd()): string | null
  * For increment operations in multi-repo setups, use resolveEffectiveRoot()
  * which returns the umbrella root.
  *
+ * NOTE: Never use the returned path as the root of a recursive filesystem
+ * scan. Outside a project it is process.cwd(), which may be $HOME or /.
+ * Use findProjectRoot() and stop on null instead.
+ *
  * @param startDir - Directory to start searching from (defaults to process.cwd())
  * @returns Project root path or process.cwd() if not found
  *
@@ -173,19 +177,39 @@ export function findUmbrellaRoot(startDir: string = process.cwd()): string | nul
 }
 
 /**
+ * Resolve the effective project root, or null when not inside a project.
+ *
+ * - In a multi-repo umbrella: returns the umbrella root (increments belong there)
+ * - In a single-repo project: returns the nearest project root
+ * - Otherwise: null
+ *
+ * Use this instead of resolveEffectiveRoot() for any command that scans or
+ * mutates the tree under the root: outside a project the cwd fallback would be
+ * $HOME or /, and a walk from there is unbounded (0879).
+ *
+ * @param startDir - Directory to start searching from (defaults to process.cwd())
+ * @returns Effective project root path or null if not inside a SpecWeave project
+ */
+export function findEffectiveRoot(startDir: string = process.cwd()): string | null {
+  return findUmbrellaRoot(startDir) ?? findProjectRoot(startDir);
+}
+
+/**
  * Resolve the effective project root for increment operations.
  *
  * - In a multi-repo umbrella: returns the umbrella root (increments belong there)
  * - In a single-repo project: returns the nearest project root
  * - Fallback: returns process.cwd()
  *
+ * NOTE: Never use the returned path as the root of a recursive filesystem
+ * scan; outside a project it is process.cwd(). Use findEffectiveRoot() and
+ * stop on null instead.
+ *
  * @param startDir - Directory to start searching from (defaults to process.cwd())
  * @returns Effective project root path
  */
 export function resolveEffectiveRoot(startDir: string = process.cwd()): string {
-  const umbrellaRoot = findUmbrellaRoot(startDir);
-  if (umbrellaRoot) return umbrellaRoot;
-  return findProjectRoot(startDir) || process.cwd();
+  return findEffectiveRoot(startDir) ?? process.cwd();
 }
 
 /**

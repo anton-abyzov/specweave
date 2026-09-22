@@ -164,6 +164,10 @@ export class IntentStore {
   }
 
   create(input: unknown): WorkIntent {
+    return this.withWriteLock(() => this.createUnlocked(input));
+  }
+
+  private createUnlocked(input: unknown): WorkIntent {
     const data = object(input);
     this.assertWritable(this.read());
     const incrementId = field(data.incrementId, 'Increment', 180) || null;
@@ -182,6 +186,10 @@ export class IntentStore {
   }
 
   update(id: string, input: unknown): WorkIntent {
+    return this.withWriteLock(() => this.updateUnlocked(id, input));
+  }
+
+  private updateUnlocked(id: string, input: unknown): WorkIntent {
     const data = object(input);
     const history = this.read();
     this.assertWritable(history, id);
@@ -223,6 +231,10 @@ export class IntentStore {
   }
 
   addExecution(id: string, input: unknown): WorkIntent {
+    return this.withWriteLock(() => this.addExecutionUnlocked(id, input));
+  }
+
+  private addExecutionUnlocked(id: string, input: unknown): WorkIntent {
     const data = object(input);
     const history = this.read();
     this.assertWritable(history, id);
@@ -255,6 +267,23 @@ export class IntentStore {
       executions: [...(stored?.executions ?? []), segment],
       sessionRefs: stored?.sessionRefs ?? [],
     });
+  }
+
+  /** CLI and dashboard are separate writers; revision checks must be inside the same lock. */
+  private withWriteLock<T>(operation: () => T): T {
+    fs.mkdirSync(path.dirname(this.file), { recursive: true });
+    const lock = `${this.file}.lock`;
+    let fd: number;
+    try { fd = fs.openSync(lock, 'wx', 0o600); }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST')
+        throw new WorkError('Work is being edited. Retry; inspect board.jsonl.lock if a writer was interrupted.', 409);
+      throw error;
+    }
+    try {
+      fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }));
+      return operation();
+    } finally { fs.closeSync(fd); fs.unlinkSync(lock); }
   }
 
   private append(intent: WorkIntent): WorkIntent {
