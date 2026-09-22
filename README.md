@@ -46,7 +46,7 @@ specweave dashboard
 
 The hub keeps goals, shared context, artifact references and reusable routines in `.specweave/project/hub.json`; assignments reuse the intent board. Fresh worker briefs carry current context into Codex, Claude Code or another tool. The host launches agents and schedules routines when authorized. Saving a routine does not start a schedule.
 
-Codex native skills install under `.agents/skills/sw-*`. Existing legacy skills remain in place, and changed native installations are backed up. See [portable projects](docs-site/docs/guides/portable-projects.md) for migration, CLI examples and boundaries.
+Codex native skills install under `.agents/skills/sw-*`. Existing legacy skills remain in place, and changed native installations are backed up. See [portable projects](https://spec-weave.com/docs/guides/portable-projects) for migration, CLI examples and boundaries.
 
 ## The loop
 
