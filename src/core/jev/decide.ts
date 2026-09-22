@@ -227,7 +227,7 @@ function segmentIsReadOnly(segment: string): boolean {
   // These read-oriented tools also write files, set system state or launch helpers.
   // Keep them out of the fast path rather than implementing a partial shell parser.
   if (['sort', 'uniq', 'fd', 'date', 'hostname', 'less', 'man'].includes(tokens[0])) return false;
-  if (tokens.some((t) => /^--(?:output|pre|exec|exec-batch|pager|ext-diff|textconv|open-files-in-pager)(?:=|$)/.test(t))) return false;
+  if (tokens.some((t) => /^--(?:output|pre|exec|exec-batch|pager|ext-diff|textconv|open-files-in-pager|hostname-bin|compile)(?:=|$)/.test(t))) return false;
   if (tokens[0] === 'tree' && tokens.some((t) => /^-[^-]*o/.test(t))) return false;
   if (tokens[0] === 'file' && tokens.some((t) => /^-[^-]*C/.test(t))) return false;
 

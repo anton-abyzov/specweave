@@ -130,6 +130,9 @@ describe('prefilterCommand', () => {
     String.raw`find . -fpri\nt /tmp/important-file`,
     "echo 'ordinary quoted text'",
     String.raw`cat path\ with\ spaces`,
+    'file --compile -m /tmp/magic',
+    'rg --hostname-bin /tmp/helper pattern /tmp/input',
+    'rg --hostname-bin=/tmp/helper pattern /tmp/input',
   ])('sends %s to Jev', (command) => {
     expect(prefilterCommand(command)).toBe('check');
   });
