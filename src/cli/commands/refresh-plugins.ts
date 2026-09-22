@@ -12,6 +12,7 @@
  * @updated 1.0.535 - Migrated from CLI-based install to direct file copy
  * @updated 1.0.475 - Restored native Claude CLI install when available
  * @updated 1.0.540 - Core-only default install + --plugin flag + --quiet mode
+ * @updated 2.2.3 - Refuse to run outside a SpecWeave project (no process.cwd() fallback)
  */
 
 import chalk from 'chalk';
@@ -28,7 +29,7 @@ import {
   syncNativePluginContent,
 } from '../../utils/plugin-copier.js';
 import { cleanupStalePlugins, migrateUserLevelPlugins } from '../../utils/cleanup-stale-plugins.js';
-import { getProjectRoot } from '../../utils/find-project-root.js';
+import { findProjectRoot } from '../../utils/find-project-root.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { enablePluginsInSettings } from '../helpers/init/claude-plugin-enabler.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
@@ -196,8 +197,20 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     if (!quiet) console.log(formattedMsg ?? plainMsg);
   };
 
-  // Step 0: Resolve which adapter/tool this project uses.
-  const projectRoot = getProjectRoot();
+  // Step 0: Resolve the project root. Deliberately no process.cwd() fallback:
+  // the project-scoped steps below scan the tree under this path, and from a
+  // non-project directory (e.g. $HOME) that scan is unbounded.
+  const projectRoot = findProjectRoot();
+  if (!projectRoot) {
+    const cwd = process.cwd();
+    const msg = `No SpecWeave project found: no .specweave/config.json in ${cwd} or any parent directory`;
+    log(chalk.yellow(`\n  ${msg}`));
+    log(chalk.gray('  Run this command from inside a SpecWeave project, or run `specweave init` first.\n'));
+    process.exitCode = 1;
+    return { failed: 1, errors: [msg] };
+  }
+
+  // Step 0b: Resolve which adapter/tool this project uses.
   const resolved = resolveActiveAdapter(projectRoot);
   const useNativeCli = resolved.method === 'native-cli';
   const isClaude = resolved.name === 'claude';

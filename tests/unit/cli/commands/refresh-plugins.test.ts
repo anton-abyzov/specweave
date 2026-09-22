@@ -6,7 +6,7 @@
  * - Direct file copy fallback (.claude/skills/) when CLI is unavailable
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks
@@ -19,6 +19,7 @@ const {
   mockExistsSync,
   mockReadFileSync,
   mockGetProjectRoot,
+  mockFindProjectRoot,
   mockDetectClaudeCli,
   mockEnablePluginsInSettings,
 } = vi.hoisted(() => ({
@@ -28,6 +29,7 @@ const {
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
   mockGetProjectRoot: vi.fn(),
+  mockFindProjectRoot: vi.fn(),
   mockDetectClaudeCli: vi.fn(),
   mockEnablePluginsInSettings: vi.fn(),
 }));
@@ -61,6 +63,7 @@ vi.mock('../../../../src/utils/cleanup-stale-plugins.js', () => ({
 
 vi.mock('../../../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mockGetProjectRoot,
+  findProjectRoot: mockFindProjectRoot,
 }));
 
 // Mock Claude CLI detector
@@ -172,6 +175,7 @@ describe('refresh-plugins', () => {
 
     mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
     mockGetProjectRoot.mockReturnValue('/mock/project');
+    mockFindProjectRoot.mockReturnValue('/mock/project');
     mockDetectClaudeCli.mockReturnValue(CLI_UNAVAILABLE);
     mockEnablePluginsInSettings.mockReturnValue(true);
 
@@ -542,6 +546,89 @@ describe('refresh-plugins', () => {
 
       // Plugin installation should still have been called
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // No project found (0879): never fall back to process.cwd()
+  //
+  // getProjectRoot() returns process.cwd() when no .specweave/config.json is
+  // found upward; the legacy-lockfile scan then walked that whole tree (from
+  // $HOME: one core pinned for 6+ minutes). The command must stop instead.
+  // -------------------------------------------------------------------------
+
+  describe('no project found', () => {
+    let exitCodeBefore: typeof process.exitCode;
+
+    beforeEach(() => {
+      exitCodeBefore = process.exitCode;
+      process.exitCode = undefined;
+      mockFindProjectRoot.mockReturnValue(null);
+    });
+
+    afterEach(() => {
+      process.exitCode = exitCodeBefore;
+    });
+
+    it('bails out with failed=1, exit code 1 and a message naming the cwd and .specweave/config.json', async () => {
+      const result = await refreshPluginsCommand({ quiet: true });
+
+      expect(result.failed).toBe(1);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toContain('No SpecWeave project found');
+      expect(result.errors[0]).toContain('.specweave/config.json');
+      expect(result.errors[0]).toContain(process.cwd());
+      expect(process.exitCode).toBe(1);
+    });
+
+    it('prints the message and the remedy when not quiet', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      await refreshPluginsCommand({});
+
+      const output = consoleSpy.mock.calls.map((args) => String(args[0])).join('\n');
+      expect(output).toContain('No SpecWeave project found');
+      expect(output).toContain('specweave init');
+      consoleSpy.mockRestore();
+    });
+
+    it('stays silent with --quiet', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      await refreshPluginsCommand({ quiet: true });
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('does not scan, migrate, install, or touch settings', async () => {
+      await refreshPluginsCommand({ all: true });
+
+      expect(mockGetProjectRoot).not.toHaveBeenCalled();
+      expect(mockCleanupLegacyLockfiles).not.toHaveBeenCalled();
+      expect(mockCleanupOrphanedChildLocks).not.toHaveBeenCalled();
+      expect(mockDetectClaudeCli).not.toHaveBeenCalled();
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+      expect(mockCleanupStalePlugins).not.toHaveBeenCalled();
+      expect(mockMigrateUserLevelPlugins).not.toHaveBeenCalled();
+    });
+
+    it('runs normally once a project root is found', async () => {
+      mockFindProjectRoot.mockReturnValue('/mock/project');
+
+      const result = await refreshPluginsCommand({});
+
+      expect(result.failed).toBe(0);
+      expect(process.exitCode).toBeUndefined();
+      expect(mockCleanupLegacyLockfiles).toHaveBeenCalledWith('/mock/project', expect.any(Object));
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
+        'sw',
+        '/mock/specweave',
+        '/mock/project',
+        { force: undefined },
+      );
     });
   });
 });

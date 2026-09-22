@@ -37,6 +37,24 @@ describe('LSP Setup - Multi-repo Language Scanning', () => {
   });
 
   describe('scanLanguagesAcrossRepos', () => {
+    it('skips symlinked repository containers and source files', async () => {
+      const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'lsp-outside-'));
+      try {
+        fs.mkdirSync(path.join(outside, 'repo'));
+        fs.writeFileSync(path.join(outside, 'repo/app.ts'), 'export {};');
+        fs.symlinkSync(outside, path.join(tempDir, 'repositories'), 'dir');
+        fs.symlinkSync(path.join(outside, 'repo/app.ts'), path.join(tempDir, 'linked.ts'), 'file');
+        fs.writeFileSync(path.join(tempDir, 'real.py'), 'print(1)');
+        const result = await scanLanguagesAcrossRepos(tempDir);
+        expect(result.success).toBe(true);
+        expect(result.totalFiles).toBe(1);
+        expect(result.reposScanned).toEqual(['root']);
+        expect(result.languages.map(l => l.name)).toEqual(['Python']);
+      } finally {
+        fs.rmSync(outside, { recursive: true, force: true });
+      }
+    });
+
     it('should scan single project for TypeScript files', async () => {
       // Create some TypeScript files
       fs.writeFileSync(path.join(tempDir, 'index.ts'), 'export const x = 1;');

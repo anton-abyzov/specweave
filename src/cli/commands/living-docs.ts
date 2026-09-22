@@ -28,6 +28,7 @@ import type { BackgroundJob, LivingDocsJobConfig } from '../../core/background/t
 import type { LivingDocsUserInputs } from '../../core/background/types.js';
 import { detectBrownfield, estimateDuration } from '../helpers/init/living-docs-preflight.js';
 import { isClaudeCodeAvailable, getClaudeCodeStatus, getAvailableProviders } from '../../core/llm/provider-factory.js';
+import { findProjectRoot } from '../../utils/find-project-root.js';
 
 export interface LivingDocsOptions {
   resume?: string;
@@ -44,13 +45,17 @@ export interface LivingDocsOptions {
  * Main living-docs command handler
  */
 export async function livingDocsCommand(options: LivingDocsOptions): Promise<void> {
-  const projectPath = process.cwd();
-
-  // Check if SpecWeave is initialized
-  const specweavePath = path.join(projectPath, '.specweave');
-  if (!fs.existsSync(specweavePath)) {
-    console.log(chalk.yellow('No SpecWeave project found in current directory.'));
-    console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+  // Resolve the project root by .specweave/config.json. Deliberately no
+  // process.cwd() fallback and no bare `.specweave/` check: ~/.specweave/ (the
+  // global plugins lockfile) exists on every machine that ran SpecWeave, so from
+  // $HOME a directory check passes and the brownfield check plus the discovery
+  // phase then walk the whole home tree (0879).
+  const projectPath = findProjectRoot();
+  if (!projectPath) {
+    const cwd = process.cwd();
+    console.log(chalk.yellow(`No SpecWeave project found: no .specweave/config.json in ${cwd} or any parent directory`));
+    console.log(chalk.gray('Run this command from inside a SpecWeave project, or run `specweave init` first.'));
+    process.exitCode = 1;
     return;
   }
 

@@ -52,6 +52,7 @@ import {
   runDiscovery,
   calculateTier,
   selectRepresentativeFiles,
+  MAX_SCAN_DEPTH,
   type DiscoveryResult,
   type SamplingConfig,
 } from '../../../../src/core/living-docs/discovery.js';
@@ -627,6 +628,34 @@ describe('discovery', () => {
       await runDiscovery(projectPath, [], onProgress);
 
       expect(onProgress).toHaveBeenCalled();
+    });
+
+    // 0879: countDirectories() had no depth bound while scanDirectory() stopped at
+    // depth 15, so on a deep tree the progress total overshot what was scanned and
+    // on a huge tree ($HOME) the count itself ran away. Both share MAX_SCAN_DEPTH.
+    it('should bound the directory count to the same depth as the scan', async () => {
+      const chainLength = MAX_SCAN_DEPTH + 10;
+      mockReaddirSync.mockImplementation((dirPath: string) => {
+        const rel = realPath.relative(projectPath, dirPath);
+        const level = rel === '' ? 0 : rel.split(realPath.sep).length;
+        return level < chainLength ? [dirent(`l${level + 1}`, true)] : [];
+      });
+      mockExistsSync.mockReturnValue(false);
+      mockStatSync.mockReturnValue({
+        size: 0,
+        isDirectory: () => false,
+        isFile: () => false,
+        birthtime: new Date(),
+        mtime: new Date(),
+      });
+
+      const onProgress = vi.fn();
+      const result = await runDiscovery(projectPath, [], onProgress);
+
+      const scanned = result.codebaseStats.totalDirs;
+      expect(scanned).toBe(MAX_SCAN_DEPTH + 1); // root (depth 0) .. depth MAX_SCAN_DEPTH
+      const totals = [...new Set(onProgress.mock.calls.map((c) => c[1]))];
+      expect(totals).toEqual([scanned]);
     });
 
     it('should scan additional sources', async () => {

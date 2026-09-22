@@ -385,7 +385,6 @@ program
       noPush: options.push === false, // Handle --no-push
       force: options.force,
       branch: options.branch,
-      projectRoot: process.cwd()
     });
   });
 
@@ -780,6 +779,13 @@ program
     if (!result.success) process.exit(1);
   });
 
+// Route lazy CLI actions through the guarded command factory. Keep registrations
+// here so static shell-completion generation still sees every command and option.
+async function runLspCommand(args) {
+  const { createLspCommand } = await import('../dist/src/cli/commands/lsp.js');
+  await createLspCommand().parseAsync(args, { from: 'user' });
+}
+
 // LSP command - Code intelligence operations
 const lspCmd = program
   .command('lsp')
@@ -789,40 +795,35 @@ lspCmd
   .command('refs <file> <symbol>')
   .description('Find all references to a symbol')
   .action(async (file, symbol) => {
-    const { handleLspRefs } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspRefs(process.cwd(), file, symbol);
+    await runLspCommand(['refs', '--', file, symbol]);
   });
 
 lspCmd
   .command('def <file> <symbol>')
   .description('Go to definition of a symbol')
   .action(async (file, symbol) => {
-    const { handleLspDef } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspDef(process.cwd(), file, symbol);
+    await runLspCommand(['def', '--', file, symbol]);
   });
 
 lspCmd
   .command('hover <file> <symbol>')
   .description('Get type information for a symbol')
   .action(async (file, symbol) => {
-    const { handleLspHover } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspHover(process.cwd(), file, symbol);
+    await runLspCommand(['hover', '--', file, symbol]);
   });
 
 lspCmd
   .command('symbols <file>')
   .description('List all symbols in a file')
   .action(async (file) => {
-    const { handleLspSymbols } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSymbols(process.cwd(), file);
+    await runLspCommand(['symbols', '--', file]);
   });
 
 lspCmd
   .command('search <query>')
   .description('Search for symbols in workspace')
   .action(async (query) => {
-    const { handleLspSearch } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSearch(process.cwd(), query);
+    await runLspCommand(['search', '--', query]);
   });
 
 lspCmd
@@ -830,16 +831,14 @@ lspCmd
   .description('Warm up LSP by pre-indexing workspace (run on session start)')
   .option('--quiet', 'Suppress output')
   .action(async (files, options) => {
-    const { handleLspWarmup } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspWarmup(process.cwd(), files, options.quiet ?? false);
+    await runLspCommand(['warmup', ...(options.quiet ? ['--quiet'] : []), '--', ...files]);
   });
 
 lspCmd
   .command('status')
   .description('Show LSP status and warm-up state')
   .action(async () => {
-    const { handleLspStatus } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspStatus(process.cwd());
+    await runLspCommand(['status']);
   });
 
 lspCmd
@@ -850,13 +849,10 @@ lspCmd
   .option('--dry-run', 'Show what would be installed without installing')
   .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
   .action(async (options) => {
-    const { handleLspSetup } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSetup(process.cwd(), {
-      maxLanguages: parseInt(options.max, 10),
-      minFileCount: parseInt(options.minFiles, 10),
-      dryRun: options.dryRun ?? false,
-      scope: options.scope,
-    });
+    await runLspCommand([
+      'setup', '--max', options.max, '--min-files', options.minFiles,
+      '--scope', options.scope, ...(options.dryRun ? ['--dry-run'] : []),
+    ]);
   });
 
 // Commits command - Display last 2 git commits

@@ -12,6 +12,7 @@ import * as os from 'os';
 import {
   cleanupLegacyLockfiles,
   cleanupOrphanedChildLocks,
+  DEFAULT_MAX_WALK_DEPTH,
 } from '../../../src/utils/cleanup-stale-plugins.js';
 
 let tmpDir: string;
@@ -144,6 +145,61 @@ describe('cleanupLegacyLockfiles', () => {
 
     expect(result.success).toBe(true);
     expect(result.removedCount).toBe(0);
+  });
+
+  // T-012 (0879): symlinked directories are never followed. A link such as
+  // `~/Google Drive -> ~/Library/CloudStorage/...` or `link -> /` must not pull
+  // the whole disk into the scan, nor let the scan delete files outside the tree.
+  it('T-012: should not follow symlinked directories', () => {
+    const externalDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-external-'));
+    try {
+      const externalLock = path.join(externalDir, 'skills-lock.json');
+      fs.writeFileSync(externalLock, '{}');
+      const oldTime = new Date(Date.now() - 60_000);
+      fs.utimesSync(externalLock, oldTime, oldTime);
+
+      fs.symlinkSync(externalDir, path.join(tmpDir, 'escape'));
+
+      const result = cleanupLegacyLockfiles(tmpDir, { mtimeThresholdMs: 0 });
+
+      expect(result.success).toBe(true);
+      expect(result.removedCount).toBe(0);
+      expect(result.removedPaths).toEqual([]);
+      expect(fs.existsSync(externalLock)).toBe(true);
+    } finally {
+      fs.rmSync(externalDir, { recursive: true, force: true });
+    }
+  });
+
+  // T-013 (0879): the descent is depth-bounded, so a huge tree (e.g. $HOME when
+  // no project is found) cannot pin a core for minutes.
+  it('T-013: should stop descending at maxDepth', () => {
+    const oldTime = new Date(Date.now() - 60_000);
+    const makeLock = (segments: string[]): string => {
+      const dir = path.join(tmpDir, ...segments);
+      fs.mkdirSync(dir, { recursive: true });
+      const lock = path.join(dir, 'skills-lock.json');
+      fs.writeFileSync(lock, '{}');
+      fs.utimesSync(lock, oldTime, oldTime);
+      return lock;
+    };
+    const depthSegments = (prefix: string, depth: number): string[] =>
+      Array.from({ length: depth }, (_, i) => `${prefix}${i + 1}`);
+
+    const atLimit = makeLock(depthSegments('d', DEFAULT_MAX_WALK_DEPTH));
+    const pastLimit = makeLock(depthSegments('e', DEFAULT_MAX_WALK_DEPTH + 1));
+
+    const bounded = cleanupLegacyLockfiles(tmpDir, { mtimeThresholdMs: 0 });
+    expect(bounded.removedPaths).toEqual([atLimit]);
+    expect(fs.existsSync(atLimit)).toBe(false);
+    expect(fs.existsSync(pastLimit)).toBe(true);
+
+    const deeper = cleanupLegacyLockfiles(tmpDir, {
+      mtimeThresholdMs: 0,
+      maxDepth: DEFAULT_MAX_WALK_DEPTH + 1,
+    });
+    expect(deeper.removedPaths).toEqual([pastLimit]);
+    expect(fs.existsSync(pastLimit)).toBe(false);
   });
 });
 
