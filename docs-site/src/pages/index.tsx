@@ -20,6 +20,7 @@ export default function Home() {
           <div className={styles.actions}><Link className={styles.primary} to="/docs/getting-started">Start with your project <span aria-hidden="true">↗</span></Link><a className={styles.textLink} href="#work">Explore the workflow ↓</a></div>
           <div className={styles.install}><code>npm install -g specweave</code><button onClick={copyCommand} aria-label="Copy installation command">{copied ? 'Copied' : 'Copy'}</button></div>
           <span className={styles.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'MIT licensed. No account required for the local workflow.'}</span>
+          <Link className={styles.textLink} to="/jev">New: Jev in practice, with EasyChamp evidence ↗</Link>
         </div>
         <div className={styles.heroArt}><img src="/img/product/continuity.webp" alt="One orange thread continues through three separate frames" width="2048" height="1152" fetchPriority="high" /><div className={styles.artCaption}><span>01 / CONTINUITY</span><span>Different tools. One durable record.</span></div></div>
       </section>
@@ -43,6 +44,7 @@ export default function Home() {
         </div>
         <Link className={styles.textLink} to="/docs/overview/dogfooding">More projects and how we use SpecWeave ↗</Link>
       </section>
+      <section className={`${styles.section} ${styles.jevFeature}`} aria-labelledby="jev-title"><div><span className={styles.eyebrow}>A new optional capability / Jev</span><h2 id="jev-title">Small decisions.<br /><em>Show your working.</em></h2><p>Some requests need a better route, not more generated text. See how Jev classifies EasyChamp requests, where the regex wins, and what our recorded tests actually prove.</p><Link className={styles.primary} to="/jev">Explore Jev in practice ↗</Link></div><div className={styles.jevPreview}><span className={styles.eyebrow}>Recorded example · synthetic input</span><blockquote>“Could I see the leagues available to me?”</blockquote><dl><div><dt>Regex baseline</dt><dd>General chat fallback</dd></div><div><dt>Regex + Jev</dt><dd>Get leagues</dd></div></dl><p>Real API calls. Inspectable inputs and failures. Production time savings remain unmeasured.</p><Link className={styles.textLink} to="/jev">See measurements and limits ↗</Link></div></section>
       <section className={styles.skillsBanner}><div><span className={styles.eyebrow}>The companion project</span><h3>Better skills. Less baggage.</h3><p>Find focused expertise, inspect its source, and evaluate whether it helps your workflow.</p></div><a className={styles.secondary} href="https://verified-skill.com">Explore Verified Skills ↗</a></section>
       <section className={styles.finalCta}><span className={styles.eyebrow}>Your next session can start here</span><h2>Keep building.<br /><em>Keep the context.</em></h2><Link className={styles.primary} to="/docs/getting-started">Get started ↗</Link><a className={styles.textLink} href="https://github.com/anton-abyzov/specweave">Read the source</a></section>
     </main>
