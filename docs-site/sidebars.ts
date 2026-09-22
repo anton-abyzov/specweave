@@ -45,6 +45,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
+        {type: 'doc', id: 'guides/portable-projects', label: 'Portable Projects'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'What is an Increment?'},
         {type: 'doc', id: 'guides/core-concepts/living-documentation', label: 'Living Documentation'},
         {type: 'doc', id: 'guides/core-concepts/skills-first-architecture', label: 'Skills-First Architecture'},
@@ -310,6 +311,7 @@ const sidebars: SidebarsConfig = {
   enterpriseSidebar: [
     {type: 'doc', id: 'enterprise/index', label: 'Enterprise Overview'},
     {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
+        {type: 'doc', id: 'guides/portable-projects', label: 'Portable Projects'},
     {type: 'doc', id: 'guides/github-sync', label: 'GitHub Sync'},
     {type: 'doc', id: 'guides/jira-ado-sync', label: 'Jira & Azure DevOps'},
     {type: 'doc', id: 'guides/compliance-standards', label: 'Compliance Standards'},

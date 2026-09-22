@@ -454,8 +454,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 4: Refresh plugins (DEFAULT - unless --no-plugins specified)
-  if (!skipPlugins) {
+  // Step 4: Refresh plugins (DEFAULT - unless --no-plugins or dry run).
+  if (!skipPlugins && !options.check) {
     console.log('');
     spinner.start('Refreshing marketplace plugins...');
     spinner.stop();
@@ -505,7 +505,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   }
 
   if (!skipPlugins) {
-    console.log(`  Plugins:      ${result.pluginsRefreshed ? chalk.green('✓ Refreshed') : chalk.red('Failed')}`);
+    console.log(`  Plugins:      ${options.check ? chalk.gray('Would refresh (dry run)') : result.pluginsRefreshed ? chalk.green('✓ Refreshed') : chalk.red('Failed')}`);
   } else {
     console.log(chalk.gray(`  Plugins:      Skipped (--no-plugins specified)`));
   }
@@ -527,7 +527,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Next steps
   console.log(chalk.blue('\n  Next steps:'));
 
-  if (!skipPlugins) {
+  if (options.check) {
+    console.log(chalk.gray('    1. Run specweave update without --check to apply changes'));
+  } else if (!skipPlugins) {
     console.log(chalk.gray('    1. Restart Claude Code for plugin changes'));
     if (result.warnings.length > 0) {
       console.log(chalk.gray('    2. Review warnings above'));

@@ -46,7 +46,7 @@ function slashSkills(content: string): string[] {
 
 /** Commands registered on the CLI (`.command('name <arg>')`). */
 function registeredCommands(): Set<string> {
-  const bin = fs.readFileSync(path.join(ROOT, 'bin/specweave.js'), 'utf-8');
+  const bin = fs.readdirSync(path.join(ROOT, 'bin')).filter(name => name.endsWith('.js')).map(name => fs.readFileSync(path.join(ROOT, 'bin', name), 'utf-8')).join('\n');
   const names = (bin.match(/\.command\('([^']+)'/g) ?? []).map(m =>
     m.replace(/^\.command\('/, '').replace(/'$/, '').split(/\s+/)[0]
   );

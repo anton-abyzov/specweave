@@ -1,3 +1,21 @@
+## [2.3.0] - 2026-09-22
+
+### Added
+
+- Portable project hub for software, research, content and operations in any local folder, including folders without Git.
+- Shared project goals and context, artifact references, reusable routine definitions and fresh coordinator or worker briefs for Codex, Claude Code and other tools.
+- Project dashboard with revision conflict recovery, assignment creation, file downloads and responsive desktop, tablet and phone layouts.
+- `specweave project` CLI and the portable `sw:project` skill. Existing intent work and evidence remain authoritative; routines do not create schedules.
+
+### Fixed
+
+- `specweave update --check` now keeps plugin refresh read-only and reports planned changes without installing them.
+- Filesystem discovery now requires an actual project, skips symlinks and respects depth bounds. LSP and dashboard commands stop safely outside projects; `save` targets the enclosing Git repository and fans out only from a project root or with `--all`.
+- Codex installs native skills under `.agents/skills/sw-*`, verifies each project's installed files and preserves legacy and custom skills. Changed installations are backed up before replacement; executable resources retain their modes.
+- Concurrent CLI and dashboard intent writes use the same exclusive lock. Project hub writes reject stale revisions, corrupt input and symlinked managed paths.
+
+This is an additive minor release. Native agent execution, connector permissions, hooks and schedules remain under the host application's control. The dashboard now shares the current website's paper, ink, rust accent, surface, control and typography tokens; fonts are bundled for offline use. Existing project data needs no breaking migration.
+
 ## [2.2.3] - 2026-09-22
 
 ### Fixed
