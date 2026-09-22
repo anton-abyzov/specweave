@@ -53,6 +53,9 @@ describe('published package installability gate', () => {
     const wait = vi.fn();
     expect(await waitForPublishedTarball(manifest, { fetchImpl, wait, attempts: 3 })).toEqual(bytes);
     expect(wait).toHaveBeenCalledTimes(2);
+    const urls = fetchImpl.mock.calls.map(([url]) => String(url));
+    expect(new Set(urls).size).toBe(3);
+    expect(urls.every((url) => new URL(url).searchParams.has('_specweave_verify'))).toBe(true);
   });
   it('rejects corrupt propagated tarballs without retrying integrity failures', async () => {
     const fetchImpl = vi.fn(async () => new Response('wrong bytes'));

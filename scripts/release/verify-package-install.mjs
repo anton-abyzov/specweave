@@ -28,10 +28,15 @@ export function validateManifest(manifest, expected) {
 }
 
 function npm(args, options) {
-  const npmScript = process.env.npm_execpath;
-  return npmScript
-    ? execFileSync(process.execPath, [npmScript, ...args], options)
-    : execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, options);
+  const npmScript = [
+    process.env.npm_execpath,
+    path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'),
+    path.resolve(path.dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js'),
+  ].find((file) => file && existsSync(file));
+  if (npmScript) return execFileSync(process.execPath, [npmScript, ...args], options);
+  // .cmd files cannot be spawned by execFileSync without a shell on Windows.
+  if (process.platform === 'win32') throw new Error('Cannot locate npm CLI JavaScript; run through npm run release:preflight');
+  return execFileSync('npm', args, options);
 }
 
 export function verifyInstalledTarball(tarballPath, expected) {
@@ -48,7 +53,10 @@ export function verifyInstalledTarball(tarballPath, expected) {
     validateManifest(installed, expected);
     const command = path.join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'specweave.cmd' : 'specweave');
     if (!existsSync(command)) throw new Error('Clean installation did not create the specweave command');
-    const output = execFileSync(command, ['--version'], { cwd: installRoot, encoding: 'utf8', timeout: 30_000 }).trim();
+    const installedEntry = path.join(installRoot, 'node_modules', expected.name, installed.bin.specweave);
+    const output = (process.platform === 'win32'
+      ? execFileSync(process.execPath, [installedEntry, '--version'], { cwd: installRoot, encoding: 'utf8', timeout: 30_000 })
+      : execFileSync(command, ['--version'], { cwd: installRoot, encoding: 'utf8', timeout: 30_000 })).trim();
     if (output !== expected.version) throw new Error(`Installed command reported ${JSON.stringify(output)}, expected ${expected.version}`);
     console.log(`[install-check] packed bin preserved; clean installed specweave --version = ${output}`);
     return { name: manifest.name, version: manifest.version, bin: manifest.bin, commandOutput: output };
@@ -73,7 +81,10 @@ async function waitForRegistryResponse(url, label, { fetchImpl = fetch, attempts
   for (let attempt = 0; attempt < attempts; attempt++) {
     let reason;
     try {
-      const response = await fetchImpl(url, { cache: 'no-store', signal: AbortSignal.timeout(15000) });
+      // CDN negative caches can outlive propagation even with no-store request mode.
+      const lookup = new URL(url);
+      lookup.searchParams.set('_specweave_verify', `${Date.now()}-${attempt}`);
+      const response = await fetchImpl(lookup.href, { cache: 'no-store', signal: AbortSignal.timeout(15000) });
       if (response.ok) return response;
       if (response.status !== 404 && response.status !== 429 && response.status < 500) throw new Error(`Registry rejected ${label}: HTTP ${response.status}`);
       reason = `HTTP ${response.status}`;
