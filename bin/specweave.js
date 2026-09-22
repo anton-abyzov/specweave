@@ -953,9 +953,81 @@ program
     if (!result.success) process.exit(1);
   });
 
-// Use the same guarded LSP registration as library callers and command tests.
-const { createLspCommand } = await import('../dist/src/cli/commands/lsp.js');
-program.addCommand(createLspCommand());
+// Route lazy CLI actions through the guarded command factory. Keep registrations
+// here so static shell-completion generation still sees every command and option.
+async function runLspCommand(args) {
+  const { createLspCommand } = await import('../dist/src/cli/commands/lsp.js');
+  await createLspCommand().parseAsync(args, { from: 'user' });
+}
+
+// LSP command - Code intelligence operations
+const lspCmd = program
+  .command('lsp')
+  .description('LSP code intelligence (refs, def, hover, symbols, search)');
+
+lspCmd
+  .command('refs <file> <symbol>')
+  .description('Find all references to a symbol')
+  .action(async (file, symbol) => {
+    await runLspCommand(['refs', '--', file, symbol]);
+  });
+
+lspCmd
+  .command('def <file> <symbol>')
+  .description('Go to definition of a symbol')
+  .action(async (file, symbol) => {
+    await runLspCommand(['def', '--', file, symbol]);
+  });
+
+lspCmd
+  .command('hover <file> <symbol>')
+  .description('Get type information for a symbol')
+  .action(async (file, symbol) => {
+    await runLspCommand(['hover', '--', file, symbol]);
+  });
+
+lspCmd
+  .command('symbols <file>')
+  .description('List all symbols in a file')
+  .action(async (file) => {
+    await runLspCommand(['symbols', '--', file]);
+  });
+
+lspCmd
+  .command('search <query>')
+  .description('Search for symbols in workspace')
+  .action(async (query) => {
+    await runLspCommand(['search', '--', query]);
+  });
+
+lspCmd
+  .command('warmup [files...]')
+  .description('Warm up LSP by pre-indexing workspace (run on session start)')
+  .option('--quiet', 'Suppress output')
+  .action(async (files, options) => {
+    await runLspCommand(['warmup', ...(options.quiet ? ['--quiet'] : []), '--', ...files]);
+  });
+
+lspCmd
+  .command('status')
+  .description('Show LSP status and warm-up state')
+  .action(async () => {
+    await runLspCommand(['status']);
+  });
+
+lspCmd
+  .command('setup')
+  .description('Scan project for languages and interactively install LSP plugins (22 languages)')
+  .option('-n, --max <number>', 'Maximum number of languages to suggest', '5')
+  .option('--min-files <number>', 'Minimum file count to consider a language', '5')
+  .option('--dry-run', 'Show what would be installed without installing')
+  .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
+  .action(async (options) => {
+    await runLspCommand([
+      'setup', '--max', options.max, '--min-files', options.minFiles,
+      '--scope', options.scope, ...(options.dryRun ? ['--dry-run'] : []),
+    ]);
+  });
 
 // Commits command - Display last 2 git commits
 program
