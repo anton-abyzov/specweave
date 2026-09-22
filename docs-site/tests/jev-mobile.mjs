@@ -39,6 +39,20 @@ try {
         const data = await page.request.get(baseUrl + '/evidence/jev-easychamp-benchmark.json');
         assert.equal(data.status(), 200);
         assert.equal((await data.json()).suite.rows.length, 26);
+        const replayResponse = await page.request.get(baseUrl + '/evidence/jev-easychamp-replay.json');
+        assert.equal(replayResponse.status(), 200, 'current replay is publicly readable');
+        const replay = await replayResponse.json();
+        assert.equal(replay.rows.length, 62, 'current replay denominator');
+        assert.equal(replay.provider.calls, 41, 'current replay provider calls');
+        assert.equal(replay.metrics.all.additional_correct_direct_routes, 5);
+        const comparisonResponse = await page.request.get(baseUrl + '/evidence/jev-easychamp-agent-comparison.json');
+        assert.equal(comparisonResponse.status(), 200, 'paired handler evidence is publicly readable');
+        const comparison = await comparisonResponse.json();
+        assert.equal(comparison.rows.length, 5, 'paired handler sample size');
+        assert.equal(comparison.rows.filter(row => row.enabled.jev.some(call => call.reason === 'accepted')).length, 4, 'paired handler rerun acceptance');
+        for (const file of ['jev-easychamp-benchmark.json', 'jev-easychamp-replay.json', 'jev-easychamp-agent-comparison.json']) {
+          assert.equal(await page.locator(`main a[href="/evidence/${file}"]`).count(), 1, `${file}: evidence link exists`);
+        }
       }
       await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo({ top: 0, behavior: 'instant' }); });
       await page.screenshot({ path: `${output}/${path === '/' ? 'home' : 'jev'}-${width}-hero.png` });
