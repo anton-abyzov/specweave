@@ -1,4 +1,4 @@
-## [2.3.0-rc.1] - 2026-09-21
+## [2.3.0] - 2026-09-22
 
 ### Added
 
@@ -12,7 +12,7 @@
 - Codex installs native skills under `.agents/skills/sw-*`, verifies each project's installed files and preserves legacy and custom skills. Changed installations are backed up before replacement; executable resources retain their modes.
 - Concurrent CLI and dashboard intent writes use the same exclusive lock. Project hub writes reject stale revisions, corrupt input and symlinked managed paths.
 
-This is an additive release candidate. Native agent execution, connector permissions, hooks and schedules remain under the host application's control. Stable publication awaits manual UI acceptance.
+This is an additive minor release. Native agent execution, connector permissions, hooks and schedules remain under the host application's control. The dashboard now shares the current website's paper, ink, rust accent, surface, control and typography tokens; fonts are bundled for offline use. Existing project data needs no breaking migration.
 
 ## [2.2.3] - 2026-09-22
 
