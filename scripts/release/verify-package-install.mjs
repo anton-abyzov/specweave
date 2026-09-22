@@ -69,32 +69,47 @@ export function verifyLocalPackage(repoRoot) {
   } finally { rmSync(packRoot, { recursive: true, force: true }); }
 }
 
-export async function waitForPublishedManifest(version, { fetchImpl = fetch, attempts = 40, delayMs = 15000, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
-  const expected = { name: 'specweave', version };
+async function waitForRegistryResponse(url, label, { fetchImpl = fetch, attempts = 40, delayMs = 15000, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
   for (let attempt = 0; attempt < attempts; attempt++) {
-    const response = await fetchImpl(`https://registry.npmjs.org/specweave/${encodeURIComponent(version)}`, { cache: 'no-store', signal: AbortSignal.timeout(15000) });
-    if (response.ok) {
-      const manifest = await response.json();
-      validateManifest(manifest, expected);
-      if (!manifest.dist?.tarball || !manifest.dist?.integrity) throw new Error('Published manifest lacks tarball integrity');
-      return manifest;
+    let reason;
+    try {
+      const response = await fetchImpl(url, { cache: 'no-store', signal: AbortSignal.timeout(15000) });
+      if (response.ok) return response;
+      if (response.status !== 404 && response.status !== 429 && response.status < 500) throw new Error(`Registry rejected ${label}: HTTP ${response.status}`);
+      reason = `HTTP ${response.status}`;
+      await response.body?.cancel();
+    } catch (error) {
+      if (!(error instanceof TypeError) && !['AbortError', 'TimeoutError'].includes(error.name)) throw error;
+      reason = error.name;
     }
-    if (response.status !== 404 && response.status !== 429 && response.status < 500) throw new Error(`Registry rejected release lookup: HTTP ${response.status}`);
     if (attempt + 1 < attempts) {
-      console.log(`[install-check] ${version} processing (HTTP ${response.status}); waiting for public registry`);
+      console.log(`[install-check] ${label} processing (${reason}); waiting for public registry`);
       await wait(delayMs);
     }
   }
-  throw new Error(`${version} is not publicly available after bounded registry wait`);
+  throw new Error(`${label} is not publicly available after bounded registry wait`);
+}
+
+export async function waitForPublishedManifest(version, options) {
+  const response = await waitForRegistryResponse(`https://registry.npmjs.org/specweave/${encodeURIComponent(version)}`, version, options);
+  const manifest = await response.json();
+  validateManifest(manifest, { name: 'specweave', version });
+  if (!manifest.dist?.tarball || !manifest.dist?.integrity) throw new Error('Published manifest lacks tarball integrity');
+  return manifest;
+}
+
+export async function waitForPublishedTarball(manifest, options) {
+  // Metadata and CDN tarball propagation are independent. A 200 manifest is not enough.
+  const response = await waitForRegistryResponse(manifest.dist.tarball, `${manifest.version} tarball`, options);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const [algorithm, digest] = manifest.dist.integrity.split('-');
+  if (!['sha512', 'sha256'].includes(algorithm) || createHash(algorithm).update(bytes).digest('base64') !== digest) throw new Error('Published tarball integrity mismatch');
+  return bytes;
 }
 
 export async function verifyPublishedPackage(version) {
   const manifest = await waitForPublishedManifest(version);
-  const response = await fetch(manifest.dist.tarball, { signal: AbortSignal.timeout(60000) });
-  if (!response.ok) throw new Error(`Published tarball unavailable: HTTP ${response.status}`);
-  const bytes = Buffer.from(await response.arrayBuffer());
-  const [algorithm, digest] = manifest.dist.integrity.split('-');
-  if (!['sha512', 'sha256'].includes(algorithm) || createHash(algorithm).update(bytes).digest('base64') !== digest) throw new Error('Published tarball integrity mismatch');
+  const bytes = await waitForPublishedTarball(manifest);
   const dir = mkdtempSync(path.join(tmpdir(), 'specweave-registry-check-'));
   try {
     const tarball = path.join(dir, 'package.tgz');

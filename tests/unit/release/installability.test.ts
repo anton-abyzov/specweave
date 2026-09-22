@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { gzipSync } from 'node:zlib';
-import { packedManifest, validateManifest, waitForPublishedManifest } from '../../../scripts/release/verify-package-install.mjs';
+import { createHash } from 'node:crypto';
+import { packedManifest, validateManifest, waitForPublishedManifest, waitForPublishedTarball } from '../../../scripts/release/verify-package-install.mjs';
 
 const expected = { name: 'specweave', version: '2.2.3' };
 const valid = { ...expected, bin: { specweave: 'bin/specweave.js' }, dist: { tarball: 'https://registry.npmjs.org/specweave/-/specweave-2.2.3.tgz', integrity: 'sha512-test' } };
@@ -44,5 +45,23 @@ describe('published package installability gate', () => {
   it('rejects published metadata without integrity', async () => {
     const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ ...valid, dist: {} })));
     await expect(waitForPublishedManifest(expected.version, { fetchImpl, attempts: 1 })).rejects.toThrow('integrity');
+  });
+  it('waits for CDN tarball propagation independently of metadata and validates digest', async () => {
+    const bytes = archive('package/package.json', JSON.stringify(valid));
+    const manifest = { ...valid, dist: { ...valid.dist, integrity: 'sha512-' + createHash('sha512').update(bytes).digest('base64') } };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(new Response('{}', { status: 404 })).mockRejectedValueOnce(new TypeError('fetch failed')).mockResolvedValueOnce(new Response(bytes));
+    const wait = vi.fn();
+    expect(await waitForPublishedTarball(manifest, { fetchImpl, wait, attempts: 3 })).toEqual(bytes);
+    expect(wait).toHaveBeenCalledTimes(2);
+  });
+  it('rejects corrupt propagated tarballs without retrying integrity failures', async () => {
+    const fetchImpl = vi.fn(async () => new Response('wrong bytes'));
+    await expect(waitForPublishedTarball(valid, { fetchImpl, attempts: 2, wait: vi.fn() })).rejects.toThrow('integrity mismatch');
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+  it('bounds tarball processing retries', async () => {
+    const fetchImpl = vi.fn(async () => new Response('', { status: 503 }));
+    await expect(waitForPublishedTarball(valid, { fetchImpl, attempts: 2, wait: vi.fn() })).rejects.toThrow('tarball is not publicly available');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 });
