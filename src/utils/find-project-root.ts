@@ -65,6 +65,10 @@ export function findProjectRoot(startDir: string = process.cwd()): string | null
  * For increment operations in multi-repo setups, use resolveEffectiveRoot()
  * which returns the umbrella root.
  *
+ * NOTE: Never use the returned path as the root of a recursive filesystem
+ * scan. Outside a project it is process.cwd(), which may be $HOME or /.
+ * Use findProjectRoot() and stop on null instead.
+ *
  * @param startDir - Directory to start searching from (defaults to process.cwd())
  * @returns Project root path or process.cwd() if not found
  *
