@@ -1,0 +1,329 @@
+{
+  "measured_at": "2026-09-22T02:59:47.006494+00:00",
+  "model": "gemini-2.5-flash",
+  "status": "controlled_local_agent_with_live_providers_and_fixture_api",
+  "limits": [
+    "Selected five successful Jev reads from earlier replay, not an independent accuracy sample.",
+    "Actual EasyChamp MCPServerInstance process_message and registered tools, no production HTTP/auth/DB path.",
+    "Gemini and Jev network real; EasyChamp API responses fixtures, zero production data.",
+    "Sequential single-run pairs; no retries/fallback, no warmup, no production end-to-end claim.",
+    "No Gemini billed cost available: token usage reported; Jev cost API-reported."
+  ],
+  "rows": [
+    {
+      "id": "h01",
+      "message": "Could I see the leagues available to me?",
+      "expected_route": "get_leagues",
+      "off": {
+        "latency_ms": 1987.687167013064,
+        "output": "I'm sorry, I can't retrieve a list of all available leagues. I can only provide information for a specific league if you give me its name or ID.",
+        "error": null,
+        "generations": [
+          {
+            "input_tokens": 13297,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "output_tokens": 49,
+            "input_audio_tokens": 0,
+            "cache_audio_read_tokens": 0,
+            "output_audio_tokens": 0,
+            "details": {
+              "text_prompt_tokens": 13297
+            },
+            "requests": 2,
+            "tool_calls": 1
+          }
+        ],
+        "jev": [
+          {
+            "route": null,
+            "reason": "disabled",
+            "confidence": null,
+            "latency_ms": 0.0,
+            "cost_usd": null,
+            "provider_choice": null
+          }
+        ],
+        "fixture_api_requests": []
+      },
+      "enabled": {
+        "latency_ms": 307.4321250023786,
+        "output": "I found 1 league(s):\n\n• **Demo Community League**\n  View: https://easychamp.com/observe/league/demo-league\n",
+        "error": null,
+        "generations": [],
+        "jev": [
+          {
+            "route": "get_leagues",
+            "reason": "accepted",
+            "confidence": 0.96,
+            "latency_ms": 306.8493749888148,
+            "cost_usd": 2.1042e-05,
+            "provider_choice": "get_leagues"
+          }
+        ],
+        "fixture_api_requests": [
+          {
+            "method": "GET",
+            "path": "/aioptimize/champ-leagues/my"
+          }
+        ]
+      }
+    },
+    {
+      "id": "h07",
+      "message": "What championships can I browse?",
+      "expected_route": "get_competitions",
+      "off": {
+        "latency_ms": 1199.3962079868652,
+        "output": "I can't browse championships directly without a league name or ID. Would you like to create a new league or competition?",
+        "error": null,
+        "generations": [
+          {
+            "input_tokens": 13291,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "output_tokens": 39,
+            "input_audio_tokens": 0,
+            "cache_audio_read_tokens": 0,
+            "output_audio_tokens": 0,
+            "details": {
+              "text_prompt_tokens": 13291
+            },
+            "requests": 2,
+            "tool_calls": 1
+          }
+        ],
+        "jev": [
+          {
+            "route": null,
+            "reason": "disabled",
+            "confidence": null,
+            "latency_ms": 0.0,
+            "cost_usd": null,
+            "provider_choice": null
+          }
+        ],
+        "fixture_api_requests": []
+      },
+      "enabled": {
+        "latency_ms": 399.9374160193838,
+        "output": "I found 1 competition(s):\n\n• **Demo Autumn Cup** (Soccer)\n",
+        "error": null,
+        "generations": [],
+        "jev": [
+          {
+            "route": "get_competitions",
+            "reason": "accepted",
+            "confidence": 0.98,
+            "latency_ms": 399.4469589961227,
+            "cost_usd": 2.0916e-05,
+            "provider_choice": "get_competitions"
+          }
+        ],
+        "fixture_api_requests": [
+          {
+            "method": "GET",
+            "path": "/aioptimize/champs"
+          }
+        ]
+      }
+    },
+    {
+      "id": "h08",
+      "message": "Перечисли доступные соревнования.",
+      "expected_route": "get_competitions",
+      "off": {
+        "latency_ms": 5190.3555000026245,
+        "output": "Мне нужно название лиги или идентификатор лиги, чтобы перечислить доступные соревнования. Пожалуйста, укажите название или идентификатор лиги.",
+        "error": null,
+        "generations": [
+          {
+            "input_tokens": 13291,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 11297,
+            "output_tokens": 540,
+            "input_audio_tokens": 0,
+            "cache_audio_read_tokens": 0,
+            "output_audio_tokens": 0,
+            "details": {
+              "cached_content_tokens": 11297,
+              "thoughts_tokens": 495,
+              "text_prompt_tokens": 13291,
+              "text_cache_tokens": 11297
+            },
+            "requests": 2,
+            "tool_calls": 1
+          }
+        ],
+        "jev": [
+          {
+            "route": null,
+            "reason": "disabled",
+            "confidence": null,
+            "latency_ms": 0.0,
+            "cost_usd": null,
+            "provider_choice": null
+          }
+        ],
+        "fixture_api_requests": []
+      },
+      "enabled": {
+        "latency_ms": 2715.330292005092,
+        "output": "Мне нужно знать название лиги или ее идентификатор, чтобы перечислить соревнования. Пожалуйста, укажите название лиги, которая вас интересует.",
+        "error": null,
+        "generations": [
+          {
+            "input_tokens": 13291,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 11480,
+            "output_tokens": 211,
+            "input_audio_tokens": 0,
+            "cache_audio_read_tokens": 0,
+            "output_audio_tokens": 0,
+            "details": {
+              "cached_content_tokens": 11480,
+              "thoughts_tokens": 166,
+              "text_prompt_tokens": 13291,
+              "text_cache_tokens": 11480
+            },
+            "requests": 2,
+            "tool_calls": 1
+          }
+        ],
+        "jev": [
+          {
+            "route": null,
+            "reason": "uncertain",
+            "confidence": 0.94,
+            "latency_ms": 222.66762499930337,
+            "cost_usd": 2.1966e-05,
+            "provider_choice": "get_competitions"
+          }
+        ],
+        "fixture_api_requests": []
+      }
+    },
+    {
+      "id": "h09",
+      "message": "Enséñame todos los torneos disponibles.",
+      "expected_route": "get_competitions",
+      "off": {
+        "latency_ms": 1355.3002499975264,
+        "output": "No tengo la capacidad de mostrar todos los torneos disponibles. Solo puedo obtener información sobre un torneo específico si me proporcionas su nombre o ID.",
+        "error": null,
+        "generations": [
+          {
+            "input_tokens": 6627,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "output_tokens": 138,
+            "input_audio_tokens": 0,
+            "cache_audio_read_tokens": 0,
+            "output_audio_tokens": 0,
+            "details": {
+              "thoughts_tokens": 109,
+              "text_prompt_tokens": 6627
+            },
+            "requests": 1,
+            "tool_calls": 0
+          }
+        ],
+        "jev": [
+          {
+            "route": null,
+            "reason": "disabled",
+            "confidence": null,
+            "latency_ms": 0.0,
+            "cost_usd": null,
+            "provider_choice": null
+          }
+        ],
+        "fixture_api_requests": []
+      },
+      "enabled": {
+        "latency_ms": 278.9476250181906,
+        "output": "I found 1 competition(s):\n\n• **Demo Autumn Cup** (Soccer)\n",
+        "error": null,
+        "generations": [],
+        "jev": [
+          {
+            "route": "get_competitions",
+            "reason": "accepted",
+            "confidence": 0.95,
+            "latency_ms": 278.4561250009574,
+            "cost_usd": 2.1084e-05,
+            "provider_choice": "get_competitions"
+          }
+        ],
+        "fixture_api_requests": [
+          {
+            "method": "GET",
+            "path": "/aioptimize/champs"
+          }
+        ]
+      }
+    },
+    {
+      "id": "h13",
+      "message": "Quiero ver todos los equipos disponibles.",
+      "expected_route": "get_teams",
+      "off": {
+        "latency_ms": 3293.5809170012362,
+        "output": "Para ver los equipos disponibles, necesito saber en qué liga estás interesado. Por favor, dime el nombre de la liga.",
+        "error": null,
+        "generations": [
+          {
+            "input_tokens": 13295,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 5520,
+            "output_tokens": 430,
+            "input_audio_tokens": 0,
+            "cache_audio_read_tokens": 0,
+            "output_audio_tokens": 0,
+            "details": {
+              "thoughts_tokens": 392,
+              "text_prompt_tokens": 13295,
+              "cached_content_tokens": 5520,
+              "text_cache_tokens": 5520
+            },
+            "requests": 2,
+            "tool_calls": 1
+          }
+        ],
+        "jev": [
+          {
+            "route": null,
+            "reason": "disabled",
+            "confidence": null,
+            "latency_ms": 0.0,
+            "cost_usd": null,
+            "provider_choice": null
+          }
+        ],
+        "fixture_api_requests": []
+      },
+      "enabled": {
+        "latency_ms": 276.3098750147037,
+        "output": "I found 1 team(s):\n\n• **Demo Falcons** - [View](https://easychamp.com/observe/team/demo-team)\n",
+        "error": null,
+        "generations": [],
+        "jev": [
+          {
+            "route": "get_teams",
+            "reason": "accepted",
+            "confidence": 0.96,
+            "latency_ms": 275.84912499878556,
+            "cost_usd": 2.1e-05,
+            "provider_choice": "get_teams"
+          }
+        ],
+        "fixture_api_requests": [
+          {
+            "method": "POST",
+            "path": "/aioptimize/teams/filter"
+          }
+        ]
+      }
+    }
+  ]
+}

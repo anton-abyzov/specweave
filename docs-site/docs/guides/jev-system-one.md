@@ -6,21 +6,27 @@ sidebar_label: Jev (System One)
 
 # Jev (System One)
 
-Agents running SpecWeave burn frontier-model turns on decisions whose answers were
-never open-ended: which skill a prompt needs, which model tier a task deserves, whether
-a shell command is safe to run unattended, whether a red test run is a regression or a
-flake, whether pulled issue text carries instructions aimed at the agent.
+Jev is an optional classifier for decisions with a known set of answers: suggest a
+route, classify a failure, or recommend a task's model tier. Your main coding model
+still writes code and explanations. Deterministic code keeps authorization and policy.
 
-[Jev](https://docs.typesafe.ai) is TypeSafe's System One model. It answers exactly that
-shape of question in roughly 250 ms for roughly $0.00002, with calibrated probabilities
-and a schema it cannot violate. It is a **selection** model: it never generates code,
-prose or explanations.
+[See the practical EasyChamp example and inspect recorded calls](/jev). The published
+26-input intent benchmark uses **synthetic, author-labelled messages**, not production
+traffic. It records 25/26 correct Jev labels versus 12/26 for the ported regex baseline,
+with 258 ms median API latency and $0.00073853 total API cost. These are measurements of
+that run, not a service guarantee or evidence of developer time saved.
+
+[Jev](https://docs.typesafe.ai) is TypeSafe's System One model. It selects among specified
+outcomes and returns confidence information. Validate responses and apply confidence
+thresholds; a score is not proof that a decision is correct or safe.
 
 ## The one test
 
 > Can every possible answer be written down before the call?
 
-Yes, Jev. No, keep the work in the frontier model. That is the whole rule.
+If yes, first check whether a rule, lookup, or existing parser already solves it.
+Use Jev for the remaining language ambiguity. If no, keep the task with a generative
+model or a human. Count total latency and cost, including fallbacks, before enabling it.
 
 Three primitives, nothing else:
 
