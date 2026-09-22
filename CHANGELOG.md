@@ -1,4 +1,4 @@
-## [Unreleased]
+## [2.2.4] - 2026-09-22
 
 ### Fixed
 - LSP commands and dashboard now require a SpecWeave project before discovery or server startup. LSP setup resolves the nearest project from subdirectories; language and server discovery skip symlinked repositories and project markers (0882).
