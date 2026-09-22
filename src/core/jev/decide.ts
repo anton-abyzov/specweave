@@ -199,8 +199,8 @@ const SHELL_POWER = /[<>`'"\\]|\$\(|\$\{|\n/;
 
 /** Single-token commands that only read. */
 const READ_ONLY_COMMANDS = new Set([
-  'ls', 'cat', 'head', 'tail', 'wc', 'pwd', 'whoami', 'date', 'tree', 'file', 'stat',
-  'du', 'df', 'which', 'echo', 'printf', 'grep', 'egrep', 'fgrep', 'rg', 'ag', 'find',
+  'ls', 'cat', 'head', 'tail', 'wc', 'pwd', 'whoami', 'date', 'tree', 'stat',
+  'du', 'df', 'which', 'echo', 'printf', 'grep', 'egrep', 'fgrep', 'ag',
   'fd', 'sort', 'uniq', 'basename', 'dirname', 'realpath', 'jq', 'uname', 'hostname',
   'less', 'man', 'true',
 ]);
@@ -229,12 +229,7 @@ function segmentIsReadOnly(segment: string): boolean {
   if (['sort', 'uniq', 'fd', 'date', 'hostname', 'less', 'man'].includes(tokens[0])) return false;
   if (tokens.some((t) => /^--(?:output|pre|exec|exec-batch|pager|ext-diff|textconv|open-files-in-pager|hostname-bin|compile)(?:=|$)/.test(t))) return false;
   if (tokens[0] === 'tree' && tokens.some((t) => /^-[^-]*o/.test(t))) return false;
-  if (tokens[0] === 'file' && tokens.some((t) => /^-[^-]*C/.test(t))) return false;
-
-  // `find` can mutate via -delete/-exec; treat those as unknown.
-  if (tokens[0] === 'find' && tokens.some((t) => /^-(delete|exec|execdir|ok|okdir|fprint0?|fprintf|fls)$/.test(t))) {
-    return false;
-  }
+  // rg/find/file expose helper execution or file writes: none bypass the guard.
   if (READ_ONLY_COMMANDS.has(tokens[0])) return true;
 
   return READ_ONLY_PREFIXES.some(
