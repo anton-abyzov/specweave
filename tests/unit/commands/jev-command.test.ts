@@ -48,7 +48,18 @@ function stubFetch(answers: Record<string, unknown> = {}, opts: StubOptions = {}
     };
     const out: Record<string, unknown> = {};
     for (const [id, question] of Object.entries(payload.questions)) {
-      if (answers[id] !== undefined) { out[id] = answers[id]; continue; }
+      if (answers[id] !== undefined) {
+        const answer = answers[id] as { type: string; probabilities?: Record<string, number> };
+        if (answer.type === 'choice' && answer.probabilities) {
+          // Abbreviated fixtures still need the full distribution the API promises.
+          const probabilities = { ...answer.probabilities };
+          const missing = Object.keys(question.criteria ?? {}).filter((key) => !(key in probabilities));
+          const remainder = 1 - Object.values(probabilities).reduce((sum, p) => sum + p, 0);
+          for (const key of missing) probabilities[key] = remainder / missing.length;
+          out[id] = { ...answer, probabilities };
+        } else out[id] = answer;
+        continue;
+      }
       if (question.type === 'noul') {
         out[id] = { type: 'noul', noul: 0.5 };
       } else {
