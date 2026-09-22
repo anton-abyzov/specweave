@@ -80,6 +80,17 @@ jobs:
     if: success()
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Verify candidate link checking
+        run: node docs-site/tests/candidate-links.mjs
+
       - name: Download docs build artifact
         uses: actions/download-artifact@v8
         with:
@@ -103,4 +114,4 @@ jobs:
             echo "Documentation server did not become ready within 60 seconds"
             exit 1
           fi
-          npx --yes linkinator@8.1.0 http://127.0.0.1:3000 --recurse --verbosity error --skip "github.com/anton-abyzov/specweave/edit"
+          node docs-site/scripts/check-candidate-links.mjs http://127.0.0.1:3000
