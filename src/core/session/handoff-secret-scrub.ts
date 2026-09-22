@@ -40,7 +40,8 @@ export const SECRET_PATTERNS: readonly SecretPattern[] = [
   { type: 'github-server', regex: /ghs_[A-Za-z0-9]{20,}/g },
   { type: 'aws-key', regex: /AKIA[0-9A-Z]{12,}/g },
   { type: 'aws-temp-key', regex: /ASIA[0-9A-Z]{12,}/g },
-  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g },
+  // Includes multiline bodies, JSON-escaped newlines, and truncated blocks to EOF.
+  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|$)/g },
   { type: 'vskill-token', regex: /vsk_[A-Za-z0-9]{16,}/g },
   { type: 'slack-token', regex: /xox[bap]-[A-Za-z0-9-]{10,}/g },
   { type: 'bearer', regex: /Bearer\s+[A-Za-z0-9._~+/=-]{8,}/g },
