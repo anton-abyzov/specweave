@@ -65,7 +65,7 @@ export function StatusDonut({ segments, size = 160, centerLabel, centerValue }: 
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         {centerValue != null && (
-          <span className="text-xl font-bold text-white">{centerValue}</span>
+          <span className="text-xl font-bold text-gray-200">{centerValue}</span>
         )}
         {centerLabel && (
           <span className="text-[10px] text-gray-500 uppercase tracking-wider">{centerLabel}</span>
