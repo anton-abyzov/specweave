@@ -194,8 +194,8 @@ export function guardVerdict(
 const RISKY_TOKEN =
   /\b(rm|rmdir|mv|cp|dd|mkfs|shred|truncate|drop|delete|del|push|force|reset|revert|clean|prune|checkout|stash|sudo|su|chmod|chown|chgrp|kill|killall|pkill|shutdown|reboot|halt|curl|wget|ssh|scp|rsync|publish|deploy|apply|destroy|terraform|helm|eval|exec|sh|bash|zsh|source|tee|install|uninstall|link|unlink|format|migrate|seed|restore)\b/i;
 
-/** Redirection, command substitution and heredocs put us straight into "check". */
-const SHELL_POWER = /[<>`]|\$\(|\$\{|\n/;
+/** Shell quoting/escaping needs a real parser; never infer safety from split tokens. */
+const SHELL_POWER = /[<>`'"\\]|\$\(|\$\{|\n/;
 
 /** Single-token commands that only read. */
 const READ_ONLY_COMMANDS = new Set([

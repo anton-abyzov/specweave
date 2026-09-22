@@ -119,6 +119,17 @@ describe('prefilterCommand', () => {
     'find . -fprint0 /tmp/important',
     'date 010101012026',
     'hostname changed-host',
+    "rg '--pre=/tmp/helper' pattern /tmp/input",
+    'rg "--pre=/tmp/helper" pattern /tmp/input',
+    "git diff '--output=/tmp/important-file'",
+    'git diff "--output=/tmp/important-file"',
+    "find . '-fprint' /tmp/important-file",
+    'find . "-fprint" /tmp/important-file',
+    String.raw`rg --pr\e=/tmp/helper pattern /tmp/input`,
+    String.raw`git diff --out\put=/tmp/important-file`,
+    String.raw`find . -fpri\nt /tmp/important-file`,
+    "echo 'ordinary quoted text'",
+    String.raw`cat path\ with\ spaces`,
   ])('sends %s to Jev', (command) => {
     expect(prefilterCommand(command)).toBe('check');
   });
