@@ -9,6 +9,7 @@
 
 ### Fixed
 
+- `specweave update --check` now keeps plugin refresh read-only and reports planned changes without installing them.
 - Filesystem discovery now requires an actual project, skips symlinks and respects depth bounds. LSP and dashboard commands stop safely outside projects; `save` targets the enclosing Git repository and fans out only from a project root or with `--all`.
 - Codex installs native skills under `.agents/skills/sw-*`, verifies each project's installed files and preserves legacy and custom skills. Changed installations are backed up before replacement; executable resources retain their modes.
 - Concurrent CLI and dashboard intent writes use the same exclusive lock. Project hub writes reject stale revisions, corrupt input and symlinked managed paths.
