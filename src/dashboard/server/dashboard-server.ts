@@ -1,4 +1,5 @@
 import { registerWorkRoutes } from './routes/work-routes.js';
+import { registerProjectHubRoutes } from './routes/project-hub-routes.js';
 import { localRequestError } from './local-request.js';
 import { getIncrementDetail } from './data/work-projection.js';
 import * as http from 'http';
@@ -95,6 +96,7 @@ export class DashboardServer {
 
     this.registerRoutes();
     registerWorkRoutes(this.router, req => this.resolveProject(req)?.root, this.sseManager);
+    registerProjectHubRoutes(this.router, req => this.resolveProject(req)?.root, this.sseManager);
   }
 
   /** Add a new project to the dashboard */
@@ -1449,4 +1451,3 @@ export function scanRepositories(projectRoot: string): Array<{
 
   return repos.sort((a, b) => a.name.localeCompare(b.name));
 }
-

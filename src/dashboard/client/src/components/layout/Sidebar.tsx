@@ -3,6 +3,7 @@ import { useProject } from '../../hooks/useProject';
 import { useSSEStatus } from '../../contexts/SSEContext';
 
 const PRIMARY = [
+  ['/project', 'Project hub', '◈'],
   ['/', 'Work board', '▥'],
   ['/increments', 'Evidence', '▤'],
   ['/sessions', 'Sessions', '↗'],
