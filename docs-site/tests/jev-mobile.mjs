@@ -1,12 +1,67 @@
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const baseUrl = process.env.SITE_URL || 'http://127.0.0.1:3018';
 const output = process.env.SITE_ARTIFACTS || '/tmp/0880-site-artifacts';
+const testRoot = fileURLToPath(new URL('../../', import.meta.url));
+const git = args => execFileSync('git', args, { cwd: testRoot, encoding: 'utf8' }).trim();
+const testSource = {
+  root: testRoot, revision: git(['rev-parse', 'HEAD']), branch: git(['branch', '--show-current']),
+  trackedChanges: Boolean(git(['status', '--porcelain', '--untracked-files=no'])),
+};
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
+const contrastResults = [];
+async function inspectTextContrast(page) {
+  return page.locator('main').evaluate(main => {
+    function rgba(value) {
+      const values = value.match(/[\d.]+/g)?.map(Number);
+      if (!/^rgba?\(/.test(value) || !values || values.length < 3) throw new Error(`Unsupported computed color: ${value}`);
+      return [values[0], values[1], values[2], values[3] ?? 1];
+    }
+    function blend(foreground, background) {
+      return [0, 1, 2].map(index => foreground[index] * foreground[3] + background[index] * (1 - foreground[3]));
+    }
+    function luminance(color) {
+      const channels = color.map(value => { const c = value / 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; });
+      return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+    }
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+    const pairs = new Map();
+    const failures = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      const text = node.textContent?.trim();
+      const element = node.parentElement;
+      if (!text || !element || ['SCRIPT', 'STYLE'].includes(element.tagName)) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const rect = range.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      if (!rect.width || !rect.height || style.visibility !== 'visible') continue;
+      const ancestors = [];
+      for (let parent = element; parent; parent = parent.parentElement) ancestors.unshift(parent);
+      if (ancestors.some(parent => Number(getComputedStyle(parent).opacity) === 0)) continue;
+      let background = [255, 255, 255];
+      for (const parent of ancestors) background = blend(rgba(getComputedStyle(parent).backgroundColor), background);
+      const foreground = blend(rgba(style.color), background);
+      const a = luminance(foreground), b = luminance(background);
+      const ratio = (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+      const fontSize = Number.parseFloat(style.fontSize);
+      const fontWeight = Number.parseInt(style.fontWeight, 10) || 400;
+      const required = fontSize >= 24 || (fontSize >= 18.6667 && fontWeight >= 700) ? 3 : 4.5;
+      const sample = { text: text.slice(0, 80), foreground, background, fontSize, fontWeight, ratio: Number(ratio.toFixed(3)), required };
+      const key = `${foreground.join(',')}|${background.join(',')}|${required}`;
+      if (!pairs.has(key)) pairs.set(key, sample);
+      if (ratio + 1e-6 < required) failures.push(sample);
+    }
+    return { pairs: [...pairs.values()], failures };
+  });
+}
 try {
   for (const width of [320, 375, 390, 768, 1440]) {
     const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
@@ -54,12 +109,22 @@ try {
           assert.equal(await page.locator(`main a[href="/evidence/${file}"]`).count(), 1, `${file}: evidence link exists`);
         }
       }
+      if ([390, 1440].includes(width)) {
+        const contrast = await inspectTextContrast(page);
+        contrastResults.push({ path, width, ...contrast });
+        await writeFile(`${output}/contrast.json`, JSON.stringify({ testedAt: new Date().toISOString(), baseUrl, testSource, results: contrastResults }, null, 2));
+        assert.deepEqual(contrast.failures, [], `${path}: text contrast at ${width}`);
+      }
       await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo({ top: 0, behavior: 'instant' }); });
       await page.screenshot({ path: `${output}/${path === '/' ? 'home' : 'jev'}-${width}-hero.png` });
       await page.screenshot({ path: `${output}/${path === '/' ? 'home' : 'jev'}-${width}.png`, fullPage: true });
       if (path === '/jev') {
         await page.locator('#measurements').evaluate(el => window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'instant' }));
         await page.screenshot({ path: `${output}/jev-${width}-evidence.png` });
+        if ([390, 1440].includes(width)) {
+          await page.getByRole('heading', { name: 'What changed in the actual chat handler?' }).evaluate(el => window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'instant' }));
+          await page.screenshot({ path: `${output}/jev-${width}-comparison.png` });
+        }
       }
       results.push({ path, width, status: 'pass', consoleErrors: errors });
       assert.deepEqual(errors, [], `${path}: page errors`);
@@ -67,5 +132,5 @@ try {
     await page.close();
   }
 } finally { await browser.close(); }
-await writeFile(`${output}/results.json`, JSON.stringify({ testedAt: new Date().toISOString(), baseUrl, headless: true, results }, null, 2));
+await writeFile(`${output}/results.json`, JSON.stringify({ testedAt: new Date().toISOString(), baseUrl, testSource, headless: true, results }, null, 2));
 console.log(`${results.length} responsive page checks passed; screenshots: ${output}`);
