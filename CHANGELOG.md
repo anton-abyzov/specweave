@@ -1,3 +1,19 @@
+## [2.3.0-rc.1] - 2026-09-21
+
+### Added
+
+- Portable project hub for software, research, content and operations in any local folder, including folders without Git.
+- Shared project goals and context, artifact references, reusable routine definitions and fresh coordinator or worker briefs for Codex, Claude Code and other tools.
+- Project dashboard with revision conflict recovery, assignment creation, file downloads and responsive desktop, tablet and phone layouts.
+- `specweave project` CLI and the portable `sw:project` skill. Existing intent work and evidence remain authoritative; routines do not create schedules.
+
+### Fixed
+
+- Codex installs native skills under `.agents/skills/sw-*`, verifies each project's installed files and preserves legacy and custom skills. Changed installations are backed up before replacement; executable resources retain their modes.
+- Concurrent CLI and dashboard intent writes use the same exclusive lock. Project hub writes reject stale revisions, corrupt input and symlinked managed paths.
+
+This is an additive release candidate. Native agent execution, connector permissions, hooks and schedules remain under the host application's control. Stable publication awaits manual UI acceptance.
+
 ## [2.2.3] - 2026-09-22
 
 ### Fixed
