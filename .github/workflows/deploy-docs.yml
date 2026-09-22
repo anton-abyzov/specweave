@@ -7,6 +7,7 @@ on:
     branches: [develop]
     paths:
       - 'docs-site/**'
+      - 'src/styles/brand-tokens.css'
       - '.specweave/docs/public/**'
       - 'README.md'
       - 'CHANGELOG.md'
