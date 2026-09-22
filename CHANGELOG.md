@@ -1,3 +1,18 @@
+## [2.2.3] - 2026-09-22
+
+### Fixed
+
+- Jev now validates provider answer types, choices and numeric bounds before a decision can be consumed.
+- Secret masking covers question text and complete PEM private-key blocks, as well as request state. Masking remains heuristic and does not make arbitrary private input safe to send.
+- Commands with output-writing or helper-execution flags no longer qualify for the read-only guard shortcut.
+- Headless browser delegation rejects off-domain navigation before sending the main-frame request, including redirects. This is a navigation boundary, not a firewall for page subresources.
+
+### Changed
+
+- The website now explains Jev through a bounded EasyChamp read-routing use case, downloadable replay results, and a controlled comparison of the actual chat handler with live models and fixture API data.
+- Mobile layouts use larger text, accessible controls and a single-column work board. Premium artwork is identified separately from measured evidence.
+- Documentation distinguishes classifier accuracy, observed handler behavior, and unmeasured production productivity. Jev remains optional; deterministic permissions and fallback paths remain necessary.
+
 ## [2.2.2] - 2026-09-21
 
 A prompt audit of the whole instruction surface against the repo's own target model

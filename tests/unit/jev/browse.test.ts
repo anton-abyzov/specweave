@@ -58,6 +58,10 @@ function makeEnv(partial: Partial<Env> = {}): Env {
 
 function makePlaywright(env: Env): unknown {
   const page = {
+    context: () => ({ newCDPSession: async () => ({
+      send: async (method: string) => method === 'Page.getFrameTree' ? { frameTree: { frame: { id: 'main' } } } : {},
+      on: () => {},
+    }) }),
     goto: vi.fn(async (url: string) => {
       env.gotos.push(url);
       env.url = url;
@@ -208,7 +212,7 @@ const MORE_INFO: FakeElement = {
   role: 'link',
   name: 'More information...',
   kind: 'clickable',
-  href: 'https://www.iana.org/domains/example',
+  href: '/more',
 };
 
 /* ---------------------------------------------------------------------- tests */
@@ -342,7 +346,7 @@ describe('runBrowse — handing control back', () => {
 });
 
 describe('runBrowse — safety rails', () => {
-  it('goes back and blocks when a click leaves the allowed origins', async () => {
+  it('never offers or clicks a link outside allowed domains', async () => {
     const env = makeEnv({
       elements: [{ i: 0, role: 'link', name: 'Sponsored', kind: 'clickable', href: 'https://evil.test/' }],
       onClick: (_i, e) => {
@@ -353,8 +357,9 @@ describe('runBrowse — safety rails', () => {
     const result = await promise;
 
     expect(result.status).toBe('blocked');
-    expect(env.backs).toBe(1);
-    expect(result.steps[0].reason).toContain('outside the allowed origins');
+    expect(env.backs).toBe(0);
+    expect(env.clicks).toEqual([]);
+    expect(result.steps[0].reason).toContain('unknown option');
   });
 
   it('allows a subdomain of an explicitly allowed domain', async () => {
@@ -455,8 +460,9 @@ describe('runBrowse — jev.browse config', () => {
     const result = await promise;
 
     expect(result.status).toBe('blocked');
-    expect(result.steps[0].reason).toContain('outside the allowed origins');
-    expect(env.backs).toBe(1);
+    expect(result.steps[0].reason).toContain('unknown option');
+    expect(env.clicks).toEqual([]);
+    expect(env.backs).toBe(0);
   });
 
   it('allows a subdomain of a config-listed domain', async () => {
@@ -680,6 +686,39 @@ describe('runBrowse — the page changing under the choice', () => {
 });
 
 describe('runBrowse — refusals', () => {
+  it('fails closed before navigation when CDP interception cannot be installed', async () => {
+    const env = makeEnv();
+    const pw = makePlaywright(env) as any;
+    const launch = pw.chromium.launch;
+    pw.chromium.launch = async (opts: unknown) => {
+      const browser = await launch(opts);
+      const newPage = browser.newPage;
+      browser.newPage = async () => {
+        const page = await newPage();
+        page.context = () => ({ newCDPSession: async () => { throw new Error('CDP unavailable'); } });
+        return page;
+      };
+      return browser;
+    };
+    const { client } = stubClient([]);
+    const result = await runBrowse({ goal: 'Read', url: env.url, playwright: pw, client, screenshotDir: shotDir() });
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('CDP unavailable');
+    expect(env.gotos).toEqual([]);
+    expect(env.browserClosed).toBe(true);
+  });
+
+  it('rechecks a same-label link whose destination changes during inference', async () => {
+    const env = makeEnv({ elements: [MORE_INFO] });
+    const { promise } = run(env, [
+      { choice: 'a0', mutate: (e) => { e.elements = [{ ...MORE_INFO, href: 'https://excluded.test/' }]; } },
+      { choice: 'BLOCKED' },
+    ]);
+    const result = await promise;
+    expect(env.clicks).toEqual([]);
+    expect(result.steps[0].reason).toContain('outside allowed domains');
+  });
+
   it('returns an error result when Jev is unavailable', async () => {
     // Force the "off" path: no client injected, Jev disabled for this process, empty root.
     vi.stubEnv('SPECWEAVE_JEV', '0');
