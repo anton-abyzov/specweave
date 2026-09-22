@@ -45,7 +45,7 @@ jobs:
       # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 22 ships an older
       # npm. Without this the publish silently falls back to token auth.
       - name: Upgrade npm for OIDC trusted publishing
-        run: npm i -g npm@latest
+        run: npm i -g npm@12.0.2
 
       - name: Configure Git
         run: |
@@ -198,6 +198,13 @@ jobs:
             echo "Publishing stable version..."
             npm publish --access public
           fi
+
+      # npm can accept an upload while registry processing still returns 404.
+      # A successful publish command is not yet a publicly installable release.
+      - name: Verify public package and clean CLI installation
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: node scripts/release/verify-package-install.mjs --published "$VERSION"
 
       - name: Create GitHub Release
         env:
