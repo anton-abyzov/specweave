@@ -114,14 +114,47 @@ function finite(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function probabilityMap(value: unknown): Record<string, number> | null {
+function probabilityMap(value: unknown, allowed: string[]): Record<string, number> | null {
   if (!isPlainObject(value)) return null;
+  if (Object.keys(value).length !== allowed.length || allowed.some((key) => !Object.prototype.hasOwnProperty.call(value, key))) return null;
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(value)) {
     if (!finite(v) || v < 0 || v > 1) return null;
     out[k] = v;
   }
+  // Allow tiny rounding differences, not a missing or impossible distribution.
+  if (Math.abs(Object.values(out).reduce((sum, p) => sum + p, 0) - 1) > 0.01) return null;
   return out;
+}
+
+function probability(value: unknown): value is number {
+  return finite(value) && value >= 0 && value <= 1;
+}
+
+/** Scrub each string before serialization, so masking cannot consume JSON delimiters. */
+function redactContent(value: Json): { value: Json; redactions: number } {
+  if (typeof value === 'string') {
+    const result = redactSecrets(value);
+    return { value: result.text, redactions: result.redactions };
+  }
+  if (value === null || typeof value !== 'object') return { value, redactions: 0 };
+  let redactions = 0;
+  if (Array.isArray(value)) {
+    const items = value.map((item) => {
+      const result = redactContent(item);
+      redactions += result.redactions;
+      return result.value;
+    });
+    return { value: items, redactions };
+  }
+  const entries = Object.entries(value).map(([key, item]) => {
+    // Renaming a choice/question ID silently would change the API contract.
+    if (redactSecrets(key).redactions) throw new JevError('validation', 'request contains a secret-shaped object key');
+    const result = redactContent(item);
+    redactions += result.redactions;
+    return [key, result.value];
+  });
+  return { value: Object.fromEntries(entries), redactions };
 }
 
 /**
@@ -189,20 +222,24 @@ function parseAnswers(body: unknown, questions: Record<string, Question>): Recor
       throw new JevError('schema', `response is missing an answer for question "${id}"`);
     }
     const type = a.type;
+    const question = questions[id];
+    if (type !== question.type) throw new JevError('schema', `answer "${id}" does not match the requested type`);
     if (type === 'noul') {
       if (!finite(a.noul) || a.noul < 0 || a.noul > 1) {
         throw new JevError('schema', `answer "${id}" has an out-of-range noul probability`);
       }
       answers[id] = { type: 'noul', noul: a.noul };
     } else if (type === 'choice') {
-      const probabilities = probabilityMap(a.probabilities);
-      if (typeof a.choice !== 'string' || !probabilities || !finite(a.confidence)) {
+      const allowed = Object.keys((question as Extract<Question, { type: 'choice' }>).criteria);
+      const probabilities = probabilityMap(a.probabilities, allowed);
+      if (typeof a.choice !== 'string' || !allowed.includes(a.choice) || !probabilities || !probability(a.confidence)) {
         throw new JevError('schema', `answer "${id}" is not a well-formed choice answer`);
       }
       answers[id] = { type: 'choice', choice: a.choice, probabilities, confidence: a.confidence };
     } else if (type === 'score') {
-      const probabilities = probabilityMap(a.probabilities);
-      if (!finite(a.score) || !probabilities || !finite(a.confidence)) {
+      const levels = (question as Extract<Question, { type: 'score' }>).criteria.length;
+      const probabilities = probabilityMap(a.probabilities, Array.from({ length: levels }, (_, i) => String(i)));
+      if (!finite(a.score) || a.score < 0 || a.score > levels - 1 || !probabilities || !probability(a.confidence)) {
         throw new JevError('schema', `answer "${id}" is not a well-formed score answer`);
       }
       const legend = isPlainObject(a.legend)
@@ -259,20 +296,10 @@ export class JevClient {
     const usageLog = opts.usageLog ?? this.usageLog;
     const url = jevEndpoint(this.config);
 
-    // THE choke point: nothing reaches the wire before this line. Redacting the
-    // serialized form catches secrets wherever a caller buried them — a command
-    // string, a diff hunk, a page excerpt — without every caller remembering to.
-    // A marker never contains a quote or a backslash, so the JSON normally still
-    // parses; when a mask swallowed a delimiter we send the redacted text itself
-    // rather than the unredacted object.
-    const redacted = redactSecrets(JSON.stringify(state) ?? '');
-    let safeState: Json;
-    try {
-      safeState = JSON.parse(redacted.text) as Json;
-    } catch {
-      safeState = redacted.text;
-    }
-    const body = JSON.stringify({ model: this.config.model, state: safeState, questions });
+    // Questions carry user-controlled AC text, skill descriptions and custom criteria.
+    // Scrub the whole payload, not only state. Round-trip first to preserve JSON semantics.
+    const redacted = redactContent(JSON.parse(JSON.stringify({ model: this.config.model, state, questions })) as Json);
+    const body = JSON.stringify(redacted.value);
 
     const started = Date.now();
     let lastError: JevError = new JevError('transport', 'request was never attempted');
