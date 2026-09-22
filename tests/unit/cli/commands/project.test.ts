@@ -37,6 +37,18 @@ describe('project commands', () => {
     expect(fs.existsSync(path.join(root, '.specweave'))).toBe(false);
     expect(() => run('show')).toThrow('No project');
   });
+  it.each(['AGENTS.md', '.agents/skills/sw-project', '.agents/skills/sw-project/SKILL.md', '.specweave/config.json'])('rejects existing or dangling managed symlinks: %s', relative => {
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-project-outside-'));
+    try {
+      const target = path.join(root, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      const destination = relative.endsWith('sw-project') ? outside : path.join(outside, 'new.md');
+      fs.symlinkSync(destination, target);
+      expect(() => init()).toThrow('symlink');
+      expect(fs.readdirSync(outside)).toEqual([]);
+      expect(fs.existsSync(path.join(root, '.specweave/project/hub.json'))).toBe(false);
+    } finally { fs.rmSync(outside, { recursive: true, force: true }); }
+  });
   it('uses current revision for explicit changes and prepares a work assignment', () => {
     init();
     const context = path.join(root, 'context.md');fs.writeFileSync(context, 'New decisions');

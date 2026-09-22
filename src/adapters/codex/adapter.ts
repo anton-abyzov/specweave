@@ -5,8 +5,7 @@
  * Uses universal AGENTS.md file for instructions.
  *
  * Codex features:
- * - Works in CLI, IDE, web, GitHub, iOS app
- * - GPT-5-Codex optimized for engineering tasks
+ * - Native skills and project instructions
  * - File read/write operations
  * - Test execution and validation
  * - Task-based isolated environments
@@ -19,6 +18,8 @@ import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import { applyInstructionTemplate } from '../../cli/helpers/init/instruction-file-writer.js';
 import { findSourceDir } from '../../cli/helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
+import { installNativeSkills } from '../../utils/native-skill-installer.js';
+import { normalizeSkillFrontmatter } from '../../utils/plugin-copier.js';
 import type { Plugin } from '../../core/types/plugin.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -132,7 +133,10 @@ export class CodexAdapter extends AdapterBase {
   async compilePlugin(plugin: Plugin): Promise<void> {
     const skillsDir = '.agents/skills';
     console.log(`\n📦 Installing plugin skills for Codex: ${plugin.manifest.name}`);
-    await this.writeSkillFiles(plugin, skillsDir);
+    const result = installNativeSkills(plugin.skills.map(skill => ({
+      name: `${plugin.manifest.name}-${skill.name}`, sourceDir: skill.path,
+    })), process.cwd(), normalizeSkillFrontmatter);
+    for (const backup of result.backups) console.log(`   Previous skill preserved: ${backup}`);
     console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${skillsDir}/`);
     console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Codex!`);
   }
@@ -172,7 +176,8 @@ Quick start:
   specweave refresh-plugins
 
 Use the same intent board, task ledger and verification commands in any harness.
-Existing .codex/skills files are preserved; inspect duplicate legacy skills manually.
+Managed native skills use the sw- prefix. Changed files are backed up under
+.specweave/state/skill-backups. Existing .codex/skills files remain untouched.
 Hooks require the host's supported events and trust review; this adapter does not
 silently install or approve hooks. The project brief works without hooks.
 

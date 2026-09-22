@@ -24,17 +24,17 @@ const HUB_MARKER = '<!-- specweave:project-hub -->';
 function initialize(root: string, options: ProjectOptions): void {
   if (!options.name?.trim() || !options.goal?.trim()) throw new HubError('init requires --name and --goal');
   // Validate before creating any project files.
-  if (options.name.length > 180 || options.goal.length > 2000) throw new HubError('Name or goal is too long');
-  fs.mkdirSync(root, { recursive: true });
-  for (const p of ['.specweave', '.agents', '.agents/skills']) {
+  if (options.name.length > 180 || options.goal.length > 2000 || /\u0000/.test(options.name + options.goal)) throw new HubError('Name or goal is invalid');
+  for (const p of ['.specweave', '.specweave/config.json', '.agents', '.agents/skills', '.agents/skills/sw-project', '.agents/skills/sw-project/SKILL.md', 'AGENTS.md']) {
     const target = path.join(root, p);
-    if (fs.existsSync(target) && fs.lstatSync(target).isSymbolicLink()) throw new HubError(`Refusing symlink: ${p}`);
+    try { if (fs.lstatSync(target).isSymbolicLink()) throw new HubError(`Refusing symlink: ${p}`); }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   }
+  fs.mkdirSync(root, { recursive: true });
   fs.mkdirSync(path.join(root, '.specweave'), { recursive: true });
   const config = path.join(root, '.specweave/config.json');
   if (!fs.existsSync(config)) fs.writeFileSync(config, JSON.stringify({ project: { name: options.name }, adapters: { default: 'codex' } }, null, 2) + '\n', { flag: 'wx' });
   const agents = path.join(root, 'AGENTS.md');
-  if (fs.existsSync(agents) && fs.lstatSync(agents).isSymbolicLink()) throw new HubError('Refusing symlink: AGENTS.md');
   const existing = fs.existsSync(agents) ? fs.readFileSync(agents, 'utf8') : '';
   if (!existing.includes(HUB_MARKER)) fs.appendFileSync(agents, `\n${HUB_MARKER}\n## Shared project context\nRead .specweave/project/hub.json for the project goal, shared context, artifacts and routine definitions. Run \`specweave project show\` for current work and \`specweave project brief\` for a fresh coordinator brief. Use native task tools only within user authorization. Routines are definitions until configured in the host scheduler.\n<!-- /specweave:project-hub -->\n`);
   const source = path.join(findSourceDir('plugins/specweave', path.dirname(fileURLToPath(import.meta.url))), 'skills/project/SKILL.md');
@@ -50,9 +50,9 @@ export function runProjectCommand(action: string, options: ProjectOptions = {}, 
   const hub = new ProjectHubStore(root);
   if (action === 'init') {
     const context = readInput(options.contextFile);
-    if (context.length > 16000) throw new HubError('Context exceeds 16000 characters');
-    initialize(root, options);
+    if (context.length > 16000 || /\u0000/.test(context)) throw new HubError('Context exceeds 16000 characters or contains NUL');
     const current = hub.read();
+    initialize(root, options);
     // Re-running init must not replace an existing hub.
     if (current.revision > 0) return { root, hub: current, existing: true };
     return { root, hub: hub.saveProfile({ revision: 0, name: options.name, goal: options.goal, context }) };

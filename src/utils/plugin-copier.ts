@@ -31,6 +31,7 @@ import { consoleLogger } from './logger.js';
 import { compareSemverDesc } from './semver-sort.js';
 // getProjectRoot no longer used here — bundled plugins use global lock
 import { getPluginScope, getScopeArgs } from '../core/types/plugin-scope.js';
+import { installNativeSkills } from './native-skill-installer.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,6 +45,8 @@ export interface CopyPluginOptions {
 }
 
 export interface CopyPluginResult {
+  /** Existing native skills preserved before a changed installation. */
+  backups?: string[];
   success: boolean;
   /** Content hash of source plugin directory */
   sha: string;
@@ -835,7 +838,7 @@ const HOOKS_BLOCK_RE = /^hooks\s*:.*\n(?:[ \t]+.*\n)*/gm;
  * - Ensure `description:` field (extracted from body if missing)
  * - Strip Claude-specific fields (user-invocable, allowed-tools, model, hooks, etc.)
  */
-function normalizeSkillFrontmatter(content: string, skillName: string): string {
+export function normalizeSkillFrontmatter(content: string, skillName: string): string {
   const normalized = content.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
 
   if (!normalized.startsWith('---')) {
@@ -926,6 +929,23 @@ export function copyPluginSkillsToProject(
   const sourceDir = resolve(specweaveRoot, pluginEntry.source);
   if (!existsSync(sourceDir)) {
     return { success: false, sha: '', error: `Source dir not found: ${sourceDir}` };
+  }
+
+  // Native skills use namespaced destinations and verify actual destination bytes.
+  // A global source hash cannot prove installation in this project or directory.
+  if (normalize(options.targetSkillsDir || '') === normalize('.agents/skills')) {
+    const sha = computePluginHash(sourceDir);
+    try {
+      const skillsDir = join(sourceDir, 'skills');
+      const skills = existsSync(skillsDir) ? readdirSync(skillsDir, { withFileTypes: true })
+        .filter(entry => entry.isDirectory() && existsSync(join(skillsDir, entry.name, 'SKILL.md')))
+        .map(entry => ({ name: `${pluginName}-${entry.name}`, sourceDir: join(skillsDir, entry.name) })) : [];
+      const result = installNativeSkills(skills, projectRoot, normalizeSkillFrontmatter);
+      for (const backup of result.backups) consoleLogger.warn(`Previous native skill preserved: ${backup}`);
+      return { success: true, sha, ...result };
+    } catch (error) {
+      return { success: false, sha, error: `Failed to install native skills: ${error}` };
+    }
   }
 
   // 3. Compute hash and check global lockfile for skip

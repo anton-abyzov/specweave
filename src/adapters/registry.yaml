@@ -360,7 +360,7 @@ capabilities:
   instruction_file:
     claude: .claude/skills + agents
     antigravity: .agent/skills/
-    codex: .codex/skills/
+    codex: .agents/skills/
     opencode: .opencode/skills/
     copilot: .github/skills/
     cursor: .cursor/skills/

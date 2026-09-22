@@ -68,6 +68,12 @@
       "path": "skills/jev/SKILL.md",
       "description": "Delegate closed-set decisions to Jev (TypeSafe System One) instead of a frontier turn: routing, command safety, text screening, failure triage.",
       "deprecated": false
+    },
+    {
+      "name": "sw:project",
+      "path": "skills/project/SKILL.md",
+      "deprecated": false,
+      "description": "Coordinate code, research and content projects with shared context, artifacts and portable worker briefs."
     }
   ],
   "optionalSkills": {
