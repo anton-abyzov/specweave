@@ -162,9 +162,13 @@ allow. Everything else is allowed.
 
 A regex prefilter runs before any call. `npm test`, `npm run build` / `test` / `lint`,
 `pnpm test`, `yarn test`, `cargo test`, `go test` and plain read commands (`ls`, `cat`,
-`grep`, `rg`, `find`, `git status` / `log` / `diff` / `show`, and friends) skip Jev
+`grep`, `git status` / `log` / `diff` / `show`, and friends) skip Jev
 entirely, so the common case costs nothing — and **project-defined scripts are therefore
 trusted by the guard**: whatever `npm test` runs in a repo is never scored.
+
+Commands containing shell quotes or backslashes go through the guard. Helper-capable
+search tools such as `rg`, `find`, and `file` also go through it, even for ordinary
+reads; their optional execution and output modes are not a safe bypass.
 
 ### The Bash guard is per project
 
