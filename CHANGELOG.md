@@ -1,3 +1,8 @@
+## [Unreleased]
+
+### Fixed
+- `specweave living-docs`, `specweave save` and `specweave gc` no longer operate on `process.cwd()` when run outside a project (follow-up to the `refresh-plugins` fix, 0879). `living-docs` accepted any directory holding a bare `.specweave/` folder — `~/.specweave/` exists on every machine that ran SpecWeave — so from `$HOME` the brownfield check and the discovery phase walked the whole home tree; `save` scanned the cwd for nested git repos and would commit and push in each one; `gc` purged `<cwd>/.specweave/state` and scanned for nested `.specweave/` directories. All three now stop with `No SpecWeave project found: no .specweave/config.json in <cwd> or any parent directory` (exit code 1). The greenfield check used by `init` and `living-docs` no longer follows symlinks, and the living-docs directory count shares the scan's depth bound (it had none).
+
 ## [2.2.2] - 2026-09-21
 
 A prompt audit of the whole instruction surface against the repo's own target model

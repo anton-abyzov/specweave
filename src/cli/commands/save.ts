@@ -16,6 +16,7 @@ import { ConfigManager } from '../../core/config/config-manager.js';
 import { getCurrentBranch, detectRepository, isWorkingDirectoryClean } from '../../utils/git-utils.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { scanForChildRepos } from '../../core/living-docs/umbrella-detector.js';
+import { findProjectRoot } from '../../utils/find-project-root.js';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -59,7 +60,11 @@ export interface SaveOptions {
   /** Logger instance */
   logger?: Logger;
 
-  /** Project root path */
+  /**
+   * Project root path. When omitted, the nearest SpecWeave project root (by
+   * .specweave/config.json) is used and the command refuses to run outside a
+   * project — never process.cwd() (0879).
+   */
   projectRoot?: string;
 }
 
@@ -104,7 +109,18 @@ interface FileChange {
  */
 export async function executeSave(options: SaveOptions = {}): Promise<void> {
   const logger = options.logger ?? consoleLogger;
-  const projectRoot = options.projectRoot ?? process.cwd();
+  // An explicit projectRoot is the caller's responsibility. Otherwise resolve
+  // the nearest project root with no process.cwd() fallback: the repository
+  // scan below walks the tree under this path and would then commit (and push)
+  // in every git repo it finds under e.g. $HOME (0879).
+  const projectRoot = options.projectRoot ?? findProjectRoot();
+  if (!projectRoot) {
+    const cwd = process.cwd();
+    logger.log(`No SpecWeave project found: no .specweave/config.json in ${cwd} or any parent directory`);
+    logger.log('Run this command from inside a SpecWeave project, or run `specweave init` first.');
+    process.exitCode = 1;
+    return;
+  }
   const interactive = options.interactive ?? false;
   const dryRun = options.dryRun ?? false;
   const syncStrategy = options.sync ?? 'rebase';

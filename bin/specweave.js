@@ -559,7 +559,6 @@ program
       noPush: options.push === false, // Handle --no-push
       force: options.force,
       branch: options.branch,
-      projectRoot: process.cwd()
     });
   });
 

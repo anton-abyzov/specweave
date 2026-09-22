@@ -18,6 +18,7 @@ import {
   resolveFromProjectRoot,
   findUmbrellaRoot,
   resolveEffectiveRoot,
+  findEffectiveRoot,
   hasSpecweaveIncrements,
 } from '../../../src/utils/find-project-root.js';
 
@@ -433,6 +434,33 @@ describe('find-project-root', () => {
       const { nestedDir } = await createBareDirTree();
       const result = resolveEffectiveRoot(nestedDir);
       expect(result).toBe(process.cwd());
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // findEffectiveRoot (0879: resolveEffectiveRoot without the cwd fallback)
+  // ---------------------------------------------------------------------------
+  describe('findEffectiveRoot', () => {
+    it('should return umbrella root when inside an umbrella workspace', async () => {
+      const { umbrellaRoot, childRepoNested } = await createUmbrellaTree();
+      expect(findEffectiveRoot(childRepoNested)).toBe(umbrellaRoot);
+    });
+
+    it('should return project root for standalone project', async () => {
+      const { projectRoot, nestedDir } = await createProjectTree();
+      expect(findEffectiveRoot(nestedDir)).toBe(projectRoot);
+    });
+
+    it('should return null, never process.cwd(), when no project found', async () => {
+      const { nestedDir } = await createBareDirTree();
+      expect(findEffectiveRoot(nestedDir)).toBeNull();
+    });
+
+    it('should treat a bare .specweave/ directory without config.json as no project', async () => {
+      const tmpBase = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'sw-fer-bare-'));
+      tempDirs.push(tmpBase);
+      await fsPromises.mkdir(path.join(tmpBase, '.specweave'), { recursive: true });
+      expect(findEffectiveRoot(tmpBase)).toBeNull();
     });
   });
 

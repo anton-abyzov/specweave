@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, symlinkSync } from 'fs';
 import * as fsPromises from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -219,5 +219,46 @@ describe('greenfield-detection', () => {
     it('should return true for empty array', () => {
       expect(isGreenfieldMultiRepo([])).toBe(true);
     });
+  });
+});
+
+// 0879: hasSourceFiles() used statSync, so a symlink such as `~/Google Drive ->
+// ~/Library/CloudStorage/...` or `link -> /` pulled the whole target tree into the
+// scan (22k directories through one link in the repro). Symlinks are now skipped.
+describe('greenfield-detection symlinks (0879)', () => {
+  let dir: string;
+  let external: string;
+
+  beforeEach(() => {
+    dir = tmpPath('gf-link');
+    external = tmpPath('gf-external');
+    mkdirSync(dir, { recursive: true });
+    mkdirSync(path.join(external, 'pkg'), { recursive: true });
+    writeFileSync(path.join(external, 'pkg', 'app.ts'), 'export const x = 1;');
+  });
+
+  afterEach(async () => {
+    await fsPromises.rm(dir, { recursive: true, force: true }).catch(() => {});
+    await fsPromises.rm(external, { recursive: true, force: true }).catch(() => {});
+  });
+
+  it('should not follow a symlinked directory', () => {
+    symlinkSync(external, path.join(dir, 'escape'));
+    expect(isGreenfieldDetailed(dir)).toEqual({
+      isGreenfield: true,
+      reason: 'No source files or dependencies found',
+    });
+  });
+
+  it('should ignore a symlinked source file', () => {
+    symlinkSync(path.join(external, 'pkg', 'app.ts'), path.join(dir, 'app.ts'));
+    expect(isGreenfield(dir)).toBe(true);
+  });
+
+  it('should still detect real source files next to a symlink', () => {
+    symlinkSync(external, path.join(dir, 'escape'));
+    mkdirSync(path.join(dir, 'src'));
+    writeFileSync(path.join(dir, 'src', 'index.ts'), 'export {};');
+    expect(isGreenfield(dir)).toBe(false);
   });
 });
