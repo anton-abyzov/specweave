@@ -77,15 +77,17 @@ export function verifyLocalPackage(repoRoot) {
   } finally { rmSync(packRoot, { recursive: true, force: true }); }
 }
 
-async function waitForRegistryResponse(url, label, { fetchImpl = fetch, attempts = 40, delayMs = 15000, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
+async function waitForRegistryResponse(url, label, consume, { fetchImpl = fetch, attempts = 40, delayMs = 15000, timeoutMs = 15000, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
   for (let attempt = 0; attempt < attempts; attempt++) {
     let reason;
     try {
       // CDN negative caches can outlive propagation even with no-store request mode.
       const lookup = new URL(url);
       lookup.searchParams.set('_specweave_verify', `${Date.now()}-${attempt}`);
-      const response = await fetchImpl(lookup.href, { cache: 'no-store', signal: AbortSignal.timeout(15000) });
-      if (response.ok) return response;
+      const response = await fetchImpl(lookup.href, { cache: 'no-store', signal: AbortSignal.timeout(timeoutMs) });
+      // Headers alone do not complete a fetch: socket/timeout failures can happen
+      // while reading the body. Keep consumption inside this retry boundary.
+      if (response.ok) return await consume(response);
       if (response.status !== 404 && response.status !== 429 && response.status < 500) throw new Error(`Registry rejected ${label}: HTTP ${response.status}`);
       reason = `HTTP ${response.status}`;
       await response.body?.cancel();
@@ -102,8 +104,7 @@ async function waitForRegistryResponse(url, label, { fetchImpl = fetch, attempts
 }
 
 export async function waitForPublishedManifest(version, options) {
-  const response = await waitForRegistryResponse(`https://registry.npmjs.org/specweave/${encodeURIComponent(version)}`, version, options);
-  const manifest = await response.json();
+  const manifest = await waitForRegistryResponse(`https://registry.npmjs.org/specweave/${encodeURIComponent(version)}`, version, (response) => response.json(), options);
   validateManifest(manifest, { name: 'specweave', version });
   if (!manifest.dist?.tarball || !manifest.dist?.integrity) throw new Error('Published manifest lacks tarball integrity');
   return manifest;
@@ -111,8 +112,8 @@ export async function waitForPublishedManifest(version, options) {
 
 export async function waitForPublishedTarball(manifest, options) {
   // Metadata and CDN tarball propagation are independent. A 200 manifest is not enough.
-  const response = await waitForRegistryResponse(manifest.dist.tarball, `${manifest.version} tarball`, options);
-  const bytes = Buffer.from(await response.arrayBuffer());
+  const body = await waitForRegistryResponse(manifest.dist.tarball, `${manifest.version} tarball`, (response) => response.arrayBuffer(), { timeoutMs: 60000, ...options });
+  const bytes = Buffer.from(body);
   const [algorithm, digest] = manifest.dist.integrity.split('-');
   if (!['sha512', 'sha256'].includes(algorithm) || createHash(algorithm).update(bytes).digest('base64') !== digest) throw new Error('Published tarball integrity mismatch');
   return bytes;

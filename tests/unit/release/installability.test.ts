@@ -67,4 +67,22 @@ describe('published package installability gate', () => {
     await expect(waitForPublishedTarball(valid, { fetchImpl, attempts: 2, wait: vi.fn() })).rejects.toThrow('tarball is not publicly available');
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
+  it.each([new TypeError('socket closed during download'), new DOMException('download aborted', 'AbortError')])('retries interrupted 200 tarball body: %s', async (error) => {
+    const bytes = archive('package/package.json', JSON.stringify(valid));
+    const manifest = { ...valid, dist: { ...valid.dist, integrity: 'sha512-' + createHash('sha512').update(bytes).digest('base64') } };
+    const brokenBody = new ReadableStream({ start(controller) { controller.error(error); } });
+    const fetchImpl = vi.fn().mockResolvedValueOnce(new Response(brokenBody)).mockResolvedValueOnce(new Response(bytes));
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    try {
+      expect(await waitForPublishedTarball(manifest, { fetchImpl, attempts: 2, wait: vi.fn() })).toEqual(bytes);
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+      expect(timeout.mock.calls).toEqual([[60000], [60000]]);
+    } finally { timeout.mockRestore(); }
+  });
+  it('retries a manifest body transport failure after successful response headers', async () => {
+    const brokenBody = new ReadableStream({ start(controller) { controller.error(new TypeError('socket closed')); } });
+    const fetchImpl = vi.fn().mockResolvedValueOnce(new Response(brokenBody)).mockResolvedValueOnce(new Response(JSON.stringify(valid)));
+    expect(await waitForPublishedManifest(expected.version, { fetchImpl, attempts: 2, wait: vi.fn() })).toEqual(valid);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
 });
