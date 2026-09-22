@@ -65,8 +65,6 @@ describe('prefilterCommand', () => {
     'pwd',
     'echo hello',
     'grep -rn TODO src',
-    'rg --files',
-    'find . -name *.ts',
     'git status',
     'git log --oneline -10',
     'git diff --stat',
@@ -83,6 +81,9 @@ describe('prefilterCommand', () => {
   });
 
   it.each([
+    'rg --files',
+    'find . -name *.ts',
+    'file /tmp/input',
     'rm -rf /tmp/project',
     'git push --force origin main',
     'git reset --hard HEAD~3',
