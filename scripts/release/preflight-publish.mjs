@@ -36,6 +36,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { verifyLocalPackage } from './verify-package-install.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const pkg = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
@@ -242,6 +243,11 @@ if (failures.length > 0) {
   );
   process.exit(1);
 }
+
+// File presence alone cannot detect npm normalizing away a bin mapping.
+// Inspect the actual packed manifest and invoke the freshly installed command.
+try { verifyLocalPackage(repoRoot); }
+catch (error) { console.error(`[preflight] installability check failed: ${error.message}`); process.exit(1); }
 
 console.log(
   `[preflight] ok — tarball carries ${entries.size} entries including ${entrypoints.join(', ')}, ` +
