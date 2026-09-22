@@ -228,6 +228,8 @@ describe('update command', () => {
 
       const output = consoleLogs.join('\n');
       expect(output).toContain('DRY RUN');
+      expect(mockRefreshPluginsCommand).not.toHaveBeenCalled();
+      expect(output).toContain('Would refresh (dry run)');
     });
 
     it('should update instructions for SpecWeave projects', async () => {
