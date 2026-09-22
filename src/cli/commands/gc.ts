@@ -7,7 +7,7 @@
 
 import * as path from 'path';
 import chalk from 'chalk';
-import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { findEffectiveRoot } from '../../utils/find-project-root.js';
 import {
   purgeState,
   findNestedSpecweaveDirs,
@@ -23,7 +23,22 @@ export interface GcCommandOptions {
 
 // NOTE: user-facing command output; console.* is intentional here.
 export async function gcCommand(options: GcCommandOptions = {}): Promise<void> {
-  const projectRoot = options.projectRoot || resolveEffectiveRoot();
+  // An explicit --project-root is the caller's responsibility. Otherwise resolve
+  // the effective root with no process.cwd() fallback: the nested-.specweave
+  // scan below walks the tree under this root, which outside a project would
+  // be $HOME or / (0879).
+  const projectRoot = options.projectRoot || findEffectiveRoot();
+  if (!projectRoot) {
+    const msg = `No SpecWeave project found: no .specweave/config.json in ${process.cwd()} or any parent directory`;
+    if (options.json) {
+      console.log(JSON.stringify({ error: msg }, null, 2));
+    } else {
+      console.log(chalk.yellow(`\n${msg}`));
+      console.log(chalk.gray('Run this command from inside a SpecWeave project, or run `specweave init` first.\n'));
+    }
+    process.exitCode = 1;
+    return;
+  }
   const stateDir = path.join(projectRoot, '.specweave', 'state');
 
   const result = purgeState(stateDir, { apply: !!options.yes });
