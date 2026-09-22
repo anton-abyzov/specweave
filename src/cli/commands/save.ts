@@ -45,7 +45,11 @@ export interface SaveOptions {
   /** Skip repos without remotes */
   skipNoRemote?: boolean;
 
-  /** Include all repos (even outside umbrella config) */
+  /**
+   * Fan out into git repositories nested under the root even when the root is
+   * not a SpecWeave project root. From a project root (its own
+   * .specweave/config.json) nested repos are detected automatically (0879).
+   */
   all?: boolean;
 
   /** Commit but don't push */
@@ -61,9 +65,9 @@ export interface SaveOptions {
   logger?: Logger;
 
   /**
-   * Project root path. When omitted, the nearest SpecWeave project root (by
-   * .specweave/config.json) is used and the command refuses to run outside a
-   * project — never process.cwd() (0879).
+   * Project root path. When omitted, the top level of the git repository
+   * enclosing process.cwd() is used, and the command refuses to run outside a
+   * git repository — never process.cwd() itself (0879).
    */
   projectRoot?: string;
 }
@@ -109,15 +113,18 @@ interface FileChange {
  */
 export async function executeSave(options: SaveOptions = {}): Promise<void> {
   const logger = options.logger ?? consoleLogger;
-  // An explicit projectRoot is the caller's responsibility. Otherwise resolve
-  // the nearest project root with no process.cwd() fallback: the repository
-  // scan below walks the tree under this path and would then commit (and push)
-  // in every git repo it finds under e.g. $HOME (0879).
-  const projectRoot = options.projectRoot ?? findProjectRoot();
+  // An explicit projectRoot is the caller's responsibility. Otherwise operate on
+  // the git repository enclosing the cwd. Not process.cwd() itself: from a
+  // non-repository directory such as $HOME the nested-repo scan below is
+  // unbounded and would commit and push in every repo it finds (0879). And not
+  // the SpecWeave project root either: from an umbrella child repo, whose stale
+  // .specweave/ has no config.json, the nearest config.json is the umbrella's,
+  // and saving from there would fan out to every sibling repo.
+  const projectRoot = options.projectRoot ?? (await findGitToplevel(process.cwd()));
   if (!projectRoot) {
     const cwd = process.cwd();
-    logger.log(`No SpecWeave project found: no .specweave/config.json in ${cwd} or any parent directory`);
-    logger.log('Run this command from inside a SpecWeave project, or run `specweave init` first.');
+    logger.log(`Not inside a git repository: ${cwd}`);
+    logger.log('Run this command from inside the repository you want to save.');
     process.exitCode = 1;
     return;
   }
@@ -341,10 +348,17 @@ async function detectRepositories(
       }
     }
   } else {
-    // Strategy 2: Auto-detect nested git repositories (repositories/ folder, etc.)
-    const scanResult = await scanForChildRepos(projectRoot, 3);
+    // Strategy 2: Auto-detect nested git repositories (repositories/ folder, etc.).
+    // Only from a SpecWeave project root (its own .specweave/config.json) or with
+    // --all: a plain git repo, or an umbrella child whose .specweave/ has no
+    // config.json, is saved on its own and never fans out into repos nested
+    // under it (0879).
+    const isProjectRoot = findProjectRoot(projectRoot) === path.resolve(projectRoot);
+    const scanResult = options.all || isProjectRoot
+      ? await scanForChildRepos(projectRoot, 3)
+      : null;
 
-    if (scanResult.isUmbrella && scanResult.config?.childRepos?.length) {
+    if (scanResult?.isUmbrella && scanResult.config?.childRepos?.length) {
       logger.log(`Auto-detected ${scanResult.config.childRepos.length} nested repositories`);
 
       for (const childRepo of scanResult.config.childRepos) {
@@ -377,6 +391,16 @@ async function detectRepositories(
   }
 
   return repos;
+}
+
+/**
+ * Top-level directory of the git repository enclosing `cwd`, or null when `cwd`
+ * is not inside a git work tree.
+ */
+async function findGitToplevel(cwd: string): Promise<string | null> {
+  const result = await execFileNoThrow('git', ['rev-parse', '--show-toplevel'], { cwd });
+  const toplevel = result.stdout.trim();
+  return result.exitCode === 0 && toplevel ? toplevel : null;
 }
 
 /**
