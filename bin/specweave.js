@@ -953,84 +953,9 @@ program
     if (!result.success) process.exit(1);
   });
 
-// LSP command - Code intelligence operations
-const lspCmd = program
-  .command('lsp')
-  .description('LSP code intelligence (refs, def, hover, symbols, search)');
-
-lspCmd
-  .command('refs <file> <symbol>')
-  .description('Find all references to a symbol')
-  .action(async (file, symbol) => {
-    const { handleLspRefs } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspRefs(process.cwd(), file, symbol);
-  });
-
-lspCmd
-  .command('def <file> <symbol>')
-  .description('Go to definition of a symbol')
-  .action(async (file, symbol) => {
-    const { handleLspDef } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspDef(process.cwd(), file, symbol);
-  });
-
-lspCmd
-  .command('hover <file> <symbol>')
-  .description('Get type information for a symbol')
-  .action(async (file, symbol) => {
-    const { handleLspHover } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspHover(process.cwd(), file, symbol);
-  });
-
-lspCmd
-  .command('symbols <file>')
-  .description('List all symbols in a file')
-  .action(async (file) => {
-    const { handleLspSymbols } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSymbols(process.cwd(), file);
-  });
-
-lspCmd
-  .command('search <query>')
-  .description('Search for symbols in workspace')
-  .action(async (query) => {
-    const { handleLspSearch } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSearch(process.cwd(), query);
-  });
-
-lspCmd
-  .command('warmup [files...]')
-  .description('Warm up LSP by pre-indexing workspace (run on session start)')
-  .option('--quiet', 'Suppress output')
-  .action(async (files, options) => {
-    const { handleLspWarmup } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspWarmup(process.cwd(), files, options.quiet ?? false);
-  });
-
-lspCmd
-  .command('status')
-  .description('Show LSP status and warm-up state')
-  .action(async () => {
-    const { handleLspStatus } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspStatus(process.cwd());
-  });
-
-lspCmd
-  .command('setup')
-  .description('Scan project for languages and interactively install LSP plugins (22 languages)')
-  .option('-n, --max <number>', 'Maximum number of languages to suggest', '5')
-  .option('--min-files <number>', 'Minimum file count to consider a language', '5')
-  .option('--dry-run', 'Show what would be installed without installing')
-  .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
-  .action(async (options) => {
-    const { handleLspSetup } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSetup(process.cwd(), {
-      maxLanguages: parseInt(options.max, 10),
-      minFileCount: parseInt(options.minFiles, 10),
-      dryRun: options.dryRun ?? false,
-      scope: options.scope,
-    });
-  });
+// Use the same guarded LSP registration as library callers and command tests.
+const { createLspCommand } = await import('../dist/src/cli/commands/lsp.js');
+program.addCommand(createLspCommand());
 
 // Commits command - Display last 2 git commits
 program

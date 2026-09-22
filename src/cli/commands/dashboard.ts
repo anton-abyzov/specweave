@@ -12,7 +12,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { findAvailablePort } from '../../utils/docs-preview/server-manager.js';
 import type { DashboardLockFile } from '../../dashboard/types.js';
-import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { findEffectiveRoot } from '../../utils/find-project-root.js';
 
 const LOCK_FILE = path.join(process.env.HOME || '', '.specweave-dashboard.json');
 
@@ -22,13 +22,13 @@ export interface DashboardOptions {
 }
 
 export async function dashboardCommand(options: DashboardOptions = {}): Promise<void> {
-  const projectRoot = resolveEffectiveRoot();
-  const specweavePath = path.join(projectRoot, '.specweave');
+  const projectRoot = findEffectiveRoot();
 
-  if (!fs.existsSync(specweavePath)) {
-    console.log(chalk.red('No SpecWeave project found in current directory.'));
+  if (!projectRoot) {
+    console.log(chalk.red(`No SpecWeave project found: no .specweave/config.json in ${process.cwd()} or any parent directory`));
     console.log(chalk.dim('Run `specweave init` first.'));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   // Check if dashboard is already running
