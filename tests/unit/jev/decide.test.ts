@@ -22,8 +22,17 @@ const TEST_KEY = 'test-key-not-a-real-credential';
 const THRESHOLDS: JevConfig['thresholds'] = JEV_DEFAULTS.thresholds;
 
 function clientFor(bodies: unknown[]): { client: JevClient; fetchStub: ReturnType<typeof vi.fn> } {
-  const fetchStub = vi.fn(async () => {
-    const body = bodies.shift() ?? {};
+  const fetchStub = vi.fn(async (_url: string, init: RequestInit) => {
+    const body = bodies.shift() as { answers?: Record<string, any> } ?? {};
+    const questions = JSON.parse(init.body as string).questions;
+    // Fixtures abbreviate distributions; the real API returns every requested option.
+    for (const [id, answer] of Object.entries(body.answers ?? {})) {
+      if (answer.type !== 'choice') continue;
+      const keys = Object.keys(questions[id]?.criteria ?? {});
+      const missing = keys.filter((key) => !(key in answer.probabilities));
+      const remainder = 1 - Object.values(answer.probabilities as Record<string, number>).reduce((sum, p) => sum + p, 0);
+      for (const key of missing) answer.probabilities[key] = remainder / missing.length;
+    }
     return new Response(JSON.stringify(body), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -94,6 +103,22 @@ describe('prefilterCommand', () => {
     '',
     '   ',
     'terraform destroy',
+    'sort -o /tmp/important /tmp/input',
+    'sort --output=/tmp/important /tmp/input',
+    'uniq /tmp/input /tmp/important',
+    'git diff --output=/tmp/important',
+    'git log --output=/tmp/important',
+    'rg --pre /tmp/helper pattern /tmp/input',
+    'rg --pre=/tmp/helper pattern /tmp/input',
+    'rg --open-files-in-pager=/tmp/helper pattern',
+    'fd -x /tmp/helper',
+    'tree -o/tmp/important',
+    'file -C -m /tmp/magic',
+    'find . -fprintf /tmp/important %p',
+    'find . -fls /tmp/important',
+    'find . -fprint0 /tmp/important',
+    'date 010101012026',
+    'hostname changed-host',
   ])('sends %s to Jev', (command) => {
     expect(prefilterCommand(command)).toBe('check');
   });
