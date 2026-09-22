@@ -89,7 +89,7 @@ export function readRegisteredCommands(root = REPO_ROOT) {
   const names = new Set(BUILTIN_COMMANDS);
   let src = '';
   try {
-    src = fs.readFileSync(bin, 'utf8');
+    src = fs.readdirSync(path.dirname(bin)).filter(name => name.endsWith('.js')).map(name => fs.readFileSync(path.join(path.dirname(bin), name), 'utf8')).join('\n');
   } catch {
     return names;
   }
