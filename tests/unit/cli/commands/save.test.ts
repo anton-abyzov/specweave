@@ -20,6 +20,7 @@ import * as fs from 'fs/promises';
 import os from 'os';
 import { executeSave } from '../../../../src/cli/commands/save.js';
 import { Logger } from '../../../../src/utils/logger.js';
+import { findProjectRoot } from '../../../../src/utils/find-project-root.js';
 
 const execAsync = promisify(exec);
 
@@ -1225,5 +1226,84 @@ describe('save command', () => {
       expect(lines[0]).toContain('feat: change 3');
       expect(lines[3]).toContain('init');
     });
+  });
+});
+
+// ============================================================================
+// PROJECT ROOT RESOLUTION (0879)
+// ============================================================================
+
+// bin/specweave.js used to pass projectRoot: process.cwd(), and executeSave fell
+// back to process.cwd() itself, so from a non-project directory (e.g. $HOME) the
+// command scanned the cwd for nested git repos and would commit and push in each.
+describe('executeSave project root resolution (0879)', () => {
+  let cwdSpy: ReturnType<typeof vi.spyOn> | undefined;
+  let exitCodeBefore: typeof process.exitCode;
+  const dirs: string[] = [];
+
+  async function gitRepo(dir: string): Promise<void> {
+    const cleanEnv = { ...process.env };
+    delete cleanEnv.NODE_OPTIONS;
+    await fs.mkdir(dir, { recursive: true });
+    await execAsync('git init', { cwd: dir, env: cleanEnv });
+    await execAsync('git config user.email "test@specweave.dev"', { cwd: dir, env: cleanEnv });
+    await execAsync('git config user.name "Test"', { cwd: dir, env: cleanEnv });
+    await fs.writeFile(path.join(dir, '.gitkeep'), '');
+    await execAsync('git add -A && git commit -m "init"', { cwd: dir, env: cleanEnv });
+  }
+
+  beforeEach(() => {
+    exitCodeBefore = process.exitCode;
+    process.exitCode = undefined;
+  });
+
+  afterEach(async () => {
+    cwdSpy?.mockRestore();
+    cwdSpy = undefined;
+    process.exitCode = exitCodeBefore;
+    for (const d of dirs.splice(0)) {
+      await fs.rm(d, { recursive: true, force: true }).catch(() => {});
+    }
+  });
+
+  it('refuses to run when no projectRoot is given and the cwd is not inside a SpecWeave project', async () => {
+    const bare = await fs.mkdtemp(path.join(os.tmpdir(), 'sw-save-noproj-'));
+    dirs.push(bare);
+    expect(findProjectRoot(bare)).toBeNull(); // precondition: nothing upward is a project
+    // A nested git repo the old cwd fallback would have auto-detected and committed in.
+    await gitRepo(path.join(bare, 'a', 'repo'));
+    cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(bare);
+    const { logger, output } = createTestLogger();
+
+    await executeSave({ dryRun: true, noPush: true, logger });
+
+    const text = output.join('\n');
+    expect(text).toContain('No SpecWeave project found');
+    expect(text).toContain('.specweave/config.json');
+    expect(text).toContain(bare);
+    expect(text).toContain('specweave init');
+    expect(text).not.toContain('Scanning for repositories');
+    expect(process.exitCode).toBe(1);
+  });
+
+  it('resolves the nearest project root from a subdirectory when no projectRoot is given', async () => {
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'sw-save-root-'));
+    dirs.push(base);
+    const repoDir = path.join(base, 'my-project');
+    await gitRepo(repoDir);
+    await fs.mkdir(path.join(repoDir, '.specweave'), { recursive: true });
+    await fs.writeFile(path.join(repoDir, '.specweave', 'config.json'), '{}');
+    const sub = path.join(repoDir, 'src', 'deep');
+    await fs.mkdir(sub, { recursive: true });
+    cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(sub);
+    const { logger, output } = createTestLogger();
+
+    await executeSave({ dryRun: true, noPush: true, logger });
+
+    const text = output.join('\n');
+    expect(text).not.toContain('No SpecWeave project found');
+    expect(text).toContain('Mode: Workspace (1 repository)');
+    expect(text).toContain('my-project');
+    expect(process.exitCode).not.toBe(1);
   });
 });

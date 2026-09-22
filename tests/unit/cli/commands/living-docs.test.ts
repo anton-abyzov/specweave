@@ -45,6 +45,7 @@ const {
   mockExecuteLivingDocsChunk,
   mockGetProgressSummary,
   mockLoadLivingDocsCheckpoint,
+  mockFindProjectRoot,
 } = vi.hoisted(() => {
   const _mockGetJobs = vi.fn().mockReturnValue([]);
   const _mockGetJob = vi.fn().mockReturnValue(null);
@@ -91,6 +92,7 @@ const {
     mockExecuteLivingDocsChunk: vi.fn().mockResolvedValue({ status: 'all_complete' }),
     mockGetProgressSummary: vi.fn().mockReturnValue('Phase 3/8'),
     mockLoadLivingDocsCheckpoint: vi.fn().mockReturnValue(null),
+    mockFindProjectRoot: vi.fn().mockReturnValue('/tmp/test'),
   };
 });
 
@@ -133,6 +135,10 @@ vi.mock('../../../../src/core/background/living-docs-executor.js', () => ({
   executeLivingDocsChunk: mockExecuteLivingDocsChunk,
   getProgressSummary: mockGetProgressSummary,
   loadLivingDocsCheckpoint: mockLoadLivingDocsCheckpoint,
+}));
+
+vi.mock('../../../../src/utils/find-project-root.js', () => ({
+  findProjectRoot: mockFindProjectRoot,
 }));
 
 // ── Import under test (after mocks) ────────────────────────────────────
@@ -195,6 +201,7 @@ describe('livingDocsCommand', () => {
     mockGetJob.mockReturnValue(null);
     mockIsJobRunning.mockReturnValue(false);
     mockReadFileSync.mockReturnValue('{}');
+    mockFindProjectRoot.mockReturnValue('/tmp/test');
   });
 
   afterEach(() => {
@@ -207,18 +214,46 @@ describe('livingDocsCommand', () => {
   // ── Initialization guard ──────────────────────────────────────────
 
   describe('initialization guard', () => {
-    it('should exit early if .specweave directory does not exist', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('.specweave')) return false;
-        return true;
-      });
+    let exitCodeBefore: typeof process.exitCode;
+
+    beforeEach(() => {
+      exitCodeBefore = process.exitCode;
+      process.exitCode = undefined;
+    });
+
+    afterEach(() => {
+      process.exitCode = exitCodeBefore;
+    });
+
+    // 0879: a bare `.specweave/` directory is not a project (~/.specweave/ holds the
+    // global plugins lockfile on every machine), so the guard keys on
+    // findProjectRoot() — .specweave/config.json — with no process.cwd() fallback.
+    it('should bail out with exit code 1 when no project root is found', async () => {
+      mockFindProjectRoot.mockReturnValue(null);
+      mockExistsSync.mockReturnValue(true); // a stray .specweave/ dir must not count
 
       await livingDocsCommand({});
 
       const output = logSpy.mock.calls.map(c => c[0]).join('\n');
       expect(output).toContain('No SpecWeave project found');
+      expect(output).toContain('.specweave/config.json');
+      expect(output).toContain('/tmp/test');
       expect(output).toContain('specweave init');
+      expect(process.exitCode).toBe(1);
+      expect(mockDetectBrownfield).not.toHaveBeenCalled();
       expect(mockLaunchLivingDocsJob).not.toHaveBeenCalled();
+    });
+
+    it('should operate on the resolved project root, not the cwd', async () => {
+      cwdSpy.mockReturnValue('/tmp/test/src/deep');
+      mockFindProjectRoot.mockReturnValue('/tmp/test');
+      mockDetectBrownfield.mockReturnValue(false); // greenfield: returns before any prompt
+
+      await livingDocsCommand({});
+
+      expect(mockDetectBrownfield).toHaveBeenCalledWith('/tmp/test');
+      expect(mockLaunchLivingDocsJob).not.toHaveBeenCalled();
+      expect(process.exitCode).not.toBe(1);
     });
   });
 
@@ -1203,15 +1238,16 @@ describe('livingDocsCommand', () => {
   // ── Edge cases ────────────────────────────────────────────────────
 
   describe('edge cases', () => {
-    it('should use process.cwd() as project path', async () => {
-      cwdSpy.mockReturnValue('/custom/project/path');
-
-      // Make it exit early (no .specweave)
-      mockExistsSync.mockReturnValue(false);
+    // 0879: the project path is the resolved project root (by .specweave/config.json),
+    // not process.cwd(); cwd is only reported in the no-project message.
+    it('should use the resolved project root as project path, not process.cwd()', async () => {
+      mockFindProjectRoot.mockReturnValue('/resolved/root');
+      mockDetectBrownfield.mockReturnValue(false);
 
       await livingDocsCommand({});
 
-      expect(cwdSpy).toHaveBeenCalled();
+      expect(mockFindProjectRoot).toHaveBeenCalled();
+      expect(mockDetectBrownfield).toHaveBeenCalledWith('/resolved/root');
     });
 
     it('should handle orphaned job with zero total progress', async () => {
