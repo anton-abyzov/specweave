@@ -1,0 +1,28 @@
+/* Shared public-website and local-workspace design contract. */
+:root {
+  --sw-brand-paper: #f6f4ee;
+  --sw-brand-ink: #252820;
+  --sw-brand-muted: #65695e;
+  --sw-brand-line: #d9dcd0;
+  --sw-brand-accent: #bd481f;
+  --sw-brand-surface: #fbfcf8;
+  --sw-brand-card: #ffffff;
+  --sw-brand-soft: #eff2e8;
+  --sw-brand-hover: #e6e9de;
+  --sw-brand-selected: #e7ebdf;
+  --sw-brand-control-border: #8f9d81;
+  --sw-brand-action: #252820;
+  --sw-brand-action-hover: #3f4835;
+  --sw-brand-on-action: #ffffff;
+  --sw-brand-success: #547451;
+  --sw-brand-warning: #90541e;
+  --sw-brand-danger: #a2392b;
+  --sw-brand-danger-soft: #faeee8;
+  --sw-brand-review: #626f9a;
+  --sw-brand-sans: "IBM Plex Sans", sans-serif;
+  --sw-brand-display: "Newsreader", Georgia, serif;
+  --sw-brand-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --sw-brand-radius: 4px;
+  --sw-brand-shadow: 0 18px 50px #25282008;
+  --sw-brand-overlay: #25282066;
+}
