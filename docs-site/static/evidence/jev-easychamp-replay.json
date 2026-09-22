@@ -1292,5 +1292,6 @@
   "implementation_commit": "25ff5ff",
   "release_commit": "dadf7635c62856a11738bc6e42b8e5fad8234253",
   "module_sha256": "829bbc4790292f006b5bbf4a166aeb6d2314935363c142ea795d77f92785dc7b",
-  "source_commit_note": "source_commit is pre-change baseline checkout at replay time; implementation then committed and rebased without routing source changes."
+  "source_commit_note": "source_commit is pre-change baseline checkout at replay time; implementation then committed and rebased without routing source changes.",
+  "release_commit_note": "release_commit identifies the original candidate containing the measured module, not proof of production deployment. The replay metrics and module_sha256 describe the recorded experiment and do not change with later releases."
 }
