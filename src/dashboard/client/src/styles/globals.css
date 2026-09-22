@@ -62,12 +62,37 @@
   --color-gray-900: var(--sw-brand-surface);
   --color-gray-800: var(--sw-brand-soft);
   --color-gray-700: var(--sw-brand-line);
-  --color-gray-600: var(--sw-brand-control-border);
+  --color-gray-600: var(--sw-brand-muted);
   --color-gray-500: var(--sw-brand-muted);
   --color-gray-400: var(--sw-brand-muted);
   --color-gray-300: var(--sw-brand-ink);
   --color-gray-200: var(--sw-brand-ink);
   --color-gray-100: var(--sw-brand-ink);
+  --color-indigo-300: var(--sw-brand-accent);
+  --color-indigo-400: var(--sw-brand-accent);
+  --color-indigo-500: var(--sw-brand-action-hover);
+  --color-indigo-600: var(--sw-brand-action);
+  --color-blue-300: var(--sw-brand-review);
+  --color-blue-400: var(--sw-brand-review);
+  --color-amber-300: var(--sw-brand-warning);
+  --color-amber-400: var(--sw-brand-warning);
+  --color-red-300: var(--sw-brand-danger);
+  --color-red-400: var(--sw-brand-danger);
+  --color-emerald-300: var(--sw-brand-success);
+  --color-emerald-400: var(--sw-brand-success);
+  --color-emerald-500: var(--sw-brand-success);
+  --color-rose-200: var(--sw-brand-danger);
+  --color-rose-300: var(--sw-brand-danger);
+  --color-rose-400: var(--sw-brand-danger);
+  --color-cyan-400: var(--sw-brand-review);
+  --color-violet-400: var(--sw-brand-review);
+  --color-orange-400: var(--sw-brand-warning);
+}
+
+/* Existing selected-tab utilities need their matching light-surface foreground. */
+.work-shell .bg-gray-700.text-white,
+.work-shell .hover\:bg-gray-700.hover\:text-white:hover {
+  color: var(--sw-brand-ink);
 }
 .work-shell {
   background: var(--work-bg);

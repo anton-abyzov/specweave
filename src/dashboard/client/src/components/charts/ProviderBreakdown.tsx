@@ -65,7 +65,7 @@ export function ProviderBreakdown({ data }: ProviderBreakdownProps) {
             </div>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-gray-400">{formatTokens(info.total_tokens)} tokens</span>
-              <span className="text-white font-medium">{formatCost(info.total_cost)}</span>
+              <span className="text-gray-200 font-medium">{formatCost(info.total_cost)}</span>
               <span className="text-gray-600">{expanded === provider ? '▲' : '▼'}</span>
             </div>
           </button>
