@@ -9,6 +9,7 @@
 
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
+import type { Dirent } from 'fs';
 
 /** Source file extensions to scan for */
 const SOURCE_EXTENSIONS = new Set([
@@ -75,35 +76,33 @@ export function isGreenfieldMultiRepo(repoPaths: string[]): boolean {
 
 /**
  * Recursively scan for source files. Stops on first match.
+ *
+ * Symlinks are never followed (0879): a link such as `~/Google Drive -> ...`
+ * or `link -> /` would otherwise pull the whole target tree into the scan.
+ * Dirent types come from the directory entry itself (lstat semantics), so a
+ * symlink reports isSymbolicLink() and neither isFile() nor isDirectory().
  */
 function hasSourceFiles(dirPath: string, depth: number, maxDepth: number): boolean {
   if (depth > maxDepth) return false;
 
-  let entries: string[];
+  let entries: Dirent[];
   try {
-    entries = fs.readdirSync(dirPath);
+    entries = fs.readdirSync(dirPath, { withFileTypes: true });
   } catch {
     return false;
   }
 
   for (const entry of entries) {
-    if (SKIP_DIRS.has(entry)) continue;
+    if (SKIP_DIRS.has(entry.name)) continue;
+    if (entry.isSymbolicLink()) continue;
 
-    const fullPath = path.join(dirPath, entry);
-    let stat: ReturnType<typeof fs.statSync>;
-    try {
-      stat = fs.statSync(fullPath);
-    } catch {
-      continue;
-    }
-
-    if (stat.isFile()) {
-      const ext = path.extname(entry).toLowerCase();
+    if (entry.isFile()) {
+      const ext = path.extname(entry.name).toLowerCase();
       if (SOURCE_EXTENSIONS.has(ext)) {
         return true; // Found a source file → brownfield
       }
-    } else if (stat.isDirectory()) {
-      if (hasSourceFiles(fullPath, depth + 1, maxDepth)) {
+    } else if (entry.isDirectory()) {
+      if (hasSourceFiles(path.join(dirPath, entry.name), depth + 1, maxDepth)) {
         return true;
       }
     }

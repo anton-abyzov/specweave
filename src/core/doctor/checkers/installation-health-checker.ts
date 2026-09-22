@@ -28,6 +28,7 @@ import type {
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
 import { computePluginHash, readGlobalLockfile } from '../../../utils/plugin-copier.js';
+import { findProjectRoot } from '../../../utils/find-project-root.js';
 import { npmRegistryFlag } from '../../../utils/npm-constants.js';
 
 /**
@@ -640,6 +641,16 @@ export class InstallationHealthChecker implements HealthChecker {
     projectRoot: string,
     fix: boolean
   ): Promise<CheckResult[]> {
+    // Outside a SpecWeave project the root is just the caller's cwd (update.ts
+    // passes process.cwd()); scanning that tree is unbounded (0879), so skip.
+    if (!findProjectRoot(projectRoot)) {
+      const message = 'not inside a SpecWeave project - scan skipped';
+      return [
+        { name: 'Legacy lockfiles', status: 'pass', message },
+        { name: 'Orphaned child lockfiles', status: 'pass', message },
+      ];
+    }
+
     const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import(
       '../../../utils/cleanup-stale-plugins.js'
     );

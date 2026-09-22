@@ -102,6 +102,13 @@ export interface DiscoveryResult {
 }
 
 /**
+ * Maximum directory depth for the discovery walk (the project root is depth 0).
+ * Shared by countDirectories() and scanDirectory() so the progress total matches
+ * what is actually scanned and neither can run away on a huge tree (0879).
+ */
+export const MAX_SCAN_DEPTH = 15;
+
+/**
  * Skip patterns for directories that should not be scanned
  */
 const SKIP_DIRS = new Set([
@@ -396,22 +403,27 @@ export async function runDiscovery(
 }
 
 /**
- * Count directories for progress estimation
+ * Count directories for progress estimation.
+ *
+ * Same skip rules and depth bound as scanDirectory(). Dirent.isDirectory() is
+ * false for symlinks, so links are never followed. An unreadable directory
+ * counts as 0 (scanDirectory() does not count it either).
  */
-async function countDirectories(dirPath: string, count = 0): Promise<number> {
+async function countDirectories(dirPath: string, depth = 0): Promise<number> {
+  if (depth > MAX_SCAN_DEPTH) return 0;
   try {
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
     let total = 1;
 
     for (const entry of entries) {
       if (entry.isDirectory() && !SKIP_DIRS.has(entry.name) && !entry.name.startsWith('.')) {
-        total += await countDirectories(path.join(dirPath, entry.name), total);
+        total += await countDirectories(path.join(dirPath, entry.name), depth + 1);
       }
     }
 
     return total;
   } catch {
-    return count;
+    return 0;
   }
 }
 
@@ -425,7 +437,7 @@ async function scanDirectory(
   onDir: (dir: string) => void,
   depth = 0
 ): Promise<void> {
-  if (depth > 15) return; // Prevent infinite recursion
+  if (depth > MAX_SCAN_DEPTH) return;
 
   try {
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });

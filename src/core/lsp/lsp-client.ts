@@ -1017,17 +1017,17 @@ function hasProjectFiles(projectRoot: string, patterns: string[]): boolean {
       // Glob pattern - check root directory
       const regex = new RegExp('^' + pattern.replace('.', '\\.').replace('*', '.*') + '$');
       try {
-        const rootFiles = fs.readdirSync(projectRoot);
-        if (rootFiles.some(f => regex.test(f))) return true;
+        const rootFiles = fs.readdirSync(projectRoot, { withFileTypes: true });
+        if (rootFiles.some(f => !f.isSymbolicLink() && regex.test(f.name))) return true;
 
         // Also check one level of subdirectories for project files
         // (e.g., src/MyApp/MyApp.csproj, MyProject/MyProject.sln)
         for (const entry of rootFiles) {
-          const subPath = path.join(projectRoot, entry);
+          const subPath = path.join(projectRoot, entry.name);
           try {
-            if (fs.statSync(subPath).isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
-              const subFiles = fs.readdirSync(subPath);
-              if (subFiles.some(f => regex.test(f))) return true;
+            if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+              const subFiles = fs.readdirSync(subPath, { withFileTypes: true });
+              if (subFiles.some(f => !f.isSymbolicLink() && regex.test(f.name))) return true;
             }
           } catch {
             // Skip unreadable dirs
@@ -1038,7 +1038,11 @@ function hasProjectFiles(projectRoot: string, patterns: string[]): boolean {
       }
     } else {
       // Exact file
-      if (fs.existsSync(path.join(projectRoot, pattern))) return true;
+      try {
+        if (!fs.lstatSync(path.join(projectRoot, pattern)).isSymbolicLink()) return true;
+      } catch {
+        // Missing or unreadable marker.
+      }
     }
   }
   return false;
