@@ -157,7 +157,8 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/anton-abyzov/specweave/tree/develop/docs-site/',
+          // PR-only pages must link to the source revision that contains them.
+          editUrl: `https://github.com/anton-abyzov/specweave/tree/${process.env.DOCS_SOURCE_REF || 'develop'}/docs-site/`,
           // Use docs/ folder as source (standard Docusaurus location)
           path: './docs',
           routeBasePath: 'docs',
@@ -174,7 +175,7 @@ const config: Config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          editUrl: 'https://github.com/anton-abyzov/specweave/tree/develop/docs-site/',
+          editUrl: `https://github.com/anton-abyzov/specweave/tree/${process.env.DOCS_SOURCE_REF || 'develop'}/docs-site/`,
           blogTitle: 'SpecWeave Blog',
           blogDescription: 'Spec-Driven Development insights, tutorials, and updates',
           postsPerPage: 10,
