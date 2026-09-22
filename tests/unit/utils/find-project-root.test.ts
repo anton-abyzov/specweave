@@ -446,6 +446,15 @@ describe('find-project-root', () => {
       expect(findEffectiveRoot(childRepoNested)).toBe(umbrellaRoot);
     });
 
+    it('should prefer the umbrella root over a child repo that has its own .specweave/config.json', async () => {
+      const { umbrellaRoot, childRepo, childRepoNested } = await createUmbrellaTree();
+      await fsPromises.mkdir(path.join(childRepo, '.specweave'), { recursive: true });
+      await fsPromises.writeFile(path.join(childRepo, '.specweave', 'config.json'), '{}');
+      // The only shape in which the two functions differ.
+      expect(findProjectRoot(childRepoNested)).toBe(childRepo);
+      expect(findEffectiveRoot(childRepoNested)).toBe(umbrellaRoot);
+    });
+
     it('should return project root for standalone project', async () => {
       const { projectRoot, nestedDir } = await createProjectTree();
       expect(findEffectiveRoot(nestedDir)).toBe(projectRoot);

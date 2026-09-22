@@ -18,7 +18,7 @@ import { promisify } from 'util';
 import path from 'path';
 import * as fs from 'fs/promises';
 import os from 'os';
-import { executeSave } from '../../../../src/cli/commands/save.js';
+import { executeSave, type SaveOptions } from '../../../../src/cli/commands/save.js';
 import { Logger } from '../../../../src/utils/logger.js';
 import { findProjectRoot } from '../../../../src/utils/find-project-root.js';
 
@@ -1233,23 +1233,54 @@ describe('save command', () => {
 // PROJECT ROOT RESOLUTION (0879)
 // ============================================================================
 
-// bin/specweave.js used to pass projectRoot: process.cwd(), and executeSave fell
-// back to process.cwd() itself, so from a non-project directory (e.g. $HOME) the
+// bin/specweave.js used to pass projectRoot: process.cwd() and executeSave fell back
+// to process.cwd() itself, so from a non-repository directory (e.g. $HOME) the
 // command scanned the cwd for nested git repos and would commit and push in each.
+// The root is now the git toplevel enclosing the cwd, and the nested-repo scan only
+// runs from a SpecWeave project root (or with --all).
 describe('executeSave project root resolution (0879)', () => {
   let cwdSpy: ReturnType<typeof vi.spyOn> | undefined;
   let exitCodeBefore: typeof process.exitCode;
   const dirs: string[] = [];
 
-  async function gitRepo(dir: string): Promise<void> {
-    const cleanEnv = { ...process.env };
-    delete cleanEnv.NODE_OPTIONS;
+  const cleanEnv = { ...process.env };
+  delete cleanEnv.NODE_OPTIONS;
+
+  async function gitRepo(dir: string): Promise<string> {
     await fs.mkdir(dir, { recursive: true });
-    await execAsync('git init', { cwd: dir, env: cleanEnv });
+    await execAsync('git init -q', { cwd: dir, env: cleanEnv });
     await execAsync('git config user.email "test@specweave.dev"', { cwd: dir, env: cleanEnv });
     await execAsync('git config user.name "Test"', { cwd: dir, env: cleanEnv });
     await fs.writeFile(path.join(dir, '.gitkeep'), '');
-    await execAsync('git add -A && git commit -m "init"', { cwd: dir, env: cleanEnv });
+    await execAsync('git add -A && git commit -q -m "init"', { cwd: dir, env: cleanEnv });
+    return dir;
+  }
+
+  async function tmp(name: string): Promise<string> {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), `sw-save-0879-${name}-`));
+    dirs.push(dir);
+    return dir;
+  }
+
+  /** Umbrella root (SpecWeave project + git repo) with two child git repos carrying a stale .specweave/ (no config.json). */
+  async function umbrella(): Promise<{ root: string; childA: string; childB: string }> {
+    const root = await gitRepo(path.join(await tmp('umb'), 'umbrella'));
+    await fs.mkdir(path.join(root, '.specweave'), { recursive: true });
+    await fs.writeFile(path.join(root, '.specweave', 'config.json'), '{}');
+    const childA = await gitRepo(path.join(root, 'repositories', 'org', 'child-a'));
+    const childB = await gitRepo(path.join(root, 'repositories', 'org', 'child-b'));
+    for (const child of [childA, childB]) {
+      await fs.mkdir(path.join(child, '.specweave', 'state'), { recursive: true }); // stale: no config.json
+    }
+    return { root, childA, childB };
+  }
+
+  async function run(cwd: string, extra: Partial<SaveOptions> = {}): Promise<string> {
+    cwdSpy?.mockRestore();
+    cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(cwd);
+    const { logger, output } = createTestLogger();
+    await executeSave({ dryRun: true, noPush: true, logger, ...extra });
+    return output.join('\n');
   }
 
   beforeEach(() => {
@@ -1266,44 +1297,66 @@ describe('executeSave project root resolution (0879)', () => {
     }
   });
 
-  it('refuses to run when no projectRoot is given and the cwd is not inside a SpecWeave project', async () => {
-    const bare = await fs.mkdtemp(path.join(os.tmpdir(), 'sw-save-noproj-'));
-    dirs.push(bare);
-    expect(findProjectRoot(bare)).toBeNull(); // precondition: nothing upward is a project
+  it('refuses to run when no projectRoot is given and the cwd is not inside a git repository', async () => {
+    const bare = await tmp('bare');
+    expect(findProjectRoot(bare)).toBeNull(); // precondition: nothing upward is a project either
     // A nested git repo the old cwd fallback would have auto-detected and committed in.
     await gitRepo(path.join(bare, 'a', 'repo'));
-    cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(bare);
-    const { logger, output } = createTestLogger();
 
-    await executeSave({ dryRun: true, noPush: true, logger });
+    const text = await run(bare);
 
-    const text = output.join('\n');
-    expect(text).toContain('No SpecWeave project found');
-    expect(text).toContain('.specweave/config.json');
+    expect(text).toContain('Not inside a git repository');
     expect(text).toContain(bare);
-    expect(text).toContain('specweave init');
     expect(text).not.toContain('Scanning for repositories');
     expect(process.exitCode).toBe(1);
   });
 
-  it('resolves the nearest project root from a subdirectory when no projectRoot is given', async () => {
-    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'sw-save-root-'));
-    dirs.push(base);
-    const repoDir = path.join(base, 'my-project');
-    await gitRepo(repoDir);
-    await fs.mkdir(path.join(repoDir, '.specweave'), { recursive: true });
-    await fs.writeFile(path.join(repoDir, '.specweave', 'config.json'), '{}');
-    const sub = path.join(repoDir, 'src', 'deep');
+  it('operates on the enclosing git repository from a subdirectory, SpecWeave project or not', async () => {
+    const repo = await gitRepo(path.join(await tmp('plain'), 'plain-repo'));
+    const sub = path.join(repo, 'src', 'deep');
     await fs.mkdir(sub, { recursive: true });
-    cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(sub);
-    const { logger, output } = createTestLogger();
 
-    await executeSave({ dryRun: true, noPush: true, logger });
+    const text = await run(sub);
 
-    const text = output.join('\n');
-    expect(text).not.toContain('No SpecWeave project found');
     expect(text).toContain('Mode: Workspace (1 repository)');
-    expect(text).toContain('my-project');
+    expect(text).toContain('plain-repo');
     expect(process.exitCode).not.toBe(1);
+  });
+
+  it('saves only the child repo when run inside an umbrella child whose .specweave/ has no config.json', async () => {
+    const { root, childA } = await umbrella();
+    expect(findProjectRoot(childA)).toBe(root); // the shape that made a project-root walk-up dangerous
+
+    const text = await run(path.join(childA, '.specweave', 'state'));
+
+    expect(text).not.toContain('Auto-detected');
+    expect(text).toContain('Mode: Workspace (1 repository)');
+    expect(text).toContain('child-a');
+    expect(text).not.toContain('child-b');
+    expect(process.exitCode).not.toBe(1);
+  });
+
+  it('fans out to nested repos from the umbrella root, which is a SpecWeave project root', async () => {
+    const { root } = await umbrella();
+
+    const text = await run(root);
+
+    expect(text).toContain('Auto-detected 2 nested repositories');
+    expect(text).toContain('Mode: Workspace (3 repositories)');
+    expect(process.exitCode).not.toBe(1);
+  });
+
+  it('does not fan out from a plain git repo with nested repos unless --all is given', async () => {
+    const root = await gitRepo(path.join(await tmp('mono'), 'mono'));
+    await gitRepo(path.join(root, 'packages', 'a'));
+    await gitRepo(path.join(root, 'packages', 'b'));
+
+    const plain = await run(root);
+    expect(plain).not.toContain('Auto-detected');
+    expect(plain).toContain('Mode: Workspace (1 repository)');
+
+    const all = await run(root, { all: true });
+    expect(all).toContain('Auto-detected 2 nested repositories');
+    expect(all).toContain('Mode: Workspace (3 repositories)');
   });
 });
