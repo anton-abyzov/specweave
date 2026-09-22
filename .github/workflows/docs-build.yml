@@ -46,6 +46,8 @@ jobs:
           echo "Synced README.md to docs-site"
 
       - name: Build documentation
+        env:
+          DOCS_SOURCE_REF: ${{ github.event.pull_request.head.sha }}
         run: |
           cd docs-site
           npm run build
