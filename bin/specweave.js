@@ -126,6 +126,7 @@ program
   .option('-n, --note <text>', 'Note (alias of --reason)')
   .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
+  .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
     const { taskCommand } = await import('../dist/src/cli/commands/task.js');
@@ -181,7 +182,7 @@ program
 // Handoff command - Assemble a portable cross-tool work-handoff doc + diff
 program
   .command('handoff [incrementId]')
-  .description('Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool')
+  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account')
   .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
   .option('--summary <summary>', 'Short summary of where things stand')
   .option('--next <next>', 'The exact next step for the resuming agent')
@@ -192,6 +193,8 @@ program
   .option('--non-specweave', 'Force the .handoff/ fallback even inside a SpecWeave workspace')
   .option('--out <path>', 'Override the doc output path')
   .option('--json', 'Output the full result as JSON (for programmatic use)')
+  .option('--no-push', 'Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)')
+  .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
   .action(async (incrementId, options) => {
     const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
     await handoffCommand({
@@ -205,7 +208,66 @@ program
       nonSpecweave: options.nonSpecweave,
       out: options.out,
       json: options.json,
+      push: options.push === false ? false : undefined,
+      keepClaims: options.keepClaims,
     });
+  });
+
+// Pickup command - everything a fresh session needs, in one read
+program
+  .command('pickup [incrementId]')
+  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria')
+  .option('--no-apply', 'Only show the waiting handoff; do not apply it to this checkout')
+  .option('--json', 'Output as JSON')
+  .action(async (incrementId, options) => {
+    const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply });
+  });
+
+// Report command - HTML timeline of an increment's ledger (handoff evidence)
+program
+  .command('report [incrementId]')
+  .description('Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)')
+  .option('--out <file>', 'Where to write it (default: the increment\'s reports/handoff-report.html)')
+  .action(async (incrementId, options) => {
+    const { reportCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await reportCommand({ incrementId, out: options.out });
+  });
+
+// Note command - leave a note on an increment for whoever works on it next
+program
+  .command('note <text> [incrementId]')
+  .description('Append a note to an increment\'s ledger; `specweave pickup` shows it to the next agent')
+  .action(async (text, incrementId) => {
+    const { noteCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await noteCommand(text, { incrementId });
+  });
+
+// Auto-handoff - hand off by itself near the plan's usage limit (Claude Code, Codex)
+program
+  .command('auto-handoff [action]')
+  .description('on | off | status: hand off automatically at a share of the usage limit (default 90%)')
+  .option('--at <percent>', 'Threshold in percent of any usage window', (v) => Number(v))
+  .action(async (action, options) => {
+    const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await autoHandoffCommand(action, { at: options.at });
+  });
+
+program
+  .command('statusline')
+  .description('Claude Code status line that records usage for auto-handoff')
+  .option('--wrap <command>', 'Print this status line command\'s output instead of the built-in line')
+  .action(async (options) => {
+    const { statuslineCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await statuslineCommand({ wrap: options.wrap });
+  });
+
+program
+  .command('usage-guard')
+  .description('Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold')
+  .action(async () => {
+    const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await usageGuardCommand();
   });
 
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions

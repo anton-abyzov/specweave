@@ -46,21 +46,32 @@ function oneX(sections: Array<[string, string]>, user: string[] = [], version = 
 
 describe('parseTemplate', () => {
   it('splits sections and keeps the user-owned tail', () => {
-    const t = claudeTemplate();
-    expect(t.sections.map(s => s.id)).toEqual(['header', 'structure', 'loop', 'verify', 'parallel', 'conventions', 'umbrella', 'jev', 'troubleshooting']);
-    expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header', 'loop', 'verify', 'parallel', 'conventions']);
-    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella'], ['jev', 'jev']]);
+    const t = agentsTemplate();
+    expect(t.sections.map(s => s.id)).toEqual(['header', 'loop', 'rules', 'umbrella', 'hub', 'jev']);
+    expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header', 'loop', 'rules']);
+    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella'], ['hub', 'hub'], ['jev', 'jev']]);
     expect(t.tail).toMatch(/^## Commands/);
     expect(t.tail).toContain('## Project notes');
+    expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'AGENTS.md.template'), 'utf-8'))).toEqual(t.sections);
+  });
+
+  it('parses CLAUDE.md as a thin @AGENTS.md import with a Project notes tail', () => {
+    const t = claudeTemplate();
+    expect(t.sections.map(s => s.id)).toEqual(['header', 'jev']);
+    expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header']);
+    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['jev', 'jev']]);
+    expect(t.sections[0].content).toMatch(/^@AGENTS\.md\n/);
+    expect(t.tail).toMatch(/^## Project notes/);
+    expect(t.tail).not.toContain('## Commands');
     expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'CLAUDE.md.template'), 'utf-8'))).toEqual(t.sections);
   });
 });
 
 describe('mergeInstructionFile — (a) fresh file', () => {
   it('renders META + sections + tail with commands filled', () => {
-    const r = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS });
+    const r = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
     expect(r.action).toBe('created');
-    expect(r.content.startsWith(`<!-- SW:META template="claude" version="${V}" sections="header,structure,loop,verify,parallel,conventions,troubleshooting" -->`)).toBe(true);
+    expect(r.content.startsWith(`<!-- SW:META template="agents" version="${V}" sections="header,loop,rules" -->`)).toBe(true);
     expect(r.content).toContain(`# ${NAME}`);
     expect(r.content).toContain('| Build | `npm run build` |');
     expect(r.content).toContain('| Test | `npm test` |');
@@ -113,18 +124,21 @@ describe('mergeInstructionFile — (b) 1.x SW:META file', () => {
   it('deletes every section not in the new template and reports them', () => {
     const r = mergeInstructionFile(legacy1x, claudeTemplate(), 'claude', V, NAME, { commands: CMDS });
     expect(r.action).toBe('merged');
-    expect(r.removed).toEqual(['hook-priority', 'reflect', 'docs', 'non-claude']);
+    expect(r.removed).toEqual(['hook-priority', 'reflect', 'structure', 'docs', 'non-claude']);
     expect(r.content).not.toContain('SW:SECTION:hook-priority');
     expect(r.content).not.toContain('Hook Instructions Override Everything');
     expect(r.content).not.toContain('SpecWeave learns from corrections');
     expect(r.content).not.toContain('See AGENTS.md');
-    expect(r.content).toMatch(/sections="header,structure,loop,verify,parallel,conventions,troubleshooting"/);
-    expect(r.migration).toEqual({ fromVersion: '1.0.580', removed: ['hook-priority', 'reflect', 'docs', 'non-claude'] });
+    expect(r.content).not.toContain('SW:SECTION:structure');
+    expect(r.content).not.toContain('old structure');
+    expect(r.content).toMatch(/sections="header"/);
+    expect(r.migration).toEqual({ fromVersion: '1.0.580', removed: ['hook-priority', 'reflect', 'structure', 'docs', 'non-claude'] });
     expect(r.warnings.join('\n')).toContain('Upgraded instructions from 1.0.580 to 2.0.0');
   });
 
   it('preserves user segments verbatim, in order, below the managed block, and strips legacy markers', () => {
-    const r = mergeInstructionFile(legacy1x, claudeTemplate(), 'claude', V, NAME, { commands: CMDS });
+    // synthetic template: CLAUDE.md no longer carries a Commands table, MINI does
+    const r = mergeInstructionFile(legacy1x, MINI, 'claude', V, NAME, { commands: CMDS });
     const lastEnd = r.content.lastIndexOf('<!-- SW:END:');
     const skill = r.content.indexOf('## Skill Memories');
     const proj = r.content.indexOf('## Project Structure');
@@ -282,10 +296,12 @@ describe('mergeInstructionFile — (c) legacy file without markers', () => {
     expect(r.content).toContain('- **2026-02-02**: push then monitor the pipeline');
     expect(r.content).not.toContain('SpecWeave learns from corrections');
     expect(r.content).not.toContain('**Disable**');
-    // managed block first, then Commands, then user content
+    // managed block first, then the template tail (Project notes; CLAUDE.md has no Commands table), then user content
     const lastEnd = r.content.lastIndexOf('<!-- SW:END:');
-    expect(r.content.indexOf('## Commands')).toBeGreaterThan(lastEnd);
-    expect(r.content.indexOf('## Production Credentials')).toBeGreaterThan(r.content.indexOf('## Commands'));
+    expect(r.content).not.toMatch(/^## Commands$/m);
+    expect(r.content.match(/^## Project notes$/gm)).toHaveLength(1);
+    expect(r.content.indexOf('## Project notes')).toBeGreaterThan(lastEnd);
+    expect(r.content.indexOf('## Production Credentials')).toBeGreaterThan(r.content.indexOf('## Project notes'));
     expect(r.migration).toEqual({ fromVersion: 'legacy (no markers)', removed: [] });
   });
 
@@ -462,10 +478,15 @@ describe('mergeInstructionFile — conditional (when=) sections', () => {
   });
 
   it('drives the real templates from config.workspace.repos', () => {
-    const on = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
-    const off = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS });
-    expect(on.content).toContain('Umbrella projects only');
-    expect(off.content).not.toContain('Umbrella projects only');
+    const on = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    const off = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+    expect(on.content).toContain('<!-- SW:SECTION:umbrella');
+    expect(on.content).toContain('Umbrella project: nested repos live under');
+    expect(off.content).not.toContain('SW:SECTION:umbrella');
+    expect(off.content).not.toContain('Umbrella project: nested repos live under');
+    // CLAUDE.md imports AGENTS.md and carries no umbrella section of its own
+    const claudeOn = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
+    expect(claudeOn.content).not.toContain('SW:SECTION:umbrella');
   });
 });
 

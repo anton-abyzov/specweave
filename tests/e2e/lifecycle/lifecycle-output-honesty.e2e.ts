@@ -141,7 +141,7 @@ describe('e2e: no sync is claimed when no sync is configured', () => {
     expect(out).not.toMatch(/Auto-synced/);
   });
 
-  it('still reports the sync when a tracker IS configured', () => {
+  it('does not sync on a status change even when a tracker IS configured', () => {
     const config = readConfig();
     config.sync = { enabled: true, provider: 'github', github: { owner: 'o', repo: 'r' } };
     writeConfig(config);
@@ -149,7 +149,8 @@ describe('e2e: no sync is claimed when no sync is configured', () => {
     sw('pause', INC);
     const out = sw('resume', INC).out;
 
-    expect(out).toMatch(/Auto-synced increment .* to external tools/);
+    // 3.0: only `specweave sync push` talks to a tracker.
+    expect(out).not.toMatch(/Auto-synced/);
   });
 });
 
