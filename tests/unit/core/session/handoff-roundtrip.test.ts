@@ -102,6 +102,32 @@ describe('hand off and pick up across checkouts', () => {
     expect(applyHandoff(b).status).toBe('already');
   });
 
+  it('a fresh clone on the default branch picks up on the handed-off branch and leaves the default alone', async () => {
+    const a = path.join(base, 'a');
+    git(a, 'checkout', '-q', '-b', 'sw/0766-stats');
+    write(a, 'query.js', 'committed\n');
+    git(a, 'add', '-A');
+    git(a, 'commit', '-qm', 'T-001: query');
+    write(a, 'widget.js', 'half done\n');
+    const handoff = await buildWorkHandoff(a, { agent: 'claude@mbp', reason: 'out of tokens' });
+    expect(handoff.push?.warnings).toEqual([]);
+
+    const b = path.join(base, 'b');
+    git(base, 'clone', '-q', path.join(base, 'remote.git'), 'b');
+    identity(b, 'b');
+    const developBefore = git(b, 'rev-parse', 'develop');
+
+    const res = applyHandoff(b);
+    expect(res.status).toBe('applied');
+    expect(res.switchedTo).toBe('sw/0766-stats');
+    expect(res.message).toContain('switched to branch sw/0766-stats');
+    expect(git(b, 'rev-parse', '--abbrev-ref', 'HEAD')).toBe('sw/0766-stats');
+    expect(git(b, 'rev-parse', '--abbrev-ref', '@{upstream}')).toBe('origin/sw/0766-stats');
+    expect(git(b, 'rev-parse', 'develop')).toBe(developBefore);
+    expect(fs.readFileSync(path.join(b, 'query.js'), 'utf8')).toBe('committed\n');
+    expect(fs.readFileSync(path.join(b, 'widget.js'), 'utf8')).toBe('half done\n');
+  });
+
   it('comes back: fast-forwards the original checkout and sets its stale edits aside', async () => {
     const a = path.join(base, 'a');
     write(a, 'widget.js', 'half done\n');
