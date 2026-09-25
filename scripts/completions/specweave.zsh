@@ -23,8 +23,9 @@ commands=(
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
     'verify:'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
-    'handoff:Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool'
-    'pickup:Print the open increment, the next task with its acceptance criteria, claims, branch state, the last handoff, notes and memory'
+    'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account'
+    'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
+    'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
@@ -215,13 +216,19 @@ _specweave() {
                         '--non-specweave[Force the .handoff/ fallback even inside a SpecWeave workspace]' \
                         '--out[Override the doc output path]' \
                         '--json[Output the full result as JSON (for programmatic use)]' \
-                        '--push[Push the branch and a snapshot of uncommitted edits to wip/<branch> so a cloud session can pick them up]' \
+                        '--no-push[Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)]' \
                         '--keep-claims[Keep your task claims instead of releasing them for the next agent]' \
                         '--help[Show help]'
                     ;;
                 pickup)
                     _arguments \
+                        '--no-apply[Only show the waiting handoff; do not apply it to this checkout]' \
                         '--json[Output as JSON]' \
+                        '--help[Show help]'
+                    ;;
+                report)
+                    _arguments \
+                        '--out[Where to write it (default\: the increment'\''s reports/handoff-report.html)]' \
                         '--help[Show help]'
                     ;;
                 note)

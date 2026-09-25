@@ -188,7 +188,16 @@ export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupA
     return { ...base, status: 'here', message: `The last handoff, from ${who}, is already this checkout.` };
   }
 
-  const dirty = git(['status', '--porcelain']);
+  let dirty = git(['status', '--porcelain']);
+  if (dirty && !opts.dryRun) {
+    // Edits that are exactly a handoff made or picked up here are already in
+    // the new handoff's history: set them aside (stashed, never deleted).
+    const here = workingTreeId(git);
+    const known = pickedUp(repoRoot).some((sha) => tryGit(['rev-parse', `${sha}^{tree}`]) === here);
+    if (known && tryGit(['stash', 'push', '--include-untracked', '-m', `specweave pickup: edits already handed off (${snapshot.slice(0, 7)})`]) !== null) {
+      dirty = git(['status', '--porcelain']);
+    }
+  }
   if (dirty) {
     return {
       ...base, status: 'dirty',

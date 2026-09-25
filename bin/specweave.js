@@ -248,7 +248,7 @@ program
 // Handoff command - Assemble a portable cross-tool work-handoff doc + diff
 program
   .command('handoff [incrementId]')
-  .description('Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool')
+  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account')
   .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
   .option('--summary <summary>', 'Short summary of where things stand')
   .option('--next <next>', 'The exact next step for the resuming agent')
@@ -259,7 +259,7 @@ program
   .option('--non-specweave', 'Force the .handoff/ fallback even inside a SpecWeave workspace')
   .option('--out <path>', 'Override the doc output path')
   .option('--json', 'Output the full result as JSON (for programmatic use)')
-  .option('--push', 'Push the branch and a snapshot of uncommitted edits to wip/<branch> so a cloud session can pick them up')
+  .option('--no-push', 'Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)')
   .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
   .action(async (incrementId, options) => {
     const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
@@ -274,7 +274,7 @@ program
       nonSpecweave: options.nonSpecweave,
       out: options.out,
       json: options.json,
-      push: options.push,
+      push: options.push === false ? false : undefined,
       keepClaims: options.keepClaims,
     });
   });
@@ -282,11 +282,22 @@ program
 // Pickup command - everything a fresh session needs, in one read
 program
   .command('pickup [incrementId]')
-  .description('Print the open increment, the next task with its acceptance criteria, claims, branch state, the last handoff, notes and memory')
+  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria')
+  .option('--no-apply', 'Only show the waiting handoff; do not apply it to this checkout')
   .option('--json', 'Output as JSON')
   .action(async (incrementId, options) => {
     const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
-    process.exitCode = await pickupCommand({ incrementId, json: options.json });
+    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply });
+  });
+
+// Report command - HTML timeline of an increment's ledger (handoff evidence)
+program
+  .command('report [incrementId]')
+  .description('Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)')
+  .option('--out <file>', 'Where to write it (default: the increment\'s reports/handoff-report.html)')
+  .action(async (incrementId, options) => {
+    const { reportCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await reportCommand({ incrementId, out: options.out });
   });
 
 // Note command - leave a note on an increment for whoever works on it next

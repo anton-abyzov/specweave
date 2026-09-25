@@ -240,7 +240,7 @@ function newestHandoffDoc(projectRoot: string, incDirs: string[]): { p: string; 
   return best;
 }
 
-/** One line of branch state: branch @ sha, upstream distance, uncommitted work, a WIP ref. */
+/** One line of branch state: branch @ sha, upstream distance, uncommitted work. */
 function gitLine(projectRoot: string): string {
   const git = (args: string[]): string | null => {
     try {
@@ -267,9 +267,6 @@ function gitLine(projectRoot: string): string {
   const status = git(['status', '--porcelain', '--', '.', ':(exclude,glob).specweave/increments/*/ledger.jsonl', ':(exclude,glob).specweave/increments/*/metadata.json', ':(exclude,glob).specweave/increments/*/reports/**', ':(exclude,glob).specweave/state/**', ':(exclude,glob).specweave/logs/**']);
   const dirty = status ? status.split('\n').filter(Boolean).length : 0;
   if (dirty) parts.push(`${dirty} uncommitted file${dirty === 1 ? '' : 's'}`);
-  if (branch !== 'HEAD' && git(['rev-parse', '--verify', '--quiet', `refs/remotes/origin/wip/${branch}`])) {
-    parts.push(`WIP snapshot on origin/wip/${branch} (git cherry-pick --no-commit origin/wip/${branch})`);
-  }
   return parts.join(' · ');
 }
 

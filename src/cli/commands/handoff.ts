@@ -13,12 +13,9 @@
  *     [--decision <d> ...] [--inline] [--non-specweave] [--out <path>] [--json] \
  *     [--push] [--keep-claims]
  *
- * Output order (AC-US1-02 / US-005 — STRICT):
- *   1. The absolute doc path as PLAIN TEXT (first line — for shell capture).
- *   2. A clickable markdown link to the doc.
- *   3. The `.diff` path.
- *   4. The fenced copy-paste resume prompt.
- *   5. A note that per-tool "find your source session" tips live inside the doc.
+ * Output is three or four lines: what was handed off, how to continue ("pick
+ * up" in the other tool), and where the details are. `--inline` prints a
+ * paste-able prompt for the rare case with no Git remote and another machine.
  *
  * With `--json`, the full {@link WorkHandoffResult} is printed as JSON instead
  * (for programmatic callers — e.g. the hook handler and tests).
@@ -28,6 +25,7 @@
  * @module cli/commands/handoff
  */
 
+import * as path from 'path';
 import {
   buildWorkHandoff,
   AmbiguousActiveIncrementError,
@@ -55,7 +53,7 @@ export interface HandoffCommandOptions {
   out?: string;
   /** `--json` → print the full result as JSON. */
   json?: boolean;
-  /** `--push` → push the branch and a WIP snapshot to `wip/<branch>`. */
+  /** `--no-push` → false: keep the handoff local. Default: push when there is a remote. */
   push?: boolean;
   /** `--keep-claims` → do not release this agent's task claims. */
   keepClaims?: boolean;
@@ -103,29 +101,28 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     return;
   }
 
-  // ── Contractual output order (AC-US1-02) ──────────────────────────────────
+  // Short by design: the other side needs two words ("pick up"), not a prompt.
   const out: string[] = [];
-  // 1. Absolute doc path as PLAIN TEXT, first.
-  out.push(result.docPath);
-  // 2. Clickable markdown link.
-  out.push(`[handoff doc](${result.docPath})`);
-  // 3. The .diff path, then what changed for the next agent.
-  out.push(`Uncommitted diff: ${result.diffPath}`);
-  if (result.released.length) out.push(`Released your claims on ${result.released.join(', ')} so the next agent can take them.`);
-  if (result.push?.branch) out.push(`Pushed ${result.push.branch}.`);
-  if (result.push?.wipRef) out.push(`Pushed uncommitted edits to ${result.push.wipRef}.`);
+  const rel = path.relative(startDir, result.docPath).split(path.sep).join('/') || result.docPath;
+  const what: string[] = [];
+  if (result.released.length) what.push(`released ${result.released.join(', ')}`);
+  if (result.push?.branch) what.push(`pushed ${result.push.branch}`);
+  if (result.push?.wipRef) what.push('pushed your uncommitted edits');
+  else if (result.push?.handoffRef) what.push('pushed the handoff');
+  out.push(`Handed off${result.incrementId ? ` ${result.incrementId}` : ''}${what.length ? ` (${what.join(', ')})` : ''}.`);
   for (const w of result.push?.warnings ?? []) out.push(`warning: ${w}`);
-  // 4. Fenced copy-paste resume prompt.
-  out.push('');
-  out.push('Copy-paste this prompt into the other tool:');
-  out.push('```');
-  out.push(result.pastePrompt);
-  out.push('```');
-  // 5. Note that per-tool tips live inside the doc.
-  out.push('');
-  out.push(
-    `Per-tool "find your source session" tips are inside the doc (How To Resume section): ${result.docPath}`,
-  );
+  if (result.push?.handoffRef) {
+    out.push('To continue in any tool, machine or account, say "pick up" there (or run `specweave pickup`).');
+  } else if (opts.inline) {
+    out.push('Paste this into the other tool:');
+    out.push('```');
+    out.push(result.pastePrompt);
+    out.push('```');
+  } else {
+    out.push('To continue in another tool on this machine, say "pick up" there (or run `specweave pickup`).');
+    out.push('Nothing was pushed, so another machine or a cloud session will not see it; run `specweave handoff --inline` for a prompt you can paste instead.');
+  }
+  out.push(`Details: ${rel}`);
 
   process.stdout.write(out.join('\n') + '\n');
 }

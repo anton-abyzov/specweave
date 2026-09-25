@@ -80,9 +80,11 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(section?.required).toBe(false);
   });
 
-  it('AGENTS.md starts sessions with pickup and stops them with handoff --push', () => {
+  it('AGENTS.md maps "hand off" and "pick up" to the two commands', () => {
     expect(agents).toContain('`specweave pickup`');
-    expect(agents).toContain('`specweave handoff --push');
+    expect(agents).toContain('`specweave handoff --reason');
+    expect(agents).toMatch(/says "hand off"/);
+    expect(agents).toMatch(/says "pick up"/);
     expect(agents).toContain('.specweave/memory/');
     expect(agents).not.toContain('tasks.md');
   });
