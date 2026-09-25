@@ -40,7 +40,7 @@ In Claude Code, skills and commands are invoked the same way - with `sw:&lt;name
 **All slash commands** organized by purpose:
 - **Planning**: `sw:increment`
 - **Execution**: `sw:auto`, `sw:do`, `sw:team`
-- **Quality**: `sw:review`, `sw:qa`
+- **Quality**: `sw:review`, `specweave verify`
 - **Completion**: `specweave task next`, `sw:done`
 - **Sync**: `sw:sync` (push, pull, status, setup)
 
@@ -98,7 +98,7 @@ specweave status                          # Check status
   other="validate"
 />
 
-Additional: `sw:qa --gate` (AI quality gate), `sw:review` (deep audit).
+Additional: `sw:review` (quality check and deep audit).
 
 ### Completion
 

@@ -214,7 +214,7 @@ sw:done 0042
 
 **What happens**:
 1. **Task validation**: Are all tasks marked complete?
-2. **Quality gate**: Runs `sw:qa --gate`
+2. **Quality gate**: Runs `sw:review`
 3. **PM validation**: AI reviews against acceptance criteria
 4. **Completion report**: Generated in increment folder
 5. **External sync**: Closes GitHub issue, updates JIRA status
@@ -492,7 +492,7 @@ Phase: IMPLEMENTATION (60% complete)
 Recommended Actions:
   1. Continue implementation: sw:do
   2. Check progress: specweave status
-  3. Validate quality: sw:qa 0042
+  3. Validate quality: sw:review 0042
 
 Blockers Detected: None
 

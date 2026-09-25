@@ -206,7 +206,7 @@ export class WorkflowOrchestrator {
       [WorkflowPhase.PLAN_GENERATION]: { description: 'Generate implementation plan', command: 'sw:plan' },
       [WorkflowPhase.IMPLEMENTATION]: { description: 'Execute tasks', command: 'sw:do' },
       [WorkflowPhase.TESTING]: { description: 'Run tests', command: 'npm test' },
-      [WorkflowPhase.REVIEW]: { description: 'Run quality assessment', command: 'sw:qa' },
+      [WorkflowPhase.REVIEW]: { description: 'Run quality assessment', command: 'sw:review' },
       [WorkflowPhase.COMPLETION]: { description: 'Close increment', command: 'sw:done' },
       [WorkflowPhase.SPEC_WRITING]: { description: 'Complete spec.md and generate plan', command: 'sw:plan' },
       [WorkflowPhase.TASK_BREAKDOWN]: { description: 'Create tasks and start implementation', command: 'sw:do' },

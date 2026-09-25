@@ -208,7 +208,7 @@ const COMMAND_MAPPINGS: CommandMapping[] = [
   // REVIEW
   {
     phase: WorkflowPhase.REVIEW,
-    commandPattern: '/sw:qa',
+    commandPattern: '/sw:review',
     weight: 1.3
   },
 
@@ -741,7 +741,7 @@ export class PhaseDetector {
       [WorkflowPhase.IMPLEMENTATION]: { command: '/sw:do', reason: 'Execute tasks from tasks.md' },
       [WorkflowPhase.TESTING]: { command: '/sw:test', reason: 'Run test suite and validate coverage' },
       [WorkflowPhase.DOCUMENTATION]: { command: '/sw:sync-docs', reason: 'Sync increment to living documentation' },
-      [WorkflowPhase.REVIEW]: { command: '/sw:qa', reason: 'Run quality assessment on increment' },
+      [WorkflowPhase.REVIEW]: { command: '/sw:review', reason: 'Run quality assessment on increment' },
       [WorkflowPhase.COMPLETION]: { command: '/sw:done', reason: 'Close increment and update status' },
       [WorkflowPhase.UNKNOWN]: null
     };

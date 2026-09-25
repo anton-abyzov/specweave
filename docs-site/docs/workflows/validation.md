@@ -143,5 +143,5 @@ specweave task skip T-07 --reason "endpoint already exists in v2 API"
 ## See also
 
 - [SpecWeave 2.0](/docs/guides/specweave-2) — why the three-report pipeline went away
-- [Skills reference](/docs/reference/skills) — `/sw:review`, `/sw:qa`, `/sw:done`
+- [Skills reference](/docs/reference/skills) — `/sw:review`, `/sw:done`
 - [Configuration](/docs/reference/configuration) — `testing.commands`

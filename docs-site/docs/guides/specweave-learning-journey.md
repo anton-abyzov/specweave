@@ -1217,7 +1217,7 @@ Completed Feature
 
 ```bash
 # Security review
-sw:qa 0001
+sw:review 0001
 
 # TDD workflow
 sw:do
@@ -1637,7 +1637,7 @@ It will guide you through the entire cycle.
 │                                                         │
 │  QUALITY                                                │
 │  sw:review ID → Run checks                    │
-│  sw:qa ID       → Quality assessment            │
+│  sw:review ID       → Quality assessment            │
 │  sw:do   → TDD workflow                  │
 │                                                         │
 │  SYNC                                                   │
