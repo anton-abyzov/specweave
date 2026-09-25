@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff pickup report note jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella"
+    local main_commands="init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella"
 
     case "${prev}" in
         specweave)
@@ -93,6 +93,18 @@ _specweave_completions() {
             return 0
             ;;
         note)
+            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            return 0
+            ;;
+        auto-handoff)
+            COMPREPLY=( $(compgen -W "--at --help" -- "${cur}") )
+            return 0
+            ;;
+        statusline)
+            COMPREPLY=( $(compgen -W "--wrap --help" -- "${cur}") )
+            return 0
+            ;;
+        usage-guard)
             COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
             return 0
             ;;

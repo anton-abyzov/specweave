@@ -27,6 +27,9 @@ commands=(
     'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
     'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
+    'auto-handoff:on | off | status\: hand off automatically at a share of the usage limit (default 90%)'
+    'statusline:Claude Code status line that records usage for auto-handoff'
+    'usage-guard:Stop hook\: asks the agent to hand off once usage passes the auto-handoff threshold'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -232,6 +235,20 @@ _specweave() {
                         '--help[Show help]'
                     ;;
                 note)
+                    _arguments \
+                        '--help[Show help]'
+                    ;;
+                auto-handoff)
+                    _arguments \
+                        '--at[Threshold in percent of any usage window]' \
+                        '--help[Show help]'
+                    ;;
+                statusline)
+                    _arguments \
+                        '--wrap[Print this status line command'\''s output instead of the built-in line]' \
+                        '--help[Show help]'
+                    ;;
+                usage-guard)
                     _arguments \
                         '--help[Show help]'
                     ;;
