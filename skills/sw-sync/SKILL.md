@@ -3,7 +3,6 @@ description: Sync SpecWeave increments with GitHub, Jira or Azure DevOps - push 
 argument-hint: "push|pull|status|setup [increment-id]"
 version: 3.0.0
 ---
-<!-- Generated from skills/sw-sync/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
 # sw-sync: external tracker sync
 

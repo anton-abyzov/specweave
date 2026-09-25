@@ -3,7 +3,6 @@ description: Close a SpecWeave increment - every task done or skipped, specweave
 argument-hint: "[increment-id] [--reason \"...\"]"
 version: 3.0.0
 ---
-<!-- Generated from skills/sw-done/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
 # sw-done: close an increment
 

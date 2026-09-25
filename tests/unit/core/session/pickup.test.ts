@@ -154,6 +154,34 @@ describe('pushHandoff', () => {
   const git = (cwd: string, ...args: string[]) =>
     execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
+  it('snapshots a same-size edit made in the same second as the last commit', () => {
+    const remote = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-race-remote-'));
+    try {
+      git(remote, 'init', '-q', '--bare');
+      git(root, 'init', '-q', '-b', 'feature');
+      git(root, 'config', 'user.email', 't@t');
+      git(root, 'config', 'user.name', 't');
+      git(root, 'config', 'commit.gpgsign', 'false');
+      git(root, 'config', 'core.trustctime', 'false');
+      git(root, 'remote', 'add', 'origin', remote);
+      const file = path.join(root, 'a.txt');
+      const t = new Date('2026-09-25T20:00:00Z');
+      fs.writeFileSync(file, 'one\n');
+      fs.utimesSync(file, t, t);
+      git(root, 'add', '-A');
+      git(root, 'commit', '-qm', 'init');
+      // The commit wrote the index in the same second as the edit below.
+      fs.utimesSync(path.join(root, '.git', 'index'), t, t);
+      fs.writeFileSync(file, 'two\n');
+      fs.utimesSync(file, t, t);
+
+      pushHandoff(root, { by: 'claude@mbp', at: new Date().toISOString() });
+      expect(git(remote, 'show', 'wip/feature:a.txt')).toBe('two');
+    } finally {
+      fs.rmSync(remote, { recursive: true, force: true });
+    }
+  });
+
   it('pushes the branch and a WIP snapshot without touching the index or branch', () => {
     const remote = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-remote-'));
     try {

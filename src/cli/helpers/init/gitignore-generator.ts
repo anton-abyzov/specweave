@@ -54,7 +54,6 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.pnpm-store/',
     '.yarn/',
     '.npm/',
-    'package-lock.json',  // Optional: some teams commit this
     '*.tsbuildinfo',
     '.eslintcache',
   ],
@@ -88,13 +87,11 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
   rust: [
     '# Rust',
     'target/',
-    'Cargo.lock',  // For libraries (keep for binaries)
     '**/*.rs.bk',
   ],
   go: [
     '# Go',
     'vendor/',
-    'go.sum',
     '*.exe',
     '*.test',
     '*.out',
@@ -135,12 +132,10 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     'vendor/bundle/',
     '.ruby-version',
     '.ruby-gemset',
-    'Gemfile.lock',  // Optional for gems
   ],
   php: [
     '# PHP',
     'vendor/',
-    'composer.lock',
     '.phpunit.result.cache',
     '.php_cs.cache',
     '.php-cs-fixer.cache',

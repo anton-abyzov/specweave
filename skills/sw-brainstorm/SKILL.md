@@ -3,7 +3,6 @@ description: Widen the options before committing - framed options compared on st
 argument-hint: "<topic> [--depth quick|standard|deep]"
 version: 3.0.0
 ---
-<!-- Generated from skills/sw-brainstorm/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
 # sw-brainstorm: diverge, converge, pick
 

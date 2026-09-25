@@ -3,7 +3,6 @@ description: Run one SpecWeave increment with several agents in parallel - any t
 argument-hint: "[increment-id]"
 version: 3.0.0
 ---
-<!-- Generated from skills/sw-team/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
 # sw-team: several agents, one increment
 

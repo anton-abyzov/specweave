@@ -37,6 +37,7 @@ program
   .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
+  .option('--git-hooks', 'Also install the SpecWeave pre-commit hook (off by default)')
   .option('--full', 'Install all plugins (skip lazy loading, longer init but all skills available immediately)')
   .option('-q, --quick', 'Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)')
   .option('--non-interactive', 'Alias for --quick (skip all prompts)')

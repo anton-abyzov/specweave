@@ -54,7 +54,13 @@ function workingTreeId(git: Git): string {
   try {
     const indexPath = git(['rev-parse', '--path-format=absolute', '--git-path', 'index']);
     const privateIndex = path.join(tmp, 'index');
-    if (fs.existsSync(indexPath)) fs.copyFileSync(indexPath, privateIndex);
+    if (fs.existsSync(indexPath)) {
+      fs.copyFileSync(indexPath, privateIndex);
+      // Keep the index's mtime: git rehashes files changed in the same second
+      // as the index was written only when it can see that second.
+      const { atime, mtime } = fs.statSync(indexPath);
+      fs.utimesSync(privateIndex, atime, mtime);
+    }
     const withIndex = { GIT_INDEX_FILE: privateIndex };
     git(['add', '-A', '--', '.'], withIndex);
     return git(['write-tree'], withIndex);

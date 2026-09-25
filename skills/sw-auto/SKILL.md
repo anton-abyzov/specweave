@@ -3,7 +3,6 @@ description: Run a SpecWeave increment unattended until every task is done, then
 argument-hint: "[increment-ids...] [--dry-run|--reset]"
 version: 3.0.0
 ---
-<!-- Generated from skills/sw-auto/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
 # sw-auto: run until done
 

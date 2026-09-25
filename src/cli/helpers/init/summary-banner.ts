@@ -19,7 +19,8 @@ export interface SummaryBannerOptions {
   adapter: string;
   language: string;
   defaults: {
-    testing: string;
+    /** `testing.mode` from config, when the user set one (init writes none). */
+    testing?: string;
     lspEnabled: boolean;
     gitHooksInstalled: boolean;
     coverage?: { unit: number; integration: number; e2e: number };
@@ -89,16 +90,13 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
   // Enabled defaults
   lines.push(chalk.cyan('  Enabled by default:'));
 
-  let testLabel: string;
+  lines.push('    • Skills sw-* in .claude/skills/ and .agents/skills/');
   if (options.defaults.testing === 'TDD' && options.defaults.coverage) {
     const ct = options.defaults.coverage;
-    testLabel = `TDD mode (coverage: ${ct.unit}% unit, ${ct.integration}% integration, ${ct.e2e}% e2e)`;
-  } else if (options.defaults.testing === 'TDD') {
-    testLabel = 'TDD mode (testing)';
-  } else {
-    testLabel = `${options.defaults.testing} (testing)`;
+    lines.push(`    • TDD mode (coverage: ${ct.unit}% unit, ${ct.integration}% integration, ${ct.e2e}% e2e)`);
+  } else if (options.defaults.testing) {
+    lines.push(`    • ${options.defaults.testing === 'TDD' ? 'TDD mode' : options.defaults.testing} (testing)`);
   }
-  lines.push(`    • ${testLabel}`);
 
   if (options.defaults.lspEnabled) {
     lines.push('    • LSP code intelligence');

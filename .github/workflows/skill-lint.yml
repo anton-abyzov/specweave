@@ -3,6 +3,7 @@ name: skill-lint
 on:
   pull_request:
     paths:
+      - 'skills/**'
       - 'plugins/specweave/skills/**'
       - 'plugins/specweave/agents/**'
       - 'plugins/specweave/PLUGIN.md'

@@ -147,7 +147,8 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
   });
 
   it('CLAUDE.md uses slash commands and AGENTS.md uses the CLI plus the standalone skills', () => {
-    expect(claude).toContain('`/sw:increment "title"`');
+    // Project skills are namespaced sw-*; the plugin form /sw:<name> also works.
+    expect(claude).toContain('`/sw-increment "title"`');
     expect(agents).toContain('`specweave create-increment "title"`');
     expect(agents).not.toMatch(/`\/sw:/);
     // the sw-* skills are vskill-installed standalone skills, not plugin commands;
