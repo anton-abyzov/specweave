@@ -150,8 +150,6 @@ Key functional areas within the plugin:
 | **Testing** | `sw:do` (test-first loop), `specweave verify`, `sw:qa` |
 | **Code review** | `sw:review` (one adversarial fresh-context pass) |
 | **Release management** | `specweave save`, `specweave save`, `specweave save`, `specweave save` |
-| **Documentation** | `specweave docs`, `specweave living-docs`, `specweave docs build`, `specweave docs preview` |
-| **Diagrams & media** | `specweave docs`, `specweave docs`, `specweave docs`, `specweave docs` |
 | **Team orchestration** | `sw:team` (worktree per agent, ledger claims) |
 
 Additional domain-specific skills are available via the [vskill CLI](https://verified-skill.com) and the community registry (see [Skills & Capabilities](/docs/overview/skills-and-capabilities)).

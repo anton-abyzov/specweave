@@ -34,7 +34,7 @@ SpecWeave's task format enforces this naturally:
 
 | Claude Code Phase | SpecWeave Equivalent | Command |
 |-------------------|----------------------|---------|
-| **Explore** | Research/brownfield analysis | `specweave docs`, `specweave sync status` |
+| **Explore** | Research/brownfield analysis | `specweave sync status` |
 | **Plan** | Increment planning | `sw:increment "feature"` |
 | **Code** | Task execution | `sw:do` |
 | **Commit** | Validation + closure | `sw:review`, `sw:done` |
