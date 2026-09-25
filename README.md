@@ -33,6 +33,8 @@ you (in Codex, or account 2): pick up
 
 That is the whole handoff. "Hand off" runs `specweave handoff`: it releases your task claims, records why you stopped, and pushes your branch plus a snapshot of your uncommitted edits. "Pick up" runs `specweave pickup` in any other tool, account, machine or cloud session (a Claude Code Projects thread, a Codex cloud task): it brings that work into the checkout and prints the next task with its acceptance criteria. Nothing to copy, no paths to paste.
 
+Running out mid-task? `specweave auto-handoff on`, once per machine, makes it automatic: when a session reaches 90% of your plan's 5-hour or weekly limit, it hands off by itself and tells you to say "pick up" elsewhere. Claude Code reads the limit through its status line (your own status line keeps working) and Codex through a Stop hook. Under the threshold it costs no tokens. `--at 85` changes the threshold and `off` undoes every change.
+
 `specweave report` writes an HTML timeline of who did what on an increment (tools, sessions, handoffs, pickups, test evidence), straight from the ledger.
 
 ## The loop
@@ -84,7 +86,7 @@ npm i -g specweave@3
 specweave update
 ```
 
-`specweave update` rewrites `AGENTS.md` into the lean form, turns `CLAUDE.md` into an import of it, keeps your own sections, and backs up the old files under `.specweave/backups/`. Existing increments need no migration. See **[SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3)** for what changed and what was removed.
+`specweave update` rewrites `AGENTS.md` into the lean form, turns `CLAUDE.md` into an import of it, keeps your own sections, and backs up the old files under `.specweave/backups/`. Existing increments need no migration. The **[3.0.0 changelog](CHANGELOG.md#300---2026-09-25)** lists what changed and what was removed. To have sessions hand off by themselves near the usage limit, run `specweave auto-handoff on` once.
 
 <br/>
 
