@@ -32,7 +32,7 @@ import * as path from 'path';
 import { touchIncrementUpdated } from './increment-updated.js';
 
 export type TaskEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
-export type IncrementEventType = 'note' | 'session' | 'handoff';
+export type IncrementEventType = 'note' | 'session' | 'handoff' | 'pickup';
 export type LedgerEventType = TaskEventType | IncrementEventType;
 
 /** Task id used by increment-level events (notes, sessions, handoffs). */
@@ -79,8 +79,8 @@ export interface LedgerFold {
 export const LEDGER_FILE = 'ledger.jsonl';
 export const DEFAULT_LEASE_HOURS = 2;
 
-const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff']);
-const INCREMENT_EVENTS: ReadonlySet<string> = new Set(['note', 'session', 'handoff']);
+const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff', 'pickup']);
+const INCREMENT_EVENTS: ReadonlySet<string> = new Set(['note', 'session', 'handoff', 'pickup']);
 
 /** Resolve the ledger path for an increment directory. */
 export function ledgerPath(incrementDir: string): string {
@@ -130,7 +130,8 @@ export function detectHost(env: NodeJS.ProcessEnv = process.env): string {
 
 /** The tool's own session id, when it exposes one (for `session` events). */
 export function detectSessionId(env: NodeJS.ProcessEnv = process.env): string | undefined {
-  return (env.CLAUDE_CODE_SESSION_ID || env.CODEX_SESSION_ID || env.SPECWEAVE_SESSION_ID)?.trim() || undefined;
+  const own: Record<string, string | undefined> = { claude: env.CLAUDE_CODE_SESSION_ID, codex: env.CODEX_SESSION_ID };
+  return (env.SPECWEAVE_SESSION_ID || own[detectTool(env)] || env.CLAUDE_CODE_SESSION_ID || env.CODEX_SESSION_ID)?.trim() || undefined;
 }
 
 /** Serialize one event as a single ledger line (with trailing newline). */

@@ -1,17 +1,19 @@
 <!-- SECTION:header required -->
 # {PROJECT_NAME}
 
-This project uses SpecWeave. Work is planned in increments: `.specweave/increments/NNNN-slug/spec.md` holds Problem, Scope, Acceptance Criteria, Approach and Tasks, and `ledger.jsonl` beside it records who claimed and finished what. Start every session with `specweave pickup`. This file is read by Codex, Grok, Cursor, Gemini, Copilot and Claude Code (through CLAUDE.md).
+This project uses SpecWeave. Work is planned in increments: `.specweave/increments/NNNN-slug/spec.md` holds Problem, Scope, Acceptance Criteria, Approach and Tasks, and `ledger.jsonl` beside it records who claimed and finished what. Start every session with `specweave pickup`.
 <!-- /SECTION -->
 
 <!-- SECTION:loop required -->
 ## The loop
 
-1. `specweave pickup`: the open increment, the next task with its acceptance criteria, claims held by others, branch state, the last handoff, notes and project memory.
+1. `specweave pickup`: brings in the latest handoff, then prints the open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory.
 2. New work that needs acceptance criteria or a handoff: `specweave create-increment "title"`, then fill in spec.md. If an open increment already owns the files, add ACs and tasks to it instead of opening another. Small self-contained fixes need no increment.
 3. `specweave task claim T-NN`, edit only that task's Files, commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`.
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
-5. Stopping for any reason (out of tokens, switching tool or account): `specweave handoff --push --reason "<why>"` and give the user the prompt it prints.
+5. Stopping for any reason (out of tokens, switching tool or account): `specweave handoff --reason "<why>"`.
+
+**Handoff in two words.** When the user says "hand off", "handoff", "I'm out of tokens" or "switching accounts", run `specweave handoff --reason "<their words>"` and tell them to say "pick up" in the other tool. When the user says "pick up", "pick up here", "continue" or "continue from the other account", run `specweave pickup` and carry on with the task it names. `specweave report` writes an HTML timeline of who did what.
 
 Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a`. An AC is met when the tasks covering it are done. Leave a message for whoever works on an increment next with `specweave note "<text>"`. Each step is also a skill for any tool: `npx vskill install anton-abyzov/specweave/sw-do` (and `sw-increment`, `sw-review`, `sw-handoff`).
 <!-- /SECTION -->

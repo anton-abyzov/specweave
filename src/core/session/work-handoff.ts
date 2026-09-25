@@ -22,6 +22,7 @@ import { captureGitState } from './handoff-git-state.js';
 import { scrubSecrets } from './handoff-secret-scrub.js';
 import { appendEvent, getAgentId, ledgerPath, INCREMENT_EVENT_TASK } from '../tasks/ledger.js';
 import { pushHandoff } from './handoff-remote.js';
+import { writeHandoffReport } from './handoff-report.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs } from '../tasks/verify-runner.js';
@@ -176,6 +177,10 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   };
 
   docInput.released = released;
+  // The HTML timeline travels with the handoff as evidence of who did what.
+  if (!opts.checkpoint && incrementId && incDir) {
+    try { writeHandoffReport(incDir, incrementId); } catch { /* evidence is best-effort */ }
+  }
   writeDoc(docPath, renderHandoffDoc(docInput));
   if (isSpecWeave) writePointer(effectiveRoot, docPath);
   // The snapshot is taken after the doc is written, so it carries the doc.
