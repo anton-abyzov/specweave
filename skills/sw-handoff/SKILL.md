@@ -27,6 +27,11 @@ Add `--next "<exact next step>"`, `--gotcha "..."` or `--decision "..."` only fo
 the files cannot tell the next agent. No Git remote and another machine:
 `--inline` prints a prompt to paste instead. `--no-push` keeps it local.
 
+To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code and
+Codex, on their own machine; not in cloud sessions). A session then hands off at 90% of
+the 5-hour or weekly limit (`--at <percent>` to change it); `auto-handoff status` shows
+the current usage. When its Stop hook asks you to hand off, run the handoff it names.
+
 ## Pick up
 
 When the user says "pick up", "pick up here", "continue" or "continue from the other
