@@ -486,7 +486,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/specweave-social-card-v2.jpg',
+    image: 'img/v3/og.jpg',
 
     // Twitter/X Card meta tags (explicit for better compatibility)
     metadata: [

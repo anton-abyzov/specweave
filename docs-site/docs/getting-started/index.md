@@ -40,14 +40,14 @@ Start with a short intent: what outcome should change? A small change can stay a
 specweave create-increment "Preserve checkout when a customer returns"
 ```
 
-Fill `spec.md` with the problem, scope, acceptance criteria, and approach. Define tasks in `tasks.md`. Your agent can do this from your request; use `sw:increment` where the skill is installed.
+The increment is one `spec.md`: the problem, scope, acceptance criteria, approach and a `## Tasks` section. Your agent can write it from your request; use the `sw-increment` skill where it is installed.
 
 ```bash
 specweave task next <increment-id>
 specweave task claim T-01 <increment-id>
 ```
 
-Implement the task, commit the change, and record the actual verification command:
+`task next` prints the task with the acceptance criteria it covers. Implement it, commit, and record the actual verification command:
 
 ```bash
 specweave task done T-01 <increment-id> --run "npm test"
@@ -58,10 +58,16 @@ Choose your project's real test command. The append-only ledger records who clai
 ## Change agents without losing the thread
 
 ```bash
-specweave handoff
+specweave handoff --push
 ```
 
-Open the project in your next coding tool. Read the specification and handoff, then use `specweave task next <increment-id>`. The shared record survives the conversation. A handoff is an explicit action; default hooks do not run a Git snapshot during compaction.
+This releases your claims, records decisions and pushes work in progress to a `wip/` branch. In the next tool, or under another subscription, run:
+
+```bash
+specweave pickup
+```
+
+It prints the increment, the next task with its criteria, the branch, the last handoff, unread notes and project memory in one read.
 
 [How cross-tool handoffs work](/docs/guides/cross-tool-handoff)
 

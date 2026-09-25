@@ -44,6 +44,9 @@ const sidebars: SidebarsConfig = {
       label: 'Core Concepts',
       collapsed: false,
       items: [
+        {type: 'doc', id: 'guides/specweave-3', label: 'SpecWeave 3.0'},
+        {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Handoff and Pickup'},
+        {type: 'doc', id: 'guides/claude-code-projects', label: 'Claude Code Projects'},
         {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
         {type: 'doc', id: 'guides/portable-projects', label: 'Portable Projects'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'What is an Increment?'},
@@ -136,7 +139,6 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/jev-system-one', label: 'Jev (System One)'},
         {type: 'doc', id: 'reference/sync-cli', label: 'specweave sync (CLI)'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Other AI Tools'},
-        {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Cross-Tool Handoff'},
       ],
     },
     {

@@ -1,48 +1,61 @@
-# Cross-Tool Work Handoff
+# Cross-Tool Handoff and Pickup
 
-> **Run out of tokens? Hand off your work to any AI tool — pick up exactly where you left off, uncommitted edits and all.**
+> **Out of tokens, or want a second opinion from another model? Hand off in one command, pick up in the next tool in one read.**
 
-:::tip Works in 8+ tools
-One command writes a portable handoff document that **Claude Code, Codex, OpenCode, Gemini, Antigravity, Cursor, Aider, Cline/Roo, and Windsurf** can all read. The document — not any tool's private transcript — is the portable context.
+:::tip Works across tools and accounts
+Claude Code (including Projects threads), Codex, Grok Build, Cursor, GitHub Copilot, Gemini CLI, OpenCode and a second Claude subscription all read the same files: `AGENTS.md`, the increment's `spec.md`, its ledger and the handoff. None of them can read another tool's private transcript, so SpecWeave keeps what matters in git.
 :::
 
 ## The problem
 
-No AI coding tool can read another's session. Each one locks its transcript in a proprietary store — a `.jsonl` file, a SQLite database, or an encrypted `.pb`. So when you burn through your subscription tokens on one tool mid-task, the in-flight context (your goal, the decisions you made, your *uncommitted* edits) is trapped there. Switching to another tool — a different subscription, or a free tier — means re-explaining everything from scratch, and your uncommitted edits are invisible to the new tool.
+No AI coding tool can read another's session. Each one keeps its transcript in its own store. When you hit a usage limit mid-task, the goal, the decisions and your uncommitted edits are stuck there. Claude Code project memory stays with one account, so even a second Claude subscription starts cold.
 
-There is no shared, readable session format. The only thing portable across tools is a **document** the next agent can read.
-
-## The solution
-
-`/sw:handoff` (in Claude Code) — or the installed `handoff` skill in any other tool — assembles your current work state into one durable, secret-scrubbed handoff document, dumps a full diff of your uncommitted edits to a sibling file, and prints:
-
-1. the **absolute path** of the doc (plain text, so it is copyable everywhere),
-2. a clickable link,
-3. the `.diff` path with your exact uncommitted edits,
-4. a copy-paste **resume prompt** to drop into the next tool,
-5. per-tool tips for finding your original session.
+## Hand off
 
 ```bash
-specweave handoff                       # one active increment → used automatically
-specweave handoff 0867                   # pick a specific increment
-specweave handoff --reason "out of tokens" --next "wire the CLI command"
-specweave handoff --inline               # embed the full doc for a different machine
+specweave handoff                         # the active increment
+specweave handoff 0042 --reason "out of tokens" --next "restore on return"
+specweave handoff --push                  # also commit work in progress to a wip/ branch
 ```
 
-It works on **any** project, SpecWeave or not. Write the handoff explicitly before changing tools. Default hooks do not capture Git state during compaction.
+`handoff`:
 
-## What makes it different
+- **Releases your task claims**, so the next tool is not locked out.
+- **Records decisions and open questions** in the increment's ledger, where every tool reads them.
+- **Writes `handoff.md`** with repo-relative paths, so it resolves on any machine.
+- **Captures your uncommitted edits** as a diff, leaving out SpecWeave's own bookkeeping so the diff shows your code.
+- **Scrubs secrets** from the free-text fields and the diff before writing anything.
+- With `--push`, **commits the work in progress to a `wip/` branch** and pushes it. A cloud session, such as a Claude Code Projects thread or a Codex cloud task, only sees what is pushed.
 
-These four moats are why a handoff document beats "just summarize where we are":
+## Pick up
 
-- **Captures uncommitted edits — not just filenames.** The full `git diff` (working tree + staged) is dumped to a sibling `.diff` file for free, no tokens spent. The next agent reads the exact edits or runs `git apply --check` against them.
-- **Durable after it is written.** The handoff remains on disk after the session ends. The specification and ledger retain recorded progress even if the conversation is lost.
-- **Secret-scrubbed and gitignored by default.** A regex scrub runs over both the free-text fields and the captured diff before any write; the doc and diff are gitignored (`.handoff/.gitignore` = `*`) and never auto-committed.
-- **Cross-machine `--inline` mode.** When the file is unreachable on the machine you are resuming on, `--inline` embeds the full scrubbed doc body inside the paste-prompt so the context travels in the prompt itself.
+In the next tool, from the project folder:
+
+```bash
+specweave pickup
+```
+
+`pickup` prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, the branch and whether it is ahead of or behind its upstream, the last handoff, unread notes from other increments, and the project memory index. The Claude Code SessionStart hook prints the same thing, and `AGENTS.md` tells every other tool to run it first.
+
+In 2.x, resuming meant finding and reading four or five files. Now it is one command.
+
+## Who holds a task
+
+A task claim records the tool and host that made it, for example `codex@my-laptop`. SpecWeave detects Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and Grok; set `SPECWEAVE_TOOL` to name anything else. A claim left by you (the same git email) from another tool can be taken over without `--force`, which is what happens when you switch subscriptions on one machine.
+
+## Using it without the CLI
+
+Install the self-contained `handoff` skill so the capability reaches whichever tool you switch to:
+
+```bash
+npx vskill i handoff
+```
+
+It needs only `git` and a shell. If `specweave` is on your PATH it uses it; otherwise it writes a compatible handoff from your git state and a short interview.
 
 ## Cross-tool resume matrix
 
-Every tool stores its session differently. The handoff document is portable across all of them; this table is for *optionally* recovering a tool's own native transcript.
+Every tool stores its session differently. The handoff document is portable across all of them; this table is for optionally recovering a tool's own native transcript.
 
 | Tool | Session storage | Find current session | Native resume command | Export / transferable |
 |---|---|---|---|---|
@@ -55,7 +68,7 @@ Every tool stores its session differently. The handoff document is portable acro
 | **Aider** | `.aider.chat.history.md` in repo root | the file is in the repo root | `aider --restore-chat-history` | Markdown file, but Aider-specific — use the handoff doc |
 | **Cline / Roo** | VS Code extension storage | open the task list in the side panel | reopen the prior task in-panel | Not portable — use the handoff doc |
 | **Windsurf** | App-internal Cascade history | open the Cascade history | reopen the prior conversation in-app | Not portable — use the handoff doc |
-| **SpecWeave** | `.specweave/state/handoff-latest.md` + `.specweave/increments/{id}/reports/handoff.md` | the handoff doc itself | `specweave handoff` (re-run to refresh) | **Portable by design** — this is the cross-tool document |
+| **SpecWeave** | `.specweave/increments/{id}/handoff.md` + `ledger.jsonl`, in git | `specweave pickup` | `specweave pickup` | **Portable by design**: any tool, any account |
 
 ### The Claude Code munge rule
 
@@ -68,36 +81,13 @@ Claude Code session files live under `~/.claude/projects/<munged-cwd>/`, where t
 
 The `/.` between `umb` and `claude-worktrees` yields the double dash.
 
-## The handoff document format
-
-The doc is rendered from a single source of truth (`handoff-doc-format.ts`), so every path — the CLI, the auto-trigger hook, and the cross-tool vskill skill — produces the identical format. Sections, in order:
-
-1. **Where I Left Off** — why you are handing off, a summary, the active increment id + status, current and next task.
-2. **Done / Pending** — task counts and percentage, AC counts, and any AC/task drift.
-3. **Key Decisions & Gotchas** — decisions from `plan.md` plus what you supplied, and ambient rules (test mode, coverage target, WIP limit) from `config.json`.
-4. **Files Touched** — `git status --porcelain` and `git diff --stat` inline, an UNCOMMITTED warning when the tree is dirty, and a pointer to the full `.diff`.
-5. **Exact Next Steps** — your explicit next step, or the next pending task.
-6. **How To Resume** — the per-tool matrix above, plus the rule: if the doc path does not exist on the current machine, STOP and ask for a paste rather than improvise.
-7. **Redaction** — per-pattern secret-scrub counts and the heuristic disclaimer.
-
-Every doc ends with a `Doc format v1` footer marker, which doubles as the ownership sentinel: the builder will only overwrite a `HANDOFF.md` that carries this marker, never a project's own foreign `HANDOFF.md`.
-
-## Using it in another tool
-
-Install the self-contained `handoff` skill via vskill so the capability reaches whichever tool you switch to:
-
-```bash
-npx vskill i handoff
-```
-
-The skill is fully self-contained — it needs only `git` and a shell. If `specweave` happens to be on your PATH it uses it as a high-fidelity accelerator; otherwise it builds a byte-compatible document from your git state plus a short interview. Either way, a handoff written in Claude Code is continuable in Codex (or any of the tools above) unchanged.
-
 ---
 
 ## See also
 
-- ADR 0867-01 — *Portable handoff document as the cross-tool context boundary* (`.specweave/docs/internal/architecture/adr/0867-01-portable-handoff-document-as-cross-tool-context-boundary.md`) — the architectural rationale.
-- [Autonomous Execution](./autonomous-execution.md) — how the auto-trigger hooks fit the broader unattended workflow.
+- [SpecWeave 3.0](./specweave-3.md): everything that changed in this release.
+- [Claude Code Projects and threads](./claude-code-projects.md): one thread, one increment, and the memory folder.
+- [Autonomous Execution](./autonomous-execution.md): how handoff fits unattended work.
 
 <!-- SEO long-tail keywords (one phrase per line for exact-match indexing):
 switch from Claude Code to Codex mid-task
