@@ -17,6 +17,9 @@ User-agent: Claude-SearchBot
 User-agent: PerplexityBot
 User-agent: Google-Extended
 Allow: /
+Disallow: /DOCUMENTATION-AUDIT
+Disallow: /sections/
 Disallow: /search
+Disallow: /docs/_page-template
 
 Sitemap: https://spec-weave.com/sitemap.xml
