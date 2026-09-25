@@ -109,7 +109,7 @@ When external APIs hit rate limits:
 1. Worker detects rate limit response
 2. Job status changes to `paused`
 3. Worker exits gracefully with checkpoint saved
-4. User resumes later: `specweave jobs --resume <id>`
+4. The next run of the same operation resumes from the checkpoint
 
 ## Job Types
 
@@ -219,59 +219,20 @@ stateDiagram-v2
 | `completed` | Successfully finished |
 | `failed` | Error prevented completion |
 
-## Monitoring Jobs
+## Inspecting Jobs
 
-### Check All Jobs
+Each job keeps its state on disk under `.specweave/state/jobs/<job-id>/`:
 
-<CommandTabs
-  natural="Show background jobs"
-  claude="specweave jobs"
-  other="jobs"
-/>
-
-Shows all active jobs grouped by status.
-
-### Follow Progress Live
+| File | Contents |
+|------|----------|
+| `config.json` | The job's input configuration |
+| `worker.log` | Timestamped worker output |
+| `worker.pid` | PID of the detached worker while it runs |
+| `result.json` | Final result once the job finishes |
 
 ```bash
-specweave jobs --follow abc12345
+tail -f .specweave/state/jobs/<job-id>/worker.log
 ```
-
-Polls every second for real-time progress updates.
-
-### View Worker Logs
-
-```bash
-specweave jobs --logs abc12345
-```
-
-Shows timestamped worker output (last 50 lines).
-
-### Get Job Details
-
-```bash
-specweave jobs --id abc12345
-```
-
-Full details: config, progress, files, PID.
-
-## Managing Jobs
-
-### Kill Running Job
-
-```bash
-specweave jobs --kill abc12345
-```
-
-Sends SIGTERM, marks as `paused` for later resume.
-
-### Resume Paused Job
-
-```bash
-specweave jobs --resume abc12345
-```
-
-Spawns new worker that continues from last checkpoint.
 
 ## State Persistence
 
@@ -321,25 +282,11 @@ Progress is saved before every item:
 
 ### Job Stuck in "Running"?
 
-The worker may have crashed. Check:
-
-```bash
-specweave jobs --id <id>
-```
-
-If PID shows as "dead" but status is "running", the worker crashed. Use:
-
-```bash
-specweave jobs --resume <id>
-```
+The worker may have crashed. Check whether the PID in `.specweave/state/jobs/<id>/worker.pid` is still alive and read the end of `worker.log`. If the process is gone, run the same operation again: it skips work that already finished.
 
 ### Rate Limited?
 
-Jobs auto-pause on rate limits. Wait for reset (usually 1-15 minutes), then:
-
-```bash
-specweave jobs --resume <id>
-```
+Jobs auto-pause on rate limits. Wait for the reset (usually 1-15 minutes), then run the same operation again.
 
 ### Can't Resume?
 
@@ -360,31 +307,21 @@ rm -rf .specweave/state/jobs/<old-job-id>
 
 ## Best Practices
 
-### 1. Check Jobs After Init
+### 1. Watch Long Operations
 
-After `specweave init` with large imports:
-
-<CommandTabs
-  natural="Check jobs"
-  claude="specweave jobs"
-  other="jobs"
-/>
-
-### 2. Monitor Long Operations
-
-For imports >1000 items:
+For large clones or imports, follow the worker log:
 
 ```bash
-specweave jobs --follow <id>
+tail -f .specweave/state/jobs/<job-id>/worker.log
 ```
 
-### 3. Don't Close Claude Immediately
+### 2. Don't Close Claude Immediately
 
 Give the worker 10-30 seconds to fully detach before closing the terminal.
 
-### 4. Resume Promptly After Rate Limits
+### 3. Resume Promptly After Rate Limits
 
-Rate limit windows are usually 15-60 minutes. Resume promptly to complete imports.
+Rate limit windows are usually 15-60 minutes. Re-run the operation promptly to complete it.
 
 ## API Reference
 
@@ -410,7 +347,7 @@ manager.completeJob(jobId, error?);
 ### Job Launcher
 
 ```typescript
-import { launchCloneJob, launchImportJob } from './core/background/job-launcher.js';
+import { launchCloneJob } from './core/background/job-launcher.js';
 
 // Launch clone job
 const result = await launchCloneJob({
@@ -418,20 +355,10 @@ const result = await launchCloneJob({
   repositories: [{ owner, name, cloneUrl }],
   estimatedTotal: repos.length
 });
-
-// Launch import job
-const result = await launchImportJob({
-  type: 'import-issues',
-  projectPath,
-  coordinatorConfig,
-  estimatedTotal: 10000,
-  foreground: false  // true = run in current process
-});
 ```
 
 ## Related Documentation
 
-- [Commands: specweave jobs](/docs/reference/commands) - Full command reference
 - [ADO Repo Cloning](/docs/guides/jira-ado-sync) - Enterprise setup
 - [GitHub sync](/docs/guides/github-sync) — `specweave sync pull --create-increments` imports issues
 - [Living Docs Sync Strategy](/docs/guides/core-concepts/living-documentation) - When and how docs sync

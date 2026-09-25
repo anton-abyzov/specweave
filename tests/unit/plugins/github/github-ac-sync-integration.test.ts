@@ -32,11 +32,6 @@ vi.mock('fs', () => ({
   existsSync: mockExistsSync,
 }));
 
-const mockPushSyncUserStories = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave/lib/integrations/github/github-push-sync.js', () => ({
-  pushSyncUserStories: mockPushSyncUserStories,
-}));
-
 import { postACProgressComments } from '../../../../plugins/specweave/lib/integrations/github/github-ac-comment-poster.js';
 import { autoCloseCompletedUserStories } from '../../../../plugins/specweave/lib/integrations/github/github-us-auto-closer.js';
 
@@ -131,7 +126,6 @@ function setupReadFileMock(specContent: string) {
 describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPushSyncUserStories.mockResolvedValue({ created: [], updated: [], errors: [] });
   });
 
   // -------------------------------------------------------------------------

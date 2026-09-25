@@ -4,12 +4,10 @@
  * Tests the end-to-end flow across multiple components:
  * - TC-026: refresh-plugins end-to-end with inline copier
  * - TC-027: Init with inline copier end-to-end
- * - TC-028: Migration end-to-end
  *
  * These tests exercise the integration between:
  * - refresh-plugins command (src/cli/commands/refresh-plugins.ts)
  * - plugin-installer (src/cli/helpers/init/plugin-installer.ts)
- * - migrate-to-vskill (src/cli/commands/migrate-to-vskill.ts)
  *
  * All external I/O (filesystem, child_process) is mocked via vi.mock.
  *
@@ -82,7 +80,7 @@ const mockOra = vi.hoisted(() => {
 // vi.mock() declarations
 // ---------------------------------------------------------------------------
 
-// Mock execFileNoThrowSync (used by migrate-to-vskill)
+// Mock execFileNoThrowSync (asserts no legacy `claude plugin install` calls)
 vi.mock('../../src/utils/execFileNoThrow.js', () => ({
   execFileNoThrowSync: mockExecFileNoThrowSync,
 }));
@@ -148,7 +146,7 @@ vi.mock('fs', async (importOriginal) => {
   };
 });
 
-// Mock node:fs (for migrate-to-vskill which uses `import from 'node:fs'`)
+// Mock node:fs
 vi.mock('node:fs', () => ({
   existsSync: mockExistsSync,
   readdirSync: mockReaddirSync,
@@ -168,7 +166,7 @@ vi.mock('node:fs', () => ({
   },
 }));
 
-// Mock node:os (for migrate-to-vskill)
+// Mock node:os
 vi.mock('node:os', () => ({
   homedir: mockHomedir,
   default: { homedir: mockHomedir },
@@ -227,12 +225,6 @@ vi.mock('../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
   enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
 
-// Mock vskill-resolver (for plugin-installer backward compat)
-vi.mock('../../src/utils/vskill-resolver.js', () => ({
-  resolveVskillPath: () => '/mock/vskill/dist/cli.js',
-  resolveSpecweaveDir: () => '/mock/specweave',
-}));
-
 // Mock plugin-copier (inline copier used by refresh-plugins and plugin-installer)
 vi.mock('../../src/utils/plugin-copier.js', () => ({
   copyPlugin: mockCopyPlugin,
@@ -258,7 +250,6 @@ vi.mock('../../src/utils/find-project-root.js', () => ({
 
 import { refreshPluginsCommand } from '../../src/cli/commands/refresh-plugins.js';
 import { installAllPlugins } from '../../src/cli/helpers/init/plugin-installer.js';
-import { migrateToVskill, shouldOfferMigration } from '../../src/cli/commands/migrate-to-vskill.js';
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -528,223 +519,10 @@ describe('vskill plugin pipeline integration', () => {
   });
 
   // =========================================================================
-  // TC-028: Migration end-to-end
-  // =========================================================================
-  describe('TC-028: Migration end-to-end', () => {
-    it('should create a lockfile with entries for all discovered marketplace plugins', () => {
-      // Given: marketplace-installed plugins at ~/.claude/plugins/cache/specweave/
-      const pluginDirs = ['sw', 'frontend', 'backend', 'testing', 'sw-github'];
-
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (pluginDirs.some(d => p.endsWith(`/cache/specweave/${d}`))) return true;
-        if (p.endsWith('vskill.lock')) return false;
-        return false;
-      });
-
-      mockReaddirSync.mockImplementation((p: string, _opts?: unknown) => {
-        if (typeof p === 'string' && p.endsWith('/cache/specweave')) {
-          return pluginDirs.map(name => ({
-            name,
-            isDirectory: () => true,
-            isFile: () => false,
-          }));
-        }
-        // Each plugin directory contains some files
-        if (pluginDirs.some(d => typeof p === 'string' && p.endsWith(`/cache/specweave/${d}`))) {
-          return [
-            { name: 'SKILL.md', isDirectory: () => false, isFile: () => true },
-            { name: 'hooks.json', isDirectory: () => false, isFile: () => true },
-          ];
-        }
-        return [];
-      });
-
-      mockReadFileSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('SKILL.md')) return '# Skill content';
-        if (typeof p === 'string' && p.endsWith('hooks.json')) return '{"hooks":[]}';
-        return '';
-      });
-
-      mockStatSync.mockImplementation((p: string) => ({
-        isDirectory: () => pluginDirs.some(d => typeof p === 'string' && p.endsWith(`/cache/specweave/${d}`)),
-        isFile: () => !pluginDirs.some(d => typeof p === 'string' && p.endsWith(`/cache/specweave/${d}`)),
-      }));
-
-      // When: migrateToVskill() runs
-      const result = migrateToVskill();
-
-      // Then: lockfile is created with entries for all 5 plugins
-      expect(result.success).toBe(true);
-      expect(result.migratedCount).toBe(5);
-      expect(result.plugins).toHaveLength(5);
-
-      // Verify lockfile was written
-      expect(mockWriteFileSync).toHaveBeenCalled();
-      const writeCall = mockWriteFileSync.mock.calls.find(
-        (call: unknown[]) => typeof call[0] === 'string' && (call[0] as string).endsWith('vskill.lock')
-      );
-      expect(writeCall).toBeDefined();
-
-      // Parse lockfile content
-      const lockContent = JSON.parse(writeCall![1] as string);
-      expect(lockContent.version).toBe(1);
-      expect(Object.keys(lockContent.skills)).toHaveLength(5);
-
-      // Each plugin has required fields
-      for (const name of pluginDirs) {
-        const entry = lockContent.skills[name];
-        expect(entry).toBeDefined();
-        expect(entry.sha).toBeTruthy();
-        expect(entry.sha).toMatch(/^[a-f0-9]{64}$/); // SHA-256 full hex
-        expect(entry.marketplace).toBe('specweave');
-        expect(entry.pluginDir).toBe(true);
-        expect(entry.installedPath).toContain(`/cache/specweave/${name}`);
-      }
-    });
-
-    it('should preserve original plugin files (non-destructive migration)', () => {
-      // Given: marketplace-installed plugins
-      const pluginDirs = ['sw', 'frontend'];
-
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (pluginDirs.some(d => p.endsWith(`/cache/specweave/${d}`))) return true;
-        if (p.endsWith('vskill.lock')) return false;
-        return false;
-      });
-
-      mockReaddirSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('/cache/specweave')) {
-          return pluginDirs.map(name => ({
-            name,
-            isDirectory: () => true,
-            isFile: () => false,
-          }));
-        }
-        if (pluginDirs.some(d => typeof p === 'string' && p.endsWith(`/cache/specweave/${d}`))) {
-          return [
-            { name: 'SKILL.md', isDirectory: () => false, isFile: () => true },
-          ];
-        }
-        return [];
-      });
-
-      mockReadFileSync.mockReturnValue('# content');
-      mockStatSync.mockImplementation((p: string) => ({
-        isDirectory: () => pluginDirs.some(d => typeof p === 'string' && p.endsWith(`/cache/specweave/${d}`)),
-        isFile: () => !pluginDirs.some(d => typeof p === 'string' && p.endsWith(`/cache/specweave/${d}`)),
-      }));
-
-      // When: migration runs
-      migrateToVskill();
-
-      // Then: no files are deleted
-      expect(mockRmSync).not.toHaveBeenCalled();
-
-      // Only vskill.lock is written, not any plugin files
-      const writeCalls = mockWriteFileSync.mock.calls;
-      for (const call of writeCalls) {
-        const filePath = call[0] as string;
-        expect(filePath).not.toContain('/cache/specweave/sw/');
-        expect(filePath).not.toContain('/cache/specweave/frontend/');
-      }
-    });
-
-    it('should correctly detect when migration is needed', () => {
-      // Given: marketplace plugins exist but no vskill.lock
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (p.endsWith('vskill.lock')) return false;
-        return false;
-      });
-
-      mockReaddirSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('/cache/specweave')) {
-          return [
-            { name: 'sw', isDirectory: () => true, isFile: () => false },
-            { name: 'frontend', isDirectory: () => true, isFile: () => false },
-          ];
-        }
-        return [];
-      });
-
-      // When: shouldOfferMigration() is called
-      const shouldMigrate = shouldOfferMigration();
-
-      // Then: returns true
-      expect(shouldMigrate).toBe(true);
-    });
-
-    it('should skip migration when vskill.lock already exists', () => {
-      // Given: vskill.lock already exists
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (p.endsWith('vskill.lock')) return true;
-        return false;
-      });
-
-      // When: shouldOfferMigration() is called
-      const shouldMigrate = shouldOfferMigration();
-
-      // Then: returns false (already migrated)
-      expect(shouldMigrate).toBe(false);
-    });
-
-    it('should handle empty cache directory gracefully', () => {
-      // Given: cache directory exists but is empty
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (p.endsWith('vskill.lock')) return false;
-        return false;
-      });
-      mockReaddirSync.mockReturnValue([]);
-
-      // When: migration runs
-      const result = migrateToVskill();
-
-      // Then: succeeds with 0 migrated
-      expect(result.success).toBe(true);
-      expect(result.migratedCount).toBe(0);
-    });
-
-    it('should not write lockfile in dry-run mode', () => {
-      // Given: plugins exist
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (p.endsWith('/cache/specweave/sw')) return true;
-        if (p.endsWith('vskill.lock')) return false;
-        return false;
-      });
-
-      mockReaddirSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('/cache/specweave')) {
-          return [{ name: 'sw', isDirectory: () => true, isFile: () => false }];
-        }
-        if (typeof p === 'string' && p.endsWith('/cache/specweave/sw')) {
-          return [{ name: 'SKILL.md', isDirectory: () => false, isFile: () => true }];
-        }
-        return [];
-      });
-
-      mockReadFileSync.mockReturnValue('# content');
-      mockStatSync.mockReturnValue({ isDirectory: () => true, isFile: () => false });
-
-      // When: migration runs with dryRun
-      const result = migrateToVskill({ dryRun: true });
-
-      // Then: no writes but result still correct
-      expect(mockWriteFileSync).not.toHaveBeenCalled();
-      expect(result.success).toBe(true);
-      expect(result.migratedCount).toBeGreaterThan(0);
-    });
-  });
-
-  // =========================================================================
   // Cross-component integration: pipeline coherence
   // =========================================================================
   describe('Pipeline coherence', () => {
-    it('all three paths (refresh, init, migrate) avoid claude plugin install', async () => {
+    it('both paths (refresh, init) avoid claude plugin install', async () => {
       // Setup for refresh
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('marketplace.json')) return true;
@@ -769,15 +547,6 @@ describe('vskill plugin pipeline integration', () => {
       mockGetProjectRoot.mockReturnValue('/mock/project');
 
       await installAllPlugins({ dirname: '/test' });
-
-      // Migration (synchronous, no exec calls)
-      mockExistsSync.mockImplementation((p: string) => {
-        if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
-        if (p.endsWith('vskill.lock')) return false;
-        return false;
-      });
-      mockReaddirSync.mockReturnValue([]);
-      migrateToVskill();
 
       // Across ALL calls: ZERO invocations of `claude plugin install`
       const allCalls = mockExecFileNoThrowSync.mock.calls;

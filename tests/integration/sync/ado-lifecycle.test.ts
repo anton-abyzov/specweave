@@ -10,8 +10,6 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { AdoClient, createAdoClient } from '../../../plugins/specweave/lib/integrations/ado/ado-client.js';
-import { AdoDescriptionUpdater } from '../../../src/core/ado-description-updater.js';
-import { mapAdoStateToSpecweave } from '../../../plugins/specweave/lib/integrations/ado/ado-pull-sync.js';
 
 const hasCredentials =
   !!process.env.AZURE_DEVOPS_PAT &&
@@ -54,39 +52,12 @@ describe.skipIf(!hasCredentials)('ADO Full Lifecycle Integration', () => {
     expect(workItem.fields['System.State']).toBe('Active');
   });
 
-  it('updates AC checkboxes in description', async () => {
-    expect(createdWorkItemId).toBeDefined();
-
-    const updater = new AdoDescriptionUpdater();
-    const acStatus = new Map<string, boolean>([
-      ['AC-US1-01', true],
-      ['AC-US1-02', false],
-    ]);
-
-    const acHtml = updater.formatACCheckboxes(acStatus);
-    const workItem = await client.getWorkItem(createdWorkItemId);
-    const currentDesc = workItem.fields['System.Description'] || '';
-    const newDesc = updater.updateAcSection(currentDesc, acHtml);
-
-    await client.updateWorkItem(createdWorkItemId, {
-      description: newDesc,
-    });
-
-    const updated = await client.getWorkItem(createdWorkItemId);
-    const desc = updated.fields['System.Description'] || '';
-    expect(desc).toContain('AC-US1-01');
-    expect(desc).toContain('AC-US1-02');
-  });
-
-  it('pulls state and maps correctly', async () => {
+  it('pulls work item state', async () => {
     expect(createdWorkItemId).toBeDefined();
 
     const result = await client.pullWorkItemState(createdWorkItemId);
     expect(result.state).toBe('Active');
     expect(result.modifiedAt).toBeInstanceOf(Date);
-
-    const mapped = mapAdoStateToSpecweave(result.state);
-    expect(mapped).toBe('active');
   });
 
   it('closes work item and verifies state', async () => {
@@ -98,9 +69,6 @@ describe.skipIf(!hasCredentials)('ADO Full Lifecycle Integration', () => {
 
     const workItem = await client.getWorkItem(createdWorkItemId);
     expect(['Closed', 'Done', 'Resolved']).toContain(workItem.fields['System.State']);
-
-    const mapped = mapAdoStateToSpecweave(workItem.fields['System.State']);
-    expect(mapped).toBe('completed');
   });
 
   it('cleans up test work item', async () => {
