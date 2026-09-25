@@ -192,6 +192,7 @@ program
   .option('-n, --note <text>', 'Note (alias of --reason)')
   .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
+  .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
     const { taskCommand } = await import('../dist/src/cli/commands/task.js');

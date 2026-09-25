@@ -29,7 +29,7 @@ describe('ImportToIncrementConverter integration', () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it('imports a JIRA issue → increment directory with metadata.json, spec.md, tasks.md', async () => {
+  it('imports a JIRA issue → increment directory with metadata.json and spec.md', async () => {
     const converter = new ImportToIncrementConverter({
       projectRoot: tempDir,
       projectId: 'test-project',
@@ -68,9 +68,8 @@ describe('ImportToIncrementConverter integration', () => {
     const specPath = join(result.incrementPath, 'spec.md');
     expect(existsSync(specPath)).toBe(true);
 
-    // Verify tasks.md exists
-    const tasksPath = join(result.incrementPath, 'tasks.md');
-    expect(existsSync(tasksPath)).toBe(true);
+    // 3.0: the tasks live in spec.md
+    expect(existsSync(join(result.incrementPath, 'tasks.md'))).toBe(false);
   });
 
   it('imports a GitHub issue → increment with G suffix', async () => {
@@ -99,7 +98,7 @@ describe('ImportToIncrementConverter integration', () => {
     expect(result.platform).toBe('github');
     expect(existsSync(join(result.incrementPath, 'metadata.json'))).toBe(true);
     expect(existsSync(join(result.incrementPath, 'spec.md'))).toBe(true);
-    expect(existsSync(join(result.incrementPath, 'tasks.md'))).toBe(true);
+    expect(existsSync(join(result.incrementPath, 'tasks.md'))).toBe(false);
   });
 
   it('batch import deduplicates existing items', async () => {
