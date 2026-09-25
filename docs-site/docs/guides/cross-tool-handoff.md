@@ -25,6 +25,9 @@ specweave handoff 0042 --reason "out of tokens" --next "restore on return"
 - **Writes `handoff.md`** with where you stopped, the next step and repo-relative paths, so it resolves on any machine.
 - **Pushes your work to git** when the repo has an `origin` remote: your branch, and a snapshot of your uncommitted edits to a well-known handoff ref and to `wip/<branch>`. Your working tree, index and branch are left as they were.
 - **Scrubs secrets** from the free-text fields and the diff before writing anything.
+- **Writes an HTML report** of who did what on the increment to `reports/handoff-report.html`. `specweave report` writes it on demand.
+
+`--no-push` keeps the handoff local and `--keep-claims` keeps your claims.
 
 Because the handoff lives in git, a cloud session such as a Claude Code Projects thread or a Codex cloud task sees it the same way your laptop does. There is nothing to copy or paste.
 
@@ -36,7 +39,7 @@ In the next tool, from the project folder:
 specweave pickup
 ```
 
-`pickup` fetches the last handoff. When your checkout is clean and the history allows it, it fast-forwards your branch and applies the handed-off edits; otherwise it says in plain words what to do and changes nothing. Then it prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, its files and test, the branch, notes from other increments, and the project memory index.
+`pickup` fetches the last handoff. When your checkout is clean and the history allows it, it fast-forwards your branch and applies the handed-off edits; otherwise it says in plain words what to do and changes nothing. `--no-apply` only shows what is waiting. Then it prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, its files and test, the branch, notes from other increments, and the project memory index.
 
 The Claude Code SessionStart hook prints the same summary, and `AGENTS.md` tells every other tool to run `pickup` first. In 2.x, resuming meant finding and reading four or five files and pasting a prompt. Now it is one command.
 
