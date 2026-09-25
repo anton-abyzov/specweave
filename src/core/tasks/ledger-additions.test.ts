@@ -76,15 +76,12 @@ describe('task skip (reason mandatory, terminal)', () => {
     expect(events[0]).toMatchObject({ t: 'T-01', e: 'skip', by: 'a@h', note: 'not needed' });
   });
 
-  it('renders `[-] skipped` in tasks.md with the reason', async () => {
+  it('records the skip reason in the ledger and leaves tasks.md untouched', async () => {
     const { root, incDir } = mkProject();
+    const before = readTasks(incDir);
     await taskCommand('skip', 'T-01', undefined, { cwd: root, agent: 'a@h', reason: 'dropped from scope' });
-    const md = readTasks(incDir);
-    expect(md).toContain('- [-] skipped by a@h');
-    expect(md).toContain('dropped from scope');
-    // Task definitions survive untouched.
-    expect(md).toContain('### T-01 First');
-    expect(md).toContain('- AC: AC-01 | Files: src/a.ts | Test: -');
+    expect(readTasks(incDir)).toBe(before);
+    expect(loadTaskBoard(incDir).tasks[0].state).toMatchObject({ status: 'skipped', by: 'a@h', note: 'dropped from scope' });
   });
 
   it('is terminal: a later done is refused', async () => {
@@ -144,29 +141,25 @@ describe('task done auto-claim', () => {
   });
 });
 
-describe('board rendering on every ledger write', () => {
-  it('claim / release / block also refresh the SW:BOARD block', async () => {
+describe('board rendering', () => {
+  it('ledger writes never rewrite tasks.md (3.0: the ledger is the only state store)', async () => {
     const { root, incDir } = mkProject();
+    const before = readTasks(incDir);
     await taskCommand('claim', 'T-01', undefined, { cwd: root, agent: 'a@h' });
-    let md = readTasks(incDir);
-    expect(md).toContain(BOARD_BEGIN);
-    expect(md).toContain('| Task | State | By | Evidence | Note |');
-    expect(md).toMatch(/\| T-01 \| claimed \| a@h \|/);
-
     await taskCommand('release', 'T-01', undefined, { cwd: root, agent: 'a@h' });
-    md = readTasks(incDir);
-    expect(md).toMatch(/\| T-01 \| open \|/);
-
     await taskCommand('block', 'T-02', undefined, { cwd: root, agent: 'a@h', reason: 'waiting on API' });
-    expect(readTasks(incDir)).toMatch(/\| T-02 \| blocked \| a@h \|  \| waiting on API \|/);
+    expect(readTasks(incDir)).toBe(before);
+    expect(readTasks(incDir)).not.toContain(BOARD_BEGIN);
   });
 
-  it('render is idempotent and never touches task definitions', async () => {
+  it('render prints the board; render --write is idempotent and never touches task definitions', async () => {
     const { root, incDir } = mkProject();
     await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', evidence: 'sha' });
     await taskCommand('render', undefined, undefined, { cwd: root, agent: 'a@h' });
+    expect(stdout.join('')).toMatch(/\| T-01 \| done \| a@h \|/);
+    await taskCommand('render', undefined, undefined, { cwd: root, agent: 'a@h', write: true });
     const first = readTasks(incDir);
-    await taskCommand('render', undefined, undefined, { cwd: root, agent: 'a@h' });
+    await taskCommand('render', undefined, undefined, { cwd: root, agent: 'a@h', write: true });
     expect(readTasks(incDir)).toBe(first);
     expect(stdout.join('')).toContain('already up to date');
     expect(first).toContain('### T-02 Second');
@@ -231,7 +224,8 @@ describe('task done --run', () => {
 
     const evidence = loadTaskBoard(incDir).tasks[0].state.evidence!;
     expect(evidence).toContain('→ exit 0');
-    expect(evidence).toContain('reports/task-T-01.log');
+    // The log path is derivable from the task id, so evidence does not repeat it.
+    expect(evidence).not.toContain('reports/task-T-01.log');
     expect(evidence).toContain('line120');
     expect(evidence).not.toContain('line70'); // only the last 50 lines
   });
