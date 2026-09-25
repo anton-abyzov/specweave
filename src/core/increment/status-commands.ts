@@ -6,6 +6,8 @@
  * Part of increment 0007: Smart Status Management
  */
 
+import * as fs from 'fs';
+import * as nodePath from 'path';
 import chalk from 'chalk';
 import { MetadataManager } from './metadata-manager.js';
 import { IncrementStatus, IncrementType, computeTransitionPath, countsTowardWipLimit } from '../types/increment-metadata.js';
@@ -421,6 +423,11 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
     let ghMilestoneClosed = false;
     const ghErrors: string[] = [];
     try {
+      // Only when the project asked for it: status changes never touch a
+      // tracker unless hooks.post_increment_done says to close issues.
+      const done = (JSON.parse(fs.readFileSync(nodePath.join(resolveEffectiveRoot(), '.specweave', 'config.json'), 'utf8')) as
+        { hooks?: { post_increment_done?: { close_github_issue?: boolean; close_external_issue?: boolean } } }).hooks?.post_increment_done;
+      if (done?.close_github_issue !== true && done?.close_external_issue !== true) throw new SkipClosure();
       const { GitHubReconciler } = await import('../../sync/github-reconciler.js');
       const closureResult = await GitHubReconciler.closeCompletedIncrementIssues(
         resolveEffectiveRoot(),
@@ -431,8 +438,9 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
       ghMilestoneClosed = closureResult.milestoneClose;
       ghErrors.push(...closureResult.errors);
     } catch (fallbackError) {
-      const msg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-      ghErrors.push(msg);
+      if (!(fallbackError instanceof SkipClosure) && !isMissingFile(fallbackError)) {
+        ghErrors.push(fallbackError instanceof Error ? fallbackError.message : String(fallbackError));
+      }
     }
 
     log(chalk.green(`\n✅ Increment ${incrementId} completed!`));
@@ -573,4 +581,10 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     console.log(chalk.red(`\n❌ Failed to show status: ${error instanceof Error ? error.message : String(error)}\n`));
     process.exit(1);
   }
+}
+
+class SkipClosure extends Error {}
+
+function isMissingFile(e: unknown): boolean {
+  return (e as NodeJS.ErrnoException)?.code === 'ENOENT';
 }
