@@ -48,7 +48,7 @@ specweave note "Draft restore works; expiry not started" 0042
 
 ## Who holds a task
 
-A task claim records the tool and host that made it, for example `codex@my-laptop`. SpecWeave detects Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and Grok; set `SPECWEAVE_TOOL` to name anything else. A claim left by you (the same git email) from another tool can be taken over without `--force`, which is what happens when you switch subscriptions on one machine.
+A task claim records the tool and host that made it, for example `codex@my-laptop`. SpecWeave detects Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and Grok; set `SPECWEAVE_TOOL` to name anything else. `specweave handoff` releases your claims, so the next tool can claim the same tasks straight away. A claim that was never released expires after the lease (2 hours by default); before that, `specweave task claim <id> --force` takes it over.
 
 ## Using it without the CLI
 
