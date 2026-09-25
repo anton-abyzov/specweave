@@ -106,11 +106,11 @@ Generated code →  copy/paste → ship
 
 **Real cost**: Bugs in production. Security vulnerabilities. Customer trust destroyed.
 
-**SpecWeave solution**: `specweave verify` and `sw:review` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
+**SpecWeave solution**: `sw:qa` and `sw:review` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
 
 <CommandTabs
   natural="Check quality on this increment"
-  claude="sw:review 0001"
+  claude="sw:qa 0001"
   other="qa 0001"
 />
 

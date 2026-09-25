@@ -240,7 +240,7 @@ sw-release:npm
 **When**: Pre-commit quality check
 
 ```bash
-sw:review 0001
+sw:qa 0001 --review-only
 ```
 
 ```
@@ -322,8 +322,10 @@ specweave task next                      # What to do next
 
 ```bash
 # Validation
-specweave verify 0001        # Test, lint and build, ACs checked against the ledger
-sw:review 0001               # Fresh-context review and quality check before closing
+sw:review 0001             # Rule-based checks (120+ rules)
+sw:qa 0001                   # AI quality assessment
+sw:qa 0001 --pre             # Before starting work
+sw:qa 0001 --gate            # Before closing
 
 # Testing
 npx vitest run 0001          # Test coverage check
