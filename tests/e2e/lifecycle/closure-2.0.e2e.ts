@@ -202,14 +202,15 @@ describe('2.0 closure gate — acceptance criteria are the definition of done', 
 
     const verify = sw(root, ['verify']);
     expect(verify.code).toBe(1);
-    expect(verify.out).toContain('acceptance criteria unchecked');
+    expect(verify.out).toContain('1 of 2 acceptance criteria not met');
+    // AC-01 is met by its finished task T-01; AC-02's only task was skipped.
     const report = JSON.parse(fs.readFileSync(path.join(incDir, 'reports', 'verify.json'), 'utf-8'));
-    expect(report.acs).toEqual({ total: 2, done: 0 });
+    expect(report.acs).toEqual({ total: 2, done: 1 });
     expect(report.ok).toBe(false);
 
     const blocked = sw(root, ['complete', '0001-greet']);
     expect(blocked.code).not.toBe(0);
-    expect(blocked.out).toContain('acceptance criteria unchecked');
+    expect(blocked.out).toContain('acceptance criteria not met');
     // Still open: `task done` started it (planning → active) and the blocked
     // `complete` must not have advanced it any further.
     expect(readMeta(incDir).status).toBe('active');

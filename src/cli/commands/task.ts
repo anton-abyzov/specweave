@@ -206,9 +206,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
           err(`${taskId} NOT done — \`${cmd}\` exited ${result.code} (full log: ${rel(projectRoot, logPath)})\n${tail}`);
           return EXIT_RUN_FAILED;
         }
-        // The log path is derivable from the task id (reports/task-<id>.log),
-        // so the evidence carries the command, its exit and the output tail only.
-        evidence = [`${cmd} → exit 0`, tail, evidence].filter(Boolean).join('\n');
+        evidence = [`${cmd} → exit 0`, `log: ${rel(projectRoot, logPath)}`, tail, evidence].filter(Boolean).join('\n');
       }
       if (!evidence) { err(`done needs evidence: --evidence "<sha or test output>" or --run "<cmd>" (task Test: ${task.test ?? 'none'})`); return 2; }
       const sha = headSha(projectRoot);
