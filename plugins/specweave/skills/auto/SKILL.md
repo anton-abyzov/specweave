@@ -27,7 +27,8 @@ before editing, a passing test for every `done`, verify before closing.
 2. A failing test is fixed in the next turn, never marked done.
 3. Genuinely blocked (missing secret, ambiguous spec, external dependency):
    `specweave task block T-NN --reason "<what is missing>"` and move on. Blocked tasks
-   do not count as remaining work, so the loop ends instead of thrashing.
+   still count as work left: when only blocked tasks remain, run `specweave cancel-auto`
+   and tell the user what each one needs, instead of looping until the turn limit.
 4. Nothing claimable left: run sw-done (verify, review, complete).
 
 ## Running out of budget
