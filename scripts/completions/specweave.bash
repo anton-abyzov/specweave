@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella"
+    local main_commands="init uninstall pause start resume abandon complete task verify create-increment handoff jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
 
     case "${prev}" in
         specweave)
@@ -21,31 +21,11 @@ _specweave_completions() {
             return 0
             ;;
         init)
-            COMPREPLY=( $(compgen -W "-n --name -t --template -a --adapter --tech-stack -l --language -f --force --force-refresh --no-living-docs --full -q --quick --non-interactive --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-n --name -t --template -a --adapter --tech-stack -l --language -f --force --force-refresh --full -q --quick --non-interactive --help" -- "${cur}") )
             return 0
             ;;
         uninstall)
             COMPREPLY=( $(compgen -W "--global --keep-data --dry-run -f --force --help" -- "${cur}") )
-            return 0
-            ;;
-        install)
-            COMPREPLY=( $(compgen -W "-g --global -l --local --help" -- "${cur}") )
-            return 0
-            ;;
-        scan-skill)
-            COMPREPLY=( $(compgen -W "--json --help" -- "${cur}") )
-            return 0
-            ;;
-        scan-plugins)
-            COMPREPLY=( $(compgen -W "--json --verbose --dir --help" -- "${cur}") )
-            return 0
-            ;;
-        judge-skill)
-            COMPREPLY=( $(compgen -W "--json --model --scan-only --help" -- "${cur}") )
-            return 0
-            ;;
-        list)
-            COMPREPLY=( $(compgen -W "--installed --help" -- "${cur}") )
             return 0
             ;;
         pause)
@@ -104,18 +84,6 @@ _specweave_completions() {
             COMPREPLY=( $(compgen -W "-v --verbose -t --type --help" -- "${cur}") )
             return 0
             ;;
-        interview)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
-            return 0
-            ;;
-        decision-log)
-            COMPREPLY=( $(compgen -W "--hook --decision --since --limit --json --tail --help" -- "${cur}") )
-            return 0
-            ;;
-        status-line)
-            COMPREPLY=( $(compgen -W "--json --clear --config --help" -- "${cur}") )
-            return 0
-            ;;
         auto)
             COMPREPLY=( $(compgen -W "--dry-run --all-backlog --reset --help" -- "${cur}") )
             return 0
@@ -160,40 +128,12 @@ _specweave_completions() {
             COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
             return 0
             ;;
-        jobs)
-            COMPREPLY=( $(compgen -W "--all --id --logs --follow --kill --resume --help" -- "${cur}") )
-            return 0
-            ;;
-        living-docs)
-            COMPREPLY=( $(compgen -W "--resume --depth --priority --sources --depends-on --foreground --force --full-scan --help" -- "${cur}") )
-            return 0
-            ;;
-        cache)
-            COMPREPLY=( $(compgen -W "--rebuild --status --clear --quiet --debug --help" -- "${cur}") )
-            return 0
-            ;;
-        analytics)
-            COMPREPLY=( $(compgen -W "--export --since --type --json --limit --help" -- "${cur}") )
-            return 0
-            ;;
-        analytics-push)
-            COMPREPLY=( $(compgen -W "--plugin --json --silent --help" -- "${cur}") )
-            return 0
-            ;;
         lsp)
             COMPREPLY=( $(compgen -W "refs def hover symbols search warmup status setup --help" -- "${cur}") )
             return 0
             ;;
-        commits)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
-            return 0
-            ;;
         sync)
             COMPREPLY=( $(compgen -W "push pull status setup --help" -- "${cur}") )
-            return 0
-            ;;
-        docs)
-            COMPREPLY=( $(compgen -W "preview build validate public kill status sync --help" -- "${cur}") )
             return 0
             ;;
         refresh-plugins)
@@ -204,40 +144,8 @@ _specweave_completions() {
             COMPREPLY=( $(compgen -W "--verbose --json --quick --skip-external --fix --fix-status --help" -- "${cur}") )
             return 0
             ;;
-        health)
-            COMPREPLY=( $(compgen -W "--json --verbose --help" -- "${cur}") )
-            return 0
-            ;;
-        session)
-            COMPREPLY=( $(compgen -W "start end --help" -- "${cur}") )
-            return 0
-            ;;
-        hook)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
-            return 0
-            ;;
-        detect-intent)
-            COMPREPLY=( $(compgen -W "--install --silent --file --help" -- "${cur}") )
-            return 0
-            ;;
-        evaluate-completion)
-            COMPREPLY=( $(compgen -W "--model --timeout --silent --help" -- "${cur}") )
-            return 0
-            ;;
         generate-rubric)
             COMPREPLY=( $(compgen -W "--refresh --silent --help" -- "${cur}") )
-            return 0
-            ;;
-        detect-project)
-            COMPREPLY=( $(compgen -W "--name --description --install --silent --help" -- "${cur}") )
-            return 0
-            ;;
-        resolve-structure)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
-            return 0
-            ;;
-        export-skills)
-            COMPREPLY=( $(compgen -W "-o --output -p --plugin -s --skill --dry-run --validate -v --verbose --help" -- "${cur}") )
             return 0
             ;;
         dashboard)
@@ -254,10 +162,6 @@ _specweave_completions() {
             ;;
         get)
             COMPREPLY=( $(compgen -W "--branch --prefix --role --no-init --yes --all --pattern --limit --no-archived --no-forks --help" -- "${cur}") )
-            return 0
-            ;;
-        migrate-to-umbrella)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
             return 0
             ;;
         *)
