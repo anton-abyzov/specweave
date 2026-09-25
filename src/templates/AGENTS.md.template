@@ -13,7 +13,7 @@ This project uses SpecWeave. Work is planned in increments: `.specweave/incremen
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
 5. Stopping for any reason (out of tokens, switching tool or account): `specweave handoff --reason "<why>"`.
 
-**Handoff in two words.** When the user says "hand off", "handoff", "I'm out of tokens" or "switching accounts", run `specweave handoff --reason "<their words>"` and tell them to say "pick up" in the other tool. When the user says "pick up", "pick up here", "continue" or "continue from the other account", run `specweave pickup` and carry on with the task it names. `specweave report` writes an HTML timeline of who did what.
+**Handoff in two words.** When the user says "hand off", "handoff", "I'm out of tokens" or "switching accounts", run `specweave handoff --reason "<their words>"` and tell them to say "pick up" in the other tool. When the user says "pick up", "pick up here", "continue" or "continue from the other account", run `specweave pickup` and carry on with the task it names. `specweave report` writes an HTML timeline of who did what. To hand off by itself near the usage limit, the user runs `specweave auto-handoff on` once.
 
 Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a`. An AC is met when the tasks covering it are done. Leave a message for whoever works on an increment next with `specweave note "<text>"`. Each step is also a skill for any tool: `npx vskill install anton-abyzov/specweave/sw-do` (and `sw-increment`, `sw-review`, `sw-handoff`).
 <!-- /SECTION -->
