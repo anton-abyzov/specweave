@@ -35,7 +35,6 @@ The CLI is the source of truth. When a skill and the CLI disagree, the CLI is ri
 | `specweave create-increment [title]` | Create the increment folder (`metadata.json`, `spec.md`, `tasks.md`). `--supersedes NNNN` abandons the increment it replaces. |
 | `specweave next-id` | Print the next free increment number. Prefer `create-increment`, which reserves it atomically. |
 | `specweave status` | Increment status overview (alias: `progress`). |
-| `specweave list` | List available and installed components. |
 | `specweave pause <id>` / `resume <id>` / `abandon <id>` | Status transitions. Never edit `metadata.json` by hand. |
 | `specweave complete [id] [more-ids…]` | Close one or more increments. Blocks without a green `verify.json` unless `--reason`. `--all --reason "<why>"` for batch triage. |
 | `specweave archive [increments…]` | Archive completed increments. |
@@ -65,17 +64,13 @@ The CLI is the source of truth. When a skill and the CLI disagree, the CLI is ri
 | `specweave qa <id>` | Risk-scored quality assessment. Not the review, not the gate. |
 | `specweave generate-rubric <id>` | Generate or refresh the AC-tied rubric under the increment's `reports/`. |
 | `specweave doctor` | Full project health check: config shape, instruction-file references, hooks, hygiene. |
-| `specweave health` | Quick deployment health check (config, plugins, sync connectivity). |
 | `specweave gc` | Purge stale `.specweave/state` files. Dry run by default; `--yes` to delete. |
 
-## Handoff and sessions
+## Handoff
 
 | Command | Does |
 |---------|------|
 | `specweave handoff [id]` | Write a portable, secret-scrubbed handoff doc plus the diff. |
-| `specweave session start` / `session end` | Session lifecycle. |
-| `specweave status-line` | Current increment status line. |
-| `specweave decision-log` | Query the structured decision log. |
 
 ## Autonomous execution
 
@@ -84,7 +79,6 @@ The CLI is the source of truth. When a skill and the CLI disagree, the CLI is ri
 | `specweave auto [increment-ids…]` | Start unattended execution. The Stop hook is the loop. |
 | `specweave auto-status` | Session status and progress. |
 | `specweave cancel-auto` | Cancel a running auto session. |
-| `specweave evaluate-completion <id>` | Decide whether an auto session should be considered complete. |
 
 ## Sync
 
@@ -107,51 +101,24 @@ The CLI is the source of truth. When a skill and the CLI disagree, the CLI is ri
 | Command | Does |
 |---------|------|
 | `specweave save [message]` | Auto-generate a commit message, commit and sync with the remote. |
-| `specweave commits` | Show the last two commits. |
 | `specweave branch-name <id>` | Print the computed branch name for an increment. |
 | `specweave link-pr` | Link a pull request to external tickets. |
-
-## Docs
-
-| Command | Does |
-|---------|------|
-| `specweave docs preview` | Documentation preview server with hot reload. |
-| `specweave docs build` | Build the static documentation site. |
-| `specweave docs validate` | Validate documentation without starting a server. |
-| `specweave docs public` | Preview public-scope docs only. |
-| `specweave docs kill` | Stop all running documentation servers. |
-| `specweave docs status` | Documentation status. |
-| `specweave docs sync [id]` | Sync living documentation for an increment. |
-| `specweave living-docs` | Launch or resume the Living Docs Builder. |
 
 ## Observability
 
 | Command | Does |
 |---------|------|
 | `specweave dashboard` | Real-time observability dashboard in the browser. |
-| `specweave analytics` | Usage analytics (commands, skills, agents). |
 | `specweave hooks log` | Recent hook warnings, errors and blocks from `.specweave/logs/hooks.jsonl`. |
-| `specweave jobs` | Monitor background jobs. |
-| `specweave cache` | Manage the dashboard cache. |
 
 ## Code intelligence
 
 `specweave lsp refs | def | hover | symbols | search | warmup | status | setup` — see [LSP integration](/docs/guides/lsp-integration).
 
-## Skills and security
-
-| Command | Does |
-|---------|------|
-| `specweave scan-skill <file>` | Pattern-scan a skill file for security issues. |
-| `specweave scan-plugins` | Batch-scan every plugin `SKILL.md`. |
-| `specweave judge-skill <file>` | Pattern scan plus LLM judgement. |
-| `specweave export-skills` | Export skills to the Agent Skills open standard. |
-| `specweave install [component]` | Install agents/skills into `.claude/`. |
-
 ---
 
 ## Removed in 2.0
 
-The `commands/` plugin namespace (73 files) and the per-provider `sw-github:` / `sw-jira:` / `sw-ado:` namespaces are gone. The `specweave increment <action>` verb is retained for compatibility; new work should use `create-increment`, `status`, `pause`, `resume`, `abandon` and `complete` directly.
+The `commands/` plugin namespace (73 files) and the per-provider `sw-github:` / `sw-jira:` / `sw-ado:` namespaces are gone. Use `create-increment`, `status`, `pause`, `resume`, `abandon` and `complete` directly.
 
 See [SpecWeave 2.0](/docs/guides/specweave-2#what-was-removed-and-why) for the full list and the evidence behind it.

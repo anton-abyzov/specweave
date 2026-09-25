@@ -30,7 +30,6 @@ export interface InitOptions {
   language?: string;  // Language for i18n support
   force?: boolean;    // Force fresh start (non-interactive)
   forceRefresh?: boolean;  // Force marketplace refresh (skip cache)
-  noLivingDocs?: boolean;  // Skip living docs builder job
   fullInstall?: boolean;  // Install all plugins (skip lazy loading)
   quick?: boolean;    // Quick mode: skip prompts, use sensible defaults
   logger?: Logger;    // Logger for debug/error messages

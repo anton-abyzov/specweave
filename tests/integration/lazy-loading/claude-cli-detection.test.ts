@@ -1,7 +1,7 @@
 /**
  * Claude CLI Detection Isolated Test
  *
- * Tests the exact code path used by isClaudeCliAvailable()
+ * Tests the exact code path used by detectClaudeCli()
  * to diagnose why it returns available: false even when
  * the claude binary is working.
  *
@@ -9,14 +9,13 @@
  *   npx vitest run tests/integration/lazy-loading/claude-cli-detection.test.ts
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execFileSync, spawnSync } from 'child_process';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileNoThrowSync } from '../../../src/utils/execFileNoThrow.js';
 import { detectClaudeCli, getCleanEnv } from '../../../src/utils/claude-cli-detector.js';
-import { clearCliCache, isClaudeCliAvailable } from '../../../src/core/lazy-loading/llm-plugin-detector.js';
 
 /**
  * Check CLI availability at MODULE LOAD TIME.
@@ -60,11 +59,6 @@ if (!CLI_AVAILABLE_AT_LOAD) {
 }
 
 describe('Claude CLI Detection (Isolated)', () => {
-  beforeEach(() => {
-    // Clear cache before each test to ensure fresh detection
-    clearCliCache();
-  });
-
   describe('Environment Diagnostic', () => {
     it('should diagnose PATH and environment', () => {
       console.log('\n========== ENVIRONMENT DIAGNOSTIC ==========');
@@ -240,14 +234,6 @@ describe('Claude CLI Detection (Isolated)', () => {
       expect(status.pluginCommandsWork).toBe(true);
       expect(status.available).toBe(true);
     });
-
-    it.skipIf(!PLUGIN_CMD_WORKS)('should return available via isClaudeCliAvailable()', () => {
-      const status = isClaudeCliAvailable();
-      console.log('isClaudeCliAvailable() result:', JSON.stringify(status, null, 2));
-
-      expect(status.available).toBe(true);
-      expect(status.version).toContain('Claude Code');
-    });
   });
 
   describe('LLM Execution (2+2=4 test)', () => {
@@ -257,12 +243,8 @@ describe('Claude CLI Detection (Isolated)', () => {
       console.log('Process CWD:', process.cwd());
       console.log('Node version:', process.version);
 
-      // Clear cache to force fresh detection
-      clearCliCache();
-      console.log('Cache cleared, running fresh detection...');
-
       // First verify CLI is available - THROW if not (don't silently skip!)
-      const cliStatus = isClaudeCliAvailable();
+      const cliStatus = detectClaudeCli();
 
       // DEBUG: Log full status
       console.log('CLI Status:', JSON.stringify(cliStatus, null, 2));

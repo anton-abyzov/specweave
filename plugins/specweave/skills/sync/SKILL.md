@@ -30,7 +30,7 @@ drains the retry queue through the same entry point. Exit code of
 report (`providers`, `github`, `health`, `resilience`, `gaps`, `hasIssues`).
 
 Not sync: `specweave doctor --fix-status` repairs metadata.json ↔ spec.md status
-desyncs, and `specweave sync-living-docs` regenerates internal living docs.
+desyncs.
 
 ## Providers
 
