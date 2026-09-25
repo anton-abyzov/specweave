@@ -138,7 +138,7 @@ SpecWeave ships as a **single bundled plugin** (`specweave`) that installs autom
 | Component | Count | Details |
 |-----------|-------|---------|
 | **Skills** | 44 | Auto-activating expertise (increment, PM, architect, TDD, grill, sync...) |
-| **Skills** | 11 | `sw:increment`, `sw:do`, `sw:done`, `sw:review`, `sw:team`, `sw:handoff`, `sw:sync`, `sw:auto`, `sw:brainstorm`, `sw:project`, `sw:jev` |
+| **Skills** | 10 | `sw:increment`, `sw:do`, `sw:done`, `sw:review`, `sw:team`, `sw:handoff`, `sw:sync`, `sw:auto`, `sw:brainstorm`, `sw:qa` |
 | **Agents** | 3 + 21 | 3 top-level (PM, Architect, Planner) + 21 sub-agents (team-lead, code-reviewer) |
 
 Key functional areas within the plugin:
@@ -147,7 +147,7 @@ Key functional areas within the plugin:
 |------|----------|
 | **Increment lifecycle** | `sw:increment`, `sw:do`, `sw:done`, `sw:review`, `sw:auto` |
 | **GitHub/Jira/ADO sync** | `sw:sync` (push, pull, status, setup) |
-| **Testing** | `sw:do` (test-first loop), `specweave verify`, `sw:review` |
+| **Testing** | `sw:do` (test-first loop), `specweave verify`, `sw:qa` |
 | **Code review** | `sw:review` (one adversarial fresh-context pass) |
 | **Release management** | `specweave save`, `specweave save`, `specweave save`, `specweave save` |
 | **Documentation** | `specweave docs`, `specweave living-docs`, `specweave docs build`, `specweave docs preview` |

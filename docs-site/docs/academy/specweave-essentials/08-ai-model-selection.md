@@ -53,7 +53,7 @@ This article preserves the earlier model-routing design and dated model comparis
 />
 
 ```bash
-sw:review 0001          # Uses Opus for analysis
+sw:qa 0001          # Uses Opus for analysis
 ```
 
 ### Haiku 4.5
@@ -80,7 +80,7 @@ SpecWeave picks automatically:
 ```
 sw:increment    → Opus (complex planning)
 sw:do           → Sonnet (balanced execution)
-sw:review           → Opus (deep analysis)
+sw:qa           → Opus (deep analysis)
 sw:sync → Haiku (fast sync)
 ```
 

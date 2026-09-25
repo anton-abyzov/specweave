@@ -416,7 +416,7 @@ graph TB
 
 ### Phase 3: Validation
 
-**Invoke**: Say "check quality", use `sw:review 0008` in Claude Code, or type `validate 0008` in other AI tools.
+**Invoke**: Say "check quality", use `sw:review 0008` or `sw:qa 0008` in Claude Code, or type `validate 0008` in other AI tools.
 
 **What Happens**:
 1. Rule-based validation:
@@ -507,7 +507,7 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 | "Start implementing" | `sw:do` | `do` | Execute tasks |
 | "We're done" | `sw:done 0008` | `done 0008` | Close increment |
 | "Check quality" | `sw:review 0008` | `validate 0008` | Validate increment |
-| "Assess quality" | `sw:review 0008` | `qa 0008` | Quality assessment |
+| "Assess quality" | `sw:qa 0008` | `qa 0008` | Quality assessment |
 | "What's the status?" | `specweave status` | `progress` | Check progress |
 | "List all increments" | `specweave status` | `status` | Show all increments |
 

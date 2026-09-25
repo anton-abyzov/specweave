@@ -38,7 +38,7 @@ This is the merge of 1.x's `grill`, `code-reviewer` and `judge-llm`.
 
 `<increment-id> [--reason <text>]`
 
-Closure: ledger check → `specweave verify` → optional review → `specweave complete`. The only hard gate is `reports/verify.json` with `ok: true`. The model may run it when you say "close it" or "we're done"; the verify gate still decides.
+Closure: ledger check → `specweave verify` → optional review → `specweave complete`. The only hard gate is `reports/verify.json` with `ok: true`. Carries `disable-model-invocation: true` — the model cannot fire it on its own.
 
 ### `/sw:team`
 
@@ -48,7 +48,7 @@ Runs one increment with several agents in parallel — any vendor, any subscript
 
 `[incrementId] [--reason …] [--summary …] [--next …] [--gotcha …] [--decision …] [--inline]`
 
-Writes a portable, secret-scrubbed handoff document so the work continues in any tool or on any machine. Say "hand off" and "pick up"; `specweave auto-handoff on` hands off by itself near the usage limit.
+Writes a portable, secret-scrubbed handoff document so the work continues in any tool or on any machine. `disable-model-invocation: true`.
 
 ### `/sw:sync`
 
@@ -60,7 +60,7 @@ One surface for GitHub, Jira and Azure DevOps. See the [`specweave sync` referen
 
 `[increment-ids...] [--dry-run|--reset|--all-backlog]`
 
-Unattended execution. `specweave auto` writes a session file; the plugin's Stop hook reads it after every turn and either blocks with what remains or lets the session end. No daemon, no background process — the hook *is* the loop.
+Unattended execution. `specweave auto` writes a session file; the plugin's Stop hook reads it after every turn and either blocks with what remains or lets the session end. No daemon, no background process — the hook *is* the loop. `disable-model-invocation: true`.
 
 ### `/sw:brainstorm`
 
@@ -70,36 +70,42 @@ Diverge, converge, pick — then hand the winner to `/sw:increment`. Decides *wh
 
 Auto-activates on "brainstorm", "ideate" and "what are our options" — reach for it when the problem is clear but the approach is not, and you want to explore the space before a spec locks one in.
 
-The old `qa` skill was folded into `/sw:review` in 3.0: the review's verdict is the quality check.
+### `/sw:qa`
+
+`<increment-id> [--gate|--pre|--full]`
+
+A thin wrapper over `specweave qa`: risk score and blockers. Not the code review (`/sw:review`) and not the closure gate (`specweave verify`).
 
 ---
 
 ## Standalone skills (any AI tool)
 
-The same eleven skills live under `skills/` (the one source the plugin copies are generated from), distributed through [vskill](https://verified-skill.com), that work in Claude Code, Codex, OpenCode, Cursor, Gemini CLI, Windsurf and others. Each spells out the file formats and a manual shell/PowerShell procedure, so they work with no CLI installed at all.
+Five skills under `skills/`, distributed through [vskill](https://verified-skill.com), that work in Claude Code, Codex, OpenCode, Cursor, Gemini CLI, Windsurf and others. Each spells out the file formats and a manual shell/PowerShell procedure, so they work with no CLI installed at all.
 
 ```bash
 npx vskill install anton-abyzov/specweave/sw-increment
 npx vskill install anton-abyzov/specweave/sw-do
+npx vskill install anton-abyzov/specweave/sw-task
 npx vskill install anton-abyzov/specweave/sw-review
 npx vskill install anton-abyzov/specweave/sw-handoff
 ```
 
 | Skill | Use it when | Writes |
 |-------|-------------|--------|
-| `sw-increment` | planning a feature, before any code | `spec.md` with ACs and tasks |
+| `sw-increment` | planning a feature, before any code | `metadata.json`, `spec.md`, `tasks.md` |
 | `sw-do` | implementing an increment, task by task | commits, ledger events, `reports/verify.json` |
+| `sw-task` | claiming, finishing or skipping tasks; several agents on one increment | `ledger.jsonl` |
 | `sw-review` | adversarial review before shipping | `reports/review.md` |
-| `sw-handoff` | "hand off" in one tool, "pick up" in another | `handoff.md`, a pushed snapshot |
+| `sw-handoff` | out of tokens, switching tools or machines | `handoff.md`, `handoff.diff` |
 
-Typical loop: `sw-increment` → `sw-do` → `sw-review` → `sw-done`. `sw-handoff` any time you stop.
+Typical loop: `sw-increment` → `sw-do` (which drives `sw-task`) → `sw-review` → `specweave complete <id>`. `sw-handoff` any time you stop.
 
 ---
 
 ## Skill conventions
 
 - The **directory name is the command** — skills carry no `name:` frontmatter field.
-- No skill sets `disable-model-invocation`: "close it", "hand off" and "run until done" work in plain words.
+- `done`, `handoff` and `auto` set `disable-model-invocation: true`.
 - `npm run lint:skills` fails on a `name:` field, and on any reference to a `specweave <cmd>` or `sw:<name>` that does not exist.
 
 ## Writing your own
