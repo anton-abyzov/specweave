@@ -253,7 +253,7 @@ increment: ${incrementId}
       expect(result.errors).toContain('spec.md not found');
     });
 
-    it('should handle missing tasks.md gracefully', async () => {
+    it('gates a one-file increment (no tasks.md) on verify, not on tasks.md', async () => {
       // Arrange: Create spec.md but no tasks.md
       const specContent = `---
 increment: ${incrementId}
@@ -277,8 +277,9 @@ status: active
       const result: ValidationResult = await IncrementCompletionValidator.validateCompletion(incrementId);
 
       // Assert
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('tasks.md not found');
+      // beforeEach wrote a passing verify.json, which is the gate.
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
     });
   });
 

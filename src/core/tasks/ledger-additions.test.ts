@@ -224,8 +224,8 @@ describe('task done --run', () => {
 
     const evidence = loadTaskBoard(incDir).tasks[0].state.evidence!;
     expect(evidence).toContain('→ exit 0');
-    // The log path is derivable from the task id, so evidence does not repeat it.
-    expect(evidence).not.toContain('reports/task-T-01.log');
+    // The ledger cites the log so a teammate can open the full output.
+    expect(evidence).toContain('reports/task-T-01.log');
     expect(evidence).toContain('line120');
     expect(evidence).not.toContain('line70'); // only the last 50 lines
   });
