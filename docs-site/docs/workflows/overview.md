@@ -87,7 +87,7 @@ Out of tokens, switching subscription, or want another model to take over: say "
 specweave handoff --reason "out of tokens"
 ```
 
-It releases your claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits so a cloud session, another machine or another account can see them. In the next tool, say "pick up", or run `specweave pickup`: it fetches the handoff, applies your edits and prints the next task. Details in [Handoff and pickup](/docs/guides/cross-tool-handoff).
+It releases your claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits so a cloud session, another machine or another account can see them. In the next tool, say "pick up", or run `specweave pickup`: it fetches the handoff, applies your edits and prints the next task. Run `specweave auto-handoff on` once and Claude Code and Codex on your machine do the hand off themselves at 90% of the usage limit. Details in [Handoff and pickup](/docs/guides/cross-tool-handoff).
 
 ## Hotfixes
 
