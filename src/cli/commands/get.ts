@@ -206,7 +206,7 @@ async function _handleBulkGet(
   const jobId = result.job?.id ?? 'unknown';
 
   console.log(chalk.green(`  Job ${jobId} started.`));
-  console.log(chalk.dim(`   Monitor: specweave jobs\n`));
+  console.log(chalk.dim(`   Logs: .specweave/state/jobs/${jobId}/worker.log\n`));
 }
 
 async function _registerAndInit(
