@@ -5,6 +5,7 @@ A redesign from an audit of 2.3. Handoff between tools and accounts is two words
 ### Added
 
 - "Hand off" and "pick up". `specweave handoff` releases your claims, records why you stopped, and pushes the branch plus a snapshot of uncommitted edits to `specweave-handoff`. `specweave pickup` brings that work into any clone, tool, account or cloud session and prints the next task with its acceptance criteria. `AGENTS.md` maps the phrases to the commands for every tool.
+- `specweave auto-handoff on`: a session hands off by itself at 90% of the plan's 5-hour or weekly limit (`--at` to change). Claude Code reports usage through `specweave statusline`, which wraps any status line you already have; Codex through a Stop hook that reads its session log. Both use `specweave usage-guard` as the Stop hook. `off` restores your settings.
 - `specweave report`: an HTML timeline of who did what on an increment (tools, sessions, claims, test evidence, handoffs, pickups), generated from the ledger.
 - `specweave note "<text>"`: leave a message on an increment for whoever works on it next.
 - `.specweave/memory/`: committed project memory in the Claude Code Projects format, shown by `pickup`.
@@ -16,7 +17,7 @@ A redesign from an audit of 2.3. Handoff between tools and accounts is two words
 - Acceptance criteria are met when the tasks covering them are done; `verify` derives it. `task next` and `task claim` print the AC text.
 - `AGENTS.md` is the one instruction file (about 800 tokens, down from 1,860). `CLAUDE.md` is `@AGENTS.md` plus Claude-only lines.
 - One skill source for Claude Code, Codex and Grok: 11 skills (`qa` folded into `review`, `task` into `do`).
-- `init` writes only what a project needs: no docs scaffold, no background job, no git hook unless `--git-hooks`, no TDD defaults, no lockfile in `.gitignore`, no write to the global Claude settings.
+- `init` writes only what a project needs: no docs scaffold, no background job, no git hook unless `--git-hooks`, no TDD defaults, no lockfile in `.gitignore`, no write to the global Claude settings (only `auto-handoff on` changes them, when you run it).
 - The PreCompact hook writes a checkpoint and keeps claims.
 - The handoff diff and file list leave out SpecWeave's own bookkeeping.
 
@@ -28,7 +29,7 @@ A redesign from an audit of 2.3. Handoff between tools and accounts is two words
 
 ### Upgrade
 
-`npm i -g specweave@3 && specweave update`. See the [3.0 guide](https://spec-weave.com/docs/guides/specweave-3).
+`npm i -g specweave@3 && specweave update`, then `specweave auto-handoff on` if you want handoffs to start by themselves. See "Upgrade to 3.0" in the README.
 
 ## [2.3.0] - 2026-09-22
 
