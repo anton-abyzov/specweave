@@ -33,6 +33,8 @@ export const HANDOFF_SECTION_ORDER: readonly string[] = [
 
 /** Per-tool native resume commands (pinned by cross-tool-commands.test.ts). */
 export interface ToolResumeEntry {
+  /** The tool name `detectTool` writes into ledger ids (`grok@mbp`). */
+  id: string;
   tool: string;
   findSession: string;
   resumeCmd: string;
@@ -44,6 +46,7 @@ export const CLAUDE_MUNGE_EXAMPLE =
 
 export const TOOL_RESUME_MATRIX: readonly ToolResumeEntry[] = [
   {
+    id: 'claude',
     tool: 'Claude Code',
     findSession:
       'ls ~/.claude/projects/<munged-cwd>/ (munge: every non-alphanumeric char → "-", runs NOT collapsed; e.g. ' +
@@ -51,29 +54,46 @@ export const TOOL_RESUME_MATRIX: readonly ToolResumeEntry[] = [
     resumeCmd: 'claude -r <uuid>',
   },
   {
+    id: 'codex',
     tool: 'Codex',
     findSession: 'ls ~/.codex/sessions/ (newest dir = most recent session)',
     resumeCmd: 'codex resume <uuid>   (or: codex resume --last)',
   },
   {
+    id: 'opencode',
     tool: 'OpenCode',
     findSession: 'opencode sessions list',
     resumeCmd: 'opencode -s <id>   (long form: opencode --session <id>)',
   },
   {
+    id: 'gemini',
     tool: 'Gemini CLI',
     findSession: 'run /chat list inside the Gemini session to see saved tags',
     resumeCmd: '/chat resume <tag>',
   },
   {
+    id: 'antigravity',
     tool: 'Antigravity',
     findSession: 'open the Antigravity Agent Manager and pick the prior task thread',
     resumeCmd: 'resume the thread from the Antigravity Agent Manager',
   },
   {
+    id: 'aider',
     tool: 'Aider',
     findSession: 'aider keeps .aider.chat.history.md in the repo root',
     resumeCmd: 'aider --restore-chat-history',
+  },
+  {
+    id: 'grok',
+    tool: 'Grok Build',
+    findSession: 'ls ~/.grok/sessions/<encoded-cwd>/ (or pick one on the grok welcome screen)',
+    resumeCmd: 'grok --resume <id>   (or: grok --resume for the latest here)',
+  },
+  {
+    id: 'muse',
+    tool: 'Muse Code',
+    findSession: 'run muse resume to pick from recent sessions',
+    resumeCmd: 'muse resume   (headless: muse exec --session-id <uuid>)',
   },
 ] as const;
 
@@ -253,7 +273,9 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
   L.push('## Resume');
   L.push('1. `specweave pickup` prints the next task with its acceptance criteria, claims and branch state.');
   L.push(`2. \`specweave task claim <T-id>${inc ? ` ${inc.id}` : ''}\` → implement → \`specweave task done <T-id> --run "<test>"\`.`);
-  L.push(`3. Original transcript (optional): ${TOOL_RESUME_MATRIX.slice(0, 3).map((e) => `${e.tool}: \`${e.resumeCmd.split('   ')[0]}\``).join(' · ')}.`);
+  const own = TOOL_RESUME_MATRIX.find((e) => e.id === input.agent.split('@')[0]);
+  const transcripts = own ? [own] : TOOL_RESUME_MATRIX.slice(0, 3);
+  L.push(`3. Original transcript (optional): ${transcripts.map((e) => `${e.tool}: \`${e.resumeCmd.split('   ')[0]}\``).join(' · ')}.`);
   L.push('');
   L.push('---');
   L.push(`<!-- ${DOC_FORMAT_MARKER} -->`);

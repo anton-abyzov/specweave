@@ -4,11 +4,14 @@
  *   specweave auto-handoff [on|off|status] [--at 90]
  *   specweave statusline [--wrap "<your status line command>"]   (Claude Code status line)
  *   specweave usage-guard                                          (Stop hook, Claude Code and Codex)
+ *   specweave usage-guard --limit-hit                              (StopFailure hook, Grok Build)
  *
- * `auto-handoff on` wires the two tools once, in the user's own settings:
+ * `auto-handoff on` wires the tools once, in the user's own settings:
  * Claude Code gets the status line (wrapping any existing one) and a Stop
  * hook; Codex gets the same Stop hook in ~/.codex/hooks.json. From then on a
- * session that reaches the threshold hands off by itself.
+ * session that reaches the threshold hands off by itself. Grok Build reports
+ * no usage percentage, so it gets a StopFailure hook in ~/.grok/hooks/ that
+ * runs the handoff itself right after a turn hits the rate limit.
  *
  * @module cli/commands/auto-handoff
  */
@@ -18,8 +21,9 @@ import * as os from 'os';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
-  DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest,
+  DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
 } from '../../core/session/usage-guard.js';
+import { detectTool } from '../../core/tasks/ledger.js';
 
 const GUARD_COMMAND = 'specweave usage-guard';
 const STATUS_COMMAND = 'specweave statusline';
@@ -58,17 +62,31 @@ export async function statuslineCommand(opts: { wrap?: string; home?: string } =
   return 0;
 }
 
-/** Stop hook for Claude Code and Codex: `{}` or a block that asks for a handoff. */
-export async function usageGuardCommand(opts: { home?: string } = {}): Promise<number> {
+/**
+ * Stop hook for Claude Code and Codex: `{}` or a block that asks for a handoff.
+ * With `limitHit` (Grok Build's StopFailure hook) the model has already run
+ * out, so the hook writes the handoff itself.
+ */
+export async function usageGuardCommand(opts: { home?: string; limitHit?: boolean; input?: string } = {}): Promise<number> {
+  if (opts.limitHit) {
+    try {
+      const root = limitHitTarget(parse(opts.input ?? await readStdin()), { home: opts.home });
+      if (root) {
+        const { handoffCommand } = await import('./handoff.js');
+        await handoffCommand({ cwd: root, reason: `rate limit reached in ${detectTool()}` });
+      }
+    } catch { /* a hook must never break the tool */ }
+    return 0;
+  }
   let result = {};
   try {
-    result = usageGuard(parse(await readStdin()), { home: opts.home });
+    result = usageGuard(parse(opts.input ?? await readStdin()), { home: opts.home });
   } catch { /* a hook must never break the tool */ }
   process.stdout.write(JSON.stringify(result) + '\n');
   return 0;
 }
 
-interface HookEntry { type?: string; command?: string; timeout?: number }
+interface HookEntry { type?: string; command?: string; timeout?: number; env?: Record<string, string> }
 interface HookGroup { matcher?: string; hooks?: HookEntry[] }
 type Settings = Record<string, unknown> & { hooks?: Record<string, HookGroup[]>; statusLine?: { type?: string; command?: string } };
 
@@ -104,6 +122,20 @@ function removeGuard(s: Settings): void {
   if (!Object.keys(s.hooks).length) delete s.hooks;
 }
 
+const GROK_HOOK_FILE = 'specweave-auto-handoff.json';
+
+/** Grok Build hook file: hand off when a turn fails on the rate limit. */
+export function grokHook(): Settings {
+  return {
+    hooks: {
+      StopFailure: [{
+        matcher: 'rate_limit',
+        hooks: [{ type: 'command', command: `${GUARD_COMMAND} --limit-hit`, timeout: 60, env: { SPECWEAVE_TOOL: 'grok' } } as HookEntry],
+      }],
+    },
+  };
+}
+
 function shellQuote(s: string): string {
   return `'${s.replace(/'/g, `'\\''`)}'`;
 }
@@ -117,6 +149,7 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
   const home = opts.home ?? os.homedir();
   const claudeFile = path.join(home, '.claude', 'settings.json');
   const codexFile = path.join(home, '.codex', 'hooks.json');
+  const grokFile = path.join(home, '.grok', 'hooks', GROK_HOOK_FILE);
   const say = (line: string) => process.stdout.write(line + '\n');
 
   if (action === 'on') {
@@ -146,6 +179,10 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
         say(`Codex: Stop hook added in ${codexFile} (Codex asks you to trust a new hook once)`);
       }
     }
+    if (fs.existsSync(path.join(home, '.grok'))) {
+      writeJson(grokFile, grokHook());
+      say(`Grok Build: StopFailure hook added in ${grokFile}; it hands off right after a turn hits the rate limit, since Grok shows no usage percentage`);
+    }
     writeSettings({ at, since: new Date().toISOString(), ...(previousStatusLine ? { previousStatusLine } : {}) }, home);
     say(`Auto-handoff is on: at ${at}% of any usage window, the session runs \`specweave handoff\` and tells you to say "pick up" elsewhere.`);
     return 0;
@@ -164,6 +201,7 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
     }
     const codex = fs.existsSync(codexFile) ? readJson(codexFile) : undefined;
     if (codex) { removeGuard(codex); writeJson(codexFile, codex); }
+    fs.rmSync(grokFile, { force: true });
     writeSettings(undefined, home);
     say('Auto-handoff is off; your previous status line is back.');
     return 0;
