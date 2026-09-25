@@ -86,7 +86,7 @@ npm i -g specweave@3
 specweave update
 ```
 
-`specweave update` rewrites `AGENTS.md` into the lean form, turns `CLAUDE.md` into an import of it, keeps your own sections, and backs up the old files under `.specweave/backups/`. Existing increments need no migration. The **[3.0.0 changelog](CHANGELOG.md#300---2026-09-25)** lists what changed and what was removed. To have sessions hand off by themselves near the usage limit, run `specweave auto-handoff on` once.
+`specweave update` rewrites `AGENTS.md` into the lean form, turns `CLAUDE.md` into an import of it, keeps your own sections, and backs up the old files under `.specweave/backups/`. Existing increments need no migration. The **[3.0.0 changelog](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md#300---2026-09-25)** lists what changed and what was removed. To have sessions hand off by themselves near the usage limit, run `specweave auto-handoff on` once.
 
 <br/>
 
