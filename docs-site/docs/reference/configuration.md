@@ -20,14 +20,11 @@ For a Claude Code project with a GitHub remote, `specweave init` writes roughly 
   "project": { "name": "my-app", "version": "0.1.0" },
   "adapters": { "default": "claude" },
   "repository": { "provider": "github", "organization": "acme", "repo": "my-app" },
-  "testing": {
-    "mode": "TDD",
-    "commands": [],
-    "coverage": { "unit": 95, "integration": 90, "e2e": 100 }
-  },
+  "testing": { "commands": [] },
   "limits": { "activeIncrements": 3 },
   "planning": { "deepInterview": "off" },
-  "auto": { "enabled": true, "requireTests": false },
+  "auto": { "maxTurns": 20, "maxSessionAge": 7200, "requireTests": false },
+  "livingDocs": false,
   "lsp": { "enabled": true },
   "workspace": { "name": "my-app", "repos": [] },
   "sync": { "enabled": true, "autoSync": true, "settings": { "canUpsertInternalItems": true, "canUpdateExternalItems": true, "canUpdateStatus": true } }
@@ -60,9 +57,9 @@ The single most useful edit is filling in `testing.commands`.
 | Field | Default | Notes |
 |-------|---------|-------|
 | `commands` | `[]` | The commands `specweave verify` runs, in order. Empty means auto-detect: `package.json` scripts `test`, `lint`, `build`, then Cargo, pytest or Go. |
-| `mode` | `"TDD"` | `TDD`, `test-after`, `manual` or `none`. How tests are written for new work. |
-| `coverage.unit`, `coverage.integration` | `95`, `90` | Line coverage targets in percent. Below target is a warning at close, not a block. |
-| `coverage.e2e` | `100` | Share of written end-to-end tests that must pass. Not line coverage. |
+| `mode` | not set | `TDD`, `test-after`, `manual` or `none`: how tests are written for new work. `init` writes it only when you choose one. |
+| `coverage.unit`, `coverage.integration` | not set | Line coverage targets in percent. Below target is a warning at close, not a block. Written only when you set a target. |
+| `coverage.e2e` | not set | Share of written end-to-end tests that must pass. Not line coverage. |
 
 ### `tasks`
 
@@ -92,7 +89,7 @@ Settings for `specweave auto` and its Stop hook.
 | `maxSessionAge` | `7200` | Seconds before an idle auto session is treated as stale and reset. |
 | `requireTests` | `false` | Add a "tests pass" condition to the session's success criteria. |
 
-`init` also writes `enabled`, `maxRetries`, `requireValidation`, `requireJudgeLLM` and `skipQualityGates` here. 3.0 does not read them.
+These are the only `auto` keys 3.0 reads. Projects created with 2.x may also have `enabled`, `maxRetries`, `requireValidation`, `requireJudgeLLM` and `skipQualityGates`; they are ignored.
 
 ### `workspace`
 
@@ -175,7 +172,7 @@ These keys are accepted without a warning because some code still reads them. Yo
 | `cicd` | `specweave branch-name` and the CI/CD helpers (`pushStrategy`, `git`, `release`). |
 | `issueTracker` | The older tracker block that `specweave sync setup` still writes for Jira and Azure DevOps. |
 | `plugins` | `plugins.enabled`, the list of enabled Claude Code plugins. |
-| `livingDocs` | A 2.x leftover that `init` still writes as `false`. Living docs are gone in 3.0; leave it alone. |
+| `livingDocs` | `false` by default. `"onDone"` regenerates living docs when an increment closes; `specweave update` sets it for 2.x projects that used living docs. |
 
 ## Removed keys
 

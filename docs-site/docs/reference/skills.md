@@ -26,7 +26,7 @@ You rarely need to name a skill. `AGENTS.md` tells every agent the loop, so plai
 | `brainstorm` | Compares options on stated criteria and ends with a pick, before a spec is written. | "brainstorm", "what are our options" |
 | `jev` | Hands closed-set decisions (routing, command safety, screening, failure triage) to Jev. | "jev", "system one" |
 
-The Claude Code plugin also carries `qa`, a thin wrapper over `specweave qa` for a risk score. The portable set adds `sw-task` for agents that only need to claim and finish tasks.
+These eleven are the whole set. In 3.0 `qa` folded into `review` and `task` into `do`. The CLI still has `specweave qa` for a risk score.
 
 There is no pickup skill. `AGENTS.md` tells every agent to run `specweave pickup` at the start of a session and when you say "pick up" or "continue". In Claude Code the SessionStart hook also prints a short pickup on its own.
 
@@ -35,12 +35,12 @@ There is no pickup skill. `AGENTS.md` tells every agent to run `specweave pickup
 | Where you work | How skills are installed | How you call one |
 |----------------|--------------------------|------------------|
 | Claude Code with the plugin | `claude plugin install sw@specweave` | `/sw:do`, `/sw:handoff`, `/sw:increment "Add login form"` |
-| Claude Code without the plugin (a Claude Code Projects thread, another cloud session) | When the plugin is not installed, `specweave init` copies the skills into `.claude/skills/` in the repo; commit that folder | Pick them from the `/` menu, or ask in plain words |
-| Codex (CLI, desktop, cloud) | `specweave init --adapter codex` or `specweave refresh-plugins` writes `.agents/skills/sw-<name>/` | `$sw-do`, `$sw-handoff`, `$sw-increment` |
+| Claude Code without the plugin (a Claude Code Projects thread, another cloud session) | `specweave init` writes them to `.claude/skills/sw-<name>/` in the repo; commit that folder | `/sw-do`, `/sw-handoff`, or ask in plain words |
+| Codex (CLI, desktop, cloud) | The same `specweave init` writes `.agents/skills/sw-<name>/` too, whatever the adapter | `$sw-do`, `$sw-handoff`, `$sw-increment` |
 | Cursor, Gemini CLI, Copilot and other tools | `specweave init --adapter <tool>` writes the skills where that tool looks for them | The tool's own skill syntax, or plain words |
 | Any tool, no SpecWeave install | `npx vskill install anton-abyzov/specweave/sw-do` (see below) | The tool's own skill syntax, or plain words |
 
-In Claude Code, `auto`, `done` and `handoff` are marked so the model does not start them by itself; you type `/sw:handoff` or `/sw:done`. Saying "hand off" or "we are done" still works, because `AGENTS.md` tells the agent to run `specweave handoff --reason "<your words>"` whenever it stops, and `specweave complete` to close.
+No skill is hidden from the model, so plain words start any of them: "hand off", "we are done" or "run until done". `AGENTS.md` also tells the agent to run `specweave handoff --reason "<your words>"` whenever it stops, so a tool without skills does the same.
 
 ## Handing off in a few words
 
@@ -55,12 +55,11 @@ See [cross-tool handoff](/docs/guides/cross-tool-handoff) and [Claude Code Proje
 
 ## Portable skills for any tool
 
-These live in the `skills/` folder of the SpecWeave repo and install with [vskill](/docs/skills/vskill-cli). Each one spells out the file formats and a manual shell procedure, so they work even where the CLI is not installed.
+The same eleven skills live in the `skills/sw-<name>/` folders of the SpecWeave repo, which are the one source the plugin and project copies are generated from. They install into other tools with [vskill](/docs/skills/vskill-cli). Each one spells out the file formats and a manual shell procedure, so they work even where the CLI is not installed.
 
 ```bash
 npx vskill install anton-abyzov/specweave/sw-increment
 npx vskill install anton-abyzov/specweave/sw-do
-npx vskill install anton-abyzov/specweave/sw-task
 npx vskill install anton-abyzov/specweave/sw-review
 npx vskill install anton-abyzov/specweave/sw-handoff
 npx vskill install anton-abyzov/specweave/sw-jev
@@ -69,8 +68,7 @@ npx vskill install anton-abyzov/specweave/sw-jev
 | Skill | Use it when | Writes |
 |-------|-------------|--------|
 | `sw-increment` | Planning a feature, before any code | `metadata.json`, `spec.md` |
-| `sw-do` | Implementing an increment task by task | Commits, ledger events, `reports/verify.json` |
-| `sw-task` | Claiming, finishing or skipping tasks; several agents on one increment | `ledger.jsonl` |
+| `sw-do` | Implementing an increment task by task, including claiming, finishing or skipping a task | Commits, ledger events, `reports/verify.json` |
 | `sw-review` | Reviewing before shipping | `reports/review.md` |
 | `sw-handoff` | Stopping: out of tokens, switching tools or machines | `handoff.md`, `handoff.diff` |
 | `sw-jev` | A decision whose possible answers can all be listed in advance | Nothing; it answers and you act |

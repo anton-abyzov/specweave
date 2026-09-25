@@ -36,7 +36,11 @@ specweave init
 | `AGENTS.md` | The instruction file every tool reads: the loop, the rules, your build and test commands |
 | `CLAUDE.md` | Imports `AGENTS.md` with `@AGENTS.md`, plus Claude-only notes |
 | `.specweave/config.json` | Project settings |
-| `.claude/skills/` | SpecWeave skills for Claude Code, including cloud Projects threads |
+| `.specweave/memory/MEMORY.md` | The index of project memory: one line per decision that must outlive a session |
+| `.claude/skills/sw-*` | The eleven SpecWeave skills for Claude Code, including cloud Projects threads |
+| `.agents/skills/sw-*` | The same skills for Codex and other tools that read `.agents/skills/` |
+
+It also adds a few lines to `.gitignore` and `.gitattributes` (the ledger merges with `merge=union`), and writes a `README.md` only if you have none. Nothing outside the project is touched, and there is no git hook unless you ask for one with `--git-hooks`.
 
 Commit these files. Everything SpecWeave keeps is meant to be in git, because git is what every tool and every account shares.
 
