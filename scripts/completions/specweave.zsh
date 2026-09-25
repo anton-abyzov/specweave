@@ -24,6 +24,8 @@ commands=(
     'verify:'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
     'handoff:Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool'
+    'pickup:Print the open increment, the next task with its acceptance criteria, claims, branch state, the last handoff, notes and memory'
+    'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -213,6 +215,17 @@ _specweave() {
                         '--non-specweave[Force the .handoff/ fallback even inside a SpecWeave workspace]' \
                         '--out[Override the doc output path]' \
                         '--json[Output the full result as JSON (for programmatic use)]' \
+                        '--push[Push the branch and a snapshot of uncommitted edits to wip/<branch> so a cloud session can pick them up]' \
+                        '--keep-claims[Keep your task claims instead of releasing them for the next agent]' \
+                        '--help[Show help]'
+                    ;;
+                pickup)
+                    _arguments \
+                        '--json[Output as JSON]' \
+                        '--help[Show help]'
+                    ;;
+                note)
+                    _arguments \
                         '--help[Show help]'
                     ;;
                 jev)

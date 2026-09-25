@@ -108,7 +108,7 @@ describe('task done auto-claim', () => {
     const { root, incDir } = mkProject();
     expect(await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'solo@h', evidence: 'sha123' })).toBe(0);
     const events = ledgerLines(incDir);
-    expect(events.map((e) => e.e)).toEqual(['claim', 'done']);
+    expect(events.map((e) => e.e).filter((e) => e !== 'session')).toEqual(['claim', 'done']);
     expect(loadTaskBoard(incDir).tasks[0].state.status).toBe('done');
     expect(stdout.join('')).toContain('Auto-claimed T-01');
   });
@@ -117,7 +117,7 @@ describe('task done auto-claim', () => {
     const { root, incDir } = mkProject();
     await taskCommand('claim', 'T-01', undefined, { cwd: root, agent: 'solo@h' });
     await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'solo@h', evidence: 'sha123' });
-    expect(ledgerLines(incDir).map((e) => e.e)).toEqual(['claim', 'done']);
+    expect(ledgerLines(incDir).map((e) => e.e).filter((e) => e !== 'session')).toEqual(['claim', 'done']);
   });
 
   it('refuses a done on another live claim with an actionable message', async () => {
@@ -190,7 +190,7 @@ describe('fold hardening (BOM, CRLF, blank, junk)', () => {
       '',
     ].join('\r\n');
     const { events, malformed } = parseLedger(content);
-    expect(events.map((e) => e.e)).toEqual(['claim', 'done']);
+    expect(events.map((e) => e.e).filter((e) => e !== 'session')).toEqual(['claim', 'done']);
     expect(malformed).toBe(2);
     expect(foldLedger(events).tasks.get('T-01')!.status).toBe('done');
   });

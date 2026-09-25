@@ -20,7 +20,8 @@ import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { captureGitState } from './handoff-git-state.js';
 import { scrubSecrets } from './handoff-secret-scrub.js';
-import { getAgentId } from '../tasks/ledger.js';
+import { appendEvent, getAgentId, ledgerPath, INCREMENT_EVENT_TASK } from '../tasks/ledger.js';
+import { pushHandoff, wipRefFor } from './handoff-push.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs } from '../tasks/verify-runner.js';
@@ -34,6 +35,7 @@ import {
   type HandoffDocInput,
   type HandoffIncrementInfo,
   type HandoffTaskRow,
+  type HandoffPushInfo,
 } from './handoff-doc-format.js';
 
 export interface WorkHandoffOptions {
@@ -46,6 +48,10 @@ export interface WorkHandoffOptions {
   inline?: boolean;
   out?: string;
   nonSpecweave?: boolean;
+  /** Push the branch and a WIP snapshot of uncommitted edits (`wip/<branch>`). */
+  push?: boolean;
+  /** Keep this agent's claims instead of releasing them for the next agent. */
+  keepClaims?: boolean;
   /** Override the agent id (tests). */
   agent?: string;
 }
@@ -57,6 +63,9 @@ export interface WorkHandoffResult {
   pastePrompt: string;
   isSpecWeave: boolean;
   incrementId?: string;
+  /** Task ids whose claims this handoff released. */
+  released: string[];
+  push?: HandoffPushInfo;
 }
 
 export class AmbiguousActiveIncrementError extends Error {
@@ -97,14 +106,28 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const agent = opts.agent ?? getAgentId();
   const leaseHours = isSpecWeave ? readLeaseHours(effectiveRoot) : undefined;
 
+  // ── Ledger: release this agent's claims, record the handoff ─────────────
+  // Both land before the Git capture so a pushed snapshot carries them.
+  const released: string[] = [];
+  if (incrementId && incDir && fs.existsSync(path.join(incDir, 'metadata.json'))) {
+    const ledger = ledgerPath(incDir);
+    const at = new Date().toISOString();
+    if (!opts.keepClaims) {
+      const board = loadTaskBoard(incDir, { leaseHours });
+      for (const t of board.tasks) {
+        if ((t.state.status === 'claimed' || t.state.status === 'stale') && t.state.by === agent) {
+          appendEvent(ledger, { t: t.id, e: 'release', by: agent, at, note: 'handoff' });
+          released.push(t.id);
+        }
+      }
+    }
+    const note = [opts.reason, opts.next ? `next: ${opts.next}` : undefined].filter(Boolean).join(' · ');
+    appendEvent(ledger, { t: INCREMENT_EVENT_TASK, e: 'handoff', by: agent, at, ...(note ? { note: scrubSecrets(note).scrubbed } : {}) });
+  }
+
   let increment: HandoffIncrementInfo | undefined;
-  let fileDecisions: string[] = [];
   if (incrementId && incDir && fs.existsSync(path.join(incDir, 'metadata.json'))) {
     increment = assembleIncrementInfo(incDir, incrementId, agent, leaseHours);
-    fileDecisions = [
-      ...readDecisions(path.join(incDir, 'spec.md')),
-      ...readDecisions(path.join(incDir, 'plan.md')),
-    ];
   }
 
   // ── Paths ──────────────────────────────────────────────────────────────
@@ -120,7 +143,8 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     summary: [opts.summary, intents, intentLink].filter(Boolean).join('\n\n') || undefined,
     next: opts.next,
     gotcha: opts.gotcha,
-    decisions: [...fileDecisions, ...(opts.decisions ?? [])],
+    // Decisions come from the agent; spec.md's Approach already holds the planned ones.
+    decisions: opts.decisions ?? [],
   });
   for (const [kind, count] of Object.entries(intentRedactions)) scrubbed.counts[kind] = (scrubbed.counts[kind] ?? 0) + count;
   scrubDiffFileInPlace(diffPath, scrubbed.counts);
@@ -142,13 +166,23 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     redactionCounts: scrubbed.counts,
   };
 
+  docInput.released = released;
+  // With --push the doc names the WIP ref it is about to publish, so the
+  // snapshot carries a doc that points at itself; a failed push rewrites it.
+  if (opts.push && git.isGitRepo && git.branch && git.branch !== 'HEAD' && git.hasUncommittedChanges) {
+    docInput.push = { wipRef: wipRefFor(git.branch), warnings: [] };
+  }
+  writeDoc(docPath, renderHandoffDoc(docInput));
+  if (isSpecWeave) writePointer(effectiveRoot, docPath);
+  if (opts.push) {
+    const planned = docInput.push?.wipRef;
+    docInput.push = pushHandoff(effectiveRoot);
+    if (docInput.push.wipRef !== planned || docInput.push.warnings.length) writeDoc(docPath, renderHandoffDoc(docInput));
+  }
   const docMarkdown = renderHandoffDoc(docInput);
   const pastePrompt = renderPastePrompt(docInput, { inline: opts.inline });
 
-  writeDoc(docPath, docMarkdown);
-  if (isSpecWeave) writePointer(effectiveRoot, docPath);
-
-  return { docPath, diffPath, docMarkdown, pastePrompt, isSpecWeave, incrementId };
+  return { docPath, diffPath, docMarkdown, pastePrompt, isSpecWeave, incrementId, released, push: docInput.push };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

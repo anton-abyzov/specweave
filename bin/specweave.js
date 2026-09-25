@@ -259,6 +259,8 @@ program
   .option('--non-specweave', 'Force the .handoff/ fallback even inside a SpecWeave workspace')
   .option('--out <path>', 'Override the doc output path')
   .option('--json', 'Output the full result as JSON (for programmatic use)')
+  .option('--push', 'Push the branch and a snapshot of uncommitted edits to wip/<branch> so a cloud session can pick them up')
+  .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
   .action(async (incrementId, options) => {
     const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
     await handoffCommand({
@@ -272,7 +274,28 @@ program
       nonSpecweave: options.nonSpecweave,
       out: options.out,
       json: options.json,
+      push: options.push,
+      keepClaims: options.keepClaims,
     });
+  });
+
+// Pickup command - everything a fresh session needs, in one read
+program
+  .command('pickup [incrementId]')
+  .description('Print the open increment, the next task with its acceptance criteria, claims, branch state, the last handoff, notes and memory')
+  .option('--json', 'Output as JSON')
+  .action(async (incrementId, options) => {
+    const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await pickupCommand({ incrementId, json: options.json });
+  });
+
+// Note command - leave a note on an increment for whoever works on it next
+program
+  .command('note <text> [incrementId]')
+  .description('Append a note to an increment\'s ledger; `specweave pickup` shows it to the next agent')
+  .action(async (text, incrementId) => {
+    const { noteCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await noteCommand(text, { incrementId });
   });
 
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions

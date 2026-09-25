@@ -26,7 +26,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { runShell, isShellCommand } from '../../core/tasks/run-shell.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
-import { appendEvent, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
+import { appendEvent, recordSessionOnce, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
 import {
   loadTaskBoard,
   nextTask,
@@ -176,6 +176,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       if (deps.length && !opts.force) { err(`${taskId} depends on ${deps.join(', ')} (not done). Use --force to override.`); return EXIT_DEPS_UNMET; }
       const overlap = fileOverlaps(board, task, agent);
       if (overlap.length && !opts.force) { err(`${taskId} shares Files with live claim(s) ${overlap.join(', ')}. Pick another task or --force.`); return EXIT_FILES_OVERLAP; }
+      recordSessionOnce(ledger, agent);
       append('claim', taskId, note ? { note } : {});
       // Re-read: the earliest live claim wins; confirm we own it.
       const after = board.tasks.find((t) => t.id === taskId)!;
@@ -226,6 +227,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         // docs recommend) recorded work against a still-`planned` increment.
         const autoStarted = ensureIncrementStarted(inc.dir);
         if (autoStarted && !opts.json) out(autoStarted);
+        recordSessionOnce(ledger, agent);
         append('claim', taskId);
         if (!opts.json) out(`Auto-claimed ${taskId} as ${agent}`);
       }
