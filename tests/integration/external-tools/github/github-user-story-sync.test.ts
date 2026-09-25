@@ -205,32 +205,6 @@ External stakeholders need complete context in GitHub issues without accessing t
     expect(result.body).toContain('🤖 Auto-created by SpecWeave User Story Sync');
   });
 
-  it('should detect repo name from git remote and use it as project name', async () => {
-    // Setup test environment
-    process.chdir(tmpDir);
-
-    // Initialize git repo with specific remote
-    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
-    execSync('git remote add origin https://github.com/mycompany/awesome-app.git', { cwd: tmpDir, env: getCleanEnv() });
-
-    // Create minimal config
-    const configPath = path.join(tmpDir, '.specweave/config.json');
-    await fs.ensureDir(path.dirname(configPath));
-    await fs.writeJson(configPath, {
-      project: { name: 'Awesome App' },
-    });
-
-    // Import ProjectDetector
-    const { ProjectDetector } = await import('../../../../src/core/living-docs/project-detector.js');
-
-    const detector = new ProjectDetector({ configPath });
-    const projects = detector.getProjects();
-
-    // Should detect "awesome-app" from git remote, NOT "default"
-    expect(projects.length).toBeGreaterThan(0);
-    expect(projects[0].id).toBe('awesome-app');
-  });
-
   it('should handle multi-repo setup with separate project folders', async () => {
     // Setup test environment
     process.chdir(tmpDir);

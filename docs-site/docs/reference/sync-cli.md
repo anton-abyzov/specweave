@@ -110,6 +110,5 @@ Two neighbouring commands that are often confused with sync:
 | Command | Does |
 |---------|------|
 | `specweave doctor` | Health check, including `metadata.json` ↔ `spec.md` status desyncs. |
-| `specweave sync-living-docs [id]` | Regenerates internal living docs (only meaningful when `livingDocs` is enabled). |
 
 See also: [GitHub sync](/docs/guides/github-sync) · [Jira and Azure DevOps](/docs/guides/jira-ado-sync)

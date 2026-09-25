@@ -221,11 +221,6 @@ describe('File Implementation Verification', () => {
     const filesToCheck = [
       'github-client-v2.ts',
       'github-feature-sync.ts',
-      'github-spec-sync.ts',
-      'github-issue-updater.ts',
-      // 'github-sync-bidirectional.ts', // Removed - deprecated module deleted
-      'github-board-resolver.ts',
-      'github-hierarchical-sync.ts',
       'duplicate-detector.ts',
     ];
 

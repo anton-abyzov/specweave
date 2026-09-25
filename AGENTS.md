@@ -14,7 +14,7 @@ This is the source of the `specweave` npm package: a CLI plus a Claude Code plug
 | `src/core/hooks/handlers/` | Claude Code hook handlers, reached through `plugins/specweave/hooks/run.mjs` |
 | `src/sync/`, `src/integrations/` | GitHub, Jira and ADO sync (opt-in, only on `specweave sync`) |
 | `src/templates/` | What `init` and `update` write into user projects |
-| `skills/sw-*` | Portable skills for any tool; `plugins/specweave/skills/` is the Claude plugin copy |
+| `skills/sw-*` | The one skill source for every tool; `npm run generate:skills` writes the plugin copies in `plugins/specweave/skills/` (never edit those) |
 | `docs-site/` | spec-weave.com (Docusaurus); deploys from `develop` |
 
 ## Work here

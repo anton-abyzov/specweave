@@ -1351,7 +1351,7 @@ With SpecWeave:
 
 2. **Selective Context Loading**
    ```bash
-   specweave docs authentication
+   grep -ril authentication .specweave/docs/internal/
 
    Searching living docs...
    Found 3 relevant files:
