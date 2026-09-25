@@ -309,6 +309,33 @@ program
     process.exitCode = await noteCommand(text, { incrementId });
   });
 
+// Auto-handoff - hand off by itself near the plan's usage limit (Claude Code, Codex)
+program
+  .command('auto-handoff [action]')
+  .description('on | off | status: hand off automatically at a share of the usage limit (default 90%)')
+  .option('--at <percent>', 'Threshold in percent of any usage window', (v) => Number(v))
+  .action(async (action, options) => {
+    const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await autoHandoffCommand(action, { at: options.at });
+  });
+
+program
+  .command('statusline')
+  .description('Claude Code status line that records usage for auto-handoff')
+  .option('--wrap <command>', 'Print this status line command\'s output instead of the built-in line')
+  .action(async (options) => {
+    const { statuslineCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await statuslineCommand({ wrap: options.wrap });
+  });
+
+program
+  .command('usage-guard')
+  .description('Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold')
+  .action(async () => {
+    const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await usageGuardCommand();
+  });
+
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions
 program
   .command('jev <action> [args...]')

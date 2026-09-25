@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff pickup report note jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
+set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -28,6 +28,9 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: hand off automatically at a share of the usage limit (default 90%)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
@@ -179,6 +182,12 @@ complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output
 
 # report
 complete -c specweave -n "__fish_seen_subcommand_from report" -l out -d "Where to write it (default: the increment's reports/handoff-report.html)"
+
+# auto-handoff
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Threshold in percent of any usage window"
+
+# statusline
+complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
