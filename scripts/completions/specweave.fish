@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume abandon complete task verify create-increment handoff jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -19,7 +19,13 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: hand off automatically at a share of the usage limit (default 90%)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
@@ -86,6 +92,7 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l run -d "Run <cmd>
 complete -c specweave -n "__fish_seen_subcommand_from task" -l note -s n -d "Note (alias of --reason)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l reason -d "Reason (required for skip / block)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With `release`: release every task claimed by this agent"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l write -d "With `render`: refresh a legacy tasks.md from the ledger"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 
 # verify
@@ -121,6 +128,21 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l clipboard -d "
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l non-specweave -d "Force the .handoff/ fallback even inside a SpecWeave workspace"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l out -d "Override the doc output path"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l json -d "Output the full result as JSON (for programmatic use)"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l no-push -d "Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l keep-claims -d "Keep your task claims instead of releasing them for the next agent"
+
+# pickup
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l no-apply -d "Only show the waiting handoff; do not apply it to this checkout"
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output as JSON"
+
+# report
+complete -c specweave -n "__fish_seen_subcommand_from report" -l out -d "Where to write it (default: the increment's reports/handoff-report.html)"
+
+# auto-handoff
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Threshold in percent of any usage window"
+
+# statusline
+complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"

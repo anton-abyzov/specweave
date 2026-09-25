@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall pause start resume abandon complete task verify create-increment handoff jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
+    local main_commands="init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
 
     case "${prev}" in
         specweave)
@@ -49,7 +49,7 @@ _specweave_completions() {
             return 0
             ;;
         task)
-            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --json --help" -- "${cur}") )
             return 0
             ;;
         verify)
@@ -61,7 +61,31 @@ _specweave_completions() {
             return 0
             ;;
         handoff)
-            COMPREPLY=( $(compgen -W "--reason --summary --next --gotcha --decision --inline --clipboard --non-specweave --out --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--reason --summary --next --gotcha --decision --inline --clipboard --non-specweave --out --json --no-push --keep-claims --help" -- "${cur}") )
+            return 0
+            ;;
+        pickup)
+            COMPREPLY=( $(compgen -W "--no-apply --json --help" -- "${cur}") )
+            return 0
+            ;;
+        report)
+            COMPREPLY=( $(compgen -W "--out --help" -- "${cur}") )
+            return 0
+            ;;
+        note)
+            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            return 0
+            ;;
+        auto-handoff)
+            COMPREPLY=( $(compgen -W "--at --help" -- "${cur}") )
+            return 0
+            ;;
+        statusline)
+            COMPREPLY=( $(compgen -W "--wrap --help" -- "${cur}") )
+            return 0
+            ;;
+        usage-guard)
+            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
             return 0
             ;;
         jev)

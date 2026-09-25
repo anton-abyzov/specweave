@@ -39,13 +39,45 @@ export interface VerifyReport {
   ledgerMalformed: number;
 }
 
-export interface AcEntry { id: string; done: boolean; text: string }
+export interface AcEntry {
+  id: string;
+  done: boolean;
+  text: string;
+  /** How `done` was decided: ticked in spec.md, or every covering task is done in the ledger. */
+  via?: 'checkbox' | 'ledger';
+}
 
-/** One-line human summary of unchecked ACs, or undefined when nothing is open. */
+/** One-line human summary of open ACs, or undefined when nothing is open. */
 export function describeUncheckedAcs(acs: { total: number; done: number }): string | undefined {
   const open = acs.total - acs.done;
   if (!Number.isFinite(open) || open <= 0) return undefined;
-  return `${open} of ${acs.total} acceptance criteria unchecked in spec.md`;
+  return `${open} of ${acs.total} acceptance criteria not met (tick them in spec.md, or finish the tasks that cover them)`;
+}
+
+/** The ACs declared in an increment's spec.md (empty when there is none). */
+export function readSpecAcs(incrementDir: string): AcEntry[] {
+  const specPath = path.join(incrementDir, 'spec.md');
+  try {
+    return parseSpecAcs(fs.readFileSync(specPath, 'utf-8'));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Derive AC completion from the ledger: an AC is met when it is ticked in
+ * spec.md, or when at least one task covers it and every task covering it is
+ * done or skipped with at least one done. Nobody has to tick checkboxes by
+ * hand at close; a ticked box still counts, so hand-verified ACs keep working.
+ */
+export function deriveAcStatus(acs: AcEntry[], board: TaskBoard): AcEntry[] {
+  return acs.map((a) => {
+    if (a.done) return { ...a, via: 'checkbox' };
+    const covering = board.tasks.filter((t) => (t.acs ?? []).includes(a.id));
+    const terminal = covering.every((t) => t.state.status === 'done' || t.state.status === 'skipped');
+    const anyDone = covering.some((t) => t.state.status === 'done');
+    return covering.length > 0 && terminal && anyDone ? { ...a, done: true, via: 'ledger' } : a;
+  });
 }
 
 /** Parse `- [ ] AC-01 …` / `- [x] **AC-US1-01**: …` lines from spec.md. */
@@ -120,16 +152,14 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
     results.push({ cmd, exit: r.code, tail: r.tail, ms: Date.now() - started });
   }
 
-  const specPath = path.join(incrementDir, 'spec.md');
-  const acs = fs.existsSync(specPath) ? parseSpecAcs(fs.readFileSync(specPath, 'utf-8')) : [];
   const board = loadTaskBoard(incrementDir, { leaseHours: opts.leaseHours });
+  const acs = deriveAcStatus(readSpecAcs(incrementDir), board);
 
-  // `ok` means "this increment is ready to close", and in 2.0 the acceptance
-  // criteria in spec.md ARE the definition of done. A green (or empty) command
-  // list with unticked ACs used to report PASS and let `complete` close the
-  // increment with 0 of N criteria met — the gate was measuring the test
-  // commands only. Specs with no AC lines at all stay non-blocking (legacy
-  // increments); they are surfaced as a notice by the closure gate instead.
+  // `ok` means "this increment is ready to close": the acceptance criteria in
+  // spec.md ARE the definition of done. An AC is met when ticked by hand or
+  // when every task covering it is done in the ledger. Specs with no AC lines
+  // at all stay non-blocking (legacy increments); they are surfaced as a
+  // notice by the closure gate instead.
   const commandsOk = results.every((r) => r.exit === 0);
   const acsOk = acs.length === 0 || acs.every((a) => a.done);
 
@@ -175,12 +205,12 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
   }
   L.push('## Acceptance criteria');
   L.push('');
-  L.push(`${report.acs.done}/${report.acs.total} checked`);
+  L.push(`${report.acs.done}/${report.acs.total} met`);
   L.push('');
   if (acs.length) {
-    L.push('| AC | Done | Text |');
+    L.push('| AC | Met | Text |');
     L.push('|---|---|---|');
-    for (const a of acs) L.push(`| ${a.id} | ${a.done ? 'x' : ' '} | ${a.text.replace(/\|/g, '\\|')} |`);
+    for (const a of acs) L.push(`| ${a.id} | ${a.done ? (a.via === 'ledger' ? 'x (tasks)' : 'x') : ' '} | ${a.text.replace(/\|/g, '\\|')} |`);
     L.push('');
   }
   L.push('## Tasks (ledger)');

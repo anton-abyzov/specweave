@@ -84,12 +84,8 @@ export class IncrementCompletionValidator {
       errors.push('spec.md not found');
     }
 
-    if (!tasksExists) {
-      errors.push('tasks.md not found');
-    }
-
-    // If files don't exist, return early
-    if (!specExists || !tasksExists) {
+    // If spec.md is missing there is nothing to check
+    if (!specExists) {
       return {
         isValid: false,
         errors,
@@ -97,52 +93,57 @@ export class IncrementCompletionValidator {
       };
     }
 
-    // Count open acceptance criteria
-    const openACs = await this.countOpenACs(incrementId);
-    if (openACs > 0) {
-      blocking(`${openACs} acceptance criteria still open`);
-    }
-
-    // Count pending tasks
-    const pendingTasks = await this.countPendingTasks(incrementId);
-    if (pendingTasks > 0) {
-      blocking(`${pendingTasks} tasks still pending`);
-    }
-
-    // NEW (v0.23.0): Validate AC coverage
-    try {
-      const acManager = new ACStatusManager(resolveEffectiveRoot());
-      const coverageResult = await this.validateACCoverage(incrementId, specPath, tasksPath, acManager);
-
-      // CRITICAL: Block closure if P0 ACs are orphaned
-      if (blockOnP0Orphans && coverageResult.orphanedP0.length > 0) {
-        blocking(
-          `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
-          coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
-          `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
-          `  Run: specweave verify ${incrementId} for a detailed coverage report.`
-        );
+    // A 3.0 increment keeps its tasks in spec.md and their state in
+    // ledger.jsonl; `specweave verify` checks both and the closure gate below
+    // reads its result. The checks up to the gate read a legacy tasks.md.
+    if (tasksExists) {
+      // Count open acceptance criteria
+      const openACs = await this.countOpenACs(incrementId);
+      if (openACs > 0) {
+        blocking(`${openACs} acceptance criteria still open`);
       }
 
-      // Warn about orphan P1/P2 ACs (non-blocking)
-      if (coverageResult.orphanedP1P2.length > 0) {
-        warnings.push(
-          `${coverageResult.orphanedP1P2.length} P1/P2 ACs have no tasks (OK if deferred):\n` +
-          coverageResult.orphanedP1P2.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n')
-        );
+      // Count pending tasks
+      const pendingTasks = await this.countPendingTasks(incrementId);
+      if (pendingTasks > 0) {
+        blocking(`${pendingTasks} tasks still pending`);
       }
 
-      // Warn about orphan tasks (no AC references)
-      if (coverageResult.orphanTasks.length > 0) {
-        warnings.push(
-          `${coverageResult.orphanTasks.length} tasks have no **Satisfies ACs** field:\n` +
-          coverageResult.orphanTasks.map(taskId => `    • ${taskId}`).join('\n') +
-          `\n  Add AC references to improve traceability.`
-        );
+      // NEW (v0.23.0): Validate AC coverage
+      try {
+        const acManager = new ACStatusManager(resolveEffectiveRoot());
+        const coverageResult = await this.validateACCoverage(incrementId, specPath, tasksPath, acManager);
+
+        // CRITICAL: Block closure if P0 ACs are orphaned
+        if (blockOnP0Orphans && coverageResult.orphanedP0.length > 0) {
+          blocking(
+            `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
+            coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
+            `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
+            `  Run: specweave verify ${incrementId} for a detailed coverage report.`
+          );
+        }
+
+        // Warn about orphan P1/P2 ACs (non-blocking)
+        if (coverageResult.orphanedP1P2.length > 0) {
+          warnings.push(
+            `${coverageResult.orphanedP1P2.length} P1/P2 ACs have no tasks (OK if deferred):\n` +
+            coverageResult.orphanedP1P2.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n')
+          );
+        }
+
+        // Warn about orphan tasks (no AC references)
+        if (coverageResult.orphanTasks.length > 0) {
+          warnings.push(
+            `${coverageResult.orphanTasks.length} tasks have no **Satisfies ACs** field:\n` +
+            coverageResult.orphanTasks.map(taskId => `    • ${taskId}`).join('\n') +
+            `\n  Add AC references to improve traceability.`
+          );
+        }
+      } catch (error) {
+        logger.warn(`AC coverage validation failed: ${error instanceof Error ? error.message : String(error)}`);
+        warnings.push('AC coverage validation skipped due to error');
       }
-    } catch (error) {
-      logger.warn(`AC coverage validation failed: ${error instanceof Error ? error.message : String(error)}`);
-      warnings.push('AC coverage validation skipped due to error');
     }
 
     // NEW (v0.26.2): Detect external tool drift

@@ -10,11 +10,13 @@
  *   task release T-01 [inc] | --all-mine
  *   task block T-01 [inc] --note "…"
  *   task skip T-01 [inc] --reason "…"   (terminal; reason mandatory)
- *   task render [inc]                   rewrite derived state lines + SW:BOARD in tasks.md
+ *   task render [inc] [--write]         print the board; --write refreshes a legacy tasks.md
  *
  * `inc` defaults to the single active increment. Every command is read+append
- * only on ledger.jsonl; every ledger write re-renders the SW:BOARD block in
- * tasks.md (idempotent, task definitions untouched).
+ * only on ledger.jsonl. Task definitions (spec.md `## Tasks`, or a legacy
+ * tasks.md) are never rewritten, so bookkeeping does not dirty the tree.
+ * `next` and `claim` print the text of the task's acceptance criteria so the
+ * agent does not need to reread spec.md for every task.
  *
  * @module cli/commands/task
  */
@@ -24,7 +26,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { runShell, isShellCommand } from '../../core/tasks/run-shell.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
-import { appendEvent, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
+import { appendEvent, recordSessionOnce, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
 import {
   loadTaskBoard,
   nextTask,
@@ -37,6 +39,8 @@ import {
   type BoardTask,
 } from '../../core/tasks/task-board.js';
 import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
+import { readSpecAcs, type AcEntry } from '../../core/tasks/verify-runner.js';
+import { tasksFileName } from '../../core/tasks/tasks-source.js';
 
 export interface TaskCommandOptions {
   force?: boolean;
@@ -47,6 +51,8 @@ export interface TaskCommandOptions {
   reason?: string;
   json?: boolean;
   allMine?: boolean;
+  /** `render --write`: refresh a legacy tasks.md from the ledger. */
+  write?: boolean;
   /** Override cwd (tests). */
   cwd?: string;
   /** Override agent id (tests). */
@@ -95,8 +101,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   const append = (e: LedgerEventType, t: string, extra: Partial<LedgerEvent> = {}) => {
     appendEvent(ledger, { t, e, by: agent, at: now(), ...extra });
     board = load();
-    writeRenderedTasksMd(board); // every ledger write refreshes the SW:BOARD block
   };
+  let specAcs: AcEntry[] | undefined;
+  const acsOf = (): AcEntry[] => (specAcs ??= readSpecAcs(inc.dir));
   /** `--reason` is the documented spelling for skip/block; `--note` stays as an alias. */
   const note = (opts.note ?? opts.reason)?.trim() || undefined;
   /** A live claim held by somebody else (stale claims are takeable). */
@@ -129,13 +136,17 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       out(opts.json ? JSON.stringify({ increment: inc.id, next: null, counts: c }) : `No claimable task in ${inc.id} (${c.done}/${c.total} done, ${c.claimed} claimed, ${c.blocked} blocked). Run \`specweave verify ${inc.id}\` when everything is done.`);
       return 0;
     }
-    out(opts.json ? JSON.stringify({ increment: inc.id, next: brief(t) }) : describeTask(t, inc.id));
+    out(opts.json ? JSON.stringify({ increment: inc.id, next: brief(t, acsOf()) }) : describeTask(t, inc.id, acsOf()));
     return 0;
   }
 
   if (action === 'render') {
-    const changed = writeRenderedTasksMd(board);
-    out(changed ? `tasks.md rendered from ledger (${board.counts.done}/${board.counts.total} done)` : 'tasks.md already up to date');
+    if (opts.write) {
+      const changed = writeRenderedTasksMd(board);
+      out(changed ? `tasks.md rendered from ledger (${board.counts.done}/${board.counts.total} done)` : 'no legacy tasks.md to render, or already up to date');
+      return 0;
+    }
+    out(renderBoardTable(board));
     return 0;
   }
 
@@ -150,7 +161,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   if (!taskArg) { err(`Usage: specweave task ${action} <T-id> [increment]`); return 2; }
   const known = board.tasks.map((t) => t.id);
   const taskId = normalizeTaskId(taskArg, known);
-  if (!taskId) { err(`Task "${taskArg}" not found in ${inc.id}/tasks.md. Known: ${known.join(', ') || '(none)'}`); return 1; }
+  if (!taskId) { err(`Task "${taskArg}" not found in ${inc.id}/${tasksFileName(inc.dir)}. Known: ${known.join(', ') || '(none)'}`); return 1; }
   const task = board.tasks.find((t) => t.id === taskId)!;
 
   switch (action) {
@@ -165,6 +176,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       if (deps.length && !opts.force) { err(`${taskId} depends on ${deps.join(', ')} (not done). Use --force to override.`); return EXIT_DEPS_UNMET; }
       const overlap = fileOverlaps(board, task, agent);
       if (overlap.length && !opts.force) { err(`${taskId} shares Files with live claim(s) ${overlap.join(', ')}. Pick another task or --force.`); return EXIT_FILES_OVERLAP; }
+      recordSessionOnce(ledger, agent);
       append('claim', taskId, note ? { note } : {});
       // Re-read: the earliest live claim wins; confirm we own it.
       const after = board.tasks.find((t) => t.id === taskId)!;
@@ -172,13 +184,13 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         err(`Lost the race for ${taskId}: ${describeState(after.state)}`);
         return EXIT_LOST_RACE;
       }
-      out(opts.json ? JSON.stringify({ claimed: taskId, by: agent, task: brief(after) }) : `Claimed ${taskId} as ${agent}\n${describeTask(after, inc.id)}`);
+      out(opts.json ? JSON.stringify({ claimed: taskId, by: agent, task: brief(after, acsOf()) }) : `Claimed ${taskId} as ${agent}\n${describeTask(after, inc.id, acsOf())}`);
       return 0;
     }
     case 'done': {
       if (task.state.status === 'done') { out(`${taskId} already done by ${task.state.by}`); return 0; }
       if (task.state.status === 'skipped') {
-        err(`${taskId} was skipped by ${task.state.by}${task.state.note ? ` (${task.state.note})` : ''} — skip is terminal; add a new task in tasks.md if the work is needed after all`);
+        err(`${taskId} was skipped by ${task.state.by}${task.state.note ? ` (${task.state.note})` : ''} — skip is terminal; add a new task to ${tasksFileName(inc.dir)} if the work is needed after all`);
         return 1;
       }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
@@ -213,6 +225,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         // docs recommend) recorded work against a still-`planned` increment.
         const autoStarted = ensureIncrementStarted(inc.dir);
         if (autoStarted && !opts.json) out(autoStarted);
+        recordSessionOnce(ledger, agent);
         append('claim', taskId);
         if (!opts.json) out(`Auto-claimed ${taskId} as ${agent}`);
       }
@@ -289,14 +302,26 @@ function headSubject(cwd: string): string | undefined {
   }
 }
 
-function brief(t: BoardTask) {
-  return { id: t.id, title: t.title, files: t.filesAffected ?? [], test: t.test, acs: t.acs ?? [], status: t.state.status, by: t.state.by };
+/** The acceptance criteria a task covers, with their text from spec.md. */
+function taskAcs(t: BoardTask, acs: AcEntry[]): AcEntry[] {
+  const byId = new Map(acs.map((a) => [a.id, a]));
+  return (t.acs ?? []).map((id) => byId.get(id) ?? { id, done: false, text: '' });
 }
 
-function describeTask(t: BoardTask, incId: string): string {
+function brief(t: BoardTask, acs: AcEntry[] = []) {
+  return {
+    id: t.id, title: t.title, files: t.filesAffected ?? [], test: t.test, acs: t.acs ?? [],
+    criteria: taskAcs(t, acs).map((a) => ({ id: a.id, text: a.text })),
+    status: t.state.status, by: t.state.by,
+  };
+}
+
+function describeTask(t: BoardTask, incId: string, acs: AcEntry[] = []): string {
+  const criteria = taskAcs(t, acs);
   return [
     `${t.id} ${t.title}`,
-    `  AC: ${(t.acs ?? []).join(', ') || '-'} | Files: ${(t.filesAffected ?? []).join(', ') || '-'} | Test: ${t.test ?? '-'}`,
+    ...(criteria.length ? criteria.map((a) => `  ${a.id}: ${a.text || '(text not found in spec.md)'}`) : ['  AC: -']),
+    `  Files: ${(t.filesAffected ?? []).join(', ') || '-'} | Test: ${t.test ?? '-'}`,
     `  state: ${describeState(t.state)}`,
     `  when done: specweave task done ${t.id} ${incId}${t.test ? ` --run "${t.test}"` : ' --evidence "<sha / output>"'}`,
   ].join('\n');

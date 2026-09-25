@@ -6,6 +6,8 @@
  * Part of increment 0007: Smart Status Management
  */
 
+import * as fs from 'fs';
+import * as nodePath from 'path';
 import chalk from 'chalk';
 import { MetadataManager } from './metadata-manager.js';
 import { IncrementStatus, IncrementType, computeTransitionPath, countsTowardWipLimit } from '../types/increment-metadata.js';
@@ -273,9 +275,9 @@ export interface CompleteOptions {
 /**
  * Complete an active increment
  *
- * This transitions the increment to "completed" status, which triggers:
- * 1. StatusChangeSyncTrigger → External tool sync (GitHub/JIRA/ADO)
- * 2. Living docs update
+ * This transitions the increment to "completed" status and then runs the
+ * post-completion hooks (LifecycleHookDispatcher.onIncrementDone), which only
+ * touch an external tracker when the project explicitly configured closure.
  *
  * Quality gates (unless skipValidation=true):
  * - All tasks must be marked complete
@@ -285,16 +287,6 @@ export interface CompleteOptions {
  * @since v4.0 - Auto mode stop hook integration
  */
 export async function completeIncrement(options: CompleteOptions): Promise<boolean> {
-  // Sync suppression must span the ENTIRE closure, not just the final
-  // updateStatus() call. MetadataManager.updateStatus() fires the status-change
-  // trigger from a floating async IIFE, so a flag toggled around that one call
-  // is already back to `false` by the time the trigger actually looks at it —
-  // which is why a single `complete` used to print "Auto-synced …" twice and
-  // run the auto-close path from two places. onIncrementDone() is the single
-  // sync point during completion.
-  const { StatusChangeSyncTrigger } = await import('./status-change-sync-trigger.js');
-  const previouslySuppressed = StatusChangeSyncTrigger.suppressForCompletion;
-  StatusChangeSyncTrigger.suppressForCompletion = true;
   // Intermediate auto-walk transitions (planning → active → ready_for_review)
   // are bookkeeping, not milestones: their notices contradicted the
   // "completed!" line printed seconds later.
@@ -303,7 +295,6 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
   try {
     return await runCompleteIncrement(options);
   } finally {
-    StatusChangeSyncTrigger.suppressForCompletion = previouslySuppressed;
     MetadataManager.suppressTransitionNotices = previouslySilentTransitions;
   }
 }
@@ -391,9 +382,8 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
       }
     }
 
-    // Living docs sync is handled by LifecycleHookDispatcher.onIncrementDone()
-    // after status is set to COMPLETED. Suppress StatusChangeSyncTrigger so
-    // sync runs exactly once (via onIncrementDone, not twice).
+    // Post-completion work (explicitly configured tracker closure) runs once,
+    // in LifecycleHookDispatcher.onIncrementDone(), after status is COMPLETED.
     if (closeReason) {
       try {
         const current = MetadataManager.read(incrementId);
@@ -403,7 +393,6 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
       }
     }
 
-    // Suppression is held for the whole of completeIncrement() (see above).
     MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
     // Dispatch post-increment-done hooks (awaited, error-isolated)
@@ -434,6 +423,11 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
     let ghMilestoneClosed = false;
     const ghErrors: string[] = [];
     try {
+      // Only when the project asked for it: status changes never touch a
+      // tracker unless hooks.post_increment_done says to close issues.
+      const done = (JSON.parse(fs.readFileSync(nodePath.join(resolveEffectiveRoot(), '.specweave', 'config.json'), 'utf8')) as
+        { hooks?: { post_increment_done?: { close_github_issue?: boolean; close_external_issue?: boolean } } }).hooks?.post_increment_done;
+      if (done?.close_github_issue !== true && done?.close_external_issue !== true) throw new SkipClosure();
       const { GitHubReconciler } = await import('../../sync/github-reconciler.js');
       const closureResult = await GitHubReconciler.closeCompletedIncrementIssues(
         resolveEffectiveRoot(),
@@ -444,8 +438,9 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
       ghMilestoneClosed = closureResult.milestoneClose;
       ghErrors.push(...closureResult.errors);
     } catch (fallbackError) {
-      const msg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-      ghErrors.push(msg);
+      if (!(fallbackError instanceof SkipClosure) && !isMissingFile(fallbackError)) {
+        ghErrors.push(fallbackError instanceof Error ? fallbackError.message : String(fallbackError));
+      }
     }
 
     log(chalk.green(`\n✅ Increment ${incrementId} completed!`));
@@ -586,4 +581,10 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     console.log(chalk.red(`\n❌ Failed to show status: ${error instanceof Error ? error.message : String(error)}\n`));
     process.exit(1);
   }
+}
+
+class SkipClosure extends Error {}
+
+function isMissingFile(e: unknown): boolean {
+  return (e as NodeJS.ErrnoException)?.code === 'ENOENT';
 }

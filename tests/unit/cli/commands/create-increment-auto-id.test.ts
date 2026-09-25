@@ -52,9 +52,9 @@ describe('create-increment --auto-id', () => {
     expect(fs.existsSync(incPath)).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'metadata.json'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'spec.md'))).toBe(true);
-    // plan.md is opt-in (`--with-plan`) in 2.0.
+    // plan.md is opt-in (`--with-plan`); 3.0 keeps tasks in spec.md.
     expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(false);
-    expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(true);
+    expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(false);
   });
 
   it('should generate correct sequential ID when increments exist', async () => {

@@ -1,67 +1,41 @@
 <!-- SECTION:header required -->
 # {PROJECT_NAME}
 
-SpecWeave project. Small requests live in the intent board; scoped work lives in increments under `.specweave/increments/NNNN-slug/`. `spec.md` (Problem, ACs, Approach) is the source of truth; the ledger records who did what. This file is for Codex, OpenCode, Cursor, Gemini, Aider and humans; Claude Code reads CLAUDE.md (same content). Keep it under one page; project-specific notes go in **Project notes** at the bottom.
-<!-- /SECTION -->
-
-<!-- SECTION:structure -->
-## Structure
-
-```
-.specweave/
-  intents/board.jsonl       append-only intent history (latest revision per id; planning state, not verification)
-  increments/NNNN-slug/   spec.md (Problem · ACs · Approach) · tasks.md (tasks + rendered board) · ledger.jsonl (claims/done, CLI-written) · handoff.md · reports/ (evidence; binaries in reports/artifacts/, gitignored)
-  docs/                    ADRs and hand-written docs (read before changing architecture)
-  config.json
-```
-Only those files (plus optional `plan.md` when Approach outgrows a page, and `scripts/`) live in an increment root; everything else goes in `reports/`. Commit messages start with the increment id: `0042: add login form`.
-
-`tasks.md` format (the CLI parses it): `### T-01 Title` followed by one line `- AC: AC-01, AC-02 | Files: src/login.ts, src/login.test.ts | Test: npm test -- login`. `ledger.jsonl` is one JSON object per line, append-only: `{"t":"T-01","e":"claim|done|skip|release|block","by":"<tool>@<host>","at":"<ISO>","evidence":"<sha>","note":"<why>"}` (`evidence` required for `done`, `note` required for `skip`, both optional elsewhere).
+This project uses SpecWeave. Work is planned in increments: `.specweave/increments/NNNN-slug/spec.md` holds Problem, Scope, Acceptance Criteria, Approach and Tasks, and `ledger.jsonl` beside it records who claimed and finished what. Start every session with `specweave pickup`.
 <!-- /SECTION -->
 
 <!-- SECTION:loop required -->
 ## The loop
 
-| Step | Command (each step is also a standalone skill you can install into any tool with `npx vskill install anton-abyzov/specweave/sw-do` — same for `sw-increment`, `sw-review`, `sw-handoff`, `sw-task`) |
-|---|---|
-| Plan a feature: write `spec.md` (Problem, Scope, `AC-01…` checkboxes, Approach: files that change, order of work, risks, decisions), resolve material scope questions before implementation | `specweave create-increment "title"` |
-| Work the tasks | `specweave task next` → `specweave task claim T-NN` → implement → commit (`NNNN: …`) → `specweave task done T-NN --run "<test cmd>"` (the command runs through your OS shell: cmd.exe on Windows, sh elsewhere) |
-| Verify the whole increment | `specweave verify` |
-| Review before closing (recommended for anything that ships) | in a fresh session: read spec.md, list findings by severity citing path:line, re-verify each before writing `reports/review.md`; the authoring session never approves its own work |
-| Close (needs a green verify or `--reason "<why>"`) | `specweave complete NNNN` |
-| Stop for any reason | `specweave handoff` |
+1. `specweave pickup`: brings in the latest handoff, then prints the open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory.
+2. New work that needs acceptance criteria or a handoff: `specweave create-increment "title"`, then fill in spec.md. If an open increment already owns the files, add ACs and tasks to it instead of opening another. Small self-contained fixes need no increment.
+3. `specweave task claim T-NN`, edit only that task's Files, commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`.
+4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
+5. Stopping for any reason (out of tokens, switching tool or account): `specweave handoff --reason "<why>"`.
 
-Without the `specweave` CLI: create the folder by hand (id = highest existing 4-digit prefix + 1, zero-padded); append one JSON line per event to `ledger.jsonl` as UTF-8 without BOM, LF-terminated, e.g. `{"t":"T-01","e":"claim","by":"<tool>@<host>","at":"<ISO>"}` (bash: `>>`; PowerShell: `[IO.File]::AppendAllText('ledger.jsonl', $line + "`n")`, never `>>`, it writes UTF-16); mark done with the same line using `"e":"done","evidence":"<commit sha>"` after the Test command exits 0; write `reports/verify.md` with the real test output and say the increment is ready to close (closing itself needs the CLI).
-Use an increment for work that needs shared scope, acceptance criteria, or a handoff. Small self-contained fixes can remain a lightweight intent. For bugs, reproduce the failure and add a regression test when it protects behavior. User authorization carries through routine implementation and verification.
+**Handoff in two words.** When the user says "hand off", "handoff", "I'm out of tokens" or "switching accounts", run `specweave handoff --reason "<their words>"` and tell them to say "pick up" in the other tool. When the user says "pick up", "pick up here", "continue" or "continue from the other account", run `specweave pickup` and carry on with the task it names. `specweave report` writes an HTML timeline of who did what. To hand off by itself near the usage limit, the user runs `specweave auto-handoff on` once.
+
+Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a`. An AC is met when the tasks covering it are done. Leave a message for whoever works on an increment next with `specweave note "<text>"`. Each step is also a skill for any tool: `npx vskill install anton-abyzov/specweave/sw-do` (and `sw-increment`, `sw-review`, `sw-handoff`).
 <!-- /SECTION -->
 
-<!-- SECTION:verify required -->
-## Verification before "done"
+<!-- SECTION:rules required -->
+## Rules
 
-Run the project's build/test/lint (see **Commands**) before reporting any task complete and paste the real output. A task is done only when its **Test** command exits 0. Never skip, weaken, or delete a test to make it pass. Never set `status: completed` by hand; use `specweave complete`.
-<!-- /SECTION -->
-
-<!-- SECTION:parallel required -->
-## Working in parallel (any tool, any account)
-
-1. One worktree per agent, named after the agent: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>` (e.g. `../0042-codex -b inc/0042-codex`). The branch name must contain the increment id.
-2. Claim before editing: `specweave task claim T-NN` (or `specweave task next`). Edit only that task's **Files**; need another file → claim its task or add a task. A claim older than 2h with no `done` is stale and may be re-claimed.
-3. Never edit ledger lines or another task's status; append only. On a git conflict in `ledger.jsonl` keep every line from both sides.
-4. `done` needs the task's **Test** command exit 0 and a commit sha. A task that turns out unnecessary is closed with `specweave task skip T-NN --reason "..."` (no CLI: append a `skip` ledger line with a reason), never ticked.
-5. When you stop: `specweave task release --all-mine` then `specweave handoff`.
-Resuming: check `.specweave/intents/board.jsonl` (latest revision per id) or `specweave dashboard` for unfinished intents, including work without an increment. Then find the active increment with `specweave status` (or the `NNNN-*` folder whose `metadata.json` has `"status": "active"`), read `spec.md`, then the latest `handoff.md`, then `specweave task next`.
-<!-- /SECTION -->
-
-<!-- SECTION:conventions required -->
-## Conventions
-
-- Secrets: confirm a key is present without printing its value (`grep -q NAME .env` or `Select-String -Quiet NAME .env`); never commit `.env*`.
-- Prefer deleting code over adapting it; change only what the task needs.
-- Check `.specweave/docs/` ADRs before architectural changes; record new decisions in spec.md **Approach** or an ADR. When a new increment replaces an old one, create it with `--supersedes NNNN` (or set `supersedes` in its metadata.json) instead of leaving the old one open.
+- A task is done when its Test exits 0 and you have seen the real output. Never skip, weaken or delete a test to pass, and never set a status by hand.
+- One agent per branch and worktree: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>`. A claim older than 2h is stale. On a merge conflict in `ledger.jsonl` keep every line from both sides.
+- Decisions that must outlive this session go in spec.md Approach, or as one file per fact in `.specweave/memory/` with a line in its `MEMORY.md` index. Memory is committed, so every tool and account sees it.
+- Check a secret exists without printing it; never commit `.env*`.
+- Without the CLI, append ledger lines yourself, one JSON object per line, UTF-8, LF: `{"t":"T-01","e":"claim","by":"<tool>@<host>","at":"<ISO time>"}` (`e` is claim, done, release, skip or block; `done` needs `"evidence":"<commit sha>"`, `skip` needs `"note":"<why>"`).
 <!-- /SECTION -->
 
 <!-- SECTION:umbrella when="umbrella" -->
-- Umbrella projects only: nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
+Umbrella project: nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
+<!-- /SECTION -->
+
+<!-- SECTION:hub when="hub" -->
+## Project hub
+
+`.specweave/project/hub.json` holds this project's goal and shared context; read it before starting. `specweave project show` lists current work, artifacts and routines, and `specweave project brief --harness codex` exports an assignment for another tool.
 <!-- /SECTION -->
 
 <!-- SECTION:jev when="jev" -->
@@ -86,16 +60,6 @@ Every call sends its state — prompt text, task titles and ACs, the shell comma
 The Bash guard is per project (`specweave jev setup --guard-bash` writes the config flag, the `.specweave/state/jev-guard.enabled` marker and a project-level `PreToolUse` hook; `--no-guard-bash` removes all three). A regex prefilter skips Jev for `npm test`, `npm run build|test|lint`, `pnpm/yarn test`, `cargo test`, `go test` and plain read commands, so project-defined scripts are trusted by the guard. A denied command is the user's to approve — stop and ask; do not reword it, wrap it or edit config around it.
 <!-- /SECTION -->
 
-<!-- SECTION:troubleshooting -->
-## Troubleshooting
-
-| Issue | Fix |
-|---|---|
-| `specweave` not found | `npm i -g specweave` (optional; the loop works without it) |
-| Instructions out of date after upgrade | `specweave update` |
-| Unsure who owns a task | `specweave task list` |
-<!-- /SECTION -->
-
 ## Commands
 
 | Action | Command |
@@ -108,8 +72,4 @@ If a cell still says TODO, fill it in from `package.json`/`Makefile` and commit;
 
 ## Project notes
 
-(architecture map, things agents get wrong here, recurring mistakes — keep it short)
-
-## Portable project hub
-
-When `.specweave/project/hub.json` exists, read its goal and shared context before starting work. `specweave project show` lists current work, artifacts and routine definitions; `specweave project brief --harness codex` exports a fresh assignment. Use native skills/task tools when available and authorized, or execute sequentially. Routines are definitions until configured in a native scheduler.
+(architecture map, things agents get wrong here, recurring mistakes; keep it short)

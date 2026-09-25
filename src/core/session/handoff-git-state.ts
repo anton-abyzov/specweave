@@ -36,7 +36,28 @@ export interface GitState {
   diffStat: string;
   /** True when there are working-tree or staged changes. */
   hasUncommittedChanges: boolean;
+  /** Upstream branch (`origin/feature`), empty when none is configured. */
+  upstream?: string;
+  /** Commits on HEAD not yet on the upstream (undefined without an upstream). */
+  ahead?: number;
 }
+
+/**
+ * SpecWeave's own bookkeeping, excluded from the handoff diff and the "files
+ * touched" list: the next agent reads it through `specweave pickup`, and in a
+ * measured handoff it was 97% of the diff. spec.md and plan.md stay in, since
+ * edits to them are real work.
+ */
+export const BOOKKEEPING_PATHSPECS: readonly string[] = [
+  ':(exclude,glob).specweave/increments/*/ledger.jsonl',
+  ':(exclude,glob).specweave/increments/*/metadata.json',
+  ':(exclude,glob).specweave/increments/*/reports/**',
+  ':(exclude,glob).specweave/increments/*/handoff.md',
+  ':(exclude,glob).specweave/increments/*/handoff.diff',
+  ':(exclude,glob).specweave/intents/**',
+  ':(exclude,glob).specweave/state/**',
+  ':(exclude,glob).specweave/logs/**',
+];
 
 /** Total Git budget leaves headroom below PreCompact's five-second budget. */
 export const GIT_CAPTURE_BUDGET_MS = 3500;
@@ -75,7 +96,8 @@ export function captureGitState(repoRoot: string, diffOutputPath: string): GitSt
 
     const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']) ?? '';
     const shortSha = git(['rev-parse', '--short', 'HEAD']) ?? '';
-    const statusPorcelain = git(['status', '--porcelain']) ?? '';
+    const scope = ['--', '.', ...BOOKKEEPING_PATHSPECS];
+    const statusPorcelain = git(['status', '--porcelain', ...scope]) ?? '';
     // NUL-delimited paths handle spaces, quotes, Unicode and embedded newlines.
     const untracked = (git(['ls-files', '--others', '--exclude-standard', '-z'], false) ?? '')
       .split('\0').filter(Boolean);
@@ -83,15 +105,19 @@ export function captureGitState(repoRoot: string, diffOutputPath: string): GitSt
     const hasHead = shortSha !== '';
     const working = ['diff', '--no-ext-diff', '--no-textconv', ...(hasHead ? ['HEAD'] : [])];
     const staged = ['diff', '--no-ext-diff', '--no-textconv', '--cached'];
-    const workingDiff = git(working) ?? '';
-    const stagedDiff = (hasHead ? git(staged) : '') ?? '';
-    const workingStat = git([...working, '--stat']) ?? '';
-    const stagedStat = (hasHead ? git([...staged, '--stat']) : '') ?? '';
+    const workingDiff = git([...working, ...scope]) ?? '';
+    const stagedDiff = (hasHead ? git([...staged, ...scope]) : '') ?? '';
+    const workingStat = git([...working, '--stat', ...scope]) ?? '';
+    const stagedStat = (hasHead ? git([...staged, '--stat', ...scope]) : '') ?? '';
     safeWriteDiff(diffOutputPath, [workingDiff, stagedDiff].filter(Boolean).join('\n'));
+    const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']) ?? '';
+    const aheadRaw = upstream ? git(['rev-list', '--count', `${upstream}..HEAD`]) : null;
     return {
       isGitRepo: true, branch, shortSha, statusPorcelain,
       diffStat: [workingStat, stagedStat].filter(Boolean).join('\n'),
       hasUncommittedChanges: statusPorcelain.length > 0,
+      upstream,
+      ahead: aheadRaw !== null && aheadRaw !== '' ? Number(aheadRaw) : undefined,
     };
   } catch {
     safeWriteDiff(diffOutputPath, '');

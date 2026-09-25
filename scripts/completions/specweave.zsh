@@ -18,7 +18,13 @@ commands=(
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
     'verify:'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
-    'handoff:Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool'
+    'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account'
+    'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
+    'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
+    'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
+    'auto-handoff:on | off | status\: hand off automatically at a share of the usage limit (default 90%)'
+    'statusline:Claude Code status line that records usage for auto-handoff'
+    'usage-guard:Stop hook\: asks the agent to hand off once usage passes the auto-handoff threshold'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -116,6 +122,7 @@ _specweave() {
                         '--note[Note (alias of --reason)]' \
                         '--reason[Reason (required for skip / block)]' \
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
+                        '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--json[Machine-readable output]' \
                         '--help[Show help]'
                     ;;
@@ -157,6 +164,37 @@ _specweave() {
                         '--non-specweave[Force the .handoff/ fallback even inside a SpecWeave workspace]' \
                         '--out[Override the doc output path]' \
                         '--json[Output the full result as JSON (for programmatic use)]' \
+                        '--no-push[Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)]' \
+                        '--keep-claims[Keep your task claims instead of releasing them for the next agent]' \
+                        '--help[Show help]'
+                    ;;
+                pickup)
+                    _arguments \
+                        '--no-apply[Only show the waiting handoff; do not apply it to this checkout]' \
+                        '--json[Output as JSON]' \
+                        '--help[Show help]'
+                    ;;
+                report)
+                    _arguments \
+                        '--out[Where to write it (default\: the increment'\''s reports/handoff-report.html)]' \
+                        '--help[Show help]'
+                    ;;
+                note)
+                    _arguments \
+                        '--help[Show help]'
+                    ;;
+                auto-handoff)
+                    _arguments \
+                        '--at[Threshold in percent of any usage window]' \
+                        '--help[Show help]'
+                    ;;
+                statusline)
+                    _arguments \
+                        '--wrap[Print this status line command'\''s output instead of the built-in line]' \
+                        '--help[Show help]'
+                    ;;
+                usage-guard)
+                    _arguments \
                         '--help[Show help]'
                     ;;
                 jev)
