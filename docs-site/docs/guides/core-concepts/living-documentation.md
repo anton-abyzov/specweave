@@ -37,29 +37,7 @@ Hand-written architecture material lives under `.specweave/docs/` — ADRs in pa
 
 If you are upgrading from 1.x, `specweave update` maps the old `hooks.post_task_completion.sync_living_docs` flag onto this key.
 
-Regenerate on demand:
-
-```bash
-specweave docs sync 0042      # living docs for one increment
-specweave sync-living-docs    # the whole tree
-specweave living-docs         # interactive Living Docs Builder
-```
-
-## Previewing docs
-
-<CommandTabs
-  natural="Show me the docs"
-  claude="specweave docs preview"
-  other="specweave docs preview"
-/>
-
-| Command | Does |
-|---------|------|
-| `specweave docs preview` | Preview server with hot reload. |
-| `specweave docs public` | Public-scope docs only. |
-| `specweave docs build` | Static build for deployment. |
-| `specweave docs validate` | Validate without starting a server. |
-| `specweave docs kill` | Stop every running docs server. |
+Regenerate on demand with `specweave sync push <id>`, which updates the living docs for that increment before pushing to the configured trackers.
 
 ## Why the default flipped
 

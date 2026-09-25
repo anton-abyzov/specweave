@@ -12,7 +12,6 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fsp from 'fs/promises';
 import { ensureRubricFile } from './rubric-generator.js';
-import { parseRubric } from './rubric-parser.js';
 
 function makeSpec(acCount: number): string {
   const lines: string[] = [
@@ -31,6 +30,23 @@ function makeSpec(acCount: number): string {
     lines.push(`- [ ] **AC-US1-${n}**: Criterion number ${i} holds.`);
   }
   return lines.join('\n');
+}
+
+/** Minimal reader for the generated rubric: criterion headers plus their Source field. */
+function readCriteria(content: string): Array<{ id: string; severity: string; sourceACs: string[] }> {
+  const criteria: Array<{ id: string; severity: string; sourceACs: string[] }> = [];
+  for (const line of content.split('\n')) {
+    const header = line.match(/^###\s+(R-[A-Z0-9-]+\d+):\s+.+?\s+\[(blocking|advisory)\]\s*$/);
+    if (header) {
+      criteria.push({ id: header[1], severity: header[2], sourceACs: [] });
+      continue;
+    }
+    const source = line.match(/^-\s+\*\*Source\*\*:\s+(.+)$/);
+    if (source && criteria.length > 0) {
+      criteria[criteria.length - 1].sourceACs = source[1].split(',').map(s => s.trim());
+    }
+  }
+  return criteria;
 }
 
 /** Inherited project defaults the generator always appends: R-D01, R-D02, R-D03. */
@@ -60,8 +76,8 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     // Not a template placeholder.
     expect(content).not.toMatch(/status:\s*template/);
 
-    // Parser round-trips and yields exactly N + 3 criteria.
-    const parsed = parseRubric(content);
+    // Exactly N + 3 criteria.
+    const parsed = { criteria: readCriteria(content) };
     expect(parsed.criteria.length).toBe(N + DEFAULT_CRITERIA);
 
     // Exactly N AC-tied blocking criteria + the inherited defaults.
@@ -99,7 +115,7 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     const third = await ensureRubricFile('0999-fixture', dir, { refresh: true });
     expect(third.written).toBe(true);
 
-    const regenerated = parseRubric(await fsp.readFile(rubricPath, 'utf-8'));
+    const regenerated = { criteria: readCriteria(await fsp.readFile(rubricPath, 'utf-8')) };
     const acTied = regenerated.criteria.filter(c =>
       c.sourceACs.some(s => s.startsWith('AC-')),
     );

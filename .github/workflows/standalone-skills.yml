@@ -9,6 +9,8 @@ on:
     paths:
       - 'skills/**'
       - 'scripts/lint-standalone-skills.mjs'
+      - 'scripts/build/generate-skills.mjs'
+      - 'plugins/specweave/skills/**'
       - 'src/templates/*.template'
       - 'tests/unit/skills/**'
       - 'src/core/tasks/**'
@@ -35,4 +37,5 @@ jobs:
           node-version: 20
       - run: npm ci --ignore-scripts
       - run: node scripts/lint-standalone-skills.mjs
+      - run: node scripts/build/generate-skills.mjs --check
       - run: npx vitest run tests/unit/skills --reporter=dot

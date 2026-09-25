@@ -16,31 +16,29 @@ import { detectStackCommands } from './stack-detector.js';
 import { generateSmartGitignore } from './gitignore-generator.js';
 // ensureClaudeSettingsWithLsp removed (v1.0.210) - LSP is opt-in only
 import {
-  LivingDocsScaffold,
   scanExistingDocs,
   findSimilarFolders,
-  type ScaffoldResult,
   type DetectedDoc,
 } from '../../../core/living-docs/scaffolding/index.js';
 import { consoleLogger } from '../../../utils/logger.js';
 
+/** The committed project memory index `init` creates (see the AGENTS.md template). */
+export const MEMORY_INDEX_STUB =
+  '# Project memory index\n' +
+  'Committed and read by every tool and account: one file per durable fact in this folder, one line per file here (see AGENTS.md).\n';
+
 /**
- * Create the .specweave directory structure
- *
- * Enhanced with smart living docs scaffolding:
- * - Creates full docs structure with README files
- * - Detects project ID from git remote
- * - Scans for existing documentation to merge
+ * Create the .specweave directory structure: increments/, state/ and the
+ * committed memory index. No living-docs scaffold (3.0).
  *
  * @param targetDir - Target directory
  * @param _adapterName - Adapter name (unused, kept for API compatibility)
- * @param options - Optional scaffolding options
- * @returns Promise that resolves when scaffolding is complete
+ * @param _options - Unused, kept for API compatibility
  */
 export async function createDirectoryStructure(
   targetDir: string,
   _adapterName: string,
-  options?: { projectName?: string; scanExistingDocs?: boolean }
+  _options?: { projectName?: string; scanExistingDocs?: boolean }
 ): Promise<void> {
   // Guard: Prevent creating .specweave inside an existing .specweave/increments/ path
   const resolvedTarget = path.resolve(targetDir);
@@ -53,70 +51,18 @@ export async function createDirectoryStructure(
     );
   }
 
-  // Core directories (created first for immediate availability)
-  // NOTE: .specweave/memory/ is DEPRECATED (v2.0) - learnings now go to CLAUDE.md
-  const coreDirectories = [
-    '.specweave/increments',
-    '.specweave/cache',
-    '.specweave/state',
-  ];
-
-  coreDirectories.forEach((dir) => {
+  for (const dir of ['.specweave/increments', '.specweave/state', '.specweave/memory']) {
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
-  });
-
-  // Use smart scaffolding for living docs structure
-  const scaffold = new LivingDocsScaffold({
-    projectPath: targetDir,
-    projectName: options?.projectName,
-    logger: consoleLogger,
-    overwrite: false,
-  });
-
-  try {
-    // Properly await scaffold completion
-    const result: ScaffoldResult = await scaffold.scaffold();
-
-    if (result.success) {
-      console.log(chalk.green('   ✓ Living docs structure created'));
-      if (result.dirsCreated.length > 0) {
-        console.log(chalk.gray(`     ${result.dirsCreated.length} directories created`));
-      }
-    } else {
-      console.log(chalk.yellow('   ⚠ Living docs scaffolding had errors:'));
-      result.errors.forEach(err => console.log(chalk.gray('     ' + err)));
-    }
-  } catch {
-    // Fallback to basic structure if scaffolding fails
-    console.log(chalk.yellow('   ⚠ Smart scaffolding failed, using basic structure'));
-    createBasicDocsStructure(targetDir);
   }
+  ensureMemoryIndex(targetDir);
 }
 
-/**
- * Fallback: Create basic docs structure without scaffolding
- */
-function createBasicDocsStructure(targetDir: string): void {
-  const directories = [
-    '.specweave/docs/internal/strategy',
-    '.specweave/docs/internal/specs',
-    '.specweave/docs/internal/architecture',
-    '.specweave/docs/internal/architecture/adr',
-    '.specweave/docs/internal/architecture/diagrams',
-    '.specweave/docs/internal/delivery',
-    '.specweave/docs/internal/operations',
-    '.specweave/docs/internal/governance',
-    '.specweave/docs/internal/modules',
-    '.specweave/docs/internal/organization',
-    '.specweave/docs/public',
-    '.specweave/docs/public/overview',
-    '.specweave/docs/public/api',
-    '.specweave/docs/public/guides',
-  ];
-
-  directories.forEach((dir) => {
-    fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
-  });
+/** Create `.specweave/memory/MEMORY.md` unless one exists. */
+export function ensureMemoryIndex(targetDir: string): void {
+  const index = path.join(targetDir, '.specweave', 'memory', 'MEMORY.md');
+  if (fs.existsSync(index)) return;
+  fs.mkdirSync(path.dirname(index), { recursive: true });
+  fs.writeFileSync(index, MEMORY_INDEX_STUB, 'utf-8');
 }
 
 /**
@@ -194,9 +140,9 @@ export async function copyTemplates(
     }
   }
 
-  // Copy README.md
+  // README.md only for a project that has none: never replace the user's own.
   const readmeTemplate = path.join(templatesDir, 'README.md.template');
-  if (fs.existsSync(readmeTemplate)) {
+  if (fs.existsSync(readmeTemplate) && !fs.existsSync(path.join(targetDir, 'README.md'))) {
     let readme = fs.readFileSync(readmeTemplate, 'utf-8');
     readme = readme.replace(/{{PROJECT_NAME}}/g, projectName);
     fs.writeFileSync(path.join(targetDir, 'README.md'), readme);
@@ -341,16 +287,19 @@ export function createConfigFile(
       provider: 'local' as const,
     },
     testing: {
-      mode: testMode ?? 'TDD',
       // `specweave verify` falls back to stack auto-detection while this is empty.
       commands: [],
-      coverage: coverageTarget
+      // A test mode or coverage target is written only when the caller asks for one.
+      ...(testMode ? { mode: testMode } : {}),
+      ...(coverageTarget
         ? {
-            unit: Math.min(coverageTarget + 5, 95),
-            integration: coverageTarget,
-            e2e: Math.min(coverageTarget + 10, 100),
+            coverage: {
+              unit: Math.min(coverageTarget + 5, 95),
+              integration: coverageTarget,
+              e2e: Math.min(coverageTarget + 10, 100),
+            },
           }
-        : { unit: 95, integration: 90, e2e: 100 },
+        : {}),
     },
     // Advisory WIP note only — nothing blocks on it.
     limits: {
@@ -359,14 +308,13 @@ export function createConfigFile(
     planning: {
       deepInterview: 'off',
     },
-    // Auto mode configuration (stop hook behavior)
+    // Auto mode: only the keys something reads. The Stop hook stops the loop
+    // after maxTurns turns or a session older than maxSessionAge seconds;
+    // `specweave auto` reads requireTests.
     auto: {
-      enabled: true,
-      maxRetries: 20,           // Circuit breaker after N retries
-      requireTests: false,      // Require tests to pass before completion
-      requireValidation: true,  // Require validation before completion
-      requireJudgeLLM: false,   // Require LLM judge validation
-      skipQualityGates: false,  // Skip quality gates (not recommended)
+      maxTurns: 20,
+      maxSessionAge: 7200,
+      requireTests: false,
     },
     // Living docs are opt-in: set to 'onDone' to regenerate them at closure.
     livingDocs: false,

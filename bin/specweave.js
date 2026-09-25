@@ -37,7 +37,7 @@ program
   .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
-  .option('--no-living-docs', 'Skip living docs builder setup')
+  .option('--git-hooks', 'Also install the SpecWeave pre-commit hook (off by default)')
   .option('--full', 'Install all plugins (skip lazy loading, longer init but all skills available immediately)')
   .option('-q, --quick', 'Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)')
   .option('--non-interactive', 'Alias for --quick (skip all prompts)')
@@ -52,16 +52,6 @@ program
     await initCommand(resolvedName, options);
   });
 
-// Increment commands (TODO: Implement in future versions)
-// program
-//   .command('increment <action> [name]')
-//   .description('Manage increments (create, list, status)')
-//   .option('-p, --priority <level>', 'Priority level (P1, P2, P3)', 'P1')
-//   .action(async (action, name, options) => {
-//     const { incrementCommand } = require('../dist/src/cli/commands/increment');
-//     await incrementCommand(action, name, options);
-//   });
-
 // Uninstall command - Remove SpecWeave from a project
 program
   .command('uninstall')
@@ -73,61 +63,6 @@ program
   .action(async (options) => {
     const { uninstallCommand } = await import('../dist/src/cli/commands/uninstall.js');
     await uninstallCommand(process.cwd(), options);
-  });
-
-// Install command - Install agents/skills
-program
-  .command('install [component-name]')
-  .description('Install agents/skills to .claude/ or ~/.claude/')
-  .option('-g, --global', 'Install globally to ~/.claude/')
-  .option('-l, --local', 'Install locally to .claude/ (default)')
-  .action(async (componentName, options) => {
-    const { installCommand } = await import('../dist/src/cli/commands/install.js');
-    await installCommand(componentName, options);
-  });
-
-// Scan skill command - Security scan a skill file
-program
-  .command('scan-skill <file>')
-  .description('Scan a skill file for security issues (Tier 1 pattern scanning)')
-  .option('--json', 'Output results as JSON', false)
-  .action(async (file, options) => {
-    const { scanSkillCommand } = await import('../dist/src/cli/commands/scan-skill.js');
-    await scanSkillCommand(file, options);
-  });
-
-// Scan plugins command - Batch security scan of all plugins/*/skills/*/SKILL.md files
-program
-  .command('scan-plugins')
-  .description('Batch-scan all plugin SKILL.md files for security issues (Gen Agent Trust Hub categories)')
-  .option('--json', 'Output results as JSON for CI integration', false)
-  .option('--verbose', 'Show per-skill reports in addition to batch summary', false)
-  .option('--dir <path>', 'Path to plugins directory (default: ./plugins)')
-  .action(async (options) => {
-    const { scanPluginsCommand } = await import('../dist/src/cli/commands/scan-plugins.js');
-    await scanPluginsCommand(options);
-  });
-
-// Judge skill command - Combined Tier 1 + Tier 2 LLM security analysis
-program
-  .command('judge-skill <file>')
-  .description('Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)')
-  .option('--json', 'Output results as JSON', false)
-  .option('--model <model>', 'LLM model to use (e.g., sonnet, opus)')
-  .option('--scan-only', 'Run Tier 1 only, skip LLM analysis', false)
-  .action(async (file, options) => {
-    const { judgeSkillCommand } = await import('../dist/src/cli/commands/judge-skill.js');
-    await judgeSkillCommand(file, options);
-  });
-
-// List command - List available/installed components
-program
-  .command('list')
-  .description('List available and installed components')
-  .option('--installed', 'Show only installed components')
-  .action(async (options) => {
-    const { listCommand } = await import('../dist/src/cli/commands/list.js');
-    await listCommand(options);
   });
 
 // Increment status commands
@@ -450,9 +385,6 @@ program
     });
   });
 
-// Delete feature command - Registered dynamically in startup
-// (See registerDeleteFeatureCommand call below)
-
 program
   .command('status')
   .alias('progress')
@@ -466,121 +398,6 @@ program
       options.verbose = true;
     }
     await statusCommand(options);
-  });
-
-// Interview command - Manage Deep Interview Mode state
-const interviewCmd = program
-  .command('interview <action> [increment-id] [category] [summary]')
-  .description('Manage Deep Interview Mode for increment planning')
-  .action(async (action, incrementId, category, summary) => {
-    const { interviewCommand } = await import('../dist/src/cli/commands/interview.js');
-    await interviewCommand(action, incrementId, category, summary);
-  });
-
-interviewCmd.addHelpText('after', `
-Actions:
-  start <increment-id>                    Start interview tracking
-  mark-covered <id> <category> [summary]  Mark category as covered
-  status [increment-id]                   Show interview status
-  clear <increment-id>                    Clear interview state
-
-Categories: architecture, integrations, ui-ux, performance, security, edge-cases
-
-Examples:
-  specweave interview start 0021-auth-feature
-  specweave interview mark-covered 0021-auth-feature architecture "Microservices with Redis"
-  specweave interview status 0021-auth-feature
-`);
-
-// Decision log command - Query structured decision logs
-program
-  .command('decision-log')
-  .description('Query structured decision logs from hooks')
-  .option('--hook <name>', 'Filter by hook name (e.g. stop-auto)')
-  .option('--decision <type>', 'Filter by decision type (approve, block)')
-  .option('--since <window>', 'Filter by time window (1h, 24h, 7d)')
-  .option('--limit <number>', 'Number of entries to show (default: 20)', '20')
-  .option('--json', 'Output raw JSON format')
-  .option('--tail', 'Follow log in real-time (like tail -f)')
-  .action(async (options) => {
-    const { decisionLogCommand, decisionLogTail } = await import('../dist/src/cli/commands/decision-log.js');
-    if (options.tail) {
-      await decisionLogTail({
-        hook: options.hook,
-        decision: options.decision
-      });
-    } else {
-      await decisionLogCommand({
-        hook: options.hook,
-        decision: options.decision,
-        since: options.since,
-        limit: parseInt(options.limit, 10),
-        json: options.json
-      });
-    }
-  });
-
-// Status line command - Display current increment progress
-program
-  .command('status-line')
-  .description('Display current increment status line')
-  .option('--json', 'Output JSON format')
-  .option('--clear', 'Clear status line cache')
-  .option('--config <path>', 'Path to config file')
-  .action(async (options) => {
-    const { registerStatusLineCommand } = await import('../dist/src/cli/commands/status-line.js');
-    const tempProgram = new Command();
-    registerStatusLineCommand(tempProgram);
-    // Execute action manually since we need the temp program
-    const manager = await import('../dist/src/core/status-line/status-line-manager.js').then(m => m.StatusLineManager);
-    const StatusLineManager = manager;
-    const path = await import('path');
-    const fs = await import('fs');
-
-    const rootDir = process.cwd();
-    let config = {};
-
-    if (options.config) {
-      const configPath = path.resolve(options.config);
-      if (fs.existsSync(configPath)) {
-        const configContent = fs.readFileSync(configPath, 'utf8');
-        const fullConfig = JSON.parse(configContent);
-        config = fullConfig.statusLine || {};
-      }
-    } else {
-      const defaultConfigPath = path.join(rootDir, '.specweave/config.json');
-      if (fs.existsSync(defaultConfigPath)) {
-        const configContent = fs.readFileSync(defaultConfigPath, 'utf8');
-        const fullConfig = JSON.parse(configContent);
-        config = fullConfig.statusLine || {};
-      }
-    }
-
-    const statusManager = new StatusLineManager(rootDir, config);
-
-    if (options.clear) {
-      statusManager.clearCache();
-      console.log('✅ Status line cache cleared');
-      return;
-    }
-
-    if (options.json) {
-      const cache = statusManager.getCacheData();
-      if (!cache) {
-        console.log(JSON.stringify({ error: 'No active increment' }, null, 2));
-        process.exit(1);
-      }
-      console.log(JSON.stringify(cache, null, 2));
-      return;
-    }
-
-    const statusLine = statusManager.render();
-    if (!statusLine) {
-      console.log('No active increment');
-      process.exit(1);
-    }
-
-    console.log(statusLine);
   });
 
 // Auto mode commands - Autonomous execution with stop hook feedback loop (v3.0)
@@ -753,94 +570,6 @@ program
     await branchNameCommand(incrementId);
   });
 
-// Jobs command - Monitor and manage background jobs (imports, cloning, sync)
-program
-  .command('jobs')
-  .description('Monitor and manage background jobs (imports, cloning, sync)')
-  .option('--all', 'Show all jobs (including completed)')
-  .option('--id <jobId>', 'Show details for specific job')
-  .option('--logs <jobId>', 'Show worker log output')
-  .option('--follow <jobId>', 'Follow job progress in real-time')
-  .option('--kill <jobId>', 'Kill running background job')
-  .option('--resume <jobId>', 'Resume paused job')
-  .action(async (options) => {
-    const { jobsCommand } = await import('../dist/src/cli/commands/jobs.js');
-    await jobsCommand(options);
-  });
-
-// Living-docs command - Launch or resume Living Docs Builder independently
-program
-  .command('living-docs')
-  .description('Launch or resume Living Docs Builder independently')
-  .option('--resume <jobId>', 'Resume orphaned/paused job')
-  .option('--depth <level>', 'Analysis depth: quick, standard, deep-native, deep-api')
-  .option('--priority <modules>', 'Priority modules (comma-separated)')
-  .option('--sources <folders>', 'Additional doc folders (comma-separated)')
-  .option('--depends-on <jobIds>', 'Wait for jobs before starting (comma-separated)')
-  .option('--foreground', 'Run in current session instead of background')
-  .option('--force', 'Force run even for greenfield projects')
-  .option('--full-scan', 'Force full deep scan (all phases: repos, org, arch, inconsistencies, strategy)')
-  .action(async (options) => {
-    const { livingDocsCommand } = await import('../dist/src/cli/commands/living-docs.js');
-    await livingDocsCommand(options);
-  });
-
-// Cache command - Dashboard cache management
-program
-  .command('cache')
-  .description('Manage dashboard cache for instant status commands')
-  .option('--rebuild', 'Rebuild cache from increments')
-  .option('--status', 'Show cache status (default)')
-  .option('--clear', 'Clear cache')
-  .option('--quiet', 'Minimal output')
-  .option('--debug', 'Show debug information')
-  .action(async (options) => {
-    const { cacheCommand } = await import('../dist/src/cli/commands/cache.js');
-    await cacheCommand(options);
-  });
-
-// Analytics command - Usage analytics dashboard
-program
-  .command('analytics')
-  .description('Show usage analytics dashboard (commands, skills, agents)')
-  .option('--export <format>', 'Export data (json, csv)')
-  .option('--since <time>', 'Filter by time range (24h, 7d, 30d)')
-  .option('--type <type>', 'Filter by event type (command, skill, agent)')
-  .option('--json', 'Output raw JSON for scripting')
-  .option('--limit <n>', 'Number of top items to show', '10')
-  .action(async (options) => {
-    const { analyticsCommand } = await import('../dist/src/cli/commands/analytics.js');
-    await analyticsCommand({
-      export: options.export,
-      since: options.since,
-      type: options.type,
-      json: options.json,
-      limit: options.limit ? parseInt(options.limit, 10) : undefined,
-    });
-  });
-
-// Analytics push command - Record analytics events (replaces PostToolUse analytics hook)
-program
-  .command('analytics-push')
-  .description('Record a skill or agent analytics event (replaces PostToolUse analytics hook)')
-  .requiredOption('--type <type>', 'Event type: skill or agent')
-  .requiredOption('--name <name>', 'Skill or agent name')
-  .option('--plugin <plugin>', 'Source plugin name')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { analyticsPushCommand } = await import('../dist/src/cli/commands/analytics-push.js');
-    const result = await analyticsPushCommand({
-      projectRoot: process.cwd(),
-      type: options.type,
-      name: options.name,
-      plugin: options.plugin,
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
-
 // Route lazy CLI actions through the guarded command factory. Keep registrations
 // here so static shell-completion generation still sees every command and option.
 async function runLspCommand(args) {
@@ -917,15 +646,6 @@ lspCmd
     ]);
   });
 
-// Commits command - Display last 2 git commits
-program
-  .command('commits')
-  .description('Display the last 2 git commits')
-  .action(async () => {
-    const { commitsCommand } = await import('../dist/src/cli/commands/commits.js');
-    await commitsCommand();
-  });
-
 // Sync command group - the ONE external tracker sync surface (GitHub / Jira / ADO)
 const syncCmd = program
   .command('sync')
@@ -985,216 +705,6 @@ syncCmd
     process.exitCode = await syncSetup({ provider: parseProvider(opts.provider), validate: opts.validate, quick: opts.quick });
   });
 
-// Deprecated top-level sync verbs: hidden aliases that print a one-line notice and delegate
-async function deprecatedSync(oldVerb) {
-  const { deprecationNotice } = await import('../dist/src/cli/commands/sync.js');
-  console.error(deprecationNotice(oldVerb));
-}
-
-program
-  .command('sync-progress [increment-id]', { hidden: true })
-  .option('--dry-run')
-  .option('--no-create')
-  .option('--no-github')
-  .option('--no-jira')
-  .option('--no-ado')
-  .option('--force')
-  .action(async (incrementId, opts) => {
-    await deprecatedSync('sync-progress');
-    const { syncProgress } = await import('../dist/src/cli/commands/sync-progress.js');
-    const args = [];
-    if (incrementId) args.push(incrementId);
-    if (opts.dryRun) args.push('--dry-run');
-    if (!opts.create) args.push('--no-create');
-    if (!opts.github) args.push('--no-github');
-    if (!opts.jira) args.push('--no-jira');
-    if (!opts.ado) args.push('--no-ado');
-    if (opts.force) args.push('--force');
-    await syncProgress(args);
-  });
-
-program
-  .command('sync-living-docs [increment-id]', { hidden: true })
-  .option('--dry-run')
-  .option('--force')
-  .action(async (incrementId, opts) => {
-    await deprecatedSync('sync-living-docs');
-    const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
-    const args = [];
-    if (incrementId) args.push(incrementId);
-    if (opts.dryRun) args.push('--dry-run');
-    if (opts.force) args.push('--force');
-    await syncLivingDocs(args);
-  });
-
-program
-  .command('sync-retry', { hidden: true })
-  .option('--dry-run')
-  .option('--force')
-  .option('--clear')
-  .action(async (opts) => {
-    await deprecatedSync('sync-retry');
-    const { syncRetryCommand } = await import('../dist/src/cli/commands/sync-retry.js');
-    const result = await syncRetryCommand(process.cwd(), opts);
-    if (result.failed > 0) process.exitCode = 1;
-  });
-
-for (const oldVerb of ['sync-status', 'sync-health', 'sync-gaps']) {
-  program
-    .command(oldVerb, { hidden: true })
-    .option('--json')
-    .option('--provider <name>')
-    .action(async (opts) => {
-      await deprecatedSync(oldVerb);
-      const { syncStatus, parseProvider } = await import('../dist/src/cli/commands/sync.js');
-      const report = await syncStatus({ json: opts.json, provider: parseProvider(opts.provider) });
-      process.exitCode = report.exitCode;
-    });
-}
-
-program
-  .command('sync-setup', { hidden: true })
-  .option('--provider <name>')
-  .option('--quick')
-  .action(async (opts) => {
-    await deprecatedSync('sync-setup');
-    const { syncSetup, parseProvider } = await import('../dist/src/cli/commands/sync.js');
-    process.exitCode = await syncSetup({ provider: parseProvider(opts.provider), quick: opts.quick });
-  });
-
-program
-  .command('validate-jira', { hidden: true })
-  .action(async () => {
-    await deprecatedSync('validate-jira');
-    const { syncSetup } = await import('../dist/src/cli/commands/sync.js');
-    process.exitCode = await syncSetup({ provider: 'jira', validate: true });
-  });
-
-// Docs command - Documentation preview, build, validation
-const docsCmd = program
-  .command('docs')
-  .description('Documentation preview, build, and validation (works in any SpecWeave project)');
-
-docsCmd
-  .command('preview')
-  .description('Start documentation preview server with hot reload')
-  .option('-p, --port <number>', 'Port number (default: 3015 internal, 3016 public)')
-  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('-f, --force', 'Force reinstall Docusaurus')
-  .option('--no-browser', 'Do not open browser automatically')
-  .option('--no-validate', 'Skip pre-flight validation')
-  .option('--no-auto-fix', 'Do not auto-fix validation issues')
-  .action(async (options) => {
-    const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsPreviewCommand({
-      port: options.port ? parseInt(options.port, 10) : undefined,
-      force: options.force,
-      noBrowser: !options.browser,
-      validate: options.validate,
-      autoFix: options.autoFix,
-      scope: options.scope || 'internal',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('build')
-  .description('Build static documentation site for deployment')
-  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('--no-validate', 'Skip pre-build validation')
-  .option('--no-auto-fix', 'Do not auto-fix validation issues')
-  .option('-o, --output <path>', 'Output directory')
-  .action(async (options) => {
-    const { docsBuildCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsBuildCommand({
-      validate: options.validate,
-      autoFix: options.autoFix,
-      output: options.output,
-      scope: options.scope || 'internal',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('validate')
-  .description('Validate documentation without starting server')
-  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('--auto-fix', 'Auto-fix common issues')
-  .option('-v, --verbose', 'Show all issues (not just errors)')
-  .action(async (options) => {
-    const { docsValidateCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsValidateCommand({
-      autoFix: options.autoFix,
-      verbose: options.verbose,
-      scope: options.scope || 'internal',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('public')
-  .description('Preview public documentation (shorthand for preview --scope public)')
-  .option('-p, --port <number>', 'Port number (default: 3016)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('-f, --force', 'Force reinstall Docusaurus')
-  .option('--no-browser', 'Do not open browser automatically')
-  .option('--no-validate', 'Skip pre-flight validation')
-  .option('--no-auto-fix', 'Do not auto-fix validation issues')
-  .action(async (options) => {
-    const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsPreviewCommand({
-      port: options.port ? parseInt(options.port, 10) : undefined,
-      force: options.force,
-      noBrowser: !options.browser,
-      validate: options.validate,
-      autoFix: options.autoFix,
-      scope: 'public',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('kill')
-  .description('Stop all running documentation servers')
-  .action(async () => {
-    const { docsKillCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsKillCommand();
-  });
-
-docsCmd
-  .command('status')
-  .description('Show documentation status and help')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .action(async (options) => {
-    const { docsStatusCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsStatusCommand({ project: options.project });
-  });
-
-// Default action for 'specweave docs' without subcommand — launches internal preview
-docsCmd
-  .command('sync [increment-id]')
-  .description('Sync living documentation for an increment (feature spec + user story files)')
-  .option('--dry-run', 'Preview without making changes')
-  .option('--force', 'Force sync even if no changes detected')
-  .action(async (incrementId, options) => {
-    const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
-    const args = [];
-    if (incrementId) args.push(incrementId);
-    if (options.dryRun) args.push('--dry-run');
-    if (options.force) args.push('--force');
-    await syncLivingDocs(args);
-  });
-
-
-docsCmd.action(async () => {
-  const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
-  await docsPreviewCommand({ scope: 'internal' });
-});
-
-
 // Refresh plugins command - Copy first-party plugins to ~/.claude/commands/
 program
   .command('refresh-plugins')
@@ -1236,131 +746,6 @@ program
     }
   });
 
-// Health command - Quick deployment verification
-program
-  .command('health')
-  .description('Quick deployment health check (config, plugins, sync connectivity)')
-  .option('--json', 'Output as JSON for CI/CD pipelines')
-  .option('--verbose', 'Show detailed output')
-  .action(async (options) => {
-    const { runHealthCheck } = await import('../dist/src/cli/commands/health.js');
-    const report = await runHealthCheck(process.cwd(), {
-      json: options.json,
-      verbose: options.verbose,
-    });
-
-    if (report.status === 'unhealthy') {
-      process.exit(1);
-    }
-  });
-
-// Session command - Session lifecycle management (replaces SessionStart/Stop hooks)
-const sessionCmd = program
-  .command('session')
-  .description('Session lifecycle management (start, end)');
-
-sessionCmd
-  .command('start')
-  .description('Initialize session (replaces SessionStart hook)')
-  .option('--session-id <id>', 'Session identifier for isolated state')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { sessionStartCommand } = await import('../dist/src/cli/commands/session.js');
-    const result = await sessionStartCommand({
-      projectRoot: process.cwd(),
-      sessionId: options.sessionId,
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
-
-sessionCmd
-  .command('end')
-  .description('End session: auto scan, sync flush (replaces Stop hooks)')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { sessionEndCommand } = await import('../dist/src/cli/commands/session.js');
-    const result = await sessionEndCommand({
-      projectRoot: process.cwd(),
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
-
-// Hook command - CLI delegation entry point for Claude Code hooks (internal)
-program
-  .command('hook <event-type>')
-  .description('Handle Claude Code hook events (internal)')
-  .action(async (eventType) => {
-    try {
-      const { handleHook } = await import('../dist/src/cli/commands/hook.js');
-      await handleHook(eventType);
-    } catch {
-      // Never crash — `{}` is the schema-valid pass-through for every event
-      process.stdout.write('{}');
-    }
-    process.exit(0);
-  });
-
-// Detect intent command - Hook helper for automatic plugin loading (internal)
-program
-  .command('detect-intent [prompt]')
-  .description('Detect SpecWeave intent from a prompt and optionally install plugins')
-
-  .option('--install', 'Also install detected plugins after detection')
-  .option('--silent', 'Silent mode - no stdout output (for hooks)')
-  .option('--file <path>', 'Read prompt from file instead of argument (avoids shell escaping issues)')
-  .action(async (promptArg, options) => {
-    const { detectIntentCommand } = await import('../dist/src/cli/commands/detect-intent.js');
-    const fs = await import('fs');
-
-    // Read prompt from file if specified, otherwise use argument
-    let prompt = promptArg || '';
-    if (options.file) {
-      try {
-        prompt = fs.readFileSync(options.file, 'utf8').trim();
-      } catch (fileError) {
-        if (!options.silent) {
-          console.error(`Error reading file: ${fileError.message}`);
-        }
-        process.exit(1);
-      }
-    }
-
-    if (!prompt) {
-      if (!options.silent) {
-        console.error('Error: No prompt provided. Use positional argument or --file option.');
-      }
-      process.exit(1);
-    }
-
-    const result = await detectIntentCommand(prompt, options);
-    // Exit code: 0 if plugins detected, 1 if none
-    process.exit(result.detected ? 0 : 1);
-  });
-
-// Evaluate completion command - LLM-based completion evaluation for auto mode (internal)
-program
-  .command('evaluate-completion <increment-id>')
-  .description('Evaluate whether an auto mode session should be considered complete')
-
-  .option('--model <model>', 'Model for LLM evaluation: haiku or sonnet (default: sonnet)')
-  .option('--timeout <ms>', 'Timeout in milliseconds (default: 45000)', parseInt)
-  .option('--silent', 'Minimal output')
-  .action(async (incrementId, options) => {
-    const { evaluateCompletionCommand } = await import('../dist/src/cli/commands/evaluate-completion.js');
-    const result = await evaluateCompletionCommand(incrementId, options);
-    if (!options.silent) {
-      console.log(JSON.stringify(result, null, 2));
-    }
-    // Exit code: 0 if complete, 1 if not
-    process.exit(result.complete ? 0 : 1);
-  });
-
 // Generate rubric command - emit the AC-tied quality contract rubric.md (0865)
 program
   .command('generate-rubric <increment-id>')
@@ -1372,53 +757,6 @@ program
     const { generateRubricCommand } = await import('../dist/src/cli/commands/generate-rubric.js');
     const result = await generateRubricCommand(incrementId, options);
     process.exit(result.success ? 0 : 1);
-  });
-
-// Detect project command - Analyze project files and suggest plugins (internal)
-program
-  .command('detect-project [path]')
-  .description('Detect project type from files and suggest plugins to install')
-
-  .option('--name <name>', 'Increment name for legacy name-based detection')
-  .option('--description <text>', 'Description for legacy name-based detection')
-  .option('--install', 'Also install detected plugins after detection')
-  .option('--silent', 'Silent mode - no stdout output (for hooks)')
-  .action(async (path, options) => {
-    const { detectProjectCommand } = await import('../dist/src/cli/commands/detect-project.js');
-    const result = await detectProjectCommand(path, options);
-    // Exit code: 0 if types detected, 1 if none
-    process.exit(result.types.length > 0 ? 0 : 1);
-  });
-
-// Resolve structure command - REMOVED (all workspaces use repositories/ structure)
-program
-  .command('resolve-structure')
-  .description('[REMOVED] All workspaces now use the repositories/ structure')
-  .action(() => {
-    console.log('This command has been removed. All workspaces now use the repositories/ structure.');
-    process.exit(0);
-  });
-
-// Export skills command - Export to Agent Skills open standard
-program
-  .command('export-skills')
-  .description('Export SpecWeave skills to Agent Skills open standard format (agentskills.io)')
-  .option('-o, --output <dir>', 'Output directory (default: .agent-skills)')
-  .option('-p, --plugin <name>', 'Export specific plugin only')
-  .option('-s, --skill <name>', 'Export specific skill only')
-  .option('--dry-run', 'Preview without writing files')
-  .option('--validate', 'Validate output against Agent Skills spec')
-  .option('-v, --verbose', 'Show detailed output')
-  .action(async (options) => {
-    const { exportSkillsCommand } = await import('../dist/src/cli/commands/export-skills.js');
-    await exportSkillsCommand({
-      output: options.output,
-      plugin: options.plugin,
-      skill: options.skill,
-      dryRun: options.dryRun,
-      validate: options.validate,
-      verbose: options.verbose,
-    });
   });
 
 // Supplementary CLI help and project coordination.
@@ -1492,24 +830,9 @@ program
     await getCommand(source, opts);
   });
 
-// Migrate-to-umbrella command - REMOVED (all workspaces use repositories/ structure)
-program
-  .command('migrate-to-umbrella')
-  .description('[REMOVED] Use specweave get to add repositories')
-  .action(() => {
-    console.log('This command has been removed. Use `specweave get` to add repositories.');
-    process.exit(0);
-  });
-
 // Run startup check, then parse arguments
 (async () => {
   await checkForDuplicates();
-
-  // Hide internal-only commands from --help (still callable by hooks)
-  for (const name of ['hook', 'detect-intent', 'evaluate-completion', 'detect-project']) {
-    const cmd = program.commands.find(c => c.name() === name);
-    if (cmd) cmd._hidden = true;
-  }
 
   // Parse arguments
   program.parse(process.argv);

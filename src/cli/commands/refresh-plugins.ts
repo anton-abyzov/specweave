@@ -33,8 +33,25 @@ import { findProjectRoot } from '../../utils/find-project-root.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { enablePluginsInSettings } from '../helpers/init/claude-plugin-enabler.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
+import { installProjectSkills, removeLegacySkillCopies } from '../../core/skills/project-skills.js';
 
 const __dirname = getDirname(import.meta.url);
+
+/**
+ * The core plugin's project copies are the namespaced sw-* skills in both
+ * .claude/skills and .agents/skills (3.0), never the unnamespaced `do`,
+ * `review`, ... that 2.x copied. Removes those old copies on the way.
+ */
+function installCoreProjectSkills(projectRoot: string): { success: boolean; sha: string; skipped?: boolean; error?: string } {
+  try {
+    const removed = removeLegacySkillCopies(projectRoot);
+    const skills = installProjectSkills(projectRoot);
+    const changed = removed.length + skills.written.length + skills.removed.length;
+    return { success: true, sha: '', skipped: changed === 0 };
+  } catch (err) {
+    return { success: false, sha: '', error: err instanceof Error ? err.message : String(err) };
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -318,8 +335,12 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
       result = installPlugin(plugin.name, specweaveRoot, { force: options.force });
       if (!result.success) {
         logger.warn(`Native install failed for ${plugin.name}, falling back to direct copy`);
-        result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
+        result = plugin.name === CORE_PLUGIN
+          ? installCoreProjectSkills(projectRoot)
+          : copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
       }
+    } else if (plugin.name === CORE_PLUGIN) {
+      result = installCoreProjectSkills(projectRoot);
     } else {
       const copyOptions: { force?: boolean; targetSkillsDir?: string } = { force: options.force };
       if (!isClaude && resolved.skillsDir) {

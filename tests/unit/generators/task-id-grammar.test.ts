@@ -19,7 +19,6 @@ import * as os from 'os';
 import * as path from 'path';
 import { parseTasksWithUSLinks, getAllTasks } from '../../../src/generators/spec/task-parser.js';
 import { loadTaskBoard, normalizeTaskId, compareTaskIds } from '../../../src/core/tasks/task-board.js';
-import { validateACCoverage } from '../../../src/validators/ac-coverage-validator.js';
 
 let dir: string;
 
@@ -116,17 +115,5 @@ describe('AC traceability for the 2.0 field line', () => {
     );
     const [task] = getAllTasks(parseTasksWithUSLinks(p));
     expect(task.satisfiesACs).toEqual(['AC-01', 'AC-02']);
-  });
-
-  it('does not report a design-format task as an orphan in AC coverage', () => {
-    fs.writeFileSync(
-      path.join(dir, 'spec.md'),
-      ['---', 'increment: 0002-trace', 'title: Trace', '---', '', '# Trace', '', '- [x] AC-01: it works', ''].join('\n'),
-    );
-    writeTasks(
-      ['# Tasks', '', '### T-01 Build it', '- AC: AC-01 | Files: src/a.ts | Test: npm test', ''].join('\n'),
-    );
-    const report = validateACCoverage(dir, { logger: { log: () => {} } as never });
-    expect(report.orphanTasks).toEqual([]);
   });
 });

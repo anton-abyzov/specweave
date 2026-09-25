@@ -21,13 +21,10 @@ export function applySmartDefaults(
   config: Record<string, any>,
   options: SmartDefaultsOptions
 ): Record<string, any> {
-  // Testing: TDD by default.
-  // Coverage semantics: unit/integration = Istanbul line coverage %;
-  // e2e = % of written e2e tests that must pass (Playwright has no Istanbul reporter).
+  // Testing: only the commands `specweave verify` runs (empty = auto-detect).
+  // No TDD mode or coverage targets: those are the user's call, not a default.
   config.testing = {
-    mode: 'TDD',
     commands: [],
-    coverage: { unit: 80, integration: 70, e2e: 100 },
     ...config.testing,
   };
 
