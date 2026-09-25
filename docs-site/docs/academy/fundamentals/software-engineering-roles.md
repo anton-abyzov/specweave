@@ -53,7 +53,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: QA Engineer
 - **Expertise**: Test strategy, test planning, quality gates
 - **Activates**: When planning test coverage, validating quality
-- **Commands**: `npx vitest run`, `sw:qa`
+- **Commands**: `npx vitest run`, `sw:review`
 - **Output**: Test plans, quality assessment reports
 
 **5. TDD Cycle Agent** (`tdd-cycle`)
@@ -308,7 +308,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 **QA Lead Agent**:
 - Defines test strategy (unit/integration/E2E targets)
 - Validates test coverage via `npx vitest run`
-- Runs quality gates via `sw:qa`
+- Runs quality gates via `sw:review`
 - Ensures AC-ID traceability (spec.md AC → tasks.md tests)
 
 **Test-Aware Planner Agent**:
@@ -332,7 +332,7 @@ npx vitest run 0008
 # Developer adds test for AC-US1-03
 
 # 3. QA Lead runs quality gate
-sw:qa 0008
+sw:review 0008
 
 # Output:
 # ✅ PASS - All tests passing, coverage targets met
@@ -616,7 +616,7 @@ sw:sync update
 
 <CommandTabs
   natural="Check quality on increment 0009"
-  claude="sw:qa 0009"
+  claude="sw:review 0009"
   other="qa 0009"
 />
 
@@ -727,7 +727,7 @@ Always validate before closing:
 
 ```bash
 npx vitest run 0008  # Check test coverage
-sw:qa 0008           # Run quality assessment
+sw:review 0008           # Run quality assessment
 sw:done 0008         # PM validation + closure
 ```
 

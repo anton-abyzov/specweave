@@ -1,7 +1,7 @@
 ---
 description: Delegate closed-set decisions to Jev (TypeSafe System One) instead of a frontier turn — routing, shell-command safety, text screening, failure triage. Use for "jev", "system one", "classify this".
-argument-hint: "[doctor|setup|ask|route|guard|screen|failure|usage]"
-version: "1.0.0"
+argument-hint: "[doctor|setup|ask|route|task|guard|screen|failure|browse|usage]"
+version: 3.0.0
 ---
 
 # sw-jev — closed-set decisions in 250 ms
@@ -74,19 +74,20 @@ curl -sS https://openrouter.ai/api/v1/systemone -H "Content-Type: application/js
   -d '{"model":"jev-1.13","state":{"prompt":"add rate limiting to the upload endpoint"},"questions":{"complexity":{"type":"choice","instructions":"How much reasoning does an experienced engineer need to complete this task correctly?","criteria":{"trivial":"Mechanical, fully specified edit. No design decision.","moderate":"Bounded implementation with a known approach; a few files.","complex":"Needs design or investigation; ambiguous requirements."}}}}'
 ```
 
-```powershell
-Invoke-RestMethod -Method Post -Uri 'https://openrouter.ai/api/v1/systemone' `
-  -Headers @{ Authorization = "Bearer $env:OPENROUTER_API_KEY" } -ContentType 'application/json' `
-  -Body (Get-Content -Raw ./route-question.json)
-```
+## Commands at a glance
+
+`doctor` (provider, key variable name, latency) · `setup` · `route "<prompt>"` · `task T-NN`
+(model tier for one ledger task) · `guard "<command>"` · `screen <file>` · `failure <file>` ·
+`ask --state @s.json --questions @q.json` · `browse --goal "<goal>" --url "<url>"` (headless,
+allow-listed domains only, never types text Jev chose, skips pay/delete/sign-out controls
+unless `--allow-sensitive`) · `usage`. Each is `specweave jev <action>`; `--json` for machines.
+The guard can run as a Claude Code `PreToolUse` hook for one project:
+`specweave jev setup --guard-bash` (`--no-guard-bash` removes it). In every other tool,
+call `specweave jev guard` yourself.
 
 ## Guard a shell command
 
-```bash
-specweave jev guard "rm -rf ./build"
-```
-
-Exit 0 allow, 2 warn, 3 deny, 4 unavailable. Call it yourself before anything unattended —
+`specweave jev guard "rm -rf ./build"` exits 0 allow, 2 warn, 3 deny, 4 unavailable. Call it yourself before anything unattended —
 outside Claude Code nothing intercepts your commands for you. A regex prefilter skips the
 call entirely for `npm test`, `npm run build`/`test`/`lint`, `pnpm test`, `yarn test`,
 `cargo test`, `go test` and plain read commands (`ls`, `cat`, `grep`, `rg`, `find`,
@@ -142,8 +143,7 @@ open on everything else so the workflow keeps running without Jev.
 
 ## Build it into your own project
 
-Read the live docs first — `https://docs.typesafe.ai/llms.txt` (append `.md` to any docs
-path). Keep every question in one constants module so the wording is a contract; fan out
-independent questions over the same state in a single request; give every consumer a
-documented threshold and a fallback; cascade — Jev first, frontier model only for what it
-is unsure about — and measure before/after. Related: `sw-do`, `sw-review`.
+Read `https://docs.typesafe.ai/llms.txt` first. Keep every question in one constants
+module, fan independent questions into one request, give each a threshold and a
+fallback, and cascade: Jev first, the frontier model only where Jev is unsure.
+Related: sw-do, sw-review.

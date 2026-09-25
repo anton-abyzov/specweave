@@ -146,11 +146,11 @@ Every hook fails open: any error, timeout or missing configuration returns `{}` 
 
 Eleven skills ship in the `sw` plugin:
 
-`increment` · `do` · `done` · `review` · `team` · `handoff` · `sync` · `auto` · `brainstorm` · `qa` · `jev`
+`increment` · `do` · `done` · `review` · `team` · `handoff` · `sync` · `auto` · `brainstorm` · `project` · `jev`
 
 `review` is the merge of the old `grill`, `code-reviewer` and `judge-llm`. `team` is the merge of `team-lead` and `team-merge`. `done`, `handoff` and `auto` carry `disable-model-invocation: true` so the model cannot fire them on its own. `jev` arrived in 2.2 and delegates closed-set decisions — routing, command safety, text screening, failure triage — to TypeSafe's System One model; see [Jev (System One)](/docs/guides/jev-system-one).
 
-Six standalone skills under `skills/` are distributed through vskill for non-Claude tools, and carry the full manual procedure so they work with no CLI at all: `sw-increment`, `sw-do`, `sw-task`, `sw-review`, `sw-handoff`, `sw-jev`.
+In 3.0 the same eleven skills under `skills/sw-<name>/` are the one source: the plugin copies are generated from them, `specweave init` installs them into `.claude/skills/` and `.agents/skills/`, and vskill distributes them to other tools. `qa` folded into `review`, `task` into `do`.
 
 ---
 

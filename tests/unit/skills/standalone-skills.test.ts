@@ -1,14 +1,14 @@
 /**
- * The repo-root `skills/` folder is the vskill-distributable standalone core
- * (sw-increment, sw-do, sw-task, sw-review, sw-handoff, sw-jev) used by tools
- * that do not run the Claude Code plugin.
+ * The repo-root `skills/` folder is the one source of every SpecWeave skill:
+ * the Claude plugin copies and the project copies init installs are generated
+ * from it.
  *
  * These tests pin two things:
  *  1. the portability contract (scripts/lint-standalone-skills.mjs);
  *  2. that the formats the skills document are the formats the CLI actually
- *     writes and parses — the ledger line, the tasks.md definition line, the
- *     SW:BOARD markers and the handoff sections come from src/, so a drift in
- *     either direction fails here instead of in a user's repo.
+ *     writes and parses — the ledger line, the spec.md task line and the
+ *     handoff sections come from src/, so a drift in either direction fails
+ *     here instead of in a user's repo.
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
@@ -18,13 +18,16 @@ import * as os from 'os';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { parseLedger, formatLedgerLine, type LedgerEvent } from '../../../src/core/tasks/ledger.js';
-import { loadTaskBoard, BOARD_BEGIN, BOARD_END } from '../../../src/core/tasks/task-board.js';
+import { loadTaskBoard } from '../../../src/core/tasks/task-board.js';
 import { HANDOFF_SECTION_ORDER, DOC_FORMAT_MARKER } from '../../../src/core/session/handoff-doc-format.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const SKILLS_DIR = path.join(REPO_ROOT, 'skills');
 const LINTER = path.join(REPO_ROOT, 'scripts', 'lint-standalone-skills.mjs');
-const EXPECTED_SKILLS = ['sw-do', 'sw-handoff', 'sw-increment', 'sw-jev', 'sw-review', 'sw-task'];
+const EXPECTED_SKILLS = [
+  'sw-auto', 'sw-brainstorm', 'sw-do', 'sw-done', 'sw-handoff', 'sw-increment',
+  'sw-jev', 'sw-project', 'sw-review', 'sw-sync', 'sw-team',
+];
 
 const read = (name: string): string => fs.readFileSync(path.join(SKILLS_DIR, name, 'SKILL.md'), 'utf-8');
 
@@ -52,7 +55,7 @@ afterEach(() => {
 });
 
 describe('standalone skills (skills/)', () => {
-  it('ships exactly the standalone core plus a README', () => {
+  it('ships exactly the 11 skills plus a README', () => {
     const dirs = fs.readdirSync(SKILLS_DIR, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
     expect(dirs).toEqual(EXPECTED_SKILLS);
     expect(fs.existsSync(path.join(SKILLS_DIR, 'README.md'))).toBe(true);
@@ -88,13 +91,19 @@ describe('standalone skills (skills/)', () => {
     expect(stderr).toContain('no install line for sw-bad');
   });
 
-  it('sw-handoff captures the git diff for PowerShell as well as bash', () => {
+  it('no skill uses a Claude-only tool call, so every tool can run it', () => {
+    for (const name of EXPECTED_SKILLS) {
+      const body = read(name);
+      expect(body, name).not.toMatch(/\b(Skill|Task|SendMessage|TeamCreate)\(\s*\{/);
+      expect(body, name).not.toMatch(/\/sw:[a-z]/);
+    }
+  });
+
+  it('sw-handoff teaches the two-word handoff and pickup', () => {
     const handoff = read('sw-handoff');
-    const ps = fenced(handoff, 'powershell').find((b) => b.includes('handoff.diff'));
-    expect(ps, 'no PowerShell form of the handoff.diff capture').toBeDefined();
-    // `{ … } > file` in PowerShell writes the scriptblock text in UTF-16.
-    expect(ps).toContain('[IO.File]::WriteAllText');
-    expect(ps).not.toMatch(/[^`>]>[^>=]/);
+    expect(handoff).toContain('specweave handoff --reason');
+    expect(handoff).toContain('specweave pickup');
+    expect(handoff).toMatch(/"pick up"/);
   });
 
   it('lint catches a bash block that writes a file with no PowerShell sibling', async () => {
@@ -163,13 +172,16 @@ describe('documented formats match the CLI', () => {
     });
   });
 
-  it('the tasks.md definition format in sw-increment is what the board parser reads', () => {
+  it('the spec.md task format in sw-increment is what the board parser reads', () => {
     const block = fenced(read('sw-increment'), 'markdown').find((b) => b.includes('### T-01'));
     expect(block).toBeDefined();
+    expect(block).toContain('## Acceptance Criteria');
+    expect(block).toContain('## Tasks');
 
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-inc-'));
     tmpDirs.push(dir);
-    fs.writeFileSync(path.join(dir, 'tasks.md'), block! + '\n');
+    // One-file increment: no tasks.md, the parser reads spec.md.
+    fs.writeFileSync(path.join(dir, 'spec.md'), block! + '\n');
 
     const board = loadTaskBoard(dir);
     expect(board.tasks.map((t) => t.id)).toEqual(['T-01', 'T-02']);
@@ -179,11 +191,12 @@ describe('documented formats match the CLI', () => {
     expect(board.tasks.every((t) => t.state.status === 'open')).toBe(true);
   });
 
-  it('sw-task documents the board markers the CLI renders', () => {
-    const task = read('sw-task');
-    expect(task).toContain(BOARD_BEGIN);
-    expect(BOARD_END).toBe('<!-- /SW:BOARD -->');
-    expect(task).toMatch(/specweave task render/);
+  it('no skill tells the agent to write tasks.md or tick AC boxes', () => {
+    for (const name of EXPECTED_SKILLS) {
+      const body = read(name);
+      expect(body, name).not.toMatch(/tasks\.md/);
+      expect(body, name).not.toMatch(/Tick the ACs|\[x\] AC-/);
+    }
   });
 
   it('sw-handoff documents every handoff section, in order, with the current marker', () => {

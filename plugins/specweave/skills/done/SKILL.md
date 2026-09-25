@@ -1,41 +1,48 @@
 ---
-disable-model-invocation: true
-description: Close an increment: ledger check, specweave verify, optional review, then specweave complete. Use when all tasks are done and saying "close increment", "we are done", or "finish up".
-version: 2.0.0
-argument-hint: "<increment-id> [--reason <text>]"
+description: Close a SpecWeave increment - every task done or skipped, specweave verify green, a fresh-context review, then specweave complete. Use for "close it", "we are done", "finish up".
+argument-hint: "[increment-id] [--reason \"...\"]"
+version: 3.0.0
 ---
+<!-- Generated from skills/sw-done/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
-# Close Increment
+# sw-done: close an increment
 
-Closure = **verify → optional review → `specweave complete`**. The only hard
-gate is `reports/verify.json` with `ok: true`. Grill / judge / rubric reports
-are optional evidence and never block.
-
-## Usage
-
-```
-sw:done <increment-id>                    # normal closure
-sw:done <increment-id> --reason "<why>"   # close without a green verify (recorded as metadata.closeReason)
-```
+Closing is verify, review, complete. The one hard gate is a passing
+`reports/verify.json`; everything else is evidence.
 
 ## Steps
 
-1. **Ledger check**: `specweave task list <id>`. Every task must be `done` or `skipped`. Open/claimed tasks → go back to `sw:do` (or `task skip … --reason "<why>"`). Release your own claims: `specweave task release --all-mine`.
-2. **Verify**: `specweave verify <id>`. Runs `testing.commands` from config (else `npm run test|lint|build`, `cargo test`, `pytest`, `go test ./...`), writes `reports/verify.md` + `reports/verify.json`. Non-zero exit → fix, re-run. Do not proceed on red without a `--reason` from the user.
-3. **Review (recommended for anything user-facing, optional otherwise)**: invoke `Skill({ skill: "sw:review" })` — fresh context, adversarial, findings cite `path:line`, written to `reports/review.md`. Fix critical/high findings, re-run step 2 if code changed.
-4. **Docs touched?** If the increment changed commands, config, or user-facing behaviour, update README/CHANGELOG/CLAUDE.md `## Commands` in the same commit. Living docs sync only if `livingDocs` is enabled in config (`specweave docs sync <id>`).
-5. **Complete**: `Bash({ command: "specweave complete <id> --yes" })`. The CLI refuses when `verify.json` is missing or not ok unless `--reason "<text>"` is given; it prints a notice when `reports/review.md` is absent; it sets `status: completed` and syncs GitHub/Jira/ADO when configured. **Never edit `metadata.json` status by hand.**
-6. **Handoff**: if work continues elsewhere (follow-ups, another increment), `sw:handoff`.
+1. **Board.** `specweave task list`: every task must be `done` or `skipped`. Anything
+   open goes back to sw-do, or `specweave task skip T-04 --reason "<why>"`.
+2. **Verify.** `specweave verify` runs the project's test, lint and build commands
+   (config `testing.commands`, else detected), checks every acceptance criterion
+   against the ledger (an AC is met when all its tasks are done) and writes
+   `reports/verify.md` and `reports/verify.json`. Red: fix and re-run. Do not tick
+   AC boxes; they are derived.
+3. **Review.** For anything that ships, run sw-review in a fresh context. Fix critical
+   and high findings, then verify again.
+4. **Docs.** If commands, config or user-facing behaviour changed, update README,
+   CHANGELOG and the `## Commands` table in AGENTS.md in the same branch.
+5. **Complete.** `specweave complete 0042`. It refuses without a passing verify unless
+   the user gives a reason: `specweave complete 0042 --reason "<why>"`.
+6. **Ship.** Push the branch and open the PR the way this repository ships;
+   `specweave report` writes an HTML timeline to attach as evidence.
 
-Report in one paragraph: verify result, review verdict (or "skipped"), commit sha(s), anything deferred.
+Report in one paragraph: verify result, review verdict (or "skipped"), commits,
+anything deferred.
+
+## Manual path (no CLI)
+
+Check every task in spec.md has a `done` or `skip` line in `ledger.jsonl`. Run the
+project's test, lint and build commands yourself and put their real output in
+`reports/verify.md`. Then set `"status": "completed"` in `metadata.json`, the one state
+change the manual path makes by hand.
 
 ## Rules
 
-- Never ask "should I close?" — closure follows automatically when tasks are done; the user can re-open.
-- `--skip-validation` exists for emergencies only; prefer `--reason` so the reason is recorded.
-- Multi-agent sessions (`sw:team`): only the lead runs `sw:done`, after every agent has released and handed off.
-- Failed sync after completion: `specweave sync push <id>` retries; closure itself already succeeded.
-
-## Resources
-
-- [Official Documentation](https://verified-skill.com/docs/reference/skills#done)
+- Never ask "should I close?" when the tasks are done; close, and the user can reopen.
+- Never edit `metadata.json` status while the CLI is available.
+- Several agents on one increment: only the lead closes, after every agent has handed
+  off or released its claims.
+- Completing never calls GitHub, Jira or Azure DevOps unless close-on-complete is set;
+  a failed sync afterwards is retried with `specweave sync push`.

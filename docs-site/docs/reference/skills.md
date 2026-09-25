@@ -70,35 +70,29 @@ Diverge, converge, pick — then hand the winner to `/sw:increment`. Decides *wh
 
 Auto-activates on "brainstorm", "ideate" and "what are our options" — reach for it when the problem is clear but the approach is not, and you want to explore the space before a spec locks one in.
 
-### `/sw:qa`
-
-`<increment-id> [--gate|--pre|--full]`
-
-A thin wrapper over `specweave qa`: risk score and blockers. Not the code review (`/sw:review`) and not the closure gate (`specweave verify`).
+The old `qa` skill was folded into `/sw:review` in 3.0: the review's verdict is the quality check.
 
 ---
 
 ## Standalone skills (any AI tool)
 
-Five skills under `skills/`, distributed through [vskill](https://verified-skill.com), that work in Claude Code, Codex, OpenCode, Cursor, Gemini CLI, Windsurf and others. Each spells out the file formats and a manual shell/PowerShell procedure, so they work with no CLI installed at all.
+The same eleven skills live under `skills/` (the one source the plugin copies are generated from), distributed through [vskill](https://verified-skill.com), that work in Claude Code, Codex, OpenCode, Cursor, Gemini CLI, Windsurf and others. Each spells out the file formats and a manual shell/PowerShell procedure, so they work with no CLI installed at all.
 
 ```bash
 npx vskill install anton-abyzov/specweave/sw-increment
 npx vskill install anton-abyzov/specweave/sw-do
-npx vskill install anton-abyzov/specweave/sw-task
 npx vskill install anton-abyzov/specweave/sw-review
 npx vskill install anton-abyzov/specweave/sw-handoff
 ```
 
 | Skill | Use it when | Writes |
 |-------|-------------|--------|
-| `sw-increment` | planning a feature, before any code | `metadata.json`, `spec.md`, `tasks.md` |
+| `sw-increment` | planning a feature, before any code | `spec.md` with ACs and tasks |
 | `sw-do` | implementing an increment, task by task | commits, ledger events, `reports/verify.json` |
-| `sw-task` | claiming, finishing or skipping tasks; several agents on one increment | `ledger.jsonl` |
 | `sw-review` | adversarial review before shipping | `reports/review.md` |
-| `sw-handoff` | out of tokens, switching tools or machines | `handoff.md`, `handoff.diff` |
+| `sw-handoff` | "hand off" in one tool, "pick up" in another | `handoff.md`, a pushed snapshot |
 
-Typical loop: `sw-increment` → `sw-do` (which drives `sw-task`) → `sw-review` → `specweave complete <id>`. `sw-handoff` any time you stop.
+Typical loop: `sw-increment` → `sw-do` → `sw-review` → `sw-done`. `sw-handoff` any time you stop.
 
 ---
 

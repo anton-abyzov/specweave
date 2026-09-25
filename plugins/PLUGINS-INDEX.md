@@ -7,7 +7,7 @@ CLI subcommand, and the model-judgement procedures are the 11 skills below.
 
 | Plugin | Triggers | Description |
 |---|---|---|
-| **specweave** (`sw`) | increment, spec, tasks, plan, implement, close, review, team, handoff, sync, GitHub, Jira, ADO, auto, brainstorm, qa, jev, system one | Increment lifecycle: plan → work the ledger → verify → review → complete, with cross-tool handoff, tracker sync and closed-set decisions delegated to Jev |
+| **specweave** (`sw`) | increment, spec, tasks, plan, implement, close, review, team, handoff, sync, GitHub, Jira, ADO, auto, brainstorm, qa, project, jev, system one | Increment lifecycle: plan → work the ledger → verify → review → complete, with cross-tool handoff, tracker sync and closed-set decisions delegated to Jev |
 
 ## Quick lookup
 
@@ -16,13 +16,13 @@ CLI subcommand, and the model-judgement procedures are the 11 skills below.
 | "Plan a feature" / "let's build X" | `sw:increment` |
 | "Implement" / "continue increment" | `sw:do` |
 | "We're done" / "close it" | `sw:done` |
-| "Review this" / "grill the code" | `sw:review` |
+| "Review this" / "quality check" / "grill the code" | `sw:review` |
 | "Parallel agents" / "split this up" | `sw:team` |
-| "Handoff" / "continue in another tool" | `sw:handoff` |
+| "Hand off" / "pick up" / "out of tokens" | `sw:handoff` |
 | "Push to GitHub" / "import issues" | `sw:sync` |
 | "Run until done" | `sw:auto` |
 | "What are our options" | `sw:brainstorm` |
-| "Quality check" / "risk assessment" | `sw:qa` |
+| "Project brief" / "what is this project about" | `sw:project` |
 | "Jev" / "system one" / a decision whose answers can all be enumerated first | `sw:jev` |
 
 ## Hooks
@@ -39,5 +39,5 @@ project's `.claude/settings.json`. `--no-guard-bash` removes all three.
 `tdd-cycle`, `e2e`, `debug`, `diagrams`, `release-expert` live in `skills-optional/`
 and install per-project with vskill. See `skills-optional/README.md`.
 
-Deterministic operations are CLI: `specweave status | task | verify | complete | qa |
-handoff | sync | docs | doctor | gc | jev`.
+Deterministic operations are CLI: `specweave pickup | task | verify | complete |
+handoff | note | report | sync | doctor | jev`.
