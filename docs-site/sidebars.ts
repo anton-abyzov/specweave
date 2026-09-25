@@ -44,6 +44,7 @@ const sidebars: SidebarsConfig = {
       label: 'Core Concepts',
       collapsed: false,
       items: [
+        {type: 'doc', id: 'guides/specweave-3', label: 'SpecWeave 3.0'},
         {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
         {type: 'doc', id: 'guides/portable-projects', label: 'Portable Projects'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'What is an Increment?'},
@@ -136,7 +137,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/jev-system-one', label: 'Jev (System One)'},
         {type: 'doc', id: 'reference/sync-cli', label: 'specweave sync (CLI)'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Other AI Tools'},
-        {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Cross-Tool Handoff'},
+        {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Hand off and pick up'},
       ],
     },
     {
@@ -310,7 +311,8 @@ const sidebars: SidebarsConfig = {
   // Enterprise sidebar
   enterpriseSidebar: [
     {type: 'doc', id: 'enterprise/index', label: 'Enterprise Overview'},
-    {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
+    {type: 'doc', id: 'guides/specweave-3', label: 'SpecWeave 3.0'},
+        {type: 'doc', id: 'guides/specweave-2', label: 'SpecWeave 2.0'},
         {type: 'doc', id: 'guides/portable-projects', label: 'Portable Projects'},
     {type: 'doc', id: 'guides/github-sync', label: 'GitHub Sync'},
     {type: 'doc', id: 'guides/jira-ado-sync', label: 'Jira & Azure DevOps'},
