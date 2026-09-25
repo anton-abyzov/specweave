@@ -17,6 +17,8 @@ No AI coding tool can read another's session. Each one keeps its transcript in i
 
 ## Hand off
 
+New to switching? [Claude Code vs Codex](/docs/guides/claude-code-vs-codex) covers what each tool reads and where its session lives.
+
 Tell your agent "hand off", or run:
 
 ```bash

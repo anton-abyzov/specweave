@@ -52,6 +52,7 @@ Nothing stops you from using both. A SpecKit `spec.md` and `plan.md` are good in
 
 ## See also
 
+- [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](/docs/compare/spec-driven-development-tools)
 - [SpecWeave 3.0](/docs/guides/specweave-3)
 - [What is an increment](/docs/guides/core-concepts/what-is-an-increment)
 - [Why SpecWeave](/docs/overview/why-specweave)
