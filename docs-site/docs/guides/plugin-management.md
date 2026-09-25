@@ -42,7 +42,7 @@ If you're developing SpecWeave plugins:
 ### How It Works (v1.0.159+)
 
 1. **User submits prompt** (e.g., "Build a React dashboard with Stripe checkout")
-2. **LLM analyzes intent** via `specweave detect-intent`
+2. **LLM analyzes intent**
 3. **If BUILD task detected**, LLM recommends plugins
 4. **Plugins install** via `claude plugin install`
 5. **Session restart required** for new skills to be available

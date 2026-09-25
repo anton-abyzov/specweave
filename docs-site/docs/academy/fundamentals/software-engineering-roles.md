@@ -3,7 +3,7 @@ id: software-engineering-roles
 title: Software Engineering Roles & SpecWeave AI Agents
 sidebar_label: Engineering Roles
 description: How SpecWeave's AI agents map to traditional software engineering roles and perform specialized tasks in your development workflow
-keywords: [specweave list, pm agent, architect agent, tech lead, qa lead, security agent, performance agent, AI agents, engineering roles, software development]
+keywords: [pm agent, architect agent, tech lead, qa lead, security agent, performance agent, AI agents, engineering roles, software development]
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';

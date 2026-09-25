@@ -523,7 +523,6 @@ All commands can be invoked via natural language, slash commands in Claude Code,
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `specweave docs sync` | Sync living docs (opt-in) | `specweave docs sync 0042` |
 | `sw:increment` | Log scope changes in spec.md | `sw:increment "Added dark mode"` |
 | `npx vitest run` | Validate test coverage | `npx vitest run 0008` |
 

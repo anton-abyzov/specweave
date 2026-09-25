@@ -2,7 +2,7 @@
  * SpecWeave Init Command
  *
  * Simplified (v1.0.415): Creates .specweave/ structure + config.json + instruction files.
- * External tool setup moved to `specweave sync-setup`.
+ * External tool setup moved to `specweave sync setup`.
  * Every workspace uses repositories/ structure from day one.
  */
 
@@ -60,7 +60,6 @@ import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
 import { isSwPluginInstalledNatively } from '../../utils/plugin-copier.js';
-import type { LivingDocsUserInputs } from '../../core/background/types.js';
 
 const __dirname = getDirname(import.meta.url);
 const PROJECT_NAME_PATTERN = /^[a-z0-9-]+$/;
@@ -236,7 +235,7 @@ export async function initCommand(
               }
               if (jobIds.length > 0) {
                 console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-                console.log(chalk.gray(`     Monitor: specweave jobs`));
+                console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
               }
               reposClonedInMigration = true;
             } else if (subChoice === 'copy-local') {
@@ -450,7 +449,7 @@ export async function initCommand(
             }
             if (jobIds.length > 0) {
               console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-              console.log(chalk.gray(`     Monitor: specweave jobs`));
+              console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
             }
           }
           // 'add-later' — repositories/ already created above, nothing more needed
@@ -594,38 +593,6 @@ export async function initCommand(
     // Git hooks
     if (isGitRepo && !continueExisting) {
       installGitHooks(targetDir, templatesDir);
-    }
-
-    // Launch living docs builder (background job — never blocks init)
-    if (!continueExisting && !isCI) {
-      try {
-        const { launchLivingDocsJob } = await import('../../core/background/index.js');
-        const { displayJobScheduled, estimateDuration } = await import('../helpers/init/living-docs-preflight.js');
-
-        const userInputs: LivingDocsUserInputs = {
-          analysisDepth: 'quick',
-          priorityAreas: [],
-          additionalSources: [],
-          knownPainPoints: [],
-        };
-
-        // Save config so standalone `specweave living-docs` can reuse it
-        const stateDir = path.join(targetDir, '.specweave', 'state');
-        fs.ensureDirSync(stateDir);
-        nativeFs.writeFileSync(
-          path.join(stateDir, 'living-docs-config.json'),
-          JSON.stringify({ userInputs, savedAt: new Date().toISOString(), source: 'init' }, null, 2),
-        );
-
-        const ldResult = await launchLivingDocsJob({ projectPath: targetDir, userInputs });
-
-        if (ldResult.isBackground) {
-          const duration = estimateDuration(targetDir, 'quick');
-          displayJobScheduled(ldResult.job.id.slice(0, 8), duration, language);
-        }
-      } catch {
-        // Non-critical — living docs can always be launched later with `specweave living-docs`
-      }
     }
 
     // Summary banner
