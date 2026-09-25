@@ -457,6 +457,33 @@
 .t_k { color: #b9c79e; }
 .t_ok { color: #a7c49a; }
 
+/* Evidence card: a real, recorded handoff under the story. */
+
+.evidence {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  margin-top: 48px;
+  padding: 22px 26px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  background: var(--sw-brand-surface);
+  border-radius: 4px;
+}
+
+.evidence .eyebrow { margin: 0; }
+
+.evidence strong {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.evidence > span:last-child {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 /* ---------- Threads ---------- */
 
 .threads { border-top: 1px solid var(--line); }
@@ -706,4 +733,6 @@
   .map { padding: 6px 16px 10px; }
 
   .stats { grid-template-columns: 1fr; }
+
+  .evidence { grid-template-columns: 1fr; gap: 10px; }
 }

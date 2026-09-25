@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
-import { art, beats, mapping, stats } from './content';
+import { art, beats, handoffEvidence, mapping, stats } from './content';
 import { useParallax, useScrollSteps } from './useLayerMotion';
 import styles from './landing.module.css';
 
@@ -55,6 +55,11 @@ export function ScrollStory() {
         </div>
       </div>
     </div>
+    {handoffEvidence && <a className={styles.evidence} href={handoffEvidence.href}>
+      <span className={styles.eyebrow}>Recorded evidence</span>
+      <strong>{handoffEvidence.summary}</strong>
+      <span>Open the full report ↗</span>
+    </a>}
   </section>;
 }
 

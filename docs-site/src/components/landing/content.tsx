@@ -13,6 +13,12 @@ export const art = {
   lean: '/img/v3/lean.webp' as string | null,
 };
 
+/**
+ * A recorded, real handoff between tools, published under static/evidence/.
+ * Set this once docs-site/static/evidence/handoff-3.0.html exists; the story shows it after the last beat.
+ */
+export const handoffEvidence: { href: string; summary: string } | null = null;
+
 export const tools = ['Claude Code', 'Claude Code Projects', 'Codex', 'Grok Build', 'Cursor', 'Gemini CLI', 'GitHub Copilot', 'OpenCode'];
 
 function Term({ lines }: { lines: [string, string?][] }) {
