@@ -150,6 +150,8 @@ export interface PickupApplyResult {
   message: string;
   snapshot?: string;
   meta?: Partial<HandoffMeta> & { branch?: string };
+  /** Branch pickup switched to from the repository's default branch. */
+  switchedTo?: string;
   /** Commits the current branch moved forward by. */
   fastForwarded?: number;
   /** Files changed by the applied uncommitted edits. */
@@ -211,6 +213,7 @@ export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupA
     };
   }
 
+  const switchedTo = opts.dryRun ? undefined : switchToHandedOffBranch(tryGit, remote, meta.branch, parent);
   const head = tryGit(['rev-parse', 'HEAD']);
   const isAncestor = (a: string, b: string) => tryGit(['merge-base', '--is-ancestor', a, b]) !== null;
   let fastForwarded = 0;
@@ -249,13 +252,39 @@ export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupA
   }
   remember();
   const parts = [
+    switchedTo ? `switched to branch ${switchedTo}` : '',
     fastForwarded ? `moved this branch forward ${fastForwarded} commit${fastForwarded === 1 ? '' : 's'}` : '',
     editedFiles ? `applied ${editedFiles} uncommitted file${editedFiles === 1 ? '' : 's'}` : '',
   ].filter(Boolean);
   return {
-    ...base, status: 'applied', fastForwarded, editedFiles,
+    ...base, status: 'applied', ...(switchedTo ? { switchedTo } : {}), fastForwarded, editedFiles,
     message: `Picked up the handoff from ${who}${parts.length ? `: ${parts.join(', ')}` : ''}.`,
   };
+}
+
+/**
+ * A checkout on the repository's default branch (or on no commit yet) picks
+ * up on the handed-off branch instead of moving the default branch to it.
+ * Any other branch, such as a cloud thread's own, carries on as it is.
+ */
+function switchToHandedOffBranch(tryGit: (args: string[]) => string | null, remote: string, branch: string | undefined, parent: string): string | undefined {
+  const current = tryGit(['symbolic-ref', '--quiet', '--short', 'HEAD']);
+  if (!branch || !current || current === branch) return undefined;
+  if (tryGit(['check-ref-format', '--branch', branch]) === null) return undefined;
+  const unborn = tryGit(['rev-parse', '--verify', '--quiet', 'HEAD']) === null;
+  const remoteHead = tryGit(['symbolic-ref', '--quiet', '--short', `refs/remotes/${remote}/HEAD`]);
+  const defaults = remoteHead ? [remoteHead.slice(remote.length + 1)] : ['main', 'master'];
+  if (!unborn && !defaults.includes(current)) return undefined;
+
+  if (tryGit(['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`]) !== null) {
+    return tryGit(['switch', '--quiet', branch]) !== null ? branch : undefined;
+  }
+  tryGit(['fetch', '--quiet', '--no-tags', remote, `+refs/heads/${branch}:refs/remotes/${remote}/${branch}`]);
+  const upstream = `${remote}/${branch}`;
+  const start = tryGit(['rev-parse', '--verify', '--quiet', `refs/remotes/${upstream}`]) !== null
+    ? ['switch', '--quiet', '--create', branch, '--track', upstream]
+    : ['switch', '--quiet', '--create', branch, parent];
+  return tryGit(start) !== null ? branch : undefined;
 }
 
 function pickedUp(repoRoot: string): string[] {
