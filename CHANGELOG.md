@@ -1,3 +1,35 @@
+## [3.0.0] - 2026-09-25
+
+A redesign from an audit of 2.3. Handoff between tools and accounts is two words, an increment is one file, and a third of the code is gone.
+
+### Added
+
+- "Hand off" and "pick up". `specweave handoff` releases your claims, records why you stopped, and pushes the branch plus a snapshot of uncommitted edits to `specweave-handoff`. `specweave pickup` brings that work into any clone, tool, account or cloud session and prints the next task with its acceptance criteria. `AGENTS.md` maps the phrases to the commands for every tool.
+- `specweave report`: an HTML timeline of who did what on an increment (tools, sessions, claims, test evidence, handoffs, pickups), generated from the ledger.
+- `specweave note "<text>"`: leave a message on an increment for whoever works on it next.
+- `.specweave/memory/`: committed project memory in the Claude Code Projects format, shown by `pickup`.
+- Agent identity detects Claude Code, Codex, Grok, Cursor, Gemini CLI, Copilot and OpenCode; cloud sessions are `<tool>@cloud`; `SPECWEAVE_TOOL` and `SPECWEAVE_HOST` override. Claims record the tool's session id.
+
+### Changed
+
+- New increments are one `spec.md` with a `## Tasks` section. State lives only in `ledger.jsonl`; `tasks.md` is never rewritten. Existing increments with `tasks.md` work unchanged.
+- Acceptance criteria are met when the tasks covering them are done; `verify` derives it. `task next` and `task claim` print the AC text.
+- `AGENTS.md` is the one instruction file (about 800 tokens, down from 1,860). `CLAUDE.md` is `@AGENTS.md` plus Claude-only lines.
+- One skill source for Claude Code, Codex and Grok: 11 skills (`qa` folded into `review`, `task` into `do`).
+- `init` writes only what a project needs: no docs scaffold, no background job, no git hook unless `--git-hooks`, no TDD defaults, no lockfile in `.gitignore`, no write to the global Claude settings.
+- The PreCompact hook writes a checkpoint and keeps claims.
+- The handoff diff and file list leave out SpecWeave's own bookkeeping.
+
+### Removed
+
+- About 280,000 lines of unreachable code and its tests.
+- Commands: `living-docs`, `jobs`, `sync-living-docs`, `docs`, the hidden `sync-*` aliases and `validate-jira`, `analytics`, `analytics-push`, `cache`, `commits`, `interview`, `decision-log`, `export-skills`, `detect-intent`, `detect-project`, `scan-skill`, `scan-plugins`, `judge-skill`, `session`, `health` (use `doctor`), `status-line`, `evaluate-completion`, `install`, `list`, `hook`, `resolve-structure`, `migrate-to-umbrella`.
+- Tracker calls on status changes. Only `specweave sync` touches GitHub, Jira or Azure DevOps.
+
+### Upgrade
+
+`npm i -g specweave@3 && specweave update`. See the [3.0 guide](https://spec-weave.com/docs/guides/specweave-3).
+
 ## [2.3.0] - 2026-09-22
 
 ### Added
