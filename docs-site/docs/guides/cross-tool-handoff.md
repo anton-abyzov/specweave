@@ -49,6 +49,21 @@ To leave a message for whoever works on an increment next:
 specweave note "Draft restore works; expiry not started" 0042
 ```
 
+## Hand off automatically
+
+On your own machine, SpecWeave can hand off for you before a session runs out:
+
+```bash
+specweave auto-handoff on            # hand off at 90% of any usage window
+specweave auto-handoff on --at 80    # or pick your own threshold
+specweave auto-handoff status
+specweave auto-handoff off           # restores your previous setup
+```
+
+In Claude Code, `on` sets the status line to `specweave statusline`, which records the 5-hour and 7-day usage Claude Code reports on Pro and Max plans after the first reply. If you already have a status line, it keeps showing it. It also adds a `specweave usage-guard` Stop hook. When `~/.codex` exists, the same hook goes into `~/.codex/hooks.json`, and there it reads the rate limits Codex writes to its session log. Once usage passes the threshold, the hook stops the agent once per session and has it run `specweave handoff`, then tell you to say "pick up" in the next tool. Under the threshold the hook adds nothing to the conversation.
+
+Cloud sessions (Claude Code on the web, Projects threads and Codex cloud tasks) have no status line or user hooks, so there you still say "hand off".
+
 ## Who holds a task
 
 A task claim records the tool and host that made it, for example `codex@my-laptop`. SpecWeave detects Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and Grok; set `SPECWEAVE_TOOL` to name anything else. `specweave handoff` releases your claims, so the next tool can claim the same tasks straight away. A claim that was never released expires after the lease (2 hours by default); before that, `specweave task claim <id> --force` takes it over.
