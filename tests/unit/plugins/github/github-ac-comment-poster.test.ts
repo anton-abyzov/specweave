@@ -29,11 +29,6 @@ vi.mock('fs', () => ({
   existsSync: mockExistsSync,
 }));
 
-const mockPushSyncUserStories = vi.hoisted(() => vi.fn());
-vi.mock('../../../../plugins/specweave/lib/integrations/github/github-push-sync.js', () => ({
-  pushSyncUserStories: mockPushSyncUserStories,
-}));
-
 import {
   postACProgressComments,
   type CommentPostOptions,
