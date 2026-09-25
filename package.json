@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "Keep intent, specifications, and verified progress portable across AI coding tools. A local live work board, append-only task evidence, explicit handoffs, and optional GitHub/Jira/Azure DevOps integrations.",
   "type": "module",
   "bin": {
@@ -10,7 +10,7 @@
     "preinstall": "node scripts/check-node-version.js || exit 0",
     "preuninstall": "node scripts/preuninstall.cjs",
     "version": "node scripts/build/auto-changelog.js && node scripts/build/stamp-plugin-version.cjs && git add CHANGELOG.md plugins/specweave/.claude-plugin/plugin.json .claude-plugin/marketplace.json",
-    "postversion": "echo '\u2705 Version bumped with CHANGELOG entry'",
+    "postversion": "echo '✅ Version bumped with CHANGELOG entry'",
     "clean": "rm -rf dist/",
     "build": "npm run generate:skills && tsc && npm run build:dashboard && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps && npm run copy:adapters && npm run stamp:plugin-version",
     "generate:skills": "node scripts/build/generate-skills.mjs",
