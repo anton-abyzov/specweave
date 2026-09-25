@@ -12,20 +12,21 @@ No AI coding tool can read another's session. Each one keeps its transcript in i
 
 ## Hand off
 
+Tell your agent "hand off", or run:
+
 ```bash
-specweave handoff                         # the active increment
+specweave handoff                     # the active increment
 specweave handoff 0042 --reason "out of tokens" --next "restore on return"
-specweave handoff --push                  # also commit work in progress to a wip/ branch
 ```
 
 `handoff`:
 
 - **Releases your task claims**, so the next tool is not locked out.
-- **Records decisions and open questions** in the increment's ledger, where every tool reads them.
-- **Writes `handoff.md`** with repo-relative paths, so it resolves on any machine.
-- **Captures your uncommitted edits** as a diff, leaving out SpecWeave's own bookkeeping so the diff shows your code.
+- **Writes `handoff.md`** with where you stopped, the next step and repo-relative paths, so it resolves on any machine.
+- **Pushes your work to git** when the repo has an `origin` remote: your branch, and a snapshot of your uncommitted edits to a well-known handoff ref and to `wip/<branch>`. Your working tree, index and branch are left as they were.
 - **Scrubs secrets** from the free-text fields and the diff before writing anything.
-- With `--push`, **commits the work in progress to a `wip/` branch** and pushes it. A cloud session, such as a Claude Code Projects thread or a Codex cloud task, only sees what is pushed.
+
+Because the handoff lives in git, a cloud session such as a Claude Code Projects thread or a Codex cloud task sees it the same way your laptop does. There is nothing to copy or paste.
 
 ## Pick up
 
@@ -35,9 +36,15 @@ In the next tool, from the project folder:
 specweave pickup
 ```
 
-`pickup` prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, the branch and whether it is ahead of or behind its upstream, the last handoff, unread notes from other increments, and the project memory index. The Claude Code SessionStart hook prints the same thing, and `AGENTS.md` tells every other tool to run it first.
+`pickup` fetches the last handoff. When your checkout is clean and the history allows it, it fast-forwards your branch and applies the handed-off edits; otherwise it says in plain words what to do and changes nothing. Then it prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, its files and test, the branch, notes from other increments, and the project memory index.
 
-In 2.x, resuming meant finding and reading four or five files. Now it is one command.
+The Claude Code SessionStart hook prints the same summary, and `AGENTS.md` tells every other tool to run `pickup` first. In 2.x, resuming meant finding and reading four or five files and pasting a prompt. Now it is one command.
+
+To leave a message for whoever works on an increment next:
+
+```bash
+specweave note "Draft restore works; expiry not started" 0042
+```
 
 ## Who holds a task
 

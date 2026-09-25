@@ -58,16 +58,16 @@ Choose your project's real test command. The append-only ledger records who clai
 ## Change agents without losing the thread
 
 ```bash
-specweave handoff --push
+specweave handoff
 ```
 
-This releases your claims, records decisions and pushes work in progress to a `wip/` branch. In the next tool, or under another subscription, run:
+Or just tell your agent to hand off. This releases your claims and pushes your branch and uncommitted edits to git. In the next tool, or under another subscription, run:
 
 ```bash
 specweave pickup
 ```
 
-It prints the increment, the next task with its criteria, the branch, the last handoff, unread notes and project memory in one read.
+It fetches the handoff, applies your edits, and prints the increment, the next task with its criteria, notes and project memory in one read. Nothing to copy or paste.
 
 [How cross-tool handoffs work](/docs/guides/cross-tool-handoff)
 

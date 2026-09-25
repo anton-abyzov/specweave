@@ -23,22 +23,28 @@ New increments are a single `spec.md`:
 A customer who leaves checkout loses their choices.
 
 ## Scope
-Cart and shipping choice. Not payment details.
+In: cart and shipping choice. Out: payment details.
 
 ## Acceptance Criteria
-- AC-01 Returning within 24 hours restores the cart and shipping choice
-- AC-02 A paid order is never restored
+- [ ] AC-01: Returning within 24 hours restores the cart and shipping choice
+- [ ] AC-02: A paid order is never restored
 
 ## Approach
 Store a draft keyed by customer; clear it when payment succeeds.
 
+## Open questions
+- none
+
 ## Tasks
-- T-01 Save the checkout draft (AC-01)
-- T-02 Restore it on return (AC-01, AC-02)
-- T-03 Drop drafts after payment (AC-02)
+
+### T-01 Save the checkout draft
+- AC: AC-01 | Files: src/checkout/draft.ts, src/checkout/draft.test.ts | Test: npm test -- draft
+
+### T-02 Restore it on return
+- AC: AC-01, AC-02 | Files: src/checkout/restore.ts | Test: npm test -- restore
 ```
 
-There is no `tasks.md`, no template comments to delete, and no state written back into markdown. State lives only in the append-only `ledger.jsonl`. `metadata.json` stays as machine state that agents do not need to read. `plan.md` is still available for a genuinely large design.
+Each task is a heading plus one line naming the criteria it covers, the files it owns and the command that tests it. Claiming a task claims its files, so two agents cannot edit the same file at once. There is no `tasks.md`, and SpecWeave never writes state back into markdown. State lives only in the append-only `ledger.jsonl`. `metadata.json` stays as machine state that agents do not need to read. `plan.md` is still available for a genuinely large design.
 
 Increments created with 2.x, with a separate `tasks.md`, keep working unchanged.
 
@@ -52,8 +58,9 @@ Increments created with 2.x, with a separate `tasks.md`, keep working unchanged.
 
 ### Handoff and pickup
 
-- `specweave handoff` releases your task claims, records decisions and open questions in the ledger, and writes a handoff with repo-relative paths. With `--push` it commits work in progress to a `wip/` branch, so a cloud session can see it.
-- `specweave pickup` prints everything a fresh session needs in one read: the active increment, the next task with its criteria, branch state, the last handoff, unread notes and the project memory index.
+- `specweave handoff` (or just telling your agent to hand off) releases your task claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits to git. Nothing to copy or paste.
+- `specweave pickup`, in the next tool, fetches that handoff, applies your edits when the checkout is clean, and prints everything a fresh session needs in one read: the active increment, the next task with its criteria, branch state, notes and the project memory index.
+- `specweave note "<text>" <increment>` leaves a message for whoever works on that increment next; `pickup` shows it.
 
 See [Cross-tool handoff](./cross-tool-handoff.md).
 

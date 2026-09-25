@@ -16,13 +16,21 @@ Since 3.0, a new increment is one file you read and write, plus machine state yo
 └── handoff.md       # written by specweave handoff
 ```
 
-`spec.md` has five sections:
+`spec.md` has six sections:
 
 - **Problem**: the outcome, in the user's words.
 - **Scope**: what is in and what is out.
-- **Acceptance Criteria**: numbered, `- AC-01 …`. This is the definition of done.
+- **Acceptance Criteria**: numbered, `- [ ] AC-01: …`. This is the definition of done.
 - **Approach**: files, order, risks and decisions.
-- **Tasks**: one line per task, naming the criteria it covers, `- T-02 Restore it on return (AC-01, AC-02)`.
+- **Open questions**: what is still undecided, or "none".
+- **Tasks**: a heading per task and one line naming the criteria it covers, the files it owns and its test:
+
+```markdown
+### T-02 Restore it on return
+- AC: AC-01, AC-02 | Files: src/checkout/restore.ts | Test: npm test -- restore
+```
+
+Claiming a task claims its files, so two agents never edit the same file at once.
 
 State is never written back into markdown. When the agent claims or finishes a task, SpecWeave appends to `ledger.jsonl`. An acceptance criterion is met when every task that covers it is done, so nobody ticks boxes by hand.
 
@@ -48,7 +56,7 @@ specweave verify 0042                     # run the project's checks
 specweave complete 0042                   # close with evidence
 ```
 
-When you switch tools or hit a usage limit, `specweave handoff --push` in the old tool and `specweave pickup` in the new one. See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
+When you switch tools or hit a usage limit, run `specweave handoff` in the old tool and `specweave pickup` in the new one. Nothing to copy between them. See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
 
 ## Lifecycle
 

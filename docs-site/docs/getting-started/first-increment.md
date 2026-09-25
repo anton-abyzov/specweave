@@ -38,15 +38,22 @@ Signed-in users see a generic welcome.
 The header greeting. Not emails.
 
 ## Acceptance Criteria
-- AC-01 A signed-in user sees "Hi, <first name>"
-- AC-02 A signed-out visitor sees "Welcome"
+- [ ] AC-01: A signed-in user sees "Hi, <first name>"
+- [ ] AC-02: A signed-out visitor sees "Welcome"
 
 ## Approach
 Read the name from the session in the header component.
 
+## Open questions
+- none
+
 ## Tasks
-- T-01 Render the name from the session (AC-01)
-- T-02 Fall back for signed-out visitors (AC-02)
+
+### T-01 Render the name from the session
+- AC: AC-01 | Files: src/header/Greeting.tsx | Test: npm test -- greeting
+
+### T-02 Fall back for signed-out visitors
+- AC: AC-02 | Files: src/header/Greeting.tsx | Test: npm test -- greeting
 ```
 
 Read it before any code is written. Adjust the criteria until they say exactly what done means.
@@ -64,26 +71,26 @@ Under the hood the agent runs:
 ```bash
 specweave task next                        # T-01 and the text of AC-01
 specweave task claim T-01
-specweave task done T-01 --run "npm test"  # records the real check and its result
+specweave task done T-01 --run "npm test -- greeting"  # records the real check
 ```
 
 Each task arrives with its own criteria, so the agent does not reread the whole spec. When every task covering a criterion is done, that criterion is met.
 
 ## 3. Switch tools halfway (optional)
 
-Say you run out of usage after T-01. In the current tool:
+Say you run out of usage after T-01. Tell the agent "hand off", or run:
 
 ```bash
-specweave handoff --push
+specweave handoff
 ```
 
-Then open the project in another tool, or the same tool under another subscription, and run:
+It pushes your branch and uncommitted edits to git. Then open the project in another tool, or the same tool under another subscription, and run:
 
 ```bash
 specweave pickup
 ```
 
-It shows increment 0001, T-02 with AC-02, the branch, your handoff note and the project memory. Continue from there. See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
+It fetches the handoff, applies your edits, and shows increment 0001, T-02 with AC-02, any notes and the project memory. Continue from there. Nothing to copy or paste. See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
 
 ## 4. Review and close
 

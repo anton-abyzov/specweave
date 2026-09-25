@@ -18,7 +18,7 @@ export function LayeredHeroArt() {
       <div className={styles.chip}><span className={styles.chipDot} />spec.md<b>2 of 3 tasks done</b></div>
     </div>
     <div className={clsx(styles.plane, styles.floatB)} style={depth(0.6)}>
-      <div className={styles.chip}><span className={styles.chipDot} data-tone="ok" />handoff pushed<b>wip/0042-checkout</b></div>
+      <div className={styles.chip}><span className={styles.chipDot} data-tone="ok" />handoff pushed<b>wip/checkout-recovery</b></div>
     </div>
     <div className={clsx(styles.plane, styles.floatC)} style={depth(0.9)}>
       <div className={clsx(styles.chip, styles.chipDark)}>$ specweave pickup</div>

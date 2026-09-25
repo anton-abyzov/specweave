@@ -30,7 +30,13 @@ specweave create-increment "Checkout recovery v2" --supersedes 0042
 
 ## Threads talking to each other
 
-When one thread needs something from another thread's increment, it appends a note to that increment's ledger rather than editing its files. The owning thread sees unread notes the next time it runs `specweave pickup`. This keeps each increment owned by one session, which is what makes parallel threads safe.
+When one thread needs something from another thread's increment, it leaves a note rather than editing that increment's files:
+
+```bash
+specweave note "The API now returns drafts sorted by date" 0043
+```
+
+The owning thread sees it the next time it runs `specweave pickup`. This keeps each increment owned by one session, which is what makes parallel threads safe.
 
 ## Why the memory folder matters
 
@@ -49,4 +55,4 @@ Plugins declared in a repository's `.claude/settings.json` do not load in Projec
 | Grok Build | `AGENTS.md` and `CLAUDE.md` | `.grok/skills/`, `.agents/skills/`, Claude Code skills |
 | Cursor, GitHub Copilot, Gemini CLI | `AGENTS.md` | Their own skill folders, or the CLI directly |
 
-Everything else is in git, which is the one thing every tool and every account shares. To move a thread's work to another tool, run `specweave handoff --push` in the thread and `specweave pickup` in the next tool. See [Cross-tool handoff](./cross-tool-handoff.md).
+Everything else is in git, which is the one thing every tool and every account shares. To move a thread's work to another tool or account, tell the thread to hand off (or run `specweave handoff`), then run `specweave pickup` in the next tool. The handoff travels through git, so a cloud thread and a laptop see the same thing. See [Cross-tool handoff](./cross-tool-handoff.md).
