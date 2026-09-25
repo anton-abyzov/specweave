@@ -526,7 +526,7 @@ Implement OAuth for backend services using Node.js and PostgreSQL...
 EOF
 
 # Run detection (hypothetical command)
-specweave detect-project /tmp/test-content.md
+detect-project /tmp/test-content.md
 
 # Output:
 # Project: backend

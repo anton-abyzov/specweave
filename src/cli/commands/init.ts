@@ -2,7 +2,7 @@
  * SpecWeave Init Command
  *
  * Simplified (v1.0.415): Creates .specweave/ structure + config.json + instruction files.
- * External tool setup moved to `specweave sync-setup`.
+ * External tool setup moved to `specweave sync setup`.
  * Every workspace uses repositories/ structure from day one.
  */
 
@@ -237,7 +237,7 @@ export async function initCommand(
               }
               if (jobIds.length > 0) {
                 console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-                console.log(chalk.gray(`     Monitor: specweave jobs`));
+                console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
               }
               reposClonedInMigration = true;
             } else if (subChoice === 'copy-local') {
@@ -451,7 +451,7 @@ export async function initCommand(
             }
             if (jobIds.length > 0) {
               console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-              console.log(chalk.gray(`     Monitor: specweave jobs`));
+              console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
             }
           }
           // 'add-later' — repositories/ already created above, nothing more needed

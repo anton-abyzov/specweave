@@ -36,7 +36,7 @@ export function externalSyncConfigured(projectRoot: string): boolean {
     return false;
   }
 
-  // 2.0 shape — `specweave sync-setup` writes sync.enabled = true.
+  // 2.0 shape — `specweave sync setup` writes sync.enabled = true.
   const sync = config?.sync;
   if (sync?.enabled === true) return true;
   if (sync?.github?.enabled === true || sync?.jira?.enabled === true || sync?.ado?.enabled === true) {

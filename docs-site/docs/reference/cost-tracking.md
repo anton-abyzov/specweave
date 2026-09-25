@@ -35,4 +35,3 @@ Provider invoices, subscription allowances, negotiated rates, credits and actual
 
 Usage parsing runs locally and makes **no model API calls**. Its output contains session identifiers, timestamps, model identifiers and usage counts; those are operational metadata, not a claim of anonymous data. The source session files may contain sensitive transcripts. The cost API returns summaries rather than prompts or responses.
 
-`specweave analytics` is a separate command for recorded command, skill and agent events. It is not an increment billing export. See [models and execution context](/docs/guides/model-selection) for interpreting harness, model, effort, provider and surface alongside task evidence.
