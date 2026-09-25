@@ -80,7 +80,7 @@ export const beats: Beat[] = [
     id: 'handoff',
     label: 'Hit a limit',
     title: <>Out of tokens?<br /><em>Hand it off.</em></>,
-    body: <>Tell your agent to hand off, or run <code>specweave handoff</code>. It releases your task claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits to git. Nothing to copy, nothing to paste.</>,
+    body: <>Tell your agent to hand off, or run <code>specweave handoff</code>. It releases your task claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits to git. Nothing to copy, nothing to paste. With <code>specweave auto-handoff on</code>, Claude Code and Codex do it on their own at 90% of the limit.</>,
     file: 'terminal · Claude Code',
     panel: <Term lines={[
       ['$ specweave handoff', 'p'],
