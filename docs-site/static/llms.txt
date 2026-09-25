@@ -1,0 +1,36 @@
+# SpecWeave
+
+> SpecWeave is an open-source CLI (npm package `specweave`, MIT) that keeps AI coding work in git as one short spec.md per piece of work, an append-only task ledger and a handoff. When Claude Code, Codex or another agent hits a usage limit, `specweave handoff` records the state and pushes the uncommitted edits, and `specweave pickup` continues it in Codex, Grok Build, Gemini CLI, Cursor, Copilot or a second account of the same tool. One AGENTS.md of about 760 tokens is the instruction file every agent reads.
+
+Install: `npm install -g specweave`, then `specweave init` in a repository.
+
+## Start here
+
+- [What is SpecWeave?](https://spec-weave.com/docs/overview/introduction): the spec, the ledger and the handoff in one page
+- [How it works](https://spec-weave.com/docs/overview/how-it-works): the daily loop from spec to closed increment
+- [Installation](https://spec-weave.com/docs/getting-started/installation): install, update, uninstall
+- [Your first increment](https://spec-weave.com/docs/getting-started/first-increment)
+
+## Switching tools and accounts
+
+- [Handoff and pickup](https://spec-weave.com/docs/guides/cross-tool-handoff): continue a task in another tool when a usage limit hits, including auto-handoff at 90 percent
+- [Claude Code Projects and threads](https://spec-weave.com/docs/guides/claude-code-projects): one thread is one increment
+- [Codex, Grok Build, Cursor and Gemini CLI](https://spec-weave.com/docs/integrations/generic-ai-tools): what each tool reads
+- [SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3): what changed from 2.x and how to upgrade
+
+## Reference
+
+- [Commands](https://spec-weave.com/docs/reference/commands)
+- [Configuration](https://spec-weave.com/docs/reference/configuration)
+- [FAQ](https://spec-weave.com/docs/faq)
+- [SpecWeave vs GitHub Spec Kit](https://spec-weave.com/docs/guides/specweave-vs-speckit)
+
+## Skills
+
+- [Verified Skill](https://verified-skill.com): a registry that security-scans agent skills for Claude Code, Codex and other tools before you install them
+- [vskill CLI](https://spec-weave.com/docs/skills/vskill-cli)
+
+## Optional
+
+- [Source code](https://github.com/anton-abyzov/specweave)
+- [Blog](https://spec-weave.com/blog)

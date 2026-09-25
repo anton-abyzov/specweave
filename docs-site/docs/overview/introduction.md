@@ -1,6 +1,6 @@
 ---
-title: What is SpecWeave?
-description: SpecWeave keeps AI-assisted work in your repository as a short spec, an append-only task ledger and a handoff, so any coding agent, account or model can continue it.
+title: "What is SpecWeave? Spec-driven development across AI coding tools"
+description: "SpecWeave keeps AI-assisted work in your repository as a short spec, an append-only task ledger and a handoff, so any coding agent, account or model can continue it."
 ---
 
 # What is SpecWeave?

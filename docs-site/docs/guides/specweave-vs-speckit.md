@@ -1,7 +1,7 @@
 ---
+title: "SpecWeave vs GitHub Spec Kit"
+description: "SpecWeave 3.0 and GitHub Spec Kit compared: where they overlap, how they differ after the spec is written, and when each one fits."
 sidebar_position: 5
-title: SpecWeave vs SpecKit
-description: How SpecWeave 3.0 and GitHub's SpecKit differ, where they overlap, and when each one fits.
 ---
 
 # SpecWeave vs GitHub SpecKit

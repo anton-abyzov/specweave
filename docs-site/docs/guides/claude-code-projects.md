@@ -1,6 +1,6 @@
 ---
-title: Claude Code Projects and threads
-description: How SpecWeave 3.0 maps Claude Code Projects, threads and project memory onto increments, and how that carries over to Codex and other tools.
+title: "Claude Code Projects and threads with SpecWeave"
+description: "How SpecWeave 3.0 maps Claude Code Projects, threads and project memory onto increments, and how that work carries over to Codex, Grok and a second Claude account."
 ---
 
 # Claude Code Projects and threads

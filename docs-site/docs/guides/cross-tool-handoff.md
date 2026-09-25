@@ -1,3 +1,8 @@
+---
+title: "Switch from Claude Code to Codex mid-task: handoff and pickup"
+description: "Out of Claude Code or Codex usage halfway through a task? Hand off in one command and pick up in Codex, Grok Build, Gemini CLI or another account with the spec, tasks and uncommitted edits intact."
+---
+
 # Cross-Tool Handoff and Pickup
 
 > **Out of tokens, or want a second opinion from another model? Hand off in one command, pick up in the next tool in one read.**
