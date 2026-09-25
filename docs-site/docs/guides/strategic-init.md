@@ -381,7 +381,7 @@ specweave init --quick \
 ## Next Steps After Strategic Init
 
 1. **Review generated projects**: Check `.specweave/docs/internal/specs/` for project folders
-2. **Start first increment**: `specweave increment "Setup authentication"`
+2. **Start first increment**: `specweave create-increment "Setup authentication"`
 3. **Invite team**: Share `.specweave/config.json` with team for consistent setup
 4. **Apply for cloud credits**: Use URLs provided in Architecture Recommendation
 

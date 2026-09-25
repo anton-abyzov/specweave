@@ -10,11 +10,6 @@ local -a commands
 commands=(
     'init:Initialize a new SpecWeave project'
     'uninstall:Remove SpecWeave from the current project'
-    'install:Install agents/skills to .claude/ or ~/.claude/'
-    'scan-skill:Scan a skill file for security issues (Tier 1 pattern scanning)'
-    'scan-plugins:Batch-scan all plugin SKILL.md files for security issues (Gen Agent Trust Hub categories)'
-    'judge-skill:Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)'
-    'list:List available and installed components'
     'pause:Pause an active increment'
     'start:Start a planned/backlog/paused increment (status -> active)'
     'resume:Resume a paused, abandoned or not-yet-started increment'
@@ -35,9 +30,6 @@ commands=(
     'archive:Archive completed increments and sync living docs (project-specific folders)'
     'save:Smart save - auto-generate commit message, sync with remote, commit and push'
     'status:Show increment status overview (alias\: progress)'
-    'interview:Manage Deep Interview Mode for increment planning'
-    'decision-log:Query structured decision logs from hooks'
-    'status-line:Display current increment status line'
     'auto:Start autonomous execution (stop hook feedback loop)'
     'auto-status:Check auto session status and progress'
     'cancel-auto:Cancel running auto session'
@@ -49,31 +41,15 @@ commands=(
     'qa:Run quality assessment on an increment'
     'link-pr:Link a pull request to external tickets (JIRA, ADO)'
     'branch-name:Output the computed branch name for an increment (with optional JIRA/ADO ticket key)'
-    'jobs:Monitor and manage background jobs (imports, cloning, sync)'
-    'living-docs:Launch or resume Living Docs Builder independently'
-    'cache:Manage dashboard cache for instant status commands'
-    'analytics:Show usage analytics dashboard (commands, skills, agents)'
-    'analytics-push:Record a skill or agent analytics event (replaces PostToolUse analytics hook)'
     'lsp:LSP code intelligence (refs, def, hover, symbols, search)'
-    'commits:Display the last 2 git commits'
     'sync:Sync increments with GitHub, Jira or Azure DevOps\: push | pull | status | setup'
-    'docs:Documentation preview, build, and validation (works in any SpecWeave project)'
     'refresh-plugins:Refresh SpecWeave plugins (core only by default, use --all for everything)'
     'doctor:Run comprehensive health check on SpecWeave project'
-    'health:Quick deployment health check (config, plugins, sync connectivity)'
-    'session:Session lifecycle management (start, end)'
-    'hook:Handle Claude Code hook events (internal)'
-    'detect-intent:Detect SpecWeave intent from a prompt and optionally install plugins'
-    'evaluate-completion:Evaluate whether an auto mode session should be considered complete'
     'generate-rubric:Generate or refresh the AC-tied rubric.md quality contract at the increment root'
-    'detect-project:Detect project type from files and suggest plugins to install'
-    'resolve-structure:[REMOVED] All workspaces now use the repositories/ structure'
-    'export-skills:Export SpecWeave skills to Agent Skills open standard format (agentskills.io)'
     'dashboard:Launch real-time observability dashboard in browser'
     'hooks:'
     'context:Show SpecWeave workspace context'
     'get:Clone and register an existing repository into the workspace'
-    'migrate-to-umbrella:[REMOVED] Use specweave get to add repositories'
 )
 
 _specweave() {
@@ -108,36 +84,6 @@ _specweave() {
                         '--keep-data[Archive .specweave/ instead of deleting]' \
                         '--dry-run[Show what would be removed without deleting]' \
                         '--force[Skip confirmation prompt]' \
-                        '--help[Show help]'
-                    ;;
-                install)
-                    _arguments \
-                        '--global[Install globally to ~/.claude/]' \
-                        '--local[Install locally to .claude/ (default)]' \
-                        '--help[Show help]'
-                    ;;
-                scan-skill)
-                    _arguments \
-                        '--json[Output results as JSON]' \
-                        '--help[Show help]'
-                    ;;
-                scan-plugins)
-                    _arguments \
-                        '--json[Output results as JSON for CI integration]' \
-                        '--verbose[Show per-skill reports in addition to batch summary]' \
-                        '--dir[Path to plugins directory (default\: ./plugins)]' \
-                        '--help[Show help]'
-                    ;;
-                judge-skill)
-                    _arguments \
-                        '--json[Output results as JSON]' \
-                        '--model[LLM model to use (e.g., sonnet, opus)]' \
-                        '--scan-only[Run Tier 1 only, skip LLM analysis]' \
-                        '--help[Show help]'
-                    ;;
-                list)
-                    _arguments \
-                        '--installed[Show only installed components]' \
                         '--help[Show help]'
                     ;;
                 pause)
@@ -314,27 +260,6 @@ _specweave() {
                         '--type[Filter by increment type (feature, hotfix, bug, etc.)]' \
                         '--help[Show help]'
                     ;;
-                interview)
-                    _arguments \
-                        '--help[Show help]'
-                    ;;
-                decision-log)
-                    _arguments \
-                        '--hook[Filter by hook name (e.g. stop-auto)]' \
-                        '--decision[Filter by decision type (approve, block)]' \
-                        '--since[Filter by time window (1h, 24h, 7d)]' \
-                        '--limit[Number of entries to show (default\: 20)]' \
-                        '--json[Output raw JSON format]' \
-                        '--tail[Follow log in real-time (like tail -f)]' \
-                        '--help[Show help]'
-                    ;;
-                status-line)
-                    _arguments \
-                        '--json[Output JSON format]' \
-                        '--clear[Clear status line cache]' \
-                        '--config[Path to config file]' \
-                        '--help[Show help]'
-                    ;;
                 auto)
                     _arguments \
                         '--dry-run[Preview without activating]' \
@@ -413,70 +338,14 @@ _specweave() {
                     _arguments \
                         '--help[Show help]'
                     ;;
-                jobs)
-                    _arguments \
-                        '--all[Show all jobs (including completed)]' \
-                        '--id[Show details for specific job]' \
-                        '--logs[Show worker log output]' \
-                        '--follow[Follow job progress in real-time]' \
-                        '--kill[Kill running background job]' \
-                        '--resume[Resume paused job]' \
-                        '--help[Show help]'
-                    ;;
-                living-docs)
-                    _arguments \
-                        '--resume[Resume orphaned/paused job]' \
-                        '--depth[Analysis depth\: quick, standard, deep-native, deep-api]' \
-                        '--priority[Priority modules (comma-separated)]' \
-                        '--sources[Additional doc folders (comma-separated)]' \
-                        '--depends-on[Wait for jobs before starting (comma-separated)]' \
-                        '--foreground[Run in current session instead of background]' \
-                        '--force[Force run even for greenfield projects]' \
-                        '--full-scan[Force full deep scan (all phases\: repos, org, arch, inconsistencies, strategy)]' \
-                        '--help[Show help]'
-                    ;;
-                cache)
-                    _arguments \
-                        '--rebuild[Rebuild cache from increments]' \
-                        '--status[Show cache status (default)]' \
-                        '--clear[Clear cache]' \
-                        '--quiet[Minimal output]' \
-                        '--debug[Show debug information]' \
-                        '--help[Show help]'
-                    ;;
-                analytics)
-                    _arguments \
-                        '--export[Export data (json, csv)]' \
-                        '--since[Filter by time range (24h, 7d, 30d)]' \
-                        '--type[Filter by event type (command, skill, agent)]' \
-                        '--json[Output raw JSON for scripting]' \
-                        '--limit[Number of top items to show]' \
-                        '--help[Show help]'
-                    ;;
-                analytics-push)
-                    _arguments \
-                        '--plugin[Source plugin name]' \
-                        '--json[Output as JSON]' \
-                        '--silent[Suppress output]' \
-                        '--help[Show help]'
-                    ;;
                 lsp)
                     _arguments \
                         '1:subcommand:(refs def hover symbols search warmup status setup)' \
                         '--help[Show help]'
                     ;;
-                commits)
-                    _arguments \
-                        '--help[Show help]'
-                    ;;
                 sync)
                     _arguments \
                         '1:subcommand:(push pull status setup)' \
-                        '--help[Show help]'
-                    ;;
-                docs)
-                    _arguments \
-                        '1:subcommand:(preview build validate public kill status sync)' \
                         '--help[Show help]'
                     ;;
                 refresh-plugins)
@@ -498,61 +367,10 @@ _specweave() {
                         '--fix-status[Fix metadata.json <-> spec.md status desyncs (formerly sw\:sync-status)]' \
                         '--help[Show help]'
                     ;;
-                health)
-                    _arguments \
-                        '--json[Output as JSON for CI/CD pipelines]' \
-                        '--verbose[Show detailed output]' \
-                        '--help[Show help]'
-                    ;;
-                session)
-                    _arguments \
-                        '1:subcommand:(start end)' \
-                        '--help[Show help]'
-                    ;;
-                hook)
-                    _arguments \
-                        '--help[Show help]'
-                    ;;
-                detect-intent)
-                    _arguments \
-                        '--install[Also install detected plugins after detection]' \
-                        '--silent[Silent mode - no stdout output (for hooks)]' \
-                        '--file[Read prompt from file instead of argument (avoids shell escaping issues)]' \
-                        '--help[Show help]'
-                    ;;
-                evaluate-completion)
-                    _arguments \
-                        '--model[Model for LLM evaluation\: haiku or sonnet (default\: sonnet)]' \
-                        '--timeout[Timeout in milliseconds (default\: 45000)]' \
-                        '--silent[Minimal output]' \
-                        '--help[Show help]'
-                    ;;
                 generate-rubric)
                     _arguments \
                         '--refresh[Regenerate from current ACs, overwriting an existing non-template rubric]' \
                         '--silent[Minimal output]' \
-                        '--help[Show help]'
-                    ;;
-                detect-project)
-                    _arguments \
-                        '--name[Increment name for legacy name-based detection]' \
-                        '--description[Description for legacy name-based detection]' \
-                        '--install[Also install detected plugins after detection]' \
-                        '--silent[Silent mode - no stdout output (for hooks)]' \
-                        '--help[Show help]'
-                    ;;
-                resolve-structure)
-                    _arguments \
-                        '--help[Show help]'
-                    ;;
-                export-skills)
-                    _arguments \
-                        '--output[Output directory (default\: .agent-skills)]' \
-                        '--plugin[Export specific plugin only]' \
-                        '--skill[Export specific skill only]' \
-                        '--dry-run[Preview without writing files]' \
-                        '--validate[Validate output against Agent Skills spec]' \
-                        '--verbose[Show detailed output]' \
                         '--help[Show help]'
                     ;;
                 dashboard)
@@ -583,10 +401,6 @@ _specweave() {
                         '--limit[Max repos to fetch in bulk mode (default\: 1000)]' \
                         '--no-archived[Skip archived repositories in bulk mode]' \
                         '--no-forks[Skip forked repositories in bulk mode]' \
-                        '--help[Show help]'
-                    ;;
-                migrate-to-umbrella)
-                    _arguments \
                         '--help[Show help]'
                     ;;
             esac

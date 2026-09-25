@@ -333,7 +333,7 @@ To disable bidirectional linking (not recommended):
 If automatic sync didn't work during `sw:done`:
 
 ```bash
-specweave sync-living-docs 0031-external-tool-status-sync
+specweave sync push 0031-external-tool-status-sync
 ```
 
 **Output**:

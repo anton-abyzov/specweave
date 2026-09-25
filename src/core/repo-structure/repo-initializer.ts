@@ -12,7 +12,7 @@ import ora from 'ora';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import type { GitProvider } from './git-provider.js';
 import type { RepoStructureConfig } from './repo-structure-manager.js';
-import { getJobManager } from '../background/index.js';
+import { getJobManager } from '../background/job-manager.js';
 import type { CloneJobConfig } from '../background/types.js';
 
 export interface RepoInitializerOptions {
