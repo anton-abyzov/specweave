@@ -99,7 +99,7 @@ describe('ImportToIncrementConverter', () => {
       expect(result.externalRef).toBe('github#owner/repo#123');
       expect(result.createdFiles).toContain('metadata.json');
       expect(result.createdFiles).toContain('spec.md');
-      expect(result.createdFiles).toContain('tasks.md');
+      expect(result.createdFiles).not.toContain('tasks.md');
 
       // Verify metadata.json
       const metadataPath = path.join(result.incrementPath, 'metadata.json');
@@ -218,10 +218,9 @@ describe('ImportToIncrementConverter', () => {
       const item = createGitHubItem({ acceptanceCriteria: undefined });
       const result = await converter.createIncrement(item);
 
-      const tasksPath = path.join(result.incrementPath, 'tasks.md');
-      const tasks = fs.readFileSync(tasksPath, 'utf-8');
-      // Should have template tasks, not derived from ACs
-      expect(tasks).toContain('TEMPLATE FILE');
+      const spec = fs.readFileSync(path.join(result.incrementPath, 'spec.md'), 'utf-8');
+      // Should have a placeholder task, not tasks derived from ACs
+      expect(spec).toContain('### T-01 [First task]');
     });
 
     it('should handle long titles by truncating slug', async () => {

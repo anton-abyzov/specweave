@@ -131,6 +131,7 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l run -d "Run <cmd>
 complete -c specweave -n "__fish_seen_subcommand_from task" -l note -s n -d "Note (alias of --reason)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l reason -d "Reason (required for skip / block)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With `release`: release every task claimed by this agent"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l write -d "With `render`: refresh a legacy tasks.md from the ledger"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 
 # verify

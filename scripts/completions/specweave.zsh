@@ -171,6 +171,7 @@ _specweave() {
                         '--note[Note (alias of --reason)]' \
                         '--reason[Reason (required for skip / block)]' \
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
+                        '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--json[Machine-readable output]' \
                         '--help[Show help]'
                     ;;
