@@ -1,6 +1,8 @@
 # SpecWeave plugin (`sw`)
 
 The Claude Code surface for SpecWeave: **11 skills, 2 default hooks, 1 closer agent**.
+The skills are generated from `skills/sw-<name>/` at the repository root (the one source
+every tool shares); edit them there, never here.
 Everything deterministic lives in the `specweave` CLI; a skill exists only where a
 procedure needs model judgement. There is no `commands/` namespace in 2.0.
 
@@ -8,16 +10,16 @@ procedure needs model judgement. There is no `commands/` namespace in 2.0.
 
 | Skill | What it does |
 |---|---|
-| `sw:increment` | Plan a unit of work → `spec.md` (Problem, Scope, ACs, Approach) + `tasks.md` |
+| `sw:increment` | Plan a unit of work → one `spec.md` (Problem, Scope, ACs, Approach, Tasks) |
 | `sw:do` | Work the increment task by task through the ledger, with evidence per task |
 | `sw:done` | Close it: ledger check → `specweave verify` → optional review → `specweave complete` |
-| `sw:review` | Adversarial fresh-context review; every finding cites `path:line` |
+| `sw:review` | Adversarial fresh-context review and quality check; every finding cites `path:line` |
 | `sw:team` | Several agents on one increment: a worktree each, claims through the ledger |
-| `sw:handoff` | Portable, secret-scrubbed handoff doc so the work continues in any tool |
+| `sw:handoff` | "Hand off" here, "pick up" in any other tool, account or machine |
 | `sw:sync` | GitHub / Jira / ADO: push, pull, status, setup |
 | `sw:auto` | Unattended loop driven by the Stop hook |
 | `sw:brainstorm` | Expand the option space before committing to one |
-| `sw:qa` | Risk-scored quality assessment (`specweave qa`) |
+| `sw:project` | Shared goal, memory, work items and briefs across tools |
 | `sw:jev` | Delegate closed-set decisions to Jev (TypeSafe System One): routing, command safety, screening |
 
 Optional procedures (tdd-cycle, e2e, debug, diagrams, release-expert) are **not** in the
@@ -51,8 +53,6 @@ the marker and the project hook. This is a Claude Code surface only; other tools
 | Agent | Purpose |
 |---|---|
 | `sw:sw-closer` | Runs closure in a fresh context after implementation finishes |
-
-Team lane templates live in `skills/team/agents/` and are loaded by `specweave team`.
 
 ## Requirements
 

@@ -61,9 +61,9 @@ Codex native skills install under `.agents/skills/sw-*`. Existing legacy skills 
 
 Everything lives in `.specweave/increments/NNNN-slug/`: `spec.md`, `tasks.md` (+ the rendered `SW:BOARD`), `ledger.jsonl`, `handoff.md`, `reports/`.
 
-## The twelve skills
+## The eleven skills
 
-The CLI is the product and it runs in any AI tool or in CI. These twelve focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
+The CLI is the product and it runs in any AI tool or in CI. These eleven focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
 
 | Skill | Use it for |
 |-------|------------|
@@ -73,8 +73,7 @@ The CLI is the product and it runs in any AI tool or in CI. These twelve focused
 | `sw:do` | Claim a task, implement it, close it with evidence. |
 | `sw:auto` | The same loop, unattended, until the tasks run out. |
 | `sw:team` | A worktree per agent, claims arbitrated by the ledger. |
-| `sw:review` | Fresh-context adversarial pass; findings cite `path:line`. |
-| `sw:qa` | Risk-scored assessment, blockers, verdict. |
+| `sw:review` | Fresh-context adversarial pass and quality check; findings cite `path:line`. |
 | `sw:done` | Verify, review check, `specweave complete`. |
 | `sw:sync` | GitHub, Jira and Azure DevOps: push, pull, status, setup. |
 | `sw:handoff` | A one-page, secret-scrubbed continuation doc. |

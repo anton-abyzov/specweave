@@ -85,7 +85,8 @@ describe('init-architecture (integration)', () => {
       const config: Record<string, any> = {};
       const result = applySmartDefaults(config, { adapter: 'claude', isGitRepo: true });
 
-      expect(result.testing.mode).toBe('TDD');
+      expect(result.testing.mode).toBeUndefined();
+      expect(result.testing.commands).toEqual([]);
       expect(result.planning.deepInterview).toBe('off');
       expect(result.lsp.enabled).toBe(true);
     });
@@ -160,7 +161,7 @@ describe('init-architecture (integration)', () => {
       // Phase 4: Apply smart defaults
       const config: Record<string, any> = {};
       applySmartDefaults(config, { adapter: 'claude', isGitRepo: true });
-      expect(config.testing.mode).toBe('TDD');
+      expect(config.testing.mode).toBeUndefined();
 
       // Phase 5: Generate summary banner (simplified - no tracker/greenfield/repoCount)
       const banner = formatSummaryBanner({
@@ -180,7 +181,7 @@ describe('init-architecture (integration)', () => {
       expect(stripped).toContain('my-app');
       expect(stripped).toContain('GitHub');
       expect(stripped).toContain('acme/my-app');
-      expect(stripped).toContain('TDD');
+      expect(stripped).not.toContain('TDD');
       expect(stripped).toContain('LSP');
     });
 
@@ -224,7 +225,8 @@ describe('init-architecture (integration)', () => {
       });
 
       const stripped = banner.replace(/\x1B\[[0-9;]*m/g, '');
-      expect(stripped).toContain('TDD');
+      expect(stripped).not.toContain('TDD');
+      expect(stripped).toContain('Skills sw-*');
     });
 
     it('full pipeline: ADO repo with no credentials', () => {

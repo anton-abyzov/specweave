@@ -159,6 +159,10 @@ const { mockEnableAgentTeamsEnvVar } = vi.hoisted(() => ({
   mockEnableAgentTeamsEnvVar: vi.fn(),
 }));
 
+const { mockInstallProjectSkills } = vi.hoisted(() => ({
+  mockInstallProjectSkills: vi.fn(),
+}));
+
 const { mockApplySmartDefaults } = vi.hoisted(() => ({
   mockApplySmartDefaults: vi.fn().mockReturnValue({}),
 }));
@@ -313,6 +317,12 @@ vi.mock('../../../../src/cli/helpers/init/claude-settings-env.js', () => ({
   enableAgentTeamsEnvVar: mockEnableAgentTeamsEnvVar,
 }));
 
+vi.mock('../../../../src/core/skills/project-skills.js', () => ({
+  installProjectSkills: mockInstallProjectSkills,
+  PROJECT_SKILL_DIRS: ['.claude/skills', '.agents/skills'],
+  SPECWEAVE_SKILLS: ['increment', 'do', 'auto', 'team', 'review', 'done', 'sync', 'handoff', 'project', 'brainstorm', 'jev'],
+}));
+
 vi.mock('../../../../src/cli/commands/lsp.js', () => ({
   scanLanguagesAcrossRepos: vi.fn().mockResolvedValue({ success: false, languages: [], reposScanned: [] }),
   handleLspSetup: vi.fn(),
@@ -418,6 +428,7 @@ describe('init command', () => {
     mockScanMisplacedRepos.mockReturnValue([]);
     mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
     mockEnsureSkillCreator.mockResolvedValue(undefined);
+    mockInstallProjectSkills.mockReturnValue({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [] });
     mockPromptLanguageSelection.mockResolvedValue({ language: 'en', keepEnglishOriginals: false });
     mockGetDefaultLanguageSelection.mockReturnValue({ language: 'en', keepEnglishOriginals: false });
     mockGetPluginScope.mockReturnValue('user');
@@ -1231,66 +1242,45 @@ describe('init command', () => {
   // initCommand - Plugin installation (Claude)
   // ==========================================================================
 
-  describe('initCommand - Claude plugin installation', () => {
-    it('should install plugins when tool is claude and new project', async () => {
+  describe('initCommand - skills installation (3.0)', () => {
+    it('installs the sw-* project skills for a new Claude project', async () => {
       mockExistsSync.mockReturnValue(false);
       mockDetectTool.mockResolvedValue('claude');
 
       await initCommand('claude-project', { quick: true });
 
-      expect(mockInstallAllPlugins).toHaveBeenCalledWith(
-        expect.objectContaining({
-          forceRefresh: undefined,
-        })
-      );
-    });
-
-    it('should call installAllPlugins when fullInstall option is set', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockDetectTool.mockResolvedValue('claude');
-
-      await initCommand('full-install', { quick: true, fullInstall: true });
-
-      expect(mockInstallAllPlugins).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dirname: expect.any(String),
-        })
-      );
-    });
-
-    it('should skip plugin install for continue-existing', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('.specweave')) return true;
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockPromptSmartReinit.mockResolvedValue({ action: 'continue', continueExisting: true });
-      mockReadJsonSync.mockReturnValue({ adapters: { default: 'claude' } });
-
-      await initCommand('.', { quick: true });
-
+      expect(mockInstallProjectSkills).toHaveBeenCalledWith(expect.stringContaining('claude-project'));
       expect(mockInstallAllPlugins).not.toHaveBeenCalled();
     });
 
-    it('should enable agent teams env var for claude tool', async () => {
+    it('installs the same skills for every other tool', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockGetAdapter.mockReturnValue({
+        install: vi.fn(), postInstall: vi.fn(), supportsPlugins: vi.fn().mockReturnValue(true), compilePlugin: vi.fn(),
+      });
+
+      await initCommand('codex-project', { adapter: 'codex', quick: true });
+
+      expect(mockInstallProjectSkills).toHaveBeenCalledWith(expect.stringContaining('codex-project'));
+    });
+
+    it('never enables the agent-teams env var, in the project or globally', async () => {
       mockExistsSync.mockReturnValue(false);
       mockDetectTool.mockResolvedValue('claude');
 
       await initCommand('agent-teams', { quick: true });
 
-      expect(mockEnableAgentTeamsEnvVar).toHaveBeenCalled();
+      expect(mockEnableAgentTeamsEnvVar).not.toHaveBeenCalled();
     });
 
-    it('should also enable agent teams env var in global ~/.claude/settings.json', async () => {
+    it('never enables plugins in the global Claude settings', async () => {
       mockExistsSync.mockReturnValue(false);
       mockDetectTool.mockResolvedValue('claude');
 
-      await initCommand('agent-teams-global', { quick: true });
+      await initCommand('no-global', { quick: true, forceRefresh: true });
 
-      // Should be called with both project dir AND homedir
-      const calls = mockEnableAgentTeamsEnvVar.mock.calls.map((c: unknown[][]) => c[0]);
-      const homeDir = (await import('os')).homedir();
-      expect(calls).toContainEqual(homeDir);
+      expect(mockEnablePlugin).not.toHaveBeenCalled();
+      expect(mockInstallAllPlugins).not.toHaveBeenCalled();
     });
   });
 
@@ -1416,7 +1406,7 @@ describe('init command', () => {
   // ==========================================================================
 
   describe('initCommand - LSP setup in CI mode', () => {
-    it('should auto-enable LSP in CI mode for claude tool', async () => {
+    it('never writes ENABLE_LSP_TOOL into the user\'s shell config', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('config.json')) return true;
         return false;
@@ -1426,7 +1416,7 @@ describe('init command', () => {
 
       await initCommand('lsp-ci', { quick: true });
 
-      expect(mockSetupLspEnvVar).toHaveBeenCalled();
+      expect(mockSetupLspEnvVar).not.toHaveBeenCalled();
     });
 
     it('should write LSP config to config.json in CI mode', async () => {
@@ -1574,25 +1564,6 @@ describe('init command', () => {
   });
 
   // ==========================================================================
-  // initCommand - Force refresh
-  // ==========================================================================
-
-  describe('initCommand - force refresh option', () => {
-    it('should pass forceRefresh to installAllPlugins', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockDetectTool.mockResolvedValue('claude');
-
-      await initCommand('force-refresh', { quick: true, forceRefresh: true });
-
-      expect(mockInstallAllPlugins).toHaveBeenCalledWith(
-        expect.objectContaining({
-          forceRefresh: true,
-        })
-      );
-    });
-  });
-
-  // ==========================================================================
   // initCommand - Interactive mode (non-CI)
   // ==========================================================================
 
@@ -1712,14 +1683,25 @@ describe('init command', () => {
   // initCommand - Git hooks (CI mode)
   // ==========================================================================
 
-  describe('initCommand - git hooks auto-installation', () => {
-    it('should auto-install git hooks when .git exists for new project', async () => {
+  describe('initCommand - git hooks (opt-in)', () => {
+    it('installs no git hook by default', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.endsWith('.git')) return true;
         return false;
       });
 
-      await initCommand('hooks-ci', { quick: true });
+      await initCommand('hooks-default', { quick: true });
+
+      expect(mockInstallGitHooks).not.toHaveBeenCalled();
+    });
+
+    it('installs the git hook with --git-hooks', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.endsWith('.git')) return true;
+        return false;
+      });
+
+      await initCommand('hooks-opt-in', { quick: true, gitHooks: true });
 
       expect(mockInstallGitHooks).toHaveBeenCalled();
     });
@@ -1811,32 +1793,4 @@ describe('init command', () => {
     });
   });
 
-  // ==========================================================================
-  // initCommand - Plugin enablement in project settings
-  // ==========================================================================
-
-  describe('initCommand - plugin enablement', () => {
-    it('should enable plugins in project settings when install succeeds', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockDetectTool.mockResolvedValue('claude');
-      mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
-
-      await initCommand('plugin-enable', { quick: true });
-
-      // Plugin enablement is now delegated to installAllPlugins internally.
-      // Verify installAllPlugins was called (it handles enablement via enablePluginsInSettings).
-      expect(mockInstallAllPlugins).toHaveBeenCalled();
-      expect(mockEnablePlugin).not.toHaveBeenCalled();
-    });
-
-    it('should skip plugin enablement when marketplace-only install', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockDetectTool.mockResolvedValue('claude');
-      mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: true });
-
-      await initCommand('marketplace-only', { quick: true });
-
-      expect(mockEnablePlugin).not.toHaveBeenCalled();
-    });
-  });
 });

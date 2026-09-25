@@ -1,12 +1,12 @@
 {
   "$schema": "https://spec-weave.com/schemas/skill-marketplace.v1.json",
   "plugin": "sw",
-  "description": "Skill catalog for the specweave plugin. The plugin version is tracked in .claude-plugin/plugin.json (stamped from package.json); this file only lists what ships.",
+  "description": "Skill catalog for the specweave plugin. The skills are generated from skills/sw-<name>/ (scripts/build/generate-skills.mjs); the plugin version is tracked in .claude-plugin/plugin.json.",
   "skills": [
     {
       "name": "sw:increment",
       "path": "skills/increment/SKILL.md",
-      "description": "Plan a unit of work: spec.md with Problem, Scope, numbered ACs and an Approach, plus tasks.md definitions.",
+      "description": "Plan a unit of work: one spec.md with Problem, Scope, numbered ACs, Approach and Tasks.",
       "deprecated": false
     },
     {
@@ -18,13 +18,13 @@
     {
       "name": "sw:done",
       "path": "skills/done/SKILL.md",
-      "description": "Close an increment: ledger check, specweave verify, optional review, specweave complete.",
+      "description": "Close an increment: board check, specweave verify, fresh-context review, specweave complete.",
       "deprecated": false
     },
     {
       "name": "sw:review",
       "path": "skills/review/SKILL.md",
-      "description": "Adversarial fresh-context review; every finding cites path:line and is re-verified. Replaces grill, code-reviewer and judge-llm.",
+      "description": "Adversarial fresh-context review and quality check; every finding cites path:line and is re-verified. Replaces qa, grill, code-reviewer and judge-llm.",
       "deprecated": false
     },
     {
@@ -36,7 +36,7 @@
     {
       "name": "sw:handoff",
       "path": "skills/handoff/SKILL.md",
-      "description": "Portable, secret-scrubbed handoff doc so the work continues in any AI tool or on any machine.",
+      "description": "\"Hand off\" in one tool, \"pick up\" in any other tool, account or machine: specweave handoff and specweave pickup.",
       "deprecated": false
     },
     {
@@ -48,19 +48,13 @@
     {
       "name": "sw:auto",
       "path": "skills/auto/SKILL.md",
-      "description": "Unattended execution driven by the Stop hook until every task is done.",
+      "description": "Run an increment unattended until every task is done, then verify and close.",
       "deprecated": false
     },
     {
       "name": "sw:brainstorm",
       "path": "skills/brainstorm/SKILL.md",
       "description": "Expand the option space before committing to one, ending in a pick handed to sw:increment.",
-      "deprecated": false
-    },
-    {
-      "name": "sw:qa",
-      "path": "skills/qa/SKILL.md",
-      "description": "Risk-scored quality assessment via specweave qa: verdict, blockers, optional export to tasks.md.",
       "deprecated": false
     },
     {
@@ -73,7 +67,7 @@
       "name": "sw:project",
       "path": "skills/project/SKILL.md",
       "deprecated": false,
-      "description": "Coordinate code, research and content projects with shared context, artifacts and portable worker briefs."
+      "description": "Shared goal, memory, work items, artifacts and briefs, portable across AI tools and accounts."
     }
   ],
   "optionalSkills": {
@@ -99,7 +93,7 @@
       "sw:plan": "sw:increment",
       "sw:pm": "sw:increment",
       "sw:architect": "sw:increment",
-      "sw:validate": "sw:qa",
+      "sw:validate": "sw:review",
       "sw:close-all": "specweave complete --all",
       "sw:progress": "specweave status",
       "sw:analytics": "specweave dashboard",
@@ -129,6 +123,14 @@
       "sw:remotion": "external media skills",
       "sw:skill-gen": "vskill skill-creator",
       "sw:skill-refine": "vskill skill-creator"
+    }
+  },
+  "removedIn3_0": {
+    "note": "Removed in 3.0. Use the replacement; there is no alias routing.",
+    "map": {
+      "sw:qa": "sw:review",
+      "sw:task": "sw:do",
+      "sw-task": "sw-do"
     }
   }
 }

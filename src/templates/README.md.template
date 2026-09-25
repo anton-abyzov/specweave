@@ -1,26 +1,26 @@
 # {{PROJECT_NAME}}
 
-A [SpecWeave](https://verified-skill.com) project: work happens in increments under `.specweave/increments/NNNN-slug/`, each with a `spec.md` (Problem, acceptance criteria, Approach), a `tasks.md`, and an append-only `ledger.jsonl` that records who claimed and finished what.
+A [SpecWeave](https://spec-weave.com) project: work happens in increments under `.specweave/increments/NNNN-slug/`, each one `spec.md` (Problem, Scope, acceptance criteria, Approach, Tasks) plus an append-only `ledger.jsonl` that records who claimed and finished what.
 
 ## Working on this project
 
 | Step | Command |
 |---|---|
-| Plan a feature | `specweave create-increment "title"` (Claude Code: `/sw:increment`) |
+| Start or continue | `specweave pickup` |
+| Plan a feature | `specweave create-increment "title"` (skill: `sw-increment`) |
 | Work the tasks | `specweave task next` → `specweave task claim T-NN` → implement → `specweave task done T-NN --run "<test cmd>"` |
-| Verify | `specweave verify` |
-| Close | `specweave complete NNNN` |
-| Stop / hand off | `specweave handoff` |
+| Verify and close | `specweave verify`, then `specweave complete NNNN` |
+| Switch tool or account | `specweave handoff`, then say "pick up" in the other tool |
 
-Agent instructions live in `CLAUDE.md` (Claude Code) and `AGENTS.md` (Codex, OpenCode, Cursor, Gemini, Aider). Both files keep a short managed block; the **Commands** table and **Project notes** at the bottom are yours to edit.
+Agent instructions live in `AGENTS.md` (every tool; `CLAUDE.md` imports it). The skills are in `.agents/skills/` and `.claude/skills/`.
 
 ## Structure
 
 ```
 .specweave/
-  increments/NNNN-slug/   spec.md · tasks.md · ledger.jsonl · handoff.md · reports/
-  docs/                    ADRs and hand-written docs
+  increments/NNNN-slug/   spec.md · ledger.jsonl · handoff.md · reports/
+  memory/                 MEMORY.md index + one file per durable fact
   config.json
 ```
 
-Docs: https://verified-skill.com · Source: https://github.com/anton-abyzov/specweave
+Docs: https://spec-weave.com · Source: https://github.com/anton-abyzov/specweave
