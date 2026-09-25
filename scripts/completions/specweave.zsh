@@ -96,7 +96,7 @@ _specweave() {
                         '--language[Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)]' \
                         '--force[Force fresh start (non-interactive, removes existing .specweave)]' \
                         '--force-refresh[Force marketplace refresh (skip cache, always pull latest)]' \
-                        '--no-living-docs[Skip living docs builder setup]' \
+                        '--git-hooks[Also install the SpecWeave pre-commit hook (off by default)]' \
                         '--full[Install all plugins (skip lazy loading, longer init but all skills available immediately)]' \
                         '--quick[Quick mode\: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)]' \
                         '--non-interactive[Alias for --quick (skip all prompts)]' \

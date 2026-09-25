@@ -818,36 +818,52 @@ describe('update command', () => {
   // Deprecated memory directory removal
   // ==========================================================================
 
-  describe('deprecated memory directory removal', () => {
-    it('should remove .specweave/memory/ directory', async () => {
+  describe('skills (3.0)', () => {
+    it('replaces the unnamespaced SpecWeave copies with sw-* in both skill folders', async () => {
       setupSpecWeaveProject();
-      const memoryDir = path.join(tempDir, '.specweave', 'memory');
-      fs.mkdirSync(memoryDir, { recursive: true });
-      fs.writeFileSync(path.join(memoryDir, 'old.md'), 'old learning');
+      const legacy = path.join(tempDir, '.claude', 'skills', 'do');
+      fs.mkdirSync(legacy, { recursive: true });
+      fs.writeFileSync(path.join(legacy, 'SKILL.md'), '---\ndescription: x\n---\nRun `specweave task next` then claim.\n');
+      const mine = path.join(tempDir, '.claude', 'skills', 'review');
+      fs.mkdirSync(mine, { recursive: true });
+      fs.writeFileSync(path.join(mine, 'SKILL.md'), '---\ndescription: mine\n---\nMy own review steps.\n');
 
       await updateCommand({ noSelf: true, noPlugins: true });
 
-      expect(fs.existsSync(memoryDir)).toBe(false);
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('Removed deprecated .specweave/memory/');
+      expect(fs.existsSync(legacy)).toBe(false);
+      expect(fs.existsSync(path.join(mine, 'SKILL.md'))).toBe(true);
+      for (const dir of ['.claude/skills', '.agents/skills']) {
+        expect(fs.existsSync(path.join(tempDir, dir, 'sw-do', 'SKILL.md')), dir).toBe(true);
+      }
     });
 
-    it('should report memory directory in check mode without deleting', async () => {
+    it('changes nothing in check mode', async () => {
+      setupSpecWeaveProject();
+      const legacy = path.join(tempDir, '.claude', 'skills', 'do');
+      fs.mkdirSync(legacy, { recursive: true });
+      fs.writeFileSync(path.join(legacy, 'SKILL.md'), 'Run `specweave task next`.\n');
+
+      await updateCommand({ noSelf: true, noPlugins: true, check: true });
+
+      expect(fs.existsSync(legacy)).toBe(true);
+      expect(fs.existsSync(path.join(tempDir, '.claude', 'skills', 'sw-do'))).toBe(false);
+      expect(consoleLogs.join('\n')).toContain('Would remove 1 unnamespaced SpecWeave skill copy');
+    });
+  });
+
+  describe('project memory (.specweave/memory/)', () => {
+    it('keeps .specweave/memory/: it is the committed project memory in 3.0', async () => {
       setupSpecWeaveProject();
       const memoryDir = path.join(tempDir, '.specweave', 'memory');
       fs.mkdirSync(memoryDir, { recursive: true });
+      fs.writeFileSync(path.join(memoryDir, 'MEMORY.md'), '# Project memory index\n- [Auth](auth.md): tokens rotate daily\n');
+      fs.writeFileSync(path.join(memoryDir, 'auth.md'), 'Tokens rotate daily.\n');
 
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        check: true,
-      });
+      await updateCommand({ noSelf: true, noPlugins: true });
 
-      expect(fs.existsSync(memoryDir)).toBe(true);
-      const output = consoleLogs.join('\n');
-      expect(output).toContain(
-        'Deprecated .specweave/memory/ will be deleted'
-      );
+      expect(fs.readFileSync(path.join(memoryDir, 'auth.md'), 'utf-8')).toBe('Tokens rotate daily.\n');
+      expect(fs.existsSync(path.join(memoryDir, 'MEMORY.md'))).toBe(true);
+      expect(consoleLogs.join('\n')).not.toMatch(/deprecated \.specweave\/memory/i);
     });
 
     it('should do nothing if memory directory does not exist', async () => {

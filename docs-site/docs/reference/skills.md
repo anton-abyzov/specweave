@@ -38,7 +38,7 @@ This is the merge of 1.x's `grill`, `code-reviewer` and `judge-llm`.
 
 `<increment-id> [--reason <text>]`
 
-Closure: ledger check → `specweave verify` → optional review → `specweave complete`. The only hard gate is `reports/verify.json` with `ok: true`. Carries `disable-model-invocation: true` — the model cannot fire it on its own.
+Closure: ledger check → `specweave verify` → optional review → `specweave complete`. The only hard gate is `reports/verify.json` with `ok: true`. The model may run it when you say "close it" or "we're done"; the verify gate still decides.
 
 ### `/sw:team`
 
@@ -48,7 +48,7 @@ Runs one increment with several agents in parallel — any vendor, any subscript
 
 `[incrementId] [--reason …] [--summary …] [--next …] [--gotcha …] [--decision …] [--inline]`
 
-Writes a portable, secret-scrubbed handoff document so the work continues in any tool or on any machine. `disable-model-invocation: true`.
+Writes a portable, secret-scrubbed handoff document so the work continues in any tool or on any machine. Say "hand off" and "pick up"; `specweave auto-handoff on` hands off by itself near the usage limit.
 
 ### `/sw:sync`
 
@@ -60,7 +60,7 @@ One surface for GitHub, Jira and Azure DevOps. See the [`specweave sync` referen
 
 `[increment-ids...] [--dry-run|--reset|--all-backlog]`
 
-Unattended execution. `specweave auto` writes a session file; the plugin's Stop hook reads it after every turn and either blocks with what remains or lets the session end. No daemon, no background process — the hook *is* the loop. `disable-model-invocation: true`.
+Unattended execution. `specweave auto` writes a session file; the plugin's Stop hook reads it after every turn and either blocks with what remains or lets the session end. No daemon, no background process — the hook *is* the loop.
 
 ### `/sw:brainstorm`
 
@@ -99,7 +99,7 @@ Typical loop: `sw-increment` → `sw-do` → `sw-review` → `sw-done`. `sw-hand
 ## Skill conventions
 
 - The **directory name is the command** — skills carry no `name:` frontmatter field.
-- `done`, `handoff` and `auto` set `disable-model-invocation: true`.
+- No skill sets `disable-model-invocation`: "close it", "hand off" and "run until done" work in plain words.
 - `npm run lint:skills` fails on a `name:` field, and on any reference to a `specweave <cmd>` or `sw:<name>` that does not exist.
 
 ## Writing your own

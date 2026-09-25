@@ -84,7 +84,7 @@ complete -c specweave -n "__fish_seen_subcommand_from init" -l tech-stack -d "Te
 complete -c specweave -n "__fish_seen_subcommand_from init" -l language -s l -d "Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l force -s f -d "Force fresh start (non-interactive, removes existing .specweave)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l force-refresh -d "Force marketplace refresh (skip cache, always pull latest)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l no-living-docs -d "Skip living docs builder setup"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l git-hooks -d "Also install the SpecWeave pre-commit hook (off by default)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l full -d "Install all plugins (skip lazy loading, longer init but all skills available immediately)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l quick -s q -d "Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l non-interactive -d "Alias for --quick (skip all prompts)"

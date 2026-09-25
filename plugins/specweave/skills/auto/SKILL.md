@@ -1,5 +1,4 @@
 ---
-disable-model-invocation: true
 description: Run a SpecWeave increment unattended until every task is done, then verify and close. Use for "auto mode", "run until done", "ship this while I sleep".
 argument-hint: "[increment-ids...] [--dry-run|--reset]"
 version: 3.0.0
