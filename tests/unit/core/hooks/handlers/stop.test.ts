@@ -111,6 +111,28 @@ describe('stop (auto loop driver)', () => {
     expect(res.reason).toContain('all_complete_needs_closure');
   });
 
+  it('one-file increment: finished tasks meet their ACs and the loop reaches closure', async () => {
+    // 3.0 never ticks AC boxes; the ledger decides. Before, the loop never saw
+    // "all done" on a spec.md-only increment and ran into auto.maxTurns.
+    repo = mkRepo();
+    writeAutoMode(repo, { active: true, incrementIds: ['0002-one-file'] });
+    const dir = path.join(repo, '.specweave', 'increments', '0002-one-file');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'metadata.json'), JSON.stringify({ increment: '0002-one-file', status: 'active' }));
+    fs.writeFileSync(path.join(dir, 'spec.md'), [
+      '# One file', '', '## Acceptance Criteria', '- [ ] AC-01: prints', '- [ ] AC-02: configurable', '',
+      '## Tasks', '', '### T-01 Print', '- AC: AC-01 | Files: a.js | Test: true', '',
+      '### T-02 Config', '- AC: AC-02 | Files: b.js | Test: true', '',
+    ].join('\n'));
+    process.chdir(repo);
+    expect((await stop()).reason).toContain('0002-one-file: 2 task(s) / 2 AC(s) remain');
+    fs.writeFileSync(path.join(dir, 'ledger.jsonl'), [
+      '{"t":"T-01","e":"done","by":"a","at":"2026-09-25T10:00:00Z","evidence":"true"}',
+      '{"t":"T-02","e":"done","by":"a","at":"2026-09-25T10:01:00Z","evidence":"true"}', '',
+    ].join('\n'));
+    expect((await stop()).reason).toContain('all_complete_needs_closure');
+  });
+
   it('a task claimed by another agent still counts as remaining work', async () => {
     repo = mkRepo();
     writeAutoMode(repo, { active: true, incrementIds: ['0001-demo'] });
