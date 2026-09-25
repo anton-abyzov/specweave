@@ -52,6 +52,11 @@ export interface WorkHandoffOptions {
   push?: boolean;
   /** Keep this agent's claims instead of releasing them for the next agent. */
   keepClaims?: boolean;
+  /**
+   * A checkpoint (PreCompact) rather than a handoff: the same session goes on
+   * working, so claims stay and no `handoff` event is written.
+   */
+  checkpoint?: boolean;
   /** Override the agent id (tests). */
   agent?: string;
 }
@@ -109,7 +114,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   // ── Ledger: release this agent's claims, record the handoff ─────────────
   // Both land before the Git capture so a pushed snapshot carries them.
   const released: string[] = [];
-  if (incrementId && incDir && fs.existsSync(path.join(incDir, 'metadata.json'))) {
+  if (!opts.checkpoint && incrementId && incDir && fs.existsSync(path.join(incDir, 'metadata.json'))) {
     const ledger = ledgerPath(incDir);
     const at = new Date().toISOString();
     if (!opts.keepClaims) {
