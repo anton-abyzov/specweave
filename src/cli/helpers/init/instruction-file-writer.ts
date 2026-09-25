@@ -74,6 +74,8 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
  * `jev` is on only when `config.jev.enabled` is literally `true` — the Jev
  * section is opt-in guidance for a paid external model, so a missing or
  * unreadable config must never render it.
+ *
+ * `hub` is on when `.specweave/project/hub.json` exists.
  */
 export function detectTemplateFlags(projectPath: string): Record<string, boolean> {
   let config: { workspace?: unknown; jev?: { enabled?: unknown } } | undefined;
@@ -84,12 +86,13 @@ export function detectTemplateFlags(projectPath: string): Record<string, boolean
     // no config yet, or unreadable: fall through to the filesystem scan
   }
   const jev = config?.jev?.enabled === true;
+  const hub = fs.existsSync(path.join(projectPath, '.specweave', 'project', 'hub.json'));
   const repos = (config?.workspace as { repos?: unknown } | undefined)?.repos;
-  if (Array.isArray(repos)) return { umbrella: repos.length > 0, jev };
+  if (Array.isArray(repos)) return { umbrella: repos.length > 0, jev, hub };
   try {
-    return { umbrella: scanWorkspaceRepos(projectPath) !== null, jev };
+    return { umbrella: scanWorkspaceRepos(projectPath) !== null, jev, hub };
   } catch {
-    return { umbrella: false, jev };
+    return { umbrella: false, jev, hub };
   }
 }
 

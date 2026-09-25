@@ -31,44 +31,52 @@ const writeConfig = (config: unknown): void => {
   fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), JSON.stringify(config));
 };
 
-describe('detectTemplateFlags (umbrella + jev sections)', () => {
+describe('detectTemplateFlags (umbrella + jev + hub sections)', () => {
   it('is off without a config, with an empty repo list, or on unreadable JSON', () => {
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
     writeConfig({ workspace: { name: 'w', repos: [] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
     fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), '{ broken');
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
   });
 
   it('falls back to the repositories/ scan while init has not written workspace yet', () => {
     // init writes a minimal config (no workspace key) before the instruction files
     writeConfig({ version: '2.0', project: { name: 'demo' } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
     fs.mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false, hub: false });
     // an explicit empty workspace list still wins over the scan
     writeConfig({ version: '2.0', workspace: { name: 'demo', repos: [] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
   });
 
   it('is on when the workspace lists repos', () => {
     writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false, hub: false });
   });
 
   it('jev is on only when jev.enabled is literally true', () => {
     writeConfig({ workspace: { name: 'w', repos: [] }, jev: { enabled: true } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: true });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: true, hub: false });
     for (const enabled of [false, 'true', 1, null, undefined]) {
       writeConfig({ workspace: { name: 'w', repos: [] }, jev: { enabled } });
-      expect(detectTemplateFlags(dir), String(enabled)).toEqual({ umbrella: false, jev: false });
+      expect(detectTemplateFlags(dir), String(enabled)).toEqual({ umbrella: false, jev: false, hub: false });
     }
   });
 
+  it('hub is on when .specweave/project/hub.json exists', () => {
+    writeConfig({ workspace: { name: 'w', repos: [] } });
+    expect(detectTemplateFlags(dir).hub).toBe(false);
+    fs.mkdirSync(path.join(dir, '.specweave', 'project'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.specweave', 'project', 'hub.json'), JSON.stringify({ goal: 'ship' }));
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: true });
+  });
+
   it('renders the jev section into both files only when the flag is on', () => {
-    const off = apply('CLAUDE.md', { flags: { umbrella: false, jev: false } });
+    const off = apply('CLAUDE.md', { flags: { umbrella: false, jev: false, hub: false } });
     expect(off.content).not.toContain('Jev (System One)');
-    const on = apply('AGENTS.md', { flags: { umbrella: false, jev: true } });
+    const on = apply('AGENTS.md', { flags: { umbrella: false, jev: true, hub: false } });
     expect(on.content).toContain('## Jev (System One) — closed-set decisions');
     expect(on.content).toContain('specweave jev guard');
   });
@@ -81,9 +89,14 @@ describe('applyInstructionTemplate', () => {
     expect(c.action).toBe('created');
     expect(a.action).toBe('created');
     expect(c.backupPath).toBeNull();
+    expect(a.backupPath).toBeNull();
+    // the Commands table lives in AGENTS.md; CLAUDE.md just imports it
+    const agents = fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf-8');
+    expect(agents).toContain('| Build | `npm run build` |');
+    expect(agents).toContain('| Lint | TODO: not detected \u2014 fill in the lint command |');
     const claude = fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf-8');
-    expect(claude).toContain('| Build | `npm run build` |');
-    expect(claude).toContain('| Lint | TODO: not detected \u2014 fill in the lint command |');
+    expect(claude).toContain('@AGENTS.md');
+    expect(claude).not.toContain('## Commands');
     expect(fs.existsSync(path.join(dir, '.specweave', 'backups'))).toBe(false);
   });
 
@@ -126,19 +139,22 @@ describe('applyInstructionTemplate', () => {
   });
 
   it('emits the umbrella section only for a workspace with repos, and drops it when it empties', () => {
-    const plain = apply('CLAUDE.md');
-    expect(plain.content).not.toContain('Umbrella projects only');
+    const UMBRELLA = 'Umbrella project: nested repos live under';
+    const plain = apply('AGENTS.md');
+    expect(plain.content).not.toContain(UMBRELLA);
 
     writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
-    const umbrella = apply('CLAUDE.md');
+    const umbrella = apply('AGENTS.md');
     expect(umbrella.action).toBe('merged');
     expect(umbrella.added).toEqual(['umbrella']);
-    expect(umbrella.content).toContain('Umbrella projects only');
+    expect(umbrella.content).toContain(UMBRELLA);
+    // CLAUDE.md has no umbrella section; it gets it through @AGENTS.md
+    expect(apply('CLAUDE.md').content).not.toContain(UMBRELLA);
 
     writeConfig({ workspace: { name: 'w', repos: [] } });
-    const shrunk = apply('CLAUDE.md');
+    const shrunk = apply('AGENTS.md');
     expect(shrunk.removed).toEqual(['umbrella']);
-    expect(shrunk.content).not.toContain('Umbrella projects only');
+    expect(shrunk.content).not.toContain(UMBRELLA);
   });
 
   it('backup filenames contain no colons', () => {

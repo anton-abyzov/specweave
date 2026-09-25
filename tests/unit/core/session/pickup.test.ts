@@ -188,3 +188,26 @@ describe('pushHandoff', () => {
     expect(pushHandoff(root).warnings).toEqual(['not a git repository']);
   });
 });
+
+describe('buildWorkHandoff', () => {
+  it('releases the agent\'s claims and records the handoff, which pickup then shows', async () => {
+    const { buildWorkHandoff } = await import('../../../../src/core/session/work-handoff.js');
+    writeIncrement('0001-login', 'active', [{ t: 'T-01', e: 'claim', by: 'claude@mbp', at: ago(5) }]);
+    const res = await buildWorkHandoff(root, { agent: 'claude@mbp', reason: 'out of tokens' });
+    expect(res.released).toEqual(['T-01']);
+    expect(res.pastePrompt).toContain('specweave pickup');
+    expect(res.pastePrompt).not.toContain(root);
+    const text = buildPickup(root, { agent: 'codex@cloud' }).text;
+    expect(text).toContain('Next: T-01 Sign in');
+    expect(text).toContain('Last handoff: claude@mbp 0m ago: out of tokens');
+  });
+
+  it('as a PreCompact checkpoint keeps claims and writes no ledger events', async () => {
+    const { buildWorkHandoff } = await import('../../../../src/core/session/work-handoff.js');
+    const dir = writeIncrement('0001-login', 'active', [{ t: 'T-01', e: 'claim', by: 'claude@mbp', at: ago(5) }]);
+    const before = fs.readFileSync(path.join(dir, 'ledger.jsonl'), 'utf-8');
+    const res = await buildWorkHandoff(root, { agent: 'claude@mbp', checkpoint: true });
+    expect(res.released).toEqual([]);
+    expect(fs.readFileSync(path.join(dir, 'ledger.jsonl'), 'utf-8')).toBe(before);
+  });
+});
