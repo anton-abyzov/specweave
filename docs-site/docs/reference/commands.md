@@ -78,6 +78,9 @@ Status changes never call GitHub, Jira or Azure DevOps. See [increment status re
 | `specweave pickup [id]` | Fetch the latest handoff and apply it to this checkout: fast-forward the branch and restore the uncommitted edits, only when the working tree is clean and the history allows it; otherwise it explains why and changes nothing. Then print the open increment, the next task with its criteria, claims, branch state, notes and the memory index. Records a `pickup` event in the ledger. | `--no-apply` (only show the waiting handoff), `--json` |
 | `specweave report [id]` | Write an HTML timeline of who did what on an increment: tools, sessions, handoffs, pickups and task evidence. Default output `reports/handoff-report.html`; `handoff` and `pickup` refresh it too. | `--out <file>` |
 | `specweave note "<text>" [id]` | Leave a message in the increment's ledger. `pickup` shows it to whoever comes next. | |
+| `specweave auto-handoff <on\|off\|status>` | Hand off by itself near the usage limit, on your own machine. `on` sets Claude Code's status line to `specweave statusline` and adds a `specweave usage-guard` Stop hook to Claude Code and, when `~/.codex` exists, to Codex. `off` restores your previous setup. | `--at <percent>` (default 90) |
+| `specweave statusline` | The Claude Code status line `auto-handoff on` installs. It records the 5-hour and 7-day usage, and keeps showing your previous status line. | `--wrap <command>` |
+| `specweave usage-guard` | The Stop hook `auto-handoff on` installs. Once usage passes the threshold, it asks the agent to run `specweave handoff`, once per session. | |
 
 See [cross-tool handoff](/docs/guides/cross-tool-handoff) for the full flow.
 
