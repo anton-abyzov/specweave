@@ -33,6 +33,11 @@ Codex, on their own machine; not in cloud sessions). A session then hands off at
 the 5-hour or weekly limit (`--at <percent>` to change it); `auto-handoff status` shows
 the current usage. When its Stop hook asks you to hand off, run the handoff it names.
 
+Claude Code also warns the model itself near and at the 5-hour limit, with a note that
+starts "[Usage limit approaching" or "[Usage limit reached". Treat that note as the
+handoff moment: finish the current edit, run `specweave handoff --reason "usage limit"`
+(one command; it needs no summary from you) and stop.
+
 ## Pick up
 
 When the user says "pick up", "pick up here", "continue" or "continue from the other
