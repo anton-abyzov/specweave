@@ -10,7 +10,8 @@
  * Usage:
  *   specweave handoff [incrementId] \
  *     [--reason <r>] [--summary <s>] [--next <n>] [--gotcha <g>] \
- *     [--decision <d> ...] [--inline] [--non-specweave] [--out <path>] [--json]
+ *     [--decision <d> ...] [--inline] [--non-specweave] [--out <path>] [--json] \
+ *     [--push] [--keep-claims]
  *
  * Output order (AC-US1-02 / US-005 — STRICT):
  *   1. The absolute doc path as PLAIN TEXT (first line — for shell capture).
@@ -54,6 +55,10 @@ export interface HandoffCommandOptions {
   out?: string;
   /** `--json` → print the full result as JSON. */
   json?: boolean;
+  /** `--push` → push the branch and a WIP snapshot to `wip/<branch>`. */
+  push?: boolean;
+  /** `--keep-claims` → do not release this agent's task claims. */
+  keepClaims?: boolean;
   /** Override the starting directory for workspace resolution (tests). */
   cwd?: string;
 }
@@ -71,6 +76,8 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     inline: opts.inline,
     out: opts.out,
     nonSpecweave: opts.nonSpecweave,
+    push: opts.push,
+    keepClaims: opts.keepClaims,
   };
 
   let result;
@@ -102,8 +109,12 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
   out.push(result.docPath);
   // 2. Clickable markdown link.
   out.push(`[handoff doc](${result.docPath})`);
-  // 3. The .diff path.
+  // 3. The .diff path, then what changed for the next agent.
   out.push(`Uncommitted diff: ${result.diffPath}`);
+  if (result.released.length) out.push(`Released your claims on ${result.released.join(', ')} so the next agent can take them.`);
+  if (result.push?.branch) out.push(`Pushed ${result.push.branch}.`);
+  if (result.push?.wipRef) out.push(`Pushed uncommitted edits to ${result.push.wipRef}.`);
+  for (const w of result.push?.warnings ?? []) out.push(`warning: ${w}`);
   // 4. Fenced copy-paste resume prompt.
   out.push('');
   out.push('Copy-paste this prompt into the other tool:');

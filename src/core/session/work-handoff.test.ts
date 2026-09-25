@@ -156,7 +156,7 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
     expect(doc).toContain('ACs 1/3');
     expect(doc).toContain('T-002 Second task'); // ledger table row
     expect(doc).toContain('T-003 Third task');
-    expect(doc).toContain('Use the reused parsers'); // plan.md decision
+    expect(doc).not.toContain('Use the reused parsers'); // plan.md stays in plan.md
     expect(doc).toContain('active claims: none');
     expect(doc).toContain(DOC_FORMAT_MARKER);
 
@@ -193,11 +193,38 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
     expect(doc).toContain('T-005 Late US-001 task');
   });
 
-  it('merges agent --decision over plan.md decisions', async () => {
+  it('records only the agent's --decision, pointing at spec.md for planned ones', async () => {
     const root = makeSpecWeaveWorkspace({ activeIds: ['0001-foo'], withIncrement: true });
     const res = await buildWorkHandoff(root, { decisions: ['agent-supplied call'] });
-    expect(res.docMarkdown).toContain('Use the reused parsers'); // from plan.md
-    expect(res.docMarkdown).toContain('agent-supplied call');     // from opts
+    expect(res.docMarkdown).not.toContain('Use the reused parsers');
+    expect(res.docMarkdown).toContain('agent-supplied call');
+    expect((await buildWorkHandoff(root)).docMarkdown).toContain('see spec.md Approach');
+  });
+
+  it('releases the agent\'s own claims and records a handoff event', async () => {
+    const root = makeSpecWeaveWorkspace({ activeIds: ['0001-foo'], withIncrement: true });
+    const ledger = path.join(root, '.specweave', 'increments', '0001-foo', 'ledger.jsonl');
+    const at = new Date().toISOString();
+    fs.appendFileSync(ledger, JSON.stringify({ t: 'T-002', e: 'claim', by: 'me@box', at }) + '\n' +
+      JSON.stringify({ t: 'T-003', e: 'claim', by: 'other@box', at }) + '\n');
+    const res = await buildWorkHandoff(root, { agent: 'me@box', reason: 'out of tokens' });
+    expect(res.released).toEqual(['T-002']);
+    const events = fs.readFileSync(ledger, 'utf-8').trim().split('\n').map((l) => JSON.parse(l));
+    expect(events.at(-2)).toMatchObject({ t: 'T-002', e: 'release', by: 'me@box' });
+    expect(events.at(-1)).toMatchObject({ t: '*', e: 'handoff', by: 'me@box', note: 'out of tokens' });
+    expect(res.docMarkdown).toContain('T-003 (claimed by other@box)');
+    expect(res.pastePrompt).toContain('specweave pickup');
+    expect(res.pastePrompt).toContain('.specweave/increments/0001-foo/handoff.md');
+    expect(res.pastePrompt).not.toContain(root);
+  });
+
+  it('keeps claims with keepClaims', async () => {
+    const root = makeSpecWeaveWorkspace({ activeIds: ['0001-foo'], withIncrement: true });
+    const ledger = path.join(root, '.specweave', 'increments', '0001-foo', 'ledger.jsonl');
+    fs.appendFileSync(ledger, JSON.stringify({ t: 'T-002', e: 'claim', by: 'me@box', at: new Date().toISOString() }) + '\n');
+    const res = await buildWorkHandoff(root, { agent: 'me@box', keepClaims: true });
+    expect(res.released).toEqual([]);
+    expect(res.docMarkdown).toContain('T-002 (claimed by me@box)');
   });
 
   it('is idempotent — re-running overwrites the same files', async () => {

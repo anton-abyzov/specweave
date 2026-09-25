@@ -10,6 +10,13 @@
  * `specweave task …` or a plain `echo '…' >> ledger.jsonl`. Lines are never
  * edited or deleted; state is DERIVED by {@link foldLedger}.
  *
+ * Increment-level events use the task id `*` and never change task state:
+ *
+ *   note     a message for whoever works on this increment next (another
+ *            thread, tool or account). `specweave note` writes it.
+ *   session  a tool session picked the increment up (`specweave pickup`).
+ *   handoff  a session handed the increment off (`specweave handoff`).
+ *
  * Writes are single-line O_APPEND appends (same rationale as
  * core/sync/event-queue.ts): atomic for short lines on every major OS, so two
  * agents in one working tree never tear each other's lines. Across worktrees or
@@ -24,7 +31,12 @@ import * as os from 'os';
 import * as path from 'path';
 import { touchIncrementUpdated } from './increment-updated.js';
 
-export type LedgerEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
+export type TaskEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
+export type IncrementEventType = 'note' | 'session' | 'handoff';
+export type LedgerEventType = TaskEventType | IncrementEventType;
+
+/** Task id used by increment-level events (notes, sessions, handoffs). */
+export const INCREMENT_EVENT_TASK = '*';
 
 export interface LedgerEvent {
   /** Task id, e.g. `T-01`. */
@@ -67,7 +79,8 @@ export interface LedgerFold {
 export const LEDGER_FILE = 'ledger.jsonl';
 export const DEFAULT_LEASE_HOURS = 2;
 
-const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip']);
+const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff']);
+const INCREMENT_EVENTS: ReadonlySet<string> = new Set(['note', 'session', 'handoff']);
 
 /** Resolve the ledger path for an increment directory. */
 export function ledgerPath(incrementDir: string): string {
@@ -75,25 +88,49 @@ export function ledgerPath(incrementDir: string): string {
 }
 
 /**
- * Agent identity: `SPECWEAVE_AGENT` env, else `<tool>@<hostname>` where the
- * tool is inferred from the host AI tool's environment.
+ * Agent identity: `SPECWEAVE_AGENT` env, else `<tool>@<host>` where the tool
+ * is inferred from the host AI tool's environment and the host is the short
+ * hostname, or `cloud` inside a cloud session (whose hostname is random per
+ * session, which would make every cloud session a stranger to its own claims).
  */
 export function getAgentId(env: NodeJS.ProcessEnv = process.env): string {
   const explicit = env.SPECWEAVE_AGENT?.trim();
   if (explicit) return explicit;
-  return `${detectTool(env)}@${shortHostname()}`;
+  return `${detectTool(env)}@${detectHost(env)}`;
 }
 
+/**
+ * The AI tool this process runs under. `SPECWEAVE_TOOL` wins; then the
+ * cross-tool `AI_AGENT` variable (e.g. `claude-code_2-1-282_agent`); then
+ * each tool's own environment markers.
+ */
 export function detectTool(env: NodeJS.ProcessEnv = process.env): string {
-  if (env.CLAUDECODE || env.CLAUDE_CODE) return 'claude';
-  if (Object.keys(env).some((k) => k.startsWith('CODEX_'))) return 'codex';
-  if (Object.keys(env).some((k) => k.startsWith('OPENCODE'))) return 'opencode';
+  const explicit = env.SPECWEAVE_TOOL?.trim().toLowerCase();
+  if (explicit) return explicit.replace(/[^a-z0-9-]/g, '') || 'cli';
+  const aiAgent = env.AI_AGENT?.trim().toLowerCase() ?? '';
+  const keys = Object.keys(env);
+  if (aiAgent.startsWith('claude') || env.CLAUDECODE || env.CLAUDE_CODE) return 'claude';
+  if (aiAgent.startsWith('codex') || keys.some((k) => k.startsWith('CODEX_'))) return 'codex';
+  if (aiAgent.startsWith('grok') || keys.some((k) => k.startsWith('GROK_'))) return 'grok';
+  if (aiAgent.startsWith('cursor') || env.CURSOR_AGENT || env.CURSOR_TRACE_ID) return 'cursor';
+  if (aiAgent.startsWith('gemini') || env.GEMINI_CLI) return 'gemini';
+  if (aiAgent.startsWith('copilot') || env.COPILOT_AGENT) return 'copilot';
+  if (aiAgent.startsWith('opencode') || keys.some((k) => k.startsWith('OPENCODE'))) return 'opencode';
+  if (aiAgent) return aiAgent.split(/[_\s]/)[0].replace(/[^a-z0-9-]/g, '') || 'cli';
   return 'cli';
 }
 
-function shortHostname(): string {
+/** `cloud` inside a cloud session, else the short hostname. */
+export function detectHost(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.SPECWEAVE_HOST?.trim()) return env.SPECWEAVE_HOST.trim().toLowerCase();
+  if (env.CLAUDE_CODE_REMOTE === 'true' || env.CODEX_CLOUD) return 'cloud';
   const h = os.hostname() || 'host';
   return h.split('.')[0].toLowerCase();
+}
+
+/** The tool's own session id, when it exposes one (for `session` events). */
+export function detectSessionId(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  return (env.CLAUDE_CODE_SESSION_ID || env.CODEX_SESSION_ID || env.SPECWEAVE_SESSION_ID)?.trim() || undefined;
 }
 
 /** Serialize one event as a single ledger line (with trailing newline). */
@@ -202,6 +239,8 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
     state.since !== undefined && atMs - Date.parse(state.since) > leaseMs;
 
   for (const ev of sorted) {
+    // Increment-level events (notes, sessions, handoffs) never touch task state.
+    if (INCREMENT_EVENTS.has(ev.e)) continue;
     const cur = tasks.get(ev.t) ?? { status: 'open' as TaskLedgerStatus };
     const atMs = Date.parse(ev.at);
     const heldByOther =
@@ -257,6 +296,28 @@ export function foldLedgerFile(ledgerFile: string, opts: FoldOptions = {}): Ledg
   const { events, malformed } = readLedger(ledgerFile);
   const fold = foldLedger(events, opts);
   return { ...fold, malformed };
+}
+
+/** Increment-level events (notes, sessions, handoffs), oldest first. */
+export function readIncrementEvents(ledgerFile: string, types?: IncrementEventType[]): LedgerEvent[] {
+  const wanted = new Set<string>(types ?? [...INCREMENT_EVENTS]);
+  return readLedger(ledgerFile).events
+    .filter((e) => wanted.has(e.e))
+    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+}
+
+/**
+ * Record which tool session works on this increment, once per session id, so
+ * the ledger shows the chain of sessions (and accounts) that touched it. Only
+ * runs when the tool exposes a session id.
+ */
+export function recordSessionOnce(ledgerFile: string, by: string, env: NodeJS.ProcessEnv = process.env): boolean {
+  const id = detectSessionId(env);
+  if (!id) return false;
+  const note = `session ${id}`;
+  if (readIncrementEvents(ledgerFile, ['session']).some((e) => e.note === note)) return false;
+  appendEvent(ledgerFile, { t: INCREMENT_EVENT_TASK, e: 'session', by, at: new Date().toISOString(), note });
+  return true;
 }
 
 /** Human-readable one-liner for a task state (used by `task list`, handoff, verify). */
