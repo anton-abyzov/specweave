@@ -5,7 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { buildPickup } from '../../../../src/core/session/pickup.js';
 import { noteCommand } from '../../../../src/cli/commands/pickup.js';
-import { pushHandoff } from '../../../../src/core/session/handoff-push.js';
+import { pushHandoff } from '../../../../src/core/session/handoff-remote.js';
 import { detectTool, detectHost, getAgentId, recordSessionOnce, readIncrementEvents } from '../../../../src/core/tasks/ledger.js';
 
 let root: string;
@@ -170,7 +170,7 @@ describe('pushHandoff', () => {
       fs.writeFileSync(path.join(root, 'new.txt'), 'untracked\n');
       const head = git(root, 'rev-parse', 'HEAD');
 
-      const info = pushHandoff(root);
+      const info = pushHandoff(root, { by: 'claude@mbp', at: new Date().toISOString(), reason: 'out of tokens' });
       expect(info.warnings).toEqual([]);
       expect(info.branch).toBe('feature');
       expect(info.wipRef).toBe('wip/feature');
@@ -185,7 +185,8 @@ describe('pushHandoff', () => {
   });
 
   it('explains why it could not push', () => {
-    expect(pushHandoff(root).warnings).toEqual(['not a git repository']);
+    expect(pushHandoff(root, { by: 'a', at: 'b' }, { explicit: true }).warnings).toEqual(['not a git repository']);
+    expect(pushHandoff(root, { by: 'a', at: 'b' }).warnings).toEqual([]);
   });
 });
 

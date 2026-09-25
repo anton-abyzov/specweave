@@ -162,17 +162,16 @@ describe('per-tool resume matrix (pinned strings)', () => {
 describe('renderPastePrompt', () => {
   it('default mode starts with pickup, uses repo-relative paths and fails safe when missing', () => {
     const p = renderPastePrompt(baseInput());
-    expect(p).toContain('Run `specweave pickup` first');
-    expect(p).toContain('handoff doc at .specweave/increments/0867-cross-tool-work-handoff/handoff.md');
+    expect(p).toContain('run `specweave pickup`');
+    expect(p).toContain('The handoff doc is .specweave/increments/0867-cross-tool-work-handoff/handoff.md');
     expect(p).not.toContain('/repo/');
-    expect(p).toContain('STOP and ask me to paste the handoff');
-    expect(p).toContain('specweave task claim <T-id> 0867-cross-tool-work-handoff');
+    expect(p).toContain('STOP and ask me to paste it');
     expect(p).not.toContain(INLINE_BEGIN_MARKER);
   });
 
-  it('points at the WIP branch when the handoff was pushed', () => {
-    const p = renderPastePrompt(baseInput({ push: { wipRef: 'wip/feature', warnings: [] } }));
-    expect(p).toContain('git fetch origin wip/feature && git cherry-pick --no-commit FETCH_HEAD');
+  it('is one line when the handoff was pushed', () => {
+    const p = renderPastePrompt(baseInput({ push: { handoffRef: 'specweave-handoff', warnings: [] } }));
+    expect(p).toBe('Pick up my handed-off work: run `specweave pickup` and continue with the task it names.');
   });
 
   it('--inline mode embeds the full body between BEGIN/END markers', () => {

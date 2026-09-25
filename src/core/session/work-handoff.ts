@@ -21,7 +21,7 @@ import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { captureGitState } from './handoff-git-state.js';
 import { scrubSecrets } from './handoff-secret-scrub.js';
 import { appendEvent, getAgentId, ledgerPath, INCREMENT_EVENT_TASK } from '../tasks/ledger.js';
-import { pushHandoff, wipRefFor } from './handoff-push.js';
+import { pushHandoff } from './handoff-remote.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs } from '../tasks/verify-runner.js';
@@ -48,7 +48,11 @@ export interface WorkHandoffOptions {
   inline?: boolean;
   out?: string;
   nonSpecweave?: boolean;
-  /** Push the branch and a WIP snapshot of uncommitted edits (`wip/<branch>`). */
+  /**
+   * Push the branch and a snapshot of the working tree so `specweave pickup`
+   * finds it from any clone. Default: on when the repo has an `origin`
+   * remote (quietly skipped otherwise); `false` keeps the handoff local.
+   */
   push?: boolean;
   /** Keep this agent's claims instead of releasing them for the next agent. */
   keepClaims?: boolean;
@@ -172,17 +176,11 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   };
 
   docInput.released = released;
-  // With --push the doc names the WIP ref it is about to publish, so the
-  // snapshot carries a doc that points at itself; a failed push rewrites it.
-  if (opts.push && git.isGitRepo && git.branch && git.branch !== 'HEAD' && git.hasUncommittedChanges) {
-    docInput.push = { wipRef: wipRefFor(git.branch), warnings: [] };
-  }
   writeDoc(docPath, renderHandoffDoc(docInput));
   if (isSpecWeave) writePointer(effectiveRoot, docPath);
-  if (opts.push) {
-    const planned = docInput.push?.wipRef;
-    docInput.push = pushHandoff(effectiveRoot);
-    if (docInput.push.wipRef !== planned || docInput.push.warnings.length) writeDoc(docPath, renderHandoffDoc(docInput));
+  // The snapshot is taken after the doc is written, so it carries the doc.
+  if (opts.push !== false && !opts.checkpoint) {
+    docInput.push = pushHandoff(effectiveRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
   }
   const docMarkdown = renderHandoffDoc(docInput);
   const pastePrompt = renderPastePrompt(docInput, { inline: opts.inline });
