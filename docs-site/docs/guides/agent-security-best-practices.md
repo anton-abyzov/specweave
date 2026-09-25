@@ -48,13 +48,13 @@ Prompt injection is the #1 risk when AI agents read files. A malicious comment i
 SpecWeave includes several layers of defense:
 
 **1. Increment Scope Isolation**
-Each agent works within a defined increment. The spec.md explicitly lists which files to modify. If an agent tries to modify files outside its scope, that's a red flag during code review.
+Each agent works within a defined increment. Every task in spec.md lists the `Files` it may change, and a claim that overlaps another agent's live claim is refused. If an agent tries to modify files outside its scope, that's a red flag during code review.
 
 **2. Quality Gates Catch Anomalies**
 `sw:review` reviews all changes before completion. A senior-engineer-level review catches suspicious modifications — files that shouldn't have been touched, unexpected dependencies added, configuration changes.
 
-**3. Hook Validation**
-Post-tool-use hooks can validate that file modifications stay within the increment's declared scope. If an agent edits `/etc/passwd` when it should be editing `src/auth/login.ts`, the hook flags it.
+**3. Opt-in Command Guard**
+`specweave jev setup --guard-bash` adds a project-level PreToolUse hook that screens shell commands before they run and denies the risky ones; a denied command is yours to approve. `--no-guard-bash` removes it. See [Jev](/docs/guides/jev-system-one).
 
 ### Your Practices
 
@@ -289,7 +289,7 @@ Before running an agent swarm, verify:
 
 ## Further Reading
 
-- [Security Fundamentals](/docs/academy/fundamentals/security-fundamentals) — OWASP, authentication, input validation
-- [Compliance Standards](/docs/guides/compliance-standards) — HIPAA, GDPR, SOC 2, PCI-DSS
+- [Why Verified Skills Matter](/docs/guides/why-verified-skill-matters) — the case for scanning skills before you install them
+- [Autonomous Execution](/docs/guides/autonomous-execution) — how auto mode runs and where it stops for you
 - [OpenClaw Security Risks (BitSight)](https://www.bitsight.com/blog/openclaw-ai-security-risks-exposed-instances) — External analysis of OpenClaw exposure
 - [Anthropic's Responsible Scaling Policy](https://www.anthropic.com/responsible-scaling-policy) — capability safeguards and risk governance

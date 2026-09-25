@@ -1,157 +1,134 @@
 ---
 sidebar_position: 2
 title: Commands
-description: Every specweave CLI command and every sw skill in SpecWeave 2.0.
+description: Every specweave CLI command in SpecWeave 3.0, grouped by what you use it for, with the flags that matter.
 ---
 
 # Commands reference
 
-Two surfaces, one behaviour:
+The `specweave` CLI is the source of truth. Skills such as `/sw:do` or `$sw-handoff` call these commands and add the judgement steps; see the [skills reference](/docs/reference/skills).
 
-- **`specweave <cmd>`** — the CLI. Deterministic, scriptable, works in any tool or CI.
-- **`/sw:<skill>`** — Claude Code skills that wrap the CLI and add the judgement steps (writing the spec, reviewing the diff).
-
-The CLI is the source of truth. When a skill and the CLI disagree, the CLI is right.
-
----
+Most commands that take an increment id accept the short number (`0042`) and fall back to the single active increment when you leave it out. Run `specweave <command> --help` for the full flag list.
 
 ## The loop
 
-| Step | CLI | Skill |
-|------|-----|-------|
-| Plan | `specweave create-increment "<title>"` | `/sw:increment` |
-| Work | `specweave task next` / `claim` / `done` | `/sw:do` |
-| Verify | `specweave verify [id]` | — |
-| Review | — | `/sw:review` |
-| Close | `specweave complete <id>` | `/sw:done` |
-| Hand off | `specweave handoff [id]` | `/sw:handoff` |
+| Step | Command |
+|------|---------|
+| Start a session | `specweave pickup` |
+| Plan | `specweave create-increment "Add login form"` |
+| Work | `specweave task next`, `task claim T-01`, `task done T-01 --run "npm test"` |
+| Check | `specweave verify` |
+| Close | `specweave complete 0042` |
+| Stop | `specweave handoff --reason "out of tokens"` |
 
----
+## Setup
 
-## Increment lifecycle
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave init [project-name]` | Set up `.specweave/`, `AGENTS.md`, `CLAUDE.md` and the skills for your tool. | `-a, --adapter <tool>`, `-q, --quick` (no prompts), `-f, --force` (fresh start), `-l, --language <lang>` |
+| `specweave update` | Update the CLI, instruction files, config and plugins in one step. This is the upgrade path from 2.x. | `--check` (dry run), `--no-self`, `--no-plugins`, `-f, --force` |
+| `specweave update-instructions` | Rewrite `AGENTS.md` and `CLAUDE.md` with a merge that keeps your own sections. | `--dry-run`, `-v, --verbose` |
+| `specweave refresh-plugins` | Reinstall the SpecWeave skills for the configured tool. | `--force`, `--plugin <name>`, `-q, --quiet` |
+| `specweave uninstall` | Remove SpecWeave from the project. | `--keep-data` (archive `.specweave/`), `--dry-run`, `--global`, `-f, --force` |
 
-| Command | Does |
-|---------|------|
-| `specweave create-increment [title]` | Create the increment folder (`metadata.json`, `spec.md`, `tasks.md`). `--supersedes NNNN` abandons the increment it replaces. |
-| `specweave next-id` | Print the next free increment number. Prefer `create-increment`, which reserves it atomically. |
-| `specweave status` | Increment status overview (alias: `progress`). |
-| `specweave list` | List available and installed components. |
-| `specweave pause <id>` / `resume <id>` / `abandon <id>` | Status transitions. Never edit `metadata.json` by hand. |
-| `specweave complete [id] [more-ids…]` | Close one or more increments. Blocks without a green `verify.json` unless `--reason`. `--all --reason "<why>"` for batch triage. |
-| `specweave archive [increments…]` | Archive completed increments. |
-| `specweave check-discipline` | Status counts, the advisory WIP note, and metadata consistency. |
+## Increments
 
-## Tasks and the ledger
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave create-increment [title]` | Create `.specweave/increments/NNNN-slug/` with `metadata.json` and `spec.md`. The number is reserved atomically. | `--with-plan` (also `plan.md`), `--planned` (create as planned, not active), `--supersedes <id>`, `--parent <id>`, `--type <type>`, `--priority <P1\|P2\|P3>`, `--json` |
+| `specweave next-id` | Print the next free increment number. Prefer `create-increment`. | `--name <slug>`, `--project <id>` |
+| `specweave start <id>` | Move a planned or paused increment to active. | |
+| `specweave pause <id>` | Pause an active increment. | `-r, --reason <text>` |
+| `specweave resume <id>` | Resume a paused, abandoned or not-yet-started increment. | |
+| `specweave abandon <id>` | Abandon an increment. | `-r, --reason <text>`, `-f, --force` |
+| `specweave complete [id] [more-ids...]` | Close one or more increments. Blocks without a passing `reports/verify.json` unless you give a reason. Alias: `done`. | `-r, --reason <text>`, `--all --reason <text>` (close every task-complete increment), `-y, --yes` |
+| `specweave status` | Status overview of all increments. Alias: `progress`. | `-v, --verbose`, `-t, --type <type>` |
+| `specweave archive [increments...]` | Move completed increments to the archive folder. | `--keep-last <n>` (default 5), `--older-than <days>`, `--archive-completed`, `--dry-run` |
+| `specweave check-discipline` | Status counts, the advisory WIP note and metadata consistency. | `--json`, `-v, --verbose` |
 
-`specweave task <action> [task] [increment]` — the multi-vendor task ledger. State lives only in `ledger.jsonl`; every write re-renders the `SW:BOARD` block in `tasks.md`.
+Status changes never call GitHub, Jira or Azure DevOps. See [increment status reference](/docs/guides/increment-status-reference) for the states.
 
-| Action | Does |
-|--------|------|
-| `task whoami` | Print this agent's id. |
-| `task list` | Table: task, status, owner, evidence. `--json` for machines. |
-| `task next` | First open task with dependencies met and no `Files` overlap. |
-| `task claim T-01` | Append a claim. Exit 3 = lost race, exit 4 = `Files` overlap, exit 6 = unmet dependencies. `--force` overrides. |
-| `task done T-01 --run "<cmd>"` | Run the test command through the OS shell, store exit code and output tail as evidence, append `done`. Exit 5 when the command fails. Auto-claims when nobody holds a live claim. `--evidence "<text>"` if you already have proof. |
-| `task release T-01` / `task release --all-mine` | Drop claims. |
-| `task block T-01 --note "<why>"` | Mark blocked. |
-| `task skip T-01 --reason "<why>"` | Terminal, reason mandatory. |
-| `task render` | Rewrite the derived state lines and the `SW:BOARD` table in `tasks.md`. |
+## Tasks and verification
 
-## Verification and quality
+`specweave task <action> [task] [increment]` works the append-only ledger. Task definitions live in the `## Tasks` section of `spec.md` (or a legacy `tasks.md`); state lives only in `ledger.jsonl`.
 
-| Command | Does |
-|---------|------|
-| `specweave verify [id]` | Run `testing.commands[]` (or auto-detected test/lint/build), collect the AC table and ledger summary, write `reports/verify.md` + `reports/verify.json`. `verify.json.ok` is the only closure gate. |
-| `specweave qa <id>` | Risk-scored quality assessment. Not the review, not the gate. |
-| `specweave generate-rubric <id>` | Generate or refresh the AC-tied rubric under the increment's `reports/`. |
-| `specweave doctor` | Full project health check: config shape, instruction-file references, hooks, hygiene. |
-| `specweave health` | Quick deployment health check (config, plugins, sync connectivity). |
-| `specweave gc` | Purge stale `.specweave/state` files. Dry run by default; `--yes` to delete. |
+| Action | Purpose |
+|--------|---------|
+| `task whoami` | Print this agent's id, such as `claude@laptop` or `codex@cloud`. |
+| `task list` | Every task with status, owner and evidence. `--json` for scripts. |
+| `task next` | The first open task whose dependencies are done and whose files no one else holds. Prints the task with the text of its acceptance criteria. |
+| `task claim T-01` | Claim a task. Exit 3 means someone else holds it, 4 means a file overlap with a live claim, 6 means unmet dependencies. `--force` overrides. |
+| `task done T-01 --run "<cmd>"` | Run the task's test, store the exit code and output tail as evidence, and mark it done. Exit 5 when the command fails. The full output goes to `reports/task-T-01.log`. `--evidence "<text>"` if you already have proof. |
+| `task release T-01` | Give a claim back. `--all-mine` releases every claim you hold. |
+| `task block T-01 --reason "<why>"` | Mark a task blocked. |
+| `task skip T-01 --reason "<why>"` | Mark a task as not needed. Final; the reason is required. |
+| `task render` | Print the task board. `--write` refreshes a legacy `tasks.md`. |
 
-## Handoff and sessions
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave verify [id]` | Run the project's test, lint and build commands and write `reports/verify.md` and `reports/verify.json`. `verify.json` is what `complete` checks. | `--cmd <command>` (repeatable), `--json` |
+| `specweave qa <id>` | Risk-scored quality assessment. It is not the review and not the closure gate. | `--gate`, `--pre`, `--ci` (exit 1 on fail), `--no-ai` |
+| `specweave generate-rubric <id>` | Write or refresh `rubric.md`, a quality contract tied to the acceptance criteria. | `--refresh` |
 
-| Command | Does |
-|---------|------|
-| `specweave handoff [id]` | Write a portable, secret-scrubbed handoff doc plus the diff. |
-| `specweave session start` / `session end` | Session lifecycle. |
-| `specweave status-line` | Current increment status line. |
-| `specweave decision-log` | Query the structured decision log. |
+## Handoff
 
-## Autonomous execution
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave handoff [id]` | Release your claims, record the handoff in the ledger, write `handoff.md` plus `handoff.diff` with secrets scrubbed, and push. The push sends the branch and a snapshot of uncommitted edits to the `specweave-handoff` ref and `wip/<branch>`, so any tool, machine or account can pick it up. Without a git remote the push is skipped. | `--reason <text>`, `--next <step>`, `--no-push` (keep it local), `--summary <text>`, `--decision <text>` (repeatable), `--gotcha <text>`, `--keep-claims`, `--inline`, `--json` |
+| `specweave pickup [id]` | Fetch the latest handoff and apply it to this checkout: fast-forward the branch and restore the uncommitted edits, only when the working tree is clean and the history allows it; otherwise it explains why and changes nothing. Then print the open increment, the next task with its criteria, claims, branch state, notes and the memory index. Records a `pickup` event in the ledger. | `--no-apply` (only show the waiting handoff), `--json` |
+| `specweave report [id]` | Write an HTML timeline of who did what on an increment: tools, sessions, handoffs, pickups and task evidence. Default output `reports/handoff-report.html`; `handoff` and `pickup` refresh it too. | `--out <file>` |
+| `specweave note "<text>" [id]` | Leave a message in the increment's ledger. `pickup` shows it to whoever comes next. | |
 
-| Command | Does |
-|---------|------|
-| `specweave auto [increment-ids…]` | Start unattended execution. The Stop hook is the loop. |
-| `specweave auto-status` | Session status and progress. |
-| `specweave cancel-auto` | Cancel a running auto session. |
-| `specweave evaluate-completion <id>` | Decide whether an auto session should be considered complete. |
+See [cross-tool handoff](/docs/guides/cross-tool-handoff) for the full flow.
+
+## Autonomy
+
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave auto [ids...]` | Start unattended execution. The Stop hook feeds the session back into the loop until the tasks are done. | `--dry-run`, `--all-backlog`, `--reset` |
+| `specweave auto-status` | Status of the running auto session. | `--json`, `--verbose` |
+| `specweave cancel-auto` | Stop the auto session. | `--force` |
+| `specweave team [description]` | Launch Claude Code with agent teams in split panes. | `--mode <tmux\|in-process>`, `--no-increment` |
+| `specweave jev <action>` | Jev (System One) for closed-set decisions: `doctor`, `setup`, `ask`, `route`, `task`, `guard`, `screen`, `failure`, `browse`, `usage`. | `--json`, `--provider <name>` (setup) |
+
+See [autonomous execution](/docs/guides/autonomous-execution), [agent teams](/docs/guides/agent-teams-and-swarms) and [Jev](/docs/guides/jev-system-one).
 
 ## Sync
 
-`specweave sync push | pull | status | setup` — see the [`specweave sync` reference](/docs/reference/sync-cli).
+| Command | Purpose |
+|---------|---------|
+| `specweave sync push [id]` | Push progress to the configured tracker. The only command that writes to one. |
+| `specweave sync pull` | Report tracker changes, or import issues as increments. |
+| `specweave sync status` | Token, account, provider health and sync gaps. |
+| `specweave sync setup` | Connect GitHub, Jira or Azure DevOps. |
+| `specweave link-pr --increment <id> --pr-url <url> --pr-number <n>` | Link a pull request to the increment's Jira or Azure DevOps ticket. |
+| `specweave branch-name <id>` | Print the branch name for an increment, including a ticket key when one is linked. |
 
-## Project and workspace
+Flags are in the [`specweave sync` reference](/docs/reference/sync-cli).
 
-| Command | Does |
-|---------|------|
-| `specweave init [project-name]` | Initialise a SpecWeave project. |
-| `specweave update` | Update the CLI, instruction files, config and plugins. The 2.0 upgrade path. |
-| `specweave update-instructions` | Rewrite `CLAUDE.md` / `AGENTS.md` with a smart merge that preserves your content. |
-| `specweave refresh-plugins` | Refresh the plugins. |
-| `specweave get <source>` | Clone and register an existing repository into the workspace. |
-| `specweave context` / `context projects` | Workspace context; project and board values for `spec.md`. |
-| `specweave uninstall` | Remove SpecWeave from the current project. |
+## Maintenance
 
-## Git helpers
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave doctor` | Project health check: config, instruction files, hooks, installation. | `--fix`, `--fix-status` (repair `metadata.json` and `spec.md` status mismatches), `--quick`, `--json` |
+| `specweave gc` | Find stale `.specweave/state` files and report worktree size. Dry run by default. | `-y, --yes` (delete), `--json` |
+| `specweave hooks log` | Recent hook warnings, errors and blocks from `.specweave/logs/hooks.jsonl`. | `--last <n>`, `--blocks-only`, `--errors-only`, `--hook <name>` |
+| `specweave dashboard` | Open the local dashboard in the browser. | `-p, --port <n>` (default 3456), `--no-browser` |
 
-| Command | Does |
-|---------|------|
-| `specweave save [message]` | Auto-generate a commit message, commit and sync with the remote. |
-| `specweave commits` | Show the last two commits. |
-| `specweave branch-name <id>` | Print the computed branch name for an increment. |
-| `specweave link-pr` | Link a pull request to external tickets. |
+## Other
 
-## Docs
+| Command | Purpose | Useful flags |
+|---------|---------|--------------|
+| `specweave save [message]` | Generate a commit message, commit, sync with the remote and push. | `--dry-run`, `--no-push`, `--sync <rebase\|merge\|none>`, `-i, --interactive` |
+| `specweave lsp <action>` | Code intelligence: `refs`, `def`, `hover`, `symbols`, `search`, `warmup`, `status`, `setup`. See [LSP integration](/docs/guides/lsp-integration). | |
+| `specweave get <source>` | Clone a repository into the workspace and register it. Accepts `owner/repo`, a URL, or an org with `--all`. | `--branch <name>`, `--all`, `--pattern <glob>`, `--no-init` |
+| `specweave context projects` | Print the project and board values an increment can use. | |
+| `specweave project <action>` | Portable project hub: `init`, `show`, `set`, `brief`, `work-add`, `work-update`, `work-record`, `artifact-add`, `artifact-remove`, `routine-add`, `routine-remove`. See [portable projects](/docs/guides/portable-projects). | `--harness <codex\|claude\|generic>`, `--json` |
 
-| Command | Does |
-|---------|------|
-| `specweave docs preview` | Documentation preview server with hot reload. |
-| `specweave docs build` | Build the static documentation site. |
-| `specweave docs validate` | Validate documentation without starting a server. |
-| `specweave docs public` | Preview public-scope docs only. |
-| `specweave docs kill` | Stop all running documentation servers. |
-| `specweave docs status` | Documentation status. |
-| `specweave docs sync [id]` | Sync living documentation for an increment. |
-| `specweave living-docs` | Launch or resume the Living Docs Builder. |
+## Removed in 3.0
 
-## Observability
+These commands no longer exist. Living docs are gone as a feature.
 
-| Command | Does |
-|---------|------|
-| `specweave dashboard` | Real-time observability dashboard in the browser. |
-| `specweave analytics` | Usage analytics (commands, skills, agents). |
-| `specweave hooks log` | Recent hook warnings, errors and blocks from `.specweave/logs/hooks.jsonl`. |
-| `specweave jobs` | Monitor background jobs. |
-| `specweave cache` | Manage the dashboard cache. |
+`living-docs`, `jobs`, `sync-living-docs`, `docs`, the `sync-progress`, `sync-retry`, `sync-status`, `sync-health`, `sync-gaps` and `sync-setup` aliases (use `specweave sync`), `validate-jira`, `analytics`, `analytics-push`, `cache`, `commits`, `interview`, `decision-log`, `export-skills`, `detect-intent`, `detect-project`, `scan-skill`, `scan-plugins`, `judge-skill`, `session`, `health` (use `doctor`), `status-line`, `evaluate-completion`, `install`, `list`, `hook`, `resolve-structure`, `migrate-to-umbrella`.
 
-## Code intelligence
-
-`specweave lsp refs | def | hover | symbols | search | warmup | status | setup` — see [LSP integration](/docs/guides/lsp-integration).
-
-## Skills and security
-
-| Command | Does |
-|---------|------|
-| `specweave scan-skill <file>` | Pattern-scan a skill file for security issues. |
-| `specweave scan-plugins` | Batch-scan every plugin `SKILL.md`. |
-| `specweave judge-skill <file>` | Pattern scan plus LLM judgement. |
-| `specweave export-skills` | Export skills to the Agent Skills open standard. |
-| `specweave install [component]` | Install agents/skills into `.claude/`. |
-
----
-
-## Removed in 2.0
-
-The `commands/` plugin namespace (73 files) and the per-provider `sw-github:` / `sw-jira:` / `sw-ado:` namespaces are gone. The `specweave increment <action>` verb is retained for compatibility; new work should use `create-increment`, `status`, `pause`, `resume`, `abandon` and `complete` directly.
-
-See [SpecWeave 2.0](/docs/guides/specweave-2#what-was-removed-and-why) for the full list and the evidence behind it.
+See [SpecWeave 3.0](/docs/guides/specweave-3) for why they went and what replaces them.

@@ -17,7 +17,7 @@ A video walkthrough of these concepts is coming soon. Subscribe to the [Anton Ab
 
 ## What is a Skill?
 
-**A skill is a `SKILL.md` file with instructions -- Claude adds it to its toolkit and you invoke it three ways: natural language ("design the architecture"), slash command (`sw:increment`), or CLI keyword (`architect` in other AI tools).**
+**A skill is a `SKILL.md` file with instructions -- Claude adds it to its toolkit and you invoke it three ways: natural language ("design the architecture"), slash command (`sw:increment` in Claude Code), or the skill name in other AI tools (`$sw-increment` in Codex).**
 
 The core insight: **same prompt, dramatically different quality.**
 

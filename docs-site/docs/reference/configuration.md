@@ -1,97 +1,102 @@
 ---
 sidebar_position: 4
 title: Configuration
-description: Every key SpecWeave 2.0 reads from .specweave/config.json, plus increment metadata.
+description: The keys SpecWeave 3.0 reads from .specweave/config.json, what init writes, and which old keys are removed.
 ---
 
 # Configuration reference
 
-SpecWeave 2.0 has an **exact** config surface. Every key listed here has a reader in the code; anything else in `.specweave/config.json` produces one warning line on load and is ignored.
+`.specweave/config.json` holds project settings. `specweave init` writes it, and you rarely need to touch it. Every key on this page has a reader in the code. A top-level key SpecWeave does not know produces one warning line when the config loads and is otherwise ignored.
 
-`specweave init` writes the file. `specweave update` migrates a 1.x file to this shape in a single pass.
+Per-increment state is not here. It lives in each increment's `metadata.json` and `ledger.jsonl`; see the [metadata reference](/docs/reference/metadata-reference).
 
----
+## What init writes
 
-## A complete 2.0 config
+For a Claude Code project with a GitHub remote, `specweave init` writes roughly this:
 
 ```json
 {
   "version": "2.0",
-  "project": { "name": "my-app" },
+  "project": { "name": "my-app", "version": "0.1.0" },
   "adapters": { "default": "claude" },
+  "repository": { "provider": "github", "organization": "acme", "repo": "my-app" },
   "testing": {
     "mode": "TDD",
-    "commands": ["npm test", "npm run lint"],
+    "commands": [],
     "coverage": { "unit": 95, "integration": 90, "e2e": 100 }
   },
   "limits": { "activeIncrements": 3 },
   "planning": { "deepInterview": "off" },
-  "livingDocs": false,
-  "sync": { "enabled": false }
+  "auto": { "enabled": true, "requireTests": false },
+  "lsp": { "enabled": true },
+  "workspace": { "name": "my-app", "repos": [] },
+  "sync": { "enabled": true, "autoSync": true, "settings": { "canUpsertInternalItems": true, "canUpdateExternalItems": true, "canUpdateStatus": true } }
 }
 ```
 
-That is the whole default. Everything below is optional.
+`version` is the config schema version. It stays `"2.0"` in SpecWeave 3.0 because the file format did not change.
 
----
+Without a git remote, `repository.provider` is `"local"` and there is no `sync` block. With another tool, `adapters.default` names it (`codex`, `cursor`, `copilot`, `gemini`, `generic` and so on) and `lsp` is not written.
+
+The single most useful edit is filling in `testing.commands`.
 
 ## Core keys
 
-### `version`
-
-Config schema version. 2.0 configs carry `"2.0"`. The migrator sets it.
-
 ### `project`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `name` | string | The only field SpecWeave itself reads. |
-| `version`, `description`, `techStack`, `team` | — | Metadata for your own use. |
+| Field | Notes |
+|-------|-------|
+| `name` | The project name. The only field SpecWeave itself reads. |
+| `version`, `description`, `techStack`, `team` | For your own use. |
 
 ### `adapters`
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `default` | `"claude"` \| `"codex"` \| `"generic"` | `"claude"` | Which instruction-file flavour `specweave update-instructions` generates. |
+| Field | Default | Notes |
+|-------|---------|-------|
+| `default` | `"claude"` | The tool chosen at `init`. `refresh-plugins` uses it to decide where the skills go. |
 
 ### `testing`
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `mode` | `"TDD"` \| `"test-after"` \| `"manual"` \| `"none"` | `"TDD"` | How tests are written for new work. |
-| `commands` | `string[]` | `[]` | The project's verification commands, run **in order** by `specweave verify`. Empty means auto-detect from `package.json` scripts (`test` → `lint` → `build`), Cargo, pytest or go. |
-| `coverage.unit` | number | `95` | Line coverage target (%). |
-| `coverage.integration` | number | `90` | Line coverage target (%). |
-| `coverage.e2e` | number | `100` | Pass-rate of written e2e tests, not line coverage. |
+| Field | Default | Notes |
+|-------|---------|-------|
+| `commands` | `[]` | The commands `specweave verify` runs, in order. Empty means auto-detect: `package.json` scripts `test`, `lint`, `build`, then Cargo, pytest or Go. |
+| `mode` | `"TDD"` | `TDD`, `test-after`, `manual` or `none`. How tests are written for new work. |
+| `coverage.unit`, `coverage.integration` | `95`, `90` | Line coverage targets in percent. Below target is a warning at close, not a block. |
+| `coverage.e2e` | `100` | Share of written end-to-end tests that must pass. Not line coverage. |
 
-`testing.commands` is the single most valuable key in the file: it is exactly what `verify.json` records, and therefore what the closure gate is checking.
+### `tasks`
+
+| Field | Default | Notes |
+|-------|---------|-------|
+| `leaseHours` | `2` | Hours before an unfinished claim is stale and another agent may take the task over. |
 
 ### `limits`
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `activeIncrements` | number | `3` | **Advisory.** Exceeding it prints one info note. Nothing blocks. `0` disables the note. |
-
-The 1.x hard WIP cap is gone.
+| Field | Default | Notes |
+|-------|---------|-------|
+| `activeIncrements` | `3` | Advisory. Going over prints one note; nothing blocks. `0` turns the note off. |
 
 ### `planning`
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `deepInterview` | `"off"` \| `"warn"` | `"off"` | `"warn"` makes the planning skill ask the structured interview questions and note the gaps. Enforcement is skill-side only — no hook blocks a write in 2.0. |
+| Field | Default | Notes |
+|-------|---------|-------|
+| `deepInterview` | `"off"` | `"warn"` asks the planning skill to cover a structured set of questions and note the gaps. It never blocks. |
 
-### `livingDocs`
+### `auto`
 
-| Value | Effect |
-|-------|--------|
-| `false` (default) | Living docs are never generated. |
-| `"onDone"` | Regenerated when an increment is completed. |
+Settings for `specweave auto` and its Stop hook.
 
-Off by default because the 1.x auto-generated tree was never read. The diagram/JPG generators were removed entirely.
+| Field | Default | Notes |
+|-------|---------|-------|
+| `maxTurns` | `20` | Hard stop for one auto session. |
+| `maxSessionAge` | `7200` | Seconds before an idle auto session is treated as stale and reset. |
+| `requireTests` | `false` | Add a "tests pass" condition to the session's success criteria. |
+
+`init` also writes `enabled`, `maxRetries`, `requireValidation`, `requireJudgeLLM` and `skipQualityGates` here. 3.0 does not read them.
 
 ### `workspace`
 
-Multi-repo workspaces (the umbrella repo plus its children). Replaces the 1.x `umbrella`, `multiProject` and `projectMappings` blocks, which the migrator folds in automatically.
+Multi-repo workspaces: an umbrella folder with child repos under `repositories/`. `init` fills this in when it finds child repos.
 
 ```json
 {
@@ -99,172 +104,93 @@ Multi-repo workspaces (the umbrella repo plus its children). Replaces the 1.x `u
     "name": "acme",
     "repos": [
       { "id": "web-ui", "path": "repositories/acme/web-ui", "prefix": "FE", "role": "frontend" },
-      { "id": "api",    "path": "repositories/acme/api",    "prefix": "BE", "role": "backend" }
+      { "id": "api", "path": "repositories/acme/api", "prefix": "BE", "role": "backend" }
     ]
   }
 }
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `name` | string | Workspace display name. |
-| `rootRepo` | object | Sync targets for the umbrella repo itself. |
-| `repos[].id` | string | Must match the canonical source name (GitHub repo name, Jira key lowercased, ADO project kebab-cased). |
-| `repos[].path` | string | Relative or absolute path. |
-| `repos[].prefix` | string | User-story prefix — `US-FE-001`. |
-| `repos[].techStack`, `repos[].role` | — | Story routing hints. |
-| `repos[].sync` | object | Per-repo `github` / `jira` / `ado` targets. |
+| Field | Notes |
+|-------|-------|
+| `name` | Workspace name. |
+| `rootRepo` | Sync target for the umbrella repo itself. |
+| `repos[].id` | Must match the repository name. |
+| `repos[].path` | Relative or absolute path. |
+| `repos[].prefix`, `repos[].role`, `repos[].techStack` | Routing hints. |
+| `repos[].sync` | Per-repo `github`, `jira` or `ado` target. |
 
-The umbrella section of `CLAUDE.md` is emitted only when `workspace.repos` is non-empty.
+The old `umbrella`, `multiProject` and `projectMappings` blocks are folded into `workspace` when the config loads.
 
 ### `sync`
 
-See the [`specweave sync` reference](/docs/reference/sync-cli) for the full block. The essentials:
-
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `enabled` | boolean | `false` | Master switch. Nothing talks to a tracker until this is true. |
-| `github` / `jira` / `ado` | object | — | Per-provider `{ enabled, … }`. GitHub is first-class; Jira and ADO are opt-in and community-maintained. |
-| `settings.autoSyncOnCompletion` | boolean | `true` | Push on `specweave complete`. |
-| `defaultProfile` | string | — | Fallback profile when an increment names none. |
-
-`sync.mode` was removed: the queued event-queue path dropped events on a partial flush.
-
-### `auto`
-
-Settings for `specweave auto`.
-
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | boolean | — |
-| `maxIterations` | number | `2500` |
-| `maxTurns` | number | `50` |
-| `maxRetries` | number | `20` |
-| `requireTests` | boolean | `false` |
-
-### `jev`
-
-Delegation of closed-set decisions to [Jev (TypeSafe System One)](/docs/guides/jev-system-one). Off until you opt in — it is a paid external call.
-
-```json
-{
-  "jev": {
-    "enabled": true,
-    "provider": "openrouter",
-    "model": "jev-1.13",
-    "apiKeyEnv": "OPENROUTER_API_KEY",
-    "timeoutMs": 4000,
-    "thresholds": { "route": 0.7, "guardDeny": 0.85, "guardWarn": 0.5 },
-    "guards": { "bash": false },
-    "modelRouting": true,
-    "browse": { "allowDomains": [], "maxSteps": 20 }
-  }
-}
-```
-
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `enabled` | boolean | `false` | Master switch. Nothing is sent to a provider until this is literally `true`. Written by `specweave jev setup` after a live ping. |
-| `provider` | `"openrouter"` \| `"typesafe"` | `"openrouter"` | OpenRouter posts to `https://openrouter.ai/api/v1/systemone`; TypeSafe direct to `https://api.typesafe.ai/v1/systemone`. |
-| `model` | string | `"jev-1.13"` (openrouter) / `"jev-latest"` (typesafe) | The model id sent with every request. |
-| `apiKeyEnv` | string | — | Name of the environment variable holding the key, when it is not the provider default. Only the **name** is ever stored, printed or logged — never a key value. |
-| `timeoutMs` | number | `4000` | Per-request timeout. The Bash guard applies its own tighter budget on top. |
-| `thresholds.route` | number | `0.7` | Routing answers below this confidence fall back to `opus` and to the agent's own skill choice. |
-| `thresholds.guardDeny` | number | `0.85` | Deny band for the guard verdict. |
-| `thresholds.guardWarn` | number | `0.5` | Warn band for the guard verdict. |
-| `guards.bash` | boolean | `false` | The per-project Bash guard. Set it with `specweave jev setup --guard-bash`, which also writes `.specweave/state/jev-guard.enabled` and a project-level `PreToolUse` hook (matcher `Bash`) in `.claude/settings.json`. `--no-guard-bash` removes all three. |
-| `modelRouting` | boolean | `true` | Lets `selectModelTierForTask()` ask Jev, with the keyword heuristic as fallback. Only takes effect when `enabled` is true. |
-| `browse.allowDomains` | string[] | `[]` | Origins `specweave jev browse` may visit. Merged with the repeatable `--allow-domain` flag; the start URL must already be inside the result. |
-| `browse.maxSteps` | number | `20` | Hard cap on browse iterations. |
-
-All three thresholds are clamped to `0..1` on load, and `guardDeny` is never allowed below `guardWarn`.
-
-**Environment overrides**, read per process and never written to the file:
-
-| Variable | Effect |
-|----------|--------|
-| `SPECWEAVE_JEV` | `0` disables Jev for this process; `1` enables it ad hoc. |
-| `SPECWEAVE_JEV_PROVIDER` | Overrides `provider`. |
-| `SPECWEAVE_JEV_MODEL` | Overrides `model`. |
-
-The key itself lives only in the environment: `OPENROUTER_API_KEY`, `TYPESAFE_API_KEY`, or `JEV_API_KEY` for either.
-
----
-
-## Kept beyond the advertised surface
-
-These keys are not part of the 2.0 story, but real code still reads them, so they are accepted without a warning:
-
-| Key | Reader |
-|-----|--------|
-| `lsp` | LSP config and the plugin detector. |
-| `cicd` | `specweave branch-name` and the CI/CD config loader. Carries `pushStrategy`, `git.*`, `release.*`. |
-| `repository` | The external-issue auto-creator and `specweave sync` health. |
-| `issueTracker` | The 1.x tracker block, still written by the `specweave sync setup` wizard and read by the Jira/ADO paths. |
-| `hooks` | Closure-time tracker flags (`close_github_issue`, `close_jira_issue`, `close_ado_work_item`, `close_external_issue`) read by the lifecycle dispatcher. The living-docs flags were removed — use `livingDocs`. |
-| `plugins` | The Claude adapter's `plugins.enabled` list. |
-
----
-
-## Removed keys
-
-The migrator deletes these outright and records what it dropped in `.specweave/state/config-migration-2.json`:
-
-`contextBudget` · `quality` · `cache` · `deduplication` · `archiving` · `apiDocs` · `statusLine` · `incrementAssist` · `billing` · `translation` · `language` · `documentation` · `reflect` · `pluginAutoLoad` · `grill` · `codeReview` · `qualityGates` · `skillGen`
-
-Removed `hooks` sub-keys: `banner`, `post_increment_planning`, `post_task_completion`.
-
-Removed `testing` sub-keys (after the renames below): `defaultTestMode`, `defaultCoverageTarget`, `coverageTargets`, `tddEnforcement`, `playwright`.
-
-## Renames applied by the migrator
-
-| 1.x | 2.0 |
-|-----|-----|
-| `testing.defaultTestMode` | `testing.mode` |
-| `testing.coverageTargets` | `testing.coverage` |
-| `limits.maxActiveIncrements` | `limits.activeIncrements` (advisory) |
-| `hooks.*.sync_living_docs` | `livingDocs: "onDone"` \| `false` |
-| `planning.deepInterview.{enabled,enforcement}` | `planning.deepInterview: "off"` \| `"warn"` |
-| `umbrella`, `multiProject`, `projectMappings` | `workspace` |
-| `sync.mode` | removed |
-
----
-
-## Increment metadata
-
-`.specweave/increments/NNNN-slug/metadata.json`:
+External trackers. Nothing is written to GitHub, Jira or Azure DevOps until you run `specweave sync push`; starting, pausing or resuming an increment never calls a tracker.
 
 | Field | Notes |
 |-------|-------|
-| `id` | The four-digit increment number. |
-| `status` | `planned` \| `active` \| `completed` \| `abandoned` \| `paused`. **Set only by CLI transitions** — never edit it by hand. |
-| `type` | feature, bug, hotfix, refactor, … |
-| `created`, `updated` | ISO timestamps. |
-| `externalLinks` | Tracker keys and URLs written by `specweave sync push`. Never hand-edit. |
-| `closeReason` | Why an increment was closed or abandoned without a green verify. |
-| `supersedes` | Set by `create-increment --supersedes NNNN`, which abandons the old increment with a matching `closeReason`. |
-| `parent` | Parent increment, when one exists. |
+| `enabled` | Master switch. `init` turns it on when it finds a GitHub or Azure DevOps remote. |
+| `github` | `{ "enabled", "owner", "repo" }`. First-class. |
+| `jira` | `{ "enabled", "domain", "projectKey" }`. Opt-in. |
+| `ado` | `{ "enabled", "organization", "project" }`. Opt-in. |
+| `settings.canUpsertInternalItems`, `settings.canUpdateExternalItems` | `sync push` only creates missing issues when one of these is `true`. |
+| `defaultProfile`, `profiles` | Named tracker targets, written by `specweave sync setup`. |
 
----
+Flags and token resolution are in the [`specweave sync` reference](/docs/reference/sync-cli).
 
-## Git configuration written by init and update
+### `hooks`
 
-`.gitignore`:
+The explicit close-on-complete setting. With it, `specweave complete` closes the Jira issue or Azure DevOps work item that `sync push` linked to the increment.
 
-```
-.specweave/state/
-.specweave/logs/
-.specweave/jobs/
-.specweave/cache/
-.specweave/backups/
-.specweave/increments/**/reports/artifacts/
-.claude/worktrees/
+```json
+{ "hooks": { "post_increment_done": { "close_external_issue": true } } }
 ```
 
-`.gitattributes`:
+`close_jira_issue` and `close_github_issue` have the same effect. Closure is skipped when `sync.settings.canUpdateExternalItems` is `false`. GitHub issues that `sync push` already linked to the increment are closed on `complete` whether or not this is set.
+
+### `jev`
+
+Jev (System One) is off until `specweave jev setup` writes `"enabled": true` after a live test call. Only the name of the environment variable that holds the key is stored, never the key.
+
+| Field | Default |
+|-------|---------|
+| `enabled` | `false` |
+| `provider` | `"openrouter"` (or `"typesafe"`) |
+| `model` | `"jev-1.13"` on OpenRouter |
+| `apiKeyEnv` | provider default: `OPENROUTER_API_KEY` or `TYPESAFE_API_KEY`, then `JEV_API_KEY` |
+| `timeoutMs` | `4000` |
+| `thresholds` | `{ "route": 0.7, "guardDeny": 0.85, "guardWarn": 0.5 }` |
+| `guards.bash` | `false` |
+| `modelRouting` | `true` |
+| `browse` | `{ "allowDomains": [], "maxSteps": 20 }` |
+
+`SPECWEAVE_JEV=0` turns Jev off for one process; `SPECWEAVE_JEV_PROVIDER` and `SPECWEAVE_JEV_MODEL` override the file. See [Jev](/docs/guides/jev-system-one).
+
+## Kept for compatibility
+
+These keys are accepted without a warning because some code still reads them. You do not need to set them.
+
+| Key | Read by |
+|-----|---------|
+| `repository` | Remote detection at `init`, and issue creation during `sync push`. |
+| `lsp` | `{ "enabled": true }` for Claude Code projects. See [LSP integration](/docs/guides/lsp-integration). |
+| `cicd` | `specweave branch-name` and the CI/CD helpers (`pushStrategy`, `git`, `release`). |
+| `issueTracker` | The older tracker block that `specweave sync setup` still writes for Jira and Azure DevOps. |
+| `plugins` | `plugins.enabled`, the list of enabled Claude Code plugins. |
+| `livingDocs` | A 2.x leftover that `init` still writes as `false`. Living docs are gone in 3.0; leave it alone. |
+
+## Removed keys
+
+`specweave update` and `specweave update-instructions` delete these and record what they dropped in `.specweave/state/config-migration-2.json`:
+
+`contextBudget`, `quality`, `cache`, `deduplication`, `archiving`, `apiDocs`, `statusLine`, `incrementAssist`, `billing`, `translation`, `language`, `documentation`, `reflect`, `pluginAutoLoad`, `banner`, `grill`, `codeReview`, `qualityGates`, `skillGen`.
+
+Also removed: `hooks.banner`, `hooks.post_increment_planning`, `hooks.post_task_completion`, `sync.mode`, and the `testing` sub-keys `defaultTestMode`, `defaultCoverageTarget`, `coverageTargets`, `tddEnforcement` and `playwright` (after they are renamed to `testing.mode` and `testing.coverage`). `limits.maxActiveIncrements` becomes `limits.activeIncrements`.
+
+## Git files
+
+`init` and `update-instructions` add this line to `.gitattributes` so parallel agents never conflict on the ledger:
 
 ```
 **/ledger.jsonl merge=union
 ```
 
-The `merge=union` line is required for multi-agent work: it makes a ledger conflict concatenate both sides instead of forcing a manual merge, and the fold is order-independent.
+They also add runtime folders such as `.specweave/state/` and `.specweave/logs/` to `.gitignore`. `.specweave/increments/` and `.specweave/memory/` are committed.

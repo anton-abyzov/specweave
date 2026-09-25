@@ -1,245 +1,150 @@
-# Increment Metadata Reference
-
-Every SpecWeave increment has a `metadata.json` file at `.specweave/increments/{id}/metadata.json`. This is the source of truth for increment state, configuration, and external tool links.
-
+---
+sidebar_position: 5
+title: Metadata and ledger
+description: The machine files in an increment folder in SpecWeave 3.0 - metadata.json, the ledger.jsonl event format, and the reports.
 ---
 
-## Required Fields
+# Metadata and ledger reference
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Increment identifier (e.g., `"0532-fix-hook-timeout"`) |
-| `status` | string | Current lifecycle state (see Status Lifecycle below) |
-| `type` | string | Increment classification (see Types below) |
-| `created` | ISO 8601 | Creation timestamp |
-| `lastActivity` | ISO 8601 | Last activity timestamp |
+An increment is a folder, `.specweave/increments/NNNN-slug/`. You write `spec.md`. The CLI writes everything else. Agents do not need to read `metadata.json`; `specweave pickup` and `specweave task next` give them what they need.
 
-## Optional Fields
+## Files in an increment folder
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `priority` | string | `"P1"` | Priority: P0, P1, P2, P3, critical, high, medium, low |
-| `testMode` | string | `"TDD"` | Testing mode: TDD, test-after, test-first, manual, none |
-| `coverageTarget` | number | `90` | Test coverage target (0-100, 0 = disabled) |
-| `feature_id` | string | `null` | Feature ID (derived from increment number) |
-| `epic_id` | string | `null` | Epic ID if part of an epic |
-| `project` | string | — | Project identifier (for umbrella/workspace repos) |
-| `skipLivingDocsSync` | boolean | `false` | Skip living docs sync for this increment |
+| File | Written by | Holds |
+|------|-----------|-------|
+| `spec.md` | You or the agent | Problem, Scope, Acceptance Criteria, Approach, Open questions, Tasks. |
+| `metadata.json` | The CLI | Status, type, timestamps, tracker links. |
+| `ledger.jsonl` | `specweave task`, `note`, `handoff`, `pickup` | Every claim, completion and message, one JSON object per line. The only task state. |
+| `plan.md` | `create-increment --with-plan` | Optional long design notes. |
+| `rubric.md` | `specweave generate-rubric` | Optional quality contract tied to the acceptance criteria. |
+| `handoff.md`, `handoff.diff` | `specweave handoff` | The last handoff and the uncommitted diff at that moment. |
+| `reports/verify.md`, `reports/verify.json` | `specweave verify` | Test, lint and build results. `complete` checks `verify.json`. |
+| `reports/task-T-01.log` | `task done --run` | Full output of the task's test command. |
+| `reports/handoff-report.html` | `specweave report`, `handoff`, `pickup` | HTML timeline of who did what: tools, sessions, handoffs, pickups and evidence. |
+| `tasks.md` | 2.x only | Task definitions in increments created before 3.0. Still read. |
 
----
+## metadata.json
 
-## Status Lifecycle
-
-```mermaid
-stateDiagram-v2
-    [*] --> planning : sw:increment
-    planning --> active : Start work
-    planning --> backlog : Defer
-    planning --> abandoned : Cancel
-    active --> ready_for_review : All tasks complete
-    active --> paused : Block
-    active --> abandoned : Cancel
-    backlog --> active : Resume
-    backlog --> abandoned : Cancel
-    paused --> active : Unblock
-    paused --> abandoned : Cancel
-    ready_for_review --> completed : sw:done
-    ready_for_review --> active : Needs more work
-    completed --> active : Reopen
-    completed --> [*]
-    abandoned --> active : Un-abandon
-    abandoned --> [*]
-```
-
-### Status Values
-
-| Status | WIP Counted | Description |
-|--------|:-----------:|-------------|
-| `planning` | No | Spec/plan/tasks being created |
-| `active` | Yes | Currently being worked on |
-| `backlog` | No | Planned but not ready |
-| `paused` | Yes | Temporarily blocked |
-| `ready_for_review` | Yes | All tasks complete, awaiting review |
-| `completed` | No | Approved via sw:done |
-| `abandoned` | No | Work abandoned |
-
-### Critical Gates
-
-- **active → ready_for_review**: Auto-transitions when all tasks marked complete
-- **ready_for_review → completed**: Only via explicit `sw:done` with quality gates
-- **Direct active → completed**: Not allowed — prevents auto-completion bugs
-
----
-
-## Increment Types
-
-| Type | WIP Limit | Auto-Abandon | Description |
-|------|:---------:|:------------:|-------------|
-| `feature` | 2 | — | New functionality |
-| `bug` | unlimited | — | Bug fix requiring RCA |
-| `hotfix` | unlimited | — | Critical production fix, bypasses all limits |
-| `change-request` | 2 | — | Business/stakeholder changes |
-| `refactor` | 1 | — | Technical debt reduction |
-| `experiment` | unlimited | 14 days | POC/spike, auto-abandons after threshold |
-
----
-
-## Lifecycle Timestamps
-
-These fields are set automatically when status transitions occur:
-
-| Field | Set When |
-|-------|----------|
-| `backlogAt` | Status → backlog |
-| `backlogReason` | Status = backlog |
-| `pausedAt` | Status → paused |
-| `pausedReason` | Status = paused |
-| `abandonedAt` | Status → abandoned |
-| `abandonedReason` | Status = abandoned |
-| `readyForReviewAt` | All tasks complete (auto) |
-| `approvedAt` | sw:done completes |
-
----
-
-## External Links
-
-The `externalLinks` object tracks references to external tools. Each provider has its own schema.
-
-### GitHub
+`specweave create-increment` writes this:
 
 ```json
 {
-  "externalLinks": {
-    "github": {
-      "issues": {
-        "US-001": {
-          "issueNumber": 1573,
-          "issueUrl": "https://github.com/org/repo/issues/1573",
-          "status": "active"
-        }
-      },
-      "milestone": 243,
-      "syncedAt": "2026-03-15T16:49:06.925Z"
-    }
-  }
-}
-```
-
-### JIRA
-
-```json
-{
-  "externalLinks": {
-    "jira": {
-      "epicKey": "PROJ-220",
-      "epicUrl": "https://domain.atlassian.net/browse/PROJ-220",
-      "projectKey": "PROJ",
-      "domain": "domain.atlassian.net",
-      "syncedAt": "2026-03-15T17:04:28.435Z"
-    }
-  }
-}
-```
-
-### Azure DevOps
-
-```json
-{
-  "externalLinks": {
-    "ado": {
-      "featureId": "1366",
-      "featureUrl": "https://dev.azure.com/org/project/_workitems/edit/1366",
-      "organization": "MyOrg",
-      "project": "MyProject",
-      "syncedAt": "2026-03-15T17:04:30.186Z"
-    }
-  }
-}
-```
-
----
-
-## Sync Target
-
-Controls which sync profile handles this increment (v1.0.31+):
-
-```json
-{
-  "syncTarget": {
-    "profileId": "github-main",
-    "provider": "github",
-    "derivedFrom": "project-mapping",
-    "setAt": "2026-03-15T08:52:13.086Z",
-    "sourceProjectId": "frontend-app"
-  }
-}
-```
-
-`derivedFrom` values: `user-selection`, `project-mapping`, `default-profile`, `first-profile-fallback`, `auto-detected`
-
----
-
-## PR References
-
-Track pull requests linked to this increment (v1.0.437+):
-
-```json
-{
-  "prRefs": [{
-    "branch": "sw/0520-feature-branch",
-    "prNumber": 42,
-    "prUrl": "https://github.com/org/repo/pull/42",
-    "repoSlug": "org/repo",
-    "state": "open",
-    "createdAt": "2026-03-12T10:00:00Z"
-  }]
-}
-```
-
----
-
-## Complete Example
-
-```json
-{
-  "id": "0532-fix-hook-timeout-errors",
-  "status": "completed",
-  "type": "bug",
+  "id": "0042-add-login-form",
+  "status": "active",
+  "type": "feature",
   "priority": "P1",
-  "created": "2026-03-15T08:52:13.086Z",
-  "lastActivity": "2026-03-15T17:04:20.194Z",
-  "testMode": "TDD",
-  "coverageTarget": 90,
-  "feature_id": null,
-  "epic_id": null,
-  "project": "specweave",
-  "externalLinks": {
-    "github": {
-      "issues": {
-        "US-001": {
-          "issueNumber": 1573,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1573",
-          "status": "active"
-        }
-      },
-      "milestone": 243,
-      "syncedAt": "2026-03-15T16:49:06.925Z"
-    },
-    "jira": {
-      "epicKey": "SWE2E-220",
-      "epicUrl": "https://antonabyzov.atlassian.net/browse/SWE2E-220",
-      "projectKey": "SWE2E",
-      "domain": "antonabyzov.atlassian.net",
-      "syncedAt": "2026-03-15T17:04:28.435Z"
-    }
-  },
-  "syncTarget": {
-    "profileId": "github-main",
-    "provider": "github",
-    "derivedFrom": "project-mapping",
-    "setAt": "2026-03-15T08:52:13.086Z"
-  },
-  "readyForReviewAt": "2026-03-15T17:04:20.147Z",
-  "approvedAt": "2026-03-15T17:04:20.194Z"
+  "created": "2026-09-20T09:12:00.000Z",
+  "updated": "2026-09-20T09:12:00.000Z",
+  "lastActivity": "2026-09-20T09:12:00.000Z",
+  "title": "Add login form",
+  "project": "my-app"
 }
 ```
+
+Never edit `status` by hand. Use `start`, `pause`, `resume`, `abandon` and `complete`.
+
+### Fields
+
+| Field | Notes |
+|-------|-------|
+| `id` | Folder name, such as `0042-add-login-form`. |
+| `status` | See the statuses below. |
+| `type` | `feature` (default), `bug`, `hotfix`, `refactor`, `change-request` or `experiment`. |
+| `priority` | `P1` by default; set with `--priority`. |
+| `created` | ISO timestamp. |
+| `updated` | Last change. Every ledger append also updates it. `lastActivity` is the same value, kept for 2.x increments. |
+| `title` | The title given to `create-increment`. |
+| `project`, `board` | Which workspace repo or board the increment belongs to, when there is more than one. |
+| `planning.parallel` | Present when created with `--parallel`. |
+| `testMode`, `coverageTarget` | Per-increment overrides of the `testing` config. Filled in with defaults when missing. |
+| `externalLinks` | Tracker issue numbers and URLs, written by `specweave sync push` or an import. Never hand-edit. |
+
+### Lifecycle fields
+
+Set by the CLI during status changes:
+
+| Field | Set when |
+|-------|----------|
+| `pausedAt`, `pausedReason` | `specweave pause` |
+| `abandonedAt`, `abandonedReason` | `specweave abandon` |
+| `approvedAt` | `specweave complete` |
+| `readyForReviewAt` | `complete` passes through `ready_for_review` on the way to `completed`. |
+| `closeReason` | `complete --reason`, or when another increment supersedes this one. |
+| `supersedes` | `create-increment --supersedes NNNN`. The old increment is abandoned with `closeReason: "superseded by <new id>"`. |
+| `parent` | `create-increment --parent NNNN`. |
+
+### Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `planned` | Spec exists, work has not started. `create-increment --planned` or an import. |
+| `active` | Being worked on. The default for a new increment, and what `task`, `verify` and `handoff` use when you give no id. |
+| `paused` | Stopped for now. |
+| `completed` | Closed by `specweave complete`. |
+| `abandoned` | Dropped or superseded. |
+
+`backlog` and `ready_for_review` are 2.x states that still load. Older spellings are mapped when read: `planning`, `new` and `todo` become `planned`; `in_progress` and `started` become `active`; `done` and `closed` become `completed`; `cancelled` and `superseded` become `abandoned`. See the [increment status reference](/docs/guides/increment-status-reference).
+
+## ledger.jsonl
+
+The ledger is append-only. Each line is one JSON object, UTF-8, LF line endings:
+
+```json
+{"t":"T-01","e":"claim","by":"claude@laptop","at":"2026-09-20T10:00:00.000Z"}
+{"t":"T-01","e":"done","by":"claude@laptop","at":"2026-09-20T10:40:00.000Z","evidence":"npm test -- login → exit 0\n12 passing"}
+{"t":"*","e":"note","by":"codex@cloud","at":"2026-09-20T11:05:00.000Z","note":"Staging API key rotated; ask before running e2e"}
+{"t":"*","e":"handoff","by":"claude@laptop","at":"2026-09-20T12:00:00.000Z","note":"out of tokens · next: T-02 restore draft"}
+{"t":"*","e":"pickup","by":"codex@cloud","at":"2026-09-20T12:10:00.000Z","note":"from claude@laptop, snapshot 3f9c2a1"}
+```
+
+| Key | Required | Meaning |
+|-----|----------|---------|
+| `t` | yes | Task id such as `T-01`, or `*` for an increment-level event. |
+| `e` | yes | Event type, below. |
+| `by` | yes | Agent id. |
+| `at` | yes | ISO 8601 timestamp. |
+| `note` | for `skip` and `block` | Reason or message. |
+| `evidence` | for `done` | Commit sha, test command and output tail. |
+
+Lines that do not parse are counted and skipped, never fatal. A byte-order mark and CRLF endings are tolerated.
+
+### Task events
+
+| Event | Effect |
+|-------|--------|
+| `claim` | The task becomes claimed by `by`. Ignored if someone else holds a claim that is still within the lease; the earliest claim wins. |
+| `done` | The task is done. Ignored without `evidence`, or if someone else holds a live claim. |
+| `release` | The owner gives the task back; it becomes open. |
+| `block` | The task is blocked, with a reason in `note`. |
+| `skip` | The task will not be done. Final. Ignored without a `note`. |
+
+A claim older than the lease (`tasks.leaseHours`, default 2 hours) is stale, and another agent may take the task over. Task state is derived by sorting events by time and replaying them, so the order of lines in the file does not matter.
+
+An acceptance criterion counts as met when every task that lists it under `AC:` is done. Nobody ticks boxes in `spec.md`.
+
+### Increment events
+
+These use `"t": "*"` and never change task state.
+
+| Event | Written by |
+|-------|-----------|
+| `note` | `specweave note "<text>"`. A message for whoever works on the increment next. |
+| `session` | `task claim`, `task done` and `pickup`, once per tool session, when the tool exposes a session id. |
+| `handoff` | `specweave handoff`. `note` carries the reason and the next step. |
+| `pickup` | `specweave pickup` when it applies a handoff. `note` says who it came from and which snapshot. |
+
+`pickup` shows the latest notes and the last handoff. Secrets are scrubbed from `note` and `handoff` text before they are written.
+
+### Agent id
+
+`by` is `<tool>@<host>`, for example `claude@laptop`, `codex@build-box` or `claude@cloud`. The tool is detected from the environment (Claude Code, Codex, Grok, Cursor, Gemini CLI, Copilot, OpenCode; `cli` otherwise). Cloud sessions use `cloud` as the host so a new container keeps its own claims. Override with `SPECWEAVE_TOOL` and `SPECWEAVE_HOST`, or set the whole id with `SPECWEAVE_AGENT`. `specweave task whoami` prints it.
+
+### Writing the ledger without the CLI
+
+Any tool can append a line itself:
+
+```bash
+echo '{"t":"T-01","e":"claim","by":"grok@laptop","at":"2026-09-20T10:00:00Z"}' >> .specweave/increments/0042-add-login-form/ledger.jsonl
+```
+
+Appends are single-line writes, so two agents in one working tree do not corrupt each other. Across branches, `.gitattributes` sets `**/ledger.jsonl merge=union`, so a merge keeps every line from both sides. See [cross-tool handoff](/docs/guides/cross-tool-handoff) for the full multi-agent flow.

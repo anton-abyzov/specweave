@@ -1,127 +1,75 @@
 ---
 id: spec-md
-title: spec.md (Specification File)
+title: spec.md
 sidebar_label: spec.md
+description: The single file that describes an increment in SpecWeave 3.0 - Problem, Scope, Acceptance Criteria, Approach, Open questions and Tasks.
 ---
 
-# spec.md (Specification File)
+# spec.md
 
-The **spec.md** file is the primary specification document in a SpecWeave [increment](/docs/glossary/terms/increments), containing requirements, user stories, and acceptance criteria.
+In SpecWeave 3.0, **`spec.md` is the increment**. It is the one file an agent reads to know what to build, why, how it will be checked, and which tasks are left. It holds definitions only; progress lives in the [ledger](/docs/glossary/terms/ledger).
 
-## Purpose
+## Template
 
-**spec.md answers: "WHAT and WHY?"**
-
-- What are we building?
-- Why are we building it?
-- Who is it for?
-- What defines "done"?
-
-## Location
-
-```
-.specweave/increments/0001-user-authentication/
-├── spec.md         ← Specification (WHAT/WHY)
-├── plan.md         ← Architecture (HOW)
-├── tasks.md        ← Implementation checklist
-└── metadata.json
-```
-
-## Structure
+`specweave create-increment "title"` writes this:
 
 ```markdown
----
-increment: 0001-user-authentication
-feature_id: FS-001
-status: active
----
+# Keep checkout resumable
 
-# Increment 0001: User Authentication
+## Problem
 
-## Overview
-Brief description of what this increment delivers and why.
+What is wrong today, for whom, and the evidence. Not the solution.
 
-## User Stories
+## Scope
 
-### US-001: User Login
-**As a** registered user
-**I want to** log in with my credentials
-**So that** I can access my account
+In: what this increment ships. Out: what it does not include.
 
-**Acceptance Criteria**:
-- [ ] **AC-US1-01**: Valid credentials → redirect to dashboard (P1, testable)
-- [ ] **AC-US1-02**: Invalid credentials → error message (P1, testable)
-- [ ] **AC-US1-03**: Remember me checkbox works (P2, testable)
+## Acceptance Criteria
 
-### US-002: Password Reset
-...
+- [ ] AC-01: Specific, testable criterion
+- [ ] AC-02: Specific, testable criterion
 
-## Out of Scope
-- ❌ Social login (future increment)
-- ❌ Biometric authentication
+## Approach
 
-## Success Criteria
-- All P1 acceptance criteria met
-- 80%+ test coverage
-- No critical security vulnerabilities
+Files that change, in order; key decisions; rejected alternatives; risks.
+
+## Open questions
+
+- question, or "none"
+
+## Tasks
+
+### T-01 First task
+- AC: AC-01 | Files: src/file.ts, src/file.test.ts | Test: npm test -- file
+
+### T-02 Second task
+- AC: AC-02 | Files: src/other.ts | Test: npm test -- other
 ```
 
-## Key Elements
+## Sections
 
-### YAML Frontmatter
-```yaml
----
-increment: 0001-user-authentication  # Required
-feature_id: FS-001                   # Optional, links to living docs
-status: active                       # auto-managed
----
-```
+| Section | What goes in it |
+|---|---|
+| Problem | The situation today and who it hurts. Not the fix. |
+| Scope | What is in and what is explicitly out. |
+| Acceptance Criteria | Numbered, testable checks (`AC-01`, `AC-02`). See [AC-ID](/docs/glossary/terms/ac-id). |
+| Approach | The design in a few lines: files in order, decisions, rejected options, risks. Decisions that must outlive the session go here. |
+| Open questions | What still needs an answer, or "none". |
+| Tasks | `### T-NN Title` headings, each with one line giving the ACs it covers, the Files it touches and the Test that proves it. |
 
-### User Stories
-Follow the format:
-```markdown
-### US-XXX: Story Title
-**As a** [user role]
-**I want to** [action]
-**So that** [benefit]
-```
+## What is not in it
 
-### Acceptance Criteria with AC-IDs
-```markdown
-- [ ] **AC-US1-01**: Description (Priority, testability)
-```
+- **No status.** There is no frontmatter and no progress written back into the file. Status is in `metadata.json`, task state in `ledger.jsonl`.
+- **No separate task file.** Tasks are the last section. Increments from 2.x keep their [tasks.md](/docs/glossary/terms/tasks-md).
+- **No long design document.** If the Approach genuinely needs pages, create the increment with `--with-plan` to get an optional `plan.md`.
 
-**AC-ID format**: `AC-US{story}-{number}` (e.g., AC-US1-01)
+## Editing it
 
-### Priority Labels
-- **P1** - Must-have for this increment
-- **P2** - Nice-to-have
-- **P3** - Future enhancement
-
-## Relationship to Other Files
-
-| File | Purpose | Who Creates |
-|------|---------|-------------|
-| **spec.md** | Requirements (WHAT/WHY) | [PM Agent](/docs/reference/skills) |
-| plan.md | Architecture (HOW) | [Architect Agent](/docs/reference/skills) |
-| tasks.md | Implementation checklist | Test-Aware Planner |
-
-## Best Practices
-
-✅ **DO:**
-- Keep user stories focused (one feature per story)
-- Make acceptance criteria testable
-- Document out-of-scope items
-- Use consistent AC-ID format
-
-❌ **DON'T:**
-- Mix HOW with WHAT (that goes in plan.md)
-- Create vague acceptance criteria
-- Forget to mark criteria as P1/P2
+Edit `spec.md` by hand or through the agent at any time. Adding an AC or a task is a normal edit. Removing a task that has ledger events leaves those events orphaned, so prefer `specweave task skip T-03 --reason "..."` for work that will not happen.
 
 ## Related
 
-- [Increments](/docs/glossary/terms/increments) - Contains spec.md
-- User Stories - Format for requirements
-- [AC-ID](/docs/glossary/terms/ac-id) - Traceability identifiers
-- [PM Agent](/docs/reference/skills) - Creates spec.md
+- [Increment](/docs/glossary/terms/increments)
+- [AC-ID](/docs/glossary/terms/ac-id)
+- [Ledger](/docs/glossary/terms/ledger)
+- [What is an increment](/docs/guides/core-concepts/what-is-an-increment)
