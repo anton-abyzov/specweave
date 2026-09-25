@@ -133,8 +133,14 @@ export interface HandoffDocInput {
 export interface HandoffPushInfo {
   /** Branch pushed to origin (empty when the push was not needed or failed). */
   branch?: string;
-  /** `wip/<branch>` holding a snapshot of uncommitted edits. */
+  /** `wip/<branch>`, set when the snapshot carries uncommitted edits. */
   wipRef?: string;
+  /** The well-known ref `specweave pickup` fetches. */
+  handoffRef?: string;
+  /** The snapshot commit pushed to it. */
+  snapshot?: string;
+  /** Why nothing was pushed, when that was expected (no remote, no Git). */
+  skipped?: string;
   /** Why a push step did not happen, in words. */
   warnings: string[];
 }
@@ -222,7 +228,7 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
     L.push(input.git.statusPorcelain || '(no porcelain output)');
     L.push('```');
     L.push(`Full diff: \`${repoRelative(input.repoRoot, input.diffPath)}\``);
-    if (input.push?.wipRef) L.push(`Also pushed as a WIP snapshot: \`git fetch origin ${input.push.wipRef} && git cherry-pick --no-commit FETCH_HEAD\``);
+    if (input.push?.wipRef) L.push(`Also pushed to \`${input.push.wipRef}\`; \`specweave pickup\` applies it.`);
   } else if (input.git.isGitRepo) {
     L.push('Working tree clean.');
   } else {
@@ -271,25 +277,16 @@ export function renderPastePrompt(input: HandoffDocInput, opts: { inline?: boole
     P.push(INLINE_BEGIN_MARKER);
     P.push(renderHandoffDoc(input));
     P.push(INLINE_END_MARKER);
+  } else if (input.push?.handoffRef) {
+    // Pushed: the other side needs two words, not a prompt.
+    P.push('Pick up my handed-off work: run `specweave pickup` and continue with the task it names.');
   } else {
-    // Repo-relative paths: the next tool may run in another checkout, another
-    // machine or a cloud container, where an absolute path means nothing.
+    // Repo-relative paths: the next tool may run in another checkout, where
+    // an absolute path means nothing.
     const doc = repoRelative(input.repoRoot, input.docPath);
-    const diff = repoRelative(input.repoRoot, input.diffPath);
-    if (input.isSpecWeave) {
-      P.push('Resume my work. Run `specweave pickup` first: it prints the increment, the next task with its acceptance criteria, and branch state.');
-    } else {
-      P.push('Resume my work.');
-    }
-    P.push(`Then read the handoff doc at ${doc}. If it is not in your checkout, STOP and ask me to paste the handoff; do not improvise context.`);
-    if (input.push?.wipRef) {
-      P.push(`My uncommitted edits are on a WIP branch: git fetch origin ${input.push.wipRef} && git cherry-pick --no-commit FETCH_HEAD`);
-    } else if (input.git.hasUncommittedChanges) {
-      P.push(`The exact uncommitted edits are in ${diff}.`);
-    }
-    if (input.increment) {
-      P.push(`Active increment: ${input.increment.id}. Claim a task (\`specweave task claim <T-id> ${input.increment.id}\`) before editing.`);
-    }
+    P.push('Pick up my handed-off work: run `specweave pickup` and continue with the task it names.');
+    P.push(`The handoff doc is ${doc}. If it is not in your checkout, STOP and ask me to paste it; do not improvise context.`);
+    if (input.git.hasUncommittedChanges) P.push(`The uncommitted edits are in ${repoRelative(input.repoRoot, input.diffPath)}.`);
   }
   return P.join('\n');
 }
