@@ -138,13 +138,13 @@ Flags and token resolution are in the [`specweave sync` reference](/docs/referen
 
 ### `hooks`
 
-The explicit close-on-complete setting. With it, `specweave complete` closes the Jira issue or Azure DevOps work item that `sync push` linked to the increment.
+The explicit close-on-complete setting. With it, `specweave complete` closes the GitHub issue, Jira issue or Azure DevOps work item that `sync push` linked to the increment. Without it, `complete` leaves every tracker alone. `specweave sync setup` writes `close_external_issue: true`; set it to `false` to keep closure local.
 
 ```json
 { "hooks": { "post_increment_done": { "close_external_issue": true } } }
 ```
 
-`close_jira_issue` and `close_github_issue` have the same effect. Closure is skipped when `sync.settings.canUpdateExternalItems` is `false`. GitHub issues that `sync push` already linked to the increment are closed on `complete` whether or not this is set.
+`close_external_issue` covers every tracker. The narrower keys close one kind only: `close_github_issue` for GitHub, `close_jira_issue` and `close_ado_work_item` for Jira and Azure DevOps. Closure is skipped when `sync.settings.canUpdateExternalItems` is `false`.
 
 ### `jev`
 

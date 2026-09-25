@@ -21,7 +21,7 @@ GitHub is first-class. Jira and Azure DevOps are opt-in. The `sync` skill (`/sw:
 In 3.0, SpecWeave writes to a tracker only when you ask it to:
 
 - `specweave sync push` creates or updates issues.
-- `specweave complete` closes GitHub issues that `sync push` already linked to the increment. It closes Jira issues and Azure DevOps work items only when the close-on-complete setting is on (`hooks.post_increment_done.close_external_issue`, see [configuration](/docs/reference/configuration#hooks)).
+- `specweave complete` closes the GitHub issue, Jira issue or Azure DevOps work item that `sync push` linked to the increment only when the close-on-complete setting is on (`hooks.post_increment_done.close_external_issue`, see [configuration](/docs/reference/configuration#hooks)).
 
 Nothing else calls a tracker. Creating an increment, `start`, `pause`, `resume`, `abandon` and every `task` command stay local. There are no living docs.
 

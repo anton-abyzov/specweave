@@ -77,7 +77,7 @@ A different model is a good reviewer. Hand off to Codex or Grok for the review, 
 specweave complete 0042
 ```
 
-closes the increment when the verify report passes. If you must close without a passing report, `--reason` records why in `metadata.json`. Completing never creates issues. If an earlier `specweave sync push` linked the increment to a GitHub issue, completing closes that issue. Push progress with `specweave sync push` when you want a tracker updated. See [GitHub](/docs/guides/github-sync).
+closes the increment when the verify report passes. If you must close without a passing report, `--reason` records why in `metadata.json`. Completing never creates issues. It closes an issue that an earlier `specweave sync push` linked only when the close-on-complete setting is on, which `specweave sync setup` turns on. Push progress with `specweave sync push` when you want a tracker updated. See [GitHub](/docs/guides/github-sync).
 
 ## When you have to stop
 

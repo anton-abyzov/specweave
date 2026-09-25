@@ -76,7 +76,7 @@ specweave complete --all --reason "end of sprint cleanup"             # every ac
 
 ## Status changes do not touch trackers
 
-Starting, pausing, resuming or abandoning an increment never creates, updates or closes a GitHub issue or a Jira or Azure DevOps work item. Trackers change only when you run `specweave sync push`, and when `complete` closes an issue that is already linked (see [GitHub sync](/docs/guides/github-sync) and [Jira and Azure DevOps](/docs/guides/jira-ado-sync) for the close-on-complete setting).
+Starting, pausing, resuming or abandoning an increment never creates, updates or closes a GitHub issue or a Jira or Azure DevOps work item. Trackers change only when you run `specweave sync push`, and when `complete` closes an already linked issue because the close-on-complete setting is on (see [GitHub sync](/docs/guides/github-sync) and [Jira and Azure DevOps](/docs/guides/jira-ado-sync) for the close-on-complete setting).
 
 ## How many active increments
 

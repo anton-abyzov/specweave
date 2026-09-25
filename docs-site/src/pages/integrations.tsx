@@ -23,7 +23,7 @@ export default function Integrations() {
         <tr><td>Azure DevOps</td><td>Your organization plans with work items and boards.</td><td><Link to="/docs/guides/jira-ado-sync">Jira and Azure DevOps</Link></td></tr>
       </tbody></table>
       <pre>{'specweave sync setup           # connect a tracker\nspecweave sync status          # credentials, health, what would change\nspecweave sync push 0042       # publish progress, when you choose\nspecweave sync pull            # report changes made in the tracker'}</pre>
-      <p>A push is an external write, so it happens only when you run it. Starting, pausing or resuming an increment never touches a tracker, and nothing creates issues except a push. Completing an increment closes the GitHub issue a push linked it to. <code>sync pull</code> reports what changed in the tracker for you to review; it does not rewrite your local files.</p>
+      <p>A push is an external write, so it happens only when you run it. Starting, pausing or resuming an increment never touches a tracker, and nothing creates issues except a push. Completing an increment closes the issue a push linked only when the close-on-complete setting is on; <code>sync setup</code> turns it on, and you can turn it off. <code>sync pull</code> reports what changed in the tracker for you to review; it does not rewrite your local files.</p>
 
       <h2>Who owns what</h2>
       <p>The spec and the ledger record what done means and what was verified. The tracker holds planning context: priority, assignee, labels and the place stakeholders look. A closed issue is not proof that acceptance criteria passed; a passing verify report is.</p>
