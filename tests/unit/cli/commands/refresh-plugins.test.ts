@@ -529,14 +529,10 @@ describe('refresh-plugins', () => {
       );
     });
 
-    it('T-017: orphan cleanup called in umbrella mode', async () => {
+    it('T-017: never deletes a child repo vskill.lock (it is that repo\'s own file)', async () => {
       await refreshPluginsCommand({});
 
-      expect(mockCleanupOrphanedChildLocks).toHaveBeenCalledTimes(1);
-      expect(mockCleanupOrphanedChildLocks).toHaveBeenCalledWith(
-        '/mock/project',
-        expect.objectContaining({})
-      );
+      expect(mockCleanupOrphanedChildLocks).not.toHaveBeenCalled();
     });
 
     it('T-018: verbose mode logs removed paths', async () => {

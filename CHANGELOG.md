@@ -1,3 +1,15 @@
+## [3.0.3] - 2026-09-26
+
+### Fixed
+
+- `specweave update` no longer rewrites `vskill.lock`. When a bundled plugin hash was out of date, the health check replaced the project lock with its merged view, dropping `version`, `createdAt` and every agent but one. Corrected hashes now go to `~/.specweave/plugins-lock.json`, and the project lock is only read.
+- `specweave update` and `specweave doctor` no longer delete a child repo's `vskill.lock` in an umbrella project. That file belongs to the child repo.
+- The update health check no longer reports "outdated: v3.0.2 (latest: v3.0.1)". It compared versions for equality against a cached registry answer; it now compares them as versions and re-asks npm when the cache is older than the running CLI.
+
+### Changed
+
+- `task done --run` writes its evidence to `reports/task-T-NN.txt` instead of `.log`, so a project's `*.log` rule no longer hides it and no negation is needed. `specweave update` removes the `!…/reports/*.log` and `!…/reports/task-T-*.log` lines that 3.0.0 to 3.0.2 added, so old logs are ignored again.
+
 ## [3.0.2] - 2026-09-26
 
 ### Fixed

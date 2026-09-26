@@ -448,25 +448,28 @@ export function ensureGlobalLockfile(homeOverride?: string): VskillLock {
 // ---------------------------------------------------------------------------
 
 /**
- * Migrate bundled plugin entries (source: 'local:specweave') from a project's
- * vskill.lock to the global ~/.specweave/plugins-lock.json.
+ * Copy bundled plugin entries (source: 'local:specweave') from a project's
+ * vskill.lock into the global ~/.specweave/plugins-lock.json.
  *
- * - Only moves entries with source === 'local:specweave'
+ * The project vskill.lock belongs to vskill and is usually committed, so it is
+ * only read, never rewritten or deleted: 3.0.2 and earlier dropped entries and
+ * fields from it. A bundled entry left there is harmless; the doctor reads
+ * provenance from the entry, not from the file it sits in.
+ *
  * - Preserves newer global entries (timestamp comparison)
- * - Deletes project vskill.lock if it becomes empty after migration
  * - Idempotent: safe to run multiple times
  */
 export function migrateBundledToGlobalLock(
   projectRoot: string,
   homeOverride?: string,
-): { migratedCount: number; deletedProjectLock: boolean } {
+): { migratedCount: number } {
   const projectLock = readLockfile(projectRoot);
-  if (!projectLock) return { migratedCount: 0, deletedProjectLock: false };
+  if (!projectLock) return { migratedCount: 0 };
 
   const bundledEntries = Object.entries(projectLock.skills)
     .filter(([, entry]) => entry.source === 'local:specweave');
 
-  if (bundledEntries.length === 0) return { migratedCount: 0, deletedProjectLock: false };
+  if (bundledEntries.length === 0) return { migratedCount: 0 };
 
   const globalLock = ensureGlobalLockfile(homeOverride);
   let migratedCount = 0;
@@ -476,26 +479,12 @@ export function migrateBundledToGlobalLock(
     // Only overwrite if global entry doesn't exist or project entry is newer
     if (!existing || entry.installedAt > existing.installedAt) {
       globalLock.skills[name] = entry;
+      migratedCount++;
     }
-    delete projectLock.skills[name];
-    migratedCount++;
   }
 
-  writeGlobalLockfile(globalLock, homeOverride);
-
-  // Delete project lock if no entries remain
-  const remainingSkills = Object.keys(projectLock.skills).length;
-  let deletedProjectLock = false;
-  if (remainingSkills === 0) {
-    try {
-      rmSync(join(projectRoot, LOCKFILE_NAME), { force: true });
-      deletedProjectLock = true;
-    } catch { /* non-fatal */ }
-  } else {
-    writeLockfile(projectLock, projectRoot);
-  }
-
-  return { migratedCount, deletedProjectLock };
+  if (migratedCount > 0) writeGlobalLockfile(globalLock, homeOverride);
+  return { migratedCount };
 }
 
 // ---------------------------------------------------------------------------
@@ -514,7 +503,7 @@ const SATELLITE_PLUGIN_NAMES = new Set([
 ]);
 
 /**
- * Remove satellite plugin entries from both global and project lockfiles.
+ * Remove satellite plugin entries from the global lockfile.
  *
  * After consolidation, all satellite skills ship under the 'sw' plugin.
  * This function cleans up stale lockfile entries that reference the old
@@ -523,11 +512,11 @@ const SATELLITE_PLUGIN_NAMES = new Set([
  * - Idempotent: safe to run multiple times
  * - Failure non-blocking: returns {migratedCount: 0} on any error
  *
- * @param projectRoot - Project directory (optional — only global lock if omitted)
+ * @param _projectRoot - Unused: the project vskill.lock is vskill's file
  * @param homeOverride - Override home directory for testing
  */
 export function migrateSatelliteToUnifiedLock(
-  projectRoot?: string,
+  _projectRoot?: string,
   homeOverride?: string,
 ): { migratedCount: number } {
   let migratedCount = 0;
@@ -551,31 +540,7 @@ export function migrateSatelliteToUnifiedLock(
       }
     }
 
-    // 2. Clean project vskill.lock (if provided)
-    if (projectRoot) {
-      const projectLock = readLockfile(projectRoot);
-      if (projectLock) {
-        let projectChanged = false;
-        for (const skillName of Object.keys(projectLock.skills)) {
-          const entry = projectLock.skills[skillName];
-          if (entry.source && SATELLITE_PLUGIN_NAMES.has(entry.source.replace('local:', ''))) {
-            delete projectLock.skills[skillName];
-            migratedCount++;
-            projectChanged = true;
-          }
-        }
-        if (projectChanged) {
-          const remaining = Object.keys(projectLock.skills).length;
-          if (remaining === 0) {
-            try {
-              rmSync(join(projectRoot, LOCKFILE_NAME), { force: true });
-            } catch (err) { consoleLogger.debug(`migrateSatelliteToUnifiedLock: failed to remove project lockfile: ${err}`); }
-          } else {
-            writeLockfile(projectLock, projectRoot);
-          }
-        }
-      }
-    }
+    // The project vskill.lock is vskill's file and is never rewritten here.
   } catch (err) {
     consoleLogger.debug(`migrateSatelliteToUnifiedLock: non-blocking failure: ${err}`);
   }

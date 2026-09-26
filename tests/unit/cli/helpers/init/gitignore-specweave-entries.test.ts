@@ -52,28 +52,30 @@ describe('ensureSpecweaveGitignoreEntries', () => {
     expect(fs.readFileSync(path.join(dir, '.gitignore'), 'utf-8')).toBe(first);
   });
 
-  it('keeps old report logs ignored but task evidence logs committable', () => {
+  it('removes the 3.0.0-3.0.2 negations: old logs stay ignored, .txt evidence stays committable', () => {
     const dir = mk();
-    const negation = '!.specweave/increments/**/reports/*.log';
-    fs.writeFileSync(path.join(dir, '.gitignore'), `*.log\n\n# SpecWeave (added by specweave update)\n.specweave/state/\n${negation}\n`);
-    const log = path.join('.specweave', 'increments', '0653-old', 'reports', 'run.log');
-    fs.mkdirSync(path.join(dir, path.dirname(log)), { recursive: true });
-    fs.writeFileSync(path.join(dir, log), 'old run\n');
+    const broad = '!.specweave/increments/**/reports/*.log';
+    const scoped = '!.specweave/increments/**/reports/task-T-*.log';
+    fs.writeFileSync(path.join(dir, '.gitignore'), `*.log\n\n# SpecWeave (added by specweave update)\n.specweave/state/\n${broad}\n${scoped}\n`);
+    const reports = path.join('.specweave', 'increments', '0653-old', 'reports');
+    fs.mkdirSync(path.join(dir, reports), { recursive: true });
+    const oldLogs = [path.join(reports, 'run.log'), path.join(reports, 'task-T-01.log')];
+    for (const log of oldLogs) fs.writeFileSync(path.join(dir, log), 'old run\n');
+    const evidence = path.join(reports, 'task-T-02.txt');
+    fs.writeFileSync(path.join(dir, evidence), '$ npm test\n# exit 0\n');
     execFileSync('git', ['init', '-q', dir]);
 
     const { added } = ensureSpecweaveGitignoreEntries(dir);
 
     const lines = fs.readFileSync(path.join(dir, '.gitignore'), 'utf-8').split('\n');
-    expect(lines).not.toContain(negation);
-    expect(added).not.toContain(negation);
+    expect(lines).not.toContain(broad);
+    expect(lines).not.toContain(scoped);
+    expect(added.filter((l) => l.startsWith('!'))).toEqual([]);
     expect(lines).toContain('*.log');
-    expect(execFileSync('git', ['-C', dir, 'check-ignore', log], { encoding: 'utf-8' }).trim()).toBe(log);
-
-    // The evidence log `task done --run` writes and the ledger cites stays committable.
-    const evidence = path.join(path.dirname(log), 'task-T-01.log');
-    fs.writeFileSync(path.join(dir, evidence), 'echo hi -> exit 0\n');
-    const r = spawnSync('git', ['-C', dir, 'check-ignore', '-q', evidence]);
-    expect(r.status).toBe(1);
+    for (const log of oldLogs) {
+      expect(spawnSync('git', ['-C', dir, 'check-ignore', '-q', log]).status, log).toBe(0);
+    }
+    expect(spawnSync('git', ['-C', dir, 'check-ignore', '-q', evidence]).status).toBe(1);
   });
 
   it('creates .gitignore when the project has none', () => {
