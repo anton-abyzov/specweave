@@ -1,527 +1,97 @@
 ---
 sidebar_position: 5
-title: Autonomous Execution Guide
+title: Autonomous execution
+description: Run an increment unattended in Claude Code with specweave auto, and how the Stop hook loop decides when to stop.
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# Autonomous execution
 
-# Autonomous Execution Guide
+Auto mode lets Claude Code keep working on an increment until its tasks are done, without you typing "continue". There is no daemon and no background process. `specweave auto` writes a small session file, and the SpecWeave plugin's Stop hook reads it every time Claude tries to end its turn.
 
-Learn how to use SpecWeave's autonomous execution mode (`sw:auto`) to work hands-free until all tasks are complete.
+Auto mode depends on the Stop hook, so it works in Claude Code with the `sw` plugin loaded. Other tools run the same loop turn by turn (see [the loop](/docs/integrations/generic-ai-tools#the-loop-with-only-the-cli)).
 
-## Overview
-
-Auto mode enables continuous autonomous execution using Claude Code's Stop Hook integration. It implements a feedback loop that prevents Claude from exiting until work is complete.
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    AUTONOMOUS EXECUTION                       │
-├──────────────────────────────────────────────────────────────┤
-│  sw:auto 0001                                                │
-│      │                                                        │
-│      ▼                                                        │
-│  ┌────────────┐     ┌─────────────┐     ┌──────────────┐    │
-│  │ Setup      │ ──▶ │ Execute     │ ──▶ │ Stop Hook    │    │
-│  │ Session    │     │ sw:do      │     │ Intercepts   │    │
-│  └────────────┘     └─────────────┘     └──────┬───────┘    │
-│                                                  │            │
-│                     ┌────────────────────────────┘            │
-│                     ▼                                         │
-│              ┌──────────────┐                                 │
-│              │ All Tasks    │                                 │
-│              │ Complete?    │                                 │
-│              └──────┬───────┘                                 │
-│                     │                                         │
-│         NO ─────────┼─────────── YES                          │
-│         │           │             │                           │
-│         ▼           │             ▼                           │
-│  ┌──────────────┐   │    ┌──────────────┐                    │
-│  │ Block Exit   │   │    │ Session      │                    │
-│  │ Re-feed      │───┘    │ Complete!    │                    │
-│  │ Prompt       │        └──────────────┘                    │
-│  └──────────────┘                                            │
-└──────────────────────────────────────────────────────────────┘
-```
-
-## Quick Start
-
-<CommandTabs
-  natural="Ship it while I sleep"
-  claude="sw:auto"
-  other="auto"
-/>
-
-### Basic Usage
+## Start, check, stop
 
 ```bash
-# Start auto on current active increment
-sw:auto
+specweave auto                 # continue with the increments that are already active
+specweave auto 0042 0043       # activate these increments and start
+specweave auto --all-backlog   # activate every planned or backlog increment
+specweave auto --dry-run       # show what would be activated, change nothing
+specweave auto --reset         # clear stale auto-mode state files
 
-# Start on specific increment
-sw:auto 0001-user-authentication
-
-# Start on multiple increments (queue)
-sw:auto 0001 0002 0003
-```
-
-### With Safety Limits
-
-```bash
-# Limit iterations
-sw:auto --max-iterations 50
-
-# Limit time
-sw:auto --max-hours 8
-
-# Both
-sw:auto --max-iterations 100 --max-hours 24
-```
-
-### Preview Mode
-
-```bash
-# See what would happen without starting
-sw:auto --dry-run
-```
-
----
-
-## When to Use Auto Mode
-
-### Good Use Cases
-
-| Scenario | Why Auto Mode Works |
-|----------|---------------------|
-| **Well-defined tasks** | Clear spec, clear ACs, minimal ambiguity |
-| **10+ tasks** | Saves time vs manual `sw:do` iterations |
-| **Overnight work** | "Ship while sleeping" |
-| **Test-driven work** | Self-healing test loops catch issues |
-| **Brownfield cleanup** | Systematic refactoring across files |
-
-### When to Avoid
-
-| Scenario | Why Not Auto Mode |
-|----------|-------------------|
-| **Unclear requirements** | Will make wrong decisions autonomously |
-| **Needs user input** | Human gates will pause session anyway |
-| **Exploratory work** | Better to iterate manually |
-| **Production deploys** | Human approval required (gated) |
-
----
-
-## Session Management
-
-### Check Status
-
-```bash
-specweave auto-status
-```
-
-Output:
-```
-🤖 Auto Session Status
-
-Status: 🟢 RUNNING
-
-Session ID: auto-2025-12-29-abc123
-Duration: 2h 15m
-Iteration: 47 / 100
-
-Progress: [████████████████░░░░░░░░░░░░░░] 47%
-
-📋 Increment Queue
-   Total: 3 | Completed: 2 | Failed: 0
-
-📌 Current Increment: 0003-payment-integration
-   Tasks: 12 / 18 (67%)
-```
-
-### Cancel Session
-
-```bash
-# Interactive (asks confirmation)
-specweave cancel-auto
-
-# Force cancel
+specweave auto-status          # is a session active, and which increments are open
+specweave auto-status --json
+specweave cancel-auto          # end the session (asks first)
 specweave cancel-auto --force
-
-# With reason
-specweave cancel-auto --reason "Need to pivot to urgent bug fix"
 ```
 
-### Resume After Crash
+In Claude Code you can also type `/sw:auto` or say "run this until it's done".
 
-If Claude Code crashes or you close the terminal:
+Only start auto mode on an increment whose spec is settled. Open questions in `spec.md` become guesses when nobody is watching.
+
+## How the loop decides
+
+```mermaid
+flowchart TD
+  A[specweave auto 0042] --> B[Claude works the next task]
+  B --> C{Stop hook}
+  C -->|work remains| B
+  C -->|all tasks and ACs done| D[verify, then complete]
+  C -->|limit or no progress| E[session ends]
+```
+
+Each time Claude tries to stop, the hook checks, in order:
+
+1. No active auto session: the session ends normally.
+2. The session file is older than `auto.maxSessionAge` (default 7200 seconds): released.
+3. More than `auto.maxTurns` turns (default 20): released as a safety stop.
+4. Three turns in a row with no change in remaining work: released by the loop guard.
+5. No increment left to work on: released.
+6. No tasks or acceptance criteria remain: Claude is sent back once with `all_complete_needs_closure`, its cue to run `specweave verify` and close the increment.
+7. Otherwise: Claude is sent back with how many tasks and acceptance criteria remain.
+
+Any error inside the hook lets the session end. An ordinary session without an auto session file is never held.
+
+## What the agent does inside the loop
+
+The same loop as `/sw:do`:
 
 ```bash
-# Just run sw:do - it detects incomplete tasks
-sw:do
-
-# Or use Claude Code's built-in resume
-/resume
-claude --continue
+specweave task next 0042
+specweave task claim T-03 0042
+# edit only the task's Files, commit as "0042: what changed"
+specweave task done T-03 0042 --run "npm test -- cart"
 ```
 
----
-
-## Safety Features
-
-### 1. Max Iterations
-
-Prevents runaway loops:
+A failing test is fixed in the next turn; a task is never marked done without a passing run. When a task is genuinely blocked (a missing secret, an ambiguous criterion), the agent records it and stops:
 
 ```bash
-sw:auto --max-iterations 50
+specweave task block T-04 0042 --reason "needs STRIPE_TEST_KEY"
 ```
 
-When reached, session completes gracefully with summary.
+A blocked task still counts as remaining work, so after three turns without progress the loop guard ends the session and the block is waiting for you in `specweave pickup`.
 
-### 2. Max Hours
-
-Time boxing for long sessions:
-
-```bash
-sw:auto --max-hours 8
-```
-
-### 3. Human Gates
-
-Sensitive operations require approval:
-
-- `npm publish`
-- `git push --force`
-- `rm -rf /`
-- Production deployments
-- Database migrations (drop, delete)
-
-Auto mode pauses and asks for confirmation:
-
-```
-⚠️ Human Gate Required
-
-Operation: npm publish
-Increment: 0007-release-v2
-
-This operation requires human approval.
-
-[Approve] [Reject] [Skip]
-```
-
-### 4. Self-Assessment Scoring
-
-Claude scores its own confidence after each task:
-
-| Score | Action |
-|-------|--------|
-| ≥ 0.90 | Continue confidently |
-| 0.70-0.89 | Continue with caution |
-| 0.50-0.69 | Self-review before continuing |
-| < 0.50 | **STOP** and request human review |
-
-### 5. Test Failure Detection
-
-Multiple test failures (>3) pause the session:
-
-```
-🔴 Multiple test failures detected (5)
-
-Auto session paused for human review.
-
-Failing tests:
-- auth.spec.ts:45 - Login redirect
-- checkout.spec.ts:112 - Payment timeout
-- ...
-
-Run specweave auto-status for details.
-```
-
-### 6. Circuit Breakers
-
-External service failures are handled gracefully:
-
-| Service | Failure Threshold | Recovery |
-|---------|-------------------|----------|
-| GitHub | 3 failures | Queue operations |
-| JIRA | 3 failures | Queue operations |
-| ADO | 3 failures | Queue operations |
-
----
+When everything is done: `specweave verify 0042`, then `specweave complete 0042`.
 
 ## Configuration
-
-Configure in `.specweave/config.json`:
 
 ```json
 {
   "auto": {
-    "enabled": true,
-    "maxIterations": 100,
-    "maxHours": 24,
-    "testCommand": "npm test",
-    "coverageThreshold": 80,
-    "enforceTestFirst": false,
-    "humanGated": {
-      "patterns": ["deploy", "migrate", "publish"],
-      "timeout": 1800
-    }
+    "maxTurns": 20,
+    "maxSessionAge": 7200,
+    "requireTests": true
   }
 }
 ```
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `enabled` | Enable auto mode | `true` |
-| `maxIterations` | Max loop iterations | `100` |
-| `maxHours` | Max session duration | `24` |
-| `testCommand` | Test command to run | `npm test` |
-| `coverageThreshold` | Minimum coverage % | `80` |
-| `enforceTestFirst` | Require tests before impl | `false` |
-| `humanGated.patterns` | Operations requiring approval | `["deploy", "migrate", "publish"]` |
-| `humanGated.timeout` | Gate timeout in seconds | `1800` |
+`requireTests` (or `testing.mode` set to `TDD`) adds "all tests must pass" to the completion criteria printed at start. The Stop hook itself only counts remaining tasks and acceptance criteria; the tests are run by `task done --run` and `specweave verify`, and `specweave complete` refuses to close without a passing verify report unless you give `--reason`.
 
----
+## Running out of tokens mid-run
 
-## Test Execution Integration
+Auto mode does not survive a usage limit on its own. Before a long run, make sure the agent knows the fallback in `AGENTS.md`: on any stop, run `specweave handoff --reason "<why>"`, which pushes the branch and uncommitted edits when there is a remote. The next session, in any tool or account, starts with `specweave pickup` (or "pick up"). See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
 
-Auto mode runs tests after completing testable tasks in a self-healing loop:
+## See also
 
-```
-IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT TASK
-                    ↑________________↓
-                   (max 3 iterations)
-```
-
-### Test Status Reporting
-
-After every task, you'll see:
-
-```markdown
-## 🧪 Test Status Report (after T-003)
-
-| Type | Status | Pass/Total | Coverage |
-|------|--------|------------|----------|
-| Unit | ✅ | 42/42 | 87% |
-| Integration | ✅ | 12/12 | - |
-| E2E | ⚠️ | 8/10 | - |
-
-**Failing tests:**
-- `auth.spec.ts:45` - Login redirect not working
-
-**Next:** Fixing E2E failure before continuing...
-```
-
----
-
-## Auto-Execute Rules
-
-In auto mode, Claude MUST execute commands directly - never show manual steps.
-
-### The Golden Rule
-
-```
-❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
-❌ FORBIDDEN: "Execute the schema in Supabase SQL Editor"
-❌ FORBIDDEN: "Set secret via: wrangler secret put..."
-
-✅ REQUIRED: Execute commands DIRECTLY using available credentials
-```
-
-### Credential Lookup Order
-
-1. `.env` file - Primary credential storage
-2. Environment variables - Already loaded in session
-3. CLI tool auth - `wrangler whoami`, `gh auth status`
-4. Config files - `wrangler.toml`, `.specweave/config.json`
-
-### If Credentials Missing
-
-Claude asks for them instead of showing manual steps:
-
-```
-🔐 Credential Required for Auto-Execution
-
-I need your DATABASE_URL to execute the migration.
-
-**Please paste your connection string:**
-[I will save to .env and continue automatically]
-```
-
----
-
-## Best Practices
-
-### 1. Validate Before Auto
-
-```bash
-# Run quality check first
-sw:review 0001 --quality
-
-# Then start auto
-sw:auto 0001
-```
-
-### 2. Use Dry Run for Large Sessions
-
-```bash
-# Preview what will happen
-sw:auto 0001 0002 0003 --dry-run
-
-# If looks good, start for real
-sw:auto 0001 0002 0003
-```
-
-### 3. Set Reasonable Limits
-
-```bash
-# For overnight work
-sw:auto --max-hours 8 --max-iterations 100
-
-# For quick focused work
-sw:auto --max-iterations 25
-```
-
-### 4. Monitor Initially
-
-For your first few auto sessions:
-
-1. Keep the terminal visible
-2. Check `specweave auto-status` periodically
-3. Be ready to `specweave cancel-auto` if needed
-
-### 5. Review Summaries
-
-After completion, review the summary:
-
-```
-.specweave/logs/auto-{session-id}-summary.md
-```
-
----
-
-## Troubleshooting
-
-### Session Won't Start
-
-```bash
-❌ Auto session already active: auto-2025-12-29-xyz789
-
-Options:
-  1. Cancel it: specweave cancel-auto
-  2. Check status: specweave auto-status
-  3. Let it continue (close this tab)
-```
-
-**Solution**: Cancel the existing session or let it finish.
-
-### Session Stuck
-
-If a session seems stuck:
-
-```bash
-# Check status
-specweave auto-status
-
-# If paused, check why
-cat .specweave/state/auto-session.json
-```
-
-Common causes:
-- Human gate pending approval
-- Low confidence score
-- Multiple test failures
-
-### Tests Keep Failing
-
-If tests repeatedly fail:
-
-1. Session will pause after 3+ failures
-2. Review failing tests manually
-3. Fix issues
-4. Resume with `sw:do`
-
----
-
-## Simple Mode
-
-For minimal context, use simple mode:
-
-```bash
-sw:auto --simple
-```
-
-Simple mode:
-- Minimal re-feed prompt
-- No session state UI
-- No queue management
-- Just: loop + completion check + max iterations
-
-Good for:
-- Very straightforward tasks
-- Reducing token usage
-- Maximum speed
-
----
-
-## For Non-Claude AI Systems
-
-If using SpecWeave with other AI systems (GPT, Gemini, etc.), implement this pattern:
-
-```bash
-#!/bin/bash
-# autonomous-loop.sh
-
-MAX_ITER=100
-ITER=0
-
-while true; do
-    # Check completion
-    TOTAL=$(grep -c "^### T-" .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
-    DONE=$(grep -c '\[x\].*completed' .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
-
-    if [ "$TOTAL" -gt 0 ] && [ "$DONE" -ge "$TOTAL" ]; then
-        echo "All tasks complete!"
-        break
-    fi
-
-    # Feed to AI
-    cat PROMPT.md | your-ai-cli
-
-    # Safety: max iterations
-    ITER=$((ITER + 1))
-    if [ "$ITER" -ge "$MAX_ITER" ]; then
-        echo "Max iterations reached"
-        break
-    fi
-done
-```
-
----
-
-## Related Commands
-
-| Command | Purpose |
-|---------|---------|
-| `sw:auto` | Start autonomous execution |
-| `specweave auto-status` | Check session status |
-| `specweave cancel-auto` | Cancel running session |
-| `sw:do` | Manual task execution |
-| `specweave status` | Show increment progress |
-| `sw:review` | Quality check before auto |
-
----
-
-## Summary
-
-| Aspect | Details |
-|--------|---------|
-| **Start** | `sw:auto [increment-ids] [options]` |
-| **Check** | `specweave auto-status` |
-| **Cancel** | `specweave cancel-auto` |
-| **Resume** | `sw:do` (auto-detects incomplete) |
-| **Max iterations** | `--max-iterations N` (default: 100) |
-| **Max hours** | `--max-hours N` (optional) |
-| **Simple mode** | `--simple` (minimal context) |
-| **Preview** | `--dry-run` |
-
-**Philosophy**:
-> Auto mode isn't about removing humans from the loop - it's about letting you focus on decisions while Claude handles execution.
+- [Agent teams](/docs/guides/agent-teams-and-swarms): several agents on one increment
+- [Increment statuses](/docs/guides/increment-status-reference)

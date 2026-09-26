@@ -1,658 +1,115 @@
 ---
 sidebar_position: 1
+title: FAQ
+description: Short answers about SpecWeave 3.0 - supported tools, switching tools or accounts, where state lives, trackers, tasks.md, living docs, upgrading and cost.
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# Frequently Asked Questions
 
-# Frequently Asked Questions (FAQ)
+## What is SpecWeave, in one paragraph?
 
-## Two-Spec Architecture
+A small CLI and a set of skills that keep AI coding work in plain files in your repository. Each piece of work is an increment: one `spec.md` with the problem, scope, acceptance criteria, approach and tasks, plus an append-only `ledger.jsonl` that records who claimed and finished each task and with what evidence. Because everything is in git, any AI tool can continue where another one stopped. See [SpecWeave 3.0](/docs/guides/specweave-3) for what the current version changed.
 
-### Why do I have specs in two places?
+## Which AI tools does it work with?
 
-**Short Answer**: You might not! Most features only need increment specs. Living docs specs are OPTIONAL for major features spanning 3+ increments.
+Any tool that can read files and run a shell command.
 
-**The Two Types**:
+- **Claude Code** reads `CLAUDE.md`, which imports `AGENTS.md`. The `sw` plugin adds skills such as `/sw:increment`, `/sw:do` and `/sw:handoff`, and the same skills are installed into `.claude/skills/` for cloud sessions and Claude Code Projects threads.
+- **Codex, Grok, Cursor, GitHub Copilot and Gemini CLI** read `AGENTS.md`. Codex also gets the skills in `.agents/skills/` and invokes them as `$sw-do`, `$sw-handoff` and so on.
+- **Anything else** (OpenCode, Aider, a plain terminal) can follow the same loop by running `specweave pickup`, `specweave task ...` and `specweave handoff`, or by installing the portable skills with `npx vskill install anton-abyzov/specweave/sw-do`.
 
-1. **Living Docs Spec** (`.specweave/docs/internal/specs/spec-####-name/spec.md`)
-   - **Optional** - Only for major features (3+ increments)
-   - **Permanent** - Never deleted, evolves over time
-   - **Complete** - Contains ALL user stories, requirements, acceptance criteria
-   - **PM Tool Link** - Can be linked to Jira epic, ADO feature, GitHub milestone
+You do not need slash commands. Asking in plain words ("plan this as an increment", "continue", "hand off") works in every tool, because `AGENTS.md` tells the agent which command to run. See [Other AI tools](/docs/integrations/generic-ai-tools).
 
-2. **Increment Spec** (`.specweave/increments/####-name/spec.md`)
-   - **Always created** - Every increment has one
-   - **Focused** - Contains subset of work for THIS increment only
-   - **Temporary** - Can be deleted after completion (optional)
-   - **References** - May reference living docs spec: "See SPEC-0005 for complete requirements"
+## I ran out of tokens. How do I continue in another tool or account?
 
-**Real-World Example**:
-
-```
-Authentication Feature (spans 3 increments):
-
-Living Docs Spec (permanent):
-.specweave/docs/internal/specs/spec-0005-authentication/spec.md
-├── ALL 20 user stories (US-001 through US-020)
-├── ALL acceptance criteria (AC-US1-01 through AC-US20-05)
-├── Complete requirements (FR-001 through FR-030)
-└── Linked to Jira epic AUTH-123
-
-Increment 1: Basic Login
-.specweave/increments/0007-basic-login/spec.md
-├── References: "See SPEC-0005"
-├── Implements: US-001, US-002, US-003 only
-└── Out of scope: OAuth (US-010), 2FA (US-018)
-
-Increment 2: OAuth Integration
-.specweave/increments/0012-oauth-integration/spec.md
-├── References: "See SPEC-0005"
-├── Implements: US-010, US-011, US-012 only
-└── Dependencies: Requires increment 0007 (basic login)
-
-Increment 3: Two-Factor Auth
-.specweave/increments/0018-two-factor-auth/spec.md
-├── References: "See SPEC-0005"
-├── Implements: US-018, US-019, US-020 only
-└── Dependencies: Requires increment 0007, 0012
-```
-
-After all 3 increments complete:
-- ✅ Living docs spec REMAINS (permanent knowledge base)
-- ⏳ Increment specs can be deleted (optional)
-
----
-
-### Which one is the source of truth?
-
-**Important Distinction**: There are TWO different "source of truth" concepts:
-
-1. **Requirements Truth**: What SHOULD be built (specs)
-2. **Reality Truth**: What ACTUALLY exists (code)
-
-```mermaid
-graph TB
-    subgraph "Requirements (Intent)"
-        A[Living Docs Spec] --> B[Increment Spec]
-        B --> C[tasks.md]
-    end
-
-    subgraph "Reality (What Exists)"
-        D[Code] --> E[Running System]
-        E --> F[Actual Behavior]
-    end
-
-    C -.->|"implements"| D
-
-    style A fill:#90EE90
-    style D fill:#87CEEB
-    style F fill:#FFB6C1
-```
-
-**For Requirements** (what should we build?):
-- **Living Docs Spec** = Source of truth (if it exists)
-- Otherwise → Increment Spec is source of truth
-
-**For Reality** (what actually works?):
-- **Code** = Source of truth (always)
-- Tests verify code matches requirements
-- When specs and code disagree → you have either a **bug** (code wrong) or **spec drift** (spec outdated)
-
-**Decision Tree for Spec Selection**:
-
-```mermaid
-graph TD
-    A[Which spec defines<br/>requirements?] --> B{Does living docs<br/>spec exist?}
-    B -->|Yes| C[Living Docs Spec<br/>defines requirements]
-    B -->|No| D[Increment Spec<br/>defines requirements]
-
-    C --> E[Increment spec<br/>references it]
-    D --> F[Increment spec<br/>is standalone]
-
-    style C fill:#90EE90
-    style D fill:#87CEEB
-```
-
-**Practical Examples**:
-
-| Scenario | Requirements Truth | Reality Truth |
-|----------|-------------------|---------------|
-| New feature planning | Living Docs / Increment Spec | N/A (not built yet) |
-| During implementation | Spec defines expected behavior | Code defines current state |
-| Bug found | Spec says X, code does Y → fix code | Code is wrong |
-| Spec outdated | Code does Z (correctly), spec says X → update spec | Code is right |
-
-**With Living Docs Spec** (major feature):
-- **Requirements Truth**: `.specweave/docs/internal/specs/spec-0005-authentication/spec.md`
-- **Increment Reference**: "See SPEC-0005 for complete requirements"
-- **Relationship**: Living docs = complete requirements, increment = current scope
-
-**Without Living Docs Spec** (simple feature):
-- **Requirements Truth**: `.specweave/increments/0009-add-dark-mode/spec.md`
-- **No Reference**: Standalone specification
-- **Relationship**: Increment spec = complete requirements
-
-**Key Insight**: Specs define INTENT, code defines REALITY. Both matter, but for different questions.
-
----
-
-### Do I need both for every feature?
-
-**No!** Most features only need increment specs.
-
-**Decision Flowchart**:
-
-```mermaid
-graph TD
-    A[New Feature Request] --> B{Will this span<br/>3+ increments?}
-    B -->|Yes| C[Create Living Docs Spec<br/>.specweave/docs/internal/specs/]
-    B -->|No| D{Is this a major<br/>module/product?}
-    D -->|Yes| C
-    D -->|No| E[Only Create Increment Spec<br/>.specweave/increments/]
-
-    C --> F[Create increment spec<br/>that references living docs]
-    E --> G[Increment spec<br/>is standalone]
-
-    style C fill:#FFB6C1
-    style E fill:#90EE90
-    style F fill:#87CEEB
-    style G fill:#DDA0DD
-```
-
-**When to Create Living Docs Spec**:
-- ✅ Feature spans 3+ increments (authentication, payment processing, messaging system)
-- ✅ Major module/product (new product line, major refactor affecting multiple areas)
-- ✅ Need PM tool link (Jira epic, ADO feature, GitHub milestone spanning months)
-- ✅ Want permanent historical record (how did we build authentication? Check SPEC-0005)
-
-**When to Skip Living Docs Spec** (just use increment spec):
-- ✅ Feature completes in 1 increment (add dark mode toggle)
-- ✅ Feature completes in 2 increments (refactor API client)
-- ✅ Bug fix, hotfix, experiment (temporary work)
-- ✅ Small enhancement (add CSV export button)
-
-**Rule of Thumb**: If you're unsure, start with increment spec only. You can always create living docs spec later if the feature grows.
-
----
-
-### Can I delete increment specs after completion?
-
-**Yes!** Increment specs are temporary references.
-
-**What You Can Delete**:
-- ✅ `.specweave/increments/0007-basic-login/spec.md` (after increment complete)
-- ✅ `.specweave/increments/0007-basic-login/plan.md` (after increment complete)
-- ✅ Entire increment folder (if you want clean history)
-
-**What You Should NEVER Delete**:
-- ❌ `.specweave/docs/internal/specs/` (permanent knowledge base)
-- ❌ `.specweave/docs/internal/architecture/adr/` (architecture decisions)
-- ❌ `.specweave/docs/internal/strategy/` (business context)
-
-**Typical Workflow**:
-
-```
-Day 1: Create increment 0007 (basic login)
-├── spec.md (references SPEC-0005)
-├── plan.md
-└── tasks.md
-
-Day 30: Complete increment 0007
-├── All tasks done ✅
-├── Tests passing ✅
-└── Code merged ✅
-
-Day 31: Optional cleanup
-├── Delete 0007/spec.md (not needed anymore)
-├── Delete 0007/plan.md (not needed anymore)
-└── Keep SPEC-0005 (permanent reference)
-
-Day 60: Start increment 0012 (OAuth)
-└── Create new spec.md that references SPEC-0005
-    (SPEC-0005 still there, providing complete context!)
-```
-
-**Why Delete Increment Specs?**
-- **Reduce clutter**: Keep increment folders minimal
-- **Focus on living docs**: One permanent spec vs many temporary ones
-- **Historical traceability**: Git history shows what was implemented when
-
-**Why Keep Increment Specs?**
-- **Historical snapshot**: What did we plan THEN vs where are we NOW?
-- **Audit trail**: Track how scope evolved across increments
-- **Learning**: Understand how features were broken down
-
-**Recommendation**: Keep increment specs if you need historical traceability. Delete if you prefer cleaner folders (living docs remain either way).
-
----
-
-### What about brownfield projects (existing code)?
-
-**Living Docs Specs integrate with existing project docs!**
-
-**Pattern**:
-
-```
-your-existing-project/
-├── docs/
-│   ├── api-design.md             ← Existing docs (keep them!)
-│   ├── database-schema.md        ← Existing docs (keep them!)
-│   └── authentication-design.md  ← Existing docs (keep them!)
-│
-└── .specweave/                   ← SpecWeave overlay (non-invasive)
-    ├── docs/internal/specs/
-    │   └── spec-0005-authentication/
-    │       └── spec.md           ← Links to existing docs!
-    │           └── "See: /docs/authentication-design.md (existing system)"
-    │
-    └── increments/
-        └── 0007-enhance-auth/
-            └── spec.md           ← "Enhancing existing system (see SPEC-0005)"
-```
-
-**Living Docs Spec for Brownfield**:
-
-```markdown
-# SPEC-0005: Authentication Enhancements
-
-## Brownfield Context
-
-**Existing System**:
-- See: `/docs/authentication-design.md` (current JWT implementation)
-- See: `/docs/api-design.md#auth-endpoints` (existing endpoints)
-- Current state: Basic JWT auth, no OAuth, no 2FA
-
-## Enhancement Goals
-
-This spec ENHANCES the existing system with:
-- OAuth2 integration (US-010)
-- Two-factor authentication (US-018)
-- Session management improvements (US-020)
-
-**What We're NOT Changing**:
-- JWT implementation (keep existing)
-- User database schema (keep existing)
-- Existing endpoints (backward compatible)
-```
-
-**Benefits for Brownfield**:
-- ✅ Living docs REFERENCE existing docs (don't duplicate)
-- ✅ Clear "what exists" vs "what we're adding"
-- ✅ Increment specs focus on NEW work only
-- ✅ Existing docs remain authoritative for legacy code
-
----
-
-### What about small features (1 increment)?
-
-**Use increment spec only! No living docs spec needed.**
-
-**Example: Add Dark Mode Toggle** (1 increment)
-
-```
-.specweave/increments/0015-dark-mode-toggle/
-├── spec.md                    ← Complete specification (no living docs reference)
-│   ├── US-001: Toggle in settings
-│   ├── US-002: Persist preference
-│   ├── US-003: CSS variable switching
-│   └── Success criteria
-├── plan.md                    ← Implementation approach
-└── tasks.md                   ← 5 tasks, 1 week
-
-NO living docs spec needed!
-Increment spec is complete and standalone.
-```
-
-**When Small Features Grow**:
-
-```
-Iteration 1 (Increment 0015): Dark mode toggle
-└── spec.md (3 user stories)
-
-User feedback: "Can we have scheduled dark mode?"
-
-Iteration 2 (Increment 0022): Scheduled dark mode
-└── spec.md (2 more user stories)
-
-User feedback: "Can we have per-app dark mode?"
-
-Iteration 3 (Increment 0030): Per-app dark mode
-└── spec.md (3 more user stories)
-
-At this point: Consider creating living docs spec!
-├── SPEC-0020: Dark Mode System
-│   └── ALL 8 user stories (complete)
-└── Future increments reference SPEC-0020
-```
-
-**Rule**: Start simple (increment spec only). Promote to living docs spec if feature grows beyond 2 increments.
-
----
-
-### How do PM tools (Jira/GitHub/ADO) fit in?
-
-**Living Docs Specs link to PM tools!**
-
-**Integration Pattern**:
-
-```mermaid
-graph LR
-    A[Jira Epic<br/>AUTH-123] --> B[Living Docs Spec<br/>SPEC-0005]
-    B --> C[Increment 0007<br/>Basic Login]
-    B --> D[Increment 0012<br/>OAuth]
-    B --> E[Increment 0018<br/>2FA]
-
-    C --> F[Jira Story<br/>AUTH-124]
-    D --> G[Jira Story<br/>AUTH-125]
-    E --> H[Jira Story<br/>AUTH-126]
-
-    style A fill:#FFB6C1
-    style B fill:#90EE90
-    style C fill:#87CEEB
-    style D fill:#87CEEB
-    style E fill:#87CEEB
-```
-
-**Living Docs Spec with Jira Epic**:
-
-```markdown
-# SPEC-0005: Authentication System
-
-**External PM Tool**:
-- **Jira Epic**: AUTH-123
-- **URL**: https://jira.company.com/browse/AUTH-123
-- **Stakeholder**: VP Engineering
-- **Business Case**: See `.specweave/docs/internal/strategy/authentication/business-case.md`
-
-## User Stories
-
-### US-001: Basic Login (Jira: AUTH-124)
-...
-
-### US-010: OAuth Integration (Jira: AUTH-125)
-...
-
-### US-018: Two-Factor Auth (Jira: AUTH-126)
-...
-```
-
-**Benefits**:
-- ✅ Living docs spec = single source of truth (linked to Jira epic)
-- ✅ Each increment = Jira story (subset of epic)
-- ✅ Stakeholders track epic in Jira, engineers use SpecWeave
-- ✅ No duplication (living docs references Jira, Jira references SpecWeave)
-
-**For GitHub** (SpecWeave native integration):
-- ✅ Auto-create GitHub Issues for increments
-- ✅ Auto-sync progress after each task
-- ✅ Auto-close issues when increments complete
-- ✅ See: [GitHub Sync Guide](./guides/github-sync)
-
----
-
-### What if my project doesn't match this structure?
-
-**SpecWeave is flexible! You can adapt the structure.**
-
-**Common Adaptations**:
-
-**1. Monorepo with Multiple Apps**:
-```
-monorepo/
-├── apps/
-│   ├── web/
-│   ├── mobile/
-│   └── admin/
-└── .specweave/                    ← One SpecWeave root for entire monorepo
-    ├── docs/internal/specs/
-    │   ├── spec-0001-web-auth/    ← Specs can be app-specific
-    │   └── spec-0002-mobile-auth/
-    └── increments/
-        ├── 0007-web-basic-login/  ← Increments can target specific apps
-        └── 0008-mobile-basic-login/
-```
-
-**2. Microservices (Multiple Repos)** — use the umbrella workspace pattern:
-```
-my-workspace/                          ← specweave init my-workspace
-├── .specweave/                        ← One SpecWeave for entire system
-│   ├── docs/internal/specs/
-│   │   └── spec-0005-auth/
-│   └── increments/
-│       ├── 0007-user-svc-auth/
-│       └── 0008-order-svc-auth/
-├── repositories/
-│   └── my-org/
-│       ├── user-service/              ← specweave get my-org/user-service
-│       ├── order-service/             ← specweave get my-org/order-service
-│       └── notification-service/      ← specweave get my-org/notification-service
-├── CLAUDE.md
-└── AGENTS.md
-```
-
-Run `specweave init` once to create the workspace, then `specweave get` for each repo (or `specweave get "my-org/*"` to bulk-clone all repos in an organization).
-
-**3. Small Project (No Living Docs)**:
-```
-small-project/
-└── .specweave/
-    ├── docs/internal/
-    │   ├── architecture/          ← Keep architecture docs
-    │   └── strategy/              ← Optional: high-level strategy
-    └── increments/
-        ├── 0001-setup/
-        ├── 0002-feature-a/        ← No living docs specs
-        └── 0003-feature-b/        ← Increment specs only
-
-Every feature = 1 increment = standalone spec
-No living docs specs needed!
-```
-
-**4. Enterprise (Heavy PM Integration)**:
-```
-enterprise-project/
-└── .specweave/
-    ├── docs/internal/specs/
-    │   ├── spec-0001-auth/        ← Links to Jira epic AUTH-123
-    │   ├── spec-0002-billing/     ← Links to ADO feature FEA-456
-    │   └── spec-0003-reporting/   ← Links to GitHub milestone v2.0
-    └── increments/
-        └── (increments reference living docs specs)
-```
-
-**Key Principle**: SpecWeave provides structure but doesn't enforce rigidity. Adapt to your project's needs!
-
----
-
-## Getting Started
-
-### I'm new to SpecWeave. Where do I start?
-
-**Quick Start** (5 minutes):
+Say "hand off" in the session that is stopping. The agent runs:
 
 ```bash
-# 1. Install SpecWeave
-npm install -g specweave
-
-# 2. Initialize your project
-cd my-project
-specweave init
+specweave handoff --reason "out of tokens"
 ```
 
-Create your first increment:
+That releases your task claims, records the handoff in the increment's ledger, writes `handoff.md` with repo-relative paths, scrubs secrets, and pushes the branch plus a snapshot of your uncommitted edits (to `wip/<branch>` and a shared `specweave-handoff` branch). Nothing needs copying.
 
-<CommandTabs
-  natural="Let's add user registration"
-  claude='sw:increment "Add user registration"'
-  other='increment "Add user registration"'
-/>
+In the next tool or account, open the same repository and say "pick up". The agent runs `specweave pickup`, which fetches the waiting handoff, brings this checkout up to it (fast-forwarding the branch and applying the uncommitted edits, only when your working tree is clean), and prints the active increment, the next task with its acceptance criteria, branch state, the last handoff, recent notes and the project memory index in one read. In Claude Code the SessionStart hook prints a short version of this automatically.
+
+This works the same for a cloud session (a Claude Code Projects thread, Codex cloud), another machine or a second subscription, because the handoff travels through your git remote. Use `specweave handoff --no-push` to keep it local, or `specweave pickup --no-apply` to see what is waiting without changing your checkout. `specweave report` writes an HTML timeline of which tool did what on the increment. Full details: [Cross-tool handoff](/docs/guides/cross-tool-handoff).
+
+## Where does the state live?
+
+In the repository, under `.specweave/`:
+
+| Path | What it holds |
+|---|---|
+| `.specweave/increments/NNNN-slug/spec.md` | Problem, Scope, Acceptance Criteria, Approach, Open questions, Tasks |
+| `.specweave/increments/NNNN-slug/ledger.jsonl` | Append-only events: claim, done, release, skip, block, plus note, session, handoff and pickup |
+| `.specweave/increments/NNNN-slug/metadata.json` | Machine state such as status and timestamps, written only by the CLI |
+| `.specweave/increments/NNNN-slug/reports/` | `verify.md` and `verify.json` from `specweave verify`, task run logs |
+| `.specweave/memory/` | `MEMORY.md` index plus one file per durable fact, committed |
+| `.specweave/config.json` | Project settings |
+| `.specweave/state/` | Local runtime files, not committed |
+
+Nothing important lives only inside one tool's chat history. See the [ledger](/docs/glossary/terms/ledger) and [metadata.json](/docs/glossary/terms/metadata-json) entries in the glossary.
+
+## Can two agents work on the same increment?
+
+Yes. Each agent claims a task before editing (`specweave task claim T-02`). The earliest live claim wins, and a claim that overlaps another claim's `Files` is refused unless you pass `--force`. A claim older than the lease (2 hours by default, `tasks.leaseHours` in config) is stale and can be taken over. Give each agent its own branch and worktree. If two branches both append to `ledger.jsonl`, `init` has set `merge=union` in `.gitattributes`, so git keeps every line from both sides.
+
+## Do I need Jira, GitHub Issues or Azure DevOps?
+
+No. SpecWeave works with no tracker at all, and that is the default.
+
+If you want issues, GitHub is first-class and Jira and Azure DevOps are opt-in. Sync never runs behind your back: starting, pausing or completing an increment does not touch a tracker. Only `specweave sync push`, and the explicit close-on-complete setting, write to one.
 
 ```bash
-# Result: spec.md, plan.md, tasks.md created
-# No living docs spec needed for first feature!
+specweave sync setup      # connect a provider
+specweave sync status     # check token, account and health
+specweave sync push 0042  # push one increment
 ```
 
-**When to Add Living Docs Spec**:
-- After 2-3 increments → If you realize the feature is growing
-- Before starting large feature → If you know it will span 3+ increments
-- For major modules → If you're building a new product/subsystem
+See [GitHub sync](/docs/guides/github-sync) and [Jira and Azure DevOps](/docs/guides/jira-ado-sync).
 
----
+## What happened to tasks.md?
 
-### How do I decide: Living Docs Spec vs Increment Spec only?
-
-**Use this checklist**:
-
-**Create Living Docs Spec if ANY of these are true**:
-- [ ] Feature will span 3+ increments (3+ months of work)
-- [ ] Feature is a major module (authentication, payments, messaging)
-- [ ] Need PM tool link (Jira epic, ADO feature, GitHub milestone)
-- [ ] Want permanent historical record (how did we build X?)
-- [ ] Brownfield: Enhancing major existing system
-- [ ] Multiple teams working on different parts
-
-**Skip Living Docs Spec (use increment spec only) if ALL of these are true**:
-- [ ] Feature completes in 1-2 increments (less than 1 month)
-- [ ] Feature is small/focused (add button, fix bug, refactor file)
-- [ ] No PM tool needed (local tracking only)
-- [ ] No long-term documentation value
-- [ ] Solo developer or small team
-
-**When in doubt**: Start with increment spec only. Promote to living docs spec later if needed.
-
----
-
-### Can I migrate existing specs to SpecWeave?
-
-**Yes! SpecWeave is brownfield-friendly.**
-
-**Migration Pattern**:
-
-```bash
-# Step 1: Initialize SpecWeave (non-invasive)
-cd your-existing-project
-specweave init
-
-# Step 2: Create living docs specs that REFERENCE existing docs
-# Don't duplicate - link to existing documentation!
-
-# Step 3: Create increments for NEW work
-sw:increment "Enhance authentication"
-
-# Your existing docs remain unchanged
-# SpecWeave overlays on top
-```
-
-**Example Migration**:
+New increments do not have one. Tasks live in the `## Tasks` section of `spec.md`:
 
 ```markdown
-# SPEC-0001: Authentication Enhancements
-
-## Existing System (Brownfield)
-- **Current Docs**: `/docs/auth-design.md` (keep as-is)
-- **Current Implementation**: `/src/auth/` (JWT-based)
-- **Gaps Identified**: No OAuth, no 2FA, session issues
-
-## Enhancement Plan
-This spec documents ONLY the enhancements:
-- US-001: Add OAuth2 (NEW)
-- US-002: Add 2FA (NEW)
-- US-003: Fix session management (ENHANCEMENT)
-
-See `/docs/auth-design.md` for existing system details.
+### T-01 Save the checkout draft
+- AC: AC-01 | Files: src/checkout/draft.ts, src/checkout/draft.test.ts | Test: npm test -- draft
 ```
 
----
+Task state is never written back into markdown; it lives only in `ledger.jsonl`. An acceptance criterion counts as met when every task that covers it is done, so nobody ticks checkboxes at close.
 
-## Technical Details
+Increments created with 2.x keep their `tasks.md`, and the CLI still reads it. See [tasks.md (legacy)](/docs/glossary/terms/tasks-md).
 
-### What's the file structure exactly?
+## What happened to living docs?
 
-**Complete Structure**:
+Living docs are gone as a feature in 3.0, along with the `living-docs`, `sync-living-docs` and `docs` commands. They generated a second copy of every spec that drifted from the code and cost tokens to maintain. What outlives an increment now goes in two places: the Approach section of its `spec.md`, and one-file-per-fact notes in `.specweave/memory/`. Any `.specweave/docs/` folder you already have stays as ordinary files.
 
-```
-.specweave/
-├── docs/
-│   ├── internal/                          # Internal docs (not published)
-│   │   ├── specs/                         # Living docs specs (OPTIONAL)
-│   │   │   └── spec-####-name/
-│   │   │       └── spec.md                # Complete specification (permanent)
-│   │   ├── strategy/                      # Business context (OPTIONAL)
-│   │   │   └── module-name/
-│   │   │       ├── overview.md            # High-level vision
-│   │   │       └── business-case.md       # ROI, market analysis
-│   │   ├── architecture/                  # Technical design (MANDATORY)
-│   │   │   ├── adr/                       # Architecture Decision Records
-│   │   │   └── diagrams/                  # System diagrams
-│   │   ├── delivery/                      # Build & release
-│   │   ├── operations/                    # Runbooks, SLOs
-│   │   └── governance/                    # Policies, standards
-│   │
-│   └── public/                            # User-facing docs (can publish)
-│       ├── guides/
-│       └── api/
-│
-└── increments/                            # Implementation work
-    ├── 0001-setup/
-    ├── 0002-feature-a/
-    │   ├── spec.md                        # WHAT & WHY (always present)
-    │   ├── plan.md                        # HOW (always present)
-    │   ├── tasks.md                       # STEPS (always present, with embedded tests)
-    │   ├── metadata.json                  # Status tracking
-    │   ├── reports/                       # Session reports, analyses
-    │   ├── scripts/                       # Helper scripts
-    │   └── logs/                          # Execution logs
-    └── 0003-feature-b/
+## How do I upgrade from 2.x?
+
+```bash
+npm install -g specweave@3
+cd your-project
+specweave update
 ```
 
-**Key Folders**:
-- **`specs/`**: OPTIONAL living docs specs (permanent)
-- **`increments/`**: MANDATORY work tracking (spec, plan, tasks for each)
-- **`architecture/`**: MANDATORY technical decisions
-- **`strategy/`**: OPTIONAL business context
+`specweave update` rewrites `AGENTS.md` and `CLAUDE.md` into the 3.0 form and keeps your own sections, migrates `config.json`, adds the ledger `merge=union` line to `.gitattributes`, refreshes the SpecWeave-managed pre-commit hook if you have one, and refreshes the plugin. Open increments keep working as they are. Run `specweave doctor` afterwards. If you scripted against a command that was removed, the list is in [SpecWeave 3.0](/docs/guides/specweave-3#removed-commands).
 
----
+## What does it cost?
 
-### How does SpecWeave compare to other approaches?
+SpecWeave is open source under the MIT license and free. You pay for the AI tool you already use. The core loop (`pickup`, `task`, `verify`, `complete`, `handoff`) makes no model calls. The exceptions are optional: the AI pass in `specweave qa` (skip it with `--no-ai`), and Jev, which is opt-in and runs under your own provider key (see [Jev](/docs/guides/jev-system-one)). For a local view of Claude Code token usage, open `specweave dashboard`; see [Usage and cost estimates](/docs/reference/cost-tracking) for what it can and cannot measure.
 
-**Comparison Table**:
+## Does it work on an existing codebase?
 
-| Aspect | SpecWeave | Traditional Docs | Jira/ADO Only | Code Comments Only |
-|--------|-----------|------------------|---------------|-------------------|
-| **Source of Truth** | Living docs + increment specs | Wiki (often stale) | PM tool (high-level only) | Code (no vision) |
-| **Permanent Record** | ✅ Yes (living docs) | ⚠️ If maintained | ❌ Issues closed = lost | ❌ Code changes = lost |
-| **Implementation Tracking** | ✅ Yes (increments) | ❌ Manual | ✅ Yes (issues) | ❌ No |
-| **Brownfield Friendly** | ✅ Yes (references existing) | ⚠️ Duplicate effort | ⚠️ Separate system | ✅ Yes |
-| **PM Tool Integration** | ✅ Yes (links to Jira/ADO/GitHub) | ❌ Manual sync | ✅ Native | ❌ No |
-| **Test Integration** | ✅ Yes (tasks.md with embedded tests) | ❌ Separate test docs | ❌ No | ⚠️ Unit tests only |
+Yes. `specweave init` adds `.specweave/`, `AGENTS.md` and `CLAUDE.md` and does not touch your code. Start with an increment for the next change you were going to make anyway. See [Brownfield projects](/docs/workflows/brownfield).
 
-**When to Use SpecWeave**:
-- ✅ Spec-driven development (plan before implementing)
-- ✅ Long-term projects (need permanent documentation)
-- ✅ Team collaboration (clear source of truth)
-- ✅ Brownfield projects (integrate with existing docs)
+## Something is broken. Where do I start?
 
-**When NOT to Use SpecWeave**:
-- ❌ Prototyping (just code it)
-- ❌ Throwaway projects (no long-term value)
-- ❌ Solo tiny projects (overhead not worth it)
+Run `specweave doctor`, then see [Troubleshooting](/docs/guides/troubleshooting).
 
----
+## See also
 
-## Still Have Questions?
-
-**Resources**:
-- **User Guide**: [Getting Started](/docs/getting-started)
-- **GitHub Sync**: [GitHub Integration](./guides/github-sync)
-- **Architecture**: System Architecture (historical reference; not published)
-- **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
-- **Discord**: [Join Community](https://discord.gg/specweave) *(coming soon)*
-
-**Common Follow-Ups**:
-- "How do I sync with Jira?" → See [Jira Plugin](/docs/guides/jira-ado-sync)
-- "Can I use SpecWeave with Cursor?" → See [Tool Support](/docs/integrations/generic-ai-tools)
-- "What's the increment lifecycle?" → See [Increment Guide](/docs/guides/increment-status-reference)
-
----
-
-**Last Updated**: 2025-12-24 (v1.0.46)
+- [Getting started](/docs/getting-started)
+- [What is an increment](/docs/guides/core-concepts/what-is-an-increment)
+- [Claude Code Projects and threads](/docs/guides/claude-code-projects)
+- [Glossary](/docs/glossary/overview)

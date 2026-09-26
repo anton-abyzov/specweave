@@ -234,7 +234,7 @@ Source Comparison: react-best-practices
 
 ### Planned Improvements
 
-- **LLM-assisted detection**: Use an LLM judge (SpecWeave's existing `skill-judge.ts`) to evaluate borderline conflicts that keyword matching cannot resolve.
+- **LLM-assisted detection**: Use an LLM judge to evaluate borderline conflicts that keyword matching cannot resolve.
 - **Community resolution database**: Allow developers to share how they resolved specific conflicts, building a knowledge base of practical resolutions.
 - **Automatic scoping**: If two skills conflict on React patterns but one is scoped to a specific directory (`/app/legacy/`), automatically scope the conflict resolution rather than applying it project-wide.
 - **Continuous monitoring**: As skills update, re-run contradiction detection and notify developers if new conflicts emerge with their installed skill set.

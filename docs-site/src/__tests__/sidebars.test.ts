@@ -37,28 +37,28 @@ function flattenCategoryLabels(items: SidebarItem[]): string[] {
   return labels;
 }
 
-describe('Docusaurus sidebars Diataxis hierarchy (T-017)', () => {
+describe('Docusaurus sidebars (3.0 structure)', () => {
   const docsSidebar = (sidebars as any).docsSidebar;
 
   it('has primary sidebar groups following the Diataxis hierarchy', () => {
     const topLabels = flattenCategoryLabels(docsSidebar);
     const requiredGroups = [
-      'Overview',
-      'Getting Started',
-      'Core Concepts',
-      'Workflows',
+      'Start here',
+      'Concepts',
+      'Switch tools and accounts',
+      'Working with SpecWeave',
       'Integrations',
+      'Reference',
     ];
     for (const group of requiredGroups) {
       expect(topLabels).toContain(group);
     }
   });
 
-  it('has FAQ as a standalone doc in the primary sidebar', () => {
-    const faqEntry = docsSidebar.find(
-      (item: SidebarItem) => item.type === 'doc' && item.id === 'faq'
-    );
-    expect(faqEntry).toBeDefined();
+  it('keeps FAQ and troubleshooting in the primary sidebar', () => {
+    const ids = flattenDocIds(docsSidebar);
+    expect(ids).toContain('faq');
+    expect(ids).toContain('guides/troubleshooting/index');
   });
 
   it('preserves all pre-existing doc IDs in the sidebar tree', () => {
@@ -81,7 +81,10 @@ describe('Docusaurus sidebars Diataxis hierarchy (T-017)', () => {
       'skills/index',
       'reference/index',
       'enterprise/index',
-      'academy/index',
+      'overview/how-it-works',
+      'guides/cross-tool-handoff',
+      'guides/claude-code-projects',
+      'guides/specweave-3',
     ];
 
     for (const id of criticalIds) {
@@ -96,8 +99,14 @@ describe('Docusaurus navbar items (T-017)', () => {
     (item: any) => item.position === 'left'
   );
 
-  it('has 4 or fewer left-positioned nav items', () => {
-    expect(navItems.length).toBeLessThanOrEqual(4);
+  it('has 6 or fewer left-positioned nav items', () => {
+    expect(navItems.length).toBeLessThanOrEqual(6);
+  });
+
+  it('links Handoff straight to the handoff guide', () => {
+    expect(navItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({label: 'Handoff', to: '/docs/guides/cross-tool-handoff'}),
+    ]));
   });
 
   it('links Product and Integrations to the product layers', () => {
@@ -110,7 +119,7 @@ describe('Docusaurus navbar items (T-017)', () => {
   it('keeps Docs and Verified Skills available in primary navigation', () => {
     expect(navItems).toEqual(expect.arrayContaining([
       expect.objectContaining({label: 'Docs', sidebarId: 'docsSidebar'}),
-      expect.objectContaining({label: 'Verified Skills ↗', href: 'https://verified-skill.com'}),
+      expect.objectContaining({label: 'Verified Skills', href: 'https://verified-skill.com'}),
     ]));
   });
 

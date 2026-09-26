@@ -1,101 +1,85 @@
 ---
 title: GitHub sync
-description: Connect SpecWeave increments to GitHub Issues — the first-class sync provider.
+description: Mirror SpecWeave increments to GitHub Issues with one explicit command, specweave sync push.
 ---
 
 # GitHub sync
 
-GitHub is the first-class sync provider. Everything goes through one CLI surface — `specweave sync` — or the `sw:sync` skill that wraps it. Never call `gh`, `curl` or the GitHub REST API directly from an agent: the CLI owns token resolution, the rate budget, duplicate detection and the bidirectional links.
+GitHub Issues is the first-class tracker. SpecWeave does not need it: the spec, the ledger and the verify report are the record, and the issue is a mirror for people who work in GitHub.
+
+In 3.0 sync is explicit. Starting, pausing, resuming or abandoning an increment never touches GitHub. An issue is created or updated only when you run `specweave sync push`, and closed when you complete an increment that already has a linked issue.
+
+Agents should go through `specweave sync` (or the `sync` skill that wraps it) and never call `gh` or the REST API directly. The CLI owns token resolution, duplicate detection and the links in both directions.
 
 ## Connect
 
 ```bash
 specweave sync setup --provider github
+specweave sync setup --validate        # re-check an existing setup
 ```
 
-The wizard writes `sync.github` into `.specweave/config.json` and validates that your token can actually write to the repository. To re-check an existing setup without re-running the wizard:
+The wizard writes the provider block into `.specweave/config.json` and asks what SpecWeave may do. `sync push` creates a missing issue only when `sync.settings.canUpsertInternalItems` or `sync.settings.canUpdateExternalItems` is `true`. The wizard also sets `hooks.post_increment_done.close_external_issue`, which closes linked issues when an increment completes. Set it to `false` if you want `complete` to leave trackers alone.
 
-```bash
-specweave sync setup --validate
-```
+`sync.enabled` is `false` in a fresh project, so nothing talks to GitHub until you run setup.
 
 ### Where the token comes from
 
-Tokens resolve in one documented order, first hit wins:
+First hit wins:
 
-1. `.specweave/config.json`
-2. `process.env.GITHUB_TOKEN`, then `process.env.GH_TOKEN`
-3. the project's `.env`
+1. a token in `.specweave/config.json`
+2. `GITHUB_TOKEN`, then `GH_TOKEN`, in the environment
+3. `GITHUB_TOKEN` or `GH_TOKEN` in the project's `.env`
 4. `gh auth token`
 
-`specweave sync status` prints which layer won and which account it belongs to. This matters: a `.env` token silently outranks your `gh` login, so a repository you can push to from the terminal can still 404 from SpecWeave.
+`specweave sync status` and `sync push` print which source won and which account it belongs to. A `.env` token outranks your `gh` login, so a repository you can push to from the terminal can still fail from SpecWeave.
 
-**A 404 on write means the token's account has no write access to `owner/repo`.** GitHub masks permission failures as 404s. Fix the token; do not retry.
+A 404 on a write means the token's account has no write access to `owner/repo`. GitHub reports permission failures as 404. Fix the token; retrying will not help.
 
 ## Push
 
 ```bash
-specweave sync push                 # the active increment
-specweave sync push 0042            # a specific increment
-specweave sync push 0042 --dry-run  # preview, write nothing
-specweave sync push 0042 --reconcile  # fix stale/duplicate milestones first
-specweave sync push 0042 --force      # push even when nothing looks changed
+specweave sync push                     # the active increment
+specweave sync push 0042                # one increment
+specweave sync push 0042 --dry-run      # preview, write nothing
+specweave sync push 0042 --no-create    # update only; never create a missing issue
+specweave sync push 0042 --reconcile    # close stale or duplicate milestones first
+specweave sync push 0042 --force        # push even when nothing looks changed
 ```
 
-`push` runs in a fixed order: `tasks.md` → the ACs in `spec.md` → living docs (only if `livingDocs` is enabled) → the provider write. Then it drains the retry queue through the same entry point.
-
-Push after tasks change, not on every edit.
+`push` creates the issue if it is missing and allowed, updates it, records the link in the increment's `metadata.json` under `externalLinks`, and then retries any earlier provider writes that failed. Push at milestones (after `verify`, before review, at close), not after every edit.
 
 ## Pull
 
 ```bash
-specweave sync pull                       # report external changes, last 7 days
-specweave sync pull --since 30            # last 30 days
+specweave sync pull                       # report external changes from the last 7 days
+specweave sync pull --since 30            # last 30 days (or an ISO date)
 specweave sync pull --create-increments   # import issues as increments (interactive)
 ```
 
-`pull` is a report by default. `--create-increments` is the import path: it turns selected issues into `NNNN-slug` increment folders with `externalLinks` already populated.
+`pull` only reports; it never rewrites your spec or ledger. `--create-increments` is the import path and creates increment folders with the external link already set.
 
 ## Health
 
 ```bash
-specweave sync status            # tokens, account, can-push, provider health, retry queue, gaps
-specweave sync status --json     # one parsable report
+specweave sync status            # token source, account, can-push, provider health, retry queue, gaps
+specweave sync status --json
 specweave sync status --quick    # skip network probes
 ```
 
-The exit code is 1 when anything needs attention. The JSON report carries `providers`, `github`, `health`, `resilience`, `gaps` and `hasIssues`.
+The exit code is 1 when something needs attention. Paste the output as it is when asking for help; token and permission messages are precise.
 
-## Bidirectional links
+## Links in both directions
 
-A sync is only correct when both directions exist:
+- Local to GitHub: the issue number lives in `metadata.json` under `externalLinks`.
+- GitHub to local: the issue body carries the increment id.
 
-- **local → external** — the issue key lives in `metadata.json` under `externalLinks`.
-- **external → local** — the issue body carries the increment id and the commit sha.
+Never edit `externalLinks` by hand. If a link looks wrong, run `specweave sync push <id> --force`.
 
-If either side is missing after a push, the link is broken: re-run `specweave sync push <id> --force`. Never edit `externalLinks` by hand.
+## Known limits
 
-## Mapping
+The sync engine in 3.0 is the 2.x engine with the automatic triggers removed. It was built around the older user-story layout, so it mirrors a 3.0 single-file increment as one issue and does not yet reflect per-task progress well. A rewrite of sync around the ledger is planned for 3.1. Until then, treat the issue as a pointer to the increment, and the ledger and `reports/verify.json` as the source of truth.
 
-| SpecWeave | GitHub |
-|-----------|--------|
-| Increment | Issue (optionally under a milestone) |
-| Acceptance criteria | Checklist in the issue body |
-| Tasks | Checklist items, updated on `sync push` |
-| `complete` | Issue closed (when `sync` is enabled) |
+## See also
 
-## Configuration
-
-```json
-{
-  "sync": {
-    "enabled": true,
-    "github": { "enabled": true, "owner": "my-org", "repo": "my-app" },
-    "settings": { "autoSyncOnCompletion": true }
-  }
-}
-```
-
-`sync.enabled` is `false` by default — nothing talks to GitHub until you turn it on.
-
-See also: [Jira and Azure DevOps](/docs/guides/jira-ado-sync) · [`specweave sync` reference](/docs/reference/sync-cli)
+- [Jira and Azure DevOps](/docs/guides/jira-ado-sync)
+- [`specweave sync` reference](/docs/reference/sync-cli)

@@ -1,38 +1,34 @@
 ---
 sidebar_position: 1
-title: Enterprise Overview
-description: SpecWeave for enterprise teams — audit trails, brownfield work, multi-repo workspaces, and tracker sync.
+title: Enterprise overview
+description: SpecWeave for enterprise teams, covering audit trails, brownfield work, multi-repo workspaces, tracker sync and parallel delivery.
 ---
 
-# SpecWeave for Enterprise
+# SpecWeave for enterprise
 
-SpecWeave is built for the reality of enterprise development: legacy codebases, distributed teams, compliance requirements and complex release cycles.
+SpecWeave is built for legacy codebases, distributed teams and work that has to stand up to an audit.
 
-## Audit trails that are actually true
+## Audit trails that are true
 
-Every decision lives in a version-controlled file, and the evidence for every task is recorded by the tool that produced it — not asserted afterwards.
+Every decision lives in a version-controlled file, and the evidence for every task is recorded by the command that produced it, not asserted afterwards.
 
 | Question an auditor asks | Where the answer lives |
 |---|---|
-| Why was this built this way? | `spec.md` — Problem, Scope, ACs, Approach (with rejected alternatives and ADR links) |
-| Who did what, and when? | `ledger.jsonl` — an append-only event per claim, done, skip and block, with agent id and timestamp |
-| What proves it works? | `reports/verify.json` — the commands that ran, their exit codes, and the AC tally |
-| Why was this closed without a green verify? | `metadata.json.closeReason` — mandatory when the gate is bypassed |
-| Who reviewed it? | `reports/review.md` — findings with `path:line`, produced in a fresh context |
+| Why was this built this way? | `spec.md`: Problem, Scope, Acceptance Criteria, Approach |
+| Who did what, and when? | `ledger.jsonl`: an append-only event for each claim, done, skip, block and handoff, with agent id and timestamp |
+| What proves it works? | `reports/verify.json`: the commands that ran, their exit codes and the acceptance criteria tally |
+| Why was this closed without a passing verify? | `metadata.json` `closeReason`, required when the gate is bypassed |
+| Who reviewed it? | `reports/review.md`, written by a review in a fresh session |
 
-The ledger is append-only and never rewritten, so an audit trail cannot be quietly tidied up after the fact.
-
-**[Compliance standards guide →](/docs/guides/compliance-standards)**
+The ledger is never rewritten, so the trail cannot be tidied up after the fact. `specweave report` renders it as an HTML timeline.
 
 ## Brownfield work
 
-Most enterprise work is brownfield. The increment folder is designed for it: `spec.md` records the *existing* behaviour under Problem before anything changes, and `--supersedes` lets a replacement increment abandon its predecessor with a recorded reason instead of leaving a graveyard of half-open work.
-
-**[Brownfield workflow →](/docs/workflows/brownfield)**
+Most enterprise work changes existing code. `spec.md` records the existing behaviour under Problem before anything changes, and `create-increment --supersedes <id>` lets a replacement increment abandon its predecessor with a recorded reason instead of leaving half-open work behind. See [Brownfield workflow](/docs/workflows/brownfield).
 
 ## Multi-repo workspaces
 
-One umbrella repository coordinating child repositories, each with its own user-story prefix and its own sync targets:
+One umbrella repository can coordinate child repositories, each with its own story prefix and its own sync target:
 
 ```json
 {
@@ -52,14 +48,16 @@ One umbrella repository coordinating child repositories, each with its own user-
 
 ## Tracker integration
 
-- **[GitHub sync](/docs/guides/github-sync)** — first-class. Push, pull, import, health.
-- **[Jira and Azure DevOps](/docs/guides/jira-ado-sync)** — opt-in and community-maintained: push and close work, nothing beyond that is guaranteed.
-- **[`specweave sync` reference](/docs/reference/sync-cli)** — every verb and flag.
+Trackers are mirrors, and they change only when you ask. Starting, pausing or abandoning an increment never touches them; `specweave sync push` does.
 
-## Parallel delivery
+- [GitHub sync](/docs/guides/github-sync): first-class
+- [Jira and Azure DevOps](/docs/guides/jira-ado-sync): opt-in; create, update on push, close
+- [`specweave sync` reference](/docs/reference/sync-cli)
 
-Several agents — or several people, or a mix — on one increment, coordinating only through committed files. No message bus, no shared memory, no vendor lock: see [Agent teams and swarms](/docs/guides/agent-teams-and-swarms).
+## Parallel delivery and tool choice
+
+Several agents, several people or a mix can work one increment, coordinating only through committed files. See [Agent teams](/docs/guides/agent-teams-and-swarms). Because the whole record is in git, teams are not tied to one AI vendor: work can move between Claude Code, Codex, Cursor and others with [handoff and pickup](/docs/guides/cross-tool-handoff).
 
 ## Before you roll it out
 
-Read **[SpecWeave 2.0](/docs/guides/specweave-2)** first. 2.0 deliberately removed the enterprise-shaped surface that nobody used — the Jira/ADO multi-project and hierarchy-mapping stacks, the three-report closure pipeline, the auto-generated documentation tree. If your rollout plan depends on one of those, plan around the 2.0 shape rather than the 1.x docs.
+Read [SpecWeave 3.0](/docs/guides/specweave-3) for what changed and how to upgrade. Earlier versions removed the Jira and Azure DevOps multi-project and hierarchy mapping and the generated documentation tree. If a rollout plan depends on those, plan around the current shape.

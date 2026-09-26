@@ -108,6 +108,41 @@ Claude Code session files live under `~/.claude/projects/<munged-cwd>/`, where t
 
 The `/.` between `umb` and `claude-worktrees` yields the double dash.
 
+## Evidence: a recorded handoff
+
+This is a real run of the 3.0 CLI across two clones of one repository, with nothing copied between them except through git. The first clone ran as a Claude Code cloud session: it finished T-01, started T-02, left a note and handed off.
+
+```text
+$ specweave task done T-01 --run "npm test"
+Done T-01 (1/2) — evidence: npm test → exit 0
+$ specweave handoff --reason "out of tokens" --next "finish restore on return"
+Handed off 0001-resumable-checkout (released T-02, pushed main, pushed your uncommitted edits).
+To continue in any tool, machine or account, say "pick up" there (or run `specweave pickup`).
+```
+
+The second clone ran as Codex. One command brought in the handoff and printed the next task:
+
+```text
+$ specweave pickup
+Picked up the handoff from claude@cloud 0m ago (out of tokens): applied 7 uncommitted files.
+SpecWeave pickup · you are codex@laptop
+Increment 0001-resumable-checkout "Resumable checkout" (active) · tasks 1/2 done · ACs 0/2 met
+Next: T-02 Restore the draft on return
+  AC-01: Returning within 24 hours restores the cart and shipping choice
+  AC-02: A paid order is never restored
+  Files: src/restore.js | Test: npm test
+  claim: specweave task claim T-02 0001-resumable-checkout
+Spec: .specweave/increments/0001-resumable-checkout/spec.md
+Branch: main @ 76b1964 · in sync with origin/main · 3 uncommitted files
+Last handoff: claude@cloud 0m ago: out of tokens · next: finish restore on return
+Notes:
+- claude@cloud 0m ago: Payment thread: drafts must never store card data
+```
+
+Codex then claimed T-02, finished it with `specweave task done T-02 --run "npm test"`, and `specweave verify` reported both acceptance criteria met. `specweave report` wrote an HTML timeline of the whole run from the ledger: [open the recorded report](pathname:///evidence/handoff-demo.html).
+
+{/* Evidence slot: when the recorded report of a real handoff between accounts lands at static/evidence/handoff-3.0.html, link it here and set handoffEvidence in src/components/landing/content.tsx. */}
+
 ---
 
 ## See also

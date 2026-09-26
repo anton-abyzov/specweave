@@ -1,443 +1,89 @@
-# SpecWeave Integration Guide for Non-Claude AI Tools
-
-SpecWeave is designed to be AI-tool agnostic. While it has first-class support for Claude Code with plugins and hooks, the core system works with **any AI coding assistant**.
-
-## Core Principle
-
-SpecWeave uses **file-based tracking**:
-- `spec.md` - Requirements and acceptance criteria
-- `tasks.md` - Work items with checkboxes
-- `metadata.json` - Status and timestamps
-
-Any AI that can read and write files can use SpecWeave.
-
+---
+title: Codex, Grok, Cursor and other tools
+sidebar_label: Codex, Grok, Cursor and others
+description: How Codex, Grok Build, Cursor, Copilot, Gemini CLI and other agents use SpecWeave through AGENTS.md, skills and the CLI, and how to switch between them mid-task.
 ---
 
-## Quick Start for Any AI Tool
+# Codex, Grok, Cursor and other tools
 
-### 1. Install SpecWeave CLI
+SpecWeave does not depend on Claude Code. Everything that matters is a file in git (`AGENTS.md`, the increment's `spec.md`, its `ledger.jsonl`, the handoff and `.specweave/memory/`) plus a CLI that any agent can run in a shell. Claude Code gets a plugin and two hooks on top; every other tool uses the same files and commands.
+
+## What each tool reads
+
+| Tool | Instructions | Skills |
+|---|---|---|
+| Claude Code, including Projects threads | `CLAUDE.md`, which imports `AGENTS.md` | the `sw` plugin (`/sw:do`), or `.claude/skills/sw-*` |
+| Codex (CLI, app and cloud) | `AGENTS.md` | `.agents/skills/sw-*`, invoked as `$sw-do` |
+| Grok Build | `AGENTS.md` and `CLAUDE.md` | `.grok/skills/`, `.agents/skills/` and Claude Code skills |
+| Cursor, GitHub Copilot, Gemini CLI, OpenCode | `AGENTS.md` | their own skill folders, or the CLI directly |
+
+`AGENTS.md` is the single, short instruction file. It tells every agent to start with `specweave pickup` and describes the loop below, so a tool that reads nothing else still knows what to do.
+
+`specweave init` writes `AGENTS.md` and `CLAUDE.md` and installs the eleven skills twice, as `.claude/skills/sw-<name>/` for Claude Code and `.agents/skills/sw-<name>/` for Codex and other tools that read that folder, so switching tools needs no reinstall. For a tool that looks elsewhere, install the portable skills one at a time:
 
 ```bash
-npm install -g specweave
+npx vskill install anton-abyzov/specweave/sw-do
+npx vskill install anton-abyzov/specweave/sw-handoff
 ```
 
-### 2. Initialize Your Project
+You never have to name a skill. Asking in plain words ("plan this", "do the next task", "hand off", "pick up where I left off") works in every tool, because the instructions map those requests to the same commands.
+
+## The loop with only the CLI
+
+This is what `AGENTS.md` asks every agent to do. It needs Node.js and `npm install -g specweave`, nothing tool-specific.
 
 ```bash
-cd your-project
-specweave init .
+specweave pickup                                  # latest handoff, open increment, next task and its ACs, claims, notes, memory
+specweave create-increment "Keep checkout resumable"   # only for new work; then fill in spec.md
+specweave task next                               # the next open task with the text of its acceptance criteria
+specweave task claim T-01
+# edit only the files listed on the task, commit as "0042: what changed"
+specweave task done T-01 --run "npm test -- checkout"  # exit 0 required; the output is stored as evidence
+specweave verify                                  # project test, lint and build, written to reports/verify.json
+specweave complete 0042
 ```
 
-### 3. Install Skills/Plugins (Optional)
+Tasks live in `spec.md` as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts | Test: npm test -- a`. An acceptance criterion counts as met when every task that covers it is done, so nobody ticks checkboxes.
 
-```bash
-# Bash (macOS, Linux, Windows Git Bash/WSL)
-bash ~/.specweave/scripts/install-plugins.sh --target generic
+Without the CLI at all, an agent can still take part by appending ledger lines itself, one JSON object per line:
 
-# PowerShell (Windows native)
-~\.specweave\scripts\install-plugins.ps1 -Target generic
-```
-
-### 4. Include Context in Your AI
-
-Provide your AI tool with:
-1. `CLAUDE.md` - The workflow rules
-2. Current `spec.md` - Requirements
-3. Current `tasks.md` - Work items
-
----
-
-## Tool-Specific Setup
-
-### Cursor IDE
-
-**Option 1: Project Rules**
-Add to `.cursorrules`:
-```
-# SpecWeave Workflow Rules
-
-Read CLAUDE.md for complete SpecWeave documentation.
-
-Key behaviors:
-1. Check .specweave/increments/ for current work
-2. Update tasks.md [ ] → [x] when completing tasks
-3. Update spec.md [ ] AC- → [x] AC- for acceptance criteria
-4. Run tests after each task
-5. Keep files in .specweave/increments/####/reports/ not project root
-```
-
-**Option 2: Context Files**
-Use `@file CLAUDE.md` and `@file .specweave/increments/*/tasks.md` in prompts.
-
----
-
-### Windsurf
-
-Add to cascade settings:
-```yaml
-rules:
-  - name: specweave
-    content: |
-      Follow SpecWeave workflow:
-      - Source of truth: spec.md + tasks.md
-      - Update checkboxes when completing work
-      - Run tests after each task
-      - Files go in .specweave/increments/####/ folders
-```
-
-Reference files with `/file` command.
-
----
-
-### Aider
-
-Add to `.aider.conf.yml`:
-```yaml
-# SpecWeave context
-read:
-  - CLAUDE.md
-  - .specweave/increments/*/spec.md
-  - .specweave/increments/*/tasks.md
-  - .specweave/memory/*.md
-
-# Auto-commit settings (compatible with SpecWeave)
-auto-commits: true
-commit-prompt: |
-  Write a concise commit message for the changes.
-  Do NOT include AI/Claude references.
-```
-
----
-
-### Continue.dev (VS Code)
-
-Add to `.continue/config.json`:
 ```json
-{
-  "contextProviders": [
-    {
-      "name": "file",
-      "params": { "path": "CLAUDE.md" }
-    },
-    {
-      "name": "folder",
-      "params": { "path": ".specweave/increments" }
-    }
-  ],
-  "customCommands": [
-    {
-      "name": "specweave-status",
-      "prompt": "Read tasks.md and show completion status"
-    },
-    {
-      "name": "specweave-next",
-      "prompt": "Find the next pending task in tasks.md and work on it"
-    }
-  ]
-}
+{"t":"T-01","e":"claim","by":"codex@laptop","at":"2026-09-25T10:00:00Z"}
 ```
 
----
+`e` is `claim`, `done`, `release`, `skip` or `block`. A `done` line needs `"evidence"` (a commit sha), and a `skip` line needs `"note"` with the reason.
 
-### GitHub Copilot
+## Switching tools mid-task
 
-Add to `.github/copilot-instructions.md`:
-```markdown
-# SpecWeave Integration
-
-This project uses SpecWeave for spec-driven development.
-
-## Key Files
-- `CLAUDE.md` - Framework rules (read this first)
-- `.specweave/increments/####-name/spec.md` - Requirements
-- `.specweave/increments/####-name/tasks.md` - Work items
-
-## Workflow
-1. Check tasks.md for pending [ ] tasks
-2. Implement the task
-3. Update task status: [ ] → [x]
-4. Update acceptance criteria in spec.md
-5. Run tests before marking complete
-
-## File Organization
-- Reports → `.specweave/increments/####/reports/`
-- Logs → `.specweave/increments/####/logs/`
-- NEVER create files in project root
-```
-
----
-
-### Codeium
-
-Add to project configuration:
-```json
-{
-  "codeium.contextFiles": [
-    "CLAUDE.md",
-    ".specweave/increments/*/tasks.md"
-  ]
-}
-```
-
----
-
-### OpenAI API / GPT-5.3
-
-Include in system prompt:
-```
-You are working on a project using SpecWeave spec-driven development.
-
-RULES:
-1. Read tasks.md for current work items
-2. When completing a task, update its status from [ ] to [x]
-3. Update corresponding ACs in spec.md
-4. Run tests after each task
-5. Never create files in project root - use .specweave/increments/####/ folders
-
-TASK FORMAT:
-### T-001: Task Title
-**Status**: [ ] pending
-**Acceptance**: Given X, When Y, Then Z
-
-Mark complete by changing: [ ] pending → [x] completed
-```
-
----
-
-### Claude API (Direct)
-
-If using Claude API directly (not Claude Code):
-
-```python
-import anthropic
-
-client = anthropic.Anthropic()
-
-# Load context files
-with open("CLAUDE.md") as f:
-    rules = f.read()
-with open(".specweave/increments/0001-feature/tasks.md") as f:
-    tasks = f.read()
-
-message = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=4096,
-    system=f"""You are working with SpecWeave.
-
-RULES:
-{rules}
-
-CURRENT TASKS:
-{tasks}
-
-When you complete a task, output the updated tasks.md content with [x] for completed items.
-""",
-    messages=[{"role": "user", "content": "Work on the next pending task"}]
-)
-```
-
----
-
-## Autonomous Mode (Stop Hook Feedback Loop) for Any AI
-
-The stop hook feedback loop pattern enables autonomous task completion:
-
-### Python Implementation
-
-```python
-import os
-import re
-import subprocess
-from pathlib import Path
-
-def get_pending_tasks(tasks_file: str) -> list:
-    """Extract pending tasks from tasks.md"""
-    content = Path(tasks_file).read_text()
-    pattern = r'### (T-\d+):.*?\n\*\*Status\*\*: \[ \] pending'
-    return re.findall(pattern, content, re.DOTALL)
-
-def mark_task_complete(tasks_file: str, task_id: str):
-    """Update task status to completed"""
-    content = Path(tasks_file).read_text()
-    # Replace [ ] pending with [x] completed for this task
-    pattern = rf'(### {task_id}:.*?\n\*\*Status\*\*: )\[ \] pending'
-    updated = re.sub(pattern, r'\1[x] completed', content, flags=re.DOTALL)
-    Path(tasks_file).write_text(updated)
-
-def run_tests() -> bool:
-    """Run project tests"""
-    result = subprocess.run(['npm', 'test'], capture_output=True)
-    return result.returncode == 0
-
-def ai_complete_task(task_content: str) -> str:
-    """Have AI work on the task (implement with your AI API)"""
-    # Call your AI API here
-    pass
-
-def autonomous_loop(tasks_file: str, max_iterations: int = 100):
-    """Main autonomous execution loop"""
-    for i in range(max_iterations):
-        pending = get_pending_tasks(tasks_file)
-        if not pending:
-            print("All tasks complete!")
-            return True
-
-        task_id = pending[0]
-        print(f"Working on {task_id}...")
-
-        # AI works on task
-        ai_complete_task(task_id)
-
-        # Run tests
-        if not run_tests():
-            print("Tests failed, fixing...")
-            ai_complete_task("Fix failing tests")
-            if not run_tests():
-                print("Still failing after fix attempt")
-                continue
-
-        # Mark complete
-        mark_task_complete(tasks_file, task_id)
-        print(f"Completed {task_id}")
-
-    return False
-
-# Run it
-autonomous_loop(".specweave/increments/0001-feature/tasks.md")
-```
-
-### Shell Script Implementation
+When you run out of tokens or want another model to continue, say "hand off" in the tool you are in, or run:
 
 ```bash
-#!/bin/bash
-# auto-loop.sh - Autonomous task completion
-
-TASKS_FILE=".specweave/increments/0001-feature/tasks.md"
-MAX_ITER=100
-ITER=0
-
-while [ $ITER -lt $MAX_ITER ]; do
-    # Check for pending tasks
-    PENDING=$(grep -c '\[ \] pending' "$TASKS_FILE")
-    if [ "$PENDING" -eq 0 ]; then
-        echo "All tasks complete!"
-        exit 0
-    fi
-
-    # Get first pending task
-    TASK=$(grep -m1 '\[ \] pending' "$TASKS_FILE" | head -1)
-    echo "Working on: $TASK"
-
-    # Call your AI tool here
-    # aider --message "Complete this task: $TASK"
-
-    # Run tests
-    npm test
-    if [ $? -ne 0 ]; then
-        echo "Tests failed, retrying..."
-        continue
-    fi
-
-    ((ITER++))
-done
-
-echo "Max iterations reached"
-exit 1
+specweave handoff --reason "out of tokens"
 ```
 
----
+`handoff` releases your task claims, records the handoff in the ledger, writes `handoff.md` with repo-relative paths and scrubs secrets. When the repository has a remote, it also pushes your branch and a snapshot of your uncommitted edits (to `specweave-handoff` and `wip/<branch>`), so another machine, another account or a cloud session such as a Claude Code Projects thread or a Codex cloud task can see the work. Add `--no-push` to keep everything local.
 
-## Replicating SpecWeave Commands
+In the next tool, from the same repository, say "pick up", or run:
 
-| Command | Description | Manual Equivalent |
-|---------|-------------|-------------------|
-| `sw:increment "X"` | Plan new feature | Create spec.md and tasks.md files manually |
-| `sw:do` | Work on tasks | Read tasks.md, implement, update checkboxes |
-| `specweave status` | Check status | `grep -c '\[x\]' tasks.md` vs total tasks |
-| `sw:done` | Close increment | Verify all [x], update metadata.json status |
-| `sw:review` | Quality check | Run tests, check coverage, lint |
-| `sw:handoff` | Extract learnings | Save patterns to .specweave/memory/*.md |
-
----
-
-## File Templates
-
-### spec.md Template
-```markdown
----
-increment: 0001-feature-name
-title: "Feature Title"
----
-
-# Feature: Feature Title
-
-## Overview
-Brief description of the feature.
-
-## User Stories
-
-### US-001: User Story Title
-**As a** user
-**I want** to do something
-**So that** I can achieve a goal
-
-**Acceptance Criteria**:
-- [ ] **AC-US1-01**: Given X, When Y, Then Z
-- [ ] **AC-US1-02**: Given A, When B, Then C
+```bash
+specweave pickup
 ```
 
-### tasks.md Template
-```markdown
----
-increment: 0001-feature-name
----
+`pickup` fetches the waiting handoff, brings your branch and uncommitted edits into this checkout when it is clean, and prints the increment, the next task with its acceptance criteria, notes and memory. `--no-apply` only shows the handoff and changes nothing. To leave a message for whoever works on an increment next, use `specweave note "<text>" [id]`.
 
-# Tasks: Feature Title
+Each claim records who made it as `<tool>@<host>`, for example `codex@laptop`, or `<tool>@cloud` in a cloud session. SpecWeave detects Claude Code, Codex, Grok, Cursor, Gemini CLI, Copilot and OpenCode; set `SPECWEAVE_TOOL` or `SPECWEAVE_HOST` to override. See [Cross-tool handoff](/docs/guides/cross-tool-handoff) for the full walk-through and the per-tool session table.
 
-### T-001: First Task
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
+## What only Claude Code gets
 
-Description of what needs to be done.
+- The `sw` plugin with `/sw:<name>` commands.
+- The SessionStart hook, which prints a short pickup when a session opens. Other tools run `specweave pickup` because `AGENTS.md` tells them to.
+- The Stop hook that drives [auto mode](/docs/guides/autonomous-execution).
+- The `specweave team` launcher. The team protocol itself (a worktree per agent, claims through the ledger) works with any tool; see [Agent teams](/docs/guides/agent-teams-and-swarms).
 
-**Acceptance**:
-- [ ] Criteria 1
-- [ ] Criteria 2
+Everything else, including verify, handoff, memory and sync, works the same in every tool.
 
----
+## See also
 
-### T-002: Second Task
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-02
-**Status**: [ ] pending
-```
-
----
-
-## Best Practices
-
-1. **Always include CLAUDE.md in context** - It contains the rules
-2. **Update tasks.md immediately** - Mark tasks [x] right after completing
-3. **Run tests after each task** - Don't batch task completions
-4. **Keep files organized** - Use .specweave/increments/####/ folders
-5. **Check memory files** - Load .specweave/memory/*.md for learned patterns
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| AI doesn't follow workflow | Include CLAUDE.md in every prompt |
-| Tasks not updating | Verify file path, check for syntax errors |
-| Tests not running | Ensure test command is correct for your project |
-| Files in wrong location | Move to .specweave/increments/####/reports/ |
-
----
-
-## Resources
-
-- [SpecWeave Documentation](https://spec-weave.com)
-- [GitHub Repository](https://github.com/anton-abyzov/specweave)
-- [Auto Mode Documentation](https://spec-weave.com/docs/reference/commands)
+- [Cross-tool handoff](/docs/guides/cross-tool-handoff)
+- [Claude Code Projects and threads](/docs/guides/claude-code-projects)
+- [Portable projects](/docs/guides/portable-projects)

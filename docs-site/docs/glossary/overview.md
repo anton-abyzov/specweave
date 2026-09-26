@@ -1,94 +1,58 @@
-# Glossary
-
-Welcome to the SpecWeave Glossary - your comprehensive reference for terminology used throughout the documentation.
-
-## How to Use This Glossary
-
-- Browse alphabetically using the sections below
-- Use your browser's search (Ctrl+F / Cmd+F) to find specific terms
-- Check the [Index by Category](./index-by-category.md) for grouped terms
-
-## Core Concepts
-
-### Acceptance Criteria (AC)
-Specific, measurable conditions that must be met for a user story to be considered complete. In SpecWeave, ACs are tracked in `spec.md` and automatically linked to tasks.
-
-### Increment
-A unit of work in SpecWeave representing a feature, enhancement, or fix. Each increment has a unique ID (e.g., `0153`) and contains `spec.md`, `tasks.md`, and `plan.md`.
-
-### Living Docs
-Self-updating documentation that stays synchronized with code through SpecWeave's sync system. Living docs include specs, ADRs, and architecture documentation.
-
-### SpecWeave
-The spec-driven Skill Fabric for AI coding agents — program your AI in English with 100+ reusable skills, autonomous workflows, and enterprise-grade coordination.
-
-### User Story (US)
-A high-level description of a feature from the user's perspective, typically following the format: "As a [user], I want [feature], so that [benefit]."
-
-## Development Terms
-
-### ADR (Architecture Decision Record)
-A document capturing an important architectural decision, its context, and rationale. ADRs are stored in `.specweave/docs/internal/architecture/adr/`.
-
-### Hook
-A script that executes automatically at specific points in the SpecWeave workflow (e.g., after task completion, before increment start).
-
-### Task
-A specific, actionable work item within an increment. Tasks are defined in `tasks.md` and link to acceptance criteria.
-
-### TDD (Test-Driven Development)
-A development approach where tests are written before implementation code. SpecWeave supports TDD by saying "test-driven development", using `sw:do` in Claude Code, or typing `tdd-cycle` in other AI tools.
-
-## AI and Automation
-
-### Autonomous Mode
-SpecWeave's autonomous execution feature. Invoke by saying "ship while I sleep", using `sw:auto` in Claude Code, or typing `auto` in other AI tools. Executes tasks continuously without manual intervention until all work is complete.
-
-### Claude Code
-Anthropic's CLI tool that integrates with SpecWeave for AI-powered development assistance.
-
-### Model Hints
-Task annotations (⚡ Haiku, 🧠 Sonnet, 💎 Opus) that optimize cost and speed by selecting the appropriate AI model.
-
-## Integration Terms
-
-### External Sync
-Integration with external project management tools like GitHub Issues, JIRA, or Azure DevOps.
-
-### GitHub Sync
-SpecWeave's ability to create and update GitHub issues automatically based on increments and user stories.
-
-### Multi-Project Setup
-Configuration where SpecWeave manages multiple related projects (e.g., frontend, backend, shared libraries) from a single umbrella directory.
-
-## SEO and Documentation
-
-### Schema.org
-Structured data vocabulary used to markup content for search engines. SpecWeave docs use Organization and SoftwareApplication schemas.
-
-### WebP
-Modern image format that provides superior compression (~30-50% smaller) compared to JPEG/PNG.
-
-### robots.txt
-File that tells search engine crawlers which pages to index and where to find the sitemap.
-
-## Status and Workflow
-
-### Backlog
-Increments that are planned but not yet started (status: `backlog`).
-
-### Completed
-Increments that have passed validation and been approved (status: `completed`).
-
-### In Progress
-Increments actively being worked on (status: `in_progress`).
-
-### Paused
-Increments temporarily suspended due to blockers or deprioritization (status: `paused`).
-
-### Planned
-Increments with completed specs and plans, ready for implementation (status: `planned`).
-
+---
+title: Glossary
+description: The terms SpecWeave 3.0 uses, with a one-line definition each and links to the longer entries.
 ---
 
-**Need more context?** Check the [Index by Category](./index-by-category.md) for grouped terminology.
+# Glossary
+
+The words SpecWeave uses, as they apply to 3.0. Terms with their own page link to it.
+
+## Work and files
+
+| Term | Meaning |
+|---|---|
+| [Increment](/docs/glossary/terms/increments) | One unit of work in `.specweave/increments/NNNN-slug/`: a `spec.md`, a `ledger.jsonl` and a `metadata.json`. |
+| [spec.md](/docs/glossary/terms/spec-md) | The one file an agent reads: Problem, Scope, Acceptance Criteria, Approach, Open questions and Tasks. |
+| [AC-ID](/docs/glossary/terms/ac-id) | The id of an acceptance criterion, such as `AC-01`. Tasks name the ACs they cover. |
+| Task | A `### T-01 Title` heading in the Tasks section of `spec.md`, followed by one line naming the ACs it covers, the Files it changes and its Test command. |
+| [Ledger](/docs/glossary/terms/ledger) | `ledger.jsonl`, the append-only log of claims, completions and notes. The only place task state lives. |
+| [metadata.json](/docs/glossary/terms/metadata-json) | Machine state for an increment (status, type, timestamps), written only by the CLI. |
+| [tasks.md (legacy)](/docs/glossary/terms/tasks-md) | The separate task file of increments created before 3.0. Still read, never created. |
+| plan.md | Optional design overflow for a large increment, created with `specweave create-increment --with-plan`. |
+| Project memory | `.specweave/memory/`: a `MEMORY.md` index plus one file per durable fact, committed so every tool and account sees it. |
+| `AGENTS.md` | The single instruction file every tool reads. `CLAUDE.md` imports it with `@AGENTS.md`. |
+
+## Working on tasks
+
+| Term | Meaning |
+|---|---|
+| Claim | A ledger event saying an agent is working on a task. The earliest live claim wins. |
+| Stale claim | A claim older than the lease (2 hours by default, `tasks.leaseHours`). Anyone may take it over. |
+| Evidence | What `specweave task done` stores: a commit sha, or the real output of the command given with `--run`. |
+| Agent id | Who made a ledger event, as `<tool>@<host>` (for example `codex@laptop`, or `claude@cloud` in a cloud session). Override with `SPECWEAVE_TOOL`, `SPECWEAVE_HOST` or `SPECWEAVE_AGENT`. |
+| [Handoff](/docs/glossary/terms/handoff) | Stopping cleanly so another tool, account or machine can continue: `specweave handoff`, which pushes the work through your git remote. |
+| Pickup | Starting a session from where the last one stopped: `specweave pickup` brings in the waiting handoff and prints everything in one read. |
+| Note | A message left in an increment's ledger for whoever works on it next: `specweave note "text" 0042`. |
+
+## Closing work
+
+| Term | Meaning |
+|---|---|
+| Verify | `specweave verify` runs the project's test, lint and build commands and checks the ACs, writing `reports/verify.md` and `reports/verify.json`. |
+| [Quality gate](/docs/glossary/terms/quality-gate) | The check `specweave complete` makes before closing: a passing `verify.json`, or an explicit `--reason`. |
+| Status | One of `planned`, `active`, `paused`, `completed`, `abandoned`, changed only by CLI commands. See [increment status reference](/docs/guides/increment-status-reference). |
+| Supersede | Replacing an open increment with a new one: `specweave create-increment "title" --supersedes 0042`. |
+
+## Tools and integrations
+
+| Term | Meaning |
+|---|---|
+| Skill | A `SKILL.md` file an AI tool loads on demand. SpecWeave's are increment, do, auto, team, review, done, sync, handoff, project, brainstorm and jev. See [skills reference](/docs/reference/skills). |
+| Auto mode | Unattended execution of an increment's tasks: `/sw:auto` or `specweave auto`. See [autonomous execution](/docs/guides/autonomous-execution). |
+| Sync | Pushing increments to GitHub Issues, Jira or Azure DevOps. Only runs on `specweave sync push`. See [GitHub sync](/docs/guides/github-sync). |
+| Jev | An opt-in fast classifier for decisions with a fixed set of answers. See [Jev](/docs/guides/jev-system-one). |
+| Hook | A script Claude Code runs at a session event. SpecWeave uses SessionStart (a short pickup) and Stop (auto mode only). |
+
+## Removed in 3.0
+
+Living docs, the separate `tasks.md` for new increments, and a set of commands were removed in 3.0. See [SpecWeave 3.0](/docs/guides/specweave-3#removed-commands) for the list.
