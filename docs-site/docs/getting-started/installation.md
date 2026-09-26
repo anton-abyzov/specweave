@@ -359,7 +359,7 @@ Bulk operations require GitHub authentication. Run `gh auth login` or set the `G
 :::
 
 :::info Large organizations
-Bulk cloning runs as a background job. Monitor progress with `specweave jobs`. The job survives terminal closure and skips already-cloned repos on resume.
+Bulk cloning runs as a background job; its log is at `.specweave/state/jobs/<job-id>/worker.log`. The job survives terminal closure and skips already-cloned repos on resume.
 :::
 
 **Directory structure:**

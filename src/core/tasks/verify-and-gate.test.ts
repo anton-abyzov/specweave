@@ -104,7 +104,7 @@ describe('checkClosureGate', () => {
     await runVerify(root, '0001-demo', incDir, { commands: [] });
     const openAcs = checkClosureGate(incDir, '0001-demo');
     expect(openAcs.ok).toBe(false);
-    expect(openAcs.errors[0]).toMatch(/1 of 3 acceptance criteria unchecked/);
+    expect(openAcs.errors[0]).toMatch(/1 of 3 acceptance criteria not met/);
     expect(checkClosureGate(incDir, '0001-demo', { reason: 'shipping anyway' }).ok).toBe(true);
 
     tickAllAcs(incDir);

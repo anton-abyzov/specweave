@@ -18,6 +18,14 @@ const mocks = vi.hoisted(() => ({
   enablePluginsInSettings: vi.fn(() => true),
   readFileSync: vi.fn(),
   existsSync: vi.fn(() => true),
+  installProjectSkills: vi.fn(() => ({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [] })),
+  removeLegacySkillCopies: vi.fn(() => [] as string[]),
+}));
+
+// The core plugin (sw) installs as the sw-* project skills (3.0)
+vi.mock('../../../src/core/skills/project-skills.js', () => ({
+  installProjectSkills: mocks.installProjectSkills,
+  removeLegacySkillCopies: mocks.removeLegacySkillCopies,
 }));
 
 vi.mock('../../../src/utils/claude-cli-detector.js', () => ({
@@ -97,20 +105,19 @@ describe('refreshPluginsCommand', () => {
   it('should install only sw plugin by default (no flags)', async () => {
     await refreshPluginsCommand({});
 
-    expect(mocks.copyPluginSkillsToProject).toHaveBeenCalledTimes(1);
-    expect(mocks.copyPluginSkillsToProject).toHaveBeenCalledWith(
-      'sw',
-      expect.any(String),
-      expect.any(String),
-      expect.any(Object),
-    );
+    expect(mocks.installProjectSkills).toHaveBeenCalledTimes(1);
+    expect(mocks.installProjectSkills).toHaveBeenCalledWith('/mock/project');
+    expect(mocks.copyPluginSkillsToProject).not.toHaveBeenCalled();
   });
 
   // TC-002 (AC-US1-02): --all = install everything
   it('should install all plugins when --all is passed', async () => {
     await refreshPluginsCommand({ all: true });
 
-    expect(mocks.copyPluginSkillsToProject).toHaveBeenCalledTimes(8);
+    // sw as the sw-* project skills, the other 7 by direct copy
+    expect(mocks.installProjectSkills).toHaveBeenCalledTimes(1);
+    expect(mocks.copyPluginSkillsToProject).toHaveBeenCalledTimes(7);
+    expect(mocks.copyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0])).not.toContain('sw');
   });
 
   // TC-003 (AC-US1-03): Existing non-core plugins untouched
@@ -118,7 +125,8 @@ describe('refreshPluginsCommand', () => {
     await refreshPluginsCommand({});
 
     // Only sw is installed, no uninstall calls
-    expect(mocks.copyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+    expect(mocks.installProjectSkills).toHaveBeenCalledTimes(1);
+    expect(mocks.copyPluginSkillsToProject).not.toHaveBeenCalled();
     // No rmSync, no uninstall calls — just the one install
   });
 

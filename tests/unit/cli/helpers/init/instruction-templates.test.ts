@@ -63,28 +63,30 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     ['README.md.template', readme],
   ];
 
-  it('declare the same SECTION ids in the same order', () => {
-    const c = parseTemplate(claude).sections.map(s => `${s.id}${s.required ? '!' : ''}`);
-    const a = parseTemplate(agents).sections.map(s => `${s.id}${s.required ? '!' : ''}`);
-    expect(a).toEqual(c);
-    expect(c).toEqual([
-      'header!', 'structure', 'loop!', 'verify!', 'parallel!', 'conventions!', 'umbrella', 'jev', 'troubleshooting',
+  it('AGENTS.md is the one instruction file and CLAUDE.md imports it', () => {
+    expect(parseTemplate(agents).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual([
+      'header!', 'loop!', 'rules!', 'umbrella', 'hub', 'jev',
     ]);
+    expect(parseTemplate(claude).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual(['header!', 'jev']);
+    expect(claude.split('\n')[1]).toBe('@AGENTS.md');
+    // Claude reads AGENTS.md through the import, so nothing is said twice.
+    expect(claude).not.toContain('## The loop');
+    expect(claude).not.toContain('## Commands');
   });
 
-  it.each([['umbrella'], ['jev']])('the %s section is conditional on its own flag in both templates', (id) => {
-    for (const [name, content] of [['CLAUDE.md.template', claude], ['AGENTS.md.template', agents]] as const) {
-      const section = parseTemplate(content).sections.find(s => s.id === id);
-      expect(section?.when, `${name} ${id}`).toBe(id);
-      expect(section?.required, `${name} ${id}`).toBe(false);
-    }
+  it.each([['umbrella'], ['hub'], ['jev']])('the %s section of AGENTS.md is conditional on its own flag', (id) => {
+    const section = parseTemplate(agents).sections.find(s => s.id === id);
+    expect(section?.when).toBe(id);
+    expect(section?.required).toBe(false);
   });
 
-  it('the conditional jev section is byte-identical in both templates', () => {
-    const body = (content: string): string | undefined =>
-      parseTemplate(content).sections.find(s => s.id === 'jev')?.content;
-    expect(body(claude)).toBeDefined();
-    expect(body(agents)).toBe(body(claude));
+  it('AGENTS.md maps "hand off" and "pick up" to the two commands', () => {
+    expect(agents).toContain('`specweave pickup`');
+    expect(agents).toContain('`specweave handoff --reason');
+    expect(agents).toMatch(/says "hand off"/);
+    expect(agents).toMatch(/says "pick up"/);
+    expect(agents).toContain('.specweave/memory/');
+    expect(agents).not.toContain('tasks.md');
   });
 
   it.each([
@@ -112,16 +114,19 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
   it.each([
     ['CLAUDE.md.template', claude],
     ['AGENTS.md.template', agents],
-  ])('%s keeps the managed block under one page and the Commands/Project notes outside it', (_name, content) => {
-    // "One page" is the page a project actually renders: `umbrella` and `jev` are
-    // opt-in sections and do not count against the budget.
-    const unconditional = parseTemplate(content).sections.filter(s => !s.when);
-    const rendered = [...unconditional.map(s => s.content), parseTemplate(content).tail].join('\n\n');
-    expect(rendered.split('\n').length).toBeLessThanOrEqual(90);
+  ])('%s keeps the managed block small and the Project notes outside it', (_name, content) => {
+    // What a project renders by default: `umbrella`, `hub` and `jev` are opt-in.
     const t = parseTemplate(content);
-    expect(t.tail).toMatch(/^## Commands\n/);
+    const unconditional = t.sections.filter(s => !s.when);
+    const rendered = [...unconditional.map(s => s.content), t.tail].join('\n\n');
+    // About 800 tokens for AGENTS.md (it was 1,860 in 2.x).
+    expect(rendered.length).toBeLessThanOrEqual(3300);
     expect(t.tail).toContain('## Project notes');
     expect(t.sections.map(s => s.content).join('\n')).not.toContain('## Commands');
+  });
+
+  it('AGENTS.md keeps the Commands table outside the managed block', () => {
+    expect(parseTemplate(agents).tail).toMatch(/^## Commands\n/);
   });
 
   it.each(shipped)('every `specweave <cmd>` in %s is registered in bin/specweave.js', (_name, content) => {
@@ -142,7 +147,8 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
   });
 
   it('CLAUDE.md uses slash commands and AGENTS.md uses the CLI plus the standalone skills', () => {
-    expect(claude).toContain('`/sw:increment "title"`');
+    // Project skills are namespaced sw-*; the plugin form /sw:<name> also works.
+    expect(claude).toContain('`/sw-increment "title"`');
     expect(agents).toContain('`specweave create-increment "title"`');
     expect(agents).not.toMatch(/`\/sw:/);
     // the sw-* skills are vskill-installed standalone skills, not plugin commands;
