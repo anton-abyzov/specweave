@@ -1,3 +1,8 @@
+---
+title: "Why verified agent skills matter: lessons from ClawHub"
+description: "After hundreds of malicious skills were found on ClawHub, verified-skill.com scans Claude Code and Codex skills before you install them. What happened and how verification works."
+---
+
 # Why Verified Skill Matters — Lessons from ClawHub's Collapse
 
 ## The Short Version

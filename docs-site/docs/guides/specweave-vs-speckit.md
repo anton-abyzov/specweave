@@ -1,7 +1,7 @@
 ---
+title: "SpecWeave vs GitHub Spec Kit"
+description: "SpecWeave 3.0 and GitHub Spec Kit compared: where they overlap, how they differ after the spec is written, and when each one fits."
 sidebar_position: 5
-title: SpecWeave vs SpecKit
-description: How SpecWeave 3.0 and GitHub's SpecKit differ, where they overlap, and when each one fits.
 ---
 
 # SpecWeave vs GitHub SpecKit
@@ -52,6 +52,7 @@ Nothing stops you from using both. A SpecKit `spec.md` and `plan.md` are good in
 
 ## See also
 
+- [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](/docs/compare/spec-driven-development-tools)
 - [SpecWeave 3.0](/docs/guides/specweave-3)
 - [What is an increment](/docs/guides/core-concepts/what-is-an-increment)
 - [Why SpecWeave](/docs/overview/why-specweave)

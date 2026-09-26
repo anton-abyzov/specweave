@@ -15,7 +15,7 @@ export default function Home() {
     try { await navigator.clipboard.writeText('npm install -g specweave'); setCopied(true); setCopyError(false); }
     catch { setCopyError(true); }
   }
-  return <Layout title="Switch tools. Keep your place." description="SpecWeave 3.0 keeps specs, tasks and proof of done in your repo, so Claude Code, Codex, Grok or another subscription can pick up exactly where the last session stopped.">
+  return <Layout title="Hand off AI coding work between Claude Code and Codex" description="Out of Claude Code or Codex usage mid-task? SpecWeave keeps your spec, tasks and edits in git, so another agent or account picks up where you stopped.">
     <main className={clsx(base.page, styles.landing)}>
       <section className={styles.hero}>
         <div className={styles.heroText}>

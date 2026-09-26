@@ -1,7 +1,7 @@
 ---
-title: Codex, Grok, Cursor and other tools
+title: "Use SpecWeave with Codex, Grok Build, Cursor and Gemini CLI"
+description: "How Codex, Grok Build, Cursor, Copilot, Gemini CLI and other agents use SpecWeave through AGENTS.md, skills and the CLI, and how to switch between them mid-task."
 sidebar_label: Codex, Grok, Cursor and others
-description: How Codex, Grok Build, Cursor, Copilot, Gemini CLI and other agents use SpecWeave through AGENTS.md, skills and the CLI, and how to switch between them mid-task.
 ---
 
 # Codex, Grok, Cursor and other tools

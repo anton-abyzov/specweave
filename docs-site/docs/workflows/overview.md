@@ -1,6 +1,6 @@
 ---
-title: The daily loop
-description: How a change moves through SpecWeave 3.0, from request to closed increment, with the words to say in any tool and the commands underneath.
+title: "A Claude Code and Codex workflow: the daily loop"
+description: "A repeatable AI coding workflow for Claude Code, Codex and other agents: plan a short spec, claim a task, prove it with a test, verify, review and close, and hand off when a usage limit hits."
 ---
 
 # The daily loop

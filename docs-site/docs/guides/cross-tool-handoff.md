@@ -1,3 +1,8 @@
+---
+title: "Switch from Claude Code to Codex mid-task: handoff and pickup"
+description: "Out of Claude Code or Codex usage halfway through a task? Hand off in one command and pick up in Codex, Grok Build, Gemini CLI or another account with the spec, tasks and uncommitted edits intact."
+---
+
 # Cross-Tool Handoff and Pickup
 
 > **Out of tokens, or want a second opinion from another model? Hand off in one command, pick up in the next tool in one read.**
@@ -11,6 +16,8 @@ Claude Code (including Projects threads), Codex, Grok Build, Cursor, GitHub Copi
 No AI coding tool can read another's session. Each one keeps its transcript in its own store. When you hit a usage limit mid-task, the goal, the decisions and your uncommitted edits are stuck there. Claude Code project memory stays with one account, so even a second Claude subscription starts cold.
 
 ## Hand off
+
+New to switching? [Claude Code vs Codex](/docs/guides/claude-code-vs-codex) covers what each tool reads and where its session lives.
 
 Tell your agent "hand off", or run:
 
