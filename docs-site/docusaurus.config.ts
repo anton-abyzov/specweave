@@ -15,6 +15,9 @@ const config: Config = {
   // Production URL
   url: 'https://spec-weave.com',
   baseUrl: '/',
+  // GitHub Pages serves docs/x/index.html and 301s /docs/x to /docs/x/.
+  // Emit the slash form so canonicals and sitemap URLs are not redirects.
+  trailingSlash: true,
 
   // SEO: Schema.org structured data for search engines
   headTags: [
@@ -52,7 +55,7 @@ const config: Config = {
         applicationCategory: 'DeveloperApplication',
         operatingSystem: 'Linux, macOS, Windows',
         downloadUrl: 'https://www.npmjs.com/package/specweave',
-        installUrl: 'https://spec-weave.com/docs/getting-started/installation',
+        installUrl: 'https://spec-weave.com/docs/getting-started/installation/',
         license: 'https://opensource.org/licenses/MIT',
         codeRepository: 'https://github.com/anton-abyzov/specweave',
         author: {'@type': 'Person', name: 'Anton Abyzov', url: 'https://github.com/anton-abyzov'},
