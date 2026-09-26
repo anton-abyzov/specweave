@@ -902,6 +902,22 @@ describe('update command', () => {
       expect(fs.existsSync(path.join(parent, 'logs'))).toBe(true);
       expect(consoleLogs.join('\n')).not.toMatch(/stale \.specweave/i);
     });
+
+    it('keeps user folders under increments/, whatever their name', async () => {
+      setupSpecWeaveProject();
+      const increments = path.join(tempDir, '.specweave', 'increments');
+      for (const name of ['_research-basketball-stats', '_scratch-chat-perf', '_archive']) {
+        fs.mkdirSync(path.join(increments, name), { recursive: true });
+        fs.writeFileSync(path.join(increments, name, 'notes.md'), `# ${name}\n`);
+      }
+
+      await updateCommand({ noSelf: true, noPlugins: true });
+
+      for (const name of ['_research-basketball-stats', '_scratch-chat-perf', '_archive']) {
+        expect(fs.readFileSync(path.join(increments, name, 'notes.md'), 'utf-8')).toBe(`# ${name}\n`);
+      }
+      expect(consoleLogs.join('\n')).not.toMatch(/unrecognized folder/i);
+    });
   });
 
   // ==========================================================================

@@ -353,41 +353,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Step 2.5 (removed in 3.0): `.specweave/memory/` is the committed project
   // memory again (MEMORY.md + one file per fact), so update never deletes it.
 
-  // Step 2.5b: Clean up invalid folders in .specweave/increments/ (v1.0.257+)
-  // Removes: unrecognized underscore folders (_analysis, etc.) and nested .specweave
-  if (isSpecWeaveProject) {
-    const { RECOGNIZED_LIFECYCLE_FOLDERS } = await import('../../core/increment/increment-utils.js');
-    const incrementsDir = path.join(projectPath, '.specweave', 'increments');
-    if (fs.existsSync(incrementsDir)) {
-      const recognizedSet = new Set<string>(RECOGNIZED_LIFECYCLE_FOLDERS);
-      const entries = fs.readdirSync(incrementsDir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
-        const fullPath = path.join(incrementsDir, entry.name);
-
-        // Remove nested .specweave folder (accidental init artifact)
-        if (entry.name === '.specweave') {
-          if (options.check) {
-            console.log(chalk.yellow(`  ⚠️  Nested .specweave/ inside increments will be removed`));
-          } else {
-            fs.rmSync(fullPath, { recursive: true, force: true });
-            console.log(chalk.green(`  ✓ Removed nested .specweave/ from increments/`));
-          }
-          continue;
-        }
-
-        // Remove unrecognized underscore folders
-        if (entry.name.startsWith('_') && !recognizedSet.has(entry.name)) {
-          if (options.check) {
-            console.log(chalk.yellow(`  ⚠️  Unrecognized folder ${entry.name} will be removed`));
-          } else {
-            fs.rmSync(fullPath, { recursive: true, force: true });
-            console.log(chalk.green(`  ✓ Removed unrecognized folder: increments/${entry.name}`));
-          }
-        }
-      }
-    }
-  }
+  // Step 2.5b (removed in 3.0.2): update never deletes folders under
+  // .specweave/increments/. An underscore folder the lifecycle does not know
+  // (_research-*, _scratch-*) is the user's own work and is often tracked.
 
   // Step 2.6: Remove the dropped reflect subsystem's state (2.0).
   // `reflect` has no reader in 2.0 and is a key the config migration deletes.
