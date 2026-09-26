@@ -1639,7 +1639,6 @@ Deepen your understanding of key concepts:
 - *Site Reliability Engineering* by Google
 
 **Courses**
-- [System Design Interview Prep](https://www.systemdesignprep.com)
 - [AWS Certified Solutions Architect](https://aws.amazon.com/certification/)
 - [Microservices Patterns](https://microservices.io)
 
