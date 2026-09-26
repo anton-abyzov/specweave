@@ -129,7 +129,7 @@ _specweave_completions() {
             return 0
             ;;
         update)
-            COMPREPLY=( $(compgen -W "--no-self --no-plugins --all --minimal --check -v --verbose -f --force --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--no-self --no-plugins --all --minimal --check --dry-run -v --verbose -f --force --help" -- "${cur}") )
             return 0
             ;;
         check-discipline)

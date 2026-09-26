@@ -298,6 +298,7 @@ _specweave() {
                         '--all[Install ALL plugins (not just router)]' \
                         '--minimal[Clean /plugin output (removes marketplace, no lazy loading)]' \
                         '--check[Dry run - show what would change without making changes]' \
+                        '--dry-run[Same as --check]' \
                         '--verbose[Show detailed output]' \
                         '--force[Force refresh even if up to date]' \
                         '--help[Show help]'
