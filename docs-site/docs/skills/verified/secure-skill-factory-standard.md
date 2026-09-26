@@ -733,9 +733,7 @@ function validateStructure(skillContent: string): Finding[] {
 
 8. **Skill Discovery and Evaluation** (SpecWeave Docs). Guide to finding quality AI agent skills with a 6-dimension quality scoring rubric. [Skill Discovery and Evaluation](/docs/skills/skill-discovery-evaluation)
 
-9. **Agent Skills Extensibility Analysis** (SpecWeave Docs). Compatibility matrix for the Agent Skills format across 39 AI coding platforms. [Agent Skills Extensibility Analysis](/docs/guides/agent-skills-extensibility-analysis)
-
-10. **Skill Contradiction Resolution** (SpecWeave Docs). System design for detecting and resolving contradicting instructions from multiple skill sources. [Skill Contradiction Resolution](/docs/skills/skill-contradiction-resolution)
+9. **Skill Contradiction Resolution** (SpecWeave Docs). System design for detecting and resolving contradicting instructions from multiple skill sources. [Skill Contradiction Resolution](/docs/skills/skill-contradiction-resolution)
 
 ---
 

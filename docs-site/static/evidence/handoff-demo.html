@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handoff report: Resumable checkout</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1c1b19;--mut:#6b6760;--line:#e4e0d8;--card:#fff;--acc:#2f6f5e;--hand:#fff6e0;--claude:#b8612f;--codex:#2f5f9e;--grok:#6a4bb0;--other:#555}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ece9e2;--mut:#a29d93;--line:#2e2c28;--card:#1e1d1a;--acc:#6fc2a8;--hand:#3a3120}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:32px 16px}h1{font-size:26px;margin:0 0 4px}h2{font-size:17px;margin:32px 0 10px}
+.sub{color:var(--mut);margin:0 0 24px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}.stat .v{font-size:22px;font-weight:650}.stat .l{color:var(--mut);font-size:13px}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:600}tr:last-child td{border-bottom:0}tr.hand td{background:var(--hand)}
+td.t{white-space:nowrap;color:var(--mut)}td.d{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;max-width:420px}
+.who{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:1px 6px;border-radius:6px;border:1px solid currentColor;white-space:nowrap}
+.claude{color:var(--claude)}.codex{color:var(--codex)}.grok{color:var(--grok)}.other{color:var(--other)}
+.st{font-size:12.5px;padding:1px 6px;border-radius:6px;background:var(--line)}.st.done{background:var(--acc);color:var(--bg)}
+ul.acs{padding-left:18px}ul.acs li.met{color:var(--acc)}ul.acs li.met::marker{content:"✓ "}footer{color:var(--mut);font-size:13px;margin-top:32px}
+</style>
+</head>
+<body>
+<main>
+<h1>Resumable checkout</h1>
+<p class="sub">Increment 0001-resumable-checkout · active · report generated 2026-09-25 18:51 from <code>ledger.jsonl</code></p>
+<div class="stats">
+<div class="stat"><div class="v">2/2</div><div class="l">tasks done</div></div>
+<div class="stat"><div class="v">2/2</div><div class="l">acceptance criteria met</div></div>
+<div class="stat"><div class="v">1</div><div class="l">handoff</div></div>
+<div class="stat"><div class="v">1</div><div class="l">pickup</div></div>
+<div class="stat"><div class="v">claude, codex</div><div class="l">tools</div></div>
+<div class="stat"><div class="v">1</div><div class="l">recorded sessions</div></div>
+</div>
+<h2>Timeline</h2>
+<div class="wrap"><table>
+<thead><tr><th>When (UTC)</th><th>Who</th><th>What</th><th>Task</th><th>Evidence or note</th></tr></thead>
+<tbody>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>started a session</td><td></td><td class="d">session 8e445fba-7d03-56f5-a460-4af2d321f529</td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>claimed</td><td>T-01</td><td class="d"></td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>finished</td><td>T-01</td><td class="d">npm test → exit 0
+&gt; test
+&gt; node -e 0
+…</td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>claimed</td><td>T-02</td><td class="d"></td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>left a note</td><td></td><td class="d">Payment thread: drafts must never store card data</td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>released</td><td>T-02</td><td class="d">handoff</td></tr>
+<tr class="hand"><td class="t">2026-09-25 18:51</td><td><span class="who claude">claude@cloud</span></td><td>handed off</td><td></td><td class="d">out of tokens · next: finish restore on return</td></tr>
+<tr class="hand"><td class="t">2026-09-25 18:51</td><td><span class="who codex">codex@laptop</span></td><td>picked up</td><td></td><td class="d">from claude@cloud, snapshot ed29171</td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who codex">codex@laptop</span></td><td>claimed</td><td>T-02</td><td class="d"></td></tr>
+<tr><td class="t">2026-09-25 18:51</td><td><span class="who codex">codex@laptop</span></td><td>finished</td><td>T-02</td><td class="d">npm test → exit 0
+&gt; test
+&gt; node -e 0
+…</td></tr>
+</tbody></table></div>
+<h2>Tasks</h2>
+<div class="wrap"><table>
+<thead><tr><th>Task</th><th>Title</th><th>State</th><th>By</th></tr></thead>
+<tbody>
+<tr><td>T-01</td><td>Save the checkout draft</td><td><span class="st done">done</span></td><td><span class="who claude">claude@cloud</span></td></tr>
+<tr><td>T-02</td><td>Restore the draft on return</td><td><span class="st done">done</span></td><td><span class="who codex">codex@laptop</span></td></tr>
+</tbody></table></div>
+<h2>Acceptance criteria</h2>
+<ul class="acs">
+<li class="met"><b>AC-01</b> Returning within 24 hours restores the cart and shipping choice <small>(met by its tasks)</small></li>
+<li class="met"><b>AC-02</b> A paid order is never restored <small>(met by its tasks)</small></li>
+</ul>
+<footer>Agents: claude@cloud, codex@laptop. Handoff and pickup rows are highlighted. Generated by <code>specweave report</code>.</footer>
+</main>
+</body>
+</html>

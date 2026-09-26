@@ -7,37 +7,39 @@ import styles from './Footer.module.css';
 
 const COLUMNS = [
   {
-    title: 'Product',
+    title: 'Start',
     links: [
-      {label: 'Work model', to: '/product'},
+      {label: 'What is SpecWeave?', to: '/docs/overview/introduction'},
+      {label: 'Quick start', to: '/docs/getting-started'},
+      {label: 'How it works', to: '/docs/overview/how-it-works'},
+      {label: 'What changed in 3.0', to: '/docs/guides/specweave-3'},
+    ],
+  },
+  {
+    title: 'Switch tools',
+    links: [
+      {label: 'Handoff and pickup', to: '/docs/guides/cross-tool-handoff'},
+      {label: 'Claude Code Projects', to: '/docs/guides/claude-code-projects'},
+      {label: 'Codex, Grok and others', to: '/docs/integrations/generic-ai-tools'},
       {label: 'Integrations', to: '/integrations'},
-      {label: 'Verified Skills', href: 'https://verified-skill.com'},
+    ],
+  },
+  {
+    title: 'Reference',
+    links: [
+      {label: 'Commands', to: '/docs/reference/commands'},
+      {label: 'Skills', to: '/docs/reference/skills'},
+      {label: 'Troubleshooting', to: '/docs/guides/troubleshooting'},
       {label: 'Changelog', to: '/docs/reference/changelog'},
     ],
   },
   {
-    title: 'Docs',
+    title: 'Project',
     links: [
-      {label: 'Introduction', to: '/docs/overview/introduction'},
-      {label: 'Getting Started', to: '/docs/getting-started'},
-      {label: 'Skills reference', to: '/docs/reference/skills'},
-      {label: 'Commands', to: '/docs/reference/commands'},
-    ],
-  },
-  {
-    title: 'Community',
-    links: [
-      {label: 'GitHub Issues', href: 'https://github.com/anton-abyzov/specweave/issues'},
-      {label: 'Stack Overflow', href: 'https://stackoverflow.com/questions/tagged/specweave'},
-      {label: 'Blog', to: '/blog'},
-    ],
-  },
-  {
-    title: 'Open source',
-    links: [
-      {label: 'About', to: '/docs/overview/introduction'},
       {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
       {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
+      {label: 'Verified Skills', href: 'https://verified-skill.com'},
+      {label: 'Blog', to: '/blog'},
     ],
   },
 ];

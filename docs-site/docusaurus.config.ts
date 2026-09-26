@@ -118,7 +118,6 @@ const config: Config = {
   projectName: 'specweave',
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
 
   i18n: {
     defaultLocale: 'en',
@@ -130,6 +129,7 @@ const config: Config = {
     mermaid: true,
     format: 'mdx',
     hooks: {
+      onBrokenMarkdownLinks: 'warn',
       onBrokenMarkdownImages: () => {},
     },
   },
@@ -164,10 +164,7 @@ const config: Config = {
           routeBasePath: 'docs',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true,
-          // CRITICAL: Override default exclude to include _ folders (_archive, _orphans, etc.)
-          // Docusaurus default excludes: ['**/_*.{js,jsx,ts,tsx,md,mdx}', '**/_*/**', '**/__tests__/**']
-          // We want ALL folders and files visible, so we set exclude to empty array
-          exclude: [],
+
         },
         blog: {
           showReadingTime: true,
@@ -206,280 +203,43 @@ const config: Config = {
     [
       '@docusaurus/plugin-client-redirects',
       {
+        // Pages removed or merged over time, pointed at the page that replaced them.
         redirects: [
-          // Docs root has no index doc — land on the introduction
-          {
-            from: '/docs',
-            to: '/docs/overview/introduction',
-          },
-          // Extensible Skills — old paths → new pillar location
-          {
-            from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills'],
-            to: '/docs/skills/extensible/extensible-skills',
-          },
-          {
-            from: '/docs/guides/claude-skills-deep-dive',
-            to: '/docs/skills/extensible/extensible-skills',
-          },
-          {
-            from: '/docs/guides/self-improving-skills',
-            to: '/docs/skills/extensible/extensible-skills',
-          },
-          {
-            from: ['/docs/guides/skill-development-guidelines', '/docs/skills/skill-development-guidelines'],
-            to: '/docs/skills/extensible/skill-development-guidelines',
-          },
-          // Verified Skills Standard — old paths → new pillar location
-          {
-            from: ['/docs/guides/skills-ecosystem-security', '/docs/skills/skills-ecosystem-security'],
-            to: '/docs/skills/verified/skills-ecosystem-security',
-          },
-          {
-            from: ['/docs/guides/secure-skill-factory-standard', '/docs/skills/secure-skill-factory-standard'],
-            to: '/docs/skills/verified/secure-skill-factory-standard',
-          },
-          {
-            from: '/docs/skills/verified-skills',
-            to: '/docs/skills/verified/verified-skills',
-          },
-          // Skills page rename (programs → structured expertise)
-          {
-            from: '/docs/overview/skills-as-programs',
-            to: '/docs/overview/skills-as-structured-expertise',
-          },
-          // Ecosystem — unchanged locations
-          {
-            from: '/docs/guides/skill-discovery-evaluation',
-            to: '/docs/skills/skill-discovery-evaluation',
-          },
-          {
-            from: '/docs/guides/skill-contradiction-resolution',
-            to: '/docs/skills/skill-contradiction-resolution',
-          },
-          // === Documentation Overhaul (0556) Redirects ===
-          // Deleted root files
-          {
-            from: ['/docs/intro', '/docs/quick-start', '/docs/features'],
-            to: '/docs/overview/introduction',
-          },
-          // learn/ → academy/ redirects
-          {
-            from: '/docs/learn/foundations/software-engineering-roles',
-            to: '/docs/academy/fundamentals/software-engineering-roles',
-          },
-          {
-            from: '/docs/learn/foundations/enterprise-app-development',
-            to: '/docs/academy/fundamentals/enterprise-app-development',
-          },
-          {
-            from: '/docs/learn/foundations/claude-code-basics',
-            to: '/docs/overview/claude-code-basics',
-          },
-          {
-            from: '/docs/learn/foundations/terminal-empowerment',
-            to: '/docs/academy',
-          },
-          {
-            from: '/docs/learn/frontend/frontend-fundamentals',
-            to: '/docs/academy/fundamentals/frontend-fundamentals',
-          },
-          {
-            from: '/docs/learn/backend/backend-fundamentals',
-            to: '/docs/academy/fundamentals/backend-fundamentals',
-          },
-          {
-            from: '/docs/learn/infrastructure/iac-fundamentals',
-            to: '/docs/academy/fundamentals/iac-fundamentals',
-          },
-          {
-            from: '/docs/learn/ml-ai/ml-fundamentals',
-            to: '/docs/academy/fundamentals/ml-fundamentals',
-          },
-          {
-            from: '/docs/learn/testing/testing-fundamentals',
-            to: '/docs/academy/fundamentals/testing-fundamentals',
-          },
-          {
-            from: '/docs/learn/testing/cli-integration-testing',
-            to: '/docs/academy/fundamentals/testing-fundamentals',
-          },
-          // Merged duplicates
-          {
-            from: '/docs/enterprise/compliance-standards',
-            to: '/docs/guides/compliance-standards',
-          },
-          {
-            from: '/docs/reference/compliance-standards',
-            to: '/docs/guides/compliance-standards',
-          },
-          {
-            from: '/docs/guides/cost-tracking',
-            to: '/docs/reference/cost-tracking',
-          },
-          {
-            from: '/docs/guides/cost-optimization',
-            to: '/docs/reference/cost-tracking',
-          },
-          {
-            from: '/docs/guides/core-concepts/living-docs-sync-strategy',
-            to: '/docs/guides/core-concepts/living-documentation',
-          },
-          {
-            from: '/docs/guides/core-concepts/who-benefits-from-living-docs',
-            to: '/docs/guides/core-concepts/living-documentation',
-          },
-          {
-            from: '/docs/skills/extensible/self-improving-skills',
-            to: '/docs/skills/extensible/extensible-skills',
-          },
-          {
-            from: '/docs/skills/extensible/skill-generation',
-            to: '/docs/skills/extensible/extensible-skills',
-          },
-          {
-            from: '/docs/guides/multilingual-guide',
-            to: '/docs/guides/specweave-2',
-          },
-          {
-            from: '/docs/guides/intelligent-living-docs-sync',
-            to: '/docs/guides/core-concepts/living-documentation',
-          },
-          {
-            from: '/docs/commands/command-decision-tree',
-            to: '/docs/reference/commands',
-          },
-          // 2.0: the commands/ namespace and the sync deep dives collapsed
-          {
-            from: '/docs/commands/overview',
-            to: '/docs/reference/commands',
-          },
-          {
-            from: '/docs/reference/command-decision-tree',
-            to: '/docs/reference/commands',
-          },
-          {
-            from: '/docs/guides/command-reference-by-priority',
-            to: '/docs/reference/commands',
-          },
-          {
-            from: '/docs/reference/use-case-guide',
-            to: '/docs/reference/commands',
-          },
-          {
-            from: '/docs/guides/github-integration',
-            to: '/docs/guides/github-sync',
-          },
-          {
-            from: '/docs/guides/external-tool-sync',
-            to: '/docs/guides/github-sync',
-          },
-          {
-            from: '/docs/guides/sync-strategies',
-            to: '/docs/reference/sync-cli',
-          },
-          {
-            from: '/docs/guides/sync-configuration',
-            to: '/docs/reference/sync-cli',
-          },
-          {
-            from: '/docs/guides/spec-bidirectional-sync',
-            to: '/docs/reference/sync-cli',
-          },
-          {
-            from: '/docs/guides/spec-commit-sync',
-            to: '/docs/reference/sync-cli',
-          },
-          {
-            from: '/docs/guides/status-sync-guide',
-            to: '/docs/reference/sync-cli',
-          },
-          {
-            from: '/docs/guides/status-sync-migration',
-            to: '/docs/reference/sync-cli',
-          },
-          {
-            from: '/docs/guides/multi-project-sync-architecture',
-            to: '/docs/guides/jira-ado-sync',
-          },
-          {
-            from: '/docs/guides/umbrella-sync-routing',
-            to: '/docs/guides/jira-ado-sync',
-          },
-          {
-            from: '/docs/guides/hierarchy-mapping',
-            to: '/docs/guides/jira-ado-sync',
-          },
-          {
-            from: '/docs/guides/ado-multi-project-migration',
-            to: '/docs/guides/jira-ado-sync',
-          },
-          {
-            from: '/docs/guides/multi-project-setup',
-            to: '/docs/reference/configuration',
-          },
-          {
-            from: '/docs/guides/repository-selection',
-            to: '/docs/reference/configuration',
-          },
-          {
-            from: '/docs/guides/migration-v024',
-            to: '/docs/guides/specweave-2',
-          },
-          {
-            from: '/docs/guides/migration-v031-project-fields',
-            to: '/docs/guides/specweave-2',
-          },
-          {
-            from: '/docs/enterprise/github-migration',
-            to: '/docs/guides/github-sync',
-          },
-          {
-            from: '/docs/enterprise/jira-migration',
-            to: '/docs/guides/jira-ado-sync',
-          },
-          {
-            from: '/docs/enterprise/azure-devops-migration',
-            to: '/docs/guides/jira-ado-sync',
-          },
-          {
-            from: '/docs/guides/agent-teams-setup',
-            to: '/docs/guides/agent-teams-and-swarms',
-          },
-          {
-            from: '/docs/integrations/issue-trackers',
-            to: '/docs/guides/github-sync',
-          },
-          {
-            from: '/docs/guides/integrations/issue-trackers',
-            to: '/docs/guides/github-sync',
-          },
-          {
-            from: '/docs/guides/integrations/external-tools-overview',
-            to: '/docs/guides/github-sync',
-          },
-          {
-            from: '/docs/skills/extensible/extensible-skills-guide',
-            to: '/docs/skills/extensible/extensible-skills',
-          },
-          // Deleted getting-started duplicates
-          {
-            from: '/docs/guides/getting-started/quickstart',
-            to: '/docs/getting-started',
-          },
-          {
-            from: '/docs/guides/getting-started/nvm-global-packages-fix',
-            to: '/docs/getting-started/installation',
-          },
-          // Numbered video prefix redirect (living docs use 005- prefix)
-          {
-            from: '/docs/academy/videos/005-opencode-web-calculator',
-            to: '/docs/academy/videos/opencode-web-calculator',
-          },
-          // Plugin Ecosystem → Skills & Capabilities rename
-          {
-            from: '/docs/overview/plugins-ecosystem',
-            to: '/docs/overview/skills-and-capabilities',
-          },
+          {from: '/docs', to: '/docs/overview/introduction'},
+          {from: ['/docs/intro', '/docs/quick-start', '/docs/features', '/docs/overview/features', '/docs/guides/life-automation', '/docs/guides/meta-capability'], to: '/docs/overview/introduction'},
+          {from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills', '/docs/guides/claude-skills-deep-dive', '/docs/guides/self-improving-skills', '/docs/skills/extensible/self-improving-skills', '/docs/skills/extensible/skill-generation', '/docs/skills/extensible/extensible-skills-guide', '/docs/guides/agent-skills-extensibility-analysis'], to: '/docs/skills/extensible/extensible-skills'},
+          {from: ['/docs/guides/skill-development-guidelines', '/docs/skills/skill-development-guidelines'], to: '/docs/skills/extensible/skill-development-guidelines'},
+          {from: ['/docs/guides/skills-ecosystem-security', '/docs/skills/skills-ecosystem-security'], to: '/docs/skills/verified/skills-ecosystem-security'},
+          {from: ['/docs/guides/secure-skill-factory-standard', '/docs/skills/secure-skill-factory-standard'], to: '/docs/skills/verified/secure-skill-factory-standard'},
+          {from: ['/docs/skills/verified-skills'], to: '/docs/skills/verified/verified-skills'},
+          {from: ['/docs/overview/skills-as-programs', '/docs/overview/skills-as-structured-expertise', '/docs/overview/plugins-ecosystem', '/docs/overview/skills-and-capabilities'], to: '/docs/skills'},
+          {from: ['/docs/guides/skill-discovery-evaluation'], to: '/docs/skills/skill-discovery-evaluation'},
+          {from: ['/docs/guides/skill-contradiction-resolution'], to: '/docs/skills/skill-contradiction-resolution'},
+          {from: ['/docs/enterprise/compliance-standards', '/docs/reference/compliance-standards', '/docs/guides/compliance-standards'], to: '/docs/enterprise'},
+          {from: ['/docs/guides/cost-tracking', '/docs/guides/cost-optimization'], to: '/docs/reference/cost-tracking'},
+          {from: ['/docs/guides/core-concepts/living-docs-sync-strategy', '/docs/guides/core-concepts/who-benefits-from-living-docs', '/docs/guides/core-concepts/living-documentation', '/docs/guides/intelligent-living-docs-sync', '/docs/guides/multilingual-guide', '/docs/guides/migration-v024', '/docs/guides/migration-v031-project-fields', '/docs/guides/specweave-2', '/docs/guides/core-concepts/background-jobs', '/docs/glossary/terms/living-docs'], to: '/docs/guides/specweave-3'},
+          {from: ['/docs/commands/command-decision-tree', '/docs/commands/overview', '/docs/reference/command-decision-tree', '/docs/guides/command-reference-by-priority', '/docs/reference/use-case-guide'], to: '/docs/reference/commands'},
+          {from: ['/docs/guides/github-integration', '/docs/guides/external-tool-sync', '/docs/enterprise/github-migration', '/docs/integrations/issue-trackers', '/docs/guides/integrations/issue-trackers', '/docs/guides/integrations/external-tools-overview', '/docs/guides/bidirectional-linking', '/docs/guides/github-action-setup', '/docs/academy/specweave-essentials/07-external-tools', '/docs/academy/specweave-essentials/external-tools'], to: '/docs/guides/github-sync'},
+          {from: ['/docs/guides/sync-strategies', '/docs/guides/sync-configuration', '/docs/guides/spec-bidirectional-sync', '/docs/guides/spec-commit-sync', '/docs/guides/status-sync-guide', '/docs/guides/status-sync-migration'], to: '/docs/reference/sync-cli'},
+          {from: ['/docs/guides/multi-project-sync-architecture', '/docs/guides/umbrella-sync-routing', '/docs/guides/hierarchy-mapping', '/docs/guides/ado-multi-project-migration', '/docs/enterprise/jira-migration', '/docs/enterprise/azure-devops-migration'], to: '/docs/guides/jira-ado-sync'},
+          {from: ['/docs/guides/multi-project-setup', '/docs/guides/repository-selection'], to: '/docs/reference/configuration'},
+          {from: ['/docs/guides/agent-teams-setup'], to: '/docs/guides/agent-teams-and-swarms'},
+          {from: ['/docs/guides/getting-started/quickstart', '/docs/overview/no-docs-needed', '/docs/guides/specweave-learning-journey', '/docs/guides/mobile/react-native-setup-guide', '/docs/academy', '/docs/academy/specweave-essentials', '/docs/academy/fundamentals', '/docs/academy/talks', '/docs/academy/talks/skills-plugins-marketplaces', '/docs/academy/videos', '/docs/academy/videos/opencode-web-calculator', '/docs/academy/videos/005-opencode-web-calculator', '/docs/academy/fundamentals/ai-development-fundamentals', '/docs/academy/fundamentals/backend-fundamentals', '/docs/academy/fundamentals/enterprise-app-development', '/docs/academy/fundamentals/frontend-fundamentals', '/docs/academy/fundamentals/iac-fundamentals', '/docs/academy/fundamentals/ml-fundamentals', '/docs/academy/fundamentals/security-fundamentals', '/docs/academy/fundamentals/software-engineering-roles', '/docs/academy/fundamentals/testing-fundamentals', '/docs/learn/backend/backend-fundamentals', '/docs/learn/foundations/claude-code-basics', '/docs/learn/foundations/enterprise-app-development', '/docs/learn/foundations/software-engineering-roles', '/docs/learn/foundations/terminal-empowerment', '/docs/learn/frontend/frontend-fundamentals', '/docs/learn/infrastructure/iac-fundamentals', '/docs/learn/ml-ai/ml-fundamentals', '/docs/learn/testing/testing-fundamentals', '/docs/learn/testing/cli-integration-testing', '/docs/academy/specweave-essentials/01-getting-started', '/docs/academy/specweave-essentials/getting-started'], to: '/docs/getting-started'},
+          {from: ['/docs/guides/getting-started/nvm-global-packages-fix', '/docs/guides/strategic-init', '/docs/glossary/terms/strategic-init', '/docs/academy/specweave-essentials/12-init-deep-dive', '/docs/academy/specweave-essentials/init-deep-dive'], to: '/docs/getting-started/installation'},
+          {from: ['/docs/academy/specweave-essentials/02-three-file-structure', '/docs/academy/specweave-essentials/three-file-structure', '/docs/guides/project-specific-tasks', '/docs/guides/specs-organization-guide', '/docs/glossary/terms/project-specific-tasks'], to: '/docs/guides/core-concepts/what-is-an-increment'},
+          {from: ['/docs/academy/specweave-essentials/03-your-first-increment', '/docs/academy/specweave-essentials/your-first-increment'], to: '/docs/getting-started/first-increment'},
+          {from: ['/docs/academy/specweave-essentials/04-the-next-command', '/docs/academy/specweave-essentials/the-next-command', '/docs/academy/specweave-essentials/05-quality-gates', '/docs/academy/specweave-essentials/quality-gates', '/docs/academy/specweave-essentials/06-tdd-workflow', '/docs/academy/specweave-essentials/tdd-workflow', '/docs/academy/specweave-essentials/10-advanced-patterns', '/docs/academy/specweave-essentials/advanced-patterns', '/docs/guides/brainstorming', '/docs/guides/deep-interview-mode', '/docs/guides/best-practices', '/docs/guides/deployment-platforms', '/docs/workflows/deployment', '/docs/workflows/design', '/docs/workflows/greenfield', '/docs/workflows/hotfix', '/docs/workflows/implementation', '/docs/workflows/planning', '/docs/workflows/research', '/docs/workflows/validation'], to: '/docs/workflows/overview'},
+          {from: ['/docs/academy/specweave-essentials/08-ai-model-selection', '/docs/academy/specweave-essentials/ai-model-selection'], to: '/docs/guides/model-selection'},
+          {from: ['/docs/academy/specweave-essentials/09-troubleshooting', '/docs/academy/specweave-essentials/troubleshooting', '/docs/guides/troubleshooting/common-errors', '/docs/guides/troubleshooting/emergency-recovery'], to: '/docs/guides/troubleshooting'},
+          {from: ['/docs/academy/specweave-essentials/11-vibe-coding-problem', '/docs/academy/specweave-essentials/vibe-coding-problem', '/docs/overview/philosophy', '/docs/overview/ai-revolution-context', '/docs/guides/ai-coding-benchmarks'], to: '/docs/overview/why-specweave'},
+          {from: ['/docs/academy/specweave-essentials/13-increment-lifecycle', '/docs/academy/specweave-essentials/increment-lifecycle', '/docs/guides/backlog-management', '/docs/guides/scheduling-and-planning'], to: '/docs/guides/increment-status-reference'},
+          {from: ['/docs/overview/claude-code-basics', '/docs/overview/claude-code-architecture'], to: '/docs/guides/claude-code-projects'},
+          {from: ['/docs/guides/core-concepts/skills-first-architecture', '/docs/guides/lazy-plugin-loading', '/docs/guides/plugin-management', '/docs/glossary/terms/skills-vs-agents'], to: '/docs/reference/skills'},
+          {from: ['/docs/guides/core-concepts/deterministic-llm-hybrid'], to: '/docs/guides/jev-system-one'},
+          {from: ['/docs/guides/openclaw-agent-setup'], to: '/docs/integrations/generic-ai-tools'},
+          {from: ['/docs/guides/analytics-dashboard', '/docs/guides/dashboard/activity', '/docs/guides/dashboard/agents', '/docs/guides/dashboard/config', '/docs/guides/dashboard/errors', '/docs/guides/dashboard/hooks', '/docs/guides/dashboard/marketplace', '/docs/guides/dashboard/notifications', '/docs/guides/dashboard/plugins', '/docs/guides/dashboard/services'], to: '/docs/guides/dashboard'},
+          {from: ['/docs/glossary', '/docs/glossary/index-by-category', '/docs/glossary/terms/intelligent-model-selection', '/docs/glossary/terms/project-detection'], to: '/docs/glossary/overview'},
+          {from: ['/docs/api'], to: '/docs/reference'},
         ],
       },
     ],
@@ -513,71 +273,43 @@ const config: Config = {
       },
       items: [
         {to: '/product', label: 'Product', position: 'left'},
-        {to: '/integrations', label: 'Integrations', position: 'left'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
-        {href: 'https://verified-skill.com', label: 'Verified Skills ↗', position: 'left'},
+        {to: '/docs/guides/cross-tool-handoff', label: 'Handoff', position: 'left'},
+        {to: '/integrations', label: 'Integrations', position: 'left'},
+        {to: '/blog', label: 'Blog', position: 'left'},
+        {href: 'https://verified-skill.com', label: 'Verified Skills', position: 'left'},
         {type: 'search', position: 'right'},
-        {href: 'https://github.com/anton-abyzov/specweave', label: 'GitHub ↗', position: 'right'},
+        {href: 'https://github.com/anton-abyzov/specweave', label: 'GitHub', position: 'right'},
       ],
     },
 
     // Footer configuration
     footer: {
       style: 'dark',
-      links: [
-        {
-          title: 'Documentation',
-          items: [
-            {
-              label: 'Introduction',
-              to: '/docs/overview/introduction',
-            },
-            {
-              label: 'Getting Started',
-              to: '/docs/getting-started',
-            },
-            {
-              label: 'Skills Reference',
-              to: '/docs/reference/skills',
-            },
-            {
-              label: 'Commands Reference',
-              to: '/docs/reference/commands',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'GitHub Issues',
-              href: 'https://github.com/anton-abyzov/specweave/issues',
-            },
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/specweave',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/anton-abyzov/specweave',
-            },
-            {
-              label: 'Features',
-              to: '/docs/overview/features',
-            },
-          ],
-        },
-      ],
+      // Columns live in src/theme/Footer/index.tsx (swizzled).
       copyright: `Copyright © ${new Date().getFullYear()} SpecWeave.`,
+    },
+
+    // Mermaid diagrams in the site's paper and burnt-orange palette
+    mermaid: {
+      theme: {light: 'base', dark: 'dark'},
+      options: {
+        fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+        themeVariables: {
+          primaryColor: '#fbfcf8',
+          primaryBorderColor: '#bd481f',
+          primaryTextColor: '#252820',
+          secondaryColor: '#eceee4',
+          tertiaryColor: '#f6f4ee',
+          lineColor: '#8a8f7c',
+          noteBkgColor: '#f6f4ee',
+          noteBorderColor: '#bd481f',
+          actorBkg: '#fbfcf8',
+          actorBorder: '#bd481f',
+          signalColor: '#252820',
+          signalTextColor: '#252820',
+        },
+      },
     },
 
     // Prism syntax highlighting

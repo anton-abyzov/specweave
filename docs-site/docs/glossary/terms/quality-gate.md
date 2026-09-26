@@ -1,109 +1,54 @@
 ---
 id: quality-gate
-title: Quality Gate
-sidebar_label: Quality Gate
+title: Quality gate
+sidebar_label: Quality gate
+description: What SpecWeave 3.0 checks before an increment can close - a passing verify report, or an explicit reason - and the optional reviews around it.
 ---
 
-# Quality Gate
+# Quality gate
 
-A **quality gate** is a checkpoint in the SpecWeave workflow that validates work meets specific criteria before proceeding to the next phase.
+A **quality gate** is a check that has to pass before work moves on. SpecWeave 3.0 has one blocking gate, at close, and keeps everything else as evidence you can choose to collect.
 
-## SpecWeave Quality Gates
+## The closure gate
 
-### 1. Pre-Implementation Gate
-
-Validates specifications before starting implementation. Say "assess quality before we start", use `sw:qa 0001 --pre` in Claude Code, or type `qa 0001 --pre` in other AI tools.
-
-**Checks**:
-- ✅ Clarity - Requirements are clear and unambiguous
-- ✅ Testability - Acceptance criteria are testable
-- ✅ Completeness - All necessary sections present
-- ✅ Feasibility - Technical approach is sound
-
-### 2. Completion Gate
-
-Validates work before closing an [increment](/docs/glossary/terms/increments). Say "we're done", use `sw:done 0001` in Claude Code, or type `done 0001` in other AI tools.
-
-**Three validation gates**:
-1. **Tasks Complete** - All tasks in [tasks.md](/docs/glossary/terms/tasks-md) marked done
-2. **Tests Pass** - 60%+ test coverage
-3. **Docs Updated** - [Living docs](/docs/glossary/terms/living-docs) synchronized
-
-### 3. Quality Assessment Gate
-
-Comprehensive quality check before release. Say "full quality assessment", use `sw:qa 0001 --gate` in Claude Code, or type `qa 0001 --gate` in other AI tools.
-
-**7 Quality Dimensions** (weighted scoring):
-1. Clarity (18%)
-2. Testability (22%)
-3. Completeness (18%)
-4. Feasibility (13%)
-5. Maintainability (9%)
-6. Edge Cases (9%)
-7. Risk Assessment (11%)
-
-**Gate Decisions**:
-- 🟢 **PASS** - Ready to proceed
-- 🟡 **CONCERNS** - Should fix before release
-- 🔴 **FAIL** - Must fix before proceeding
-
-## Risk Scoring
-
-Quality gates include risk assessment using **Probability × Impact** method:
-
-| Risk Level | Score | Action |
-|------------|-------|--------|
-| **CRITICAL** | ≥9.0 | Immediate action required |
-| **HIGH** | 6.0-8.9 | Address before release |
-| **MEDIUM** | 3.0-5.9 | Monitor |
-| **LOW** | &lt;3.0 | Acceptable |
-
-## Example Output
+`specweave complete` closes an increment only when `reports/verify.json` exists and says the run passed. That report comes from `specweave verify`:
 
 ```bash
-$ sw:qa 0001 --gate
-
-📊 Quality Assessment: 0001-user-authentication
-
-📈 Overall Score: 85/100 (PASS)
-
-Dimension Scores:
-  ✅ Clarity: 90/100
-  ✅ Testability: 88/100
-  ✅ Completeness: 85/100
-  ✅ Feasibility: 82/100
-  ⚠️  Maintainability: 75/100
-  ✅ Edge Cases: 80/100
-  ✅ Risk Assessment: 78/100
-
-🎯 Gate Decision: 🟢 PASS
-
-📝 Recommendations:
-  - Consider extracting AuthService into smaller modules
-  - Add rate limiting tests for login endpoint
-
-✅ Ready for release
+specweave verify 0042     # runs test, lint and build; checks every AC
+specweave complete 0042
 ```
 
-## Configuration
+`verify` passes when:
 
-Quality gate thresholds in `.specweave/config.json`:
+- every command it runs exits 0. The commands come from `testing.commands` in `.specweave/config.json`, or are detected from your stack (the Commands table in `AGENTS.md` lists them);
+- every acceptance criterion is met, meaning the tasks that cover it are done in the [ledger](/docs/glossary/terms/ledger). See [AC-ID](/docs/glossary/terms/ac-id).
 
-```json
-{
-  "validation": {
-    "quality_judge": {
-      "enabled": true,
-      "pass_threshold": 70,
-      "concerns_threshold": 50
-    }
-  }
-}
+It writes `reports/verify.md` for people and `reports/verify.json` for the gate.
+
+If verify fails, `complete` says why: which command failed, or how many criteria are not met. To close anyway, for example when the work was dropped or moved to another increment, give a reason. It is stored as `closeReason` in [metadata.json](/docs/glossary/terms/metadata-json):
+
+```bash
+specweave complete 0042 --reason "moved to 0045"
 ```
+
+## Per-task evidence
+
+A task is not done until its test ran and passed. `specweave task done T-02 --run "npm test -- restore"` runs the command, refuses to mark the task done on a non-zero exit, and stores the output tail and the commit sha as evidence. The full output goes to `reports/task-T-02.log`.
+
+## Optional checks
+
+These add evidence but never block closing on their own:
+
+| Check | How to run it |
+|---|---|
+| Code review in a fresh session | `/sw:review` in Claude Code, or ask any tool to "review this increment". Writes `reports/review.md`; `complete` notes when it is missing. |
+| Quality assessment | `specweave qa 0042` (`--pre` before coding, `--gate` for a fuller pass, `--ci` to exit 1 on FAIL). |
+| Rubric | `specweave generate-rubric 0042` writes a `rubric.md` tied to the ACs. |
+
+`AGENTS.md` asks for a review in a fresh session for anything that ships, because the session that wrote the code is the worst judge of it.
 
 ## Related
 
-- [Increments](/docs/glossary/terms/increments) - What gates validate
-- Acceptance Criteria - What gates check
-- Test Coverage - Coverage requirements
-- TDD - Test-first approach
+- [Increment](/docs/glossary/terms/increments)
+- [Troubleshooting: verify and complete](/docs/guides/troubleshooting#verify-and-complete)
+- [Commands reference](/docs/reference/commands)
