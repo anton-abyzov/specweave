@@ -6,7 +6,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { execFileSync } from 'child_process';
+import { execFileSync, spawnSync } from 'child_process';
 import { ensureSpecweaveGitignoreEntries } from '../../../../../src/cli/helpers/init/gitignore-generator.js';
 import { ensureGitattributes, LEDGER_MERGE_ATTRIBUTE } from '../../../../../src/cli/helpers/init/directory-structure.js';
 
@@ -52,7 +52,7 @@ describe('ensureSpecweaveGitignoreEntries', () => {
     expect(fs.readFileSync(path.join(dir, '.gitignore'), 'utf-8')).toBe(first);
   });
 
-  it('keeps old report logs ignored and removes the negation 3.0.1 added', () => {
+  it('keeps old report logs ignored but task evidence logs committable', () => {
     const dir = mk();
     const negation = '!.specweave/increments/**/reports/*.log';
     fs.writeFileSync(path.join(dir, '.gitignore'), `*.log\n\n# SpecWeave (added by specweave update)\n.specweave/state/\n${negation}\n`);
@@ -68,6 +68,12 @@ describe('ensureSpecweaveGitignoreEntries', () => {
     expect(added).not.toContain(negation);
     expect(lines).toContain('*.log');
     expect(execFileSync('git', ['-C', dir, 'check-ignore', log], { encoding: 'utf-8' }).trim()).toBe(log);
+
+    // The evidence log `task done --run` writes and the ledger cites stays committable.
+    const evidence = path.join(path.dirname(log), 'task-T-01.log');
+    fs.writeFileSync(path.join(dir, evidence), 'echo hi -> exit 0\n');
+    const r = spawnSync('git', ['-C', dir, 'check-ignore', '-q', evidence]);
+    expect(r.status).toBe(1);
   });
 
   it('creates .gitignore when the project has none', () => {

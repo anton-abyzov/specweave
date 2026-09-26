@@ -3,7 +3,7 @@
 ### Fixed
 
 - `specweave update` no longer deletes folders under `.specweave/increments/`. 3.0.0 and 3.0.1 removed any underscore folder they did not recognise, such as `_research-*` or `_scratch-*`, even when it was tracked in git.
-- `specweave update` no longer un-ignores old logs. 3.0.0 and 3.0.1 appended `!.specweave/increments/**/reports/*.log` to `.gitignore`, which made every log under `reports/` show up as a new file; update now removes that line.
+- `specweave update` no longer un-ignores old logs. 3.0.0 and 3.0.1 appended `!.specweave/increments/**/reports/*.log` to `.gitignore`, which made every log under `reports/` show up as a new file. Update now replaces it with `!.specweave/increments/**/reports/task-T-*.log`, so only the evidence log that `task done --run` writes and the ledger cites is committed.
 
 ## [3.0.1] - 2026-09-26
 

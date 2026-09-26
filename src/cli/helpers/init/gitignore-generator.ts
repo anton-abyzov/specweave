@@ -429,6 +429,9 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '# Binary evidence and agent worktrees (never committed)',
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
+    '# `task done --run` writes its evidence to reports/task-<id>.log and the',
+    '# ledger cites it, so that log is committed; every other *.log stays ignored.',
+    '!.specweave/increments/**/reports/task-T-*.log',
     '# Binary evidence in reports/ (videos, screenshots, app bundles)',
     '**/reports/*.mp4',
     '**/reports/*.png',
@@ -840,8 +843,8 @@ export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: str
   const wanted = GITIGNORE_ENTRIES.specweave;
   let existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
 
-  // 3.0.0 and 3.0.1 appended a negation that un-ignored every old log under
-  // reports/ (hundreds in a long-lived project). Take it back out.
+  // 3.0.0 and 3.0.1 appended a negation that un-ignored every log under
+  // reports/ (hundreds in a long-lived project). Swap it for the task-log one.
   const withoutNegation = existing
     .split('\n')
     .filter((line) => !DROPPED_SPECWEAVE_LINES.has(line.trim()))
