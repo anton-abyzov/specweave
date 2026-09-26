@@ -55,7 +55,7 @@ const config: Config = {
         applicationCategory: 'DeveloperApplication',
         operatingSystem: 'Linux, macOS, Windows',
         downloadUrl: 'https://www.npmjs.com/package/specweave',
-        installUrl: 'https://spec-weave.com/docs/getting-started/installation',
+        installUrl: 'https://spec-weave.com/docs/getting-started/installation/',
         license: 'https://opensource.org/licenses/MIT',
         codeRepository: 'https://github.com/anton-abyzov/specweave',
         author: {'@type': 'Person', name: 'Anton Abyzov', url: 'https://github.com/anton-abyzov'},
