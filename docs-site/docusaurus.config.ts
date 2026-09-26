@@ -118,7 +118,6 @@ const config: Config = {
   projectName: 'specweave',
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
 
   i18n: {
     defaultLocale: 'en',
@@ -130,6 +129,7 @@ const config: Config = {
     mermaid: true,
     format: 'mdx',
     hooks: {
+      onBrokenMarkdownLinks: 'warn',
       onBrokenMarkdownImages: () => {},
     },
   },
