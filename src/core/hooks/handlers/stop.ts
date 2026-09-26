@@ -24,6 +24,8 @@ import type { HandlerFn, HookContext } from './types.js';
 import { pass, stopBlock } from './types.js';
 import { logHook, readActiveIncrements, readJsonSafe } from './utils.js';
 import { loadTaskBoard } from '../../tasks/task-board.js';
+import { hasTasksFile } from '../../tasks/tasks-source.js';
+import { readSpecAcs, deriveAcStatus } from '../../tasks/verify-runner.js';
 
 const TURNS_FILE = '.stop-auto-turns';
 
@@ -78,21 +80,6 @@ function resetTurns(stateDir: string): void {
   try { fs.unlinkSync(path.join(stateDir, TURNS_FILE)); } catch { /* absent */ }
 }
 
-/** Count satisfied/total ACs from spec.md `- [ ]`/`- [x]` AC lines. */
-function countAcs(specPath: string): { total: number; satisfied: number } {
-  let total = 0;
-  let satisfied = 0;
-  try {
-    for (const line of fs.readFileSync(specPath, 'utf8').split('\n')) {
-      const m = line.match(/^\s*-\s*\[([ xX])\]\s*\*{0,2}AC[-\w]/);
-      if (!m) continue;
-      total++;
-      if (m[1].toLowerCase() === 'x') satisfied++;
-    }
-  } catch { /* no spec — no ACs */ }
-  return { total, satisfied };
-}
-
 /** Increment ids from the session marker, else the active-increment state/scan. */
 function resolveIncrementIds(session: Record<string, unknown>, projectRoot: string): string[] {
   const fromMarker = Array.isArray(session.incrementIds)
@@ -124,17 +111,16 @@ function computeRemaining(
   for (const id of incrementIds) {
     const dir = findIncrementDir(projectRoot, id);
     if (!dir) continue;
-    if (fs.existsSync(path.join(dir, 'tasks.md'))) {
-      try {
-        // The ledger fold is the one counter (same source as `specweave task
-        // list` / verify.json / the closure gate). done and skipped are both
-        // terminal; everything else (open/claimed/blocked/stale) is work left.
-        const { total, done, skipped } = loadTaskBoard(dir).counts;
-        pendingTasks += Math.max(0, total - done - skipped);
-      } catch { /* unparseable tasks file — skip */ }
-    }
-    const { total, satisfied } = countAcs(path.join(dir, 'spec.md'));
-    pendingAcs += total - satisfied;
+    try {
+      // The ledger fold is the one counter (same source as `specweave task
+      // list`, verify.json and the closure gate), for tasks in spec.md or a
+      // legacy tasks.md. done and skipped are terminal; the rest is work left.
+      // ACs are met when their tasks are done, as `verify` derives them.
+      const board = hasTasksFile(dir) ? loadTaskBoard(dir) : undefined;
+      if (board) pendingTasks += Math.max(0, board.counts.total - board.counts.done - board.counts.skipped);
+      const acs = board ? deriveAcStatus(readSpecAcs(dir), board) : readSpecAcs(dir);
+      pendingAcs += acs.filter((a) => !a.done).length;
+    } catch { /* unparseable increment — skip */ }
   }
   return { pendingTasks, pendingAcs };
 }

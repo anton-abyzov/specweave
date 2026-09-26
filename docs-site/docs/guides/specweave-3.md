@@ -54,7 +54,7 @@ Increments created with 2.x, with a separate `tasks.md`, keep working unchanged.
 
 ### One instruction file
 
-`AGENTS.md` is the single instruction file, and it is about 700 tokens. `CLAUDE.md` imports it with `@AGENTS.md` and holds only what is specific to Claude Code. In 2.x, `init` wrote the same rules into both files, about 3,300 tokens together, and tools that read both read them twice.
+`AGENTS.md` is the single instruction file, and it is about 800 tokens. `CLAUDE.md` imports it with `@AGENTS.md` and holds only what is specific to Claude Code. In 2.x, `init` wrote the same rules into both files, about 3,300 tokens together, and tools that read both read them twice.
 
 ### Handoff and pickup
 

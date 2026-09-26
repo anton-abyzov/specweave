@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Lint the repo-root `skills/` folder — the vskill-distributable standalone
- * SpecWeave core (sw-increment, sw-do, sw-task, sw-review, sw-handoff).
+ * SpecWeave skills (the one source the plugin and project copies are generated from).
  *
  * These skills are installed into non-Claude tools, so they must stay portable:
  * no Claude-only tools or plugin command names, no PowerShell `>>` (it writes
@@ -43,7 +43,7 @@ const SHELL_WRITE_REDIRECT = /(?:^|[^0-9&>])>{1,2}\s*(?![&|])(?!\/dev\/null)["'$
 
 /** Ledger event keys, in the order `formatLedgerLine` writes them. */
 const LEDGER_KEY_ORDER = ['t', 'e', 'by', 'at', 'note', 'evidence'];
-const LEDGER_EVENTS = new Set(['claim', 'done', 'release', 'block', 'skip']);
+const LEDGER_EVENTS = new Set(['claim', 'done', 'release', 'block', 'skip', 'note']);
 
 function parseFrontmatter(content) {
   const m = content.match(/^---\n([\s\S]*?)\n---\n/);
@@ -177,7 +177,7 @@ export function lintSkill(dir) {
       add(`ledger example has unparseable timestamp "${obj.at}"`);
     }
     if (obj.e === 'done' && !obj.evidence) add('ledger `done` example has no evidence');
-    if ((obj.e === 'skip' || obj.e === 'block') && !obj.note) add(`ledger \`${obj.e}\` example has no note`);
+    if ((obj.e === 'skip' || obj.e === 'block' || obj.e === 'note') && !obj.note) add(`ledger \`${obj.e}\` example has no note`);
   }
 
   return errors;

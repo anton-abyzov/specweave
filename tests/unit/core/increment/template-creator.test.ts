@@ -56,15 +56,15 @@ describe('template-creator', () => {
       expect(result.success).toBe(true);
       expect(result.createdFiles).toContain('metadata.json');
       expect(result.createdFiles).toContain('spec.md');
-      expect(result.createdFiles).toContain('tasks.md');
-      // 2.0: plan.md is an optional overflow, not part of the default set.
-      expect(result.createdFiles).not.toContain('plan.md');
+      // 3.0: one file per increment. Tasks live in spec.md; plan.md is an
+      // optional overflow, not part of the default set.
+      expect(result.createdFiles).toEqual(['metadata.json', 'spec.md']);
 
       // Verify files exist
       const incrementPath = path.join(incrementsPath, '0001-test-feature');
       expect(fs.existsSync(path.join(incrementPath, 'metadata.json'))).toBe(true);
       expect(fs.existsSync(path.join(incrementPath, 'spec.md'))).toBe(true);
-      expect(fs.existsSync(path.join(incrementPath, 'tasks.md'))).toBe(true);
+      expect(fs.existsSync(path.join(incrementPath, 'tasks.md'))).toBe(false);
       expect(fs.existsSync(path.join(incrementPath, 'plan.md'))).toBe(false);
     });
 
@@ -101,7 +101,9 @@ describe('template-creator', () => {
       expect(content).toContain(TEMPLATE_MARKERS.CRITERION);
 
       // Must contain the template warning comment
-      expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS');
+      // 3.0: no instructional comment block or frontmatter to read and delete.
+      expect(content).not.toContain('<!--');
+      expect(content.startsWith('---')).toBe(false);
     });
 
     it('scaffolds the 2.0 spec.md shape (Problem/Scope/AC/Approach/Open questions)', async () => {
@@ -159,7 +161,7 @@ describe('template-creator', () => {
       expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA ARCHITECT SKILL');
     });
 
-    it('should create tasks.md as a TEMPLATE with markers', async () => {
+    it('keeps the task definitions in spec.md', async () => {
       await createIncrementTemplates({
         incrementId: '0001-test-feature',
         title: 'Test Feature',
@@ -168,34 +170,15 @@ describe('template-creator', () => {
         projectRoot: tempDir,
       });
 
-      const tasksPath = path.join(incrementsPath, '0001-test-feature', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
-
-      // CRITICAL: tasks.md must be the 2.0 skeleton with template placeholders
+      const content = fs.readFileSync(path.join(incrementsPath, '0001-test-feature', 'spec.md'), 'utf-8');
+      expect(content).toContain('## Tasks');
       expect(content).toContain('### T-01 [First task]');
-      expect(content).toContain('- AC: AC-01 | Files: src/[file].ts | Test:');
-
-      // Must contain the template warning comment
-      expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
+      expect(content).toContain('- AC: AC-01 | Files:');
+      // Tasks come last, so appending a task never lands inside another section.
+      expect(content.indexOf('## Tasks')).toBeGreaterThan(content.indexOf('## Open questions'));
     });
 
-    it('should include projectId in user stories', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-test-feature',
-        title: 'Test Feature',
-        description: 'A test feature description',
-        projectId: 'my-custom-project',
-        projectRoot: tempDir,
-      });
-
-      const specPath = path.join(incrementsPath, '0001-test-feature', 'spec.md');
-      const content = fs.readFileSync(specPath, 'utf-8');
-
-      // Project ID must be in user stories
-      expect(content).toContain('**Project**: my-custom-project');
-    });
-
-    it('should include boardId for 2-level structures', async () => {
+    it('records the board in metadata, not in spec.md', async () => {
       await createIncrementTemplates({
         incrementId: '0001-test-feature',
         title: 'Test Feature',
@@ -205,10 +188,10 @@ describe('template-creator', () => {
         projectRoot: tempDir,
       });
 
-      const specPath = path.join(incrementsPath, '0001-test-feature', 'spec.md');
-      const content = fs.readFileSync(specPath, 'utf-8');
-
-      expect(content).toContain('**Board**: frontend-team');
+      const incDir = path.join(incrementsPath, '0001-test-feature');
+      const metadata = JSON.parse(fs.readFileSync(path.join(incDir, 'metadata.json'), 'utf-8'));
+      expect(metadata.board).toBe('frontend-team');
+      expect(fs.readFileSync(path.join(incDir, 'spec.md'), 'utf-8')).not.toContain('**Board**');
     });
 
     it('should create valid metadata.json', async () => {
@@ -219,8 +202,6 @@ describe('template-creator', () => {
         projectId: 'test-project',
         type: 'hotfix',
         priority: 'P1',
-        testMode: 'TDD',
-        coverageTarget: 90,
         projectRoot: tempDir,
       });
 
@@ -231,8 +212,12 @@ describe('template-creator', () => {
       expect(metadata.status).toBe('active');
       expect(metadata.type).toBe('hotfix');
       expect(metadata.priority).toBe('P1');
-      expect(metadata.testMode).toBe('TDD');
-      expect(metadata.coverageTarget).toBe(90);
+      expect(metadata.title).toBe('Test Feature');
+      // 3.0: no TDD/coverage or empty sync fields in every increment.
+      expect(metadata).not.toHaveProperty('testMode');
+      expect(metadata).not.toHaveProperty('coverageTarget');
+      expect(metadata).not.toHaveProperty('externalLinks');
+      expect(metadata).not.toHaveProperty('feature_id');
     });
 
     it('writes a status MetadataManager.read() accepts (create → read → complete)', async () => {
@@ -254,8 +239,9 @@ describe('template-creator', () => {
       expect(Object.values(IncrementStatus)).toContain(metadata.status);
       expect(() => MetadataManager.validate(metadata)).not.toThrow();
 
+      // metadata.json is the only status store; spec.md has no frontmatter.
       const spec = fs.readFileSync(path.join(incrementsPath, '0001-round-trip', 'spec.md'), 'utf-8');
-      expect(spec).toContain(`status: ${metadata.status}`);
+      expect(spec).not.toContain('status:');
     });
 
     it('should provide next steps guidance', async () => {
@@ -267,12 +253,12 @@ describe('template-creator', () => {
         projectRoot: tempDir,
       });
 
-      // The 2.0 loop, in order: write the spec, write the tasks, work them, close.
-      expect(result.nextSteps).toHaveLength(4);
+      // The loop, in order: write the spec (with its tasks), work them, close.
+      expect(result.nextSteps).toHaveLength(3);
       expect(result.nextSteps[0]).toContain('spec.md');
-      expect(result.nextSteps[1]).toContain('tasks.md');
-      expect(result.nextSteps[2]).toContain('specweave task next');
-      expect(result.nextSteps[3]).toContain('specweave complete');
+      expect(result.nextSteps[0]).toContain('Tasks');
+      expect(result.nextSteps[1]).toContain('specweave task next');
+      expect(result.nextSteps[2]).toContain('specweave complete');
     });
 
     it('should fail if increment already exists', async () => {
@@ -296,87 +282,6 @@ describe('template-creator', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('DUPLICATE');
-    });
-
-    /**
-     * TDD is an EXECUTION practice, not a PLANNING practice.
-     * Planning ALWAYS generates standard templates.
-     * TDD discipline is enforced at execution time via sw:tdd-* commands.
-     */
-    it('should store TDD testMode in metadata but use standard tasks template', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-tdd-feature',
-        title: 'TDD Feature',
-        description: 'Testing TDD mode handling',
-        projectId: 'test-project',
-        testMode: 'TDD',
-        projectRoot: tempDir,
-      });
-
-      // metadata.json should store testMode for execution-time reference
-      const metadataPath = path.join(incrementsPath, '0001-tdd-feature', 'metadata.json');
-      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
-      expect(metadata.testMode).toBe('TDD');
-
-      // But tasks.md should ALWAYS use standard template
-      // TDD discipline is enforced at EXECUTION time, not planning time
-      const tasksPath = path.join(incrementsPath, '0001-tdd-feature', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
-
-      // Should NOT have TDD-specific sections (TDD is execution-time)
-      expect(content).not.toContain('## TDD Contract');
-      expect(content).not.toContain('TDD MODE ACTIVE');
-      expect(content).not.toContain('[RED]');
-      expect(content).not.toContain('[GREEN]');
-      expect(content).not.toContain('[REFACTOR]');
-
-      // Should have standard task builder template
-      expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
-    });
-
-    it('should use standard template regardless of testMode setting', async () => {
-      // Test with various testMode values - all should produce standard templates
-      const testModes = ['TDD', 'tdd', 'Tdd', 'test-after', 'test-first', undefined];
-
-      for (let i = 0; i < testModes.length; i++) {
-        const testMode = testModes[i];
-        const incrementId = `000${i + 1}-testmode-${testMode || 'undefined'}`;
-
-        await createIncrementTemplates({
-          incrementId,
-          title: `TestMode ${testMode}`,
-          description: 'Testing testMode handling',
-          projectId: 'test-project',
-          testMode: testMode as string,
-          projectRoot: tempDir,
-        });
-
-        const tasksPath = path.join(incrementsPath, incrementId, 'tasks.md');
-        const content = fs.readFileSync(tasksPath, 'utf-8');
-
-        // ALL testModes should produce standard template
-        expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
-        expect(content).not.toContain('## TDD Contract');
-        expect(content).not.toContain('TDD MODE ACTIVE');
-      }
-    });
-
-    it('should preserve testMode in metadata for execution-time use', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-preserve-mode',
-        title: 'Preserve Mode',
-        description: 'Testing testMode preservation',
-        projectId: 'test-project',
-        testMode: 'TDD',
-        projectRoot: tempDir,
-      });
-
-      const metadataPath = path.join(incrementsPath, '0001-preserve-mode', 'metadata.json');
-      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
-
-      // testMode should be preserved in metadata for execution commands
-      // (e.g., sw:do --tdd reads this to enforce TDD discipline)
-      expect(metadata.testMode).toBe('TDD');
     });
   });
 

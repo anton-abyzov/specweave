@@ -12,6 +12,8 @@
  * @module core/session/handoff-doc-format
  */
 
+import * as path from 'path';
+
 /** Footer marker (ownership sentinel + format version handle). */
 export const DOC_FORMAT_MARKER = 'Doc format v2';
 /** Prior marker — still recognized as "ours" so v1 docs are overwritten, not treated as foreign. */
@@ -31,6 +33,8 @@ export const HANDOFF_SECTION_ORDER: readonly string[] = [
 
 /** Per-tool native resume commands (pinned by cross-tool-commands.test.ts). */
 export interface ToolResumeEntry {
+  /** The tool name `detectTool` writes into ledger ids (`grok@mbp`). */
+  id: string;
   tool: string;
   findSession: string;
   resumeCmd: string;
@@ -42,6 +46,7 @@ export const CLAUDE_MUNGE_EXAMPLE =
 
 export const TOOL_RESUME_MATRIX: readonly ToolResumeEntry[] = [
   {
+    id: 'claude',
     tool: 'Claude Code',
     findSession:
       'ls ~/.claude/projects/<munged-cwd>/ (munge: every non-alphanumeric char → "-", runs NOT collapsed; e.g. ' +
@@ -49,29 +54,46 @@ export const TOOL_RESUME_MATRIX: readonly ToolResumeEntry[] = [
     resumeCmd: 'claude -r <uuid>',
   },
   {
+    id: 'codex',
     tool: 'Codex',
     findSession: 'ls ~/.codex/sessions/ (newest dir = most recent session)',
     resumeCmd: 'codex resume <uuid>   (or: codex resume --last)',
   },
   {
+    id: 'opencode',
     tool: 'OpenCode',
     findSession: 'opencode sessions list',
     resumeCmd: 'opencode -s <id>   (long form: opencode --session <id>)',
   },
   {
+    id: 'gemini',
     tool: 'Gemini CLI',
     findSession: 'run /chat list inside the Gemini session to see saved tags',
     resumeCmd: '/chat resume <tag>',
   },
   {
+    id: 'antigravity',
     tool: 'Antigravity',
     findSession: 'open the Antigravity Agent Manager and pick the prior task thread',
     resumeCmd: 'resume the thread from the Antigravity Agent Manager',
   },
   {
+    id: 'aider',
     tool: 'Aider',
     findSession: 'aider keeps .aider.chat.history.md in the repo root',
     resumeCmd: 'aider --restore-chat-history',
+  },
+  {
+    id: 'grok',
+    tool: 'Grok Build',
+    findSession: 'ls ~/.grok/sessions/<encoded-cwd>/ (or pick one on the grok welcome screen)',
+    resumeCmd: 'grok --resume <id>   (or: grok --resume for the latest here)',
+  },
+  {
+    id: 'muse',
+    tool: 'Muse Code',
+    findSession: 'run muse resume to pick from recent sessions',
+    resumeCmd: 'muse resume   (headless: muse exec --session-id <uuid>)',
   },
 ] as const;
 
@@ -122,6 +144,32 @@ export interface HandoffDocInput {
   increment?: HandoffIncrementInfo;
   git: HandoffGitInfo;
   redactionCounts: Record<string, number>;
+  /** What `--push` published, if it ran. */
+  push?: HandoffPushInfo;
+  /** Claims this handoff released so the next agent can take them. */
+  released?: string[];
+}
+
+export interface HandoffPushInfo {
+  /** Branch pushed to origin (empty when the push was not needed or failed). */
+  branch?: string;
+  /** `wip/<branch>`, set when the snapshot carries uncommitted edits. */
+  wipRef?: string;
+  /** The well-known ref `specweave pickup` fetches. */
+  handoffRef?: string;
+  /** The snapshot commit pushed to it. */
+  snapshot?: string;
+  /** Why nothing was pushed, when that was expected (no remote, no Git). */
+  skipped?: string;
+  /** Why a push step did not happen, in words. */
+  warnings: string[];
+}
+
+/** In-repo paths print relative to the repo; paths outside it stay absolute. */
+export function repoRelative(repoRoot: string, p: string): string {
+  const relative = path.relative(repoRoot, p);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) return p;
+  return relative.split(path.sep).join('/');
 }
 
 const MAX_TASK_ROWS = 25;
@@ -150,7 +198,8 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
     : 'not a git repo';
   L.push(`agent: ${input.agent} · ${input.generatedAt} · ${gitBit} · redactions: ${totalRedactions(input.redactionCounts)}`);
   const claims = (inc?.tasks ?? []).filter((t) => t.status === 'claimed' || t.status === 'blocked' || t.status === 'stale');
-  L.push(`active claims: ${claims.length ? claims.map((t) => `${t.id} (${t.status} by ${t.by})`).join(', ') : 'none'}`);
+  L.push(`active claims: ${claims.length ? claims.map((t) => `${t.id} (${t.status} by ${t.by})`).join(', ') : 'none'}${input.released?.length ? ` · released: ${input.released.join(', ')}` : ''}`);
+  if (input.push?.warnings.length) L.push(`push: ${input.push.warnings.join('; ')}`);
   L.push('');
 
   // ── Where I left off ──────────────────────────────────────────────────
@@ -198,7 +247,8 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
     L.push('```');
     L.push(input.git.statusPorcelain || '(no porcelain output)');
     L.push('```');
-    L.push(`Full diff: \`${input.diffPath}\``);
+    L.push(`Full diff: \`${repoRelative(input.repoRoot, input.diffPath)}\``);
+    if (input.push?.wipRef) L.push(`Also pushed to \`${input.push.wipRef}\`; \`specweave pickup\` applies it.`);
   } else if (input.git.isGitRepo) {
     L.push('Working tree clean.');
   } else {
@@ -221,9 +271,11 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
 
   // ── Resume ────────────────────────────────────────────────────────────
   L.push('## Resume');
-  L.push(`1. Read this file; if the path does not exist on your machine, ask for it to be pasted.`);
-  L.push(`2. \`specweave task next${inc ? ` ${inc.id}` : ''}\` → claim → implement → \`task done --run\`.`);
-  L.push(`3. Original transcript (optional): ${TOOL_RESUME_MATRIX.slice(0, 3).map((e) => `${e.tool}: \`${e.resumeCmd.split('   ')[0]}\``).join(' · ')}.`);
+  L.push('1. `specweave pickup` prints the next task with its acceptance criteria, claims and branch state.');
+  L.push(`2. \`specweave task claim <T-id>${inc ? ` ${inc.id}` : ''}\` → implement → \`specweave task done <T-id> --run "<test>"\`.`);
+  const own = TOOL_RESUME_MATRIX.find((e) => e.id === input.agent.split('@')[0]);
+  const transcripts = own ? [own] : TOOL_RESUME_MATRIX.slice(0, 3);
+  L.push(`3. Original transcript (optional): ${transcripts.map((e) => `${e.tool}: \`${e.resumeCmd.split('   ')[0]}\``).join(' · ')}.`);
   L.push('');
   L.push('---');
   L.push(`<!-- ${DOC_FORMAT_MARKER} -->`);
@@ -247,13 +299,16 @@ export function renderPastePrompt(input: HandoffDocInput, opts: { inline?: boole
     P.push(INLINE_BEGIN_MARKER);
     P.push(renderHandoffDoc(input));
     P.push(INLINE_END_MARKER);
+  } else if (input.push?.handoffRef) {
+    // Pushed: the other side needs two words, not a prompt.
+    P.push('Pick up my handed-off work: run `specweave pickup` and continue with the task it names.');
   } else {
-    P.push(`Resume my work. Read the handoff doc at: ${input.docPath}`);
-    P.push('If that path does NOT exist on this machine, STOP and ask me to paste the handoff — do not improvise context.');
-    P.push(`The exact uncommitted edits are in: ${input.diffPath}`);
-    if (input.increment) {
-      P.push(`Active increment: ${input.increment.id}. Run \`specweave task next ${input.increment.id}\` and claim before editing.`);
-    }
+    // Repo-relative paths: the next tool may run in another checkout, where
+    // an absolute path means nothing.
+    const doc = repoRelative(input.repoRoot, input.docPath);
+    P.push('Pick up my handed-off work: run `specweave pickup` and continue with the task it names.');
+    P.push(`The handoff doc is ${doc}. If it is not in your checkout, STOP and ask me to paste it; do not improvise context.`);
+    if (input.git.hasUncommittedChanges) P.push(`The uncommitted edits are in ${repoRelative(input.repoRoot, input.diffPath)}.`);
   }
   return P.join('\n');
 }
