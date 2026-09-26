@@ -876,6 +876,34 @@ describe('update command', () => {
     });
   });
 
+  describe('folders outside the project', () => {
+    it('never removes ~/.specweave or a .specweave/ above the project', async () => {
+      const home = path.join(tempDir, 'home');
+      const project = path.join(home, 'Projects', 'github', 'app');
+      const userLevel = path.join(home, '.specweave');
+      const parent = path.join(home, 'Projects', '.specweave');
+      for (const dir of [path.join(userLevel, 'logs'), path.join(userLevel, 'state'), path.join(parent, 'logs'), path.join(project, '.specweave')]) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(path.join(userLevel, 'plugins.lock'), '{}');
+      fs.writeFileSync(path.join(userLevel, 'auto-handoff.json'), '{"at":90}');
+      fs.writeFileSync(path.join(project, '.specweave', 'config.json'), '{}');
+      const originalHome = process.env.HOME;
+      process.env.HOME = home;
+      process.chdir(project);
+      try {
+        await updateCommand({ noSelf: true, noPlugins: true });
+      } finally {
+        process.env.HOME = originalHome;
+      }
+
+      expect(fs.readFileSync(path.join(userLevel, 'auto-handoff.json'), 'utf-8')).toBe('{"at":90}');
+      expect(fs.existsSync(path.join(userLevel, 'plugins.lock'))).toBe(true);
+      expect(fs.existsSync(path.join(parent, 'logs'))).toBe(true);
+      expect(consoleLogs.join('\n')).not.toMatch(/stale \.specweave/i);
+    });
+  });
+
   // ==========================================================================
   // validateProjectHealth (tested via updateCommand)
   // ==========================================================================

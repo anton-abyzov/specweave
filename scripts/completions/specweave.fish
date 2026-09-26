@@ -226,6 +226,7 @@ complete -c specweave -n "__fish_seen_subcommand_from update" -l no-plugins -d "
 complete -c specweave -n "__fish_seen_subcommand_from update" -l all -d "Install ALL plugins (not just router)"
 complete -c specweave -n "__fish_seen_subcommand_from update" -l minimal -d "Clean /plugin output (removes marketplace, no lazy loading)"
 complete -c specweave -n "__fish_seen_subcommand_from update" -l check -d "Dry run - show what would change without making changes"
+complete -c specweave -n "__fish_seen_subcommand_from update" -l dry-run -d "Same as --check"
 complete -c specweave -n "__fish_seen_subcommand_from update" -l verbose -s v -d "Show detailed output"
 complete -c specweave -n "__fish_seen_subcommand_from update" -l force -s f -d "Force refresh even if up to date"
 

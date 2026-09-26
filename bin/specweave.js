@@ -495,10 +495,12 @@ program
   .option('--all', 'Install ALL plugins (not just router)')
   .option('--minimal', 'Clean /plugin output (removes marketplace, no lazy loading)')
   .option('--check', 'Dry run - show what would change without making changes')
+  .option('--dry-run', 'Same as --check')
   .option('-v, --verbose', 'Show detailed output')
   .option('-f, --force', 'Force refresh even if up to date')
   .action(async (options) => {
     const { updateCommand } = await import('../dist/src/cli/commands/update.js');
+    if (options.dryRun) options.check = true;
     await updateCommand(options);
   });
 
