@@ -1,7 +1,7 @@
 {
   "name": "sw",
   "description": "Portable intent and verified progress across coding tools. Eleven focused workflow skills, two default lifecycle hooks, and a deterministic CLI and live local dashboard.",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
