@@ -196,6 +196,7 @@ _specweave() {
                     ;;
                 usage-guard)
                     _arguments \
+                        '--limit-hit[StopFailure hook (Grok Build)\: hand off now, the turn hit the rate limit]' \
                         '--help[Show help]'
                     ;;
                 jev)

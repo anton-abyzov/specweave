@@ -145,6 +145,9 @@ complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Th
 # statusline
 complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
 
+# usage-guard
+complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook (Grok Build): hand off now, the turn hit the rate limit"
+
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l provider -d "setup: openrouter | typesafe"

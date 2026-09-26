@@ -85,7 +85,7 @@ _specweave_completions() {
             return 0
             ;;
         usage-guard)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--limit-hit --help" -- "${cur}") )
             return 0
             ;;
         jev)

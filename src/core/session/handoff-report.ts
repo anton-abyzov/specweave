@@ -68,7 +68,7 @@ export function buildHandoffReport(incDir: string, incrementId: string, now = ne
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Handoff report: ${esc(title)}</title>
 <style>
-:root{--bg:#fbfaf7;--fg:#1c1b19;--mut:#6b6760;--line:#e4e0d8;--card:#fff;--acc:#2f6f5e;--hand:#fff6e0;--claude:#b8612f;--codex:#2f5f9e;--grok:#6a4bb0;--other:#555}
+:root{--bg:#fbfaf7;--fg:#1c1b19;--mut:#6b6760;--line:#e4e0d8;--card:#fff;--acc:#2f6f5e;--hand:#fff6e0;--claude:#b8612f;--codex:#2f5f9e;--grok:#6a4bb0;--muse:#0f7c86;--gemini:#9a6a00;--other:#555}
 @media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ece9e2;--mut:#a29d93;--line:#2e2c28;--card:#1e1d1a;--acc:#6fc2a8;--hand:#3a3120}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
 main{max-width:1000px;margin:0 auto;padding:32px 16px}h1{font-size:26px;margin:0 0 4px}h2{font-size:17px;margin:32px 0 10px}
@@ -79,7 +79,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
 th{color:var(--mut);font-weight:600}tr:last-child td{border-bottom:0}tr.hand td{background:var(--hand)}
 td.t{white-space:nowrap;color:var(--mut)}td.d{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;max-width:420px}
 .who{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:1px 6px;border-radius:6px;border:1px solid currentColor;white-space:nowrap}
-.claude{color:var(--claude)}.codex{color:var(--codex)}.grok{color:var(--grok)}.other{color:var(--other)}
+.claude{color:var(--claude)}.codex{color:var(--codex)}.grok{color:var(--grok)}.muse{color:var(--muse)}.gemini{color:var(--gemini)}.other{color:var(--other)}
 .st{font-size:12.5px;padding:1px 6px;border-radius:6px;background:var(--line)}.st.done{background:var(--acc);color:var(--bg)}
 ul.acs{padding-left:18px}ul.acs li.met{color:var(--acc)}ul.acs li.met::marker{content:"✓ "}footer{color:var(--mut);font-size:13px;margin-top:32px}
 </style>
@@ -144,7 +144,7 @@ function label(e: LedgerEvent): string {
 
 function toolClass(agent: string): string {
   const tool = agent.split('@')[0];
-  return ['claude', 'codex', 'grok'].includes(tool) ? tool : 'other';
+  return ['claude', 'codex', 'grok', 'muse', 'gemini'].includes(tool) ? tool : 'other';
 }
 
 function fmt(iso: string): string {
