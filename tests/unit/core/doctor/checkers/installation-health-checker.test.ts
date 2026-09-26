@@ -11,6 +11,8 @@ import * as os from 'os';
 
 const mockExecSync = vi.hoisted(() => vi.fn());
 const mockReadGlobalLockfile = vi.hoisted(() => vi.fn().mockReturnValue(null));
+const mockEnsureGlobalLockfile = vi.hoisted(() => vi.fn());
+const mockWriteGlobalLockfile = vi.hoisted(() => vi.fn());
 vi.mock('child_process', async (importOriginal) => {
   const actual = await importOriginal<typeof import('child_process')>();
   return {
@@ -23,6 +25,8 @@ vi.mock('../../../../../src/utils/plugin-copier.js', async (importOriginal) => {
   return {
     ...actual,
     readGlobalLockfile: mockReadGlobalLockfile,
+    ensureGlobalLockfile: mockEnsureGlobalLockfile,
+    writeGlobalLockfile: mockWriteGlobalLockfile,
   };
 });
 import { InstallationHealthChecker } from '../../../../../src/core/doctor/checkers/installation-health-checker.js';
@@ -51,6 +55,10 @@ describe('InstallationHealthChecker', () => {
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.mkdirSync(projectRoot, { recursive: true });
     mockExecSync.mockReset();
+    mockWriteGlobalLockfile.mockReset();
+    mockEnsureGlobalLockfile.mockReset().mockImplementation(() => ({
+      version: 1, agents: ['claude-code'], skills: {}, createdAt: '', updatedAt: '',
+    }));
   });
 
   afterEach(() => {
@@ -361,7 +369,7 @@ describe('InstallationHealthChecker', () => {
       expect(lockCheck!.fixSuggestion).toContain('doctor --fix');
     });
 
-    it('TC-LF-01: fix=true with hash mismatches updates lockfile hashes directly', async () => {
+    it('TC-LF-01: fix=true corrects hashes in the global lock and leaves vskill.lock byte-for-byte', async () => {
       const pluginDir = path.join(cacheDir, 'specweave', 'sw');
       fs.mkdirSync(path.join(pluginDir, 'do'), { recursive: true });
       fs.writeFileSync(path.join(pluginDir, 'do', 'SKILL.md'), '# Do skill');
@@ -382,7 +390,14 @@ describe('InstallationHealthChecker', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      fs.writeFileSync(lockPath, JSON.stringify(lockfile, null, 2));
+      // vskill writes more agents and user entries than SpecWeave knows about.
+      lockfile.agents = ['claude-code', 'codex', 'cursor', 'gemini-cli'];
+      (lockfile.skills as Record<string, unknown>).frontend = {
+        version: '1.0.0', sha: 'a'.repeat(64), tier: 'VERIFIED',
+        installedAt: new Date().toISOString(), source: 'github:anton-abyzov/vskill',
+      };
+      const original = JSON.stringify(lockfile, null, 2);
+      fs.writeFileSync(lockPath, original);
 
       const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { fix: true, quick: true });
@@ -392,8 +407,11 @@ describe('InstallationHealthChecker', () => {
       expect(lockCheck?.status).toBe('pass');
       expect(lockCheck?.message).toContain('corrected');
 
-      const updated = JSON.parse(fs.readFileSync(lockPath, 'utf-8'));
-      expect(updated.skills.sw.sha).not.toBe('wrong_hash_123');
+      expect(fs.readFileSync(lockPath, 'utf-8')).toBe(original);
+      expect(mockWriteGlobalLockfile).toHaveBeenCalledTimes(1);
+      const written = mockWriteGlobalLockfile.mock.calls[0][0];
+      expect(written.skills.sw.sha).not.toBe('wrong_hash_123');
+      expect(written.skills.frontend).toBeUndefined();
     });
 
     it('TC-LF-02: fix=true with missing skills runs refresh-plugins and returns warn', async () => {
@@ -722,12 +740,12 @@ describe('InstallationHealthChecker', () => {
   // Full check() method
   // =========================================================================
   describe('check() integration', () => {
-    it('TC-016: should return all 7 check categories', async () => {
+    it('TC-016: should return all 6 check categories', async () => {
       const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
 
       expect(result.category).toBe('Installation Health');
-      expect(result.checks.length).toBe(7);
+      expect(result.checks.length).toBe(6);
 
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).toContain('Legacy commands directories');
@@ -735,15 +753,15 @@ describe('InstallationHealthChecker', () => {
       expect(checkNames).toContain('Lockfile integrity');
       expect(checkNames).toContain('Plugin cache hook freshness');
       expect(checkNames).toContain('Legacy lockfiles');
-      expect(checkNames).toContain('Orphaned child lockfiles');
+      expect(checkNames).not.toContain('Orphaned child lockfiles');
       expect(checkNames).toContain('Update health');
     });
 
-    it('TC-016c: should return 6 checks when quick=true (skips update health)', async () => {
+    it('TC-016c: should return 5 checks when quick=true (skips update health)', async () => {
       const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
 
-      expect(result.checks.length).toBe(6);
+      expect(result.checks.length).toBe(5);
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).not.toContain('Update health');
     });
@@ -800,6 +818,41 @@ describe('InstallationHealthChecker', () => {
       expect(check!.status).toBe('warn');
       expect(check!.message).toContain('outdated');
       expect(check!.fixSuggestion).toContain('specweave update');
+    });
+
+    it('TC-UH-02b: passes when the running CLI is newer than the registry answer', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === `npm view specweave version ${npmRegistryFlag()}`) return '3.0.1';
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('3.0.2');
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check!.status).toBe('pass');
+      expect(check!.message).not.toContain('outdated');
+    });
+
+    it('TC-UH-02c: re-asks npm when the cached latest is older than the running CLI', async () => {
+      const stateDir = path.join(projectRoot, '.specweave', 'state');
+      fs.mkdirSync(stateDir, { recursive: true });
+      fs.writeFileSync(path.join(stateDir, 'npm-version-check.json'), JSON.stringify({ version: '3.0.1', checkedAt: Date.now() }));
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === `npm view specweave version ${npmRegistryFlag()}`) return '3.0.3';
+        if (cmd === `npm view specweave@3.0.3 version ${npmRegistryFlag()}`) return '3.0.3';
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
+      vi.spyOn(checker, 'runningCliVersion').mockReturnValue('3.0.2');
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check!.message).toBe('outdated: v3.0.2 (latest: v3.0.3)');
     });
 
     it('TC-UH-03: should fail when CDN propagation issue detected', async () => {
@@ -965,12 +1018,12 @@ describe('InstallationHealthChecker', () => {
       expect(legacyCheck).toBeDefined();
       expect(legacyCheck!.status).toBe('warn');
 
-      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
-      expect(orphanCheck).toBeDefined();
-      expect(orphanCheck!.status).toBe('warn');
+      // A child repo's vskill.lock is that repo's own file, never "orphaned".
+      expect(result.checks.find(c => c.name === 'Orphaned child lockfiles')).toBeUndefined();
+      expect(fs.existsSync(childLock)).toBe(true);
     });
 
-    it('T-013: fix mode removes files and reports removed count', async () => {
+    it('T-013: fix mode removes legacy lockfiles and keeps child vskill.lock files', async () => {
       // Create legacy lockfile
       const legacyLock = path.join(projectRoot, 'skills-lock.json');
       fs.writeFileSync(legacyLock, '{}');
@@ -997,13 +1050,8 @@ describe('InstallationHealthChecker', () => {
       expect(legacyCheck).toBeDefined();
       expect(legacyCheck!.status).toBe('pass');
 
-      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
-      expect(orphanCheck).toBeDefined();
-      expect(orphanCheck!.status).toBe('pass');
-
-      // Files should be deleted
       expect(fs.existsSync(legacyLock)).toBe(false);
-      expect(fs.existsSync(childLock)).toBe(false);
+      expect(fs.readFileSync(childLock, 'utf-8')).toBe('{}');
     });
 
     it('T-014: pass status when no stale lockfiles exist', async () => {
@@ -1014,19 +1062,14 @@ describe('InstallationHealthChecker', () => {
       const legacyCheck = result.checks.find(c => c.name === 'Legacy lockfiles');
       expect(legacyCheck).toBeDefined();
       expect(legacyCheck!.status).toBe('pass');
-
-      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
-      expect(orphanCheck).toBeDefined();
-      expect(orphanCheck!.status).toBe('pass');
     });
 
-    it('T-015: check() returns entries named "Legacy lockfiles" and "Orphaned child lockfiles"', async () => {
+    it('T-015: check() returns an entry named "Legacy lockfiles"', async () => {
       const checker = new InstallationHealthChecker({ packageRoot: pkgRoot, commandsDir, cacheDir });
       const result = await checker.check(projectRoot, { quick: true });
 
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).toContain('Legacy lockfiles');
-      expect(checkNames).toContain('Orphaned child lockfiles');
     });
 
     // 0879: `specweave update` passes process.cwd(); outside a project that tree
@@ -1045,11 +1088,6 @@ describe('InstallationHealthChecker', () => {
       expect(legacyCheck).toBeDefined();
       expect(legacyCheck!.status).toBe('pass');
       expect(legacyCheck!.message).toContain('scan skipped');
-
-      const orphanCheck = result.checks.find(c => c.name === 'Orphaned child lockfiles');
-      expect(orphanCheck).toBeDefined();
-      expect(orphanCheck!.status).toBe('pass');
-      expect(orphanCheck!.message).toContain('scan skipped');
 
       // Nothing was deleted: the scan never ran.
       expect(fs.existsSync(legacyLock)).toBe(true);

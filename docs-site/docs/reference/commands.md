@@ -58,7 +58,7 @@ Status changes never call GitHub, Jira or Azure DevOps. See [increment status re
 | `task list` | Every task with status, owner and evidence. `--json` for scripts. |
 | `task next` | The first open task whose dependencies are done and whose files no one else holds. Prints the task with the text of its acceptance criteria. |
 | `task claim T-01` | Claim a task. Exit 3 means someone else holds it, 4 means a file overlap with a live claim, 6 means unmet dependencies. `--force` overrides. |
-| `task done T-01 --run "<cmd>"` | Run the task's test, store the exit code and output tail as evidence, and mark it done. Exit 5 when the command fails. The full output goes to `reports/task-T-01.log`. `--evidence "<text>"` if you already have proof. |
+| `task done T-01 --run "<cmd>"` | Run the task's test, store the exit code and output tail as evidence, and mark it done. Exit 5 when the command fails. The full output goes to `reports/task-T-01.txt`. `--evidence "<text>"` if you already have proof. |
 | `task release T-01` | Give a claim back. `--all-mine` releases every claim you hold. |
 | `task block T-01 --reason "<why>"` | Mark a task blocked. |
 | `task skip T-01 --reason "<why>"` | Mark a task as not needed. Final; the reason is required. |
