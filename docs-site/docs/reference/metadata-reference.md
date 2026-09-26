@@ -19,7 +19,7 @@ An increment is a folder, `.specweave/increments/NNNN-slug/`. You write `spec.md
 | `rubric.md` | `specweave generate-rubric` | Optional quality contract tied to the acceptance criteria. |
 | `handoff.md`, `handoff.diff` | `specweave handoff` | The last handoff and the uncommitted diff at that moment. |
 | `reports/verify.md`, `reports/verify.json` | `specweave verify` | Test, lint and build results. `complete` checks `verify.json`. |
-| `reports/task-T-01.log` | `task done --run` | Full output of the task's test command. |
+| `reports/task-T-01.txt` | `task done --run` | Full output of the task's test command. |
 | `reports/handoff-report.html` | `specweave report`, `handoff`, `pickup` | HTML timeline of who did what: tools, sessions, handoffs, pickups and evidence. |
 | `tasks.md` | 2.x only | Task definitions in increments created before 3.0. Still read. |
 

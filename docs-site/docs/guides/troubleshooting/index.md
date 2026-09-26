@@ -126,7 +126,7 @@ specweave task done T-02 --run "npm test -- draft"
 specweave task done T-02 --evidence "a1b2c3d, 14 tests passed"
 ```
 
-With `--run`, a non-zero exit means the task is **not** done; the full output is in `reports/task-T-02.log` inside the increment.
+With `--run`, a non-zero exit means the task is **not** done; the full output is in `reports/task-T-02.txt` inside the increment.
 
 ### Merge conflict in `ledger.jsonl`
 

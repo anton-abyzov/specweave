@@ -212,12 +212,12 @@ describe('fold hardening (BOM, CRLF, blank, junk)', () => {
 });
 
 describe('task done --run', () => {
-  it('captures the full output in reports/task-T-NN.log and a 50-line tail in evidence', async () => {
+  it('captures the full output in reports/task-T-NN.txt and a 50-line tail in evidence', async () => {
     const { root, incDir } = mkProject();
     const cmd = 'node -e "for (let i=1;i<=120;i++) console.log(\'line\'+i)"';
     expect(await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', run: cmd })).toBe(0);
 
-    const log = fs.readFileSync(path.join(incDir, 'reports', 'task-T-01.log'), 'utf-8');
+    const log = fs.readFileSync(path.join(incDir, 'reports', 'task-T-01.txt'), 'utf-8');
     expect(log).toContain('line1\n');
     expect(log).toContain('line120');
     expect(log).toContain('# exit 0');
@@ -225,7 +225,7 @@ describe('task done --run', () => {
     const evidence = loadTaskBoard(incDir).tasks[0].state.evidence!;
     expect(evidence).toContain('→ exit 0');
     // The ledger cites the log so a teammate can open the full output.
-    expect(evidence).toContain('reports/task-T-01.log');
+    expect(evidence).toContain('reports/task-T-01.txt');
     expect(evidence).toContain('line120');
     expect(evidence).not.toContain('line70'); // only the last 50 lines
   });
@@ -235,7 +235,7 @@ describe('task done --run', () => {
     const code = await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', run: 'node -e "console.log(\'boom\');process.exit(3)"' });
     expect(code).toBe(5);
     expect(loadTaskBoard(incDir).tasks[0].state.status).toBe('open');
-    expect(fs.readFileSync(path.join(incDir, 'reports', 'task-T-01.log'), 'utf-8')).toContain('boom');
+    expect(fs.readFileSync(path.join(incDir, 'reports', 'task-T-01.txt'), 'utf-8')).toContain('boom');
   });
 
   it('tailLines keeps the last n lines and drops trailing blanks', () => {

@@ -236,18 +236,12 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   if (isClaude) {
     // Step 0.5: Clean stale lockfiles
     try {
-      const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import('../../utils/cleanup-stale-plugins.js');
+      const { cleanupLegacyLockfiles } = await import('../../utils/cleanup-stale-plugins.js');
 
       const legacyResult = cleanupLegacyLockfiles(projectRoot, { verbose: options.verbose });
-      const orphanResult = cleanupOrphanedChildLocks(projectRoot, { verbose: options.verbose });
 
-      if (options.verbose) {
-        if (legacyResult.removedCount > 0) {
-          legacyResult.removedPaths.forEach(p => console.log(`  Removed legacy lockfile: ${p}`));
-        }
-        if (orphanResult.removedCount > 0) {
-          orphanResult.removedPaths.forEach(p => console.log(`  Removed orphaned lockfile: ${p}`));
-        }
+      if (options.verbose && legacyResult.removedCount > 0) {
+        legacyResult.removedPaths.forEach(p => console.log(`  Removed legacy lockfile: ${p}`));
       }
     } catch (err) {
       logger.debug(`Step 0.5: lockfile cleanup failed: ${err}`);

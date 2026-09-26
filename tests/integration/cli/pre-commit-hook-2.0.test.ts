@@ -112,7 +112,7 @@ describe('installed pre-commit hook (2.0)', () => {
       'metadata.json': '{}\n',
       'spec.md': '# S\n',
       'tasks.md': '# T\n',
-      'reports/task-T-01.log': 'ok\n',
+      'reports/task-T-01.txt': 'ok\n',
       'reports/verify.json': '{}\n',
       'logs/run.log': 'ok\n',
     });

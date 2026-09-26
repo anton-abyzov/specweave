@@ -277,11 +277,15 @@ function refusal(task: BoardTask, taskId: string, leaseHours: number): string {
   return `refused: ${taskId} is claimed by ${task.state.by} since ${task.state.since}; run \`specweave task release ${taskId}\` as that agent, wait for the ${leaseHours}h lease to expire, or pass --force`;
 }
 
-/** Store the full command output next to the increment's other evidence. */
+/**
+ * Store the full command output next to the increment's other evidence.
+ * `.txt`, not `.log`: the ledger cites this file so it must be committable,
+ * and most .gitignore files ignore `*.log`.
+ */
 function writeRunLog(incrementDir: string, taskId: string, cmd: string, code: number, output: string): string {
   const dir = path.join(incrementDir, 'reports');
   fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `task-${taskId}.log`);
+  const file = path.join(dir, `task-${taskId}.txt`);
   fs.writeFileSync(file, `$ ${cmd}\n# exit ${code} — ${new Date().toISOString()}\n\n${output}`, 'utf-8');
   return file;
 }

@@ -33,7 +33,7 @@ specweave complete 0042 --reason "moved to 0045"
 
 ## Per-task evidence
 
-A task is not done until its test ran and passed. `specweave task done T-02 --run "npm test -- restore"` runs the command, refuses to mark the task done on a non-zero exit, and stores the output tail and the commit sha as evidence. The full output goes to `reports/task-T-02.log`.
+A task is not done until its test ran and passed. `specweave task done T-02 --run "npm test -- restore"` runs the command, refuses to mark the task done on a non-zero exit, and stores the output tail and the commit sha as evidence. The full output goes to `reports/task-T-02.txt`.
 
 ## Optional checks
 

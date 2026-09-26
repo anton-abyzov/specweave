@@ -429,9 +429,6 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '# Binary evidence and agent worktrees (never committed)',
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
-    '# `task done --run` writes its evidence to reports/task-<id>.log and the',
-    '# ledger cites it, so that log is committed; every other *.log stays ignored.',
-    '!.specweave/increments/**/reports/task-T-*.log',
     '# Binary evidence in reports/ (videos, screenshots, app bundles)',
     '**/reports/*.mp4',
     '**/reports/*.png',
@@ -821,9 +818,15 @@ export async function generateSmartGitignore(
   return { detection, result };
 }
 
-/** Lines an earlier `specweave update` wrote that it now removes again. */
+/**
+ * Lines an earlier `specweave update` wrote that it now removes again. Both
+ * negations un-ignored old logs by the hundred; task evidence is `.txt` now.
+ */
 const DROPPED_SPECWEAVE_LINES = new Set([
   '!.specweave/increments/**/reports/*.log',
+  '!.specweave/increments/**/reports/task-T-*.log',
+  '# `task done --run` writes its evidence to reports/task-<id>.log and the',
+  '# ledger cites it, so that log is committed; every other *.log stays ignored.',
   '# reports/ holds COMMITTED evidence: the generic `*.log` rule above would',
   '# swallow the task evidence log a ledger `done` event cites, so a teammate',
   '# cloning the repo could not read it. Only reports/artifacts/ is ignored.',
@@ -843,8 +846,8 @@ export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: str
   const wanted = GITIGNORE_ENTRIES.specweave;
   let existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
 
-  // 3.0.0 and 3.0.1 appended a negation that un-ignored every log under
-  // reports/ (hundreds in a long-lived project). Swap it for the task-log one.
+  // 3.0.0 to 3.0.2 appended negations that un-ignored old logs under
+  // reports/ (hundreds in a long-lived project). Take them back out.
   const withoutNegation = existing
     .split('\n')
     .filter((line) => !DROPPED_SPECWEAVE_LINES.has(line.trim()))

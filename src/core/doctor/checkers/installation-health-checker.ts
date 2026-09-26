@@ -27,9 +27,10 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
-import { computePluginHash, readGlobalLockfile } from '../../../utils/plugin-copier.js';
+import { computePluginHash, ensureGlobalLockfile, readGlobalLockfile, writeGlobalLockfile } from '../../../utils/plugin-copier.js';
 import { findProjectRoot } from '../../../utils/find-project-root.js';
 import { npmRegistryFlag } from '../../../utils/npm-constants.js';
+import { compareSemverDesc } from '../../../utils/semver-sort.js';
 
 /**
  * The 2.0 plugin hook assets copied into Claude Code's plugin cache.
@@ -313,15 +314,7 @@ export class InstallationHealthChecker implements HealthChecker {
     type Entry = { sha: string; version: string; source: string; tier?: string };
     const mergedSkills: Record<string, Entry> = {};
 
-    // Read global lock first (bundled plugins)
-    try {
-      const globalLock = readGlobalLockfile();
-      if (globalLock?.skills) {
-        Object.assign(mergedSkills, globalLock.skills);
-      }
-    } catch { /* non-fatal */ }
-
-    // Read project lock (third-party skills, may override)
+    // Read project lock (third-party skills; only ever read, never written)
     const lockPath = join(projectRoot, 'vskill.lock');
     if (existsSync(lockPath)) {
       try {
@@ -338,6 +331,15 @@ export class InstallationHealthChecker implements HealthChecker {
         };
       }
     }
+
+    // Global lock last: it is the home of bundled entries and the one --fix
+    // corrects, so it wins over a stale bundled entry left in vskill.lock.
+    try {
+      const globalLock = readGlobalLockfile();
+      if (globalLock?.skills) {
+        Object.assign(mergedSkills, globalLock.skills);
+      }
+    } catch { /* non-fatal */ }
 
     if (Object.keys(mergedSkills).length === 0) {
       return {
@@ -436,24 +438,23 @@ export class InstallationHealthChecker implements HealthChecker {
 
     if (mismatches.length > 0) {
       if (fix) {
-        // Update lockfile hashes to match currently installed files
+        // Correct the hashes in the global lock, where bundled entries live. The
+        // project vskill.lock is vskill's (often committed) file: 3.0.2 and
+        // earlier overwrote it with this merged view, dropping version,
+        // agents and createdAt.
         try {
-          const updatedSkills: typeof lockfile.skills = {};
+          const globalLock = ensureGlobalLockfile();
           for (const [name, entry] of Object.entries(lockfile.skills)) {
+            if (foreign.has(name) || FOREIGN_DIGEST_RE.test(entry.sha ?? '')) continue;
             const dir = this.bundledPluginSourceDir(name)
               ?? this.skillSearchPaths(projectRoot, name).find(p => existsSync(p))
               ?? null;
-            if (dir && !foreign.has(name) && !FOREIGN_DIGEST_RE.test(entry.sha ?? '')) {
-              try {
-                updatedSkills[name] = { ...entry, sha: computePluginHash(dir) };
-              } catch {
-                updatedSkills[name] = entry;
-              }
-            } else {
-              updatedSkills[name] = entry;
-            }
+            if (!dir) continue;
+            try {
+              globalLock.skills[name] = { ...(globalLock.skills[name] ?? entry), sha: computePluginHash(dir) };
+            } catch { /* keep the entry as it is */ }
           }
-          writeFileSync(lockPath, JSON.stringify({ ...lockfile, skills: updatedSkills }, null, 2) + '\n', 'utf-8');
+          writeGlobalLockfile(globalLock);
           return {
             name: 'Lockfile integrity',
             status: 'pass',
@@ -633,7 +634,9 @@ export class InstallationHealthChecker implements HealthChecker {
   /**
    * Detect (and optionally remove) stale lockfiles:
    *   - Legacy `skills-lock.json` files (dead format)
-   *   - Orphaned child-repo `vskill.lock` files in umbrella projects
+   *
+   * A child repo's `vskill.lock` in an umbrella is that repo's own committed
+   * file, so it is never reported or removed (3.0.2 and earlier deleted it).
    *
    * @since 1.0.541
    */
@@ -647,20 +650,16 @@ export class InstallationHealthChecker implements HealthChecker {
       const message = 'not inside a SpecWeave project - scan skipped';
       return [
         { name: 'Legacy lockfiles', status: 'pass', message },
-        { name: 'Orphaned child lockfiles', status: 'pass', message },
       ];
     }
 
-    const { cleanupLegacyLockfiles, cleanupOrphanedChildLocks } = await import(
+    const { cleanupLegacyLockfiles } = await import(
       '../../../utils/cleanup-stale-plugins.js'
     );
 
     const threshold = fix ? 0 : 5000;
 
     const legacyResult = cleanupLegacyLockfiles(projectRoot, {
-      mtimeThresholdMs: threshold,
-    });
-    const orphanResult = cleanupOrphanedChildLocks(projectRoot, {
       mtimeThresholdMs: threshold,
     });
 
@@ -689,34 +688,6 @@ export class InstallationHealthChecker implements HealthChecker {
         details: [
           ...legacyResult.removedPaths.map(p => `Stale: ${p}`),
           ...legacyResult.skippedPaths.map(p => `Recent: ${p}`),
-        ],
-        fixSuggestion: 'Run: specweave doctor --fix',
-      });
-    }
-
-    // Orphaned child lockfiles check
-    const orphanTotal = orphanResult.removedCount + orphanResult.skippedCount;
-    if (orphanTotal === 0) {
-      results.push({
-        name: 'Orphaned child lockfiles',
-        status: 'pass',
-        message: 'no stale lockfiles',
-      });
-    } else if (fix) {
-      results.push({
-        name: 'Orphaned child lockfiles',
-        status: orphanResult.removedCount > 0 ? 'pass' : 'warn',
-        message: `${orphanResult.removedCount} orphaned lockfile(s) removed`,
-        details: orphanResult.removedPaths.map(p => `Removed: ${p}`),
-      });
-    } else {
-      results.push({
-        name: 'Orphaned child lockfiles',
-        status: 'warn',
-        message: `${orphanTotal} orphaned child lockfile(s) found`,
-        details: [
-          ...orphanResult.removedPaths.map(p => `Stale: ${p}`),
-          ...orphanResult.skippedPaths.map(p => `Recent: ${p}`),
         ],
         fixSuggestion: 'Run: specweave doctor --fix',
       });
@@ -767,12 +738,14 @@ export class InstallationHealthChecker implements HealthChecker {
    * trip; doctor runs often enough that hitting the registry every time is
    * the single slowest check in the report.
    */
-  private latestPublishedVersion(projectRoot: string): string {
+  private latestPublishedVersion(projectRoot: string, runningVersion: string): string {
     const cachePath = join(projectRoot, '.specweave', 'state', 'npm-version-check.json');
     try {
       const cached = JSON.parse(readFileSync(cachePath, 'utf-8')) as { version?: string; checkedAt?: number };
+      // A cached "latest" older than the running CLI predates its install: re-ask npm.
       if (cached.version && typeof cached.checkedAt === 'number'
-        && Date.now() - cached.checkedAt < NPM_VERSION_CACHE_MS) {
+        && Date.now() - cached.checkedAt < NPM_VERSION_CACHE_MS
+        && compareSemverDesc(cached.version, runningVersion) <= 0) {
         return cached.version;
       }
     } catch {
@@ -830,7 +803,7 @@ export class InstallationHealthChecker implements HealthChecker {
     // Get latest version from npm — always use clean env to avoid E401 from stale tokens
     let latestVersion: string;
     try {
-      latestVersion = this.latestPublishedVersion(projectRoot);
+      latestVersion = this.latestPublishedVersion(projectRoot, installedVersion);
     } catch {
       return {
         name: 'Update health',
@@ -840,7 +813,8 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
-    if (installedVersion === latestVersion) {
+    // compareSemverDesc(a, b) > 0 means b is newer, so only that case is outdated.
+    if (compareSemverDesc(installedVersion, latestVersion) <= 0) {
       return {
         name: 'Update health',
         status: 'pass',
