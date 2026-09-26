@@ -93,7 +93,8 @@ describe('renderHandoffDoc', () => {
     const doc = renderHandoffDoc(baseInput());
     expect(doc).toContain('UNCOMMITTED');
     expect(doc).toContain('src/core/session/work-handoff.ts');
-    expect(doc).toContain('/repo/.specweave/increments/0867-cross-tool-work-handoff/handoff.diff');
+    expect(doc).toContain('.specweave/increments/0867-cross-tool-work-handoff/handoff.diff');
+    expect(doc).not.toContain('/repo/');
   });
 
   it('reports a clean tree instead of a diff when nothing is uncommitted', () => {
@@ -144,14 +145,20 @@ describe('per-tool resume matrix (pinned strings)', () => {
     expect(CLAUDE_MUNGE_EXAMPLE).toContain('specweave-umb--claude-worktrees');
   });
 
-  it('covers all six tools', () => {
+  it('covers all eight tools', () => {
     expect(TOOL_RESUME_MATRIX.map((e) => e.tool)).toEqual([
-      'Claude Code', 'Codex', 'OpenCode', 'Gemini CLI', 'Antigravity', 'Aider',
+      'Claude Code', 'Codex', 'OpenCode', 'Gemini CLI', 'Antigravity', 'Aider', 'Grok Build', 'Muse Code',
     ]);
   });
 
-  it('lists the first three resume commands in the Resume section', () => {
-    const doc = renderHandoffDoc(baseInput());
+  it('names only the writing tool\'s resume command when it is known', () => {
+    const doc = renderHandoffDoc({ ...baseInput(), agent: 'grok@mbp' });
+    expect(doc).toContain('Grok Build: `grok --resume <id>`');
+    expect(doc).not.toContain('claude -r <uuid>');
+  });
+
+  it('lists the first three resume commands when the writing tool is unknown', () => {
+    const doc = renderHandoffDoc({ ...baseInput(), agent: 'cli@mbp' });
     expect(doc).toContain('claude -r <uuid>');
     expect(doc).toContain('codex resume <uuid>');
     expect(doc).toContain('opencode -s <id>');
@@ -159,12 +166,18 @@ describe('per-tool resume matrix (pinned strings)', () => {
 });
 
 describe('renderPastePrompt', () => {
-  it('default mode points at the doc path and fails safe when missing', () => {
+  it('default mode starts with pickup, uses repo-relative paths and fails safe when missing', () => {
     const p = renderPastePrompt(baseInput());
-    expect(p).toContain('/repo/.specweave/increments/0867-cross-tool-work-handoff/handoff.md');
-    expect(p).toContain('STOP and ask me to paste the handoff');
-    expect(p).toContain('specweave task next 0867-cross-tool-work-handoff');
+    expect(p).toContain('run `specweave pickup`');
+    expect(p).toContain('The handoff doc is .specweave/increments/0867-cross-tool-work-handoff/handoff.md');
+    expect(p).not.toContain('/repo/');
+    expect(p).toContain('STOP and ask me to paste it');
     expect(p).not.toContain(INLINE_BEGIN_MARKER);
+  });
+
+  it('is one line when the handoff was pushed', () => {
+    const p = renderPastePrompt(baseInput({ push: { handoffRef: 'specweave-handoff', warnings: [] } }));
+    expect(p).toBe('Pick up my handed-off work: run `specweave pickup` and continue with the task it names.');
   });
 
   it('--inline mode embeds the full body between BEGIN/END markers', () => {

@@ -46,7 +46,7 @@ In the next tool, from the project folder:
 specweave pickup
 ```
 
-`pickup` fetches the last handoff. When your checkout is clean and the history allows it, it fast-forwards your branch and applies the handed-off edits; otherwise it says in plain words what to do and changes nothing. `--no-apply` only shows what is waiting. Then it prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, its files and test, the branch, notes from other increments, and the project memory index.
+`pickup` fetches the last handoff. When your checkout is clean and the history allows it, it fast-forwards your branch and applies the handed-off edits; otherwise it says in plain words what to do and changes nothing. A checkout on the default branch switches to the handed-off branch; any other branch, such as a cloud thread's own, carries on where it is. `--no-apply` only shows what is waiting. Then it prints everything a fresh session needs in one read: the active increment, the next task with the text of its acceptance criteria, its files and test, the branch, notes from other increments, and the project memory index.
 
 The Claude Code SessionStart hook prints the same summary, and `AGENTS.md` tells every other tool to run `pickup` first. In 2.x, resuming meant finding and reading four or five files and pasting a prompt. Now it is one command.
 
@@ -69,7 +69,9 @@ specweave auto-handoff off           # restores your previous setup
 
 In Claude Code, `on` sets the status line to `specweave statusline`, which records the 5-hour and 7-day usage Claude Code reports on Pro and Max plans after the first reply. If you already have a status line, it keeps showing it. It also adds a `specweave usage-guard` Stop hook. When `~/.codex` exists, the same hook goes into `~/.codex/hooks.json`, and there it reads the rate limits Codex writes to its session log. Once usage passes the threshold, the hook stops the agent once per session and has it run `specweave handoff`, then tell you to say "pick up" in the next tool. Under the threshold the hook adds nothing to the conversation.
 
-Cloud sessions (Claude Code on the web, Projects threads and Codex cloud tasks) have no status line or user hooks, so there you still say "hand off".
+Grok Build reports no usage percentage, so `on` gives it a hook in `~/.grok/hooks/` that runs the handoff right after a turn hits the rate limit.
+
+Cloud sessions (Claude Code on the web, Projects threads and Codex cloud tasks) have no status line or user hooks. There, and everywhere else, `AGENTS.md` tells the agent to hand off when Claude Code warns it that the usage limit is near or reached. Otherwise you say "hand off".
 
 ## Who holds a task
 

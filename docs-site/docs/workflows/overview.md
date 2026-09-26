@@ -35,7 +35,7 @@ Describe the outcome, not the implementation. The agent creates the increment an
 
 Read the spec before any code is written. This is the cheapest moment to catch a misunderstanding. Change the criteria until they say exactly what done means.
 
-If an open increment already owns the files this change touches, add criteria and tasks to that increment instead of opening another one. For something you want to explore before committing to a plan, ask to brainstorm first; the `brainstorm` skill compares approaches and hands the chosen one to planning.
+If an open increment already owns the files this change touches, add criteria and tasks to that increment instead of opening another one. When you want to explore options before you open an increment, ask to brainstorm first. This step is optional: the `brainstorm` skill compares approaches and hands the chosen one to planning.
 
 Small, self-contained fixes need no increment. Just ask your agent.
 

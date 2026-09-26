@@ -2,12 +2,12 @@
 
 <p align="center">
   <strong>Change agents. Keep the thread.</strong><br/>
-  Portable projects, shared context, and verified progress across AI tools.
+  Plan work as small specs, hand it between Claude, Codex, Grok and any other tool in two words, and close it with evidence.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/skills-12-8B5CF6" alt="12 skills" />
+  <img src="https://img.shields.io/badge/skills-11-8B5CF6" alt="11 skills" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
@@ -22,81 +22,71 @@ cd your-project
 specweave init .
 ```
 
-## See the work
+`init` writes `AGENTS.md` (read by Codex, Grok, Cursor, Gemini and Copilot), a two-line `CLAUDE.md` that imports it, and the skills for Claude Code and Codex. Nothing else runs in the background.
 
-```bash
-specweave dashboard
+## Out of tokens? Say "hand off"
+
+```text
+you (in Claude, account 1):   hand off
+you (in Codex, or account 2): pick up
 ```
 
-Start with a short intent, see what is in progress, and open the linked specification and evidence. Small work can stay lightweight. The dashboard reads local project state without model calls; card movement does not manufacture verified completion.
+That is the whole handoff. "Hand off" runs `specweave handoff`: it releases your task claims, records why you stopped, and pushes your branch plus a snapshot of your uncommitted edits. "Pick up" runs `specweave pickup` in any other tool, account, machine or cloud session (a Claude Code Projects thread, a Codex cloud task): it brings that work into the checkout and prints the next task with its acceptance criteria. Nothing to copy, no paths to paste.
 
-[Explore the product](https://spec-weave.com/product) · [Optional integrations](https://spec-weave.com/integrations)
+Running out mid-task? `specweave auto-handoff on`, once per machine, makes it automatic: when a session reaches 90% of your plan's 5-hour or weekly limit, it hands off by itself and tells you to say "pick up" elsewhere. Claude Code reads the limit through its status line (your own status line keeps working) and Codex through a Stop hook. Under the threshold it costs no tokens. `--at 85` changes the threshold and `off` undoes every change.
 
-## Any project, any agent
-
-Code, research, content and operations can share the same portable project hub. Git is optional.
-
-```bash
-mkdir research-project && cd research-project
-specweave project init --name "Research" --goal "Produce a sourced decision brief"
-specweave project work-add --title "Compare options" --summary "Use primary sources"
-specweave project brief --harness codex
-specweave dashboard
-```
-
-The hub keeps goals, shared context, artifact references and reusable routines in `.specweave/project/hub.json`; assignments reuse the intent board. Fresh worker briefs carry current context into Codex, Claude Code or another tool. The host launches agents and schedules routines when authorized. Saving a routine does not start a schedule.
-
-Codex native skills install under `.agents/skills/sw-*`. Existing legacy skills remain in place, and changed native installations are backed up. See [portable projects](https://spec-weave.com/docs/guides/portable-projects) for migration, CLI examples and boundaries.
+`specweave report` writes an HTML timeline of who did what on an increment (tools, sessions, handoffs, pickups, test evidence), straight from the ledger.
 
 ## The loop
 
-| # | Command | Claude Code skill | What it does |
-|---|---------|-------------------|--------------|
-| 1 | `specweave create-increment "<title>"` | `/sw:increment` | `spec.md` with Problem, Scope, numbered ACs and an Approach. Resolve scope; continue within your authorization. |
-| 2 | `specweave task next` → `claim` → `done --run "<test>"` | `/sw:do` | Work the tasks. `done` refuses a failing test command. |
-| 3 | `specweave verify` | — | Runs your test/lint/build; writes `reports/verify.json`. |
-| 4 | — | `/sw:review` | Fresh-context adversarial review; every finding cites `path:line`. |
-| 5 | `specweave complete <id>` | `/sw:done` | Closes. Blocks only on a green `verify.json` (or `--reason`). |
-| 6 | `specweave handoff` | `/sw:handoff` | A portable one-page doc so any other tool can pick the work up. |
+| # | Say or run | What happens |
+|---|---|---|
+| 1 | "pick up" · `specweave pickup` | The open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory, in one read. |
+| 2 | `/sw:increment` · `specweave create-increment "<title>"` | One `spec.md`: Problem, Scope, Acceptance Criteria, Approach and the Tasks. |
+| 3 | `/sw:do` · `specweave task claim T-01` → `task done T-01 --run "<test>"` | Work a task. `done` refuses a failing test and stores the evidence in the ledger. |
+| 4 | `specweave verify` · `/sw:review` | Runs your test, lint and build; a fresh-context review cites `path:line`. |
+| 5 | `/sw:done` · `specweave complete <id>` | Closes on a green verify. Acceptance criteria are met when their tasks are done; nobody ticks boxes. |
+| 6 | "hand off" · `specweave handoff` | Stop anywhere; the next tool picks up. |
 
-Everything lives in `.specweave/increments/NNNN-slug/`: `spec.md`, `tasks.md` (+ the rendered `SW:BOARD`), `ledger.jsonl`, `handoff.md`, `reports/`.
+An increment is one folder, `.specweave/increments/NNNN-slug/`, with one file you read (`spec.md`) and one the CLI appends to (`ledger.jsonl`). Increments from 2.x with a `tasks.md` keep working unchanged.
 
-## The twelve skills
+## Works the way Claude Code Projects work
 
-The CLI is the product and it runs in any AI tool or in CI. These twelve focused skills expose the workflow to compatible coding tools. Install domain expertise separately when it helps.
+| Claude Code Projects | SpecWeave |
+|---|---|
+| A thread: one session, one branch, one PR | One increment |
+| The thread's checklist | The `## Tasks` of that increment's `spec.md`, state in `ledger.jsonl` |
+| Project memory (`MEMORY.md` + one file per fact) | `.specweave/memory/`, same format, committed, so every tool and account sees it |
+| Threads passing notes | `specweave note "<text>"` on another increment |
+
+Project memory in claude.ai stays with one account. `.specweave/memory/` travels with the code, so Codex, Grok and a second Claude subscription start from the same decisions.
+
+## The eleven skills
+
+The CLI is the product and runs in any tool or in CI. The skills expose it to coding agents: `/sw:<name>` in Claude Code, `sw-<name>` in `.claude/skills/` (for Projects threads, where plugins do not load) and `.agents/skills/` (Codex, Grok).
 
 | Skill | Use it for |
 |-------|------------|
-| `sw:project` | Shared project context, artifacts, routines and worker briefs. |
-| `sw:brainstorm` | Framed alternatives, ending in a pick. |
-| `sw:increment` | Plan the work: `spec.md` with ACs, plus `tasks.md`. |
-| `sw:do` | Claim a task, implement it, close it with evidence. |
-| `sw:auto` | The same loop, unattended, until the tasks run out. |
-| `sw:team` | A worktree per agent, claims arbitrated by the ledger. |
-| `sw:review` | Fresh-context adversarial pass; findings cite `path:line`. |
-| `sw:qa` | Risk-scored assessment, blockers, verdict. |
-| `sw:done` | Verify, review check, `specweave complete`. |
-| `sw:sync` | GitHub, Jira and Azure DevOps: push, pull, status, setup. |
-| `sw:handoff` | A one-page, secret-scrubbed continuation doc. |
-| `sw:jev` | Closed-set decisions in ~250 ms via Jev (TypeSafe System One). |
+| `increment` | Plan the work as one `spec.md`. |
+| `do` | Claim a task, implement it, close it with evidence. |
+| `auto` | The same loop, unattended, until the tasks run out. |
+| `team` | A worktree per agent, claims arbitrated by the ledger. |
+| `review` | Fresh-context adversarial review; findings cite `path:line`. |
+| `done` | Verify, review check, `specweave complete`. |
+| `handoff` | "Hand off" and "pick up". |
+| `sync` | GitHub, Jira and Azure DevOps, only when you run it. |
+| `project` | Shared goals, artifacts and briefs across tools. |
+| `brainstorm` | Framed alternatives, ending in a pick. |
+| `jev` | Closed-set decisions in about 250 ms via Jev. |
 
-Five longer procedures (tdd-cycle, e2e, debug, diagrams, release-expert) live in `skills-optional/` and install on demand with [vskill](https://www.npmjs.com/package/vskill).
-
-## Upgrade to 2.0
+## Upgrade to 3.0
 
 ```bash
-npm i -g specweave@2
+npm i -g specweave@3
 specweave update
 ```
 
-`specweave update` is idempotent: it rewrites the managed sections of `CLAUDE.md`/`AGENTS.md` while preserving your own, migrates `config.json` in one pass, writes the `.gitignore`/`.gitattributes` entries 2.0 needs, and keeps backups under `.specweave/backups/`. Then run `specweave doctor`.
-
-2.0 removed a lot on purpose — the three-report closure pipeline, auto-generated living docs, 34 never-invoked skills, the queued sync mode. See **[What was removed, and why](https://spec-weave.com/docs/guides/specweave-2#what-was-removed-and-why)**.
-
-There is no alias routing: a 1.x slug simply has no skill behind it. The old-to-new map —
-every removed skill, the skill or CLI command that replaced it, and the ones that moved to
-`skills-optional/` — is `removedIn2_0` in
-[`plugins/specweave/marketplace.json`](https://github.com/anton-abyzov/specweave/blob/develop/plugins/specweave/marketplace.json).
+`specweave update` rewrites `AGENTS.md` into the lean form, turns `CLAUDE.md` into an import of it, keeps your own sections, and backs up the old files under `.specweave/backups/`. Existing increments need no migration. The **[3.0.0 changelog](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md#300---2026-09-25)** lists what changed and what was removed. To have sessions hand off by themselves near the usage limit, run `specweave auto-handoff on` once.
 
 <br/>
 
@@ -142,7 +132,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 ## Key Features
 
-**Spec-First Planning** — Every feature starts as `spec.md` (Problem, Scope, ACs, Approach) plus `tasks.md`. Configuration, not prompting.
+**Spec-First Planning** — Every feature starts as one `spec.md`: Problem, Scope, ACs, Approach and Tasks.
 
 **Evidence, not vibes** — `specweave task done --run "<test>"` refuses a failing command and stores the exit code and output tail in the ledger.
 
@@ -158,13 +148,13 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**12 focused skills** — see [The twelve skills](#the-twelve-skills) above. Plus six standalone skills for non-Claude tools.
+**11 skills, one source** — the same skills for Claude Code, Codex and Grok; see [The eleven skills](#the-eleven-skills).
 
-**External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in.
+**External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in. Nothing calls a tracker unless you run sync.
 
 **Enterprise Ready** — Compliance audit trails. Brownfield analysis. Multi-repo workspaces.
 
-**Dashboard** — Built-in web dashboard for increment progress, analytics, cost tracking, and multi-project monitoring.
+**Dashboard** — `specweave dashboard` shows intents, increments and evidence from local files, with no model calls.
 
 <br/>
 
@@ -186,7 +176,7 @@ npx vskill eval run my-skill                  # Run eval suite
 
 ## Documentation
 
-**[spec-weave.com](https://spec-weave.com)** — [SpecWeave 2.0](https://spec-weave.com/docs/guides/specweave-2) · [commands](https://spec-weave.com/docs/reference/commands) · [skills](https://spec-weave.com/docs/reference/skills) · [configuration](https://spec-weave.com/docs/reference/configuration)
+**[spec-weave.com](https://spec-weave.com)** — [SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3) · [handoff](https://spec-weave.com/docs/guides/cross-tool-handoff) · [commands](https://spec-weave.com/docs/reference/commands) · [skills](https://spec-weave.com/docs/reference/skills) · [configuration](https://spec-weave.com/docs/reference/configuration)
 
 ## Contributing
 

@@ -23,10 +23,12 @@ You rarely need to name a skill. `AGENTS.md` tells every agent the loop, so plai
 | `sync` | GitHub, Jira and Azure DevOps: push progress, pull or import issues, check status, run setup. | "sync", "push to GitHub", "import issues" |
 | `handoff` | Writes a secret-scrubbed handoff and pushes it, so the work continues in another tool, account or session. | "hand off", "handoff", "I'm out of tokens", "switching accounts" |
 | `project` | Coordinates ongoing work across tools with shared goals, context, artifacts and worker briefs. | "set up a project", "brief a worker" |
-| `brainstorm` | Compares options on stated criteria and ends with a pick, before a spec is written. | "brainstorm", "what are our options" |
+| `brainstorm` | Compares options on stated criteria and ends with a pick, before a spec is written. | "brainstorm", "ideate", "explore approaches", "what are our options" |
 | `jev` | Hands closed-set decisions (routing, command safety, screening, failure triage) to Jev. | "jev", "system one" |
 
 These eleven are the whole set. In 3.0 `qa` folded into `review` and `task` into `do`. The CLI still has `specweave qa` for a risk score.
+
+Reach for `/sw:brainstorm` when the problem is clear but the approach is not. It ends with one pick and hands it to `increment`, so the brainstorm never replaces the spec.
 
 There is no pickup skill. `AGENTS.md` tells every agent to run `specweave pickup` at the start of a session and when you say "pick up" or "continue". In Claude Code the SessionStart hook also prints a short pickup on its own.
 

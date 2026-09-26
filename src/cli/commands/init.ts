@@ -2,7 +2,7 @@
  * SpecWeave Init Command
  *
  * Simplified (v1.0.415): Creates .specweave/ structure + config.json + instruction files.
- * External tool setup moved to `specweave sync-setup`.
+ * External tool setup moved to `specweave sync setup`.
  * Every workspace uses repositories/ structure from day one.
  */
 
@@ -32,7 +32,6 @@ import {
   scanMisplacedRepos,
   buildWorkspaceConfig,
   promptSmartReinit,
-  installAllPlugins,
   promptLanguageSelection,
   getDefaultLanguageSelection,
   createMinimalConfig,
@@ -56,11 +55,9 @@ import {
   promptOrgRepo,
 } from '../helpers/init/workspace-setup.js';
 import { promptRootRepoConnection, type RootRepoInfo } from '../helpers/init/root-repo-detection.js';
-import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
-import { isSwPluginInstalledNatively } from '../../utils/plugin-copier.js';
-import type { LivingDocsUserInputs } from '../../core/background/types.js';
+import { installProjectSkills, PROJECT_SKILL_DIRS, SPECWEAVE_SKILLS } from '../../core/skills/project-skills.js';
 
 const __dirname = getDirname(import.meta.url);
 const PROJECT_NAME_PATTERN = /^[a-z0-9-]+$/;
@@ -84,7 +81,11 @@ export function isNonInteractive(options: Pick<InitOptions, 'quick'>): boolean {
 }
 
 /**
- * Main init command — simplified to core scaffolding only.
+ * Main init command — scaffolds only what the user needs (3.0):
+ * config, AGENTS.md / CLAUDE.md, .gitignore / .gitattributes, the memory
+ * index, and the 11 skills as `sw-<name>` in `.claude/skills/` and
+ * `.agents/skills/`. Nothing outside the project is written. The git
+ * pre-commit hook is opt-in (`--git-hooks`).
  */
 export async function initCommand(
   projectName?: string,
@@ -236,7 +237,7 @@ export async function initCommand(
               }
               if (jobIds.length > 0) {
                 console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-                console.log(chalk.gray(`     Monitor: specweave jobs`));
+                console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
               }
               reposClonedInMigration = true;
             } else if (subChoice === 'copy-local') {
@@ -450,7 +451,7 @@ export async function initCommand(
             }
             if (jobIds.length > 0) {
               console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-              console.log(chalk.gray(`     Monitor: specweave jobs`));
+              console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
             }
           }
           // 'add-later' — repositories/ already created above, nothing more needed
@@ -545,87 +546,33 @@ export async function initCommand(
       }
     }
 
-    // Stop the init spinner before plugin installation — installAllPlugins()
-    // creates its own ora spinner and concurrent spinners cause visual corruption.
     spinner.stop();
 
-    // Plugin install (Claude only)
-    // CRITICAL FIX (v0.34.6): Skip plugin installation when continuing existing config.
-    // Previously, re-running `specweave init .` would deregister all marketplace plugins.
-    let autoInstallSucceeded = false;
-    let marketplaceOnly = false;
-    if (toolName === 'claude') {
-      if (continueExisting) {
-        console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
-        autoInstallSucceeded = true;
-      } else if (!options.forceRefresh && isSwPluginInstalledNatively()) {
-        console.log(chalk.green('   ✓ SW plugin already installed natively, skipping local skill copy'));
-        autoInstallSucceeded = true;
-      } else {
-        const result = await installAllPlugins({
-          dirname: __dirname,
-          forceRefresh: options.forceRefresh,
-          projectRoot: targetDir,
-        });
-        autoInstallSucceeded = result.success;
-        marketplaceOnly = result.marketplaceOnly || false;
+    // Skills: the same 11 skills for every tool, namespaced so they never
+    // collide with the user's own, in both folders tools read. Never touches
+    // ~/.claude or any other global settings.
+    let skillsInstalled = false;
+    try {
+      const skills = installProjectSkills(targetDir);
+      skillsInstalled = true;
+      if (skills.written.length > 0) {
+        console.log(chalk.green(`   ✓ ${SPECWEAVE_SKILLS.length} skills installed as sw-* in ${PROJECT_SKILL_DIRS.join('/ and ')}/`));
       }
-
-      // Auto-install Anthropic's skill-creator (non-blocking)
-      if (!continueExisting) {
-        // Fire-and-forget — non-blocking, never throws
-        ensureSkillCreator(targetDir).catch(() => {});
-      }
-
-      // Enable agent teams env var (project-level + global)
-      try {
-        const os = await import('os');
-        const { enableAgentTeamsEnvVar } = await import('../helpers/init/claude-settings-env.js');
-        enableAgentTeamsEnvVar(targetDir);
-        enableAgentTeamsEnvVar(os.homedir());
-      } catch {
-        console.log(chalk.yellow('   ⚠ Could not enable agent teams env var (non-critical)'));
-      }
-
-      setupLspEnvVar();
+    } catch (err) {
+      console.log(chalk.yellow(`   ⚠ Could not install skills: ${err instanceof Error ? err.message : String(err)}`));
     }
 
-
-    // Git hooks
-    if (isGitRepo && !continueExisting) {
-      installGitHooks(targetDir, templatesDir);
+    // Anthropic's skill-creator only when the user opted in (SPECWEAVE_INSTALL_SKILL_CREATOR=1).
+    if (toolName === 'claude' && !continueExisting) {
+      ensureSkillCreator(targetDir).catch(() => {});
     }
 
-    // Launch living docs builder (background job — never blocks init)
-    if (!continueExisting && !isCI) {
-      try {
-        const { launchLivingDocsJob } = await import('../../core/background/index.js');
-        const { displayJobScheduled, estimateDuration } = await import('../helpers/init/living-docs-preflight.js');
-
-        const userInputs: LivingDocsUserInputs = {
-          analysisDepth: 'quick',
-          priorityAreas: [],
-          additionalSources: [],
-          knownPainPoints: [],
-        };
-
-        // Save config so standalone `specweave living-docs` can reuse it
-        const stateDir = path.join(targetDir, '.specweave', 'state');
-        fs.ensureDirSync(stateDir);
-        nativeFs.writeFileSync(
-          path.join(stateDir, 'living-docs-config.json'),
-          JSON.stringify({ userInputs, savedAt: new Date().toISOString(), source: 'init' }, null, 2),
-        );
-
-        const ldResult = await launchLivingDocsJob({ projectPath: targetDir, userInputs });
-
-        if (ldResult.isBackground) {
-          const duration = estimateDuration(targetDir, 'quick');
-          displayJobScheduled(ldResult.job.id.slice(0, 8), duration, language);
-        }
-      } catch {
-        // Non-critical — living docs can always be launched later with `specweave living-docs`
-      }
+    // Git pre-commit hook: opt-in only.
+    let gitHooksInstalled = false;
+    if (options.gitHooks && isGitRepo) {
+      gitHooksInstalled = installGitHooks(targetDir, templatesDir);
+    } else if (options.gitHooks) {
+      console.log(chalk.yellow('   ⚠ --git-hooks: not a git repository, no hook installed'));
     }
 
     // Summary banner
@@ -649,9 +596,9 @@ export async function initCommand(
       }
 
       const finalDefaults = {
-        testing: bannerConfig?.testing?.mode || 'TDD',
+        testing: bannerConfig?.testing?.mode,
         lspEnabled: !!bannerConfig?.lsp?.enabled,
-        gitHooksInstalled: isGitRepo,
+        gitHooksInstalled,
         coverage: bannerConfig?.testing?.coverage,
       };
 
@@ -670,7 +617,7 @@ export async function initCommand(
       toolName,
       language,
       usedDotNotation,
-      toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined,
+      toolName === 'claude' ? { pluginAutoInstalled: skillsInstalled, marketplaceOnly: false } : undefined,
       { misplacedRepos }
     );
   } catch (error) {
@@ -707,21 +654,8 @@ async function installNonClaudeAdapter(
     docsApproach: 'incremental'
   });
 
-  // Install core plugin
-  try {
-    spinner.start('Installing SpecWeave core plugin...');
-    const corePluginPath = findSourceDir('plugins/specweave', __dirname);
-    const { PluginLoader } = await import('../../core/plugins/plugin-loader.js');
-    const loader = new PluginLoader();
-    const corePlugin = await loader.loadFromDirectory(corePluginPath);
-
-    if (adapter.supportsPlugins()) {
-      await adapter.compilePlugin(corePlugin);
-      spinner.succeed('SpecWeave core plugin installed');
-    }
-  } catch {
-    spinner.warn('Could not install core plugin');
-  }
+  // The SpecWeave skills themselves are installed for every tool by
+  // installProjectSkills (.claude/skills + .agents/skills), not per adapter.
 
   // Copy marketplace plugin skills from local Claude cache (skill-creator, frontend-design, etc.)
   if (adapter.supportsPlugins()) {
@@ -755,7 +689,7 @@ async function copyMarketplaceSkills(targetDir: string, toolName: string): Promi
   // MUST match each adapter's compilePlugin() target directory
   const skillsDirMap: Record<string, string> = {
     antigravity: '.agent/skills',
-    codex: '.codex/skills',
+    codex: '.agents/skills',
     opencode: '.opencode/skills',
     copilot: '.github/skills',
     cursor: '.cursor/skills',

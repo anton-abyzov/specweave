@@ -118,7 +118,7 @@ export const mapping: [string, string][] = [
 ];
 
 export const stats: { value: number; prefix?: string; unit: string; label: string; was: string }[] = [
-  { value: 700, prefix: '~', unit: 'tokens', label: 'One instruction file, AGENTS.md', was: 'Was about 3,300 across CLAUDE.md and AGENTS.md' },
+  { value: 800, prefix: '~', unit: 'tokens', label: 'One instruction file, AGENTS.md', was: 'Was about 3,300 across CLAUDE.md and AGENTS.md' },
   { value: 1, unit: 'file', label: 'Per increment', was: 'Was spec.md, tasks.md and often plan.md' },
   { value: 1, unit: 'read', label: 'To resume in a new tool', was: 'Was 4 to 5 files the next tool had to find' },
   { value: 11, unit: 'skills', label: 'One source for every tool', was: 'Was 12 plugin skills and 6 portable ones that drifted' },

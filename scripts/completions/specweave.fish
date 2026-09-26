@@ -4,18 +4,13 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall install scan-skill scan-plugins judge-skill list pause start resume abandon complete task verify create-increment handoff jev next-id archive save status interview decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name jobs living-docs cache analytics analytics-push lsp commits sync docs refresh-plugins doctor health session hook detect-intent evaluate-completion generate-rubric detect-project resolve-structure export-skills dashboard hooks context get migrate-to-umbrella
+set -l commands init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a init -d "Initialize a new SpecWeave project"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a uninstall -d "Remove SpecWeave from the current project"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a install -d "Install agents/skills to .claude/ or ~/.claude/"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a scan-skill -d "Scan a skill file for security issues (Tier 1 pattern scanning)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a scan-plugins -d "Batch-scan all plugin SKILL.md files for security issues (Gen Agent Trust Hub categories)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a judge-skill -d "Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a list -d "List available and installed components"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pause -d "Pause an active increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a start -d "Start a planned/backlog/paused increment (status -> active)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resume -d "Resume a paused, abandoned or not-yet-started increment"
@@ -24,15 +19,18 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: hand off automatically at a share of the usage limit (default 90%)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a save -d "Smart save - auto-generate commit message, sync with remote, commit and push"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a status -d "Show increment status overview (alias: progress)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a interview -d "Manage Deep Interview Mode for increment planning"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a decision-log -d "Query structured decision logs from hooks"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a status-line -d "Display current increment status line"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto -d "Start autonomous execution (stop hook feedback loop)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-status -d "Check auto session status and progress"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a cancel-auto -d "Cancel running auto session"
@@ -44,31 +42,15 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a gc -d "P
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a qa -d "Run quality assessment on an increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a link-pr -d "Link a pull request to external tickets (JIRA, ADO)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a branch-name -d "Output the computed branch name for an increment (with optional JIRA/ADO ticket key)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jobs -d "Monitor and manage background jobs (imports, cloning, sync)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a living-docs -d "Launch or resume Living Docs Builder independently"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a cache -d "Manage dashboard cache for instant status commands"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a analytics -d "Show usage analytics dashboard (commands, skills, agents)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a analytics-push -d "Record a skill or agent analytics event (replaces PostToolUse analytics hook)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a lsp -d "LSP code intelligence (refs, def, hover, symbols, search)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a commits -d "Display the last 2 git commits"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a sync -d "Sync increments with GitHub, Jira or Azure DevOps: push | pull | status | setup"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a docs -d "Documentation preview, build, and validation (works in any SpecWeave project)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a refresh-plugins -d "Refresh SpecWeave plugins (core only by default, use --all for everything)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a doctor -d "Run comprehensive health check on SpecWeave project"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a health -d "Quick deployment health check (config, plugins, sync connectivity)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a session -d "Session lifecycle management (start, end)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a hook -d "Handle Claude Code hook events (internal)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a detect-intent -d "Detect SpecWeave intent from a prompt and optionally install plugins"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a evaluate-completion -d "Evaluate whether an auto mode session should be considered complete"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a generate-rubric -d "Generate or refresh the AC-tied rubric.md quality contract at the increment root"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a detect-project -d "Detect project type from files and suggest plugins to install"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resolve-structure -d "[REMOVED] All workspaces now use the repositories/ structure"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a export-skills -d "Export SpecWeave skills to Agent Skills open standard format (agentskills.io)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a dashboard -d "Launch real-time observability dashboard in browser"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a hooks -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a context -d "Show SpecWeave workspace context"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a get -d "Clone and register an existing repository into the workspace"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a migrate-to-umbrella -d "[REMOVED] Use specweave get to add repositories"
 
 # init
 complete -c specweave -n "__fish_seen_subcommand_from init" -l name -s n -d "Project name (alternative to positional argument)"
@@ -78,7 +60,7 @@ complete -c specweave -n "__fish_seen_subcommand_from init" -l tech-stack -d "Te
 complete -c specweave -n "__fish_seen_subcommand_from init" -l language -s l -d "Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l force -s f -d "Force fresh start (non-interactive, removes existing .specweave)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l force-refresh -d "Force marketplace refresh (skip cache, always pull latest)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l no-living-docs -d "Skip living docs builder setup"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l git-hooks -d "Also install the SpecWeave pre-commit hook (off by default)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l full -d "Install all plugins (skip lazy loading, longer init but all skills available immediately)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l quick -s q -d "Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l non-interactive -d "Alias for --quick (skip all prompts)"
@@ -88,26 +70,6 @@ complete -c specweave -n "__fish_seen_subcommand_from uninstall" -l global -d "A
 complete -c specweave -n "__fish_seen_subcommand_from uninstall" -l keep-data -d "Archive .specweave/ instead of deleting"
 complete -c specweave -n "__fish_seen_subcommand_from uninstall" -l dry-run -d "Show what would be removed without deleting"
 complete -c specweave -n "__fish_seen_subcommand_from uninstall" -l force -s f -d "Skip confirmation prompt"
-
-# install
-complete -c specweave -n "__fish_seen_subcommand_from install" -l global -s g -d "Install globally to ~/.claude/"
-complete -c specweave -n "__fish_seen_subcommand_from install" -l local -s l -d "Install locally to .claude/ (default)"
-
-# scan-skill
-complete -c specweave -n "__fish_seen_subcommand_from scan-skill" -l json -d "Output results as JSON"
-
-# scan-plugins
-complete -c specweave -n "__fish_seen_subcommand_from scan-plugins" -l json -d "Output results as JSON for CI integration"
-complete -c specweave -n "__fish_seen_subcommand_from scan-plugins" -l verbose -d "Show per-skill reports in addition to batch summary"
-complete -c specweave -n "__fish_seen_subcommand_from scan-plugins" -l dir -d "Path to plugins directory (default: ./plugins)"
-
-# judge-skill
-complete -c specweave -n "__fish_seen_subcommand_from judge-skill" -l json -d "Output results as JSON"
-complete -c specweave -n "__fish_seen_subcommand_from judge-skill" -l model -d "LLM model to use (e.g., sonnet, opus)"
-complete -c specweave -n "__fish_seen_subcommand_from judge-skill" -l scan-only -d "Run Tier 1 only, skip LLM analysis"
-
-# list
-complete -c specweave -n "__fish_seen_subcommand_from list" -l installed -d "Show only installed components"
 
 # pause
 complete -c specweave -n "__fish_seen_subcommand_from pause" -l reason -s r -d "Reason for pausing"
@@ -131,6 +93,7 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l run -d "Run <cmd>
 complete -c specweave -n "__fish_seen_subcommand_from task" -l note -s n -d "Note (alias of --reason)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l reason -d "Reason (required for skip / block)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With `release`: release every task claimed by this agent"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l write -d "With `render`: refresh a legacy tasks.md from the ledger"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 
 # verify
@@ -166,6 +129,24 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l clipboard -d "
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l non-specweave -d "Force the .handoff/ fallback even inside a SpecWeave workspace"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l out -d "Override the doc output path"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l json -d "Output the full result as JSON (for programmatic use)"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l no-push -d "Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l keep-claims -d "Keep your task claims instead of releasing them for the next agent"
+
+# pickup
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l no-apply -d "Only show the waiting handoff; do not apply it to this checkout"
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output as JSON"
+
+# report
+complete -c specweave -n "__fish_seen_subcommand_from report" -l out -d "Where to write it (default: the increment's reports/handoff-report.html)"
+
+# auto-handoff
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Threshold in percent of any usage window"
+
+# statusline
+complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
+
+# usage-guard
+complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook (Grok Build): hand off now, the turn hit the rate limit"
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
@@ -218,19 +199,6 @@ complete -c specweave -n "__fish_seen_subcommand_from save" -l branch -d "Create
 # status
 complete -c specweave -n "__fish_seen_subcommand_from status" -l verbose -s v -d "Show detailed information"
 complete -c specweave -n "__fish_seen_subcommand_from status" -l type -s t -d "Filter by increment type (feature, hotfix, bug, etc.)"
-
-# decision-log
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l hook -d "Filter by hook name (e.g. stop-auto)"
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l decision -d "Filter by decision type (approve, block)"
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l since -d "Filter by time window (1h, 24h, 7d)"
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l limit -d "Number of entries to show (default: 20)"
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l json -d "Output raw JSON format"
-complete -c specweave -n "__fish_seen_subcommand_from decision-log" -l tail -d "Follow log in real-time (like tail -f)"
-
-# status-line
-complete -c specweave -n "__fish_seen_subcommand_from status-line" -l json -d "Output JSON format"
-complete -c specweave -n "__fish_seen_subcommand_from status-line" -l clear -d "Clear status line cache"
-complete -c specweave -n "__fish_seen_subcommand_from status-line" -l config -d "Path to config file"
 
 # auto
 complete -c specweave -n "__fish_seen_subcommand_from auto" -l dry-run -d "Preview without activating"
@@ -286,51 +254,11 @@ complete -c specweave -n "__fish_seen_subcommand_from qa" -l verbose -s v -d "Sh
 # link-pr
 complete -c specweave -n "__fish_seen_subcommand_from link-pr" -l branch -d "Branch name"
 
-# jobs
-complete -c specweave -n "__fish_seen_subcommand_from jobs" -l all -d "Show all jobs (including completed)"
-complete -c specweave -n "__fish_seen_subcommand_from jobs" -l id -d "Show details for specific job"
-complete -c specweave -n "__fish_seen_subcommand_from jobs" -l logs -d "Show worker log output"
-complete -c specweave -n "__fish_seen_subcommand_from jobs" -l follow -d "Follow job progress in real-time"
-complete -c specweave -n "__fish_seen_subcommand_from jobs" -l kill -d "Kill running background job"
-complete -c specweave -n "__fish_seen_subcommand_from jobs" -l resume -d "Resume paused job"
-
-# living-docs
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l resume -d "Resume orphaned/paused job"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l depth -d "Analysis depth: quick, standard, deep-native, deep-api"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l priority -d "Priority modules (comma-separated)"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l sources -d "Additional doc folders (comma-separated)"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l depends-on -d "Wait for jobs before starting (comma-separated)"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l foreground -d "Run in current session instead of background"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l force -d "Force run even for greenfield projects"
-complete -c specweave -n "__fish_seen_subcommand_from living-docs" -l full-scan -d "Force full deep scan (all phases: repos, org, arch, inconsistencies, strategy)"
-
-# cache
-complete -c specweave -n "__fish_seen_subcommand_from cache" -l rebuild -d "Rebuild cache from increments"
-complete -c specweave -n "__fish_seen_subcommand_from cache" -l status -d "Show cache status (default)"
-complete -c specweave -n "__fish_seen_subcommand_from cache" -l clear -d "Clear cache"
-complete -c specweave -n "__fish_seen_subcommand_from cache" -l quiet -d "Minimal output"
-complete -c specweave -n "__fish_seen_subcommand_from cache" -l debug -d "Show debug information"
-
-# analytics
-complete -c specweave -n "__fish_seen_subcommand_from analytics" -l export -d "Export data (json, csv)"
-complete -c specweave -n "__fish_seen_subcommand_from analytics" -l since -d "Filter by time range (24h, 7d, 30d)"
-complete -c specweave -n "__fish_seen_subcommand_from analytics" -l type -d "Filter by event type (command, skill, agent)"
-complete -c specweave -n "__fish_seen_subcommand_from analytics" -l json -d "Output raw JSON for scripting"
-complete -c specweave -n "__fish_seen_subcommand_from analytics" -l limit -d "Number of top items to show"
-
-# analytics-push
-complete -c specweave -n "__fish_seen_subcommand_from analytics-push" -l plugin -d "Source plugin name"
-complete -c specweave -n "__fish_seen_subcommand_from analytics-push" -l json -d "Output as JSON"
-complete -c specweave -n "__fish_seen_subcommand_from analytics-push" -l silent -d "Suppress output"
-
 # lsp
 complete -c specweave -n "__fish_seen_subcommand_from lsp" -a "refs def hover symbols search warmup status setup" -d "lsp subcommand"
 
 # sync
 complete -c specweave -n "__fish_seen_subcommand_from sync" -a "push pull status setup" -d "sync subcommand"
-
-# docs
-complete -c specweave -n "__fish_seen_subcommand_from docs" -a "preview build validate public kill status sync" -d "docs subcommand"
 
 # refresh-plugins
 complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l all -d "Install ALL plugins (not just core sw)"
@@ -347,40 +275,9 @@ complete -c specweave -n "__fish_seen_subcommand_from doctor" -l skip-external -
 complete -c specweave -n "__fish_seen_subcommand_from doctor" -l fix -d "Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)"
 complete -c specweave -n "__fish_seen_subcommand_from doctor" -l fix-status -d "Fix metadata.json <-> spec.md status desyncs (formerly sw:sync-status)"
 
-# health
-complete -c specweave -n "__fish_seen_subcommand_from health" -l json -d "Output as JSON for CI/CD pipelines"
-complete -c specweave -n "__fish_seen_subcommand_from health" -l verbose -d "Show detailed output"
-
-# session
-complete -c specweave -n "__fish_seen_subcommand_from session" -a "start end" -d "session subcommand"
-
-# detect-intent
-complete -c specweave -n "__fish_seen_subcommand_from detect-intent" -l install -d "Also install detected plugins after detection"
-complete -c specweave -n "__fish_seen_subcommand_from detect-intent" -l silent -d "Silent mode - no stdout output (for hooks)"
-complete -c specweave -n "__fish_seen_subcommand_from detect-intent" -l file -d "Read prompt from file instead of argument (avoids shell escaping issues)"
-
-# evaluate-completion
-complete -c specweave -n "__fish_seen_subcommand_from evaluate-completion" -l model -d "Model for LLM evaluation: haiku or sonnet (default: sonnet)"
-complete -c specweave -n "__fish_seen_subcommand_from evaluate-completion" -l timeout -d "Timeout in milliseconds (default: 45000)"
-complete -c specweave -n "__fish_seen_subcommand_from evaluate-completion" -l silent -d "Minimal output"
-
 # generate-rubric
 complete -c specweave -n "__fish_seen_subcommand_from generate-rubric" -l refresh -d "Regenerate from current ACs, overwriting an existing non-template rubric"
 complete -c specweave -n "__fish_seen_subcommand_from generate-rubric" -l silent -d "Minimal output"
-
-# detect-project
-complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l name -d "Increment name for legacy name-based detection"
-complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l description -d "Description for legacy name-based detection"
-complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l install -d "Also install detected plugins after detection"
-complete -c specweave -n "__fish_seen_subcommand_from detect-project" -l silent -d "Silent mode - no stdout output (for hooks)"
-
-# export-skills
-complete -c specweave -n "__fish_seen_subcommand_from export-skills" -l output -s o -d "Output directory (default: .agent-skills)"
-complete -c specweave -n "__fish_seen_subcommand_from export-skills" -l plugin -s p -d "Export specific plugin only"
-complete -c specweave -n "__fish_seen_subcommand_from export-skills" -l skill -s s -d "Export specific skill only"
-complete -c specweave -n "__fish_seen_subcommand_from export-skills" -l dry-run -d "Preview without writing files"
-complete -c specweave -n "__fish_seen_subcommand_from export-skills" -l validate -d "Validate output against Agent Skills spec"
-complete -c specweave -n "__fish_seen_subcommand_from export-skills" -l verbose -s v -d "Show detailed output"
 
 # dashboard
 complete -c specweave -n "__fish_seen_subcommand_from dashboard" -l port -s p -d "Port number (default: 3456)"
