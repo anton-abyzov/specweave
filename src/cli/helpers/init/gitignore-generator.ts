@@ -429,10 +429,9 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '# Binary evidence and agent worktrees (never committed)',
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
-    '# reports/ holds COMMITTED evidence: the generic `*.log` rule above would',
-    '# swallow the task evidence log a ledger `done` event cites, so a teammate',
-    '# cloning the repo could not read it. Only reports/artifacts/ is ignored.',
-    '!.specweave/increments/**/reports/*.log',
+    '# `task done --run` writes its evidence to reports/task-<id>.log and the',
+    '# ledger cites it, so that log is committed; every other *.log stays ignored.',
+    '!.specweave/increments/**/reports/task-T-*.log',
     '# Binary evidence in reports/ (videos, screenshots, app bundles)',
     '**/reports/*.mp4',
     '**/reports/*.png',
@@ -822,6 +821,14 @@ export async function generateSmartGitignore(
   return { detection, result };
 }
 
+/** Lines an earlier `specweave update` wrote that it now removes again. */
+const DROPPED_SPECWEAVE_LINES = new Set([
+  '!.specweave/increments/**/reports/*.log',
+  '# reports/ holds COMMITTED evidence: the generic `*.log` rule above would',
+  '# swallow the task evidence log a ledger `done` event cites, so a teammate',
+  '# cloning the repo could not read it. Only reports/artifacts/ is ignored.',
+])
+
 /**
  * Append the SpecWeave runtime-state entries (`.specweave/state/`, logs, jobs,
  * cache, backups, `reports/artifacts/`, `.claude/worktrees/`) to an existing
@@ -834,7 +841,18 @@ export async function generateSmartGitignore(
 export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: string[]; path: string } {
   const gitignorePath = path.join(targetDir, '.gitignore');
   const wanted = GITIGNORE_ENTRIES.specweave;
-  const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
+  let existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
+
+  // 3.0.0 and 3.0.1 appended a negation that un-ignored every log under
+  // reports/ (hundreds in a long-lived project). Swap it for the task-log one.
+  const withoutNegation = existing
+    .split('\n')
+    .filter((line) => !DROPPED_SPECWEAVE_LINES.has(line.trim()))
+    .join('\n');
+  if (withoutNegation !== existing) {
+    existing = withoutNegation;
+    fs.writeFileSync(gitignorePath, existing);
+  }
   const present = new Set(existing.split('\n').map((l) => l.trim()).filter(Boolean));
 
   const missing = wanted.filter((line) => !line.startsWith('#') && !present.has(line.trim()));
