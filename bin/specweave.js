@@ -266,9 +266,10 @@ program
 program
   .command('usage-guard')
   .description('Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold')
-  .action(async () => {
+  .option('--limit-hit', 'StopFailure hook (Grok Build): hand off now, the turn hit the rate limit')
+  .action(async (options) => {
     const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
-    process.exitCode = await usageGuardCommand();
+    process.exitCode = await usageGuardCommand({ limitHit: options.limitHit === true });
   });
 
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions

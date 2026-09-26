@@ -22,6 +22,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { findProjectRoot } from '../../utils/find-project-root.js';
 
 export const DEFAULT_THRESHOLD = 90;
 
@@ -190,4 +191,42 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
 /** One short status line: the fullest windows, e.g. "5-hour 42% · weekly 12%". */
 export function usageSummary(windows: UsageWindow[]): string {
   return windows.map((w) => `${w.name} ${Math.round(w.percent)}%`).join(' · ');
+}
+
+/**
+ * Grok Build shows no usage percentage to scripts, but it fires `StopFailure`
+ * with `error: "rate_limit"` when a turn hits the limit. Its hook input is
+ * camelCase (`sessionId`, `cwd`, `workspaceRoot`).
+ */
+export interface LimitHitInput {
+  sessionId?: string;
+  session_id?: string;
+  cwd?: string;
+  workspaceRoot?: string;
+  error?: string;
+}
+
+/**
+ * Where a rate-limited turn should hand off, or undefined when it should not:
+ * auto-handoff is off, the failure is not a rate limit, the session already
+ * handed off, or the directory is not a SpecWeave project. Writes the
+ * once-per-session marker before returning, so a retry storm hands off once.
+ */
+export function limitHitTarget(input: LimitHitInput, opts: { home?: string; now?: number } = {}): string | undefined {
+  if (!readSettings(opts.home)) return undefined;
+  if (input.error !== 'rate_limit') return undefined;
+  const id = safeId(String(input.sessionId ?? input.session_id ?? ''));
+  if (!id) return undefined;
+  const start = input.cwd ?? input.workspaceRoot;
+  const root = start ? findProjectRoot(start) ?? undefined : undefined;
+  if (!root) return undefined;
+  const marker = path.join(usageDir(opts.home), `${id}.handed-off`);
+  if (fs.existsSync(marker)) return undefined;
+  try {
+    fs.mkdirSync(path.dirname(marker), { recursive: true });
+    fs.writeFileSync(marker, `${new Date(opts.now ?? Date.now()).toISOString()} rate_limit\n`);
+  } catch {
+    return undefined;
+  }
+  return root;
 }

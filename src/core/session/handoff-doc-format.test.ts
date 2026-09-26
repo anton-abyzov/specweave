@@ -145,14 +145,20 @@ describe('per-tool resume matrix (pinned strings)', () => {
     expect(CLAUDE_MUNGE_EXAMPLE).toContain('specweave-umb--claude-worktrees');
   });
 
-  it('covers all six tools', () => {
+  it('covers all eight tools', () => {
     expect(TOOL_RESUME_MATRIX.map((e) => e.tool)).toEqual([
-      'Claude Code', 'Codex', 'OpenCode', 'Gemini CLI', 'Antigravity', 'Aider',
+      'Claude Code', 'Codex', 'OpenCode', 'Gemini CLI', 'Antigravity', 'Aider', 'Grok Build', 'Muse Code',
     ]);
   });
 
-  it('lists the first three resume commands in the Resume section', () => {
-    const doc = renderHandoffDoc(baseInput());
+  it('names only the writing tool\'s resume command when it is known', () => {
+    const doc = renderHandoffDoc({ ...baseInput(), agent: 'grok@mbp' });
+    expect(doc).toContain('Grok Build: `grok --resume <id>`');
+    expect(doc).not.toContain('claude -r <uuid>');
+  });
+
+  it('lists the first three resume commands when the writing tool is unknown', () => {
+    const doc = renderHandoffDoc({ ...baseInput(), agent: 'cli@mbp' });
     expect(doc).toContain('claude -r <uuid>');
     expect(doc).toContain('codex resume <uuid>');
     expect(doc).toContain('opencode -s <id>');
