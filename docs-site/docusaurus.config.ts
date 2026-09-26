@@ -486,16 +486,14 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/specweave-social-card-v2.jpg',
+    image: 'img/v3/og.jpg',
 
     // Twitter/X Card meta tags (explicit for better compatibility)
     metadata: [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:site', content: '@aabyzov' },
       { name: 'twitter:creator', content: '@aabyzov' },
-      { name: 'twitter:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
     ],
 
     // Color mode configuration

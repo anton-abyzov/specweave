@@ -2,267 +2,100 @@ import CommandTabs from '@site/src/components/CommandTabs';
 
 # What is an Increment?
 
-An **increment** is SpecWeave's fundamental unit of work—a complete, self-contained feature with specifications, architecture, implementation plan, and tests.
+An **increment** is SpecWeave's unit of work: one change with a clear definition of done. In a Claude Code Project it is one thread; in git it is one branch and one pull request.
 
-## Think of Increments as "Git Commits for Features"
+## What is inside
 
-Just like Git commits capture code changes with messages and history, **increments capture feature development** with complete context:
-
-```mermaid
-graph LR
-    A[Increment 0001] --> B[Increment 0002]
-    B --> C[Increment 0003]
-    C --> D[Increment 0004]
-
-    style A fill:#e1f5e1
-    style B fill:#e1f5e1
-    style C fill:#e1f5e1
-    style D fill:#fff3cd
-```
-
-**Each increment contains:**
-- 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria) — **required**
-- 🏗️ **plan.md** - How (architecture, test strategy, implementation approach) — **optional**, for complex features
-- ✅ **tasks.md** - Checklist with embedded tests — **required**
-- 📊 **logs/** - Execution history
-- 📝 **reports/** - Completion summaries, scope changes
-
-> **When is plan.md needed?** Create `plan.md` for features with architectural decisions, multi-component design, or technology choices. Skip it for bug fixes, simple migrations, and straightforward tasks where the spec already describes the approach.
-
-## Anatomy of an Increment
+Since 3.0, a new increment is one file you read and write, plus machine state you do not:
 
 ```
-.specweave/increments/0001-user-authentication/
-├── spec.md              # WHAT: Requirements, user stories, AC-IDs
-│                        # - US-001: Basic login flow
-│                        # - US-002: Password reset
-│                        # - AC-US1-01: Valid credentials → dashboard
-│
-├── plan.md              # HOW: Architecture + test strategy (OPTIONAL)
-│                        # - Only for complex features needing design docs
-│                        # - Skip for bug fixes, simple migrations
-│                        # - Example: JWT auth design, database schema
-│
-├── tasks.md             # Checklist + embedded tests
-│                        # - T-001: AuthService [in_progress]
-│                        # - T-002: Login endpoint [pending]
-│                        # - Each task has BDD test plan
-│
-├── logs/                # Execution logs
-│   └── session-2025-11-04.log
-│
-└── reports/             # Completion reports, scope changes
-    └── COMPLETION-REPORT.md
+.specweave/increments/0042-checkout-recovery/
+├── spec.md          # the only file you and the agent edit
+├── ledger.jsonl     # append-only state: claims, done, notes, sessions
+├── metadata.json    # id, status, type, tracker links (machine state)
+└── handoff.md       # written by specweave handoff
 ```
 
-## Why Increments?
+`spec.md` has six sections:
 
-### 1. Complete Context
+- **Problem**: the outcome, in the user's words.
+- **Scope**: what is in and what is out.
+- **Acceptance Criteria**: numbered, `- [ ] AC-01: …`. This is the definition of done.
+- **Approach**: files, order, risks and decisions.
+- **Open questions**: what is still undecided, or "none".
+- **Tasks**: a heading per task and one line naming the criteria it covers, the files it owns and its test:
 
-Every increment is a **snapshot in time** with all context preserved:
-
-```mermaid
-graph TB
-    subgraph "Increment 0001: User Auth"
-        A[Requirements<br/>What was needed?]
-        B[Architecture<br/>How was it built?]
-        C[Tasks<br/>What was done?]
-        D[Tests<br/>How was it validated?]
-    end
-
-    A --> B --> C --> D
-
-    style A fill:#e3f2fd
-    style B fill:#e3f2fd
-    style C fill:#e3f2fd
-    style D fill:#e3f2fd
+```markdown
+### T-02 Restore it on return
+- AC: AC-01, AC-02 | Files: src/checkout/restore.ts | Test: npm test -- restore
 ```
 
-**6 months later**, you can answer:
-- ✅ "Why did we choose JWT over sessions?" → Read spec.md
-- ✅ "How does password reset work?" → Read plan.md
-- ✅ "What tests cover this?" → Read tasks.md (embedded tests)
+Claiming a task claims its files, so two agents never edit the same file at once.
 
-### 2. Traceability
+State is never written back into markdown. When the agent claims or finishes a task, SpecWeave appends to `ledger.jsonl`. An acceptance criterion is met when every task that covers it is done, so nobody ticks boxes by hand.
 
-Clear path from requirements → implementation → tests:
+A separate `plan.md` is still available for a genuinely large design. Increments created with 2.x, which have a `tasks.md`, keep working unchanged.
 
-```
-AC-US1-01 (spec)
-   ↓
-T-001: AuthService (tasks)
-   ↓
-validLogin() test (tests/unit/auth.test.ts)
-```
+## Why one file
 
-**For compliance** (HIPAA, SOC 2, FDA):
-- Complete audit trail
-- Requirement-to-code traceability
-- Test coverage proof
+Every token an agent spends rereading bookkeeping is a token it does not spend on your code. In 2.x, `tasks.md` was two thirds derived state that the ledger already held, and the agent reread the whole spec on every task to find its criteria. In 3.0, `specweave task next` prints the task with the text of its criteria, so the agent reads a few lines per task.
 
-### 3. Focused Work
-
-**ONE increment at a time** prevents context switching:
-
-| Without Increments | With Increments |
-|-------------------|-----------------|
-| Multiple features in progress | **Focus on ONE thing** |
-| Unclear what's done | **Clear completion criteria** |
-| Documentation scattered | **Everything in one place** |
-| Hard to rollback | **Self-contained units** |
-
-## Increment Types
-
-SpecWeave supports different work types:
-
-| Type | Use When | Can Interrupt? | Example |
-|------|----------|----------------|---------|
-| **feature** | New functionality | No | User authentication, payments |
-| **hotfix** | Critical production bug | ✅ Yes | Security patch, crash fix |
-| **bug** | Production bugs needing investigation | ✅ Yes | Memory leak, performance issue |
-| **change-request** | Stakeholder request | No | UI redesign, API changes |
-| **refactor** | Code improvement | No | Extract service layer, TypeScript migration |
-| **experiment** | POC/spike work | No | Evaluate libraries, architecture spike |
-
-**Note**: All types use the same structure (spec.md, plan.md, tasks). The type is just a label for tracking.
-
-## Increment Lifecycle
+## Working through an increment
 
 <CommandTabs
-  natural="Let's add user authentication with JWT and refresh tokens"
-  claude='sw:increment "user authentication with JWT"'
-  other='increment "user authentication with JWT"'
+  natural="Let's make checkout resumable when a customer comes back"
+  claude='sw:increment "keep checkout resumable"'
+  other='specweave create-increment "keep checkout resumable"'
 />
+
+```bash
+specweave task next                       # next task, with its acceptance criteria
+specweave task claim T-02                 # claim it (and the files it owns)
+specweave task done T-02 --run "npm test" # record the real verification
+specweave verify 0042                     # run the project's checks
+specweave complete 0042                   # close with evidence
+```
+
+When you switch tools or hit a usage limit, run `specweave handoff` in the old tool and `specweave pickup` in the new one. Nothing to copy between them. See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
+
+## Lifecycle
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning : sw:increment
-    Planning --> Active : sw:do
-    Active --> Active : Complete tasks
+    [*] --> Planned : create-increment
+    Planned --> Active : first task claimed
     Active --> Paused : specweave pause
     Paused --> Active : specweave resume
-    Active --> Completed : All tasks done
+    Active --> Completed : verified and complete
     Active --> Abandoned : specweave abandon
     Completed --> [*]
     Abandoned --> [*]
 ```
 
-**States explained:**
-- **Planning**: PM agent creates spec.md, plan.md, tasks.md
-- **Active**: Implementation in progress
-- **Paused**: Temporarily on hold (with reason)
-- **Completed**: All tasks done, tests passing
-- **Abandoned**: Work canceled (with reason)
+Changing status does not touch GitHub, Jira or Azure DevOps. A tracker is updated only when you run `specweave sync push`, or when you turn on close-on-complete.
 
-## Best Practices
+## Increment types
 
-### ✅ DO
+The type is a label for tracking; every type has the same layout.
 
-1. **Keep increments focused** - One feature or fix per increment
-2. **Complete before starting new** - Finish 0001 before 0002
-3. **Use descriptive names** - `0001-user-authentication` not `0001`
-4. **Document scope changes** - Use `sw:increment (to update spec)`
-5. **Close properly** - Validate tests, update docs, create completion report
+| Type | Use when |
+|------|----------|
+| **feature** | New functionality |
+| **hotfix** | A critical production fix |
+| **bug** | A defect that needs investigation |
+| **change-request** | A stakeholder asked for a change |
+| **refactor** | Improving code without changing behaviour |
+| **experiment** | A spike or proof of concept |
 
-### ❌ DON'T
+## Good habits
 
-1. **Don't start multiple increments** - Causes context switching
-2. **Don't skip specs** - Leads to unclear requirements
-3. **Don't modify completed increments** - They're immutable snapshots
-4. **Don't create unnecessary plan.md** - Only for complex features with architecture decisions
-5. **Don't forget tests** - Every task needs test validation
+1. **One outcome per increment.** If a request touches files an open increment already owns, add scope there instead of opening a second one.
+2. **Criteria you can check.** "Returning within 24 hours restores the cart" beats "checkout is better".
+3. **Verify before closing.** A task is done when its check passed, not when the code was written.
+4. **Hand off explicitly.** Run `specweave handoff` before you switch tools, so the next one starts where you stopped.
 
-## Real-World Examples
+## Next steps
 
-### Example 1: Simple Feature
-
-```
-Increment: 0005-dark-mode
-Duration: 2 days
-Tasks: 4
-Type: feature
-
-Structure:
-├── spec.md (1 user story, 3 AC-IDs)
-├── plan.md (CSS variables, theme switching)
-├── tasks.md (4 tasks, embedded tests, 85% coverage)
-└── reports/COMPLETION-REPORT.md
-```
-
-### Example 2: Complex Feature
-
-```
-Increment: 0012-payment-processing
-Duration: 3 weeks
-Tasks: 18
-Type: feature
-
-Structure:
-├── spec.md (5 user stories, 15 AC-IDs)
-├── plan.md (Stripe integration, webhooks, refunds)
-├── tasks.md (18 tasks, embedded tests, 90% coverage)
-├── logs/ (multiple sessions)
-└── reports/
-    ├── COMPLETION-REPORT.md
-    └── scope-changes-2025-11-10.md
-```
-
-### Example 3: Emergency Hotfix
-
-```
-Increment: 0008-sql-injection-fix
-Duration: 4 hours
-Tasks: 3
-Type: hotfix
-
-Structure:
-├── spec.md (Security vulnerability, CVE reference)
-├── plan.md (Parameterized queries, input validation)
-├── tasks.md (3 tasks, security tests, 100% coverage)
-└── reports/COMPLETION-REPORT.md (impact analysis)
-```
-
-## Increments vs Living Documentation
-
-**Increments** (immutable snapshots):
-- Historical record
-- "What was done and why"
-- Never modified after completion
-- Complete audit trail
-
-**Living Docs** (always current):
-- Current system state
-- "What exists now"
-- Auto-updated by hooks
-- Single source of truth
-
-**Both are essential:**
-```
-Question: "Why did we build it this way?"
-Answer: Read increment snapshot
-
-Question: "What's the current implementation?"
-Answer: Read living docs
-```
-
-## Summary
-
-- **Increment = complete feature unit** (spec, plan, tasks, tests)
-- **Immutable snapshots** preserved forever
-- **Clear lifecycle** (planning → active → completed)
-- **Focus on ONE** increment at a time
-- **Complete context** for future reference
-- **Traceability** from requirements to code
-
-## Next Steps
-
-- [Creating Your First Increment](/docs/workflows/planning)
-- [The sw:do Workflow](/docs/workflows/implementation)
-- [Living Documentation](/docs/guides/core-concepts/living-documentation)
-
----
-
-**Learn More:**
-- [Increment Planning Workflow](/docs/workflows/planning)
-- Increment Discipline (WIP Limits) (historical reference; not published)
-- Test-Aware Planning
+- [Your first increment](/docs/getting-started/first-increment)
+- [Claude Code Projects and threads](/docs/guides/claude-code-projects)
+- [SpecWeave 3.0](/docs/guides/specweave-3)
