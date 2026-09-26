@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Keep intent, specifications, and verified progress portable across AI coding tools. A local live work board, append-only task evidence, explicit handoffs, and optional GitHub/Jira/Azure DevOps integrations.",
   "type": "module",
   "bin": {

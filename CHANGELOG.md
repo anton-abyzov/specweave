@@ -1,3 +1,10 @@
+## [3.0.1] - 2026-09-26
+
+### Fixed
+
+- `specweave update` no longer deletes `~/.specweave` or any `.specweave/` folder above the project. In 3.0.0, running it in a project three or fewer folders below your home directory removed `~/.specweave` (plugin lock, hook settings, auto-handoff settings, logs) as a "stale" folder. Update now never deletes anything outside the project. `init` still offers, with a prompt, to remove a stale parent folder and never touches the home one.
+- `specweave update --dry-run` works as an alias for `--check`.
+
 ## [3.0.0] - 2026-09-25
 
 A redesign from an audit of 2.3. Handoff between tools and accounts is two words, an increment is one file, and a third of the code is gone.
