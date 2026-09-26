@@ -46,13 +46,33 @@ const config: Config = {
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
         name: 'SpecWeave',
+        description:
+          'Open-source CLI that keeps AI coding work in git as a short spec, an append-only task ledger and a handoff, so Claude Code, Codex, Grok Build, Gemini CLI or another account can pick up where the last session stopped.',
+        url: 'https://spec-weave.com',
         applicationCategory: 'DeveloperApplication',
         operatingSystem: 'Linux, macOS, Windows',
+        downloadUrl: 'https://www.npmjs.com/package/specweave',
+        installUrl: 'https://spec-weave.com/docs/getting-started/installation',
+        license: 'https://opensource.org/licenses/MIT',
+        codeRepository: 'https://github.com/anton-abyzov/specweave',
+        author: {'@type': 'Person', name: 'Anton Abyzov', url: 'https://github.com/anton-abyzov'},
         offers: {
           '@type': 'Offer',
           price: '0',
           priceCurrency: 'USD',
         },
+      }),
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'SpecWeave',
+        url: 'https://spec-weave.com',
       }),
     },
     {
@@ -248,12 +268,18 @@ const config: Config = {
   themeConfig: {
     image: 'img/v3/og.jpg',
 
-    // Twitter/X Card meta tags (explicit for better compatibility)
+    // themeConfig.image already emits og:image and twitter:image for every page
     metadata: [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:site', content: '@aabyzov' },
       { name: 'twitter:creator', content: '@aabyzov' },
       { property: 'og:type', content: 'website' },
+      { property: 'og:site_name', content: 'SpecWeave' },
+      {
+        name: 'keywords',
+        content:
+          'switch from Claude Code to Codex, Claude Code usage limit, AI coding agent handoff, spec-driven development, AGENTS.md, Claude Code Projects, Codex, Grok Build, Gemini CLI',
+      },
     ],
 
     // Color mode configuration

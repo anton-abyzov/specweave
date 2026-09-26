@@ -1,29 +1,25 @@
 # robots.txt for spec-weave.com
 
-# Default crawlers - allow all
 User-agent: *
 Allow: /
-
-# Sitemap location
-Sitemap: https://spec-weave.com/sitemap.xml
-
-# Disallow non-public content
 Disallow: /DOCUMENTATION-AUDIT
-
-# Exclude non-page routes from crawling
 Disallow: /sections/
 Disallow: /search
 Disallow: /docs/_page-template
 
-# Rate limiting for aggressive AI bots
+# Search and answer engines are welcome: developers ask them which tool to use.
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
 User-agent: GPTBot
-Crawl-delay: 10
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+Allow: /
+Disallow: /DOCUMENTATION-AUDIT
+Disallow: /sections/
+Disallow: /search
+Disallow: /docs/_page-template
 
-User-agent: CCBot
-Crawl-delay: 10
-
-User-agent: Claude-Web
-Crawl-delay: 10
-
-User-agent: anthropic-ai
-Crawl-delay: 10
+Sitemap: https://spec-weave.com/sitemap.xml
