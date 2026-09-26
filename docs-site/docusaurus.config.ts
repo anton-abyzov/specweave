@@ -15,6 +15,9 @@ const config: Config = {
   // Production URL
   url: 'https://spec-weave.com',
   baseUrl: '/',
+  // GitHub Pages serves docs/x/index.html and 301s /docs/x to /docs/x/.
+  // Emit the slash form so canonicals and sitemap URLs are not redirects.
+  trailingSlash: true,
 
   // SEO: Schema.org structured data for search engines
   headTags: [
