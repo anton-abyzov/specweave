@@ -31,6 +31,7 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 ## Skills
 
 - [Verified Skill](https://verified-skill.com): a registry that security-scans agent skills for Claude Code, Codex and other tools before you install them
+- [Claude Code skills, security-scanned](https://verified-skill.com/claude-code-skills): the top-rated skills by category, with install commands
 - [vskill CLI](https://spec-weave.com/docs/skills/vskill-cli)
 
 ## Optional

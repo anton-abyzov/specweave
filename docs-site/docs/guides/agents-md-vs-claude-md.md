@@ -55,7 +55,7 @@ The file is loaded into every session, before the agent reads a line of your cod
 **Leave out:**
 - Anything the agent can learn by reading the code.
 - Long explanations, history and style essays.
-- Step-by-step procedures you use only sometimes. Put those in skills (`.claude/skills/`, `.agents/skills/`), which load only when needed.
+- Step-by-step procedures you use only sometimes. Put those in skills (`.claude/skills/`, `.agents/skills/`), which load only when needed. [Verified Skill](https://verified-skill.com/claude-code-skills) lists security-scanned ones you can install instead of writing your own.
 
 SpecWeave 3.0 followed this rule on its own instructions. In 2.x, `CLAUDE.md` and `AGENTS.md` together came to about 3,300 tokens. In 3.0, `AGENTS.md` is about 760 tokens, and `CLAUDE.md` only imports it.
 
