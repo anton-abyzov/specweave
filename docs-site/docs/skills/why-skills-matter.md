@@ -53,4 +53,4 @@ Without evaluation, you're flying blind — the skill might be making things wor
 
 ---
 
-Ready to dive deeper? Learn [how skills, plugins, and marketplaces work together](fundamentals).
+Ready to dive deeper? Learn [how skills, plugins, and marketplaces work together](./fundamentals.md).
