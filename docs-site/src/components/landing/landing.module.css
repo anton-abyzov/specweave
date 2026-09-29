@@ -198,19 +198,25 @@
   to { transform: translateX(-50%); }
 }
 
+/*
+ * Active states repeat the base class so they always win. The production CSS
+ * minifier merges rules with identical bodies and can move an active rule
+ * above its base rule, which left the pinned stage blank on spec-weave.com.
+ */
+
 /* ---------- Pinned story: steps scroll, stage stays ---------- */
 
 .story {
   --progress: 0;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 120px 64px 40px;
+  padding: 96px 64px 24px;
 }
 
 .storyIntro {
   --sy: 0;
   position: relative;
-  margin-bottom: 40px;
+  margin-bottom: 8px;
 }
 
 .storyIntro h2 {
@@ -242,7 +248,7 @@
 }
 
 .storyStep {
-  min-height: 88vh;
+  min-height: 68vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -251,7 +257,7 @@
   transition: opacity .5s ease, transform .5s ease;
 }
 
-.storyStepActive {
+.storyStep.storyStepActive {
   opacity: 1;
   transform: none;
 }
@@ -313,7 +319,7 @@
   pointer-events: none;
 }
 
-.stageBeatActive {
+.stageBeat.stageBeatActive {
   opacity: 1;
   transform: none;
 }
@@ -564,10 +570,11 @@
 .wideArt {
   display: block;
   width: 100%;
-  aspect-ratio: 21 / 8;
+  aspect-ratio: 16 / 5;
   object-fit: cover;
+  object-position: center 70%;
   border-radius: 3px;
-  margin-top: 64px;
+  margin-top: 48px;
 }
 
 /* ---------- Lean stats ---------- */
