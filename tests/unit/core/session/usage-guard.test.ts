@@ -3,9 +3,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings,
+  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading,
 } from '../../../../src/core/session/usage-guard.js';
-import { autoHandoffCommand, statuslineCommand } from '../../../../src/cli/commands/auto-handoff.js';
+import { autoHandoffCommand, autoHandoffStatus, statuslineCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
 let home: string;
 const NOW = Date.parse('2026-09-25T20:00:00Z');
@@ -72,6 +72,26 @@ describe('usage guard', () => {
     expect(usageGuard({ session_id: 's2' }, { home, now: NOW })).toEqual({});
   });
 
+  it('asks again in a later window once the window that triggered the handoff has reset', () => {
+    writeSettings({ at: 90 }, home);
+    recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
+    expect(usageGuard({ session_id: 's1' }, { home, now: NOW }).decision).toBe('block');
+    expect(usageGuard({ session_id: 's1' }, { home, now: NOW + 60_000 })).toEqual({});
+    // The 5-hour window resets; the session keeps going and fills the next one.
+    const next = LATER + 5 * 3600;
+    recordClaudeUsage({ ...claudeStatus('s1', 93), rate_limits: { five_hour: { used_percentage: 93, resets_at: next } } }, home, NOW);
+    const again = usageGuard({ session_id: 's1' }, { home, now: (LATER + 60) * 1000 });
+    expect(again.decision).toBe('block');
+    expect(again.reason).toContain('93% of the 5-hour limit');
+  });
+
+  it('a marker from 3.0.3 (no reset time) keeps the session handed off', () => {
+    writeSettings({ at: 90 }, home);
+    recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
+    fs.writeFileSync(path.join(home, '.specweave', 'usage', 's1.handed-off'), '2026-09-25T20:00:00.000Z 5-hour 95\n');
+    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
+  });
+
   it('ignores a window that has already reset', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
@@ -135,6 +155,7 @@ describe('specweave auto-handoff on/off', () => {
     expect(claude.model).toBe('opus');
     expect(claude.statusLine).toEqual({ type: 'command', padding: 0, command: `specweave statusline --wrap 'bash ~/.claude/it'\\''s-mine.sh'` });
     expect(claude.hooks.Stop).toEqual([{ hooks: [{ type: 'command', command: 'specweave usage-guard', timeout: 10 }] }]);
+    expect(claude.hooks.StopFailure).toEqual([{ matcher: 'rate_limit', hooks: [{ type: 'command', command: 'specweave usage-guard --limit-hit', timeout: 60 }] }]);
     expect(JSON.parse(fs.readFileSync(codexFile, 'utf8')).hooks.Stop).toHaveLength(1);
     expect(readSettings(home)?.at).toBe(85);
 
@@ -148,6 +169,46 @@ describe('specweave auto-handoff on/off', () => {
     await quiet(() => autoHandoffCommand('on', { home }));
     expect(fs.existsSync(path.join(home, '.codex'))).toBe(false);
     expect(JSON.parse(fs.readFileSync(path.join(home, '.claude', 'settings.json'), 'utf8')).statusLine.command).toBe('specweave statusline');
+  });
+});
+
+describe('specweave auto-handoff status', () => {
+  it('says it is off until turned on', () => {
+    expect(autoHandoffStatus(home)).toEqual(['Auto-handoff is off. Turn it on with `specweave auto-handoff on`.']);
+  });
+
+  it('shows each tool\'s hooks and the last usage it reported', async () => {
+    fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
+    await quiet(() => autoHandoffCommand('on', { home }));
+    recordClaudeUsage(claudeStatus('s1', 42, 12), home, NOW - 3 * 60_000);
+    const file = rollout(61, 20);
+    fs.utimesSync(file, (NOW - 10 * 60_000) / 1000, (NOW - 10 * 60_000) / 1000);
+
+    const lines = autoHandoffStatus(home, NOW);
+    expect(lines[0]).toMatch(/^Auto-handoff is on at 90%/);
+    expect(lines[1]).toBe('Claude Code: status line, Stop and StopFailure hooks in place; last reading 5-hour 42% · weekly 12% (3 min ago)');
+    expect(lines[2]).toBe('Codex: Stop hook in place; last reading 5-hour 61% · weekly 20% (10 min ago)');
+    expect(lines).toHaveLength(3);
+  });
+
+  it('names what is missing when a hook was removed by hand', async () => {
+    await quiet(() => autoHandoffCommand('on', { home }));
+    const claudeFile = path.join(home, '.claude', 'settings.json');
+    const claude = JSON.parse(fs.readFileSync(claudeFile, 'utf8'));
+    delete claude.hooks.Stop;
+    claude.statusLine = { type: 'command', command: 'my-line' };
+    fs.writeFileSync(claudeFile, JSON.stringify(claude));
+    const lines = autoHandoffStatus(home, NOW);
+    expect(lines[1]).toBe('Claude Code: missing status line, Stop hook; no usage reading yet');
+    expect(lines.at(-1)).toContain('auto-handoff on` again');
+  });
+
+  it('finds the newest Codex session log across date folders', () => {
+    const old = path.join(home, '.codex', 'sessions', '2026', '09', '24', 'rollout-old.jsonl');
+    fs.mkdirSync(path.dirname(old), { recursive: true });
+    fs.writeFileSync(old, JSON.stringify({ payload: { rate_limits: { primary: { used_percent: 5, window_minutes: 300 } } } }) + '\n');
+    rollout(77, 30);
+    expect(latestCodexReading(home)?.windows[0]).toMatchObject({ name: '5-hour', percent: 77 });
   });
 });
 

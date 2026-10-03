@@ -62,10 +62,12 @@ Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives th
 
 ## Hand off by itself
 
-To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code and
-Codex, on their own machine; not in cloud sessions). A session then hands off at 90% of
-the 5-hour or weekly limit (`--at <percent>` to change it); `auto-handoff status` shows
-the current usage. When its Stop hook asks you to hand off, run the handoff it names.
+To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code,
+Codex and Grok Build, on their own machine; not in cloud sessions). A session then hands
+off at 90% of the 5-hour or weekly limit (`--at <percent>` to change it), and a Claude
+Code or Grok turn that hits the limit outright hands off from a hook. `auto-handoff
+status` shows the hooks and the last usage reading. When its Stop hook asks you to hand
+off, run the handoff it names.
 
 Claude Code also warns the model itself near and at the 5-hour limit, with a note that
 starts "[Usage limit approaching" or "[Usage limit reached". Treat that note as the

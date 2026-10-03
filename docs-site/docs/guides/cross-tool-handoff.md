@@ -1,5 +1,5 @@
 ---
-title: "Switch from Claude Code to Codex mid-task: handoff and pickup"
+title: "Handoff and pickup: continue a task in any AI coding tool"
 description: "Out of Claude Code or Codex usage halfway through a task? Hand off in one command and pick up in Codex, Grok Build, Gemini CLI or another account with the spec, tasks and uncommitted edits intact."
 ---
 
@@ -17,7 +17,7 @@ No AI coding tool can read another's session. Each one keeps its transcript in i
 
 ## Hand off
 
-New to switching? [Claude Code vs Codex](/docs/guides/claude-code-vs-codex) covers what each tool reads and where its session lives.
+New to switching? [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/) is the step-by-step version, and [Claude Code vs Codex](/docs/guides/claude-code-vs-codex) covers what each tool reads and where its session lives.
 
 Tell your agent "hand off", or run:
 
@@ -91,11 +91,7 @@ specweave auto-handoff status
 specweave auto-handoff off           # restores your previous setup
 ```
 
-In Claude Code, `on` sets the status line to `specweave statusline`, which records the 5-hour and 7-day usage Claude Code reports on Pro and Max plans after the first reply. If you already have a status line, it keeps showing it. It also adds a `specweave usage-guard` Stop hook. When `~/.codex` exists, the same hook goes into `~/.codex/hooks.json`, and there it reads the rate limits Codex writes to its session log. Once usage passes the threshold, the hook stops the agent once per session and has it run `specweave handoff`, then tell you to say "pick up" in the next tool. Under the threshold the hook adds nothing to the conversation.
-
-Grok Build reports no usage percentage, so `on` gives it a hook in `~/.grok/hooks/` that runs the handoff right after a turn hits the rate limit.
-
-Cloud sessions (Claude Code on the web, Projects threads and Codex cloud tasks) have no status line or user hooks. There, and everywhere else, `AGENTS.md` tells the agent to hand off when Claude Code warns it that the usage limit is near or reached. Otherwise you say "hand off".
+At 90% of the fullest usage window, Claude Code and Codex stop once and run `specweave handoff`; when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
 
 ## Who holds a task
 
@@ -178,6 +174,8 @@ Codex then claimed T-02, finished it with `specweave task done T-02 --run "npm t
 
 ## See also
 
+- [Switch from Claude Code to Codex without losing your place](./switch-claude-code-to-codex.md): the same steps as a short how-to.
+- [Claude Code usage limit reached](./claude-code-usage-limit.md): every option when a limit hits, and auto-handoff.
 - [SpecWeave 3.0](./specweave-3.md): everything that changed in this release.
 - [Claude Code Projects and threads](./claude-code-projects.md): one thread, one increment, and the memory folder.
 - [Autonomous Execution](./autonomous-execution.md): how handoff fits unattended work.
