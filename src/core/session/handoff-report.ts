@@ -139,6 +139,7 @@ function label(e: LedgerEvent): string {
     case 'session': return 'started a session';
     case 'handoff': return 'handed off';
     case 'pickup': return 'picked up';
+    case 'wait': return 'waits on';
   }
 }
 

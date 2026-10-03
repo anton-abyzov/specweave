@@ -206,8 +206,8 @@ function lastHandoff(projectRoot: string, incDirs: string[]): string {
     if (last && (!event || Date.parse(last.at) > Date.parse(event.e.at))) event = { e: last, dir };
   }
   if (event) {
-    const docPath = path.join(event.dir, 'handoff.md');
-    const where = fs.existsSync(docPath) ? ` → ${rel(projectRoot, docPath)}` : '';
+    const docs = ['handoff.md', 'handoff.auto.md'].map((f) => path.join(event!.dir, f)).filter((p) => fs.existsSync(p));
+    const where = docs.length ? ` → ${docs.map((p) => rel(projectRoot, p)).join(' + ')}` : '';
     return `Last handoff: ${event.e.by} ${age(event.e.at)}${event.e.note ? `: ${oneLine(event.e.note, 200)}` : ''}${where}`;
   }
   const doc = newestHandoffDoc(projectRoot, incDirs);
@@ -217,7 +217,7 @@ function lastHandoff(projectRoot: string, incDirs: string[]): string {
 
 function newestHandoffDoc(projectRoot: string, incDirs: string[]): { p: string; mtime: number } | undefined {
   const candidates = [
-    ...incDirs.map((d) => path.join(d, 'handoff.md')),
+    ...incDirs.flatMap((d) => [path.join(d, 'handoff.md'), path.join(d, 'handoff.auto.md')]),
     path.join(projectRoot, '.specweave', 'state', 'handoff-latest.md'),
   ];
   // Canonical owned docs recover older absolute pointers after a project move.
@@ -298,7 +298,7 @@ function age(iso?: string): string {
   return Number.isNaN(t) ? '' : ageMs(t);
 }
 
-function ageMs(ms: number): string {
+export function ageMs(ms: number): string {
   const min = Math.max(0, Math.round((Date.now() - ms) / 60000));
   if (min < 60) return `${min}m ago`;
   const h = Math.round(min / 60);

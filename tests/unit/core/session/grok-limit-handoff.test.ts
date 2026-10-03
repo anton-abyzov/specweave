@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { limitHitTarget, writeSettings } from '../../../../src/core/session/usage-guard.js';
+import { limitHitTarget, writeSettings, LIMIT_HIT_REARM_MS } from '../../../../src/core/session/usage-guard.js';
 import { autoHandoffCommand, grokHook } from '../../../../src/cli/commands/auto-handoff.js';
 
 let home: string;
@@ -45,7 +45,24 @@ describe('Grok Build rate-limit handoff', () => {
     expect(limitHitTarget(failure({ cwd: home, sessionId: 'g-out' }), { home })).toBeUndefined();
     expect(limitHitTarget(failure(), { home })).toBe(project);
     expect(limitHitTarget(failure(), { home })).toBeUndefined();
-    expect(fs.readFileSync(path.join(home, '.specweave', 'usage', 'g-1.handed-off'), 'utf8')).toContain('rate_limit');
+    expect(fs.readFileSync(path.join(home, '.specweave', 'usage', 'g-1.limit-hit'), 'utf8')).toContain('rate_limit');
+  });
+
+  it('hands off again once the shortest window could have reset, not before', () => {
+    writeSettings({ at: 90 }, home);
+    const now = Date.parse('2026-10-03T06:00:00Z');
+    expect(limitHitTarget(failure(), { home, now })).toBe(project);
+    expect(limitHitTarget(failure(), { home, now: now + LIMIT_HIT_REARM_MS - 60_000 })).toBeUndefined();
+    expect(limitHitTarget(failure(), { home, now: now + LIMIT_HIT_REARM_MS + 60_000 })).toBe(project);
+  });
+
+  it('Claude Code: a StopFailure rate_limit hands off even after the Stop hook already asked', () => {
+    writeSettings({ at: 90 }, home);
+    fs.mkdirSync(path.join(home, '.specweave', 'usage'), { recursive: true });
+    fs.writeFileSync(path.join(home, '.specweave', 'usage', 'c-1.handed-off'), '{"window":"5-hour","percent":91}\n');
+    const claudeInput = { session_id: 'c-1', hook_event_name: 'StopFailure', cwd: project, error: 'rate_limit', error_details: '429' };
+    expect(limitHitTarget(claudeInput, { home })).toBe(project);
+    expect(limitHitTarget(claudeInput, { home })).toBeUndefined();
   });
 
   it('accepts the snake_case session id too and rejects ids that escape the usage folder', () => {

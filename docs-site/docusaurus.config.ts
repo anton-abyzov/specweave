@@ -307,6 +307,7 @@ const config: Config = {
         {to: '/integrations', label: 'Integrations', position: 'left'},
         {to: '/blog', label: 'Blog', position: 'left'},
         {href: 'https://verified-skill.com', label: 'Verified Skills', position: 'left'},
+        {to: '/pricing', label: 'Pricing', position: 'right'},
         {type: 'search', position: 'right'},
         {href: 'https://github.com/anton-abyzov/specweave', label: 'GitHub', position: 'right'},
       ],
