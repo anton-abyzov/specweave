@@ -1,0 +1,13 @@
+.plans{max-width:1004px;margin-inline:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;align-items:stretch}
+.plan{display:flex;flex-direction:column;border-top:1px solid var(--line);padding:26px 0 0}
+.highlight{border-top:2px solid var(--accent)}
+.plan .name{font-size:26px;line-height:1.15;margin:0 0 14px}
+.plan .price{margin:0 0 16px;color:var(--soft);font-size:14px}
+.plan .price b{font-size:40px;line-height:1;color:var(--ink);font-weight:600;margin-right:6px}
+.plan .lead{margin:0 0 18px;font-size:15px}
+.features{list-style:none;padding:0;margin:0 0 26px;flex:1}
+.features li{position:relative;padding:0 0 10px 20px;font-size:14px;color:var(--soft)}
+.features li::before{content:'';position:absolute;left:0;top:.62em;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.plan>a{align-self:flex-start}
+.note{max-width:1004px;margin:30px auto 0;font-size:14px;color:var(--soft)}
+@media(max-width:1000px){.plans{grid-template-columns:1fr;gap:40px}}
