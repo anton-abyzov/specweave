@@ -38,8 +38,8 @@ const scenes = [
       lines: ["The model this whole video runs on.", "Default in Claude Code on my accounts."] },
     { name: "Claude Code Projects", by: "Anthropic", tone: "blue", tag: "Now on Pro",
       lines: ["I had early access.", "A fresh Pro account has it too: I checked."] },
-    { name: "Astra 6", by: "Codex", tone: "green", tag: "Frontier",
-      lines: ["Codex's newest frontier model. Very strong.", "Which is exactly why switching tools matters."] },
+    { name: "GPT-6 Astra", by: "OpenAI · in Codex", tone: "green", tag: "Frontier",
+      lines: ["OpenAI's flagship, now in Codex. Very strong.", "Which is exactly why switching tools matters."] },
     { name: "GPT-6 Sol", by: "OpenAI", tone: "red", tag: "Disappointment",
       lines: ["Same release day as Opus 5.5.", "Side by side, it just didn't hold up for me."] },
   ] },
@@ -319,7 +319,7 @@ html, body { width:1920px; height:1080px; overflow:hidden; background:#0b0b0f; c
 .cap { position:absolute; left:0; right:0; bottom:22px; display:flex; justify-content:center; opacity:0; }
 .cap span { max-width:1600px; padding:16px 30px; border-radius:16px; background:rgba(12,12,16,0.88); border:1px solid rgba(255,255,255,0.10);
   font-size:40px; font-weight:600; line-height:1.25; letter-spacing:-0.2px; text-align:center; box-shadow:0 18px 50px rgba(0,0,0,0.55); border-left:6px solid var(--terra); }
-.punch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(8,8,12,0.15), rgba(8,8,12,0.55)); }
+.punch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(1100px 520px at 50% 50%, rgba(8,8,12,0.82), rgba(8,8,12,0.45)); }
 .p-eyebrow { font:600 30px "Geist Mono", monospace; color:var(--terra); letter-spacing:4px; text-transform:uppercase; opacity:0; margin-bottom:18px; }
 .p-big { font-size:118px; font-weight:800; letter-spacing:-3px; text-align:center; text-shadow:0 10px 50px rgba(0,0,0,0.85); opacity:0; max-width:1700px; }
 .still { position:absolute; left:0; right:0; top:60px; height:820px; display:flex; align-items:center; justify-content:center; opacity:0; }
