@@ -13,8 +13,9 @@
  *                rollout file the hook's `transcript_path` points at.
  *
  * The Stop hook (`specweave usage-guard`) then blocks the stop once per
- * session when any window is at or past the threshold, and the agent runs
- * `specweave handoff`. Under the threshold it prints `{}`: no tokens, no files.
+ * session and usage window when any window is at or past the threshold, and
+ * the agent runs `specweave handoff`. Under the threshold it prints `{}`: no
+ * tokens, no files.
  *
  * @module core/session/usage-guard
  */
@@ -25,6 +26,9 @@ import * as path from 'path';
 import { findProjectRoot } from '../../utils/find-project-root.js';
 
 export const DEFAULT_THRESHOLD = 90;
+
+/** The shortest usage window; a session that hit the limit may hit it again after this. */
+export const LIMIT_HIT_REARM_MS = 5 * 60 * 60 * 1000;
 
 export interface UsageWindow {
   /** "5-hour", "weekly", "spend" or "<n>-minute". */
@@ -143,11 +147,72 @@ export function codexWindows(transcriptPath: string): UsageWindow[] {
   return [];
 }
 
+export interface UsageReading {
+  tool: 'Claude Code' | 'Codex';
+  /** Epoch milliseconds of the reading. */
+  at: number;
+  windows: UsageWindow[];
+}
+
+/** The newest usage any Claude Code session's status line recorded. */
+export function latestClaudeReading(home?: string): UsageReading | undefined {
+  let best: UsageReading | undefined;
+  let names: string[] = [];
+  try { names = fs.readdirSync(usageDir(home)).filter((n) => n.endsWith('.json')); } catch { return undefined; }
+  for (const name of names) {
+    try {
+      const saved = JSON.parse(fs.readFileSync(path.join(usageDir(home), name), 'utf8')) as { at?: string; windows?: UsageWindow[] };
+      const at = Date.parse(saved.at ?? '');
+      if (saved.windows?.length && at && (!best || at > best.at)) best = { tool: 'Claude Code', at, windows: saved.windows };
+    } catch { /* skip a half-written file */ }
+  }
+  return best;
+}
+
+/** The newest file under `dir` whose name matches, walking date folders newest first. */
+function newestFile(dir: string, match: (name: string) => boolean, depth: number): string | undefined {
+  let entries: fs.Dirent[];
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return undefined; }
+  const files = entries.filter((e) => e.isFile() && match(e.name)).map((e) => path.join(dir, e.name));
+  if (files.length) return files.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)[0];
+  if (depth <= 0) return undefined;
+  for (const sub of entries.filter((e) => e.isDirectory()).map((e) => e.name).sort().reverse()) {
+    const found = newestFile(path.join(dir, sub), match, depth - 1);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** The rate limits in the newest Codex session log (~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl). */
+export function latestCodexReading(home = os.homedir()): UsageReading | undefined {
+  const file = newestFile(path.join(home, '.codex', 'sessions'), (n) => n.startsWith('rollout-') && n.endsWith('.jsonl'), 3);
+  if (!file) return undefined;
+  const windows = codexWindows(file);
+  return windows.length ? { tool: 'Codex', at: fs.statSync(file).mtimeMs, windows } : undefined;
+}
+
 /** The fullest window that has not reset yet. */
 export function fullest(windows: UsageWindow[], now = Date.now()): UsageWindow | undefined {
   return windows
     .filter((w) => !w.resetsAt || w.resetsAt * 1000 > now)
     .sort((a, b) => b.percent - a.percent)[0];
+}
+
+/**
+ * Whether a session may be asked to hand off (again). A session is asked once
+ * per usage window: when the window that triggered the handoff has reset, a
+ * session that kept going is guarded again. A marker without a reset time
+ * stays spent.
+ */
+function rearmed(marker: string, now: number): boolean {
+  let text: string;
+  try { text = fs.readFileSync(marker, 'utf8'); } catch { return true; }
+  try {
+    const resetsAt = (JSON.parse(text) as { resetsAt?: unknown }).resetsAt;
+    return typeof resetsAt === 'number' && resetsAt * 1000 <= now;
+  } catch {
+    return false;
+  }
 }
 
 export function handoffInstruction(w: UsageWindow): string {
@@ -171,17 +236,18 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   if (!settings) return {};
   const id = safeId(String(input.session_id ?? ''));
   if (!id) return {};
+  const now = opts.now ?? Date.now();
   const marker = path.join(usageDir(opts.home), `${id}.handed-off`);
-  if (fs.existsSync(marker)) return {};
+  if (!rearmed(marker, now)) return {};
 
   const rollout = input.transcript_path && path.basename(input.transcript_path).startsWith('rollout-') ? input.transcript_path : undefined;
   const windows = [...readClaudeUsage(id, opts.home), ...(rollout ? codexWindows(rollout) : [])];
-  const top = fullest(windows, opts.now);
+  const top = fullest(windows, now);
   if (!top || top.percent < settings.at) return {};
 
   try {
     fs.mkdirSync(path.dirname(marker), { recursive: true });
-    fs.writeFileSync(marker, `${new Date(opts.now ?? Date.now()).toISOString()} ${top.name} ${top.percent}\n`);
+    fs.writeFileSync(marker, JSON.stringify({ at: new Date(now).toISOString(), window: top.name, percent: top.percent, ...(top.resetsAt ? { resetsAt: top.resetsAt } : {}) }) + '\n');
   } catch {
     return {}; // without the marker it would fire every turn; stay quiet instead
   }
@@ -194,9 +260,11 @@ export function usageSummary(windows: UsageWindow[]): string {
 }
 
 /**
- * Grok Build shows no usage percentage to scripts, but it fires `StopFailure`
- * with `error: "rate_limit"` when a turn hits the limit. Its hook input is
- * camelCase (`sessionId`, `cwd`, `workspaceRoot`).
+ * When a turn fails on the rate limit, Claude Code and Grok Build fire
+ * `StopFailure` with `error: "rate_limit"`. It is the backstop for a session
+ * that ran out before the Stop hook could ask for a handoff, and the only
+ * signal Grok Build gives (it shows no usage percentage). Grok's hook input is
+ * camelCase (`sessionId`, `workspaceRoot`), Claude Code's snake_case.
  */
 export interface LimitHitInput {
   sessionId?: string;
@@ -209,8 +277,10 @@ export interface LimitHitInput {
 /**
  * Where a rate-limited turn should hand off, or undefined when it should not:
  * auto-handoff is off, the failure is not a rate limit, the session already
- * handed off, or the directory is not a SpecWeave project. Writes the
- * once-per-session marker before returning, so a retry storm hands off once.
+ * already wrote one in the last five hours, or the directory is not a
+ * SpecWeave project. Writes its marker before returning, so a retry storm
+ * hands off once. The marker is separate from the Stop hook's: a session that
+ * was asked to hand off at 90% and still ran out writes a fresh handoff.
  */
 export function limitHitTarget(input: LimitHitInput, opts: { home?: string; now?: number } = {}): string | undefined {
   if (!readSettings(opts.home)) return undefined;
@@ -220,11 +290,15 @@ export function limitHitTarget(input: LimitHitInput, opts: { home?: string; now?
   const start = input.cwd ?? input.workspaceRoot;
   const root = start ? findProjectRoot(start) ?? undefined : undefined;
   if (!root) return undefined;
-  const marker = path.join(usageDir(opts.home), `${id}.handed-off`);
-  if (fs.existsSync(marker)) return undefined;
+  const now = opts.now ?? Date.now();
+  const marker = path.join(usageDir(opts.home), `${id}.limit-hit`);
+  try {
+    if (now - fs.statSync(marker).mtimeMs < LIMIT_HIT_REARM_MS) return undefined;
+  } catch { /* no marker yet */ }
   try {
     fs.mkdirSync(path.dirname(marker), { recursive: true });
-    fs.writeFileSync(marker, `${new Date(opts.now ?? Date.now()).toISOString()} rate_limit\n`);
+    fs.writeFileSync(marker, `${new Date(now).toISOString()} rate_limit\n`);
+    fs.utimesSync(marker, now / 1000, now / 1000);
   } catch {
     return undefined;
   }
