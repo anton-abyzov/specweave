@@ -1,0 +1,5 @@
+assets/bed.wav
+renders/
+node_modules/
+.thumbnails/
+.waveform-cache/
