@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Claude Code Projects + Opus 5.5</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Geist Sans"; src: url("assets/fonts/GeistSans.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 100 900; }
+:root { --terra:#d97757; --blue:#4f8cff; --green:#22c55e; --red:#ef4444; --text:#f5f5f7; --muted:#a3a3a3; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:1920px; height:1080px; overflow:hidden; background:#0b0b0f; color:var(--text); font-family:"Geist Sans", sans-serif; -webkit-font-smoothing:antialiased; }
+#root { position:relative; width:100%; height:100%; overflow:hidden; background:#0b0b0f; }
+.bgfx { position:absolute; inset:0; background:
+  radial-gradient(1200px 700px at 15% 10%, rgba(217,119,87,0.16), transparent 60%),
+  radial-gradient(1000px 700px at 90% 100%, rgba(79,140,255,0.12), transparent 60%), #0b0b0f; }
+.scene { position:absolute; inset:0; }
+.window { position:absolute; left:192px; top:30px; width:1536px; height:920px; border-radius:16px; overflow:hidden;
+  background:#faf9f7; box-shadow:0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08); opacity:0; }
+.chrome { height:34px; background:#1c1c22; display:flex; align-items:center; gap:8px; padding:0 14px; }
+.chrome i { width:12px; height:12px; border-radius:50%; background:#ff5f57; display:block; }
+.chrome i:nth-child(2) { background:#febc2e; } .chrome i:nth-child(3) { background:#28c840; }
+.chrome span { margin-left:16px; font:500 14px "Geist Mono", monospace; color:#8b8b93; }
+.view { position:relative; width:1536px; height:886px; overflow:hidden; }
+.cam { position:absolute; left:0; top:0; width:1456px; height:840px; transform-origin:0 0; }
+.cam img { display:block; width:1456px; height:840px; }
+.hl { position:absolute; border:3px solid var(--terra); border-radius:10px; box-shadow:0 0 0 4000px rgba(10,10,14,0.28), 0 0 24px rgba(217,119,87,0.55); opacity:0; }
+.cap { position:absolute; left:0; right:0; bottom:22px; display:flex; justify-content:center; opacity:0; }
+.cap span { max-width:1600px; padding:16px 30px; border-radius:16px; background:rgba(12,12,16,0.88); border:1px solid rgba(255,255,255,0.10);
+  font-size:40px; font-weight:600; line-height:1.25; letter-spacing:-0.2px; text-align:center; box-shadow:0 18px 50px rgba(0,0,0,0.55); border-left:6px solid var(--terra); }
+.punch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(8,8,12,0.15), rgba(8,8,12,0.55)); }
+.p-eyebrow { font:600 30px "Geist Mono", monospace; color:var(--terra); letter-spacing:4px; text-transform:uppercase; opacity:0; margin-bottom:18px; }
+.p-big { font-size:118px; font-weight:800; letter-spacing:-3px; text-align:center; text-shadow:0 10px 50px rgba(0,0,0,0.85); opacity:0; max-width:1700px; }
+.still { position:absolute; left:0; right:0; top:60px; height:820px; display:flex; align-items:center; justify-content:center; opacity:0; }
+.still img { border-radius:22px; box-shadow:0 30px 90px rgba(0,0,0,0.6); height:780px; width:auto; }
+.titlecard { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding-left:180px; }
+.t-num { font:700 30px "Geist Mono", monospace; color:var(--terra); opacity:0; margin-bottom:10px; }
+.t-eyebrow { font:600 28px "Geist Mono", monospace; color:var(--muted); letter-spacing:5px; text-transform:uppercase; opacity:0; }
+.t-title { font-size:128px; font-weight:800; letter-spacing:-4px; line-height:1.02; margin:18px 0 22px; max-width:1600px; opacity:0; }
+.t-title .accent, .e-title .accent { color:var(--terra); }
+.t-sub { font-size:40px; color:var(--muted); font-weight:500; opacity:0; }
+.r-head { position:absolute; left:120px; top:90px; font:600 30px "Geist Mono", monospace; color:var(--muted); letter-spacing:5px; text-transform:uppercase; opacity:0; }
+.rgrid { position:absolute; left:120px; right:120px; top:160px; bottom:70px; display:grid; grid-template-columns:repeat(2, 1fr); gap:40px; }
+.rcard { position:relative; border-radius:28px; padding:34px 44px; background:linear-gradient(180deg, rgba(30,30,38,0.92), rgba(18,18,24,0.92));
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08), 0 20px 50px rgba(0,0,0,0.5); opacity:0; overflow:hidden; }
+.rcard::before { content:""; position:absolute; left:0; right:0; top:0; height:6px; background:var(--accent); }
+.tone-terra { --accent:var(--terra); } .tone-blue { --accent:var(--blue); } .tone-green { --accent:var(--green); } .tone-red { --accent:var(--red); }
+.r-tag { display:inline-block; font:700 22px "Geist Mono", monospace; letter-spacing:3px; text-transform:uppercase; color:var(--accent); padding:8px 16px; border-radius:999px; border:1px solid var(--accent); }
+.r-name { font-size:64px; font-weight:800; letter-spacing:-2px; margin-top:16px; }
+.r-by { font-size:28px; color:var(--muted); margin-bottom:14px; }
+.r-line { font-size:32px; line-height:1.32; opacity:0; }
+.term { position:absolute; left:110px; right:110px; top:40px; height:830px; border-radius:16px; overflow:hidden; background:#101014; box-shadow:0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08); opacity:0; }
+.term-small { top:120px; height:520px; left:260px; right:260px; }
+.tbody { padding:30px 38px; font-family:"Geist Mono", monospace; }
+.tb { margin-bottom:26px; opacity:0; }
+.tl-prompt { font-size:22px; color:#7c7c86; }
+.tl-cmd { font-size:30px; font-weight:600; color:#f5f5f7; margin:4px 0 8px; white-space:nowrap; }
+.dollar { color:var(--green); margin-right:16px; }
+.typed { display:inline-block; }
+.tl-out { font-size:23px; color:#c9c9d1; line-height:1.45; white-space:pre-wrap; opacity:0; }
+.endcard { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding-left:180px; }
+.e-title { font-size:96px; font-weight:800; letter-spacing:-3px; opacity:0; }
+.e-points { margin:36px 0 40px; }
+.e-pt { font-size:38px; color:#dcdce2; margin:12px 0; opacity:0; padding-left:34px; position:relative; }
+.e-pt::before { content:""; position:absolute; left:0; top:17px; width:14px; height:14px; border-radius:4px; background:var(--terra); }
+.e-cmd { display:inline-block; align-self:flex-start; font:600 44px "Geist Mono", monospace; padding:18px 30px; border-radius:16px; background:#101014; border:1px solid rgba(255,255,255,0.12); opacity:0; }
+.e-links { font:500 30px "Geist Mono", monospace; color:var(--muted); margin-top:30px; opacity:0; }
+.e-sub { font-size:34px; color:var(--terra); font-weight:700; margin-top:22px; opacity:0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="514">
+<div class="bgfx"></div>
+<section id="s0" class="clip scene scene-punch" data-start="0" data-duration="4.5" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s0-cam" data-layout-allow-overflow><img src="assets/shots/project-main.jpg" width="1456" height="840" alt=""></div></div>
+      </div><div class="punch"><div class="p-eyebrow">Claude Code Projects</div><div class="p-big">18 threads. One project.</div></div></section>
+<section id="s1" class="clip scene scene-punch" data-start="4.5" data-duration="4.5" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s1-cam" data-layout-allow-overflow><img src="assets/shots/thread-checklist.jpg" width="1456" height="840" alt=""></div></div>
+      </div><div class="punch"><div class="p-eyebrow">Live checklists</div><div class="p-big">Every thread works on its own.</div></div></section>
+<section id="s2" class="clip scene scene-punch" data-start="9" data-duration="4.5" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s2-cam" data-layout-allow-overflow><img src="assets/shots/project-main.jpg" width="1456" height="840" alt=""></div></div>
+      </div><div class="punch"><div class="p-eyebrow">Weekly limit</div><div class="p-big">Out of tokens? It pauses.</div></div></section>
+<section id="s3" class="clip scene scene-punchterm" data-start="13.5" data-duration="4.5" data-track-index="1"><div class="term term-small"><div class="chrome"><i></i><i></i><i></i><span>Terminal</span></div><div class="tbody"><div class="tb" id="s3-b0">
+        <div class="tl-prompt">~/codex-side (another tool)</div>
+        <div class="tl-cmd"><span class="dollar">$</span><span class="typed" id="s3-b0-cmd">specweave pickup</span></div>
+        <div class="tl-out" id="s3-b0-o0">Picked up the handoff from claude@antons-macbook-m4max 0m ago (Claude weekly limit at 90%)</div><div class="tl-out" id="s3-b0-o1">Next: T-02 Show the Overdue badge</div></div></div></div><div class="punch"><div class="p-eyebrow">specweave pickup</div><div class="p-big">Or picks up in another tool.</div></div></section>
+<section id="s4" class="clip scene scene-title" data-start="18" data-duration="6" data-track-index="1"><div class="titlecard">
+      
+      <div class="t-eyebrow">Full demo · now on Pro</div>
+      <div class="t-title">Claude Code Projects <span class="accent">+ Opus 5.5</span></div>
+      <div class="t-sub">No voice-over. Real screens, real output.</div></div></section>
+<section id="s5" class="clip scene scene-title" data-start="24" data-duration="4" data-track-index="1"><div class="titlecard">
+      <div class="t-num">01</div>
+      <div class="t-eyebrow">Chapter 1</div>
+      <div class="t-title">Recent releases</div>
+      <div class="t-sub">What landed, and what disappointed</div></div></section>
+<section id="s6" class="clip scene scene-releases" data-start="28" data-duration="60" data-track-index="1"><div class="r-head">Recent releases</div><div class="rgrid"><div class="rcard tone-terra" id="s6-c0">
+      <div class="r-tag">The big one</div><div class="r-name">Opus 5.5</div><div class="r-by">Anthropic</div>
+      <div class="r-line">The model this whole video runs on.</div><div class="r-line">Default in Claude Code on my accounts.</div></div><div class="rcard tone-blue" id="s6-c1">
+      <div class="r-tag">Now on Pro</div><div class="r-name">Claude Code Projects</div><div class="r-by">Anthropic</div>
+      <div class="r-line">I had early access.</div><div class="r-line">A fresh Pro account has it too: I checked.</div></div><div class="rcard tone-green" id="s6-c2">
+      <div class="r-tag">Frontier</div><div class="r-name">Astra 6</div><div class="r-by">Codex</div>
+      <div class="r-line">Codex's newest frontier model. Very strong.</div><div class="r-line">Which is exactly why switching tools matters.</div></div><div class="rcard tone-red" id="s6-c3">
+      <div class="r-tag">Disappointment</div><div class="r-name">GPT-6 Sol</div><div class="r-by">OpenAI</div>
+      <div class="r-line">Same release day as Opus 5.5.</div><div class="r-line">Side by side, it just didn't hold up for me.</div></div></div></section>
+<section id="s7" class="clip scene scene-title" data-start="88" data-duration="4" data-track-index="1"><div class="titlecard">
+      <div class="t-num">02</div>
+      <div class="t-eyebrow">Chapter 2</div>
+      <div class="t-title">Opus 5.5 in Claude Code</div>
+      <div class="t-sub">Model, effort, per thread</div></div></section>
+<section id="s8" class="clip scene scene-shot" data-start="92" data-duration="20" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s8-cam" data-layout-allow-overflow><img src="assets/shots/model-picker.jpg" width="1456" height="840" alt=""><div class="hl" id="s8-hl0" style="left:978px;top:691px;width:120px;height:34px"></div><div class="hl" id="s8-hl1" style="left:978px;top:712px;width:120px;height:74px"></div></div></div>
+      </div><div class="cap" id="s8-cap0"><span>Opus 5.5 is the default model in Claude Code.</span></div><div class="cap" id="s8-cap1"><span>One click to switch. It's ticked at the top.</span></div><div class="cap" id="s8-cap2"><span>Fable 5.1, Sonnet 5.5 and Haiku 4.5 sit right below. Keys 1 to 4.</span></div></section>
+<section id="s9" class="clip scene scene-still" data-start="112" data-duration="18" data-track-index="1"><div class="still"><img src="assets/shots/effort-zoom.png" width="712" height="664" alt=""></div><div class="cap" id="s9-cap0"><span>Then effort: Faster on the left, Smarter on the right.</span></div><div class="cap" id="s9-cap1"><span>Medium is the recommended default.</span></div><div class="cap" id="s9-cap2"><span>Turn it up for planning and reviews. Keep Medium for routine work.</span></div></section>
+<section id="s10" class="clip scene scene-shot" data-start="130" data-duration="18" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s10-cam" data-layout-allow-overflow><img src="assets/shots/thread-checklist.jpg" width="1456" height="840" alt=""><div class="hl" id="s10-hl0" style="left:1314px;top:797px;width:104px;height:34px"></div></div></div>
+      </div><div class="cap" id="s10-cap0"><span>And it's set per thread, not per account.</span></div><div class="cap" id="s10-cap1"><span>This thread runs Opus 5.5 at High effort, right in its own composer.</span></div></section>
+<section id="s11" class="clip scene scene-title" data-start="148" data-duration="4" data-track-index="1"><div class="titlecard">
+      <div class="t-num">03</div>
+      <div class="t-eyebrow">Chapter 3</div>
+      <div class="t-title">What Projects are</div>
+      <div class="t-sub">A home for long-running work</div></div></section>
+<section id="s12" class="clip scene scene-shot" data-start="152" data-duration="22" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s12-cam" data-layout-allow-overflow><img src="assets/shots/home.jpg" width="1456" height="840" alt=""><div class="hl" id="s12-hl0" style="left:598px;top:131px;width:94px;height:30px"></div><div class="hl" id="s12-hl1" style="left:622px;top:164px;width:116px;height:30px"></div><div class="hl" id="s12-hl2" style="left:731px;top:164px;width:74px;height:30px"></div></div></div>
+      </div><div class="cap" id="s12-cap0"><span>Projects sit at the top of Claude Code, each with a live status.</span></div><div class="cap" id="s12-cap1"><span>Needs input: a thread is waiting on you.</span></div><div class="cap" id="s12-cap2"><span>Ready for review: work is done and waits for your OK.</span></div><div class="cap" id="s12-cap3"><span>Working: a thread is running right now.</span></div></section>
+<section id="s13" class="clip scene scene-shot" data-start="174" data-duration="16" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s13-cam" data-layout-allow-overflow><img src="assets/shots/projects-grid.jpg" width="1456" height="840" alt=""><div class="hl" id="s13-hl0" style="left:439px;top:98px;width:822px;height:201px"></div></div></div>
+      </div><div class="cap" id="s13-cap0"><span>Every project is private and pinned in the sidebar.</span></div><div class="cap" id="s13-cap1"><span>Six products, six projects: each keeps its own history, threads and memory.</span></div></section>
+<section id="s14" class="clip scene scene-shot" data-start="190" data-duration="20" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s14-cam" data-layout-allow-overflow><img src="assets/shots/new-project.jpg" width="1456" height="840" alt=""><div class="hl" id="s14-hl0" style="left:523px;top:270px;width:410px;height:48px"></div><div class="hl" id="s14-hl1" style="left:523px;top:352px;width:410px;height:80px"></div><div class="hl" id="s14-hl2" style="left:523px;top:464px;width:410px;height:117px"></div></div></div>
+      </div><div class="cap" id="s14-cap0"><span>Creating one takes three fields.</span></div><div class="cap" id="s14-cap1"><span>A name.</span></div><div class="cap" id="s14-cap2"><span>A goal. Optional, but every thread reads it.</span></div><div class="cap" id="s14-cap3"><span>Context: the repos the project works in.</span></div></section>
+<section id="s15" class="clip scene scene-title" data-start="210" data-duration="4" data-track-index="1"><div class="titlecard">
+      <div class="t-num">04</div>
+      <div class="t-eyebrow">Chapter 4</div>
+      <div class="t-title">Demo: threads and the coordinator</div>
+      <div class="t-sub">My real EasyChamp project</div></div></section>
+<section id="s16" class="clip scene scene-shot" data-start="214" data-duration="36" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s16-cam" data-layout-allow-overflow><img src="assets/shots/project-main.jpg" width="1456" height="840" alt=""><div class="hl" id="s16-hl0" style="left:256px;top:34px;width:702px;height:702px"></div><div class="hl" id="s16-hl1" style="left:969px;top:2px;width:484px;height:832px"></div><div class="hl" id="s16-hl2" style="left:974px;top:110px;width:472px;height:34px"></div><div class="hl" id="s16-hl3" style="left:974px;top:373px;width:472px;height:34px"></div></div></div>
+      </div><div class="cap" id="s16-cap0"><span>This is a real project: EasyChamp, my sports platform.</span></div><div class="cap" id="s16-cap1"><span>Left: the project chat. You talk to one coordinator here.</span></div><div class="cap" id="s16-cap2"><span>Right: every thread it started. Each one is its own agent session.</span></div><div class="cap" id="s16-cap3"><span>18 threads are waiting on me.</span></div><div class="cap" id="s16-cap4"><span>52 are idle: finished, or parked until there's something to do.</span></div></section>
+<section id="s17" class="clip scene scene-shot" data-start="250" data-duration="30" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s17-cam" data-layout-allow-overflow><img src="assets/shots/coordinator-split.jpg" width="1456" height="840" alt=""><div class="hl" id="s17-hl0" style="left:271px;top:260px;width:364px;height:118px"></div><div class="hl" id="s17-hl1" style="left:271px;top:407px;width:674px;height:152px"></div></div></div>
+      </div><div class="cap" id="s17-cap0"><span>Watch what the coordinator does with a message.</span></div><div class="cap" id="s17-cap1"><span>A question about a match page gets its own thread, with its own scope.</span></div><div class="cap" id="s17-cap2"><span>It even splits a thread: the TikTok question leaves the tracking thread and gets its own look.</span></div></section>
+<section id="s18" class="clip scene scene-shot" data-start="280" data-duration="44" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s18-cam" data-layout-allow-overflow><img src="assets/shots/thread-checklist.jpg" width="1456" height="840" alt=""><div class="hl" id="s18-hl0" style="left:977px;top:249px;width:468px;height:268px"></div><div class="hl" id="s18-hl1" style="left:977px;top:186px;width:240px;height:36px"></div><div class="hl" id="s18-hl2" style="left:977px;top:534px;width:418px;height:190px"></div></div></div>
+      </div><div class="cap" id="s18-cap0"><span>Open a thread and it's a full agent session.</span></div><div class="cap" id="s18-cap1"><span>A live checklist: read memory, audit, sweep 224 checkouts, push the index.</span></div><div class="cap" id="s18-cap2"><span>Threads get messages from the coordinator too. This one got 7.</span></div><div class="cap" id="s18-cap3"><span>And then the wall every heavy user hits: usage limit reached.</span></div></section>
+<section id="s19" class="clip scene scene-shot" data-start="324" data-duration="30" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s19-cam" data-layout-allow-overflow><img src="assets/shots/project-main.jpg" width="1456" height="840" alt=""><div class="hl" id="s19-hl0" style="left:371px;top:169px;width:574px;height:108px"></div><div class="hl" id="s19-hl1" style="left:271px;top:336px;width:364px;height:89px"></div></div></div>
+      </div><div class="cap" id="s19-cap0"><span>So here's what I asked the coordinator.</span></div><div class="cap" id="s19-cap1"><span>&quot;Make every thread ready for a handoff, so I can continue on another subscription.&quot;</span></div><div class="cap" id="s19-cap2"><span>It started a Handoff readiness thread for exactly that. One ask, one thread.</span></div></section>
+<section id="s20" class="clip scene scene-title" data-start="354" data-duration="4" data-track-index="1"><div class="titlecard">
+      <div class="t-num">05</div>
+      <div class="t-eyebrow">Chapter 5</div>
+      <div class="t-title">Routines, limits and results</div>
+      <div class="t-sub">What keeps a project moving</div></div></section>
+<section id="s21" class="clip scene scene-shot" data-start="358" data-duration="26" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s21-cam" data-layout-allow-overflow><img src="assets/shots/routines.jpg" width="1456" height="840" alt=""><div class="hl" id="s21-hl0" style="left:444px;top:359px;width:812px;height:172px"></div><div class="hl" id="s21-hl1" style="left:444px;top:539px;width:812px;height:182px"></div></div></div>
+      </div><div class="cap" id="s21-cap0"><span>Routines are agents on a schedule.</span></div><div class="cap" id="s21-cap1"><span>A morning briefing, email triage, a system health check.</span></div><div class="cap" id="s21-cap2"><span>PR digests, dependency checks, release notes when a PR merges.</span></div></section>
+<section id="s22" class="clip scene scene-shot" data-start="384" data-duration="34" data-track-index="1">
+      <div class="window"><div class="chrome"><i></i><i></i><i></i><span>claude.ai/code</span></div>
+        <div class="view"><div class="cam" id="s22-cam" data-layout-allow-overflow><img src="assets/shots/project-main.jpg" width="1456" height="840" alt=""><div class="hl" id="s22-hl0" style="left:271px;top:560px;width:417px;height:123px"></div><div class="hl" id="s22-hl1" style="left:281px;top:642px;width:332px;height:32px"></div><div class="hl" id="s22-hl2" style="left:271px;top:721px;width:674px;height:38px"></div></div></div>
+      </div><div class="cap" id="s22-cap0"><span>When the weekly limit hits, the whole project pauses.</span></div><div class="cap" id="s22-cap1"><span>Claude says it will pick things up at 10:00 AM by itself.</span></div><div class="cap" id="s22-cap2"><span>Auto-continue restarts every thread when the limit resets.</span></div><div class="cap" id="s22-cap3"><span>Nice. But that can be days away. What if you can't wait?</span></div></section>
+<section id="s23" class="clip scene scene-title" data-start="418" data-duration="4" data-track-index="1"><div class="titlecard">
+      <div class="t-num">06</div>
+      <div class="t-eyebrow">Chapter 6</div>
+      <div class="t-title">Out of usage? Hand off.</div>
+      <div class="t-sub">SpecWeave, in one minute</div></div></section>
+<section id="s24" class="clip scene scene-terminal" data-start="422" data-duration="66" data-track-index="1"><div class="term "><div class="chrome"><i></i><i></i><i></i><span>Terminal</span></div><div class="tbody"><div class="tb" id="s24-b0">
+        <div class="tl-prompt">~/todo-app (Claude Code)</div>
+        <div class="tl-cmd"><span class="dollar">$</span><span class="typed" id="s24-b0-cmd">specweave auto-handoff status</span></div>
+        <div class="tl-out" id="s24-b0-o0">Auto-handoff is on at 90% (since 2026-09-26T03:22:09.356Z).</div></div><div class="tb" id="s24-b1">
+        <div class="tl-prompt">~/todo-app (Claude Code)</div>
+        <div class="tl-cmd"><span class="dollar">$</span><span class="typed" id="s24-b1-cmd">specweave handoff --reason &quot;Claude weekly limit at 90%&quot;</span></div>
+        <div class="tl-out" id="s24-b1-o0">Handed off 0001-add-due-dates-to-todos (released T-02, pushed main, pushed your uncommitted edits).</div><div class="tl-out" id="s24-b1-o1">To continue in any tool, machine or account, say &quot;pick up&quot; there (or run `specweave pickup`).</div><div class="tl-out" id="s24-b1-o2">Details: .specweave/increments/0001-add-due-dates-to-todos/handoff.md</div></div><div class="tb" id="s24-b2">
+        <div class="tl-prompt">~/codex-side (fresh clone, another tool)</div>
+        <div class="tl-cmd"><span class="dollar">$</span><span class="typed" id="s24-b2-cmd">specweave pickup</span></div>
+        <div class="tl-out" id="s24-b2-o0">Picked up the handoff from claude@antons-macbook-m4max 0m ago (Claude weekly limit at 90%): applied 6 uncommitted files.</div><div class="tl-out" id="s24-b2-o1">Increment 0001-add-due-dates-to-todos &quot;Add due dates to todos&quot; (active) · tasks 1/2 done · ACs 1/2 met</div><div class="tl-out" id="s24-b2-o2">Next: T-02 Show the Overdue badge</div><div class="tl-out" id="s24-b2-o3">  AC-02: Todos past their due date show an &quot;Overdue&quot; badge</div><div class="tl-out" id="s24-b2-o4">  Files: src/list.js, src/list.test.js | Test: node --test src/list.test.js</div><div class="tl-out" id="s24-b2-o5">Branch: main @ 7a631db · in sync with origin/main · 3 uncommitted files</div></div></div></div><div class="cap" id="s24-cap0"><span>SpecWeave keeps the work itself in git: spec, tasks, claims, next step.</span></div><div class="cap" id="s24-cap1"><span>Say &quot;hand off&quot; or let it fire at 90% of a limit. It pushes state and even uncommitted edits.</span></div><div class="cap" id="s24-cap2"><span>In Codex, Cursor, another account or machine: say &quot;pick up&quot;.</span></div><div class="cap" id="s24-cap3"><span>Same spec, same task, same next step and acceptance criteria. Nothing lost.</span></div><div class="cap" id="s24-cap4"><span>Open source and free: npm i -g specweave</span></div></section>
+<section id="s25" class="clip scene scene-end" data-start="488" data-duration="26" data-track-index="1"><div class="endcard">
+      <div class="e-title">Claude Code Projects <span class="accent">+ Opus 5.5</span></div>
+      <div class="e-points">
+        <div class="e-pt">One coordinator, many threads, each a real agent session</div>
+        <div class="e-pt">Opus 5.5 by default, model and effort per thread</div>
+        <div class="e-pt">Routines on a schedule, auto-continue after limits</div>
+        <div class="e-pt">Out of usage? <b>specweave handoff</b>, then <b>pick up</b> anywhere</div>
+      </div>
+      <div class="e-cmd"><span class="dollar">$</span> npm i -g specweave</div>
+      <div class="e-links">spec-weave.com · github.com/anton-abyzov/specweave · verified-skill.com</div>
+      <div class="e-sub">Subscribe for the next one</div></div></section>
+<audio id="bed" src="assets/bed.wav" data-start="0" data-duration="514" data-track-index="9" data-volume="0.32"></audio>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+function capIn(sel, t) { tl.fromTo(sel, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, t); }
+function capOut(sel, t) { tl.to(sel, { opacity: 0, duration: 0.3, ease: "power1.in" }, t); }
+function hlIn(sel, t) { tl.fromTo(sel, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" }, t); }
+function hlOut(sel, t) { tl.to(sel, { opacity: 0, duration: 0.3 }, t); }
+tl.set("#s0-cam", {"x":-1382.4,"y":-78.14,"scale":2.0044}, 0);
+tl.to("#s0-cam", { ...{"x":-1612.8,"y":-270.67,"scale":2.1626}, duration: 4.50, ease: "power2.inOut" }, 0.00);
+tl.fromTo("#s0 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0);
+tl.fromTo("#s0 .p-eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.20);
+tl.fromTo("#s0 .p-big", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.35);
+tl.set("#s1-cam", {"x":-1382.4,"y":-318.67,"scale":2.0044}, 4.5);
+tl.to("#s1-cam", { ...{"x":-1689.6,"y":-354.54,"scale":2.2154}, duration: 4.50, ease: "power2.inOut" }, 4.50);
+tl.fromTo("#s1 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 4.5);
+tl.fromTo("#s1 .p-eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 4.70);
+tl.fromTo("#s1 .p-big", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 4.85);
+tl.set("#s2-cam", {"x":-244.75,"y":-865.13,"scale":2.1099}, 9);
+tl.to("#s2-cam", { ...{"x":-322.81,"y":-1007.55,"scale":2.3209}, duration: 4.50, ease: "power2.inOut" }, 9.00);
+tl.fromTo("#s2 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 9);
+tl.fromTo("#s2 .p-eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 9.20);
+tl.fromTo("#s2 .p-big", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 9.35);
+tl.fromTo("#s3 .term", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 13.5);
+tl.fromTo("#s3-b0", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 13.70);
+tl.fromTo("#s3-b0-cmd", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.72, ease: "steps(16)" }, 14.00);
+tl.fromTo("#s3-b0-o0", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 15.02);
+tl.fromTo("#s3-b0-o1", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 15.37);
+tl.fromTo("#s3 .p-eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 13.70);
+tl.fromTo("#s3 .p-big", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 13.85);
+tl.fromTo("#s4 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 18.20);
+tl.fromTo("#s4 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 18.35);
+tl.fromTo("#s4 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 18.80);
+tl.to("#s4 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 23.55);
+tl.fromTo("#s5 .t-num", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 24.10);
+tl.fromTo("#s5 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 24.20);
+tl.fromTo("#s5 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 24.35);
+tl.fromTo("#s5 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 24.80);
+tl.to("#s5 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 27.55);
+tl.fromTo("#s6 .r-head", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5 }, 28);
+tl.fromTo("#s6-c0", { opacity: 0, y: 60, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 28.20);
+tl.fromTo("#s6-c0 .r-line", { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5, stagger: 1.4, ease: "power2.out" }, 29.00);
+tl.to("#s6-c0", { boxShadow: "0 0 0 2px var(--accent), 0 30px 80px rgba(0,0,0,0.6)", duration: 0.4 }, 28.20);
+tl.to("#s6-c0", { opacity: 0.38, boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 20px 50px rgba(0,0,0,0.5)", duration: 0.5 }, 43.00);
+tl.fromTo("#s6-c1", { opacity: 0, y: 60, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 43.20);
+tl.fromTo("#s6-c1 .r-line", { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5, stagger: 1.4, ease: "power2.out" }, 44.00);
+tl.to("#s6-c1", { boxShadow: "0 0 0 2px var(--accent), 0 30px 80px rgba(0,0,0,0.6)", duration: 0.4 }, 43.20);
+tl.to("#s6-c1", { opacity: 0.38, boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 20px 50px rgba(0,0,0,0.5)", duration: 0.5 }, 58.00);
+tl.fromTo("#s6-c2", { opacity: 0, y: 60, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 58.20);
+tl.fromTo("#s6-c2 .r-line", { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5, stagger: 1.4, ease: "power2.out" }, 59.00);
+tl.to("#s6-c2", { boxShadow: "0 0 0 2px var(--accent), 0 30px 80px rgba(0,0,0,0.6)", duration: 0.4 }, 58.20);
+tl.to("#s6-c2", { opacity: 0.38, boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 20px 50px rgba(0,0,0,0.5)", duration: 0.5 }, 73.00);
+tl.fromTo("#s6-c3", { opacity: 0, y: 60, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 73.20);
+tl.fromTo("#s6-c3 .r-line", { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5, stagger: 1.4, ease: "power2.out" }, 74.00);
+tl.to("#s6-c3", { boxShadow: "0 0 0 2px var(--accent), 0 30px 80px rgba(0,0,0,0.6)", duration: 0.4 }, 73.20);
+tl.to("#s6 .rcard", { opacity: 1, duration: 0.6 }, 82.00);
+tl.fromTo("#s7 .t-num", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 88.10);
+tl.fromTo("#s7 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 88.20);
+tl.fromTo("#s7 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 88.35);
+tl.fromTo("#s7 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 88.80);
+tl.to("#s7 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 91.55);
+tl.set("#s8-cam", {"x":0,"y":-0.08,"scale":1.0549}, 92);
+tl.to("#s8-cam", { ...{"x":-1236.4,"y":-797.69,"scale":2.0044}, duration: 5.00, ease: "power2.inOut" }, 92.00);
+tl.to("#s8-cam", { ...{"x":-1416.26,"y":-930.62,"scale":2.1626}, duration: 15.00, ease: "power2.inOut" }, 97.00);
+hlIn("#s8-hl0", 98.00); hlOut("#s8-hl0", 103.70);
+hlIn("#s8-hl1", 104.00); hlOut("#s8-hl1", 110.70);
+tl.fromTo("#s8 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 92);
+capIn("#s8-cap0", 92.50); capOut("#s8-cap0", 97.15);
+capIn("#s8-cap1", 98.00); capOut("#s8-cap1", 103.65);
+capIn("#s8-cap2", 104.50); capOut("#s8-cap2", 111.15);
+tl.fromTo("#s9 .still", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, 112);
+tl.fromTo("#s9 .still img", { scale: 1 }, { scale: 1.08, duration: 18, ease: "none" }, 112);
+capIn("#s9-cap0", 112.50); capOut("#s9-cap0", 118.15);
+capIn("#s9-cap1", 119.00); capOut("#s9-cap1", 124.15);
+capIn("#s9-cap2", 124.80); capOut("#s9-cap2", 129.45);
+tl.set("#s10-cam", {"x":0,"y":-0.08,"scale":1.0549}, 130);
+tl.to("#s10-cam", { ...{"x":-1536,"y":-886.31,"scale":2.1099}, duration: 4.00, ease: "power2.inOut" }, 130.00);
+tl.to("#s10-cam", { ...{"x":-1766.4,"y":-1019.23,"scale":2.2681}, duration: 14.00, ease: "power2.inOut" }, 134.00);
+hlIn("#s10-hl0", 135.00); hlOut("#s10-hl0", 146.70);
+tl.fromTo("#s10 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 130);
+capIn("#s10-cap0", 130.50); capOut("#s10-cap0", 134.15);
+capIn("#s10-cap1", 135.00); capOut("#s10-cap1", 147.15);
+tl.fromTo("#s11 .t-num", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 148.10);
+tl.fromTo("#s11 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 148.20);
+tl.fromTo("#s11 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 148.35);
+tl.fromTo("#s11 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 148.80);
+tl.to("#s11 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 151.55);
+tl.set("#s12-cam", {"x":0,"y":-0.08,"scale":1.0549}, 152);
+tl.to("#s12-cam", { ...{"x":-801.23,"y":0,"scale":1.8462}, duration: 6.00, ease: "power2.inOut" }, 152.00);
+tl.to("#s12-cam", { ...{"x":-910.42,"y":0,"scale":1.9516}, duration: 16.00, ease: "power2.inOut" }, 158.00);
+hlIn("#s12-hl0", 159.00); hlOut("#s12-hl0", 163.70);
+hlIn("#s12-hl1", 164.00); hlOut("#s12-hl1", 168.70);
+hlIn("#s12-hl2", 169.00); hlOut("#s12-hl2", 173.70);
+tl.fromTo("#s12 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 152);
+capIn("#s12-cap0", 152.50); capOut("#s12-cap0", 158.15);
+capIn("#s12-cap1", 159.00); capOut("#s12-cap1", 163.65);
+capIn("#s12-cap2", 164.00); capOut("#s12-cap2", 168.65);
+capIn("#s12-cap3", 169.00); capOut("#s12-cap3", 173.65);
+tl.set("#s13-cam", {"x":0,"y":-0.08,"scale":1.0549}, 174);
+tl.to("#s13-cam", { ...{"x":-666.73,"y":0,"scale":1.6879}, duration: 5.00, ease: "power2.inOut" }, 174.00);
+tl.to("#s13-cam", { ...{"x":-711.56,"y":0,"scale":1.7407}, duration: 11.00, ease: "power2.inOut" }, 179.00);
+hlIn("#s13-hl0", 179.00); hlOut("#s13-hl0", 188.70);
+tl.fromTo("#s13 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 174);
+capIn("#s13-cap0", 174.50); capOut("#s13-cap0", 178.65);
+capIn("#s13-cap1", 179.20); capOut("#s13-cap1", 189.35);
+tl.set("#s14-cam", {"x":0,"y":-0.08,"scale":1.0549}, 190);
+tl.to("#s14-cam", { ...{"x":-422.4,"y":-243.77,"scale":1.6352}, duration: 4.00, ease: "power2.inOut" }, 190.00);
+tl.to("#s14-cam", { ...{"x":-460.8,"y":-274.36,"scale":1.6879}, duration: 16.00, ease: "power2.inOut" }, 194.00);
+hlIn("#s14-hl0", 195.00); hlOut("#s14-hl0", 200.70);
+hlIn("#s14-hl1", 201.00); hlOut("#s14-hl1", 205.20);
+hlIn("#s14-hl2", 205.50); hlOut("#s14-hl2", 209.70);
+tl.fromTo("#s14 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 190);
+capIn("#s14-cap0", 190.50); capOut("#s14-cap0", 194.35);
+capIn("#s14-cap1", 195.00); capOut("#s14-cap1", 200.65);
+capIn("#s14-cap2", 201.00); capOut("#s14-cap2", 205.15);
+capIn("#s14-cap3", 205.50); capOut("#s14-cap3", 209.65);
+tl.fromTo("#s15 .t-num", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 210.10);
+tl.fromTo("#s15 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 210.20);
+tl.fromTo("#s15 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 210.35);
+tl.fromTo("#s15 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 210.80);
+tl.to("#s15 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 213.55);
+tl.set("#s16-cam", {"x":0,"y":-0.08,"scale":1.0549}, 214);
+tl.to("#s16-cam", { ...{"x":-100.75,"y":-155.15,"scale":1.4242}, duration: 7.00, ease: "power2.inOut" }, 214.00);
+tl.to("#s16-cam", { ...{"x":-844.8,"y":-178.36,"scale":1.6352}, duration: 7.00, ease: "power2.inOut" }, 221.00);
+tl.to("#s16-cam", { ...{"x":-1152,"y":-110.85,"scale":1.8462}, duration: 12.00, ease: "power2.inOut" }, 228.00);
+tl.to("#s16-cam", { ...{"x":-1152,"y":-424.69,"scale":1.8462}, duration: 10.00, ease: "power2.inOut" }, 240.00);
+hlIn("#s16-hl0", 221.00); hlOut("#s16-hl0", 227.20);
+hlIn("#s16-hl1", 228.00); hlOut("#s16-hl1", 238.70);
+hlIn("#s16-hl2", 240.00); hlOut("#s16-hl2", 244.70);
+hlIn("#s16-hl3", 245.00); hlOut("#s16-hl3", 249.70);
+tl.fromTo("#s16 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 214);
+capIn("#s16-cap0", 214.50); capOut("#s16-cap0", 220.15);
+capIn("#s16-cap1", 221.00); capOut("#s16-cap1", 227.15);
+capIn("#s16-cap2", 228.00); capOut("#s16-cap2", 239.15);
+capIn("#s16-cap3", 240.00); capOut("#s16-cap3", 244.65);
+capIn("#s16-cap4", 245.00); capOut("#s16-cap4", 249.65);
+tl.set("#s17-cam", {"x":0,"y":-0.08,"scale":1.0549}, 250);
+tl.to("#s17-cam", { ...{"x":-147.69,"y":-96.6,"scale":1.6352}, duration: 5.00, ease: "power2.inOut" }, 250.00);
+tl.to("#s17-cam", { ...{"x":-177.23,"y":-350.32,"scale":1.6879}, duration: 11.00, ease: "power2.inOut" }, 255.00);
+tl.to("#s17-cam", { ...{"x":-177.23,"y":-531.85,"scale":1.6879}, duration: 14.00, ease: "power2.inOut" }, 266.00);
+hlIn("#s17-hl0", 255.00); hlOut("#s17-hl0", 264.70);
+hlIn("#s17-hl1", 266.00); hlOut("#s17-hl1", 278.70);
+tl.fromTo("#s17 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 250);
+capIn("#s17-cap0", 250.50); capOut("#s17-cap0", 254.65);
+capIn("#s17-cap1", 255.00); capOut("#s17-cap1", 265.15);
+capIn("#s17-cap2", 266.00); capOut("#s17-cap2", 279.15);
+tl.set("#s18-cam", {"x":0,"y":-0.08,"scale":1.0549}, 280);
+tl.to("#s18-cam", { ...{"x":-844.8,"y":-178.36,"scale":1.6352}, duration: 5.00, ease: "power2.inOut" }, 280.00);
+tl.to("#s18-cam", { ...{"x":-1382.4,"y":0,"scale":2.0044}, duration: 15.00, ease: "power2.inOut" }, 285.00);
+tl.to("#s18-cam", { ...{"x":-1075.2,"y":-620.46,"scale":1.7934}, duration: 10.00, ease: "power2.inOut" }, 300.00);
+tl.to("#s18-cam", { ...{"x":-1152,"y":-664.77,"scale":1.8462}, duration: 14.00, ease: "power2.inOut" }, 310.00);
+hlIn("#s18-hl0", 286.00); hlOut("#s18-hl0", 298.70);
+hlIn("#s18-hl1", 300.00); hlOut("#s18-hl1", 308.70);
+hlIn("#s18-hl2", 310.00); hlOut("#s18-hl2", 322.70);
+tl.fromTo("#s18 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 280);
+capIn("#s18-cap0", 280.50); capOut("#s18-cap0", 284.65);
+capIn("#s18-cap1", 286.00); capOut("#s18-cap1", 299.15);
+capIn("#s18-cap2", 300.00); capOut("#s18-cap2", 309.15);
+capIn("#s18-cap3", 310.00); capOut("#s18-cap3", 323.15);
+tl.set("#s19-cam", {"x":0,"y":-0.08,"scale":1.0549}, 324);
+tl.to("#s19-cam", { ...{"x":-412.06,"y":0,"scale":1.7934}, duration: 5.00, ease: "power2.inOut" }, 324.00);
+tl.to("#s19-cam", { ...{"x":-96,"y":-278.58,"scale":1.8989}, duration: 11.00, ease: "power2.inOut" }, 329.00);
+tl.to("#s19-cam", { ...{"x":-120,"y":-298.63,"scale":1.9516}, duration: 14.00, ease: "power2.inOut" }, 340.00);
+hlIn("#s19-hl0", 329.00); hlOut("#s19-hl0", 339.70);
+hlIn("#s19-hl1", 340.00); hlOut("#s19-hl1", 353.20);
+tl.fromTo("#s19 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 324);
+capIn("#s19-cap0", 324.50); capOut("#s19-cap0", 328.65);
+capIn("#s19-cap1", 329.00); capOut("#s19-cap1", 339.65);
+capIn("#s19-cap2", 340.00); capOut("#s19-cap2", 353.65);
+tl.fromTo("#s20 .t-num", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 354.10);
+tl.fromTo("#s20 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 354.20);
+tl.fromTo("#s20 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 354.35);
+tl.fromTo("#s20 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 354.80);
+tl.to("#s20 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 357.55);
+tl.set("#s21-cam", {"x":0,"y":-0.08,"scale":1.0549}, 358);
+tl.to("#s21-cam", { ...{"x":-532.22,"y":-383.02,"scale":1.5297}, duration: 6.00, ease: "power2.inOut" }, 358.00);
+tl.to("#s21-cam", { ...{"x":-577.05,"y":-443.15,"scale":1.5824}, duration: 20.00, ease: "power2.inOut" }, 364.00);
+hlIn("#s21-hl0", 364.00); hlOut("#s21-hl0", 372.70);
+hlIn("#s21-hl1", 373.50); hlOut("#s21-hl1", 383.20);
+tl.fromTo("#s21 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 358);
+capIn("#s21-cap0", 358.50); capOut("#s21-cap0", 363.65);
+capIn("#s21-cap1", 364.00); capOut("#s21-cap1", 373.15);
+capIn("#s21-cap2", 373.50); capOut("#s21-cap2", 383.15);
+tl.set("#s22-cam", {"x":0,"y":-0.08,"scale":1.0549}, 384);
+tl.to("#s22-cam", { ...{"x":-194.11,"y":-797.69,"scale":2.0044}, duration: 5.00, ease: "power2.inOut" }, 384.00);
+tl.to("#s22-cam", { ...{"x":-371.34,"y":-709.08,"scale":1.8989}, duration: 15.00, ease: "power2.inOut" }, 389.00);
+tl.to("#s22-cam", { ...{"x":-402.99,"y":-753.38,"scale":1.9516}, duration: 14.00, ease: "power2.inOut" }, 404.00);
+hlIn("#s22-hl0", 389.00); hlOut("#s22-hl0", 396.20);
+hlIn("#s22-hl1", 396.50); hlOut("#s22-hl1", 403.20);
+hlIn("#s22-hl2", 404.00); hlOut("#s22-hl2", 417.20);
+tl.fromTo("#s22 .window", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 384);
+capIn("#s22-cap0", 384.50); capOut("#s22-cap0", 388.65);
+capIn("#s22-cap1", 389.00); capOut("#s22-cap1", 396.15);
+capIn("#s22-cap2", 396.50); capOut("#s22-cap2", 403.15);
+capIn("#s22-cap3", 404.00); capOut("#s22-cap3", 417.15);
+tl.fromTo("#s23 .t-num", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 418.10);
+tl.fromTo("#s23 .t-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 418.20);
+tl.fromTo("#s23 .t-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 418.35);
+tl.fromTo("#s23 .t-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 418.80);
+tl.to("#s23 .titlecard", { opacity: 0, duration: 0.4, ease: "power1.in" }, 421.55);
+tl.fromTo("#s24 .term", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 422);
+tl.fromTo("#s24-b0", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 423.00);
+tl.fromTo("#s24-b0-cmd", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1.30, ease: "steps(29)" }, 423.30);
+tl.fromTo("#s24-b0-o0", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 424.91);
+tl.fromTo("#s24-b1", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 431.00);
+tl.fromTo("#s24-b1-cmd", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 2.40, ease: "steps(55)" }, 431.30);
+tl.fromTo("#s24-b1-o0", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 434.00);
+tl.fromTo("#s24-b1-o1", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 434.35);
+tl.fromTo("#s24-b1-o2", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 434.70);
+tl.fromTo("#s24-b2", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 446.00);
+tl.fromTo("#s24-b2-cmd", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.72, ease: "steps(16)" }, 446.30);
+tl.fromTo("#s24-b2-o0", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 447.32);
+tl.fromTo("#s24-b2-o1", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 447.67);
+tl.fromTo("#s24-b2-o2", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 448.02);
+tl.fromTo("#s24-b2-o3", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 448.37);
+tl.fromTo("#s24-b2-o4", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 448.72);
+tl.fromTo("#s24-b2-o5", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }, 449.07);
+capIn("#s24-cap0", 422.50); capOut("#s24-cap0", 430.15);
+capIn("#s24-cap1", 431.00); capOut("#s24-cap1", 445.15);
+capIn("#s24-cap2", 446.00); capOut("#s24-cap2", 458.65);
+capIn("#s24-cap3", 459.50); capOut("#s24-cap3", 473.15);
+capIn("#s24-cap4", 474.00); capOut("#s24-cap4", 487.15);
+tl.fromTo("#s25 .e-title", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 488.20);
+tl.fromTo("#s25 .e-pt", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.5, stagger: 1.2, ease: "power2.out" }, 489.20);
+tl.fromTo("#s25 .e-cmd", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 494.50);
+tl.fromTo("#s25 .e-links", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 495.50);
+tl.fromTo("#s25 .e-sub", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6 }, 497.00);
+tl.to("#s25 .endcard", { opacity: 0, duration: 1.5, ease: "power1.in" }, 512.40);
+window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "opus55-projects",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.114 preview",
+    "check": "npx --yes hyperframes@0.8.114 lint && npx --yes hyperframes@0.8.114 validate && npx --yes hyperframes@0.8.114 inspect",
+    "build": "node scripts/build.mjs",
+    "render": "npx --yes hyperframes@0.8.114 render",
+    "publish": "npx --yes hyperframes@0.8.114 publish"
+  }
+}
