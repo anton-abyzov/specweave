@@ -32,7 +32,7 @@ That releases your task claims, records the handoff in the increment's ledger, w
 
 In the next tool or account, open the same repository and say "pick up". The agent runs `specweave pickup`, which fetches the waiting handoff, brings this checkout up to it (fast-forwarding the branch and applying the uncommitted edits, only when your working tree is clean), and prints the active increment, the next task with its acceptance criteria, branch state, the last handoff, recent notes and the project memory index in one read. In Claude Code the SessionStart hook prints a short version of this automatically.
 
-This works the same for a cloud session (a Claude Code Projects thread, Codex cloud), another machine or a second subscription, because the handoff travels through your git remote. Use `specweave handoff --no-push` to keep it local, or `specweave pickup --no-apply` to see what is waiting without changing your checkout. `specweave report` writes an HTML timeline of which tool did what on the increment. Full details: [Cross-tool handoff](/docs/guides/cross-tool-handoff).
+This works the same for a cloud session (a Claude Code Projects thread, Codex cloud), another machine or a second subscription, because the handoff travels through your git remote. Use `specweave handoff --no-push` to keep it local, or `specweave pickup --no-apply` to see what is waiting without changing your checkout. `specweave report` writes an HTML timeline of which tool did what on the increment. Full details: [Cross-tool handoff](/docs/guides/cross-tool-handoff). For the step-by-step version see [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/), and for every option when a limit hits see [Claude Code usage limit reached](/docs/guides/claude-code-usage-limit/).
 
 ## Where does the state live?
 
@@ -98,6 +98,10 @@ specweave update
 ## What does it cost?
 
 SpecWeave is open source under the MIT license and free. You pay for the AI tool you already use. The core loop (`pickup`, `task`, `verify`, `complete`, `handoff`) makes no model calls. The exceptions are optional: the AI pass in `specweave qa` (skip it with `--no-ai`), and Jev, which is opt-in and runs under your own provider key (see [Jev](/docs/guides/jev-system-one)). For a local view of Claude Code token usage, open `specweave dashboard`; see [Usage and cost estimates](/docs/reference/cost-tracking) for what it can and cannot measure.
+
+## How is it different from OpenSpec, Spec Kit or BMAD?
+
+All of them give the agent a written spec. SpecWeave adds what happens while the work is built: task claims for parallel agents, stored test output as proof a task is done, and handoff between tools and accounts. They also work well together. See [SpecWeave vs OpenSpec](/docs/compare/specweave-vs-openspec/), [SpecWeave vs GitHub Spec Kit](/docs/guides/specweave-vs-speckit/), [SpecWeave vs the BMAD Method](/docs/compare/specweave-vs-bmad-method/), or [all of them compared](/docs/compare/spec-driven-development-tools/).
 
 ## Does it work on an existing codebase?
 
