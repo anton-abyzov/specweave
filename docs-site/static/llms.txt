@@ -20,6 +20,10 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [AGENTS.md vs CLAUDE.md](https://spec-weave.com/docs/guides/agents-md-vs-claude-md/): one instruction file for every coding agent
 - [SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3/): what changed from 2.x and how to upgrade
 
+## Teams
+
+- [Pricing for teams](https://spec-weave.com/pricing/): SpecWeave is free (MIT); private skills on Verified Skill from $20 a month; a $990 founding team pilot that sets up handoff between Claude Code and Codex
+
 ## Reference
 
 - [Commands](https://spec-weave.com/docs/reference/commands/)
