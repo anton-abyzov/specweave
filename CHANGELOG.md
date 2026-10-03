@@ -1,3 +1,15 @@
+## [Unreleased]
+
+### Added
+
+- Claude Code gets a `StopFailure` hook from `specweave auto-handoff on`. When a turn fails on the usage limit before the 90% Stop hook could ask (one long turn can jump past it), the hook writes and pushes the handoff itself, as Grok Build's already did.
+- `specweave auto-handoff status` shows whether each tool's hooks are in place and the last usage Claude Code and Codex reported, and says to run `on` again when something is missing.
+
+### Fixed
+
+- The 90% Stop hook asked a session to hand off once and never again. A session that kept going after its 5-hour window reset was unguarded in the next window. It is now asked once per usage window.
+- A session the Stop hook had already asked to hand off was skipped by the limit-hit hook, so edits made after the 90% handoff were not handed off when the limit hit. The two hooks now keep separate markers.
+
 ## [3.0.3] - 2026-09-26
 
 ### Fixed

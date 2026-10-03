@@ -67,11 +67,7 @@ specweave auto-handoff status
 specweave auto-handoff off           # restores your previous setup
 ```
 
-In Claude Code, `on` sets the status line to `specweave statusline`, which records the 5-hour and 7-day usage Claude Code reports on Pro and Max plans after the first reply. If you already have a status line, it keeps showing it. It also adds a `specweave usage-guard` Stop hook. When `~/.codex` exists, the same hook goes into `~/.codex/hooks.json`, and there it reads the rate limits Codex writes to its session log. Once usage passes the threshold, the hook stops the agent once per session and has it run `specweave handoff`, then tell you to say "pick up" in the next tool. Under the threshold the hook adds nothing to the conversation.
-
-Grok Build reports no usage percentage, so `on` gives it a hook in `~/.grok/hooks/` that runs the handoff right after a turn hits the rate limit.
-
-Cloud sessions (Claude Code on the web, Projects threads and Codex cloud tasks) have no status line or user hooks. There, and everywhere else, `AGENTS.md` tells the agent to hand off when Claude Code warns it that the usage limit is near or reached. Otherwise you say "hand off".
+At 90% of the fullest usage window, Claude Code and Codex stop once and run `specweave handoff`; when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
 
 ## Who holds a task
 

@@ -7,11 +7,13 @@
  *   specweave usage-guard --limit-hit                              (StopFailure hook, Grok Build)
  *
  * `auto-handoff on` wires the tools once, in the user's own settings:
- * Claude Code gets the status line (wrapping any existing one) and a Stop
- * hook; Codex gets the same Stop hook in ~/.codex/hooks.json. From then on a
- * session that reaches the threshold hands off by itself. Grok Build reports
- * no usage percentage, so it gets a StopFailure hook in ~/.grok/hooks/ that
- * runs the handoff itself right after a turn hits the rate limit.
+ * Claude Code gets the status line (wrapping any existing one), a Stop hook
+ * and a StopFailure hook; Codex gets the same Stop hook in ~/.codex/hooks.json.
+ * From then on a session that reaches the threshold hands off by itself.
+ * Grok Build reports no usage percentage, so it gets only the StopFailure
+ * hook, in ~/.grok/hooks/; it runs the handoff itself right after a turn hits
+ * the rate limit. In Claude Code the same StopFailure hook is the backstop for
+ * a turn that jumps past the limit before the Stop hook could ask.
  *
  * @module cli/commands/auto-handoff
  */
@@ -22,10 +24,12 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
   DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
+  latestClaudeReading, latestCodexReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
 import { detectTool } from '../../core/tasks/ledger.js';
 
 const GUARD_COMMAND = 'specweave usage-guard';
+const LIMIT_HIT_COMMAND = `${GUARD_COMMAND} --limit-hit`;
 const STATUS_COMMAND = 'specweave statusline';
 
 async function readStdin(): Promise<string> {
@@ -73,7 +77,8 @@ export async function usageGuardCommand(opts: { home?: string; limitHit?: boolea
       const root = limitHitTarget(parse(opts.input ?? await readStdin()), { home: opts.home });
       if (root) {
         const { handoffCommand } = await import('./handoff.js');
-        await handoffCommand({ cwd: root, reason: `rate limit reached in ${detectTool()}` });
+        const tool = detectTool();
+        await handoffCommand({ cwd: root, reason: tool === 'cli' ? 'usage limit reached' : `usage limit reached in ${tool}` });
       }
     } catch { /* a hook must never break the tool */ }
     return 0;
@@ -104,23 +109,29 @@ function writeJson(file: string, data: Settings): void {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 }
 
-function hasGuard(s: Settings): boolean {
-  return (s.hooks?.Stop ?? []).some((g) => (g.hooks ?? []).some((h) => h.command === GUARD_COMMAND));
+function hasHook(s: Settings, event: string, command: string): boolean {
+  return (s.hooks?.[event] ?? []).some((g) => (g.hooks ?? []).some((h) => h.command === command));
 }
 
-function addGuard(s: Settings): void {
+function addHook(s: Settings, event: string, group: HookGroup): void {
+  const command = group.hooks?.[0]?.command ?? '';
+  if (hasHook(s, event, command)) return;
   s.hooks = s.hooks ?? {};
-  s.hooks.Stop = [...(s.hooks.Stop ?? []), { hooks: [{ type: 'command', command: GUARD_COMMAND, timeout: 10 }] }];
+  s.hooks[event] = [...(s.hooks[event] ?? []), group];
 }
 
-function removeGuard(s: Settings): void {
-  if (!s.hooks?.Stop) return;
-  s.hooks.Stop = s.hooks.Stop
-    .map((g) => ({ ...g, hooks: (g.hooks ?? []).filter((h) => h.command !== GUARD_COMMAND) }))
+function removeHook(s: Settings, event: string, command: string): void {
+  if (!s.hooks?.[event]) return;
+  s.hooks[event] = s.hooks[event]
+    .map((g) => ({ ...g, hooks: (g.hooks ?? []).filter((h) => h.command !== command) }))
     .filter((g) => g.hooks.length);
-  if (!s.hooks.Stop.length) delete s.hooks.Stop;
+  if (!s.hooks[event].length) delete s.hooks[event];
   if (!Object.keys(s.hooks).length) delete s.hooks;
 }
+
+const STOP_HOOK: HookGroup = { hooks: [{ type: 'command', command: GUARD_COMMAND, timeout: 10 }] };
+/** Claude Code: a turn that failed on the usage limit (HTTP 429) hands off from the hook itself. */
+const CLAUDE_LIMIT_HOOK: HookGroup = { matcher: 'rate_limit', hooks: [{ type: 'command', command: LIMIT_HIT_COMMAND, timeout: 60 }] };
 
 const GROK_HOOK_FILE = 'specweave-auto-handoff.json';
 
@@ -130,7 +141,7 @@ export function grokHook(): Settings {
     hooks: {
       StopFailure: [{
         matcher: 'rate_limit',
-        hooks: [{ type: 'command', command: `${GUARD_COMMAND} --limit-hit`, timeout: 60, env: { SPECWEAVE_TOOL: 'grok' } } as HookEntry],
+        hooks: [{ type: 'command', command: LIMIT_HIT_COMMAND, timeout: 60, env: { SPECWEAVE_TOOL: 'grok' } } as HookEntry],
       }],
     },
   };
@@ -166,15 +177,16 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
         previousStatusLine = claude.statusLine;
         claude.statusLine = { ...(claude.statusLine ?? {}), type: 'command', command: current ? `${STATUS_COMMAND} --wrap ${shellQuote(current)}` : STATUS_COMMAND };
       }
-      if (!hasGuard(claude)) addGuard(claude);
+      addHook(claude, 'Stop', STOP_HOOK);
+      addHook(claude, 'StopFailure', CLAUDE_LIMIT_HOOK);
       writeJson(claudeFile, claude);
-      say(`Claude Code: status line ${current ? 'wraps your existing one' : 'set'} and Stop hook added in ${claudeFile}`);
+      say(`Claude Code: status line ${current ? 'wraps your existing one' : 'set'}, Stop and StopFailure hooks added in ${claudeFile}`);
     }
     if (fs.existsSync(path.dirname(codexFile))) {
       const codex = readJson(codexFile);
       if (!codex) say(`Left ${codexFile} alone: it is not valid JSON.`);
       else {
-        if (!hasGuard(codex)) addGuard(codex);
+        addHook(codex, 'Stop', STOP_HOOK);
         writeJson(codexFile, codex);
         say(`Codex: Stop hook added in ${codexFile} (Codex asks you to trust a new hook once)`);
       }
@@ -192,7 +204,8 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
     const settings = readSettings(home);
     const claude = readJson(claudeFile);
     if (claude && fs.existsSync(claudeFile)) {
-      removeGuard(claude);
+      removeHook(claude, 'Stop', GUARD_COMMAND);
+      removeHook(claude, 'StopFailure', LIMIT_HIT_COMMAND);
       if (claude.statusLine?.command?.startsWith(STATUS_COMMAND)) {
         if (settings?.previousStatusLine) claude.statusLine = settings.previousStatusLine as Settings['statusLine'];
         else delete claude.statusLine;
@@ -200,14 +213,58 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
       writeJson(claudeFile, claude);
     }
     const codex = fs.existsSync(codexFile) ? readJson(codexFile) : undefined;
-    if (codex) { removeGuard(codex); writeJson(codexFile, codex); }
+    if (codex) { removeHook(codex, 'Stop', GUARD_COMMAND); writeJson(codexFile, codex); }
     fs.rmSync(grokFile, { force: true });
     writeSettings(undefined, home);
     say('Auto-handoff is off; your previous status line is back.');
     return 0;
   }
 
-  const settings = readSettings(home);
-  say(settings ? `Auto-handoff is on at ${settings.at}% (since ${settings.since ?? 'unknown'}).` : 'Auto-handoff is off. Turn it on with `specweave auto-handoff on`.');
+  for (const line of autoHandoffStatus(home)) say(line);
   return 0;
+}
+
+function ago(ms: number, now: number): string {
+  const min = Math.max(0, Math.round((now - ms) / 60000));
+  return min < 60 ? `${min} min ago` : min < 48 * 60 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} days ago`;
+}
+
+function readingLine(r: UsageReading | undefined, now: number): string {
+  return r ? `last reading ${usageSummary(r.windows)} (${ago(r.at, now)})` : 'no usage reading yet';
+}
+
+/**
+ * What `auto-handoff status` prints: the threshold, whether each tool's hooks
+ * are actually in place, and the last usage each tool reported.
+ */
+export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string[] {
+  const settings = readSettings(home);
+  if (!settings) return ['Auto-handoff is off. Turn it on with `specweave auto-handoff on`.'];
+  const lines = [`Auto-handoff is on at ${settings.at}% (since ${settings.since ?? 'unknown'}).`];
+  let broken = false;
+
+  const claude = readJson(path.join(home, '.claude', 'settings.json'));
+  if (claude) {
+    const missing = [
+      claude.statusLine?.command?.startsWith(STATUS_COMMAND) ? '' : 'status line',
+      hasHook(claude, 'Stop', GUARD_COMMAND) ? '' : 'Stop hook',
+      hasHook(claude, 'StopFailure', LIMIT_HIT_COMMAND) ? '' : 'StopFailure hook',
+    ].filter(Boolean);
+    broken ||= missing.length > 0;
+    lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${readingLine(latestClaudeReading(home), now)}`);
+  }
+  const codexFile = path.join(home, '.codex', 'hooks.json');
+  if (fs.existsSync(path.dirname(codexFile))) {
+    const codex = readJson(codexFile);
+    const ok = !!codex && hasHook(codex, 'Stop', GUARD_COMMAND);
+    broken ||= !ok;
+    lines.push(`Codex: ${ok ? 'Stop hook in place' : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
+  }
+  if (fs.existsSync(path.join(home, '.grok'))) {
+    const ok = fs.existsSync(path.join(home, '.grok', 'hooks', GROK_HOOK_FILE));
+    broken ||= !ok;
+    lines.push(`Grok Build: ${ok ? 'StopFailure hook in place' : 'missing StopFailure hook'}; Grok reports no usage, so it hands off when a turn hits the limit`);
+  }
+  if (broken) lines.push('Run `specweave auto-handoff on` again to put the missing pieces back.');
+  return lines;
 }
