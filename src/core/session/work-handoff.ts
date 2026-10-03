@@ -33,6 +33,7 @@ import {
   renderPastePrompt,
   DOC_FORMAT_MARKER,
   LEGACY_DOC_FORMAT_MARKER,
+  extractKeepBlocks,
   type HandoffDocInput,
   type HandoffIncrementInfo,
   type HandoffTaskRow,
@@ -86,6 +87,8 @@ export class AmbiguousActiveIncrementError extends Error {
 }
 
 export const HANDOFF_POINTER_FILE = 'handoff-latest.txt';
+/** Where the generated doc goes when the increment's `handoff.md` was written by hand. */
+export const AUTO_HANDOFF_FILE = 'handoff.auto.md';
 
 export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOptions = {}): Promise<WorkHandoffResult> {
   const passedRoot = path.resolve(repoRoot);
@@ -177,6 +180,12 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   };
 
   docInput.released = released;
+  // Hand-kept blocks of the previous version survive regeneration (scrubbed like the rest).
+  docInput.keep = readKeepBlocks(docPath).map((b) => {
+    const r = scrubSecrets(b);
+    for (const [k, v] of Object.entries(r.counts)) scrubbed.counts[k] = (scrubbed.counts[k] ?? 0) + v;
+    return r.scrubbed;
+  });
   // The HTML timeline travels with the handoff as evidence of who did what.
   if (!opts.checkpoint && incrementId && incDir) {
     try { writeHandoffReport(incDir, incrementId); } catch { /* evidence is best-effort */ }
@@ -288,7 +297,9 @@ export function readDecisions(filePath: string): string[] {
  * Decide doc + diff paths.
  *
  * - explicit `out`: use it (diff is a sibling `.diff`).
- * - SpecWeave + active increment: the increment's own `handoff.md`.
+ * - SpecWeave + active increment: the increment's own `handoff.md`, unless a
+ *   hand-written one (no generator marker) is there: then `handoff.auto.md`,
+ *   so a person's handoff is never overwritten.
  * - SpecWeave, no active increment: `state/handoff-latest.md`.
  * - non-SpecWeave: `.handoff/HANDOFF.md`, unless a foreign root `./HANDOFF.md`
  *   without the marker exists (ownership sentinel still routes to `.handoff/`).
@@ -304,7 +315,9 @@ function resolveWritePaths(
     return { docPath: abs, diffPath: siblingDiff(abs) };
   }
   if (isSpecWeave && incDir) {
-    return { docPath: path.join(incDir, 'handoff.md'), diffPath: path.join(incDir, 'handoff.diff') };
+    const own = path.join(incDir, 'handoff.md');
+    const docPath = isForeignHandoffFile(own) ? path.join(incDir, AUTO_HANDOFF_FILE) : own;
+    return { docPath, diffPath: path.join(incDir, 'handoff.diff') };
   }
   // No increment (SpecWeave without an active one, or plain repo): root
   // ./HANDOFF.md if it is ours, else .handoff/ (gitignored).
@@ -333,6 +346,10 @@ export function isForeignHandoffFile(handoffPath: string): boolean {
   if (!fs.existsSync(handoffPath)) return false;
   const content = fs.readFileSync(handoffPath, 'utf-8');
   return !content.includes(DOC_FORMAT_MARKER) && !content.includes(LEGACY_DOC_FORMAT_MARKER);
+}
+
+function readKeepBlocks(docPath: string): string[] {
+  try { return extractKeepBlocks(fs.readFileSync(docPath, 'utf-8')); } catch { return []; }
 }
 
 function writeDoc(docPath: string, markdown: string): void {

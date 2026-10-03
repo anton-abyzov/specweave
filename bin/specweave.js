@@ -184,6 +184,8 @@ program
 program
   .command('handoff [incrementId]')
   .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account')
+  .option('--all', 'Write .specweave/handoffs/<date>-INDEX.md and index.json: every active increment and every nested repo with local-only work (writes nothing else)')
+  .option('--dry-run', 'With --all: print the index instead of writing it')
   .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
   .option('--summary <summary>', 'Short summary of where things stand')
   .option('--next <next>', 'The exact next step for the resuming agent')
@@ -211,6 +213,8 @@ program
       json: options.json,
       push: options.push === false ? false : undefined,
       keepClaims: options.keepClaims,
+      all: options.all,
+      dryRun: options.dryRun,
     });
   });
 
@@ -219,10 +223,11 @@ program
   .command('pickup [incrementId]')
   .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria')
   .option('--no-apply', 'Only show the waiting handoff; do not apply it to this checkout')
+  .option('--all', 'Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing')
   .option('--json', 'Output as JSON')
   .action(async (incrementId, options) => {
     const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
-    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply });
+    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply, all: options.all });
   });
 
 // Report command - HTML timeline of an increment's ledger (handoff evidence)

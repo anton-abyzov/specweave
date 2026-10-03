@@ -2,6 +2,7 @@
  * CLI Commands: pickup, note
  *
  *   specweave pickup [incrementId] [--json]
+ *   specweave pickup --all [--json]
  *   specweave note "<text>" [incrementId]
  *
  * `pickup` is the one read a fresh session needs, in any tool on any account.
@@ -19,18 +20,27 @@ import { resolveIncrement, IncrementResolutionError } from '../../core/tasks/res
 import { scrubSecrets } from '../../core/session/handoff-secret-scrub.js';
 import { applyHandoff, type PickupApplyResult } from '../../core/session/handoff-remote.js';
 import { writeHandoffReport } from '../../core/session/handoff-report.js';
+import { readLatestIndex, renderPickupAll } from '../../core/session/handoff-all.js';
 
 export interface PickupCommandOptions {
   incrementId?: string;
   json?: boolean;
   /** `--no-apply`: only show the handoff, leave the checkout as it is. */
   apply?: boolean;
+  /** `--all`: print the newest handoff index, actionable rows first. Read-only. */
+  all?: boolean;
   cwd?: string;
   agent?: string;
 }
 
 export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<number> {
   const root = resolveEffectiveRoot(opts.cwd ?? process.cwd());
+  if (opts.all) {
+    const latest = readLatestIndex(root);
+    const text = renderPickupAll(root, latest);
+    process.stdout.write((opts.json ? JSON.stringify({ ...latest, text }, null, 2) : text) + '\n');
+    return 0;
+  }
   const agent = opts.agent ?? getAgentId();
 
   // 1. Bring in the latest handoff pushed from any tool, machine or account.
