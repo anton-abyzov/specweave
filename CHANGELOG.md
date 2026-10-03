@@ -5,7 +5,7 @@
 - Claude Code gets a `StopFailure` hook from `specweave auto-handoff on`. When a turn fails on the usage limit before the 90% Stop hook could ask (one long turn can jump past it), the hook writes and pushes the handoff itself, as Grok Build's already did.
 - `specweave auto-handoff status` shows whether each tool's hooks are in place and the last usage Claude Code and Codex reported, and says to run `on` again when something is missing.
 - `specweave handoff --all` writes one index of every active increment (tasks done, open criteria, what it waits on, a resume prompt) plus every nested checkout with local-only work, and `specweave pickup --all` prints it with the increments you can act on first. It commits and pushes nothing. A hand-written `handoff.md` is no longer overwritten; the generated doc goes to `handoff.auto.md`, and `<!-- keep -->` blocks survive the next handoff.
-- Releases can be cut from GitHub alone: run the Release & Publish workflow on `develop` and it bumps, commits, tags and publishes.
+- Releases no longer need a local tag push: running the Release & Publish workflow on `develop` opens a version PR, and merging it tags and publishes the release.
 
 ### Fixed
 
