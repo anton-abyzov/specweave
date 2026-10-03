@@ -61,11 +61,11 @@ _specweave_completions() {
             return 0
             ;;
         handoff)
-            COMPREPLY=( $(compgen -W "--reason --summary --next --gotcha --decision --inline --clipboard --non-specweave --out --json --no-push --keep-claims --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--all --dry-run --reason --summary --next --gotcha --decision --inline --clipboard --non-specweave --out --json --no-push --keep-claims --help" -- "${cur}") )
             return 0
             ;;
         pickup)
-            COMPREPLY=( $(compgen -W "--no-apply --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--no-apply --all --json --help" -- "${cur}") )
             return 0
             ;;
         report)

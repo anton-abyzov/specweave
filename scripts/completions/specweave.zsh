@@ -155,6 +155,8 @@ _specweave() {
                     ;;
                 handoff)
                     _arguments \
+                        '--all[Write .specweave/handoffs/<date>-INDEX.md and index.json\: every active increment and every nested repo with local-only work (writes nothing else)]' \
+                        '--dry-run[With --all\: print the index instead of writing it]' \
                         '--reason[Why you are handing off (e.g. "out of tokens")]' \
                         '--summary[Short summary of where things stand]' \
                         '--next[The exact next step for the resuming agent]' \
@@ -172,6 +174,7 @@ _specweave() {
                 pickup)
                     _arguments \
                         '--no-apply[Only show the waiting handoff; do not apply it to this checkout]' \
+                        '--all[Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing]' \
                         '--json[Output as JSON]' \
                         '--help[Show help]'
                     ;;

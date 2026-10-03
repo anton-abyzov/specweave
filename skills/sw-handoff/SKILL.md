@@ -1,5 +1,5 @@
 ---
-description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "out of tokens", "switching accounts", "pick up" or "continue".
+description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "hand off all", "out of tokens", "switching accounts", "pick up" or "continue".
 argument-hint: "[--reason \"...\"] [--next \"...\"]"
 version: 3.0.0
 ---
@@ -26,6 +26,41 @@ the user: say "pick up" in the other tool.
 Add `--next "<exact next step>"`, `--gotcha "..."` or `--decision "..."` only for what
 the files cannot tell the next agent. No Git remote and another machine:
 `--inline` prints a prompt to paste instead. `--no-push` keeps it local.
+
+## Hand off everything (switching accounts with many threads)
+
+When the user switches accounts or tools with several increments in flight ("hand off
+all", "switching subscriptions"), run:
+
+```bash
+specweave handoff --all --reason "<their words>"
+```
+
+It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json`: one row per active
+increment (tasks done/total, open ACs, last activity, what it waits on, a paste-ready
+resume prompt) and, in an umbrella workspace, every checkout under
+`repositories/<org>/<repo>` (and its worktrees) with uncommitted files, unpushed
+commits or a branch with no remote, with its open PR when `gh` is installed. It is
+read-only toward everything else: no claims released, nothing committed or pushed in
+the umbrella or the nested repos. Commit and push the local-only work it lists, or say
+so in your reply. `--dry-run` prints the index without writing it.
+
+A wait is a ledger line `{"t":"*","e":"wait","by":"<you>","at":"<ISO time>","note":"Anton: typed go for the cutover"}`
+or a `Waits on: ...` line in the increment's `handoff.md`; a `wait` with the note
+`resolved` clears the earlier ones.
+
+On the other side, "pick up all" is `specweave pickup --all`: the newest index,
+actionable increments first, then the ones waiting on a person. Start each topic with
+its resume prompt, then `specweave pickup <id>`.
+
+## Your hand-written handoff is kept
+
+`specweave handoff` never overwrites a `handoff.md` that a person wrote (one without the
+`<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it.
+Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next
+`handoff`.
+
+## Hand off by itself
 
 To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code and
 Codex, on their own machine; not in cloud sessions). A session then hands off at 90% of
