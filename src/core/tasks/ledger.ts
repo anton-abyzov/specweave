@@ -16,6 +16,10 @@
  *            thread, tool or account). `specweave note` writes it.
  *   session  a tool session picked the increment up (`specweave pickup`).
  *   handoff  a session handed the increment off (`specweave handoff`).
+ *   pickup   a session picked up a handoff (`specweave pickup`).
+ *   wait     the increment waits on a person (`note` says on whom and for
+ *            what). A `wait` whose note is empty, `none`, `cleared` or
+ *            `resolved` clears the earlier ones. `handoff --all` lists them.
  *
  * Writes are single-line O_APPEND appends (same rationale as
  * core/sync/event-queue.ts): atomic for short lines on every major OS, so two
@@ -32,7 +36,7 @@ import * as path from 'path';
 import { touchIncrementUpdated } from './increment-updated.js';
 
 export type TaskEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
-export type IncrementEventType = 'note' | 'session' | 'handoff' | 'pickup';
+export type IncrementEventType = 'note' | 'session' | 'handoff' | 'pickup' | 'wait';
 export type LedgerEventType = TaskEventType | IncrementEventType;
 
 /** Task id used by increment-level events (notes, sessions, handoffs). */
@@ -79,8 +83,8 @@ export interface LedgerFold {
 export const LEDGER_FILE = 'ledger.jsonl';
 export const DEFAULT_LEASE_HOURS = 2;
 
-const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff', 'pickup']);
-const INCREMENT_EVENTS: ReadonlySet<string> = new Set(['note', 'session', 'handoff', 'pickup']);
+const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff', 'pickup', 'wait']);
+const INCREMENT_EVENTS: ReadonlySet<string> = new Set(['note', 'session', 'handoff', 'pickup', 'wait']);
 
 /** Resolve the ledger path for an increment directory. */
 export function ledgerPath(incrementDir: string): string {

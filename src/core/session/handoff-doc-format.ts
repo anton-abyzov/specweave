@@ -19,6 +19,16 @@ export const DOC_FORMAT_MARKER = 'Doc format v2';
 /** Prior marker — still recognized as "ours" so v1 docs are overwritten, not treated as foreign. */
 export const LEGACY_DOC_FORMAT_MARKER = 'Doc format v1';
 
+/** A `<!-- keep -->…<!-- /keep -->` block survives regeneration of a generated doc. */
+export const KEEP_OPEN_MARKER = '<!-- keep -->';
+export const KEEP_CLOSE_MARKER = '<!-- /keep -->';
+const KEEP_BLOCK_RE = /<!--\s*keep\s*-->[\s\S]*?<!--\s*\/keep\s*-->/g;
+
+/** Every keep block in a document, markers included, in order. */
+export function extractKeepBlocks(text: string): string[] {
+  return (text ?? '').match(KEEP_BLOCK_RE) ?? [];
+}
+
 export const INLINE_BEGIN_MARKER = 'BEGIN HANDOFF';
 export const INLINE_END_MARKER = 'END HANDOFF';
 
@@ -148,6 +158,8 @@ export interface HandoffDocInput {
   push?: HandoffPushInfo;
   /** Claims this handoff released so the next agent can take them. */
   released?: string[];
+  /** Keep blocks carried over from the previous version of this doc. */
+  keep?: string[];
 }
 
 export interface HandoffPushInfo {
@@ -201,6 +213,10 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
   L.push(`active claims: ${claims.length ? claims.map((t) => `${t.id} (${t.status} by ${t.by})`).join(', ') : 'none'}${input.released?.length ? ` · released: ${input.released.join(', ')}` : ''}`);
   if (input.push?.warnings.length) L.push(`push: ${input.push.warnings.join('; ')}`);
   L.push('');
+  for (const block of input.keep ?? []) {
+    L.push(block);
+    L.push('');
+  }
 
   // ── Where I left off ──────────────────────────────────────────────────
   L.push('## Where I left off');
