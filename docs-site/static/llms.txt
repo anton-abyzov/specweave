@@ -16,6 +16,9 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [Handoff and pickup](https://spec-weave.com/docs/guides/cross-tool-handoff/): continue a task in another tool when a usage limit hits, including auto-handoff at 90 percent
 - [Claude Code Projects and threads](https://spec-weave.com/docs/guides/claude-code-projects/): one thread is one increment
 - [Codex, Grok Build, Cursor and Gemini CLI](https://spec-weave.com/docs/integrations/generic-ai-tools/): what each tool reads
+- [Auto-handoff rules](https://spec-weave.com/docs/guides/auto-handoff/): when SpecWeave hands off by itself at 90 percent of a Claude Code or Codex usage window
+- [Switch from Claude Code to Codex without losing your place](https://spec-weave.com/docs/guides/switch-claude-code-to-codex/): the two commands, what carries over, and switching back
+- [Claude Code usage limit reached: what to do next](https://spec-weave.com/docs/guides/claude-code-usage-limit/): how the five-hour and weekly limits work and every way to keep going
 - [Claude Code vs Codex](https://spec-weave.com/docs/guides/claude-code-vs-codex/): differences that matter day to day, and switching when a limit hits
 - [AGENTS.md vs CLAUDE.md](https://spec-weave.com/docs/guides/agents-md-vs-claude-md/): one instruction file for every coding agent
 - [SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3/): what changed from 2.x and how to upgrade
@@ -31,6 +34,8 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [FAQ](https://spec-weave.com/docs/faq/)
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](https://spec-weave.com/docs/compare/spec-driven-development-tools/)
 - [SpecWeave vs GitHub Spec Kit](https://spec-weave.com/docs/guides/specweave-vs-speckit/)
+- [SpecWeave vs OpenSpec](https://spec-weave.com/docs/compare/specweave-vs-openspec/)
+- [SpecWeave vs the BMAD Method](https://spec-weave.com/docs/compare/specweave-vs-bmad-method/)
 
 ## Skills
 

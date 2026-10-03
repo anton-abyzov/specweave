@@ -1,5 +1,5 @@
 ---
-title: "Switch from Claude Code to Codex mid-task: handoff and pickup"
+title: "Handoff and pickup: continue a task in any AI coding tool"
 description: "Out of Claude Code or Codex usage halfway through a task? Hand off in one command and pick up in Codex, Grok Build, Gemini CLI or another account with the spec, tasks and uncommitted edits intact."
 ---
 
@@ -17,7 +17,7 @@ No AI coding tool can read another's session. Each one keeps its transcript in i
 
 ## Hand off
 
-New to switching? [Claude Code vs Codex](/docs/guides/claude-code-vs-codex) covers what each tool reads and where its session lives.
+New to switching? [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/) is the step-by-step version, and [Claude Code vs Codex](/docs/guides/claude-code-vs-codex) covers what each tool reads and where its session lives.
 
 Tell your agent "hand off", or run:
 
@@ -150,6 +150,8 @@ Codex then claimed T-02, finished it with `specweave task done T-02 --run "npm t
 
 ## See also
 
+- [Switch from Claude Code to Codex without losing your place](./switch-claude-code-to-codex.md): the same steps as a short how-to.
+- [Claude Code usage limit reached](./claude-code-usage-limit.md): every option when a limit hits, and auto-handoff.
 - [SpecWeave 3.0](./specweave-3.md): everything that changed in this release.
 - [Claude Code Projects and threads](./claude-code-projects.md): one thread, one increment, and the memory folder.
 - [Autonomous Execution](./autonomous-execution.md): how handoff fits unattended work.
