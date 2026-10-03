@@ -20,7 +20,7 @@ specweave auto-handoff off           # puts your previous setup back
 
 | | Claude Code | Codex | Grok Build | Gemini CLI, Cursor, Copilot, OpenCode, cloud sessions |
 |---|---|---|---|---|
-| **How usage is measured** | Terminal sessions: the 5-hour, weekly and spend percentages Claude Code passes to its status line (Pro and Max, after the first reply), saved per session by `specweave statusline`. Desktop, Remote Control and `claude -p` sessions run no status line: they use Claude Code's own usage cache when it is under an hour old (see below). | The `rate_limits` Codex writes into its own session log every turn (5-hour and weekly `used_percent`). | Grok shows no usage percentage. | None of them shows a usage percentage to scripts. |
+| **How usage is measured** | Terminal sessions: the 5-hour, weekly and spend percentages Claude Code passes to its status line (Pro and Max, after the first reply), saved per session by `specweave statusline`. Desktop, Remote Control and `claude -p` sessions run no status line: they use the desktop app's usage samples or Claude Code's own usage cache when fresh (see below). | The `rate_limits` Codex writes into its own session log every turn (5-hour and weekly `used_percent`). | Grok shows no usage percentage. | None of them shows a usage percentage to scripts. |
 | **What fires at 90%** | `Stop` hook `specweave usage-guard` | `Stop` hook `specweave usage-guard` in `~/.codex/hooks.json` | nothing (no number to compare) | nothing |
 | **What fires when the limit is hit** | `StopFailure` hook (matcher `rate_limit`) runs `specweave usage-guard --limit-hit`, which writes the handoff itself | the 90% Stop hook is the only one | `StopFailure` hook in `~/.grok/hooks/` writes the handoff itself | you say "hand off" in the next session |
 | **Recognises "hand off" / "pick up"** | the `sw-handoff` skill, and `AGENTS.md` through `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` | `AGENTS.md` (SpecWeave adds it to Gemini CLI's `context.fileName`) |
@@ -50,11 +50,12 @@ A session is asked **once per usage window**. If you keep working in the same se
 
 ## Desktop, Remote Control and `claude -p` sessions
 
-Claude Code runs the status line only in a terminal session. In the desktop app, in a Remote Control session and in `claude -p`, nothing writes a fresh usage reading where a hook can read it. The desktop app shows live usage, but keeps it to itself.
+Claude Code runs the status line only in a terminal session. In the desktop app, in a Remote Control session and in `claude -p`, the Stop hook falls back to two readings, whichever is fresher:
 
-What the Stop hook falls back to is Claude Code's own usage cache, `cachedUsageUtilization` in `~/.claude.json` (or `$CLAUDE_CONFIG_DIR/.claude.json`). Claude Code refreshes it only when it fetches your usage, for example when you open `/usage`, so it is often missing or old. The hook uses it only when it is under an hour old and belongs to the signed-in account.
+- **The desktop app's usage samples**, `plan-usage-history.json` in the app's folder (`~/Library/Application Support/Claude/` on macOS). The app writes your 5-hour and 7-day percentages there about every 15 minutes while it runs, for each organization you use; the hook takes the newest sample of the session's organization (`CLAUDE_CODE_ORGANIZATION_UUID`) when it is under 20 minutes old.
+- **Claude Code's own usage cache**, `cachedUsageUtilization` in `~/.claude.json` (or `$CLAUDE_CONFIG_DIR/.claude.json`), refreshed only when Claude Code fetches your usage, for example when you open `/usage`. The hook uses it when it is under an hour old and belongs to the signed-in account.
 
-So in those sessions, plan on this: **they hand off when a turn hits the limit**, through the `StopFailure` hook below, and at 90% only when the cache happens to be fresh. `specweave auto-handoff status` says the same. For the 90% handoff, run the work in a terminal session.
+Neither is guaranteed. Samples come minutes apart and usage can jump from 0% to 100% between two of them, and both files are the app's own, undocumented. So in those sessions, plan on this: **they hand off when a turn hits the limit**, through the `StopFailure` hook below, and at 90% when a fresh reading shows it. `specweave auto-handoff status` says the same. For a dependable 90% handoff, run the work in a terminal session.
 
 ## What happens when the limit is hit mid-task
 
@@ -83,12 +84,12 @@ specweave pickup
 ```text
 Auto-handoff is on at 90% (since 2026-09-26T05:40:00.000Z).
 Claude Code: status line, Stop and StopFailure hooks in place; last reading 5-hour 42% · weekly 12% (3 min ago)
-  Desktop, Remote Control and `claude -p` sessions run no status line, so they hand off at the threshold only while Claude Code's own usage cache is under an hour old; otherwise they hand off when a turn hits the limit.
+  Desktop, Remote Control and `claude -p` sessions run no status line. They read the desktop app's usage samples (every 15 minutes or so) or Claude Code's usage cache when either is fresh, so a jump past the threshold between samples is missed; then they hand off when a turn hits the limit.
 Codex: Stop hook in place but not approved yet; last reading 5-hour 61% · weekly 20% (10 min ago)
   Codex skips a hook until you trust it: open `codex` in a terminal once and approve the hook when it asks.
 ```
 
-"no usage reading yet" for Claude Code means no terminal session's status line has run since `on` and Claude Code's usage cache is empty or old: open a terminal session and send one message. "not approved yet" for Codex means Codex has not recorded your trust for the hook in `~/.codex/config.toml`. To see the whole path without waiting for a real limit, run `specweave auto-handoff on --at 1` in a test project and send one message: the session hands off for real, pushes included. Then set it back with `specweave auto-handoff on --at 90`.
+"no usage reading yet" for Claude Code means no terminal session's status line has run since `on` and no fresh desktop sample or usage cache exists: open a terminal session and send one message. "not approved yet" for Codex means Codex has not recorded your trust for the hook in `~/.codex/config.toml`. To see the whole path without waiting for a real limit, run `specweave auto-handoff on --at 1` in a test project and send one message: the session hands off for real, pushes included. Then set it back with `specweave auto-handoff on --at 90`.
 
 ## Turning it off
 

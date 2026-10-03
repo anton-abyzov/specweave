@@ -24,7 +24,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
   DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
-  latestClaudeReading, latestCodexReading, claudeCachedReading, type UsageReading,
+  latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
 import { detectTool } from '../../core/tasks/ledger.js';
 
@@ -265,11 +265,15 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
     ].filter(Boolean);
     broken ||= missing.length > 0;
     const statusReading = latestClaudeReading(home);
-    const cached = claudeCachedReading({ home, now });
-    const reading = statusReading && (!cached || statusReading.at >= cached.at) ? readingLine(statusReading, now)
-      : cached ? `${readingLine(cached, now)} from Claude Code's usage cache` : readingLine(undefined, now);
+    const fallbacks: Array<[UsageReading | undefined, string]> = [
+      [statusReading, ''],
+      [desktopUsageReading({ home, now }), ' from the desktop app'],
+      [claudeCachedReading({ home, now }), ' from Claude Code\'s usage cache'],
+    ];
+    const [best, source] = fallbacks.filter(([r]) => r).sort(([a], [b]) => b!.at - a!.at)[0] ?? [undefined, ''];
+    const reading = `${readingLine(best, now)}${source}`;
     lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${reading}`);
-    lines.push('  Desktop, Remote Control and `claude -p` sessions run no status line, so they hand off at the threshold only while Claude Code\'s own usage cache is under an hour old; otherwise they hand off when a turn hits the limit.');
+    lines.push('  Desktop, Remote Control and `claude -p` sessions run no status line. They read the desktop app\'s usage samples (every 15 minutes or so) or Claude Code\'s usage cache when either is fresh, so a jump past the threshold between samples is missed; then they hand off when a turn hits the limit.');
   }
   const codexFile = path.join(home, '.codex', 'hooks.json');
   if (fs.existsSync(path.dirname(codexFile))) {

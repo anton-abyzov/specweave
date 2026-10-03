@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading,
+  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading,
 } from '../../../../src/core/session/usage-guard.js';
 import { autoHandoffCommand, autoHandoffStatus, statuslineCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
@@ -89,6 +89,49 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
     claudeCache(95, NOW - 60_000);
     recordClaudeUsage(claudeStatus('term-1', 40), home, NOW);
     expect(usageGuard({ session_id: 'term-1' }, { home, now: NOW })).toEqual({});
+  });
+
+  function desktopSamples(samples: object[]) {
+    const dir = path.join(home, 'Library', 'Application Support', 'Claude');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'plan-usage-history.json'), JSON.stringify({ version: 2, samples }));
+  }
+  const mac = { platform: 'darwin' as const };
+
+  it('reads the desktop app\'s newest sample for this session\'s organization', () => {
+    writeSettings({ at: 90 }, home);
+    desktopSamples([
+      { t: NOW - 40 * 60_000, org: 'org-a', u: { fh: 50, sd: 20, xu: 0 } },
+      { t: NOW - 5 * 60_000, org: 'org-a', u: { fh: 94, sd: 31, xu: 0 } },
+      { t: NOW - 60_000, org: 'org-b', u: { fh: 10, sd: 5 } },
+    ]);
+    const env = { CLAUDE_CODE_ORGANIZATION_UUID: 'org-a', CLAUDE_CODE_ENTRYPOINT: 'claude-desktop' };
+    expect(desktopUsageReading({ home, now: NOW, env, ...mac })).toEqual({
+      tool: 'Claude Code', at: NOW - 5 * 60_000, windows: [{ name: '5-hour', percent: 94 }, { name: 'weekly', percent: 31 }],
+    });
+    const res = usageGuard({ session_id: 'desk-2' }, { home, now: NOW, env, ...mac });
+    expect(res.hookSpecificOutput?.additionalContext).toContain('94% of the 5-hour limit');
+    // Another organization's session sees its own, lower sample.
+    expect(usageGuard({ session_id: 'desk-3' }, { home, now: NOW, env: { CLAUDE_CODE_ORGANIZATION_UUID: 'org-b' }, ...mac })).toEqual({});
+  });
+
+  it('ignores a desktop sample older than 20 minutes, and several organizations with none named', () => {
+    desktopSamples([{ t: NOW - 21 * 60_000, org: 'org-a', u: { fh: 99, sd: 40 } }]);
+    expect(desktopUsageReading({ home, now: NOW, env: { CLAUDE_CODE_ORGANIZATION_UUID: 'org-a' }, ...mac })).toBeUndefined();
+    // One organization in the file: no variable needed.
+    desktopSamples([{ t: NOW - 60_000, org: 'org-a', u: { fh: 91 } }]);
+    expect(desktopUsageReading({ home, now: NOW, env: {}, ...mac })?.windows).toEqual([{ name: '5-hour', percent: 91 }]);
+    desktopSamples([{ t: NOW - 60_000, org: 'org-a', u: { fh: 91 } }, { t: NOW - 60_000, org: 'org-b', u: { fh: 5 } }]);
+    expect(desktopUsageReading({ home, now: NOW, env: {}, ...mac })).toBeUndefined();
+  });
+
+  it('uses the fresher of the desktop sample and the usage cache', () => {
+    claudeCache(70, NOW - 2 * 60_000);
+    desktopSamples([{ t: NOW - 10 * 60_000, org: 'org-a', u: { fh: 60, sd: 20 } }]);
+    const env = { CLAUDE_CODE_ORGANIZATION_UUID: 'org-a' };
+    expect(claudeFallbackReading({ home, now: NOW, env, ...mac })?.windows[0].percent).toBe(70);
+    claudeCache(70, NOW - 30 * 60_000);
+    expect(claudeFallbackReading({ home, now: NOW, env, ...mac })?.windows[0].percent).toBe(60);
   });
 
   it('honours CLAUDE_CONFIG_DIR', () => {
