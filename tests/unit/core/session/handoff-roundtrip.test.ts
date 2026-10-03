@@ -162,6 +162,32 @@ describe('hand off and pick up across checkouts', () => {
     expect(fs.readFileSync(path.join(b, 'mine.js'), 'utf8')).toBe('local work\n');
   });
 
+  it('records one pickup when another tool picks up in the same checkout', async () => {
+    const a = path.join(base, 'a');
+    const pickups = () => readIncrementEvents(path.join(a, INC, 'ledger.jsonl'), ['pickup']);
+    // Pushed from here: the snapshot is already this checkout, so nothing is applied.
+    await buildWorkHandoff(a, { agent: 'claude@mbp', reason: 'usage at 91% of the 5-hour limit' });
+    await quiet(() => pickupCommand({ cwd: a, agent: 'codex@mbp' }));
+    expect(pickups()).toHaveLength(1);
+    expect(pickups()[0]).toMatchObject({ by: 'codex@mbp', note: expect.stringContaining('from claude@mbp') });
+    // Running pickup again is not a second pickup.
+    await quiet(() => pickupCommand({ cwd: a, agent: 'codex@mbp' }));
+    expect(pickups()).toHaveLength(1);
+
+    // Kept local (no push): still recorded, and the report counts it.
+    await buildWorkHandoff(a, { agent: 'codex@mbp', reason: 'usage at 92%', push: false });
+    await quiet(() => pickupCommand({ cwd: a, agent: 'claude@mbp' }));
+    expect(pickups().map((e) => e.by)).toEqual(['codex@mbp', 'claude@mbp']);
+    expect(fs.readFileSync(path.join(a, INC, 'reports', 'handoff-report.html'), 'utf8')).toContain('<div class="v">2</div><div class="l">pickups</div>');
+  });
+
+  it('pickup --no-apply records nothing', async () => {
+    const a = path.join(base, 'a');
+    await buildWorkHandoff(a, { agent: 'claude@mbp', push: false });
+    await quiet(() => pickupCommand({ cwd: a, agent: 'codex@mbp', apply: false }));
+    expect(readIncrementEvents(path.join(a, INC, 'ledger.jsonl'), ['pickup'])).toEqual([]);
+  });
+
   it('keeps a handoff local with push: false and says so', async () => {
     const res = await buildWorkHandoff(path.join(base, 'a'), { agent: 'claude@mbp', push: false });
     expect(res.push).toBeUndefined();

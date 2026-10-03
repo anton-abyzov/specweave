@@ -110,6 +110,101 @@ function readClaudeUsage(sessionId: string, home?: string): UsageWindow[] {
   }
 }
 
+/** Claude Code drops its own usage cache after an hour; so does the guard. */
+export const CLAUDE_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+
+function claudeConfigFile(env: NodeJS.ProcessEnv, home = os.homedir()): string {
+  const dir = env.CLAUDE_CONFIG_DIR?.trim();
+  return dir ? path.join(dir, '.claude.json') : path.join(home, '.claude.json');
+}
+
+type CachedWindow = { utilization?: number | null; resets_at?: string | null };
+
+/**
+ * Claude Code's own record of the plan usage: `cachedUsageUtilization` in
+ * ~/.claude.json (or $CLAUDE_CONFIG_DIR/.claude.json), written whenever Claude
+ * Code fetches the usage, in every kind of session: terminal, desktop, Remote
+ * Control and `claude -p`. It is the reading for sessions that never run a
+ * status line. Ignored when older than an hour or saved for another account.
+ */
+export function claudeCachedReading(opts: { env?: NodeJS.ProcessEnv; home?: string; now?: number } = {}): UsageReading | undefined {
+  const now = opts.now ?? Date.now();
+  let cfg: { oauthAccount?: { accountUuid?: string }; cachedUsageUtilization?: { fetchedAtMs?: number; accountUuid?: string; utilization?: Record<string, unknown> } };
+  try {
+    cfg = JSON.parse(fs.readFileSync(claudeConfigFile(opts.env ?? process.env, opts.home), 'utf8'));
+  } catch {
+    return undefined;
+  }
+  const cache = cfg?.cachedUsageUtilization;
+  const at = cache?.fetchedAtMs;
+  if (!cache || typeof at !== 'number' || now - at < 0 || now - at > CLAUDE_CACHE_MAX_AGE_MS) return undefined;
+  const account = cfg.oauthAccount?.accountUuid;
+  if (account && cache.accountUuid && account !== cache.accountUuid) return undefined;
+  const u = cache.utilization ?? {};
+  const windows: UsageWindow[] = [];
+  const names: Record<string, string> = { five_hour: '5-hour', seven_day: 'weekly' };
+  for (const [key, name] of Object.entries(names)) {
+    const w = u[key] as CachedWindow | null | undefined;
+    if (!w || typeof w.utilization !== 'number') continue;
+    const reset = w.resets_at ? Date.parse(w.resets_at) : NaN;
+    windows.push({ name, percent: w.utilization, ...(Number.isFinite(reset) ? { resetsAt: Math.floor(reset / 1000) } : {}) });
+  }
+  return windows.length ? { tool: 'Claude Code', at, windows } : undefined;
+}
+
+/** Desktop samples arrive about every 15 minutes; an older one may miss a jump to the limit. */
+export const DESKTOP_SAMPLE_MAX_AGE_MS = 20 * 60 * 1000;
+
+/** Where the Claude desktop app keeps its own files. */
+export function desktopAppDir(home = os.homedir(), platform: NodeJS.Platform = process.platform, env: NodeJS.ProcessEnv = process.env): string {
+  if (platform === 'darwin') return path.join(home, 'Library', 'Application Support', 'Claude');
+  if (platform === 'win32') return path.join(env.APPDATA ?? path.join(home, 'AppData', 'Roaming'), 'Claude');
+  return path.join(env.XDG_CONFIG_HOME ?? path.join(home, '.config'), 'Claude');
+}
+
+/**
+ * The Claude desktop app's plan-usage samples, `plan-usage-history.json`:
+ * `{ version: 2, samples: [{ t, org, u: { fh, sd } }] }`, 5-hour (`fh`) and
+ * 7-day (`sd`) percentages per organization, written about every 15 minutes
+ * while the app runs. It is the only reading desktop and Remote Control
+ * sessions leave on disk. Undocumented, so best effort: only the newest sample
+ * of this session's organization (CLAUDE_CODE_ORGANIZATION_UUID), and only
+ * when it is under 20 minutes old.
+ */
+export function desktopUsageReading(opts: { env?: NodeJS.ProcessEnv; home?: string; now?: number; platform?: NodeJS.Platform } = {}): UsageReading | undefined {
+  const env = opts.env ?? process.env;
+  const now = opts.now ?? Date.now();
+  let samples: Array<{ t?: unknown; org?: unknown; u?: { fh?: unknown; sd?: unknown } }>;
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(desktopAppDir(opts.home, opts.platform, env), 'plan-usage-history.json'), 'utf8'));
+    samples = Array.isArray(raw?.samples) ? raw.samples : [];
+  } catch {
+    return undefined;
+  }
+  let org = env.CLAUDE_CODE_ORGANIZATION_UUID?.trim();
+  if (!org) {
+    const orgs = new Set(samples.map((x) => x?.org).filter((o) => typeof o === 'string'));
+    if (orgs.size !== 1) return undefined; // several accounts and no way to tell which is this one
+    org = [...orgs][0] as string;
+  }
+  let newest: (typeof samples)[number] | undefined;
+  for (const x of samples) {
+    if (x?.org === org && typeof x.t === 'number' && (!newest || x.t > (newest.t as number))) newest = x;
+  }
+  const at = newest?.t as number | undefined;
+  if (!newest || at === undefined || now - at < 0 || now - at > DESKTOP_SAMPLE_MAX_AGE_MS) return undefined;
+  const windows: UsageWindow[] = [];
+  if (typeof newest.u?.fh === 'number') windows.push({ name: '5-hour', percent: newest.u.fh });
+  if (typeof newest.u?.sd === 'number') windows.push({ name: 'weekly', percent: newest.u.sd });
+  return windows.length ? { tool: 'Claude Code', at, windows } : undefined;
+}
+
+/** The freshest reading for a Claude Code session that runs no status line. */
+export function claudeFallbackReading(opts: { env?: NodeJS.ProcessEnv; home?: string; now?: number; platform?: NodeJS.Platform } = {}): UsageReading | undefined {
+  const readings = [desktopUsageReading(opts), claudeCachedReading(opts)].filter((r): r is UsageReading => !!r);
+  return readings.sort((a, b) => b.at - a.at)[0];
+}
+
 /** Windows from the newest `token_count` event in a Codex rollout file. */
 export function codexWindows(transcriptPath: string): UsageWindow[] {
   let text: string;
@@ -227,11 +322,24 @@ export interface GuardInput {
   stop_hook_active?: boolean;
 }
 
+export interface GuardOutput {
+  /** Codex: block the stop; `reason` goes to the model. */
+  decision?: 'block';
+  reason?: string;
+  /**
+   * Claude Code: non-error context for the model; the turn continues so it can
+   * act on it. A `decision: "block"` would show the user "Stop hook error".
+   */
+  hookSpecificOutput?: { hookEventName: 'Stop'; additionalContext: string };
+  /** Claude Code: a line shown to the user. */
+  systemMessage?: string;
+}
+
 /**
- * Stop-hook decision. Returns a block (the agent keeps going and hands off)
- * the first time a session is at or past the threshold, otherwise `{}`.
+ * Stop-hook output. The first time a session is at or past the threshold in a
+ * usage window, it keeps the agent going so it hands off; otherwise `{}`.
  */
-export function usageGuard(input: GuardInput, opts: { home?: string; now?: number } = {}): { decision?: 'block'; reason?: string } {
+export function usageGuard(input: GuardInput, opts: { home?: string; now?: number; env?: NodeJS.ProcessEnv; platform?: NodeJS.Platform } = {}): GuardOutput {
   const settings = readSettings(opts.home);
   if (!settings) return {};
   const id = safeId(String(input.session_id ?? ''));
@@ -241,7 +349,11 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   if (!rearmed(marker, now)) return {};
 
   const rollout = input.transcript_path && path.basename(input.transcript_path).startsWith('rollout-') ? input.transcript_path : undefined;
-  const windows = [...readClaudeUsage(id, opts.home), ...(rollout ? codexWindows(rollout) : [])];
+  // Codex: its session log. Claude Code: what the status line saw in this
+  // session (terminal only), else the desktop app's samples or Claude Code's
+  // own usage cache, whichever is fresher.
+  let windows = rollout ? codexWindows(rollout) : readClaudeUsage(id, opts.home);
+  if (!rollout && !windows.length) windows = claudeFallbackReading({ env: opts.env, home: opts.home, now, platform: opts.platform })?.windows ?? [];
   const top = fullest(windows, now);
   if (!top || top.percent < settings.at) return {};
 
@@ -251,7 +363,11 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   } catch {
     return {}; // without the marker it would fire every turn; stay quiet instead
   }
-  return { decision: 'block', reason: handoffInstruction(top) };
+  if (rollout) return { decision: 'block', reason: handoffInstruction(top) };
+  return {
+    hookSpecificOutput: { hookEventName: 'Stop', additionalContext: handoffInstruction(top) },
+    systemMessage: `Auto-handoff: usage is at ${Math.round(top.percent)}% of the ${top.name} limit, so this session is handing off. Say "pick up" in another tool or account to continue.`,
+  };
 }
 
 /** One short status line: the fullest windows, e.g. "5-hour 42% · weekly 12%". */
