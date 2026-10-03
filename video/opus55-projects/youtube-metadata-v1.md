@@ -10,22 +10,23 @@ Alternative: Claude Code Projects + Opus 5.5: Real Demo (Now on Pro)
 
 ## Description
 
-Claude Code Projects with Opus 5.5 on my real project, plus my take on GPT-6 Astra in Codex and GPT-6 Sol.
+Claude Code Projects with Opus 5.5 on a real codebase, plus my quick take on GPT-6 Astra in Codex and GPT-6 Sol.
 
-Heads-up: the presenter is my AI avatar (HeyGen) speaking with my cloned voice (ElevenLabs). The edit and captions were built from instructions I gave in a Claude Code project. The screens and terminal output are real.
+I walk through Claude Code Projects on my real EasyChamp project: the Opus 5.5 model picker and effort slider, a thread running Opus 5.5 High, project statuses, the New project dialog, the coordinator splitting a thread, a thread's live checklist, Routines, and what happens when you hit the weekly limit. Projects is now on Pro, and a fresh Pro account has it too. At the end I run a real SpecWeave handoff in the terminal, then run specweave pickup in a fresh clone to show the next task and its acceptance criterion.
 
-What you'll see: the Opus 5.5 model picker and effort slider, a thread running Opus 5.5 at high effort, project statuses, the New project dialog, the coordinator spinning up and splitting threads, a thread's live checklist, Routines, and what happens at the weekly usage limit. Then a real SpecWeave handoff, picked up in a fresh clone with the next task and its acceptance criteria.
+No voice-over in this one, captions only.
 
 Chapters
-0:00 Claude Code Projects in 15 seconds
-0:16 Heads-up: this is my AI avatar
-0:42 Opus 5.5, GPT-6 Astra and GPT-6 Sol
-1:23 Opus 5.5 in Claude Code: model and effort per thread
-2:18 What Claude Code Projects are (now on Pro)
-2:59 Demo: the coordinator and parallel threads
-4:28 Routines and the weekly usage limit
-5:12 Out of usage? Hand off with SpecWeave
-6:00 Wrap-up
+0:00 Highlights
+0:24 Recent releases
+1:28 Opus 5.5 in Claude Code
+2:28 What Projects are
+3:30 Demo: threads and the coordinator
+5:54 Routines, limits and results
+6:58 Out of usage? Hand off.
+8:08 Wrap-up
+
+Recent releases, my take: Opus 5.5 is the big one. GPT-6 Astra in Codex is very strong. GPT-6 Sol came out the same day as Opus 5.5 and was my biggest disappointment of the month; side by side it didn't hold up.
 
 Links
 SpecWeave: https://spec-weave.com
@@ -42,7 +43,7 @@ Claude Code skills directory: https://verified-skill.com/claude-code-skills
 
 ## Tags
 
-claude code, claude code projects, opus 5.5, claude opus 5.5, claude code demo, claude code projects demo, codex, gpt-6 astra, gpt-6 sol, ai coding agent, anthropic claude, specweave, agent handoff, ai avatar, heygen, elevenlabs
+claude code, claude code projects, opus 5.5, claude opus 5.5, claude code demo, claude code projects demo, codex, gpt-6 astra, gpt-6 sol, ai coding agent, anthropic claude, specweave, agent handoff
 
 ## Pinned comment
 

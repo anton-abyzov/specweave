@@ -1,0 +1,802 @@
+{
+  "voice": {
+    "provider": "elevenlabs",
+    "voice_id": "CXBq9AgXLrBIJkfnV9hg",
+    "model_id": "eleven_multilingual_v2"
+  },
+  "avatar": {
+    "provider": "heygen",
+    "avatar_id": "ff47cdf8e509436686c5334695543713"
+  },
+  "scenes": [
+    {
+      "id": "hook",
+      "type": "punch",
+      "beats": [
+        {
+          "shot": "project-main",
+          "cam": [
+            1210,
+            300,
+            2.0
+          ],
+          "eyebrow": "Claude Code Projects",
+          "big": "72 threads. One project.",
+          "say": "Eighteen threads waiting on me. Seventy-two in one project."
+        },
+        {
+          "shot": "thread-checklist",
+          "cam": [
+            1210,
+            370,
+            2.0
+          ],
+          "eyebrow": "Live checklists",
+          "big": "Every thread works on its own.",
+          "say": "Every thread does its own work, with a live checklist you can watch."
+        },
+        {
+          "shot": "project-main",
+          "cam": [
+            475,
+            620,
+            2.1
+          ],
+          "eyebrow": "Weekly limit",
+          "big": "Out of tokens? It pauses.",
+          "say": "When you run out of tokens, the whole project pauses."
+        },
+        {
+          "terminal": true,
+          "eyebrow": "specweave pickup",
+          "big": "Or picks up in another tool.",
+          "say": "Or the work moves to a completely different tool. Let me show you how."
+        }
+      ]
+    },
+    {
+      "id": "disclosure",
+      "type": "avatar",
+      "avatar_take": "intro",
+      "beats": [
+        {
+          "lines": [
+            "This is my AI avatar",
+            "Voice cloned with ElevenLabs",
+            "Avatar by HeyGen",
+            "Edit built in a Claude Code project"
+          ],
+          "say": "But first, a quick heads-up: that's not really me. This is my AI avatar, speaking with my cloned voice. The face, the voice, the edit and the captions were all made with AI, from instructions I gave inside a Claude Code project. I want you to see what's actually possible today. So let's get into it."
+        }
+      ]
+    },
+    {
+      "id": "title",
+      "type": "title",
+      "eyebrow": "Full demo · now on Pro",
+      "title": "Claude Code Projects",
+      "accent": "+ Opus 5.5",
+      "sub": "Real screens, real output",
+      "beats": [
+        {
+          "say": "Claude Code Projects and Opus 5.5: a full demo, with real screens and real output."
+        }
+      ]
+    },
+    {
+      "id": "ch1",
+      "type": "title",
+      "chapter": "01",
+      "eyebrow": "Chapter 1",
+      "title": "Recent releases",
+      "sub": "What landed, and what disappointed",
+      "beats": [
+        {
+          "say": "First, the recent releases."
+        }
+      ]
+    },
+    {
+      "id": "releases",
+      "type": "releases",
+      "beats": [
+        {
+          "card": {
+            "name": "Opus 5.5",
+            "by": "Anthropic",
+            "tone": "terra",
+            "tag": "The big one",
+            "lines": [
+              "The model I used to build this video.",
+              "Default in Claude Code on my account."
+            ]
+          },
+          "say": "Opus 5.5 from Anthropic is the big one. It's the model I used to build this whole video, and it's now the default in Claude Code on my account."
+        },
+        {
+          "card": {
+            "name": "Claude Code Projects",
+            "by": "Anthropic",
+            "tone": "blue",
+            "tag": "Now on Pro",
+            "lines": [
+              "I had early access.",
+              "A fresh Pro account has it too: I checked."
+            ]
+          },
+          "say": "Second, Claude Code Projects. I had early access, and I checked: a brand new Pro account has it too."
+        },
+        {
+          "card": {
+            "name": "GPT-6 Astra",
+            "by": "OpenAI · in Codex",
+            "tone": "green",
+            "tag": "Frontier",
+            "lines": [
+              "OpenAI's flagship, now in Codex. Very strong.",
+              "Which is exactly why switching tools matters."
+            ]
+          },
+          "say": "Third, GPT 6 Astra from OpenAI, now in Codex. It's really strong, and that's exactly why being able to switch tools matters."
+        },
+        {
+          "card": {
+            "name": "GPT-6 Sol",
+            "by": "OpenAI",
+            "tone": "red",
+            "tag": "Disappointment",
+            "lines": [
+              "Same release day as Opus 5.5.",
+              "Side by side, it just didn't hold up for me."
+            ]
+          },
+          "say": "And fourth, GPT 6 Sol. It shipped the same day as Opus 5.5, and for me it was the disappointment of the month. In my side-by-side tests, it just didn't hold up."
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "type": "title",
+      "chapter": "02",
+      "eyebrow": "Chapter 2",
+      "title": "Opus 5.5 in Claude Code",
+      "sub": "Model, effort, per thread",
+      "beats": [
+        {
+          "say": "Chapter two: Opus 5.5 inside Claude Code."
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "type": "shot",
+      "shot": "model-picker",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Let's start with the model. On my account, Opus 5.5 is now the default in Claude Code."
+        },
+        {
+          "cam": [
+            1000,
+            700,
+            1.9
+          ],
+          "hl": [
+            984,
+            697,
+            108,
+            22
+          ],
+          "say": "Click the model name and the picker opens, with Opus 5.5 ticked right at the top."
+        },
+        {
+          "cam": [
+            1010,
+            720,
+            2.05
+          ],
+          "hl": [
+            984,
+            718,
+            108,
+            62
+          ],
+          "say": "Below it are Fable 5.1, Sonnet 5.5 and Haiku 4.5, each with its own number key."
+        }
+      ]
+    },
+    {
+      "id": "effort",
+      "type": "still",
+      "shot": "effort-zoom",
+      "w": 712,
+      "h": 664,
+      "beats": [
+        {
+          "say": "Right next to it is effort. Faster on the left, smarter on the right."
+        },
+        {
+          "say": "Medium is the recommended default. I turn it up for planning and code reviews, and leave it at the default for routine work."
+        }
+      ]
+    },
+    {
+      "id": "perthread",
+      "type": "shot",
+      "shot": "thread-checklist",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "And here's the part I like most. The model is set per thread, not per account."
+        },
+        {
+          "cam": [
+            1250,
+            760,
+            2.0
+          ],
+          "hl": [
+            1320,
+            803,
+            92,
+            22
+          ],
+          "say": "This thread runs Opus 5.5 at high effort, set right in its own composer, while the project chat next to it runs a different model."
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "type": "title",
+      "chapter": "03",
+      "eyebrow": "Chapter 3",
+      "title": "What Projects are",
+      "sub": "A home for long-running work",
+      "beats": [
+        {
+          "say": "Chapter three. So, what are Projects?"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "type": "shot",
+      "shot": "home",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Projects sit right at the top of Claude Code, and each active project shows a live status."
+        },
+        {
+          "cam": [
+            850,
+            200,
+            1.75
+          ],
+          "hl": [
+            604,
+            137,
+            82,
+            18
+          ],
+          "say": "Needs input: a thread is waiting on you."
+        },
+        {
+          "cam": [
+            850,
+            205,
+            1.8
+          ],
+          "hl": [
+            628,
+            170,
+            104,
+            18
+          ],
+          "say": "Ready for review: the work is done and needs your okay."
+        },
+        {
+          "cam": [
+            860,
+            210,
+            1.85
+          ],
+          "hl": [
+            737,
+            170,
+            62,
+            18
+          ],
+          "say": "And working: a thread is running right now."
+        }
+      ]
+    },
+    {
+      "id": "grid",
+      "type": "shot",
+      "shot": "projects-grid",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Here's my full list."
+        },
+        {
+          "cam": [
+            850,
+            200,
+            1.6
+          ],
+          "hl": [
+            445,
+            104,
+            810,
+            189
+          ],
+          "say": "Six products, six projects. Each one is private, pinned in the sidebar, and keeps its own history, threads and memory."
+        }
+      ]
+    },
+    {
+      "id": "newproject",
+      "type": "shot",
+      "shot": "new-project",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Creating a new one has just three fields, and only the name is required."
+        },
+        {
+          "cam": [
+            728,
+            420,
+            1.55
+          ],
+          "hl": [
+            529,
+            276,
+            398,
+            36
+          ],
+          "say": "A name."
+        },
+        {
+          "cam": [
+            728,
+            400,
+            1.6
+          ],
+          "hl": [
+            529,
+            358,
+            398,
+            68
+          ],
+          "say": "A goal, which is optional."
+        },
+        {
+          "cam": [
+            728,
+            470,
+            1.6
+          ],
+          "hl": [
+            529,
+            470,
+            398,
+            105
+          ],
+          "say": "And context: the repositories the project works in."
+        }
+      ]
+    },
+    {
+      "id": "ch4",
+      "type": "title",
+      "chapter": "04",
+      "eyebrow": "Chapter 4",
+      "title": "Demo: threads and the coordinator",
+      "sub": "My real EasyChamp project",
+      "beats": [
+        {
+          "say": "Chapter four. Let me show you a real one."
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "type": "shot",
+      "shot": "project-main",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "This is EasyChamp, my sports platform, running as a Claude Code project."
+        },
+        {
+          "cam": [
+            610,
+            420,
+            1.35
+          ],
+          "hl": [
+            262,
+            40,
+            690,
+            690
+          ],
+          "say": "On the left is the project chat. You talk to one coordinator here, like you would to a teammate."
+        },
+        {
+          "cam": [
+            1210,
+            380,
+            1.55
+          ],
+          "hl": [
+            975,
+            8,
+            472,
+            820
+          ],
+          "say": "On the right is every thread it started. Each one is its own agent session, with its own context."
+        },
+        {
+          "cam": [
+            1210,
+            300,
+            1.75
+          ],
+          "hl": [
+            980,
+            116,
+            460,
+            22
+          ],
+          "say": "Eighteen threads are waiting on me right now,"
+        },
+        {
+          "cam": [
+            1210,
+            470,
+            1.75
+          ],
+          "hl": [
+            980,
+            379,
+            460,
+            22
+          ],
+          "say": "and fifty-two are idle: finished, parked, or waiting on a decision inside the thread."
+        }
+      ]
+    },
+    {
+      "id": "split",
+      "type": "shot",
+      "shot": "coordinator-split",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Now watch what the coordinator does with a message."
+        },
+        {
+          "cam": [
+            560,
+            330,
+            1.55
+          ],
+          "hl": [
+            277,
+            266,
+            352,
+            106
+          ],
+          "say": "I asked how a match page was built and what it costs, and it spun up a thread just for that question, with its own scope."
+        },
+        {
+          "cam": [
+            560,
+            480,
+            1.6
+          ],
+          "hl": [
+            277,
+            413,
+            662,
+            140
+          ],
+          "say": "It even splits threads. The TikTok question was pulled out of the tracking thread into a thread of its own."
+        }
+      ]
+    },
+    {
+      "id": "thread",
+      "type": "shot",
+      "shot": "thread-checklist",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Open any thread, and it's a full agent session."
+        },
+        {
+          "cam": [
+            1210,
+            380,
+            1.55
+          ],
+          "hl": [
+            983,
+            255,
+            456,
+            256
+          ],
+          "say": "There's a live checklist: read the handoff notes, audit the commands, sweep two hundred twenty-four checkouts, and push the index."
+        },
+        {
+          "cam": [
+            1110,
+            210,
+            1.9
+          ],
+          "hl": [
+            983,
+            192,
+            228,
+            24
+          ],
+          "say": "Threads also get messages from the coordinator. This one received seven."
+        },
+        {
+          "cam": [
+            1210,
+            630,
+            1.7
+          ],
+          "hl": [
+            983,
+            540,
+            406,
+            178
+          ],
+          "say": "And then there's the wall every heavy user hits: usage limit reached."
+        }
+      ]
+    },
+    {
+      "id": "ask",
+      "type": "shot",
+      "shot": "project-main",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "So here's what I asked the coordinator."
+        },
+        {
+          "cam": [
+            658,
+            222,
+            1.7
+          ],
+          "hl": [
+            377,
+            175,
+            562,
+            96
+          ],
+          "say": "In short: get every thread ready for a handoff, so the work can keep going in another tool or subscription."
+        },
+        {
+          "cam": [
+            455,
+            380,
+            1.8
+          ],
+          "hl": [
+            277,
+            342,
+            352,
+            77
+          ],
+          "say": "And it started a handoff readiness thread for exactly that. One ask, one thread."
+        }
+      ]
+    },
+    {
+      "id": "ch5",
+      "type": "title",
+      "chapter": "05",
+      "eyebrow": "Chapter 5",
+      "title": "Routines, limits and results",
+      "sub": "What keeps a project moving",
+      "beats": [
+        {
+          "say": "Chapter five: what keeps a project moving."
+        }
+      ]
+    },
+    {
+      "id": "routines",
+      "type": "shot",
+      "shot": "routines",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "Routines are agents that run on a schedule or on a trigger. Here are the built-in templates."
+        },
+        {
+          "cam": [
+            850,
+            440,
+            1.45
+          ],
+          "hl": [
+            450,
+            365,
+            800,
+            160
+          ],
+          "say": "A morning briefing, email triage, a system health check, issue triage."
+        },
+        {
+          "cam": [
+            850,
+            600,
+            1.5
+          ],
+          "hl": [
+            450,
+            545,
+            800,
+            170
+          ],
+          "say": "Pull request digests, dependency checks, and release notes every time something merges."
+        }
+      ]
+    },
+    {
+      "id": "limit",
+      "type": "shot",
+      "shot": "project-main",
+      "beats": [
+        {
+          "cam": [
+            728,
+            420,
+            1.0
+          ],
+          "say": "And here's what happens when you hit the weekly limit."
+        },
+        {
+          "cam": [
+            480,
+            620,
+            1.9
+          ],
+          "hl": [
+            277,
+            566,
+            405,
+            111
+          ],
+          "say": "The whole project pauses, and Claude tells you exactly when it will pick everything back up on its own."
+        },
+        {
+          "cam": [
+            470,
+            650,
+            2.0
+          ],
+          "hl": [
+            287,
+            648,
+            320,
+            20
+          ],
+          "say": "Auto-continue restarts every thread once the limit resets."
+        },
+        {
+          "cam": [
+            600,
+            740,
+            1.8
+          ],
+          "hl": [
+            277,
+            727,
+            662,
+            26
+          ],
+          "say": "That helps. But you can't always wait for a reset. So what if you need to keep going right now?"
+        }
+      ]
+    },
+    {
+      "id": "ch6",
+      "type": "title",
+      "chapter": "06",
+      "eyebrow": "Chapter 6",
+      "title": "Out of usage? Hand off.",
+      "sub": "SpecWeave, in one minute",
+      "beats": [
+        {
+          "say": "Chapter six. You hand off."
+        }
+      ]
+    },
+    {
+      "id": "handoff",
+      "type": "terminal",
+      "beats": [
+        {
+          "block": 0,
+          "say": "This is SpecWeave, my open-source tool. It keeps the work itself in git: the spec, the tasks, who's on what, and the next step. I've set it to hand off by itself at ninety percent of the limit."
+        },
+        {
+          "block": 1,
+          "say": "When I'm close to the limit, I just say hand off, or it fires on its own. It releases my task, writes down where things stand, and pushes my branch, including uncommitted edits."
+        },
+        {
+          "block": 2,
+          "say": "Then in another tool, on another machine or account, I say: pick up."
+        },
+        {
+          "say": "And it comes back with the same spec, the same task, the next step and its acceptance criteria. Right where I left off."
+        },
+        {
+          "say": "It's free. To install it, run N P M install, dash G, specweave. The command is in the description."
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "type": "avatar",
+      "avatar_take": "outro",
+      "beats": [
+        {
+          "end": true,
+          "say": "That's Claude Code Projects with Opus 5.5. One coordinator, many threads, each one a real agent session. And when you run out of usage, you hand off and keep going. The links are in the description. And once more: this was my AI avatar. The real me set all of this up and reviewed it before it went live. See you in the next one."
+        }
+      ]
+    }
+  ]
+}

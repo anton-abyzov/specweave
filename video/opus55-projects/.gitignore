@@ -1,5 +1,7 @@
 assets/bed.wav
+assets/vo/narration.wav
+assets/avatar/*.webm
+assets/avatar/*.mp4
+assets/avatar/run.log
 renders/
 node_modules/
-.thumbnails/
-.waveform-cache/
