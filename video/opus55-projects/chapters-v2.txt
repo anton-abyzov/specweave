@@ -1,0 +1,7 @@
+0:00 Highlights
+0:42 Recent releases
+1:23 Opus 5.5 in Claude Code
+2:18 What Projects are
+2:59 Demo: threads and the coordinator
+4:28 Routines, limits and results
+5:12 Out of usage? Hand off.

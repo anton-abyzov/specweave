@@ -19,10 +19,12 @@ h = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(h)
 
 AI_POWER = "cmgyq88pu0001po4fdvq4fvii"  # Anton Abyzov: AI Power (@antonabyzov)
-VIDEO = ROOT / "renders/claude-code-projects-opus-5-5.mp4"
-THUMB = ROOT / "thumb/ai-A-1280.jpg"
-STATE = ROOT / "renders/publish-state.json"
 PRIVACY = sys.argv[1] if len(sys.argv) > 1 else "private"
+VERSION = sys.argv[2] if len(sys.argv) > 2 else "v1"  # each cut gets its own receipts
+SUFFIX = "" if VERSION == "v1" else f"-{VERSION}"
+VIDEO = ROOT / f"renders/claude-code-projects-opus-5-5{SUFFIX}.mp4"
+THUMB = ROOT / "thumb/ai-A-1280.jpg"
+STATE = ROOT / f"renders/publish-state{SUFFIX}.json"
 assert PRIVACY in ("private", "unlisted", "public")
 
 meta = (ROOT / "youtube-metadata.md").read_text()
@@ -55,7 +57,10 @@ if state["post"]:
 today = dt.datetime.now(dt.timezone.utc)
 window = f"?startDate={(today - dt.timedelta(days=7)).strftime('%Y-%m-%dT00:00:00.000Z')}&endDate={(today + dt.timedelta(days=30)).strftime('%Y-%m-%dT23:59:59.000Z')}"
 live = request("GET", h.POSTIZ_PUBLIC + "/posts" + window)["posts"]
-dupe = [p for p in live if p["integration"]["id"] == AI_POWER and "Claude Code Projects" in (p.get("content") or "")]
+known = {json.loads(f.read_text())["post"]["id"] for f in ROOT.glob("renders/publish-state*.json")
+         if f != STATE and json.loads(f.read_text()).get("post")}
+dupe = [p for p in live if p["integration"]["id"] == AI_POWER and "Claude Code Projects" in (p.get("content") or "")
+        and p["id"] not in known]
 assert not dupe, "A post for this video already exists: " + json.dumps([p["id"] for p in dupe])
 
 pending = [p for p in (VIDEO, THUMB) if h.sha256(p) != state["media"].get(p.name, {}).get("sha256")]
