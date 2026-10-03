@@ -76,7 +76,7 @@ specweave auto-handoff status
 
 In Claude Code it reads the five-hour and weekly usage from the status line. In Codex it reads the rate limits Codex writes to its session log. When the fullest window crosses the threshold, a Stop hook pauses the agent once per window, has it run `specweave handoff`, and tells you to say "pick up" in the next tool. Under the threshold it adds nothing to your conversation.
 
-If one long turn jumps straight past 90 percent and Claude Code stops on the limit, a second hook writes the handoff itself, without the model, so your latest edits are still pushed.
+If one long turn jumps straight past 90 percent and Claude Code stops on the limit, a second hook writes the handoff itself, without the model, so your latest edits are still pushed. The 90 percent check needs a terminal session: the desktop app, Remote Control and `claude -p` run no status line, so there the limit hook is what hands off.
 
 Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) have no status line or user hooks. There, the agent hands off when Claude Code warns that the limit is near, or when you say "hand off". [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool.
 
