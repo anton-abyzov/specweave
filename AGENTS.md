@@ -29,9 +29,12 @@ This is the source of the `specweave` npm package: a CLI plus a Claude Code plug
 
 ## Releasing
 
-From GitHub alone, no local tag push: run **Release & Publish** on `develop` from the Actions tab, or `gh workflow run release.yml --ref develop -f version_type=patch` (or `-f version=X.Y.Z`). It bumps `package.json`, the plugin and marketplace manifests and the CHANGELOG (an `## [Unreleased]` section becomes the entry; without one, the commits since the last tag are listed), commits `Release X.Y.Z` to `develop`, tags `vX.Y.Z` and publishes to npm through GitHub OIDC trusted publishing. Tick `dry_run` to bump, build and pack without pushing or publishing. If the publish fails after the push, run it again with `version` set to that version.
+`develop` only accepts pull requests, so a release is a version PR:
 
-Pushing a `vX.Y.Z` tag still works: bump with `npm run release:patch` (or `:minor`, `:major`), merge to `develop`, tag that commit. The workflow checks the tag against `package.json` and publishes the same way. No local npm token is needed or used.
+1. Run **Release & Publish** on `develop` from the Actions tab, or `gh workflow run release.yml --ref develop -f version_type=patch` (or `-f version=X.Y.Z`). It bumps `package.json`, the plugin and marketplace manifests and the CHANGELOG (an `## [Unreleased]` section becomes the entry; without one, the commits since the last tag are listed), builds and packs it, pushes `release/vX.Y.Z` and opens the PR. Locally, `npm run release:patch` (or `:minor`, `:major`) on a branch does the same bump. Tick `dry_run` to bump, build and pack without pushing anything.
+2. Merge the PR. A push to `develop` that changes the version in `package.json` to one with no tag tags that commit `vX.Y.Z` and publishes it to npm through GitHub OIDC trusted publishing, then creates the GitHub release. No local npm token or tag push is needed.
+
+Pushing a `vX.Y.Z` tag on a commit whose `package.json` has that version still publishes it the same way. A PR opened by the Actions token starts no CI run; the release job builds and checks the tarball again before publishing.
 
 ## Project notes
 

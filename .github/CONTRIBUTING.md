@@ -768,9 +768,9 @@ npm run release:patch --release
 > and no version check. `npm run release` passes `--ignore-scripts=false` so the
 > hook fires; `npm run release:preflight` is the backstop that inspects the
 > actual tarball. Normal releases go through CI: run `release.yml` on
-> `develop` (`gh workflow run release.yml --ref develop -f version_type=patch`),
-> which bumps, commits, tags and publishes via OIDC trusted publishing, or push
-> a `vX.Y.Z` tag on a commit whose `package.json` already has that version.
+> `develop` (`gh workflow run release.yml --ref develop -f version_type=patch`)
+> to open a version PR, and merging it tags and publishes via OIDC trusted
+> publishing. Pushing a `vX.Y.Z` tag still works too.
 
 ---
 
