@@ -89,7 +89,7 @@ On your own machine, turn on automatic handoff once:
 specweave auto-handoff on
 ```
 
-At 90 percent of the five-hour or weekly window, Claude Code (and Codex, if `~/.codex` exists) stops once, runs the handoff, and tells you to say "pick up" in the other tool. See [Claude Code usage limit reached](/docs/guides/claude-code-usage-limit/) for how it reads the limits.
+At 90 percent of the five-hour or weekly window, Claude Code (and Codex, if `~/.codex` exists) stops once, runs the handoff, and tells you to say "pick up" in the other tool. If Claude Code hits the limit in the middle of a turn, a hook writes the handoff without the model. See [Auto-handoff rules](/docs/guides/auto-handoff/) for each tool.
 
 ## Other directions
 
@@ -121,5 +121,6 @@ It needs only `git` and a shell. If `specweave` is installed it uses it; otherwi
 ## See also
 
 - [Handoff and pickup](/docs/guides/cross-tool-handoff/): every option and a recorded run
+- [Auto-handoff rules](/docs/guides/auto-handoff/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
 - [Claude Code usage limit reached: what to do next](/docs/guides/claude-code-usage-limit/)

@@ -39,6 +39,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Handoff and pickup'},
+        {type: 'doc', id: 'guides/auto-handoff', label: 'Auto-handoff rules'},
         {type: 'doc', id: 'guides/switch-claude-code-to-codex', label: 'Switch Claude Code to Codex'},
         {type: 'doc', id: 'guides/claude-code-usage-limit', label: 'Usage limit reached'},
         {type: 'doc', id: 'guides/claude-code-projects', label: 'Claude Code Projects'},

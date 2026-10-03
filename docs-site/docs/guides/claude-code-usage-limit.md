@@ -74,9 +74,11 @@ specweave auto-handoff on --at 80  # or pick your own threshold
 specweave auto-handoff status
 ```
 
-In Claude Code it reads the session and weekly usage from the status line. In Codex it reads the rate limits Codex writes to its session log. When usage crosses the threshold, a Stop hook pauses the agent once, has it run `specweave handoff`, and tells you to say "pick up" in the next tool. Under the threshold it adds nothing to your conversation.
+In Claude Code it reads the five-hour and weekly usage from the status line. In Codex it reads the rate limits Codex writes to its session log. When the fullest window crosses the threshold, a Stop hook pauses the agent once per window, has it run `specweave handoff`, and tells you to say "pick up" in the next tool. Under the threshold it adds nothing to your conversation.
 
-Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) have no status line or user hooks. There, the agent hands off when Claude Code warns that the limit is near, or when you say "hand off".
+If one long turn jumps straight past 90 percent and Claude Code stops on the limit, a second hook writes the handoff itself, without the model, so your latest edits are still pushed.
+
+Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) have no status line or user hooks. There, the agent hands off when Claude Code warns that the limit is near, or when you say "hand off". [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool.
 
 ## Make the allowance last longer
 
@@ -99,5 +101,6 @@ Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) hav
 
 - [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/)
 - [Handoff and pickup](/docs/guides/cross-tool-handoff/)
+- [Auto-handoff rules](/docs/guides/auto-handoff/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
 - [Claude Code Projects and threads](/docs/guides/claude-code-projects/)
