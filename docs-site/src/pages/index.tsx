@@ -81,7 +81,10 @@ export default function Home() {
           <p>Keep GitHub, Jira or Azure DevOps where your team plans. In 3.0, changing an increment's status no longer creates or closes issues. SpecWeave touches a tracker only when you push to it.</p>
           <Link className={base.textLink} to="/integrations">Explore optional integrations ↗</Link>
         </div>
-        <div className={base.connectionList}>{[['GitHub', 'Issues and pull requests'], ['Jira', 'Opt-in, pushed when you choose'], ['Azure DevOps', 'Opt-in, pushed when you choose']].map(([name, desc]) => <Link to="/integrations" key={name}><strong>{name}</strong><span>{desc}</span><b aria-hidden="true">↗</b></Link>)}</div>
+        <div className={base.connectionList}>
+          {[['GitHub', 'First-class: one issue per increment, updated on push'], ['Jira', 'Opt-in: created and updated on push, closed on complete'], ['Azure DevOps', 'Opt-in: work items created on push, closed on complete']].map(([name, desc]) => <Link to="/integrations" key={name}><strong>{name}</strong><span>{desc}</span><b aria-hidden="true">↗</b></Link>)}
+          <div className={base.syncCommand}><code>$ specweave sync push --dry-run</code><span>Preview what would change. Nothing reaches a tracker until you run it without the flag.</span></div>
+        </div>
       </section>
 
       <section className={clsx(base.section, base.showcaseSection)} id="built-with" aria-labelledby="built-with-title">
