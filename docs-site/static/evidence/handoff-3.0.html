@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handoff report: 0766 - Padel player statistics, level rating and profile</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1c1b19;--mut:#6b6760;--line:#e4e0d8;--card:#fff;--acc:#2f6f5e;--hand:#fff6e0;--claude:#b8612f;--codex:#2f5f9e;--grok:#6a4bb0;--muse:#0f7c86;--gemini:#9a6a00;--other:#555}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ece9e2;--mut:#a29d93;--line:#2e2c28;--card:#1e1d1a;--acc:#6fc2a8;--hand:#3a3120}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:32px 16px}h1{font-size:26px;margin:0 0 4px}h2{font-size:17px;margin:32px 0 10px}
+.sub{color:var(--mut);margin:0 0 24px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}.stat .v{font-size:22px;font-weight:650}.stat .l{color:var(--mut);font-size:13px}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:600}tr:last-child td{border-bottom:0}tr.hand td{background:var(--hand)}
+td.t{white-space:nowrap;color:var(--mut)}td.d{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;max-width:420px}
+.who{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:1px 6px;border-radius:6px;border:1px solid currentColor;white-space:nowrap}
+.claude{color:var(--claude)}.codex{color:var(--codex)}.grok{color:var(--grok)}.muse{color:var(--muse)}.gemini{color:var(--gemini)}.other{color:var(--other)}
+.st{font-size:12.5px;padding:1px 6px;border-radius:6px;background:var(--line)}.st.done{background:var(--acc);color:var(--bg)}
+ul.acs{padding-left:18px}ul.acs li.met{color:var(--acc)}ul.acs li.met::marker{content:"✓ "}footer{color:var(--mut);font-size:13px;margin-top:32px}
+</style>
+</head>
+<body>
+<main>
+<h1>0766 - Padel player statistics, level rating and profile</h1>
+<p class="sub">Increment 0766-padel-player-stats · completed · report generated 2026-10-03 06:00 from <code>ledger.jsonl</code></p>
+<div class="stats">
+<div class="stat"><div class="v">5/5</div><div class="l">tasks done</div></div>
+<div class="stat"><div class="v">8/8</div><div class="l">acceptance criteria met</div></div>
+<div class="stat"><div class="v">2</div><div class="l">handoffs</div></div>
+<div class="stat"><div class="v">0</div><div class="l">pickups</div></div>
+<div class="stat"><div class="v">anton, claude-thread</div><div class="l">tools</div></div>
+<div class="stat"><div class="v">1</div><div class="l">recorded sessions</div></div>
+</div>
+<h2>Timeline</h2>
+<div class="wrap"><table>
+<thead><tr><th>When (UTC)</th><th>Who</th><th>What</th><th>Task</th><th>Evidence or note</th></tr></thead>
+<tbody>
+<tr><td class="t">2026-09-26 03:49</td><td><span class="who other">anton</span></td><td>started a session</td><td></td><td class="d">session 7cfcb6e2-40ef-4304-ba02-c6daadfe7394</td></tr>
+<tr><td class="t">2026-09-26 03:49</td><td><span class="who other">anton</span></td><td>claimed</td><td>T-005</td><td class="d"></td></tr>
+<tr><td class="t">2026-09-26 03:49</td><td><span class="who other">anton</span></td><td>finished</td><td>T-005</td><td class="d">curl -s https://easychamp.com/ec-standings-api/champs/30540192-00ec-4d53-aab0-fdba96da23a7/padel-ranking | python3 -c &quot;import json,sys;r=json.load(sys.stdin)['rows'];assert len(r)==18 and all(x['matches']&gt;0 for x in r);print(len(r),'players ranked; top',r[0]['name'],r[0]['level'])&quot; → exit 0
+log: .specweave/increments/0766-padel-player-stats/reports/task-T-005.log
+18 players ranked; top Mateo Ruiz 3.29
+…</td></tr>
+<tr class="hand"><td class="t">2026-09-26 04:46</td><td><span class="who other">anton</span></td><td>handed off</td><td></td><td class="d">handoff test</td></tr>
+<tr><td class="t">2026-10-03 05:53</td><td><span class="who other">claude-thread</span></td><td>left a note</td><td></td><td class="d">T-002 re-proved live in prod by a second agent: python3 .specweave/increments/0766-padel-player-stats/scripts/verify_padel_profile.py -&gt; exit 0. 18 players: profile == ranking, folds add up from match lists, levels 0..7, deterministic. Log: .specweave/increments/0766-padel-player-stats/reports/reproof-T-002-2026-10-03.log (HEAD 0120aff3d). The CLI keeps the tasks.md completion; this note carries the fresh evidence.</td></tr>
+<tr><td class="t">2026-10-03 05:55</td><td><span class="who other">claude-thread</span></td><td>left a note</td><td></td><td class="d">T-004 re-proved live in prod by a second agent: python3 .specweave/increments/0766-padel-player-stats/scripts/verify_padel_pages.py -&gt; exit 0. Stats tab ranks all 18 players; 18 player pages show the padel record with live levels. Log: .specweave/increments/0766-padel-player-stats/reports/reproof-T-004-2026-10-03.log (HEAD 0120aff3d). The CLI keeps the tasks.md completion; this note carries the fresh evidence.</td></tr>
+<tr class="hand"><td class="t">2026-10-03 05:58</td><td><span class="who other">claude-thread</span></td><td>handed off</td><td></td><td class="d">handoff test: second agent re-proved T-002 and T-004 live, switching back · next: specweave complete 0766-padel-player-stats (status already completed in metadata)</td></tr>
+</tbody></table></div>
+<h2>Tasks</h2>
+<div class="wrap"><table>
+<thead><tr><th>Task</th><th>Title</th><th>State</th><th>By</th></tr></thead>
+<tbody>
+<tr><td>T-001</td><td>padel-2v2 court formation (kit json + API generated catalog)</td><td><span class="st done">done</span></td><td><span class="who other">tasks.md</span></td></tr>
+<tr><td>T-002</td><td>Padel profile + ranking fold and endpoints</td><td><span class="st done">done</span></td><td><span class="who other">tasks.md</span></td></tr>
+<tr><td>T-003</td><td>Console pair picker in padel score dialog</td><td><span class="st done">done</span></td><td><span class="who other">tasks.md</span></td></tr>
+<tr><td>T-004</td><td>Padel profile sections + arena wiring (arena components; no kit change needed)</td><td><span class="st done">done</span></td><td><span class="who other">tasks.md</span></td></tr>
+<tr><td>T-005</td><td>Demo data + prod verification</td><td><span class="st done">done</span></td><td><span class="who other">anton</span></td></tr>
+</tbody></table></div>
+<h2>Acceptance criteria</h2>
+<ul class="acs">
+<li class="met"><b>AC-US1-01</b> A padel fixture lineup takes a `padel-2v2` court formation with Right (drive) and Left (reves) slots.</li>
+<li class="met"><b>AC-US1-02</b> The console score dialog for a padel fixture lets the organizer pick the two players and their sides for each team before or after entering sets, prefilled from the team's last pair.</li>
+<li class="met"><b>AC-US2-01</b> GET /player/{id}/padel-profile returns matches, W/L, win %, sets and games W/L, tie-breaks, deciding sets, comebacks, current and best streak, last-5 form, side split, partner records, level with reliability and history, and recent matches with set lines and level change.</li>
+<li class="met"><b>AC-US2-02</b> GET /champs/{id}/padel-ranking returns every player of the competition ranked by level with W/L, win %, games difference and streak.</li>
+<li class="met"><b>AC-US2-03</b> Only finished, non-draft fixtures of published competitions with the padel sets profile and a recorded pair count; the level is deterministic (same fixtures, same numbers).</li>
+<li class="met"><b>AC-US3-01</b> The Watch player page shows the padel profile (level card with chart, stat tiles, form strip, partners, side split, match list) for padel players.</li>
+<li class="met"><b>AC-US3-02</b> The padel competition page shows the level ranking; the match page shows each pair with sides.</li>
+<li class="met"><b>AC-US4-01</b> Every demo padel team has three players, every played match has a pair with sides, and the profile and ranking pages render real numbers in prod.</li>
+</ul>
+<footer>Agents: anton, claude-thread. Handoff and pickup rows are highlighted. Generated by <code>specweave report</code>.</footer>
+</main>
+</body>
+</html>
