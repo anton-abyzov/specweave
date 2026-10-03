@@ -24,7 +24,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
   DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
-  latestClaudeReading, latestCodexReading, type UsageReading,
+  latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
 import { detectTool } from '../../core/tasks/ledger.js';
 
@@ -188,7 +188,7 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
       else {
         addHook(codex, 'Stop', STOP_HOOK);
         writeJson(codexFile, codex);
-        say(`Codex: Stop hook added in ${codexFile} (Codex asks you to trust a new hook once)`);
+        say(`Codex: Stop hook added in ${codexFile}. Codex skips it until you trust it: open \`codex\` in a terminal once and approve the hook when it asks.`);
       }
     }
     if (fs.existsSync(path.join(home, '.grok'))) {
@@ -224,6 +224,38 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
   return 0;
 }
 
+/**
+ * Codex runs a user hook only after the user trusts it, and records that in
+ * ~/.codex/config.toml as a `[hooks.state."<home>/.codex/hooks.json:stop:<group>:<hook>"]`
+ * table with a `trusted_hash`. Plugin hooks use keys like
+ * `"sw@specweave:hooks/hooks.json:stop:0:0"`, which say nothing about ours.
+ * The hash covers the hook's content, so a changed hook needs approving again.
+ * There is no command to approve one; Codex asks when it next starts in a terminal.
+ */
+export function codexHookTrusted(home = os.homedir()): boolean {
+  const hooksFile = path.join(home, '.codex', 'hooks.json');
+  const codex = readJson(hooksFile);
+  const groups = codex?.hooks?.Stop ?? [];
+  const wanted = new Set<string>();
+  groups.forEach((g, gi) => (g.hooks ?? []).forEach((h, hi) => {
+    if (h.command === GUARD_COMMAND) wanted.add(`${hooksFile}:stop:${gi}:${hi}`);
+  }));
+  if (!wanted.size) return false;
+  let toml: string;
+  try { toml = fs.readFileSync(path.join(home, '.codex', 'config.toml'), 'utf8'); } catch { return false; }
+  let current: string | undefined;
+  for (const line of toml.split(/\r?\n/)) {
+    const table = line.match(/^\s*\[(.*)\]\s*(#.*)?$/);
+    if (table) {
+      const key = table[1].match(/^\s*hooks\.state\.\s*"((?:[^"\\]|\\.)*)"\s*$/);
+      current = key ? key[1].replace(/\\(.)/g, '$1') : undefined;
+      continue;
+    }
+    if (current && wanted.has(current) && /^\s*trusted_hash\s*=\s*"[^"]+"/.test(line)) return true;
+  }
+  return false;
+}
+
 function ago(ms: number, now: number): string {
   const min = Math.max(0, Math.round((now - ms) / 60000));
   return min < 60 ? `${min} min ago` : min < 48 * 60 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} days ago`;
@@ -251,14 +283,25 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
       hasHook(claude, 'StopFailure', LIMIT_HIT_COMMAND) ? '' : 'StopFailure hook',
     ].filter(Boolean);
     broken ||= missing.length > 0;
-    lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${readingLine(latestClaudeReading(home), now)}`);
+    const statusReading = latestClaudeReading(home);
+    const fallbacks: Array<[UsageReading | undefined, string]> = [
+      [statusReading, ''],
+      [desktopUsageReading({ home, now }), ' from the desktop app'],
+      [claudeCachedReading({ home, now }), ' from Claude Code\'s usage cache'],
+    ];
+    const [best, source] = fallbacks.filter(([r]) => r).sort(([a], [b]) => b!.at - a!.at)[0] ?? [undefined, ''];
+    const reading = `${readingLine(best, now)}${source}`;
+    lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${reading}`);
+    lines.push('  Desktop, Remote Control and `claude -p` sessions run no status line. They read the desktop app\'s usage samples (every 15 minutes or so) or Claude Code\'s usage cache when either is fresh, so a jump past the threshold between samples is missed; then they hand off when a turn hits the limit.');
   }
   const codexFile = path.join(home, '.codex', 'hooks.json');
   if (fs.existsSync(path.dirname(codexFile))) {
     const codex = readJson(codexFile);
     const ok = !!codex && hasHook(codex, 'Stop', GUARD_COMMAND);
     broken ||= !ok;
-    lines.push(`Codex: ${ok ? 'Stop hook in place' : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
+    const trusted = codexHookTrusted(home);
+    lines.push(`Codex: ${ok ? `Stop hook in place${trusted ? '' : ' but not approved yet'}` : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
+    if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.');
   }
   if (fs.existsSync(path.join(home, '.grok'))) {
     const ok = fs.existsSync(path.join(home, '.grok', 'hooks', GROK_HOOK_FILE));

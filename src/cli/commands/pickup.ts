@@ -15,7 +15,7 @@
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { buildPickup } from '../../core/session/pickup.js';
-import { appendEvent, getAgentId, ledgerPath, recordSessionOnce, INCREMENT_EVENT_TASK } from '../../core/tasks/ledger.js';
+import { appendEvent, getAgentId, ledgerPath, readIncrementEvents, recordSessionOnce, INCREMENT_EVENT_TASK } from '../../core/tasks/ledger.js';
 import { resolveIncrement, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 import { scrubSecrets } from '../../core/session/handoff-secret-scrub.js';
 import { applyHandoff, type PickupApplyResult } from '../../core/session/handoff-remote.js';
@@ -45,7 +45,6 @@ export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<nu
 
   // 1. Bring in the latest handoff pushed from any tool, machine or account.
   const applied: PickupApplyResult = applyHandoff(root, { dryRun: opts.apply === false });
-  if (applied.status === 'applied' && opts.apply !== false) recordPickup(root, applied, agent);
 
   // 2. Describe what is here now.
   let incrementId: string | undefined;
@@ -59,23 +58,36 @@ export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<nu
     }
   }
   const result = buildPickup(root, { incrementId, agent });
+  if (opts.apply !== false && !['dirty', 'diverged', 'failed'].includes(applied.status)) {
+    recordPickup(root, applied.meta?.increment ?? result.incrementId, applied, agent);
+  }
   const text = [applied.message, result.text].filter(Boolean).join('\n');
   process.stdout.write((opts.json ? JSON.stringify({ ...result, text, handoff: applied }, null, 2) : text) + '\n');
   return applied.status === 'failed' ? 1 : 0;
 }
 
-/** Ledger evidence that the work changed hands: a `pickup` event and the new session. */
-function recordPickup(root: string, applied: PickupApplyResult, agent: string): void {
-  const id = applied.meta?.increment;
-  if (!id) return;
+/**
+ * Ledger evidence that the work changed hands: a `pickup` event and the new
+ * session, once per handoff. Recorded whenever the increment's last handoff
+ * has no pickup after it, whether the edits came over git or the handoff was
+ * made in this same checkout (another tool or account on the same machine).
+ */
+export function recordPickup(root: string, id: string | undefined, applied: PickupApplyResult, agent: string): boolean {
+  if (!id) return false;
   try {
     const inc = resolveIncrement(root, id);
     const ledger = ledgerPath(inc.dir);
+    const events = readIncrementEvents(ledger, ['handoff', 'pickup']);
+    const last = events[events.length - 1];
+    if (last?.e !== 'handoff') return false;
     recordSessionOnce(ledger, agent);
-    const from = [applied.meta?.by ? `from ${applied.meta.by}` : '', applied.snapshot ? `snapshot ${applied.snapshot.slice(0, 7)}` : ''].filter(Boolean).join(', ');
+    const by = applied.meta?.by ?? last.by;
+    const from = [by ? `from ${by}` : '', applied.snapshot ? `snapshot ${applied.snapshot.slice(0, 7)}` : ''].filter(Boolean).join(', ');
     appendEvent(ledger, { t: INCREMENT_EVENT_TASK, e: 'pickup', by: agent, at: new Date().toISOString(), ...(from ? { note: from } : {}) });
     writeHandoffReport(inc.dir, inc.id);
+    return true;
   } catch { /* the increment is not in this checkout; nothing to record */ }
+  return false;
 }
 
 export interface NoteCommandOptions {
