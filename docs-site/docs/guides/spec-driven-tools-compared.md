@@ -32,6 +32,8 @@ This page describes each tool as its public documentation presents it in Septemb
 
 **SpecWeave differs** in what happens during the change: task claims with a lease, stored test output for each task, a closing gate, and a handoff that moves the work to another tool with the uncommitted edits.
 
+See [SpecWeave vs OpenSpec](/docs/compare/specweave-vs-openspec/) for a longer comparison.
+
 ## GitHub Spec Kit
 
 [Spec Kit](https://github.com/github/spec-kit) walks a feature through a constitution, a spec, a plan and a task list with slash commands such as `/speckit.specify`, `/speckit.plan` and `/speckit.tasks`. Plans can include research notes, data models and API contracts.
@@ -47,6 +49,8 @@ The [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) gives the agent 
 **Pick BMAD** for a new product where the planning itself is the hard part, and you want each role's output as a separate document.
 
 **SpecWeave differs** by keeping planning to one short spec per change, so an agent resuming work reads one file. That makes it lighter for ongoing work on an existing product.
+
+See [SpecWeave vs the BMAD Method](/docs/compare/specweave-vs-bmad-method/) for a longer comparison.
 
 ## Kiro
 
@@ -72,4 +76,5 @@ These tools are not mutually exclusive. OpenSpec's living specs and Spec Kit's o
 
 - [What is SpecWeave?](/docs/overview/introduction)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex)
+- [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/)
 - [AGENTS.md vs CLAUDE.md](/docs/guides/agents-md-vs-claude-md)

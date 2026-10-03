@@ -39,6 +39,8 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         {type: 'doc', id: 'guides/cross-tool-handoff', label: 'Handoff and pickup'},
+        {type: 'doc', id: 'guides/switch-claude-code-to-codex', label: 'Switch Claude Code to Codex'},
+        {type: 'doc', id: 'guides/claude-code-usage-limit', label: 'Usage limit reached'},
         {type: 'doc', id: 'guides/claude-code-projects', label: 'Claude Code Projects'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Codex, Grok and others'},
         {type: 'doc', id: 'guides/claude-code-vs-codex', label: 'Claude Code vs Codex'},
@@ -143,6 +145,8 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'examples/index', label: 'Examples'},
         {type: 'doc', id: 'guides/spec-driven-tools-compared', label: 'Compared: OpenSpec, Spec Kit, BMAD, Kiro'},
         {type: 'doc', id: 'guides/specweave-vs-speckit', label: 'SpecWeave vs Spec Kit'},
+        {type: 'doc', id: 'guides/specweave-vs-openspec', label: 'SpecWeave vs OpenSpec'},
+        {type: 'doc', id: 'guides/specweave-vs-bmad', label: 'SpecWeave vs BMAD'},
         {type: 'doc', id: 'enterprise/index', label: 'Enterprise'},
         {type: 'doc', id: 'metrics', label: 'DORA metrics'},
       ],
