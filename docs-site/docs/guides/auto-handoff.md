@@ -86,10 +86,10 @@ Auto-handoff is on at 90% (since 2026-09-26T05:40:00.000Z).
 Claude Code: status line, Stop and StopFailure hooks in place; last reading 5-hour 42% · weekly 12% (3 min ago)
   Desktop, Remote Control and `claude -p` sessions run no status line. They read the desktop app's usage samples (every 15 minutes or so) or Claude Code's usage cache when either is fresh, so a jump past the threshold between samples is missed; then they hand off when a turn hits the limit.
 Codex: Stop hook in place but not approved yet; last reading 5-hour 61% · weekly 20% (10 min ago)
-  Codex skips a hook until you trust it: open `codex` in a terminal once and approve the hook when it asks.
+  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.
 ```
 
-"no usage reading yet" for Claude Code means no terminal session's status line has run since `on` and no fresh desktop sample or usage cache exists: open a terminal session and send one message. "not approved yet" for Codex means Codex has not recorded your trust for the hook in `~/.codex/config.toml`. To see the whole path without waiting for a real limit, run `specweave auto-handoff on --at 1` in a test project and send one message: the session hands off for real, pushes included. Then set it back with `specweave auto-handoff on --at 90`.
+"no usage reading yet" for Claude Code means no terminal session's status line has run since `on` and no fresh desktop sample or usage cache exists: open a terminal session and send one message. "not approved yet" for Codex means `~/.codex/config.toml` has no `trusted_hash` for this exact hook (`[hooks.state."<home>/.codex/hooks.json:stop:<group>:<hook>"]`). Trust entries for plugin hooks do not count. Codex ties the trust to the hook's content, so a changed hook needs approving again. To see the whole path without waiting for a real limit, run `specweave auto-handoff on --at 1` in a test project and send one message: the session hands off for real, pushes included. Then set it back with `specweave auto-handoff on --at 90`.
 
 ## Turning it off
 

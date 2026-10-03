@@ -225,16 +225,35 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
 }
 
 /**
- * Codex runs a new hook only after the user trusts it, and records that in
- * ~/.codex/config.toml under the hook's `hooks.json:stop` key. There is no
- * command to approve one; Codex asks when it next starts in a terminal.
+ * Codex runs a user hook only after the user trusts it, and records that in
+ * ~/.codex/config.toml as a `[hooks.state."<home>/.codex/hooks.json:stop:<group>:<hook>"]`
+ * table with a `trusted_hash`. Plugin hooks use keys like
+ * `"sw@specweave:hooks/hooks.json:stop:0:0"`, which say nothing about ours.
+ * The hash covers the hook's content, so a changed hook needs approving again.
+ * There is no command to approve one; Codex asks when it next starts in a terminal.
  */
 export function codexHookTrusted(home = os.homedir()): boolean {
-  try {
-    return /hooks\.json:stop/i.test(fs.readFileSync(path.join(home, '.codex', 'config.toml'), 'utf8'));
-  } catch {
-    return false;
+  const hooksFile = path.join(home, '.codex', 'hooks.json');
+  const codex = readJson(hooksFile);
+  const groups = codex?.hooks?.Stop ?? [];
+  const wanted = new Set<string>();
+  groups.forEach((g, gi) => (g.hooks ?? []).forEach((h, hi) => {
+    if (h.command === GUARD_COMMAND) wanted.add(`${hooksFile}:stop:${gi}:${hi}`);
+  }));
+  if (!wanted.size) return false;
+  let toml: string;
+  try { toml = fs.readFileSync(path.join(home, '.codex', 'config.toml'), 'utf8'); } catch { return false; }
+  let current: string | undefined;
+  for (const line of toml.split(/\r?\n/)) {
+    const table = line.match(/^\s*\[(.*)\]\s*(#.*)?$/);
+    if (table) {
+      const key = table[1].match(/^\s*hooks\.state\.\s*"((?:[^"\\]|\\.)*)"\s*$/);
+      current = key ? key[1].replace(/\\(.)/g, '$1') : undefined;
+      continue;
+    }
+    if (current && wanted.has(current) && /^\s*trusted_hash\s*=\s*"[^"]+"/.test(line)) return true;
   }
+  return false;
 }
 
 function ago(ms: number, now: number): string {
@@ -282,7 +301,7 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
     broken ||= !ok;
     const trusted = codexHookTrusted(home);
     lines.push(`Codex: ${ok ? `Stop hook in place${trusted ? '' : ' but not approved yet'}` : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
-    if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal once and approve the hook when it asks.');
+    if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.');
   }
   if (fs.existsSync(path.join(home, '.grok'))) {
     const ok = fs.existsSync(path.join(home, '.grok', 'hooks', GROK_HOOK_FILE));

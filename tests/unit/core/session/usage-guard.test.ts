@@ -5,7 +5,7 @@ import * as path from 'path';
 import {
   usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading,
 } from '../../../../src/core/session/usage-guard.js';
-import { autoHandoffCommand, autoHandoffStatus, statuslineCommand } from '../../../../src/cli/commands/auto-handoff.js';
+import { autoHandoffCommand, autoHandoffStatus, codexHookTrusted, statuslineCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
 let home: string;
 const NOW = Date.parse('2026-09-25T20:00:00Z');
@@ -282,7 +282,8 @@ describe('specweave auto-handoff status', () => {
     recordClaudeUsage(claudeStatus('s1', 42, 12), home, NOW - 3 * 60_000);
     const file = rollout(61, 20);
     fs.utimesSync(file, (NOW - 10 * 60_000) / 1000, (NOW - 10 * 60_000) / 1000);
-    fs.writeFileSync(path.join(home, '.codex', 'config.toml'), '[hooks.state]\n"/u/.codex/hooks.json:stop:0:0" = { trusted_hash = "abc" }\n');
+    fs.writeFileSync(path.join(home, '.codex', 'config.toml'),
+      `[hooks.state."${path.join(home, '.codex', 'hooks.json')}:stop:0:0"]\ntrusted_hash = "sha256:abc"\n`);
 
     const lines = autoHandoffStatus(home, NOW);
     expect(lines[0]).toMatch(/^Auto-handoff is on at 90%/);
@@ -299,7 +300,30 @@ describe('specweave auto-handoff status', () => {
     expect(out).toContain('open `codex` in a terminal once and approve the hook');
     const lines = autoHandoffStatus(home, NOW);
     expect(lines).toContain('Codex: Stop hook in place but not approved yet; no usage reading yet');
-    expect(lines).toContain('  Codex skips a hook until you trust it: open `codex` in a terminal once and approve the hook when it asks.');
+    expect(lines.find((l) => l.startsWith('  Codex skips a hook'))).toContain('open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes');
+  });
+
+  it('counts only Codex\'s trust entry for this hook, not plugin Stop hooks', async () => {
+    fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
+    const hooksFile = path.join(home, '.codex', 'hooks.json');
+    // Someone else's Stop hook comes first, so ours is group 1.
+    fs.writeFileSync(hooksFile, JSON.stringify({ hooks: { Stop: [{ hooks: [{ type: 'command', command: 'other' }] }] } }));
+    await quiet(() => autoHandoffCommand('on', { home }));
+    const toml = (body: string) => fs.writeFileSync(path.join(home, '.codex', 'config.toml'), body);
+
+    toml([
+      '[hooks.state."codex@openai-codex:hooks/hooks.json:stop:0:0"]', 'trusted_hash = "sha256:p1"', '',
+      '[hooks.state."sw@specweave:hooks/hooks.json:stop:0:0"]', 'trusted_hash = "sha256:p2"', '',
+      `[hooks.state."${hooksFile}:pre_tool_use:0:0"]`, 'trusted_hash = "sha256:u1"', '',
+      `[hooks.state."${hooksFile}:stop:0:0"]`, 'trusted_hash = "sha256:other"', '',
+    ].join('\n'));
+    expect(codexHookTrusted(home)).toBe(false);
+
+    toml(`[hooks.state."${hooksFile}:stop:1:0"]\nenabled = true\n`); // seen, never approved
+    expect(codexHookTrusted(home)).toBe(false);
+
+    toml(`model = "gpt-5"\n\n[hooks.state."${hooksFile}:stop:1:0"]\ntrusted_hash = "sha256:ours"\n`);
+    expect(codexHookTrusted(home)).toBe(true);
   });
 
   it('falls back to Claude Code\'s own usage cache when no status line ran', async () => {
