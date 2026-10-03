@@ -767,8 +767,10 @@ npm run release:patch --release
 > `prepublishOnly` as well as to dependencies — a bare publish runs no rebuild
 > and no version check. `npm run release` passes `--ignore-scripts=false` so the
 > hook fires; `npm run release:preflight` is the backstop that inspects the
-> actual tarball. Normal releases go through CI: push a `vX.Y.Z` tag and
-> `.github/workflows/release.yml` publishes via OIDC trusted publishing.
+> actual tarball. Normal releases go through CI: run `release.yml` on
+> `develop` (`gh workflow run release.yml --ref develop -f version_type=patch`),
+> which bumps, commits, tags and publishes via OIDC trusted publishing, or push
+> a `vX.Y.Z` tag on a commit whose `package.json` already has that version.
 
 ---
 
