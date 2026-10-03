@@ -119,6 +119,8 @@ complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l paren
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l json -d "Output result as JSON (for programmatic use)"
 
 # handoff
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l all -d "Write .specweave/handoffs/<date>-INDEX.md and index.json: every active increment and every nested repo with local-only work (writes nothing else)"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l dry-run -d "With --all: print the index instead of writing it"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l reason -d "Why you are handing off (e.g. \"out of tokens\")"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l summary -d "Short summary of where things stand"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l next -d "The exact next step for the resuming agent"
@@ -134,6 +136,7 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l keep-claims -d
 
 # pickup
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l no-apply -d "Only show the waiting handoff; do not apply it to this checkout"
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l all -d "Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing"
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output as JSON"
 
 # report

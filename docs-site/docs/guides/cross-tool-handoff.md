@@ -56,6 +56,30 @@ To leave a message for whoever works on an increment next:
 specweave note "Draft restore works; expiry not started" 0042
 ```
 
+## Hand off everything at once
+
+Switching subscriptions with a dozen threads in flight is one command:
+
+```bash
+specweave handoff --all --reason "switching accounts"
+```
+
+It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json` with one row per active increment: tasks done, open acceptance criteria, last activity, what it waits on, and a resume prompt to paste into a new thread. In an umbrella workspace it also scans every checkout under `repositories/<org>/<repo>` and their worktrees, and lists each one with uncommitted files, unpushed commits or a branch with no remote, with the open PR for that branch when the GitHub CLI is installed. A checkout whose path or branch carries an increment's four-digit id is listed in that increment's row.
+
+`--all` changes nothing else: no claims are released, no ledger events are written, and nothing is committed or pushed in the umbrella or the nested repos. `--dry-run` prints the index instead of writing it.
+
+An increment waits on a person when its ledger has a `wait` line, such as `{"t":"*","e":"wait","by":"claude@mbp","at":"2026-10-03T05:00:00Z","note":"Anton: typed go for the cutover"}`, or its `handoff.md` has a `Waits on:` line. A `wait` with the note `resolved` clears the earlier ones.
+
+On the other side:
+
+```bash
+specweave pickup --all
+```
+
+prints the newest index with the increments you can act on now first, then the ones waiting on a person, then the checkouts with local-only work. Then `specweave pickup <id>` for the one you start with.
+
+`specweave handoff` never overwrites a `handoff.md` a person wrote (one without the generated `<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it. Anything between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next handoff.
+
 ## Hand off automatically
 
 On your own machine, SpecWeave can hand off for you before a session runs out:
