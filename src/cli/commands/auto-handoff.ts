@@ -24,7 +24,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
   DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
-  latestClaudeReading, latestCodexReading, type UsageReading,
+  latestClaudeReading, latestCodexReading, claudeCachedReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
 import { detectTool } from '../../core/tasks/ledger.js';
 
@@ -188,7 +188,7 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
       else {
         addHook(codex, 'Stop', STOP_HOOK);
         writeJson(codexFile, codex);
-        say(`Codex: Stop hook added in ${codexFile} (Codex asks you to trust a new hook once)`);
+        say(`Codex: Stop hook added in ${codexFile}. Codex skips it until you trust it: open \`codex\` in a terminal once and approve the hook when it asks.`);
       }
     }
     if (fs.existsSync(path.join(home, '.grok'))) {
@@ -224,6 +224,19 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
   return 0;
 }
 
+/**
+ * Codex runs a new hook only after the user trusts it, and records that in
+ * ~/.codex/config.toml under the hook's `hooks.json:stop` key. There is no
+ * command to approve one; Codex asks when it next starts in a terminal.
+ */
+export function codexHookTrusted(home = os.homedir()): boolean {
+  try {
+    return /hooks\.json:stop/i.test(fs.readFileSync(path.join(home, '.codex', 'config.toml'), 'utf8'));
+  } catch {
+    return false;
+  }
+}
+
 function ago(ms: number, now: number): string {
   const min = Math.max(0, Math.round((now - ms) / 60000));
   return min < 60 ? `${min} min ago` : min < 48 * 60 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} days ago`;
@@ -251,14 +264,21 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
       hasHook(claude, 'StopFailure', LIMIT_HIT_COMMAND) ? '' : 'StopFailure hook',
     ].filter(Boolean);
     broken ||= missing.length > 0;
-    lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${readingLine(latestClaudeReading(home), now)}`);
+    const statusReading = latestClaudeReading(home);
+    const cached = claudeCachedReading({ home, now });
+    const reading = statusReading && (!cached || statusReading.at >= cached.at) ? readingLine(statusReading, now)
+      : cached ? `${readingLine(cached, now)} from Claude Code's usage cache` : readingLine(undefined, now);
+    lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${reading}`);
+    lines.push('  Desktop, Remote Control and `claude -p` sessions run no status line, so they hand off at the threshold only while Claude Code\'s own usage cache is under an hour old; otherwise they hand off when a turn hits the limit.');
   }
   const codexFile = path.join(home, '.codex', 'hooks.json');
   if (fs.existsSync(path.dirname(codexFile))) {
     const codex = readJson(codexFile);
     const ok = !!codex && hasHook(codex, 'Stop', GUARD_COMMAND);
     broken ||= !ok;
-    lines.push(`Codex: ${ok ? 'Stop hook in place' : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
+    const trusted = codexHookTrusted(home);
+    lines.push(`Codex: ${ok ? `Stop hook in place${trusted ? '' : ' but not approved yet'}` : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
+    if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal once and approve the hook when it asks.');
   }
   if (fs.existsSync(path.join(home, '.grok'))) {
     const ok = fs.existsSync(path.join(home, '.grok', 'hooks', GROK_HOOK_FILE));
