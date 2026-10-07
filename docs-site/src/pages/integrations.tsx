@@ -4,7 +4,7 @@ import Link from '@docusaurus/Link';
 import styles from './continuity.module.css';
 
 export default function Integrations() {
-  return <Layout title="Integrations" description="SpecWeave works with every coding agent that reads AGENTS.md, and pushes progress to GitHub, Jira or Azure DevOps only when you ask."><main className={styles.page}>
+  return <Layout title="AI coding agents and issue tracker integrations" description="SpecWeave works with every coding agent that reads AGENTS.md, and pushes progress to GitHub, Jira or Azure DevOps only when you ask."><main className={styles.page}>
     <header className={styles.articleHero}><span className={styles.eyebrow}>Product / Integrations</span><h1>Every agent reads it.<br /><em>Trackers only when you ask.</em></h1><p>SpecWeave needs no service and no account. Coding agents read the files in your repository. Issue trackers are optional, and in 3.0 nothing reaches them unless you run <code>specweave sync push</code>.</p></header>
     <div className={styles.articleBody}>
       <h2>Coding agents</h2>

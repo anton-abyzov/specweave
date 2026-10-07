@@ -1,121 +1,52 @@
 ---
 title: "SEO Best Practices for Developer Documentation Sites"
-description: "Learn how to optimize your technical documentation for search engines with Schema.org, robots.txt, and performance improvements. Boost organic traffic by 20-40%."
-keywords: [SEO, documentation, Schema.org, technical writing, search optimization]
-authors:
-  - name: SpecWeave Team
-    title: Documentation Engineers
-    url: https://github.com/anton-abyzov/specweave
-    image_url: /img/logo.svg
+description: "A practical technical SEO checklist for developer documentation: canonical URLs, crawlable noindex pages, accurate metadata, sitemaps and measured Search Console results."
+keywords: [technical SEO, developer documentation, canonical URLs, robots.txt, sitemaps]
+authors: [specweave-team]
 date: 2026-01-04
-tags: [SEO, documentation, best-practices, performance]
+tags: [seo, documentation, best-practices, performance]
 ---
 
 # SEO Best Practices for Developer Documentation Sites
 
-Optimizing technical documentation for search engines can significantly improve discoverability and organic traffic. Here's what we learned implementing comprehensive SEO enhancements for SpecWeave's documentation site.
+*Updated October 7, 2026.*
+
+Developer documentation should help people find a precise answer and help search engines identify the page that contains it. Start with useful content, clear navigation and reliable HTTP responses; then make the metadata and sitemap agree with that content.
 
 <!-- truncate -->
 
-## Why SEO Matters for Developer Docs
+## Keep canonical URLs consistent
 
-Developer documentation is often the first touchpoint for potential users. When someone searches for "spec-driven development" or "autonomous AI agents," you want your docs to appear in the top results.
+Pick one public URL for each document. On SpecWeave, GitHub Pages serves directory pages with a trailing slash, so both the canonical tag and sitemap use that form. Internal links should lead directly to the current document instead of an old redirect page.
 
-Key benefits of SEO for docs:
-- **20-40% increase in organic traffic** from structured data
-- **2-3x higher click-through rates** with optimized social cards
-- **Better indexing** ensures all valuable content is discoverable
-- **Competitive advantage** over similar tools
+Include the preferred, indexable pages in the sitemap. Remove internal search results, reports and intentionally excluded archives. A sitemap helps discovery; it does not guarantee crawling, indexing or a particular ranking. Redirected URLs and alternate pages can be valid exclusions when they point to the right replacement. [Google's canonical URL guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls) explains how redirects, canonical tags and sitemap inclusion work together.
 
-## 1. Implement Schema.org Structured Data
+## Let crawlers see a noindex directive
 
-Search engines love structured data. We added Organization and SoftwareApplication schemas:
+An internal search page is useful navigation, but usually adds little as a search result. Give it a `noindex` directive and leave it crawlable:
 
-```typescript
-headTags: [
-  {
-    tagName: 'script',
-    attributes: { type: 'application/ld+json' },
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'SpecWeave',
-      applicationCategory: 'DeveloperApplication',
-      // ... more fields
-    }),
-  },
-]
+```html
+<meta name="robots" content="noindex, follow">
 ```
 
-Result: Rich snippets in search results with ratings and pricing info.
+Blocking that same URL in `robots.txt` prevents Google from reading the directive. SpecWeave's search page follows this policy and is excluded from the sitemap. Our blog tag result pages also remain intentionally excluded; original articles stay indexable. Use exclusions deliberately rather than treating every Search Console notice as a bug. See [Google's noindex documentation](https://developers.google.com/search/docs/crawling-indexing/block-indexing).
 
-## 2. Optimize robots.txt
+## Describe the page people will read
 
-A proper robots.txt guides crawlers efficiently:
+Give each page a clear title and a relevant description. An integrations overview and a CLI reference should have distinct titles even when they share a broad topic. Archive pages need descriptions too: identify the author or topic and explain what readers can find there.
 
-```txt
-User-agent: *
-Allow: /
+Use the words developers use when asking the question, in readable headings, link text and content. A `keywords` meta tag does not affect Google's indexing or ranking. Social cards help people recognize shared links, but they do not establish a fixed search click-through improvement. [Google's SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide) describes these practices and their limits.
 
-Sitemap: https://spec-weave.com/sitemap.xml
+## Publish truthful structured data
 
-# Rate limiting for AI bots
-User-agent: GPTBot
-Crawl-delay: 10
-```
+Structured data can describe the organization and software application. Keep its URL, license, price and supported platforms consistent with the product. Do not invent ratings, reviews or measured outcomes to qualify for a search feature.
 
-This prevents server overload from aggressive bots while ensuring all public content is crawled.
+Valid Schema.org markup and eligibility for a Google rich result are separate checks. Google's software app feature requires a real rating or review as well as the other required properties. Our application description does not claim that result. Validate supported markup and inspect the deployed page. [Google's software application documentation](https://developers.google.com/search/docs/appearance/structured-data/software-app) lists the requirements.
 
-## 3. Convert Images to WebP
+## Verify delivery, then measure discovery
 
-We reduced social card size by 46% (54KB → 29KB) without quality loss:
+Before publishing, inspect the rendered HTML, follow internal links and test the sitemap against the built pages. Check that missing pages return HTTP 404, indexable pages have one matching canonical, and deliberately excluded pages stay out of the sitemap. Test narrow screens, readable themes and image loading as part of the same release.
 
-```bash
-cwebp -q 85 social-card.jpg -o social-card.webp
-```
+After deployment, repeat the public checks and use Search Console to monitor impressions, clicks, queries and indexing over time. A successful build or Lighthouse score proves a specific technical check, not an organic traffic increase. Keep the measured baseline, date range and changes together before attributing a result to SEO work.
 
-Faster loading means better user experience and SEO scores.
-
-## 4. Add Resource Hints
-
-Preconnect hints reduce DNS lookup time:
-
-```typescript
-{
-  tagName: 'link',
-  attributes: {
-    rel: 'preconnect',
-    href: 'https://fonts.googleapis.com',
-  },
-}
-```
-
-External resources load 50-100ms faster.
-
-## 5. Prevent Duplicate Content
-
-Tag archive pages create duplicate content. We added noindex directives:
-
-```jsx
-<Head>
-  <meta name="robots" content="noindex, follow" />
-</Head>
-```
-
-This ensures search engines index original posts, not tag pages.
-
-## Results
-
-After implementing these optimizations:
-- ✅ Lighthouse SEO score: 95+
-- ✅ Google Rich Results Test: Zero errors
-- ✅ Page load time improved by 30%
-- ✅ Zero broken links
-
-## Conclusion
-
-SEO for developer docs isn't just about rankings—it's about making your content discoverable and accessible. These five improvements took ~20 hours but deliver long-term value.
-
----
-
-**Want to learn more?** Explore the [SpecWeave Documentation](https://spec-weave.com/docs/overview/introduction) for comprehensive guides on spec-driven development and AI-powered workflows.
+Explore the [SpecWeave introduction](/docs/overview/introduction/) or [start in your project](/docs/getting-started/).

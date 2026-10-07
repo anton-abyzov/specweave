@@ -8,3 +8,10 @@ antonabyzov:
     github: anton-abyzov
     linkedin: antonabyzov
     x: antonabyzov
+
+specweave-team:
+  name: SpecWeave Team
+  title: Documentation Engineers
+  url: https://github.com/anton-abyzov/specweave
+  image_url: /img/logo.svg
+  page: false
