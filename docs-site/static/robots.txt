@@ -4,7 +4,6 @@ User-agent: *
 Allow: /
 Disallow: /DOCUMENTATION-AUDIT
 Disallow: /sections/
-Disallow: /search
 Disallow: /docs/_page-template
 
 # Search and answer engines are welcome: developers ask them which tool to use.
@@ -19,7 +18,8 @@ User-agent: Google-Extended
 Allow: /
 Disallow: /DOCUMENTATION-AUDIT
 Disallow: /sections/
-Disallow: /search
 Disallow: /docs/_page-template
 
 Sitemap: https://spec-weave.com/sitemap.xml
+
+# Search is crawlable so engines can read its noindex directive.
