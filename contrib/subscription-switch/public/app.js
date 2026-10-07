@@ -145,10 +145,13 @@ function renderHosts() {
   const list = $('#host-list'); list.replaceChildren();
   for (const host of hosts) {
     const card = element('article', 'host-card');
-    const status = host.status === 'local' ? 'Local host' : host.status === 'auth-required' ? 'SSH sign-in required' : host.status === 'offline' ? 'Offline' : 'Access unknown';
+    const status = host.status === 'local' ? 'Local host' : host.status === 'ready' ? 'Ready' : host.status === 'auth-required' ? host.companionRunning === true ? 'Native sign-in required' : 'SSH sign-in required' : host.status === 'offline' ? 'Offline' : 'Access unknown';
     card.append(element('p', 'host-role', host.role === 'main' ? 'Main host' : 'Worker'), element('h3', '', text(host.label, host.id)), element('p', 'host-name', text(host.hostname, 'Hostname unknown')), element('p', 'host-status', status));
-    card.append(element('p', 'host-fact', host.sshReachable === true ? 'SSH reachable' : host.sshReachable === false ? 'SSH unreachable' : 'SSH not verified'));
+    const sshAuthenticated = typeof host.source === 'string' && host.source.split(';').some((part) => part.trim() === 'authenticated-ssh');
+    card.append(element('p', 'host-fact', sshAuthenticated ? 'SSH authenticated' : host.sshReachable === true ? 'SSH reachable' : host.sshReachable === false ? 'SSH unreachable' : 'SSH not verified'));
     card.append(element('p', 'host-fact', host.installed === true ? 'Companion installed' : host.installed === false ? 'Installation pending' : 'Installation unknown'));
+    const observed = resetDate(host.observedAt);
+    if (observed) card.append(element('p', 'host-observation', `Observed ${observed}`));
     list.append(card);
   }
 }

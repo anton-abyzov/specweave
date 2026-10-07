@@ -120,6 +120,8 @@ try:
                 assert page.locator('[data-select="claude-1"]').is_disabled()
                 assert page.locator('[data-select="codex-2"]').is_disabled()
                 assert "EDT" in page.locator('[data-account-id="codex-1"]').inner_text()
+                assert "SSH sign-in required" in page.locator("#host-list").inner_text()
+                assert "Offline" in page.locator("#host-list").inner_text()
                 assert "No managed runs recorded" in page.locator("#run-list").inner_text()
                 assert_no_overflow(page)
                 screenshot = EVIDENCE / f"{name}.png"
@@ -152,12 +154,18 @@ try:
                 assert_no_overflow(page)
                 assert not errors, errors
                 assert page.get_by_role("link", name="Accounts", exact=True).count() == 1
+                # Live fleet receipts distinguish native sign-in from verified SSH access.
+                current["hosts"][1].update({"companionRunning": True, "installed": True, "observedAt": "2026-10-07T07:25:00Z", "source": "authenticated-ssh; companion-doctor; loopback-http200"})
+                current["hosts"][2].update({"status": "ready", "companionRunning": True, "installed": True, "sshReachable": True, "observedAt": "2026-10-07T07:25:00Z", "source": "authenticated-ssh; companion-doctor; loopback-http200"})
                 # Untrusted state strings must stay text, including narrow layouts and RTL labels.
                 attack = '<img src=x onerror="window.__xss=1">' + "AccountWithAnExceptionallyLongUnbrokenName" * 4 + " حساب تجريبي"
                 current["accounts"][0]["label"] = attack
                 current["recommendations"][0]["reason"] = '<script>window.__xss=1</script>'
                 page.get_by_role("button", name="Refresh accounts", exact=True).click()
                 page.get_by_text(attack, exact=True).first.wait_for()
+                page.get_by_text("Native sign-in required", exact=True).wait_for()
+                assert page.locator("#host-list").get_by_text("SSH authenticated", exact=True).count() == 2
+                assert page.locator("#host-list").get_by_text("Ready", exact=True).count() == 1
                 assert page.locator(".account-card img, .account-card script, #recommendations script").count() == 0
                 assert page.evaluate("window.__xss") is None
                 assert_no_overflow(page)

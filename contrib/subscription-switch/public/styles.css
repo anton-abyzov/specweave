@@ -14,4 +14,5 @@ main{max-width:1360px;margin:auto;padding:48px 28px 64px}.intro{display:flex;jus
 .icon-button,.select-button{min-height:44px;min-width:44px}.login-details summary{padding-block:10px;min-height:44px;display:list-item}
 .selection-controls{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}.selection-controls .panel-copy{overflow-wrap:anywhere;margin:0 0 12px}.selection-controls .select-button{width:100%}
 .run-error{grid-column:1/-1;overflow-wrap:anywhere;font-size:12px;line-height:1.6;margin-top:10px;color:var(--danger)}
+.host-observation{grid-column:1/-1;overflow-wrap:anywhere;font-size:11px;line-height:1.6;margin-top:10px;color:var(--muted)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
