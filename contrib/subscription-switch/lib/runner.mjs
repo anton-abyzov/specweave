@@ -1,7 +1,7 @@
 import { realpath, mkdir, open, readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ensureState, mutateState } from './state.mjs';
-import { accountStatus, recommend } from './policy.mjs';
+import { recommend } from './policy.mjs';
 import { nativeEnv, nativeRunArgs } from './native.mjs';
 import { execute, atomicJSON, hash, id, iso, redact } from './util.mjs';
 import { checkpoint, dirtyTracked, repository } from './checkpoint.mjs';
@@ -41,6 +41,15 @@ export function classifyOutcome(result, provider) {
 export function managedPrompt(prompt, sandbox) {
   return `Managed execution rules: All automated browser tests, screenshots, scrapers and delegated browser runs must explicitly use headless: true (Python headless=True). Keep PWDEBUG=0 and PLAYWRIGHT_HTML_OPEN=never and HTML reporters open:'never'. Save evidence to files. Do not open a personal/visible browser. Preserve unrelated work, native credentials and other sessions. This run uses ${sandbox}; obey the native permission boundary. A denied operation remains denied.\n\nUser task:\n${prompt}`;
 }
+export async function reserveRun(root, account, record, { allowUnknown = false } = {}) {
+  return mutateState(root, current => {
+    // Use the full current routing policy under the state lock. A refreshed
+    // unverified identity cannot slip through the explicit unknown-quota path.
+    const chosen = recommend(current, { provider: account.provider, accountId: account.id, allowUnknown });
+    if (chosen.id !== account.id) throw new Error('Profile became unavailable before launch');
+    current.runs.push(record);
+  });
+}
 export async function run(root, { cwd = process.cwd(), prompt, accountId, provider, allowUnknown = false, model, sandbox = 'read-only', timeoutMs = 120000, failover = false, maxAttempts = 3, files = [] } = {}) {
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 128 * 1024) throw new Error('Run requires a bounded nonempty prompt');
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 30 * 60 * 1000) throw new Error('Run timeout must be 1000-1800000 ms');
@@ -61,12 +70,7 @@ export async function run(root, { cwd = process.cwd(), prompt, accountId, provid
       }
       const account = state.accounts.find(a => a.id === chosen.id), runId = id();
       const record = { id: runId, groupId, accountId: account.id, provider: account.provider, cwd: lease.cwd, startedAt: iso(), endedAt: null, status: 'running', exitCode: null, model: null, requestedModel: model || null, sandbox, checkpointId: savedCheckpoint?.id || null };
-      await mutateState(root, current => {
-        const present = current.accounts.find(a => a.id === account.id);
-        const status = present && accountStatus(present, current.runs);
-        if (!present || present.authenticated !== true || !['ready', ...(attempt === 0 && allowUnknown && accountId === account.id ? ['unknown'] : [])].includes(status)) throw new Error('Profile became unavailable before launch');
-        current.runs.push(record);
-      });
+      await reserveRun(root, account, record, { allowUnknown: attempt === 0 && allowUnknown && accountId === account.id });
       let result, outcome;
       try {
         const args = nativeRunArgs(account, prompt, { model, sandbox });

@@ -3,13 +3,31 @@ import assert from 'node:assert/strict';
 import { readFile, symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fixture, fakeBinary, authed, quota } from './helpers.mjs';
-import { acquireLease, run, classifyOutcome, managedPrompt } from '../lib/runner.mjs';
+import { acquireLease, reserveRun, run, classifyOutcome, managedPrompt } from '../lib/runner.mjs';
 import { readState, mutateState } from '../lib/state.mjs';
+import { recommend } from '../lib/policy.mjs';
 test('exclusive lease rejects duplicate canonical or symlinked workspace', async t => {
   const f = await fixture(t); await symlink(f.repo, join(f.base, 'alias'));
   const lease = await acquireLease(f.root, f.repo);
   await assert.rejects(acquireLease(f.root, f.repo), /exclusive lease/); await assert.rejects(acquireLease(f.root, join(f.base, 'alias')), /exclusive lease/);
   await lease.release(); const second = await acquireLease(f.root, f.repo); await second.release();
+});
+test('launch reservation rejects a newer unverified identity after an earlier eligible recommendation', async t => {
+  const f = await fixture(t), binary = await fakeBinary(f.base, 'reserved-claude', `console.log(JSON.stringify({type:'result',subtype:'success'}));`);
+  await authed(f.root, 'claude-1', binary, null);
+  await mutateState(f.root, s => { s.accounts.find(a => a.id === 'claude-1').authKind = 'claude.ai'; });
+  const snapshot = await readState(f.root), account = snapshot.accounts.find(a => a.id === 'claude-1');
+  assert.equal(recommend(snapshot, { accountId: account.id, allowUnknown: true }).id, account.id);
+  // A concurrent native refresh changes identity after selection but before
+  // the atomic reservation; even stale authenticated:true/manual quota cannot
+  // authorize this legacy token through --allow-unknown.
+  await mutateState(f.root, s => Object.assign(s.accounts.find(a => a.id === account.id), { authKind: 'oauth_token', authenticated: true, authError: null, quota: quota() }));
+  const record = { id: 'reserved-after-selection', accountId: account.id, provider: account.provider, status: 'running' };
+  await assert.rejects(reserveRun(f.root, account, record, { allowUnknown: true }), /unavailable before launch/);
+  assert.equal((await readState(f.root)).runs.length, 0);
+  await mutateState(f.root, s => Object.assign(s.accounts.find(a => a.id === account.id), { authKind: 'claude.ai', authenticated: true, quota: null }));
+  await reserveRun(f.root, account, record, { allowUnknown: true });
+  assert.equal((await readState(f.root)).runs[0].id, record.id);
 });
 test('failed native run persists failure and redacts JSON credentials; no synthetic success', async t => {
   const f = await fixture(t);
