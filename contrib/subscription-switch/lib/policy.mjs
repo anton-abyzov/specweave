@@ -1,5 +1,15 @@
 export const MODES = ['balanced', 'reset-first', 'spend-first'];
 export const QUOTA_TTL_MS = 15 * 60 * 1000;
+export function claudeProfileIsolationUnverified(account) {
+  // Legacy native oauth_token status can report the same ambient keychain login
+  // for empty isolated config roots. No supported profile binding is observed.
+  return account.authError === 'profile-isolation-unverified' || (account.provider === 'claude' && !account.nativeDefault && account.id !== 'claude-1' && ['oauth_token', 'oauth-token'].includes(account.authKind));
+}
+export function claudeSubscriptionAuthUnverified(account) {
+  // oauth_token also appears for a native default backed by a credit balance.
+  // A token method alone cannot establish a consumer subscription entitlement.
+  return account.authError === 'subscription-auth-unverified' || (account.provider === 'claude' && ['oauth_token', 'oauth-token'].includes(account.authKind));
+}
 export function validateQuota(quota, now = Date.now()) {
   if (!quota || !['native-app-server', 'manual'].includes(quota.source)) throw new Error('Quota requires a native-app-server or explicit manual source');
   const observed = Date.parse(quota.observedAt), expiry = Date.parse(quota.expiresAt);
@@ -13,6 +23,7 @@ export function validateQuota(quota, now = Date.now()) {
 }
 export function accountStatus(account, runs = [], now = Date.now()) {
   if (runs.some(r => r.accountId === account.id && r.status === 'running')) return 'active';
+  if (claudeProfileIsolationUnverified(account) || claudeSubscriptionAuthUnverified(account)) return 'unknown';
   if (account.authenticated !== true) return account.authenticated === false ? 'auth-required' : 'unknown';
   if (['api_key', 'api-key', 'apikey', 'bedrock', 'vertex', 'foundry', 'unknown'].includes(account.authKind)) return 'auth-required';
   const q = account.quota;
@@ -45,13 +56,13 @@ export function recommend(state, { provider = state.policy.preferredProvider, ac
   const candidates = state.accounts.filter(a => (!provider || a.provider === provider) && !exclude.includes(a.id) && (!explicit || a.id === explicit));
   const eligible = candidates.filter(a => {
     const status = accountStatus(a, state.runs, now);
-    return a.authenticated === true && (status === 'ready' || (status === 'unknown' && allowUnknown && accountId === a.id));
+    return a.authenticated === true && !claudeProfileIsolationUnverified(a) && !claudeSubscriptionAuthUnverified(a) && (status === 'ready' || (status === 'unknown' && allowUnknown && accountId === a.id));
   }).sort((a, b) => score(a, state.policy.mode) - score(b, state.policy.mode) || a.id.localeCompare(b.id));
   const account = eligible[0] || null;
   return { provider: provider || 'any', id: account?.id || null, reason: account ? `${state.policy.mode}; ${accountStatus(account, state.runs, now)} observation` : 'No eligible profile with fresh observed quota; unknown quota requires an explicit account and --allow-unknown' };
 }
 export function publicState(state) {
-  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind }) => ({ id, provider, label, authenticated, authKind,
+  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError }) => ({ id, provider, label, authenticated, authKind, authError: authError || null,
     status: accountStatus(state.accounts.find(a => a.id === id), state.runs), quota: quota || { window: null, weekly: null, observedAt: null, expiresAt: null, source: null } })),
     policy: state.policy, hosts: state.hosts, services: state.services,
     runs: state.runs.slice(-30).reverse().map(({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error }) => ({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error })),

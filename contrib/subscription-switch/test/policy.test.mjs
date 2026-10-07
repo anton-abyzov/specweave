@@ -47,3 +47,15 @@ test('explicit selection can return to automatic; corrupt/error/stale quota neve
   a.lastQuotaErrorAt = 'invalid'; a.quota = quota(); assert.equal(accountStatus(a), 'stale');
   b.authKind = 'api_key'; assert.equal(accountStatus(b), 'auth-required'); assert.equal(recommend(state).id, null);
 });
+test('stale positive legacy Claude slot state cannot regain eligibility from manual quota or allow-unknown', () => {
+  const state = { policy: { mode: 'balanced' }, runs: [], accounts: ['claude-1', 'claude-2', 'claude-3'].map(id => ({ id, provider: 'claude', nativeDefault: id === 'claude-1', authenticated: true, authKind: 'oauth_token', quota: quota({ used: 0, weekly: 0 }) })) };
+  assert.equal(recommend(state).id, null);
+  for (const account of state.accounts) {
+    assert.equal(accountStatus(account), 'unknown');
+    assert.equal(recommend(state, { accountId: account.id, allowUnknown: true }).id, null);
+    account.quota = null;
+    assert.equal(recommend(state, { accountId: account.id, allowUnknown: true }).id, null);
+  }
+  const flagged = { id: 'claude-4', provider: 'claude', authenticated: true, authKind: 'claude.ai', authError: 'profile-isolation-unverified', quota: quota() };
+  state.accounts.push(flagged); assert.equal(accountStatus(flagged), 'unknown'); assert.equal(recommend(state, { accountId: flagged.id, allowUnknown: true }).id, null);
+});

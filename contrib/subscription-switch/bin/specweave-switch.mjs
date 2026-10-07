@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { stateRoot, ensureState, initState, mutateState, findBinary } from '../lib/state.mjs';
 import { publicState, recommend, setPolicy, selectAccount, validateQuota, QUOTA_TTL_MS } from '../lib/policy.mjs';
-import { refresh, nativeEnv } from '../lib/native.mjs';
+import { refresh, nativeEnv, inspectAuth } from '../lib/native.mjs';
 import { run } from '../lib/runner.mjs';
 import { checkpoint, restore } from '../lib/checkpoint.mjs';
 import { execute, redact, iso } from '../lib/util.mjs';
@@ -65,6 +65,9 @@ async function main(argv) {
     const account = state.accounts.find(a => a.id === p[1]); if (!account) throw new Error('Unknown profile');
     if (p[0] === 'login') {
       const binary = findBinary(account.provider), args = account.provider === 'codex' ? ['login'] : ['auth', 'login'];
+      const observed = await inspectAuth({ ...account, binary });
+      await mutateState(root, s => Object.assign(s.accounts.find(a => a.id === account.id), observed));
+      if (observed.authError === 'profile-isolation-unverified') throw new Error('Claude profile isolation is unverified: native oauth_token status may reuse the default keychain login. Sign-in for this isolated slot is blocked until a supported independent profile binding is verified; authenticate a supported consumer subscription in the native default claude-1 profile instead. Native sign-in was not started.');
       const child = spawn(binary, args, { env: nativeEnv(account), stdio: 'inherit' });
       const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
       process.exitCode = code || 0;

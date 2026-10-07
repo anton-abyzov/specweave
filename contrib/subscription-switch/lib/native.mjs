@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { execute, iso } from './util.mjs';
-import { QUOTA_TTL_MS } from './policy.mjs';
+import { QUOTA_TTL_MS, claudeProfileIsolationUnverified } from './policy.mjs';
 import { ensureState, mutateState } from './state.mjs';
 
 export function nativeEnv(account) {
@@ -24,8 +24,12 @@ export async function inspectAuth(account) {
   if (account.provider === 'claude') {
     try {
       const body = JSON.parse(result.stdout), kind = String(body.authMethod || '').toLowerCase();
-      const consumerAuth = ['claude.ai', 'claude_ai', 'oauth', 'oauth_token', 'oauth-token'].includes(kind);
+      const consumerAuth = ['claude.ai', 'claude_ai'].includes(kind);
       const knownApiAuth = ['api_key', 'api-key', 'apikey', 'bedrock', 'vertex', 'foundry'].includes(kind);
+      if (result.exitCode === 0 && body.loggedIn === true && ['oauth_token', 'oauth-token'].includes(kind)) {
+        const isolated = claudeProfileIsolationUnverified({ ...account, authKind: kind, authError: null });
+        return { authenticated: null, authKind: kind, authObservedAt: iso(), authError: isolated ? 'profile-isolation-unverified' : 'subscription-auth-unverified' };
+      }
       return { authenticated: result.exitCode === 0 && body.loggedIn === true && consumerAuth, authKind: consumerAuth || knownApiAuth ? kind : 'unknown', authObservedAt: iso(), authError: body.loggedIn === true && !consumerAuth ? 'subscription-auth-required' : null };
     }
     catch { return { authenticated: false, authKind: null, authObservedAt: iso(), authError: 'native-auth-output-unrecognized' }; }
