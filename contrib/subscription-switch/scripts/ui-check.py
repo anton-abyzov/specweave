@@ -5,6 +5,7 @@ Run with Playwright installed, or: uv run --with playwright python3 <this file>.
 SWITCH_URL defaults to http://127.0.0.1:8318; SWITCH_EVIDENCE_DIR selects artifacts.
 """
 import copy
+import datetime
 import functools
 import json
 import os
@@ -12,6 +13,7 @@ from pathlib import Path
 import socket
 import tempfile
 import threading
+import traceback
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
@@ -193,6 +195,13 @@ try:
             browser.close()
     (EVIDENCE / "ui-check.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print(json.dumps(receipt, indent=2))
+except Exception:
+    # Retain the original failure across reruns, including the first failing viewport.
+    failure = EVIDENCE / ("failure-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f") + ".log")
+    failure.write_text(traceback.format_exc())
+    receipt.update({"status": "failed", "failureLog": str(failure)})
+    (EVIDENCE / "ui-check.json").write_text(json.dumps(receipt, indent=2) + "\n")
+    raise
 finally:
     if server:
         server.shutdown()
