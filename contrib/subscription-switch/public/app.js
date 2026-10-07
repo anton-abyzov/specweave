@@ -37,7 +37,18 @@ function notice(message, kind = 'info') {
   node.hidden = !message;
 }
 function asArray(value) { return Array.isArray(value) ? value.filter((entry) => entry && typeof entry === 'object') : []; }
+function blockedAuth(account) {
+  if (account.authError === 'profile-isolation-unverified') return 'profile-isolation-unverified';
+  if (account.authError === 'subscription-auth-unverified') return 'subscription-auth-unverified';
+  if (account.provider === 'claude' && ['oauth_token', 'oauth-token'].includes(account.authKind)) {
+    return account.id === 'claude-1' ? 'subscription-auth-unverified' : 'profile-isolation-unverified';
+  }
+  return null;
+}
 function statusLabel(account) {
+  const blocked = blockedAuth(account);
+  if (blocked === 'profile-isolation-unverified') return ['Profile isolation unverified', 'warning'];
+  if (blocked === 'subscription-auth-unverified') return ['Subscription unverified', 'warning'];
   const labels = {
     exhausted: ['Quota exhausted', 'danger'], stale: ['Observation stale', 'warning'],
     active: ['Working', 'success'], error: ['Needs attention', 'danger'],
@@ -74,6 +85,14 @@ function quotaBlock(title, window) {
 function nativeLoginHint(account) {
   const details = element('details', 'login-details');
   details.append(element('summary', '', 'Native sign-in'));
+  const blocked = blockedAuth(account);
+  if (blocked) {
+    details.querySelector('summary').textContent = 'Authentication check';
+    details.append(element('p', '', blocked === 'profile-isolation-unverified'
+      ? 'This slot may be reporting the default Claude keychain session. Separate profile identity must be verified before sign-in or selection.'
+      : 'The native token method does not confirm a consumer subscription. Verify the account and subscription in official Claude Code, then refresh.'));
+    return details;
+  }
   // Known profile IDs only: no state-supplied commands or credentials are rendered.
   const slot = profileSlots.find((entry) => entry.id === account.id);
   let command = 'Use the native provider sign-in for this profile.';
@@ -104,10 +123,10 @@ function renderAccounts() {
     button.type = 'button'; button.dataset.select = account.id;
     button.setAttribute('aria-label', `Select ${text(account.label, account.id)}`);
     button.setAttribute('aria-pressed', String(selected === account.id));
-    button.disabled = pending || account.authenticated !== true || ['exhausted', 'active', 'error'].includes(account.status);
+    button.disabled = pending || Boolean(blockedAuth(account)) || account.authenticated !== true || ['exhausted', 'active', 'error'].includes(account.status);
     button.addEventListener('click', () => mutate('/api/select', { id: account.id }, `${text(account.label, account.id)} selected for new managed runs.`));
     actions.append(button);
-    if (account.authenticated === false) info.append(nativeLoginHint(account));
+    if (account.authenticated === false || blockedAuth(account)) info.append(nativeLoginHint(account));
     card.append(info, quotaBlock('Current window', account.quota?.window), quotaBlock('Weekly window', account.quota?.weekly), actions);
     const observation = element('div', 'quota-observation');
     const observed = resetDate(account.quota?.observedAt);
@@ -116,7 +135,7 @@ function renderAccounts() {
     card.append(observation); list.append(card);
   }
   $('#account-count').textContent = Array.isArray(state.accounts)
-    ? `${accounts.filter((account) => account.authenticated === true).length} signed in / 7 slots` : '7 profile slots';
+    ? `${accounts.filter((account) => account.authenticated === true && !blockedAuth(account)).length} signed in / 7 slots` : '7 profile slots';
   list.setAttribute('aria-busy', String(pending));
 }
 function renderPolicy() {

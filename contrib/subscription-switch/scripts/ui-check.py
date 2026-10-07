@@ -195,13 +195,41 @@ try:
                 assert "receipt-11" in page.locator(".run-row").last.inner_text()
                 assert "receipt-10" not in page.locator("#run-list").inner_text()
                 assert_no_overflow(page)
+                # Persisted positive auth and manual quota never bypass native identity gates.
+                for i, reason in [(4, "subscription-auth-unverified"), (5, "profile-isolation-unverified")]:
+                    current["accounts"][i].update({"authenticated": True, "status": "ready" if i == 4 else "stale", "authKind": "oauth_token", "authError": reason, "quota": copy.deepcopy(fixture["accounts"][0]["quota"])})
+                    current["accounts"][i]["quota"]["source"] = "manual"
+                page.get_by_role("button", name="Refresh accounts", exact=True).click()
+                page.get_by_text("Subscription unverified", exact=True).wait_for()
+                page.get_by_text("Profile isolation unverified", exact=True).wait_for()
+                for id in ["claude-1", "claude-2"]:
+                    card = page.locator(f'[data-account-id="{id}"]')
+                    assert card.locator("button[data-select]").is_disabled()
+                    assert card.locator("code").count() == 0
+                    card.get_by_text("Authentication check", exact=True).click()
+                assert "Separate profile identity must be verified" in page.locator('[data-account-id="claude-2"]').inner_text()
+                assert "does not confirm a consumer subscription" in page.locator('[data-account-id="claude-1"]').inner_text()
+                page.get_by_text("1 signed in / 7 slots", exact=True).wait_for()
+                assert_no_overflow(page)
+                # An absent quota or stale authError also remains blocked by the native token kind.
+                for i in [4, 5]:
+                    current["accounts"][i]["quota"] = {"window": None, "weekly": None, "source": None}
+                    current["accounts"][i]["authError"] = None
+                page.get_by_role("button", name="Refresh accounts", exact=True).click()
+                page.get_by_text("Profile isolation unverified", exact=True).wait_for()
+                page.get_by_text("Subscription unverified", exact=True).wait_for()
+                for id in ["claude-1", "claude-2"]:
+                    assert page.locator(f'[data-select="{id}"]').is_disabled()
+                blocked_screenshot = EVIDENCE / f"{name}-auth-gates.png"
+                page.screenshot(path=str(blocked_screenshot), full_page=True)
+                receipt["screenshots"].append(str(blocked_screenshot))
                 # Error responses are visible and do not optimistically alter the saved policy.
                 page.route("**/api/policy", lambda route: route.fulfill(status=409, content_type="application/json", body=json.dumps({"error": "Fixture policy rejected"})))
                 page.locator('[data-mode="spend-first"]').click()
                 page.get_by_text("Fixture policy rejected", exact=True).wait_for()
                 assert page.locator('[data-mode="balanced"]').get_attribute("aria-pressed") == "true"
                 assert not errors, errors
-                receipt["checks"].append({"viewport": name, "overflow": False, "policy_refresh_selection": "passed", "automatic_selection": "passed", "unknown_exhausted": "passed", "invalid_measurements": "passed", "xss_long_rtl": "passed", "failed_run": "passed", "newest_receipts_first": "passed", "api_error": "passed"})
+                receipt["checks"].append({"viewport": name, "overflow": False, "policy_refresh_selection": "passed", "automatic_selection": "passed", "unknown_exhausted": "passed", "invalid_measurements": "passed", "xss_long_rtl": "passed", "failed_run": "passed", "newest_receipts_first": "passed", "api_error": "passed", "legacy_auth_gates": "passed"})
                 context.close()
         finally:
             browser.close()
