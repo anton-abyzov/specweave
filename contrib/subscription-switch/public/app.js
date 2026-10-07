@@ -168,7 +168,8 @@ function renderRuns() {
     list.append(empty); return;
   }
   const labels = { running: 'Running', success: 'Succeeded', failed: 'Failed', 'quota-exhausted': 'Quota exhausted', 'timed-out': 'Timed out' };
-  for (const run of runs.slice().reverse().slice(0, 20)) {
+  // The backend returns its newest 30 receipts first.
+  for (const run of runs.slice(0, 20)) {
     const row = element('article', 'run-row');
     const info = element('div'); info.append(element('h3', '', text(run.accountId, 'Account unknown')), element('p', 'run-summary', `${text(run.provider, 'Provider unknown')} · ${text(run.model, 'Model not recorded')}`));
     const status = element('p', 'run-status', labels[run.status] || 'Outcome unknown');

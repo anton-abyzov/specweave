@@ -159,13 +159,22 @@ try:
                 assert "Quota exhausted" in page.locator("#run-list").inner_text()
                 assert "Succeeded" not in page.locator("#run-list").inner_text()
                 assert_no_overflow(page)
+                # Match publicState's actual newest-first, 30-receipt payload.
+                current["runs"] = [{"id": f"receipt-{i:02d}", "accountId": "codex-1", "provider": "codex", "status": "failed", "cwd": "/fixture/workspace", "startedAt": "2026-10-07T04:00:00Z", "endedAt": "2026-10-07T04:01:00Z", "exitCode": 1, "model": None} for i in range(30, 0, -1)]
+                page.get_by_role("button", name="Refresh accounts", exact=True).click()
+                page.get_by_text("30 recorded", exact=True).wait_for()
+                assert page.locator(".run-row").count() == 20
+                assert "receipt-30" in page.locator(".run-row").first.inner_text()
+                assert "receipt-11" in page.locator(".run-row").last.inner_text()
+                assert "receipt-10" not in page.locator("#run-list").inner_text()
+                assert_no_overflow(page)
                 # Error responses are visible and do not optimistically alter the saved policy.
                 page.route("**/api/policy", lambda route: route.fulfill(status=409, content_type="application/json", body=json.dumps({"error": "Fixture policy rejected"})))
                 page.locator('[data-mode="spend-first"]').click()
                 page.get_by_text("Fixture policy rejected", exact=True).wait_for()
                 assert page.locator('[data-mode="balanced"]').get_attribute("aria-pressed") == "true"
                 assert not errors, errors
-                receipt["checks"].append({"viewport": name, "overflow": False, "policy_refresh_selection": "passed", "unknown_exhausted": "passed", "xss_long_rtl": "passed", "failed_run": "passed", "api_error": "passed"})
+                receipt["checks"].append({"viewport": name, "overflow": False, "policy_refresh_selection": "passed", "unknown_exhausted": "passed", "xss_long_rtl": "passed", "failed_run": "passed", "newest_receipts_first": "passed", "api_error": "passed"})
                 context.close()
         finally:
             browser.close()
