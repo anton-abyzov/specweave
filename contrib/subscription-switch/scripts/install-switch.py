@@ -70,6 +70,8 @@ if args.service:
               'RunAtLoad': True, 'KeepAlive': True, 'WorkingDirectory': str(release),
               'EnvironmentVariables': {'PATH': str(node.parent) + ':/usr/bin:/bin:/usr/sbin:/sbin', 'PWDEBUG': '0', 'PLAYWRIGHT_HTML_OPEN': 'never'},
               'StandardOutPath': str(logs / 'stdout.log'), 'StandardErrorPath': str(logs / 'stderr.log')}
+    if domain.startswith('user/'):
+        config['LimitLoadToSessionType'] = ['Background']
     with agent.open('wb') as handle:
         plistlib.dump(config, handle)
     agent.chmod(0o600)
