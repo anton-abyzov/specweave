@@ -135,10 +135,17 @@ try:
                 page.locator('[data-mode="balanced"][aria-pressed="true"]').wait_for()
                 page.locator('[data-select="codex-1"]').click()
                 page.locator('[data-select="codex-1"][aria-pressed="true"]').wait_for()
+                page.get_by_text("Pinned profile: Codex 1", exact=True).wait_for()
+                page.get_by_role("button", name="Return to automatic", exact=True).click()
+                page.get_by_text("Automatic account selection restored.", exact=True).wait_for()
+                assert page.locator('[data-select="codex-1"]').get_attribute("aria-pressed") == "false"
+                assert page.get_by_role("button", name="Return to automatic", exact=True).is_disabled()
+                page.get_by_text("Automatic account selection", exact=True).wait_for()
                 page.get_by_role("button", name="Refresh accounts", exact=True).click()
                 page.get_by_text("Native account observations refreshed. Unavailable usage remains unknown.", exact=True).wait_for()
                 assert any(r["path"] == "/api/refresh" and r["body"] == {} for r in requests)
                 assert any(r["path"] == "/api/select" and r["body"] == {"id": "codex-1"} for r in requests)
+                assert any(r["path"] == "/api/select" and r["body"] == {"id": None} for r in requests)
                 assert {r["body"]["mode"] for r in requests if r["path"] == "/api/policy"} == {"balanced", "reset-first", "spend-first"}
                 assert_no_overflow(page)
                 assert not errors, errors
@@ -152,6 +159,12 @@ try:
                 assert page.locator(".account-card img, .account-card script, #recommendations script").count() == 0
                 assert page.evaluate("window.__xss") is None
                 assert_no_overflow(page)
+                # Invalid measurements remain unknown rather than clamped capacity.
+                current["accounts"][0]["quota"]["window"]["usedPercent"] = -1
+                current["accounts"][0]["quota"]["weekly"]["usedPercent"] = 150
+                page.get_by_role("button", name="Refresh accounts", exact=True).click()
+                page.locator('[data-account-id="codex-1"]').get_by_text("Unknown", exact=True).first.wait_for()
+                assert page.locator('[data-account-id="codex-1"]').get_by_text("Unknown", exact=True).count() == 2
                 # Failed and quota-limited runs never look successful.
                 current["runs"] = [{"id": "fixture-quota", "accountId": "claude-1", "provider": "claude", "status": "quota-exhausted", "cwd": "/fixture/workspace", "startedAt": "2026-10-07T04:00:00Z", "endedAt": "2026-10-07T04:01:00Z", "exitCode": 1, "model": None}]
                 page.get_by_role("button", name="Refresh accounts", exact=True).click()
@@ -174,7 +187,7 @@ try:
                 page.get_by_text("Fixture policy rejected", exact=True).wait_for()
                 assert page.locator('[data-mode="balanced"]').get_attribute("aria-pressed") == "true"
                 assert not errors, errors
-                receipt["checks"].append({"viewport": name, "overflow": False, "policy_refresh_selection": "passed", "unknown_exhausted": "passed", "xss_long_rtl": "passed", "failed_run": "passed", "newest_receipts_first": "passed", "api_error": "passed"})
+                receipt["checks"].append({"viewport": name, "overflow": False, "policy_refresh_selection": "passed", "automatic_selection": "passed", "unknown_exhausted": "passed", "invalid_measurements": "passed", "xss_long_rtl": "passed", "failed_run": "passed", "newest_receipts_first": "passed", "api_error": "passed"})
                 context.close()
         finally:
             browser.close()

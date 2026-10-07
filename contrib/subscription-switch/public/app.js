@@ -51,8 +51,8 @@ function statusLabel(account) {
 function quotaBlock(title, window) {
   const block = element('div', 'quota-block');
   block.append(element('p', 'quota-heading', title));
-  const used = typeof window?.usedPercent === 'number' && Number.isFinite(window.usedPercent)
-    ? Math.min(100, Math.max(0, window.usedPercent)) : null;
+  const used = typeof window?.usedPercent === 'number' && Number.isFinite(window.usedPercent) && window.usedPercent >= 0 && window.usedPercent <= 100
+    ? window.usedPercent : null;
   if (used === null) {
     block.append(element('p', 'quota-amount unknown', 'Unknown'));
     const meter = element('div', 'meter'); meter.setAttribute('aria-hidden', 'true'); block.append(meter);
@@ -123,6 +123,10 @@ function renderPolicy() {
   for (const button of document.querySelectorAll('[data-mode]')) {
     button.setAttribute('aria-pressed', String(state.policy?.mode === button.dataset.mode)); button.disabled = pending;
   }
+  const selected = state.policy?.selectedAccount;
+  const selectedProfile = asArray(state.accounts).find((account) => account.id === selected);
+  $('#selection-state').textContent = typeof selected === 'string' ? `Pinned profile: ${text(selectedProfile?.label, selected)}` : state.policy ? 'Automatic account selection' : 'Selection has not been observed.';
+  $('#automatic-selection').disabled = pending || typeof selected !== 'string';
   const list = $('#recommendations'); list.replaceChildren();
   const recommendations = asArray(state.recommendations);
   if (!recommendations.length) list.append(element('p', 'muted', 'Recommendations are unknown.'));
@@ -208,6 +212,7 @@ try { storedTheme = localStorage.getItem('specweave-switch-theme'); } catch { /*
 setTheme(storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 $('#theme-toggle').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
 $('#refresh').addEventListener('click', () => mutate('/api/refresh', {}, 'Native account observations refreshed. Unavailable usage remains unknown.'));
+$('#automatic-selection').addEventListener('click', () => mutate('/api/select', { id: null }, 'Automatic account selection restored.'));
 for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => mutate('/api/policy', { mode: button.dataset.mode }, `${button.querySelector('.policy-name').firstChild.textContent.trim()} policy saved.`));
 render();
 request('/api/state').then((result) => { state = result; $('#state-time').textContent = `State loaded ${dateFormatter.format(new Date())}`; render(); }).catch((error) => { notice(error.message, 'error'); $('#account-list').setAttribute('aria-busy', 'false'); });
