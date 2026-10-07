@@ -54,7 +54,15 @@ command=sys.argv[1]
 if command=='print':
  if '/' not in sys.argv[2].split('/',1)[1]:
   sys.exit(1 if os.environ.get('FAKE_NO_DOMAIN')=='1' else 0)
- if not state.exists(): sys.exit(1)
+ teardown=root/'teardown.pending'
+ if teardown.exists():
+  remaining=int(teardown.read_text())-1
+  if remaining<=0:
+   teardown.unlink()
+   if state.exists(): state.unlink()
+  else: teardown.write_text(str(remaining))
+ if not state.exists():
+  print('Could not find service "com.specweave.switch"', file=sys.stderr); sys.exit(113)
  data=json.loads(state.read_text())
  print('path = '+data['path'])
  print('program = '+data['args'][0])
@@ -64,9 +72,12 @@ if command=='print':
  sys.exit(0)
 if command=='bootout':
  if os.environ.get('FAKE_BOOTOUT_FAIL')=='1': sys.exit(1)
- if state.exists(): state.unlink()
+ if os.environ.get('FAKE_TEARDOWN_POLLS'):
+  (root/'teardown.pending').write_text(os.environ['FAKE_TEARDOWN_POLLS'])
+ elif state.exists(): state.unlink()
  sys.exit(0)
 if command=='bootstrap':
+ if state.exists(): sys.exit(5)
  marker=root/'bootstrap.failed'
  if os.environ.get('FAKE_BOOTSTRAP_FAIL')=='1' and not marker.exists():
   marker.touch(); sys.exit(1)
@@ -180,6 +191,27 @@ sys.exit(1)
         self.assertEqual(json.loads(self.active.read_text()),json.loads(self.old_active))
         self.assertFalse(any(call[0]=='bootstrap' for call in self.calls()))
 
+    def test_asynchronous_teardown_waits_before_replacement(self):
+        result=self.run_install(FAKE_TEARDOWN_POLLS='4')
+        self.assertEqual(result.returncode,0,result.stderr)
+        calls=self.calls()
+        stop=next(i for i,call in enumerate(calls) if call[0]=='bootout')
+        start=next(i for i,call in enumerate(calls) if call[0]=='bootstrap')
+        self.assertGreaterEqual(sum(call[0]=='print' for call in calls[stop+1:start]),4)
+        self.assertEqual(sum(call[0]=='bootstrap' for call in calls),1)
+        self.assertFalse((self.scratch/'teardown.pending').exists())
+
+    def test_wait_is_bounded_and_rejects_unknown_errors(self):
+        printed='path = '+str(self.agent)+'\nprogram = '+str(self.node)+'\narguments = {\n'+'\n'.join(json.loads(self.old_active)['args'])+'\n}\n'
+        result=subprocess.CompletedProcess(['launchctl'],0,printed,'')
+        with mock.patch.object(installer,'launchctl',return_value=result):
+            with self.assertRaisesRegex(ValueError,'Timed out'):
+                installer.wait_unloaded(self.domain,self.agent,self.node,self.old_release,timeout=0.02,poll=0.001)
+        unknown=subprocess.CompletedProcess(['launchctl'],1,'','Permission denied')
+        with mock.patch.object(installer,'launchctl',return_value=unknown):
+            with self.assertRaisesRegex(ValueError,'absence is unverified'):
+                installer.wait_unloaded(self.domain,self.agent,self.node,self.old_release)
+
     def test_receipt_failure_after_bootstrap_rolls_back(self):
         module=load('receipt_failure_installer',self.script)
         original=module.atomic_bytes
@@ -190,7 +222,7 @@ sys.exit(1)
                 raise OSError('synthetic receipt write failure')
             return original(path,data,mode)
         args=type('Args',(),dict(node=str(self.node),update=True,service=True,domain=None))()
-        with mock.patch.dict(os.environ,self.env),mock.patch.object(module.pathlib.Path,'home',return_value=self.home),mock.patch.object(module,'atomic_bytes',side_effect=fail_once):
+        with mock.patch.dict(os.environ,dict(self.env,FAKE_TEARDOWN_POLLS='3')),mock.patch.object(module.pathlib.Path,'home',return_value=self.home),mock.patch.object(module,'atomic_bytes',side_effect=fail_once):
             with self.assertRaisesRegex(OSError,'synthetic receipt'):
                 module.install(args)
         self.assert_preserved()

@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 
 LABEL = 'com.specweave.switch'
 
@@ -68,10 +69,14 @@ def launchctl(*args, check=False):
     return subprocess.run(['launchctl'] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=15, check=check)
 
 
-def loaded_identity(domain, agent, node, release, allow_absent=False):
-    result = launchctl('print', domain + '/' + LABEL)
+def absent_service(result):
+    return result.returncode != 0 and 'Could not find service' in result.stderr
+
+
+def loaded_identity(domain, agent, node, release, allow_absent=False, result=None):
+    result = result if result is not None else launchctl('print', domain + '/' + LABEL)
     if result.returncode:
-        require(allow_absent, 'Prior companion service is not loaded in its recorded domain')
+        require(allow_absent and absent_service(result), 'Service absence is unverified in its recorded domain')
         return False
     fields = {}
     arguments = []
@@ -91,6 +96,21 @@ def loaded_identity(domain, agent, node, release, allow_absent=False):
             fields[match.group(1)] = match.group(2).strip()
     require(fields.get('path') == str(agent) and fields.get('program') == str(node) and arguments == [str(node), str(release / 'bin/specweave-switch.mjs'), 'serve', '--port', '8318'], 'Loaded service identity differs; preserve it for review')
     return True
+
+
+def wait_unloaded(domain, agent, node, release, timeout=10, poll=0.1):
+    """bootout can acknowledge before launchd finishes removing the job."""
+    deadline = time.monotonic() + timeout
+    while True:
+        result = launchctl('print', domain + '/' + LABEL)
+        if absent_service(result):
+            return
+        # Never treat permission/connection failures, or a different job with
+        # this label, as permission to replace a service.
+        loaded_identity(domain, agent, node, release, result=result)
+        remaining = deadline - time.monotonic()
+        require(remaining > 0, 'Timed out waiting for verified service teardown')
+        time.sleep(min(poll, remaining))
 
 
 def atomic_bytes(path, data, mode):
@@ -157,7 +177,7 @@ def install(args):
         domain = next((kind + '/' + str(os.getuid()) for kind in candidates if launchctl('print', kind + '/' + str(os.getuid())).returncode == 0), None)
         require(domain is not None, 'No requested launchd domain is available')
         if not previous:
-            require(launchctl('print', domain + '/' + LABEL).returncode != 0, 'Existing loaded companion service preserved for review')
+            require(absent_service(launchctl('print', domain + '/' + LABEL)), 'Service absence unverified; preserve any loaded service for review')
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
     owned_directory(root)
     lock = root / '.install.lock'
@@ -221,6 +241,7 @@ def install(args):
                 atomic_bytes(backup / 'service.plist', old_agent, 0o600)
         receipt = {'bundleSha256': bundle_hash, 'release': str(release), 'launcher': str(wrapper), 'node': str(node), 'serviceInstalled': args.service, 'serviceDomain': domain}
         stopped = False
+        old_teardown_accepted = False
         new_service_attempted = False
         launcher_changed = False
         agent_changed = False
@@ -230,6 +251,8 @@ def install(args):
                 loaded_identity(domain, agent, old_node, old_release)
                 stopped = True
                 launchctl('bootout', domain + '/' + LABEL, check=True)
+                old_teardown_accepted = True
+                wait_unloaded(domain, agent, old_node, old_release)
             atomic_bytes(wrapper, new_wrapper, 0o755)
             launcher_changed = True
             if args.service:
@@ -245,6 +268,7 @@ def install(args):
             try:
                 if new_service_attempted and loaded_identity(domain, agent, node, release, allow_absent=True):
                     launchctl('bootout', domain + '/' + LABEL, check=True)
+                    wait_unloaded(domain, agent, node, release)
                 if launcher_changed:
                     if previous:
                         atomic_bytes(wrapper, old_wrapper, 0o755)
@@ -260,9 +284,12 @@ def install(args):
                     atomic_bytes(receipt_file, old_receipt, 0o600)
                 elif receipt_changed:
                     receipt_file.unlink()
-                if stopped and not loaded_identity(domain, agent, old_node, old_release, allow_absent=True):
-                    launchctl('bootstrap', domain, str(agent), check=True)
-                    loaded_identity(domain, agent, old_node, old_release)
+                if stopped:
+                    if old_teardown_accepted:
+                        wait_unloaded(domain, agent, old_node, old_release)
+                    if not loaded_identity(domain, agent, old_node, old_release, allow_absent=True):
+                        launchctl('bootstrap', domain, str(agent), check=True)
+                        loaded_identity(domain, agent, old_node, old_release)
             except BaseException as rollback_failure:
                 rollback_errors.append(str(rollback_failure))
             if rollback_errors:
