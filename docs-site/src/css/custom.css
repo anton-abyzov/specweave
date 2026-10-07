@@ -376,6 +376,15 @@ div[class*="announcementBar"] {
   --ifm-color-primary-lighter: #7e9364;
   --ifm-color-primary-lightest: #94a97c;
 }
+:root[data-theme='dark'] {
+  --ifm-color-primary: #b8c99e;
+  --ifm-color-primary-dark: #a8bb89;
+  --ifm-color-primary-darker: #9db17b;
+  --ifm-color-primary-darkest: #94a97c;
+  --ifm-color-primary-light: #c8d6b2;
+  --ifm-color-primary-lighter: #d5dfc5;
+  --ifm-color-primary-lightest: #e4ebd9;
+}
 .navbar { background: #f6f4ee; color: #252820; box-shadow: none; border-bottom: 1px solid #d9dcd0; padding-inline: 3rem; }
 .navbar__link { color: #535a49; font-size: 13px; font-weight: 500; }
 .navbar__title { font-size: 20px; font-weight: 500; letter-spacing: -.04em; }
