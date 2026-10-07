@@ -10,7 +10,10 @@ const defaultPublic = fileURLToPath(new URL('../public/', import.meta.url));
 function fail(status, message) { return Object.assign(new Error(message), { status }); }
 function guarded(req, port, mutation = false) {
   const host = req.headers.host;
-  if (![`127.0.0.1:${port}`, `localhost:${port}`].includes(host)) throw fail(403, 'Invalid loopback Host');
+  // Dedicated pinned SSH dashboard tunnels use these two M4 loopback ports.
+  // Keep an explicit host list; mutations still require this exact Host origin.
+  const allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`, '127.0.0.1:18318', '127.0.0.1:28318'];
+  if (!allowedHosts.includes(host)) throw fail(403, 'Invalid loopback Host');
   if (mutation && (req.headers.origin !== `http://${host}` || !/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || ''))) throw fail(403, 'Mutation requires same-origin JSON');
 }
 async function body(req) {
