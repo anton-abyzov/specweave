@@ -4,10 +4,13 @@ set -euo pipefail
 role="${1:-}"
 case "$role" in m1|m3) ;; *) echo 'Usage: worker-bootstrap.sh m1|m3' >&2; exit 2;; esac
 [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || { echo 'Apple Silicon macOS required' >&2; exit 2; }
+expected_host='Antons-MacBook-Pro'
+expected_user='antonabyzov'
+if [ "$role" = m1 ]; then expected_host='Antons-MacBook-Pro-M1MAX-2'; expected_user='anton'; fi
+[ "$(scutil --get LocalHostName)" = "$expected_host" ] && [ "$(id -un)" = "$expected_user" ] || { echo 'Worker identity does not match its verified native user; preserve this host' >&2; exit 2; }
 command -v node >/dev/null && command -v npm >/dev/null || { echo 'Install Node 22 first' >&2; exit 2; }
 [ "$(node -p 'process.versions.node.split(".")[0]')" = 22 ] || { echo 'Node 22 required' >&2; exit 2; }
 node_binary="$(command -v node)"
-node_directory="$(dirname "$node_binary")"
 # Source bundle must be uploaded by the authorized main host; do not fetch unverified code.
 source_dir="$(cd "$(dirname "$0")/.." && pwd)"
 install_dir="$HOME/.local/share/specweave/subscription-switch"
@@ -33,14 +36,8 @@ else
 fi
 "$provider_dir/node_modules/.bin/codex" --version
 "$provider_dir/node_modules/.bin/claude" --version
-mkdir -p "$install_dir"
-cp -R "$source_dir/." "$install_dir/"
-cat > "$HOME/.local/bin/specweave-switch" <<EOF
-#!/bin/bash
-export PATH="$node_directory:\$PATH"
-exec "$node_binary" "$install_dir/bin/specweave-switch.mjs" "\$@"
-EOF
-chmod 755 "$HOME/.local/bin/specweave-switch"
-"$HOME/.local/bin/specweave-switch" init
+# Use the same immutable bundle, receipt and launchd identity checks as local
+# installs. Future reviewed updates use install-switch.py --service --update.
+/usr/bin/python3 "$source_dir/scripts/install-switch.py" --node "$node_binary" --service
 "$HOME/.local/bin/specweave-switch" doctor
 printf 'Worker %s bootstrapped as %s on %s. Native sign-ins and pairing must be verified separately.\n' "$role" "$(id -un)" "$(scutil --get LocalHostName)"
