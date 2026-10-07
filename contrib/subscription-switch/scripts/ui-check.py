@@ -168,11 +168,15 @@ try:
                 page.locator('[data-account-id="codex-1"]').get_by_text("Unknown", exact=True).first.wait_for()
                 assert page.locator('[data-account-id="codex-1"]').get_by_text("Unknown", exact=True).count() == 2
                 # Failed and quota-limited runs never look successful.
-                current["runs"] = [{"id": "fixture-quota", "accountId": "claude-1", "provider": "claude", "status": "quota-exhausted", "cwd": "/fixture/workspace", "startedAt": "2026-10-07T04:00:00Z", "endedAt": "2026-10-07T04:01:00Z", "exitCode": 1, "model": None}]
+                native_error = 'Weekly usage limit reached. Resets Oct 8 at 10pm America/New_York. <script>window.__xss=1</script>'
+                current["runs"] = [{"id": "fixture-quota", "accountId": "claude-1", "provider": "claude", "status": "quota-exhausted", "cwd": "/fixture/workspace", "startedAt": "2026-10-07T04:00:00Z", "endedAt": "2026-10-07T04:01:00Z", "exitCode": 1, "model": None, "error": native_error}]
                 page.get_by_role("button", name="Refresh accounts", exact=True).click()
                 page.get_by_text("1 recorded", exact=True).wait_for()
                 assert "Quota exhausted" in page.locator("#run-list").inner_text()
                 assert "Succeeded" not in page.locator("#run-list").inner_text()
+                page.get_by_text(native_error, exact=True).wait_for()
+                assert page.locator("#run-list script").count() == 0
+                assert page.evaluate("window.__xss") is None
                 assert_no_overflow(page)
                 # Match publicState's actual newest-first, 30-receipt payload.
                 current["runs"] = [{"id": f"receipt-{i:02d}", "accountId": "codex-1", "provider": "codex", "status": "failed", "cwd": "/fixture/workspace", "startedAt": "2026-10-07T04:00:00Z", "endedAt": "2026-10-07T04:01:00Z", "exitCode": 1, "model": None} for i in range(30, 0, -1)]

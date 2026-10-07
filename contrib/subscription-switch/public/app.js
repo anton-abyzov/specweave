@@ -183,6 +183,7 @@ function renderRuns() {
     const end = resetDate(run.endedAt), start = resetDate(run.startedAt);
     details.textContent = `${text(run.id, 'Run ID unknown')} · ${end ? `Ended ${end}` : start ? `Started ${start}` : 'Time unknown'}${Number.isInteger(run.exitCode) ? ` · Exit ${run.exitCode}` : ''}\n${text(run.cwd, 'Workspace unknown')}`;
     row.append(details); list.append(row);
+    if (typeof run.error === 'string' && run.error.trim()) row.append(element('p', 'run-error', run.error));
   }
 }
 function render() { renderAccounts(); renderPolicy(); renderHosts(); renderServices(); renderRuns(); $('#refresh').disabled = pending; }
