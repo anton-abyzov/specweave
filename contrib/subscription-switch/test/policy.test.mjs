@@ -4,7 +4,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fixture, quota } from './helpers.mjs';
 import { readState, initState, profiles } from '../lib/state.mjs';
-import { accountStatus, recommend, setPolicy, validateQuota } from '../lib/policy.mjs';
+import { accountStatus, recommend, setPolicy, validateQuota, selectAccount } from '../lib/policy.mjs';
 test('init creates seven distinct nonsecret slots and preserves native auth/config', async t => {
   const f = await fixture(t); const native = join(f.home, '.codex'); await mkdir(native); await writeFile(join(native, 'config.toml'), 'keep-current-config');
   const state = await initState(f.root, f.home);
@@ -36,4 +36,14 @@ test('three deterministic policies and provider preference choose different elig
   setPolicy(state, { mode: 'spend-first', preferredProvider: 'codex' }); assert.equal(recommend(state).id, 'soon');
   assert.throws(() => setPolicy(state, { mode: 'arbitrary' }), /Invalid policy/);
   assert.throws(() => validateQuota({ ...quota(), window: { usedPercent: -1, resetsAt: 123 } }), /percentage/);
+});
+test('explicit selection can return to automatic; corrupt/error/stale quota never becomes eligible', () => {
+  const now = Date.now(), a = { id: 'a', provider: 'codex', authenticated: true, quota: quota({ used: 90, weekly: 90 }) }, b = { id: 'b', provider: 'codex', authenticated: true, quota: quota({ used: 10, weekly: 10 }) };
+  const state = { policy: { mode: 'balanced' }, runs: [], accounts: [a, b] };
+  selectAccount(state, { id: 'a' }); assert.equal(recommend(state).id, 'a'); selectAccount(state, { id: null }); assert.equal(recommend(state).id, 'b');
+  a.lastQuotaErrorAt = new Date(now + 1).toISOString(); assert.equal(accountStatus(a), 'exhausted');
+  a.quota = quota({ now: now + 2, used: -1 }); assert.equal(accountStatus(a), 'stale');
+  a.quota = quota({ now: now - 20 * 60000 }); assert.equal(accountStatus(a), 'exhausted');
+  a.lastQuotaErrorAt = 'invalid'; a.quota = quota(); assert.equal(accountStatus(a), 'stale');
+  b.authKind = 'api_key'; assert.equal(accountStatus(b), 'auth-required'); assert.equal(recommend(state).id, null);
 });

@@ -50,3 +50,21 @@ test('explicit Claude file-write run uses ordinary permissions and passes mandat
   await assert.rejects(run(f.root, { cwd: f.repo, prompt: 'edit file', accountId: 'claude-1', sandbox: 'workspace-write', failover: true }), /read-only/);
   assert.match(managedPrompt('task', 'read-only'), /headless=True/); assert.match(managedPrompt('task', 'read-only'), /PWDEBUG=0/);
 });
+test('authoritative quota failure excludes profile across groups until newer valid observation', async t => {
+  const f = await fixture(t), binary = await fakeBinary(f.base, 'quota-persisted', `console.log(JSON.stringify({type:'turn.failed',error:{message:'usage_limit_reached'}}));process.exitCode=1;`);
+  await authed(f.root, 'codex-1', binary);
+  const first = await run(f.root, { cwd: f.repo, prompt: 'read', accountId: 'codex-1' }); assert.equal(first.status, 'quota-exhausted');
+  await assert.rejects(run(f.root, { cwd: f.repo, prompt: 'read', accountId: 'codex-1' }), /No eligible/);
+  const state = await readState(f.root), failedAt = Date.parse(state.accounts[0].lastQuotaErrorAt);
+  const success = await fakeBinary(f.base, 'reobserved', `console.log(JSON.stringify({type:'turn.completed'}));`);
+  await authed(f.root, 'codex-1', success, quota({ now: failedAt + 1 }));
+  const next = await run(f.root, { cwd: f.repo, prompt: 'read', accountId: 'codex-1' }); assert.equal(next.status, 'success');
+});
+test('real-shaped Codex NDJSON nested strings and secret fields are redacted in receipts', async t => {
+  const f = await fixture(t);
+  const binary = await fakeBinary(f.base, 'nested-output', `console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'A document: '+JSON.stringify({refresh_token:'SyntheticNestedReceipt12345',api_key:'SyntheticNestedAPI12345'})},secret:'SyntheticStructuredSecret12345'}));console.log(JSON.stringify({type:'turn.completed'}));`);
+  await authed(f.root, 'codex-1', binary);
+  const result = await run(f.root, { cwd: f.repo, prompt: 'read', accountId: 'codex-1' }); assert.equal(result.status, 'success');
+  const receipt = await readFile(join(f.root, 'runs', result.attempts[0].id + '.json'), 'utf8');
+  assert.ok(!receipt.includes('SyntheticNested')); assert.ok(!receipt.includes('SyntheticStructured')); assert.ok(receipt.includes('[REDACTED]'));
+});

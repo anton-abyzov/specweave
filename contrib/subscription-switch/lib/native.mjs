@@ -9,8 +9,12 @@ export function nativeEnv(account) {
   // Inherited API/proxy auth must not silently charge API usage instead of the
   // selected native subscription. Do not replace HOME or copy credential data.
   for (const key of ['OPENAI_API_KEY', 'OPENAI_ACCESS_TOKEN', 'CODEX_ACCESS_TOKEN', 'OPENAI_BASE_URL', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'ANTHROPIC_BASE_URL', 'CLAUDECODE']) delete env[key];
+  delete env.CLAUDE_CONFIG_DIR;
   if (account.provider === 'codex') env.CODEX_HOME = account.configDir;
-  else env.CLAUDE_CONFIG_DIR = account.configDir;
+  // Claude's native default keychain scope differs from an explicitly supplied
+  // ~/.claude config directory. Leave its native default genuinely unset.
+  // The ID fallback preserves already-created v0.1 companion state.
+  else if (!account.nativeDefault && account.id !== 'claude-1') env.CLAUDE_CONFIG_DIR = account.configDir;
   return env;
 }
 export async function inspectAuth(account) {
@@ -18,7 +22,12 @@ export async function inspectAuth(account) {
   const result = await execute(account.binary, args, { env: nativeEnv(account), timeoutMs: 12000, maxBytes: 128 * 1024 });
   if (result.error || result.timedOut) return { authenticated: null, authKind: null, authObservedAt: iso(), authError: result.error || 'native-auth-timeout' };
   if (account.provider === 'claude') {
-    try { const body = JSON.parse(result.stdout); return { authenticated: result.exitCode === 0 && body.loggedIn === true, authKind: body.authMethod || null, authObservedAt: iso(), authError: null }; }
+    try {
+      const body = JSON.parse(result.stdout), kind = String(body.authMethod || '').toLowerCase();
+      const consumerAuth = ['claude.ai', 'claude_ai', 'oauth', 'oauth_token', 'oauth-token'].includes(kind);
+      const knownApiAuth = ['api_key', 'api-key', 'apikey', 'bedrock', 'vertex', 'foundry'].includes(kind);
+      return { authenticated: result.exitCode === 0 && body.loggedIn === true && consumerAuth, authKind: consumerAuth || knownApiAuth ? kind : 'unknown', authObservedAt: iso(), authError: body.loggedIn === true && !consumerAuth ? 'subscription-auth-required' : null };
+    }
     catch { return { authenticated: false, authKind: null, authObservedAt: iso(), authError: 'native-auth-output-unrecognized' }; }
   }
   const text = result.stdout + result.stderr;
@@ -61,11 +70,21 @@ export function normalizeCodexQuota(result, now = Date.now()) {
   const byId = result?.rateLimitsByLimitId;
   const entries = byId && typeof byId === 'object' ? Object.values(byId) : [];
   const limits = byId?.codex || (entries.length === 1 ? entries[0] : null) || result?.rateLimits;
-  if (!limits) return null;
+  const ordinaryUsageAllowed = limits?.ordinaryUsageAllowed ?? result?.ordinaryUsageAllowed;
+  const spendControlReached = limits?.spendControlReached ?? result?.spendControlReached;
+  const denied = ordinaryUsageAllowed === false || spendControlReached === true;
+  if (!limits && !denied) return null;
   const normalize = w => w && Number.isFinite(w.usedPercent) && Number.isFinite(w.resetsAt) && w.usedPercent >= 0 && w.usedPercent <= 100 ? { usedPercent: w.usedPercent, resetsAt: w.resetsAt } : null;
-  const window = normalize(limits.primary), weekly = normalize(limits.secondary);
-  if (!window && !weekly) return null;
-  return { window, weekly, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'native-app-server' };
+  let window = null, weekly = null;
+  for (const [position, observed] of [['primary', limits?.primary], ['secondary', limits?.secondary]]) {
+    const w = normalize(observed); if (!w) continue;
+    const weeklyWindow = Number.isFinite(observed.windowDurationMins) ? observed.windowDurationMins >= 10080 : position === 'secondary';
+    if (weeklyWindow) { if (!weekly || w.usedPercent > weekly.usedPercent) weekly = w; }
+    else if (!window || w.usedPercent > window.usedPercent) window = w;
+  }
+  if (!window && !weekly && !denied) return null;
+  return { window, weekly, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'native-app-server',
+    ...(typeof ordinaryUsageAllowed === 'boolean' ? { ordinaryUsageAllowed } : {}), ...(typeof spendControlReached === 'boolean' ? { spendControlReached } : {}), ...(denied ? { denied: true } : {}) };
 }
 function serviceProbe(service) {
   return new Promise(resolve => {

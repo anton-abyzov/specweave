@@ -8,17 +8,23 @@ export function validateQuota(quota, now = Date.now()) {
     const q = quota[name]; if (q == null) continue;
     if (!Number.isFinite(q.usedPercent) || q.usedPercent < 0 || q.usedPercent > 100 || !Number.isFinite(q.resetsAt) || q.resetsAt <= 0) throw new Error('Invalid quota percentage or reset timestamp');
   }
-  if (!quota.window && !quota.weekly) throw new Error('Quota observation requires at least one observed window');
+  if (!quota.window && !quota.weekly && !(quota.denied === true && quota.source === 'native-app-server')) throw new Error('Quota observation requires an observed window or an authoritative native denial');
   return quota;
 }
 export function accountStatus(account, runs = [], now = Date.now()) {
   if (runs.some(r => r.accountId === account.id && r.status === 'running')) return 'active';
   if (account.authenticated !== true) return account.authenticated === false ? 'auth-required' : 'unknown';
+  if (['api_key', 'api-key', 'apikey', 'bedrock', 'vertex', 'foundry', 'unknown'].includes(account.authKind)) return 'auth-required';
   const q = account.quota;
-  if (account.lastQuotaErrorAt && (!q?.observedAt || Date.parse(q.observedAt) <= Date.parse(account.lastQuotaErrorAt))) return 'exhausted';
-  if (!q || (!q.window && !q.weekly)) return 'unknown';
+  if (account.lastQuotaErrorAt) {
+    const failedAt = Date.parse(account.lastQuotaErrorAt);
+    if (!Number.isFinite(failedAt)) return 'stale';
+    if (!q?.observedAt || Date.parse(q.observedAt) <= failedAt) return 'exhausted';
+  }
+  if (!q || (!q.window && !q.weekly && !q.denied)) return 'unknown';
   try { validateQuota(q, now); } catch { return 'stale'; }
   if (Date.parse(q.expiresAt) <= now || now - Date.parse(q.observedAt) > QUOTA_TTL_MS) return 'stale';
+  if (q.denied === true || q.ordinaryUsageAllowed === false || q.spendControlReached === true) return 'exhausted';
   // A passed reset does not prove quota replenishment. Require fresh native
   // readback rather than treating the prior observation as available capacity.
   if ([q.window, q.weekly].filter(Boolean).some(w => w.resetsAt * 1000 <= now)) return 'stale';
@@ -58,6 +64,6 @@ export function setPolicy(state, value) {
   if (value.preferredProvider !== undefined) state.policy.preferredProvider = value.preferredProvider;
 }
 export function selectAccount(state, value) {
-  if (!value || Object.keys(value).some(k => k !== 'id') || typeof value.id !== 'string' || !state.accounts.some(a => a.id === value.id)) throw new Error('Unknown profile');
+  if (!value || Object.keys(value).some(k => k !== 'id') || (value.id !== null && (typeof value.id !== 'string' || !state.accounts.some(a => a.id === value.id)))) throw new Error('Unknown profile');
   state.policy.selectedAccount = value.id;
 }

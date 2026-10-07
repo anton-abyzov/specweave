@@ -6,12 +6,31 @@ import { spawn } from 'node:child_process';
 export const iso = () => new Date().toISOString();
 export const id = () => randomUUID();
 export const hash = data => createHash('sha256').update(data).digest('hex');
-export const SECRET = /-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\b(?:sk-(?:ant-|proj-|or-v1-)?[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{12,})\b|\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password)["']?\s*[=:]\s*["']?[^\s"']{8,}|\bBearer\s+[A-Za-z0-9._~+/-]{12,}/i;
+export const SECRET = /-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\b(?:sk-(?:ant-|proj-|or-v1-)?[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{12,}|eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{8,})\b|\b(?:api[_-]?key|(?:access|refresh|auth)[_-]?token|client[_-]?secret|secret[_-]?key|secret|password|token)(?:\\*["'])?\s*[=:]\s*(?:\\*["'])?[^\s"'\\]{8,}|\bBearer\s+[A-Za-z0-9._~+/-]{12,}/i;
 export function redact(text) {
   return String(text).replace(/-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----[\s\S]*?-----END (?:[A-Z ]+ )?PRIVATE KEY-----/g, '[REDACTED PRIVATE KEY]')
-    .replace(/\b(?:sk-(?:ant-|proj-|or-v1-)?[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{12,})\b/g, '[REDACTED]')
-    .replace(/((?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password)["']?\s*[=:]\s*["']?)[^\s"',}]+/gi, '$1[REDACTED]')
+    .replace(/\b(?:sk-(?:ant-|proj-|or-v1-)?[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{12,}|eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{8,})\b/g, '[REDACTED]')
+    .replace(/((?:api[_-]?key|(?:access|refresh|auth)[_-]?token|client[_-]?secret|secret[_-]?key|secret|password|token)(?:\\*["'])?\s*[=:]\s*(?:\\*["'])?)[^\s"',}\\]+/gi, '$1[REDACTED]')
     .replace(/Bearer\s+[A-Za-z0-9._~+/-]{8,}/gi, 'Bearer [REDACTED]');
+}
+const sensitiveKey = /^(?:api[_-]?key|(?:access|refresh|auth)[_-]?token|client[_-]?secret|secret[_-]?key|secret|password|token)$/i;
+function redactValue(value, depth = 0) {
+  if (depth > 20) return '[REDACTED: nesting limit]';
+  if (typeof value === 'string') {
+    const cleaned = redact(value);
+    if (/^\s*[\[{]/.test(cleaned)) { try { return JSON.stringify(redactValue(JSON.parse(cleaned), depth + 1)); } catch {} }
+    return cleaned;
+  }
+  if (Array.isArray(value)) return value.map(v => redactValue(v, depth + 1));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sensitiveKey.test(k) ? '[REDACTED]' : redactValue(v, depth + 1)]));
+  return value;
+}
+// Parse real native NDJSON envelopes before sanitizing model text. Escaped JSON
+// inside item.text is not a plain credential assignment in the raw outer line.
+export function redactNativeOutput(text) {
+  return String(text).split('\n').map(line => {
+    try { return JSON.stringify(redactValue(JSON.parse(line))); } catch { return redact(line); }
+  }).join('\n');
 }
 export async function atomicJSON(file, value) {
   await mkdir(dirname(file), { recursive: true, mode: 0o700 });
@@ -44,7 +63,7 @@ export function execute(binary, args, { cwd, env = process.env, timeoutMs = 1500
     };
     child.stdout.on('data', append('stdout')); child.stderr.on('data', append('stderr'));
     child.on('error', e => { error = e.code || e.message; stderr += e.message; });
-    child.on('close', (code, signal) => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ exitCode: code, signal, stdout: redact(stdout), stderr: redact(stderr), timedOut, truncated, error }); });
+    child.on('close', (code, signal) => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ exitCode: code, signal, stdout: redactNativeOutput(stdout), stderr: redactNativeOutput(stderr), timedOut, truncated, error }); });
     child.stdin.on('error', () => {});
     child.stdin.end(input);
   });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFile, readFile, symlink, lstat, chmod } from 'node:fs/promises';
+import { writeFile, readFile, symlink, lstat, chmod, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fixture, patchManifest } from './helpers.mjs';
 import { checkpoint, restore, git, safePath } from '../lib/checkpoint.mjs';
@@ -37,6 +37,27 @@ test('restoration preserves executable permissions and supports explicitly stage
   assert.equal((await lstat(join(target, 'main.txt'))).mode & 0o777, 0o755);
   assert.equal((await lstat(join(target, 'new-script.sh'))).mode & 0o777, 0o755);
   assert.equal(await readFile(join(target, 'new-script.sh'), 'utf8'), '#!/bin/sh\nexit 0\n');
+});
+test('staged deletion restores without requiring an entry in the capture-time index', async t => {
+  const f = await fixture(t); await git(f.repo, ['rm', 'main.txt']);
+  const saved = await checkpoint(f.root, f.repo, ['main.txt']), target = join(f.base, 'deleted-file');
+  await restore(f.root, saved.id, target); await assert.rejects(lstat(join(target, 'main.txt')), { code: 'ENOENT' });
+  assert.match(await git(target, ['status', '--short']), / D main.txt/);
+});
+test('excluded sensitive dirty paths do not block allowlisted capture or leak into metadata', async t => {
+  const f = await fixture(t); await writeFile(join(f.repo, 'auth-view.txt'), 'baseline'); await git(f.repo, ['add', 'auth-view.txt']); await git(f.repo, ['commit', '-qm', 'tracked unrelated view']);
+  await writeFile(join(f.repo, 'auth-view.txt'), '{"refresh_token":"SyntheticExcludedCredential12345"}'); await writeFile(join(f.repo, 'main.txt'), 'captured safely\n');
+  const saved = await checkpoint(f.root, f.repo, ['main.txt']);
+  assert.deepEqual(saved.paths, ['main.txt']); assert.equal(saved.omittedDirtyCount, 1); assert.equal(saved.omittedSensitivePathCount, 1); assert.deepEqual(saved.omittedDirtyPaths, []);
+  const manifest = await readFile(saved.file, 'utf8'); assert.ok(!manifest.includes('auth-view')); assert.ok(!manifest.includes('SyntheticExcluded'));
+  const before = await readdir(join(f.root, 'checkpoints'));
+  await assert.rejects(checkpoint(f.root, f.repo, ['auth-view.txt']), /Sensitive/);
+  assert.deepEqual(await readdir(join(f.root, 'checkpoints')), before);
+});
+test('escaped native JSON credentials remain denied in tracked checkpoint content', async t => {
+  const f = await fixture(t), nested = JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: JSON.stringify({ refresh_token: 'SyntheticNestedCredential12345' }) } });
+  assert.equal(SECRET.test(nested), true); await writeFile(join(f.repo, 'main.txt'), nested);
+  await assert.rejects(checkpoint(f.root, f.repo, ['main.txt']), /Sensitive/);
 });
 test('restore rejects manifest hash, file hash, base mismatch and malicious allowlist before worktree creation', async t => {
   const f = await fixture(t); await writeFile(join(f.repo, 'main.txt'), 'dirty\n');

@@ -25,5 +25,6 @@ test('loopback API rejects cross-origin/Host/schema/oversize and never exposes a
   assert.equal((await send('/api/policy', { mode: 'balanced', large: 'x'.repeat(9000) })).status, 413);
   const policy = await (await send('/api/policy', { mode: 'spend-first' })).json(); assert.equal(policy.policy.mode, 'spend-first');
   const selected = await (await send('/api/select', { id: 'codex-2' })).json(); assert.equal(selected.policy.selectedAccount, 'codex-2'); assert.equal(selected.runs.length, 0);
+  const automatic = await (await send('/api/select', { id: null })).json(); assert.equal(automatic.policy.selectedAccount, null);
   assert.equal((await fetch(origin + '/leak.js')).status, 403); assert.equal((await fetch(origin + '/')).status, 200);
 });

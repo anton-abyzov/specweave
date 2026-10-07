@@ -15,7 +15,7 @@ init                       Create seven profile slots; preserve native auth/conf
 status                     Current profile, quota, host and run observations (JSON)
 refresh                    Native auth and supported Codex quota readback (JSON)
 policy MODE [--provider codex|claude|any]
-select ACCOUNT             Prefer this account for future runs; no task launch
+select ACCOUNT|automatic   Prefer this account or return to automatic routing
 recommend [--provider PROVIDER] [--account ID --allow-unknown]
 account login ID           Launch native interactive sign-in for this profile
 account observe ID --quota JSON
@@ -59,7 +59,7 @@ async function main(argv) {
   if (command === 'status') out(publicState(state));
   else if (command === 'refresh') out(publicState(await refresh(root)));
   else if (command === 'policy') out(publicState(await mutateState(root, s => setPolicy(s, { mode: p[0], ...(v.provider ? { preferredProvider: v.provider === 'any' ? null : v.provider } : {}) }))));
-  else if (command === 'select') out(publicState(await mutateState(root, s => selectAccount(s, { id: p[0] }))));
+  else if (command === 'select') out(publicState(await mutateState(root, s => selectAccount(s, { id: ['automatic', 'auto'].includes(p[0]) ? null : p[0] }))));
   else if (command === 'recommend') out(recommend(state, { provider: v.provider, accountId: v.account, allowUnknown: !!v['allow-unknown'] }));
   else if (command === 'account') {
     const account = state.accounts.find(a => a.id === p[1]); if (!account) throw new Error('Unknown profile');

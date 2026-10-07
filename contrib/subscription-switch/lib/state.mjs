@@ -10,6 +10,7 @@ export function profiles(home = homedir()) {
   return [['codex', 4], ['claude', 3]].flatMap(([provider, count]) => Array.from({ length: count }, (_, n) => ({
     id: `${provider}-${n + 1}`, provider, label: `${provider === 'codex' ? 'Codex' : 'Claude'} ${n + 1}`,
     configDir: n === 0 ? join(home, `.${provider}`) : join(base, `${provider}-${n + 1}`),
+    nativeDefault: n === 0,
     binary: findBinary(provider, home),
     authenticated: null, authObservedAt: null, authKind: null, quota: null,
   })));
@@ -28,9 +29,9 @@ export async function initState(root = stateRoot(), home = homedir()) {
     // opened, overwritten, or initialized by this companion.
     for (const a of accounts.filter(a => !a.id.endsWith('-1'))) await mkdir(a.configDir, { recursive: true, mode: 0o700 });
     const state = { version: 1, accounts, policy: { mode: 'balanced', preferredProvider: null, selectedAccount: null }, runs: [],
-      hosts: [{ id: 'local', label: 'Main Mac', hostname: hostname(), role: 'main', status: 'local', sshReachable: null, installed: true },
-        { id: 'm1', label: 'M1 Mac', hostname: '192.168.40.134', role: 'worker', status: 'auth-required', sshReachable: true, installed: false },
-        { id: 'm3', label: 'M3 Mac', hostname: '192.168.40.66', role: 'worker', status: 'auth-required', sshReachable: true, installed: false }],
+      hosts: [{ id: 'local', label: hostname(), hostname: hostname(), role: 'local', status: 'local', sshReachable: null, installed: true },
+        { id: 'm1', label: 'M1 Mac', hostname: '192.168.40.134', role: 'worker', status: 'unknown', sshReachable: null, installed: null },
+        { id: 'm3', label: 'M3 Mac', hostname: '192.168.40.66', role: 'worker', status: 'unknown', sshReachable: null, installed: null }],
       services: [{ id: 't3', label: 'T3 stable', port: 3773, status: 'unknown' }, { id: 't3-nightly', label: 'T3 nightly', port: 3774, status: 'unknown' }, { id: 'cli-proxy', label: 'CLIProxyAPI', port: 8317, status: 'unknown' }], };
     await atomicJSON(join(root, 'state.json'), state); return state;
   });
