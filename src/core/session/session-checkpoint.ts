@@ -156,7 +156,8 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
     // A worker can have finished between our initial receipt read and election.
     const latest = readSessionCheckpoint(input, opts);
     const latestAt = latest ? Date.parse(latest.savedAt) : NaN;
-    if (Number.isFinite(latestAt) && now >= latestAt && now - latestAt < CHECKPOINT_INTERVAL_MS) {
+    const afterLease = opts.now ?? Date.now();
+    if (Number.isFinite(latestAt) && afterLease >= latestAt && afterLease - latestAt < CHECKPOINT_INTERVAL_MS) {
       releaseLease(lock, token);
       return;
     }

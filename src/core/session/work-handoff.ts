@@ -168,6 +168,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   scrubDiffFileInPlace(diffPath, scrubbed.counts, isolatedCheckpoint);
 
   const docInput: HandoffDocInput = {
+    localCheckpoint: Boolean(opts.checkpointRoot),
     docPath,
     diffPath,
     repoRoot: isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot,

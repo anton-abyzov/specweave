@@ -43,8 +43,12 @@ if (args.some(a => ['push', 'fetch', 'ls-remote', 'clone', 'pull'].includes(a)))
   fs.writeFileSync(process.env.SW_CHECKPOINT_E2E_NETWORK, String(process.pid));
   setTimeout(() => process.exit(95), 30000);
 } else if (fs.existsSync(process.env.SW_CHECKPOINT_E2E_FAULT)) {
-  process.stderr.write('Injected local git failure\\n');
-  process.exit(91);
+  if (fs.readFileSync(process.env.SW_CHECKPOINT_E2E_FAULT, 'utf8').includes('stall')) {
+    setTimeout(() => process.exit(94), 30000);
+  } else {
+    process.stderr.write('Injected local git failure\\n');
+    process.exit(91);
+  }
 } else {
   const result = cp.spawnSync(process.env.SW_CHECKPOINT_E2E_REAL_GIT, args, { stdio: 'inherit' });
   process.exit(result.status ?? 92);
@@ -112,7 +116,7 @@ function pendingWorkers() {
   const root = path.join(fixtureHome, '.specweave/checkpoints');
   if (!fs.existsSync(root)) return [];
   return fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).flatMap(e =>
-    fs.readdirSync(path.join(root, e.name)).filter(name => name.endsWith('.lock')).map(name => path.join(root, e.name, name)));
+    fs.readdirSync(path.join(root, e.name)).filter(name => name.endsWith('.lock')).map(name => path.join(root, e.name, name)).filter(file => !fs.statSync(file).isDirectory() || fs.readdirSync(file).length > 0));
 }
 function receiptFor(cwd, sessionId) {
   return receipts().find(r => r.data.sessionId === sessionId && r.data.cwd === cwd);
@@ -234,6 +238,25 @@ try {
   verifyReceipt(refreshed);
   assert.ok(fs.existsSync(stale.data.docPath), 'previous generation retained for recovery');
   console.log('PASS failed refresh preserves snapshot and retries without consuming a once-only marker');
+
+  // A synchronous local Git stall must stay out of the hook's critical path.
+  const beforeStall = receiptFor(project, 'same-session');
+  beforeStall.data.savedAt = new Date(Date.now() - 10 * 60_000).toISOString();
+  json(beforeStall.file, beforeStall.data);
+  const stallBytes = fs.readFileSync(beforeStall.file, 'utf8');
+  const callsBeforeStall = fs.statSync(gitLog).size;
+  write(faultFile, 'stall local git only\n');
+  const stalledAt = performance.now();
+  await hook(project, 'same-session', { label: 'stalled local Git' });
+  await until(() => fs.statSync(gitLog).size > callsBeforeStall, 'stalled Git entered worker');
+  await until(() => !pendingWorkers().length, 'stalled worker deadline cleanup', 11000);
+  assert.ok(performance.now() - stalledAt < 11000, 'stalled worker exceeded its bounded cleanup time');
+  assert.equal(fs.readFileSync(beforeStall.file, 'utf8'), stallBytes, 'stalled capture replaced prior receipt');
+  fs.unlinkSync(faultFile);
+  await hook(project, 'same-session', { label: 'retry after local Git stall' });
+  await until(() => receiptFor(project, 'same-session')?.data.docPath !== beforeStall.data.docPath, 'retry after stalled Git');
+  await until(() => !pendingWorkers().length, 'post-stall worker cleanup');
+  console.log('PASS stalled local Git bounded outside hook with preserved recovery and retry');
 
   assertNoNetwork();
   assert.equal(fs.existsSync(path.join(fixtureHome, '.specweave/usage')), false, 'automatic saves must not create old quota markers');

@@ -137,6 +137,8 @@ describe('local session checkpoints', () => {
   it('rechecks the successful receipt after acquiring a lease', async () => {
     await capture();
     const expired = expireReceipt();
+    let clock = Date.now();
+    vi.spyOn(Date, 'now').mockImplementation(() => clock);
     const realWrite = fsDefault.writeFileSync;
     let publishedDuringElection = false;
     vi.spyOn(fsDefault, 'writeFileSync').mockImplementation((file, content, options) => {
@@ -144,13 +146,14 @@ describe('local session checkpoints', () => {
       if (String(file).includes(`${path.sep}pending.lock${path.sep}`) && !publishedDuringElection) {
         publishedDuringElection = true;
         const receipt = JSON.parse(expired.bytes);
-        receipt.savedAt = new Date().toISOString();
+        clock += 1000; // another worker completes after our pre-election reading
+        receipt.savedAt = new Date(clock).toISOString();
         realWrite(expired.file, JSON.stringify(receipt));
       }
       return result;
     });
     syncBuiltinESMExports();
-    expect(prepareSessionCheckpoint(input(), { home, now: Date.now() + 1000 })).toBeUndefined();
+    expect(prepareSessionCheckpoint(input(), { home })).toBeUndefined();
     expect(publishedDuringElection).toBe(true);
     expect(fs.existsSync(path.join(checkpointDirectory(input(), { home })!, 'pending.lock'))).toBe(false);
   });
