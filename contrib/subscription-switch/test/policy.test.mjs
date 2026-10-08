@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { fixture, quota } from './helpers.mjs';
 import { readState, initState, profiles } from '../lib/state.mjs';
 import { accountStatus, recommend, setPolicy, validateQuota, selectAccount } from '../lib/policy.mjs';
+import { normalizeCodexQuota } from '../lib/native.mjs';
 test('init creates seven distinct nonsecret slots and preserves native auth/config', async t => {
   const f = await fixture(t); const native = join(f.home, '.codex'); await mkdir(native); await writeFile(join(native, 'config.toml'), 'keep-current-config');
   const state = await initState(f.root, f.home);
@@ -99,4 +100,19 @@ test('reset-first uses the earliest real reset, spends ties first, and keeps exp
   setPolicy(state, { mode: 'reset-first', preferredProvider: 'claude' }); assert.equal(recommend(state, { now }).id, null);
   assert.equal(JSON.stringify(state.runs), before);
   assert.equal(state.runs[0].nativeThreadId, 'same-thread');
+});
+test('reset-first preserves both main windows of one kind before ranking accounts', () => {
+  const now = Date.now(), window = (usedPercent, delay, windowDurationMins = 300) => ({ usedPercent, resetsAt: now/1000+delay, windowDurationMins });
+  const first = normalizeCodexQuota({ rateLimitsByLimitId: { codex: { primary: window(90, 86400, 1440), secondary: window(10, 3600) } } }, now);
+  const second = normalizeCodexQuota({ rateLimitsByLimitId: { codex: { primary: window(20, 10800) }, model: { primary: window(20, 600, 15) } } }, now);
+  assert.equal(first.window.usedPercent, 90); assert.equal(first.windows.filter(w => w.appliesToSelection).length, 2);
+  const state = { policy: { mode: 'reset-first' }, runs: [], accounts: [
+    { id: 'first', provider: 'codex', authenticated: true, quota: first },
+    { id: 'second', provider: 'codex', authenticated: true, quota: second },
+  ] };
+  assert.equal(recommend(state, { now }).id, 'first');
+  assert.ok(recommend(state, { now }).reason.includes(new Date(now+3600000).toISOString()));
+  first.windows.find(w => w.id === 'codex:secondary').resetsAt = now/1000-1;
+  assert.equal(accountStatus(state.accounts[0], [], now), 'stale');
+  assert.equal(recommend(state, { now }).id, 'second');
 });

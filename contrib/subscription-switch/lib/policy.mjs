@@ -38,14 +38,18 @@ export function accountStatus(account, runs = [], now = Date.now()) {
   if (q.denied === true || q.ordinaryUsageAllowed === false || q.spendControlReached === true || (q.rateLimitReachedType && q.ordinaryUsageAllowed !== true)) return 'exhausted';
   // A passed reset does not prove quota replenishment. Require fresh native
   // readback rather than treating the prior observation as available capacity.
-  if ([q.window, q.weekly].filter(Boolean).some(w => w.resetsAt !== null && w.resetsAt * 1000 <= now)) return 'stale';
+  if (selectionWindows(q).some(w => w.resetsAt !== null && w.resetsAt * 1000 <= now)) return 'stale';
   if (q.source === 'native-app-server' && q.ordinaryUsageAllowed === true) return 'ready';
   if (!q.window && !q.weekly) return 'unknown';
-  if ([q.window, q.weekly].filter(Boolean).some(w => w.usedPercent >= 100)) return 'exhausted';
+  if (selectionWindows(q).some(w => w.usedPercent >= 100)) return 'exhausted';
   return 'ready';
 }
+function selectionWindows(quota) {
+  const main = quota?.windows?.filter(w => w.appliesToSelection === true) || [];
+  return main.length ? main : [quota?.window, quota?.weekly].filter(Boolean);
+}
 function score(account, mode) {
-  const windows = [account.quota?.window, account.quota?.weekly].filter(Boolean);
+  const windows = selectionWindows(account.quota);
   if (!windows.length) return Number.POSITIVE_INFINITY;
   const used = Math.max(...windows.map(w => w.usedPercent));
   const reset = Math.min(...windows.flatMap(w => Number.isFinite(w.resetsAt) && w.resetsAt > 0 && Number.isFinite(new Date(w.resetsAt * 1000).getTime()) ? [w.resetsAt] : []));
