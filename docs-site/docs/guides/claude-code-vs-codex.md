@@ -45,15 +45,17 @@ The fix is to keep the state of the work in the repository instead of in the cha
 
 It works the same way in the other direction, and between two accounts of the same tool. [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/) walks through it step by step, and [Claude Code usage limit reached](/docs/guides/claude-code-usage-limit/) covers your other options when a limit hits.
 
-## Hand off before the limit, automatically
+## Keep recovery checkpoints automatically
 
-On your own machine, SpecWeave can do this for you:
+On your own machine, enable silent local saves:
 
 ```bash
-specweave auto-handoff on          # hand off at 90% of the 5-hour or weekly window
+specweave auto-handoff on
 ```
 
-In Claude Code it reads the usage the status line reports. In Codex it reads the rate limits Codex writes to its session log. When usage crosses the threshold, the agent stops once, runs `specweave handoff`, and tells you to say "pick up" in the other tool. Cloud sessions don't expose usage, so there you still say "hand off" yourself.
+Claude Code and Codex queue a detached checkpoint after turns, at most once every five minutes per worktree and session. Saving needs no usage reading, model call or network. It leaves claims and your checkout untouched and never stops work at 90% or 100% of a plan. Credits or a proxy can keep a provider available after a plan window fills.
+
+`specweave auto-handoff status` shows the checkpoint directory. These files are local recovery points; `pickup` does not apply them. When you choose to switch, explicit `specweave handoff` still transfers ownership and pushes your edits. Cloud sessions without user hooks need that explicit command. See [Automatic checkpoint rules](/docs/guides/auto-handoff/).
 
 ## Set up one repository for both
 

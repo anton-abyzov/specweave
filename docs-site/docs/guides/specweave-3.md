@@ -61,7 +61,7 @@ Increments created with 2.x, with a separate `tasks.md`, keep working unchanged.
 - `specweave handoff` (or just telling your agent to hand off) releases your task claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits to git. Nothing to copy or paste.
 - `specweave pickup`, in the next tool, fetches that handoff, applies your edits when the checkout is clean, and prints everything a fresh session needs in one read: the active increment, the next task with its criteria, branch state, notes and the project memory index.
 - `specweave note "<text>" <increment>` leaves a message for whoever works on that increment next; `pickup` shows it.
-- `specweave auto-handoff on` makes Claude Code and Codex on your machine hand off by themselves at 90% of the usage limit (set your own with `--at`).
+- `specweave auto-handoff on` now keeps silent local recovery checkpoints after turns, at most once every five minutes per worktree and session. It never stops work at a usage percentage, pushes or releases claims. `pickup` does not apply these files; use explicit `handoff` when you choose to transfer work. Legacy `--at` is accepted but no longer sets a threshold.
 
 See [Cross-tool handoff](./cross-tool-handoff.md).
 
