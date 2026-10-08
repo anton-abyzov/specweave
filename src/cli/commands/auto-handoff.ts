@@ -1,32 +1,14 @@
-/**
- * CLI Commands: auto-handoff, statusline, usage-guard
- *
- *   specweave auto-handoff [on|off|status] [--at 90]
- *   specweave statusline [--wrap "<your status line command>"]   (Claude Code status line)
- *   specweave usage-guard                                          (Stop hook, Claude Code and Codex)
- *   specweave usage-guard --limit-hit                              (StopFailure hook, Grok Build)
- *
- * `auto-handoff on` wires the tools once, in the user's own settings:
- * Claude Code gets the status line (wrapping any existing one), a Stop hook
- * and a StopFailure hook; Codex gets the same Stop hook in ~/.codex/hooks.json.
- * From then on a session that reaches the threshold hands off by itself.
- * Grok Build reports no usage percentage, so it gets only the StopFailure
- * hook, in ~/.grok/hooks/; it runs the handoff itself right after a turn hits
- * the rate limit. In Claude Code the same StopFailure hook is the backstop for
- * a turn that jumps past the limit before the Stop hook could ask.
- *
- * @module cli/commands/auto-handoff
- */
+/** Opt-in local checkpoints, status display, and silent lifecycle hooks. */
 
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
-  DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
+  DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageSummary,
   latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
-import { detectTool } from '../../core/tasks/ledger.js';
+import { queueSessionCheckpoint } from '../../core/session/session-checkpoint.js';
 
 const GUARD_COMMAND = 'specweave usage-guard';
 const LIMIT_HIT_COMMAND = `${GUARD_COMMAND} --limit-hit`;
@@ -60,34 +42,20 @@ export async function statuslineCommand(opts: { wrap?: string; home?: string } =
   }
   const cwd = (input.workspace as { current_dir?: string } | undefined)?.current_dir ?? (input.cwd as string | undefined) ?? process.cwd();
   const model = (input.model as { display_name?: string } | undefined)?.display_name;
-  const top = fullest(windows);
-  process.stdout.write([path.basename(cwd), model, windows.length ? usageSummary(windows) : '', top && top.percent >= (readSettings(opts.home)?.at ?? 101) ? 'hand off' : '']
+  process.stdout.write([path.basename(cwd), model, windows.length ? usageSummary(windows) : '']
     .filter(Boolean).join(' · ') + '\n');
   return 0;
 }
 
-/**
- * Stop hook for Claude Code and Codex: `{}` or a block that asks for a handoff.
- * With `limitHit` (Grok Build's StopFailure hook) the model has already run
- * out, so the hook writes the handoff itself.
- */
+/** Always return valid empty hook JSON. Saving happens outside the model turn. */
 export async function usageGuardCommand(opts: { home?: string; limitHit?: boolean; input?: string } = {}): Promise<number> {
-  if (opts.limitHit) {
-    try {
-      const root = limitHitTarget(parse(opts.input ?? await readStdin()), { home: opts.home });
-      if (root) {
-        const { handoffCommand } = await import('./handoff.js');
-        const tool = detectTool();
-        await handoffCommand({ cwd: root, reason: tool === 'cli' ? 'usage limit reached' : `usage limit reached in ${tool}` });
-      }
-    } catch { /* a hook must never break the tool */ }
-    return 0;
-  }
-  let result = {};
   try {
-    result = usageGuard(parse(opts.input ?? await readStdin()), { home: opts.home });
-  } catch { /* a hook must never break the tool */ }
-  process.stdout.write(JSON.stringify(result) + '\n');
+    const input = parse(opts.input ?? await readStdin());
+    if (readSettings(opts.home) && (!opts.limitHit || input.error === 'rate_limit')) {
+      await queueSessionCheckpoint(input, { home: opts.home });
+    }
+  } catch { /* a hook must never break the tool or steer the model */ }
+  process.stdout.write('{}\n');
   return 0;
 }
 
@@ -130,12 +98,12 @@ function removeHook(s: Settings, event: string, command: string): void {
 }
 
 const STOP_HOOK: HookGroup = { hooks: [{ type: 'command', command: GUARD_COMMAND, timeout: 10 }] };
-/** Claude Code: a turn that failed on the usage limit (HTTP 429) hands off from the hook itself. */
+/** Claude Code: a failed turn can save without calling the model again. */
 const CLAUDE_LIMIT_HOOK: HookGroup = { matcher: 'rate_limit', hooks: [{ type: 'command', command: LIMIT_HIT_COMMAND, timeout: 60 }] };
 
 const GROK_HOOK_FILE = 'specweave-auto-handoff.json';
 
-/** Grok Build hook file: hand off when a turn fails on the rate limit. */
+/** Grok Build hook file: save locally when a turn fails on the rate limit. */
 export function grokHook(): Settings {
   return {
     hooks: {
@@ -193,10 +161,11 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
     }
     if (fs.existsSync(path.join(home, '.grok'))) {
       writeJson(grokFile, grokHook());
-      say(`Grok Build: StopFailure hook added in ${grokFile}; it hands off right after a turn hits the rate limit, since Grok shows no usage percentage`);
+      say(`Grok Build: StopFailure hook added in ${grokFile}; it saves a local checkpoint after a rate-limit failure`);
     }
     writeSettings({ at, since: new Date().toISOString(), ...(previousStatusLine ? { previousStatusLine } : {}) }, home);
-    say(`Auto-handoff is on: at ${at}% of any usage window, the session runs \`specweave handoff\` and tells you to say "pick up" elsewhere.`);
+    say('Auto-handoff is on: local checkpoints refresh after turns, at most once every five minutes. Work continues; quota percentages never stop it.');
+    if (opts.at !== undefined) say('--at is accepted for compatibility; checkpoints no longer depend on a usage threshold.');
     return 0;
   }
 
@@ -266,13 +235,13 @@ function readingLine(r: UsageReading | undefined, now: number): string {
 }
 
 /**
- * What `auto-handoff status` prints: the threshold, whether each tool's hooks
+ * What `auto-handoff status` prints: checkpoint policy, whether each tool's hooks
  * are actually in place, and the last usage each tool reported.
  */
 export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string[] {
   const settings = readSettings(home);
   if (!settings) return ['Auto-handoff is off. Turn it on with `specweave auto-handoff on`.'];
-  const lines = [`Auto-handoff is on at ${settings.at}% (since ${settings.since ?? 'unknown'}).`];
+  const lines = [`Auto-handoff is on: local background checkpoints every five minutes after turns (since ${settings.since ?? 'unknown'}).`];
   let broken = false;
 
   const claude = readJson(path.join(home, '.claude', 'settings.json'));
@@ -292,7 +261,7 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
     const [best, source] = fallbacks.filter(([r]) => r).sort(([a], [b]) => b!.at - a!.at)[0] ?? [undefined, ''];
     const reading = `${readingLine(best, now)}${source}`;
     lines.push(`Claude Code: ${missing.length ? `missing ${missing.join(', ')}` : 'status line, Stop and StopFailure hooks in place'}; ${reading}`);
-    lines.push('  Desktop, Remote Control and `claude -p` sessions run no status line. They read the desktop app\'s usage samples (every 15 minutes or so) or Claude Code\'s usage cache when either is fresh, so a jump past the threshold between samples is missed; then they hand off when a turn hits the limit.');
+    lines.push('  Usage readings are informational only; saving does not depend on a status line, account quota or proxy provider.');
   }
   const codexFile = path.join(home, '.codex', 'hooks.json');
   if (fs.existsSync(path.dirname(codexFile))) {
@@ -306,8 +275,10 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
   if (fs.existsSync(path.join(home, '.grok'))) {
     const ok = fs.existsSync(path.join(home, '.grok', 'hooks', GROK_HOOK_FILE));
     broken ||= !ok;
-    lines.push(`Grok Build: ${ok ? 'StopFailure hook in place' : 'missing StopFailure hook'}; Grok reports no usage, so it hands off when a turn hits the limit`);
+    lines.push(`Grok Build: ${ok ? 'StopFailure hook in place' : 'missing StopFailure hook'}; Grok reports no usage, so it saves locally when a turn hits the limit`);
   }
+  lines.push(`Local checkpoints: ${path.join(home, '.specweave', 'checkpoints')} (per worktree and session; current.json points to the latest complete save).`);
+  lines.push('To transfer work to another tool or machine, run `specweave handoff` explicitly. Automatic checkpoints never push or release claims.');
   if (broken) lines.push('Run `specweave auto-handoff on` again to put the missing pieces back.');
   return lines;
 }

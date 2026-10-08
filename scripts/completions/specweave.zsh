@@ -22,9 +22,9 @@ commands=(
     'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
     'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
-    'auto-handoff:on | off | status\: hand off automatically at a share of the usage limit (default 90%)'
+    'auto-handoff:on | off | status\: save local background checkpoints without interrupting work'
     'statusline:Claude Code status line that records usage for auto-handoff'
-    'usage-guard:Stop hook\: asks the agent to hand off once usage passes the auto-handoff threshold'
+    'usage-guard:Stop hook\: queue a local checkpoint and return without interrupting work'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -189,7 +189,7 @@ _specweave() {
                     ;;
                 auto-handoff)
                     _arguments \
-                        '--at[Threshold in percent of any usage window]' \
+                        '--at[Legacy compatibility option; checkpoints are independent of usage]' \
                         '--help[Show help]'
                     ;;
                 statusline)
@@ -199,7 +199,7 @@ _specweave() {
                     ;;
                 usage-guard)
                     _arguments \
-                        '--limit-hit[StopFailure hook (Grok Build)\: hand off now, the turn hit the rate limit]' \
+                        '--limit-hit[StopFailure hook\: save locally after a rate-limit failure]' \
                         '--help[Show help]'
                     ;;
                 jev)

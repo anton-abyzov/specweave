@@ -1,11 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
   usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading,
 } from '../../../../src/core/session/usage-guard.js';
-import { autoHandoffCommand, autoHandoffStatus, codexHookTrusted, statuslineCommand } from '../../../../src/cli/commands/auto-handoff.js';
+import { autoHandoffCommand, autoHandoffStatus, codexHookTrusted, statuslineCommand, usageGuardCommand } from '../../../../src/cli/commands/auto-handoff.js';
+
+vi.mock('../../../../src/core/session/session-checkpoint.js', () => ({ queueSessionCheckpoint: vi.fn() }));
+import { queueSessionCheckpoint } from '../../../../src/core/session/session-checkpoint.js';
 
 let home: string;
 const NOW = Date.parse('2026-09-25T20:00:00Z');
@@ -46,7 +49,7 @@ function rollout(primary: number, secondary: number): string {
   return file;
 }
 
-beforeEach(() => { home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-usage-')); });
+beforeEach(() => { vi.clearAllMocks(); home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-usage-')); });
 afterEach(() => fs.rmSync(home, { recursive: true, force: true }));
 
 function claudeCache(fiveHour: number, fetchedAtMs: number, extra: Record<string, unknown> = {}) {
@@ -73,7 +76,7 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
       { name: 'weekly', percent: 30, resetsAt: LATER },
     ]);
     const res = usageGuard({ session_id: 'desk-1', transcript_path: path.join(home, 'x.jsonl') }, { home, now: NOW });
-    expect(res.hookSpecificOutput?.additionalContext).toContain('93% of the 5-hour limit');
+    expect(res).toEqual({});
   });
 
   it('ignores a cache older than an hour or saved for another account', () => {
@@ -110,7 +113,7 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
       tool: 'Claude Code', at: NOW - 5 * 60_000, windows: [{ name: '5-hour', percent: 94 }, { name: 'weekly', percent: 31 }],
     });
     const res = usageGuard({ session_id: 'desk-2' }, { home, now: NOW, env, ...mac });
-    expect(res.hookSpecificOutput?.additionalContext).toContain('94% of the 5-hour limit');
+    expect(res).toEqual({});
     // Another organization's session sees its own, lower sample.
     expect(usageGuard({ session_id: 'desk-3' }, { home, now: NOW, env: { CLAUDE_CODE_ORGANIZATION_UUID: 'org-b' }, ...mac })).toEqual({});
   });
@@ -150,44 +153,12 @@ describe('usage guard', () => {
     expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
   });
 
-  it('Claude Code: blocks once when the status line saw the 5-hour window past the threshold', () => {
+  it.each([0, 89, 90, 100])('never interrupts Claude Code at %s percent or writes a handoff marker', (percent) => {
     writeSettings({ at: 90 }, home);
-    recordClaudeUsage(claudeStatus('s1', 50), home, NOW);
+    recordClaudeUsage(claudeStatus('s1', percent), home, NOW);
     expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
-
-    recordClaudeUsage(claudeStatus('s1', 92.4), home, NOW);
-    const first = usageGuard({ session_id: 's1' }, { home, now: NOW });
-    // Not a block: Claude Code shows a block to the user as "Stop hook error".
-    expect(first.decision).toBeUndefined();
-    const context = first.hookSpecificOutput?.additionalContext ?? '';
-    expect(first.hookSpecificOutput?.hookEventName).toBe('Stop');
-    expect(context).toContain('Usage is at 92% of the 5-hour limit');
-    expect(context).toContain('specweave handoff --reason "usage at 92% of the 5-hour limit"');
-    expect(context).toContain('"pick up"');
-    expect(first.systemMessage).toBe('Auto-handoff: usage is at 92% of the 5-hour limit, so this session is handing off. Say "pick up" in another tool or account to continue.');
-    // The handoff turn ends with another Stop; it must not loop.
     expect(usageGuard({ session_id: 's1', stop_hook_active: true }, { home, now: NOW })).toEqual({});
-    // Other sessions are judged on their own.
-    expect(usageGuard({ session_id: 's2' }, { home, now: NOW })).toEqual({});
-  });
-
-  it('asks again in a later window once the window that triggered the handoff has reset', () => {
-    writeSettings({ at: 90 }, home);
-    recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW }).hookSpecificOutput).toBeDefined();
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW + 60_000 })).toEqual({});
-    // The 5-hour window resets; the session keeps going and fills the next one.
-    const next = LATER + 5 * 3600;
-    recordClaudeUsage({ ...claudeStatus('s1', 93), rate_limits: { five_hour: { used_percentage: 93, resets_at: next } } }, home, NOW);
-    const again = usageGuard({ session_id: 's1' }, { home, now: (LATER + 60) * 1000 });
-    expect(again.hookSpecificOutput?.additionalContext).toContain('93% of the 5-hour limit');
-  });
-
-  it('a marker from 3.0.3 (no reset time) keeps the session handed off', () => {
-    writeSettings({ at: 90 }, home);
-    recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
-    fs.writeFileSync(path.join(home, '.specweave', 'usage', 's1.handed-off'), '2026-09-25T20:00:00.000Z 5-hour 95\n');
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(fs.existsSync(path.join(home, '.specweave', 'usage', 's1.handed-off'))).toBe(false);
   });
 
   it('ignores a window that has already reset', () => {
@@ -204,14 +175,13 @@ describe('usage guard', () => {
       { name: 'weekly', percent: 40, resetsAt: LATER + 86400 },
     ]);
     const res = usageGuard({ session_id: 'abc', transcript_path: file }, { home, now: NOW });
-    expect(res.decision).toBe('block'); // Codex reads a block reason
-    expect(res.reason).toContain('88% of the 5-hour limit');
+    expect(res).toEqual({});
   });
 
-  it('Codex: the weekly window counts too', () => {
+  it('Codex: a full weekly window does not stop work', () => {
     writeSettings({ at: 90 }, home);
     const res = usageGuard({ session_id: 'abc', transcript_path: rollout(30, 91) }, { home, now: NOW });
-    expect(res.reason).toContain('91% of the weekly limit');
+    expect(res).toEqual({});
   });
 
   it('never reads a Claude transcript as a Codex rollout', () => {
@@ -286,11 +256,13 @@ describe('specweave auto-handoff status', () => {
       `[hooks.state."${path.join(home, '.codex', 'hooks.json')}:stop:0:0"]\ntrusted_hash = "sha256:abc"\n`);
 
     const lines = autoHandoffStatus(home, NOW);
-    expect(lines[0]).toMatch(/^Auto-handoff is on at 90%/);
+    expect(lines[0]).toContain('local background checkpoints every five minutes');
     expect(lines[1]).toBe('Claude Code: status line, Stop and StopFailure hooks in place; last reading 5-hour 42% · weekly 12% (3 min ago)');
-    expect(lines[2]).toContain('Desktop, Remote Control and `claude -p` sessions run no status line');
+    expect(lines[2]).toContain('Usage readings are informational only');
     expect(lines[3]).toBe('Codex: Stop hook in place; last reading 5-hour 61% · weekly 20% (10 min ago)');
-    expect(lines).toHaveLength(4);
+    expect(lines).toHaveLength(6);
+    expect(lines[4]).toContain(path.join(home, '.specweave', 'checkpoints'));
+    expect(lines[5]).toContain('never push or release claims');
   });
 
   it('tells you to approve the Codex hook until Codex trusts it', async () => {
@@ -368,5 +340,31 @@ describe('specweave statusline', () => {
     }
     const saved = JSON.parse(fs.readFileSync(path.join(home, '.specweave', 'usage', 's9.json'), 'utf8'));
     expect(saved.windows[0]).toMatchObject({ name: '5-hour', percent: 42 });
+  });
+});
+
+
+describe('silent checkpoint hook command', () => {
+  it('migrates legacy at:90 settings without reading quota or requiring model continuation', async () => {
+    writeSettings({ at: 90 }, home);
+    const input = { session_id: 'proxy-session', cwd: home, transcript_path: '/unreadable/rollout-ignored.jsonl', stop_hook_active: true };
+    const out = await quiet(() => usageGuardCommand({ home, input: JSON.stringify(input) }));
+    expect(out).toBe('{}\n');
+    expect(queueSessionCheckpoint).toHaveBeenCalledExactlyOnceWith(input, { home });
+    expect(fs.existsSync(path.join(home, '.specweave', 'usage'))).toBe(false);
+  });
+
+  it('stays silent and retryable after a scheduling failure', async () => {
+    writeSettings({ at: 90 }, home);
+    vi.mocked(queueSessionCheckpoint).mockImplementationOnce(() => { throw new Error('disk unavailable'); });
+    const opts = { home, input: JSON.stringify({ session_id: 's1', cwd: home }) };
+    expect(await quiet(() => usageGuardCommand(opts))).toBe('{}\n');
+    expect(await quiet(() => usageGuardCommand(opts))).toBe('{}\n');
+    expect(queueSessionCheckpoint).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not schedule when disabled and accepts malformed input without a hook error', async () => {
+    expect(await quiet(() => usageGuardCommand({ home, input: '{bad' }))).toBe('{}\n');
+    expect(queueSessionCheckpoint).not.toHaveBeenCalled();
   });
 });
