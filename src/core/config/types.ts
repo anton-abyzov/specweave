@@ -733,8 +733,8 @@ export interface TasksConfig {
 export interface JevConfigInput {
   /** Explicit opt-in. Default false. */
   enabled?: boolean;
-  /** 'openrouter' (default) or 'typesafe'. */
-  provider?: 'openrouter' | 'typesafe';
+  /** 'openrouter' (default), 'typesafe', or optional OpenAI Decisions. */
+  provider?: 'openrouter' | 'typesafe' | 'openai';
   /** Model id, e.g. 'jev-1.13' (openrouter) or 'jev-latest' (typesafe). */
   model?: string;
   /** NAME of the environment variable holding the API key. Never the key. */
