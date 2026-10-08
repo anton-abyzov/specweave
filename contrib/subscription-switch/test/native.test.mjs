@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, writeFile, access, readdir, rm, readFile } from 'node:fs/promises';
+import { mkdir, writeFile, access, readdir, rm, readFile, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fixture, fakeBinary } from './helpers.mjs';
@@ -87,8 +87,36 @@ test('binary discovery prefers independent installations and never falls back to
     assert.equal(findBinary('codex',f.home),join(bin,'codex'));
     await rm(join(bin,'codex')); assert.equal(findBinary('codex',f.home),join(modules,'codex'));
     await rm(join(modules,'codex')); assert.equal(findBinary('codex',f.home),join(path,'codex'));
-    await rm(join(path,'codex')); assert.equal(findBinary('codex',f.home),'codex');
+    await rm(join(path,'codex')); assert.equal(findBinary('codex',f.home),null);
   } finally { if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath; }
+});
+test('binary discovery rejects legacy PATH entries and symlink aliases from another home', async t => {
+  const f = await fixture(t), previousPath = process.env.PATH;
+  const legacy = join(f.base, 'other-home/.local/share/t3/providers/node_modules/.bin'), alias = join(f.base, 'neutral-alias'), neutral = join(f.base, 'neutral-bin');
+  for (const dir of [legacy,alias,neutral]) await mkdir(dir,{recursive:true});
+  await writeFile(join(legacy,'codex'),'#!/bin/sh\nexit 9\n',{mode:0o755});
+  await symlink(join(legacy,'codex'),join(alias,'codex'));
+  const directoryAlias=join(f.base,'neutral-directory-alias');await symlink(legacy,directoryAlias);
+  await writeFile(join(neutral,'codex'),'#!/bin/sh\nexit 7\n',{mode:0o755});
+  try {
+    process.env.PATH = legacy;
+    assert.equal(findBinary('codex',f.home),null);
+    process.env.PATH = [legacy,alias,directoryAlias,neutral].join(':');
+    assert.equal(findBinary('codex',f.home),join(neutral,'codex'));
+    await rm(join(neutral,'codex'));
+    assert.equal(findBinary('codex',f.home),null);
+  } finally { if(previousPath===undefined)delete process.env.PATH;else process.env.PATH=previousPath; }
+});
+test('native sign-in rejects a recorded legacy executable or alias before inspecting auth', async t => {
+  const f=await fixture(t), legacy=join(f.home,'.local/share/t3/providers/bin/codex'), marker=join(f.base,'legacy-auth-started'), alias=join(f.base,'recorded-alias');
+  await mkdir(join(legacy,'..'),{recursive:true});await writeFile(legacy,`#!/bin/sh\nprintf unexpected > '${marker}'\nexit 9\n`,{mode:0o755});await symlink(legacy,alias);
+  const cli=fileURLToPath(new URL('../bin/specweave-switch.mjs',import.meta.url)), env={...process.env,HOME:f.home,SPECWEAVE_SWITCH_STATE:f.root};
+  for(const binary of [legacy,alias]) {
+    await mutateState(f.root,s=>{s.accounts.find(a=>a.id==='codex-2').binary=binary;});
+    const before=await readFile(join(f.root,'state.json'),'utf8'), result=await execute(process.execPath,[cli,'account','login','codex-2'],{env,timeoutMs:5000});
+    assert.equal(result.exitCode,1);assert.match(result.stderr,/legacy workbench/);assert.equal(await readFile(join(f.root,'state.json'),'utf8'),before);
+    await assert.rejects(access(marker),{code:'ENOENT'});
+  }
 });
 
 test('native sign-in keeps the recorded binary and fails closed instead of rediscovering another login', async t => {

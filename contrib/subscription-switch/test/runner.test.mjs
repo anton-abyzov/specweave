@@ -4,7 +4,7 @@ import { readFile, symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fixture, fakeBinary, authed, quota } from './helpers.mjs';
 import { acquireLease, reserveRun, run, classifyOutcome, managedPrompt } from '../lib/runner.mjs';
-import { readState, mutateState } from '../lib/state.mjs';
+import { readState, mutateState, rebindAccountBinary } from '../lib/state.mjs';
 import { recommend } from '../lib/policy.mjs';
 test('exclusive lease rejects duplicate canonical or symlinked workspace', async t => {
   const f = await fixture(t); await symlink(f.repo, join(f.base, 'alias'));
@@ -28,6 +28,18 @@ test('launch reservation rejects a newer unverified identity after an earlier el
   await mutateState(f.root, s => Object.assign(s.accounts.find(a => a.id === account.id), { authKind: 'claude.ai', authenticated: true, quota: null }));
   await reserveRun(f.root, account, record, { allowUnknown: true });
   assert.equal((await readState(f.root)).runs[0].id, record.id);
+});
+test('launch reservation rejects an executable changed after selection and before reservation', async t => {
+  const f=await fixture(t), old=await fakeBinary(f.base,'old-binary','process.exitCode=9;'), binary=await fakeBinary(f.base,'new-binary','process.exitCode=7;');
+  await authed(f.root,'codex-1',old);
+  const selected=(await readState(f.root)).accounts.find(a=>a.id==='codex-1');
+  await rebindAccountBinary(f.root,selected.id,binary);
+  const before=await readFile(join(f.root,'state.json'),'utf8'), record={id:'stale-binary-reservation',accountId:selected.id,provider:selected.provider,status:'running'};
+  await assert.rejects(reserveRun(f.root,selected,record),/binary changed before launch/);
+  assert.equal(await readFile(join(f.root,'state.json'),'utf8'),before);
+  await reserveRun(f.root,(await readState(f.root)).accounts.find(a=>a.id===selected.id),record);
+  assert.equal((await readState(f.root)).runs[0].id,record.id);
+  await assert.rejects(rebindAccountBinary(f.root,selected.id,old),/active native run/);
 });
 test('failed native run persists failure and redacts JSON credentials; no synthetic success', async t => {
   const f = await fixture(t);

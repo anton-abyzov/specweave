@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { access, readFile, stat } from 'node:fs/promises';
-import { constants } from 'node:fs';
-import { stateRoot, ensureState, initState, mutateState, findBinary } from '../lib/state.mjs';
+import { stateRoot, ensureState, initState, mutateState, findBinary, validateNativeBinary, rebindAccountBinary } from '../lib/state.mjs';
 import { publicState, recommend, setPolicy, selectAccount, validateQuota, QUOTA_TTL_MS } from '../lib/policy.mjs';
 import { refresh, nativeEnv, inspectAuth } from '../lib/native.mjs';
 import { run } from '../lib/runner.mjs';
@@ -19,6 +17,9 @@ policy MODE [--provider codex|claude|any]
 select ACCOUNT|automatic   Prefer this account or return to automatic routing
 recommend [--provider PROVIDER] [--account ID --allow-unknown]
 account login ID           Launch native interactive sign-in for this profile
+account binary ID --binary ABSOLUTE_PATH
+                           Rebind this idle profile's independent executable only;
+                           preserve native homes, credentials, quota and history
 account observe ID --quota JSON
                            Manual observation: window/weekly usedPercent,resetsAt;
                            clearly sourced, expires after 15 minutes
@@ -39,7 +40,7 @@ Dirty tracked changes need an explicit file allowlist; untracked files are exclu
 function parse(argv) {
   const values = {}, positionals = [];
   const flags = new Set(['allow-unknown', 'failover']);
-  const options = new Set(['cwd', 'prompt', 'account', 'provider', 'model', 'timeout-ms', 'max-attempts', 'files', 'sandbox', 'to', 'base', 'port', 'quota']);
+  const options = new Set(['cwd', 'prompt', 'account', 'provider', 'model', 'timeout-ms', 'max-attempts', 'files', 'sandbox', 'to', 'base', 'port', 'quota', 'binary']);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith('--')) { positionals.push(arg); continue; }
@@ -56,6 +57,10 @@ async function main(argv) {
   if (argv[0] === '--version') { process.stdout.write('0.1.0\n'); return; }
   const [command, ...args] = argv, { values: v, positionals: p } = parse(args), root = stateRoot();
   if (command === 'init') { out(publicState(await initState(root))); return; }
+  if (command === 'account' && p[0] === 'binary') {
+    if (p.length !== 2 || !v.binary || Object.keys(v).some(key => key !== 'binary')) throw new Error('Use account binary ID --binary ABSOLUTE_PATH');
+    out(await rebindAccountBinary(root, p[1], v.binary)); return;
+  }
   const state = await ensureState(root);
   if (command === 'status') out(publicState(state));
   else if (command === 'refresh') out(publicState(await refresh(root)));
@@ -65,12 +70,10 @@ async function main(argv) {
   else if (command === 'account') {
     const account = state.accounts.find(a => a.id === p[1]); if (!account) throw new Error('Unknown profile');
     if (p[0] === 'login') {
-      const binary = account.binary, args = account.provider === 'codex' ? ['login'] : ['auth', 'login'];
-      try {
-        if (typeof binary !== 'string' || !binary.trim()) throw new Error('missing binary');
-        await access(binary, constants.X_OK);
-        if (!(await stat(binary)).isFile()) throw new Error('invalid binary');
-      } catch { throw new Error('Configured native binary is unavailable. Fix this profile binary before signing in; no alternate binary was selected.'); }
+      const args = account.provider === 'codex' ? ['login'] : ['auth', 'login'];
+      let binary;
+      try { binary = validateNativeBinary(account.binary); }
+      catch { throw new Error('Configured native binary is unavailable or depends on a legacy workbench. Use account binary to repair this profile before signing in; no alternate binary was selected.'); }
       const observed = await inspectAuth({ ...account, binary });
       await mutateState(root, s => Object.assign(s.accounts.find(a => a.id === account.id), observed));
       if (observed.authError === 'profile-isolation-unverified') throw new Error('Claude profile isolation is unverified: native oauth_token status may reuse the default keychain login. Sign-in for this isolated slot is blocked until a supported independent profile binding is verified; authenticate a supported consumer subscription in the native default claude-1 profile instead. Native sign-in was not started.');
@@ -84,7 +87,7 @@ async function main(argv) {
       if (!observation || Object.keys(observation).some(k => !['window', 'weekly'].includes(k))) throw new Error('Manual quota only accepts window and weekly');
       const quota = validateQuota({ window: observation.window || null, weekly: observation.weekly || null, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'manual' });
       out(publicState(await mutateState(root, s => { s.accounts.find(a => a.id === account.id).quota = quota; })));
-    } else throw new Error('Use account login or account observe');
+    } else throw new Error('Use account login, account binary or account observe');
   } else if (command === 'run') {
     let prompt = v.prompt;
     if (!prompt) { prompt = ''; for await (const chunk of process.stdin) { prompt += chunk.toString(); if (prompt.length > 128 * 1024) throw new Error('Prompt input exceeds 128 KiB'); } }

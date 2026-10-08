@@ -43,6 +43,7 @@ export function managedPrompt(prompt, sandbox) {
 }
 export async function reserveRun(root, account, record, { allowUnknown = false } = {}) {
   return mutateState(root, current => {
+    if (current.accounts.find(a => a.id === account.id)?.binary !== account.binary) throw new Error('Profile binary changed before launch; select it again explicitly');
     // Use the full current routing policy under the state lock. A refreshed
     // unverified identity cannot slip through the explicit unknown-quota path.
     const chosen = recommend(current, { provider: account.provider, accountId: account.id, allowUnknown });
