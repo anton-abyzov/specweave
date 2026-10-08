@@ -4,6 +4,8 @@ description: How SpecWeave, vskill and the private SpecWeave Studio pilot fit to
 ---
 
 import Architecture, { ProductMap } from '@site/src/components/ecosystem/Architecture';
+import WorkflowVideo from '@site/src/components/ecosystem/WorkflowVideo';
+import StudioOverviewVideo from '@site/src/components/ecosystem/StudioOverviewVideo';
 
 # One ecosystem, three distinct jobs
 
@@ -50,6 +52,8 @@ That demonstrates bounded native routing in the tested fleet. It does not establ
 
 ## First steps: the workflow available today
 
+<WorkflowVideo />
+
 1. Install the CLI with `npm install -g specweave`, then follow the [quick start](/docs/getting-started).
 2. Define one small outcome in a spec, including files, acceptance criteria and a test.
 3. Claim the task, do the work, run the test and record its real evidence.
@@ -59,6 +63,8 @@ That demonstrates bounded native routing in the tested fleet. It does not establ
 In **SpecWeave 3.0.6**, `specweave auto-handoff on` enables silent local recovery checkpoints. It does not stop work at a usage limit, push a transfer, release task claims or authorize another worker. `pickup` does not apply those automatic checkpoints. See [checkpoint and handoff rules](/docs/guides/auto-handoff).
 
 ## Pilot walkthrough: remote Studio
+
+<StudioOverviewVideo />
 
 For an already provisioned pilot, use the operator-supplied private URL and current host-specific instructions:
 
