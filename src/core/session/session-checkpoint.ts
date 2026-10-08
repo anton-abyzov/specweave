@@ -32,7 +32,7 @@ export interface CheckpointReceipt {
   incrementId?: string;
 }
 
-interface Lease { token: string; at: number }
+interface Lease { token: string; at: number; ticket?: number }
 export interface CheckpointRequest {
   version: 1;
   sessionId: string;
@@ -89,26 +89,53 @@ export function readSessionCheckpoint(input: CheckpointInput, opts: CheckpointOp
 }
 
 function leaseMatches(file: string, token: string): boolean {
-  return readJson<Lease>(file)?.token === token;
+  const lease = readJson<Lease>(path.join(file, `${token}.json`));
+  return lease?.token === token && typeof lease.ticket === 'number';
 }
 
 function releaseLease(file: string, token: string): void {
-  if (leaseMatches(file, token)) try { fs.unlinkSync(file); } catch { /* already gone */ }
+  // Every contender owns a distinct filename, including after stale recovery.
+  for (const suffix of ['json', 'ready']) {
+    try { fs.unlinkSync(path.join(file, `${token}.${suffix}`)); } catch { /* already gone */ }
+  }
+  try { fs.rmdirSync(file); } catch { /* another contender still owns this directory */ }
 }
 
 function acquireLease(file: string, token: string, now: number): boolean {
   try {
-    fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
-    try {
-      const age = Date.now() - fs.statSync(file).mtimeMs;
-      if (age <= CHECKPOINT_LOCK_STALE_MS) return false;
-      fs.unlinkSync(file);
-    } catch (e) {
-      if ((e as NodeJS.ErrnoException).code !== 'ENOENT') return false;
+    // A short bakery election: announce choosing first, then select one greater
+    // than every existing ticket. Concurrent choosers cause a safe retry; the
+    // stable lowest (ticket, token) wins. No shared filename is ever unlinked.
+    fs.mkdirSync(file, { recursive: true, mode: 0o700 });
+    const own = path.join(file, `${token}.json`);
+    fs.writeFileSync(own, JSON.stringify({ token, at: now }), { flag: 'wx', mode: 0o600 });
+    const candidates = (): Lease[] => {
+      const leases: Lease[] = [];
+      for (const name of fs.readdirSync(file)) {
+        if (!name.endsWith('.json')) continue;
+        const candidate = path.join(file, name);
+        try {
+          if (Date.now() - fs.statSync(candidate).mtimeMs > CHECKPOINT_LOCK_STALE_MS) {
+            fs.unlinkSync(candidate);
+            continue;
+          }
+          // A half-written contender must also prevent concurrent ownership.
+          leases.push(readJson<Lease>(candidate) ?? { token: name, at: now });
+        } catch { /* a contender finished between readdir and read */ }
+      }
+      return leases;
+    };
+    const ticket = 1 + Math.max(0, ...candidates().map((lease) => lease.ticket ?? 0));
+    const ready = path.join(file, `${token}.ready`);
+    fs.writeFileSync(ready, JSON.stringify({ token, at: now, ticket }), { flag: 'wx', mode: 0o600 });
+    fs.renameSync(ready, own);
+    if (candidates().some((lease) => lease.token !== token &&
+      (lease.ticket === undefined || lease.ticket < ticket || (lease.ticket === ticket && lease.token < token)))) {
+      releaseLease(file, token);
+      return false;
     }
-    fs.writeFileSync(file, JSON.stringify({ token, at: now }), { flag: 'wx', mode: 0o600 });
     return true;
-  } catch { return false; }
+  } catch { releaseLease(file, token); return false; }
 }
 
 /** @internal Reserve a bounded worker slot and persist only scrubbed worker input. */
@@ -126,6 +153,13 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
   let slot: string | undefined;
   let requestPath: string | undefined;
   try {
+    // A worker can have finished between our initial receipt read and election.
+    const latest = readSessionCheckpoint(input, opts);
+    const latestAt = latest ? Date.parse(latest.savedAt) : NaN;
+    if (Number.isFinite(latestAt) && now >= latestAt && now - latestAt < CHECKPOINT_INTERVAL_MS) {
+      releaseLease(lock, token);
+      return;
+    }
     const slots = path.join(checkpointsDirectory(opts.home), '.workers');
     for (let i = 0; i < CHECKPOINT_MAX_WORKERS; i++) {
       const candidate = path.join(slots, `${i}.lock`);
