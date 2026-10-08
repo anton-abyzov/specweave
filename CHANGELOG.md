@@ -1,3 +1,10 @@
+## [3.0.6] - 2026-10-08
+
+### Changed
+
+- `auto-handoff on` now queues silent, detached local checkpoints after turns, throttled to five minutes per canonical worktree and session. Claude Code and Grok `rate_limit` failures queue the same worker. Saving uses no model or network, never stops work on quota, pushes or releases claims. Successful saves publish a local `current.json` receipt pointing to the saved handoff document and diff; `auto-handoff status` shows the checkpoint directory. Explicit `handoff` still transfers ownership and pushes; `pickup` does not apply automatic checkpoints.
+- Existing enabled settings adopt the new behavior when the CLI is upgraded, with unchanged hook commands. Legacy `--at` is accepted without setting a threshold. Generated instructions and the handoff skill no longer treat usage warnings as orders to stop.
+
 ## [3.0.5] - 2026-10-08
 
 ### Added

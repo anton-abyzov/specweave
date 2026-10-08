@@ -4,7 +4,7 @@ export async function checkForDuplicates() {
   try {
     // Skip check for init command (no .specweave yet)
     const args = process.argv.slice(2);
-    if (args.length === 0 || args[0] === 'init' || args[0] === '--help' || args[0] === '-h' || args[0] === '--version' || args[0] === '-V') {
+    if (args.length === 0 || ['init', 'usage-guard', 'statusline'].includes(args[0]) || args[0] === '--help' || args[0] === '-h' || args[0] === '--version' || args[0] === '-V') {
       return;
     }
 

@@ -249,11 +249,11 @@ program
     process.exitCode = await noteCommand(text, { incrementId });
   });
 
-// Auto-handoff - hand off by itself near the plan's usage limit (Claude Code, Codex)
+// Auto-handoff - silent local recovery checkpoints (Claude Code, Codex)
 program
   .command('auto-handoff [action]')
-  .description('on | off | status: hand off automatically at a share of the usage limit (default 90%)')
-  .option('--at <percent>', 'Threshold in percent of any usage window', (v) => Number(v))
+  .description('on | off | status: save local background checkpoints without interrupting work')
+  .option('--at <percent>', 'Legacy compatibility option; checkpoints are independent of usage', (v) => Number(v))
   .action(async (action, options) => {
     const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
     process.exitCode = await autoHandoffCommand(action, { at: options.at });
@@ -270,8 +270,8 @@ program
 
 program
   .command('usage-guard')
-  .description('Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold')
-  .option('--limit-hit', 'StopFailure hook (Grok Build): hand off now, the turn hit the rate limit')
+  .description('Stop hook: queue a local checkpoint and return without interrupting work')
+  .option('--limit-hit', 'StopFailure hook: save locally after a rate-limit failure')
   .action(async (options) => {
     const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
     process.exitCode = await usageGuardCommand({ limitHit: options.limitHit === true });

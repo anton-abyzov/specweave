@@ -193,7 +193,7 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
     expect(doc).toContain('T-005 Late US-001 task');
   });
 
-  it('records only the agent's --decision, pointing at spec.md for planned ones', async () => {
+  it("records only the agent's --decision, pointing at spec.md for planned ones", async () => {
     const root = makeSpecWeaveWorkspace({ activeIds: ['0001-foo'], withIncrement: true });
     const res = await buildWorkHandoff(root, { decisions: ['agent-supplied call'] });
     expect(res.docMarkdown).not.toContain('Use the reused parsers');

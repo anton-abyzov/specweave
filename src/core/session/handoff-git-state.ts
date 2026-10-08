@@ -63,39 +63,54 @@ export const BOOKKEEPING_PATHSPECS: readonly string[] = [
 export const GIT_CAPTURE_BUDGET_MS = 3500;
 
 /** Capture through a private index; an interrupted hook never stages user files. */
-export function captureGitState(repoRoot: string, diffOutputPath: string): GitState {
+export function captureGitState(repoRoot: string, diffOutputPath: string, opts: { strict?: boolean } = {}): GitState {
   const empty: GitState = {
     isGitRepo: false, branch: '', shortSha: '', statusPorcelain: '',
     diffStat: '', hasUncommittedChanges: false,
   };
   const deadline = Date.now() + GIT_CAPTURE_BUDGET_MS;
   const env = { ...process.env, GIT_OPTIONAL_LOCKS: '0' };
-  function git(args: string[], trim = true): string | null {
+  function git(args: string[], trim = true, required = true): string | null {
     const remaining = deadline - Date.now();
-    if (remaining <= 0) return null;
+    if (remaining <= 0) {
+      if (opts.strict) throw new Error('checkpoint Git capture budget exceeded');
+      return null;
+    }
     try {
       const result = execFileSync('git', args, {
         cwd: repoRoot, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
         maxBuffer: 64 * 1024 * 1024, timeout: remaining, killSignal: 'SIGKILL',
       });
       return trim ? result.trim() : result;
-    } catch { return null; }
+    } catch (error) {
+      // Missing HEAD/upstream are normal. Timeouts and required commands are not.
+      if (opts.strict && (required || (error as { status?: number }).status !== 128 ||
+        (error as { signal?: string }).signal || typeof (error as NodeJS.ErrnoException).code === 'string')) {
+        throw new Error('checkpoint Git capture failed');
+      }
+      return null;
+    }
+  }
+  function writeDiff(content: string): void {
+    if (!opts.strict) { safeWriteDiff(diffOutputPath, content); return; }
+    fs.mkdirSync(path.dirname(diffOutputPath), { recursive: true });
+    fs.writeFileSync(diffOutputPath, content, 'utf8');
   }
   let temporary: string | undefined;
   try {
-    if (git(['rev-parse', '--is-inside-work-tree']) !== 'true') {
-      safeWriteDiff(diffOutputPath, '');
+    if (git(['rev-parse', '--is-inside-work-tree'], true, fs.existsSync(path.join(repoRoot, '.git'))) !== 'true') {
+      writeDiff('');
       return empty;
     }
     const indexPath = git(['rev-parse', '--path-format=absolute', '--git-path', 'index']);
-    if (!indexPath) { safeWriteDiff(diffOutputPath, ''); return empty; }
+    if (!indexPath) { writeDiff(''); return empty; }
     temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-handoff-index-'));
     const privateIndex = path.join(temporary, 'index');
     if (fs.existsSync(indexPath)) fs.copyFileSync(indexPath, privateIndex);
     Object.assign(env, { GIT_INDEX_FILE: privateIndex });
 
-    const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']) ?? '';
-    const shortSha = git(['rev-parse', '--short', 'HEAD']) ?? '';
+    const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], true, false) ?? '';
+    const shortSha = git(['rev-parse', '--short', 'HEAD'], true, false) ?? '';
     const scope = ['--', '.', ...BOOKKEEPING_PATHSPECS];
     const statusPorcelain = git(['status', '--porcelain', ...scope]) ?? '';
     // NUL-delimited paths handle spaces, quotes, Unicode and embedded newlines.
@@ -109,9 +124,10 @@ export function captureGitState(repoRoot: string, diffOutputPath: string): GitSt
     const stagedDiff = (hasHead ? git([...staged, ...scope]) : '') ?? '';
     const workingStat = git([...working, '--stat', ...scope]) ?? '';
     const stagedStat = (hasHead ? git([...staged, '--stat', ...scope]) : '') ?? '';
-    safeWriteDiff(diffOutputPath, [workingDiff, stagedDiff].filter(Boolean).join('\n'));
-    const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']) ?? '';
+    writeDiff([workingDiff, stagedDiff].filter(Boolean).join('\n'));
+    const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], true, false) ?? '';
     const aheadRaw = upstream ? git(['rev-list', '--count', `${upstream}..HEAD`]) : null;
+    if (opts.strict && Date.now() > deadline) throw new Error('checkpoint Git capture budget exceeded');
     return {
       isGitRepo: true, branch, shortSha, statusPorcelain,
       diffStat: [workingStat, stagedStat].filter(Boolean).join('\n'),
@@ -119,7 +135,8 @@ export function captureGitState(repoRoot: string, diffOutputPath: string): GitSt
       upstream,
       ahead: aheadRaw !== null && aheadRaw !== '' ? Number(aheadRaw) : undefined,
     };
-  } catch {
+  } catch (error) {
+    if (opts.strict) throw error;
     safeWriteDiff(diffOutputPath, '');
     return empty;
   } finally {

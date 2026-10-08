@@ -1,14 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { limitHitTarget, writeSettings, LIMIT_HIT_REARM_MS } from '../../../../src/core/session/usage-guard.js';
-import { autoHandoffCommand, grokHook } from '../../../../src/cli/commands/auto-handoff.js';
+import { writeSettings } from '../../../../src/core/session/usage-guard.js';
+import { autoHandoffCommand, grokHook, usageGuardCommand } from '../../../../src/cli/commands/auto-handoff.js';
+
+vi.mock('../../../../src/core/session/session-checkpoint.js', () => ({ queueSessionCheckpoint: vi.fn() }));
+import { queueSessionCheckpoint } from '../../../../src/core/session/session-checkpoint.js';
 
 let home: string;
 let project: string;
 
 beforeEach(() => {
+  vi.clearAllMocks();
   home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-grok-home-'));
   project = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-grok-proj-'));
   fs.mkdirSync(path.join(project, '.specweave'));
@@ -33,42 +37,22 @@ async function quiet(fn: () => Promise<unknown>): Promise<string> {
   return chunks.join('');
 }
 
-describe('Grok Build rate-limit handoff', () => {
-  it('does nothing until auto-handoff is on', () => {
-    expect(limitHitTarget(failure(), { home })).toBeUndefined();
+describe('rate-limit local checkpoint', () => {
+  it('returns valid empty JSON without scheduling when disabled or for another failure', async () => {
+    const run = (input: object) => quiet(() => usageGuardCommand({ home, limitHit: true, input: JSON.stringify(input) }));
+    expect(await run(failure())).toBe('{}\n');
+    writeSettings({ at: 90 }, home);
+    expect(await run(failure({ error: 'server_error' }))).toBe('{}\n');
+    expect(queueSessionCheckpoint).not.toHaveBeenCalled();
   });
 
-  it('hands off once per session, only on a rate limit, only inside a project', () => {
+  it.each(['sessionId', 'session_id'])('queues %s without pushing, releasing ownership or a premature success marker', async (field) => {
     writeSettings({ at: 90 }, home);
-    expect(limitHitTarget(failure({ error: 'server_error' }), { home })).toBeUndefined();
-    // ~/.specweave holds auto-handoff settings; that alone must not make home a project
-    expect(limitHitTarget(failure({ cwd: home, sessionId: 'g-out' }), { home })).toBeUndefined();
-    expect(limitHitTarget(failure(), { home })).toBe(project);
-    expect(limitHitTarget(failure(), { home })).toBeUndefined();
-    expect(fs.readFileSync(path.join(home, '.specweave', 'usage', 'g-1.limit-hit'), 'utf8')).toContain('rate_limit');
-  });
-
-  it('hands off again once the shortest window could have reset, not before', () => {
-    writeSettings({ at: 90 }, home);
-    const now = Date.parse('2026-10-03T06:00:00Z');
-    expect(limitHitTarget(failure(), { home, now })).toBe(project);
-    expect(limitHitTarget(failure(), { home, now: now + LIMIT_HIT_REARM_MS - 60_000 })).toBeUndefined();
-    expect(limitHitTarget(failure(), { home, now: now + LIMIT_HIT_REARM_MS + 60_000 })).toBe(project);
-  });
-
-  it('Claude Code: a StopFailure rate_limit hands off even after the Stop hook already asked', () => {
-    writeSettings({ at: 90 }, home);
-    fs.mkdirSync(path.join(home, '.specweave', 'usage'), { recursive: true });
-    fs.writeFileSync(path.join(home, '.specweave', 'usage', 'c-1.handed-off'), '{"window":"5-hour","percent":91}\n');
-    const claudeInput = { session_id: 'c-1', hook_event_name: 'StopFailure', cwd: project, error: 'rate_limit', error_details: '429' };
-    expect(limitHitTarget(claudeInput, { home })).toBe(project);
-    expect(limitHitTarget(claudeInput, { home })).toBeUndefined();
-  });
-
-  it('accepts the snake_case session id too and rejects ids that escape the usage folder', () => {
-    writeSettings({ at: 90 }, home);
-    expect(limitHitTarget({ session_id: 'g-2', cwd: project, error: 'rate_limit' }, { home })).toBe(project);
-    expect(limitHitTarget(failure({ sessionId: '../../x' }), { home })).toBeUndefined();
+    const input = { [field]: 'g-1', cwd: project, error: 'rate_limit' };
+    const out = await quiet(() => usageGuardCommand({ home, limitHit: true, input: JSON.stringify(input) }));
+    expect(out).toBe('{}\n');
+    expect(queueSessionCheckpoint).toHaveBeenCalledExactlyOnceWith(input, { home });
+    expect(fs.existsSync(path.join(home, '.specweave', 'usage'))).toBe(false);
   });
 
   it('auto-handoff on writes the Grok hook only when Grok is installed, and off removes it', async () => {
