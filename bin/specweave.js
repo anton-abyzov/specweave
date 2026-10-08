@@ -282,7 +282,7 @@ program
   .command('jev <action> [args...]')
   .description('Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage')
   .option('--json', 'Machine-readable JSON output')
-  .option('--provider <name>', 'setup: openrouter | typesafe')
+  .option('--provider <name>', 'setup: openrouter | typesafe | openai')
   .option('--model <model>', 'setup: model id (defaults to the provider default)')
   .option('--guard-bash', 'setup: enable the opt-in PreToolUse Bash guard')
   .option('--no-guard-bash', 'setup: disable the Bash guard')

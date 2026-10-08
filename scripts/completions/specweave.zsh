@@ -205,7 +205,7 @@ _specweave() {
                 jev)
                     _arguments \
                         '--json[Machine-readable JSON output]' \
-                        '--provider[setup\: openrouter | typesafe]' \
+                        '--provider[setup\: openrouter | typesafe | openai]' \
                         '--model[setup\: model id (defaults to the provider default)]' \
                         '--guard-bash[setup\: enable the opt-in PreToolUse Bash guard]' \
                         '--no-guard-bash[setup\: disable the Bash guard]' \
