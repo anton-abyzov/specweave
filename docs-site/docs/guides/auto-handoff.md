@@ -13,7 +13,7 @@ specweave auto-handoff status        # hook status and checkpoint directory
 specweave auto-handoff off           # restores your previous setup
 ```
 
-`on` writes to your own tool settings in your home folder, so it covers SpecWeave projects on that machine. Running it again repairs missing hooks without duplicating them. There is no daemon: each supported hook may queue one detached worker, which exits after saving.
+`on` writes to your own tool settings in your home folder, so it covers local directories and Git worktrees on that machine. A `.specweave` project adds context but is not required. Running it again repairs missing hooks without duplicating them. There is no daemon: each supported hook may queue one detached worker, which exits after saving.
 
 ## Why saving no longer waits for 90%
 
@@ -30,11 +30,11 @@ Automatic saving therefore does not read usage to decide whether to run, and it 
 | Grok Build | No regular checkpoint hook | `StopFailure` with `rate_limit` queues the same worker |
 | Other tools and cloud sessions without user hooks | Use explicit `specweave handoff` | Use explicit `specweave handoff` from an available shell or session |
 
-The hook command remains `specweave usage-guard`; failure hooks add `--limit-hit`. It returns without a model-visible instruction. A missing project or disabled setting is a no-op. Claude Code desktop, Remote Control and `claude -p` sessions need the relevant hook to run, but no longer need a status line or desktop usage cache.
+The hook command remains `specweave usage-guard`; failure hooks add `--limit-hit`. It returns without a model-visible instruction. An invalid or missing directory or session identity, or a disabled setting, is a no-op. Saving does not require a `.specweave` project. Claude Code desktop, Remote Control and `claude -p` sessions need the relevant hook to run, but no longer need a status line or desktop usage cache.
 
 ## What a checkpoint does
 
-1. The hook finds the current SpecWeave project and queues a detached local worker.
+1. The hook resolves the current directory and session identity and queues a detached local worker. It includes SpecWeave project context when available.
 2. Saves are throttled to once every five minutes per canonical worktree and session. Parallel sessions and separate worktrees have separate checkpoint locations; paths that resolve to the same worktree share its identity.
 3. The worker captures a handoff document and diff without modifying the checkout, index, branch or task claims. It makes no model calls, commits, pushes or other network requests.
 4. Only after a successful save, it writes a `current.json` receipt under `~/.specweave/checkpoints/<hash>/` that points to the saved files. Failed attempts do not replace the last successful receipt.
