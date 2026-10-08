@@ -61,6 +61,13 @@ describe('loadJevConfig', () => {
     expect(cfg.browse).toEqual({ allowDomains: ['example.com'], maxSteps: 5 });
   });
 
+  it('does not carry a Jev model into an environment-selected OpenAI provider', () => {
+    writeConfig({ enabled: true, provider: 'openrouter', model: 'jev-1.13', apiKeyEnv: 'OLD_KEY' });
+    const config = loadJevConfig(root, { SPECWEAVE_JEV_PROVIDER: 'openai' });
+    expect(config.model).toBe('gpt-6-luna');
+    expect(config.apiKeyEnv).toBeUndefined();
+  });
+
   it('applies the provider default model when the model is unset', () => {
     writeConfig({ enabled: true, provider: 'typesafe' });
     expect(loadJevConfig(root, {}).model).toBe('jev-latest');
@@ -86,7 +93,7 @@ describe('loadJevConfig', () => {
   });
 
   it('lets env override provider and model', () => {
-    writeConfig({ enabled: true, provider: 'openrouter', model: 'jev-1.13' });
+    writeConfig({ enabled: true, provider: 'openrouter', model: 'jev-1.13', apiKeyEnv: 'OLD_KEY' });
     const cfg = loadJevConfig(root, {
       SPECWEAVE_JEV_PROVIDER: 'typesafe',
       SPECWEAVE_JEV_MODEL: 'jev-experimental',
@@ -201,6 +208,7 @@ describe('resolveApiKey', () => {
     expect(JEV_PROVIDER_KEY_ENV).toEqual({
       openrouter: 'OPENROUTER_API_KEY',
       typesafe: 'TYPESAFE_API_KEY',
+      openai: 'OPENAI_API_KEY',
     });
   });
 });
@@ -260,3 +268,8 @@ describe('usage ledger', () => {
     expect(() => appendUsage(path.join(root, 'nope', '\0bad'), rec('ask', 0))).not.toThrow();
   });
 });
+
+ it('keeps unknown provider costs separate from a zero bill', () => {
+   appendUsage(root, { at: '2026-10-08T00:00:00Z', kind: 'ask', provider: 'openai', model: 'gpt-6-luna', input_tokens: 100, output_tokens: 0, latencyMs: 100, ok: true });
+   expect(readUsageSummary(root)).toMatchObject({ calls: 1, cost: 0, unknownCostCalls: 1 });
+ });

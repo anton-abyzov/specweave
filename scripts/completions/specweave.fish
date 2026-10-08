@@ -153,7 +153,7 @@ complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit 
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
-complete -c specweave -n "__fish_seen_subcommand_from jev" -l provider -d "setup: openrouter | typesafe"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l provider -d "setup: openrouter | typesafe | openai"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l model -d "setup: model id (defaults to the provider default)"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l guard-bash -d "setup: enable the opt-in PreToolUse Bash guard"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l no-guard-bash -d "setup: disable the Bash guard"

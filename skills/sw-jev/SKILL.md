@@ -24,7 +24,7 @@ ordered levels, for graded severity or risk.
 
 Every call sends its state — prompt text, task titles and acceptance criteria, the shell
 command, test-output tails, screened text, page text and element names — to the configured
-provider (OpenRouter or TypeSafe) under your own key. Secret-shaped values (tokens,
+provider (OpenRouter, TypeSafe or OpenAI) under your own key. Secret-shaped values (tokens,
 `--password`/`--token` flags, `KEY=value` assignments, bearer headers, URL credentials)
 are masked heuristically first and the count is reported, but masking is best-effort,
 never a guarantee.
@@ -33,12 +33,29 @@ never a guarantee.
 
 Key in the environment: `OPENROUTER_API_KEY` (endpoint
 `https://openrouter.ai/api/v1/systemone`, model `jev-1.13`) or `TYPESAFE_API_KEY`
-(`https://api.typesafe.ai/v1/systemone`, model `jev-latest`); `JEV_API_KEY` works for
-either. Never print, echo, log or commit the value — report the variable **name** only.
+(`https://api.typesafe.ai/v1/systemone`, model `jev-latest`), or `OPENAI_API_KEY`
+(`https://api.openai.com/v1/decisions`, model `gpt-6-luna`). `JEV_API_KEY` is a fallback
+for all three providers. Never print, echo, log or commit the value — report the variable **name** only.
 CLI: `specweave jev setup` pings live, then writes `jev.enabled: true` into
 `.specweave/config.json`. Manual path: confirm the variable exists without printing it
 (`grep -q OPENROUTER_API_KEY .env`, PowerShell `Select-String -Quiet`), then set
 `"jev": { "enabled": true }` in `.specweave/config.json` yourself.
+
+### OpenAI Decisions (optional)
+
+Run `specweave jev setup --provider openai` to ping with `OPENAI_API_KEY` and enable
+this provider in this project. Default remains off. The CLI maps `predicate` to
+`noul` and validates choices, score distributions and refusals. Do not send System
+One's `state`/question-map wire format to OpenAI: it requires `input` and a named
+`questions` array with `choices` or `levels`.
+
+Calibrate OpenAI thresholds on labeled project examples before routing work; existing
+Jev thresholds are not verified for this model. Refusal, timeout, malformed answers
+or exhausted budgets keep the caller's normal fallback. No estimate grants command
+permission, proves an AC complete or overrides deterministic safeguards. Requests
+have 40-question/512-KiB caps, a 1-MiB response cap and one total deadline. Retain
+request IDs and evidence hashes, never raw source contents. See the official
+[Decisions guide](https://developers.openai.com/api/docs/guides/decisions).
 
 ## Check it works
 
