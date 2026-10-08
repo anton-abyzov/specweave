@@ -63,6 +63,10 @@ export interface WorkHandoffOptions {
    * working, so claims stay and no `handoff` event is written.
    */
   checkpoint?: boolean;
+  /** Automatic session checkpoint: capture this worktree, tolerate ambiguous
+   * increment context, and leave the shared handoff pointer untouched. Requires
+   * checkpoint:true and an isolated out path; explicit handoff is unchanged. */
+  checkpointRoot?: string;
   /** Override the agent id (tests). */
   agent?: string;
 }
@@ -91,6 +95,7 @@ export const HANDOFF_POINTER_FILE = 'handoff-latest.txt';
 export const AUTO_HANDOFF_FILE = 'handoff.auto.md';
 
 export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOptions = {}): Promise<WorkHandoffResult> {
+  const isolatedCheckpoint = opts.checkpoint === true && !!opts.checkpointRoot && !!opts.out;
   const passedRoot = path.resolve(repoRoot);
   const resolved = resolveEffectiveRoot(passedRoot);
   const resolvedIsSpecWeave = fs.existsSync(path.join(resolved, '.specweave', 'config.json'));
@@ -107,7 +112,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
       incDir = r.dir;
     } catch (e) {
       if (e instanceof IncrementResolutionError) {
-        if (e.candidates.length > 1 && !opts.incrementId) throw new AmbiguousActiveIncrementError(e.candidates);
+        if (e.candidates.length > 1 && !opts.incrementId && !isolatedCheckpoint) throw new AmbiguousActiveIncrementError(e.candidates);
         if (opts.incrementId) throw e;
         // 0 active → git + notes handoff (no increment section)
       } else {
@@ -147,7 +152,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const { docPath, diffPath } = resolveWritePaths(effectiveRoot, isSpecWeave, incDir, opts.out);
 
   // ── Git + scrub ────────────────────────────────────────────────────────
-  const git = captureGitState(effectiveRoot, diffPath);
+  const git = captureGitState(isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot, diffPath, { strict: isolatedCheckpoint });
   const intentRedactions: Record<string, number> = {};
   const intents = isSpecWeave ? readIntentContext(effectiveRoot, intentRedactions) : undefined;
   const intentLink = intents ? `[Open the intent board](${path.relative(path.dirname(docPath), path.join(effectiveRoot, INTENT_BOARD_PATH)).replace(/\\/g, '/')})` : undefined;
@@ -165,7 +170,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const docInput: HandoffDocInput = {
     docPath,
     diffPath,
-    repoRoot: effectiveRoot,
+    repoRoot: isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot,
     generatedAt: new Date().toISOString(),
     isSpecWeave,
     agent,
@@ -191,7 +196,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     try { writeHandoffReport(incDir, incrementId); } catch { /* evidence is best-effort */ }
   }
   writeDoc(docPath, renderHandoffDoc(docInput));
-  if (isSpecWeave) writePointer(effectiveRoot, docPath);
+  if (isSpecWeave && !isolatedCheckpoint) writePointer(effectiveRoot, docPath);
   // The snapshot is taken after the doc is written, so it carries the doc.
   if (opts.push !== false && !opts.checkpoint) {
     docInput.push = pushHandoff(effectiveRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
