@@ -31,6 +31,8 @@ This is the source of the `specweave` npm package: a CLI plus a Claude Code plug
 
 From GitHub alone, no local tag push: run **Release & Publish** on `develop` from the Actions tab, or `gh workflow run release.yml --ref develop -f version_type=patch` (or `-f version=X.Y.Z`). It bumps `package.json`, the plugin and marketplace manifests and the CHANGELOG (an `## [Unreleased]` section becomes the entry; without one, the commits since the last tag are listed), commits `Release X.Y.Z` to `develop`, tags `vX.Y.Z` and publishes to npm through GitHub OIDC trusted publishing. Tick `dry_run` to bump, build and pack without pushing or publishing. If the publish fails after the push, run it again with `version` set to that version.
 
+When branch protection requires PRs, first bump the version/manifests/CHANGELOG in a reviewed PR and merge it, then run `gh workflow run release.yml --ref develop -f version=X.Y.Z` with that exact version. The workflow releases the existing commit and avoids a direct version-bump push to the protected branch. An older stable version is rejected against npm `latest`; rebase concurrent release branches and choose a newer version.
+
 Pushing a `vX.Y.Z` tag still works: bump with `npm run release:patch` (or `:minor`, `:major`), merge to `develop`, tag that commit. The workflow checks the tag against `package.json` and publishes the same way. No local npm token is needed or used.
 
 ## Project notes

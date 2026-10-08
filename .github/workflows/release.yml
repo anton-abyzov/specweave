@@ -197,6 +197,11 @@ jobs:
           awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
           cat /tmp/release-notes.md
 
+      - name: Prevent an older stable release from replacing npm latest
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: node scripts/release/guard-publish-version.mjs "$VERSION"
+
       # Push before publishing: a rejected push (develop moved on) stops the
       # run with nothing on npm. If the publish then fails, re-run with
       # version set to this version; the existing tag on HEAD is reused.
@@ -241,7 +246,7 @@ jobs:
             exit 0
           fi
           # Check if it's a prerelease version
-          if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
+          if [[ "${VERSION%%+*}" == *"-"* ]]; then
             echo "Publishing prerelease version with 'next' tag..."
             npm publish --access public --tag next
           else
@@ -273,7 +278,7 @@ jobs:
             exit 0
           fi
           # Check if it's a prerelease (contains -rc, -beta, -alpha)
-          if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
+          if [[ "${VERSION%%+*}" == *"-"* ]]; then
             gh release create "v$VERSION" \
               --title "v$VERSION" \
               --notes-file /tmp/release-notes.md \
