@@ -65,7 +65,7 @@ SpecWeave's [Verified Skills Standard](/docs/skills/verified/verified-skills) de
 2. **Verified** — LLM-based semantic analysis on top of pattern scanning. ~$0.03 per skill. Catches social engineering, scope inflation, and multi-step attacks.
 3. **Certified** — Human security review plus sandbox testing. $50-200. For high-trust, widely-used skills.
 
-Every skill published to [verifiedskill.com](https://verifiedskill.com) passes at least Tier 1 before it reaches any developer. Skills that fail are rejected with detailed findings explaining exactly what was flagged and why.
+Every skill published to [verified-skill.com](https://verified-skill.com) passes at least Tier 1 before it reaches any developer. Skills that fail are rejected with detailed findings explaining exactly what was flagged and why.
 
 The scanning methodology is fully transparent. The [52 patterns](/docs/skills/verified/secure-skill-factory-standard) are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.
 
@@ -83,4 +83,4 @@ The skill ecosystem is growing fast. Making sure it grows safely is not optional
 
 ---
 
-*The Snyk ToxicSkills study is available at [snyk.io/blog/toxicskills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/). SpecWeave's scanner test results are based on samples from [snyk-labs/toxicskills-goof](https://github.com/snyk-labs/toxicskills-goof). The verified skills registry is at [verifiedskill.com](https://verifiedskill.com).*
+*The Snyk ToxicSkills study is available at [snyk.io/blog/toxicskills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/). SpecWeave's scanner test results are based on samples from [snyk-labs/toxicskills-goof](https://github.com/snyk-labs/toxicskills-goof). The verified skills registry is at [verified-skill.com](https://verified-skill.com).*
