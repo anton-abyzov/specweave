@@ -80,18 +80,19 @@ prints the newest index with the increments you can act on now first, then the o
 
 `specweave handoff` never overwrites a `handoff.md` a person wrote (one without the generated `<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it. Anything between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next handoff.
 
-## Hand off automatically
+## Keep a local checkpoint automatically
 
-On your own machine, SpecWeave can hand off for you before a session runs out:
+On your own machine, enable background recovery checkpoints:
 
 ```bash
-specweave auto-handoff on            # hand off at 90% of any usage window
-specweave auto-handoff on --at 80    # or pick your own threshold
-specweave auto-handoff status
+specweave auto-handoff on            # silent local saves after turns
+specweave auto-handoff status        # hook status and checkpoint directory
 specweave auto-handoff off           # restores your previous setup
 ```
 
-At 90% of the fullest usage window, Claude Code and Codex stop once and run `specweave handoff`; when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
+Claude Code and Codex queue a detached local worker after a turn, throttled to once every five minutes per canonical worktree and session. Claude Code and Grok Build also queue it when a turn fails with `rate_limit`. Saving requires no model, usage reading or network. It never stops your session, releases claims or pushes work. A plan's 90% or 100% reading does not establish that the current provider will reject the next request, especially with credits or a proxy.
+
+A successful save leaves a `current.json` receipt under `~/.specweave/checkpoints/<hash>/`, pointing to a handoff document and diff. Inspect these files for local recovery; `pickup` does not apply them automatically. When you choose to transfer work, run `specweave handoff` as above so ownership and edits reach the next tool or machine. [Automatic checkpoint rules](/docs/guides/auto-handoff/) covers recovery, upgrades and hook support.
 
 ## Who holds a task
 
