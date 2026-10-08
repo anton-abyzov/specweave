@@ -84,7 +84,8 @@ export function captureGitState(repoRoot: string, diffOutputPath: string, opts: 
       return trim ? result.trim() : result;
     } catch (error) {
       // Missing HEAD/upstream are normal. Timeouts and required commands are not.
-      if (opts.strict && (required || (error as { signal?: string }).signal || (error as NodeJS.ErrnoException).code)) {
+      if (opts.strict && (required || (error as { status?: number }).status !== 128 ||
+        (error as { signal?: string }).signal || typeof (error as NodeJS.ErrnoException).code === 'string')) {
         throw new Error('checkpoint Git capture failed');
       }
       return null;
