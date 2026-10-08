@@ -61,19 +61,27 @@ its resume prompt, then `specweave pickup <id>`.
 Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next
 `handoff`.
 
-## Hand off by itself
+## Keep local checkpoints while working
 
-To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code,
-Codex and Grok Build, on their own machine; not in cloud sessions). A session then hands
-off at 90% of the 5-hour or weekly limit (`--at <percent>` to change it), and a Claude
-Code or Grok turn that hits the limit outright hands off from a hook. `auto-handoff
-status` shows the hooks and the last usage reading. When its Stop hook asks you to hand
-off, run the handoff it names.
+`specweave auto-handoff on` enables silent background checkpoints on the user's
+machine. Claude Code and Codex queue them after a `Stop`, at most once every five
+minutes per canonical worktree and session. Claude Code and Grok Build also queue
+the same local worker after a `StopFailure` with `rate_limit`. The worker uses no
+model or network, never pushes or releases claims, and leaves the checkout untouched.
+There is no daemon. `auto-handoff status` shows the checkpoint directory.
 
-Claude Code also warns the model itself near and at the 5-hour limit, with a note that
-starts "[Usage limit approaching" or "[Usage limit reached". Treat that note as the
-handoff moment: finish the current edit, run `specweave handoff --reason "usage limit"`
-(one command; it needs no summary from you) and stop.
+A successful save writes `~/.specweave/checkpoints/<hash>/current.json`, pointing to
+the saved handoff document and diff. These are local recovery files, not an ownership
+transfer. Inspect them before recovering; `specweave pickup` does not apply them.
+Use explicit `specweave handoff` when the user chooses to switch, especially to
+another machine that cannot see the local files.
+
+Usage percentages, including 100%, and notes starting "[Usage limit approaching" or
+"[Usage limit reached" are informational. They do not authorize a handoff or a stop:
+credits, a proxy or another provider may still let work continue. Saving does not
+require a usage reading. Existing enabled settings adopt this behavior after a CLI
+upgrade without changing hook commands. Legacy `--at` is accepted but does not set
+a checkpoint threshold.
 
 ## Pick up
 
