@@ -46,7 +46,7 @@ const PLANS = [
     lead: 'Two weeks to get a whole team onto one workflow that survives a usage limit.',
     features: [
       'SpecWeave set up in one of your repositories, with your AGENTS.md written',
-      'Auto-handoff between Claude Code and Codex for every engineer',
+      'Explicit handoff between Claude Code and Codex, plus local recovery checkpoints',
       "Your shared prompts moved into a private skill repository",
       'A live handoff drill with your team, then a written report',
       'Three months of Verified Skill Team for 5 seats included',
@@ -89,12 +89,13 @@ export default function Pricing() {
         <h2>What a pilot looks like</h2>
         <table><thead><tr><th>When</th><th>What happens</th></tr></thead><tbody>
           <tr><td>Day 1</td><td>A call to pick the repository and the work in flight. We read your current CLAUDE.md, AGENTS.md and prompts.</td></tr>
-          <tr><td>Days 2 to 5</td><td>SpecWeave goes in on a branch you review: one AGENTS.md every tool reads, specs for the work in flight, auto-handoff on for each engineer's tools.</td></tr>
+          <tr><td>Days 2 to 5</td><td>SpecWeave goes in on a branch you review: one AGENTS.md every tool reads, specs for the work in flight, local recovery checkpoints and an explicit handoff workflow.</td></tr>
           <tr><td>Days 6 to 9</td><td>Shared prompts become skills in a private repository, installed with one command into Claude Code and Codex.</td></tr>
           <tr><td>Day 10</td><td>The drill: an engineer runs out of Claude Code mid-task and Codex picks it up from the handoff. You get the HTML evidence report.</td></tr>
         </tbody></table>
 
         <h2>Questions teams ask</h2>
+        <details><summary>Is SpecWeave Studio included?</summary><p><Link to="/studio">SpecWeave Studio</Link> is a separate private pilot for native sessions across machines. The offer above covers the SpecWeave workflow and the stated Verified Skill seats. Studio availability, scope and terms are agreed separately.</p></details>
         <details><summary>Do we need the pilot to use SpecWeave?</summary><p>No. <code>npm install -g specweave</code> and the <Link to="/docs/getting-started">quick start</Link> are enough for one developer. The pilot is for teams that want it set up across several people and tools at once.</p></details>
         <details><summary>What gets saved automatically?</summary><p><code>specweave auto-handoff on</code> keeps local recovery checkpoints after turns, at most once every five minutes per worktree and session. It never stops work on quota, pushes or releases claims. Use <code>specweave handoff</code> when you choose to transfer work; <code>pickup</code> does not apply automatic checkpoints. Details in <Link to="/docs/guides/auto-handoff">automatic checkpoint rules</Link>.</p></details>
         <details><summary>Where does our code go?</summary><p>Nowhere new. Specs, the ledger and handoffs are files in your repository. Private skills live in your own GitHub repositories; Verified Skill syncs and scans them for install.</p></details>
