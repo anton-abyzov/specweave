@@ -1,14 +1,14 @@
 ---
-description: Delegate closed-set decisions to Jev (TypeSafe System One) instead of a frontier turn — routing, shell-command safety, text screening, failure triage. Use for "jev", "system one", "classify this".
+description: Delegate closed-set decisions to Jev (TypeSafe System One) or optional OpenAI Decisions instead of a frontier turn — routing, shell-command safety, text screening, failure triage. Use for "jev", "system one", "classify this".
 argument-hint: "[doctor|setup|ask|route|task|guard|screen|failure|browse|usage]"
-version: 3.0.0
+version: 3.0.1
 ---
 
-# sw-jev — closed-set decisions in 250 ms
+# sw-jev — bounded decisions
 
-Jev (`jev-1.13`) is a **selection** model: you give it state plus questions whose answers
-are enumerated in advance, and it returns the chosen option with calibrated probabilities
-in about 250 ms for about $0.00002. It cannot answer outside your schema and never writes
+These **selection** models evaluate state against questions whose answers are
+enumerated in advance and return probabilities. Measure latency, cost and error rates
+on your own fixtures before enabling routing. It cannot answer outside your schema and never writes
 code, prose or explanations. Run `specweave --version`: exit 0 → **CLI path**; not found
 → **manual path** (the same POST by hand; curl and PowerShell forms below).
 
