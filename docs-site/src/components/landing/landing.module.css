@@ -313,7 +313,7 @@
   pointer-events: none;
 }
 
-.stageBeatActive {
+.stageBeat.stageBeatActive {
   opacity: 1;
   transform: none;
 }
