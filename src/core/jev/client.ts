@@ -22,6 +22,7 @@ import {
 } from './config.js';
 import { redactSecrets } from './redact.js';
 import { appendUsage } from './usage.js';
+import { decisionsRequest, decisionsResponse, DecisionsAdapterError, DECISIONS_BUDGET, decisionsEvidenceHash } from './openai.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
@@ -49,6 +50,8 @@ export interface JevResponse {
   usage: { input_tokens: number; output_tokens: number; cost?: number };
   latencyMs: number;
   id?: string;
+  requestId?: string;
+  evidenceHash?: string;
   /** How many secret-shaped spans {@link redactSecrets} masked out of the state. */
   redactions?: number;
 }
@@ -62,7 +65,8 @@ export type JevErrorCode =
   | 'overloaded'
   | 'transport'
   | 'timeout'
-  | 'schema';
+  | 'schema'
+  | 'refusal';
 
 export class JevError extends Error {
   readonly code: JevErrorCode;
@@ -298,40 +302,36 @@ export class JevClient {
 
     // Questions carry user-controlled AC text, skill descriptions and custom criteria.
     // Scrub the whole payload, not only state. Round-trip first to preserve JSON semantics.
-    const redacted = redactContent(JSON.parse(JSON.stringify({ model: this.config.model, state, questions })) as Json);
+    const isOpenAI = this.config.provider === 'openai';
+    if (isOpenAI && (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60_000
+      || !Number.isInteger(retries) || retries < 0 || retries > DEFAULT_RETRIES)) {
+      throw new JevError('validation', 'OpenAI Decisions requires a 1-60000ms deadline and 0-2 retries');
+    }
+    let request: Json;
+    try {
+      request = isOpenAI ? decisionsRequest(this.config.model, state, questions)
+        : { model: this.config.model, state, questions } as unknown as Json;
+    } catch (error) { throw this.toJevError(error); }
+    const serialized = JSON.stringify(request);
+    if (isOpenAI && Buffer.byteLength(serialized, 'utf8') > DECISIONS_BUDGET.requestBytes) {
+      throw new JevError('validation', 'OpenAI Decisions request budget exceeded');
+    }
+    const redacted = redactContent(JSON.parse(serialized) as Json);
     const body = JSON.stringify(redacted.value);
+    if (isOpenAI && Buffer.byteLength(body, 'utf8') > DECISIONS_BUDGET.requestBytes) {
+      throw new JevError('validation', 'OpenAI Decisions request budget exceeded');
+    }
 
     const started = Date.now();
     let lastError: JevError = new JevError('transport', 'request was never attempted');
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const response = await this.fetchImpl(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body,
-          signal: AbortSignal.timeout(timeoutMs),
-        });
+        const remainingMs = isOpenAI ? timeoutMs - (Date.now() - started) : timeoutMs;
+        if (remainingMs <= 0) throw new JevError('timeout', 'OpenAI Decisions deadline exceeded');
+        const { payload, requestId } = await this.requestPayload(url, body, remainingMs, isOpenAI);
 
-        if (!response.ok) {
-          throw new JevError(
-            statusToCode(response.status),
-            `Jev request failed with HTTP ${response.status}${await this.detail(response)}`,
-            { status: response.status },
-          );
-        }
-
-        let payload: unknown;
-        try {
-          payload = await response.json();
-        } catch {
-          throw new JevError('schema', 'Jev response was not valid JSON');
-        }
-
-        const answers = parseAnswers(payload, questions);
+        const answers = parseAnswers(isOpenAI ? decisionsResponse(payload, questions) : payload, questions);
         const raw = payload as Record<string, unknown>;
         const usage = isPlainObject(raw.usage) ? raw.usage : {};
         const latencyMs = Date.now() - started;
@@ -347,6 +347,8 @@ export class JevClient {
           },
           latencyMs,
           id: typeof raw.id === 'string' ? raw.id : undefined,
+          requestId,
+          evidenceHash: isOpenAI ? decisionsEvidenceHash(redacted.value) : undefined,
           redactions: redacted.redactions,
         };
 
@@ -355,12 +357,77 @@ export class JevClient {
       } catch (error) {
         lastError = this.toJevError(error);
         if (!lastError.retryable || attempt === retries) break;
-        await sleep(this.backoffMs * Math.pow(2, attempt));
+        const delay = this.backoffMs * Math.pow(2, attempt);
+        if (isOpenAI && Date.now() - started + delay >= timeoutMs) {
+          lastError = new JevError('timeout', 'OpenAI Decisions deadline exceeded');
+          break;
+        }
+        await sleep(delay);
       }
     }
 
     this.log(kind, null, false, usageLog, redacted.redactions);
     throw lastError;
+  }
+
+  private async requestPayload(url: string, body: string, timeoutMs: number, bounded: boolean): Promise<{ payload: unknown; requestId?: string }> {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_, reject) => {
+      if (bounded) timer = setTimeout(() => {
+        controller.abort();
+        reject(new JevError('timeout', 'OpenAI Decisions deadline exceeded'));
+      }, timeoutMs);
+    });
+    const request = async (): Promise<{ payload: unknown; requestId?: string }> => {
+      const response = await this.fetchImpl(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
+        body,
+        ...(bounded ? { redirect: 'error' as const } : {}),
+        signal: bounded ? controller.signal : AbortSignal.timeout(timeoutMs),
+      });
+      if (!response.ok) {
+        if (bounded) controller.abort();
+        // Provider errors can echo the request. Never put OpenAI response text in logs.
+        throw new JevError(statusToCode(response.status),
+          `Jev request failed with HTTP ${response.status}${bounded ? '' : await this.detail(response)}`,
+          { status: response.status });
+      }
+      let payload: unknown;
+      if (!bounded) {
+        try { payload = await response.json(); }
+        catch { throw new JevError('schema', 'Jev response was not valid JSON'); }
+      } else {
+        if (Number(response.headers.get('content-length')) > DECISIONS_BUDGET.responseBytes || !response.body) {
+          controller.abort();
+          throw new JevError('schema', 'OpenAI Decisions response is empty or exceeds its byte budget');
+        }
+        const reader = response.body.getReader();
+        const cancel = () => { void reader.cancel().catch(() => {}); };
+        controller.signal.addEventListener('abort', cancel, { once: true });
+        const decoder = new TextDecoder();
+        let size = 0, content = '';
+        try {
+          while (true) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            size += chunk.value.byteLength;
+            if (size > DECISIONS_BUDGET.responseBytes) {
+              cancel();
+              throw new JevError('schema', 'OpenAI Decisions response exceeds its byte budget');
+            }
+            content += decoder.decode(chunk.value, { stream: true });
+          }
+          content += decoder.decode();
+          try { payload = JSON.parse(content); }
+          catch { throw new JevError('schema', 'Jev response was not valid JSON'); }
+        } finally { controller.signal.removeEventListener('abort', cancel); reader.releaseLock(); }
+      }
+      return { payload, requestId: bounded ? response.headers.get('x-request-id') ?? undefined : undefined };
+    };
+    try { return await (bounded ? Promise.race([request(), deadline]) : request()); }
+    finally { if (timer) clearTimeout(timer); }
   }
 
   /** One tiny noul, no retries, no ledger entry. Never throws. */
@@ -399,6 +466,7 @@ export class JevClient {
   }
 
   private toJevError(error: unknown): JevError {
+    if (error instanceof DecisionsAdapterError) return new JevError(error.code, error.message);
     if (error instanceof JevError) {
       return new JevError(error.code, this.redact(error.message), {
         status: error.status,
@@ -406,7 +474,7 @@ export class JevClient {
       });
     }
     const name = (error as { name?: string } | null)?.name ?? '';
-    const message = this.redact(
+    const message = this.config.provider === 'openai' ? 'provider transport error' : this.redact(
       (error as { message?: string } | null)?.message ?? 'unknown transport failure',
     );
     if (name === 'AbortError' || name === 'TimeoutError') {
@@ -435,6 +503,8 @@ export class JevClient {
         cost: result?.usage.cost,
         latencyMs: result?.latencyMs ?? 0,
         redactions: result?.redactions ?? redactions,
+        requestId: result?.requestId,
+        evidenceHash: result?.evidenceHash,
         ok,
       });
     } catch {

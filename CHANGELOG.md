@@ -1,19 +1,29 @@
-## [3.0.4] - 2026-10-07
-
-### Added
-
-- `specweave handoff --all` writes one index of every active increment (tasks done, open criteria, what it waits on, a resume prompt) plus every nested checkout with local-only work, and `specweave pickup --all` prints it with the increments you can act on first. It commits and pushes nothing. A hand-written `handoff.md` is no longer overwritten; the generated doc goes to `handoff.auto.md`, and `<!-- keep -->` blocks survive the next handoff.
-- Releases can be cut from GitHub alone: run the Release & Publish workflow on `develop` and it bumps, commits, tags and publishes.
+## [3.0.6] - 2026-10-08
 
 ### Changed
 
 - `auto-handoff on` now queues silent, detached local checkpoints after turns, throttled to five minutes per canonical worktree and session. Claude Code and Grok `rate_limit` failures queue the same worker. Saving uses no model or network, never stops work on quota, pushes or releases claims. Successful saves publish a local `current.json` receipt pointing to the saved handoff document and diff; `auto-handoff status` shows the checkpoint directory. Explicit `handoff` still transfers ownership and pushes; `pickup` does not apply automatic checkpoints.
 - Existing enabled settings adopt the new behavior when the CLI is upgraded, with unchanged hook commands. Legacy `--at` is accepted without setting a threshold. Generated instructions and the handoff skill no longer treat usage warnings as orders to stop.
 
+## [3.0.5] - 2026-10-08
+
+### Added
+
+- OpenAI Decisions is an optional Jev provider (`specweave jev setup --provider openai`), with typed answers, bounded requests, usage receipts, and fail-closed parsing. Existing TypeSafe defaults and deterministic authorization stay unchanged.
+- Claude Code gets a `StopFailure` hook from `specweave auto-handoff on`. When a turn fails on the usage limit before the 90% Stop hook could ask (one long turn can jump past it), the hook writes and pushes the handoff itself, as Grok Build's already did.
+- `specweave auto-handoff status` shows whether each tool's hooks are in place and the last usage Claude Code and Codex reported, and says to run `on` again when something is missing.
+- `specweave handoff --all` writes one index of every active increment (tasks done, open criteria, what it waits on, a resume prompt) plus every nested checkout with local-only work, and `specweave pickup --all` prints it with the increments you can act on first. It commits and pushes nothing. A hand-written `handoff.md` is no longer overwritten; the generated doc goes to `handoff.auto.md`, and `<!-- keep -->` blocks survive the next handoff.
+- Releases can be cut from GitHub alone: run the Release & Publish workflow on `develop` and it bumps, commits, tags and publishes.
+
 ### Fixed
 
+- Stable releases refuse to replace npm `latest` with an older version, protecting concurrent release branches. Prereleases always use the `next` tag.
+- Claude Code no longer shows the 90% handoff request as "Stop hook error occurred". The Stop hook now passes it as context for the model and shows you "Auto-handoff: usage is at 92% of the 5-hour limit, so this session is handing off". Codex still gets a block, which is what it reads.
 - `specweave pickup` writes a `pickup` line to the ledger once per handoff, also when the handoff was made in the same checkout or kept local. Before, only a pickup that applied edits from git was recorded, so reports of handoffs between tools on one machine said "0 pickups".
+- Desktop, Remote Control and `claude -p` sessions run no status line, so the Stop hook never had a usage reading there. It now falls back to the desktop app's usage samples (`plan-usage-history.json`, newest sample of the session's organization, under 20 minutes old) or Claude Code's own usage cache in `~/.claude.json` (under an hour old), whichever is fresher. `auto-handoff status` says that such sessions otherwise hand off when a turn hits the limit.
 - `auto-handoff status` says when Codex has not trusted the Stop hook yet (Codex skips it until you approve it in a terminal).
+- The 90% Stop hook asked a session to hand off once and never again. A session that kept going after its 5-hour window reset was unguarded in the next window. It is now asked once per usage window.
+- A session the Stop hook had already asked to hand off was skipped by the limit-hit hook, so edits made after the 90% handoff were not handed off when the limit hit. The two hooks now keep separate markers.
 - `specweave update` no longer leaves an empty `# SpecWeave (added by specweave update)` header in `.gitignore` after removing the old log negations.
 
 ## [3.0.3] - 2026-09-26

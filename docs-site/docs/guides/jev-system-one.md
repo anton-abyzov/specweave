@@ -51,15 +51,51 @@ The key lives in the environment, never in a config file or a log:
 |---|---|---|---|
 | `openrouter` (default) | `https://openrouter.ai/api/v1/systemone` | `jev-1.13` | `OPENROUTER_API_KEY` |
 | `typesafe` | `https://api.typesafe.ai/v1/systemone` | `jev-latest` | `TYPESAFE_API_KEY` |
+| `openai` | `https://api.openai.com/v1/decisions` | `gpt-6-luna` | `OPENAI_API_KEY` |
 
-`JEV_API_KEY` is honoured for either. Every SpecWeave surface reports the variable
+`JEV_API_KEY` is honoured for all three providers. Every SpecWeave surface reports the variable
 **name** only and never its value. `SPECWEAVE_JEV=0` disables Jev for one process;
 `SPECWEAVE_JEV=1` enables it ad hoc.
+
+### Optional OpenAI Decisions provider
+
+```bash
+# OPENAI_API_KEY must already be in the environment; do not put it in config.
+specweave jev setup --provider openai
+specweave jev doctor
+specweave jev route "Explain the retry error" --json
+```
+
+Setup makes one small live ping and enables the provider only if it succeeds. Jev
+remains off by default; no global installation settings or other projects change.
+The adapter uses raw HTTP, so it does not require an OpenAI SDK upgrade.
+
+The [Decisions API](https://developers.openai.com/api/docs/guides/decisions) is in public
+beta. Its `predicate` answer maps to Jev's `noul`; choices retain both their probability
+map and separate confidence. Score levels use zero-based indices and scores remain
+fractional probability-weighted averages. This adapter accepts text/JSON state only;
+it does not fetch images, listen to audio, invoke tools or generate explanations.
+
+Evaluate labeled examples before routing real work. Thresholds configured for Jev
+have **not** been calibrated for OpenAI. Test abstention and false positives, preserve
+all deterministic permissions and require real tests for completion; a classifier
+cannot authorize a command or certify an acceptance criterion.
+
+Each request is capped locally at 40 questions and 512 KiB, its streamed response
+at 1 MiB, with at most two retries
+inside the total configured deadline (1–60,000 ms). Refusal, unknown/duplicate answers,
+invalid probabilities, timeouts and exhausted retries are unavailable results
+(a refusal makes the entire batch unavailable): callers
+retain their normal fallback. These are application budgets, not provider limits.
+Redirects are rejected. Provider error bodies and source text are excluded from errors
+and the usage ledger. The ledger retains a request ID and a hash of the redacted,
+versioned request for comparisons without storing source text.
+Token usage is recorded; cost remains unknown unless the provider supplies it.
 
 ### What leaves the machine
 
 Every `specweave jev` call sends the question state to the configured provider
-(OpenRouter or TypeSafe) under your own key: the prompt text, task titles and acceptance
+(OpenRouter, TypeSafe or OpenAI) under your own key: the prompt text, task titles and acceptance
 criteria, the shell command, test-output tails, screened text, and page text and element
 names while browsing. Secret-shaped values (tokens, `--password` and `--token` flags,
 `KEY=value` assignments, bearer headers and URL credentials) are masked heuristically
