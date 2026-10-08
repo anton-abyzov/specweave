@@ -72,13 +72,26 @@ export function readCodexRateLimits(account, timeoutMs = 15000) {
 }
 export function normalizeCodexQuota(result, now = Date.now()) {
   const byId = result?.rateLimitsByLimitId;
-  const entries = byId && typeof byId === 'object' ? Object.values(byId) : [];
-  const limits = byId?.codex || (entries.length === 1 ? entries[0] : null) || result?.rateLimits;
+  // A model bucket is not the account's main allowance. Never substitute it.
+  const legacy = result?.rateLimits;
+  const limits = byId?.codex || (!legacy?.limitId || legacy.limitId === 'codex' ? legacy : null);
   const ordinaryUsageAllowed = limits?.ordinaryUsageAllowed ?? result?.ordinaryUsageAllowed;
   const spendControlReached = limits?.spendControlReached ?? result?.spendControlReached;
-  const denied = ordinaryUsageAllowed === false || spendControlReached === true;
-  if (!limits && !denied) return null;
-  const normalize = w => w && Number.isFinite(w.usedPercent) && Number.isFinite(w.resetsAt) && w.usedPercent >= 0 && w.usedPercent <= 100 ? { usedPercent: w.usedPercent, resetsAt: w.resetsAt } : null;
+  const reached = limits?.rateLimitReachedType;
+  const rateLimitReachedType = typeof reached === 'string' && /^[a-z_]{1,80}$/.test(reached) ? reached : null;
+  const denied = ordinaryUsageAllowed === false || spendControlReached === true || (rateLimitReachedType !== null && ordinaryUsageAllowed !== true);
+  const rawCredits = limits?.credits;
+  const credits = rawCredits && typeof rawCredits.hasCredits === 'boolean' && typeof rawCredits.unlimited === 'boolean'
+    ? { hasCredits: rawCredits.hasCredits, unlimited: rawCredits.unlimited,
+        ...(typeof rawCredits.balance === 'string' && /^\d{1,24}(?:\.\d{1,8})?$/.test(rawCredits.balance) ? { balance: rawCredits.balance } : {}) } : null;
+  const rawResets = result?.rateLimitResetCredits;
+  const resetCount = rawResets?.availableCount;
+  const expiries = Array.isArray(rawResets?.credits) ? rawResets.credits.filter(c => c?.status === 'available' && Number.isFinite(c.expiresAt) && c.expiresAt > now / 1000 && c.expiresAt * 1000 <= 8640000000000000).map(c => c.expiresAt) : [];
+  const resetCredits = Number.isSafeInteger(resetCount) && resetCount >= 0 && resetCount <= 1000000
+    ? { availableCount: resetCount, ...(expiries.length ? { nextExpiresAt: new Date(Math.min(...expiries) * 1000).toISOString() } : {}) } : null;
+  const normalize = w => w && Number.isFinite(w.usedPercent) && w.usedPercent >= 0 && w.usedPercent <= 100
+    ? { usedPercent: w.usedPercent, resetsAt: Number.isFinite(w.resetsAt) && w.resetsAt > 0 ? w.resetsAt : null,
+        ...(Number.isSafeInteger(w.windowDurationMins) && w.windowDurationMins > 0 ? { windowDurationMins: w.windowDurationMins } : {}) } : null;
   let window = null, weekly = null;
   for (const [position, observed] of [['primary', limits?.primary], ['secondary', limits?.secondary]]) {
     const w = normalize(observed); if (!w) continue;
@@ -86,10 +99,21 @@ export function normalizeCodexQuota(result, now = Date.now()) {
     if (weeklyWindow) { if (!weekly || w.usedPercent > weekly.usedPercent) weekly = w; }
     else if (!window || w.usedPercent > window.usedPercent) window = w;
   }
-  if (!window && !weekly && !denied) return null;
-  return { window, weekly, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'native-app-server',
-    ...(typeof ordinaryUsageAllowed === 'boolean' ? { ordinaryUsageAllowed } : {}), ...(typeof spendControlReached === 'boolean' ? { spendControlReached } : {}), ...(denied ? { denied: true } : {}) };
+  const buckets = byId && typeof byId === 'object' && !Array.isArray(byId) ? Object.entries(byId) : [];
+  if (limits && !buckets.some(([id]) => id === 'codex')) buckets.unshift(['codex', limits]);
+  const windows = buckets.slice(0, 16).flatMap(([bucketId, bucket]) => {
+    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(bucketId)) return [];
+    return ['primary', 'secondary'].flatMap(position => {
+      const w = normalize(bucket?.[position]);
+      return w ? [{ ...w, id: `${bucketId}:${position}`, bucketId, appliesToSelection: bucketId === 'codex' }] : [];
+    });
+  });
+  if (!window && !weekly && !windows.length && !denied && typeof ordinaryUsageAllowed !== 'boolean' && !credits && !resetCredits) return null;
+  return { window, weekly, windows, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'native-app-server',
+    ...(typeof ordinaryUsageAllowed === 'boolean' ? { ordinaryUsageAllowed } : {}), ...(typeof spendControlReached === 'boolean' ? { spendControlReached } : {}),
+    ...(rateLimitReachedType ? { rateLimitReachedType } : {}), ...(denied ? { denied: true } : {}), ...(credits ? { credits } : {}), ...(resetCredits ? { resetCredits } : {}) };
 }
+
 function serviceProbe(service) {
   return new Promise(resolve => {
     const socket = createConnection({ host: '127.0.0.1', port: service.port });

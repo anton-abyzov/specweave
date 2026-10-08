@@ -59,3 +59,22 @@ test('stale positive legacy Claude slot state cannot regain eligibility from man
   const flagged = { id: 'claude-4', provider: 'claude', authenticated: true, authKind: 'claude.ai', authError: 'profile-isolation-unverified', quota: quota() };
   state.accounts.push(flagged); assert.equal(accountStatus(flagged), 'unknown'); assert.equal(recommend(state, { accountId: flagged.id, allowUnknown: true }).id, null);
 });
+
+test('only fresh native permission overrides a full included window; denials, old failures and resets stay fenced', () => {
+  const now = Date.now(), make = extras => ({ id: 'a', provider: 'codex', authenticated: true, quota: { ...quota({ now, used: 100, weekly: 100 }), ...extras } });
+  const allowed = make({ source: 'native-app-server', ordinaryUsageAllowed: true });
+  assert.equal(accountStatus(allowed, [], now), 'ready');
+  assert.equal(accountStatus(make({ source: 'manual', ordinaryUsageAllowed: true }), [], now), 'exhausted');
+  for (const refusal of [{ denied: true }, { ordinaryUsageAllowed: false }, { spendControlReached: true }]) {
+    assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: true, credits: { hasCredits: true, unlimited: true }, ...refusal }), [], now), 'exhausted');
+  }
+  assert.equal(accountStatus({ ...allowed, lastQuotaErrorAt: new Date(now+1).toISOString() }, [], now), 'exhausted');
+  assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: true, expiresAt: new Date(now-1).toISOString() }), [], now), 'stale');
+  assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: true, window: { usedPercent: 100, resetsAt: now/1000-1 } }), [], now), 'stale');
+  assert.equal(accountStatus(make({ source: 'native-app-server', credits: { hasCredits: true, unlimited: true }, resetCredits: { availableCount: 2 } }), [], now), 'exhausted');
+  assert.equal(accountStatus(make({ source: 'native-app-server', window: null, weekly: null, ordinaryUsageAllowed: true }), [], now), 'ready');
+  assert.equal(accountStatus(make({ source: 'native-app-server', window: null, weekly: null, credits: { hasCredits: true, unlimited: true } }), [], now), 'unknown');
+  // OpenAI's app-server usage fixture permits ordinary work while carrying this limit explanation.
+  assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: true, spendControlReached: false, rateLimitReachedType: 'workspace_member_usage_limit_reached' }), [], now), 'ready');
+  assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: null, rateLimitReachedType: 'workspace_member_usage_limit_reached' }), [], now), 'exhausted');
+});

@@ -105,5 +105,33 @@ test('native window duration maps a weekly-only primary and honors ordinary/spen
     assert.equal(observed.denied, true); assert.equal(accountStatus({ authenticated: true, quota: observed }), 'exhausted');
   }
   const exhausted = normalizeCodexQuota({ rateLimits: { primary: { usedPercent: 100, resetsAt: 9999999999, windowDurationMins: 300 }, credits: { hasCredits: true, unlimited: true }, ordinaryUsageAllowed: true } });
-  assert.equal(accountStatus({ authenticated: true, quota: exhausted }), 'exhausted');
+  assert.equal(accountStatus({ authenticated: true, quota: exhausted }), 'ready');
+});
+
+test('native metadata preserves actual duration and separate credits without exposing reset identifiers', () => {
+  const now = Date.now();
+  const q = normalizeCodexQuota({ ordinaryUsageAllowed: true, rateLimits: { limitId: 'codex', primary: { usedPercent: 100, resetsAt: now/1000+900, windowDurationMins: 15 }, credits: { hasCredits: true, unlimited: false, balance: '42.50' } }, rateLimitResetCredits: { availableCount: 2, credits: [{ id: 'private-id', status: 'available', expiresAt: now/1000+3600 }] } }, now);
+  assert.equal(q.window.windowDurationMins, 15); assert.equal(q.credits.balance, '42.50'); assert.equal(q.resetCredits.availableCount, 2);
+  assert.ok(q.resetCredits.nextExpiresAt); assert.doesNotMatch(JSON.stringify(q), /private-id/);
+  assert.equal(accountStatus({ authenticated: true, quota: q }, [], now), 'ready');
+  const otherOnly = normalizeCodexQuota({ rateLimits: { limitId: 'other', primary: { usedPercent: 1, resetsAt: 9999999999 } }, rateLimitsByLimitId: { other: { primary: { usedPercent: 1, resetsAt: 9999999999 } } } });
+  assert.equal(otherOnly.window, null); assert.equal(otherOnly.weekly, null); assert.equal(otherOnly.windows[0].appliesToSelection, false);
+  assert.equal(accountStatus({ authenticated: true, quota: otherOnly }), 'unknown');
+  const malformed = normalizeCodexQuota({ rateLimits: { primary: { usedPercent: 1, resetsAt: 9999999999, windowDurationMins: -1 }, credits: { hasCredits: 'true', unlimited: true, balance: 'private-value' } }, rateLimitResetCredits: { availableCount: -2 } });
+  assert.equal(malformed.window.windowDurationMins, undefined); assert.equal(malformed.credits, undefined); assert.equal(malformed.resetCredits, undefined);
+  const invalidExpiry = normalizeCodexQuota({ rateLimitResetCredits: { availableCount: 1, credits: [{ status: 'available', expiresAt: 1e100 }] } });
+  assert.deepEqual(invalidExpiry.resetCredits, { availableCount: 1 });
+});
+
+test('separate model buckets are visible without replacing the main account allowance', () => {
+  const q = normalizeCodexQuota({ rateLimitsByLimitId: { codex: { primary: { usedPercent: 10, resetsAt: 9999999999, windowDurationMins: 10080 } }, codex_other: { primary: { usedPercent: 100, resetsAt: 9999999999, windowDurationMins: 60 } } } });
+  assert.equal(q.weekly.usedPercent, 10); assert.equal(q.windows.length, 2);
+  assert.equal(q.windows[1].appliesToSelection, false);
+  assert.equal(accountStatus({ authenticated: true, quota: q }), 'ready');
+  const explained = normalizeCodexQuota({ ordinaryUsageAllowed: true, rateLimits: { primary: { usedPercent: 100, resetsAt: 9999999999 }, spendControlReached: false, rateLimitReachedType: 'workspace_member_usage_limit_reached' } });
+  assert.equal(explained.denied, undefined); assert.equal(accountStatus({ authenticated: true, quota: explained }), 'ready');
+  const missingReset = normalizeCodexQuota({ rateLimits: { primary: { usedPercent: 10, resetsAt: 9999999999 }, secondary: { usedPercent: 100, resetsAt: null } } });
+  assert.equal(missingReset.weekly.usedPercent, 100); assert.equal(missingReset.weekly.resetsAt, null);
+  assert.equal(accountStatus({ authenticated: true, quota: missingReset }), 'stale');
+  assert.equal(accountStatus({ authenticated: true, quota: { ...missingReset, ordinaryUsageAllowed: true } }), 'ready');
 });

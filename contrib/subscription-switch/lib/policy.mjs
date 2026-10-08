@@ -16,9 +16,9 @@ export function validateQuota(quota, now = Date.now()) {
   if (!Number.isFinite(observed) || !Number.isFinite(expiry) || observed > now + 5000 || expiry <= observed || expiry - observed > 60 * 60 * 1000) throw new Error('Quota observation timestamp or expiry is invalid');
   for (const name of ['window', 'weekly']) {
     const q = quota[name]; if (q == null) continue;
-    if (!Number.isFinite(q.usedPercent) || q.usedPercent < 0 || q.usedPercent > 100 || !Number.isFinite(q.resetsAt) || q.resetsAt <= 0) throw new Error('Invalid quota percentage or reset timestamp');
+    if (!Number.isFinite(q.usedPercent) || q.usedPercent < 0 || q.usedPercent > 100 || (!(quota.source === 'native-app-server' && quota.ordinaryUsageAllowed === true && q.resetsAt === null) && (!Number.isFinite(q.resetsAt) || q.resetsAt <= 0))) throw new Error('Invalid quota percentage or reset timestamp');
   }
-  if (!quota.window && !quota.weekly && !(quota.denied === true && quota.source === 'native-app-server')) throw new Error('Quota observation requires an observed window or an authoritative native denial');
+  if (!quota.window && !quota.weekly && !(quota.source === 'native-app-server' && (typeof quota.ordinaryUsageAllowed === 'boolean' || quota.denied === true || quota.credits || quota.resetCredits || quota.windows?.length))) throw new Error('Quota observation requires an observed window or authoritative native metadata');
   return quota;
 }
 export function accountStatus(account, runs = [], now = Date.now()) {
@@ -32,13 +32,15 @@ export function accountStatus(account, runs = [], now = Date.now()) {
     if (!Number.isFinite(failedAt)) return 'stale';
     if (!q?.observedAt || Date.parse(q.observedAt) <= failedAt) return 'exhausted';
   }
-  if (!q || (!q.window && !q.weekly && !q.denied)) return 'unknown';
+  if (!q) return 'unknown';
   try { validateQuota(q, now); } catch { return 'stale'; }
   if (Date.parse(q.expiresAt) <= now || now - Date.parse(q.observedAt) > QUOTA_TTL_MS) return 'stale';
-  if (q.denied === true || q.ordinaryUsageAllowed === false || q.spendControlReached === true) return 'exhausted';
+  if (q.denied === true || q.ordinaryUsageAllowed === false || q.spendControlReached === true || (q.rateLimitReachedType && q.ordinaryUsageAllowed !== true)) return 'exhausted';
   // A passed reset does not prove quota replenishment. Require fresh native
   // readback rather than treating the prior observation as available capacity.
-  if ([q.window, q.weekly].filter(Boolean).some(w => w.resetsAt * 1000 <= now)) return 'stale';
+  if ([q.window, q.weekly].filter(Boolean).some(w => w.resetsAt !== null && w.resetsAt * 1000 <= now)) return 'stale';
+  if (q.source === 'native-app-server' && q.ordinaryUsageAllowed === true) return 'ready';
+  if (!q.window && !q.weekly) return 'unknown';
   if ([q.window, q.weekly].filter(Boolean).some(w => w.usedPercent >= 100)) return 'exhausted';
   return 'ready';
 }
@@ -62,7 +64,8 @@ export function recommend(state, { provider = state.policy.preferredProvider, ac
   return { provider: provider || 'any', id: account?.id || null, reason: account ? `${state.policy.mode}; ${accountStatus(account, state.runs, now)} observation` : 'No eligible profile with fresh observed quota; unknown quota requires an explicit account and --allow-unknown' };
 }
 export function publicState(state) {
-  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError }) => ({ id, provider, label, authenticated, authKind, authError: authError || null,
+  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError, lastQuotaErrorAt }) => ({ id, provider, label, authenticated, authKind, authError: authError || null,
+    lastQuotaErrorAt: Number.isFinite(Date.parse(lastQuotaErrorAt)) ? new Date(lastQuotaErrorAt).toISOString() : null,
     status: accountStatus(state.accounts.find(a => a.id === id), state.runs), quota: quota || { window: null, weekly: null, observedAt: null, expiresAt: null, source: null } })),
     policy: state.policy, hosts: state.hosts, services: state.services,
     runs: state.runs.slice(-30).reverse().map(({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error }) => ({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error })),
