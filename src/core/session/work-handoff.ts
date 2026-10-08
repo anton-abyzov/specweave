@@ -165,7 +165,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     decisions: opts.decisions ?? [],
   });
   for (const [kind, count] of Object.entries(intentRedactions)) scrubbed.counts[kind] = (scrubbed.counts[kind] ?? 0) + count;
-  scrubDiffFileInPlace(diffPath, scrubbed.counts);
+  scrubDiffFileInPlace(diffPath, scrubbed.counts, isolatedCheckpoint);
 
   const docInput: HandoffDocInput = {
     docPath,
@@ -392,15 +392,27 @@ function scrubFields(fields: { reason?: string; summary?: string; next?: string;
   return { reason: one(fields.reason), summary: one(fields.summary), next: one(fields.next), gotcha: one(fields.gotcha), decisions, counts };
 }
 
-function scrubDiffFileInPlace(diffPath: string, counts: Record<string, number>): void {
+function scrubDiffFileInPlace(diffPath: string, counts: Record<string, number>, strict = false): void {
+  const temporary = `${diffPath}.scrubbed`;
   try {
-    if (!fs.existsSync(diffPath)) return;
+    if (!fs.existsSync(diffPath)) {
+      if (strict) throw new Error('checkpoint diff is missing');
+      return;
+    }
     const raw = fs.readFileSync(diffPath, 'utf-8');
     if (!raw) return;
     const { scrubbed, counts: diffCounts } = scrubSecrets(raw);
-    fs.writeFileSync(diffPath, scrubbed, 'utf-8');
+    if (strict) {
+      fs.writeFileSync(temporary, scrubbed, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+      fs.renameSync(temporary, diffPath);
+    } else {
+      fs.writeFileSync(diffPath, scrubbed, 'utf-8');
+    }
     for (const [k, v] of Object.entries(diffCounts)) counts[k] = (counts[k] ?? 0) + v;
-  } catch {
-    // best-effort
+  } catch (error) {
+    if (strict) throw error;
+    // Explicit handoff keeps its existing best-effort behavior.
+  } finally {
+    if (strict) try { fs.unlinkSync(temporary); } catch { /* renamed or absent */ }
   }
 }

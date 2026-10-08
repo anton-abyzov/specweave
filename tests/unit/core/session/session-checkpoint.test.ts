@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'node:fs';
+import fsDefault from 'fs';
+import { syncBuiltinESMExports } from 'node:module';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
+import ts from 'typescript';
 import {
   CHECKPOINT_INTERVAL_MS, CHECKPOINT_LOCK_STALE_MS, CHECKPOINT_MAX_WORKERS,
   checkpointDirectory, cleanupCheckpointRequest, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint,
@@ -17,7 +20,7 @@ function git(...args: string[]) {
 }
 function initRepo(dir: string) {
   fs.mkdirSync(dir, { recursive: true });
-  for (const args of [['init', '-q'], ['config', 'user.email', 'checkpoint@example.test'], ['config', 'user.name', 'Checkpoint']]) {
+  for (const args of [['init', '-q'], ['config', 'user.email', 'checkpoint@example.test'], ['config', 'user.name', 'Checkpoint'], ['config', 'core.hooksPath', path.join(dir, '.git', 'test-hooks')]]) {
     execFileSync('git', args, { cwd: dir, stdio: 'ignore' });
   }
   fs.writeFileSync(path.join(dir, 'app.txt'), 'before\n');
@@ -55,7 +58,7 @@ beforeEach(() => {
   fs.mkdirSync(home);
   initRepo(repo);
 });
-afterEach(() => { vi.unstubAllEnvs(); fs.rmSync(root, { recursive: true, force: true }); });
+afterEach(() => { vi.restoreAllMocks(); syncBuiltinESMExports(); vi.unstubAllEnvs(); fs.rmSync(root, { recursive: true, force: true }); });
 
 describe('local session checkpoints', () => {
   it('captures tracked and untracked work and summary without changing ownership, index, refs, or pointer', async () => {
@@ -131,6 +134,27 @@ describe('local session checkpoints', () => {
     expect(fs.existsSync(third!.docPath)).toBe(true);
   });
 
+  it('rechecks the successful receipt after acquiring a lease', async () => {
+    await capture();
+    const expired = expireReceipt();
+    const realWrite = fsDefault.writeFileSync;
+    let publishedDuringElection = false;
+    vi.spyOn(fsDefault, 'writeFileSync').mockImplementation((file, content, options) => {
+      const result = realWrite(file, content, options);
+      if (String(file).includes(`${path.sep}pending.lock${path.sep}`) && !publishedDuringElection) {
+        publishedDuringElection = true;
+        const receipt = JSON.parse(expired.bytes);
+        receipt.savedAt = new Date().toISOString();
+        realWrite(expired.file, JSON.stringify(receipt));
+      }
+      return result;
+    });
+    syncBuiltinESMExports();
+    expect(prepareSessionCheckpoint(input(), { home, now: Date.now() + 1000 })).toBeUndefined();
+    expect(publishedDuringElection).toBe(true);
+    expect(fs.existsSync(path.join(checkpointDirectory(input(), { home })!, 'pending.lock'))).toBe(false);
+  });
+
   it('leaves the last successful receipt untouched after Git failure and retries immediately', async () => {
     const first = await capture();
     const expired = expireReceipt();
@@ -159,15 +183,51 @@ describe('local session checkpoints', () => {
     const request = JSON.parse(fs.readFileSync(requests[0], 'utf8'));
     const lock = path.join(request.directory, 'pending.lock');
     const stale = (Date.now() - CHECKPOINT_LOCK_STALE_MS - 1000) / 1000;
-    fs.utimesSync(lock, stale, stale);
-    fs.utimesSync(request.slot, stale, stale);
+    fs.utimesSync(path.join(lock, `${request.token}.json`), stale, stale);
+    fs.utimesSync(path.join(request.slot, `${request.token}.json`), stale, stale);
     const replacement = prepareSessionCheckpoint({ ...input(), session_id: 'session-0' }, { home });
     expect(replacement).toBeDefined();
-    const currentLock = fs.readFileSync(lock, 'utf8');
+    const currentLock = fs.readdirSync(lock);
     cleanupCheckpointRequest(requests[0]);
-    expect(fs.readFileSync(lock, 'utf8')).toBe(currentLock);
+    expect(fs.readdirSync(lock)).toEqual(currentLock);
     for (const file of [...requests.slice(1), replacement!]) cleanupCheckpointRequest(file);
   });
+
+  it('retains the old receipt when a scrubbed diff cannot be written completely', async () => {
+    fs.writeFileSync(path.join(repo, 'app.txt'), 'checkpoint this change\n');
+    const first = await capture();
+    const expired = expireReceipt();
+    const realWrite = fsDefault.writeFileSync;
+    const write = vi.spyOn(fsDefault, 'writeFileSync').mockImplementation((file, content, options) => {
+      if (String(file).endsWith('.diff.scrubbed')) {
+        realWrite(file, 'truncated', options);
+        throw Object.assign(new Error('test disk full'), { code: 'ENOSPC' });
+      }
+      return realWrite(file, content, options);
+    });
+    syncBuiltinESMExports();
+    await capture();
+    expect(write.mock.calls.some(([file]) => String(file).endsWith('.diff.scrubbed'))).toBe(true);
+    expect(fs.readFileSync(expired.file, 'utf8')).toBe(expired.bytes);
+    expect(fs.readFileSync(first!.diffPath, 'utf8')).toContain('+checkpoint this change');
+    write.mockRestore();
+    syncBuiltinESMExports();
+    expect((await capture())?.docPath).not.toBe(first?.docPath);
+  });
+
+  it('fails within the Git budget and preserves recovery when a required Git command stalls', async () => {
+    const first = await capture();
+    const expired = expireReceipt();
+    const fakebin = path.join(root, 'slowbin');
+    fs.mkdirSync(fakebin);
+    fs.writeFileSync(path.join(fakebin, 'git'), '#!/bin/sh\nexec /bin/sleep 10\n', { mode: 0o755 });
+    vi.stubEnv('PATH', `${fakebin}${path.delimiter}${process.env.PATH}`);
+    const start = Date.now();
+    await capture();
+    expect(Date.now() - start).toBeLessThan(5000);
+    expect(fs.readFileSync(expired.file, 'utf8')).toBe(expired.bytes);
+    expect(fs.existsSync(first!.docPath)).toBe(true);
+  }, 10_000);
 
   it('scrubs secrets before persisting worker input and from the captured diff', async () => {
     const secret = 'ghp_' + 'a'.repeat(30);
@@ -195,5 +255,35 @@ describe('local session checkpoints', () => {
     expect(await capture({ cwd: plain })).toBeDefined();
     expect(prepareSessionCheckpoint({ ...input(), session_id: '../../escape' }, { home })).toBeUndefined();
     expect(prepareSessionCheckpoint({ ...input(), cwd: '/path-that-does-not-exist' }, { home })).toBeUndefined();
+  });
+
+  it.skipIf(process.platform === 'win32')('reaps helpers orphaned by a Git timeout when the POSIX capture worker exits', async () => {
+    const fixture = path.join(root, 'supervisor');
+    fs.mkdirSync(fixture);
+    const pidFile = path.join(fixture, 'helper.pid');
+    const fakeGit = path.join(fixture, 'git');
+    fs.writeFileSync(fakeGit, '#!/bin/sh\n/bin/sleep 60 &\nprintf "%s" "$!" > "$1"\nwait\n', { mode: 0o755 });
+    const source = fs.readFileSync(path.resolve('src/core/session/checkpoint-worker.ts'), 'utf8')
+      .replace("'./session-checkpoint.js'", "'./fixture-engine.mjs'");
+    const worker = path.join(fixture, 'worker.mjs');
+    fs.writeFileSync(worker, ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ES2020 } }).outputText);
+    fs.writeFileSync(path.join(fixture, 'fixture-engine.mjs'), [
+      "import { execFileSync } from 'node:child_process';",
+      'export const CHECKPOINT_WORKER_TIMEOUT_MS = 1500;',
+      'export function cleanupCheckpointRequest() {}',
+      `export async function runSessionCheckpoint() { try { execFileSync(${JSON.stringify(fakeGit)}, [${JSON.stringify(pidFile)}], { timeout: 150, killSignal: 'SIGKILL', stdio: 'ignore' }); } catch {} }`,
+    ].join('\n'));
+    const result = spawnSync(process.execPath, [worker, path.join(fixture, 'request.json')], { timeout: 4000, encoding: 'utf8' });
+    expect(result.status).toBe(0);
+    const pid = Number(fs.readFileSync(pidFile, 'utf8'));
+    expect(pid).toBeGreaterThan(0);
+    const running = () => {
+      const stat = spawnSync('ps', ['-o', 'stat=', '-p', String(pid)], { encoding: 'utf8' });
+      return stat.status === 0 && stat.stdout.trim() !== '' && !stat.stdout.trim().startsWith('Z');
+    };
+    const deadline = Date.now() + 1000;
+    while (running() && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
+    try { expect(running()).toBe(false); }
+    finally { if (running()) try { process.kill(pid, 'SIGKILL'); } catch { /* fixture already exited */ } }
   });
 });
