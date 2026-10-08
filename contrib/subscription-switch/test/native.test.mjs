@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, writeFile, access, readdir } from 'node:fs/promises';
+import { mkdir, writeFile, access, readdir, rm, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fixture, fakeBinary } from './helpers.mjs';
 import { nativeEnv, readCodexRateLimits, normalizeCodexQuota, nativeRunArgs, inspectAuth } from '../lib/native.mjs';
 import { recommend, accountStatus } from '../lib/policy.mjs';
 import { quota } from './helpers.mjs';
-import { readState, mutateState } from '../lib/state.mjs';
+import { readState, mutateState, findBinary } from '../lib/state.mjs';
 import { execute } from '../lib/util.mjs';
 test('supported app-server initialized handshake precedes account/rateLimits/read', async t => {
   const f = await fixture(t);
@@ -59,7 +59,7 @@ test('ambient legacy Claude OAuth in empty isolated roots does not prove multipl
   assert.equal(recommend(verified).id, null); assert.equal(recommend(verified, { accountId: 'claude-1', allowUnknown: true }).id, 'claude-1');
 });
 test('CLI reinspects isolated Claude login and blocks ambient fallback before spawning sign-in', async t => {
-  const f = await fixture(t), prefix = join(f.home, '.local/share/t3/providers/node_modules/.bin'); await mkdir(prefix, { recursive: true });
+  const f = await fixture(t), prefix = join(f.home, '.local/share/specweave/providers/node_modules/.bin'); await mkdir(prefix, { recursive: true });
   const marker = join(f.base, 'native-login-was-started'), binary = join(prefix, 'claude');
   await writeFile(binary, `#!/usr/bin/env node\nimport fs from 'node:fs';const args=process.argv.slice(2);if(args.join(' ')==='auth status --json'){if(process.env.ANTHROPIC_API_KEY||process.env.CLAUDE_CODE_OAUTH_TOKEN)process.exitCode=1;else console.log(JSON.stringify({loggedIn:true,authMethod:'oauth_token'}));}else{fs.writeFileSync(${JSON.stringify(marker)},'should never start');}\n`, { mode: 0o755 });
   // Stale state looks eligible, proving login uses current native readback.
@@ -75,6 +75,37 @@ test('CLI reinspects isolated Claude login and blocks ambient fallback before sp
   assert.equal(manual.exitCode, 0); const observed = JSON.parse(manual.stdout).accounts.find(a => a.id === target.id);
   assert.equal(observed.status, 'unknown'); assert.equal(observed.authError, 'profile-isolation-unverified');
   assert.equal(recommend(await readState(f.root), { accountId: target.id, allowUnknown: true }).id, null);
+});
+
+test('binary discovery prefers independent installations and never falls back to the optional workbench', async t => {
+  const f = await fixture(t), previousPath = process.env.PATH;
+  const bin = join(f.home, '.local/share/specweave/providers/bin'), modules = join(f.home, '.local/share/specweave/providers/node_modules/.bin');
+  const legacy = join(f.home, '.local/share/t3/providers/node_modules/.bin'), path = join(f.base, 'path');
+  for (const dir of [bin,modules,legacy,path]) { await mkdir(dir,{ recursive:true }); await writeFile(join(dir,'codex'),'#!/bin/sh\nexit 9\n',{ mode:0o755 }); }
+  try {
+    process.env.PATH = path;
+    assert.equal(findBinary('codex',f.home),join(bin,'codex'));
+    await rm(join(bin,'codex')); assert.equal(findBinary('codex',f.home),join(modules,'codex'));
+    await rm(join(modules,'codex')); assert.equal(findBinary('codex',f.home),join(path,'codex'));
+    await rm(join(path,'codex')); assert.equal(findBinary('codex',f.home),'codex');
+  } finally { if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath; }
+});
+
+test('native sign-in keeps the recorded binary and fails closed instead of rediscovering another login', async t => {
+  const f = await fixture(t), marker = join(f.base,'login-marker');
+  const binary = await fakeBinary(f.base,'recorded',`import fs from 'node:fs';if(process.argv.slice(2).join(' ')==='login status')console.log('Logged in using ChatGPT');else{fs.writeFileSync(${JSON.stringify(marker)},process.env.CODEX_HOME);process.exitCode=7;}`);
+  const otherDir = join(f.home,'.local/share/specweave/providers/bin'); await mkdir(otherDir,{recursive:true});
+  await writeFile(join(otherDir,'codex'),'#!/bin/sh\nexit 33\n',{mode:0o755});
+  await mutateState(f.root,s => Object.assign(s.accounts.find(a=>a.id==='codex-2'),{binary}));
+  const cli = fileURLToPath(new URL('../bin/specweave-switch.mjs',import.meta.url));
+  const env = {...process.env,HOME:f.home,SPECWEAVE_SWITCH_STATE:f.root};
+  const result = await execute(process.execPath,[cli,'account','login','codex-2'],{env,timeoutMs:5000});
+  assert.equal(result.exitCode,7); assert.equal(await readFile(marker,'utf8'),join(f.home,'.local/share/specweave/account-profiles/codex-2'));
+  assert.equal((await readState(f.root)).accounts.find(a=>a.id==='codex-2').binary,binary);
+  await rm(marker); await rm(binary);
+  const missing = await execute(process.execPath,[cli,'account','login','codex-2'],{env,timeoutMs:5000});
+  assert.equal(missing.exitCode,1); assert.match(missing.stderr,/Configured native binary is unavailable/);
+  await assert.rejects(access(marker),{code:'ENOENT'});
 });
 test('native environment keeps HOME while selecting config home and suppressing inherited API auth', () => {
   const prior = process.env.OPENAI_API_KEY; process.env.OPENAI_API_KEY = 'synthetic';

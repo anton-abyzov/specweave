@@ -2,7 +2,7 @@ import { homedir, hostname } from 'node:os';
 import { join } from 'node:path';
 import { mkdir, readFile } from 'node:fs/promises';
 import { atomicJSON, withLock } from './util.mjs';
-import { existsSync } from 'node:fs';
+import { accessSync, constants, statSync } from 'node:fs';
 
 export function stateRoot() { return process.env.SPECWEAVE_SWITCH_STATE || join(homedir(), '.local/share/specweave/switch'); }
 export function profiles(home = homedir()) {
@@ -16,9 +16,9 @@ export function profiles(home = homedir()) {
   })));
 }
 export function findBinary(provider, home = homedir()) {
-  const candidates = ['.local/share/t3/providers/node_modules/.bin', '.local/share/specweave/providers/node_modules/.bin'].map(p => join(home, p, provider));
+  const candidates = ['.local/share/specweave/providers/bin', '.local/share/specweave/providers/node_modules/.bin'].map(p => join(home, p, provider));
   candidates.push(...(process.env.PATH || '').split(':').filter(Boolean).map(p => join(p, provider)));
-  return candidates.find(existsSync) || candidates[0];
+  return candidates.find(file => { try { accessSync(file, constants.X_OK); return statSync(file).isFile(); } catch { return false; } }) || provider;
 }
 export async function initState(root = stateRoot(), home = homedir()) {
   await mkdir(root, { recursive: true, mode: 0o700 });

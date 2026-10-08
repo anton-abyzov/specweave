@@ -78,3 +78,25 @@ test('only fresh native permission overrides a full included window; denials, ol
   assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: true, spendControlReached: false, rateLimitReachedType: 'workspace_member_usage_limit_reached' }), [], now), 'ready');
   assert.equal(accountStatus(make({ source: 'native-app-server', ordinaryUsageAllowed: null, rateLimitReachedType: 'workspace_member_usage_limit_reached' }), [], now), 'exhausted');
 });
+
+test('reset-first uses the earliest real reset, spends ties first, and keeps explicit and active-session affinity', () => {
+  const now = Date.now(), reset = Math.floor(now/1000)+1000;
+  const make = (id, used, at = reset) => ({ id, provider: 'codex', authenticated: true, quota: { ...quota({ now, used, weekly: used }), window: { usedPercent: used, resetsAt: at }, weekly: { usedPercent: used, resetsAt: reset+9000 } } });
+  const a = make('a', 10), b = make('b', 90), unknownReset = { ...make('unknown-reset', 99), quota: { ...quota({ now, used: 99 }), window: { usedPercent: 99, resetsAt: null }, weekly: null, source: 'native-app-server', ordinaryUsageAllowed: true } };
+  const active = make('active', 95, reset-100), denied = { ...make('denied', 95, reset-100), quota: { ...quota({ now }), source: 'native-app-server', ordinaryUsageAllowed: false } };
+  const state = { policy: { mode: 'reset-first' }, accounts: [a,b,unknownReset,active,denied], runs: [{ id: 'existing', accountId: 'active', status: 'running', nativeThreadId: 'same-thread' }] };
+  const before = JSON.stringify(state.runs);
+  assert.equal(recommend(state, { now }).id, 'b');
+  assert.match(recommend(state, { now }).reason, /Earliest eligible observed reset:/);
+  assert.ok(recommend(state, { now }).reason.includes(new Date(reset*1000).toISOString()));
+  assert.match(recommend(state, { now }).reason, /New run only; active sessions keep their account/);
+  selectAccount(state, { id: 'a' }); assert.equal(recommend(state, { now }).id, 'a');
+  assert.match(recommend(state, { now }).reason, /Explicit account preference retained/);
+  assert.equal(recommend(state, { accountId: 'b', now }).id, 'b');
+  selectAccount(state, { id: 'active' }); assert.equal(recommend(state, { now }).id, null);
+  selectAccount(state, { id: null }); b.quota = quota({ now: now-20*60000, used: 90 });
+  assert.equal(recommend(state, { now }).id, 'a');
+  setPolicy(state, { mode: 'reset-first', preferredProvider: 'claude' }); assert.equal(recommend(state, { now }).id, null);
+  assert.equal(JSON.stringify(state.runs), before);
+  assert.equal(state.runs[0].nativeThreadId, 'same-thread');
+});

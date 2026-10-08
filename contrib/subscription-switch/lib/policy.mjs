@@ -48,7 +48,7 @@ function score(account, mode) {
   const windows = [account.quota?.window, account.quota?.weekly].filter(Boolean);
   if (!windows.length) return Number.POSITIVE_INFINITY;
   const used = Math.max(...windows.map(w => w.usedPercent));
-  const reset = Math.min(...windows.map(w => w.resetsAt));
+  const reset = Math.min(...windows.flatMap(w => Number.isFinite(w.resetsAt) && w.resetsAt > 0 && Number.isFinite(new Date(w.resetsAt * 1000).getTime()) ? [w.resetsAt] : []));
   if (mode === 'reset-first') return reset;
   if (mode === 'spend-first') return -used;
   return used;
@@ -59,9 +59,15 @@ export function recommend(state, { provider = state.policy.preferredProvider, ac
   const eligible = candidates.filter(a => {
     const status = accountStatus(a, state.runs, now);
     return a.authenticated === true && !claudeProfileIsolationUnverified(a) && !claudeSubscriptionAuthUnverified(a) && (status === 'ready' || (status === 'unknown' && allowUnknown && accountId === a.id));
-  }).sort((a, b) => score(a, state.policy.mode) - score(b, state.policy.mode) || a.id.localeCompare(b.id));
+  }).sort((a, b) => score(a, state.policy.mode) - score(b, state.policy.mode)
+    || (state.policy.mode === 'reset-first' ? score(a, 'spend-first') - score(b, 'spend-first') : 0)
+    || a.id.localeCompare(b.id));
   const account = eligible[0] || null;
-  return { provider: provider || 'any', id: account?.id || null, reason: account ? `${state.policy.mode}; ${accountStatus(account, state.runs, now)} observation` : 'No eligible profile with fresh observed quota; unknown quota requires an explicit account and --allow-unknown' };
+  const reset = account ? score(account, 'reset-first') : Number.POSITIVE_INFINITY;
+  const priority = explicit ? 'Explicit account preference retained' : state.policy.mode === 'reset-first'
+    ? Number.isFinite(reset) ? `Earliest eligible observed reset: ${new Date(reset * 1000).toISOString()}; equal resets prefer more used quota` : 'Eligible native permission; next reset unknown'
+    : state.policy.mode === 'spend-first' ? 'Most used eligible quota' : 'Least used eligible quota';
+  return { provider: provider || 'any', id: account?.id || null, reason: account ? `${priority}. New run only; active sessions keep their account.` : 'No eligible profile with fresh observed quota; unknown quota requires an explicit account and --allow-unknown' };
 }
 export function publicState(state) {
   return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError, lastQuotaErrorAt }) => ({ id, provider, label, authenticated, authKind, authError: authError || null,

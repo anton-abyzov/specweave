@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { access, readFile, stat } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import { stateRoot, ensureState, initState, mutateState, findBinary } from '../lib/state.mjs';
 import { publicState, recommend, setPolicy, selectAccount, validateQuota, QUOTA_TTL_MS } from '../lib/policy.mjs';
 import { refresh, nativeEnv, inspectAuth } from '../lib/native.mjs';
@@ -64,7 +65,12 @@ async function main(argv) {
   else if (command === 'account') {
     const account = state.accounts.find(a => a.id === p[1]); if (!account) throw new Error('Unknown profile');
     if (p[0] === 'login') {
-      const binary = findBinary(account.provider), args = account.provider === 'codex' ? ['login'] : ['auth', 'login'];
+      const binary = account.binary, args = account.provider === 'codex' ? ['login'] : ['auth', 'login'];
+      try {
+        if (typeof binary !== 'string' || !binary.trim()) throw new Error('missing binary');
+        await access(binary, constants.X_OK);
+        if (!(await stat(binary)).isFile()) throw new Error('invalid binary');
+      } catch { throw new Error('Configured native binary is unavailable. Fix this profile binary before signing in; no alternate binary was selected.'); }
       const observed = await inspectAuth({ ...account, binary });
       await mutateState(root, s => Object.assign(s.accounts.find(a => a.id === account.id), observed));
       if (observed.authError === 'profile-isolation-unverified') throw new Error('Claude profile isolation is unverified: native oauth_token status may reuse the default keychain login. Sign-in for this isolated slot is blocked until a supported independent profile binding is verified; authenticate a supported consumer subscription in the native default claude-1 profile instead. Native sign-in was not started.');
