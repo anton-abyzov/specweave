@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
-export type JevProvider = 'openrouter' | 'typesafe';
+export type JevProvider = 'openrouter' | 'typesafe' | 'openai';
 
 export interface JevConfig {
   enabled: boolean;
@@ -46,24 +46,27 @@ export const JEV_DEFAULTS: JevConfig = {
 export const JEV_PROVIDER_ENDPOINT: Record<JevProvider, string> = {
   openrouter: 'https://openrouter.ai/api/v1/systemone',
   typesafe: 'https://api.typesafe.ai/v1/systemone',
+  openai: 'https://api.openai.com/v1/decisions',
 };
 
 /** Default model id per provider (used when `model` is not set anywhere). */
 export const JEV_PROVIDER_MODEL: Record<JevProvider, string> = {
   openrouter: 'jev-1.13',
   typesafe: 'jev-latest',
+  openai: 'gpt-6-luna',
 };
 
 /** Default API key environment variable NAME per provider. */
 export const JEV_PROVIDER_KEY_ENV: Record<JevProvider, string> = {
   openrouter: 'OPENROUTER_API_KEY',
   typesafe: 'TYPESAFE_API_KEY',
+  openai: 'OPENAI_API_KEY',
 };
 
 /** Provider-agnostic fallback key env var NAME. */
 export const JEV_FALLBACK_KEY_ENV = 'JEV_API_KEY';
 
-const PROVIDERS: readonly string[] = ['openrouter', 'typesafe'];
+const PROVIDERS: readonly string[] = ['openrouter', 'typesafe', 'openai'];
 
 function isProvider(value: unknown): value is JevProvider {
   return typeof value === 'string' && PROVIDERS.includes(value);
@@ -156,7 +159,9 @@ export function loadJevConfig(projectRoot?: string, env: NodeJS.ProcessEnv = pro
       : JEV_DEFAULTS.provider;
 
   // Model: env wins, then file, then the provider's default model.
-  const model = str(env.SPECWEAVE_JEV_MODEL) ?? str(file.model) ?? JEV_PROVIDER_MODEL[provider];
+  const model = str(env.SPECWEAVE_JEV_MODEL)
+    ?? (provider === file.provider || !envProvider ? str(file.model) : undefined)
+    ?? JEV_PROVIDER_MODEL[provider];
 
   // Enabled: SPECWEAVE_JEV=0 forces off, =1 forces on, otherwise the file decides.
   let enabled = bool(file.enabled, JEV_DEFAULTS.enabled);
@@ -172,7 +177,7 @@ export function loadJevConfig(projectRoot?: string, env: NodeJS.ProcessEnv = pro
     enabled,
     provider,
     model,
-    apiKeyEnv: str(file.apiKeyEnv),
+    apiKeyEnv: envProvider && provider !== file.provider ? undefined : str(file.apiKeyEnv),
     timeoutMs: num(file.timeoutMs, JEV_DEFAULTS.timeoutMs),
     thresholds: thresholds(fileThresholds),
     guards: { bash: bool(fileGuards.bash, JEV_DEFAULTS.guards.bash) },

@@ -21,10 +21,14 @@ export interface JevUsageRecord {
   latencyMs: number;
   /** Secret-shaped spans masked out of the request state before it was sent. */
   redactions?: number;
+  requestId?: string;
+  evidenceHash?: string;
   ok: boolean;
 }
 
 export interface JevUsageSummary {
+  /** Count of calls whose cost was not supplied; cost is only the known subtotal. */
+  unknownCostCalls?: number;
   calls: number;
   input_tokens: number;
   cost: number;
@@ -81,6 +85,8 @@ export function readUsageSummary(projectRoot: string): JevUsageSummary {
     }
     if (typeof rec.cost === 'number' && Number.isFinite(rec.cost)) {
       summary.cost += rec.cost;
+    } else {
+      summary.unknownCostCalls = (summary.unknownCostCalls ?? 0) + 1;
     }
     const kind = typeof rec.kind === 'string' && rec.kind ? rec.kind : 'unknown';
     summary.byKind[kind] = (summary.byKind[kind] ?? 0) + 1;
