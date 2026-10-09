@@ -13,6 +13,7 @@ const titles = {
   'projects-and-threads': 'One project, independent threads',
   'memory-and-usage': 'Shared facts, honest usage',
   'plans-and-routines': 'Plan, verify and schedule',
+  'personal-and-connections': 'Personal projects, folders and tools',
 };
 const digest = value => createHash('sha256').update(value).digest('hex');
 const html = value => value.replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
@@ -36,6 +37,10 @@ export function validateCapture(capture) {
     previous = beat.end;
   }
   assert(previous >= 30 && previous <= 180, 'tutorial must stay within the bounded delivery length');
+  if (capture.tutorial === 'personal-and-connections') {
+    assert.equal(capture.acceptancePassed, true);
+    assert.deepEqual(capture.personalEnvironmentProof, {managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'});
+  }
   if (capture.tutorial === 'projects-and-threads') {
     assert.equal(capture.nativeProviders?.claude, 'passed');
     assert.equal(capture.nativeProviders?.codex, 'passed');
@@ -111,7 +116,7 @@ export function compose({captureDir, output, ffmpeg = 'ffmpeg', crop = [256, 0, 
     scripts: {check: 'npx hyperframes@0.8.143 check', preview: 'npx hyperframes@0.8.143 preview --no-open',
       render: 'npx hyperframes@0.8.143 render --quality delivery --video-frame-format png'},
   }, null, 2) + '\n');
-  const metadata = {schemaVersion:1, tutorial:capture.tutorial, status:'draft-awaiting-review', version:capture.version,
+  const metadata = {schemaVersion:1, tutorial:capture.tutorial, personalEnvironmentProof:capture.personalEnvironmentProof, status:'draft-awaiting-review', version:capture.version,
     sourceCommit:capture.sourceCommit, buildSha256:capture.buildSha256, recordedAt:capture.recordedAt,
     actualApplication:true, syntheticDataOnly:true, headless:true, acceptancePassed:capture.acceptancePassed,
     nativeProviders:capture.nativeProviders, nativeReceiptSha256:capture.nativeReceiptSha256 ?? null,
