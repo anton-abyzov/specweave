@@ -1,6 +1,6 @@
 ---
 title: Studio and the SpecWeave ecosystem
-description: How SpecWeave, vskill and the private SpecWeave Studio pilot fit together, including Tailscale transport, per-host pairing, native sessions and data boundaries.
+description: How SpecWeave, vskill and the private SpecWeave Studio pilot fit together, including connection options (local network, SSH or Tailscale), per-host pairing, native sessions across providers, and data boundaries.
 ---
 
 import Architecture, { ProductMap } from '@site/src/components/ecosystem/Architecture';
@@ -22,13 +22,31 @@ SpecWeave Studio is not the app launched by `npx vskill studio`. That command op
 | Layer | Responsibility | Boundary |
 | --- | --- | --- |
 | Browser | Display sessions, output and approvals | Browser connection state does not grant execution authority |
-| Tailscale Serve | Private HTTPS transport to a host's loopback service, directly or through a pinned SSH forward from a primary host | Tailnet policy governs reachability; Studio still requires pairing |
+| Network route | Local network, an SSH tunnel, or Tailscale Serve to the selected host | Reaching a host is not permission; Studio still requires pairing on every route |
 | Studio runtime | Own host-local sessions, accounts, admission and recovery | Pair each host separately; do not copy credentials between accounts |
 | Native agent | Execute a turn through its selected provider/account | Provider availability and approval rules still apply |
 | Repository | Code, specs, task ledger and verification evidence | Git transports project changes; it is not a shared live session database |
 | vskill | Inspect/install skills and run evaluations | Source trust and evaluation results require independent assessment |
 
-Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not the pilot's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve).
+### Connecting other machines
+
+Tailscale is not required. A Studio host can be reached in any of these ways, and one machine can keep several routes, using the first that answers:
+
+| Route | When to use it | What you need |
+| --- | --- | --- |
+| Local network | The machines share a home or office network | Turn on network access on the host and pair with a one-time link |
+| SSH | You can already SSH to the machine | The desktop app opens the tunnel and can start Studio on the remote host |
+| Tailscale HTTPS | You are away from that network, or you want phone access | Both devices in the same tailnet; Tailscale Serve, never Funnel |
+
+Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not the pilot's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve). A hosted relay exists in the source but is turned off in the pilot.
+
+### Providers and switching
+
+Studio runs each provider's own agent (Claude Code, Codex, OpenCode, Cursor, Pi) with the sign-ins already on that machine. Each thread picks its provider, model and effort. You can change provider inside a thread: Studio passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. Studio does not yet switch on its own when a provider reaches a usage limit; the limit banner offers to wait for the reset or check again.
+
+### Optional components
+
+**CLIProxyAPI** is optional. Studio can read pooled account usage from a CLIProxyAPI hub you already run and show it under **Usage → Limits**. Native Claude Code and Codex turns never pass through it. Routing personal subscription sign-ins through a shared proxy can conflict with a provider's terms, so check them before pooling accounts. **AnyModel** is likewise optional and only matters for API or local-model compatibility work.
 
 ### Security boundaries
 
@@ -76,7 +94,7 @@ In **SpecWeave 3.0.6**, `specweave auto-handoff on` enables silent local recover
 
 For an already provisioned pilot, use the operator-supplied private URL and current host-specific instructions:
 
-1. Join the approved tailnet and confirm the target machine is reachable.
+1. Make sure you can reach the target machine: same network, SSH, or the approved tailnet.
 2. Pair the browser to that Studio host with the provided scoped pairing flow. Being on the network is not enough.
 3. Confirm the connection, project, native provider and account before submitting a small test request.
 4. Inspect the actual output and any pending approval. A balance or usage percentage alone is not permission to run.
