@@ -7,6 +7,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
+import {nativeProofScope, NATIVE_PROOF_CAPTION, NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
 
 const ownPath = fileURLToPath(import.meta.url);
 const titles = {
@@ -42,12 +43,23 @@ export function validateCapture(capture) {
     assert.deepEqual(capture.personalEnvironmentProof, {managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'});
   }
   if (capture.tutorial === 'projects-and-threads') {
+    nativeProofScope(capture);
+    assert(capture.beats.some(beat => beat.caption === NATIVE_PROOF_CAPTION), 'Native walkthrough needs its scope caption');
     assert.equal(capture.nativeProviders?.claude, 'passed');
     assert.equal(capture.nativeProviders?.codex, 'passed');
     assert(/^[a-f0-9]{64}$/.test(capture.nativeReceiptSha256));
     assert.equal(capture.acceptancePassed, true);
   }
   return previous;
+}
+export function nativeCompositionProof(capture) {
+  if (capture.tutorial !== 'projects-and-threads') return {};
+  return {...nativeProofScope(capture), nativeProofNote:NATIVE_PROOF_NOTE};
+}
+export function tutorialTranscript(capture) {
+  validateCapture(capture);
+  const note = capture.tutorial === 'projects-and-threads' ? `\n${NATIVE_PROOF_NOTE}\n` : '';
+  return `# ${titles[capture.tutorial]}\n${note}\n${capture.beats.map(beat => beat.caption).join('\n\n')}\n`;
 }
 export function validateCrop(crop) {
   assert(Array.isArray(crop) && crop.length === 4 && crop.every(Number.isInteger));
@@ -106,6 +118,7 @@ export function compose({captureDir, output, ffmpeg = 'ffmpeg', crop = [256, 0, 
     '-r', '30', '-g', '30', '-keyint_min', '30', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(output, 'assets/recording.mp4')], {timeout: 180000});
   fs.writeFileSync(path.join(output, 'index.html'), compositionHtml(capture));
   fs.writeFileSync(path.join(output, 'captions.vtt'), captions.bytes);
+  if (capture.tutorial === 'projects-and-threads') fs.writeFileSync(path.join(output, 'transcript.md'), tutorialTranscript(capture));
   fs.writeFileSync(path.join(output, 'hyperframes.json'), JSON.stringify({
     $schema: 'https://hyperframes.heygen.com/schema/hyperframes.json',
     paths: {blocks:'compositions', components:'compositions/components', assets:'assets'},
@@ -119,7 +132,7 @@ export function compose({captureDir, output, ffmpeg = 'ffmpeg', crop = [256, 0, 
   const metadata = {schemaVersion:1, tutorial:capture.tutorial, personalEnvironmentProof:capture.personalEnvironmentProof, status:'draft-awaiting-review', version:capture.version,
     sourceCommit:capture.sourceCommit, buildSha256:capture.buildSha256, recordedAt:capture.recordedAt,
     actualApplication:true, syntheticDataOnly:true, headless:true, acceptancePassed:capture.acceptancePassed,
-    nativeProviders:capture.nativeProviders, nativeReceiptSha256:capture.nativeReceiptSha256 ?? null,
+    nativeProviders:capture.nativeProviders, nativeReceiptSha256:capture.nativeReceiptSha256 ?? null, ...nativeCompositionProof(capture),
     providerTurnsStartedByRecorder:0,
     privacyReviewed:false, visualReviewPassed:false, captionsReviewed:false,
     crop, captureVideoSha256:capture.video.sha256, captionsSha256:capture.captions.sha256,

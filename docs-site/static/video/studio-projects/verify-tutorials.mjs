@@ -4,6 +4,7 @@ import {readFileSync, realpathSync, statSync, existsSync} from 'node:fs';
 import {dirname, resolve, relative, isAbsolute, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
+import {nativeProofScope, NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
 
 const ownPath = fileURLToPath(import.meta.url);
 const defaultRoot = dirname(ownPath);
@@ -78,6 +79,8 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
       assert.deepEqual(receipt.personalEnvironmentProof, {managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'}, 'Personal walkthrough must use owned discovery without external account claims');
     }
     if (tutorial.requiresNativeProof) {
+      nativeProofScope(receipt);
+      assert.equal(receipt.nativeProofNote, NATIVE_PROOF_NOTE, 'Native receipt must retain its metadata-preservation limitation');
       assert.equal(receipt.nativeProviders?.claude, 'passed', 'Claude execution proof required');
       assert.equal(receipt.nativeProviders?.codex, 'passed', 'Codex execution proof required');
       assert(/^[a-f0-9]{64}$/.test(receipt.nativeReceiptSha256), 'native proof needs its receipt hash');
@@ -117,6 +120,7 @@ export function verifyDocs(siteRoot, manifest, {built = false} = {}) {
       for (const tutorial of manifest.tutorials.filter(t => t.guide === page)) {
         assert(text.includes('<video') && text.includes(tutorial.media.video.file), `verified video not embedded: ${page}`);
         assert(text.includes('<track') && text.includes(tutorial.media.captions.file), `verified captions not embedded: ${page}`);
+        if (tutorial.requiresNativeProof) assert(text.includes(NATIVE_PROOF_NOTE), 'Native transcript must retain its metadata-preservation limitation');
       }
     }
     if (built) {

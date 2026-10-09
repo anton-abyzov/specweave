@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join, dirname} from 'node:path';
 import {verifyManifest, verifyDocs} from './verify-tutorials.mjs';
+import {NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
 const base = new URL('./manifest.json', import.meta.url);
 function fixture(fn) {
   const root = mkdtempSync(join(tmpdir(), '0888-tutorial-validation-'));
@@ -39,6 +40,7 @@ function readyFixture(root) {
       receipt: save(`${t.id}.json`, JSON.stringify({syntheticDataOnly: true, headless: true,
         actualApplication: true, acceptancePassed: true, privacyReviewed: true, version: '0.2.0',
         sourceCommit: 'a'.repeat(40), buildSha256:'b'.repeat(64), providerTurnsStartedByRecorder:0,
+        proofScope:'functional-project-coordination', wholeProfileBytePreservation:'not-established', fleetDeploymentVerified:false, nativeProofNote:NATIVE_PROOF_NOTE,
         nativeReceiptSha256:'c'.repeat(64), recordedAt: '2026-10-09T00:00:00Z',
         videoSha256: video.sha256, visualReviewPassed: true, captionsReviewed: true,
         personalEnvironmentProof:{managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'},
@@ -103,11 +105,37 @@ test('a shared guide must embed both the native and Personal tutorials with capt
   for (const page of pages) {
     const file = join(root, 'docs', page); mkdirSync(dirname(file), {recursive:true});
     const videos = m.tutorials.filter(t => t.guide === page && t.id !== 'personal-and-connections').map(t => `<video src="${t.media.video.file}"><track src="${t.media.captions.file}"/></video>`).join('\n');
-    writeFileSync(file, `---\ntitle: ${page}\ndescription: Fixture metadata\n---\n# Guide\n${videos}\n`);
+    writeFileSync(file, `---\ntitle: ${page}\ndescription: Fixture metadata\n---\n# Guide\n${videos}\n${NATIVE_PROOF_NOTE}\n`);
   }
   writeFileSync(join(root,'sidebars.ts'), pages.map(page => `id: '${page.replace(/\.md$/, '')}'`).join('\n'));
   assert.throws(() => verifyDocs(root,m), /verified video not embedded/);
   const t = m.tutorials.find(t => t.id === 'personal-and-connections'), file=join(root,'docs',t.guide);
   writeFileSync(file, readFileSync(file,'utf8')+`<video src="${t.media.video.file}"><track src="${t.media.captions.file}"/></video>\n`);
+  assert.equal(verifyDocs(root,m),4);
+}));
+
+test('hashed native receipts still refuse omitted scope or inflated profile/deployment claims', () => fixture(root => {
+  for (const [key, incorrect] of Object.entries({proofScope:'whole-account-verification', wholeProfileBytePreservation:'passed', fleetDeploymentVerified:true, nativeProofNote:'Account profile unchanged.'})) {
+    for (const omit of [false,true]) {
+      const m = readyFixture(root), entry = m.tutorials[0].media.receipt;
+      const receipt = JSON.parse(readFileSync(join(root,entry.file)));
+      if (omit) delete receipt[key]; else receipt[key]=incorrect;
+      const bytes=JSON.stringify(receipt); writeFileSync(join(root,entry.file),bytes);
+      entry.sha256=createHash('sha256').update(bytes).digest('hex');
+      writeFileSync(join(root,'manifest.json'),JSON.stringify(m));
+      assert.throws(() => verifyManifest(root,{release:true,probe:false}), /Native proof scope|metadata-preservation limitation/);
+    }
+  }
+}));
+test('published native transcript cannot omit the account-metadata limitation', () => fixture(root => {
+  const m=readyFixture(root), pages=[...new Set([...m.tutorials.map(t=>t.guide),'guides/claude-code-projects.md'])];
+  for (const page of pages) {
+    const file=join(root,'docs',page); mkdirSync(dirname(file),{recursive:true});
+    const videos=m.tutorials.filter(t=>t.guide===page).map(t=>`<video src="${t.media.video.file}"><track src="${t.media.captions.file}"/></video>`).join('\n');
+    writeFileSync(file,`---\ntitle: ${page}\ndescription: Fixture metadata\n---\n# Guide\n${videos}\n`);
+  }
+  writeFileSync(join(root,'sidebars.ts'),pages.map(page=>`id: '${page.replace(/\.md$/, '')}'`).join('\n'));
+  assert.throws(() => verifyDocs(root,m), /metadata-preservation limitation/);
+  const page=join(root,'docs/studio/projects.md'); writeFileSync(page,readFileSync(page,'utf8')+NATIVE_PROOF_NOTE+'\n');
   assert.equal(verifyDocs(root,m),4);
 }));

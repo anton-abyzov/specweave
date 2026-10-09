@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateCapture, validateCrop, compositionHtml} from './compose-tutorial.mjs';
+import {validateCapture, validateCrop, compositionHtml, nativeCompositionProof, tutorialTranscript} from './compose-tutorial.mjs';
+import {NATIVE_PROOF_CAPTION, NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
 const capture = () => ({schemaVersion:1, tutorial:'memory-and-usage', status:'captured-awaiting-review',
   headless:true, actualApplication:true, syntheticDataOnly:true, providerTurnsStartedByRecorder:0,
   version:'0.2.0', sourceCommit:'a'.repeat(40), buildSha256:'b'.repeat(64),
@@ -17,7 +18,8 @@ test('failed, invented, unordered, unverified and overlong captures cannot becom
 test('mixed-provider composition requires actual accepted provider proof', () => {
   const c = {...capture(), tutorial:'projects-and-threads'};
   assert.throws(() => validateCapture(c));
-  assert.equal(validateCapture({...c, acceptancePassed:true, nativeProviders:{claude:'passed', codex:'passed'}, nativeReceiptSha256:'c'.repeat(64)}), 42);
+  const accepted = nativeCapture();
+  assert.equal(validateCapture(accepted), 42);
 });
 test('privacy crop excludes sidebar and composer host identities', () => {
   validateCrop([256, 0, 1664, 1000]);
@@ -38,4 +40,26 @@ test('Personal composition distinguishes inert discovery from external service v
   assert.equal(validateCapture(c),42);
   assert.throws(() => validateCapture({...c, acceptancePassed:false}));
   assert.throws(() => validateCapture({...c, personalEnvironmentProof:{...c.personalEnvironmentProof, externalAccountAuthentication:'passed'}}));
+});
+
+function nativeCapture() {
+  const c = {...capture(), tutorial:'projects-and-threads', acceptancePassed:true,
+    nativeProviders:{claude:'passed', codex:'passed'}, nativeReceiptSha256:'c'.repeat(64),
+    proofScope:'functional-project-coordination', wholeProfileBytePreservation:'not-established', fleetDeploymentVerified:false};
+  c.beats[0].caption = NATIVE_PROOF_CAPTION;
+  return c;
+}
+test('composition rejects missing scope and inflated account or fleet claims', () => {
+  for (const [key, incorrect] of Object.entries({proofScope:'whole-account-verification', wholeProfileBytePreservation:'passed', fleetDeploymentVerified:true})) {
+    assert.throws(() => validateCapture({...nativeCapture(), [key]:incorrect}));
+    const omitted = nativeCapture(); delete omitted[key]; assert.throws(() => validateCapture(omitted));
+  }
+  const missingCaption = nativeCapture(); missingCaption.beats[0].caption = 'Everything verified.';
+  assert.throws(() => validateCapture(missingCaption), /scope caption/);
+});
+test('composition metadata and transcript retain the exact bounded native proof and limitation', () => {
+  assert.deepEqual(nativeCompositionProof(nativeCapture()), {proofScope:'functional-project-coordination', wholeProfileBytePreservation:'not-established', fleetDeploymentVerified:false, nativeProofNote:NATIVE_PROOF_NOTE});
+  const transcript = tutorialTranscript(nativeCapture());
+  assert(transcript.includes(NATIVE_PROOF_NOTE)); assert(transcript.includes(NATIVE_PROOF_CAPTION));
+  assert.deepEqual(nativeCompositionProof(capture()), {});
 });
