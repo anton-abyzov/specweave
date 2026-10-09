@@ -7,8 +7,8 @@ description: Understand shared memory, independent native conversations, cache r
 
 Share durable facts across your project. Keep each worker's conversation and provider cache with the provider that owns it.
 
-:::info 0.2 preview
-These project features target Studio 0.2.0 and remain under final native workflow and release verification. See [Studio projects](./projects.md) for version and private-pilot availability.
+:::info Studio 0.2.0 private prerelease
+These features are part of Studio 0.2.0. Its private release requires repository access, and each execution host needs the corresponding version installed. See [Studio projects](./projects.md) for release availability.
 :::
 
 | Kind of context | What belongs there |

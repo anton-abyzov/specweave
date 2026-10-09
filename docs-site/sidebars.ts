@@ -24,7 +24,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Studio preview',
+      label: 'Studio',
       collapsed: false,
       items: [
         {type: 'doc', id: 'studio/projects', label: 'Projects and threads'},
