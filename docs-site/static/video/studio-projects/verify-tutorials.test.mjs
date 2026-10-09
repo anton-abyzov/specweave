@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync, copyFileSync, writeFileSync, readFileSync, rmSync, symlinkSync} from 'node:fs';
+import {mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSync, symlinkSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
-import {verifyManifest} from './verify-tutorials.mjs';
+import {join, dirname} from 'node:path';
+import {verifyManifest, verifyDocs} from './verify-tutorials.mjs';
 const base = new URL('./manifest.json', import.meta.url);
 function fixture(fn) {
   const root = mkdtempSync(join(tmpdir(), '0888-tutorial-validation-'));
@@ -26,7 +26,7 @@ test('planned tutorials cannot advertise fabricated output', () => fixture(root 
   assert.throws(() => verifyManifest(root), /must not imply finished/);
 }));
 function readyFixture(root) {
-  const m = JSON.parse(readFileSync(join(root, 'manifest.json')));
+  const m = JSON.parse(readFileSync(base));
   const save = (file, content) => {
     writeFileSync(join(root, file), content);
     return {file, sha256: createHash('sha256').update(content).digest('hex')};
@@ -41,6 +41,7 @@ function readyFixture(root) {
         sourceCommit: 'a'.repeat(40), buildSha256:'b'.repeat(64), providerTurnsStartedByRecorder:0,
         nativeReceiptSha256:'c'.repeat(64), recordedAt: '2026-10-09T00:00:00Z',
         videoSha256: video.sha256, visualReviewPassed: true, captionsReviewed: true,
+        personalEnvironmentProof:{managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'},
         nativeProviders: {claude: 'passed', codex: 'passed'}}))};
   }
   writeFileSync(join(root, 'manifest.json'), JSON.stringify(m));
@@ -81,4 +82,32 @@ test('unknown native acceptance cannot satisfy the mixed-provider demonstration'
   entry.sha256 = createHash('sha256').update(data).digest('hex');
   writeFileSync(join(root, 'manifest.json'), JSON.stringify(m));
   assert.throws(() => verifyManifest(root, {release: true, probe: false}), /Codex execution proof/);
+}));
+
+test('Personal walkthrough is required and shares exact source and build with the native cohort', () => fixture(root => {
+  let m = readyFixture(root); m.tutorials = m.tutorials.filter(t => t.id !== 'personal-and-connections');
+  writeFileSync(join(root, 'manifest.json'), JSON.stringify(m));
+  assert.throws(() => verifyManifest(root, {release:true, probe:false}));
+  for (const patch of [{sourceCommit:'d'.repeat(40)}, {buildSha256:'e'.repeat(64)}, {personalEnvironmentProof:{externalAccountAuthentication:'passed'}}]) {
+    m = readyFixture(root);
+    const entry = m.tutorials.find(t => t.id === 'personal-and-connections').media.receipt;
+    const data = JSON.stringify({...JSON.parse(readFileSync(join(root, entry.file))), ...patch});
+    writeFileSync(join(root, entry.file), data); entry.sha256=createHash('sha256').update(data).digest('hex');
+    writeFileSync(join(root,'manifest.json'), JSON.stringify(m));
+    assert.throws(() => verifyManifest(root, {release:true,probe:false}), /same release source|same accepted build|owned discovery/);
+  }
+}));
+
+test('a shared guide must embed both the native and Personal tutorials with captions', () => fixture(root => {
+  const m = readyFixture(root), pages = [...new Set([...m.tutorials.map(t => t.guide), 'guides/claude-code-projects.md'])];
+  for (const page of pages) {
+    const file = join(root, 'docs', page); mkdirSync(dirname(file), {recursive:true});
+    const videos = m.tutorials.filter(t => t.guide === page && t.id !== 'personal-and-connections').map(t => `<video src="${t.media.video.file}"><track src="${t.media.captions.file}"/></video>`).join('\n');
+    writeFileSync(file, `---\ntitle: ${page}\ndescription: Fixture metadata\n---\n# Guide\n${videos}\n`);
+  }
+  writeFileSync(join(root,'sidebars.ts'), pages.map(page => `id: '${page.replace(/\.md$/, '')}'`).join('\n'));
+  assert.throws(() => verifyDocs(root,m), /verified video not embedded/);
+  const t = m.tutorials.find(t => t.id === 'personal-and-connections'), file=join(root,'docs',t.guide);
+  writeFileSync(file, readFileSync(file,'utf8')+`<video src="${t.media.video.file}"><track src="${t.media.captions.file}"/></video>\n`);
+  assert.equal(verifyDocs(root,m),4);
 }));

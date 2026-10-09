@@ -23,6 +23,13 @@
       "guide": "studio/plans-and-routines.md",
       "requiresNativeProof": false,
       "media": null
+    },
+    {
+      "id": "personal-and-connections",
+      "title": "Personal projects, folders and tools",
+      "guide": "studio/projects.md",
+      "requiresNativeProof": false,
+      "media": null
     }
   ]
 }

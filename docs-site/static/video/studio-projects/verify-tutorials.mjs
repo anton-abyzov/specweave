@@ -12,6 +12,7 @@ const expectedTutorials = new Map([
   ['projects-and-threads', {guide:'studio/projects.md', native:true}],
   ['memory-and-usage', {guide:'studio/memory-and-usage.md', native:false}],
   ['plans-and-routines', {guide:'studio/plans-and-routines.md', native:false}],
+  ['personal-and-connections', {guide:'studio/projects.md', native:false}],
 ]);
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 function inside(root, name) {
@@ -35,8 +36,8 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.targetVersion, '0.2.0');
   assert(['planned', 'ready'].includes(manifest.status));
-  assert(Array.isArray(manifest.tutorials) && manifest.tutorials.length === 3);
-  assert.equal(new Set(manifest.tutorials.map(t => t.id)).size, 3);
+  assert(Array.isArray(manifest.tutorials) && manifest.tutorials.length === expectedTutorials.size);
+  assert.equal(new Set(manifest.tutorials.map(t => t.id)).size, expectedTutorials.size);
   if (release) assert.equal(manifest.status, 'ready', 'Tutorials are planned, not release-ready');
   let captureSource = null, captureBuild = null;
   for (const tutorial of manifest.tutorials) {
@@ -73,6 +74,9 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
     assert.equal(receipt.videoSha256, tutorial.media.video.sha256);
     assert.equal(receipt.visualReviewPassed, true);
     assert.equal(receipt.captionsReviewed, true);
+    if (tutorial.id === 'personal-and-connections') {
+      assert.deepEqual(receipt.personalEnvironmentProof, {managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'}, 'Personal walkthrough must use owned discovery without external account claims');
+    }
     if (tutorial.requiresNativeProof) {
       assert.equal(receipt.nativeProviders?.claude, 'passed', 'Claude execution proof required');
       assert.equal(receipt.nativeProviders?.codex, 'passed', 'Codex execution proof required');
@@ -94,7 +98,7 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
 export function verifyDocs(siteRoot, manifest, {built = false} = {}) {
   const docs = resolve(siteRoot, 'docs');
   const sidebar = readFileSync(resolve(siteRoot, 'sidebars.ts'), 'utf8');
-  const pages = [...manifest.tutorials.map(t => t.guide), 'guides/claude-code-projects.md'];
+  const pages = [...new Set([...manifest.tutorials.map(t => t.guide), 'guides/claude-code-projects.md'])];
   const titles = new Set();
   for (const page of pages) {
     const path = resolve(docs, page), text = readFileSync(path, 'utf8');
@@ -110,8 +114,7 @@ export function verifyDocs(siteRoot, manifest, {built = false} = {}) {
     }
     if (manifest.status === 'planned') assert(!/<video|<iframe|VideoObject/.test(text), 'no unverified media embeds');
     else {
-      const tutorial = manifest.tutorials.find(t => t.guide === page);
-      if (tutorial) {
+      for (const tutorial of manifest.tutorials.filter(t => t.guide === page)) {
         assert(text.includes('<video') && text.includes(tutorial.media.video.file), `verified video not embedded: ${page}`);
         assert(text.includes('<track') && text.includes(tutorial.media.captions.file), `verified captions not embedded: ${page}`);
       }

@@ -31,3 +31,11 @@ test('composition uses actual frozen footage and complete timed captions without
   assert.match(output, /src="assets\/recording.mp4"/);
   assert(!/Date\.now|Math\.random|<iframe|fetch\(|\.play\(|currentTime/.test(output));
 });
+
+test('Personal composition distinguishes inert discovery from external service verification', () => {
+  const c = {...capture(), tutorial:'personal-and-connections', acceptancePassed:true,
+    personalEnvironmentProof:{managedStorage:true, noGit:true, repositoryMatch:'passed', connectionDiscovery:'owned-inert-mcp', externalAccountAuthentication:'not_tested', toolInvocation:'not_requested'}};
+  assert.equal(validateCapture(c),42);
+  assert.throws(() => validateCapture({...c, acceptancePassed:false}));
+  assert.throws(() => validateCapture({...c, personalEnvironmentProof:{...c.personalEnvironmentProof, externalAccountAuthentication:'passed'}}));
+});
