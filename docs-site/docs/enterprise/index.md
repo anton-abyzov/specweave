@@ -24,7 +24,7 @@ The CLI appends ledger events; it does not rewrite prior events. The ledger is a
 
 ## Three products, distinct responsibilities
 
-SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWeave Studio** private pilot provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for Tailscale transport, per-host pairing, account boundaries and the current verification scope. [Discuss a Studio pilot](/studio) before planning a rollout around it.
+SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWeave Studio** private pilot provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [Discuss a Studio pilot](/studio) before planning a rollout around it.
 
 ## Brownfield work
 
