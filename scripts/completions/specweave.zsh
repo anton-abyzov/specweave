@@ -25,6 +25,7 @@ commands=(
     'auto-handoff:on | off | status\: save local background checkpoints without interrupting work'
     'statusline:Claude Code status line that records usage for auto-handoff'
     'usage-guard:Stop hook\: queue a local checkpoint and return without interrupting work'
+    'autocompact:on | off | status\: where Claude Code summarizes a long session (default 400k)'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -200,6 +201,12 @@ _specweave() {
                 usage-guard)
                     _arguments \
                         '--limit-hit[StopFailure hook\: save locally after a rate-limit failure]' \
+                        '--help[Show help]'
+                    ;;
+                autocompact)
+                    _arguments \
+                        '--at[Window for `on`, 100k to 1M (default 400k)]' \
+                        '--project[Write .claude/settings.json in this project instead of ~/.claude/settings.json]' \
                         '--help[Show help]'
                     ;;
                 jev)

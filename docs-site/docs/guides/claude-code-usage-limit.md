@@ -84,6 +84,7 @@ Existing enabled settings adopt the new behavior when the CLI is upgraded; hook 
 - **Keep the instruction file short.** Everything in `CLAUDE.md` is sent with every request. SpecWeave's `AGENTS.md` is about 760 tokens, and `CLAUDE.md` only imports it. See [AGENTS.md vs CLAUDE.md](/docs/guides/agents-md-vs-claude-md/).
 - **Disconnect MCP servers you aren't using.** Their tool definitions are sent every time.
 - **Work from a written spec.** A short `spec.md` with acceptance criteria means fewer rounds of "that's not what I meant".
+- **Compact at 400K on 1M-context models.** Each message resends the conversation so far, and Claude Code's default waits until about 967K tokens to summarize it. `specweave autocompact on` (or `/autocompact 400k`) keeps every turn under half that. See [Auto-compact at 400K](/docs/guides/claude-code-auto-compact/).
 - **Start a fresh session per task.** A long transcript makes every later step more expensive. With the task state in the repository, a new session needs one `specweave pickup` to catch up.
 
 ## Common questions
@@ -101,5 +102,6 @@ Existing enabled settings adopt the new behavior when the CLI is upgraded; hook 
 - [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/)
 - [Handoff and pickup](/docs/guides/cross-tool-handoff/)
 - [Auto-handoff rules](/docs/guides/auto-handoff/)
+- [Auto-compact at 400K](/docs/guides/claude-code-auto-compact/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
 - [Claude Code Projects and threads](/docs/guides/claude-code-projects/)

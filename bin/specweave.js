@@ -277,6 +277,17 @@ program
     process.exitCode = await usageGuardCommand({ limitHit: options.limitHit === true });
   });
 
+// Auto-compact window for Claude Code (400K keeps 1M-context turns small)
+program
+  .command('autocompact [action]')
+  .description('on | off | status: where Claude Code summarizes a long session (default 400k)')
+  .option('--at <tokens>', 'Window for `on`, 100k to 1M (default 400k)')
+  .option('--project', 'Write .claude/settings.json in this project instead of ~/.claude/settings.json')
+  .action(async (action, options) => {
+    const { autocompactCommand } = await import('../dist/src/cli/commands/autocompact.js');
+    process.exitCode = await autocompactCommand(action, { at: options.at, project: options.project === true });
+  });
+
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions
 program
   .command('jev <action> [args...]')

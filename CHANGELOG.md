@@ -1,3 +1,10 @@
+## [Unreleased]
+
+### Added
+
+- `specweave autocompact on|off|status` sets where Claude Code compacts a long session (`autoCompactWindow`, default 400K, `--at`, `--project`). On 1M-context models Claude Code otherwise waits until about 967K tokens, so every late turn resends close to a million cached tokens that count toward usage. `status` also shows per-model `/autocompact` values and Codex's `model_auto_compact_token_limit`.
+- `specweave init` writes `"autoCompactWindow": 400000` to the new project's `.claude/settings.json`. It changes nothing on 200K models; `specweave autocompact off --project` removes it.
+
 ## [3.0.6] - 2026-10-08
 
 ### Changed

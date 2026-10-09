@@ -562,6 +562,19 @@ export async function initCommand(
       console.log(chalk.yellow(`   ⚠ Could not install skills: ${err instanceof Error ? err.message : String(err)}`));
     }
 
+    // Claude Code: compact at 400K so 1M-context turns stay small. Project
+    // file only (it reaches cloud sessions too); never on a re-run, so
+    // `specweave autocompact off --project` sticks.
+    if (!continueExisting) {
+      try {
+        const { applyProjectDefault } = await import('./autocompact.js');
+        const line = applyProjectDefault(targetDir);
+        if (line) console.log(chalk.green(`   ✓ ${line}`));
+      } catch {
+        // Non-critical: Claude Code keeps its own window.
+      }
+    }
+
     // Anthropic's skill-creator only when the user opted in (SPECWEAVE_INSTALL_SKILL_CREATOR=1).
     if (toolName === 'claude' && !continueExisting) {
       ensureSkillCreator(targetDir).catch(() => {});
