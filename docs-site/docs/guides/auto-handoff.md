@@ -74,7 +74,7 @@ Claude Code also shows the model a note starting "[Usage limit approaching" or "
 
 Each `Stop` (Claude Code, Codex) and each `StopFailure` with `rate_limit` (Claude Code, Grok Build) also queues a detached local worker that saves a checkpoint: a handoff document and a diff of the worktree under `~/.specweave/checkpoints/<hash>/`, with a `current.json` receipt that points to the newest complete save. Saves are throttled to once every five minutes per worktree and session. The worker makes no model call, no network request and no commit, never pushes and never releases a claim, and leaves your checkout, index and branch untouched. There is no daemon: an idle session does not save.
 
-A checkpoint is recovery evidence on this machine, not a transfer. `specweave pickup` applies the pushed handoff, never a checkpoint. If a session died before it could hand off, open the newest `current.json`, read the document and diff it points to, and compare them with the checkout before restoring anything.
+A checkpoint is recovery evidence on this machine, not a transfer: it is never pushed and never applied for you. When the newest checkpoint for the worktree is newer than the last handoff, `specweave pickup` prints a `Local checkpoint:` line with the session that saved it and the paths of its document and diff, so a session that died before it could hand off is not lost. Read them and compare with the checkout before restoring anything.
 
 ## Checkpoint-only mode
 

@@ -101,6 +101,27 @@ export function readSessionCheckpoint(input: CheckpointInput, opts: CheckpointOp
     && typeof receipt.diffPath === 'string' && fs.existsSync(receipt.docPath) && fs.existsSync(receipt.diffPath) ? receipt : undefined;
 }
 
+/**
+ * The newest checkpoint any session saved for `cwd` (resolved like the hooks
+ * resolve it), so `pickup` can offer it after a session died at the limit.
+ */
+export function latestCheckpointFor(cwd: string, opts: CheckpointOptions = {}): CheckpointReceipt | undefined {
+  const identity = checkpointIdentity({ sessionId: 'any', cwd });
+  if (!identity) return undefined;
+  const root = checkpointsDirectory(opts.home);
+  let best: CheckpointReceipt | undefined;
+  let names: string[];
+  try { names = fs.readdirSync(root); } catch { return undefined; }
+  for (const name of names) {
+    if (name.startsWith('.') || name === 'studio') continue;
+    const receipt = readJson<CheckpointReceipt>(path.join(root, name, 'current.json'));
+    if (receipt?.version !== 1 || receipt.cwd !== identity.cwd || typeof receipt.savedAt !== 'string') continue;
+    if (!fs.existsSync(receipt.docPath)) continue;
+    if (!best || Date.parse(receipt.savedAt) > Date.parse(best.savedAt)) best = receipt;
+  }
+  return best;
+}
+
 function leaseMatches(file: string, token: string): boolean {
   const lease = readJson<Lease>(path.join(file, `${token}.json`));
   return lease?.token === token && typeof lease.ticket === 'number';
