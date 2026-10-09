@@ -26,9 +26,9 @@ Anthropic adjusts the exact numbers from time to time, so check the [Claude help
 
 - **`/usage`** inside Claude Code shows your session and weekly bars and when each one resets. **`/status`** gives a quick snapshot.
 - **Settings > Usage** on claude.ai shows the same bars.
-- **A status line** can show the percentage all the time. `specweave statusline` does this; automatic checkpoints do not depend on that reading.
+- **A status line** can show the percentage all the time. `specweave statusline` does this, and it is what SpecWeave's automatic handoff reads (below).
 
-Claude Code also warns you when you are close to a plan limit. A warning, or even a 100% plan reading, is not proof that the current provider will reject the next request: extra usage, credits or a proxy may still let work continue. Keep recovery state current independently of the reading, and choose whether to switch when the provider actually refuses work or when it suits you.
+Claude Code also warns you when you are close to a limit. That warning is the moment to act, because once the limit is reached the session stops mid-step and anything it hasn't written down is stuck in a transcript no other tool can read.
 
 ## Your options when the limit hits
 
@@ -64,20 +64,21 @@ specweave pickup
 
 The step-by-step version is [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/).
 
-## Save recovery state automatically
+## Hand off before the limit, automatically
 
-On your own machine, SpecWeave can keep a local checkpoint without interrupting work:
+On your own machine, SpecWeave can watch the limit for you:
 
 ```bash
-specweave auto-handoff on          # silent local saves after turns
-specweave auto-handoff status      # hook status and checkpoint directory
+specweave auto-handoff on          # hand off at 90% of the five-hour or weekly window
+specweave auto-handoff on --at 80  # or pick your own threshold
+specweave auto-handoff status
 ```
 
-Claude Code and Codex queue a detached worker after a `Stop`, throttled to once every five minutes per canonical worktree and session. Claude Code and Grok Build queue the same local worker on `StopFailure` with `rate_limit`. It needs no model, usage reading or network, never pushes or releases task claims, and leaves your checkout untouched. It is event-driven, with no daemon.
+In Claude Code it reads the five-hour and weekly usage from the status line. In Codex it reads the rate limits Codex writes to its session log. When the fullest window crosses the threshold, a Stop hook pauses the agent once per window, has it run `specweave handoff`, and tells you to say "pick up" in the next tool. Under the threshold it adds nothing to your conversation.
 
-Successful saves write `~/.specweave/checkpoints/<hash>/current.json`, pointing to a saved handoff document and diff. `pickup` does not apply these recovery files. When you decide to switch tools or machines, run `specweave handoff` to transfer ownership and push your work.
+If one long turn jumps straight past 90 percent and Claude Code stops on the limit, a second hook writes the handoff itself, without the model, so your latest edits are still pushed. The 90 percent check needs a terminal session: the desktop app, Remote Control and `claude -p` run no status line, so there the limit hook is what hands off.
 
-Existing enabled settings adopt the new behavior when the CLI is upgraded; hook commands stay the same. `--at` remains accepted for compatibility and no longer sets a threshold. Refresh project instructions with `specweave update` to remove old quota-stop rules. Cloud sessions without user hooks need an explicit handoff. Usage warnings alone never tell the agent to stop. [Automatic checkpoint rules](/docs/guides/auto-handoff/) has the details.
+Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) have no status line or user hooks. There, the agent hands off when Claude Code warns that the limit is near, or when you say "hand off". [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool.
 
 ## Make the allowance last longer
 
@@ -95,7 +96,7 @@ Existing enabled settings adopt the new behavior when the CLI is upgraded; hook 
 
 **Does it work with a second Claude account instead of Codex?** Yes. Project memory in Claude Code stays with one account, so a second account starts cold without a handoff. `specweave pickup` gives it the same starting point Codex would get.
 
-**Do I need the SpecWeave CLI?** For automatic local checkpoints, yes. For a manual one, the self-contained skill is enough: `npx vskill i handoff`. It needs only `git` and a shell.
+**Do I need the SpecWeave CLI?** For automatic handoff, yes. For a manual one, the self-contained skill is enough: `npx vskill i handoff`. It needs only `git` and a shell.
 
 ## See also
 

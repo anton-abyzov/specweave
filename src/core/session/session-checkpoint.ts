@@ -6,6 +6,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { scrubSecrets } from './handoff-secret-scrub.js';
+import { studioThreadId } from './usage-guard.js';
 
 export const CHECKPOINT_INTERVAL_MS = 5 * 60_000;
 export const CHECKPOINT_WORKER_TIMEOUT_MS = 8_000;
@@ -30,6 +31,8 @@ export interface CheckpointReceipt {
   docPath: string;
   diffPath: string;
   incrementId?: string;
+  /** Set when SpecWeave Studio ran the session; Studio reads `studio/<thread>.json`. */
+  studioThreadId?: string;
 }
 
 interface Lease { token: string; at: number; ticket?: number }
@@ -42,6 +45,7 @@ export interface CheckpointRequest {
   token: string;
   slot: string;
   summary?: string;
+  studioThreadId?: string;
 }
 
 /** Resolve symlinks and the nearest Git worktree without invoking Git in the hook. */
@@ -78,6 +82,15 @@ export function checkpointDirectory(input: CheckpointInput, opts: CheckpointOpti
 
 function readJson<T>(file: string): T | undefined {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')) as T; } catch { return undefined; }
+}
+
+/** Where Studio finds the newest checkpoint of one of its threads, whichever provider wrote it. */
+export function studioCheckpointFile(threadId: string, home = os.homedir()): string {
+  return studioPointer(checkpointsDirectory(home), threadId);
+}
+
+function studioPointer(checkpoints: string, threadId: string): string {
+  return path.join(checkpoints, 'studio', `${threadId.replace(/[^\w.-]/g, '_')}.json`);
 }
 
 export function readSessionCheckpoint(input: CheckpointInput, opts: CheckpointOptions = {}): CheckpointReceipt | undefined {
@@ -170,7 +183,10 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
     const generation = `snapshot-${now}-${token}`;
     const summary = typeof input.last_assistant_message === 'string'
       ? scrubSecrets(input.last_assistant_message.slice(0, 32_000)).scrubbed : undefined;
-    const request: CheckpointRequest = { version: 1, ...identity, directory, generation, token, slot, ...(summary ? { summary } : {}) };
+    const studio = studioThreadId();
+    const request: CheckpointRequest = {
+      version: 1, ...identity, directory, generation, token, slot, ...(summary ? { summary } : {}), ...(studio ? { studioThreadId: studio } : {}),
+    };
     requestPath = path.join(directory, `request-${token}.json`);
     fs.writeFileSync(requestPath, JSON.stringify(request), { flag: 'wx', mode: 0o600 });
     return requestPath;
@@ -229,11 +245,22 @@ export async function runSessionCheckpoint(requestPath: string): Promise<void> {
     const receipt: CheckpointReceipt = {
       version: 1, sessionId: request.sessionId, cwd: request.cwd, savedAt: new Date().toISOString(),
       docPath: result.docPath, diffPath: result.diffPath, ...(result.incrementId ? { incrementId: result.incrementId } : {}),
+      ...(request.studioThreadId ? { studioThreadId: request.studioThreadId } : {}),
     };
     const temporary = path.join(request.directory, `current-${request.token}.json`);
     fs.writeFileSync(temporary, JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx', mode: 0o600 });
     fs.renameSync(temporary, path.join(request.directory, 'current.json'));
     published = true;
+    if (request.studioThreadId) {
+      // One pointer per Studio thread: a Claude turn and the Codex turn after it share it.
+      const pointer = studioPointer(path.dirname(request.directory), request.studioThreadId);
+      try {
+        fs.mkdirSync(path.dirname(pointer), { recursive: true, mode: 0o700 });
+        const next = `${pointer}.${request.token}`;
+        fs.writeFileSync(next, JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx', mode: 0o600 });
+        fs.renameSync(next, pointer);
+      } catch { /* the per-session receipt is already published */ }
+    }
     // Retain the preceding generation for recovery; prune only our old snapshot directories.
     const keep = new Set([generationDir, previous && path.dirname(previous.docPath)]);
     for (const name of fs.readdirSync(request.directory)) {
