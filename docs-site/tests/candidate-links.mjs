@@ -2,6 +2,21 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { authenticatedOnlyLinks, skippedLinkPattern } from '../scripts/candidate-link-policy.mjs';
+
+const privateRelease = 'https://github.com/anton-abyzov/specweave-studio/releases/tag/v0.2.0';
+assert.deepEqual(authenticatedOnlyLinks, [privateRelease]);
+const skipped = new RegExp(skippedLinkPattern);
+assert.ok(skipped.test(privateRelease), 'The verified private release needs authenticated checking');
+for (const url of [
+  'https://github.com/anton-abyzov/specweave-studio',
+  'https://github.com/anton-abyzov/specweave-studio/releases/tag/v0.2.1',
+  'https://github.com/anton-abyzov/specweave/releases/tag/v0.2.0',
+  `${privateRelease}/missing`,
+  `${privateRelease}?unexpected=1`,
+  `https://example.com/?target=${privateRelease}`,
+  privateRelease.replace('github.com', 'githubXcom'),
+]) assert.equal(skipped.test(url), false, `Unlisted links must still be checked: ${url}`);
 
 const script = fileURLToPath(new URL('../scripts/check-candidate-links.mjs', import.meta.url));
 let missingCandidate = false;
@@ -20,7 +35,7 @@ const candidate = createServer((request, response) => {
   if (path === '/') {
     const page = missingCandidate ? 'genuinely-missing' : 'jev';
     response.setHeader('Content-Type', 'text/html');
-    response.end(`<html><head><link rel="canonical" href="https://spec-weave.com/${page}"></head><body><a href="https://www.spec-weave.com/${page}">Candidate page</a><a href="${externalOrigin}/resource">External</a></body></html>`);
+    response.end(`<html><head><link rel="canonical" href="https://spec-weave.com/${page}"></head><body><a href="https://www.spec-weave.com/${page}">Candidate page</a><a href="${externalOrigin}/resource">External</a><a href="${privateRelease}">Private prerelease (repository access required)</a></body></html>`);
   } else if (path === '/jev') {
     candidateHits++;
     response.setHeader('Content-Type', 'text/html');
@@ -49,6 +64,8 @@ async function close(server) {
 try {
   let result = await check();
   assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /Authenticated-only classification: 1 exact URL/);
+  assert.match(result.output, /Separate authenticated readback: release 408293452/);
   assert.ok(candidateHits > 0, 'Absolute canonical link must request the candidate /jev route');
   assert.ok(externalHits > 0, 'External links must still be checked');
   missingCandidate = true;
@@ -60,7 +77,7 @@ try {
   result = await check();
   assert.notEqual(result.code, 0, 'Broken external link must still fail');
   assert.match(result.output, /resource/);
-  console.log('Candidate link regression: new canonical route passes; missing candidate and external routes fail.');
+  console.log('Candidate link regression: new canonical route and exact authenticated-only release pass; missing candidate, broken external and unlisted links remain checked.');
 } finally {
   await close(candidate);
   await close(external);
