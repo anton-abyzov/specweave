@@ -2,11 +2,14 @@
 
 > SpecWeave is an open-source CLI (npm package `specweave`, MIT) that keeps AI coding work in git as one short spec.md per piece of work, an append-only task ledger and a handoff. When Claude Code, Codex or another agent hits a usage limit, `specweave handoff` records the state and pushes the uncommitted edits, and `specweave pickup` continues it in Codex, Grok Build, Gemini CLI, Cursor, Copilot or a second account of the same tool. One AGENTS.md of about 760 tokens is the instruction file every agent reads.
 
+SpecWeave Studio (private pilot) is the workspace built on that record: a project has a coordinator and workers, each on its own coding agent and model (Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others), running on machines the user owns, reached over SSH or Tailscale.
+
 Install: `npm install -g specweave`, then `specweave init` in a repository.
 
 ## Start here
 
 - [What is SpecWeave?](https://spec-weave.com/docs/overview/introduction/): the spec, the ledger and the handoff in one page
+- [SpecWeave Studio](https://spec-weave.com/docs/overview/studio/): projects for every coding agent on your own machines
 - [How it works](https://spec-weave.com/docs/overview/how-it-works/): the daily loop from spec to closed increment
 - [Installation](https://spec-weave.com/docs/getting-started/installation/): install, update, uninstall
 - [Your first increment](https://spec-weave.com/docs/getting-started/first-increment/)

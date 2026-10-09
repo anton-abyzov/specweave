@@ -109,9 +109,10 @@ describe('Docusaurus navbar items (T-017)', () => {
     ]));
   });
 
-  it('links Product and Integrations to the product layers', () => {
+  it('leads with Studio, then the CLI and Integrations', () => {
+    expect(navItems[0]).toEqual(expect.objectContaining({label: 'Studio', to: '/studio'}));
     expect(navItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({label: 'Product', to: '/product'}),
+      expect.objectContaining({label: 'CLI', to: '/product'}),
       expect.objectContaining({label: 'Integrations', to: '/integrations'}),
     ]));
   });
