@@ -309,10 +309,10 @@ const config: Config = {
       },
       items: [
         {to: '/product', label: 'Product', position: 'left'},
+        {to: '/studio', label: 'Studio', position: 'left'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
         {to: '/docs/guides/cross-tool-handoff', label: 'Handoff', position: 'left'},
         {to: '/integrations', label: 'Integrations', position: 'left'},
-        {to: '/blog', label: 'Blog', position: 'left'},
         {href: 'https://verified-skill.com', label: 'Verified Skills', position: 'left'},
         {to: '/pricing', label: 'Pricing', position: 'right'},
         {type: 'search', position: 'right'},

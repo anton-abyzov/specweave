@@ -3,6 +3,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import ContinuityBoard from '../components/sections/ContinuityBoard';
 import styles from './continuity.module.css';
+import { ProductMap } from '../components/ecosystem/Architecture';
 
 const pickupOutput = `Picked up the handoff from claude@cloud (out of tokens): applied 7 uncommitted files.
 SpecWeave pickup · you are codex@laptop
@@ -36,7 +37,7 @@ export default function Product() {
       </section>
 
       <section className={`${styles.section} ${styles.layerSection}`}>
-        <div className={styles.sectionHeading}><h2>Three records.<br /><em>Nothing else to read.</em></h2><p>The agent reads a short spec and edits it. The CLI appends everything else, so the record cannot be tidied up afterwards and no tokens go on bookkeeping.</p></div>
+        <div className={styles.sectionHeading}><h2>Three records.<br /><em>A clear place to start.</em></h2><p>The agent reads a short spec. The CLI appends task events and evidence to the ledger. Git review and access controls protect the history; these ordinary files are not a tamper-proof audit system.</p></div>
         <div className={styles.layers}>
           <article><span className={styles.layerNumber}>01 / spec.md</span><h3>What done means</h3><p>Problem, scope, numbered acceptance criteria, approach and tasks. Each task names the criteria it covers, the files it owns and the test that proves it.</p><span>You read it before code is written.</span></article>
           <article><span className={styles.layerNumber}>02 / ledger.jsonl</span><h3>What actually happened</h3><p>Append-only claims, completions with the commit and the real test output, notes between threads, and every handoff. A criterion is met when every task covering it is done.</p><span>Evidence, not a checkbox.</span></article>
@@ -86,6 +87,7 @@ export default function Product() {
         </div>
       </section>
 
+      <section className={styles.section}><div className={styles.sectionHeading}><h2>One ecosystem.<br /><em>Distinct jobs.</em></h2><p>Keep the workflow, reusable expertise and native workspace easy to understand.</p></div><ProductMap /><Link className={styles.textLink} to="/docs/overview/studio-architecture">Read the architecture ↗</Link></section>
       <section className={styles.finalCta}>
         <h2>Write down what done means.<br /><em>Then switch tools freely.</em></h2>
         <Link className={styles.primary} to="/docs/getting-started">Quick start <span aria-hidden="true">↗</span></Link>

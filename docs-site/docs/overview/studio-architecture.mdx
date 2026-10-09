@@ -1,0 +1,83 @@
+---
+title: Studio and the SpecWeave ecosystem
+description: How SpecWeave, vskill and the private SpecWeave Studio pilot fit together, including Tailscale transport, per-host pairing, native sessions and data boundaries.
+---
+
+import Architecture, { ProductMap } from '@site/src/components/ecosystem/Architecture';
+import WorkflowVideo from '@site/src/components/ecosystem/WorkflowVideo';
+import StudioOverviewVideo from '@site/src/components/ecosystem/StudioOverviewVideo';
+
+# One ecosystem, three distinct jobs
+
+**SpecWeave** keeps project intent and evidence in your repository. **vskill and Skill Studio** help you install and evaluate skills. **SpecWeave Studio** is a separate private pilot for native coding sessions across machines.
+
+<ProductMap />
+
+SpecWeave Studio is not the app launched by `npx vskill studio`. That command opens **Skill Studio**, the skill development and evaluation workspace.
+
+## The architecture
+
+<Architecture />
+
+| Layer | Responsibility | Boundary |
+| --- | --- | --- |
+| Browser | Display sessions, output and approvals | Browser connection state does not grant execution authority |
+| Tailscale Serve | Private HTTPS transport to the selected host's loopback service | Tailnet policy governs reachability; Studio still requires pairing |
+| Studio runtime | Own host-local sessions, accounts, admission and recovery | Pair each host separately; do not copy credentials between accounts |
+| Native agent | Execute a turn through its selected provider/account | Provider availability and approval rules still apply |
+| Repository | Code, specs, task ledger and verification evidence | Git transports project changes; it is not a shared live session database |
+| vskill | Inspect/install skills and run evaluations | Source trust and evaluation results require independent assessment |
+
+Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not the pilot's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve).
+
+### Where data goes
+
+Local-first describes where project files and runtime state live. It does not mean every request stays on the machine. Native coding agents and Skill Studio evaluations can contact their configured cloud model providers. Review those providers, account policies and any tools your skills invoke before using sensitive material.
+
+Keep live worktrees, session databases and credential stores on their owning hosts. Use git and explicit handoff for portable code and task state. Private network access and Studio pairing are complementary controls, not interchangeable credentials.
+
+### Inside a Studio host
+
+The client sends authenticated, typed commands to the runtime on the machine that owns the session. A database transaction records events, projections, receipts and pending side effects in an outbox. Workers perform native-provider and Git operations and record their outcomes. **An accepted command is not the same as a completed side effect.**
+
+Session state belongs to the native runtime; SpecWeave remains responsible for project intent, task ownership and acceptance evidence. An account pin and the session's host affinity remain meaningful even when several machines share a subscription. Adding hosts does not create extra provider quota.
+
+The optional [Jev / Decisions integration](/docs/guides/jev-system-one) handles bounded classifications in SpecWeave. Its model output is advisory: it does not grant permissions or prove a task passed verification.
+
+## What is verified
+
+The accepted **8 October 2026, 4:14 PM EDT** private fleet run completed three native Codex marker-reading turns, one per host, sequentially. The delivery record binds that bounded result to source `5d25f9ab` and its packaged artifact. This is a dated observation, not a promise that every account currently has capacity.
+
+That demonstrates bounded native routing in the tested fleet. It does not establish concurrent enterprise load, generalized task success rates, measured productivity gains, compliance certification, a public installer or a service-level agreement. New UI and fleet work continue separately; a source commit alone is not installed-runtime proof.
+
+## First steps: the workflow available today
+
+<WorkflowVideo />
+
+1. Install the CLI with `npm install -g specweave`, then follow the [quick start](/docs/getting-started).
+2. Define one small outcome in a spec, including files, acceptance criteria and a test.
+3. Claim the task, do the work, run the test and record its real evidence.
+4. When you choose to transfer, run `specweave handoff`; use `specweave pickup` in the destination checkout after reviewing ownership and branch state.
+5. Explore [Skill Studio](/docs/skills/skill-studio) if a repeated task would benefit from a tested skill.
+
+In **SpecWeave 3.0.6**, `specweave auto-handoff on` enables silent local recovery checkpoints. It does not stop work at a usage limit, push a transfer, release task claims or authorize another worker. `pickup` does not apply those automatic checkpoints. See [checkpoint and handoff rules](/docs/guides/auto-handoff).
+
+## Pilot walkthrough: remote Studio
+
+<StudioOverviewVideo />
+
+For an already provisioned pilot, use the operator-supplied private URL and current host-specific instructions:
+
+1. Join the approved tailnet and confirm the target machine is reachable.
+2. Pair the browser to that Studio host with the provided scoped pairing flow. Being on the network is not enough.
+3. Confirm the connection, project, native provider and account before submitting a small test request.
+4. Inspect the actual output and any pending approval. A balance or usage percentage alone is not permission to run.
+5. Reconnect and verify the same session on the same host. Keep project transfer explicit when moving work between tools or machines.
+
+The operator provisions the private pilot; this guide does not imply a publicly available Studio download. [Discuss a pilot](/studio) with your engineering workflow, host requirements and evaluation criteria.
+
+## For an enterprise evaluation
+
+Begin with one repository, a small set of consenting engineers and a written success criterion. Measure accepted tasks, recovery effort, failed runs and review time. Keep tests, pilot activity and collected revenue distinct from adoption or ROI claims.
+
+SpecWeave's task ledger is append-only **by CLI behavior and workflow convention**. It is an ordinary file and can be edited outside the CLI. Use your repository's review, access and retention controls when an auditable history matters. No cryptographic immutability or compliance certification is implied.
