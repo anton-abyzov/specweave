@@ -22,6 +22,7 @@ import { incrementsDir, listActiveIncrementIds, listStartableIncrementIds, readL
 import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
 import { readIntentContext } from '../intent/portable-context.js';
 import { resolveHandoffPointer } from './handoff-pointer.js';
+import { latestCheckpointFor } from './session-checkpoint.js';
 
 export const MEMORY_INDEX_PATH = '.specweave/memory/MEMORY.md';
 
@@ -38,6 +39,8 @@ export interface PickupOptions {
   agent?: string;
   /** Explicit increment ids in priority order (the hook's active-increment state). */
   activeIds?: string[];
+  /** Home directory holding `.specweave/checkpoints` (tests). */
+  checkpointHome?: string;
 }
 
 export interface PickupResult {
@@ -75,7 +78,11 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   }
 
   const handoff = lastHandoff(projectRoot, ids.map((id) => path.join(incRoot, id)));
-  if (handoff) L.push(handoff);
+  if (handoff.line) L.push(handoff.line);
+  if (!opts.compact) {
+    const checkpoint = lastCheckpoint(projectRoot, handoff.at, opts.checkpointHome);
+    if (checkpoint) L.push(checkpoint);
+  }
 
   if (focus) {
     const notes = readIncrementEvents(ledgerPath(path.join(incRoot, focus)), ['note']).slice(-MAX_NOTES);
@@ -199,7 +206,7 @@ function readStatus(incDir: string): string {
  * travels with the branch and a checkout resets file times; otherwise the
  * newest handoff document on disk.
  */
-function lastHandoff(projectRoot: string, incDirs: string[]): string {
+function lastHandoff(projectRoot: string, incDirs: string[]): { line: string; at?: number } {
   let event: { e: LedgerEvent; dir: string } | undefined;
   for (const dir of incDirs) {
     const last = readIncrementEvents(ledgerPath(dir), ['handoff']).pop();
@@ -208,11 +215,25 @@ function lastHandoff(projectRoot: string, incDirs: string[]): string {
   if (event) {
     const docs = ['handoff.md', 'handoff.auto.md'].map((f) => path.join(event!.dir, f)).filter((p) => fs.existsSync(p));
     const where = docs.length ? ` → ${docs.map((p) => rel(projectRoot, p)).join(' + ')}` : '';
-    return `Last handoff: ${event.e.by} ${age(event.e.at)}${event.e.note ? `: ${oneLine(event.e.note, 200)}` : ''}${where}`;
+    const line = `Last handoff: ${event.e.by} ${age(event.e.at)}${event.e.note ? `: ${oneLine(event.e.note, 200)}` : ''}${where}`;
+    return { line, at: Date.parse(event.e.at) };
   }
   const doc = newestHandoffDoc(projectRoot, incDirs);
-  if (doc) return `Last handoff: ${rel(projectRoot, doc.p)} (${ageMs(doc.mtime)})`;
-  return '';
+  if (doc) return { line: `Last handoff: ${rel(projectRoot, doc.p)} (${ageMs(doc.mtime)})`, at: doc.mtime };
+  return { line: '' };
+}
+
+/**
+ * A local checkpoint newer than the last handoff: what a session that died at
+ * the limit (or was never handed off) left behind. Nothing else reads them.
+ */
+function lastCheckpoint(projectRoot: string, handoffAt: number | undefined, home?: string): string {
+  const receipt = latestCheckpointFor(projectRoot, home ? { home } : {});
+  if (!receipt) return '';
+  const savedAt = Date.parse(receipt.savedAt);
+  if (!Number.isFinite(savedAt) || (handoffAt !== undefined && savedAt <= handoffAt)) return '';
+  const diff = fs.existsSync(receipt.diffPath) ? ` + ${receipt.diffPath}` : '';
+  return `Local checkpoint: session ${receipt.sessionId} ${ageMs(savedAt)}, newer than the last handoff → ${receipt.docPath}${diff}`;
 }
 
 function newestHandoffDoc(projectRoot: string, incDirs: string[]): { p: string; mtime: number } | undefined {
