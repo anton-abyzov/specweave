@@ -7,8 +7,8 @@ description: Organize ongoing work with a coordinator, independent Claude Code a
 
 A project groups work around an outcome, shared memory and tools. Code projects can combine a working folder with several repository URLs; Personal projects start without choosing a folder or creating a Git repository. Its coordinator keeps the conversation together; worker threads carry out individual assignments. Choose a provider and model for each thread, including the coordinator. A project can contain both Claude Code and Codex workers.
 
-:::info 0.2 preview
-This guide previews Studio 0.2.0 while final native workflow and release checks finish. The separately documented installed pilot is 0.1.4. Studio release artifacts require repository access; there is no public installer linked here. The SpecWeave CLI installation guide installs the CLI only. See [Studio architecture and access](../overview/studio-architecture.mdx) for the private pilot setup.
+:::info Studio 0.2.0 private prerelease
+Studio 0.2.0 is distributed through a [private GitHub prerelease](https://github.com/anton-abyzov/specweave-studio/releases/tag/v0.2.0), which requires repository access. Publishing the release does not install it on your devices: check the running version on each host. There is no public Studio installer linked here. The SpecWeave CLI installation guide installs the CLI only; see [Studio architecture and access](../overview/studio-architecture.mdx) for the private pilot setup.
 :::
 
 ## Set up your project

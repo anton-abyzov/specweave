@@ -7,8 +7,8 @@ description: Use an optional plan for acceptance and evidence, preserve existing
 
 Start with a conversation. Add a plan when work needs acceptance criteria, owners or verification. Ordinary Studio chat does not require a SpecWeave increment or CLI installation.
 
-:::info 0.2 preview
-These project features target Studio 0.2.0 and remain under final native workflow and release verification. See [Studio projects](./projects.md) for version and private-pilot availability.
+:::info Studio 0.2.0 private prerelease
+These features are part of Studio 0.2.0. Its private release requires repository access, and each execution host needs the corresponding version installed. See [Studio projects](./projects.md) for release availability.
 :::
 
 ## One plan authority
