@@ -38,7 +38,8 @@ function readyFixture(root) {
       captions: save(`${t.id}.vtt`, 'WEBVTT\n\n00:00.000 --> 00:01.000\nFixture\n'),
       receipt: save(`${t.id}.json`, JSON.stringify({syntheticDataOnly: true, headless: true,
         actualApplication: true, acceptancePassed: true, privacyReviewed: true, version: '0.2.0',
-        sourceCommit: 'a'.repeat(40), recordedAt: '2026-10-09T00:00:00Z',
+        sourceCommit: 'a'.repeat(40), buildSha256:'b'.repeat(64), providerTurnsStartedByRecorder:0,
+        nativeReceiptSha256:'c'.repeat(64), recordedAt: '2026-10-09T00:00:00Z',
         videoSha256: video.sha256, visualReviewPassed: true, captionsReviewed: true,
         nativeProviders: {claude: 'passed', codex: 'passed'}}))};
   }
@@ -49,6 +50,20 @@ test('contract-valid receipts do not bypass real video probing', () => fixture(r
   readyFixture(root);
   assert.equal(verifyManifest(root, {release: true, probe: false}).status, 'ready');
   assert.throws(() => verifyManifest(root, {release: true}), /ffprobe/);
+}));
+test('mixed-provider proof cannot be bypassed by changing manifest metadata', () => fixture(root => {
+  const m = readyFixture(root); m.tutorials[0].requiresNativeProof = false;
+  writeFileSync(join(root, 'manifest.json'), JSON.stringify(m));
+  assert.throws(() => verifyManifest(root, {release:true, probe:false}), /cannot be disabled/);
+}));
+test('different runtime sources and builds cannot be combined into one release tutorial series', () => fixture(root => {
+  for (const patch of [{sourceCommit:'d'.repeat(40)}, {buildSha256:'e'.repeat(64)}, {providerTurnsStartedByRecorder:1}]) {
+    const m = readyFixture(root), entry = m.tutorials[1].media.receipt;
+    const content = JSON.stringify({...JSON.parse(readFileSync(join(root, entry.file))), ...patch});
+    writeFileSync(join(root, entry.file), content); entry.sha256 = createHash('sha256').update(content).digest('hex');
+    writeFileSync(join(root, 'manifest.json'), JSON.stringify(m));
+    assert.throws(() => verifyManifest(root, {release:true, probe:false}), /same release source|same accepted build|must not start inference/);
+  }
 }));
 test('rejects changed assets and symlink escape even if metadata claims readiness', () => fixture(root => {
   const m = readyFixture(root), video = m.tutorials[0].media.video;

@@ -8,6 +8,11 @@ import {spawnSync} from 'node:child_process';
 const ownPath = fileURLToPath(import.meta.url);
 const defaultRoot = dirname(ownPath);
 const maxBytes = 100 * 1024 * 1024;
+const expectedTutorials = new Map([
+  ['projects-and-threads', {guide:'studio/projects.md', native:true}],
+  ['memory-and-usage', {guide:'studio/memory-and-usage.md', native:false}],
+  ['plans-and-routines', {guide:'studio/plans-and-routines.md', native:false}],
+]);
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 function inside(root, name) {
   assert.equal(typeof name, 'string', 'asset name must be a string');
@@ -33,10 +38,15 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
   assert(Array.isArray(manifest.tutorials) && manifest.tutorials.length === 3);
   assert.equal(new Set(manifest.tutorials.map(t => t.id)).size, 3);
   if (release) assert.equal(manifest.status, 'ready', 'Tutorials are planned, not release-ready');
+  let captureSource = null, captureBuild = null;
   for (const tutorial of manifest.tutorials) {
     assert(/^[a-z][a-z0-9-]+$/.test(tutorial.id));
     assert(tutorial.title && /^studio\/[a-z-]+\.md$/.test(tutorial.guide));
     assert.equal(typeof tutorial.requiresNativeProof, 'boolean');
+    const expected = expectedTutorials.get(tutorial.id);
+    assert(expected, 'unexpected tutorial identity');
+    assert.equal(tutorial.guide, expected.guide, 'tutorial guide mismatch');
+    assert.equal(tutorial.requiresNativeProof, expected.native, 'native proof requirement cannot be disabled');
     if (manifest.status === 'planned') {
       assert.equal(tutorial.media, null, 'planned tutorials must not imply finished media');
       continue;
@@ -54,6 +64,11 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
     assert.equal(receipt.privacyReviewed, true, 'raw footage needs a privacy review');
     assert.equal(receipt.version, manifest.targetVersion);
     assert(/^[a-f0-9]{40}$/.test(receipt.sourceCommit), 'capture needs an exact source commit');
+    assert(/^[a-f0-9]{64}$/.test(receipt.buildSha256), 'capture needs its accepted build hash');
+    assert.equal(receipt.providerTurnsStartedByRecorder, 0, 'recorder must not start inference');
+    if (captureSource !== null) assert.equal(receipt.sourceCommit, captureSource, 'tutorials must show the same release source');
+    if (captureBuild !== null) assert.equal(receipt.buildSha256, captureBuild, 'tutorials must show the same accepted build');
+    captureSource = receipt.sourceCommit; captureBuild = receipt.buildSha256;
     assert(!Number.isNaN(Date.parse(receipt.recordedAt)), 'capture needs its date');
     assert.equal(receipt.videoSha256, tutorial.media.video.sha256);
     assert.equal(receipt.visualReviewPassed, true);
@@ -61,6 +76,7 @@ export function verifyManifest(root, {release = false, probe = true} = {}) {
     if (tutorial.requiresNativeProof) {
       assert.equal(receipt.nativeProviders?.claude, 'passed', 'Claude execution proof required');
       assert.equal(receipt.nativeProviders?.codex, 'passed', 'Codex execution proof required');
+      assert(/^[a-f0-9]{64}$/.test(receipt.nativeReceiptSha256), 'native proof needs its receipt hash');
     }
     if (probe) {
       const result = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries',
@@ -93,6 +109,13 @@ export function verifyDocs(siteRoot, manifest, {built = false} = {}) {
       assert(existsSync(resolve(dirname(path), match[1])), `broken local link: ${page}: ${match[1]}`);
     }
     if (manifest.status === 'planned') assert(!/<video|<iframe|VideoObject/.test(text), 'no unverified media embeds');
+    else {
+      const tutorial = manifest.tutorials.find(t => t.guide === page);
+      if (tutorial) {
+        assert(text.includes('<video') && text.includes(tutorial.media.video.file), `verified video not embedded: ${page}`);
+        assert(text.includes('<track') && text.includes(tutorial.media.captions.file), `verified captions not embedded: ${page}`);
+      }
+    }
     if (built) {
       const html = readFileSync(resolve(siteRoot, 'build/docs', page.replace(/\.md$/, ''), 'index.html'), 'utf8');
       assert.equal((html.match(/<h1\b/g) ?? []).length, 1, `built heading missing: ${page}`);
