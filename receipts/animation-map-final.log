@@ -1,0 +1,16 @@
+[BrowserManager] Browser launched (HeadlessChrome/152.0.7977.30, screenshot, gl=--use-gl=angle --use-angle=swiftshader, headlessShell=true, platform=darwin)
+[initSession:screenshot] page.goto start (0ms)
+[initSession:screenshot] page.goto complete (55ms)
+[initSession:screenshot] GSAP proxy flush complete (60ms)
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: [FrameCapture] window.__hf not ready after 45000ms. Page must expose window.__hf = { duration, seek }.
+  State: __hf=true, seek=false, player=true, renderReady=true, duration=undefined
+    at pollHfReady (file:///Users/antonabyzov/.npm/_npx/110f701c48e68d66/node_modules/hyperframes/dist/chunk-33RZPZ4K.js:5316:9)
+    at async Module.initializeSession (file:///Users/antonabyzov/.npm/_npx/110f701c48e68d66/node_modules/hyperframes/dist/chunk-33RZPZ4K.js:5740:5)
+    at async initializeSessionWithRetry (file:///Volumes/SanDisk%20APFS/codex-task-evidence/0891/motion-v2/verification/animation-map-runner/package-loader.mjs:126:7)
+    at async file:///Volumes/SanDisk%20APFS/codex-task-evidence/0891/motion-v2/verification/animation-map-runner/animation-map.mjs:70:13
+
+Node.js v22.20.0

@@ -1,0 +1,21 @@
+import http from 'node:http';
+import {readFile,writeFile} from 'node:fs/promises';
+import {resolve,extname,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+const scriptDir=dirname(fileURLToPath(import.meta.url));
+const base=resolve(process.argv[2] || resolve(scriptDir,'../source'));
+const reportPath=resolve(process.argv[3] || resolve(scriptDir,'motion-samples.json'));
+const require=createRequire('/Users/antonabyzov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/package.json');
+const {chromium}=require('playwright');
+const server=http.createServer(async(req,res)=>{try{const p=resolve(base,decodeURIComponent(req.url.split('?')[0]).replace(/^\//,'')||'index.html'); if(!p.startsWith(base+'/'))throw Error();const m={'.html':'text/html','.js':'text/javascript','.mp4':'video/mp4','.woff2':'font/woff2','.png':'image/png','.wav':'audio/wav'};res.setHeader('Content-Type',m[extname(p)]||'application/octet-stream');res.end(await readFile(p));}catch{res.writeHead(404).end();}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await chromium.launch({headless:true,executablePath:'/Users/antonabyzov/Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell'});
+try{const page=await browser.newPage({viewport:{width:1920,height:1080}});page.on('pageerror',e=>console.error(e.message));page.on('console',m=>console.error(m.text()));await page.addInitScript(()=>{window.__timelines={};});await page.goto(`http://127.0.0.1:${server.address().port}`,{waitUntil:'domcontentloaded'});console.log(await page.evaluate(()=>({gsap:typeof gsap,registries:Object.keys(window.__timelines||{}),body:document.body.innerText.slice(0,30)})));await page.waitForFunction(()=>!!window.__timelines?.['studio-motion-v2']);await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>{window.__timelines['studio-motion-v2'].totalTime(.000001).seek(0);});
+const times=[0,.2,.4,.7,1.2,1.8,3.6,7,13.5,22.5,27.3,30.2,33.35,33.4875,33.625,33.7625,33.9,35.2,41.8,43.5,44.5];
+const sample=async(t)=>page.evaluate(t=>{const tl=window.__timelines['studio-motion-v2'];tl.pause().seek(t); const prop=(sel)=>{const e=document.querySelector(sel),s=getComputedStyle(e);const data={transform:s.transform,opacity:+s.opacity};for(const k of ['x','y','z','scaleX','scaleY','rotation','rotationX','rotationY'])data[k]=+gsap.getProperty(e,k);return data;};return{time:t,card:prop('#browser-surface'),nativeCamera:prop('#native-camera'),switchCamera:prop('#switch-camera'),sharedStrip:prop('#shared-strip'),requestCopy:prop('#copy-request'),requestLineOpacity:+getComputedStyle(document.querySelector('#copy-request .line')).opacity,blur:document.querySelector('#whip-blur-node').getAttribute('stdDeviation')};},t);
+const forward=[];for(const t of times)forward.push(await sample(t));const reverse=[];for(const t of [...times].reverse())reverse.push(await sample(t));
+const discrepancies=forward.flatMap(f=>{const r=reverse.find(x=>x.time===f.time);return JSON.stringify(f, (k,v)=>k==='transform'?undefined:v)!==JSON.stringify(r, (k,v)=>k==='transform'?undefined:v)?[{time:f.time,forward:f,reverse:r}]:[];});
+const output={schemaVersion:1,headless:true,sourceIndexSha256:createHash('sha256').update(await readFile(resolve(base,'index.html'))).digest('hex'),scope:'Actual GSAP/CSS wrapper transform samples from the unchanged authored HTML in an explicit headless browser. Media clips are not replayed by this transform-only harness; encoded frames are verified separately.',newProviderTurns:0,times,forward,reverse,discrepancies};await writeFile(reportPath,JSON.stringify(output));console.log(JSON.stringify({samples:forward.length,reverseSamples:reverse.length,discrepancyTimes:discrepancies.map(d=>d.time)}));
+}finally{await browser.close();await new Promise(r=>server.close(r));}

@@ -1,0 +1,32 @@
+Input #0, mp3, from '/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/assets/make-funk-holiznacc0.mp3':
+  Metadata:
+    date            : 2022-06-16
+    creation_time   : 23-24-01
+    encoder         : Lavf54.63.104
+  Duration: 00:02:43.02, start: 0.023021, bitrate: 320 kb/s
+  Stream #0:0: Audio: mp3 (mp3float), 48000 Hz, stereo, fltp, 320 kb/s, start 0.023021
+Stream mapping:
+  Stream #0:0 -> #0:0 (mp3 (mp3float) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, wav, to '/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/assets/music-normalized-44_5.wav':
+  Metadata:
+    ICRD            : 2022-06-16
+    ISFT            : Lavf62.3.100
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s
+    Metadata:
+      encoder         : Lavc62.11.100 pcm_s16le
+[Parsed_loudnorm_0 @ 0x78fd018a80] 
+{
+	"input_i" : "-8.77",
+	"input_tp" : "0.13",
+	"input_lra" : "1.00",
+	"input_thresh" : "-18.82",
+	"output_i" : "-19.45",
+	"output_tp" : "-10.55",
+	"output_lra" : "1.10",
+	"output_thresh" : "-29.50",
+	"normalization_type" : "linear",
+	"target_offset" : "-0.05"
+}
+[out#0/wav @ 0x78fd018240] video:0KiB audio:8344KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.001147%
+size=    8344KiB time=00:00:44.50 bitrate=1536.0kbits/s speed= 325x elapsed=0:00:00.13    

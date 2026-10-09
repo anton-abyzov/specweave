@@ -1,0 +1,29 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:06.150
+Ask for the result. Recorded run · 7 October 2026.
+
+2
+00:00:06.150 --> 00:00:12.260
+One file changed. Its exact contents verified.
+
+3
+00:00:12.260 --> 00:00:21.000
+Expand the agent’s recorded tool execution.
+
+4
+00:00:21.000 --> 00:00:26.560
+Inspect successful output from the original run.
+
+5
+00:00:26.560 --> 00:00:33.625
+Open the file diff and verify the recorded change.
+
+6
+00:00:33.625 --> 00:00:40.900
+Changing providers: portable chat context, separate cache and runtime.
+
+7
+00:00:40.900 --> 00:00:44.500
+Switching UI demonstration · no provider turn.

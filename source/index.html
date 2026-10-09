@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SpecWeave Studio · follow the work</title>
+<style>
+@font-face{font-family:StudioSans;src:url('assets/inter-400.woff2') format('woff2');font-weight:400;font-display:block}
+@font-face{font-family:StudioSans;src:url('assets/inter-700.woff2') format('woff2');font-weight:700;font-display:block}
+@font-face{font-family:StudioSans;src:url('assets/inter-800.woff2') format('woff2');font-weight:800;font-display:block}
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#100f0e;font-family:StudioSans,system-ui,sans-serif;color:#f7f2e9}#root{position:relative;width:100%;height:100%;overflow:hidden;background:#100f0e}.atmosphere{position:absolute;inset:0;overflow:hidden}.glow{position:absolute;width:1100px;height:1100px;border-radius:50%;background:radial-gradient(circle,rgba(216,91,41,.25),rgba(216,91,41,0) 66%);left:-460px;top:-480px}.glow2{left:1320px;top:550px;background:radial-gradient(circle,rgba(216,91,41,.17),rgba(216,91,41,0) 68%)}.edge{position:absolute;left:72px;right:72px;top:89px;height:2px;background:#42352e}.header{position:absolute;left:72px;right:72px;top:30px;height:50px;z-index:50}.brand{font-size:30px;font-weight:700;letter-spacing:-.04em}.provenance{position:absolute;right:0;top:0;height:48px;border:1px solid #615047;border-radius:24px;padding:11px 22px;background:#221b17;font-size:21px;font-weight:700;letter-spacing:.015em;color:#ffd9b5}.depth-stage{position:absolute;left:240px;top:110px;width:1440px;height:900px;perspective:1800px;transform-style:preserve-3d}.surface{position:absolute;inset:0;border:2px solid #6b574b;border-radius:26px;box-shadow:0 36px 100px rgba(0,0,0,.48);overflow:hidden;transform-style:preserve-3d;background:#f8fafc}.viewport{position:absolute;inset:0;overflow:hidden}.strip{position:absolute;inset:0;filter:url('#whip-motion-blur');will-change:transform,filter}.panel{position:absolute;inset:0;width:1440px;height:900px;overflow:hidden;background:#f8fafc}.after{left:1440px}.camera{position:absolute;inset:0;width:1440px;height:900px;transform-origin:0 0;will-change:transform}.camera video,.camera img{position:absolute;inset:0;width:1440px;height:900px;object-fit:contain}.seam{position:absolute;left:1437px;top:0;bottom:0;width:6px;background:#e87745;pointer-events:none}.output-ring{position:absolute;left:477px;top:517px;width:648px;height:30px;border:2px solid #e87745;border-radius:7px;pointer-events:none;opacity:0}.callout{position:absolute;left:64px;top:366px;width:490px;z-index:30}.copy{opacity:0;position:relative;padding:28px 30px 32px;background:#191511;box-shadow:0 14px 40px rgba(0,0,0,.3);border:1px solid #5b4738;border-radius:24px}.step{font-size:21px;letter-spacing:.07em;color:#f3a171;font-weight:700;margin-bottom:23px}.headline{font-size:66px;line-height:1.03;font-weight:800;letter-spacing:-.05em}.line{opacity:0;display:block;white-space:nowrap}.copy p{font-size:25px;line-height:1.4;color:#e4d6c9;max-width:365px;margin:24px 0 0}.caption{position:absolute;left:74px;right:74px;bottom:22px;font-size:24px;line-height:1.3;color:#f4e7dc;z-index:50}.caption span{display:block}.progress{position:absolute;left:74px;right:74px;bottom:66px;height:3px;background:#48372c;z-index:45}.progress-fill{height:3px;background:#e87745;transform-origin:0 50%}.credit{position:absolute;right:74px;bottom:73px;font-size:17px;color:#cbb6a4;z-index:50;letter-spacing:.02em}
+</style><script src="assets/gsap.min.js"></script></head><body>
+<div id="root" data-composition-id="studio-motion-v2" data-width="1920" data-height="1080" data-duration="44.5">
+<div class="atmosphere"><div id="ambient-glow" class="glow" data-layout-allow-overflow></div><div id="ambient-glow-secondary" class="glow glow2" data-layout-allow-overflow></div><div class="edge"></div></div>
+<div class="header"><span class="brand">SpecWeave Studio</span><div id="recorded-date" class="clip provenance" data-start="0" data-duration="33.625" data-track-index="4">RECORDED RUN · 7 OCTOBER 2026</div><div id="switching-scope" class="clip provenance" data-start="33.625" data-duration="10.875" data-track-index="4">SWITCHING UI DEMONSTRATION · NO PROVIDER TURN</div></div>
+<div class="depth-stage"><div id="browser-surface" class="surface"><div class="viewport"><svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs><filter id="whip-motion-blur" x="-50%" y="-20%" width="200%" height="140%"><feGaussianBlur id="whip-blur-node" in="SourceGraphic" stdDeviation="0 0"/></filter></defs></svg><div id="shared-strip" class="strip" data-layout-allow-overflow>
+<div class="panel before" data-layout-allow-overflow><div id="native-camera" class="camera" data-layout-allow-overflow><video id="native-footage" class="clip" src="assets/recorded-run.mp4" muted playsinline data-start="0" data-duration="34.112241459" data-media-start="2.607758541" data-track-index="0"></video><div id="native-output-ring" class="output-ring"></div></div></div>
+<div class="panel after" data-layout-allow-overflow><div id="switch-camera" class="camera" data-layout-allow-overflow><video id="switch-footage" class="clip" src="assets/model-switch-confirmation.mp4" muted playsinline data-start="33.35" data-duration="9.56" data-track-index="0"></video><img id="switch-tail-hold" class="clip" src="assets/switch-final-hold.png" data-start="42.910000000000004" data-duration="1.5899999999999963" data-track-index="0"></div></div>
+<div id="transition-seam" class="seam"></div></div></div></div></div>
+<div id="callout-request" class="clip callout" data-start="0" data-duration="6.15" data-track-index="2"><div id="copy-request" class="copy"><div class="step">01 / REQUEST</div><div class="headline"><span class="line" data-layout-allow-overlap>Let the</span><span class="line" data-layout-allow-overlap>agent work.</span></div><p>Start with the result you want.</p></div></div>
+<div id="callout-complete" class="clip callout" data-start="6.15" data-duration="6.109999999999999" data-track-index="2"><div id="copy-complete" class="copy"><div class="step">02 / RESULT</div><div class="headline"><span class="line" data-layout-allow-overlap>The work.</span><span class="line" data-layout-allow-overlap>The evidence.</span></div><p>A completed task you can inspect.</p></div></div>
+<div id="callout-tools" class="clip callout" data-start="12.26" data-duration="8.74" data-track-index="2"><div id="copy-tools" class="copy"><div class="step">03 / TOOL EXECUTION</div><div class="headline"><span class="line" data-layout-allow-overlap>See what</span><span class="line" data-layout-allow-overlap>happened.</span></div><p>Expand the actual recorded command.</p></div></div>
+<div id="callout-output" class="clip callout" data-start="21" data-duration="5.559999999999999" data-track-index="2"><div id="copy-output" class="copy"><div class="step">04 / VERIFIED OUTPUT</div><div class="headline"><span class="line" data-layout-allow-overlap>Check the</span><span class="line" data-layout-allow-overlap>result.</span></div><p>Successful tool output stays with the task.</p></div></div>
+<div id="callout-diff" class="clip callout" data-start="26.56" data-duration="7.065000000000001" data-track-index="2"><div id="copy-diff" class="copy"><div class="step">05 / FILE CHANGE</div><div class="headline"><span class="line" data-layout-allow-overlap>Inspect</span><span class="line" data-layout-allow-overlap>the change.</span></div><p>Review the recorded file diff.</p></div></div>
+<div id="callout-switch" class="clip callout" data-start="33.625" data-duration="8.024999999999999" data-track-index="2"><div id="copy-switch" class="copy"><div class="step">06 / MODEL SWITCH</div><div class="headline"><span class="line" data-layout-allow-overlap>Switch with</span><span class="line" data-layout-allow-overlap>context.</span></div><p>Review the cache and runtime warning.</p></div></div>
+<div id="callout-ending" class="clip callout" data-start="41.65" data-duration="2.8500000000000014" data-track-index="2"><div id="copy-ending" class="copy"><div class="step">SPECWEAVE STUDIO</div><div class="headline"><span class="line" data-layout-allow-overlap>Ask. Inspect.</span><span class="line" data-layout-allow-overlap>Verify.</span></div><p>Follow the work in your browser.</p></div></div>
+<div id="caption-0" class="clip caption" data-start="0" data-duration="6.15" data-track-index="3"><span>Ask for the result. Recorded run · 7 October 2026.</span></div>
+<div id="caption-1" class="clip caption" data-start="6.15" data-duration="6.109999999999999" data-track-index="3"><span>One file changed. Its exact contents verified.</span></div>
+<div id="caption-2" class="clip caption" data-start="12.26" data-duration="8.74" data-track-index="3"><span>Expand the agent’s recorded tool execution.</span></div>
+<div id="caption-3" class="clip caption" data-start="21" data-duration="5.559999999999999" data-track-index="3"><span>Inspect successful output from the original run.</span></div>
+<div id="caption-4" class="clip caption" data-start="26.56" data-duration="7.065000000000001" data-track-index="3"><span>Open the file diff and verify the recorded change.</span></div>
+<div id="caption-5" class="clip caption" data-start="33.625" data-duration="7.274999999999999" data-track-index="3"><span>Changing providers: portable chat context, separate cache and runtime.</span></div>
+<div id="caption-6" class="clip caption" data-start="40.9" data-duration="3.6000000000000014" data-track-index="3"><span>Switching UI demonstration · no provider turn.</span></div>
+<div class="progress"><div id="progress-fill" class="progress-fill"></div></div><div class="credit">Music: Make Funk · HoliznaCC0 · CC0</div>
+<audio id="music-bed" class="clip" src="assets/music-normalized-44_5.wav" data-start="0" data-duration="44.5" data-volume="1" data-timeline-role="music" data-track-index="5" data-automation="{&quot;version&quot;:1,&quot;lanes&quot;:[{&quot;target&quot;:&quot;volume&quot;,&quot;points&quot;:[{&quot;t&quot;:0,&quot;v&quot;:0},{&quot;t&quot;:0.35,&quot;v&quot;:1},{&quot;t&quot;:42.5,&quot;v&quot;:1},{&quot;t&quot;:44.5,&quot;v&quot;:0}]}]}"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl=gsap.timeline({paused:true});
+// One dimensional browser card; all focus changes preserve the same actual footage.
+tl.fromTo('#browser-surface',{x:360,y:90,z:-210,rotationY:-13,rotationX:7,rotation:-4,scale:.82,opacity:.15},{x:0,y:0,z:0,rotationY:0,rotationX:0,rotation:0,scale:1,opacity:1,duration:1.8,ease:'power3.out'},0);
+tl.fromTo('#ambient-glow',{x:0,y:0,scale:1},{x:110,y:65,scale:1.15,duration:44.5,ease:'sine.inOut'},0);
+tl.fromTo('#ambient-glow-secondary',{x:0,y:0,scale:1},{x:-130,y:-80,scale:1.2,duration:44.5,ease:'sine.inOut'},0);
+tl.fromTo('#progress-fill',{scaleX:0},{scaleX:1,duration:44.5,ease:'none'},0);
+tl.set('#native-camera',{x:0,y:0,scale:1},0);
+tl.addLabel('request-focus',2.5).to('#native-camera',{x:-600,y:140,scale:1.6,duration:1.1,ease:'power3.inOut'},2.5);
+tl.addLabel('completion-focus',6.15).to('#native-camera',{x:-575,y:20,scale:1.7,duration:.8,ease:'power2.inOut'},6.15);
+tl.addLabel('tool-focus',12.26).to('#native-camera',{x:-500,y:-200,scale:1.75,duration:1.1,ease:'power3.inOut'},12.26);
+tl.addLabel('output-focus',21).to('#native-camera',{x:-630,y:-300,scale:1.85,duration:1,ease:'power2.inOut'},21);
+tl.fromTo('#native-output-ring',{opacity:0,scaleX:.6},{opacity:1,scaleX:1,duration:.5,ease:'power3.out',immediateRender:false},22.15);
+tl.addLabel('diff-reframe',26.56).to('#native-camera',{x:0,y:0,scale:1,duration:.8,ease:'power3.inOut'},26.56);
+tl.to('#native-output-ring',{opacity:0,duration:.2},26.56);
+tl.addLabel('diff-focus',29.0).to('#native-camera',{x:-1110,y:240,scale:1.7,duration:1.1,ease:'power3.inOut'},29.0);
+tl.fromTo('#browser-surface',{rotationY:0,rotationX:0,z:0},{rotationY:-3,rotationX:2,z:55,duration:.6,ease:'power2.inOut',immediateRender:false},26.7);
+tl.to('#browser-surface',{rotationY:0,rotationX:0,z:0,duration:.8,ease:'power2.inOut'},28.5);
+// Registry whip-pan-cut primitive: both actual scenes ride one strip with matched seam velocity.
+tl.set('#switch-camera',{x:-285,y:-300,scale:1.65},0);
+tl.set('#transition-seam',{opacity:0},0);
+tl.addLabel('provider-handoff',33.35).fromTo('#shared-strip',{x:0},{x:-1440,duration:.55,ease:'power3.inOut'},33.35);
+tl.to('#whip-blur-node',{attr:{stdDeviation:'16 0'},duration:.275,ease:'power3.in'},33.35);
+tl.to('#whip-blur-node',{attr:{stdDeviation:'0 0'},duration:.275,ease:'power3.out'},33.625);
+tl.fromTo('#transition-seam',{opacity:0},{opacity:1,duration:.08,ease:'power1.out',immediateRender:false},33.35);
+tl.to('#transition-seam',{opacity:0,duration:.15},33.75);
+tl.to('#browser-surface',{scale:.96,duration:.25,ease:'power2.inOut'},33.35);
+tl.to('#browser-surface',{scale:1,duration:.65,ease:'power3.out'},33.6);
+tl.addLabel('warning-focus',34.15).to('#switch-camera',{x:-360,y:-360,scale:1.8,duration:1,ease:'power2.inOut'},34.15);
+tl.addLabel('ending-reframe',40.9).to('#switch-camera',{x:-72,y:-45,scale:1.1,duration:1.1,ease:'power3.inOut'},40.9);
+tl.fromTo('#copy-request',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},0.4);
+tl.fromTo('#copy-request .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},0.55);
+tl.fromTo('#copy-complete',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},6.21);
+tl.fromTo('#copy-complete .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},6.3100000000000005);
+tl.fromTo('#copy-tools',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},12.32);
+tl.fromTo('#copy-tools .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},12.42);
+tl.fromTo('#copy-output',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},21.06);
+tl.fromTo('#copy-output .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},21.16);
+tl.fromTo('#copy-diff',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},26.619999999999997);
+tl.fromTo('#copy-diff .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},26.72);
+tl.fromTo('#copy-switch',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},33.685);
+tl.fromTo('#copy-switch .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},33.785);
+tl.fromTo('#copy-ending',{x:-70,y:25,rotation:-2,opacity:1},{x:0,y:0,rotation:0,opacity:1,duration:.65,ease:'power3.out',immediateRender:false},41.71);
+tl.fromTo('#copy-ending .line',{y:28,opacity:0},{y:0,opacity:1,duration:.5,stagger:.08,ease:'power2.out',immediateRender:false},41.809999999999995);
+window.__timelines['studio-motion-v2']=tl;
+</script></body></html>
