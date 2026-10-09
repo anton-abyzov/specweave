@@ -15,6 +15,8 @@ You describe a change. SpecWeave keeps three things for it in your repository:
 
 Because all of it is plain files in git, it works with Claude Code (including Projects threads), Codex, Grok Build, Cursor, GitHub Copilot, Gemini CLI and OpenCode, and across two subscriptions of the same tool.
 
+**[SpecWeave Studio](/docs/overview/studio/)** is the workspace built on this record. A Studio project has a coordinator and workers, each on the coding agent and model you choose, running on your own machines. The CLI works on its own; Studio is in a private pilot.
+
 ```mermaid
 flowchart LR
   you([You: describe the change]) --> spec[spec.md<br/>criteria and tasks]
