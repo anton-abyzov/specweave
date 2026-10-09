@@ -77,7 +77,7 @@ _specweave_completions() {
             return 0
             ;;
         auto-handoff)
-            COMPREPLY=( $(compgen -W "--at --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--at --checkpoint-only --handoff --help" -- "${cur}") )
             return 0
             ;;
         statusline)

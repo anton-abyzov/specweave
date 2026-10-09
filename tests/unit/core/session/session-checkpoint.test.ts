@@ -8,7 +8,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import ts from 'typescript';
 import {
   CHECKPOINT_INTERVAL_MS, CHECKPOINT_LOCK_STALE_MS, CHECKPOINT_MAX_WORKERS,
-  checkpointDirectory, cleanupCheckpointRequest, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint,
+  checkpointDirectory, cleanupCheckpointRequest, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint, studioCheckpointFile,
 } from '../../../../src/core/session/session-checkpoint.js';
 
 let root: string;
@@ -81,6 +81,20 @@ describe('local session checkpoints', () => {
     expect(git('show-ref')).toBe(refs);
     expect(fs.readFileSync(path.join(state, 'handoff-latest.txt'), 'utf8')).toBe('existing-manual-handoff.md\n');
     expect(fs.existsSync(path.join(inc, 'handoff.md'))).toBe(false);
+  });
+
+  it('inside Studio, every provider session of one thread updates the same thread pointer', async () => {
+    vi.stubEnv('SPECWEAVE_STUDIO_THREAD_ID', 'thread:01');
+    const claude = await capture({ session_id: 'claude-session' });
+    expect(claude?.studioThreadId).toBe('thread:01');
+    const pointer = studioCheckpointFile('thread:01', home);
+    expect(path.basename(pointer)).toBe('thread_01.json');
+    expect(JSON.parse(fs.readFileSync(pointer, 'utf8')).sessionId).toBe('claude-session');
+    fs.writeFileSync(path.join(repo, 'app.txt'), 'codex edit\n');
+    await capture({ session_id: 'codex-session' });
+    const shared = JSON.parse(fs.readFileSync(pointer, 'utf8'));
+    expect(shared.sessionId).toBe('codex-session');
+    expect(fs.readFileSync(shared.diffPath, 'utf8')).toContain('codex edit');
   });
 
   it('isolates sessions and Git worktrees while canonicalizing subdirectories and symlinks', () => {
