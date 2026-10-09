@@ -7,11 +7,16 @@ test.describe('3.0 landing page', () => {
 
   test('hero headline and primary action are visible', async ({ page }) => {
     const hero = page.locator('section').first();
-    await expect(hero.locator('h1')).toContainText('Switch tools.');
-    await expect(hero.locator('h1')).toContainText('Keep your place.');
-    const start = hero.getByRole('link', { name: /Start with your project/ });
-    await expect(start).toBeVisible();
-    await expect(start).toHaveAttribute('href', '/docs/getting-started');
+    await expect(hero.locator('h1')).toContainText('Every coding agent.');
+    await expect(hero.locator('h1')).toContainText('One project.');
+    const studio = hero.getByRole('link', { name: /See SpecWeave Studio/ });
+    await expect(studio).toBeVisible();
+    await expect(studio).toHaveAttribute('href', /^\/studio\/?$/);
+    await expect(hero.getByRole('link', { name: /Start free with the CLI/ })).toHaveAttribute('href', /^\/docs\/getting-started\/?$/);
+  });
+
+  test('handoff story keeps the tagline and all four beats', async ({ page }) => {
+    await expect(page.locator('#how')).toContainText('Switch tools. Keep your place.');
   });
 
   test('scroll story shows all four beats', async ({ page }) => {

@@ -308,8 +308,8 @@ const config: Config = {
         srcDark: 'img/logo-dark.svg',
       },
       items: [
-        {to: '/product', label: 'Product', position: 'left'},
         {to: '/studio', label: 'Studio', position: 'left'},
+        {to: '/product', label: 'CLI', position: 'left'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
         {to: '/docs/guides/cross-tool-handoff', label: 'Handoff', position: 'left'},
         {to: '/integrations', label: 'Integrations', position: 'left'},
