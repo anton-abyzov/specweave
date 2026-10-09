@@ -1,6 +1,6 @@
 ---
 title: "A Claude Code and Codex workflow: the daily loop"
-description: "A repeatable AI coding workflow for Claude Code, Codex and other agents: plan a short spec, claim a task, prove it with a test, verify, review and close, and hand off when you choose to switch tools."
+description: "A repeatable AI coding workflow for Claude Code, Codex and other agents: plan a short spec, claim a task, prove it with a test, verify, review and close, and hand off when a usage limit hits."
 ---
 
 # The daily loop
@@ -87,7 +87,7 @@ Out of tokens, switching subscription, or want another model to take over: say "
 specweave handoff --reason "out of tokens"
 ```
 
-It releases your claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits so a cloud session, another machine or another account can see them. In the next tool, say "pick up", or run `specweave pickup`: it fetches the handoff, applies your edits and prints the next task. Run `specweave auto-handoff on` once for silent local recovery checkpoints after turns, at most once every five minutes per worktree and session. These saves require no network or model, never interrupt work, and keep claims intact. `pickup` does not apply automatic checkpoints; explicit `handoff` still transfers ownership and pushes the work. Details in [Handoff and pickup](/docs/guides/cross-tool-handoff).
+It releases your claims, records where you stopped, and pushes your branch and a snapshot of your uncommitted edits so a cloud session, another machine or another account can see them. In the next tool, say "pick up", or run `specweave pickup`: it fetches the handoff, applies your edits and prints the next task. Run `specweave auto-handoff on` once and Claude Code and Codex on your machine do the hand off themselves at 90% of the usage limit. Details in [Handoff and pickup](/docs/guides/cross-tool-handoff).
 
 ## Hotfixes
 

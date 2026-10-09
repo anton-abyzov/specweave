@@ -81,15 +81,15 @@ specweave task done T-02 --run "npm test"
 
 The ledger records that Codex did it (`codex@laptop`), next to Claude Code's earlier entries. When your Claude Code limit resets, say "hand off" in Codex and "pick up" in Claude Code. Nothing about the steps changes.
 
-## Keep a recovery checkpoint
+## Let it switch for you
 
-On your own machine, turn on silent local checkpoints once:
+On your own machine, turn on automatic handoff once:
 
 ```bash
 specweave auto-handoff on
 ```
 
-Claude Code and Codex queue a detached local save after turns, at most once every five minutes per worktree and session. A Claude Code rate-limit failure queues the same worker. Saving needs no model or network, keeps task claims intact and never interrupts work at a usage percentage. `pickup` does not apply automatic checkpoints; use explicit `specweave handoff` when you choose to switch and push your edits. See [Automatic checkpoint rules](/docs/guides/auto-handoff/) for each tool and local recovery.
+At 90 percent of the five-hour or weekly window, Claude Code (and Codex, if `~/.codex` exists) stops once, runs the handoff, and tells you to say "pick up" in the other tool. If Claude Code hits the limit in the middle of a turn, a hook writes the handoff without the model. See [Auto-handoff rules](/docs/guides/auto-handoff/) for each tool.
 
 ## Other directions
 
