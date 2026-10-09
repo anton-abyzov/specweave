@@ -5,6 +5,7 @@
  */
 @import './tokens.css';
 @import './animations.css';
+@import '../../../src/styles/brand-tokens.css';
 
 /* ============================================
    SCOPED TRANSITIONS (interactive elements only)
@@ -368,6 +369,9 @@ div[class*="announcementBar"] {
 /* Shared product identity; documentation retains its own readable layout. */
 :root {
   --ifm-font-family-base: 'IBM Plex Sans', sans-serif;
+  --ifm-background-color: var(--sw-brand-paper);
+  --ifm-heading-font-family: var(--sw-brand-display);
+  --ifm-font-color-base: var(--sw-brand-ink);
   --ifm-color-primary: #596b45;
   --ifm-color-primary-dark: #4a5939;
   --ifm-color-primary-darker: #40502e;
@@ -377,6 +381,8 @@ div[class*="announcementBar"] {
   --ifm-color-primary-lightest: #94a97c;
 }
 :root[data-theme='dark'] {
+  --ifm-background-color: #1f231d;
+  --ifm-font-color-base: #edf1e5;
   --ifm-color-primary: #b8c99e;
   --ifm-color-primary-dark: #a8bb89;
   --ifm-color-primary-darker: #9db17b;
@@ -392,4 +398,7 @@ div[class*="announcementBar"] {
 [data-theme='dark'] .navbar { background: #23271f; color: #edf1e5; }
 [data-theme='dark'] .navbar__link { color: #d7decc; }
 .footer--dark { background: #252820; --ifm-footer-color: #c9cfbf; --ifm-footer-link-color: #c9cfbf; }
+.markdown h1,.markdown h2,.markdown h3 { font-weight:500; letter-spacing:-.02em; }
+.markdown table th { background:var(--sw-brand-soft); }
+[data-theme='dark'] .markdown table th { background:#303729; }
 @media(max-width:760px){ .navbar { padding-inline: 20px; } }

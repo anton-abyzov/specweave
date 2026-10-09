@@ -8,7 +8,7 @@ description: SpecWeave for enterprise teams, covering audit trails, brownfield w
 
 SpecWeave is built for legacy codebases, distributed teams and work that has to stand up to an audit.
 
-## Audit trails that are true
+## Inspectable delivery records
 
 Every decision lives in a version-controlled file, and the evidence for every task is recorded by the command that produced it, not asserted afterwards.
 
@@ -20,7 +20,11 @@ Every decision lives in a version-controlled file, and the evidence for every ta
 | Why was this closed without a passing verify? | `metadata.json` `closeReason`, required when the gate is bypassed |
 | Who reviewed it? | `reports/review.md`, written by a review in a fresh session |
 
-The ledger is never rewritten, so the trail cannot be tidied up after the fact. `specweave report` renders it as an HTML timeline.
+The CLI appends ledger events; it does not rewrite prior events. The ledger is an ordinary file, so edits outside the CLI remain possible. Use Git review, access controls and your retention policy to protect the record. `specweave report` renders it as an HTML timeline; no cryptographic immutability or compliance certification is implied.
+
+## Three products, distinct responsibilities
+
+SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWeave Studio** private pilot provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for Tailscale transport, per-host pairing, account boundaries and the current verification scope. [Discuss a Studio pilot](/studio) before planning a rollout around it.
 
 ## Brownfield work
 
