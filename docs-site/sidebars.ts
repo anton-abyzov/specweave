@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         {type: 'doc', id: 'overview/how-it-works', label: 'How it works'},
+        {type: 'doc', id: 'overview/studio-architecture', label: 'Studio and the ecosystem'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'Increments'},
         {type: 'doc', id: 'guides/increment-status-reference', label: 'Increment status'},
         {type: 'doc', id: 'overview/why-specweave', label: 'Why SpecWeave'},
