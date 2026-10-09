@@ -22,13 +22,21 @@ SpecWeave Studio is not the app launched by `npx vskill studio`. That command op
 | Layer | Responsibility | Boundary |
 | --- | --- | --- |
 | Browser | Display sessions, output and approvals | Browser connection state does not grant execution authority |
-| Tailscale Serve | Private HTTPS transport to the selected host's loopback service | Tailnet policy governs reachability; Studio still requires pairing |
+| Tailscale Serve | Private HTTPS transport to a host's loopback service, directly or through a pinned SSH forward from a primary host | Tailnet policy governs reachability; Studio still requires pairing |
 | Studio runtime | Own host-local sessions, accounts, admission and recovery | Pair each host separately; do not copy credentials between accounts |
 | Native agent | Execute a turn through its selected provider/account | Provider availability and approval rules still apply |
 | Repository | Code, specs, task ledger and verification evidence | Git transports project changes; it is not a shared live session database |
 | vskill | Inspect/install skills and run evaluations | Source trust and evaluation results require independent assessment |
 
 Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not the pilot's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve).
+
+### Security boundaries
+
+- **Reachability is not authorization.** Studio stays bound to loopback and ignores Tailscale identity headers. Every origin needs its own pairing, even for a device already on the tailnet.
+- **Restrict the tailnet.** The default tailnet policy lets every device reach Serve ports. Limit Studio's ports to your own devices with a grant, and do not share a Studio host to other tailnets.
+- **Serve names are public.** Certificates for `*.ts.net` names appear in public Certificate Transparency logs. Choose machine names that do not identify you and keep them out of public repositories.
+- **A usage hub key unlocks every pooled account.** An optional CLIProxyAPI hub's management key can make requests with any pooled account's token. Keep the hub on loopback with remote management off. Studio stores the key server-side, sends it only over https, loopback or a Tailscale address, and drops it when the hub URL moves.
+- **Subscriptions follow provider terms.** Studio's native path runs the official Codex and Claude Code clients with their own sign-in. Routing subscription tokens through a proxy or pooling accounts to avoid limits can breach a provider's terms and risk suspension.
 
 ### Where data goes
 
