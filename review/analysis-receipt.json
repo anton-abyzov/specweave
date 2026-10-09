@@ -1,1 +1,201 @@
-{"reviewer":"switch_audit","mode":"independent file-only analysis; no browser, no source mutations, no inference","video":"/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/agent-driven-demo-final.mp4","videoSha256":"5f891b19c868e3300ab308fead1f3135820e8a60778c0870fe6db76b241f51d0","project":"/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2","compositionSha256":"f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30","briefSha256":"e329ed8e15f3fb9f7dd1e75f1976b929d64ec7669db50cffd30048aa0f029930","fullDecodeExitCode":0,"audioAnalysisExitCode":0,"blackDetectExitCode":0,"blackIntervals":[],"decodedAudioSamplesPerChannel":2136000,"decodedAudioPeakLinear":0.3237343430519104,"samplesAtOrAboveFullScale":0,"audioSourceHash":"41eab6b4048e49d61c26ab2cf07bb753abef8e12221d005bd949311d905422ea","audioFadeWindows":[{"startSeconds":0,"endSeconds":0.1,"estimatedGainAgainstNormalizedSource":0.2118500526544367,"renderedRmsDbfs":-45.09771743808336},{"startSeconds":0.1,"endSeconds":0.2,"estimatedGainAgainstNormalizedSource":0.3089371105936492,"renderedRmsDbfs":-51.139364401173204},{"startSeconds":0.2,"endSeconds":0.35,"estimatedGainAgainstNormalizedSource":null,"renderedRmsDbfs":-156.20050866841925},{"startSeconds":0.35,"endSeconds":0.7,"estimatedGainAgainstNormalizedSource":0.9995947740941177,"renderedRmsDbfs":-21.103468606313047},{"startSeconds":1,"endSeconds":2,"estimatedGainAgainstNormalizedSource":0.999777324191001,"renderedRmsDbfs":-21.1056145338565},{"startSeconds":20,"endSeconds":21,"estimatedGainAgainstNormalizedSource":0.9955148433918273,"renderedRmsDbfs":-20.063502377552595},{"startSeconds":42.4,"endSeconds":42.5,"estimatedGainAgainstNormalizedSource":0.9914661649875343,"renderedRmsDbfs":-20.856845336759275},{"startSeconds":42.5,"endSeconds":43,"estimatedGainAgainstNormalizedSource":0.8197101124048541,"renderedRmsDbfs":-24.31744653282152},{"startSeconds":43,"endSeconds":43.5,"estimatedGainAgainstNormalizedSource":0.6320512506677562,"renderedRmsDbfs":-23.206177267797127},{"startSeconds":43.5,"endSeconds":44,"estimatedGainAgainstNormalizedSource":0.37707066070990125,"renderedRmsDbfs":-29.21863648436365},{"startSeconds":44,"endSeconds":44.25,"estimatedGainAgainstNormalizedSource":0.18481649203454867,"renderedRmsDbfs":-33.09476544426875},{"startSeconds":44.25,"endSeconds":44.45,"estimatedGainAgainstNormalizedSource":0.09947689004048857,"renderedRmsDbfs":-39.374962224129305},{"startSeconds":44.45,"endSeconds":44.5,"estimatedGainAgainstNormalizedSource":0.012018741893176728,"renderedRmsDbfs":-62.1208963981988}],"frames":[{"time":0,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-00.000000.png","sha256":"7f6d6f2d8ddfb070aa95321d2d3072a8ba43fb1685527af30e3e32567e2528e9"},{"time":0.5,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-00.500000.png","sha256":"ecdc7c18a415325aae8b0df919473fe84b88e4fcf9ce00e4a354b2505f2f6766"},{"time":1.8,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-01.800000.png","sha256":"015705e39607f2520e3e4299a3b8a69ba8861f1f78dfcc7ad18c337d2422c95e"},{"time":3.6,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-03.600000.png","sha256":"9e91f02ee26594b681cf1f0be461723ed9e3796c1a83865421a4d3d70c5b8742"},{"time":7,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-07.000000.png","sha256":"0c9f5771eca300da439386bcff354b8bfc23a81c2d0d003e8e00a2300ca7aa7f"},{"time":13.5,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-13.500000.png","sha256":"d958f2cfc2d1bd58ab531a51c8f2b5bfc83114890067897aa7b636e707c9a0af"},{"time":22.5,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-22.500000.png","sha256":"2ee79ba7f6c2e96459800c4d5516b6a1d5fad99ecc070a820646caedc5fb4032"},{"time":27.3,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-27.300000.png","sha256":"bc9382f8690cc3b4bb2dc40605a44718160e8a0b57e86902c1c1e0fbad9c396c"},{"time":30.2,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-30.200000.png","sha256":"4b3a13a0184e341d56e30a345c9f4f57ef72bebdeee5292f90b15c9c1a0145ce"},{"time":33.3,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.300000.png","sha256":"f9330fc70bfa9a848ceb66b524958837d23edcbd3d317881425f442d0a7632a3"},{"time":33.483333,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.483333.png","sha256":"5d9a00dfc512c1380581fa3d730392a64d4fccbb7675e8618252cefac2a2cff7"},{"time":33.633333,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.633333.png","sha256":"7fd4195f403708c6a27289058f226317964129e980104bbc6fd348d8d2e4e4fa"},{"time":33.766667,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.766667.png","sha256":"3298b5ebb0f5208135acb249d6fc4d13e85a3e008497a505fffce5f617d306c1"},{"time":33.933333,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.933333.png","sha256":"b7cdd5e03152eaf0cfcaa46dfd4a4d15244cae59c46e231e8b37f793daf8aa03"},{"time":35.3,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-35.300000.png","sha256":"378e64eaa4a813bf2a94468c2b8cdf2c05b419de0fe5095c3591da806e7fef9e"},{"time":37,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-37.000000.png","sha256":"67a6f25260195d07b1bcfc4e6430f60ca56e40addef11632290404b790f02873"},{"time":41.8,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-41.800000.png","sha256":"d95f6521b13a487ffe08d8c6aecdf4bfd713507424ef3abe2989b445b83c8b07"},{"time":42.91,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-42.910000.png","sha256":"cc0b8c09299cd467a4f7196c9ccf4e9cade6d95873c055b8cd7aaf41b20825d8"},{"time":43.5,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-43.500000.png","sha256":"b7b488dcc815dac76d8054e88fb155af13d6a5ccbeed8030863e7ecf44931955"},{"time":44.466,"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-44.466000.png","sha256":"a307bcf4266494d2907049aad008c9f49f6acba5343e550e8b8278344b24d625"}],"visualAcceptance":"pending reviewer inspection","soundLimit":"Measured final signal and source binding; no subjective listening claim."}
+{
+  "reviewer": "switch_audit",
+  "mode": "independent file-only analysis; no browser, no source mutations, no inference",
+  "video": "/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/agent-driven-demo-final.mp4",
+  "videoSha256": "5f891b19c868e3300ab308fead1f3135820e8a60778c0870fe6db76b241f51d0",
+  "project": "/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2",
+  "compositionSha256": "f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30",
+  "briefSha256": "e329ed8e15f3fb9f7dd1e75f1976b929d64ec7669db50cffd30048aa0f029930",
+  "fullDecodeExitCode": 0,
+  "audioAnalysisExitCode": 0,
+  "blackDetectExitCode": 0,
+  "blackIntervals": [],
+  "decodedAudioSamplesPerChannel": 2136000,
+  "decodedAudioPeakLinear": 0.3237343430519104,
+  "samplesAtOrAboveFullScale": 0,
+  "audioSourceHash": "41eab6b4048e49d61c26ab2cf07bb753abef8e12221d005bd949311d905422ea",
+  "audioFadeWindows": [
+    {
+      "startSeconds": 0,
+      "endSeconds": 0.1,
+      "estimatedGainAgainstNormalizedSource": 0.2118500526544367,
+      "renderedRmsDbfs": -45.09771743808336
+    },
+    {
+      "startSeconds": 0.1,
+      "endSeconds": 0.2,
+      "estimatedGainAgainstNormalizedSource": 0.3089371105936492,
+      "renderedRmsDbfs": -51.139364401173204
+    },
+    {
+      "startSeconds": 0.2,
+      "endSeconds": 0.35,
+      "estimatedGainAgainstNormalizedSource": null,
+      "renderedRmsDbfs": -156.20050866841925
+    },
+    {
+      "startSeconds": 0.35,
+      "endSeconds": 0.7,
+      "estimatedGainAgainstNormalizedSource": 0.9995947740941177,
+      "renderedRmsDbfs": -21.103468606313047
+    },
+    {
+      "startSeconds": 1,
+      "endSeconds": 2,
+      "estimatedGainAgainstNormalizedSource": 0.999777324191001,
+      "renderedRmsDbfs": -21.1056145338565
+    },
+    {
+      "startSeconds": 20,
+      "endSeconds": 21,
+      "estimatedGainAgainstNormalizedSource": 0.9955148433918273,
+      "renderedRmsDbfs": -20.063502377552595
+    },
+    {
+      "startSeconds": 42.4,
+      "endSeconds": 42.5,
+      "estimatedGainAgainstNormalizedSource": 0.9914661649875343,
+      "renderedRmsDbfs": -20.856845336759275
+    },
+    {
+      "startSeconds": 42.5,
+      "endSeconds": 43,
+      "estimatedGainAgainstNormalizedSource": 0.8197101124048541,
+      "renderedRmsDbfs": -24.31744653282152
+    },
+    {
+      "startSeconds": 43,
+      "endSeconds": 43.5,
+      "estimatedGainAgainstNormalizedSource": 0.6320512506677562,
+      "renderedRmsDbfs": -23.206177267797127
+    },
+    {
+      "startSeconds": 43.5,
+      "endSeconds": 44,
+      "estimatedGainAgainstNormalizedSource": 0.37707066070990125,
+      "renderedRmsDbfs": -29.21863648436365
+    },
+    {
+      "startSeconds": 44,
+      "endSeconds": 44.25,
+      "estimatedGainAgainstNormalizedSource": 0.18481649203454867,
+      "renderedRmsDbfs": -33.09476544426875
+    },
+    {
+      "startSeconds": 44.25,
+      "endSeconds": 44.45,
+      "estimatedGainAgainstNormalizedSource": 0.09947689004048857,
+      "renderedRmsDbfs": -39.374962224129305
+    },
+    {
+      "startSeconds": 44.45,
+      "endSeconds": 44.5,
+      "estimatedGainAgainstNormalizedSource": 0.012018741893176728,
+      "renderedRmsDbfs": -62.1208963981988
+    }
+  ],
+  "frames": [
+    {
+      "time": 0,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-00.000000.png",
+      "sha256": "7f6d6f2d8ddfb070aa95321d2d3072a8ba43fb1685527af30e3e32567e2528e9"
+    },
+    {
+      "time": 0.5,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-00.500000.png",
+      "sha256": "ecdc7c18a415325aae8b0df919473fe84b88e4fcf9ce00e4a354b2505f2f6766"
+    },
+    {
+      "time": 1.8,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-01.800000.png",
+      "sha256": "015705e39607f2520e3e4299a3b8a69ba8861f1f78dfcc7ad18c337d2422c95e"
+    },
+    {
+      "time": 3.6,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-03.600000.png",
+      "sha256": "9e91f02ee26594b681cf1f0be461723ed9e3796c1a83865421a4d3d70c5b8742"
+    },
+    {
+      "time": 7,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-07.000000.png",
+      "sha256": "0c9f5771eca300da439386bcff354b8bfc23a81c2d0d003e8e00a2300ca7aa7f"
+    },
+    {
+      "time": 13.5,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-13.500000.png",
+      "sha256": "d958f2cfc2d1bd58ab531a51c8f2b5bfc83114890067897aa7b636e707c9a0af"
+    },
+    {
+      "time": 22.5,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-22.500000.png",
+      "sha256": "2ee79ba7f6c2e96459800c4d5516b6a1d5fad99ecc070a820646caedc5fb4032"
+    },
+    {
+      "time": 27.3,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-27.300000.png",
+      "sha256": "bc9382f8690cc3b4bb2dc40605a44718160e8a0b57e86902c1c1e0fbad9c396c"
+    },
+    {
+      "time": 30.2,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-30.200000.png",
+      "sha256": "4b3a13a0184e341d56e30a345c9f4f57ef72bebdeee5292f90b15c9c1a0145ce"
+    },
+    {
+      "time": 33.3,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.300000.png",
+      "sha256": "f9330fc70bfa9a848ceb66b524958837d23edcbd3d317881425f442d0a7632a3"
+    },
+    {
+      "time": 33.483333,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.483333.png",
+      "sha256": "5d9a00dfc512c1380581fa3d730392a64d4fccbb7675e8618252cefac2a2cff7"
+    },
+    {
+      "time": 33.633333,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.633333.png",
+      "sha256": "7fd4195f403708c6a27289058f226317964129e980104bbc6fd348d8d2e4e4fa"
+    },
+    {
+      "time": 33.766667,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.766667.png",
+      "sha256": "3298b5ebb0f5208135acb249d6fc4d13e85a3e008497a505fffce5f617d306c1"
+    },
+    {
+      "time": 33.933333,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-33.933333.png",
+      "sha256": "b7cdd5e03152eaf0cfcaa46dfd4a4d15244cae59c46e231e8b37f793daf8aa03"
+    },
+    {
+      "time": 35.3,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-35.300000.png",
+      "sha256": "378e64eaa4a813bf2a94468c2b8cdf2c05b419de0fe5095c3591da806e7fef9e"
+    },
+    {
+      "time": 37,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-37.000000.png",
+      "sha256": "67a6f25260195d07b1bcfc4e6430f60ca56e40addef11632290404b790f02873"
+    },
+    {
+      "time": 41.8,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-41.800000.png",
+      "sha256": "d95f6521b13a487ffe08d8c6aecdf4bfd713507424ef3abe2989b445b83c8b07"
+    },
+    {
+      "time": 42.91,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-42.910000.png",
+      "sha256": "cc0b8c09299cd467a4f7196c9ccf4e9cade6d95873c055b8cd7aaf41b20825d8"
+    },
+    {
+      "time": 43.5,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-43.500000.png",
+      "sha256": "b7b488dcc815dac76d8054e88fb155af13d6a5ccbeed8030863e7ecf44931955"
+    },
+    {
+      "time": 44.466,
+      "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-source-rebind/frames/t-44.466000.png",
+      "sha256": "a307bcf4266494d2907049aad008c9f49f6acba5343e550e8b8278344b24d625"
+    }
+  ],
+  "visualAcceptance": "pending reviewer inspection",
+  "soundLimit": "Measured final signal and source binding; no subjective listening claim."
+}

@@ -1,1 +1,93 @@
-{"schemaVersion":2,"observedAt":"2026-10-09T20:41:29.744089+00:00","revision":"motion-v2","finalSha256":"5f891b19c868e3300ab308fead1f3135820e8a60778c0870fe6db76b241f51d0","sourceIndexSha256":"f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30","posterSha256":"05e6f2062bee6fee51b052237dde1191352e7f7c9bae9b63a77261db366f69cd","vttSha256":"a94d6458b27c28c66a0f2770d17af397da057441ddcfea765bac49c929ac27f2","finalBytes":15515823,"durationSeconds":44.5,"width":1920,"height":1080,"fps":"30/1","videoCodec":"h264","videoPixelFormat":"yuv420p","videoFrames":1335,"audioCodec":"aac","audioProfile":"LC","audioSampleRateHz":48000,"audioChannels":2,"audioChannelLayout":"stereo","headless":true,"newProviderTurns":0,"fullDecodePassed":true,"integratedLufs":-19.6,"truePeakDb":-9.8,"loudnessRangeLu":1.2,"music":{"title":"Make Funk","artist":"HoliznaCC0","license":"CC0 1.0 Universal","sourceUrl":"https://freemusicarchive.org/music/holiznacc0/bassic/make-funk/","sourceSha256":"4631f55b7fc2a021f24b22f60ec87735cf9163638b3a79ac1719ea3515949f9c","sourceRangeSeconds":[0,44.5],"fadeInSeconds":[0,0.35],"fadeOutSeconds":[42.5,44.5],"noSpeechTrack":true},"sources":[{"asset":"recorded-run.mp4","sha256":"9226fe017b5131c5d1011f62a2a4a46a9b288e90262bbc72bc13c96277a5a9cf","retainedV1Sha256":"9226fe017b5131c5d1011f62a2a4a46a9b288e90262bbc72bc13c96277a5a9cf","unchanged":true},{"asset":"recorded-run.webm","sha256":"0b6939fa81356ed31ea7a63d9e977107949b3c2174ab406af5ee01aeed271384","retainedV1Sha256":"0b6939fa81356ed31ea7a63d9e977107949b3c2174ab406af5ee01aeed271384","unchanged":true},{"asset":"model-switch-confirmation.mp4","sha256":"c5b6c72ed040ceda31e9dff567848f93c6644f5a03caea42a0f311a1680b8469","retainedV1Sha256":"c5b6c72ed040ceda31e9dff567848f93c6644f5a03caea42a0f311a1680b8469","unchanged":true},{"asset":"model-switch-confirmation.webm","sha256":"4bb5c8a57f50acad6d6cc03aad9031b6d205b7572ac932b3e1d5fc79d5b2e60b","retainedV1Sha256":"4bb5c8a57f50acad6d6cc03aad9031b6d205b7572ac932b3e1d5fc79d5b2e60b","unchanged":true}],"retainedV1AssetRoot":"/Users/antonabyzov/.codex/worktrees/studio-tools-switch-demo/specweave-umb/.specweave/increments/0891-studio-tools-switch-demo/reports/media/agent-driven-studio/source/assets","claims":{"historicalRun":"Recorded7October2026; accepted marker task and retained tool output/file diff only. No new inference or generic automation proof.","switching":"Production warning components in isolated fixture; no provider turn/native cache-billing acceptance.","finalHold":"Actual fixture source frame9.526s held from42.91 to44.5s."},"validation":{"checkOk":true,"lintErrors":0,"lintWarnings":8,"motionSampleCount":21,"reverseMotionSampleCount":21,"poseDiscrepancies":0,"motionSamples":"motion-samples.json","motionMapHelper":"Skill map initialized from CLI-bundled0.8.143 exports but failed window.__hf readiness; no map PASS claimed. Actual explicit-headless GSAP pose harness and CLI keyframes/check retained.","reviewFrames":"../verification/final-encoded-frames","lastEncodedFrameSeconds":44.466666,"publication":false}}
+{
+  "schemaVersion": 2,
+  "observedAt": "2026-10-09T20:41:29.744089+00:00",
+  "revision": "motion-v2",
+  "finalSha256": "5f891b19c868e3300ab308fead1f3135820e8a60778c0870fe6db76b241f51d0",
+  "sourceIndexSha256": "f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30",
+  "posterSha256": "05e6f2062bee6fee51b052237dde1191352e7f7c9bae9b63a77261db366f69cd",
+  "vttSha256": "a94d6458b27c28c66a0f2770d17af397da057441ddcfea765bac49c929ac27f2",
+  "finalBytes": 15515823,
+  "durationSeconds": 44.5,
+  "width": 1920,
+  "height": 1080,
+  "fps": "30/1",
+  "videoCodec": "h264",
+  "videoPixelFormat": "yuv420p",
+  "videoFrames": 1335,
+  "audioCodec": "aac",
+  "audioProfile": "LC",
+  "audioSampleRateHz": 48000,
+  "audioChannels": 2,
+  "audioChannelLayout": "stereo",
+  "headless": true,
+  "newProviderTurns": 0,
+  "fullDecodePassed": true,
+  "integratedLufs": -19.6,
+  "truePeakDb": -9.8,
+  "loudnessRangeLu": 1.2,
+  "music": {
+    "title": "Make Funk",
+    "artist": "HoliznaCC0",
+    "license": "CC0 1.0 Universal",
+    "sourceUrl": "https://freemusicarchive.org/music/holiznacc0/bassic/make-funk/",
+    "sourceSha256": "4631f55b7fc2a021f24b22f60ec87735cf9163638b3a79ac1719ea3515949f9c",
+    "sourceRangeSeconds": [
+      0,
+      44.5
+    ],
+    "fadeInSeconds": [
+      0,
+      0.35
+    ],
+    "fadeOutSeconds": [
+      42.5,
+      44.5
+    ],
+    "noSpeechTrack": true
+  },
+  "sources": [
+    {
+      "asset": "recorded-run.mp4",
+      "sha256": "9226fe017b5131c5d1011f62a2a4a46a9b288e90262bbc72bc13c96277a5a9cf",
+      "retainedV1Sha256": "9226fe017b5131c5d1011f62a2a4a46a9b288e90262bbc72bc13c96277a5a9cf",
+      "unchanged": true
+    },
+    {
+      "asset": "recorded-run.webm",
+      "sha256": "0b6939fa81356ed31ea7a63d9e977107949b3c2174ab406af5ee01aeed271384",
+      "retainedV1Sha256": "0b6939fa81356ed31ea7a63d9e977107949b3c2174ab406af5ee01aeed271384",
+      "unchanged": true
+    },
+    {
+      "asset": "model-switch-confirmation.mp4",
+      "sha256": "c5b6c72ed040ceda31e9dff567848f93c6644f5a03caea42a0f311a1680b8469",
+      "retainedV1Sha256": "c5b6c72ed040ceda31e9dff567848f93c6644f5a03caea42a0f311a1680b8469",
+      "unchanged": true
+    },
+    {
+      "asset": "model-switch-confirmation.webm",
+      "sha256": "4bb5c8a57f50acad6d6cc03aad9031b6d205b7572ac932b3e1d5fc79d5b2e60b",
+      "retainedV1Sha256": "4bb5c8a57f50acad6d6cc03aad9031b6d205b7572ac932b3e1d5fc79d5b2e60b",
+      "unchanged": true
+    }
+  ],
+  "retainedV1AssetRoot": "/Users/antonabyzov/.codex/worktrees/studio-tools-switch-demo/specweave-umb/.specweave/increments/0891-studio-tools-switch-demo/reports/media/agent-driven-studio/source/assets",
+  "claims": {
+    "historicalRun": "Recorded7October2026; accepted marker task and retained tool output/file diff only. No new inference or generic automation proof.",
+    "switching": "Production warning components in isolated fixture; no provider turn/native cache-billing acceptance.",
+    "finalHold": "Actual fixture source frame9.526s held from42.91 to44.5s."
+  },
+  "validation": {
+    "checkOk": true,
+    "lintErrors": 0,
+    "lintWarnings": 8,
+    "motionSampleCount": 21,
+    "reverseMotionSampleCount": 21,
+    "poseDiscrepancies": 0,
+    "motionSamples": "motion-samples.json",
+    "motionMapHelper": "Skill map initialized from CLI-bundled0.8.143 exports but failed window.__hf readiness; no map PASS claimed. Actual explicit-headless GSAP pose harness and CLI keyframes/check retained.",
+    "reviewFrames": "../verification/final-encoded-frames",
+    "lastEncodedFrameSeconds": 44.466666,
+    "publication": false
+  }
+}

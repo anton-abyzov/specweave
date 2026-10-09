@@ -1,1 +1,182 @@
-[{"timeSeconds":0,"sameDecodedPixels":true,"priorFrameSha256":"7f6d6f2d8ddfb070aa95321d2d3072a8ba43fb1685527af30e3e32567e2528e9","finalFrameSha256":"7f6d6f2d8ddfb070aa95321d2d3072a8ba43fb1685527af30e3e32567e2528e9","meanAbsoluteChannelDifference":0.0,"fractionPixelsAnyChannelDifferenceAbove10":0.0,"maximumChannelDifference":0},{"timeSeconds":0.5,"sameDecodedPixels":true,"priorFrameSha256":"ecdc7c18a415325aae8b0df919473fe84b88e4fcf9ce00e4a354b2505f2f6766","finalFrameSha256":"ecdc7c18a415325aae8b0df919473fe84b88e4fcf9ce00e4a354b2505f2f6766","meanAbsoluteChannelDifference":0.0,"fractionPixelsAnyChannelDifferenceAbove10":0.0,"maximumChannelDifference":0},{"timeSeconds":1.8,"sameDecodedPixels":false,"priorFrameSha256":"026b908a5ef18a2a991d65c7d23c7c43333be9c98e27f5e385388938749e8919","finalFrameSha256":"015705e39607f2520e3e4299a3b8a69ba8861f1f78dfcc7ad18c337d2422c95e","meanAbsoluteChannelDifference":0.17613,"fractionPixelsAnyChannelDifferenceAbove10":2e-06,"maximumChannelDifference":12},{"timeSeconds":3.6,"sameDecodedPixels":false,"priorFrameSha256":"d57911dd832942a81a2c7bea880d7e9d7073f6bdbe90fb8fbeaf3d4681a3bafd","finalFrameSha256":"9e91f02ee26594b681cf1f0be461723ed9e3796c1a83865421a4d3d70c5b8742","meanAbsoluteChannelDifference":0.18712,"fractionPixelsAnyChannelDifferenceAbove10":4e-06,"maximumChannelDifference":17},{"timeSeconds":7,"sameDecodedPixels":false,"priorFrameSha256":"518e72f0bf827a05384826132ee5648223fb24d9d7ddd977316f1067cc903fa7","finalFrameSha256":"0c9f5771eca300da439386bcff354b8bfc23a81c2d0d003e8e00a2300ca7aa7f","meanAbsoluteChannelDifference":0.21232,"fractionPixelsAnyChannelDifferenceAbove10":5e-06,"maximumChannelDifference":13},{"timeSeconds":13.5,"sameDecodedPixels":false,"priorFrameSha256":"6673675b92523053387d3c9c9286a8ffaeb90496623c4fc7b8de99c0e27675db","finalFrameSha256":"d958f2cfc2d1bd58ab531a51c8f2b5bfc83114890067897aa7b636e707c9a0af","meanAbsoluteChannelDifference":0.26996,"fractionPixelsAnyChannelDifferenceAbove10":2.1e-05,"maximumChannelDifference":28},{"timeSeconds":22.5,"sameDecodedPixels":false,"priorFrameSha256":"2de59863d4c3ae8bef1cebee7e3b8918788398b12c5c0d50ad41bd5a9dbc293c","finalFrameSha256":"2ee79ba7f6c2e96459800c4d5516b6a1d5fad99ecc070a820646caedc5fb4032","meanAbsoluteChannelDifference":0.27697,"fractionPixelsAnyChannelDifferenceAbove10":2e-05,"maximumChannelDifference":14},{"timeSeconds":27.3,"sameDecodedPixels":false,"priorFrameSha256":"72216c87e9475d279d363e76d70d8b46da42059332a6f2fe4e7bd60ee047ca66","finalFrameSha256":"bc9382f8690cc3b4bb2dc40605a44718160e8a0b57e86902c1c1e0fbad9c396c","meanAbsoluteChannelDifference":0.26444,"fractionPixelsAnyChannelDifferenceAbove10":8e-05,"maximumChannelDifference":49},{"timeSeconds":30.2,"sameDecodedPixels":false,"priorFrameSha256":"2d7c35cb5f1d48414d2b763da4f32f85e5b0c26deb3a2a92ad913481eb832350","finalFrameSha256":"4b3a13a0184e341d56e30a345c9f4f57ef72bebdeee5292f90b15c9c1a0145ce","meanAbsoluteChannelDifference":0.1818,"fractionPixelsAnyChannelDifferenceAbove10":4e-05,"maximumChannelDifference":16},{"timeSeconds":33.3,"sameDecodedPixels":false,"priorFrameSha256":"2d7eee0a61e44a1f5f5a9c7bab2c37dcbd3caf7ceb7b1900436366b74cbdcb9e","finalFrameSha256":"f9330fc70bfa9a848ceb66b524958837d23edcbd3d317881425f442d0a7632a3","meanAbsoluteChannelDifference":0.18713,"fractionPixelsAnyChannelDifferenceAbove10":3.8e-05,"maximumChannelDifference":13},{"timeSeconds":33.483333,"sameDecodedPixels":false,"priorFrameSha256":"11bdee2e9dec214853418f5248fe2443e2a5dbe235eccb22f92688e0f73c2912","finalFrameSha256":"5d9a00dfc512c1380581fa3d730392a64d4fccbb7675e8618252cefac2a2cff7","meanAbsoluteChannelDifference":0.11323,"fractionPixelsAnyChannelDifferenceAbove10":0.000102,"maximumChannelDifference":33},{"timeSeconds":33.633333,"sameDecodedPixels":false,"priorFrameSha256":"987f0a0d0ef930330a5943cc24eb2175bac16eb69dcce8728dbfe6e943389827","finalFrameSha256":"7fd4195f403708c6a27289058f226317964129e980104bbc6fd348d8d2e4e4fa","meanAbsoluteChannelDifference":0.16923,"fractionPixelsAnyChannelDifferenceAbove10":0.000139,"maximumChannelDifference":54},{"timeSeconds":33.766667,"sameDecodedPixels":false,"priorFrameSha256":"c6886fd1b932fd94601c2aea6589511a9bd94943b80f445bbce5632e665712be","finalFrameSha256":"3298b5ebb0f5208135acb249d6fc4d13e85a3e008497a505fffce5f617d306c1","meanAbsoluteChannelDifference":0.31967,"fractionPixelsAnyChannelDifferenceAbove10":0.000496,"maximumChannelDifference":38},{"timeSeconds":33.933333,"sameDecodedPixels":false,"priorFrameSha256":"27a0fd456af5e1b836c7c1a6f39b9faf8cd6a553d96eeea489c0fee5c5b7968c","finalFrameSha256":"b7cdd5e03152eaf0cfcaa46dfd4a4d15244cae59c46e231e8b37f793daf8aa03","meanAbsoluteChannelDifference":0.36874,"fractionPixelsAnyChannelDifferenceAbove10":0.000193,"maximumChannelDifference":30},{"timeSeconds":35.3,"sameDecodedPixels":false,"priorFrameSha256":"79f2369cbaa748181582ec21039af8895387d246a664d73fa0d351c494601592","finalFrameSha256":"378e64eaa4a813bf2a94468c2b8cdf2c05b419de0fe5095c3591da806e7fef9e","meanAbsoluteChannelDifference":0.31871,"fractionPixelsAnyChannelDifferenceAbove10":3.9e-05,"maximumChannelDifference":13},{"timeSeconds":37,"sameDecodedPixels":false,"priorFrameSha256":"2255b517ca2c95fa37114f75d2c4af3a6345fc34afe0e1e5de1fa20b116ce077","finalFrameSha256":"67a6f25260195d07b1bcfc4e6430f60ca56e40addef11632290404b790f02873","meanAbsoluteChannelDifference":0.28539,"fractionPixelsAnyChannelDifferenceAbove10":3.7e-05,"maximumChannelDifference":13},{"timeSeconds":41.8,"sameDecodedPixels":false,"priorFrameSha256":"302c8ebc41697ba8270193a506c57d3c9407613bcb783358b163cbbe492bbdc3","finalFrameSha256":"d95f6521b13a487ffe08d8c6aecdf4bfd713507424ef3abe2989b445b83c8b07","meanAbsoluteChannelDifference":0.07557,"fractionPixelsAnyChannelDifferenceAbove10":8.6e-05,"maximumChannelDifference":43},{"timeSeconds":42.91,"sameDecodedPixels":false,"priorFrameSha256":"ada2b91259c8d533aa4705440c0ee92461794481deaf15a38ef9a15e3b7bccf7","finalFrameSha256":"cc0b8c09299cd467a4f7196c9ccf4e9cade6d95873c055b8cd7aaf41b20825d8","meanAbsoluteChannelDifference":0.09411,"fractionPixelsAnyChannelDifferenceAbove10":5e-06,"maximumChannelDifference":14},{"timeSeconds":43.5,"sameDecodedPixels":false,"priorFrameSha256":"837cab05878275b5d56ce33cd67dad3613830afa1cb8bb4243afe7b6d62267af","finalFrameSha256":"b7b488dcc815dac76d8054e88fb155af13d6a5ccbeed8030863e7ecf44931955","meanAbsoluteChannelDifference":0.09441,"fractionPixelsAnyChannelDifferenceAbove10":5e-06,"maximumChannelDifference":14},{"timeSeconds":44.466,"sameDecodedPixels":false,"priorFrameSha256":"adff2efb36a96b02dba62aa2a797b95abfd00c21b6fed7ea747b5136f0f4fc4a","finalFrameSha256":"a307bcf4266494d2907049aad008c9f49f6acba5343e550e8b8278344b24d625","meanAbsoluteChannelDifference":0.09548,"fractionPixelsAnyChannelDifferenceAbove10":7e-06,"maximumChannelDifference":14}]
+[
+  {
+    "timeSeconds": 0,
+    "sameDecodedPixels": true,
+    "priorFrameSha256": "7f6d6f2d8ddfb070aa95321d2d3072a8ba43fb1685527af30e3e32567e2528e9",
+    "finalFrameSha256": "7f6d6f2d8ddfb070aa95321d2d3072a8ba43fb1685527af30e3e32567e2528e9",
+    "meanAbsoluteChannelDifference": 0.0,
+    "fractionPixelsAnyChannelDifferenceAbove10": 0.0,
+    "maximumChannelDifference": 0
+  },
+  {
+    "timeSeconds": 0.5,
+    "sameDecodedPixels": true,
+    "priorFrameSha256": "ecdc7c18a415325aae8b0df919473fe84b88e4fcf9ce00e4a354b2505f2f6766",
+    "finalFrameSha256": "ecdc7c18a415325aae8b0df919473fe84b88e4fcf9ce00e4a354b2505f2f6766",
+    "meanAbsoluteChannelDifference": 0.0,
+    "fractionPixelsAnyChannelDifferenceAbove10": 0.0,
+    "maximumChannelDifference": 0
+  },
+  {
+    "timeSeconds": 1.8,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "026b908a5ef18a2a991d65c7d23c7c43333be9c98e27f5e385388938749e8919",
+    "finalFrameSha256": "015705e39607f2520e3e4299a3b8a69ba8861f1f78dfcc7ad18c337d2422c95e",
+    "meanAbsoluteChannelDifference": 0.17613,
+    "fractionPixelsAnyChannelDifferenceAbove10": 2e-06,
+    "maximumChannelDifference": 12
+  },
+  {
+    "timeSeconds": 3.6,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "d57911dd832942a81a2c7bea880d7e9d7073f6bdbe90fb8fbeaf3d4681a3bafd",
+    "finalFrameSha256": "9e91f02ee26594b681cf1f0be461723ed9e3796c1a83865421a4d3d70c5b8742",
+    "meanAbsoluteChannelDifference": 0.18712,
+    "fractionPixelsAnyChannelDifferenceAbove10": 4e-06,
+    "maximumChannelDifference": 17
+  },
+  {
+    "timeSeconds": 7,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "518e72f0bf827a05384826132ee5648223fb24d9d7ddd977316f1067cc903fa7",
+    "finalFrameSha256": "0c9f5771eca300da439386bcff354b8bfc23a81c2d0d003e8e00a2300ca7aa7f",
+    "meanAbsoluteChannelDifference": 0.21232,
+    "fractionPixelsAnyChannelDifferenceAbove10": 5e-06,
+    "maximumChannelDifference": 13
+  },
+  {
+    "timeSeconds": 13.5,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "6673675b92523053387d3c9c9286a8ffaeb90496623c4fc7b8de99c0e27675db",
+    "finalFrameSha256": "d958f2cfc2d1bd58ab531a51c8f2b5bfc83114890067897aa7b636e707c9a0af",
+    "meanAbsoluteChannelDifference": 0.26996,
+    "fractionPixelsAnyChannelDifferenceAbove10": 2.1e-05,
+    "maximumChannelDifference": 28
+  },
+  {
+    "timeSeconds": 22.5,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "2de59863d4c3ae8bef1cebee7e3b8918788398b12c5c0d50ad41bd5a9dbc293c",
+    "finalFrameSha256": "2ee79ba7f6c2e96459800c4d5516b6a1d5fad99ecc070a820646caedc5fb4032",
+    "meanAbsoluteChannelDifference": 0.27697,
+    "fractionPixelsAnyChannelDifferenceAbove10": 2e-05,
+    "maximumChannelDifference": 14
+  },
+  {
+    "timeSeconds": 27.3,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "72216c87e9475d279d363e76d70d8b46da42059332a6f2fe4e7bd60ee047ca66",
+    "finalFrameSha256": "bc9382f8690cc3b4bb2dc40605a44718160e8a0b57e86902c1c1e0fbad9c396c",
+    "meanAbsoluteChannelDifference": 0.26444,
+    "fractionPixelsAnyChannelDifferenceAbove10": 8e-05,
+    "maximumChannelDifference": 49
+  },
+  {
+    "timeSeconds": 30.2,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "2d7c35cb5f1d48414d2b763da4f32f85e5b0c26deb3a2a92ad913481eb832350",
+    "finalFrameSha256": "4b3a13a0184e341d56e30a345c9f4f57ef72bebdeee5292f90b15c9c1a0145ce",
+    "meanAbsoluteChannelDifference": 0.1818,
+    "fractionPixelsAnyChannelDifferenceAbove10": 4e-05,
+    "maximumChannelDifference": 16
+  },
+  {
+    "timeSeconds": 33.3,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "2d7eee0a61e44a1f5f5a9c7bab2c37dcbd3caf7ceb7b1900436366b74cbdcb9e",
+    "finalFrameSha256": "f9330fc70bfa9a848ceb66b524958837d23edcbd3d317881425f442d0a7632a3",
+    "meanAbsoluteChannelDifference": 0.18713,
+    "fractionPixelsAnyChannelDifferenceAbove10": 3.8e-05,
+    "maximumChannelDifference": 13
+  },
+  {
+    "timeSeconds": 33.483333,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "11bdee2e9dec214853418f5248fe2443e2a5dbe235eccb22f92688e0f73c2912",
+    "finalFrameSha256": "5d9a00dfc512c1380581fa3d730392a64d4fccbb7675e8618252cefac2a2cff7",
+    "meanAbsoluteChannelDifference": 0.11323,
+    "fractionPixelsAnyChannelDifferenceAbove10": 0.000102,
+    "maximumChannelDifference": 33
+  },
+  {
+    "timeSeconds": 33.633333,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "987f0a0d0ef930330a5943cc24eb2175bac16eb69dcce8728dbfe6e943389827",
+    "finalFrameSha256": "7fd4195f403708c6a27289058f226317964129e980104bbc6fd348d8d2e4e4fa",
+    "meanAbsoluteChannelDifference": 0.16923,
+    "fractionPixelsAnyChannelDifferenceAbove10": 0.000139,
+    "maximumChannelDifference": 54
+  },
+  {
+    "timeSeconds": 33.766667,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "c6886fd1b932fd94601c2aea6589511a9bd94943b80f445bbce5632e665712be",
+    "finalFrameSha256": "3298b5ebb0f5208135acb249d6fc4d13e85a3e008497a505fffce5f617d306c1",
+    "meanAbsoluteChannelDifference": 0.31967,
+    "fractionPixelsAnyChannelDifferenceAbove10": 0.000496,
+    "maximumChannelDifference": 38
+  },
+  {
+    "timeSeconds": 33.933333,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "27a0fd456af5e1b836c7c1a6f39b9faf8cd6a553d96eeea489c0fee5c5b7968c",
+    "finalFrameSha256": "b7cdd5e03152eaf0cfcaa46dfd4a4d15244cae59c46e231e8b37f793daf8aa03",
+    "meanAbsoluteChannelDifference": 0.36874,
+    "fractionPixelsAnyChannelDifferenceAbove10": 0.000193,
+    "maximumChannelDifference": 30
+  },
+  {
+    "timeSeconds": 35.3,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "79f2369cbaa748181582ec21039af8895387d246a664d73fa0d351c494601592",
+    "finalFrameSha256": "378e64eaa4a813bf2a94468c2b8cdf2c05b419de0fe5095c3591da806e7fef9e",
+    "meanAbsoluteChannelDifference": 0.31871,
+    "fractionPixelsAnyChannelDifferenceAbove10": 3.9e-05,
+    "maximumChannelDifference": 13
+  },
+  {
+    "timeSeconds": 37,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "2255b517ca2c95fa37114f75d2c4af3a6345fc34afe0e1e5de1fa20b116ce077",
+    "finalFrameSha256": "67a6f25260195d07b1bcfc4e6430f60ca56e40addef11632290404b790f02873",
+    "meanAbsoluteChannelDifference": 0.28539,
+    "fractionPixelsAnyChannelDifferenceAbove10": 3.7e-05,
+    "maximumChannelDifference": 13
+  },
+  {
+    "timeSeconds": 41.8,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "302c8ebc41697ba8270193a506c57d3c9407613bcb783358b163cbbe492bbdc3",
+    "finalFrameSha256": "d95f6521b13a487ffe08d8c6aecdf4bfd713507424ef3abe2989b445b83c8b07",
+    "meanAbsoluteChannelDifference": 0.07557,
+    "fractionPixelsAnyChannelDifferenceAbove10": 8.6e-05,
+    "maximumChannelDifference": 43
+  },
+  {
+    "timeSeconds": 42.91,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "ada2b91259c8d533aa4705440c0ee92461794481deaf15a38ef9a15e3b7bccf7",
+    "finalFrameSha256": "cc0b8c09299cd467a4f7196c9ccf4e9cade6d95873c055b8cd7aaf41b20825d8",
+    "meanAbsoluteChannelDifference": 0.09411,
+    "fractionPixelsAnyChannelDifferenceAbove10": 5e-06,
+    "maximumChannelDifference": 14
+  },
+  {
+    "timeSeconds": 43.5,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "837cab05878275b5d56ce33cd67dad3613830afa1cb8bb4243afe7b6d62267af",
+    "finalFrameSha256": "b7b488dcc815dac76d8054e88fb155af13d6a5ccbeed8030863e7ecf44931955",
+    "meanAbsoluteChannelDifference": 0.09441,
+    "fractionPixelsAnyChannelDifferenceAbove10": 5e-06,
+    "maximumChannelDifference": 14
+  },
+  {
+    "timeSeconds": 44.466,
+    "sameDecodedPixels": false,
+    "priorFrameSha256": "adff2efb36a96b02dba62aa2a797b95abfd00c21b6fed7ea747b5136f0f4fc4a",
+    "finalFrameSha256": "a307bcf4266494d2907049aad008c9f49f6acba5343e550e8b8278344b24d625",
+    "meanAbsoluteChannelDifference": 0.09548,
+    "fractionPixelsAnyChannelDifferenceAbove10": 7e-06,
+    "maximumChannelDifference": 14
+  }
+]

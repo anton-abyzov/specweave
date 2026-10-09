@@ -1,1 +1,44 @@
-{"proofScope":"Actual production model-switch warning helper, hook and dialog; fixture-only composer selection. No native inference, complete ChatView session or cache billing acceptance.","browser":{"headless":true,"PWDEBUG":"0","PLAYWRIGHT_HTML_OPEN":"never","reporterOpen":"never"},"nativeTurns":0,"liveStores":false,"checks":["cross-provider-warning-before-mutation","cancel-preserves-selection","confirmation-applies-requested-target","same-provider-cache-warning","escape-preserves-selection","confirmation-consumed-once","navigation-invalidates-pending-confirmation","remote-source-change-invalidates-confirmation","confirmed-target-rejected-removed-model","confirmed-target-rejected-removed-instance","confirmed-target-rejected-disabled","confirmed-target-rejected-unavailable","confirmed-target-rejected-status-disabled","confirmed-target-rejected-error","confirmed-target-rejected-warning","mobile-dialog-fits","new-chat-no-warning","zero-native-turns","zero-page-errors"],"screenshots":["cross-provider-desktop.png","same-provider-desktop.png","cross-provider-mobile.png"],"sourceSha256":{"modelSwitchWarning.ts":"b2331c5040dc43f1428d69a2419d8cde51fbfc1fcdd8421929ca6cd2196f18fa","useModelSwitchConfirmation.ts":"6512503d2a2a5e14a0ed1adfb4f4579c8b392c57d82b9d858767e2f5e886fb92","ModelSwitchConfirmation.tsx":"9c19939ed8e2d79b85bd9013b232186d239f57bb196cda13d34703703fce7f5d"},"video":"model-switch-confirmation.webm","success":true}
+{
+  "proofScope": "Actual production model-switch warning helper, hook and dialog; fixture-only composer selection. No native inference, complete ChatView session or cache billing acceptance.",
+  "browser": {
+    "headless": true,
+    "PWDEBUG": "0",
+    "PLAYWRIGHT_HTML_OPEN": "never",
+    "reporterOpen": "never"
+  },
+  "nativeTurns": 0,
+  "liveStores": false,
+  "checks": [
+    "cross-provider-warning-before-mutation",
+    "cancel-preserves-selection",
+    "confirmation-applies-requested-target",
+    "same-provider-cache-warning",
+    "escape-preserves-selection",
+    "confirmation-consumed-once",
+    "navigation-invalidates-pending-confirmation",
+    "remote-source-change-invalidates-confirmation",
+    "confirmed-target-rejected-removed-model",
+    "confirmed-target-rejected-removed-instance",
+    "confirmed-target-rejected-disabled",
+    "confirmed-target-rejected-unavailable",
+    "confirmed-target-rejected-status-disabled",
+    "confirmed-target-rejected-error",
+    "confirmed-target-rejected-warning",
+    "mobile-dialog-fits",
+    "new-chat-no-warning",
+    "zero-native-turns",
+    "zero-page-errors"
+  ],
+  "screenshots": [
+    "cross-provider-desktop.png",
+    "same-provider-desktop.png",
+    "cross-provider-mobile.png"
+  ],
+  "sourceSha256": {
+    "modelSwitchWarning.ts": "b2331c5040dc43f1428d69a2419d8cde51fbfc1fcdd8421929ca6cd2196f18fa",
+    "useModelSwitchConfirmation.ts": "6512503d2a2a5e14a0ed1adfb4f4579c8b392c57d82b9d858767e2f5e886fb92",
+    "ModelSwitchConfirmation.tsx": "9c19939ed8e2d79b85bd9013b232186d239f57bb196cda13d34703703fce7f5d"
+  },
+  "video": "model-switch-confirmation.webm",
+  "success": true
+}

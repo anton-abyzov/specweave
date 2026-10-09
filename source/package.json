@@ -1,1 +1,11 @@
-{"name":"agent-driven-studio-video","private":true,"type":"module","scripts":{"dev":"npx --yes hyperframes@0.8.143 preview","check":"npx --yes hyperframes@0.8.143 check","render":"npx --yes hyperframes@0.8.143 render","publish":"npx --yes hyperframes@0.8.143 publish"}}
+{
+  "name": "agent-driven-studio-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.143 preview",
+    "check": "npx --yes hyperframes@0.8.143 check",
+    "render": "npx --yes hyperframes@0.8.143 render",
+    "publish": "npx --yes hyperframes@0.8.143 publish"
+  }
+}

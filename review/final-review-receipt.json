@@ -1,1 +1,293 @@
-{"schemaVersion":1,"reviewedAtUtc":"2026-10-09T20:41:29.964450+00:00","reviewer":"0891-switch / independent final review","verdict":"PASS after initializer-only final source/output rebind; no blocking defects found","video":"/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/agent-driven-demo.mp4","videoSha256":"5f891b19c868e3300ab308fead1f3135820e8a60778c0870fe6db76b241f51d0","compositionSha256":"f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30","briefSha256":"e329ed8e15f3fb9f7dd1e75f1976b929d64ec7669db50cffd30048aa0f029930","sourceUnchangedDuringReview":true,"specweaveInstalledVersion":"3.0.6","registryStableVersion":"3.0.6","scope":"Read-only independent review; own external evidence only; no branches, auth, private sessions, native inference, publishing or source edits","technical":{"videoDurationSeconds":44.5,"containerDurationSeconds":44.5,"width":1920,"height":1080,"fps":"30/1","codec":"h264","videoFrames":1335,"audioCodec":"aac","audioSampleRateHz":48000,"audioChannels":2,"audioDurationSeconds":44.5,"fullDecodeExitCode":0,"blackIntervals":[],"samplesAtOrAboveFullScale":0},"requirements":[{"mustHave":"Sound or background music","result":"PASS","evidence":"Stereo AAC final music signal, exact cleared Make Funk source, independent final loudness -19.6 LUFS / true peak -9.8 dBTP; no speech track."},{"mustHave":"Focus, enlargement or rotation animation","result":"PASS","evidence":"Encoded contact frames and full-resolution inspections show dimensional card entrance, purposeful request/output/diff focus enlargement and warning enlargement, then ending reframe; same source footage identity retained. Adobe After Effects was not used or claimed."},{"mustHave":"Sleek transitions and engaging motion","result":"PASS / reviewer visual assessment","evidence":"Source-preserving focus changes, staggered callouts, capped directional blur and shared-strip whip at 33.35\u201333.9 s; transition midpoint and settled frames inspected. Clear semantic holds preserve readable evidence."},{"mustHave":"Truthful recorded-date/fixture labels","result":"PASS","evidence":"Recorded 7 October 2026 label visible during native replay; explicitly no-provider-turn switching label visible during isolated fixture segment. Editorial 1.59 s ending hold disclosed in brief. No fresh inference, continuation or cache-billing proof claimed."},{"mustHave":"Publication destination","result":"READY / unpublished","evidence":"Parent names planned spec-weave.com/studio and architecture docs. This review does not publish or verify public propagation."}],"visualReview":{"contactFramesReviewedSeconds":[0,0.5,1.8,3.6,7,13.5,22.5,27.3,30.2,33.3,33.483333,33.633333,33.766667,33.933333,35.3,37,41.8,42.91,43.5,44.466],"fullResolutionCriticalFramesSeconds":[3.6,22.5,30.2,33.633333,35.3,37,44.466],"requestReadable":true,"recordedOutputReadable":true,"recordedDiffReadable":true,"warningTitleBodyTimingAndButtonsReadable":true,"warningOverlayOcclusionRepaired":true,"finalFrameReadable":true,"blackTail":false,"privateCredentialsOrPersonalContentObserved":false,"defects":[]},"audio":{"integratedLufs":-19.6,"truePeakDbtp":-9.8,"loudnessRangeLu":1.2,"decodedAudioPeakLinear":0.3237343430519104,"samplesAtOrAboveFullScale":0,"fadeInVerifiedAgainstNormalizedSource":true,"fadeOutVerifiedAgainstNormalizedSource":true,"endingGainEstimateLast50ms":0.012018741893176728,"fadeWindows":[{"startSeconds":0,"endSeconds":0.1,"estimatedGainAgainstNormalizedSource":0.2118500526544367,"renderedRmsDbfs":-45.09771743808336},{"startSeconds":0.1,"endSeconds":0.2,"estimatedGainAgainstNormalizedSource":0.3089371105936492,"renderedRmsDbfs":-51.139364401173204},{"startSeconds":0.2,"endSeconds":0.35,"estimatedGainAgainstNormalizedSource":null,"renderedRmsDbfs":-156.20050866841925},{"startSeconds":0.35,"endSeconds":0.7,"estimatedGainAgainstNormalizedSource":0.9995947740941177,"renderedRmsDbfs":-21.103468606313047},{"startSeconds":1,"endSeconds":2,"estimatedGainAgainstNormalizedSource":0.999777324191001,"renderedRmsDbfs":-21.1056145338565},{"startSeconds":20,"endSeconds":21,"estimatedGainAgainstNormalizedSource":0.9955148433918273,"renderedRmsDbfs":-20.063502377552595},{"startSeconds":42.4,"endSeconds":42.5,"estimatedGainAgainstNormalizedSource":0.9914661649875343,"renderedRmsDbfs":-20.856845336759275},{"startSeconds":42.5,"endSeconds":43,"estimatedGainAgainstNormalizedSource":0.8197101124048541,"renderedRmsDbfs":-24.31744653282152},{"startSeconds":43,"endSeconds":43.5,"estimatedGainAgainstNormalizedSource":0.6320512506677562,"renderedRmsDbfs":-23.206177267797127},{"startSeconds":43.5,"endSeconds":44,"estimatedGainAgainstNormalizedSource":0.37707066070990125,"renderedRmsDbfs":-29.21863648436365},{"startSeconds":44,"endSeconds":44.25,"estimatedGainAgainstNormalizedSource":0.18481649203454867,"renderedRmsDbfs":-33.09476544426875},{"startSeconds":44.25,"endSeconds":44.45,"estimatedGainAgainstNormalizedSource":0.09947689004048857,"renderedRmsDbfs":-39.374962224129305},{"startSeconds":44.45,"endSeconds":44.5,"estimatedGainAgainstNormalizedSource":0.012018741893176728,"renderedRmsDbfs":-62.1208963981988}],"musicSignalPresent":true,"subjectiveListeningClaim":false,"limit":"Measured encoded signal, fades, clipping and source binding; subjective music taste remains for the user."},"license":{"title":"Make Funk","artist":"HoliznaCC0","license":"CC0 1.0 Universal","sourceUrl":"https://freemusicarchive.org/music/holiznacc0/bassic/make-funk/","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0/","clearedMp3Sha256":"4631f55b7fc2a021f24b22f60ec87735cf9163638b3a79ac1719ea3515949f9c","matchesExactRetainedSource":true,"retainedPrimaryEvidenceHashes":[{"file":"fma-source.html","sha256":"cf73fcb4f48327acbc3edf61bbacdc06ad1796a9acd795d672c24a2624a5a20c","matchesClearanceReceipt":true},{"file":"cc0-deed.html","sha256":"abb4d48fc8b85de52b377dd105532c6c549f515d492a8e1712bc99e7316a1f12","matchesClearanceReceipt":true},{"file":"fma-track.json","sha256":"3d5e954b8e180c16d74ee0a7ae4dd5aeb30cb5baaf90d2702116191d3e7252e7","matchesClearanceReceipt":true},{"file":"ffprobe.json","sha256":"e445f6bddd8db6d9c757b7a70e7f7a0d5221f2c5280d573bea645876333d22b2","matchesClearanceReceipt":true}],"primaryTrackText":"Exact retained same-day FMA page names Make Funk by HoliznaCC0 and CC0 1.0 Universal.","independentWebCheck":"FMA browserless web fetch returned 403; exact retained primary page and metadata independently inspected and hashes matched. Official Creative Commons CC0 deed opened successfully."},"sourcePreservation":[{"file":"recorded-run.mp4","sha256":"9226fe017b5131c5d1011f62a2a4a46a9b288e90262bbc72bc13c96277a5a9cf","byteIdenticalToRetainedV1":true},{"file":"model-switch-confirmation.mp4","sha256":"c5b6c72ed040ceda31e9dff567848f93c6644f5a03caea42a0f311a1680b8469","byteIdenticalToRetainedV1":true},{"file":"recorded-run.webm","sha256":"0b6939fa81356ed31ea7a63d9e977107949b3c2174ab406af5ee01aeed271384","byteIdenticalToRetainedV1":true},{"file":"model-switch-confirmation.webm","sha256":"4bb5c8a57f50acad6d6cc03aad9031b6d205b7572ac932b3e1d5fc79d5b2e60b","byteIdenticalToRetainedV1":true}],"automatedGateLimit":"Draft/final HyperFrames check without motion sidecar has zero motion assertions; independent final encoded frame review supplies motion evidence. No broad clean strict-gate claim.","evidence":{"analysis":"analysis-receipt.json","ffprobe":"ffprobe.json","decode":"full-decode.log","loudness":"final-ebur128.log","blackDetection":"blackdetect.log","contact":"contact-sheet.png","runner":"analyze-final.py","comparison":"critical-frame-comparison.json"},"newNativeTurnsByReviewer":0,"browserLaunchesByReviewer":0,"processesLeftRunningByReviewer":0,"priorReview":{"path":"/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-review-receipt.json","sha256":"d6e73f8ef5ef9d303efa43b4531311da9ea1624edbd43b88dc7a267a846840a8","videoSha256":"d473934b36c681033be351c99389348fa6393094318402035a75b02574b13ed4","compositionSha256":"35b16aae565709cc0ecba1bb4e06c7b990df8ead1c7635f783178fe0e64ce40f","retainedUnmodified":true},"bindingRefinement":{"sourceDelta":"Only explicit window.__timelines initializer line added; removing this exact single line reproduces the prior reviewed source SHA256.","onlyInitializerChangedVerified":true,"analyzedFilenameBeforePromotion":"/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/agent-driven-demo-final.mp4","canonicalPromotionSameSha256Verified":true,"renderByteIdenticalToPrior":false,"criticalFramesCompared":20,"criticalFramesPixelIdenticalCount":2,"maxMeanAbsoluteChannelDifference8bit":0.36874,"maxFractionPixelsWithChannelDifferenceAbove10":0.000496,"differenceAssessment":"Not pixel-identical; all 20 fresh encoded contact frames reviewed, with full-resolution critical request/output/diff/whip/warning 35.3+37/tail inspections. No changed semantic content, pose, readability or label defect observed.","audioFadeMeasurementsEqualToPrior":true,"audioRevalidation":"Fresh final 44.5 s full decode and signal measurements repeat -19.6 LUFS / -9.8 dBTP, zero clipping. Fade gain windows exactly equal prior measured windows. No compressed or PCM byte-identity claim."},"motionSeekEvidence":{"ownerReport":"/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/verification/motion-samples.json","sha256":"0dee90bc70e1915c8bb18ed6c7427df489e430c42d6731a4be9eb69e62881aaf","sourceIndexSha256":"f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30","headless":true,"forwardSamples":21,"reverseSamples":21,"scope":"Actual GSAP/CSS wrapper transform samples from the unchanged authored HTML in an explicit headless browser. Media clips are not replayed by this transform-only harness; encoded frames are verified separately.","note":"Owner transform-only headless proof; independently inspected report and source binding. Final encoded media verified separately by this reviewer.","poseDiscrepancyCount":0}}
+{
+  "schemaVersion": 1,
+  "reviewedAtUtc": "2026-10-09T20:41:29.964450+00:00",
+  "reviewer": "0891-switch / independent final review",
+  "verdict": "PASS after initializer-only final source/output rebind; no blocking defects found",
+  "video": "/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/agent-driven-demo.mp4",
+  "videoSha256": "5f891b19c868e3300ab308fead1f3135820e8a60778c0870fe6db76b241f51d0",
+  "compositionSha256": "f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30",
+  "briefSha256": "e329ed8e15f3fb9f7dd1e75f1976b929d64ec7669db50cffd30048aa0f029930",
+  "sourceUnchangedDuringReview": true,
+  "specweaveInstalledVersion": "3.0.6",
+  "registryStableVersion": "3.0.6",
+  "scope": "Read-only independent review; own external evidence only; no branches, auth, private sessions, native inference, publishing or source edits",
+  "technical": {
+    "videoDurationSeconds": 44.5,
+    "containerDurationSeconds": 44.5,
+    "width": 1920,
+    "height": 1080,
+    "fps": "30/1",
+    "codec": "h264",
+    "videoFrames": 1335,
+    "audioCodec": "aac",
+    "audioSampleRateHz": 48000,
+    "audioChannels": 2,
+    "audioDurationSeconds": 44.5,
+    "fullDecodeExitCode": 0,
+    "blackIntervals": [],
+    "samplesAtOrAboveFullScale": 0
+  },
+  "requirements": [
+    {
+      "mustHave": "Sound or background music",
+      "result": "PASS",
+      "evidence": "Stereo AAC final music signal, exact cleared Make Funk source, independent final loudness -19.6 LUFS / true peak -9.8 dBTP; no speech track."
+    },
+    {
+      "mustHave": "Focus, enlargement or rotation animation",
+      "result": "PASS",
+      "evidence": "Encoded contact frames and full-resolution inspections show dimensional card entrance, purposeful request/output/diff focus enlargement and warning enlargement, then ending reframe; same source footage identity retained. Adobe After Effects was not used or claimed."
+    },
+    {
+      "mustHave": "Sleek transitions and engaging motion",
+      "result": "PASS / reviewer visual assessment",
+      "evidence": "Source-preserving focus changes, staggered callouts, capped directional blur and shared-strip whip at 33.35\u201333.9 s; transition midpoint and settled frames inspected. Clear semantic holds preserve readable evidence."
+    },
+    {
+      "mustHave": "Truthful recorded-date/fixture labels",
+      "result": "PASS",
+      "evidence": "Recorded 7 October 2026 label visible during native replay; explicitly no-provider-turn switching label visible during isolated fixture segment. Editorial 1.59 s ending hold disclosed in brief. No fresh inference, continuation or cache-billing proof claimed."
+    },
+    {
+      "mustHave": "Publication destination",
+      "result": "READY / unpublished",
+      "evidence": "Parent names planned spec-weave.com/studio and architecture docs. This review does not publish or verify public propagation."
+    }
+  ],
+  "visualReview": {
+    "contactFramesReviewedSeconds": [
+      0,
+      0.5,
+      1.8,
+      3.6,
+      7,
+      13.5,
+      22.5,
+      27.3,
+      30.2,
+      33.3,
+      33.483333,
+      33.633333,
+      33.766667,
+      33.933333,
+      35.3,
+      37,
+      41.8,
+      42.91,
+      43.5,
+      44.466
+    ],
+    "fullResolutionCriticalFramesSeconds": [
+      3.6,
+      22.5,
+      30.2,
+      33.633333,
+      35.3,
+      37,
+      44.466
+    ],
+    "requestReadable": true,
+    "recordedOutputReadable": true,
+    "recordedDiffReadable": true,
+    "warningTitleBodyTimingAndButtonsReadable": true,
+    "warningOverlayOcclusionRepaired": true,
+    "finalFrameReadable": true,
+    "blackTail": false,
+    "privateCredentialsOrPersonalContentObserved": false,
+    "defects": []
+  },
+  "audio": {
+    "integratedLufs": -19.6,
+    "truePeakDbtp": -9.8,
+    "loudnessRangeLu": 1.2,
+    "decodedAudioPeakLinear": 0.3237343430519104,
+    "samplesAtOrAboveFullScale": 0,
+    "fadeInVerifiedAgainstNormalizedSource": true,
+    "fadeOutVerifiedAgainstNormalizedSource": true,
+    "endingGainEstimateLast50ms": 0.012018741893176728,
+    "fadeWindows": [
+      {
+        "startSeconds": 0,
+        "endSeconds": 0.1,
+        "estimatedGainAgainstNormalizedSource": 0.2118500526544367,
+        "renderedRmsDbfs": -45.09771743808336
+      },
+      {
+        "startSeconds": 0.1,
+        "endSeconds": 0.2,
+        "estimatedGainAgainstNormalizedSource": 0.3089371105936492,
+        "renderedRmsDbfs": -51.139364401173204
+      },
+      {
+        "startSeconds": 0.2,
+        "endSeconds": 0.35,
+        "estimatedGainAgainstNormalizedSource": null,
+        "renderedRmsDbfs": -156.20050866841925
+      },
+      {
+        "startSeconds": 0.35,
+        "endSeconds": 0.7,
+        "estimatedGainAgainstNormalizedSource": 0.9995947740941177,
+        "renderedRmsDbfs": -21.103468606313047
+      },
+      {
+        "startSeconds": 1,
+        "endSeconds": 2,
+        "estimatedGainAgainstNormalizedSource": 0.999777324191001,
+        "renderedRmsDbfs": -21.1056145338565
+      },
+      {
+        "startSeconds": 20,
+        "endSeconds": 21,
+        "estimatedGainAgainstNormalizedSource": 0.9955148433918273,
+        "renderedRmsDbfs": -20.063502377552595
+      },
+      {
+        "startSeconds": 42.4,
+        "endSeconds": 42.5,
+        "estimatedGainAgainstNormalizedSource": 0.9914661649875343,
+        "renderedRmsDbfs": -20.856845336759275
+      },
+      {
+        "startSeconds": 42.5,
+        "endSeconds": 43,
+        "estimatedGainAgainstNormalizedSource": 0.8197101124048541,
+        "renderedRmsDbfs": -24.31744653282152
+      },
+      {
+        "startSeconds": 43,
+        "endSeconds": 43.5,
+        "estimatedGainAgainstNormalizedSource": 0.6320512506677562,
+        "renderedRmsDbfs": -23.206177267797127
+      },
+      {
+        "startSeconds": 43.5,
+        "endSeconds": 44,
+        "estimatedGainAgainstNormalizedSource": 0.37707066070990125,
+        "renderedRmsDbfs": -29.21863648436365
+      },
+      {
+        "startSeconds": 44,
+        "endSeconds": 44.25,
+        "estimatedGainAgainstNormalizedSource": 0.18481649203454867,
+        "renderedRmsDbfs": -33.09476544426875
+      },
+      {
+        "startSeconds": 44.25,
+        "endSeconds": 44.45,
+        "estimatedGainAgainstNormalizedSource": 0.09947689004048857,
+        "renderedRmsDbfs": -39.374962224129305
+      },
+      {
+        "startSeconds": 44.45,
+        "endSeconds": 44.5,
+        "estimatedGainAgainstNormalizedSource": 0.012018741893176728,
+        "renderedRmsDbfs": -62.1208963981988
+      }
+    ],
+    "musicSignalPresent": true,
+    "subjectiveListeningClaim": false,
+    "limit": "Measured encoded signal, fades, clipping and source binding; subjective music taste remains for the user."
+  },
+  "license": {
+    "title": "Make Funk",
+    "artist": "HoliznaCC0",
+    "license": "CC0 1.0 Universal",
+    "sourceUrl": "https://freemusicarchive.org/music/holiznacc0/bassic/make-funk/",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "clearedMp3Sha256": "4631f55b7fc2a021f24b22f60ec87735cf9163638b3a79ac1719ea3515949f9c",
+    "matchesExactRetainedSource": true,
+    "retainedPrimaryEvidenceHashes": [
+      {
+        "file": "fma-source.html",
+        "sha256": "cf73fcb4f48327acbc3edf61bbacdc06ad1796a9acd795d672c24a2624a5a20c",
+        "matchesClearanceReceipt": true
+      },
+      {
+        "file": "cc0-deed.html",
+        "sha256": "abb4d48fc8b85de52b377dd105532c6c549f515d492a8e1712bc99e7316a1f12",
+        "matchesClearanceReceipt": true
+      },
+      {
+        "file": "fma-track.json",
+        "sha256": "3d5e954b8e180c16d74ee0a7ae4dd5aeb30cb5baaf90d2702116191d3e7252e7",
+        "matchesClearanceReceipt": true
+      },
+      {
+        "file": "ffprobe.json",
+        "sha256": "e445f6bddd8db6d9c757b7a70e7f7a0d5221f2c5280d573bea645876333d22b2",
+        "matchesClearanceReceipt": true
+      }
+    ],
+    "primaryTrackText": "Exact retained same-day FMA page names Make Funk by HoliznaCC0 and CC0 1.0 Universal.",
+    "independentWebCheck": "FMA browserless web fetch returned 403; exact retained primary page and metadata independently inspected and hashes matched. Official Creative Commons CC0 deed opened successfully."
+  },
+  "sourcePreservation": [
+    {
+      "file": "recorded-run.mp4",
+      "sha256": "9226fe017b5131c5d1011f62a2a4a46a9b288e90262bbc72bc13c96277a5a9cf",
+      "byteIdenticalToRetainedV1": true
+    },
+    {
+      "file": "model-switch-confirmation.mp4",
+      "sha256": "c5b6c72ed040ceda31e9dff567848f93c6644f5a03caea42a0f311a1680b8469",
+      "byteIdenticalToRetainedV1": true
+    },
+    {
+      "file": "recorded-run.webm",
+      "sha256": "0b6939fa81356ed31ea7a63d9e977107949b3c2174ab406af5ee01aeed271384",
+      "byteIdenticalToRetainedV1": true
+    },
+    {
+      "file": "model-switch-confirmation.webm",
+      "sha256": "4bb5c8a57f50acad6d6cc03aad9031b6d205b7572ac932b3e1d5fc79d5b2e60b",
+      "byteIdenticalToRetainedV1": true
+    }
+  ],
+  "automatedGateLimit": "Draft/final HyperFrames check without motion sidecar has zero motion assertions; independent final encoded frame review supplies motion evidence. No broad clean strict-gate claim.",
+  "evidence": {
+    "analysis": "analysis-receipt.json",
+    "ffprobe": "ffprobe.json",
+    "decode": "full-decode.log",
+    "loudness": "final-ebur128.log",
+    "blackDetection": "blackdetect.log",
+    "contact": "contact-sheet.png",
+    "runner": "analyze-final.py",
+    "comparison": "critical-frame-comparison.json"
+  },
+  "newNativeTurnsByReviewer": 0,
+  "browserLaunchesByReviewer": 0,
+  "processesLeftRunningByReviewer": 0,
+  "priorReview": {
+    "path": "/Volumes/SanDisk APFS/codex-task-evidence/0891/review-v2/final-review-receipt.json",
+    "sha256": "d6e73f8ef5ef9d303efa43b4531311da9ea1624edbd43b88dc7a267a846840a8",
+    "videoSha256": "d473934b36c681033be351c99389348fa6393094318402035a75b02574b13ed4",
+    "compositionSha256": "35b16aae565709cc0ecba1bb4e06c7b990df8ead1c7635f783178fe0e64ce40f",
+    "retainedUnmodified": true
+  },
+  "bindingRefinement": {
+    "sourceDelta": "Only explicit window.__timelines initializer line added; removing this exact single line reproduces the prior reviewed source SHA256.",
+    "onlyInitializerChangedVerified": true,
+    "analyzedFilenameBeforePromotion": "/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/agent-driven-demo-final.mp4",
+    "canonicalPromotionSameSha256Verified": true,
+    "renderByteIdenticalToPrior": false,
+    "criticalFramesCompared": 20,
+    "criticalFramesPixelIdenticalCount": 2,
+    "maxMeanAbsoluteChannelDifference8bit": 0.36874,
+    "maxFractionPixelsWithChannelDifferenceAbove10": 0.000496,
+    "differenceAssessment": "Not pixel-identical; all 20 fresh encoded contact frames reviewed, with full-resolution critical request/output/diff/whip/warning 35.3+37/tail inspections. No changed semantic content, pose, readability or label defect observed.",
+    "audioFadeMeasurementsEqualToPrior": true,
+    "audioRevalidation": "Fresh final 44.5 s full decode and signal measurements repeat -19.6 LUFS / -9.8 dBTP, zero clipping. Fade gain windows exactly equal prior measured windows. No compressed or PCM byte-identity claim."
+  },
+  "motionSeekEvidence": {
+    "ownerReport": "/Volumes/SanDisk APFS/codex-task-evidence/0891/motion-v2/verification/motion-samples.json",
+    "sha256": "0dee90bc70e1915c8bb18ed6c7427df489e430c42d6731a4be9eb69e62881aaf",
+    "sourceIndexSha256": "f4470e56ee6c2c7cc63912c78624f917826eef0296002f9d8deeaadfdded0e30",
+    "headless": true,
+    "forwardSamples": 21,
+    "reverseSamples": 21,
+    "scope": "Actual GSAP/CSS wrapper transform samples from the unchanged authored HTML in an explicit headless browser. Media clips are not replayed by this transform-only harness; encoded frames are verified separately.",
+    "note": "Owner transform-only headless proof; independently inspected report and source binding. Final encoded media verified separately by this reviewer.",
+    "poseDiscrepancyCount": 0
+  }
+}
