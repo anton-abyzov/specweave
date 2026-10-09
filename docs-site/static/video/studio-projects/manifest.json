@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "targetVersion": "0.2.0",
+  "status": "planned",
+  "tutorials": [
+    {
+      "id": "projects-and-threads",
+      "title": "One project, independent threads",
+      "guide": "studio/projects.md",
+      "requiresNativeProof": true,
+      "media": null
+    },
+    {
+      "id": "memory-and-usage",
+      "title": "Shared facts, honest usage",
+      "guide": "studio/memory-and-usage.md",
+      "requiresNativeProof": false,
+      "media": null
+    },
+    {
+      "id": "plans-and-routines",
+      "title": "Plan, verify and schedule",
+      "guide": "studio/plans-and-routines.md",
+      "requiresNativeProof": false,
+      "media": null
+    }
+  ]
+}
