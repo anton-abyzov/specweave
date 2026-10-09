@@ -8,12 +8,14 @@ description: Organize ongoing work with a coordinator, independent Claude Code a
 A project groups work around an outcome, shared memory and tools. Code projects can combine a working folder with several repository URLs; Personal projects start without choosing a folder or creating a Git repository. Its coordinator keeps the conversation together; worker threads carry out individual assignments. Choose a provider and model for each thread, including the coordinator. A project can contain both Claude Code and Codex workers.
 
 :::info 0.2 preview
-This guide describes the Studio 0.2 implementation under release verification. Public installation and recorded tutorials will be added after artifact and application acceptance. The SpecWeave CLI installation guide installs the CLI, not Studio.
+This guide previews Studio 0.2.0 while final native workflow and release checks finish. The separately documented installed pilot is 0.1.4. Studio release artifacts require repository access; there is no public installer linked here. The SpecWeave CLI installation guide installs the CLI only. See [Studio architecture and access](../overview/studio-architecture.mdx) for the private pilot setup.
 :::
 
 ## Set up your project
 
 Open the project from Studio's overview, then choose **Project settings**. Give it a clear name and goal, such as “Make checkout reliable on mobile.” Select the coordinator model and the default worker model independently. Available choices come from providers configured on that host; an example model name does not guarantee that your account offers it.
+
+Pair your browser with the Studio host that will run the work. Device connections in the application's Settings are separate from the project **Connections** described below, which enable MCP tools. Browser pairing, provider sign-in and permission to run a model are separate checks.
 
 Use **Memory → Project instructions** for standing rules: the target branch, useful test commands and decisions that apply to all work. Keep the goal about the outcome. Put detailed facts in [project memory](./memory-and-usage.md).
 
