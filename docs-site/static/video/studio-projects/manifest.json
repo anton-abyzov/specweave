@@ -1,35 +1,103 @@
 {
   "schemaVersion": 1,
   "targetVersion": "0.2.0",
-  "status": "planned",
+  "status": "ready",
   "tutorials": [
     {
       "id": "projects-and-threads",
       "title": "One project, independent threads",
       "guide": "studio/projects.md",
       "requiresNativeProof": true,
-      "media": null
+      "media": {
+        "video": {
+          "file": "projects-and-threads.mp4",
+          "sha256": "7ddd1dd9370c45dcae2ab2650c342e51cfd4b658aadca058f4a1c25213f1146e"
+        },
+        "poster": {
+          "file": "projects-and-threads.jpg",
+          "sha256": "641af34a1b217103aab4f20f9ad853f1fac255e8fe86944720f8936e8e531d1d"
+        },
+        "captions": {
+          "file": "projects-and-threads.vtt",
+          "sha256": "0dba486da8ae993d8e05039f2cbec3071c5e4e30729038cf8ea62d603324712f"
+        },
+        "receipt": {
+          "file": "projects-and-threads.receipt.json",
+          "sha256": "b24144102b244dbf0174dd21a5fda1c65e048737b2126bb4accd4bf8e208b4fb"
+        }
+      }
     },
     {
       "id": "memory-and-usage",
       "title": "Shared facts, honest usage",
       "guide": "studio/memory-and-usage.md",
       "requiresNativeProof": false,
-      "media": null
+      "media": {
+        "video": {
+          "file": "memory-and-usage.mp4",
+          "sha256": "4b9f78f4ee7412e8ab4b388a021267cbd16eea0d53da3109f0d2d37c8fbb1e38"
+        },
+        "poster": {
+          "file": "memory-and-usage.jpg",
+          "sha256": "712939dac81a3439299078489a3cd52ae10ef6509bd7476573ff8098485ba33d"
+        },
+        "captions": {
+          "file": "memory-and-usage.vtt",
+          "sha256": "d5793030dc5e6b291299b7ed7b7695d8cc0681fa5a4f751aa04ca63e52b25c45"
+        },
+        "receipt": {
+          "file": "memory-and-usage.receipt.json",
+          "sha256": "58599b1562f1c1498d26fde6c94ac42c7611707f9dc3ba6fa3a620edb58627e7"
+        }
+      }
     },
     {
       "id": "plans-and-routines",
       "title": "Plan, verify and schedule",
       "guide": "studio/plans-and-routines.md",
       "requiresNativeProof": false,
-      "media": null
+      "media": {
+        "video": {
+          "file": "plans-and-routines.mp4",
+          "sha256": "3253082bca8a6ebdca1e053ec6481fc69cbbe816d1200d77abb0ddd0ddd3127d"
+        },
+        "poster": {
+          "file": "plans-and-routines.jpg",
+          "sha256": "76b7f27d3504db866188cecb2a5b3614c08d0ed48cbe43f091cd3751868d2927"
+        },
+        "captions": {
+          "file": "plans-and-routines.vtt",
+          "sha256": "813201e10a0b3d22ce6a99e3f3598cfd9a073d7746a763e965c07af126ad51c5"
+        },
+        "receipt": {
+          "file": "plans-and-routines.receipt.json",
+          "sha256": "09f95f81a156be58ed2fd20e5855f46f39b1cf146ae7d2bcb1703a273f818393"
+        }
+      }
     },
     {
       "id": "personal-and-connections",
       "title": "Personal projects, folders and tools",
       "guide": "studio/projects.md",
       "requiresNativeProof": false,
-      "media": null
+      "media": {
+        "video": {
+          "file": "personal-and-connections.mp4",
+          "sha256": "4b76c40772a0383ed4cc848b2035ce87e59c145834ed02e1a155044b577314eb"
+        },
+        "poster": {
+          "file": "personal-and-connections.jpg",
+          "sha256": "57de75f45442c65c12173ed3b90818c4e0ba71a318babca7bcaee3162d0de7b1"
+        },
+        "captions": {
+          "file": "personal-and-connections.vtt",
+          "sha256": "cc8d55f5a02e9faf610db29da2b264ec4d4ad644fbc8717d1cbb2b7911bb677d"
+        },
+        "receipt": {
+          "file": "personal-and-connections.receipt.json",
+          "sha256": "4325ee2777337241d1295aa10d85644ea08c27dd12653b3904da8840972002f4"
+        }
+      }
     }
   ]
 }

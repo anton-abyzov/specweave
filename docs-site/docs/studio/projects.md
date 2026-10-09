@@ -102,6 +102,62 @@ Resolving a thread organizes the conversation. It does not prove that tests pass
 
 If another window changed the settings, reload the current version before saving again. Review your retained draft instead of overwriting someone else's update.
 
+## Video walkthroughs
+
+### One project, independent threads
+
+<video controls playsInline preload="metadata" aria-label="One project, independent threads: captioned Studio walkthrough" poster="/video/studio-projects/projects-and-threads.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
+  <source src="/video/studio-projects/projects-and-threads.mp4" type="video/mp4" />
+  <track kind="captions" src="/video/studio-projects/projects-and-threads.vtt" srcLang="en" label="English" />
+  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/projects-and-threads.mp4">download the video</a>.
+</video>
+
+Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+
+This walkthrough verifies native project coordination with Claude and Codex, including thread reuse, project memory and usage. It does not establish byte-for-byte preservation of global account metadata. Device deployment is checked separately.
+
+<details>
+<summary>Read the transcript: One project, independent threads</summary>
+
+1. Verified here: native project coordination. Device deployment is checked separately.
+2. Coordinator and worker defaults are independent. Existing threads retain their own model choices.
+3. This Codex coordinator completed the verified native run. Its conversation stays in the project.
+4. This Claude conversation completed in the verified native run. No new inference starts in this recording.
+5. The coordinator keeps the routing history while worker details open on the right.
+6. Resolve organizes finished work without deleting its history.
+7. Reopen the same thread when related work returns.
+8. Open Usage to compare the actual coordinator and worker token totals by model.
+9. Thread shares explain where tokens went. Cache reporting can be incomplete, and API-equivalent cost is not money paid.
+
+</details>
+
+### Personal projects, folders and tools
+
+<video controls playsInline preload="metadata" aria-label="Personal projects, folders and tools: captioned Studio walkthrough" poster="/video/studio-projects/personal-and-connections.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
+  <source src="/video/studio-projects/personal-and-connections.mp4" type="video/mp4" />
+  <track kind="captions" src="/video/studio-projects/personal-and-connections.vtt" srcLang="en" label="English" />
+  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/personal-and-connections.mp4">download the video</a>.
+</video>
+
+Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+
+<details>
+<summary>Read the transcript: Personal projects, folders and tools</summary>
+
+1. This Personal project uses app-managed storage and starts without a Git repository.
+2. Personal projects keep the same project-specific memory, routines and usage views.
+3. Its execution device owns the storage. Extra folders and repositories are optional.
+4. Add an existing synthetic folder and save its access grant. This does not move the folder.
+5. A repository URL can coexist with that folder. Associate the owned local checkout before saving.
+6. Match checks the checkout's actual remote identity. This walkthrough performs no network clone.
+7. Save a local MCP command separately. This example is an owned, inert discovery fixture.
+8. Check discovers MCP tools. It does not verify a Gmail, Calendar or other external service account.
+9. Choose and save exactly the tools this project may use. Calls still follow Studio's approval rules.
+10. Revoke removes future access. Restoring requires a new discovery check and fresh tool grants.
+11. The command runs as the device's user. No external account or AI provider was contacted in this walkthrough.
+
+</details>
+
 ## Next steps
 
 - [Memory, context and usage](./memory-and-usage.md)

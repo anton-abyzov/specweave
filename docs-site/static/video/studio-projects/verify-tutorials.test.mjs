@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSync, symlinkSync} from 'node:fs';
+import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join, dirname} from 'node:path';
@@ -9,7 +9,11 @@ import {NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
 const base = new URL('./manifest.json', import.meta.url);
 function fixture(fn) {
   const root = mkdtempSync(join(tmpdir(), '0888-tutorial-validation-'));
-  try {copyFileSync(base, join(root, 'manifest.json')); fn(root);} finally {rmSync(root, {recursive: true, force: true});}
+  try {
+    const planned = JSON.parse(readFileSync(base)); planned.status = 'planned';
+    for (const tutorial of planned.tutorials) tutorial.media = null;
+    writeFileSync(join(root, 'manifest.json'), JSON.stringify(planned)); fn(root);
+  } finally {rmSync(root, {recursive: true, force: true});}
 }
 test('planned content validates without pretending to be release-ready', () => fixture(root => {
   assert.equal(verifyManifest(root).status, 'planned');
