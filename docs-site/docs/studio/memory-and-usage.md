@@ -46,3 +46,30 @@ Click **Usage** in the project header. The page shows recorded tokens by model, 
 **Estimated equivalent API cost** is an estimate based on available per-turn usage and pricing information. It is not your subscription bill, money paid or remaining plan allowance. Unknown estimates stay unknown. Check the provider's own billing and quota controls for those quantities.
 
 Return to [Studio projects](./projects.md) or continue with [plans and routines](./plans-and-routines.md).
+
+## Video walkthroughs
+
+### Shared facts, honest usage
+
+<video controls playsInline preload="metadata" aria-label="Shared facts, honest usage: captioned Studio walkthrough" poster="/video/studio-projects/memory-and-usage.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
+  <source src="/video/studio-projects/memory-and-usage.mp4" type="video/mp4" />
+  <track kind="captions" src="/video/studio-projects/memory-and-usage.vtt" srcLang="en" label="English" />
+  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/memory-and-usage.mp4">download the video</a>.
+</video>
+
+Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+
+<details>
+<summary>Read the transcript: Shared facts, honest usage</summary>
+
+1. Keep the project goal, instructions and durable facts together.
+2. Instructions guide future turns. They do not replace a provider's native history.
+3. Memory belongs to this project. Open a file to review its contents.
+4. Give a lasting decision its own small Markdown file.
+5. Save the decision. Studio checks the file revision before replacing it.
+6. Reload and reopen the file to confirm that the decision persisted.
+7. A different project keeps a different memory collection.
+8. Usage comes from recorded provider turns. Missing data remains visible.
+9. No provider turn ran in this walkthrough. An equivalent cost estimate is not a bill.
+
+</details>

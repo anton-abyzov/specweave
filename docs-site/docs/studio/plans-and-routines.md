@@ -46,3 +46,34 @@ A transport error may leave acceptance uncertain. Retry keeps the same request i
 Project deletion removes its routines. The optional usage-limit recovery setting arms supported native recovery for new stops; it does not switch accounts, enable paid overage or guarantee quota availability.
 
 The separate [SpecWeave CLI project hub](../guides/portable-projects.md) stores routine definitions. Those definitions are not automatically active Studio schedules. Configure the actual schedule in the host that will execute it.
+
+## Video walkthroughs
+
+### Plan, verify and schedule
+
+<video controls playsInline preload="metadata" aria-label="Plan, verify and schedule: captioned Studio walkthrough" poster="/video/studio-projects/plans-and-routines.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
+  <source src="/video/studio-projects/plans-and-routines.mp4" type="video/mp4" />
+  <track kind="captions" src="/video/studio-projects/plans-and-routines.vtt" srcLang="en" label="English" />
+  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/plans-and-routines.mp4">download the video</a>.
+</video>
+
+Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+
+<details>
+<summary>Read the transcript: Plan, verify and schedule</summary>
+
+1. Add a plan when acceptance needs evidence. Ordinary chat does not require the CLI.
+2. Write a short spec, one acceptance criterion and a task.
+3. Review the executable and literal arguments. Saving the command does not run it.
+4. Verification runs a real local process. A nonzero exit remains failed.
+5. We now create ready.txt in the synthetic source folder. The previous failed receipt stays unchanged.
+6. Choose a new attempt deliberately. The new receipt records the successful exit.
+7. Recheck reads the same receipt. It cannot launch that verification again.
+8. An existing SpecWeave ledger stays authoritative. Its done entry remains external, unverified evidence.
+9. Routines keep their project and host scope. This demonstration routine is disabled.
+10. Pause the project to refuse new work. It does not kill an already running turn.
+11. New routine runs remain blocked while the project is paused.
+12. Deletion requires the exact project name. This is a disposable synthetic project.
+13. Deleting project history leaves its source folder intact.
+
+</details>
