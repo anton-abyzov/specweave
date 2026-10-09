@@ -6,7 +6,7 @@ export const providers = ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'OpenC
 
 const features: [string, string, React.ReactNode][] = [
   ['Coordinator', 'One conversation per goal.', <>Tell the coordinator what you want. It splits the work, starts or reuses workers, checks what they bring back and asks you only when a decision is yours.</>],
-  ['Any provider', 'Each role picks its own model.', <>Run the coordinator on Claude Code and a worker on Codex, Grok Build or Cursor. Studio drives each provider’s official agent, so its own sign-in, approvals and limits apply.</>],
+  ['Any provider', 'Each role picks its own model.', <>Run the coordinator on Claude Code and a worker on Codex, Grok Build or Cursor. Studio drives each provider’s official agent, so its own sign-in, approvals and limits apply, and you can switch a thread to another provider mid-conversation.</>],
   ['Memory', 'Said once, known by every worker.', <>Each project keeps its own memory, instructions and settings. A decision you give the coordinator reaches the next worker without you repeating it.</>],
   ['Plan', 'Reported done is not verified.', <>An optional plan holds the spec, tasks and assignments, or reads an existing SpecWeave increment. A task is verified only when its check runs and passes.</>],
   ['Folders and repos', 'A device folder plus several repositories.', <>Point a project at a folder on a machine, add approved neighbouring folders and the repository URLs it works across. Workers get their own worktrees.</>],
@@ -20,10 +20,10 @@ export function ProjectFeatures() {
 }
 
 const rows: [string, string, string][] = [
-  ['Where work runs', 'A cloud container per thread, with a bridge to your computer in some products.', 'On machines you own: this computer, plus any you pair over SSH or Tailscale.'],
+  ['Where work runs', 'A cloud container per thread, with a bridge to your computer in some products.', 'On machines you own: this computer, plus any you pair over your network, SSH or Tailscale.'],
   ['Models', 'One vendor’s models.', 'Claude Code, Codex, Grok Build, Cursor, OpenCode, Copilot and more. The coordinator and each worker choose their own.'],
   ['Your skills and folders', 'Upload skills to the account or a repository. Neighbouring local folders are out of reach.', 'The agent runs on your machine with its provider’s local configuration, so local skills, MCP servers and folders you approve are within reach.'],
-  ['When a limit hits', 'Wait for the reset or change plans.', 'Resume on the same account when it frees up, send new work to another eligible subscription, or hand off to another tool with SpecWeave.'],
+  ['When a limit hits', 'Wait for the reset or change plans.', 'Switch the thread to another provider, which carries the recent conversation over; resume on the same account when the limit frees up; or hand off to another tool with SpecWeave.'],
   ['The record', 'Inside the vendor’s project.', 'Specs, task evidence and handoffs in git, readable by any tool.'],
   ['Laptop closed', 'Keeps running in the cloud.', 'Runs while the executing machine is awake, so a desktop or Mac mini can carry work while your laptop sleeps.'],
 ];
@@ -42,7 +42,7 @@ export function StudioFaq() {
   return <div className={styles.faq}>
     <article>
       <h3>Do I need Tailscale?</h3>
-      <p>Not on one machine: Studio runs at <code>localhost:8319</code>. Machines on the same network can be reached from your main machine through SSH forwards. Tailscale Serve is the tested way to reach Studio over private HTTPS from a phone or another place.</p>
+      <p>No. One machine needs nothing extra: Studio runs at <code>localhost:8319</code>. A machine on the same home or office network can be paired directly once its network access is on, and the desktop app can open an SSH tunnel to a machine you already reach over SSH. Tailscale Serve is for private HTTPS from a phone or from away.</p>
       <p>Either way, being reachable is not permission. Every machine and every browser is paired with Studio separately, and Studio never uses Tailscale Funnel to go public.</p>
     </article>
     <article>
@@ -56,7 +56,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>How does handoff fit in?</h3>
-      <p>A conversation that hits a usage limit can resume on the same account when the limit frees up, and new work can go to any eligible subscription. Studio does not move a running conversation to another account by itself.</p>
+      <p>Inside a thread you can switch provider: Studio passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. Studio does not yet switch on its own when a provider reaches a usage limit; the banner offers to check again or resume on the same account when the limit frees up.</p>
       <p>To continue in another tool, <Link to="/docs/guides/cross-tool-handoff/">hand off with SpecWeave</Link>: the spec, ledger and work in progress are committed, and the next agent runs <code>specweave pickup</code>.</p>
     </article>
     <article>
