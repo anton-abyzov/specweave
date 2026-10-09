@@ -5,6 +5,7 @@ description: How SpecWeave, vskill and the private SpecWeave Studio pilot fit to
 
 import Architecture, { ProductMap } from '@site/src/components/ecosystem/Architecture';
 import WorkflowVideo from '@site/src/components/ecosystem/WorkflowVideo';
+import StudioAgentVideo from '@site/src/components/ecosystem/StudioAgentVideo';
 import StudioOverviewVideo from '@site/src/components/ecosystem/StudioOverviewVideo';
 
 # One ecosystem, three distinct jobs
@@ -50,14 +51,24 @@ The accepted **8 October 2026, 4:14 PM EDT** private fleet run completed three n
 
 That demonstrates bounded native routing in the tested fleet. It does not establish concurrent enterprise load, generalized task success rates, measured productivity gains, compliance certification, a public installer or a service-level agreement. New UI and fleet work continue separately; a source commit alone is not installed-runtime proof.
 
-## First steps: the workflow available today
+## Watch agents work in Studio
+
+<StudioAgentVideo />
+
+Ask for an outcome in the chat. The agent manages the spec, task claims, tests and evidence through SpecWeave as it works. Studio lets you inspect the tool calls, changed files, results and pending approvals in the browser. The walkthrough replays a genuine completed disposable run; the switching scene previews the new confirmation UI without starting another provider turn.
+
+Model changes can rebuild prompt caches. A provider change also uses a portable context handoff: native runtime state and provider caches do not transfer. Check the warning and destination before sending the next message.
+
+## Under the hood: optional CLI deep dive
+
+The following tutorial explains the commands an agent calls. Manual spec editing and task entry are not required steps in the Studio browser walkthrough.
 
 <WorkflowVideo />
 
 1. Install the CLI with `npm install -g specweave`, then follow the [quick start](/docs/getting-started).
-2. Define one small outcome in a spec, including files, acceptance criteria and a test.
-3. Claim the task, do the work, run the test and record its real evidence.
-4. When you choose to transfer, run `specweave handoff`; use `specweave pickup` in the destination checkout after reviewing ownership and branch state.
+2. Ask your coding agent for one small outcome with a clear way to verify it. The agent records the spec, files, acceptance criteria and test.
+3. The agent claims the task, implements it, runs its test and records the real evidence. Inspect those records when you need the detail.
+4. When you choose to transfer, ask the agent to hand off. It calls `specweave handoff`; the receiving agent calls `specweave pickup` after checking ownership and branch state.
 5. Explore [Skill Studio](/docs/skills/skill-studio) if a repeated task would benefit from a tested skill.
 
 In **SpecWeave 3.0.6**, `specweave auto-handoff on` enables silent local recovery checkpoints. It does not stop work at a usage limit, push a transfer, release task claims or authorize another worker. `pickup` does not apply those automatic checkpoints. See [checkpoint and handoff rules](/docs/guides/auto-handoff).
