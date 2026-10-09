@@ -7,13 +7,13 @@ description: Use an optional plan for acceptance and evidence, preserve existing
 
 Start with a conversation. Add a plan when work needs acceptance criteria, owners or verification. Ordinary Studio chat does not require a SpecWeave increment or CLI installation.
 
-:::info Integration status
-The 0.2 planning core is implemented; its final interface and end-to-end acceptance are still being verified. The behavior below describes that core. Recorded UI walkthroughs will follow verified application behavior.
+:::info 0.2 preview
+The planning interface has passed isolated application acceptance. Final release artifacts and recorded tutorials remain under verification.
 :::
 
 ## One plan authority
 
-In native Studio mode, a project can keep a short specification, acceptance criteria and tasks. Each task can record an owner and a verification command. Reported completion is separate from a verified result.
+Open **Plan → Add a plan** to keep a short specification, acceptance criteria and tasks in Studio. Each task can record an owner and a verification command. Saving a command does not execute it. Reported completion is separate from a verified result.
 
 | Task state | What it records |
 | --- | --- |
@@ -25,7 +25,13 @@ In native Studio mode, a project can keep a short specification, acceptance crit
 
 Verification is an explicit human action that executes the saved command on the project host. Review the command and arguments before running it. A timeout, error or nonzero exit does not pass. Changing the task definition invalidates its current verified status while retaining historical evidence. A resolved chat alone does not change that evidence.
 
+Expand **Verification command and evidence** to review the executable, literal arguments, workspace and timeout. **Run verification** needs both terminal and orchestration operation permission. This executes a local command with the host's permissions; it is not a sandbox.
+
+If the response is uncertain, **Recheck last request** looks for the same receipt without starting another process. **New verification attempt** deliberately starts a separate execution. Receipts retain their command, outcome, exit code and bounded output even after the current command changes or is removed. **Ask coordinator** sends the saved task through the project conversation; it cannot grant verification permission.
+
 If the project already uses SpecWeave, connect the existing increment as the authority. Studio's optional adapter reads its `spec.md` and `ledger.jsonl`; it does not install the CLI, claim tasks, invoke pickup or maintain a competing editable ledger. An external done entry remains externally reported evidence. Missing or invalid files produce an error rather than silently switching authorities. A native plan can be exported as Markdown; native session histories and caches are not part of that export.
+
+Use **Plan source** to select or repair the binding. The increment folder must remain inside the registered project folder; register the umbrella folder when the increment belongs above a child repository. A broken source keeps its binding visible for repair and never silently becomes an empty native plan.
 
 For work outside Studio, the [SpecWeave CLI](../getting-started/installation.md) provides its own [daily loop](../workflows/overview.md) and [explicit handoff](../guides/cross-tool-handoff.md). A thread and an increment are different units: one increment may involve several workers, and a worker may receive several related follow-ups.
 
