@@ -48,6 +48,14 @@ Studio runs each provider's own agent (Claude Code, Codex, OpenCode, Cursor, Pi)
 
 **CLIProxyAPI** is optional. Studio can read pooled account usage from a CLIProxyAPI hub you already run and show it under **Usage → Limits**. Native Claude Code and Codex turns never pass through it. Routing personal subscription sign-ins through a shared proxy can conflict with a provider's terms, so check them before pooling accounts. **AnyModel** is likewise optional and only matters for API or local-model compatibility work.
 
+### Security boundaries
+
+- **Reachability is not authorization.** Studio stays bound to loopback and ignores Tailscale identity headers. Every origin needs its own pairing, even for a device already on the tailnet.
+- **Restrict the tailnet.** The default tailnet policy lets every device reach Serve ports. Limit Studio's ports to your own devices with a grant, and do not share a Studio host to other tailnets.
+- **Serve names are public.** Certificates for `*.ts.net` names appear in public Certificate Transparency logs. Choose machine names that do not identify you and keep them out of public repositories.
+- **A usage hub key unlocks every pooled account.** An optional CLIProxyAPI hub's management key can make requests with any pooled account's token. Keep the hub on loopback with remote management off. Studio stores the key server-side, sends it only over https, loopback or a Tailscale address, and drops it when the hub URL moves.
+- **Subscriptions follow provider terms.** Studio's native path runs the official Codex and Claude Code clients with their own sign-in. Routing subscription tokens through a proxy or pooling accounts to avoid limits can breach a provider's terms and risk suspension.
+
 ### Where data goes
 
 Local-first describes where project files and runtime state live. It does not mean every request stays on the machine. Native coding agents and Skill Studio evaluations can contact their configured cloud model providers. Review those providers, account policies and any tools your skills invoke before using sensitive material.
