@@ -1,0 +1,53 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:07.486
+Add a plan when acceptance needs evidence. Ordinary chat does not require the CLI.
+
+2
+00:00:07.487 --> 00:00:14.940
+Write a short spec, one acceptance criterion and a task.
+
+3
+00:00:14.940 --> 00:00:22.429
+Review the executable and literal arguments. Saving the command does not run it.
+
+4
+00:00:22.429 --> 00:00:29.752
+Verification runs a real local process. A nonzero exit remains failed.
+
+5
+00:00:29.752 --> 00:00:36.866
+We now create ready.txt in the synthetic source folder. The previous failed receipt stays unchanged.
+
+6
+00:00:36.869 --> 00:00:44.189
+Choose a new attempt deliberately. The new receipt records the successful exit.
+
+7
+00:00:44.190 --> 00:00:51.435
+Recheck reads the same receipt. It cannot launch that verification again.
+
+8
+00:00:51.435 --> 00:00:58.776
+An existing SpecWeave ledger stays authoritative. Its done entry remains external, unverified evidence.
+
+9
+00:00:58.784 --> 00:01:06.119
+Routines keep their project and host scope. This demonstration routine is disabled.
+
+10
+00:01:06.119 --> 00:01:13.351
+Pause the project to refuse new work. It does not kill an already running turn.
+
+11
+00:01:13.351 --> 00:01:20.530
+New routine runs remain blocked while the project is paused.
+
+12
+00:01:20.531 --> 00:01:27.882
+Deletion requires the exact project name. This is a disposable synthetic project.
+
+13
+00:01:27.883 --> 00:01:35.026
+Deleting project history leaves its source folder intact.
