@@ -23,9 +23,9 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: save local background checkpoints without interrupting work"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: hand off automatically at a share of the usage limit (default 90%) and save local checkpoints"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: queue a local checkpoint and return without interrupting work"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: save a local checkpoint; at the auto-handoff threshold, ask the agent to hand off once"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
@@ -143,13 +143,15 @@ complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output
 complete -c specweave -n "__fish_seen_subcommand_from report" -l out -d "Where to write it (default: the increment's reports/handoff-report.html)"
 
 # auto-handoff
-complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Legacy compatibility option; checkpoints are independent of usage"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Threshold in percent of any usage window"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l checkpoint-only -d "Only save local checkpoints; never stop on usage (credits or a proxy keep working)"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l handoff -d "Hand off at the threshold again after --checkpoint-only"
 
 # statusline
 complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
 
 # usage-guard
-complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook: save locally after a rate-limit failure"
+complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)"
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
