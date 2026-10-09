@@ -17,7 +17,7 @@ test('failed, invented, unordered, unverified and overlong captures cannot becom
 test('mixed-provider composition requires actual accepted provider proof', () => {
   const c = {...capture(), tutorial:'projects-and-threads'};
   assert.throws(() => validateCapture(c));
-  assert.equal(validateCapture({...c, acceptancePassed:true, nativeProviders:{claude:'passed', codex:'passed'}}), 42);
+  assert.equal(validateCapture({...c, acceptancePassed:true, nativeProviders:{claude:'passed', codex:'passed'}, nativeReceiptSha256:'c'.repeat(64)}), 42);
 });
 test('privacy crop excludes sidebar and composer host identities', () => {
   validateCrop([256, 0, 1664, 1000]);

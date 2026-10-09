@@ -39,6 +39,7 @@ export function validateCapture(capture) {
   if (capture.tutorial === 'projects-and-threads') {
     assert.equal(capture.nativeProviders?.claude, 'passed');
     assert.equal(capture.nativeProviders?.codex, 'passed');
+    assert(/^[a-f0-9]{64}$/.test(capture.nativeReceiptSha256));
     assert.equal(capture.acceptancePassed, true);
   }
   return previous;
@@ -113,7 +114,8 @@ export function compose({captureDir, output, ffmpeg = 'ffmpeg', crop = [256, 0, 
   const metadata = {schemaVersion:1, tutorial:capture.tutorial, status:'draft-awaiting-review', version:capture.version,
     sourceCommit:capture.sourceCommit, buildSha256:capture.buildSha256, recordedAt:capture.recordedAt,
     actualApplication:true, syntheticDataOnly:true, headless:true, acceptancePassed:capture.acceptancePassed,
-    nativeProviders:capture.nativeProviders, providerTurnsStartedByRecorder:0,
+    nativeProviders:capture.nativeProviders, nativeReceiptSha256:capture.nativeReceiptSha256 ?? null,
+    providerTurnsStartedByRecorder:0,
     privacyReviewed:false, visualReviewPassed:false, captionsReviewed:false,
     crop, captureVideoSha256:capture.video.sha256, captionsSha256:capture.captions.sha256,
     croppedVideoSha256:digest(fs.readFileSync(path.join(output, 'assets/recording.mp4'))),
