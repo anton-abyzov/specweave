@@ -25,6 +25,10 @@ Send a question or assignment in the project conversation. For a follow-up, name
 
 Click a thread row or a linked thread reference to open it in the right pane. Read its transcript, inspect messages from the coordinator and use its native controls. **Replies from the project’s thread pane pass through the coordinator**, with the selected worker attached as context. The coordinator decides whether to reuse that worker or route elsewhere. Tool approvals remain attached to the specific native request; a general project message is not an approval.
 
+Images and files attached to a reply follow that same coordinator route. Review the attachments in the coordinator conversation; the worker pane does not turn a routed reply into a direct native submission. If the response is lost, retry the retained request rather than sending another copy. Studio retains the delivery receipt across restart and expired upload staging.
+
+Answer a native approval or question in the worker that requested it. Credit spending consent applies only to an explicit direct submission to that provider and model. A project reply cannot transfer that consent to a coordinator or a different worker.
+
 The thread list separates attention from execution:
 
 | Group | Meaning |
@@ -41,7 +45,7 @@ Resolving a thread organizes the conversation. It does not prove that tests pass
 
 **Pause new work** blocks new coordinator and routine dispatch. Existing native turns keep their own stop and approval controls. **Archive project** also blocks new work and preserves history; unarchive it to continue. Neither action silently takes over or cancels a running worker.
 
-**Danger zone → Delete project** permanently removes the project, its Studio threads, shared memory and routines. Type the exact project name to confirm. Active work or a pending native request must be finished or stopped first. Source folders and remote Git branches remain intact. Deletion cannot be undone in Studio.
+**Danger zone → Delete project** permanently removes the project, its Studio threads, shared memory, plans, captured evidence, attachments and routines. Type the exact project name to confirm. Active work or a pending native request must be finished or stopped first. Source folders and remote Git branches remain intact. Deletion cannot be undone in Studio.
 
 If another window changed the settings, reload the current version before saving again. Review your retained draft instead of overwriting someone else's update.
 
