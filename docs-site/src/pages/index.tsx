@@ -44,7 +44,7 @@ export default function Home() {
       <section className={base.section} id="ecosystem" aria-labelledby="ecosystem-title">
         <div className={base.sectionHeading}><div><span className={styles.eyebrow}>The ecosystem</span><h2 id="ecosystem-title">Clear work.<br /><em>Capable agents.</em></h2></div><p>SpecWeave keeps the delivery record. vskill brings tested expertise. The new SpecWeave Studio pilot connects native coding sessions across your machines.</p></div>
         <ProductMap />
-        <Link className={base.textLink} to="/docs/overview/studio-architecture">See the full architecture, including private Tailscale access ↗</Link>
+        <Link className={base.textLink} to="/docs/overview/studio-architecture">See the full architecture and connection options ↗</Link>
       </section>
 
       <section className={clsx(base.section, styles.threads)} id="threads" aria-labelledby="threads-title">
