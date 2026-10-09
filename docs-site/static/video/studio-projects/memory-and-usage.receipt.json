@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "tutorial": "memory-and-usage",
+  "version": "0.2.0",
+  "sourceCommit": "19008d8000c35cde751292a66fc46aa9614ec702",
+  "buildSha256": "67e8f902df8df8f72779345f24a02bc02d68e6395a520584c7aebba783aac135",
+  "recordedAt": "2026-10-09T09:10:25.636Z",
+  "actualApplication": true,
+  "syntheticDataOnly": true,
+  "headless": true,
+  "acceptancePassed": true,
+  "nativeProviders": {
+    "claude": "not_recorded",
+    "codex": "not_recorded"
+  },
+  "nativeReceiptSha256": null,
+  "providerTurnsStartedByRecorder": 0,
+  "crop": [
+    256,
+    0,
+    1664,
+    1000
+  ],
+  "duration": 67.06859637500001,
+  "rendererVersion": "0.8.143",
+  "privacyReviewed": true,
+  "visualReviewPassed": true,
+  "captionsReviewed": true,
+  "normalPlaybackPassed": true,
+  "videoSha256": "fbb7f581f938ded728d6a129b6243a7afed1f88d31594dc54f90ce27f0108574",
+  "reviewMethod": "Actual UI captured with synthetic project data. Geometric crop excludes the sidebar and composer machine label. Every caption beat and rendered poster/end frame was reviewed; OCR scanned the beat frames. The final export played to completion headlessly at normal speed, with all caption samples inspected.",
+  "audio": "silent",
+  "providerExecutionInThisWalkthrough": false
+}
