@@ -249,14 +249,16 @@ program
     process.exitCode = await noteCommand(text, { incrementId });
   });
 
-// Auto-handoff - silent local recovery checkpoints (Claude Code, Codex)
+// Auto-handoff - hand off by itself near the plan's usage limit, with local checkpoints (Claude Code, Codex, Grok Build)
 program
   .command('auto-handoff [action]')
-  .description('on | off | status: save local background checkpoints without interrupting work')
-  .option('--at <percent>', 'Legacy compatibility option; checkpoints are independent of usage', (v) => Number(v))
+  .description('on | off | status: hand off automatically at a share of the usage limit (default 90%) and save local checkpoints')
+  .option('--at <percent>', 'Threshold in percent of any usage window', (v) => Number(v))
+  .option('--checkpoint-only', 'Only save local checkpoints; never stop on usage (credits or a proxy keep working)')
+  .option('--handoff', 'Hand off at the threshold again after --checkpoint-only')
   .action(async (action, options) => {
     const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
-    process.exitCode = await autoHandoffCommand(action, { at: options.at });
+    process.exitCode = await autoHandoffCommand(action, { at: options.at, checkpointOnly: options.checkpointOnly === true, handoff: options.handoff === true });
   });
 
 program
@@ -270,11 +272,22 @@ program
 
 program
   .command('usage-guard')
-  .description('Stop hook: queue a local checkpoint and return without interrupting work')
-  .option('--limit-hit', 'StopFailure hook: save locally after a rate-limit failure')
+  .description('Stop hook: save a local checkpoint; at the auto-handoff threshold, ask the agent to hand off once')
+  .option('--limit-hit', 'StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)')
   .action(async (options) => {
     const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
     process.exitCode = await usageGuardCommand({ limitHit: options.limitHit === true });
+  });
+
+// Auto-compact window for Claude Code (400K keeps 1M-context turns small)
+program
+  .command('autocompact [action]')
+  .description('on | off | status: where Claude Code summarizes a long session (default 400k)')
+  .option('--at <tokens>', 'Window for `on`, 100k to 1M (default 400k)')
+  .option('--project', 'Write .claude/settings.json in this project instead of ~/.claude/settings.json')
+  .action(async (action, options) => {
+    const { autocompactCommand } = await import('../dist/src/cli/commands/autocompact.js');
+    process.exitCode = await autocompactCommand(action, { at: options.at, project: options.project === true });
   });
 
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions

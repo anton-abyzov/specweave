@@ -1,3 +1,17 @@
+## [Unreleased]
+
+### Added
+
+- `specweave autocompact on|off|status` sets where Claude Code compacts a long session (`autoCompactWindow`, default 400K, `--at`, `--project`). On 1M-context models Claude Code otherwise waits until about 967K tokens, so every late turn resends close to a million cached tokens that count toward usage. `status` also shows per-model `/autocompact` values and Codex's `model_auto_compact_token_limit`.
+- `specweave init` writes `"autoCompactWindow": 400000` to the new project's `.claude/settings.json`. It changes nothing on 200K models; `specweave autocompact off --project` removes it.
+
+### Changed
+
+- Auto-handoff hands off at 90% again. `auto-handoff on` restores the 3.0.3 behaviour: the Stop hook asks the session once per usage window to run `specweave handoff` when any window reaches the threshold (`--at`), and a Claude Code or Grok Build turn that fails on the rate limit hands off from the StopFailure hook. The 3.0.6 local checkpoints stay: every hook still saves one between handoffs. Settings written by 3.0.6 have no mode and hand off again after upgrading.
+- `auto-handoff on --checkpoint-only` keeps the 3.0.6 behaviour for plans where credits or a proxy keep working past the limit: only local checkpoints, never a stop. `--handoff` switches back; `on` without either keeps the stored mode.
+- `specweave pickup` shows the newest local checkpoint of the worktree when it is newer than the last handoff (`Local checkpoint: session … → <document> + <diff>`). 3.0.6 wrote checkpoints that nothing read.
+- Inside SpecWeave Studio (`SPECWEAVE_STUDIO_THREAD_ID` set by Studio) the hooks never steer the model, since Studio switches provider between turns; they save the checkpoint and also write it to `~/.specweave/checkpoints/studio/<thread>.json`, shared by every provider in that thread.
+
 ## [3.0.6] - 2026-10-08
 
 ### Changed

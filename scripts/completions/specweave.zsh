@@ -22,9 +22,10 @@ commands=(
     'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
     'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
-    'auto-handoff:on | off | status\: save local background checkpoints without interrupting work'
+    'auto-handoff:on | off | status\: hand off automatically at a share of the usage limit (default 90%) and save local checkpoints'
     'statusline:Claude Code status line that records usage for auto-handoff'
-    'usage-guard:Stop hook\: queue a local checkpoint and return without interrupting work'
+    'usage-guard:Stop hook\: save a local checkpoint; at the auto-handoff threshold, ask the agent to hand off once'
+    'autocompact:on | off | status\: where Claude Code summarizes a long session (default 400k)'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
@@ -189,7 +190,9 @@ _specweave() {
                     ;;
                 auto-handoff)
                     _arguments \
-                        '--at[Legacy compatibility option; checkpoints are independent of usage]' \
+                        '--at[Threshold in percent of any usage window]' \
+                        '--checkpoint-only[Only save local checkpoints; never stop on usage (credits or a proxy keep working)]' \
+                        '--handoff[Hand off at the threshold again after --checkpoint-only]' \
                         '--help[Show help]'
                     ;;
                 statusline)
@@ -199,7 +202,13 @@ _specweave() {
                     ;;
                 usage-guard)
                     _arguments \
-                        '--limit-hit[StopFailure hook\: save locally after a rate-limit failure]' \
+                        '--limit-hit[StopFailure hook\: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)]' \
+                        '--help[Show help]'
+                    ;;
+                autocompact)
+                    _arguments \
+                        '--at[Window for `on`, 100k to 1M (default 400k)]' \
+                        '--project[Write .claude/settings.json in this project instead of ~/.claude/settings.json]' \
                         '--help[Show help]'
                     ;;
                 jev)

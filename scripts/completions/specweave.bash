@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
+    local main_commands="init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
 
     case "${prev}" in
         specweave)
@@ -77,7 +77,7 @@ _specweave_completions() {
             return 0
             ;;
         auto-handoff)
-            COMPREPLY=( $(compgen -W "--at --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--at --checkpoint-only --handoff --help" -- "${cur}") )
             return 0
             ;;
         statusline)
@@ -86,6 +86,10 @@ _specweave_completions() {
             ;;
         usage-guard)
             COMPREPLY=( $(compgen -W "--limit-hit --help" -- "${cur}") )
+            return 0
+            ;;
+        autocompact)
+            COMPREPLY=( $(compgen -W "--at --project --help" -- "${cur}") )
             return 0
             ;;
         jev)
