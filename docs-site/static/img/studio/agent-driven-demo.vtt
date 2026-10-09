@@ -1,29 +1,29 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:06.147
-Recorded run / 7 Oct 2026. Ask the agent for the result.
+00:00:00.000 --> 00:00:06.150
+Ask for the result. Recorded run · 7 October 2026.
 
 2
-00:00:06.147 --> 00:00:12.262
-The agent changed one file and verified its exact contents.
+00:00:06.150 --> 00:00:12.260
+One file changed. Its exact contents verified.
 
 3
-00:00:12.262 --> 00:00:19.443
-Expand the recorded work to inspect the actual tool and its successful output.
+00:00:12.260 --> 00:00:21.000
+Expand the agent’s recorded tool execution.
 
 4
-00:00:19.443 --> 00:00:26.565
-The recorded command returned exit code zero. Studio retained the evidence.
+00:00:21.000 --> 00:00:26.560
+Inspect successful output from the original run.
 
 5
-00:00:26.565 --> 00:00:34.112
-Inspect the recorded file change in the browser.
+00:00:26.560 --> 00:00:33.625
+Open the file diff and verify the recorded change.
 
 6
-00:00:34.112 --> 00:00:38.912
-Switching UI demonstration / no provider turn. Review the warning before changing providers.
+00:00:33.625 --> 00:00:40.900
+Changing providers: portable chat context, separate cache and runtime.
 
 7
-00:00:38.912 --> 00:00:43.672
-Prompt caches and native runtime state do not transfer between providers; portable chat context is passed.
+00:00:40.900 --> 00:00:44.500
+Switching UI demonstration · no provider turn.

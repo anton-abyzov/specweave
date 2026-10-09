@@ -8,6 +8,6 @@ export default function StudioAgentVideo() {
       <track kind="captions" src="/img/studio/agent-driven-demo.vtt" srcLang="en" label="English" />
       Your browser does not support this video. <a href="/img/studio/agent-driven-demo.mp4">Download the browser walkthrough</a>.
     </video>
-    <figcaption>Actual Studio browser recording. The completed synthetic native task is from 7 October 2026 in a disposable repository; the model-switching scene previews the new confirmation UI in an isolated fixture. No new inference runs during recording. Read the <a href="/docs/overview/studio-architecture#under-the-hood-optional-cli-deep-dive">optional CLI deep dive</a> for the mechanics agents manage.</figcaption>
+    <figcaption>A recorded agent task and its file change, followed by an isolated preview of model-switch confirmation. Synthetic demo repository, 7 October 2026; no fresh inference. Music: <a href="https://freemusicarchive.org/music/holiznacc0/bassic/make-funk/">“Make Funk” by HoliznaCC0</a>, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>. Read the <a href="/docs/overview/studio-architecture#under-the-hood-optional-cli-deep-dive">optional CLI deep dive</a> for the mechanics agents manage.</figcaption>
   </figure>;
 }
