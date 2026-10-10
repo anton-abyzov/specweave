@@ -14,7 +14,7 @@
  * only the checkpoints, for plans where credits or a proxy keep working past
  * the limit. Inside SpecWeave Studio the hooks only save the checkpoint:
  * Studio switches provider between turns. The Stop hook also stays quiet
- * outside a SpecWeave project and for a Codex plan that reports credits.
+ * outside a SpecWeave project and for a Codex plan whose credits will last.
  *
  * @module cli/commands/auto-handoff
  */
@@ -25,10 +25,11 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
   DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
-  handsOff, studioThreadId, type AutoHandoffMode, latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
+  handsOff, studioThreadId, codexCreditsLast, CREDIT_MINUTES_LOW, CREDIT_BURN_WINDOW_MS, type AutoHandoffMode, latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
 import { queueSessionCheckpoint } from '../../core/session/session-checkpoint.js';
 import { detectTool } from '../../core/tasks/ledger.js';
+import { findProjectRoot } from '../../utils/find-project-root.js';
 
 const GUARD_COMMAND = 'specweave usage-guard';
 const LIMIT_HIT_COMMAND = `${GUARD_COMMAND} --limit-hit`;
@@ -64,7 +65,8 @@ export async function statuslineCommand(opts: { wrap?: string; home?: string } =
   const model = (input.model as { display_name?: string } | undefined)?.display_name;
   const settings = readSettings(opts.home);
   const top = fullest(windows);
-  const due = !!settings && handsOff(settings) && !!top && top.percent >= settings.at;
+  // Same rule as the Stop hook: outside a project nothing is handed off, so nothing is announced.
+  const due = !!settings && handsOff(settings) && !!top && top.percent >= settings.at && !!findProjectRoot(cwd);
   process.stdout.write([path.basename(cwd), model, windows.length ? usageSummary(windows) : '', due ? 'hand off' : '']
     .filter(Boolean).join(' · ') + '\n');
   return 0;
@@ -273,9 +275,12 @@ export function codexHookTrusted(home = os.homedir()): boolean {
   return false;
 }
 
+function span(min: number): string {
+  return min < 60 ? `${min} min` : min < 48 * 60 ? `${Math.round(min / 60)} h` : `${Math.round(min / 1440)} days`;
+}
+
 function ago(ms: number, now: number): string {
-  const min = Math.max(0, Math.round((now - ms) / 60000));
-  return min < 60 ? `${min} min ago` : min < 48 * 60 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} days ago`;
+  return `${span(Math.max(0, Math.round((now - ms) / 60000)))} ago`;
 }
 
 function readingLine(r: UsageReading | undefined, now: number): string {
@@ -323,7 +328,16 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
     const trusted = codexHookTrusted(home);
     const codexReading = latestCodexReading(home);
     lines.push(`Codex: ${ok ? `Stop hook in place${trusted ? '' : ' but not approved yet'}` : 'missing Stop hook'}; ${readingLine(codexReading, now)}`);
-    if (codexReading?.credits && handsOff(settings)) lines.push('  This Codex plan has credits, which keep it working past the limit, so Codex sessions are not asked to hand off; they still save checkpoints.');
+    if (codexReading?.credits && handsOff(settings)) {
+      // The minutes describe the newest session log; an old one says nothing about now.
+      const left = now - codexReading.at <= CREDIT_BURN_WINDOW_MS ? codexReading.creditMinutesLeft : undefined;
+      const top = fullest(codexReading.windows, now);
+      // Same two conditions as the Stop hook: a window at the threshold, and credits about to run out.
+      const due = !!top && top.percent >= settings.at && !codexCreditsLast({ windows: codexReading.windows, credits: true, creditMinutesLeft: left });
+      lines.push(due
+        ? `  This Codex plan's credits are running out: about ${Math.max(1, Math.round(left ?? 0))} min left at the current rate, so a session in a project is asked to hand off at its next stop.`
+        : `  This Codex plan has credits, which keep it working past the limit. A session in a project at ${settings.at}% or more is asked to hand off only when its log shows under ${CREDIT_MINUTES_LOW} minutes of credits left at the rate they are being spent${left !== undefined ? ` (about ${span(Math.round(left))} now)` : ''}; checkpoints are saved either way.`);
+    }
     if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.');
   }
   if (fs.existsSync(path.join(home, '.grok'))) {

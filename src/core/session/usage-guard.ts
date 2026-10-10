@@ -18,8 +18,9 @@
  * tokens, no files.
  *
  * It only asks inside a SpecWeave project (the hook's `cwd` is in one), since
- * `specweave handoff` has nothing to hand off anywhere else, and never a Codex
- * session whose plan has credits: Codex keeps working past 100% on those.
+ * `specweave handoff` has nothing to hand off anywhere else. A Codex plan with
+ * credits keeps working past 100%, so it is asked only when the session's own
+ * log shows under an hour of credits left at the rate they are being spent.
  *
  * Two more cases never steer the model. `mode: "checkpoint"` is for plans where
  * credits or a proxy keep working past 100%: only local checkpoints are saved.
@@ -233,63 +234,152 @@ export function claudeFallbackReading(opts: { env?: NodeJS.ProcessEnv; home?: st
   return readings.sort((a, b) => b.at - a.at)[0];
 }
 
-/** What the newest `token_count` event in a Codex rollout file says about the plan. */
+/** What the newest `token_count` events in a Codex rollout file say about the plan. */
 export interface CodexUsage {
   windows: UsageWindow[];
   /** Credits (or an unlimited plan) keep Codex working after a window is full. */
   credits: boolean;
+  /**
+   * Minutes the credit balance lasts at the rate this log shows it falling.
+   * Undefined when the plan is unlimited or the log shows no fall to measure.
+   */
+  creditMinutesLeft?: number;
 }
 
 interface CodexRateLimits {
+  /** `codex` (or missing) is the plan; Codex also logs other buckets such as `base_model_inference` and `premium`. */
+  limit_id?: string | null;
   primary?: { used_percent?: number; window_minutes?: number; resets_at?: number } | null;
   secondary?: { used_percent?: number; window_minutes?: number; resets_at?: number } | null;
   credits?: { has_credits?: boolean; unlimited?: boolean; balance?: string | number | null } | null;
 }
 
-/** `credits.balance` is a decimal string; a zero balance buys nothing. */
+/** A rollout is read from its end in chunks of this size. */
+const CODEX_CHUNK_BYTES = 1024 * 1024;
+/** No more than this much of the end of a rollout is read; a busy hour of log fits. */
+const CODEX_SCAN_BYTES = 64 * 1024 * 1024;
+/** Credit balances older than this say nothing about the current rate. */
+export const CREDIT_BURN_WINDOW_MS = 60 * 60 * 1000;
+/** Two balances closer together than this are noise, not a rate. */
+const CREDIT_BURN_MIN_SPAN_MS = 2 * 60 * 1000;
+/** A Codex session with credits is asked to hand off when fewer minutes of credits are left. */
+export const CREDIT_MINUTES_LOW = 60;
+
+/**
+ * The lines of a file from the last to the first, read from the end in chunks
+ * so the caller can stop early. Gives up `maxBytes` from the end; the line cut
+ * there is dropped.
+ */
+function* linesFromEnd(file: string, maxBytes: number): Generator<string> {
+  const fd = fs.openSync(file, 'r');
+  try {
+    const size = fs.fstatSync(fd).size;
+    const floor = Math.max(0, size - maxBytes);
+    let end = size;
+    /** The end of a line that starts in a chunk not read yet. */
+    let carry: Buffer = Buffer.alloc(0);
+    while (end > floor) {
+      const start = Math.max(floor, end - CODEX_CHUNK_BYTES);
+      const chunk = Buffer.alloc(end - start);
+      fs.readSync(fd, chunk, 0, chunk.length, start);
+      const buf = carry.length ? Buffer.concat([chunk, carry]) : chunk;
+      end = start;
+      // A newline byte never sits inside a multi-byte character, so cutting there is safe.
+      const first = start === 0 ? -1 : buf.indexOf(0x0a);
+      if (start !== 0 && first === -1) { carry = buf; continue; }
+      carry = start === 0 ? Buffer.alloc(0) : buf.subarray(0, first);
+      const lines = buf.toString('utf8', first + 1).split('\n');
+      for (let i = lines.length - 1; i >= 0; i--) yield lines[i];
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+/** A credit balance as a number; a missing, null or empty one is unknown, not zero. */
+function creditBalance(credits: CodexRateLimits['credits']): number {
+  const b = credits?.balance;
+  return typeof b === 'number' || (typeof b === 'string' && b.trim() !== '') ? Number(b) : NaN;
+}
+
+/** `credits.balance` is a decimal string; a zero balance buys nothing, an unreported one is taken on trust. */
 function codexHasCredits(credits: CodexRateLimits['credits']): boolean {
   if (!credits) return false;
   if (credits.unlimited === true) return true;
   if (credits.has_credits !== true) return false;
-  return credits.balance === undefined || credits.balance === null || Number(credits.balance) > 0;
+  const balance = creditBalance(credits);
+  return Number.isNaN(balance) || balance > 0;
 }
 
-/** Windows and credits from the newest `token_count` event in a Codex rollout file. */
+function codexWindowsOf(limits: CodexRateLimits): UsageWindow[] {
+  const out: UsageWindow[] = [];
+  for (const key of ['primary', 'secondary'] as const) {
+    const w = limits[key];
+    if (!w || typeof w.used_percent !== 'number') continue;
+    const mins = w.window_minutes;
+    const name = mins === 300 ? '5-hour' : mins === 10080 ? 'weekly' : mins ? `${mins}-minute` : key;
+    out.push({ name, percent: w.used_percent, ...(typeof w.resets_at === 'number' ? { resetsAt: w.resets_at } : {}) });
+  }
+  return out;
+}
+
+/**
+ * Windows and credits from the newest `token_count` event of the plan's own
+ * limit in a Codex rollout file. Codex logs several limits in one session; a
+ * later `gpt-reserve` record at 0% must not hide a plan window at 95%, so
+ * another bucket is used only when no plan record is found.
+ *
+ * For a plan with a finite credit balance the scan goes on, back to an hour
+ * before that record, to see how fast the balance is falling. It stops at a
+ * top-up (a record with no credits, or with less than half of today's
+ * balance): what was spent before one says nothing about what is left.
+ */
 export function codexUsage(transcriptPath: string): CodexUsage {
   const none: CodexUsage = { windows: [], credits: false };
-  let text: string;
+  let newest: { windows: UsageWindow[]; credits: boolean; balance: number; at: number } | undefined;
+  let other: CodexUsage | undefined;
+  /** The oldest balance of the falling run that ends at `newest`. */
+  let oldest: { at: number; balance: number } | undefined;
   try {
-    const fd = fs.openSync(transcriptPath, 'r');
-    try {
-      const size = fs.fstatSync(fd).size;
-      const len = Math.min(size, 256 * 1024);
-      const buf = Buffer.alloc(len);
-      fs.readSync(fd, buf, 0, len, size - len);
-      text = buf.toString('utf8');
-    } finally {
-      fs.closeSync(fd);
+    for (const line of linesFromEnd(transcriptPath, CODEX_SCAN_BYTES)) {
+      if (!line.includes('"rate_limits"')) continue;
+      let event: { timestamp?: string; payload?: { rate_limits?: CodexRateLimits } };
+      try { event = JSON.parse(line); } catch { continue; } // a message that quotes the words, or a cut line
+      const limits = event?.payload?.rate_limits;
+      if (!limits || typeof limits !== 'object') continue;
+      const windows = codexWindowsOf(limits);
+      if (!windows.length) continue;
+      if (limits.limit_id && limits.limit_id !== 'codex') {
+        other ??= { windows, credits: codexHasCredits(limits.credits) };
+        continue;
+      }
+      const at = Date.parse(event.timestamp ?? '');
+      const balance = creditBalance(limits.credits);
+      if (!newest) {
+        newest = { windows, credits: codexHasCredits(limits.credits), balance, at };
+        // No rate to measure without a time, credits, or a balance that can run out.
+        if (!Number.isFinite(at) || !newest.credits || limits.credits?.unlimited === true || !Number.isFinite(balance)) break;
+        continue;
+      }
+      if (!Number.isFinite(at) || at > newest.at || newest.at - at > CREDIT_BURN_WINDOW_MS) break;
+      if (limits.credits?.has_credits !== true || !Number.isFinite(balance) || balance < newest.balance / 2) break;
+      oldest = { at, balance };
     }
   } catch {
-    return none;
+    if (!newest) return other ?? none; // unreadable file
   }
-  const lines = text.split('\n');
-  for (let i = lines.length - 1; i >= 0; i--) {
-    if (!lines[i].includes('"rate_limits"')) continue;
-    try {
-      const limits = (JSON.parse(lines[i]) as { payload?: { rate_limits?: CodexRateLimits } }).payload?.rate_limits;
-      if (!limits) continue;
-      const out: UsageWindow[] = [];
-      for (const key of ['primary', 'secondary'] as const) {
-        const w = limits[key];
-        if (!w || typeof w.used_percent !== 'number') continue;
-        const mins = w.window_minutes;
-        const name = mins === 300 ? '5-hour' : mins === 10080 ? 'weekly' : mins ? `${mins}-minute` : key;
-        out.push({ name, percent: w.used_percent, ...(typeof w.resets_at === 'number' ? { resetsAt: w.resets_at } : {}) });
-      }
-      if (out.length) return { windows: out, credits: codexHasCredits(limits.credits) };
-    } catch { /* a partial first line in the tail; keep looking */ }
+  if (!newest) return other ?? none;
+  const usage: CodexUsage = { windows: newest.windows, credits: newest.credits };
+  if (oldest && newest.at - oldest.at >= CREDIT_BURN_MIN_SPAN_MS && oldest.balance > newest.balance) {
+    const perMinute = (oldest.balance - newest.balance) / ((newest.at - oldest.at) / 60_000);
+    usage.creditMinutesLeft = newest.balance / perMinute;
   }
-  return none;
+  return usage;
+}
+
+/** Whether a Codex plan's credits will carry the session on: it has some, and they are not about to run out. */
+export function codexCreditsLast(usage: CodexUsage): boolean {
+  return usage.credits && !(usage.creditMinutesLeft !== undefined && usage.creditMinutesLeft < CREDIT_MINUTES_LOW);
 }
 
 /** Windows from the newest `token_count` event in a Codex rollout file. */
@@ -302,8 +392,10 @@ export interface UsageReading {
   /** Epoch milliseconds of the reading. */
   at: number;
   windows: UsageWindow[];
-  /** Codex only: credits keep it working past a full window, so it is never asked to hand off. */
+  /** Codex only: credits keep it working past a full window, so it is not asked to hand off while they last. */
   credits?: boolean;
+  /** Codex only: minutes of credits left at the rate the newest session log shows, when it shows one. */
+  creditMinutesLeft?: number;
 }
 
 /** The newest usage any Claude Code session's status line recorded. */
@@ -339,8 +431,9 @@ function newestFile(dir: string, match: (name: string) => boolean, depth: number
 export function latestCodexReading(home = os.homedir()): UsageReading | undefined {
   const file = newestFile(path.join(home, '.codex', 'sessions'), (n) => n.startsWith('rollout-') && n.endsWith('.jsonl'), 3);
   if (!file) return undefined;
-  const { windows, credits } = codexUsage(file);
-  return windows.length ? { tool: 'Codex', at: fs.statSync(file).mtimeMs, windows, ...(credits ? { credits } : {}) } : undefined;
+  const { windows, credits, creditMinutesLeft } = codexUsage(file);
+  if (!windows.length) return undefined;
+  return { tool: 'Codex', at: fs.statSync(file).mtimeMs, windows, ...(credits ? { credits } : {}), ...(creditMinutesLeft !== undefined ? { creditMinutesLeft } : {}) };
 }
 
 /** The fullest window that has not reset yet. */
@@ -367,9 +460,13 @@ function rearmed(marker: string, now: number): boolean {
   }
 }
 
-export function handoffInstruction(w: UsageWindow): string {
+/** `creditMinutes`: a Codex plan that got this far on credits, with about that many minutes of them left. */
+export function handoffInstruction(w: UsageWindow, creditMinutes?: number): string {
   const pct = Math.round(w.percent);
-  return `Usage is at ${pct}% of the ${w.name} limit. Hand off now so no work is lost: run \`specweave handoff --reason "usage at ${pct}% of the ${w.name} limit"\`, ` +
+  const low = creditMinutes !== undefined;
+  const state = `Usage is at ${pct}% of the ${w.name} limit${low ? ` and credits are running out (about ${Math.max(1, Math.round(creditMinutes))} min left at the current rate)` : ''}.`;
+  const reason = `usage at ${pct}% of the ${w.name} limit${low ? ', credits running out' : ''}`;
+  return `${state} Hand off now so no work is lost: run \`specweave handoff --reason "${reason}"\`, ` +
     `then tell the user in one line that they can say "pick up" in another tool or account to continue, and stop.`;
 }
 
@@ -398,7 +495,8 @@ export interface GuardOutput {
  * Stop-hook output. The first time a session is at or past the threshold in a
  * usage window, it keeps the agent going so it hands off; otherwise `{}`.
  * Also `{}` outside a SpecWeave project (a plain chat has nothing to hand off)
- * and for a Codex plan with credits, which keeps working past the limit.
+ * and for a Codex plan whose credits keep it working past the limit, until
+ * they are about to run out.
  */
 export function usageGuard(input: GuardInput, opts: { home?: string; now?: number; env?: NodeJS.ProcessEnv; platform?: NodeJS.Platform } = {}): GuardOutput {
   const settings = readSettings(opts.home);
@@ -415,7 +513,7 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   // session (terminal only), else the desktop app's samples or Claude Code's
   // own usage cache, whichever is fresher.
   const codex = rollout ? codexUsage(rollout) : undefined;
-  if (codex?.credits) return {};
+  if (codex && codexCreditsLast(codex)) return {};
   let windows = codex ? codex.windows : readClaudeUsage(id, opts.home);
   if (!rollout && !windows.length) windows = claudeFallbackReading({ env: opts.env, home: opts.home, now, platform: opts.platform })?.windows ?? [];
   const top = fullest(windows, now);
@@ -427,7 +525,7 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   } catch {
     return {}; // without the marker it would fire every turn; stay quiet instead
   }
-  if (rollout) return { decision: 'block', reason: handoffInstruction(top) };
+  if (codex) return { decision: 'block', reason: handoffInstruction(top, codex.credits ? codex.creditMinutesLeft : undefined) };
   return {
     hookSpecificOutput: { hookEventName: 'Stop', additionalContext: handoffInstruction(top) },
     systemMessage: `Auto-handoff: usage is at ${Math.round(top.percent)}% of the ${top.name} limit, so this session is handing off. Say "pick up" in another tool or account to continue.`,

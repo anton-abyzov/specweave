@@ -54,9 +54,19 @@ A session is asked **once per usage window**. If you keep working in the same se
 The hook stays quiet in two cases, whatever the percentage:
 
 - **Outside a SpecWeave project.** With no `.specweave/config.json` in the session's folder or above it, there is no increment, ledger or branch to hand off, so a plain chat is never told to run `specweave handoff`.
-- **A Codex plan with credits.** Next to the percentages, Codex logs `credits` (`has_credits`, `balance`, `unlimited`). With a balance above zero, or an unlimited plan, Codex keeps answering after a window reaches 100%, so the session is not asked to stop. `specweave auto-handoff status` says so under the Codex line.
+- **A Codex plan whose credits will last.** Next to the percentages, Codex logs `credits` (`has_credits`, `balance`, `unlimited`). While there is a balance, or the plan is unlimited, Codex keeps answering after a window reaches 100%, so the session is not asked to stop. `specweave auto-handoff status` says so under the Codex line.
 
 Both still save local checkpoints.
+
+Credits are a balance, and a busy day can spend it. Once a window is at the threshold, the hook reads back through the session's log to the balances Codex logged in the hour before its newest one and works out how long the rest lasts at that rate. Under **60 minutes**, a session in a project is asked to hand off once, with "credits are running out (about 8 min left at the current rate)" in the request. What gives no rate, and so never asks:
+
+- balances less than two minutes apart, or a single one;
+- a balance Codex did not report, and an unlimited plan;
+- anything spent before a top-up. The measurement starts again at a record with no credits, or with less than half of the newest balance. A smaller top-up is not noticed and makes the rate look lower for up to an hour.
+
+The estimate needs the session's own log, so a session whose first turn already runs out is not caught. Codex has no failure hook, so in that case its last local checkpoint is what `specweave pickup` offers.
+
+Codex logs more than one limit in a session: the plan's own (`limit_id: "codex"`) and others such as `gpt-reserve`. The hook reads the plan's newest record, however many records of other limits follow it, as far back as the last 64 MB of the log.
 
 ## Desktop, Remote Control and `claude -p` sessions
 
@@ -72,7 +82,7 @@ Neither is guaranteed. Samples come minutes apart and usage can jump from 0% to 
 Usage can jump from under 90% to the limit inside one long turn. Then the turn fails on the limit before the Stop hook can ask.
 
 - **Claude Code** and **Grok Build** fire `StopFailure` with `error: "rate_limit"`. The hook does not need the model: it runs `specweave handoff` itself, with the reason "usage limit reached in claude" (or grok), and pushes as above. It does this at most once per session every five hours, so a retry loop hands off once. It runs even if the 90% handoff already happened, so the handoff carries the latest edits.
-- **Codex** has no failure hook. Its 90% Stop hook is the safety margin; set `--at` lower if your turns are long. Codex skips a new hook until you trust it, and there is no command to approve one: open `codex` in a terminal once after `auto-handoff on` and approve the hook when it asks. Until then a Codex session at 92% just stops.
+- **Codex** has no failure hook. Its 90% Stop hook is the safety margin (on a plan with credits, the one-hour credit estimate above); set `--at` lower if your turns are long. Codex skips a new hook until you trust it, and there is no command to approve one: open `codex` in a terminal once after `auto-handoff on` and approve the hook when it asks. Until then a Codex session at 92% just stops.
 - Outside a SpecWeave project (no `.specweave/config.json` above the folder) the limit hook does nothing, like the 90% hook.
 
 Claude Code also shows the model a note starting "[Usage limit approaching" or "[Usage limit reached" on some plans. `AGENTS.md` tells the agent to treat that note as the handoff moment too, which is the only automatic path in cloud sessions, where there is no status line or user hook.
