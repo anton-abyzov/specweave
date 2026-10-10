@@ -13,7 +13,8 @@
  * limit hands off from the StopFailure hook itself. `--checkpoint-only` keeps
  * only the checkpoints, for plans where credits or a proxy keep working past
  * the limit. Inside SpecWeave Studio the hooks only save the checkpoint:
- * Studio switches provider between turns.
+ * Studio switches provider between turns. The Stop hook also stays quiet
+ * outside a SpecWeave project and for a Codex plan that reports credits.
  *
  * @module cli/commands/auto-handoff
  */
@@ -320,7 +321,9 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
     const ok = !!codex && hasHook(codex, 'Stop', GUARD_COMMAND);
     broken ||= !ok;
     const trusted = codexHookTrusted(home);
-    lines.push(`Codex: ${ok ? `Stop hook in place${trusted ? '' : ' but not approved yet'}` : 'missing Stop hook'}; ${readingLine(latestCodexReading(home), now)}`);
+    const codexReading = latestCodexReading(home);
+    lines.push(`Codex: ${ok ? `Stop hook in place${trusted ? '' : ' but not approved yet'}` : 'missing Stop hook'}; ${readingLine(codexReading, now)}`);
+    if (codexReading?.credits && handsOff(settings)) lines.push('  This Codex plan has credits, which keep it working past the limit, so Codex sessions are not asked to hand off; they still save checkpoints.');
     if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.');
   }
   if (fs.existsSync(path.join(home, '.grok'))) {
