@@ -23,7 +23,7 @@ export default function Studio() {
         </div><StudioProjectMock />
       </header>
 
-      <section className={styles.section} aria-labelledby="umbrella-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">What you use today.<br /><em>Under one roof.</em></h2></div><p>Project agents, personal agents and coding agents each live in their own app and their own vendor’s cloud. Studio runs them side by side on your machines, with one memory, one plan and one record.</p></div>
+      <section className={styles.section} aria-labelledby="umbrella-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">What you use today.<br /><em>Under one roof.</em></h2></div><p>Project agents, personal agents and coding agents each live in their own app and their own vendor’s cloud. Studio offers all three kinds in one workspace on your machines, with one memory, one plan and one record.</p></div>
         <UmbrellaMap />
       </section>
 

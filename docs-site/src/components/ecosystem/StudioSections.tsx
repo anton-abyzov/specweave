@@ -18,7 +18,7 @@ const statusLabel: Record<UmbrellaStatus, string> = { pilot: 'In the pilot', tes
 
 const umbrella: { job: string; instead: string[]; title: string; body: React.ReactNode; gap?: string; status: UmbrellaStatus }[] = [
   { job: 'Project agents', instead: ['Claude Code Projects', 'Codex cloud tasks'], title: 'A coordinator, and workers on any model.', body: 'One conversation per goal. Each worker picks its own provider, model, machine and worktree, and you can step into any of them.', status: 'testing' },
-  { job: 'Personal agents', instead: ['OpenAI Dots', 'xAI Grok Bot', 'Meta Muse'], title: 'Personal projects that keep working.', body: 'A project with its own folder, memory and plan, scheduled routines, and tasks that a webhook can start.', gap: 'Runs while your machine is awake, not in a vendor cloud. No chat-app channels yet.', status: 'testing' },
+  { job: 'Personal agents', instead: ['OpenAI Dots', 'xAI Grok Bot', 'Meta Muse'], title: 'Personal projects that keep working.', body: 'A project with its own folder, memory and plan, scheduled routines, tasks a webhook can start, and an opt-in browser profile with your saved logins.', gap: 'Runs while your machine is awake, not in a vendor cloud. No chat-app channels yet.', status: 'testing' },
   { job: 'Self-hosted agents', instead: ['Hermes Agent', 'OpenClaw'], title: 'Local first, with tools you grant.', body: 'Agents run on your machines. Tools come from local MCP servers you approve one tool at a time, and memory is plain files in the project.', gap: 'No Telegram, WhatsApp or Slack gateway yet.', status: 'testing' },
   { job: 'Coding agents', instead: ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'Copilot'], title: 'Every lab’s official agent.', body: 'Studio drives each provider’s own agent, so its sign-in, approvals and limits apply. Switch a thread to another provider mid-conversation.', status: 'pilot' },
   { job: 'Usage limits', instead: ['One usage page per account'], title: 'Every account’s limits on one screen.', body: 'Resume on the same account when a limit frees up, or let a capacity policy pick a fresh account for new work.', status: 'pilot' },
@@ -31,7 +31,7 @@ export function UmbrellaMap() {
       {umbrella.map(row => <article key={row.job} className={styles.uRow} role="listitem">
         <div className={styles.uJob}>
           <span>{row.job}</span>
-          <div className={styles.uChips} aria-label={`Instead of ${row.instead.join(', ')}`}>{row.instead.map(name => <i key={name}>{name}</i>)}</div>
+          <div className={styles.uChips} aria-label={`Compared with ${row.instead.join(', ')}`}>{row.instead.map(name => <i key={name}>{name}</i>)}</div>
         </div>
         <b className={styles.uArrow} aria-hidden="true">→</b>
         <div className={styles.uStudio}>

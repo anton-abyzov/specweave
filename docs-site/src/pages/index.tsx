@@ -43,7 +43,7 @@ export default function Home() {
       </div>
 
       <section className={base.section} id="umbrella" aria-labelledby="umbrella-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">Many agents.<br /><em>One place to run them.</em></h2></div><p>Every lab now ships a project agent, a personal agent and a coding agent, each in its own app and its own cloud. Studio puts them under one roof on your machines, so each job gets the best model for it, not the one from the app you happen to have open.</p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">Many agents.<br /><em>One place to run them.</em></h2></div><p>Every lab now ships a project agent, a personal agent and a coding agent, each in its own app and its own cloud. Studio gives you all three kinds in one workspace on your machines and runs every lab’s coding agent side by side, so each job gets the model that fits it, not the one from the app you happen to have open.</p></div>
         <UmbrellaMap />
       </section>
 
