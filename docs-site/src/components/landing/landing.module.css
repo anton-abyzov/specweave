@@ -43,6 +43,14 @@
   max-width: 560px;
 }
 
+.heroMock {
+  flex: 1;
+  min-width: 0;
+  max-width: 640px;
+  margin-left: auto;
+  padding-left: 56px;
+}
+
 .releasePill {
   display: inline-flex;
   align-items: center;
@@ -666,6 +674,8 @@
   }
 
   .heroStage::after { display: none; }
+
+  .heroMock { max-width: none; margin: 40px 0 48px; padding: 0; }
 
   .heroPhoto { object-position: 88% center; }
 

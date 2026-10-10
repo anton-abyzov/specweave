@@ -19,6 +19,16 @@ export const DOC_FORMAT_MARKER = 'Doc format v2';
 /** Prior marker — still recognized as "ours" so v1 docs are overwritten, not treated as foreign. */
 export const LEGACY_DOC_FORMAT_MARKER = 'Doc format v1';
 
+/** A `<!-- keep -->…<!-- /keep -->` block survives regeneration of a generated doc. */
+export const KEEP_OPEN_MARKER = '<!-- keep -->';
+export const KEEP_CLOSE_MARKER = '<!-- /keep -->';
+const KEEP_BLOCK_RE = /<!--\s*keep\s*-->[\s\S]*?<!--\s*\/keep\s*-->/g;
+
+/** Every keep block in a document, markers included, in order. */
+export function extractKeepBlocks(text: string): string[] {
+  return (text ?? '').match(KEEP_BLOCK_RE) ?? [];
+}
+
 export const INLINE_BEGIN_MARKER = 'BEGIN HANDOFF';
 export const INLINE_END_MARKER = 'END HANDOFF';
 
@@ -128,6 +138,8 @@ export interface HandoffGitInfo {
 }
 
 export interface HandoffDocInput {
+  /** A local recovery snapshot preserves the active session's ownership. */
+  localCheckpoint?: boolean;
   docPath: string;
   diffPath: string;
   repoRoot: string;
@@ -148,6 +160,8 @@ export interface HandoffDocInput {
   push?: HandoffPushInfo;
   /** Claims this handoff released so the next agent can take them. */
   released?: string[];
+  /** Keep blocks carried over from the previous version of this doc. */
+  keep?: string[];
 }
 
 export interface HandoffPushInfo {
@@ -192,7 +206,7 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
 
   // ── Header ────────────────────────────────────────────────────────────
   const title = inc ? `${inc.id}${inc.title ? ` ${inc.title}` : ''}` : 'no active increment';
-  L.push(`# Handoff — ${title}`);
+  L.push(`# ${input.localCheckpoint ? 'Local checkpoint' : 'Handoff'} — ${title}`);
   const gitBit = input.git.isGitRepo
     ? `branch ${input.git.branch || '(detached)'} @ ${input.git.shortSha || '(no commits)'} · tree: ${input.git.hasUncommittedChanges ? `${uncommittedCount(input.git.statusPorcelain)} uncommitted` : 'clean'}`
     : 'not a git repo';
@@ -201,6 +215,10 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
   L.push(`active claims: ${claims.length ? claims.map((t) => `${t.id} (${t.status} by ${t.by})`).join(', ') : 'none'}${input.released?.length ? ` · released: ${input.released.join(', ')}` : ''}`);
   if (input.push?.warnings.length) L.push(`push: ${input.push.warnings.join('; ')}`);
   L.push('');
+  for (const block of input.keep ?? []) {
+    L.push(block);
+    L.push('');
+  }
 
   // ── Where I left off ──────────────────────────────────────────────────
   L.push('## Where I left off');
@@ -258,7 +276,9 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
 
   // ── Next steps ────────────────────────────────────────────────────────
   L.push('## Next steps');
-  if (input.next) {
+  if (input.localCheckpoint) {
+    L.push('Compare this snapshot with the current checkout and confirm the original session has stopped before restoring any edits. Existing task claims remain owned by their current agents.');
+  } else if (input.next) {
     L.push(input.next);
   } else if (inc?.nextTask) {
     L.push(`\`specweave task claim ${inc.nextTask.id} ${inc.id}\` — ${inc.nextTask.title}`);
@@ -271,8 +291,13 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
 
   // ── Resume ────────────────────────────────────────────────────────────
   L.push('## Resume');
-  L.push('1. `specweave pickup` prints the next task with its acceptance criteria, claims and branch state.');
-  L.push(`2. \`specweave task claim <T-id>${inc ? ` ${inc.id}` : ''}\` → implement → \`specweave task done <T-id> --run "<test>"\`.`);
+  if (input.localCheckpoint) {
+    L.push('1. Read this document and its sibling diff as recovery evidence; inspect the current files and active owners before applying changes.');
+    L.push('2. This is a local checkpoint, not an ownership transfer. Do not run `specweave pickup` to restore it: pickup imports the separate explicit handoff. Restore only reviewed missing edits after confirming the previous writer is no longer active.');
+  } else {
+    L.push('1. `specweave pickup` prints the next task with its acceptance criteria, claims and branch state.');
+    L.push(`2. \`specweave task claim <T-id>${inc ? ` ${inc.id}` : ''}\` → implement → \`specweave task done <T-id> --run "<test>"\`.`);
+  }
   const own = TOOL_RESUME_MATRIX.find((e) => e.id === input.agent.split('@')[0]);
   const transcripts = own ? [own] : TOOL_RESUME_MATRIX.slice(0, 3);
   L.push(`3. Original transcript (optional): ${transcripts.map((e) => `${e.tool}: \`${e.resumeCmd.split('   ')[0]}\``).join(' · ')}.`);
@@ -289,6 +314,9 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
  */
 export function renderPastePrompt(input: HandoffDocInput, opts: { inline?: boolean } = {}): string {
   const P: string[] = [];
+  if (input.localCheckpoint) {
+    return `Inspect the local recovery checkpoint at ${input.docPath} and its diff at ${input.diffPath}. Compare with the current checkout and confirm the previous writer has stopped before restoring edits. This checkpoint does not release task ownership or authorize pickup.`;
+  }
   if (opts.inline) {
     P.push('Resume my work using the self-contained handoff below.');
     P.push(

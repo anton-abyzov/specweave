@@ -33,7 +33,7 @@ export function ScrollStory() {
   return <section ref={ref} className={styles.story} id="how" aria-labelledby="how-title">
     <div ref={introRef} className={styles.storyIntro}>
       {art.ribbon && <img className={styles.introRibbon} src={art.ribbon} alt="" width="1600" height="900" loading="lazy" aria-hidden="true" />}
-      <span className={styles.eyebrow}>01 / How it works</span>
+      <span className={styles.eyebrow}>04 / Switch tools. Keep your place.</span>
       <h2 id="how-title">The work lives in your repo.<br /><em>Tools come and go.</em></h2>
     </div>
     <div className={styles.storyGrid}>

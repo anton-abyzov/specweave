@@ -1,5 +1,5 @@
 ---
-description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "out of tokens", "switching accounts", "pick up" or "continue".
+description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "hand off all", "out of tokens", "switching accounts", "pick up" or "continue".
 argument-hint: "[--reason \"...\"] [--next \"...\"]"
 version: 3.0.0
 ---
@@ -28,15 +28,63 @@ Add `--next "<exact next step>"`, `--gotcha "..."` or `--decision "..."` only fo
 the files cannot tell the next agent. No Git remote and another machine:
 `--inline` prints a prompt to paste instead. `--no-push` keeps it local.
 
-To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code and
-Codex, on their own machine; not in cloud sessions). A session then hands off at 90% of
-the 5-hour or weekly limit (`--at <percent>` to change it); `auto-handoff status` shows
-the current usage. When its Stop hook asks you to hand off, run the handoff it names.
+## Hand off everything (switching accounts with many threads)
+
+When the user switches accounts or tools with several increments in flight ("hand off
+all", "switching subscriptions"), run:
+
+```bash
+specweave handoff --all --reason "<their words>"
+```
+
+It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json`: one row per active
+increment (tasks done/total, open ACs, last activity, what it waits on, a paste-ready
+resume prompt) and, in an umbrella workspace, every checkout under
+`repositories/<org>/<repo>` (and its worktrees) with uncommitted files, unpushed
+commits or a branch with no remote, with its open PR when `gh` is installed. It is
+read-only toward everything else: no claims released, nothing committed or pushed in
+the umbrella or the nested repos. Commit and push the local-only work it lists, or say
+so in your reply. `--dry-run` prints the index without writing it.
+
+A wait is a ledger line `{"t":"*","e":"wait","by":"<you>","at":"<ISO time>","note":"Anton: typed go for the cutover"}`
+or a `Waits on: ...` line in the increment's `handoff.md`; a `wait` with the note
+`resolved` clears the earlier ones.
+
+On the other side, "pick up all" is `specweave pickup --all`: the newest index,
+actionable increments first, then the ones waiting on a person. Start each topic with
+its resume prompt, then `specweave pickup <id>`.
+
+## Your hand-written handoff is kept
+
+`specweave handoff` never overwrites a `handoff.md` that a person wrote (one without the
+`<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it.
+Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next
+`handoff`.
+
+## Hand off by itself
+
+The user runs `specweave auto-handoff on` once (Claude Code, Codex and Grok Build, on
+their own machine; not in cloud sessions). By default (`--mode suggest`) a session that
+reaches 95% of the 5-hour or weekly limit gets a heads-up from the Stop hook: tell the
+user in one line that they can say "hand off", and keep working. Do not hand off on a
+heads-up. With `--mode enforce` the Stop hook instead asks you to hand off: run the
+handoff it names and stop. Neither happens when the full windows reset within 30 minutes
+(`--wait-under`), since waiting is cheaper. In both modes a Claude Code or Grok turn that
+hits the limit outright hands off from a hook. `auto-handoff status` shows the mode, the
+hooks and the last usage reading.
 
 Claude Code also warns the model itself near and at the 5-hour limit, with a note that
-starts "[Usage limit approaching" or "[Usage limit reached". Treat that note as the
-handoff moment: finish the current edit, run `specweave handoff --reason "usage limit"`
-(one command; it needs no summary from you) and stop.
+starts "[Usage limit approaching" or "[Usage limit reached". "Approaching" is a
+heads-up: mention it in one line and keep working. "Reached" is the handoff moment:
+finish the current edit, run `specweave handoff --reason "usage limit"` (one command; it
+needs no summary from you) and stop.
+
+Between handoffs every hook also saves a local checkpoint under
+`~/.specweave/checkpoints/` (no model, network, push or claim change; `pickup` does
+not apply it). `auto-handoff on --checkpoint-only` keeps only those checkpoints, for
+plans where credits or a proxy keep working past the limit. Inside SpecWeave Studio
+(`SPECWEAVE_STUDIO_THREAD_ID` is set) do not hand off on a usage note: Studio switches
+the thread to another provider between turns, and a handoff would release its claims.
 
 ## Pick up
 
@@ -46,6 +94,16 @@ forward to it and applies the handed-off edits (only on a clean tree), then prin
 increment, the next task with its acceptance criteria and any notes. If it reports
 uncommitted changes or a diverged branch, do what it says; never discard the user's
 edits. Then continue with sw-do.
+
+Several sessions can hand off in one project (each increment's handoff, and a session
+that hit the limit in a worktree or with several increments active). `specweave handoff
+list` shows them, newest first, with short ids: an increment's number such as `0874`,
+or the worktree's folder name. When the user names one ("pick up 0874", "pick up the
+studio release"), run `specweave pickup <what they named>`. With none named, `pickup`
+takes the newest and lists the others; say in one line which one you took. If the name
+matches several, it lists them and changes nothing: ask which one, or take the one the
+conversation makes clear. A session handoff's edits are still in its own checkout:
+work there.
 
 ## Notes and the record
 

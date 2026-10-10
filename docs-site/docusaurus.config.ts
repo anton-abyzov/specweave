@@ -187,7 +187,9 @@ const config: Config = {
           routeBasePath: 'docs',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true,
-
+          // The deployment workflow copies the GitHub README here. Keep one
+          // introduction in search, with the old overview URL redirected below.
+          exclude: ['**/_*.{js,jsx,ts,tsx,md,mdx}', '**/_*/**', '**/__tests__/**', 'overview/readme.md'],
         },
         blog: {
           showReadingTime: true,
@@ -201,6 +203,11 @@ const config: Config = {
           postsPerPage: 10,
           blogSidebarTitle: 'Recent posts',
           blogSidebarCount: 5,
+        },
+        sitemap: {
+          // Search results are navigational, not a page we want indexed.
+          // Keep this explicit as well as the rendered noindex directive.
+          ignorePatterns: ['/search', '/search/**'],
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -228,7 +235,7 @@ const config: Config = {
       {
         // Pages removed or merged over time, pointed at the page that replaced them.
         redirects: [
-          {from: '/docs', to: '/docs/overview/introduction'},
+          {from: ['/docs', '/docs/overview'], to: '/docs/overview/introduction'},
           {from: ['/docs/intro', '/docs/quick-start', '/docs/features', '/docs/overview/features', '/docs/guides/life-automation', '/docs/guides/meta-capability'], to: '/docs/overview/introduction'},
           {from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills', '/docs/guides/claude-skills-deep-dive', '/docs/guides/self-improving-skills', '/docs/skills/extensible/self-improving-skills', '/docs/skills/extensible/skill-generation', '/docs/skills/extensible/extensible-skills-guide', '/docs/guides/agent-skills-extensibility-analysis'], to: '/docs/skills/extensible/extensible-skills'},
           {from: ['/docs/guides/skill-development-guidelines', '/docs/skills/skill-development-guidelines'], to: '/docs/skills/extensible/skill-development-guidelines'},
@@ -301,12 +308,13 @@ const config: Config = {
         srcDark: 'img/logo-dark.svg',
       },
       items: [
-        {to: '/product', label: 'Product', position: 'left'},
+        {to: '/studio', label: 'Studio', position: 'left'},
+        {to: '/product', label: 'CLI', position: 'left'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
         {to: '/docs/guides/cross-tool-handoff', label: 'Handoff', position: 'left'},
         {to: '/integrations', label: 'Integrations', position: 'left'},
-        {to: '/blog', label: 'Blog', position: 'left'},
         {href: 'https://verified-skill.com', label: 'Verified Skills', position: 'left'},
+        {to: '/pricing', label: 'Pricing', position: 'right'},
         {type: 'search', position: 'right'},
         {href: 'https://github.com/anton-abyzov/specweave', label: 'GitHub', position: 'right'},
       ],

@@ -19,6 +19,8 @@ const COLUMNS = [
     title: 'Switch tools',
     links: [
       {label: 'Handoff and pickup', to: '/docs/guides/cross-tool-handoff'},
+      {label: 'Claude Code to Codex', to: '/docs/guides/switch-claude-code-to-codex/'},
+      {label: 'Usage limit reached', to: '/docs/guides/claude-code-usage-limit/'},
       {label: 'Claude Code Projects', to: '/docs/guides/claude-code-projects'},
       {label: 'Codex, Grok and others', to: '/docs/integrations/generic-ai-tools'},
       {label: 'Integrations', to: '/integrations'},
@@ -38,6 +40,7 @@ const COLUMNS = [
     links: [
       {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
       {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
+      {label: 'Pricing for teams', to: '/pricing'},
       {label: 'Verified Skills', href: 'https://verified-skill.com'},
       {label: 'Blog', to: '/blog'},
     ],

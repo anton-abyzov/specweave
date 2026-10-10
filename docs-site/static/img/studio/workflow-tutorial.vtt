@@ -1,0 +1,112 @@
+WEBVTT
+
+00:00:00.250 --> 00:00:02.410
+Here is a real SpecWeave workflow
+
+00:00:02.410 --> 00:00:04.570
+in a disposable demo repository.
+
+00:00:04.890 --> 00:00:06.730
+No production code is touched.
+
+00:00:07.130 --> 00:00:07.770
+First,
+
+00:00:07.770 --> 00:00:08.970
+create an increment.
+
+00:00:09.290 --> 00:00:10.570
+Write down the problem,
+
+00:00:10.530 --> 00:00:12.010
+the acceptance criteria,
+
+00:00:12.010 --> 00:00:13.610
+and a task with its exact
+
+00:00:13.610 --> 00:00:14.970
+files and test command.
+
+00:00:15.290 --> 00:00:16.730
+Now claim the task,
+
+00:00:16.730 --> 00:00:18.090
+so ownership is visible.
+
+00:00:18.410 --> 00:00:20.010
+Implement the function and run the
+
+00:00:20.010 --> 00:00:20.730
+tests.
+
+00:00:20.810 --> 00:00:21.770
+In this example,
+
+00:00:21.770 --> 00:00:23.050
+we check a list of numbers
+
+00:00:23.050 --> 00:00:24.210
+and an empty list.
+
+00:00:24.330 --> 00:00:25.530
+Both tests pass.
+
+00:00:25.850 --> 00:00:27.210
+Commit the implementation.
+
+00:00:27.530 --> 00:00:29.450
+Then mark the task done with
+
+00:00:29.410 --> 00:00:30.330
+the test command.
+
+00:00:30.650 --> 00:00:32.650
+SpecWeave runs it again and records
+
+00:00:32.650 --> 00:00:33.370
+the evidence.
+
+00:00:33.610 --> 00:00:34.490
+To stop,
+
+00:00:34.570 --> 00:00:36.370
+create an explicit handoff.
+
+00:00:36.490 --> 00:00:38.250
+This demo uses no push,
+
+00:00:38.290 --> 00:00:39.810
+so everything stays local.
+
+00:00:39.930 --> 00:00:41.370
+We save that handoff and make
+
+00:00:41.370 --> 00:00:43.050
+a clean local clone.
+
+00:00:43.210 --> 00:00:44.770
+Run pickup in the clone.
+
+00:00:44.890 --> 00:00:46.730
+The next task is still there:
+
+00:00:46.890 --> 00:00:48.810
+document the empty-list behavior.
+
+00:00:48.810 --> 00:00:49.610
+The plan,
+
+00:00:49.770 --> 00:00:50.170
+ownership,
+
+00:00:50.210 --> 00:00:52.810
+and evidence travel with the repository.
+
+00:00:52.850 --> 00:00:54.250
+Try the same workflow in your
+
+00:00:54.250 --> 00:00:56.170
+own small project at spec weave
+
+00:00:56.170 --> 00:00:57.050
+dot com.

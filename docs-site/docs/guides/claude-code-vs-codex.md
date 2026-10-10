@@ -43,14 +43,14 @@ The fix is to keep the state of the work in the repository instead of in the cha
 
    Codex gets your edits back and sees the next task with its acceptance criteria, any notes, and the project memory, all in one read.
 
-It works the same way in the other direction, and between two accounts of the same tool. See [Handoff and pickup](/docs/guides/cross-tool-handoff) for the details.
+It works the same way in the other direction, and between two accounts of the same tool. [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/) walks through it step by step, and [Claude Code usage limit reached](/docs/guides/claude-code-usage-limit/) covers your other options when a limit hits.
 
 ## Hand off before the limit, automatically
 
 On your own machine, SpecWeave can do this for you:
 
 ```bash
-specweave auto-handoff on          # hand off at 90% of the 5-hour or weekly window
+specweave auto-handoff on          # heads-up at 95% of the 5-hour or weekly window
 ```
 
 In Claude Code it reads the usage the status line reports. In Codex it reads the rate limits Codex writes to its session log. When usage crosses the threshold, the agent stops once, runs `specweave handoff`, and tells you to say "pick up" in the other tool. Cloud sessions don't expose usage, so there you still say "hand off" yourself.
@@ -79,6 +79,8 @@ Switching isn't only for emergencies. Some teams let one tool implement and the 
 ## See also
 
 - [Handoff and pickup](/docs/guides/cross-tool-handoff)
+- [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/)
+- [Claude Code usage limit reached: what to do next](/docs/guides/claude-code-usage-limit/)
 - [Claude Code Projects and threads](/docs/guides/claude-code-projects)
 - [Codex, Grok Build, Cursor and Gemini CLI](/docs/integrations/generic-ai-tools)
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](/docs/compare/spec-driven-development-tools)

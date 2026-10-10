@@ -2,11 +2,14 @@
 
 > SpecWeave is an open-source CLI (npm package `specweave`, MIT) that keeps AI coding work in git as one short spec.md per piece of work, an append-only task ledger and a handoff. When Claude Code, Codex or another agent hits a usage limit, `specweave handoff` records the state and pushes the uncommitted edits, and `specweave pickup` continues it in Codex, Grok Build, Gemini CLI, Cursor, Copilot or a second account of the same tool. One AGENTS.md of about 760 tokens is the instruction file every agent reads.
 
+SpecWeave Studio (private pilot) is the workspace built on that record: one place for project agents (like Claude Code Projects), personal agents (like OpenAI Dots or Hermes; Studio's Personal projects have memory, plans, scheduled routines and webhook tasks, but no chat-app channels yet) and coding agents. A project has a coordinator and workers, each on its own coding agent and model (Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others), running on machines the user owns, reached over the local network, SSH or Tailscale.
+
 Install: `npm install -g specweave`, then `specweave init` in a repository.
 
 ## Start here
 
 - [What is SpecWeave?](https://spec-weave.com/docs/overview/introduction/): the spec, the ledger and the handoff in one page
+- [SpecWeave Studio](https://spec-weave.com/docs/overview/studio/): every AI agent in one workspace on your own machines
 - [How it works](https://spec-weave.com/docs/overview/how-it-works/): the daily loop from spec to closed increment
 - [Installation](https://spec-weave.com/docs/getting-started/installation/): install, update, uninstall
 - [Your first increment](https://spec-weave.com/docs/getting-started/first-increment/)
@@ -16,9 +19,16 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [Handoff and pickup](https://spec-weave.com/docs/guides/cross-tool-handoff/): continue a task in another tool when a usage limit hits, including auto-handoff at 90 percent
 - [Claude Code Projects and threads](https://spec-weave.com/docs/guides/claude-code-projects/): one thread is one increment
 - [Codex, Grok Build, Cursor and Gemini CLI](https://spec-weave.com/docs/integrations/generic-ai-tools/): what each tool reads
+- [Auto-handoff rules](https://spec-weave.com/docs/guides/auto-handoff/): when SpecWeave hands off by itself at 90 percent of a Claude Code or Codex usage window, and the local checkpoints it saves between turns
+- [Switch from Claude Code to Codex without losing your place](https://spec-weave.com/docs/guides/switch-claude-code-to-codex/): the two commands, what carries over, and switching back
+- [Claude Code usage limit reached: what to do next](https://spec-weave.com/docs/guides/claude-code-usage-limit/): how the five-hour and weekly limits work and every way to keep going
 - [Claude Code vs Codex](https://spec-weave.com/docs/guides/claude-code-vs-codex/): differences that matter day to day, and switching when a limit hits
 - [AGENTS.md vs CLAUDE.md](https://spec-weave.com/docs/guides/agents-md-vs-claude-md/): one instruction file for every coding agent
 - [SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3/): what changed from 2.x and how to upgrade
+
+## Teams
+
+- [Pricing for teams](https://spec-weave.com/pricing/): SpecWeave is free (MIT); private skills on Verified Skill from $20 a month; a $990 founding team pilot that sets up handoff between Claude Code and Codex
 
 ## Reference
 
@@ -27,11 +37,12 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [FAQ](https://spec-weave.com/docs/faq/)
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](https://spec-weave.com/docs/compare/spec-driven-development-tools/)
 - [SpecWeave vs GitHub Spec Kit](https://spec-weave.com/docs/guides/specweave-vs-speckit/)
+- [SpecWeave vs OpenSpec](https://spec-weave.com/docs/compare/specweave-vs-openspec/)
+- [SpecWeave vs the BMAD Method](https://spec-weave.com/docs/compare/specweave-vs-bmad-method/)
 
 ## Skills
 
-- [Verified Skill](https://verified-skill.com): a registry that security-scans agent skills for Claude Code, Codex and other tools before you install them
-- [Claude Code skills, security-scanned](https://verified-skill.com/claude-code-skills): the top-rated skills by category, with install commands
+- [Verified Skill](https://verified-skill.com/): browse agent skills for Claude Code, Codex and other tools and inspect their security-scan evidence before installing
 - [vskill CLI](https://spec-weave.com/docs/skills/vskill-cli/)
 
 ## Optional

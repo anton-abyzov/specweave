@@ -189,7 +189,7 @@ async function route(
   out(`kind        ${decision.kind} (confidence ${decision.kindConfidence.toFixed(2)})`);
   out(`complexity  ${decision.complexity} (confidence ${decision.complexityConfidence.toFixed(2)}) → tier ${decision.tier}`);
   out(`increment   ${decision.needsIncrement.toFixed(2)} probability this needs one`);
-  out(`cost        ${decision.latencyMs} ms · ${formatCost(decision.cost ?? 0)}`);
+  out(`cost        ${decision.latencyMs} ms · ${formatCost(decision.cost)}`);
   const probabilities = formatProbabilities(decision.skillProbabilities);
   if (probabilities) out(`skills      ${probabilities}`);
   return EXIT.ok;
@@ -255,7 +255,7 @@ async function taskTier(
   out(`complexity  ${decision.complexity} (confidence ${decision.confidence.toFixed(2)})`);
   out(`tier        ${decision.tier}`);
   out(`increment   ${decision.needsIncrement.toFixed(2)} probability this needs its own increment`);
-  out(`cost        ${decision.latencyMs} ms · ${formatCost(decision.cost ?? 0)}`);
+  out(`cost        ${decision.latencyMs} ms · ${formatCost(decision.cost)}`);
   return EXIT.ok;
 }
 
@@ -288,7 +288,7 @@ async function guard(
     out(`reason      ${decision.reason}`);
     const probabilities = formatProbabilities(decision.probabilities);
     if (probabilities) out(`scopes      ${probabilities}`);
-    if (!decision.prefiltered) out(`cost        ${decision.latencyMs} ms · ${formatCost(decision.cost ?? 0)}`);
+    if (!decision.prefiltered) out(`cost        ${decision.latencyMs} ms · ${formatCost(decision.cost)}`);
   }
   return decision.verdict === 'deny' ? EXIT.deny : decision.verdict === 'warn' ? EXIT.warn : EXIT.ok;
 }
@@ -382,7 +382,7 @@ function usage(root: string, opts: JevCommandOptions): number {
 
   out(`calls       ${summary.calls}`);
   out(`tokens      ${summary.input_tokens} input`);
-  out(`cost        ${formatCost(summary.cost)}`);
+  out(`cost        ${formatCost(summary.unknownCostCalls ? undefined : summary.cost)}`);
   if (summary.since) out(`since       ${summary.since}`);
   const kinds = Object.entries(summary.byKind).sort((a, b) => b[1] - a[1]);
   for (const [kind, count] of kinds) out(`  ${kind.padEnd(10)} ${count}`);

@@ -1,0 +1,86 @@
+---
+title: "SpecWeave Studio overview: every AI agent in one workspace you own"
+description: "What SpecWeave Studio is: one local workspace for project agents, personal agents and coding agents from every lab, where a coordinator and workers run Claude Code, Codex, Grok and others on machines you own, with memory, plans, routines and SpecWeave handoff."
+---
+
+import StudioProjectMock from '@site/src/components/ecosystem/StudioProjectMock';
+import { CloudCompare, UmbrellaMap } from '@site/src/components/ecosystem/StudioSections';
+
+# SpecWeave Studio
+
+SpecWeave Studio is one workspace for the agents that are otherwise spread across many products: projects like Claude Code Projects, a personal agent like OpenAI Dots or Hermes, and the coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. It runs them as one project on your own machines and gives each job the model that fits it.
+
+You give a project a goal; a coordinator splits it into tasks and hands them to workers. The coordinator and every worker can use a different coding agent and model: Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others. They run on machines you own, next to your code, skills and accounts.
+
+Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the spec, the task evidence and the handoff in git. That record is what lets any agent continue work that another one started.
+
+<StudioProjectMock />
+
+:::info Availability
+Studio is in a private pilot and has no public download yet. Sessions, machines, approvals and usage limits are in the pilot build. Projects (coordinator, workers, memory, plans and routines) are being tested for the next pilot build. [Ask about a pilot](/studio/).
+:::
+
+## One workspace for many agents
+
+Each row is a kind of product you may already use, and the closest thing in Studio. Studio does not run those products; it gives you the same kind of agent on your own machines. The status is Studio's own.
+
+<UmbrellaMap />
+
+Studio is not a cloud service, so a personal project works while the machine running it is awake. It cannot be messaged from Telegram, WhatsApp or Slack yet, has no managed Gmail or Calendar sign-in, and does not connect to remote OAuth MCP servers.
+
+## What a project holds
+
+| Part | What it does |
+|---|---|
+| Coordinator | One long conversation per project. It plans, assigns tasks to workers, reviews what they report and asks you when a decision is yours. |
+| Workers | Native sessions, each with its own provider, model, machine and worktree. You can open any worker and steer it directly. |
+| Memory and settings | Per-project memory and instructions. A decision you give the coordinator reaches every new worker. |
+| Plan (optional) | Spec, acceptance criteria, tasks, assignments and evidence. It can be a native Studio plan or read an existing SpecWeave increment. **Reported done** and **Verified** are separate: a task is verified only when its saved check runs and passes. |
+| Folders and repositories | A main folder on a machine, extra folders you approve, and several repository URLs. Studio clones only when you ask it to, using that machine's own Git sign-in. |
+| Connections | Local MCP servers per project. Studio discovers their tools and you grant each tool explicitly. |
+| Routines | Scheduled work that runs inside the project. |
+| Personal projects | A project with its own working folder and no Git, for research, notes and everyday tasks. |
+
+Pausing and archiving a project are reversible. Deleting one removes its memory, plans and routines but keeps your source folders and remote branches.
+
+## How it differs from cloud project agents
+
+<CloudCompare />
+
+The trade-off is simple. Cloud project agents keep running when every one of your machines is off, and they need no setup. Studio needs the machine that does the work to be awake, and in return it uses your local skills and folders, your existing subscriptions from several vendors, and a record that is not locked inside one product.
+
+## Machines and networking
+
+Studio runs as a small service on each machine, at `localhost:8319`, and you use it from a browser. A desktop app for Mac and Windows is in development.
+
+- **One machine** needs nothing else.
+- **Other machines on your home or office network** can be paired directly once their network access is on.
+- **A machine you already reach over SSH** can be connected through an SSH tunnel that the desktop app opens; it can also start Studio there.
+- **Away from that network**, or from a phone, Tailscale Serve gives private HTTPS to each machine. Studio never uses Tailscale Funnel, which would make it public.
+
+Tailscale is optional. One machine can keep several routes and use the first that answers.
+
+Being reachable is not permission. Every machine and every browser is paired with Studio separately, and native sign-ins for Claude Code, Codex and the others stay on the machine that owns them. See [the architecture and its boundaries](/docs/overview/studio-architecture/).
+
+## Usage limits and handoff
+
+Studio reads the limits of the accounts on each machine. When you start new work, a capacity policy (Reset first, Balanced or Spend first) picks a fresh eligible subscription. When a conversation hits a limit, **Resume when available** continues it on the same account once the provider allows it again.
+
+You can also switch a thread to another provider yourself. Studio passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. Studio does not yet switch on its own when a provider reaches a usage limit. Moving work outside Studio is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in Studio or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point.
+
+## Optional pieces
+
+| Piece | Do you need it? | What it is for |
+|---|---|---|
+| Tailscale | Only for private HTTPS beyond your local network or from a phone | Private HTTPS transport. Studio pairing is still required. |
+| CLIProxyAPI | No | If you already run a CLIProxyAPI hub, Studio can show its pooled accounts' limits and redeem Codex reset credits. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
+| AnyModel | No | An adapter for API and local models that a native agent does not support. |
+| Switch | Optional, part of the pilot install | Reads account sign-in and limit observations on each machine for the capacity policy. |
+
+## Questions
+
+**Will my local skills work?** Yes, on the machine where the agent runs. Studio starts the provider's own agent there with its configuration, so the skills, MCP servers and settings you set up for it apply. A skill on another machine has to be installed on that machine too.
+
+**Is my code sent anywhere new?** No. Folders, sessions and project data stay on the machine. Hosted relay, telemetry and self-update are off by default. Model calls go to the providers you choose, as they would from your terminal.
+
+**Is SpecWeave Studio the same as Skill Studio?** No. `npx vskill studio` opens [Skill Studio](/docs/skills/skill-studio/), which develops and evaluates skills.
