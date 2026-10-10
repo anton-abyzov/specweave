@@ -275,9 +275,12 @@ export function codexHookTrusted(home = os.homedir()): boolean {
   return false;
 }
 
+function span(min: number): string {
+  return min < 60 ? `${min} min` : min < 48 * 60 ? `${Math.round(min / 60)} h` : `${Math.round(min / 1440)} days`;
+}
+
 function ago(ms: number, now: number): string {
-  const min = Math.max(0, Math.round((now - ms) / 60000));
-  return min < 60 ? `${min} min ago` : min < 48 * 60 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} days ago`;
+  return `${span(Math.max(0, Math.round((now - ms) / 60000)))} ago`;
 }
 
 function readingLine(r: UsageReading | undefined, now: number): string {
@@ -333,7 +336,7 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
       const due = !!top && top.percent >= settings.at && !codexCreditsLast({ windows: codexReading.windows, credits: true, creditMinutesLeft: left });
       lines.push(due
         ? `  This Codex plan's credits are running out: about ${Math.max(1, Math.round(left ?? 0))} min left at the current rate, so a session in a project is asked to hand off at its next stop.`
-        : `  This Codex plan has credits, which keep it working past the limit. A session in a project at ${settings.at}% or more is asked to hand off only when its log shows under ${CREDIT_MINUTES_LOW} minutes of credits left at the rate they are being spent${left !== undefined ? ` (about ${Math.round(left)} min now)` : ''}; checkpoints are saved either way.`);
+        : `  This Codex plan has credits, which keep it working past the limit. A session in a project at ${settings.at}% or more is asked to hand off only when its log shows under ${CREDIT_MINUTES_LOW} minutes of credits left at the rate they are being spent${left !== undefined ? ` (about ${span(Math.round(left))} now)` : ''}; checkpoints are saved either way.`);
     }
     if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.');
   }
