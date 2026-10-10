@@ -19,7 +19,7 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup and build
         uses: ./.github/actions/setup-and-build
       - name: Link CLI globally
@@ -30,7 +30,7 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup and build
         uses: ./.github/actions/setup-and-build
       - name: Install headless Chromium for navigation safety tests
@@ -44,7 +44,7 @@ jobs:
     # should not prevent merges or trigger autofix loops
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup and build
         uses: ./.github/actions/setup-and-build
       - name: Link CLI globally
