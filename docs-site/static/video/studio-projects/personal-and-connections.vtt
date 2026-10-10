@@ -1,0 +1,45 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:07.474
+This Personal project uses app-managed storage and starts without a Git repository.
+
+2
+00:00:07.475 --> 00:00:14.822
+Personal projects keep the same project-specific memory, routines and usage views.
+
+3
+00:00:14.822 --> 00:00:22.099
+Its execution device owns the storage. Extra folders and repositories are optional.
+
+4
+00:00:22.099 --> 00:00:29.471
+Add an existing synthetic folder and save its access grant. This does not move the folder.
+
+5
+00:00:29.471 --> 00:00:36.814
+A repository URL can coexist with that folder. Associate the owned local checkout before saving.
+
+6
+00:00:36.814 --> 00:00:44.112
+Match checks the checkout's actual remote identity. This walkthrough performs no network clone.
+
+7
+00:00:44.112 --> 00:00:51.421
+Save a local MCP command separately. This example is an owned, inert discovery fixture.
+
+8
+00:00:51.422 --> 00:00:58.755
+Check discovers MCP tools. It does not verify a Gmail, Calendar or other external service account.
+
+9
+00:00:58.755 --> 00:01:06.172
+Choose and save exactly the tools this project may use. Calls still follow Studio's approval rules.
+
+10
+00:01:06.172 --> 00:01:13.452
+Revoke removes future access. Restoring requires a new discovery check and fresh tool grants.
+
+11
+00:01:13.453 --> 00:01:21.630
+The command runs as the device's user. No external account or AI provider was contacted in this walkthrough.
