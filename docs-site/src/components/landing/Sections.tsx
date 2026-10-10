@@ -39,7 +39,7 @@ export function ScrollStory() {
     <div className={styles.storyGrid}>
       <ol className={styles.storySteps}>
         {beats.map((beat, i) => <li key={beat.id} data-step={i} className={clsx(styles.storyStep, i === active && styles.storyStepActive)}>
-          <span className={styles.stepLabel}>{String(i + 1).padStart(2, '0')} · {beat.label}</span>
+          <span className={styles.stepLabel}>Step {i + 1} · {beat.label}</span>
           <h3>{beat.title}</h3>
           <p>{beat.body}</p>
           <div className={styles.inlinePanel}><StagePanel index={i} /></div>
