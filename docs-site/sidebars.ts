@@ -37,8 +37,9 @@ const sidebars: SidebarsConfig = {
       label: 'Concepts',
       collapsed: false,
       items: [
+        {type: 'doc', id: 'overview/studio', label: 'SpecWeave Studio'},
         {type: 'doc', id: 'overview/how-it-works', label: 'How it works'},
-        {type: 'doc', id: 'overview/studio-architecture', label: 'Studio and the ecosystem'},
+        {type: 'doc', id: 'overview/studio-architecture', label: 'Studio architecture'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'Increments'},
         {type: 'doc', id: 'guides/increment-status-reference', label: 'Increment status'},
         {type: 'doc', id: 'overview/why-specweave', label: 'Why SpecWeave'},
@@ -53,6 +54,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/auto-handoff', label: 'Auto-handoff rules'},
         {type: 'doc', id: 'guides/switch-claude-code-to-codex', label: 'Switch Claude Code to Codex'},
         {type: 'doc', id: 'guides/claude-code-usage-limit', label: 'Usage limit reached'},
+        {type: 'doc', id: 'guides/claude-code-auto-compact', label: 'Auto-compact at 400K'},
         {type: 'doc', id: 'guides/claude-code-projects', label: 'Claude Code Projects'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Codex, Grok and others'},
         {type: 'doc', id: 'guides/claude-code-vs-codex', label: 'Claude Code vs Codex'},

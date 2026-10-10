@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
-import ContinuityBoard from '../components/sections/ContinuityBoard';
-import { LayeredHeroArt, LeanStats, ScrollStory, ThreadMap } from '../components/landing/Sections';
+import { ScrollStory, ThreadMap } from '../components/landing/Sections';
 import { art, tools } from '../components/landing/content';
 import styles from '../components/landing/landing.module.css';
 import base from './continuity.module.css';
 import { ProductMap } from '../components/ecosystem/Architecture';
+import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
+import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
+import { CloudCompare, ProjectFeatures, UmbrellaMap } from '../components/ecosystem/StudioSections';
+import studio from '../components/ecosystem/studio.module.css';
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
@@ -16,43 +19,60 @@ export default function Home() {
     try { await navigator.clipboard.writeText('npm install -g specweave'); setCopied(true); setCopyError(false); }
     catch { setCopyError(true); }
   }
-  return <Layout title="Hand off AI coding work between Claude Code and Codex" description="Out of Claude Code or Codex usage mid-task? SpecWeave keeps your spec, tasks and edits in git, so another agent or account picks up where you stopped.">
+  return <Layout title="Every AI agent in one workspace you own" description="SpecWeave Studio brings project agents like Claude Code Projects, personal agents like Dots or Hermes, and coding agents from every lab into one workspace on your machines. The open-source SpecWeave CLI keeps the spec, evidence and handoff in git.">
     <main className={clsx(base.page, styles.landing)}>
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <Link to="/docs/guides/specweave-3" className={styles.releasePill}><b>3.0</b> One-file specs, handoff and pickup <span aria-hidden="true">↗</span></Link>
-          <h1>Switch tools.<br /><em>Keep your place.</em></h1>
-          <p className={styles.lead}>Software engineering discipline for AI coding, not vibe coding. SpecWeave keeps the spec, the tasks and the proof of done in your repo, so when one tool or subscription runs out, the next one picks up exactly where it stopped.</p>
+          <Link to="/studio" className={styles.releasePill}><b>Studio</b> Projects, personal agents and every coding agent <span aria-hidden="true">↗</span></Link>
+          <h1>Every AI agent.<br /><em>One workspace.</em></h1>
+          <p className={styles.lead}>Projects like Claude Code. A personal agent like Dots or Hermes. Coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. SpecWeave Studio runs them as one project on machines you own, gives each job the model that fits, and keeps the record in git so any agent can carry on.</p>
           <div className={base.actions}>
-            <Link className={base.primary} to="/docs/getting-started">Start with your project <span aria-hidden="true">↗</span></Link>
-            <a className={base.textLink} href="#how">See how it works ↓</a>
+            <Link className={base.primary} to="/studio">See SpecWeave Studio <span aria-hidden="true">↗</span></Link>
+            <Link className={base.textLink} to="/docs/getting-started">Start free with the CLI</Link>
           </div>
           <div className={base.install}><code>npm install -g specweave</code><button onClick={copyCommand} aria-label="Copy installation command">{copied ? 'Copied' : 'Copy'}</button></div>
-          <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'MIT licensed. Local first. No account needed.'}</span>
+          <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'The open-source CLI Studio builds on. MIT, local first, no account.'}</span>
         </div>
-        <LayeredHeroArt />
+        <div className={styles.heroMock}><StudioProjectMock /></div>
       </section>
 
       <div className={styles.tools} aria-label="Works with">
         <span>Works with</span>
         <div className={styles.toolRail}><div>{[...tools, ...tools].map((t, i) => <strong key={i} aria-hidden={i >= tools.length}>{t}</strong>)}</div></div>
-        <Link to="/docs/guides/cross-tool-handoff">AGENTS.md, skills and git ↗</Link>
+        <Link to="/studio">One workspace, any provider ↗</Link>
       </div>
+
+      <section className={base.section} id="umbrella" aria-labelledby="umbrella-title">
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">Many agents.<br /><em>One place to run them.</em></h2></div><p>Every lab now ships a project agent, a personal agent and a coding agent, each in its own app and its own cloud. Studio gives you all three kinds in one workspace on your machines and runs every lab’s coding agent side by side, so each job gets the model that fits it, not the one from the app you happen to have open.</p></div>
+        <UmbrellaMap />
+      </section>
+
+      <section className={base.section} id="projects" aria-labelledby="projects-title">
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>02 / Studio projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it. <span className={studio.badge}>Projects: testing for the next pilot build</span></p></div>
+        <ProjectFeatures />
+        <StudioTutorialVideo />
+      </section>
+
+      <section className={base.section} id="local" aria-labelledby="local-title">
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>03 / Local first</span><h2 id="local-title">Your machines.<br /><em>Not a cloud container.</em></h2></div><p>Cloud project agents are simple to start and live with one vendor. Studio keeps the work where your code, skills and accounts already are, and lets you mix vendors inside one project.</p></div>
+        <CloudCompare />
+        <Link className={base.textLink} to="/docs/overview/studio/">Read the Studio overview ↗</Link>
+      </section>
 
       <ScrollStory />
 
       <section className={base.section} id="ecosystem" aria-labelledby="ecosystem-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>The ecosystem</span><h2 id="ecosystem-title">Clear work.<br /><em>Capable agents.</em></h2></div><p>SpecWeave keeps the delivery record. vskill brings tested expertise. The new SpecWeave Studio pilot connects native coding sessions across your machines.</p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>05 / The stack</span><h2 id="ecosystem-title">One workspace.<br /><em>One record.</em></h2></div><p>Studio is where you work. SpecWeave keeps what survives the session in git. vskill brings tested expertise to every agent.</p></div>
         <ProductMap />
-        <Link className={base.textLink} to="/docs/overview/studio-architecture">See the full architecture, including private Tailscale access ↗</Link>
+        <Link className={base.textLink} to="/docs/overview/studio-architecture/">See the architecture, including how machines connect ↗</Link>
       </section>
 
       <section className={clsx(base.section, styles.threads)} id="threads" aria-labelledby="threads-title">
         <div className={styles.split}>
           <div>
-            <span className={styles.eyebrow}>02 / Parallel work</span>
+            <span className={styles.eyebrow}>06 / Parallel work</span>
             <h2 id="threads-title">One thread.<br /><em>One increment.</em></h2>
-            <p className={styles.body}>A Claude Code Projects thread works on one branch and opens one pull request. So does an increment. SpecWeave maps the two, and keeps everything that matters in git, where every tool and every account can read it.</p>
+            <p className={styles.body}>A Studio worker or a Claude Code Projects thread works on one branch and opens one pull request. So does an increment. SpecWeave maps the two, and keeps everything that matters in git, where every tool and every account can read it.</p>
             <Link className={base.textLink} to="/docs/guides/claude-code-projects">How threads map to increments ↗</Link>
           </div>
           <ThreadMap />
@@ -60,30 +80,9 @@ export default function Home() {
         {art.threads && <img className={styles.wideArt} src={art.threads} alt="" loading="lazy" />}
       </section>
 
-      <section className={clsx(base.section, styles.lean)} aria-labelledby="lean-title">
-        <div className={styles.leanHead}>
-          <div>
-            <span className={styles.eyebrow}>03 / Leaner by default</span>
-            <h2 id="lean-title">Less to read.<br /><em>Every session.</em></h2>
-          </div>
-          <p className={styles.body}>Every token an agent spends rereading bookkeeping is a token it does not spend on your code. 3.0 removes the duplicates and hands the agent only what the current task needs.</p>
-        </div>
-        <LeanStats />
-        {art.lean && <img className={styles.wideArt} src={art.lean} alt="" loading="lazy" />}
-      </section>
-
-      <section className={base.section} id="work">
-        <div className={base.sectionHeading}>
-          <div><span className={styles.eyebrow}>04 / See the work</span><h2>What matters,<br /><em>at a glance.</em></h2></div>
-          <p>See what is moving, what is waiting and what is actually verified. Open an intent to find its spec and the work behind it.</p>
-        </div>
-        <ContinuityBoard />
-        <p className={base.caption}>Example data above. Your dashboard reads your project. Open it with <code>specweave dashboard</code>.</p>
-      </section>
-
       <section className={clsx(base.section, base.connectionSection)}>
         <div>
-          <span className={styles.eyebrow}>05 / Fit your team</span>
+          <span className={styles.eyebrow}>07 / Fit your team</span>
           <h2>Your tracker.<br /><em>On your terms.</em></h2>
           <p>Keep GitHub, Jira or Azure DevOps where your team plans. In 3.0, changing an increment's status no longer creates or closes issues. SpecWeave touches a tracker only when you push to it.</p>
           <Link className={base.textLink} to="/integrations">Explore optional integrations ↗</Link>
@@ -92,7 +91,7 @@ export default function Home() {
       </section>
 
       <section className={clsx(base.section, base.showcaseSection)} id="built-with" aria-labelledby="built-with-title">
-        <div className={base.showcaseHeading}><div><span className={styles.eyebrow}>06 / In practice</span><h2 id="built-with-title">Built with SpecWeave.</h2></div><p>Products where we use the workflow to plan changes, track delivery and carry work between sessions and subscriptions.</p></div>
+        <div className={base.showcaseHeading}><div><span className={styles.eyebrow}>08 / In practice</span><h2 id="built-with-title">Built with SpecWeave.</h2></div><p>Products where we use the workflow to plan changes, track delivery and carry work between sessions and subscriptions.</p></div>
         <div className={base.showcaseProjects}>
           <a href="https://easychamp.com"><span className={base.showcaseCategory}>Sports platforms</span><h3>EasyChamp <span aria-hidden="true">↗</span></h3><p>League and club tools, built across Claude Code threads, two subscriptions and Codex.</p></a>
           <a href="https://jobweave.ai"><span className={base.showcaseCategory}>Career tools</span><h3>JobWeave <span aria-hidden="true">↗</span></h3><p>Job search, tailored resumes, recruiter context and interview preparation.</p></a>
@@ -105,9 +104,9 @@ export default function Home() {
 
       <section className={base.finalCta}>
         <span className={styles.eyebrow}>Your next session can start here</span>
-        <h2>Keep building.<br /><em>Whatever you build with.</em></h2>
-        <Link className={base.primary} to="/docs/getting-started">Get started ↗</Link>
-        <Link className={base.textLink} to="/docs/guides/specweave-3">What's new in 3.0</Link>
+        <h2>Bring every agent.<br /><em>Keep your machines.</em></h2>
+        <Link className={base.primary} to="/studio">Discuss a Studio pilot ↗</Link>
+        <Link className={base.textLink} to="/docs/getting-started">Get started with the CLI</Link>
       </section>
     </main>
   </Layout>;
