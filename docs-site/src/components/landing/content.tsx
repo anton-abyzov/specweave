@@ -13,11 +13,11 @@ export const art = {
   lean: '/img/v3/lean.webp' as string | null,
 };
 
-/**
- * A recorded, real handoff between tools, published under static/evidence/.
- * Set this once docs-site/static/evidence/handoff-3.0.html exists; the story shows it after the last beat.
- */
-export const handoffEvidence: { href: string; summary: string } | null = null;
+/** A recorded, real handoff between tools, published under static/evidence/; the story shows it after the last beat. */
+export const handoffEvidence: { href: string; summary: string } | null = {
+  href: '/evidence/handoff-3.0.html',
+  summary: 'A real EasyChamp increment, padel player stats: 5 of 5 tasks and 8 of 8 acceptance criteria done, handed off twice between a laptop session and a Claude thread. The report is the raw output of specweave report.',
+};
 
 export const tools = ['Claude Code', 'Claude Code Projects', 'Codex', 'Grok Build', 'Cursor', 'Gemini CLI', 'GitHub Copilot', 'OpenCode'];
 
