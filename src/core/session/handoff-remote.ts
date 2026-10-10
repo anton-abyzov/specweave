@@ -145,7 +145,8 @@ export function pushHandoff(repoRoot: string, meta: HandoffMeta, opts: PushOptio
 }
 
 export interface PickupApplyResult {
-  status: 'none' | 'applied' | 'here' | 'already' | 'dirty' | 'diverged' | 'failed';
+  /** `elsewhere`: the pushed handoff belongs to another increment than the one asked for; nothing changed. */
+  status: 'none' | 'applied' | 'here' | 'already' | 'dirty' | 'diverged' | 'failed' | 'elsewhere';
   /** Plain-language summary for the user (empty for `none`). */
   message: string;
   snapshot?: string;
@@ -168,6 +169,17 @@ export interface ApplyOptions {
   remote?: string;
   /** Only report what would happen. */
   dryRun?: boolean;
+  /** Apply the pushed handoff only when it is this increment's (`0874` or the folder name). */
+  increment?: string;
+}
+
+/** Does a snapshot's `Handoff-Increment` name the increment the user asked for? */
+export function sameIncrement(snapshotIncrement: string | undefined, wanted: string): boolean {
+  if (!snapshotIncrement) return false;
+  const a = snapshotIncrement.toLowerCase();
+  const b = wanted.trim().toLowerCase();
+  const number = /^\d{1,4}$/.test(b) ? b.padStart(4, '0') : undefined;
+  return a === b || a.startsWith(`${b}-`) || (number !== undefined && a.slice(0, 4) === number);
 }
 
 export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupApplyResult {
@@ -187,6 +199,13 @@ export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupA
   const who = `${meta.by ?? 'someone'}${meta.at ? ` ${ago(meta.at)}` : ''}${meta.reason ? ` (${meta.reason})` : ''}`;
   const base: Pick<PickupApplyResult, 'snapshot' | 'meta'> = { snapshot, meta };
   if (pickedUp(repoRoot).includes(snapshot)) return { ...base, status: 'already', message: '' };
+  if (opts.increment && !sameIncrement(meta.increment, opts.increment)) {
+    const theirs = meta.increment ? `increment ${meta.increment}` : 'no increment';
+    return {
+      ...base, status: 'elsewhere',
+      message: `The handoff pushed by ${who} is for ${theirs}, so it was left as it is${meta.increment ? `; \`specweave pickup ${meta.increment.match(/^\d{4}/)?.[0] ?? meta.increment}\` takes it` : ''}.`,
+    };
+  }
   const remember = () => { if (!opts.dryRun) rememberPickup(repoRoot, snapshot); };
 
   const parent = git(['rev-parse', `${snapshot}^`]);

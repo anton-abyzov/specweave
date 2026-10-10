@@ -188,3 +188,20 @@ describe('renderPastePrompt', () => {
     expect(p.indexOf(INLINE_BEGIN_MARKER)).toBeLessThan(p.indexOf(INLINE_END_MARKER));
   });
 });
+
+
+describe('automatic checkpoint recovery guidance', () => {
+  it('keeps recovery separate from ownership transfer and explicit pickup', () => {
+    const input = baseInput({ localCheckpoint: true });
+    const doc = renderHandoffDoc(input);
+    expect(doc).toContain('# Local checkpoint');
+    expect(doc).toContain('confirm the original session has stopped');
+    expect(doc).toContain('Existing task claims remain owned');
+    expect(doc).toContain('Do not run `specweave pickup` to restore it');
+    expect(doc).not.toContain('specweave task claim');
+    const prompt = renderPastePrompt(input);
+    expect(prompt).toContain(input.docPath);
+    expect(prompt).toContain('does not release task ownership or authorize pickup');
+    expect(prompt).not.toContain('run `specweave pickup`');
+  });
+});

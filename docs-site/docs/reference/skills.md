@@ -1,6 +1,6 @@
 ---
 sidebar_position: 3
-title: Skills
+title: SpecWeave CLI skills reference
 description: The SpecWeave 3.0 skill set, how to invoke each skill in Claude Code, Codex and other tools, and the plain words that trigger them.
 ---
 

@@ -4,14 +4,16 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'  # Matches v1.0.0, v1.0.0-rc.1, etc.
+  # Release from GitHub alone (Actions tab or `gh workflow run release.yml`):
+  # bumps the version on develop, commits, tags and publishes. No local tag push.
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 0.7.1, 0.8.0, 1.0.0-rc.1)'
-        required: true
+        description: 'Exact version (e.g. 3.1.0, 3.1.0-rc.1). Empty bumps by version_type. The current package.json version releases it as is.'
+        required: false
         type: string
       version_type:
-        description: 'Version bump type (ignored if version contains -rc or -beta)'
+        description: 'Bump used when version is empty'
         required: false
         type: choice
         default: 'patch'
@@ -20,6 +22,15 @@ on:
           - minor
           - major
           - prerelease
+      dry_run:
+        description: 'Bump, build and pack only: push nothing, publish nothing'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -35,6 +46,12 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Only develop can publish from a manual run
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run && github.ref != 'refs/heads/develop'
+        run: |
+          echo "::error::Run the release from develop (got $GITHUB_REF), or tick dry_run."
+          exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -56,6 +73,53 @@ jobs:
         run: |
           npm install --ignore-scripts
           npm run setup
+
+      # Bump before building so the build, version check and tarball gate all
+      # see the release version. The `version` npm script writes the CHANGELOG
+      # heading and stamps the plugin and marketplace manifests.
+      - name: Bump version, commit and tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          REQUESTED: ${{ inputs.version }}
+          VERSION_TYPE: ${{ inputs.version_type }}
+        run: |
+          REQUESTED="${REQUESTED#v}"
+          CURRENT=$(node -p "require('./package.json').version")
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
+          if [ -n "$REQUESTED" ] && [ "$REQUESTED" = "$CURRENT" ]; then
+            echo "Releasing package.json version $CURRENT as is"
+          else
+            HAD_UNRELEASED=false
+            head -1 CHANGELOG.md | grep -q '^## \[Unreleased\]' && HAD_UNRELEASED=true
+            npm version "${REQUESTED:-$VERSION_TYPE}" --no-git-tag-version --ignore-scripts=false
+            NEW=$(node -p "require('./package.json').version")
+            # No [Unreleased] notes: list the commits since the last tag in
+            # place of the "- Patch release" placeholder.
+            if [ "$HAD_UNRELEASED" = false ]; then
+              git log --no-merges --format='- %s' ${LAST_TAG:+"$LAST_TAG"..HEAD} | head -30 > /tmp/commits.md
+              if [ -s /tmp/commits.md ]; then
+                node -e "
+                  const fs = require('fs');
+                  const notes = fs.readFileSync('/tmp/commits.md', 'utf8').trimEnd();
+                  const log = fs.readFileSync('CHANGELOG.md', 'utf8');
+                  fs.writeFileSync('CHANGELOG.md', log.replace('\n\n- Patch release\n', '\n\n' + notes + '\n'));
+                "
+              fi
+            fi
+            git add package.json package-lock.json CHANGELOG.md plugins/specweave/.claude-plugin/plugin.json .claude-plugin/marketplace.json
+            git commit -m "Release $NEW"
+          fi
+          VERSION=$(node -p "require('./package.json').version")
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            if [ "$(git rev-list -n 1 "v$VERSION")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::Tag v$VERSION already exists on another commit"
+              exit 1
+            fi
+            echo "Tag v$VERSION already on HEAD (re-run)"
+          else
+            git tag -a "v$VERSION" -m "v$VERSION"
+          fi
+          git log --oneline -1
 
       - name: Build project
         run: npm run build
@@ -100,6 +164,7 @@ jobs:
           echo "✅ Version verified: $PKG_VERSION"
 
       - name: Auto-generate CHANGELOG if needed
+        if: github.event_name == 'push'
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
@@ -115,24 +180,13 @@ jobs:
             fi
             TEMP_FILE=$(mktemp)
             {
-              echo "# Changelog"
-              echo ""
-              echo "All notable changes to SpecWeave will be documented in this file."
-              echo ""
-              echo "---"
-              echo ""
               echo "## [$VERSION] - $(date +%Y-%m-%d)"
               echo ""
-              echo "### Changes"
               echo "$COMMITS" | sed 's/^[a-f0-9]* /- /'
               echo ""
-              echo "---"
-              echo ""
-              tail -n +7 CHANGELOG.md
+              cat CHANGELOG.md
             } > "$TEMP_FILE"
             mv "$TEMP_FILE" CHANGELOG.md
-            git add CHANGELOG.md
-            git commit -m "docs: auto-generate CHANGELOG entry for $VERSION" || true
           fi
 
       - name: Extract release notes
@@ -143,25 +197,21 @@ jobs:
           awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
           cat /tmp/release-notes.md
 
-      - name: Bump version and commit (workflow_dispatch only)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Prevent an older stable release from replacing npm latest
         env:
-          VERSION: ${{ github.event.inputs.version }}
-          VERSION_TYPE: ${{ github.event.inputs.version_type }}
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: node scripts/release/guard-publish-version.mjs "$VERSION"
+
+      # Push before publishing: a rejected push (develop moved on) stops the
+      # run with nothing on npm. If the publish then fails, re-run with
+      # version set to this version; the existing tag on HEAD is reused.
+      - name: Push release commit and tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
         run: |
-          # If specific version provided, use it; otherwise bump
-          if [ -n "$VERSION" ] && [ "$VERSION" != "" ]; then
-            npm version "$VERSION" --no-git-tag-version --ignore-scripts=false
-          else
-            npm version "$VERSION_TYPE" --no-git-tag-version --ignore-scripts=false
-          fi
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to $NEW_VERSION"
-          git tag "v$NEW_VERSION"
-          git push origin develop
-          git push origin "v$NEW_VERSION"
-          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          git push origin HEAD:develop
+          git push origin "v$VERSION"
 
       - name: Check if version already published
         id: check-published
@@ -188,10 +238,15 @@ jobs:
         if: steps.check-published.outputs.already_published != 'true'
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           npm --version
+          if [ "$DRY_RUN" = "true" ]; then
+            npm publish --access public --dry-run --tag dry-run
+            exit 0
+          fi
           # Check if it's a prerelease version
-          if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
+          if [[ "${VERSION%%+*}" == *"-"* ]]; then
             echo "Publishing prerelease version with 'next' tag..."
             npm publish --access public --tag next
           else
@@ -202,11 +257,17 @@ jobs:
       # npm can accept an upload while registry processing still returns 404.
       # A successful publish command is not yet a publicly installable release.
       - name: Verify public package and clean CLI installation
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: node scripts/release/verify-package-install.mjs --published "$VERSION"
 
+      - name: Verify the packed CLI installs cleanly (dry run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: node scripts/release/verify-package-install.mjs
+
       - name: Create GitHub Release
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}
@@ -217,7 +278,7 @@ jobs:
             exit 0
           fi
           # Check if it's a prerelease (contains -rc, -beta, -alpha)
-          if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
+          if [[ "${VERSION%%+*}" == *"-"* ]]; then
             gh release create "v$VERSION" \
               --title "v$VERSION" \
               --notes-file /tmp/release-notes.md \
@@ -230,7 +291,7 @@ jobs:
           fi
 
       - name: Success notification
-        if: success()
+        if: success() && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |

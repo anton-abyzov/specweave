@@ -43,7 +43,7 @@ const SHELL_WRITE_REDIRECT = /(?:^|[^0-9&>])>{1,2}\s*(?![&|])(?!\/dev\/null)["'$
 
 /** Ledger event keys, in the order `formatLedgerLine` writes them. */
 const LEDGER_KEY_ORDER = ['t', 'e', 'by', 'at', 'note', 'evidence'];
-const LEDGER_EVENTS = new Set(['claim', 'done', 'release', 'block', 'skip', 'note']);
+const LEDGER_EVENTS = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'wait']);
 
 function parseFrontmatter(content) {
   const m = content.match(/^---\n([\s\S]*?)\n---\n/);

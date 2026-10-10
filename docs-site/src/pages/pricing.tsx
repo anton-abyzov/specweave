@@ -46,7 +46,7 @@ const PLANS = [
     lead: 'Two weeks to get a whole team onto one workflow that survives a usage limit.',
     features: [
       'SpecWeave set up in one of your repositories, with your AGENTS.md written',
-      'Auto-handoff between Claude Code and Codex for every engineer',
+      'Explicit handoff between Claude Code and Codex, plus local recovery checkpoints',
       "Your shared prompts moved into a private skill repository",
       'A live handoff drill with your team, then a written report',
       'Three months of Verified Skill Team for 5 seats included',
@@ -89,14 +89,15 @@ export default function Pricing() {
         <h2>What a pilot looks like</h2>
         <table><thead><tr><th>When</th><th>What happens</th></tr></thead><tbody>
           <tr><td>Day 1</td><td>A call to pick the repository and the work in flight. We read your current CLAUDE.md, AGENTS.md and prompts.</td></tr>
-          <tr><td>Days 2 to 5</td><td>SpecWeave goes in on a branch you review: one AGENTS.md every tool reads, specs for the work in flight, auto-handoff on for each engineer's tools.</td></tr>
+          <tr><td>Days 2 to 5</td><td>SpecWeave goes in on a branch you review: one AGENTS.md every tool reads, specs for the work in flight, local recovery checkpoints and an explicit handoff workflow.</td></tr>
           <tr><td>Days 6 to 9</td><td>Shared prompts become skills in a private repository, installed with one command into Claude Code and Codex.</td></tr>
           <tr><td>Day 10</td><td>The drill: an engineer runs out of Claude Code mid-task and Codex picks it up from the handoff. You get the HTML evidence report.</td></tr>
         </tbody></table>
 
         <h2>Questions teams ask</h2>
+        <details><summary>Is SpecWeave Studio included?</summary><p><Link to="/studio">SpecWeave Studio</Link> is the workspace on top of SpecWeave: projects with a coordinator and workers on any provider, running on your own machines. It is in a private pilot. Founding pilot teams can ask to evaluate it alongside the workflow; Studio scope and terms are agreed separately from the prices above.</p></details>
         <details><summary>Do we need the pilot to use SpecWeave?</summary><p>No. <code>npm install -g specweave</code> and the <Link to="/docs/getting-started">quick start</Link> are enough for one developer. The pilot is for teams that want it set up across several people and tools at once.</p></details>
-        <details><summary>What triggers a handoff automatically?</summary><p><code>specweave auto-handoff on</code> hands off when a usage window passes 90 percent, or a threshold you pick. The next tool runs <code>specweave pickup</code>. Details in <Link to="/docs/guides/cross-tool-handoff">handoff and pickup</Link>.</p></details>
+        <details><summary>What triggers a handoff automatically?</summary><p><code>specweave auto-handoff on</code> hands off when a usage window passes 90 percent, or a threshold you pick, and saves local checkpoints between turns. The next tool runs <code>specweave pickup</code>. Details in <Link to="/docs/guides/auto-handoff">auto-handoff rules</Link>.</p></details>
         <details><summary>Where does our code go?</summary><p>Nowhere new. Specs, the ledger and handoffs are files in your repository. Private skills live in your own GitHub repositories; Verified Skill syncs and scans them for install.</p></details>
         <details><summary>How do we pay?</summary><p>Verified Skill plans are paid by card on <a href="https://verified-skill.com/pricing">verified-skill.com</a>. The pilot is invoiced once you have picked a start date.</p></details>
       </div>
