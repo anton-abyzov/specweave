@@ -54,6 +54,27 @@ function rollout(primary: number, secondary: number, credits?: Record<string, un
   return file;
 }
 
+/** One `token_count` line as Codex logs it: a limit bucket, its weekly window and the credits beside it. */
+function codexEvent(minutesAgo: number, weekly: number, credits?: Record<string, unknown> | null, bucket: { limit_id?: string | null; limit_name?: string } = { limit_id: 'codex' }): string {
+  return JSON.stringify({
+    timestamp: new Date(NOW - minutesAgo * 60_000).toISOString(), type: 'event_msg',
+    payload: {
+      type: 'token_count', info: null,
+      rate_limits: { ...bucket, primary: { used_percent: weekly, window_minutes: 10080, resets_at: LATER + 86400 }, secondary: null, credits: credits ?? null, plan_type: 'pro' },
+    },
+  });
+}
+
+function rolloutOf(name: string, lines: string[]): string {
+  const file = path.join(home, '.codex', 'sessions', '2026', '09', '25', `rollout-2026-09-25T19-00-00-${name}.jsonl`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, [JSON.stringify({ type: 'session_meta', payload: { id: name } }), ...lines].join('\n') + '\n');
+  return file;
+}
+
+const credits = (balance: number) => ({ has_credits: true, unlimited: false, balance: balance.toFixed(10) });
+const RESERVE = { limit_id: 'base_model_inference', limit_name: 'gpt-reserve' };
+
 beforeEach(() => {
   vi.clearAllMocks();
   delete process.env.SPECWEAVE_STUDIO_THREAD_ID;
@@ -250,6 +271,67 @@ describe('usage guard', () => {
     }
   });
 
+  it('Codex: reads the plan limit, not another bucket that logged later', () => {
+    writeSettings({ at: 90 }, home);
+    const none = { has_credits: false, unlimited: false, balance: '0' };
+    // A session at 95% with no credits; Codex then logs its gpt-reserve bucket at 0% and a window-less premium one.
+    const hidden = rolloutOf('hidden', [
+      codexEvent(6, 95, none),
+      codexEvent(5, 0, none, RESERVE),
+      JSON.stringify({ timestamp: new Date(NOW).toISOString(), type: 'event_msg', payload: { type: 'token_count', rate_limits: { limit_id: 'premium', primary: null, secondary: null, credits: none } } }),
+    ]);
+    expect(codexUsage(hidden)).toEqual({ windows: [{ name: 'weekly', percent: 95, resetsAt: LATER + 86400 }], credits: false });
+    expect(usageGuard({ cwd: proj, session_id: 'hidden', transcript_path: hidden }, { home, now: NOW }).reason).toContain('95% of the weekly limit');
+
+    // The reserve bucket has no credits of its own; the plan's credits still count.
+    const reserve = rolloutOf('reserve', [codexEvent(6, 100, credits(48664)), codexEvent(5, 92, none, RESERVE)]);
+    expect(codexUsage(reserve)).toMatchObject({ windows: [{ name: 'weekly', percent: 100 }], credits: true });
+    expect(usageGuard({ cwd: proj, session_id: 'reserve', transcript_path: reserve }, { home, now: NOW })).toEqual({});
+
+    // An older Codex without limit_id, and a tail that only holds another bucket.
+    expect(codexUsage(rolloutOf('plain', [codexEvent(5, 91, null, {})])).windows[0].percent).toBe(91);
+    expect(codexUsage(rolloutOf('only', [codexEvent(5, 40, none, RESERVE)])).windows[0].percent).toBe(40);
+  });
+
+  it('Codex: credits that are about to run out do ask, once', () => {
+    writeSettings({ at: 90 }, home);
+    // 2,400 credits gone in 30 minutes: the 600 left last about 7.5 minutes.
+    const low = rolloutOf('low', [codexEvent(70, 100, credits(9000)), codexEvent(30, 100, credits(3000)), codexEvent(12, 100, credits(1500)), codexEvent(0, 100, credits(600))]);
+    expect(codexUsage(low).creditMinutesLeft).toBeCloseTo(7.5, 5);
+    const res = usageGuard({ cwd: proj, session_id: 'low', transcript_path: low }, { home, now: NOW });
+    expect(res.decision).toBe('block');
+    expect(res.reason).toContain('Usage is at 100% of the weekly limit and credits are running out (about 8 min left at the current rate).');
+    expect(res.reason).toContain('specweave handoff --reason "usage at 100% of the weekly limit, credits running out"');
+    expect(usageGuard({ cwd: proj, session_id: 'low', transcript_path: low }, { home, now: NOW })).toEqual({});
+    // Outside a project there is still nothing to hand off.
+    expect(usageGuard({ cwd: home, session_id: 'low2', transcript_path: low }, { home, now: NOW })).toEqual({});
+    // Under the threshold the plan itself still has room; credits are not being spent yet.
+    const early = rolloutOf('early', [codexEvent(30, 70, credits(3000)), codexEvent(0, 80, credits(600))]);
+    expect(usageGuard({ cwd: proj, session_id: 'early', transcript_path: early }, { home, now: NOW })).toEqual({});
+  });
+
+  it('Codex: a healthy, refilled, unlimited or unmeasured credit balance stays quiet', () => {
+    writeSettings({ at: 90 }, home);
+    const stays = (name: string, lines: string[], minutes?: number) => {
+      const file = rolloutOf(name, lines);
+      const usage = codexUsage(file);
+      expect(usage.credits, name).toBe(true);
+      if (minutes === undefined) expect(usage.creditMinutesLeft, name).toBeUndefined();
+      else expect(usage.creditMinutesLeft, name).toBeCloseTo(minutes, 5);
+      expect(usageGuard({ cwd: proj, session_id: name, transcript_path: file }, { home, now: NOW }), name).toEqual({});
+    };
+    // 1,000 credits in 30 minutes with 48,000 left: a day of work.
+    stays('healthy', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))], 1440);
+    // Topped up inside the hour: the fall before it says nothing about what is left.
+    stays('refilled', [codexEvent(40, 100, credits(300)), codexEvent(20, 100, credits(60000)), codexEvent(0, 100, credits(59000))]);
+    // Balances seconds apart jitter; they are not a rate.
+    stays('jitter', [codexEvent(1, 100, credits(700)), codexEvent(0, 100, credits(600))]);
+    // Only balances from the last hour count.
+    stays('stale', [codexEvent(90, 100, credits(5000)), codexEvent(0, 100, credits(600))]);
+    stays('single', [codexEvent(0, 100, credits(600))]);
+    stays('unlimited', [codexEvent(30, 100, { has_credits: true, unlimited: true, balance: '3000' }), codexEvent(0, 100, { has_credits: true, unlimited: true, balance: '600' })]);
+  });
+
   it('asks nothing outside a SpecWeave project: a plain chat has nothing to hand off', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
@@ -358,6 +440,17 @@ describe('specweave auto-handoff status', () => {
     expect(latestCodexReading(home)?.credits).toBe(true);
   });
 
+  it('says when Codex credits are about to run out', async () => {
+    fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
+    await quiet(() => autoHandoffCommand('on', { home }));
+    rolloutOf('low', [codexEvent(30, 100, credits(3000)), codexEvent(0, 100, credits(600))]);
+    const lines = autoHandoffStatus(home);
+    const at = lines.findIndex((l) => l.startsWith('Codex: '));
+    expect(lines[at + 1]).toContain("This Codex plan's credits are running out: about 8 min left");
+    rolloutOf('low', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))]);
+    expect(autoHandoffStatus(home)[at + 1]).toContain('under 60 minutes of credits left at the rate they are being spent (about 1440 min now)');
+  });
+
   it('names checkpoint-only mode', async () => {
     await quiet(() => autoHandoffCommand('on', { home, checkpointOnly: true }));
     expect(autoHandoffStatus(home, NOW)[0]).toMatch(/^Auto-handoff is on in checkpoint-only mode/);
@@ -425,6 +518,31 @@ describe('specweave auto-handoff status', () => {
 });
 
 describe('specweave statusline', () => {
+  async function statusLine(cwd: string): Promise<string> {
+    // The status line compares reset times with the real clock.
+    const soon = Math.floor(Date.now() / 1000) + 3600;
+    const input = JSON.stringify({
+      ...claudeStatus('s8', 95), workspace: { current_dir: cwd },
+      rate_limits: { five_hour: { used_percentage: 95, resets_at: soon }, seven_day: { used_percentage: 10, resets_at: soon } },
+    });
+    const stdin = process.stdin;
+    const { Readable } = await import('stream');
+    Object.defineProperty(process, 'stdin', { value: Readable.from([Buffer.from(input)]), configurable: true });
+    try {
+      return await quiet(() => statuslineCommand({ home }));
+    } finally {
+      Object.defineProperty(process, 'stdin', { value: stdin, configurable: true });
+    }
+  }
+
+  it('says "hand off" only where the Stop hook would ask: inside a project', async () => {
+    writeSettings({ at: 90 }, home);
+    expect(await statusLine(proj)).toBe('proj · Opus · 5-hour 95% · weekly 10% · hand off\n');
+    const plain = path.join(home, 'elsewhere');
+    fs.mkdirSync(plain);
+    expect(await statusLine(plain)).toBe('elsewhere · Opus · 5-hour 95% · weekly 10%\n');
+  });
+
   it('records usage and passes the same input to a wrapped status line', async () => {
     const input = JSON.stringify(claudeStatus('s9', 42));
     const stdin = process.stdin;
