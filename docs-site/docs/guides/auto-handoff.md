@@ -58,9 +58,15 @@ The hook stays quiet in two cases, whatever the percentage:
 
 Both still save local checkpoints.
 
-Credits are a balance, and a busy day can spend it. The hook reads the balances Codex logged in the session over the last hour and works out how long the rest lasts at that rate. Under **60 minutes**, a session in a project is asked to hand off once, with "credits are running out (about 8 min left at the current rate)" in the request. A balance that went up (a top-up), balances less than two minutes apart, and an unlimited plan give no rate, so they never ask. The estimate needs the session's own log: a session whose first turn already runs out is not caught, and Codex has no failure hook, so its last local checkpoint is what `specweave pickup` offers.
+Credits are a balance, and a busy day can spend it. Once a window is at the threshold, the hook reads back through the session's log to the balances Codex logged in the hour before its newest one and works out how long the rest lasts at that rate. Under **60 minutes**, a session in a project is asked to hand off once, with "credits are running out (about 8 min left at the current rate)" in the request. What gives no rate, and so never asks:
 
-Codex logs more than one limit in a session: the plan's own (`limit_id: "codex"`) and others such as `gpt-reserve`. The hook reads the plan's, whichever was logged last.
+- balances less than two minutes apart, or a single one;
+- a balance Codex did not report, and an unlimited plan;
+- anything spent before a top-up. The measurement starts again at a record with no credits, or with less than half of the newest balance. A smaller top-up is not noticed and makes the rate look lower for up to an hour.
+
+The estimate needs the session's own log, so a session whose first turn already runs out is not caught. Codex has no failure hook, so in that case its last local checkpoint is what `specweave pickup` offers.
+
+Codex logs more than one limit in a session: the plan's own (`limit_id: "codex"`) and others such as `gpt-reserve`. The hook reads the plan's newest record, however many records of other limits follow it, as far back as the last 64 MB of the log.
 
 ## Desktop, Remote Control and `claude -p` sessions
 

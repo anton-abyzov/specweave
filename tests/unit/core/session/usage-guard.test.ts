@@ -310,6 +310,41 @@ describe('usage guard', () => {
     expect(usageGuard({ cwd: proj, session_id: 'early', transcript_path: early }, { home, now: NOW })).toEqual({});
   });
 
+  it('Codex: a small top-up does not hide a balance that is still running out', () => {
+    writeSettings({ at: 90 }, home);
+    // 50 credits a minute before and after a top-up of 2,000: the 2,300 left last 46 minutes.
+    const file = rolloutOf('partial', [codexEvent(55, 100, credits(3000)), codexEvent(10, 100, credits(750)), codexEvent(9, 100, credits(2750)), codexEvent(0, 100, credits(2300))]);
+    expect(codexUsage(file).creditMinutesLeft).toBeCloseTo(46, 5);
+    expect(usageGuard({ cwd: proj, session_id: 'partial', transcript_path: file }, { home, now: NOW }).reason).toContain('about 46 min left');
+  });
+
+  it('Codex: reads back through a long log, past large lines and other buckets', () => {
+    writeSettings({ at: 90 }, home);
+    const none = { has_credits: false, unlimited: false, balance: '0' };
+    // Tool output with multi-byte text between records, 400 KB a line: 4 MB between the two balances, four chunks.
+    const bulk = (i: number) => JSON.stringify({ type: 'response_item', payload: { type: 'function_call_output', output: `${i} "rate_limits" ` + 'é漢🙂 '.repeat(40_000) } });
+    const lines = [codexEvent(30, 100, credits(3000))];
+    for (let i = 0; i < 10; i++) lines.push(bulk(i));
+    lines.push(codexEvent(0, 100, credits(600)));
+    const long = rolloutOf('long', lines);
+    expect(fs.statSync(long).size).toBeGreaterThan(3 * 1024 * 1024);
+    expect(codexUsage(long)).toEqual({ windows: [{ name: 'weekly', percent: 100, resetsAt: LATER + 86400 }], credits: true, creditMinutesLeft: 7.5 });
+
+    // The plan record is 4 MB back, behind gpt-reserve records at 0%.
+    const behind = [codexEvent(30, 96, none)];
+    for (let i = 0; i < 10; i++) behind.push(bulk(i), codexEvent(20 - i, 0, none, RESERVE));
+    const hidden = rolloutOf('far', behind);
+    expect(codexUsage(hidden)).toEqual({ windows: [{ name: 'weekly', percent: 96, resetsAt: LATER + 86400 }], credits: false });
+    expect(usageGuard({ cwd: proj, session_id: 'far', transcript_path: hidden }, { home, now: NOW }).reason).toContain('96% of the weekly limit');
+
+    // No trailing newline, CRLF and an empty file do not throw.
+    fs.writeFileSync(long, [codexEvent(30, 100, credits(3000)), codexEvent(0, 100, credits(600))].join('\r\n'));
+    expect(codexUsage(long).creditMinutesLeft).toBeCloseTo(7.5, 5);
+    fs.writeFileSync(long, '');
+    expect(codexUsage(long)).toEqual({ windows: [], credits: false });
+    expect(codexUsage(path.join(home, 'rollout-missing.jsonl'))).toEqual({ windows: [], credits: false });
+  });
+
   it('Codex: a healthy, refilled, unlimited or unmeasured credit balance stays quiet', () => {
     writeSettings({ at: 90 }, home);
     const stays = (name: string, lines: string[], minutes?: number) => {
@@ -322,8 +357,15 @@ describe('usage guard', () => {
     };
     // 1,000 credits in 30 minutes with 48,000 left: a day of work.
     stays('healthy', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))], 1440);
-    // Topped up inside the hour: the fall before it says nothing about what is left.
-    stays('refilled', [codexEvent(40, 100, credits(300)), codexEvent(20, 100, credits(60000)), codexEvent(0, 100, credits(59000))]);
+    // Topped up inside the hour: only what was spent since the top-up counts.
+    stays('refilled', [codexEvent(40, 100, credits(300)), codexEvent(20, 100, credits(60000)), codexEvent(0, 100, credits(59000))], 1180);
+    stays('refilled-lower', [codexEvent(40, 100, credits(20000)), codexEvent(10, 100, credits(100)), codexEvent(5, 100, credits(10000)), codexEvent(0, 100, credits(9900))], 495);
+    // The balance ran out and was topped up: the record without credits ends the measurement.
+    stays('ran-out', [codexEvent(50, 100, credits(5000)), codexEvent(40, 100, { has_credits: false, unlimited: false, balance: '0' }), codexEvent(30, 100, credits(3000)), codexEvent(0, 100, credits(2500))], 150);
+    // A balance Codex did not report is unknown, not zero.
+    stays('null-now', [codexEvent(30, 100, credits(3000)), codexEvent(0, 100, { has_credits: true, unlimited: false, balance: null })]);
+    stays('null-then', [codexEvent(30, 100, { has_credits: true, unlimited: false, balance: null }), codexEvent(0, 100, credits(48000))]);
+    stays('empty', [codexEvent(30, 100, credits(3000)), codexEvent(0, 100, { has_credits: true, unlimited: false, balance: '' })]);
     // Balances seconds apart jitter; they are not a rate.
     stays('jitter', [codexEvent(1, 100, credits(700)), codexEvent(0, 100, credits(600))]);
     // Only balances from the last hour count.
@@ -443,12 +485,20 @@ describe('specweave auto-handoff status', () => {
   it('says when Codex credits are about to run out', async () => {
     fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
     await quiet(() => autoHandoffCommand('on', { home }));
+    const codexLine = () => { const lines = autoHandoffStatus(home, NOW); return lines[lines.findIndex((l) => l.startsWith('Codex: ')) + 1]; };
     rolloutOf('low', [codexEvent(30, 100, credits(3000)), codexEvent(0, 100, credits(600))]);
-    const lines = autoHandoffStatus(home);
-    const at = lines.findIndex((l) => l.startsWith('Codex: '));
-    expect(lines[at + 1]).toContain("This Codex plan's credits are running out: about 8 min left");
-    rolloutOf('low', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))]);
-    expect(autoHandoffStatus(home)[at + 1]).toContain('under 60 minutes of credits left at the rate they are being spent (about 1440 min now)');
+    expect(codexLine()).toContain("This Codex plan's credits are running out: about 8 min left");
+    // Under the threshold the hook does not ask, so status does not say it will.
+    rolloutOf('low', [codexEvent(30, 40, credits(3000)), codexEvent(0, 41, credits(600))]);
+    expect(codexLine()).toContain('This Codex plan has credits');
+    expect(codexLine()).toContain('at 90% or more is asked to hand off only when');
+    const healthy = rolloutOf('low', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))]);
+    expect(codexLine()).toContain('under 60 minutes of credits left at the rate they are being spent (about 1440 min now)');
+    // A log from hours ago says nothing about the rate now.
+    const old = (NOW - 3 * 3600_000) / 1000;
+    fs.utimesSync(healthy, old, old);
+    expect(codexLine()).toContain('This Codex plan has credits');
+    expect(codexLine()).not.toContain('min now');
   });
 
   it('names checkpoint-only mode', async () => {

@@ -254,8 +254,10 @@ interface CodexRateLimits {
   credits?: { has_credits?: boolean; unlimited?: boolean; balance?: string | number | null } | null;
 }
 
-/** How much of the end of a rollout is read: enough turns to see the credit balance fall. */
-const CODEX_TAIL_BYTES = 1024 * 1024;
+/** A rollout is read from its end in chunks of this size. */
+const CODEX_CHUNK_BYTES = 1024 * 1024;
+/** No more than this much of the end of a rollout is read; a busy hour of log fits. */
+const CODEX_SCAN_BYTES = 64 * 1024 * 1024;
 /** Credit balances older than this say nothing about the current rate. */
 export const CREDIT_BURN_WINDOW_MS = 60 * 60 * 1000;
 /** Two balances closer together than this are noise, not a rate. */
@@ -263,12 +265,50 @@ const CREDIT_BURN_MIN_SPAN_MS = 2 * 60 * 1000;
 /** A Codex session with credits is asked to hand off when fewer minutes of credits are left. */
 export const CREDIT_MINUTES_LOW = 60;
 
-/** `credits.balance` is a decimal string; a zero balance buys nothing. */
+/**
+ * The lines of a file from the last to the first, read from the end in chunks
+ * so the caller can stop early. Gives up `maxBytes` from the end; the line cut
+ * there is dropped.
+ */
+function* linesFromEnd(file: string, maxBytes: number): Generator<string> {
+  const fd = fs.openSync(file, 'r');
+  try {
+    const size = fs.fstatSync(fd).size;
+    const floor = Math.max(0, size - maxBytes);
+    let end = size;
+    /** The end of a line that starts in a chunk not read yet. */
+    let carry: Buffer = Buffer.alloc(0);
+    while (end > floor) {
+      const start = Math.max(floor, end - CODEX_CHUNK_BYTES);
+      const chunk = Buffer.alloc(end - start);
+      fs.readSync(fd, chunk, 0, chunk.length, start);
+      const buf = carry.length ? Buffer.concat([chunk, carry]) : chunk;
+      end = start;
+      // A newline byte never sits inside a multi-byte character, so cutting there is safe.
+      const first = start === 0 ? -1 : buf.indexOf(0x0a);
+      if (start !== 0 && first === -1) { carry = buf; continue; }
+      carry = start === 0 ? Buffer.alloc(0) : buf.subarray(0, first);
+      const lines = buf.toString('utf8', first + 1).split('\n');
+      for (let i = lines.length - 1; i >= 0; i--) yield lines[i];
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+/** A credit balance as a number; a missing, null or empty one is unknown, not zero. */
+function creditBalance(credits: CodexRateLimits['credits']): number {
+  const b = credits?.balance;
+  return typeof b === 'number' || (typeof b === 'string' && b.trim() !== '') ? Number(b) : NaN;
+}
+
+/** `credits.balance` is a decimal string; a zero balance buys nothing, an unreported one is taken on trust. */
 function codexHasCredits(credits: CodexRateLimits['credits']): boolean {
   if (!credits) return false;
   if (credits.unlimited === true) return true;
   if (credits.has_credits !== true) return false;
-  return credits.balance === undefined || credits.balance === null || Number(credits.balance) > 0;
+  const balance = creditBalance(credits);
+  return Number.isNaN(balance) || balance > 0;
 }
 
 function codexWindowsOf(limits: CodexRateLimits): UsageWindow[] {
@@ -287,37 +327,26 @@ function codexWindowsOf(limits: CodexRateLimits): UsageWindow[] {
  * Windows and credits from the newest `token_count` event of the plan's own
  * limit in a Codex rollout file. Codex logs several limits in one session; a
  * later `gpt-reserve` record at 0% must not hide a plan window at 95%, so
- * another bucket is used only when the tail holds no plan record at all.
- * The credit balances of the last hour give the rate they are being spent at.
+ * another bucket is used only when no plan record is found.
+ *
+ * For a plan with a finite credit balance the scan goes on, back to an hour
+ * before that record, to see how fast the balance is falling. It stops at a
+ * top-up (a record with no credits, or with less than half of today's
+ * balance): what was spent before one says nothing about what is left.
  */
 export function codexUsage(transcriptPath: string): CodexUsage {
   const none: CodexUsage = { windows: [], credits: false };
-  let text: string;
-  try {
-    const fd = fs.openSync(transcriptPath, 'r');
-    try {
-      const size = fs.fstatSync(fd).size;
-      const len = Math.min(size, CODEX_TAIL_BYTES);
-      const buf = Buffer.alloc(len);
-      fs.readSync(fd, buf, 0, len, size - len);
-      text = buf.toString('utf8');
-    } finally {
-      fs.closeSync(fd);
-    }
-  } catch {
-    return none;
-  }
-  const lines = text.split('\n');
-  let newest: { limits: CodexRateLimits; windows: UsageWindow[]; at: number } | undefined;
+  let newest: { windows: UsageWindow[]; credits: boolean; balance: number; at: number } | undefined;
   let other: CodexUsage | undefined;
-  /** The oldest balance within the burn window before `newest`. */
+  /** The oldest balance of the falling run that ends at `newest`. */
   let oldest: { at: number; balance: number } | undefined;
-  for (let i = lines.length - 1; i >= 0; i--) {
-    if (!lines[i].includes('"rate_limits"')) continue;
-    try {
-      const event = JSON.parse(lines[i]) as { timestamp?: string; payload?: { rate_limits?: CodexRateLimits } };
-      const limits = event.payload?.rate_limits;
-      if (!limits) continue;
+  try {
+    for (const line of linesFromEnd(transcriptPath, CODEX_SCAN_BYTES)) {
+      if (!line.includes('"rate_limits"')) continue;
+      let event: { timestamp?: string; payload?: { rate_limits?: CodexRateLimits } };
+      try { event = JSON.parse(line); } catch { continue; } // a message that quotes the words, or a cut line
+      const limits = event?.payload?.rate_limits;
+      if (!limits || typeof limits !== 'object') continue;
       const windows = codexWindowsOf(limits);
       if (!windows.length) continue;
       if (limits.limit_id && limits.limit_id !== 'codex') {
@@ -325,22 +354,25 @@ export function codexUsage(transcriptPath: string): CodexUsage {
         continue;
       }
       const at = Date.parse(event.timestamp ?? '');
+      const balance = creditBalance(limits.credits);
       if (!newest) {
-        newest = { limits, windows, at };
-        if (!Number.isFinite(at) || limits.credits?.unlimited === true || !codexHasCredits(limits.credits)) break;
+        newest = { windows, credits: codexHasCredits(limits.credits), balance, at };
+        // No rate to measure without a time, credits, or a balance that can run out.
+        if (!Number.isFinite(at) || !newest.credits || limits.credits?.unlimited === true || !Number.isFinite(balance)) break;
         continue;
       }
-      if (!Number.isFinite(at) || newest.at - at > CREDIT_BURN_WINDOW_MS) break;
-      const balance = limits.credits?.has_credits === true ? Number(limits.credits.balance) : NaN;
-      if (Number.isFinite(balance)) oldest = { at, balance };
-    } catch { /* a partial first line in the tail; keep looking */ }
+      if (!Number.isFinite(at) || at > newest.at || newest.at - at > CREDIT_BURN_WINDOW_MS) break;
+      if (limits.credits?.has_credits !== true || !Number.isFinite(balance) || balance < newest.balance / 2) break;
+      oldest = { at, balance };
+    }
+  } catch {
+    if (!newest) return other ?? none; // unreadable file
   }
   if (!newest) return other ?? none;
-  const usage: CodexUsage = { windows: newest.windows, credits: codexHasCredits(newest.limits.credits) };
-  const balance = Number(newest.limits.credits?.balance);
-  if (usage.credits && oldest && Number.isFinite(balance) && newest.at - oldest.at >= CREDIT_BURN_MIN_SPAN_MS && oldest.balance > balance) {
-    const perMinute = (oldest.balance - balance) / ((newest.at - oldest.at) / 60_000);
-    usage.creditMinutesLeft = balance / perMinute;
+  const usage: CodexUsage = { windows: newest.windows, credits: newest.credits };
+  if (oldest && newest.at - oldest.at >= CREDIT_BURN_MIN_SPAN_MS && oldest.balance > newest.balance) {
+    const perMinute = (oldest.balance - newest.balance) / ((newest.at - oldest.at) / 60_000);
+    usage.creditMinutesLeft = newest.balance / perMinute;
   }
   return usage;
 }
