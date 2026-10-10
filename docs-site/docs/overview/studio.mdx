@@ -1,14 +1,16 @@
 ---
-title: "SpecWeave Studio overview: coordinator, workers, machines and handoff"
-description: "What SpecWeave Studio is: a local workspace where a project's coordinator and workers run Claude Code, Codex, Grok and other agents on machines you own, with memory, plans, approvals and SpecWeave handoff."
+title: "SpecWeave Studio overview: every AI agent in one workspace you own"
+description: "What SpecWeave Studio is: one local workspace for project agents, personal agents and coding agents from every lab, where a coordinator and workers run Claude Code, Codex, Grok and others on machines you own, with memory, plans, routines and SpecWeave handoff."
 ---
 
 import StudioProjectMock from '@site/src/components/ecosystem/StudioProjectMock';
-import { CloudCompare } from '@site/src/components/ecosystem/StudioSections';
+import { CloudCompare, UmbrellaMap } from '@site/src/components/ecosystem/StudioSections';
 
 # SpecWeave Studio
 
-SpecWeave Studio is the workspace for the whole SpecWeave approach. You give a project a goal; a coordinator splits it into tasks and hands them to workers. The coordinator and every worker can use a different coding agent and model: Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others. They run on machines you own, next to your code, skills and accounts.
+SpecWeave Studio is one workspace for the agents that are otherwise spread across many products: projects like Claude Code Projects, a personal agent like OpenAI Dots or Hermes, and the coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. It runs them as one project on your own machines and gives each job the model that fits it.
+
+You give a project a goal; a coordinator splits it into tasks and hands them to workers. The coordinator and every worker can use a different coding agent and model: Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others. They run on machines you own, next to your code, skills and accounts.
 
 Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the spec, the task evidence and the handoff in git. That record is what lets any agent continue work that another one started.
 
@@ -17,6 +19,14 @@ Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the sp
 :::info Availability
 Studio is in a private pilot and has no public download yet. Sessions, machines, approvals and usage limits are in the pilot build. Projects (coordinator, workers, memory, plans and routines) are being tested for the next pilot build. [Ask about a pilot](/studio/).
 :::
+
+## One workspace for many agents
+
+Each row is a kind of product you may already use, and what takes its place in Studio. The status is Studio's own.
+
+<UmbrellaMap />
+
+Studio is not a cloud service, so a personal project works while the machine running it is awake. It cannot be messaged from Telegram, WhatsApp or Slack yet, has no managed Gmail or Calendar sign-in, and does not connect to remote OAuth MCP servers.
 
 ## What a project holds
 

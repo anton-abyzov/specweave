@@ -13,6 +13,39 @@ const features: [string, string, React.ReactNode][] = [
   ['Routines and Personal', 'Recurring work, not only code.', <>Schedule routines inside a project. A Personal project gets its own working folder and per-project tool grants for research, notes and everyday tasks.</>],
 ];
 
+type UmbrellaStatus = 'pilot' | 'testing' | 'open';
+const statusLabel: Record<UmbrellaStatus, string> = { pilot: 'In the pilot', testing: 'Next pilot build', open: 'Open source now' };
+
+const umbrella: { job: string; instead: string[]; title: string; body: React.ReactNode; gap?: string; status: UmbrellaStatus }[] = [
+  { job: 'Project agents', instead: ['Claude Code Projects', 'Codex cloud tasks'], title: 'A coordinator, and workers on any model.', body: 'One conversation per goal. Each worker picks its own provider, model, machine and worktree, and you can step into any of them.', status: 'testing' },
+  { job: 'Personal agents', instead: ['OpenAI Dots', 'xAI Grok Bot', 'Meta Muse'], title: 'Personal projects that keep working.', body: 'A project with its own folder, memory and plan, scheduled routines, and tasks that a webhook can start.', gap: 'Runs while your machine is awake, not in a vendor cloud. No chat-app channels yet.', status: 'testing' },
+  { job: 'Self-hosted agents', instead: ['Hermes Agent', 'OpenClaw'], title: 'Local first, with tools you grant.', body: 'Agents run on your machines. Tools come from local MCP servers you approve one tool at a time, and memory is plain files in the project.', gap: 'No Telegram, WhatsApp or Slack gateway yet.', status: 'testing' },
+  { job: 'Coding agents', instead: ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'Copilot'], title: 'Every lab’s official agent.', body: 'Studio drives each provider’s own agent, so its sign-in, approvals and limits apply. Switch a thread to another provider mid-conversation.', status: 'pilot' },
+  { job: 'Usage limits', instead: ['One usage page per account'], title: 'Every account’s limits on one screen.', body: 'Resume on the same account when a limit frees up, or let a capacity policy pick a fresh account for new work.', status: 'pilot' },
+  { job: 'The record', instead: ['Memory locked in one vendor'], title: 'Spec, evidence and handoff in git.', body: <>The open-source SpecWeave CLI keeps it, and any tool continues with <code>specweave pickup</code>.</>, status: 'open' },
+];
+
+export function UmbrellaMap() {
+  return <>
+    <div className={styles.umbrella} role="list">
+      {umbrella.map(row => <article key={row.job} className={styles.uRow} role="listitem">
+        <div className={styles.uJob}>
+          <span>{row.job}</span>
+          <div className={styles.uChips} aria-label={`Instead of ${row.instead.join(', ')}`}>{row.instead.map(name => <i key={name}>{name}</i>)}</div>
+        </div>
+        <b className={styles.uArrow} aria-hidden="true">→</b>
+        <div className={styles.uStudio}>
+          <h3>{row.title}</h3>
+          <p>{row.body}</p>
+          {row.gap && <p className={styles.uGap}>{row.gap}</p>}
+        </div>
+        <strong className={styles.uStatus} data-status={row.status}>{statusLabel[row.status]}</strong>
+      </article>)}
+    </div>
+    <p className={styles.compareNote}>Other products as described on their public pages and in launch coverage, October 2026; they change quickly. Status is Studio’s own: In the pilot means the current private pilot build, Next pilot build means in testing.</p>
+  </>;
+}
+
 export function ProjectFeatures() {
   return <div className={styles.features}>
     {features.map(([label, title, body]) => <article key={label}><span>{label}</span><h3>{title}</h3><p>{body}</p></article>)}
@@ -34,7 +67,7 @@ export function CloudCompare() {
       <thead><tr><th scope="col">Topic</th><th scope="col">Cloud project agents</th><th scope="col">SpecWeave Studio</th></tr></thead>
       <tbody>{rows.map(([topic, cloud, studio]) => <tr key={topic}><th scope="row">{topic}</th><td data-label="Cloud project agents">{cloud}</td><td data-label="SpecWeave Studio">{studio}</td></tr>)}</tbody>
     </table>
-    <p className={styles.compareNote}>Cloud project agents include Claude Code Projects and OpenAI Dots. Compared from their public documentation in October 2026; these products change quickly.</p>
+    <p className={styles.compareNote}>Cloud project agents include Claude Code Projects, OpenAI Dots and xAI Grok Bot. Compared from their public documentation in October 2026; these products change quickly.</p>
   </>;
 }
 
@@ -58,6 +91,16 @@ export function StudioFaq() {
       <h3>How does handoff fit in?</h3>
       <p>Inside a thread you can switch provider: Studio passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. Studio does not yet switch on its own when a provider reaches a usage limit; the banner offers to check again or resume on the same account when the limit frees up.</p>
       <p>To continue in another tool, <Link to="/docs/guides/cross-tool-handoff/">hand off with SpecWeave</Link>: the spec, ledger and work in progress are committed, and the next agent runs <code>specweave pickup</code>.</p>
+    </article>
+    <article>
+      <h3>Is it a personal agent like Dots or Hermes?</h3>
+      <p>Partly. A Personal project has its own folder, memory and plan, runs scheduled routines and can be started by a webhook, all on your machine with the model you choose. It uses tools only from local MCP servers you grant tool by tool.</p>
+      <p>It is not always on in a cloud: it works while the machine running it is awake. It cannot be messaged from Telegram, WhatsApp or Slack yet, and it has no managed Gmail or Calendar sign-in.</p>
+    </article>
+    <article>
+      <h3>Does it replace Claude Code or Codex?</h3>
+      <p>No. Studio runs them. Each worker is the provider’s own agent with its own sign-in, approvals and limits, so you keep the subscriptions you already pay for and add Grok Build, Cursor, Copilot or OpenCode next to them.</p>
+      <p>What Studio adds is the layer above: one project across all of them, every account’s limits on one screen, and a record in git that any of them can continue from.</p>
     </article>
     <article>
       <h3>Is it a cloud service?</h3>

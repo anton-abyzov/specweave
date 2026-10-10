@@ -72,3 +72,21 @@
   .layer{grid-template-columns:1fr;gap:6px;padding:16px}
 }
 .machines{display:grid;gap:44px}
+
+/* Umbrella map: what Studio brings under one roof */
+.umbrella{border-top:1px solid var(--sw-brand-line)}
+.uRow{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1.6fr) 140px;gap:22px;align-items:start;padding:24px 0;border-bottom:1px solid var(--sw-brand-line)}
+.uJob>span{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;color:var(--sw-brand-accent)}
+.uChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.uChips i{font-style:normal;font-size:12.5px;line-height:1.4;padding:3px 10px;border:1px solid var(--sw-brand-line);border-radius:20px;color:var(--sw-brand-muted);background:var(--sw-brand-surface);white-space:nowrap}
+.uArrow{font-weight:400;font-size:20px;line-height:1;color:var(--sw-brand-control-border);padding-top:30px}
+.uStudio h3{font:450 24px/1.2 var(--sw-brand-display)!important;letter-spacing:-.02em;margin:0 0 8px!important}
+.uStudio p{font-size:15px;line-height:1.65;color:var(--sw-brand-muted);margin:0!important}
+.uStudio p+p{margin-top:6px!important}
+.uStudio .uGap{font-size:13px;color:var(--sw-brand-warning)}
+.uStatus{justify-self:end;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;border-radius:20px;padding:4px 10px;white-space:nowrap;margin-top:2px}
+.uStatus[data-status=pilot]{background:var(--sw-brand-selected);color:var(--sw-brand-success)}
+.uStatus[data-status=testing]{background:var(--sw-brand-danger-soft);color:var(--sw-brand-warning)}
+.uStatus[data-status=open]{background:var(--sw-brand-ink);color:var(--sw-brand-paper)}
+@media(max-width:900px){.uRow{grid-template-columns:minmax(0,1fr) auto;gap:10px 16px}.uArrow{display:none}.uJob{grid-column:1}.uStatus{grid-column:2;grid-row:1}.uStudio{grid-column:1 / -1}}
+.uStudio code{white-space:nowrap}
