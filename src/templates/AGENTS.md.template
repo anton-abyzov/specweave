@@ -13,7 +13,7 @@ This project uses SpecWeave. Work is planned in increments: `.specweave/incremen
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
 5. Stopping for any reason (out of tokens, switching tool or account): `specweave handoff --reason "<why>"`.
 
-**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or a "[Usage limit reached" note appears (outside SpecWeave Studio), run `specweave handoff --reason "<why>"` and tell the user to say "pick up" in the other tool. A "[Usage limit approaching" note or a usage heads-up is not a stop: say so in one line and keep working. When the user says "pick up", run `specweave pickup` and continue with the task it names. `specweave report` writes an HTML timeline.
+**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or a "[Usage limit reached" note appears (outside SpecWeave Studio), run `specweave handoff --reason "<why>"` and tell the user to say "pick up" in the other tool. A "[Usage limit approaching" note or a usage heads-up is not a stop: say so in one line and keep working. When the user says "pick up", run `specweave pickup` and continue with the task it names; "pick up <id or title>" passes it on. Of several it takes the newest: say which.
 
 Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a`. An AC is met when the tasks covering it are done. Leave a message for whoever works on an increment next with `specweave note "<text>"`. Each step is a skill in `.agents/skills/sw-*` and `.claude/skills/sw-*`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
 <!-- /SECTION -->

@@ -23,7 +23,14 @@ export interface CheckpointInput {
   last_assistant_message?: string;
 }
 
-export interface CheckpointOptions { home?: string; now?: number }
+export interface CheckpointOptions {
+  home?: string;
+  now?: number;
+  /** Capture now even when the last checkpoint is under five minutes old (a session handing off). */
+  force?: boolean;
+  /** Why the capture was made; shown in the checkpoint document. */
+  reason?: string;
+}
 
 export interface CheckpointReceipt {
   version: 1;
@@ -35,7 +42,16 @@ export interface CheckpointReceipt {
   incrementId?: string;
   /** Set when SpecWeave Studio ran the session; Studio reads `studio/<thread>.json`. */
   studioThreadId?: string;
+  /** First line of the session's last message, for `specweave handoff list`. */
+  title?: string;
 }
+
+/** Written beside `current.json` when a session hands off through its checkpoint (it hit the limit). */
+export const SESSION_HANDOFF_FILE = 'handoff.json';
+/** Written beside it when `specweave pickup` takes that handoff. */
+export const SESSION_PICKED_FILE = 'picked.json';
+
+export interface SessionHandoffMark { version: 1; at: string; by?: string; reason?: string }
 
 interface Lease { token: string; at: number; ticket?: number }
 export interface CheckpointRequest {
@@ -48,10 +64,11 @@ export interface CheckpointRequest {
   slot: string;
   summary?: string;
   studioThreadId?: string;
+  reason?: string;
 }
 
 /** Resolve symlinks and the nearest Git worktree without invoking Git in the hook. */
-function checkpointIdentity(input: CheckpointInput): { sessionId: string; cwd: string } | undefined {
+export function checkpointIdentity(input: CheckpointInput): { sessionId: string; cwd: string } | undefined {
   const sessionId = input.session_id ?? input.sessionId;
   if (typeof sessionId !== 'string' || !/^[\w.-]{1,128}$/.test(sessionId) || sessionId.includes('..')) return undefined;
   const start = input.cwd ?? input.workspaceRoot ?? process.cwd();
@@ -187,7 +204,7 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
   const now = opts.now ?? Date.now();
   const previous = readSessionCheckpoint(input, opts);
   const savedAt = previous ? Date.parse(previous.savedAt) : NaN;
-  if (Number.isFinite(savedAt) && now >= savedAt && now - savedAt < CHECKPOINT_INTERVAL_MS) return;
+  if (!opts.force && Number.isFinite(savedAt) && now >= savedAt && now - savedAt < CHECKPOINT_INTERVAL_MS) return;
   const token = randomUUID();
   const lock = path.join(directory, 'pending.lock');
   if (!acquireLease(lock, token, now)) return;
@@ -198,7 +215,7 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
     const latest = readSessionCheckpoint(input, opts);
     const latestAt = latest ? Date.parse(latest.savedAt) : NaN;
     const afterLease = opts.now ?? Date.now();
-    if (Number.isFinite(latestAt) && afterLease >= latestAt && afterLease - latestAt < CHECKPOINT_INTERVAL_MS) {
+    if (!opts.force && Number.isFinite(latestAt) && afterLease >= latestAt && afterLease - latestAt < CHECKPOINT_INTERVAL_MS) {
       releaseLease(lock, token);
       return;
     }
@@ -214,6 +231,7 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
     const studio = studioThreadId();
     const request: CheckpointRequest = {
       version: 1, ...identity, directory, generation, token, slot, ...(summary ? { summary } : {}), ...(studio ? { studioThreadId: studio } : {}),
+      ...(opts.reason ? { reason: scrubSecrets(opts.reason).scrubbed } : {}),
     };
     requestPath = path.join(directory, `request-${token}.json`);
     fs.writeFileSync(requestPath, JSON.stringify(request), { flag: 'wx', mode: 0o600 });
@@ -225,6 +243,55 @@ export function prepareSessionCheckpoint(input: CheckpointInput, opts: Checkpoin
       if (slot) releaseLease(slot, token);
     }
   }
+}
+
+/** First sentence of the session's last message, without markdown, at most 100 characters. */
+export function summaryTitle(summary?: string): string | undefined {
+  const lines = (summary ?? '').split(/\r?\n/).filter((l) => l.trim());
+  // Prose before headings: "## Done" says less than the sentence under it.
+  const prose = lines.find((l) => !/^\s*#/.test(l)) ?? lines[0];
+  const line = prose?.replace(/^[#>*\-\s]+/, '').replace(/[*_`]+/g, '').trim();
+  if (!line) return undefined;
+  const sentence = line.match(/^(.+?[.!?])(\s|$)/)?.[1] ?? line;
+  return sentence.length > 100 ? `${sentence.slice(0, 99)}…` : sentence;
+}
+
+/**
+ * Mark this session's checkpoint as a handoff: the session hit the limit and
+ * cannot write an increment handoff of its own (several increments are active,
+ * or it worked in a worktree or nested repository). `specweave handoff list`
+ * shows it until `specweave pickup` takes it. Returns the checkpoint directory.
+ */
+export function markSessionHandoff(input: CheckpointInput, mark: Omit<SessionHandoffMark, 'version' | 'at'> & { at?: string }, opts: CheckpointOptions = {}): string | undefined {
+  const directory = checkpointDirectory(input, opts);
+  if (!directory) return undefined;
+  try {
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+    const body: SessionHandoffMark = {
+      version: 1, at: mark.at ?? new Date(opts.now ?? Date.now()).toISOString(),
+      ...(mark.by ? { by: mark.by } : {}), ...(mark.reason ? { reason: scrubSecrets(mark.reason).scrubbed } : {}),
+    };
+    fs.writeFileSync(path.join(directory, SESSION_HANDOFF_FILE), JSON.stringify(body, null, 2) + '\n', { mode: 0o600 });
+    return directory;
+  } catch { return undefined; }
+}
+
+/** A turn that ends normally this long after the mark means the session came back to work. */
+const SESSION_HANDOFF_SETTLE_MS = 15 * 60_000;
+
+/**
+ * Drop this session's handoff mark once it works again (its limit reset and it
+ * went on), so `pickup` does not offer work its own session already continued.
+ */
+export function clearSessionHandoff(input: CheckpointInput, opts: CheckpointOptions = {}): void {
+  const directory = checkpointDirectory(input, opts);
+  if (!directory) return;
+  const file = path.join(directory, SESSION_HANDOFF_FILE);
+  const mark = readJson<SessionHandoffMark>(file);
+  if (!mark) return;
+  const at = Date.parse(mark.at);
+  if (Number.isFinite(at) && (opts.now ?? Date.now()) - at < SESSION_HANDOFF_SETTLE_MS) return;
+  try { fs.unlinkSync(file); } catch { /* already gone */ }
 }
 
 /** Queue at most one capture per session/worktree and four per user. All errors fail open. */
@@ -266,14 +333,16 @@ export async function runSessionCheckpoint(requestPath: string): Promise<void> {
     const { buildWorkHandoff } = await import('./work-handoff.js');
     const result = await buildWorkHandoff(request.cwd, {
       checkpoint: true, checkpointRoot: request.cwd, push: false, keepClaims: true,
-      out: path.join(generationDir, 'handoff.md'), reason: 'automatic local session checkpoint', summary: request.summary,
+      out: path.join(generationDir, 'handoff.md'), reason: request.reason ?? 'automatic local session checkpoint', summary: request.summary,
     });
     if (!fs.statSync(result.docPath).size || !fs.existsSync(result.diffPath)) throw new Error('incomplete checkpoint');
     if (!leaseMatches(path.join(request.directory, 'pending.lock'), request.token)) return;
+    const title = summaryTitle(request.summary) ?? previous?.title;
     const receipt: CheckpointReceipt = {
       version: 1, sessionId: request.sessionId, cwd: request.cwd, savedAt: new Date().toISOString(),
       docPath: result.docPath, diffPath: result.diffPath, ...(result.incrementId ? { incrementId: result.incrementId } : {}),
       ...(request.studioThreadId ? { studioThreadId: request.studioThreadId } : {}),
+      ...(title ? { title } : {}),
     };
     const temporary = path.join(request.directory, `current-${request.token}.json`);
     fs.writeFileSync(temporary, JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx', mode: 0o600 });

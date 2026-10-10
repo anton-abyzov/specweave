@@ -18,8 +18,8 @@ commands=(
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
     'verify:'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
-    'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account'
-    'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
+    'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs'
+    'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest'
     'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
     'auto-handoff:on | off | status\: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints'
@@ -176,6 +176,7 @@ _specweave() {
                     _arguments \
                         '--no-apply[Only show the waiting handoff; do not apply it to this checkout]' \
                         '--all[Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing]' \
+                        '--list[Print the pending handoffs with their ids, newest first; changes nothing]' \
                         '--json[Output as JSON]' \
                         '--help[Show help]'
                     ;;

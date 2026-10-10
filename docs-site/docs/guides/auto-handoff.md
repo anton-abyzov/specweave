@@ -107,6 +107,7 @@ Usage can jump from under the threshold to the limit inside one long turn. Then 
 
 - **Claude Code** and **Grok Build** fire `StopFailure` with `error: "rate_limit"`. The hook does not need the model: it runs `specweave handoff` itself, with the reason "usage limit reached in claude" (or grok), and pushes as above. It does this at most once per session every five hours, so a retry loop hands off once. It runs in suggest and enforce mode alike, and even if a handoff at the threshold already happened, so the handoff carries the latest edits. When the limit resets within `--wait-under` minutes it only saves a local checkpoint.
 - **Codex** has no failure hook. Its threshold Stop hook is the safety margin (on a plan with credits, the one-hour credit estimate above); set `--at` lower if your turns are long. Codex skips a new hook until you trust it, and there is no command to approve one: open `codex` in a terminal once after `auto-handoff on` and approve the hook when it asks. Until then a Codex session at 96% gets no heads-up and no handoff.
+- **Several sessions in one project.** An increment handoff would describe someone else's work when the session ran in a worktree or a nested repository inside the project (`.claude/worktrees/<name>`, `repositories/<org>/<repo>`), or when several increments are active and nothing says which one is its. Then the limit hook hands off the session's own checkout instead: it saves a fresh local checkpoint of that checkout and marks it as a handoff. `specweave handoff list` shows it under the folder's name, and `specweave pickup <name>` takes it. If the same session comes back to work after its limit resets, the mark is dropped, since nobody needs to take that work over.
 - Outside a SpecWeave project (no `.specweave/config.json` above the folder) the limit hook does nothing, like the threshold hook.
 
 Claude Code also shows the model a note starting "[Usage limit approaching" or "[Usage limit reached" on some plans. `AGENTS.md` tells the agent to mention "approaching" in one line and keep working, and to treat "reached" as the handoff moment, which is the only automatic path in cloud sessions, where there is no status line or user hook.
@@ -140,7 +141,28 @@ Say "pick up" (or "continue from the other account"). Every tool reads the same 
 specweave pickup
 ```
 
-`pickup` fetches the last handoff, moves the branch forward to it and applies the handed-off edits when your checkout is clean. If it is not, it says what to do and changes nothing. It writes a `pickup` line to the increment's ledger once per handoff, also when both tools work in the same checkout, so the report counts every change of hands. Then it prints the increment, the next task with its acceptance criteria, its files and test, who holds which claim, and the notes left for you. The agent continues from that task. Claude Code's SessionStart hook prints the same summary when a session opens, without fetching.
+`pickup` fetches the last handoff, moves the branch forward to it and applies the handed-off edits when your checkout is clean. If it is not, it says what to do and changes nothing. It writes a `pickup` line to the increment's ledger once per handoff, also when both tools work in the same checkout, so the report counts every change of hands. Then it prints the increment, the next task with its acceptance criteria, its files and test, who holds which claim, and the notes left for you. The agent continues from that task. Claude Code's SessionStart hook prints the same summary when a session opens, without fetching, and names the pending handoffs when there are any.
+
+### When several sessions handed off
+
+Six sessions on one machine that all ran out leave six handoffs. Each one has a short id: an increment's four-digit number, or the worktree's folder name for a session handoff.
+
+```bash
+specweave handoff list
+```
+
+```text
+3 pending handoffs, newest first:
+  studio-routing  Coordinator-only flow is built · claude@m4 · 12m ago · usage limit reached in claude
+      .claude/worktrees/studio-routing (branch codex/studio-routing)
+  0880  Project memory and routines · claude@m4 · 40m ago · usage limit reached
+      .specweave/increments/0880-memory-import/handoff.md
+  0874  Studio release tested on the Mac · claude@m4 · 2h ago · out of tokens
+      .specweave/increments/0874-studio-release/handoff.md
+Take one with `specweave pickup <id>` (say "pick up <id>"); plain "pick up" takes the newest.
+```
+
+Say "pick up 0874", or "pick up the studio release", and the agent runs `specweave pickup` with what you named: an id, an increment number or folder name, or words from the title. Plain "pick up" takes the newest and lists the others, so the next session's "pick up" gets the next one. When the words fit more than one, `pickup` lists those and changes nothing. A session handoff's edits are still in its own checkout on this machine, so `pickup` points the agent there. A pushed handoff from another machine is applied only when it belongs to the increment you named.
 
 ## Check that it works
 
