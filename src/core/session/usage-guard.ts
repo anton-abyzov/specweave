@@ -83,10 +83,13 @@ export function handsOff(settings: AutoHandoffSettings | undefined): boolean {
   return !!settings && settings.mode !== 'checkpoint';
 }
 
-/** The Studio thread this hook runs in, when SpecWeave Studio started the provider session. */
+/**
+ * The Studio thread this hook runs in, when SpecWeave Studio started the provider session.
+ * Any non-empty value counts: delegated worker ids carry `%` and `:` and must still
+ * checkpoint instead of handing off. Only the checkpoint filename is sanitized.
+ */
 export function studioThreadId(env: NodeJS.ProcessEnv = process.env): string | undefined {
-  const id = env.SPECWEAVE_STUDIO_THREAD_ID;
-  return id && /^[\w.:-]{1,128}$/.test(id) ? id : undefined;
+  return env.SPECWEAVE_STUDIO_THREAD_ID || undefined;
 }
 
 export function writeSettings(settings: AutoHandoffSettings | undefined, home?: string): void {

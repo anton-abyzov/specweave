@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading,
+  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading, studioThreadId,
 } from '../../../../src/core/session/usage-guard.js';
 import { autoHandoffCommand, autoHandoffStatus, codexHookTrusted, statuslineCommand, usageGuardCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
@@ -13,6 +13,8 @@ import { queueSessionCheckpoint } from '../../../../src/core/session/session-che
 let home: string;
 const NOW = Date.parse('2026-09-25T20:00:00Z');
 const LATER = NOW / 1000 + 3600;
+// The shape Studio gives a worker its project coordinator delegated to.
+const WORKER_THREAD_ID = 'thread:delegated-task:command%3Amcp%3A6f1c2b9e-3d4a-4e8b-9c1f-2a7d5e8b0c43%3Adelegate-task%3Arecord-footage';
 
 function claudeStatus(session: string, fiveHour: number, weekly = 10) {
   return {
@@ -410,6 +412,15 @@ describe('auto-handoff modes', () => {
     expect(usageGuard({ session_id: 's1' }, { home, now: NOW, env })).toEqual({});
     // The same session outside Studio still hands off.
     expect(usageGuard({ session_id: 's1' }, { home, now: NOW, env: {} }).hookSpecificOutput).toBeDefined();
+  });
+
+  it('a delegated Studio worker id with percent signs still counts as inside Studio', () => {
+    writeSettings({ at: 90 }, home);
+    recordClaudeUsage(claudeStatus('s1', 92), home, NOW);
+    const env = { SPECWEAVE_STUDIO_THREAD_ID: WORKER_THREAD_ID };
+    expect(studioThreadId(env)).toBe(WORKER_THREAD_ID);
+    expect(usageGuard({ session_id: 's1' }, { home, now: NOW, env })).toEqual({});
+    expect(studioThreadId({ SPECWEAVE_STUDIO_THREAD_ID: '' })).toBeUndefined();
   });
 
   it('on keeps the stored mode unless a flag changes it', async () => {
