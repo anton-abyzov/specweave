@@ -7,6 +7,7 @@ import ecosystem from '../components/ecosystem/ecosystem.module.css';
 import studio from '../components/ecosystem/studio.module.css';
 import StudioOverviewVideo from '../components/ecosystem/StudioOverviewVideo';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
+import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import { CloudCompare, ProjectFeatures, StudioFaq, StudioStack } from '../components/ecosystem/StudioSections';
 
 const pilot = 'mailto:anton.abyzov@gmail.com?subject=SpecWeave%20Studio%20pilot&body=Team%20size%3A%0ACoding%20tools%3A%0AMachines%20and%20operating%20systems%3A%0AWorkflow%20to%20evaluate%3A%0A';
@@ -24,6 +25,7 @@ export default function Studio() {
 
       <section className={styles.section} aria-labelledby="projects-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>01 / Projects</span><h2 id="projects-title">A coordinator.<br /><em>Workers on any model.</em></h2></div><p>A project is one long conversation. Add tasks as they come up; the coordinator hands them out, collects results and keeps the plan honest. <span className={studio.badge}>Testing for the next pilot build</span></p></div>
         <ProjectFeatures />
+        <StudioTutorialVideo />
       </section>
 
       <section className={styles.section} aria-labelledby="local-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>02 / Local first</span><h2 id="local-title">Built for your machines.<br /><em>Not a vendor’s cloud.</em></h2></div><p>Cloud project agents are easy to start. Studio is for people who want their own skills, folders, accounts and several vendors in the same project.</p></div>

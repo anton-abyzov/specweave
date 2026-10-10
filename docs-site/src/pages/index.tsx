@@ -8,6 +8,7 @@ import styles from '../components/landing/landing.module.css';
 import base from './continuity.module.css';
 import { ProductMap } from '../components/ecosystem/Architecture';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
+import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import { CloudCompare, ProjectFeatures } from '../components/ecosystem/StudioSections';
 import studio from '../components/ecosystem/studio.module.css';
 
@@ -44,6 +45,7 @@ export default function Home() {
       <section className={base.section} id="projects" aria-labelledby="projects-title">
         <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / Studio projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it. <span className={studio.badge}>Projects: testing for the next pilot build</span></p></div>
         <ProjectFeatures />
+        <StudioTutorialVideo />
       </section>
 
       <section className={base.section} id="local" aria-labelledby="local-title">
