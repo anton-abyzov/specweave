@@ -4,6 +4,11 @@
 
 - Inside SpecWeave Studio, Claude workers that a project coordinator delegated to no longer hand off at the usage threshold. Their `SPECWEAVE_STUDIO_THREAD_ID` (`thread:delegated-task:command%3A…`) contains `%`, which the guard rejected, so the Stop hook treated them as running outside Studio and asked them to run `specweave handoff`. Any non-empty value now counts as inside Studio; the id is only sanitized for the checkpoint filename, which still matches the one Studio reads.
 
+### Documentation
+
+- spec-weave.com plays a 61-second Studio tour on the home page and /studio, built from real screen recordings of Studio on a Mac: a coordinator splitting work into Codex and Claude workers, the Limits page, and a Claude thread at its usage limit continuing on Codex (the limit in that clip is simulated).
+- The home page and /studio now present Studio as one workspace for every AI agent, mapping the agents people use today to what takes their place in Studio, with an honest status for each.
+
 ## [3.0.7] - 2026-10-09
 
 ### Added
