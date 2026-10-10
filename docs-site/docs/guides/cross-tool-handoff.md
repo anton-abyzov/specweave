@@ -85,13 +85,14 @@ prints the newest index with the increments you can act on now first, then the o
 On your own machine, SpecWeave can hand off for you before a session runs out:
 
 ```bash
-specweave auto-handoff on            # hand off at 90% of any usage window
-specweave auto-handoff on --at 80    # or pick your own threshold
+specweave auto-handoff on                 # heads-up at 95% of any usage window
+specweave auto-handoff on --mode enforce  # or hand off there by itself
+specweave auto-handoff on --at 90         # or pick your own threshold
 specweave auto-handoff status
 specweave auto-handoff off           # restores your previous setup
 ```
 
-At 90% of the fullest usage window, Claude Code and Codex stop once and run `specweave handoff`; when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
+At 95% of the fullest usage window, Claude Code and Codex tell you once that you can say "hand off" (in enforce mode they stop and run `specweave handoff`); when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
 
 ## Who holds a task
 

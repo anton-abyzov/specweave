@@ -1,3 +1,14 @@
+## [Unreleased]
+
+### Changed
+
+- Auto-handoff no longer stops a session at the threshold by default. The new default mode, `suggest`, gives one heads-up per usage window instead: the session tells you in one line that usage is at 96% of the 5-hour limit, when it resets, and that you can say "hand off", then keeps working. On 2026-10-10 three sessions on one account stopped at 91% of the weekly limit with their work half done and hours of usage left; a turn that really runs out still hands off by itself through the StopFailure hook, and local checkpoints cover the turns in between. `specweave auto-handoff on --mode enforce` keeps the old stop; `--mode checkpoint` (or `--checkpoint-only`) never acts on usage.
+- The default threshold is 95% (was 90%).
+- The reset rule: when every window at or past the threshold resets within 30 minutes (`--wait-under <minutes>`, 0 turns it off), the session neither suggests nor enforces a handoff, and a turn that hits the limit saves only a local checkpoint. Waiting a few minutes beats moving the work. The heads-up and the stop both say when the limit resets ("which resets in 2 h 10 min"). Desktop and Remote Control sessions, whose usage samples carry no reset time, borrow it from Claude Code's usage cache while it is still ahead.
+- Settings written before this version move to the new defaults on upgrade: `suggest`, and 95 if the file held the old default of 90. A threshold you set yourself and checkpoint-only mode are kept.
+- The status line shows "handoff available" in suggest mode, "hand off" in enforce mode, and "resets in 12 min" while it waits. `auto-handoff status` names the mode and the wait.
+- `AGENTS.md` and the handoff skill treat Claude Code's "[Usage limit approaching" note as a heads-up to mention and keep working; "[Usage limit reached" is still the moment to hand off. Run `specweave update` in a project to refresh its `AGENTS.md`.
+
 ## [3.0.10] - 2026-10-10
 
 ### Fixed

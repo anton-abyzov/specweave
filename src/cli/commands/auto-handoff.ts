@@ -1,20 +1,23 @@
 /**
  * CLI Commands: auto-handoff, statusline, usage-guard
  *
- *   specweave auto-handoff [on|off|status] [--at 90] [--checkpoint-only | --handoff]
+ *   specweave auto-handoff [on|off|status] [--mode suggest|enforce|checkpoint] [--at 95] [--wait-under 30]
  *   specweave statusline [--wrap "<your status line command>"]   (Claude Code status line)
  *   specweave usage-guard                                          (Stop hook, Claude Code and Codex)
  *   specweave usage-guard --limit-hit                              (StopFailure hook, Claude Code and Grok Build)
  *
  * `auto-handoff on` wires the tools once, in the user's own settings. Every
- * hook saves a local checkpoint. In the default `handoff` mode the Stop hook
- * also asks the session, once per usage window, to run `specweave handoff`
- * when any window reaches the threshold, and a turn that fails on the rate
- * limit hands off from the StopFailure hook itself. `--checkpoint-only` keeps
- * only the checkpoints, for plans where credits or a proxy keep working past
- * the limit. Inside SpecWeave Studio the hooks only save the checkpoint:
- * Studio switches provider between turns. The Stop hook also stays quiet
- * outside a SpecWeave project and for a Codex plan whose credits will last.
+ * hook saves a local checkpoint. When any window reaches the threshold, the
+ * Stop hook acts once per usage window: in the default `suggest` mode the
+ * session tells the user a handoff is available and keeps working; in
+ * `enforce` mode it runs `specweave handoff` and stops. Neither happens when
+ * every full window resets within `--wait-under` minutes. A turn that fails on
+ * the rate limit hands off from the StopFailure hook itself in both modes.
+ * `checkpoint` mode keeps only the checkpoints, for plans where credits or a
+ * proxy keep working past the limit. Inside SpecWeave Studio the hooks only
+ * save the checkpoint: Studio switches provider between turns. The Stop hook
+ * also stays quiet outside a SpecWeave project and for a Codex plan whose
+ * credits will last.
  *
  * @module cli/commands/auto-handoff
  */
@@ -24,8 +27,8 @@ import * as os from 'os';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {
-  DEFAULT_THRESHOLD, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
-  handsOff, studioThreadId, codexCreditsLast, CREDIT_MINUTES_LOW, CREDIT_BURN_WINDOW_MS, type AutoHandoffMode, latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
+  DEFAULT_THRESHOLD, DEFAULT_WAIT_UNDER_MINUTES, AUTO_HANDOFF_MODES, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
+  handsOff, enforces, usageDecision, minutesPhrase, studioThreadId, type AutoHandoffSettings, codexCreditsLast, CREDIT_MINUTES_LOW, CREDIT_BURN_WINDOW_MS, type AutoHandoffMode, latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
 import { queueSessionCheckpoint } from '../../core/session/session-checkpoint.js';
 import { detectTool } from '../../core/tasks/ledger.js';
@@ -63,11 +66,12 @@ export async function statuslineCommand(opts: { wrap?: string; home?: string } =
   }
   const cwd = (input.workspace as { current_dir?: string } | undefined)?.current_dir ?? (input.cwd as string | undefined) ?? process.cwd();
   const model = (input.model as { display_name?: string } | undefined)?.display_name;
-  const settings = readSettings(opts.home);
-  const top = fullest(windows);
   // Same rule as the Stop hook: outside a project nothing is handed off, so nothing is announced.
-  const due = !!settings && handsOff(settings) && !!top && top.percent >= settings.at && !!findProjectRoot(cwd);
-  process.stdout.write([path.basename(cwd), model, windows.length ? usageSummary(windows) : '', due ? 'hand off' : '']
+  const decision = findProjectRoot(cwd) ? usageDecision(readSettings(opts.home), windows) : { kind: 'none' as const };
+  const note = decision.kind === 'enforce' ? 'hand off'
+    : decision.kind === 'suggest' ? 'handoff available'
+    : decision.kind === 'wait' && decision.resetMinutes !== undefined ? `resets in ${minutesPhrase(decision.resetMinutes)}` : '';
+  process.stdout.write([path.basename(cwd), model, windows.length ? usageSummary(windows) : '', note]
     .filter(Boolean).join(' · ') + '\n');
   return 0;
 }
@@ -164,11 +168,24 @@ function shellQuote(s: string): string {
 
 export interface AutoHandoffOptions {
   at?: number;
-  /** Only save local checkpoints; never stop on usage. */
+  /** `suggest`, `enforce` or `checkpoint`. */
+  mode?: string;
+  /** Minutes; when every full window resets sooner, nothing is suggested or enforced. 0 turns it off. */
+  waitUnder?: number;
+  /** Same as `--mode checkpoint`. */
   checkpointOnly?: boolean;
-  /** Back to the default after `--checkpoint-only`. */
+  /** Same as `--mode enforce` (the only mode before 3.0.11). */
   handoff?: boolean;
   home?: string;
+}
+
+/** What `on` says about the mode it set. */
+export function modeSummary(settings: AutoHandoffSettings): string {
+  const wait = settings.waitUnder ?? DEFAULT_WAIT_UNDER_MINUTES;
+  const waitRule = wait > 0 ? ` Nothing is said when every full window resets within ${wait} min: waiting is cheaper than moving the work.` : '';
+  if (settings.mode === 'checkpoint') return 'Auto-handoff is on in checkpoint-only mode: local checkpoints refresh after turns, at most once every five minutes, and usage never stops work. Run `specweave auto-handoff on --mode suggest` (or `enforce`) to act at the threshold again.';
+  if (enforces(settings)) return `Auto-handoff is on at ${settings.at}% in enforce mode: the first time a session reaches ${settings.at}% of any usage window, it runs \`specweave handoff\` and stops, and tells you to say "pick up" in another tool or account.${waitRule} Local checkpoints are saved after turns in between.`;
+  return `Auto-handoff is on at ${settings.at}% in suggest mode: the first time a session reaches ${settings.at}% of any usage window, it tells you once that you can say "hand off", and keeps working. A turn that hits the limit still hands off by itself.${waitRule} Run \`specweave auto-handoff on --mode enforce\` to stop at the threshold instead.`;
 }
 
 export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOptions = {}): Promise<number> {
@@ -179,11 +196,17 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
   const say = (line: string) => process.stdout.write(line + '\n');
 
   if (action === 'on') {
-    const at = opts.at ?? readSettings(home)?.at ?? DEFAULT_THRESHOLD;
-    if (!(at > 0 && at <= 100)) { process.stderr.write('--at takes a percentage from 1 to 100\n'); return 2; }
-    if (opts.checkpointOnly && opts.handoff) { process.stderr.write('Choose one of --checkpoint-only and --handoff\n'); return 2; }
     const previous = readSettings(home);
-    const mode: AutoHandoffMode = opts.checkpointOnly ? 'checkpoint' : opts.handoff ? 'handoff' : previous?.mode ?? 'handoff';
+    const at = opts.at ?? previous?.at ?? DEFAULT_THRESHOLD;
+    if (!(at > 0 && at <= 100)) { process.stderr.write('--at takes a percentage from 1 to 100\n'); return 2; }
+    const waitUnder = opts.waitUnder ?? previous?.waitUnder ?? DEFAULT_WAIT_UNDER_MINUTES;
+    if (!(Number.isFinite(waitUnder) && waitUnder >= 0)) { process.stderr.write('--wait-under takes minutes, 0 or more\n'); return 2; }
+    if (opts.mode !== undefined && !AUTO_HANDOFF_MODES.includes(opts.mode as AutoHandoffMode)) {
+      process.stderr.write(`--mode takes one of ${AUTO_HANDOFF_MODES.join(', ')}\n`); return 2;
+    }
+    const asked = new Set([opts.mode, opts.checkpointOnly ? 'checkpoint' : undefined, opts.handoff ? 'enforce' : undefined].filter(Boolean));
+    if (asked.size > 1) { process.stderr.write('Choose one mode: --mode, --checkpoint-only or --handoff\n'); return 2; }
+    const mode: AutoHandoffMode = ([...asked][0] as AutoHandoffMode | undefined) ?? previous?.mode ?? 'suggest';
     const claude = readJson(claudeFile);
     let previousStatusLine = previous?.previousStatusLine;
     if (!claude) {
@@ -210,12 +233,11 @@ export async function autoHandoffCommand(action = 'status', opts: AutoHandoffOpt
     }
     if (fs.existsSync(path.join(home, '.grok'))) {
       writeJson(grokFile, grokHook());
-      say(`Grok Build: StopFailure hook added in ${grokFile}; ${mode === 'handoff' ? 'it hands off right after a turn hits the rate limit, since Grok shows no usage percentage' : 'it saves a local checkpoint after a rate-limit failure'}`);
+      say(`Grok Build: StopFailure hook added in ${grokFile}; ${mode !== 'checkpoint' ? 'it hands off right after a turn hits the rate limit, since Grok shows no usage percentage' : 'it saves a local checkpoint after a rate-limit failure'}`);
     }
-    writeSettings({ at, mode, since: new Date().toISOString(), ...(previousStatusLine ? { previousStatusLine } : {}) }, home);
-    say(mode === 'handoff'
-      ? `Auto-handoff is on at ${at}%: the first time a session reaches ${at}% of any usage window, it runs \`specweave handoff\` and tells you to say "pick up" in another tool or account. Local checkpoints are saved after turns in between.`
-      : 'Auto-handoff is on in checkpoint-only mode: local checkpoints refresh after turns, at most once every five minutes, and usage never stops work. Run `specweave auto-handoff on --handoff` to hand off at the threshold again.');
+    const settings: AutoHandoffSettings = { at, mode, waitUnder, since: new Date().toISOString(), ...(previousStatusLine ? { previousStatusLine } : {}) };
+    writeSettings(settings, home);
+    say(modeSummary(settings));
     return 0;
   }
 
@@ -294,9 +316,14 @@ function readingLine(r: UsageReading | undefined, now: number): string {
 export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string[] {
   const settings = readSettings(home);
   if (!settings) return ['Auto-handoff is off. Turn it on with `specweave auto-handoff on`.'];
-  const lines = [handsOff(settings)
-    ? `Auto-handoff is on at ${settings.at}% (since ${settings.since ?? 'unknown'}): a session hands off once per usage window at the threshold, and saves local checkpoints in between.`
-    : `Auto-handoff is on in checkpoint-only mode (since ${settings.since ?? 'unknown'}): local background checkpoints every five minutes after turns; usage never stops work.`];
+  const wait = settings.waitUnder ?? DEFAULT_WAIT_UNDER_MINUTES;
+  const waitRule = wait > 0 ? `; nothing when every full window resets within ${wait} min` : '';
+  const since = `since ${settings.since ?? 'unknown'}`;
+  const lines = [settings.mode === 'checkpoint'
+    ? `Auto-handoff is on in checkpoint-only mode (${since}): local background checkpoints every five minutes after turns; usage never stops work.`
+    : enforces(settings)
+      ? `Auto-handoff is on at ${settings.at}% in enforce mode (${since}): a session hands off and stops once per usage window at the threshold${waitRule}, and saves local checkpoints in between.`
+      : `Auto-handoff is on at ${settings.at}% in suggest mode (${since}): a session tells you once per usage window at the threshold that you can say "hand off", and keeps working${waitRule}. A turn that hits the limit hands off by itself.`];
   let broken = false;
 
   const claude = readJson(path.join(home, '.claude', 'settings.json'));
@@ -334,9 +361,10 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
       const top = fullest(codexReading.windows, now);
       // Same two conditions as the Stop hook: a window at the threshold, and credits about to run out.
       const due = !!top && top.percent >= settings.at && !codexCreditsLast({ windows: codexReading.windows, credits: true, creditMinutesLeft: left });
+      const asked = enforces(settings) ? 'asked to hand off' : 'told a handoff is available';
       lines.push(due
-        ? `  This Codex plan's credits are running out: about ${Math.max(1, Math.round(left ?? 0))} min left at the current rate, so a session in a project is asked to hand off at its next stop.`
-        : `  This Codex plan has credits, which keep it working past the limit. A session in a project at ${settings.at}% or more is asked to hand off only when its log shows under ${CREDIT_MINUTES_LOW} minutes of credits left at the rate they are being spent${left !== undefined ? ` (about ${span(Math.round(left))} now)` : ''}; checkpoints are saved either way.`);
+        ? `  This Codex plan's credits are running out: about ${Math.max(1, Math.round(left ?? 0))} min left at the current rate, so a session in a project is ${asked} at its next stop.`
+        : `  This Codex plan has credits, which keep it working past the limit. A session in a project at ${settings.at}% or more is ${asked} only when its log shows under ${CREDIT_MINUTES_LOW} minutes of credits left at the rate they are being spent${left !== undefined ? ` (about ${span(Math.round(left))} now)` : ''}; checkpoints are saved either way.`);
     }
     if (ok && !trusted) lines.push('  Codex skips a hook until you trust it: open `codex` in a terminal and approve the hook when it asks. It asks again whenever the hook changes, for example after `auto-handoff on` with a new SpecWeave version.');
   }
@@ -347,7 +375,7 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
   }
   lines.push(`Local checkpoints: ${path.join(home, '.specweave', 'checkpoints')} (per worktree and session; current.json points to the latest complete save).`);
   lines.push(handsOff(settings)
-    ? 'Checkpoints never push or release claims; the handoff at the threshold does, so the next tool can `specweave pickup`.'
+    ? 'Checkpoints never push or release claims; a handoff does, so the next tool can `specweave pickup`.'
     : 'To transfer work to another tool or machine, run `specweave handoff` explicitly. Automatic checkpoints never push or release claims.');
   if (studioThreadId()) lines.push('Running inside SpecWeave Studio: hooks only save checkpoints here, and Studio switches provider between turns.');
   if (broken) lines.push('Run `specweave auto-handoff on` again to put the missing pieces back.');

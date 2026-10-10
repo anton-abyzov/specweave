@@ -22,9 +22,9 @@ commands=(
     'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria'
     'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
-    'auto-handoff:on | off | status\: hand off automatically at a share of the usage limit (default 90%) and save local checkpoints'
+    'auto-handoff:on | off | status\: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints'
     'statusline:Claude Code status line that records usage for auto-handoff'
-    'usage-guard:Stop hook\: save a local checkpoint; at the auto-handoff threshold, ask the agent to hand off once'
+    'usage-guard:Stop hook\: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once'
     'autocompact:on | off | status\: where Claude Code summarizes a long session (default 400k)'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
@@ -190,9 +190,11 @@ _specweave() {
                     ;;
                 auto-handoff)
                     _arguments \
-                        '--at[Threshold in percent of any usage window]' \
-                        '--checkpoint-only[Only save local checkpoints; never stop on usage (credits or a proxy keep working)]' \
-                        '--handoff[Hand off at the threshold again after --checkpoint-only]' \
+                        '--mode[suggest (default)\: tell you once at the threshold and keep working; enforce\: hand off and stop; checkpoint\: only save local checkpoints]' \
+                        '--at[Threshold in percent of any usage window (default 95)]' \
+                        '--wait-under[Do nothing at the threshold when the limit resets sooner than this (default 30; 0 turns it off)]' \
+                        '--checkpoint-only[Same as --mode checkpoint]' \
+                        '--handoff[Same as --mode enforce]' \
                         '--help[Show help]'
                     ;;
                 statusline)
