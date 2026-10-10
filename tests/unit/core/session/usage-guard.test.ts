@@ -493,12 +493,12 @@ describe('specweave auto-handoff status', () => {
     expect(codexLine()).toContain('This Codex plan has credits');
     expect(codexLine()).toContain('at 90% or more is asked to hand off only when');
     const healthy = rolloutOf('low', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))]);
-    expect(codexLine()).toContain('under 60 minutes of credits left at the rate they are being spent (about 1440 min now)');
+    expect(codexLine()).toContain('under 60 minutes of credits left at the rate they are being spent (about 24 h now)');
     // A log from hours ago says nothing about the rate now.
     const old = (NOW - 3 * 3600_000) / 1000;
     fs.utimesSync(healthy, old, old);
     expect(codexLine()).toContain('This Codex plan has credits');
-    expect(codexLine()).not.toContain('min now');
+    expect(codexLine()).not.toContain(' now)');
   });
 
   it('names checkpoint-only mode', async () => {
