@@ -1,0 +1,9 @@
+{
+  "name": "@specweave/subscription-switch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": { "specweave-switch": "bin/specweave-switch.mjs" },
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test test/*.test.mjs", "start": "node bin/specweave-switch.mjs serve" }
+}
