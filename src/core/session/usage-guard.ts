@@ -17,7 +17,11 @@
  * the agent runs `specweave handoff`. Under the threshold it prints `{}`: no
  * tokens, no files.
  *
- * Two cases never steer the model. `mode: "checkpoint"` is for plans where
+ * It only asks inside a SpecWeave project (the hook's `cwd` is in one), since
+ * `specweave handoff` has nothing to hand off anywhere else, and never a Codex
+ * session whose plan has credits: Codex keeps working past 100% on those.
+ *
+ * Two more cases never steer the model. `mode: "checkpoint"` is for plans where
  * credits or a proxy keep working past 100%: only local checkpoints are saved.
  * Inside SpecWeave Studio (`SPECWEAVE_STUDIO_THREAD_ID` is set) Studio switches
  * provider between turns itself, so the hooks only save the checkpoint it reads.
@@ -229,8 +233,30 @@ export function claudeFallbackReading(opts: { env?: NodeJS.ProcessEnv; home?: st
   return readings.sort((a, b) => b.at - a.at)[0];
 }
 
-/** Windows from the newest `token_count` event in a Codex rollout file. */
-export function codexWindows(transcriptPath: string): UsageWindow[] {
+/** What the newest `token_count` event in a Codex rollout file says about the plan. */
+export interface CodexUsage {
+  windows: UsageWindow[];
+  /** Credits (or an unlimited plan) keep Codex working after a window is full. */
+  credits: boolean;
+}
+
+interface CodexRateLimits {
+  primary?: { used_percent?: number; window_minutes?: number; resets_at?: number } | null;
+  secondary?: { used_percent?: number; window_minutes?: number; resets_at?: number } | null;
+  credits?: { has_credits?: boolean; unlimited?: boolean; balance?: string | number | null } | null;
+}
+
+/** `credits.balance` is a decimal string; a zero balance buys nothing. */
+function codexHasCredits(credits: CodexRateLimits['credits']): boolean {
+  if (!credits) return false;
+  if (credits.unlimited === true) return true;
+  if (credits.has_credits !== true) return false;
+  return credits.balance === undefined || credits.balance === null || Number(credits.balance) > 0;
+}
+
+/** Windows and credits from the newest `token_count` event in a Codex rollout file. */
+export function codexUsage(transcriptPath: string): CodexUsage {
+  const none: CodexUsage = { windows: [], credits: false };
   let text: string;
   try {
     const fd = fs.openSync(transcriptPath, 'r');
@@ -244,26 +270,31 @@ export function codexWindows(transcriptPath: string): UsageWindow[] {
       fs.closeSync(fd);
     }
   } catch {
-    return [];
+    return none;
   }
   const lines = text.split('\n');
   for (let i = lines.length - 1; i >= 0; i--) {
     if (!lines[i].includes('"rate_limits"')) continue;
     try {
-      const limits = (JSON.parse(lines[i]) as { payload?: { rate_limits?: Record<string, { used_percent?: number; window_minutes?: number; resets_at?: number } | null> } }).payload?.rate_limits;
+      const limits = (JSON.parse(lines[i]) as { payload?: { rate_limits?: CodexRateLimits } }).payload?.rate_limits;
       if (!limits) continue;
       const out: UsageWindow[] = [];
-      for (const key of ['primary', 'secondary']) {
+      for (const key of ['primary', 'secondary'] as const) {
         const w = limits[key];
         if (!w || typeof w.used_percent !== 'number') continue;
         const mins = w.window_minutes;
         const name = mins === 300 ? '5-hour' : mins === 10080 ? 'weekly' : mins ? `${mins}-minute` : key;
         out.push({ name, percent: w.used_percent, ...(typeof w.resets_at === 'number' ? { resetsAt: w.resets_at } : {}) });
       }
-      if (out.length) return out;
+      if (out.length) return { windows: out, credits: codexHasCredits(limits.credits) };
     } catch { /* a partial first line in the tail; keep looking */ }
   }
-  return [];
+  return none;
+}
+
+/** Windows from the newest `token_count` event in a Codex rollout file. */
+export function codexWindows(transcriptPath: string): UsageWindow[] {
+  return codexUsage(transcriptPath).windows;
 }
 
 export interface UsageReading {
@@ -271,6 +302,8 @@ export interface UsageReading {
   /** Epoch milliseconds of the reading. */
   at: number;
   windows: UsageWindow[];
+  /** Codex only: credits keep it working past a full window, so it is never asked to hand off. */
+  credits?: boolean;
 }
 
 /** The newest usage any Claude Code session's status line recorded. */
@@ -306,8 +339,8 @@ function newestFile(dir: string, match: (name: string) => boolean, depth: number
 export function latestCodexReading(home = os.homedir()): UsageReading | undefined {
   const file = newestFile(path.join(home, '.codex', 'sessions'), (n) => n.startsWith('rollout-') && n.endsWith('.jsonl'), 3);
   if (!file) return undefined;
-  const windows = codexWindows(file);
-  return windows.length ? { tool: 'Codex', at: fs.statSync(file).mtimeMs, windows } : undefined;
+  const { windows, credits } = codexUsage(file);
+  return windows.length ? { tool: 'Codex', at: fs.statSync(file).mtimeMs, windows, ...(credits ? { credits } : {}) } : undefined;
 }
 
 /** The fullest window that has not reset yet. */
@@ -342,6 +375,8 @@ export function handoffInstruction(w: UsageWindow): string {
 
 export interface GuardInput {
   session_id?: string;
+  /** Where the session runs; both tools send it. */
+  cwd?: string;
   transcript_path?: string;
   stop_hook_active?: boolean;
 }
@@ -362,12 +397,15 @@ export interface GuardOutput {
 /**
  * Stop-hook output. The first time a session is at or past the threshold in a
  * usage window, it keeps the agent going so it hands off; otherwise `{}`.
+ * Also `{}` outside a SpecWeave project (a plain chat has nothing to hand off)
+ * and for a Codex plan with credits, which keeps working past the limit.
  */
 export function usageGuard(input: GuardInput, opts: { home?: string; now?: number; env?: NodeJS.ProcessEnv; platform?: NodeJS.Platform } = {}): GuardOutput {
   const settings = readSettings(opts.home);
   if (!settings || !handsOff(settings) || studioThreadId(opts.env)) return {};
   const id = safeId(String(input.session_id ?? ''));
   if (!id) return {};
+  if (typeof input.cwd !== 'string' || !findProjectRoot(input.cwd)) return {};
   const now = opts.now ?? Date.now();
   const marker = path.join(usageDir(opts.home), `${id}.handed-off`);
   if (!rearmed(marker, now)) return {};
@@ -376,7 +414,9 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   // Codex: its session log. Claude Code: what the status line saw in this
   // session (terminal only), else the desktop app's samples or Claude Code's
   // own usage cache, whichever is fresher.
-  let windows = rollout ? codexWindows(rollout) : readClaudeUsage(id, opts.home);
+  const codex = rollout ? codexUsage(rollout) : undefined;
+  if (codex?.credits) return {};
+  let windows = codex ? codex.windows : readClaudeUsage(id, opts.home);
   if (!rollout && !windows.length) windows = claudeFallbackReading({ env: opts.env, home: opts.home, now, platform: opts.platform })?.windows ?? [];
   const top = fullest(windows, now);
   if (!top || top.percent < settings.at) return {};

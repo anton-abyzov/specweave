@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  usageGuard, recordClaudeUsage, codexWindows, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading, studioThreadId,
+  usageGuard, recordClaudeUsage, codexWindows, codexUsage, writeSettings, readSettings, latestCodexReading, claudeCachedReading, desktopUsageReading, claudeFallbackReading, studioThreadId,
 } from '../../../../src/core/session/usage-guard.js';
 import { autoHandoffCommand, autoHandoffStatus, codexHookTrusted, statuslineCommand, usageGuardCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
@@ -11,6 +11,8 @@ vi.mock('../../../../src/core/session/session-checkpoint.js', () => ({ queueSess
 import { queueSessionCheckpoint } from '../../../../src/core/session/session-checkpoint.js';
 
 let home: string;
+/** A SpecWeave project under the temp home; the guard only asks inside one. */
+let proj: string;
 const NOW = Date.parse('2026-09-25T20:00:00Z');
 const LATER = NOW / 1000 + 3600;
 // The shape Studio gives a worker its project coordinator delegated to.
@@ -28,7 +30,7 @@ function claudeStatus(session: string, fiveHour: number, weekly = 10) {
   };
 }
 
-function rollout(primary: number, secondary: number): string {
+function rollout(primary: number, secondary: number, credits?: Record<string, unknown>): string {
   const file = path.join(home, '.codex', 'sessions', '2026', '09', '25', 'rollout-2026-09-25T19-00-00-abc.jsonl');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const tokenCount = (p: number) => JSON.stringify({
@@ -38,6 +40,7 @@ function rollout(primary: number, secondary: number): string {
       rate_limits: {
         limit_id: 'codex', primary: { used_percent: p, window_minutes: 300, resets_at: LATER },
         secondary: { used_percent: secondary, window_minutes: 10080, resets_at: LATER + 86400 },
+        ...(credits ? { credits } : {}),
       },
     },
   });
@@ -55,6 +58,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   delete process.env.SPECWEAVE_STUDIO_THREAD_ID;
   home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-usage-'));
+  proj = path.join(home, 'proj');
+  fs.mkdirSync(path.join(proj, '.specweave'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.specweave', 'config.json'), '{}');
 });
 afterEach(() => fs.rmSync(home, { recursive: true, force: true }));
 
@@ -81,23 +87,23 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
       { name: '5-hour', percent: 93, resetsAt: LATER },
       { name: 'weekly', percent: 30, resetsAt: LATER },
     ]);
-    const res = usageGuard({ session_id: 'desk-1', transcript_path: path.join(home, 'x.jsonl') }, { home, now: NOW });
+    const res = usageGuard({ cwd: proj, session_id: 'desk-1', transcript_path: path.join(home, 'x.jsonl') }, { home, now: NOW });
     expect(res.hookSpecificOutput?.additionalContext).toContain('93% of the 5-hour limit');
   });
 
   it('ignores a cache older than an hour or saved for another account', () => {
     writeSettings({ at: 90 }, home);
     claudeCache(95, NOW - 61 * 60_000);
-    expect(usageGuard({ session_id: 'd1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 'd1' }, { home, now: NOW })).toEqual({});
     claudeCache(95, NOW - 60_000, { accountUuid: 'acc-2' });
-    expect(usageGuard({ session_id: 'd2' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 'd2' }, { home, now: NOW })).toEqual({});
   });
 
   it('prefers what this session\'s status line saw', () => {
     writeSettings({ at: 90 }, home);
     claudeCache(95, NOW - 60_000);
     recordClaudeUsage(claudeStatus('term-1', 40), home, NOW);
-    expect(usageGuard({ session_id: 'term-1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 'term-1' }, { home, now: NOW })).toEqual({});
   });
 
   function desktopSamples(samples: object[]) {
@@ -118,10 +124,10 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
     expect(desktopUsageReading({ home, now: NOW, env, ...mac })).toEqual({
       tool: 'Claude Code', at: NOW - 5 * 60_000, windows: [{ name: '5-hour', percent: 94 }, { name: 'weekly', percent: 31 }],
     });
-    const res = usageGuard({ session_id: 'desk-2' }, { home, now: NOW, env, ...mac });
+    const res = usageGuard({ cwd: proj, session_id: 'desk-2' }, { home, now: NOW, env, ...mac });
     expect(res.hookSpecificOutput?.additionalContext).toContain('94% of the 5-hour limit');
     // Another organization's session sees its own, lower sample.
-    expect(usageGuard({ session_id: 'desk-3' }, { home, now: NOW, env: { CLAUDE_CODE_ORGANIZATION_UUID: 'org-b' }, ...mac })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 'desk-3' }, { home, now: NOW, env: { CLAUDE_CODE_ORGANIZATION_UUID: 'org-b' }, ...mac })).toEqual({});
   });
 
   it('ignores a desktop sample older than 20 minutes, and several organizations with none named', () => {
@@ -156,16 +162,16 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
 describe('usage guard', () => {
   it('does nothing until auto-handoff is on', () => {
     recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
   });
 
   it('Claude Code: blocks once when the status line saw the 5-hour window past the threshold', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 50), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
 
     recordClaudeUsage(claudeStatus('s1', 92.4), home, NOW);
-    const first = usageGuard({ session_id: 's1' }, { home, now: NOW });
+    const first = usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW });
     // Not a block: Claude Code shows a block to the user as "Stop hook error".
     expect(first.decision).toBeUndefined();
     const context = first.hookSpecificOutput?.additionalContext ?? '';
@@ -175,20 +181,20 @@ describe('usage guard', () => {
     expect(context).toContain('"pick up"');
     expect(first.systemMessage).toBe('Auto-handoff: usage is at 92% of the 5-hour limit, so this session is handing off. Say "pick up" in another tool or account to continue.');
     // The handoff turn ends with another Stop; it must not loop.
-    expect(usageGuard({ session_id: 's1', stop_hook_active: true }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1', stop_hook_active: true }, { home, now: NOW })).toEqual({});
     // Other sessions are judged on their own.
-    expect(usageGuard({ session_id: 's2' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's2' }, { home, now: NOW })).toEqual({});
   });
 
   it('asks again in a later window once the window that triggered the handoff has reset', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW }).hookSpecificOutput).toBeDefined();
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW + 60_000 })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).hookSpecificOutput).toBeDefined();
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW + 60_000 })).toEqual({});
     // The 5-hour window resets; the session keeps going and fills the next one.
     const next = LATER + 5 * 3600;
     recordClaudeUsage({ ...claudeStatus('s1', 93), rate_limits: { five_hour: { used_percentage: 93, resets_at: next } } }, home, NOW);
-    const again = usageGuard({ session_id: 's1' }, { home, now: (LATER + 60) * 1000 });
+    const again = usageGuard({ cwd: proj, session_id: 's1' }, { home, now: (LATER + 60) * 1000 });
     expect(again.hookSpecificOutput?.additionalContext).toContain('93% of the 5-hour limit');
   });
 
@@ -196,13 +202,13 @@ describe('usage guard', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
     fs.writeFileSync(path.join(home, '.specweave', 'usage', 's1.handed-off'), '2026-09-25T20:00:00.000Z 5-hour 95\n');
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
   });
 
   it('ignores a window that has already reset', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: (LATER + 1) * 1000 })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: (LATER + 1) * 1000 })).toEqual({});
   });
 
   it('Codex: reads the newest token_count in the rollout the hook points at', () => {
@@ -212,29 +218,66 @@ describe('usage guard', () => {
       { name: '5-hour', percent: 88, resetsAt: LATER },
       { name: 'weekly', percent: 40, resetsAt: LATER + 86400 },
     ]);
-    const res = usageGuard({ session_id: 'abc', transcript_path: file }, { home, now: NOW });
+    const res = usageGuard({ cwd: proj, session_id: 'abc', transcript_path: file }, { home, now: NOW });
     expect(res.decision).toBe('block'); // Codex reads a block reason
     expect(res.reason).toContain('88% of the 5-hour limit');
   });
 
   it('Codex: the weekly window counts too', () => {
     writeSettings({ at: 90 }, home);
-    const res = usageGuard({ session_id: 'abc', transcript_path: rollout(30, 91) }, { home, now: NOW });
+    const res = usageGuard({ cwd: proj, session_id: 'abc', transcript_path: rollout(30, 91) }, { home, now: NOW });
     expect(res.reason).toContain('91% of the weekly limit');
+  });
+
+  it('Codex: a plan with credits keeps working past 100%, so it is never asked to hand off', () => {
+    writeSettings({ at: 90 }, home);
+    // What Codex Desktop logged on a Pro plan at its weekly limit with credits left.
+    const file = rollout(30, 100, { has_credits: true, unlimited: false, balance: '48664.5782495000' });
+    expect(codexUsage(file)).toEqual({
+      windows: [{ name: '5-hour', percent: 30, resetsAt: LATER }, { name: 'weekly', percent: 100, resetsAt: LATER + 86400 }],
+      credits: true,
+    });
+    expect(usageGuard({ cwd: proj, session_id: 'abc', transcript_path: file }, { home, now: NOW })).toEqual({});
+    expect(fs.existsSync(path.join(home, '.specweave', 'usage', 'abc.handed-off'))).toBe(false);
+    expect(usageGuard({ cwd: proj, session_id: 'abc', transcript_path: rollout(30, 100, { has_credits: false, unlimited: true }) }, { home, now: NOW })).toEqual({});
+  });
+
+  it('Codex: no credits, or an empty balance, still hands off', () => {
+    writeSettings({ at: 90 }, home);
+    for (const [id, credits] of [['a', { has_credits: false, unlimited: false, balance: '0' }], ['b', { has_credits: true, unlimited: false, balance: '0' }], ['c', null]] as const) {
+      const res = usageGuard({ cwd: proj, session_id: id, transcript_path: rollout(30, 100, credits ?? undefined) }, { home, now: NOW });
+      expect(res.reason, id).toContain('100% of the weekly limit');
+    }
+  });
+
+  it('asks nothing outside a SpecWeave project: a plain chat has nothing to hand off', () => {
+    writeSettings({ at: 90 }, home);
+    recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
+    const file = rollout(30, 100);
+    // Codex Desktop starts a chat with no folder in the home directory, where ~/.specweave has no config.json.
+    expect(usageGuard({ cwd: home, session_id: 'abc', transcript_path: file }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: home, session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(fs.readdirSync(path.join(home, '.specweave', 'usage')).filter((n) => n.endsWith('.handed-off'))).toEqual([]);
+    // The same sessions inside a project, or a folder under it, are asked.
+    const sub = path.join(proj, 'src');
+    fs.mkdirSync(sub);
+    expect(usageGuard({ cwd: sub, session_id: 'abc', transcript_path: file }, { home, now: NOW }).decision).toBe('block');
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).hookSpecificOutput).toBeDefined();
   });
 
   it('never reads a Claude transcript as a Codex rollout', () => {
     writeSettings({ at: 90 }, home);
     const file = path.join(home, 'transcript.jsonl');
     fs.writeFileSync(file, JSON.stringify({ payload: { rate_limits: { primary: { used_percent: 99 } } } }) + '\n');
-    expect(usageGuard({ session_id: 'x', transcript_path: file }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 'x', transcript_path: file }, { home, now: NOW })).toEqual({});
   });
 
   it('rejects session ids that could escape the usage folder', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage({ ...claudeStatus('../../evil', 99) }, home, NOW);
     expect(fs.existsSync(path.join(home, 'evil.json'))).toBe(false);
-    expect(usageGuard({ session_id: '../../evil' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: '../../evil' }, { home, now: NOW })).toEqual({});
   });
 });
 
@@ -302,6 +345,17 @@ describe('specweave auto-handoff status', () => {
     expect(lines[4]).toContain(path.join(home, '.specweave', 'checkpoints'));
     expect(lines[5]).toContain('the handoff at the threshold does');
     expect(lines).toHaveLength(6);
+  });
+
+  it('says when Codex credits keep its sessions from being asked to hand off', async () => {
+    fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
+    await quiet(() => autoHandoffCommand('on', { home }));
+    rollout(30, 100, { has_credits: true, unlimited: false, balance: '12.5' });
+    const lines = autoHandoffStatus(home);
+    const at = lines.findIndex((l) => l.startsWith('Codex: '));
+    expect(lines[at]).toContain('last reading 5-hour 30% · weekly 100%');
+    expect(lines[at + 1]).toContain('This Codex plan has credits');
+    expect(latestCodexReading(home)?.credits).toBe(true);
   });
 
   it('names checkpoint-only mode', async () => {
@@ -394,14 +448,14 @@ describe('auto-handoff modes', () => {
     fs.writeFileSync(path.join(home, '.specweave', 'auto-handoff.json'), JSON.stringify({ at: 90, since: '2026-10-08T00:00:00Z' }));
     expect(readSettings(home)?.mode).toBe('handoff');
     recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW }).hookSpecificOutput?.additionalContext).toContain('95% of the 5-hour limit');
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).hookSpecificOutput?.additionalContext).toContain('95% of the 5-hour limit');
   });
 
   it('checkpoint-only never steers the model, at any percentage', () => {
     writeSettings({ at: 90, mode: 'checkpoint' }, home);
     recordClaudeUsage(claudeStatus('s1', 100), home, NOW);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW })).toEqual({});
-    expect(usageGuard({ session_id: 'abc', transcript_path: rollout(99, 10) }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 'abc', transcript_path: rollout(99, 10) }, { home, now: NOW })).toEqual({});
     expect(fs.existsSync(path.join(home, '.specweave', 'usage', 's1.handed-off'))).toBe(false);
   });
 
@@ -409,9 +463,9 @@ describe('auto-handoff modes', () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
     const env = { SPECWEAVE_STUDIO_THREAD_ID: 'thread-1' };
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW, env })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW, env })).toEqual({});
     // The same session outside Studio still hands off.
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW, env: {} }).hookSpecificOutput).toBeDefined();
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW, env: {} }).hookSpecificOutput).toBeDefined();
   });
 
   it('a delegated Studio worker id with percent signs still counts as inside Studio', () => {
@@ -419,7 +473,7 @@ describe('auto-handoff modes', () => {
     recordClaudeUsage(claudeStatus('s1', 92), home, NOW);
     const env = { SPECWEAVE_STUDIO_THREAD_ID: WORKER_THREAD_ID };
     expect(studioThreadId(env)).toBe(WORKER_THREAD_ID);
-    expect(usageGuard({ session_id: 's1' }, { home, now: NOW, env })).toEqual({});
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW, env })).toEqual({});
     expect(studioThreadId({ SPECWEAVE_STUDIO_THREAD_ID: '' })).toBeUndefined();
   });
 
@@ -438,7 +492,7 @@ describe('usage-guard hook command', () => {
   it('saves a checkpoint on every Stop and asks for the handoff once at the threshold', async () => {
     writeSettings({ at: 90 }, home);
     recordClaudeUsage(claudeStatus('s1', 50), home, NOW);
-    const input = JSON.stringify({ session_id: 's1', cwd: home });
+    const input = JSON.stringify({ session_id: 's1', cwd: proj });
     expect(await quiet(() => usageGuardCommand({ home, input, env: {} }))).toBe('{}\n');
     recordClaudeUsage({ session_id: 's1', rate_limits: { five_hour: { used_percentage: 92 } } }, home, Date.now());
     const out = JSON.parse(await quiet(() => usageGuardCommand({ home, input, env: {} })));
@@ -449,9 +503,7 @@ describe('usage-guard hook command', () => {
 
   it('a rate-limited turn inside Studio only saves a checkpoint', async () => {
     writeSettings({ at: 90 }, home);
-    fs.mkdirSync(path.join(home, 'proj', '.specweave'), { recursive: true });
-    fs.writeFileSync(path.join(home, 'proj', '.specweave', 'config.json'), '{}');
-    const input = JSON.stringify({ session_id: 's9', cwd: path.join(home, 'proj'), error: 'rate_limit' });
+    const input = JSON.stringify({ session_id: 's9', cwd: proj, error: 'rate_limit' });
     expect(await quiet(() => usageGuardCommand({ home, input, limitHit: true, env: { SPECWEAVE_STUDIO_THREAD_ID: 't-1' } }))).toBe('{}\n');
     expect(queueSessionCheckpoint).toHaveBeenCalledOnce();
     expect(fs.existsSync(path.join(home, '.specweave', 'usage', 's9.limit-hit'))).toBe(false);
