@@ -12,10 +12,13 @@
  *                `rate_limits.primary` / `secondary` `.used_percent` to the
  *                rollout file the hook's `transcript_path` points at.
  *
- * The Stop hook (`specweave usage-guard`) then blocks the stop once per
- * session and usage window when any window is at or past the threshold, and
- * the agent runs `specweave handoff`. Under the threshold it prints `{}`: no
- * tokens, no files.
+ * The Stop hook (`specweave usage-guard`) acts once per session and usage
+ * window when any window is at or past the threshold (95% by default). In the
+ * default `suggest` mode it only tells the user, and the work goes on; in
+ * `enforce` mode it stops the session and the agent runs `specweave handoff`.
+ * When every full window resets within `waitUnder` minutes (30 by default) it
+ * does neither: waiting for the reset costs less than moving the work. Under
+ * the threshold it prints `{}`: no tokens, no files.
  *
  * It only asks inside a SpecWeave project (the hook's `cwd` is in one), since
  * `specweave handoff` has nothing to hand off anywhere else. A Codex plan with
@@ -35,7 +38,13 @@ import * as os from 'os';
 import * as path from 'path';
 import { findProjectRoot } from '../../utils/find-project-root.js';
 
-export const DEFAULT_THRESHOLD = 90;
+export const DEFAULT_THRESHOLD = 95;
+/** The default before 3.0.11; a settings file from then that still holds it moves to the new one. */
+const LEGACY_THRESHOLD = 90;
+/** When every full window resets sooner than this many minutes, waiting beats a handoff. */
+export const DEFAULT_WAIT_UNDER_MINUTES = 30;
+/** Settings files without this version were written before 3.0.11, when the only mode stopped the session. */
+export const SETTINGS_VERSION = 2;
 
 /** The shortest usage window; a session that hit the limit may hit it again after this. */
 export const LIMIT_HIT_REARM_MS = 5 * 60 * 60 * 1000;
@@ -49,13 +58,22 @@ export interface UsageWindow {
   resetsAt?: number;
 }
 
-/** `handoff`: stop once at the threshold and hand off. `checkpoint`: only save local checkpoints. */
-export type AutoHandoffMode = 'handoff' | 'checkpoint';
+/**
+ * `suggest`: at the threshold, tell the user once that a handoff is available and keep working.
+ * `enforce`: at the threshold, stop once and hand off.
+ * `checkpoint`: only save local checkpoints; usage never steers the model.
+ */
+export type AutoHandoffMode = 'suggest' | 'enforce' | 'checkpoint';
+
+export const AUTO_HANDOFF_MODES: readonly AutoHandoffMode[] = ['suggest', 'enforce', 'checkpoint'];
 
 export interface AutoHandoffSettings {
   at: number;
-  /** Missing means `handoff`, including settings written by 3.0.6. */
+  /** Missing means `suggest`. Files written before 3.0.11 read as `suggest` unless they say `checkpoint`. */
   mode?: AutoHandoffMode;
+  /** Minutes. When every window at the threshold resets sooner, nothing is suggested or enforced; 0 turns the rule off. */
+  waitUnder?: number;
+  version?: number;
   since?: string;
   /** Status line command that was there before `auto-handoff on`, restored by `off`. */
   previousStatusLine?: unknown;
@@ -73,19 +91,37 @@ function safeId(sessionId: string): string | undefined {
   return /^[\w.-]{1,128}$/.test(sessionId) && !sessionId.includes('..') ? sessionId : undefined;
 }
 
+/**
+ * The stored settings, with defaults filled in. A file written before 3.0.11
+ * (no `version`) had one mode that stopped the session at 90%; it now reads as
+ * `suggest` at 95%, keeping `checkpoint` and any threshold the user chose.
+ */
 export function readSettings(home?: string): AutoHandoffSettings | undefined {
+  let raw: Omit<AutoHandoffSettings, 'mode'> & { mode?: string };
   try {
-    const raw = JSON.parse(fs.readFileSync(path.join(specweaveHome(home), 'auto-handoff.json'), 'utf8')) as AutoHandoffSettings;
-    const at = Number(raw.at);
-    return { ...raw, at: at > 0 && at <= 100 ? at : DEFAULT_THRESHOLD, mode: raw.mode === 'checkpoint' ? 'checkpoint' : 'handoff' };
+    raw = JSON.parse(fs.readFileSync(path.join(specweaveHome(home), 'auto-handoff.json'), 'utf8'));
+    if (!raw || typeof raw !== 'object') return undefined;
   } catch {
     return undefined;
   }
+  const legacy = raw.version !== SETTINGS_VERSION;
+  let at = Number(raw.at);
+  if (!(at > 0 && at <= 100) || (legacy && at === LEGACY_THRESHOLD)) at = DEFAULT_THRESHOLD;
+  const mode: AutoHandoffMode = raw.mode === 'checkpoint' ? 'checkpoint'
+    : !legacy && (raw.mode === 'enforce' || raw.mode === 'handoff') ? 'enforce' : 'suggest';
+  const wait = Number(raw.waitUnder);
+  const waitUnder = raw.waitUnder !== undefined && raw.waitUnder !== null && Number.isFinite(wait) && wait >= 0 ? wait : DEFAULT_WAIT_UNDER_MINUTES;
+  return { ...raw, at, mode, waitUnder, version: SETTINGS_VERSION };
+}
+
+/** Whether these settings let usage steer the model at all (suggest or enforce), not only save checkpoints. */
+export function handsOff(settings: AutoHandoffSettings | undefined): boolean {
+  return !!settings && settings.mode !== 'checkpoint';
 }
 
 /** Whether these settings stop the session and hand off at the threshold. */
-export function handsOff(settings: AutoHandoffSettings | undefined): boolean {
-  return !!settings && settings.mode !== 'checkpoint';
+export function enforces(settings: AutoHandoffSettings | undefined): boolean {
+  return !!settings && settings.mode === 'enforce';
 }
 
 /**
@@ -101,7 +137,7 @@ export function writeSettings(settings: AutoHandoffSettings | undefined, home?: 
   const file = path.join(specweaveHome(home), 'auto-handoff.json');
   if (!settings) { fs.rmSync(file, { force: true }); return; }
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n');
+  fs.writeFileSync(file, JSON.stringify({ ...settings, version: SETTINGS_VERSION }, null, 2) + '\n');
 }
 
 /** Windows from Claude Code's status line input (`rate_limits`). */
@@ -228,10 +264,22 @@ export function desktopUsageReading(opts: { env?: NodeJS.ProcessEnv; home?: stri
   return windows.length ? { tool: 'Claude Code', at, windows } : undefined;
 }
 
-/** The freshest reading for a Claude Code session that runs no status line. */
+/**
+ * The freshest reading for a Claude Code session that runs no status line.
+ * Desktop samples carry no reset times; a window's reset does not move until
+ * it passes, so one still ahead in the usage cache is borrowed for it.
+ */
 export function claudeFallbackReading(opts: { env?: NodeJS.ProcessEnv; home?: string; now?: number; platform?: NodeJS.Platform } = {}): UsageReading | undefined {
   const readings = [desktopUsageReading(opts), claudeCachedReading(opts)].filter((r): r is UsageReading => !!r);
-  return readings.sort((a, b) => b.at - a.at)[0];
+  const [best, other] = readings.sort((a, b) => b.at - a.at);
+  if (!best || !other) return best;
+  const now = opts.now ?? Date.now();
+  const windows = best.windows.map((w) => {
+    if (w.resetsAt) return w;
+    const resetsAt = other.windows.find((o) => o.name === w.name)?.resetsAt;
+    return resetsAt && resetsAt * 1000 > now ? { ...w, resetsAt } : w;
+  });
+  return { ...best, windows };
 }
 
 /** What the newest `token_count` events in a Codex rollout file say about the plan. */
@@ -460,14 +508,62 @@ function rearmed(marker: string, now: number): boolean {
   }
 }
 
-/** `creditMinutes`: a Codex plan that got this far on credits, with about that many minutes of them left. */
-export function handoffInstruction(w: UsageWindow, creditMinutes?: number): string {
+/** "25 min", "2 h 10 min", "4 days". */
+export function minutesPhrase(minutes: number): string {
+  const m = Math.max(1, Math.round(minutes));
+  if (m < 60) return `${m} min`;
+  if (m < 48 * 60) return `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`;
+  return `${Math.round(m / 1440)} days`;
+}
+
+/**
+ * What the guard does about the usage it read:
+ *   `none`     under the threshold, or usage never steers the model (checkpoint mode);
+ *   `wait`     at the threshold, but every full window resets within `waitUnder` minutes;
+ *   `suggest`  tell the user once that a handoff is available, keep working;
+ *   `enforce`  stop once and hand off.
+ * `resetMinutes` is when the last of the full windows resets, when every one of them says.
+ */
+export type UsageDecision =
+  | { kind: 'none' }
+  | { kind: 'wait' | 'suggest' | 'enforce'; window: UsageWindow; resetMinutes?: number };
+
+/** Minutes until every given window has reset, or undefined when one of them has no reset time. */
+export function minutesUntilReset(windows: UsageWindow[], now = Date.now()): number | undefined {
+  if (!windows.length || windows.some((w) => !w.resetsAt)) return undefined;
+  return Math.max(0, (Math.max(...windows.map((w) => w.resetsAt as number)) * 1000 - now) / 60_000);
+}
+
+export function usageDecision(settings: AutoHandoffSettings | undefined, windows: UsageWindow[], now = Date.now()): UsageDecision {
+  if (!settings || !handsOff(settings)) return { kind: 'none' };
+  const top = fullest(windows, now);
+  if (!top || top.percent < settings.at) return { kind: 'none' };
+  const full = windows.filter((w) => w.percent >= settings.at && (!w.resetsAt || w.resetsAt * 1000 > now));
+  const resetMinutes = minutesUntilReset(full, now);
+  const known = resetMinutes !== undefined ? { resetMinutes } : {};
+  if (resetMinutes !== undefined && resetMinutes < (settings.waitUnder ?? DEFAULT_WAIT_UNDER_MINUTES)) return { kind: 'wait', window: top, ...known };
+  return { kind: enforces(settings) ? 'enforce' : 'suggest', window: top, ...known };
+}
+
+function usageState(w: UsageWindow, resetMinutes?: number, creditMinutes?: number): string {
   const pct = Math.round(w.percent);
   const low = creditMinutes !== undefined;
-  const state = `Usage is at ${pct}% of the ${w.name} limit${low ? ` and credits are running out (about ${Math.max(1, Math.round(creditMinutes))} min left at the current rate)` : ''}.`;
-  const reason = `usage at ${pct}% of the ${w.name} limit${low ? ', credits running out' : ''}`;
-  return `${state} Hand off now so no work is lost: run \`specweave handoff --reason "${reason}"\`, ` +
+  return `Usage is at ${pct}% of the ${w.name} limit${low ? ` and credits are running out (about ${Math.max(1, Math.round(creditMinutes))} min left at the current rate)` : ''}.` +
+    (resetMinutes !== undefined ? ` It resets in ${minutesPhrase(resetMinutes)}.` : '');
+}
+
+/** `creditMinutes`: a Codex plan that got this far on credits, with about that many minutes of them left. */
+export function handoffInstruction(w: UsageWindow, creditMinutes?: number, resetMinutes?: number): string {
+  const pct = Math.round(w.percent);
+  const reason = `usage at ${pct}% of the ${w.name} limit${creditMinutes !== undefined ? ', credits running out' : ''}`;
+  return `${usageState(w, resetMinutes, creditMinutes)} Hand off now so no work is lost: run \`specweave handoff --reason "${reason}"\`, ` +
     `then tell the user in one line that they can say "pick up" in another tool or account to continue, and stop.`;
+}
+
+/** The `suggest` mode note: the model tells the user once and does not stop on its own account. */
+export function suggestionInstruction(w: UsageWindow, creditMinutes?: number, resetMinutes?: number): string {
+  return `${usageState(w, resetMinutes, creditMinutes)} This is a heads-up, not a stop: do not hand off or stop because of it. ` +
+    `Add one line to your reply telling the user, and that they can say "hand off" to continue in another tool or account; then finish as you were about to.`;
 }
 
 export interface GuardInput {
@@ -493,10 +589,12 @@ export interface GuardOutput {
 
 /**
  * Stop-hook output. The first time a session is at or past the threshold in a
- * usage window, it keeps the agent going so it hands off; otherwise `{}`.
- * Also `{}` outside a SpecWeave project (a plain chat has nothing to hand off)
- * and for a Codex plan whose credits keep it working past the limit, until
- * they are about to run out.
+ * usage window, it keeps the agent going for one more reply: to tell the user
+ * a handoff is available (`suggest`) or to hand off (`enforce`); otherwise `{}`.
+ * Also `{}` when every full window resets within `waitUnder` minutes, outside
+ * a SpecWeave project (a plain chat has nothing to hand off) and for a Codex
+ * plan whose credits keep it working past the limit, until they are about to
+ * run out.
  */
 export function usageGuard(input: GuardInput, opts: { home?: string; now?: number; env?: NodeJS.ProcessEnv; platform?: NodeJS.Platform } = {}): GuardOutput {
   const settings = readSettings(opts.home);
@@ -516,19 +614,27 @@ export function usageGuard(input: GuardInput, opts: { home?: string; now?: numbe
   if (codex && codexCreditsLast(codex)) return {};
   let windows = codex ? codex.windows : readClaudeUsage(id, opts.home);
   if (!rollout && !windows.length) windows = claudeFallbackReading({ env: opts.env, home: opts.home, now, platform: opts.platform })?.windows ?? [];
-  const top = fullest(windows, now);
-  if (!top || top.percent < settings.at) return {};
+  const decision = usageDecision(settings, windows, now);
+  // `wait` writes no marker: the reset only gets closer, and after it the window starts fresh.
+  if (decision.kind === 'none' || decision.kind === 'wait') return {};
+  const { window: top, resetMinutes } = decision;
 
   try {
     fs.mkdirSync(path.dirname(marker), { recursive: true });
-    fs.writeFileSync(marker, JSON.stringify({ at: new Date(now).toISOString(), window: top.name, percent: top.percent, ...(top.resetsAt ? { resetsAt: top.resetsAt } : {}) }) + '\n');
+    fs.writeFileSync(marker, JSON.stringify({ at: new Date(now).toISOString(), mode: decision.kind, window: top.name, percent: top.percent, ...(top.resetsAt ? { resetsAt: top.resetsAt } : {}) }) + '\n');
   } catch {
     return {}; // without the marker it would fire every turn; stay quiet instead
   }
-  if (codex) return { decision: 'block', reason: handoffInstruction(top, codex.credits ? codex.creditMinutesLeft : undefined) };
+  const creditMinutes = codex?.credits ? codex.creditMinutesLeft : undefined;
+  const instruction = (decision.kind === 'enforce' ? handoffInstruction : suggestionInstruction)(top, creditMinutes, resetMinutes);
+  if (codex) return { decision: 'block', reason: instruction };
+  const pct = Math.round(top.percent);
+  const resets = resetMinutes !== undefined ? `, which resets in ${minutesPhrase(resetMinutes)}` : '';
   return {
-    hookSpecificOutput: { hookEventName: 'Stop', additionalContext: handoffInstruction(top) },
-    systemMessage: `Auto-handoff: usage is at ${Math.round(top.percent)}% of the ${top.name} limit, so this session is handing off. Say "pick up" in another tool or account to continue.`,
+    hookSpecificOutput: { hookEventName: 'Stop', additionalContext: instruction },
+    systemMessage: decision.kind === 'enforce'
+      ? `Auto-handoff: usage is at ${pct}% of the ${top.name} limit${resets}, so this session is handing off. Say "pick up" in another tool or account to continue.`
+      : `Auto-handoff: usage is at ${pct}% of the ${top.name} limit${resets}. Work continues; say "hand off" to move it to another tool or account.`,
   };
 }
 
@@ -553,15 +659,31 @@ export interface LimitHitInput {
 }
 
 /**
+ * Minutes until a session that just hit the limit can go on: when the last
+ * full window resets. The reading may predate the jump to 100%, so with no
+ * window at the threshold the fullest one counts. Undefined when unknown.
+ */
+export function limitResetMinutes(windows: UsageWindow[], at: number, now = Date.now()): number | undefined {
+  const live = windows.filter((w) => !w.resetsAt || w.resetsAt * 1000 > now);
+  const full = live.filter((w) => w.percent >= at);
+  const top = fullest(live, now);
+  return minutesUntilReset(full.length ? full : top ? [top] : [], now);
+}
+
+/**
  * Where a rate-limited turn should hand off, or undefined when it should not:
  * auto-handoff is off or checkpoint-only, the session runs inside Studio, the
- * failure is not a rate limit, the session already wrote one in the last five
- * hours, or the directory is not a SpecWeave project. Writes its marker before returning, so a retry storm
- * hands off once. The marker is separate from the Stop hook's: a session that
- * was asked to hand off at 90% and still ran out writes a fresh handoff.
+ * failure is not a rate limit, the limit resets within `waitUnder` minutes
+ * (the session can wait it out), the session already wrote one in the last
+ * five hours, or the directory is not a SpecWeave project. Both `suggest` and
+ * `enforce` hand off here: the session cannot go on, so this is the last
+ * moment to write the handoff. Writes its marker before returning, so a retry
+ * storm hands off once. The marker is separate from the Stop hook's: a session
+ * that was asked at the threshold and still ran out writes a fresh handoff.
  */
-export function limitHitTarget(input: LimitHitInput, opts: { home?: string; now?: number; env?: NodeJS.ProcessEnv } = {}): string | undefined {
-  if (!handsOff(readSettings(opts.home)) || studioThreadId(opts.env)) return undefined;
+export function limitHitTarget(input: LimitHitInput, opts: { home?: string; now?: number; env?: NodeJS.ProcessEnv; platform?: NodeJS.Platform } = {}): string | undefined {
+  const settings = readSettings(opts.home);
+  if (!settings || !handsOff(settings) || studioThreadId(opts.env)) return undefined;
   if (input.error !== 'rate_limit') return undefined;
   const id = safeId(String(input.sessionId ?? input.session_id ?? ''));
   if (!id) return undefined;
@@ -569,6 +691,10 @@ export function limitHitTarget(input: LimitHitInput, opts: { home?: string; now?
   const root = start ? findProjectRoot(start) ?? undefined : undefined;
   if (!root) return undefined;
   const now = opts.now ?? Date.now();
+  let windows = readClaudeUsage(id, opts.home);
+  if (!windows.length) windows = claudeFallbackReading({ env: opts.env, home: opts.home, now, platform: opts.platform })?.windows ?? [];
+  const reset = limitResetMinutes(windows, settings.at, now);
+  if (reset !== undefined && reset < (settings.waitUnder ?? DEFAULT_WAIT_UNDER_MINUTES)) return undefined;
   const marker = path.join(usageDir(opts.home), `${id}.limit-hit`);
   try {
     if (now - fs.statSync(marker).mtimeMs < LIMIT_HIT_REARM_MS) return undefined;

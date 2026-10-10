@@ -249,16 +249,18 @@ program
     process.exitCode = await noteCommand(text, { incrementId });
   });
 
-// Auto-handoff - hand off by itself near the plan's usage limit, with local checkpoints (Claude Code, Codex, Grok Build)
+// Auto-handoff - suggest or make a handoff near the plan's usage limit, with local checkpoints (Claude Code, Codex, Grok Build)
 program
   .command('auto-handoff [action]')
-  .description('on | off | status: hand off automatically at a share of the usage limit (default 90%) and save local checkpoints')
-  .option('--at <percent>', 'Threshold in percent of any usage window', (v) => Number(v))
-  .option('--checkpoint-only', 'Only save local checkpoints; never stop on usage (credits or a proxy keep working)')
-  .option('--handoff', 'Hand off at the threshold again after --checkpoint-only')
+  .description('on | off | status: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints')
+  .option('--mode <mode>', 'suggest (default): tell you once at the threshold and keep working; enforce: hand off and stop; checkpoint: only save local checkpoints')
+  .option('--at <percent>', 'Threshold in percent of any usage window (default 95)', (v) => Number(v))
+  .option('--wait-under <minutes>', 'Do nothing at the threshold when the limit resets sooner than this (default 30; 0 turns it off)', (v) => Number(v))
+  .option('--checkpoint-only', 'Same as --mode checkpoint')
+  .option('--handoff', 'Same as --mode enforce')
   .action(async (action, options) => {
     const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
-    process.exitCode = await autoHandoffCommand(action, { at: options.at, checkpointOnly: options.checkpointOnly === true, handoff: options.handoff === true });
+    process.exitCode = await autoHandoffCommand(action, { at: options.at, mode: options.mode, waitUnder: options.waitUnder, checkpointOnly: options.checkpointOnly === true, handoff: options.handoff === true });
   });
 
 program
@@ -272,7 +274,7 @@ program
 
 program
   .command('usage-guard')
-  .description('Stop hook: save a local checkpoint; at the auto-handoff threshold, ask the agent to hand off once')
+  .description('Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once')
   .option('--limit-hit', 'StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)')
   .action(async (options) => {
     const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');

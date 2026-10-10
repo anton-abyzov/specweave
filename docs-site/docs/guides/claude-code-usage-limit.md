@@ -69,14 +69,15 @@ The step-by-step version is [Switch from Claude Code to Codex without losing you
 On your own machine, SpecWeave can watch the limit for you:
 
 ```bash
-specweave auto-handoff on          # hand off at 90% of the five-hour or weekly window
-specweave auto-handoff on --at 80  # or pick your own threshold
+specweave auto-handoff on                 # heads-up at 95% of the five-hour or weekly window
+specweave auto-handoff on --mode enforce  # or stop and hand off there
+specweave auto-handoff on --at 90         # or pick your own threshold
 specweave auto-handoff status
 ```
 
-In Claude Code it reads the five-hour and weekly usage from the status line. In Codex it reads the rate limits Codex writes to its session log. When the fullest window crosses the threshold, a Stop hook pauses the agent once per window, has it run `specweave handoff`, and tells you to say "pick up" in the next tool. Under the threshold it adds nothing to your conversation.
+In Claude Code it reads the five-hour and weekly usage from the status line. In Codex it reads the rate limits Codex writes to its session log. When the fullest window crosses the threshold, a Stop hook has the agent tell you once per window that a handoff is available and keeps working; with `--mode enforce` it has the agent run `specweave handoff` and tells you to say "pick up" in the next tool. When the limit resets within 30 minutes it stays quiet, since waiting is cheaper than moving. Under the threshold it adds nothing to your conversation.
 
-If one long turn jumps straight past 90 percent and Claude Code stops on the limit, a second hook writes the handoff itself, without the model, so your latest edits are still pushed. The 90 percent check needs a terminal session: the desktop app, Remote Control and `claude -p` run no status line, so there the limit hook is what hands off.
+When Claude Code stops on the limit, a second hook writes the handoff itself, without the model, so your latest edits are still pushed. The threshold check needs a terminal session: the desktop app, Remote Control and `claude -p` run no status line, so there the limit hook is what hands off.
 
 Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) have no status line or user hooks. There, the agent hands off when Claude Code warns that the limit is near, or when you say "hand off". [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool.
 

@@ -141,7 +141,7 @@ Notes:
 - claude@cloud 0m ago: Payment thread: drafts must never store card data
 ```
 
-In any tool you can also just say "hand off" or "pick up where I left off"; `AGENTS.md` maps those words to the two commands. On your own machine, `specweave auto-handoff on` makes Claude Code and Codex hand off by themselves at 90% of the usage limit. See [Handoff and pickup](/docs/guides/cross-tool-handoff) for the details and the flags.
+In any tool you can also just say "hand off" or "pick up where I left off"; `AGENTS.md` maps those words to the two commands. On your own machine, `specweave auto-handoff on` makes Claude Code and Codex tell you at 95% of the usage limit that a handoff is available, and hand off by themselves when a turn hits the limit. See [Handoff and pickup](/docs/guides/cross-tool-handoff) for the details and the flags.
 
 ## Parallel threads
 

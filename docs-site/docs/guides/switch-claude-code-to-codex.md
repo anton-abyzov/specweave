@@ -89,7 +89,7 @@ On your own machine, turn on automatic handoff once:
 specweave auto-handoff on
 ```
 
-At 90 percent of the five-hour or weekly window, Claude Code (and Codex, if `~/.codex` exists) stops once, runs the handoff, and tells you to say "pick up" in the other tool. If Claude Code hits the limit in the middle of a turn, a hook writes the handoff without the model. See [Auto-handoff rules](/docs/guides/auto-handoff/) for each tool.
+At 95 percent of the five-hour or weekly window, Claude Code (and Codex, if `~/.codex` exists) tells you once that you can say "hand off"; with `--mode enforce` it stops there, runs the handoff, and tells you to say "pick up" in the other tool. If Claude Code hits the limit in the middle of a turn, a hook writes the handoff without the model. See [Auto-handoff rules](/docs/guides/auto-handoff/) for each tool.
 
 ## Other directions
 
