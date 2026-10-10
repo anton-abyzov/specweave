@@ -1,0 +1,37 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:09.485
+Verified here: native project coordination. Device deployment is checked separately.
+
+2
+00:00:09.486 --> 00:00:18.718
+Coordinator and worker defaults are independent. Existing threads retain their own model choices.
+
+3
+00:00:18.723 --> 00:00:30.816
+This Codex coordinator completed the verified native run. Its conversation stays in the project.
+
+4
+00:00:30.817 --> 00:00:43.041
+This Claude conversation completed in the verified native run. No new inference starts in this recording.
+
+5
+00:00:43.078 --> 00:00:53.184
+The coordinator keeps the routing history while worker details open on the right.
+
+6
+00:00:53.185 --> 00:01:01.317
+Resolve organizes finished work without deleting its history.
+
+7
+00:01:01.317 --> 00:01:09.449
+Reopen the same thread when related work returns.
+
+8
+00:01:09.450 --> 00:01:19.654
+Open Usage to compare the actual coordinator and worker token totals by model.
+
+9
+00:01:19.655 --> 00:01:29.844
+Thread shares explain where tokens went. Cache reporting can be incomplete, and API-equivalent cost is not money paid.
