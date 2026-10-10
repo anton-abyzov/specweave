@@ -183,7 +183,7 @@ program
 // Handoff command - Assemble a portable cross-tool work-handoff doc + diff
 program
   .command('handoff [incrementId]')
-  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account')
+  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs')
   .option('--all', 'Write .specweave/handoffs/<date>-INDEX.md and index.json: every active increment and every nested repo with local-only work (writes nothing else)')
   .option('--dry-run', 'With --all: print the index instead of writing it')
   .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
@@ -199,6 +199,11 @@ program
   .option('--no-push', 'Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)')
   .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
   .action(async (incrementId, options) => {
+    if (incrementId === 'list') {
+      const { handoffListCommand } = await import('../dist/src/cli/commands/pickup.js');
+      process.exitCode = await handoffListCommand({ json: options.json });
+      return;
+    }
     const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
     await handoffCommand({
       incrementId,
@@ -220,14 +225,16 @@ program
 
 // Pickup command - everything a fresh session needs, in one read
 program
-  .command('pickup [incrementId]')
-  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria')
+  .command('pickup [target...]')
+  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest')
   .option('--no-apply', 'Only show the waiting handoff; do not apply it to this checkout')
   .option('--all', 'Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing')
+  .option('--list', 'Print the pending handoffs with their ids, newest first; changes nothing')
   .option('--json', 'Output as JSON')
-  .action(async (incrementId, options) => {
+  .action(async (target, options) => {
     const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
-    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply, all: options.all });
+    const incrementId = Array.isArray(target) && target.length ? target.join(' ') : undefined;
+    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply, all: options.all, list: options.list });
   });
 
 // Report command - HTML timeline of an increment's ledger (handoff evidence)

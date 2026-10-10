@@ -12,7 +12,10 @@
  * session tells the user a handoff is available and keeps working; in
  * `enforce` mode it runs `specweave handoff` and stops. Neither happens when
  * every full window resets within `--wait-under` minutes. A turn that fails on
- * the rate limit hands off from the StopFailure hook itself in both modes.
+ * the rate limit hands off from the StopFailure hook itself in both modes: an
+ * increment handoff, or, for a session in a worktree or nested repository or
+ * with several increments active, a marked checkpoint of its own checkout that
+ * `specweave handoff list` shows and `specweave pickup <id>` takes.
  * `checkpoint` mode keeps only the checkpoints, for plans where credits or a
  * proxy keep working past the limit. Inside SpecWeave Studio the hooks only
  * save the checkpoint: Studio switches provider between turns. The Stop hook
@@ -30,8 +33,9 @@ import {
   DEFAULT_THRESHOLD, DEFAULT_WAIT_UNDER_MINUTES, AUTO_HANDOFF_MODES, readSettings, writeSettings, recordClaudeUsage, usageGuard, usageSummary, fullest, limitHitTarget,
   handsOff, enforces, usageDecision, minutesPhrase, studioThreadId, type AutoHandoffSettings, codexCreditsLast, CREDIT_MINUTES_LOW, CREDIT_BURN_WINDOW_MS, type AutoHandoffMode, latestClaudeReading, latestCodexReading, claudeCachedReading, desktopUsageReading, type UsageReading,
 } from '../../core/session/usage-guard.js';
-import { queueSessionCheckpoint } from '../../core/session/session-checkpoint.js';
-import { detectTool } from '../../core/tasks/ledger.js';
+import { queueSessionCheckpoint, markSessionHandoff, clearSessionHandoff, checkpointIdentity } from '../../core/session/session-checkpoint.js';
+import { detectTool, getAgentId } from '../../core/tasks/ledger.js';
+import { resolveIncrement, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 import { findProjectRoot } from '../../utils/find-project-root.js';
 
 const GUARD_COMMAND = 'specweave usage-guard';
@@ -90,13 +94,22 @@ export async function usageGuardCommand(opts: { home?: string; limitHit?: boolea
     if (opts.limitHit) {
       const root = limitHitTarget(input, { home: opts.home, env: opts.env });
       if (root) {
-        const { handoffCommand } = await import('./handoff.js');
         const tool = detectTool();
-        await handoffCommand({ cwd: root, reason: tool === 'cli' ? 'usage limit reached' : `usage limit reached in ${tool}` });
+        const reason = tool === 'cli' ? 'usage limit reached' : `usage limit reached in ${tool}`;
+        if (needsSessionHandoff(root, input)) {
+          // One project, several sessions: hand off this session's own checkout
+          // instead of an increment it may not be working on.
+          markSessionHandoff(input, { by: getAgentId(), reason }, { home: opts.home });
+          queueSessionCheckpoint(input, { home: opts.home, force: true, reason });
+        } else {
+          const { handoffCommand } = await import('./handoff.js');
+          await handoffCommand({ cwd: root, reason });
+        }
       } else if (readSettings(opts.home) && input.error === 'rate_limit') {
         queueSessionCheckpoint(input, { home: opts.home });
       }
     } else if (readSettings(opts.home)) {
+      clearSessionHandoff(input, { home: opts.home });
       queueSessionCheckpoint(input, { home: opts.home });
       result = usageGuard(input, { home: opts.home, env: opts.env });
     }
@@ -104,6 +117,28 @@ export async function usageGuardCommand(opts: { home?: string; limitHit?: boolea
   // The limit-hit hook's output is ignored; keep stdout valid JSON either way.
   process.stdout.write(JSON.stringify(opts.limitHit ? {} : result) + '\n');
   return 0;
+}
+
+/**
+ * A session that hit the limit hands off through its own checkpoint when an
+ * increment handoff would describe someone else's work: it ran in a worktree
+ * or nested repository inside the project, or several increments are active
+ * and nothing says which one is its.
+ */
+export function needsSessionHandoff(root: string, input: { session_id?: string; sessionId?: string; cwd?: string; workspaceRoot?: string }): boolean {
+  const identity = checkpointIdentity(input);
+  if (!identity) return false;
+  let project = root;
+  try { project = fs.realpathSync(root); } catch { /* keep as given */ }
+  // Its own checkout (a worktree or nested repository), not just a subfolder.
+  const rel = path.relative(project, identity.cwd);
+  if (rel && !rel.startsWith('..') && !path.isAbsolute(rel) && fs.existsSync(path.join(identity.cwd, '.git'))) return true;
+  try {
+    resolveIncrement(root);
+    return false;
+  } catch (e) {
+    return e instanceof IncrementResolutionError && e.candidates.length > 1;
+  }
 }
 
 interface HookEntry { type?: string; command?: string; timeout?: number; env?: Record<string, string> }

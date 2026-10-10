@@ -95,6 +95,16 @@ increment, the next task with its acceptance criteria and any notes. If it repor
 uncommitted changes or a diverged branch, do what it says; never discard the user's
 edits. Then continue with sw-do.
 
+Several sessions can hand off in one project (each increment's handoff, and a session
+that hit the limit in a worktree or with several increments active). `specweave handoff
+list` shows them, newest first, with short ids: an increment's number such as `0874`,
+or the worktree's folder name. When the user names one ("pick up 0874", "pick up the
+studio release"), run `specweave pickup <what they named>`. With none named, `pickup`
+takes the newest and lists the others; say in one line which one you took. If the name
+matches several, it lists them and changes nothing: ask which one, or take the one the
+conversation makes clear. A session handoff's edits are still in its own checkout:
+work there.
+
 ## Notes and the record
 
 - `specweave note "<text>"` leaves a message for whoever works on the increment next.

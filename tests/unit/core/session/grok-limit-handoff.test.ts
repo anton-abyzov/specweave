@@ -5,7 +5,10 @@ import * as path from 'path';
 import { limitHitTarget, writeSettings, recordClaudeUsage, limitResetMinutes, LIMIT_HIT_REARM_MS } from '../../../../src/core/session/usage-guard.js';
 import { autoHandoffCommand, grokHook, usageGuardCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
-vi.mock('../../../../src/core/session/session-checkpoint.js', () => ({ queueSessionCheckpoint: vi.fn() }));
+vi.mock('../../../../src/core/session/session-checkpoint.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/core/session/session-checkpoint.js')>()),
+  queueSessionCheckpoint: vi.fn(),
+}));
 import { queueSessionCheckpoint } from '../../../../src/core/session/session-checkpoint.js';
 
 let home: string;
