@@ -62,17 +62,21 @@ Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives th
 
 ## Hand off by itself
 
-To hand off by itself, the user runs `specweave auto-handoff on` once (Claude Code,
-Codex and Grok Build, on their own machine; not in cloud sessions). A session then hands
-off at 90% of the 5-hour or weekly limit (`--at <percent>` to change it), and a Claude
-Code or Grok turn that hits the limit outright hands off from a hook. `auto-handoff
-status` shows the hooks and the last usage reading. When its Stop hook asks you to hand
-off, run the handoff it names.
+The user runs `specweave auto-handoff on` once (Claude Code, Codex and Grok Build, on
+their own machine; not in cloud sessions). By default (`--mode suggest`) a session that
+reaches 95% of the 5-hour or weekly limit gets a heads-up from the Stop hook: tell the
+user in one line that they can say "hand off", and keep working. Do not hand off on a
+heads-up. With `--mode enforce` the Stop hook instead asks you to hand off: run the
+handoff it names and stop. Neither happens when the full windows reset within 30 minutes
+(`--wait-under`), since waiting is cheaper. In both modes a Claude Code or Grok turn that
+hits the limit outright hands off from a hook. `auto-handoff status` shows the mode, the
+hooks and the last usage reading.
 
 Claude Code also warns the model itself near and at the 5-hour limit, with a note that
-starts "[Usage limit approaching" or "[Usage limit reached". Treat that note as the
-handoff moment: finish the current edit, run `specweave handoff --reason "usage limit"`
-(one command; it needs no summary from you) and stop.
+starts "[Usage limit approaching" or "[Usage limit reached". "Approaching" is a
+heads-up: mention it in one line and keep working. "Reached" is the handoff moment:
+finish the current edit, run `specweave handoff --reason "usage limit"` (one command; it
+needs no summary from you) and stop.
 
 Between handoffs every hook also saves a local checkpoint under
 `~/.specweave/checkpoints/` (no model, network, push or claim change; `pickup` does

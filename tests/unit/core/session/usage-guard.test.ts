@@ -102,7 +102,7 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
   beforeEach(() => { delete process.env.CLAUDE_CONFIG_DIR; });
 
   it('reads Claude Code\'s usage cache when the status line never ran', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     claudeCache(93, NOW - 10 * 60_000);
     expect(claudeCachedReading({ home, now: NOW })?.windows).toEqual([
       { name: '5-hour', percent: 93, resetsAt: LATER },
@@ -113,7 +113,7 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
   });
 
   it('ignores a cache older than an hour or saved for another account', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     claudeCache(95, NOW - 61 * 60_000);
     expect(usageGuard({ cwd: proj, session_id: 'd1' }, { home, now: NOW })).toEqual({});
     claudeCache(95, NOW - 60_000, { accountUuid: 'acc-2' });
@@ -121,7 +121,7 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
   });
 
   it('prefers what this session\'s status line saw', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     claudeCache(95, NOW - 60_000);
     recordClaudeUsage(claudeStatus('term-1', 40), home, NOW);
     expect(usageGuard({ cwd: proj, session_id: 'term-1' }, { home, now: NOW })).toEqual({});
@@ -135,7 +135,7 @@ describe('usage guard: sessions without a status line (desktop, Remote Control, 
   const mac = { platform: 'darwin' as const };
 
   it('reads the desktop app\'s newest sample for this session\'s organization', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     desktopSamples([
       { t: NOW - 40 * 60_000, org: 'org-a', u: { fh: 50, sd: 20, xu: 0 } },
       { t: NOW - 5 * 60_000, org: 'org-a', u: { fh: 94, sd: 31, xu: 0 } },
@@ -187,7 +187,7 @@ describe('usage guard', () => {
   });
 
   it('Claude Code: blocks once when the status line saw the 5-hour window past the threshold', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 50), home, NOW);
     expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
 
@@ -200,7 +200,8 @@ describe('usage guard', () => {
     expect(context).toContain('Usage is at 92% of the 5-hour limit');
     expect(context).toContain('specweave handoff --reason "usage at 92% of the 5-hour limit"');
     expect(context).toContain('"pick up"');
-    expect(first.systemMessage).toBe('Auto-handoff: usage is at 92% of the 5-hour limit, so this session is handing off. Say "pick up" in another tool or account to continue.');
+    expect(context).toContain('It resets in 1 h.');
+    expect(first.systemMessage).toBe('Auto-handoff: usage is at 92% of the 5-hour limit, which resets in 1 h, so this session is handing off. Say "pick up" in another tool or account to continue.');
     // The handoff turn ends with another Stop; it must not loop.
     expect(usageGuard({ cwd: proj, session_id: 's1', stop_hook_active: true }, { home, now: NOW })).toEqual({});
     // Other sessions are judged on their own.
@@ -208,7 +209,7 @@ describe('usage guard', () => {
   });
 
   it('asks again in a later window once the window that triggered the handoff has reset', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
     expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).hookSpecificOutput).toBeDefined();
     expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW + 60_000 })).toEqual({});
@@ -220,20 +221,20 @@ describe('usage guard', () => {
   });
 
   it('a marker from 3.0.3 (no reset time) keeps the session handed off', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
     fs.writeFileSync(path.join(home, '.specweave', 'usage', 's1.handed-off'), '2026-09-25T20:00:00.000Z 5-hour 95\n');
     expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
   });
 
   it('ignores a window that has already reset', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
     expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: (LATER + 1) * 1000 })).toEqual({});
   });
 
   it('Codex: reads the newest token_count in the rollout the hook points at', () => {
-    writeSettings({ at: 85 }, home);
+    writeSettings({ at: 85, mode: 'enforce' }, home);
     const file = rollout(88, 40);
     expect(codexWindows(file)).toEqual([
       { name: '5-hour', percent: 88, resetsAt: LATER },
@@ -245,13 +246,13 @@ describe('usage guard', () => {
   });
 
   it('Codex: the weekly window counts too', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     const res = usageGuard({ cwd: proj, session_id: 'abc', transcript_path: rollout(30, 91) }, { home, now: NOW });
     expect(res.reason).toContain('91% of the weekly limit');
   });
 
   it('Codex: a plan with credits keeps working past 100%, so it is never asked to hand off', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     // What Codex Desktop logged on a Pro plan at its weekly limit with credits left.
     const file = rollout(30, 100, { has_credits: true, unlimited: false, balance: '48664.5782495000' });
     expect(codexUsage(file)).toEqual({
@@ -264,7 +265,7 @@ describe('usage guard', () => {
   });
 
   it('Codex: no credits, or an empty balance, still hands off', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     for (const [id, credits] of [['a', { has_credits: false, unlimited: false, balance: '0' }], ['b', { has_credits: true, unlimited: false, balance: '0' }], ['c', null]] as const) {
       const res = usageGuard({ cwd: proj, session_id: id, transcript_path: rollout(30, 100, credits ?? undefined) }, { home, now: NOW });
       expect(res.reason, id).toContain('100% of the weekly limit');
@@ -272,7 +273,7 @@ describe('usage guard', () => {
   });
 
   it('Codex: reads the plan limit, not another bucket that logged later', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     const none = { has_credits: false, unlimited: false, balance: '0' };
     // A session at 95% with no credits; Codex then logs its gpt-reserve bucket at 0% and a window-less premium one.
     const hidden = rolloutOf('hidden', [
@@ -294,7 +295,7 @@ describe('usage guard', () => {
   });
 
   it('Codex: credits that are about to run out do ask, once', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     // 2,400 credits gone in 30 minutes: the 600 left last about 7.5 minutes.
     const low = rolloutOf('low', [codexEvent(70, 100, credits(9000)), codexEvent(30, 100, credits(3000)), codexEvent(12, 100, credits(1500)), codexEvent(0, 100, credits(600))]);
     expect(codexUsage(low).creditMinutesLeft).toBeCloseTo(7.5, 5);
@@ -311,7 +312,7 @@ describe('usage guard', () => {
   });
 
   it('Codex: a small top-up does not hide a balance that is still running out', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     // 50 credits a minute before and after a top-up of 2,000: the 2,300 left last 46 minutes.
     const file = rolloutOf('partial', [codexEvent(55, 100, credits(3000)), codexEvent(10, 100, credits(750)), codexEvent(9, 100, credits(2750)), codexEvent(0, 100, credits(2300))]);
     expect(codexUsage(file).creditMinutesLeft).toBeCloseTo(46, 5);
@@ -319,7 +320,7 @@ describe('usage guard', () => {
   });
 
   it('Codex: reads back through a long log, past large lines and other buckets', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     const none = { has_credits: false, unlimited: false, balance: '0' };
     // Tool output with multi-byte text between records, 400 KB a line: 4 MB between the two balances, four chunks.
     const bulk = (i: number) => JSON.stringify({ type: 'response_item', payload: { type: 'function_call_output', output: `${i} "rate_limits" ` + 'é漢🙂 '.repeat(40_000) } });
@@ -346,7 +347,7 @@ describe('usage guard', () => {
   });
 
   it('Codex: a healthy, refilled, unlimited or unmeasured credit balance stays quiet', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     const stays = (name: string, lines: string[], minutes?: number) => {
       const file = rolloutOf(name, lines);
       const usage = codexUsage(file);
@@ -375,7 +376,7 @@ describe('usage guard', () => {
   });
 
   it('asks nothing outside a SpecWeave project: a plain chat has nothing to hand off', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
     const file = rollout(30, 100);
     // Codex Desktop starts a chat with no folder in the home directory, where ~/.specweave has no config.json.
@@ -391,14 +392,14 @@ describe('usage guard', () => {
   });
 
   it('never reads a Claude transcript as a Codex rollout', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     const file = path.join(home, 'transcript.jsonl');
     fs.writeFileSync(file, JSON.stringify({ payload: { rate_limits: { primary: { used_percent: 99 } } } }) + '\n');
     expect(usageGuard({ cwd: proj, session_id: 'x', transcript_path: file }, { home, now: NOW })).toEqual({});
   });
 
   it('rejects session ids that could escape the usage folder', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage({ ...claudeStatus('../../evil', 99) }, home, NOW);
     expect(fs.existsSync(path.join(home, 'evil.json'))).toBe(false);
     expect(usageGuard({ cwd: proj, session_id: '../../evil' }, { home, now: NOW })).toEqual({});
@@ -462,12 +463,13 @@ describe('specweave auto-handoff status', () => {
       `[hooks.state."${path.join(home, '.codex', 'hooks.json')}:stop:0:0"]\ntrusted_hash = "sha256:abc"\n`);
 
     const lines = autoHandoffStatus(home, NOW);
-    expect(lines[0]).toMatch(/^Auto-handoff is on at 90%/);
+    expect(lines[0]).toMatch(/^Auto-handoff is on at 95% in suggest mode/);
+    expect(lines[0]).toContain('nothing when every full window resets within 30 min');
     expect(lines[1]).toBe('Claude Code: status line, Stop and StopFailure hooks in place; last reading 5-hour 42% · weekly 12% (3 min ago)');
     expect(lines[2]).toContain('Desktop, Remote Control and `claude -p` sessions run no status line');
     expect(lines[3]).toBe('Codex: Stop hook in place; last reading 5-hour 61% · weekly 20% (10 min ago)');
     expect(lines[4]).toContain(path.join(home, '.specweave', 'checkpoints'));
-    expect(lines[5]).toContain('the handoff at the threshold does');
+    expect(lines[5]).toContain('a handoff does');
     expect(lines).toHaveLength(6);
   });
 
@@ -491,7 +493,7 @@ describe('specweave auto-handoff status', () => {
     // Under the threshold the hook does not ask, so status does not say it will.
     rolloutOf('low', [codexEvent(30, 40, credits(3000)), codexEvent(0, 41, credits(600))]);
     expect(codexLine()).toContain('This Codex plan has credits');
-    expect(codexLine()).toContain('at 90% or more is asked to hand off only when');
+    expect(codexLine()).toContain('at 95% or more is told a handoff is available only when');
     const healthy = rolloutOf('low', [codexEvent(30, 100, credits(49000)), codexEvent(0, 100, credits(48000))]);
     expect(codexLine()).toContain('under 60 minutes of credits left at the rate they are being spent (about 24 h now)');
     // A log from hours ago says nothing about the rate now.
@@ -586,11 +588,18 @@ describe('specweave statusline', () => {
   }
 
   it('says "hand off" only where the Stop hook would ask: inside a project', async () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     expect(await statusLine(proj)).toBe('proj · Opus · 5-hour 95% · weekly 10% · hand off\n');
     const plain = path.join(home, 'elsewhere');
     fs.mkdirSync(plain);
     expect(await statusLine(plain)).toBe('elsewhere · Opus · 5-hour 95% · weekly 10%\n');
+  });
+
+  it('names the mode: "handoff available" in suggest, the reset time while waiting', async () => {
+    writeSettings({ at: 90 }, home);
+    expect(await statusLine(proj)).toBe('proj · Opus · 5-hour 95% · weekly 10% · handoff available\n');
+    writeSettings({ at: 90, waitUnder: 90 }, home);
+    expect(await statusLine(proj)).toMatch(/^proj · Opus · 5-hour 95% · weekly 10% · resets in (59 min|1 h)\n$/);
   });
 
   it('records usage and passes the same input to a wrapped status line', async () => {
@@ -611,12 +620,103 @@ describe('specweave statusline', () => {
 
 
 describe('auto-handoff modes', () => {
-  it('3.0.6 settings without a mode hand off again', () => {
+  function legacySettings(settings: Record<string, unknown>) {
     fs.mkdirSync(path.join(home, '.specweave'), { recursive: true });
-    fs.writeFileSync(path.join(home, '.specweave', 'auto-handoff.json'), JSON.stringify({ at: 90, since: '2026-10-08T00:00:00Z' }));
-    expect(readSettings(home)?.mode).toBe('handoff');
-    recordClaudeUsage(claudeStatus('s1', 95), home, NOW);
-    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).hookSpecificOutput?.additionalContext).toContain('95% of the 5-hour limit');
+    fs.writeFileSync(path.join(home, '.specweave', 'auto-handoff.json'), JSON.stringify(settings));
+  }
+
+  it('settings written before 3.0.11 suggest at 95% instead of stopping at 90%', () => {
+    legacySettings({ at: 90, since: '2026-10-08T00:00:00Z' }); // 3.0.6: no mode
+    expect(readSettings(home)).toMatchObject({ at: 95, mode: 'suggest', waitUnder: 30 });
+    legacySettings({ at: 90, mode: 'handoff', since: '2026-10-10T00:00:00Z' }); // 3.0.7 to 3.0.10
+    expect(readSettings(home)).toMatchObject({ at: 95, mode: 'suggest' });
+    recordClaudeUsage(claudeStatus('s1', 91), home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
+    // A threshold the user picked and checkpoint-only are kept.
+    legacySettings({ at: 80, mode: 'handoff' });
+    expect(readSettings(home)).toMatchObject({ at: 80, mode: 'suggest' });
+    legacySettings({ at: 90, mode: 'checkpoint' });
+    expect(readSettings(home)?.mode).toBe('checkpoint');
+    // From 3.0.11 on the file carries a version, and enforce (or its old name) stays enforce.
+    writeSettings({ at: 90, mode: 'enforce' }, home);
+    expect(readSettings(home)).toMatchObject({ at: 90, mode: 'enforce', version: 2 });
+    legacySettings({ at: 90, mode: 'handoff', version: 2 });
+    expect(readSettings(home)?.mode).toBe('enforce');
+  });
+
+  it('suggest (the default) tells the user once and does not ask for a handoff', () => {
+    writeSettings({ at: 95 }, home);
+    recordClaudeUsage(claudeStatus('s1', 94), home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
+    recordClaudeUsage(claudeStatus('s1', 96), home, NOW);
+    const res = usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW });
+    const context = res.hookSpecificOutput?.additionalContext ?? '';
+    expect(context).toContain('Usage is at 96% of the 5-hour limit. It resets in 1 h.');
+    expect(context).toContain('do not hand off or stop because of it');
+    expect(context).not.toContain('specweave handoff');
+    expect(res.systemMessage).toBe('Auto-handoff: usage is at 96% of the 5-hour limit, which resets in 1 h. Work continues; say "hand off" to move it to another tool or account.');
+    expect(res.decision).toBeUndefined();
+    // Once per window, like enforce.
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
+  });
+
+  it('suggest in Codex continues the turn with the note instead of a handoff', () => {
+    writeSettings({ at: 95 }, home);
+    const res = usageGuard({ cwd: proj, session_id: 'abc', transcript_path: rollout(97, 10) }, { home, now: NOW });
+    expect(res.decision).toBe('block');
+    expect(res.reason).toContain('Usage is at 97% of the 5-hour limit. It resets in 1 h.');
+    expect(res.reason).toContain('say "hand off"');
+    expect(res.reason).not.toContain('specweave handoff');
+  });
+
+  it('says nothing at the threshold when the full windows reset within the wait', () => {
+    writeSettings({ at: 90, mode: 'enforce' }, home);
+    const soon = NOW / 1000 + 20 * 60;
+    const status = (five: number, weekly: number, weeklyReset = soon + 86400) => ({
+      session_id: 's1', rate_limits: { five_hour: { used_percentage: five, resets_at: soon }, seven_day: { used_percentage: weekly, resets_at: weeklyReset } },
+    });
+    recordClaudeUsage(status(97, 10), home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
+    // No marker: nothing was said, so nothing is spent.
+    expect(fs.existsSync(path.join(home, '.specweave', 'usage', 's1.handed-off'))).toBe(false);
+    // The weekly window full too: the session cannot go on until it resets, days away.
+    recordClaudeUsage(status(97, 96), home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).hookSpecificOutput?.additionalContext).toContain('It resets in 24 h 20 min.');
+  });
+
+  it('a reset more than the wait away, or an unknown one, still acts; 0 turns the wait off', () => {
+    const status = (resetIn?: number) => ({
+      session_id: 's1', rate_limits: { five_hour: { used_percentage: 97, ...(resetIn !== undefined ? { resets_at: NOW / 1000 + resetIn * 60 } : {}) } },
+    });
+    writeSettings({ at: 95, waitUnder: 60 }, home);
+    recordClaudeUsage(status(45), home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW })).toEqual({});
+    recordClaudeUsage(status(75), home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW }).systemMessage).toContain('which resets in 1 h 15 min');
+    writeSettings({ at: 95 }, home);
+    recordClaudeUsage({ ...status(), session_id: 's2' }, home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's2' }, { home, now: NOW }).systemMessage).toBe('Auto-handoff: usage is at 97% of the 5-hour limit. Work continues; say "hand off" to move it to another tool or account.');
+    writeSettings({ at: 95, waitUnder: 0 }, home);
+    recordClaudeUsage({ ...status(5), session_id: 's3' }, home, NOW);
+    expect(usageGuard({ cwd: proj, session_id: 's3' }, { home, now: NOW }).systemMessage).toContain('which resets in 5 min');
+  });
+
+  it('a desktop sample borrows the reset time from the usage cache', () => {
+    const mac = { platform: 'darwin' as const };
+    const sample = path.join(home, 'Library', 'Application Support', 'Claude', 'plan-usage-history.json');
+    fs.mkdirSync(path.dirname(sample), { recursive: true });
+    fs.writeFileSync(sample, JSON.stringify({ version: 2, samples: [{ t: NOW - 60_000, org: 'org-a', u: { fh: 97, sd: 30 } }] }));
+    const reset = new Date(NOW + 10 * 60_000).toISOString();
+    fs.writeFileSync(path.join(home, '.claude.json'), JSON.stringify({
+      cachedUsageUtilization: { fetchedAtMs: NOW - 30 * 60_000, utilization: { five_hour: { utilization: 80, resets_at: reset }, seven_day: { utilization: 29, resets_at: null } } },
+    }));
+    const env = { CLAUDE_CODE_ORGANIZATION_UUID: 'org-a' };
+    expect(claudeFallbackReading({ home, now: NOW, env, ...mac })?.windows).toEqual([
+      { name: '5-hour', percent: 97, resetsAt: Math.floor(Date.parse(reset) / 1000) }, { name: 'weekly', percent: 30 },
+    ]);
+    writeSettings({ at: 95, mode: 'enforce' }, home);
+    // 97% but back in 10 minutes: wait rather than hand off.
+    expect(usageGuard({ cwd: proj, session_id: 'desk-9' }, { home, now: NOW, env, ...mac })).toEqual({});
   });
 
   it('checkpoint-only never steers the model, at any percentage', () => {
@@ -628,7 +728,7 @@ describe('auto-handoff modes', () => {
   });
 
   it('inside Studio the hook only saves; Studio switches provider itself', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 97), home, NOW);
     const env = { SPECWEAVE_STUDIO_THREAD_ID: 'thread-1' };
     expect(usageGuard({ cwd: proj, session_id: 's1' }, { home, now: NOW, env })).toEqual({});
@@ -637,7 +737,7 @@ describe('auto-handoff modes', () => {
   });
 
   it('a delegated Studio worker id with percent signs still counts as inside Studio', () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 92), home, NOW);
     const env = { SPECWEAVE_STUDIO_THREAD_ID: WORKER_THREAD_ID };
     expect(studioThreadId(env)).toBe(WORKER_THREAD_ID);
@@ -645,20 +745,43 @@ describe('auto-handoff modes', () => {
     expect(studioThreadId({ SPECWEAVE_STUDIO_THREAD_ID: '' })).toBeUndefined();
   });
 
-  it('on keeps the stored mode unless a flag changes it', async () => {
+  it('on suggests at 95% by default and keeps the stored mode unless a flag changes it', async () => {
+    let out = await quiet(() => autoHandoffCommand('on', { home }));
+    expect(readSettings(home)).toMatchObject({ at: 95, mode: 'suggest', waitUnder: 30 });
+    expect(out).toContain('Auto-handoff is on at 95% in suggest mode');
     await quiet(() => autoHandoffCommand('on', { home, checkpointOnly: true }));
     expect(readSettings(home)?.mode).toBe('checkpoint');
     await quiet(() => autoHandoffCommand('on', { home }));
     expect(readSettings(home)?.mode).toBe('checkpoint');
-    const out = await quiet(() => autoHandoffCommand('on', { home, handoff: true }));
-    expect(readSettings(home)?.mode).toBe('handoff');
-    expect(out).toContain('Auto-handoff is on at 90%');
+    out = await quiet(() => autoHandoffCommand('on', { home, handoff: true }));
+    expect(readSettings(home)?.mode).toBe('enforce');
+    expect(out).toContain('Auto-handoff is on at 95% in enforce mode');
+    out = await quiet(() => autoHandoffCommand('on', { home, mode: 'suggest', at: 97, waitUnder: 60 }));
+    expect(readSettings(home)).toMatchObject({ at: 97, mode: 'suggest', waitUnder: 60 });
+    expect(out).toContain('resets within 60 min');
+    // The wait and the threshold stay when only the mode changes.
+    await quiet(() => autoHandoffCommand('on', { home, mode: 'enforce' }));
+    expect(readSettings(home)).toMatchObject({ at: 97, mode: 'enforce', waitUnder: 60 });
+  });
+
+  it('on rejects an unknown mode, two different modes and a negative wait', async () => {
+    const errs: string[] = [];
+    const spy = vi.spyOn(process.stderr, 'write').mockImplementation((c) => { errs.push(String(c)); return true; });
+    try {
+      expect(await autoHandoffCommand('on', { home, mode: 'always' })).toBe(2);
+      expect(await autoHandoffCommand('on', { home, mode: 'suggest', checkpointOnly: true })).toBe(2);
+      expect(await autoHandoffCommand('on', { home, waitUnder: -5 })).toBe(2);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(errs.join('')).toContain('--mode takes one of suggest, enforce, checkpoint');
+    expect(readSettings(home)).toBeUndefined();
   });
 });
 
 describe('usage-guard hook command', () => {
   it('saves a checkpoint on every Stop and asks for the handoff once at the threshold', async () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     recordClaudeUsage(claudeStatus('s1', 50), home, NOW);
     const input = JSON.stringify({ session_id: 's1', cwd: proj });
     expect(await quiet(() => usageGuardCommand({ home, input, env: {} }))).toBe('{}\n');
@@ -670,7 +793,7 @@ describe('usage-guard hook command', () => {
   });
 
   it('a rate-limited turn inside Studio only saves a checkpoint', async () => {
-    writeSettings({ at: 90 }, home);
+    writeSettings({ at: 90, mode: 'enforce' }, home);
     const input = JSON.stringify({ session_id: 's9', cwd: proj, error: 'rate_limit' });
     expect(await quiet(() => usageGuardCommand({ home, input, limitHit: true, env: { SPECWEAVE_STUDIO_THREAD_ID: 't-1' } }))).toBe('{}\n');
     expect(queueSessionCheckpoint).toHaveBeenCalledOnce();
