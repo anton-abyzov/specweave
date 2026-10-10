@@ -51,6 +51,13 @@ The threshold is the `at` value in `~/.specweave/auto-handoff.json`, 90 unless y
 
 A session is asked **once per usage window**. If you keep working in the same session after the window resets and it fills up again, it is asked again.
 
+The hook stays quiet in two cases, whatever the percentage:
+
+- **Outside a SpecWeave project.** With no `.specweave/config.json` in the session's folder or above it, there is no increment, ledger or branch to hand off, so a plain chat is never told to run `specweave handoff`.
+- **A Codex plan with credits.** Next to the percentages, Codex logs `credits` (`has_credits`, `balance`, `unlimited`). With a balance above zero, or an unlimited plan, Codex keeps answering after a window reaches 100%, so the session is not asked to stop. `specweave auto-handoff status` says so under the Codex line.
+
+Both still save local checkpoints.
+
 ## Desktop, Remote Control and `claude -p` sessions
 
 Claude Code runs the status line only in a terminal session. In the desktop app, in a Remote Control session and in `claude -p`, the Stop hook falls back to two readings, whichever is fresher:
@@ -66,7 +73,7 @@ Usage can jump from under 90% to the limit inside one long turn. Then the turn f
 
 - **Claude Code** and **Grok Build** fire `StopFailure` with `error: "rate_limit"`. The hook does not need the model: it runs `specweave handoff` itself, with the reason "usage limit reached in claude" (or grok), and pushes as above. It does this at most once per session every five hours, so a retry loop hands off once. It runs even if the 90% handoff already happened, so the handoff carries the latest edits.
 - **Codex** has no failure hook. Its 90% Stop hook is the safety margin; set `--at` lower if your turns are long. Codex skips a new hook until you trust it, and there is no command to approve one: open `codex` in a terminal once after `auto-handoff on` and approve the hook when it asks. Until then a Codex session at 92% just stops.
-- Outside a SpecWeave project (no `.specweave/config.json` above the folder) the limit hook does nothing.
+- Outside a SpecWeave project (no `.specweave/config.json` above the folder) the limit hook does nothing, like the 90% hook.
 
 Claude Code also shows the model a note starting "[Usage limit approaching" or "[Usage limit reached" on some plans. `AGENTS.md` tells the agent to treat that note as the handoff moment too, which is the only automatic path in cloud sessions, where there is no status line or user hook.
 
