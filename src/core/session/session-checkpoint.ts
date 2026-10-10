@@ -12,6 +12,8 @@ export const CHECKPOINT_INTERVAL_MS = 5 * 60_000;
 export const CHECKPOINT_WORKER_TIMEOUT_MS = 8_000;
 export const CHECKPOINT_LOCK_STALE_MS = 15_000;
 export const CHECKPOINT_MAX_WORKERS = 4;
+/** Longest Studio pointer name; leaves room for `.json` and the `.<uuid>` temp suffix under 255 bytes. */
+const STUDIO_NAME_MAX = 200;
 
 export interface CheckpointInput {
   session_id?: string;
@@ -90,7 +92,12 @@ export function studioCheckpointFile(threadId: string, home = os.homedir()): str
 }
 
 function studioPointer(checkpoints: string, threadId: string): string {
-  return path.join(checkpoints, 'studio', `${threadId.replace(/[^\w.-]/g, '_')}.json`);
+  // Same name Studio's SpecweaveCheckpoint.ts reads; ids too long for a filename get a hash tail.
+  let name = threadId.replace(/[^\w.-]/g, '_');
+  if (name.length > STUDIO_NAME_MAX) {
+    name = `${name.slice(0, STUDIO_NAME_MAX - 17)}-${createHash('sha256').update(threadId).digest('hex').slice(0, 16)}`;
+  }
+  return path.join(checkpoints, 'studio', `${name}.json`);
 }
 
 export function readSessionCheckpoint(input: CheckpointInput, opts: CheckpointOptions = {}): CheckpointReceipt | undefined {
