@@ -1,3 +1,12 @@
+## [Unreleased]
+
+### Fixed
+
+- A Codex plan with credits is asked to hand off when the credits are about to run out. 3.0.9 stopped asking as soon as the plan reported any balance, but a balance can be spent in hours, and Codex has no hook for a turn that fails on the limit, so a session in a project then stopped with only its local checkpoint. The Stop hook now reads the balances Codex logged in the session over the last hour and asks once when under 60 minutes are left at that rate ("credits are running out (about 8 min left at the current rate)"). A top-up, balances under two minutes apart and an unlimited plan give no rate and never ask. Replayed over 1,971 real turn ends at a full weekly window with credits: asked at 38 of 43 in the last 30 minutes before the balance hit zero, and at none of 1,661 more than three hours before or with no exhaustion after.
+- The Stop hook reads the Codex plan's own limit. Codex logs several limits in one session (`codex`, `gpt-reserve`, `premium`), and the hook took whichever was logged last, so a `gpt-reserve` record at 0% hid a plan window at 91% and a session that should have been asked was not; its credits flag came from the wrong record too. Another limit is used only when the log holds no plan record.
+- The Claude Code status line no longer shows "hand off" outside a SpecWeave project, where since 3.0.9 nothing asks for one.
+- `specweave auto-handoff status` shows the minutes of Codex credits left when the newest session log gives a rate, and says when they are running out.
+
 ## [3.0.9] - 2026-10-10
 
 ### Fixed
