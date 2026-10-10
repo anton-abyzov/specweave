@@ -19,7 +19,7 @@ const PLANS = [
     features: [
       'Specs, task ledger and evidence in git',
       'Handoff and pickup across Claude Code, Codex, Grok, Gemini CLI and others',
-      'Silent local recovery checkpoints after turns',
+      'Auto-handoff at 90 percent of a usage limit',
       'Optional GitHub, Jira and Azure DevOps sync',
     ],
     cta: {label: 'Quick start', to: '/docs/getting-started'},
@@ -95,9 +95,9 @@ export default function Pricing() {
         </tbody></table>
 
         <h2>Questions teams ask</h2>
-        <details><summary>Is SpecWeave Studio included?</summary><p><Link to="/studio">SpecWeave Studio</Link> is a separate private pilot for native sessions across machines. The offer above covers the SpecWeave workflow and the stated Verified Skill seats. Studio availability, scope and terms are agreed separately.</p></details>
+        <details><summary>Is SpecWeave Studio included?</summary><p><Link to="/studio">SpecWeave Studio</Link> is the workspace on top of SpecWeave: projects with a coordinator and workers on any provider, running on your own machines. It is in a private pilot. Founding pilot teams can ask to evaluate it alongside the workflow; Studio scope and terms are agreed separately from the prices above.</p></details>
         <details><summary>Do we need the pilot to use SpecWeave?</summary><p>No. <code>npm install -g specweave</code> and the <Link to="/docs/getting-started">quick start</Link> are enough for one developer. The pilot is for teams that want it set up across several people and tools at once.</p></details>
-        <details><summary>What gets saved automatically?</summary><p><code>specweave auto-handoff on</code> keeps local recovery checkpoints after turns, at most once every five minutes per worktree and session. It never stops work on quota, pushes or releases claims. Use <code>specweave handoff</code> when you choose to transfer work; <code>pickup</code> does not apply automatic checkpoints. Details in <Link to="/docs/guides/auto-handoff">automatic checkpoint rules</Link>.</p></details>
+        <details><summary>What triggers a handoff automatically?</summary><p><code>specweave auto-handoff on</code> hands off when a usage window passes 90 percent, or a threshold you pick, and saves local checkpoints between turns. The next tool runs <code>specweave pickup</code>. Details in <Link to="/docs/guides/auto-handoff">auto-handoff rules</Link>.</p></details>
         <details><summary>Where does our code go?</summary><p>Nowhere new. Specs, the ledger and handoffs are files in your repository. Private skills live in your own GitHub repositories; Verified Skill syncs and scans them for install.</p></details>
         <details><summary>How do we pay?</summary><p>Verified Skill plans are paid by card on <a href="https://verified-skill.com/pricing">verified-skill.com</a>. The pilot is invoiced once you have picked a start date.</p></details>
       </div>

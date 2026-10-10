@@ -183,7 +183,7 @@ program
 // Handoff command - Assemble a portable cross-tool work-handoff doc + diff
 program
   .command('handoff [incrementId]')
-  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account')
+  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs')
   .option('--all', 'Write .specweave/handoffs/<date>-INDEX.md and index.json: every active increment and every nested repo with local-only work (writes nothing else)')
   .option('--dry-run', 'With --all: print the index instead of writing it')
   .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
@@ -199,6 +199,11 @@ program
   .option('--no-push', 'Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)')
   .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
   .action(async (incrementId, options) => {
+    if (incrementId === 'list') {
+      const { handoffListCommand } = await import('../dist/src/cli/commands/pickup.js');
+      process.exitCode = await handoffListCommand({ json: options.json });
+      return;
+    }
     const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
     await handoffCommand({
       incrementId,
@@ -220,14 +225,16 @@ program
 
 // Pickup command - everything a fresh session needs, in one read
 program
-  .command('pickup [incrementId]')
-  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria')
+  .command('pickup [target...]')
+  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest')
   .option('--no-apply', 'Only show the waiting handoff; do not apply it to this checkout')
   .option('--all', 'Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing')
+  .option('--list', 'Print the pending handoffs with their ids, newest first; changes nothing')
   .option('--json', 'Output as JSON')
-  .action(async (incrementId, options) => {
+  .action(async (target, options) => {
     const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
-    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply, all: options.all });
+    const incrementId = Array.isArray(target) && target.length ? target.join(' ') : undefined;
+    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply, all: options.all, list: options.list });
   });
 
 // Report command - HTML timeline of an increment's ledger (handoff evidence)
@@ -249,14 +256,18 @@ program
     process.exitCode = await noteCommand(text, { incrementId });
   });
 
-// Auto-handoff - silent local recovery checkpoints (Claude Code, Codex)
+// Auto-handoff - suggest or make a handoff near the plan's usage limit, with local checkpoints (Claude Code, Codex, Grok Build)
 program
   .command('auto-handoff [action]')
-  .description('on | off | status: save local background checkpoints without interrupting work')
-  .option('--at <percent>', 'Legacy compatibility option; checkpoints are independent of usage', (v) => Number(v))
+  .description('on | off | status: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints')
+  .option('--mode <mode>', 'suggest (default): tell you once at the threshold and keep working; enforce: hand off and stop; checkpoint: only save local checkpoints')
+  .option('--at <percent>', 'Threshold in percent of any usage window (default 95)', (v) => Number(v))
+  .option('--wait-under <minutes>', 'Do nothing at the threshold when the limit resets sooner than this (default 30; 0 turns it off)', (v) => Number(v))
+  .option('--checkpoint-only', 'Same as --mode checkpoint')
+  .option('--handoff', 'Same as --mode enforce')
   .action(async (action, options) => {
     const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
-    process.exitCode = await autoHandoffCommand(action, { at: options.at });
+    process.exitCode = await autoHandoffCommand(action, { at: options.at, mode: options.mode, waitUnder: options.waitUnder, checkpointOnly: options.checkpointOnly === true, handoff: options.handoff === true });
   });
 
 program
@@ -270,11 +281,22 @@ program
 
 program
   .command('usage-guard')
-  .description('Stop hook: queue a local checkpoint and return without interrupting work')
-  .option('--limit-hit', 'StopFailure hook: save locally after a rate-limit failure')
+  .description('Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once')
+  .option('--limit-hit', 'StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)')
   .action(async (options) => {
     const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
     process.exitCode = await usageGuardCommand({ limitHit: options.limitHit === true });
+  });
+
+// Auto-compact window for Claude Code (400K keeps 1M-context turns small)
+program
+  .command('autocompact [action]')
+  .description('on | off | status: where Claude Code summarizes a long session (default 400k)')
+  .option('--at <tokens>', 'Window for `on`, 100k to 1M (default 400k)')
+  .option('--project', 'Write .claude/settings.json in this project instead of ~/.claude/settings.json')
+  .action(async (action, options) => {
+    const { autocompactCommand } = await import('../dist/src/cli/commands/autocompact.js');
+    process.exitCode = await autocompactCommand(action, { at: options.at, project: options.project === true });
   });
 
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions

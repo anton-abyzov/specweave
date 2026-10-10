@@ -50,6 +50,8 @@ specweave pickup
 
 The Claude Code SessionStart hook prints the same summary, and `AGENTS.md` tells every other tool to run `pickup` first. In 2.x, resuming meant finding and reading four or five files and pasting a prompt. Now it is one command.
 
+Several handoffs waiting, for example from sessions that each ran out on one machine? `specweave handoff list` shows them newest first, each with a short id (an increment's number such as `0874`, or a worktree's folder name). Say "pick up 0874" or "pick up the studio release" to take a specific one; plain "pick up" takes the newest and lists the rest. [Auto-handoff rules](/docs/guides/auto-handoff/#when-several-sessions-handed-off) has the details.
+
 To leave a message for whoever works on an increment next:
 
 ```bash
@@ -80,19 +82,19 @@ prints the newest index with the increments you can act on now first, then the o
 
 `specweave handoff` never overwrites a `handoff.md` a person wrote (one without the generated `<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it. Anything between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next handoff.
 
-## Keep a local checkpoint automatically
+## Hand off automatically
 
-On your own machine, enable background recovery checkpoints:
+On your own machine, SpecWeave can hand off for you before a session runs out:
 
 ```bash
-specweave auto-handoff on            # silent local saves after turns
-specweave auto-handoff status        # hook status and checkpoint directory
+specweave auto-handoff on                 # heads-up at 95% of any usage window
+specweave auto-handoff on --mode enforce  # or hand off there by itself
+specweave auto-handoff on --at 90         # or pick your own threshold
+specweave auto-handoff status
 specweave auto-handoff off           # restores your previous setup
 ```
 
-Claude Code and Codex queue a detached local worker after a turn, throttled to once every five minutes per canonical worktree and session. Claude Code and Grok Build also queue it when a turn fails with `rate_limit`. Saving requires no model, usage reading or network. It never stops your session, releases claims or pushes work. A plan's 90% or 100% reading does not establish that the current provider will reject the next request, especially with credits or a proxy.
-
-A successful save leaves a `current.json` receipt under `~/.specweave/checkpoints/<hash>/`, pointing to a handoff document and diff. Inspect these files for local recovery; `pickup` does not apply them automatically. When you choose to transfer work, run `specweave handoff` as above so ownership and edits reach the next tool or machine. [Automatic checkpoint rules](/docs/guides/auto-handoff/) covers recovery, upgrades and hook support.
+At 95% of the fullest usage window, Claude Code and Codex tell you once that you can say "hand off" (in enforce mode they stop and run `specweave handoff`); when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
 
 ## Who holds a task
 

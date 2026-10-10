@@ -20,6 +20,7 @@ import { pass, sessionContext } from './types.js';
 import { readActiveIncrements } from './utils.js';
 import { isGcDue, purgeState, formatBytes } from '../../state/state-gc.js';
 import { buildPickup } from '../../session/pickup.js';
+import { listPendingHandoffs } from '../../session/handoff-list.js';
 
 const STALE_AUTO_MS = 24 * 60 * 60 * 1000;
 
@@ -63,6 +64,19 @@ export const handle: HandlerFn = async (_input, context) => {
   safeRemove(path.join(stateDir, 'prompt-health-alert.json'));
 
   const { text } = buildPickup(projectRoot, { compact: true, activeIds: readActiveIncrements(projectRoot) });
-  if (!text) return pass();
-  return sessionContext(`SpecWeave: ${text}`);
+  const pending = pendingLine(projectRoot);
+  const all = [text, pending].filter(Boolean).join('\n');
+  if (!all) return pass();
+  return sessionContext(`SpecWeave: ${all}`);
 };
+
+/** Several sessions handed off here: name them, so "pick up <id>" can take a specific one. */
+function pendingLine(projectRoot: string): string {
+  try {
+    const pending = listPendingHandoffs(projectRoot);
+    if (!pending.length) return '';
+    const shown = pending.slice(0, 5).map((h) => `${h.id} (${h.title.length > 60 ? h.title.slice(0, 59) + '…' : h.title})`);
+    const more = pending.length > 5 ? `, +${pending.length - 5} more` : '';
+    return `Pending handoffs, newest first: ${shown.join(', ')}${more}. "pick up" takes the newest; "pick up <id>" a specific one (\`specweave pickup <id>\`).`;
+  } catch { return ''; }
+}
