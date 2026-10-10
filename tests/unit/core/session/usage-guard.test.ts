@@ -7,7 +7,10 @@ import {
 } from '../../../../src/core/session/usage-guard.js';
 import { autoHandoffCommand, autoHandoffStatus, codexHookTrusted, statuslineCommand, usageGuardCommand } from '../../../../src/cli/commands/auto-handoff.js';
 
-vi.mock('../../../../src/core/session/session-checkpoint.js', () => ({ queueSessionCheckpoint: vi.fn() }));
+vi.mock('../../../../src/core/session/session-checkpoint.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/core/session/session-checkpoint.js')>()),
+  queueSessionCheckpoint: vi.fn(),
+}));
 import { queueSessionCheckpoint } from '../../../../src/core/session/session-checkpoint.js';
 
 let home: string;

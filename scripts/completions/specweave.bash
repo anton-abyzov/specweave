@@ -65,7 +65,7 @@ _specweave_completions() {
             return 0
             ;;
         pickup)
-            COMPREPLY=( $(compgen -W "--no-apply --all --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--no-apply --all --list --json --help" -- "${cur}") )
             return 0
             ;;
         report)

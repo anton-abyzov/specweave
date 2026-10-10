@@ -50,6 +50,8 @@ specweave pickup
 
 The Claude Code SessionStart hook prints the same summary, and `AGENTS.md` tells every other tool to run `pickup` first. In 2.x, resuming meant finding and reading four or five files and pasting a prompt. Now it is one command.
 
+Several handoffs waiting, for example from sessions that each ran out on one machine? `specweave handoff list` shows them newest first, each with a short id (an increment's number such as `0874`, or a worktree's folder name). Say "pick up 0874" or "pick up the studio release" to take a specific one; plain "pick up" takes the newest and lists the rest. [Auto-handoff rules](/docs/guides/auto-handoff/#when-several-sessions-handed-off) has the details.
+
 To leave a message for whoever works on an increment next:
 
 ```bash

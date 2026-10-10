@@ -1,3 +1,13 @@
+## [Unreleased]
+
+### Added
+
+- Pick up a specific handoff. When several sessions handed off in one project, `specweave handoff list` (also `specweave pickup --list`) shows them newest first, each with a short id: the increment's four-digit number (the folder name when two share it), or the worktree's folder name for a session handoff. `specweave pickup <id>` takes that one; it also accepts an increment number such as `874`, the folder name, or words from the title (`specweave pickup studio release`). Plain `pickup` takes the newest and lists the others, so the next session's "pick up" gets the next one; when the words fit more than one, it lists those and changes nothing. A pushed handoff from another machine is applied only when it belongs to the increment named. The SessionStart hook names the pending handoffs, and `AGENTS.md` and the handoff skill teach "pick up <id or title>". Run `specweave update` in a project to refresh its `AGENTS.md`.
+
+### Fixed
+
+- A session that hit the usage limit in a worktree or nested repository inside a project, or while several increments were active, wrote no handoff: the limit hook asked `specweave handoff` for the one active increment and gave up when there were several, and a worktree's edits were not in the root checkout it captured. The hook now saves a fresh local checkpoint of the session's own checkout and marks it as a handoff, which `handoff list` shows under the folder's name until `pickup` takes it. The mark is dropped when the same session goes back to work after its limit resets.
+
 ## [3.0.11] - 2026-10-10
 
 ### Changed

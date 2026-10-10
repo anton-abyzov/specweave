@@ -19,8 +19,8 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints"
@@ -138,6 +138,7 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l keep-claims -d
 # pickup
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l no-apply -d "Only show the waiting handoff; do not apply it to this checkout"
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l all -d "Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing"
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l list -d "Print the pending handoffs with their ids, newest first; changes nothing"
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output as JSON"
 
 # report
