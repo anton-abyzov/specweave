@@ -3,3 +3,4 @@
 # Checks: long-line, base64-blob, eval-decode, test-require, padded-inline
 docs-site/remotion/scenes/Scene1Problem.tsx eval-decode   # demo string in the docs video
 docs-site/remotion/scenes/Scene2Scanner.tsx eval-decode   # demo string in the docs video
+video/opus55-projects/assets/vo/*.json long-line   # one-line voice-over alignment JSON
