@@ -1,3 +1,10 @@
+## [3.0.9] - 2026-10-10
+
+### Fixed
+
+- The 90% Stop hook no longer asks a session outside a SpecWeave project to hand off. With `auto-handoff on`, a Codex Desktop chat opened with no folder (its working directory is your home folder) was told "Usage is at 100% of the weekly limit. Hand off now so no work is lost: run `specweave handoff`" and tried to save a handoff with nothing to hand off. The hook now asks only when the session's folder is inside a project (`.specweave/config.json` in it or above it), the rule the limit-hit hook already followed.
+- A Codex plan with credits is no longer asked to hand off. Codex logs `credits` (`has_credits`, `balance`, `unlimited`) next to its 5-hour and weekly percentages; with a balance above zero, or an unlimited plan, it keeps working after a window reaches 100%, so the percentage is not a stop. Before, every Codex session on such a plan was blocked once per usage window. `specweave auto-handoff status` says so under the Codex line. Local checkpoints are still saved in both cases.
+
 ## [3.0.8] - 2026-10-10
 
 ### Fixed
