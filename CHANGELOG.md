@@ -1,3 +1,9 @@
+## [3.0.8] - 2026-10-10
+
+### Fixed
+
+- Inside SpecWeave Studio, Claude workers that a project coordinator delegated to no longer hand off at the usage threshold. Their `SPECWEAVE_STUDIO_THREAD_ID` (`thread:delegated-task:command%3A…`) contains `%`, which the guard rejected, so the Stop hook treated them as running outside Studio and asked them to run `specweave handoff`. Any non-empty value now counts as inside Studio; the id is only sanitized for the checkpoint filename, which still matches the one Studio reads.
+
 ## [3.0.7] - 2026-10-09
 
 ### Added
