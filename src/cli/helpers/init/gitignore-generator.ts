@@ -832,6 +832,30 @@ const DROPPED_SPECWEAVE_LINES = new Set([
   '# cloning the repo could not read it. Only reports/artifacts/ is ignored.',
 ])
 
+const UPDATE_HEADER = '# SpecWeave (added by specweave update)';
+
+/**
+ * Drop an update header whose block (up to the next blank line) has no rule
+ * left in it, together with the blank line written above it. Happens when
+ * every line under it was one of the dropped negations.
+ */
+function dropOrphanUpdateHeaders(lines: string[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === UPDATE_HEADER) {
+      let j = i + 1;
+      while (j < lines.length && lines[j].trim().startsWith('#')) j++;
+      if (j >= lines.length || lines[j].trim() === '') {
+        if (out.length > 0 && out[out.length - 1].trim() === '') out.pop();
+        i = j - 1;
+        continue;
+      }
+    }
+    out.push(lines[i]);
+  }
+  return out;
+}
+
 /**
  * Append the SpecWeave runtime-state entries (`.specweave/state/`, logs, jobs,
  * cache, backups, `reports/artifacts/`, `.claude/worktrees/`) to an existing
@@ -848,10 +872,9 @@ export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: str
 
   // 3.0.0 to 3.0.2 appended negations that un-ignored old logs under
   // reports/ (hundreds in a long-lived project). Take them back out.
-  const withoutNegation = existing
-    .split('\n')
-    .filter((line) => !DROPPED_SPECWEAVE_LINES.has(line.trim()))
-    .join('\n');
+  const withoutNegation = dropOrphanUpdateHeaders(
+    existing.split('\n').filter((line) => !DROPPED_SPECWEAVE_LINES.has(line.trim())),
+  ).join('\n');
   if (withoutNegation !== existing) {
     existing = withoutNegation;
     fs.writeFileSync(gitignorePath, existing);
@@ -862,6 +885,6 @@ export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: str
   if (missing.length === 0) return { added: [], path: gitignorePath };
 
   const prefix = existing && !existing.endsWith('\n') ? '\n' : '';
-  fs.writeFileSync(gitignorePath, `${existing}${prefix}\n# SpecWeave (added by specweave update)\n${missing.join('\n')}\n`);
+  fs.writeFileSync(gitignorePath, `${existing}${prefix}\n${UPDATE_HEADER}\n${missing.join('\n')}\n`);
   return { added: missing, path: gitignorePath };
 }

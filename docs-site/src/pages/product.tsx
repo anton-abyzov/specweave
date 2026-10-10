@@ -3,6 +3,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import ContinuityBoard from '../components/sections/ContinuityBoard';
 import styles from './continuity.module.css';
+import { ProductMap } from '../components/ecosystem/Architecture';
 
 const pickupOutput = `Picked up the handoff from claude@cloud (out of tokens): applied 7 uncommitted files.
 SpecWeave pickup · you are codex@laptop
@@ -21,9 +22,9 @@ export default function Product() {
     <main className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <span className={styles.eyebrow}><span className={styles.orangeDot} />Product / SpecWeave 3.0</span>
+          <span className={styles.eyebrow}><span className={styles.orangeDot} />SpecWeave CLI 3.0 / the record under Studio</span>
           <h1>The work outlives<br /><em>the session.</em></h1>
-          <p className={styles.lead}>Your agent writes the code. SpecWeave keeps what done means, what actually happened and where you stopped, as plain files in git. Any tool, any account and any model can read them.</p>
+          <p className={styles.lead}>Your agent writes the code. SpecWeave keeps what done means, what actually happened and where you stopped, as plain files in git. Any tool, any account and any model can read them, and <Link to="/studio">SpecWeave Studio</Link> can read its project plans from them.</p>
           <div className={styles.actions}>
             <Link className={styles.primary} to="/docs/getting-started">Start in your project <span aria-hidden="true">↗</span></Link>
             <Link className={styles.textLink} to="/docs/overview/how-it-works">How it works, with diagrams</Link>
@@ -36,7 +37,7 @@ export default function Product() {
       </section>
 
       <section className={`${styles.section} ${styles.layerSection}`}>
-        <div className={styles.sectionHeading}><h2>Three records.<br /><em>Nothing else to read.</em></h2><p>The agent reads a short spec and edits it. The CLI appends everything else, so the record cannot be tidied up afterwards and no tokens go on bookkeeping.</p></div>
+        <div className={styles.sectionHeading}><h2>Three records.<br /><em>A clear place to start.</em></h2><p>The agent reads a short spec. The CLI appends task events and evidence to the ledger. Git review and access controls protect the history; these ordinary files are not a tamper-proof audit system.</p></div>
         <div className={styles.layers}>
           <article><span className={styles.layerNumber}>01 / spec.md</span><h3>What done means</h3><p>Problem, scope, numbered acceptance criteria, approach and tasks. Each task names the criteria it covers, the files it owns and the test that proves it.</p><span>You read it before code is written.</span></article>
           <article><span className={styles.layerNumber}>02 / ledger.jsonl</span><h3>What actually happened</h3><p>Append-only claims, completions with the commit and the real test output, notes between threads, and every handoff. A criterion is met when every task covering it is done.</p><span>Evidence, not a checkbox.</span></article>
@@ -61,9 +62,9 @@ export default function Product() {
 
       <section className={`${styles.section} ${styles.connectionSection}`}>
         <div>
-          <span className={styles.eyebrow}>Claude Code Projects / parallel threads</span>
+          <span className={styles.eyebrow}>Studio and Claude Code Projects / parallel work</span>
           <h2>One thread,<br /><em>one increment.</em></h2>
-          <p>A thread works on one branch and opens one pull request, which is exactly an increment's shape. The thread's checklist is the increment's task list. Threads leave each other notes in the ledger instead of editing each other's files, and decisions go into a committed memory folder in the same format as project memory, so they reach another account and another tool.</p>
+          <p>A Studio worker or a Claude Code Projects thread works on one branch and opens one pull request, which is exactly an increment's shape. A Studio project plan can read the increment directly, and a thread's checklist is the increment's task list. Threads leave each other notes in the ledger instead of editing each other's files, and decisions go into a committed memory folder in the same format as project memory, so they reach another account and another tool.</p>
           <Link className={styles.textLink} to="/docs/guides/claude-code-projects">Claude Code Projects guide ↗</Link>
         </div>
         <figure className={styles.figure}>
@@ -86,6 +87,7 @@ export default function Product() {
         </div>
       </section>
 
+      <section className={styles.section}><div className={styles.sectionHeading}><h2>One ecosystem.<br /><em>Distinct jobs.</em></h2><p>Studio is where you work, the CLI keeps the record and vskill brings the expertise.</p></div><ProductMap /><Link className={styles.textLink} to="/docs/overview/studio-architecture">Read the architecture ↗</Link></section>
       <section className={styles.finalCta}>
         <h2>Write down what done means.<br /><em>Then switch tools freely.</em></h2>
         <Link className={styles.primary} to="/docs/getting-started">Quick start <span aria-hidden="true">↗</span></Link>

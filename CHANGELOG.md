@@ -1,14 +1,92 @@
-## [Unreleased]
+## [3.0.12] - 2026-10-10
 
 ### Added
 
-- Claude Code gets a `StopFailure` hook from `specweave auto-handoff on`. When a turn fails on the usage limit before the 90% Stop hook could ask (one long turn can jump past it), the hook writes and pushes the handoff itself, as Grok Build's already did.
-- `specweave auto-handoff status` shows whether each tool's hooks are in place and the last usage Claude Code and Codex reported, and says to run `on` again when something is missing.
+- Pick up a specific handoff. When several sessions handed off in one project, `specweave handoff list` (also `specweave pickup --list`) shows them newest first, each with a short id: the increment's four-digit number (the folder name when two share it), or the worktree's folder name for a session handoff. `specweave pickup <id>` takes that one; it also accepts an increment number such as `874`, the folder name, or words from the title (`specweave pickup studio release`). Plain `pickup` takes the newest and lists the others, so the next session's "pick up" gets the next one; when the words fit more than one, it lists those and changes nothing. A pushed handoff from another machine is applied only when it belongs to the increment named. The SessionStart hook names the pending handoffs, and `AGENTS.md` and the handoff skill teach "pick up <id or title>". Run `specweave update` in a project to refresh its `AGENTS.md`.
 
 ### Fixed
 
+- A session that hit the usage limit in a worktree or nested repository inside a project, or while several increments were active, wrote no handoff: the limit hook asked `specweave handoff` for the one active increment and gave up when there were several, and a worktree's edits were not in the root checkout it captured. The hook now saves a fresh local checkpoint of the session's own checkout and marks it as a handoff, which `handoff list` shows under the folder's name until `pickup` takes it. The mark is dropped when the same session goes back to work after its limit resets.
+
+## [3.0.11] - 2026-10-10
+
+### Changed
+
+- Auto-handoff no longer stops a session at the threshold by default. The new default mode, `suggest`, gives one heads-up per usage window instead: the session tells you in one line that usage is at 96% of the 5-hour limit, when it resets, and that you can say "hand off", then keeps working. On 2026-10-10 three sessions on one account stopped at 91% of the weekly limit with their work half done and hours of usage left; a turn that really runs out still hands off by itself through the StopFailure hook, and local checkpoints cover the turns in between. `specweave auto-handoff on --mode enforce` keeps the old stop; `--mode checkpoint` (or `--checkpoint-only`) never acts on usage.
+- The default threshold is 95% (was 90%).
+- The reset rule: when every window at or past the threshold resets within 30 minutes (`--wait-under <minutes>`, 0 turns it off), the session neither suggests nor enforces a handoff, and a turn that hits the limit saves only a local checkpoint. Waiting a few minutes beats moving the work. The heads-up and the stop both say when the limit resets ("which resets in 2 h 10 min"). Desktop and Remote Control sessions, whose usage samples carry no reset time, borrow it from Claude Code's usage cache while it is still ahead.
+- Settings written before this version move to the new defaults on upgrade: `suggest`, and 95 if the file held the old default of 90. A threshold you set yourself and checkpoint-only mode are kept.
+- The status line shows "handoff available" in suggest mode, "hand off" in enforce mode, and "resets in 12 min" while it waits. `auto-handoff status` names the mode and the wait.
+- `AGENTS.md` and the handoff skill treat Claude Code's "[Usage limit approaching" note as a heads-up to mention and keep working; "[Usage limit reached" is still the moment to hand off. Run `specweave update` in a project to refresh its `AGENTS.md`.
+
+## [3.0.10] - 2026-10-10
+
+### Fixed
+
+- A Codex plan with credits is asked to hand off when the credits are about to run out. 3.0.9 stopped asking as soon as the plan reported any balance, but a balance can be spent in hours, and Codex has no hook for a turn that fails on the limit, so a session in a project then stopped with only its local checkpoint. With a window at the threshold, the Stop hook now reads back through the session log to the balances of the hour before the newest one and asks once when under 60 minutes are left at that rate ("credits are running out (about 8 min left at the current rate)"). Balances under two minutes apart, an unreported balance and an unlimited plan give no rate and never ask; the measurement restarts after a top-up (a record with no credits, or with less than half of the newest balance). Replayed over 1,975 real turn ends at 90% or more of a window with credits: asked at 38 of 43 in the last 30 minutes before the balance hit zero, and at none of 1,661 more than three hours before or with no exhaustion after.
+- The Stop hook reads the Codex plan's own limit. Codex logs several limits in one session (`codex`, `gpt-reserve`, `premium`), and the hook took whichever was logged last in the final 256 KB, so a `gpt-reserve` record at 0% hid a plan window at 91% and a session that should have been asked was not; its credits flag came from the wrong record too. The hook now looks back for the plan's newest record through up to 64 MB of log, and uses another limit only when it finds none.
+- The Claude Code status line no longer shows "hand off" outside a SpecWeave project, where since 3.0.9 nothing asks for one.
+- `specweave auto-handoff status` shows the minutes of Codex credits left when the newest session log is under an hour old and gives a rate, and says when a session will be asked because they are running out.
+
+## [3.0.9] - 2026-10-10
+
+### Fixed
+
+- The 90% Stop hook no longer asks a session outside a SpecWeave project to hand off. With `auto-handoff on`, a Codex Desktop chat opened with no folder (its working directory is your home folder) was told "Usage is at 100% of the weekly limit. Hand off now so no work is lost: run `specweave handoff`" and tried to save a handoff with nothing to hand off. The hook now asks only when the session's folder is inside a project (`.specweave/config.json` in it or above it), the rule the limit-hit hook already followed.
+- A Codex plan with credits is no longer asked to hand off. Codex logs `credits` (`has_credits`, `balance`, `unlimited`) next to its 5-hour and weekly percentages; with a balance above zero, or an unlimited plan, it keeps working after a window reaches 100%, so the percentage is not a stop. Before, every Codex session on such a plan was blocked once per usage window. `specweave auto-handoff status` says so under the Codex line. Local checkpoints are still saved in both cases.
+
+## [3.0.8] - 2026-10-10
+
+### Fixed
+
+- Inside SpecWeave Studio, Claude workers that a project coordinator delegated to no longer hand off at the usage threshold. Their `SPECWEAVE_STUDIO_THREAD_ID` (`thread:delegated-task:command%3A…`) contains `%`, which the guard rejected, so the Stop hook treated them as running outside Studio and asked them to run `specweave handoff`. Any non-empty value now counts as inside Studio; the id is only sanitized for the checkpoint filename, which still matches the one Studio reads.
+
+### Documentation
+
+- spec-weave.com plays a 61-second Studio tour on the home page and /studio, built from real screen recordings of Studio on a Mac: a coordinator splitting work into Codex and Claude workers, the Limits page, and a Claude thread at its usage limit continuing on Codex (the limit in that clip is simulated).
+- The home page and /studio now present Studio as one workspace for every AI agent, mapping the agents people use today to what takes their place in Studio, with an honest status for each.
+
+## [3.0.7] - 2026-10-09
+
+### Added
+
+- `specweave autocompact on|off|status` sets where Claude Code compacts a long session (`autoCompactWindow`, default 400K, `--at`, `--project`). On 1M-context models Claude Code otherwise waits until about 967K tokens, so every late turn resends close to a million cached tokens that count toward usage. `status` also shows per-model `/autocompact` values and Codex's `model_auto_compact_token_limit`.
+- `specweave init` writes `"autoCompactWindow": 400000` to the new project's `.claude/settings.json`. It changes nothing on 200K models; `specweave autocompact off --project` removes it.
+
+### Changed
+
+- Auto-handoff hands off at 90% again. `auto-handoff on` restores the 3.0.3 behaviour: the Stop hook asks the session once per usage window to run `specweave handoff` when any window reaches the threshold (`--at`), and a Claude Code or Grok Build turn that fails on the rate limit hands off from the StopFailure hook. The 3.0.6 local checkpoints stay: every hook still saves one between handoffs. Settings written by 3.0.6 have no mode and hand off again after upgrading.
+- `auto-handoff on --checkpoint-only` keeps the 3.0.6 behaviour for plans where credits or a proxy keep working past the limit: only local checkpoints, never a stop. `--handoff` switches back; `on` without either keeps the stored mode.
+- `specweave pickup` shows the newest local checkpoint of the worktree when it is newer than the last handoff (`Local checkpoint: session … → <document> + <diff>`). 3.0.6 wrote checkpoints that nothing read.
+- Inside SpecWeave Studio (`SPECWEAVE_STUDIO_THREAD_ID` set by Studio) the hooks never steer the model, since Studio switches provider between turns; they save the checkpoint and also write it to `~/.specweave/checkpoints/studio/<thread>.json`, shared by every provider in that thread.
+
+## [3.0.6] - 2026-10-08
+
+### Changed
+
+- `auto-handoff on` now queues silent, detached local checkpoints after turns, throttled to five minutes per canonical worktree and session. Claude Code and Grok `rate_limit` failures queue the same worker. Saving uses no model or network, never stops work on quota, pushes or releases claims. Successful saves publish a local `current.json` receipt pointing to the saved handoff document and diff; `auto-handoff status` shows the checkpoint directory. Explicit `handoff` still transfers ownership and pushes; `pickup` does not apply automatic checkpoints.
+- Existing enabled settings adopt the new behavior when the CLI is upgraded, with unchanged hook commands. Legacy `--at` is accepted without setting a threshold. Generated instructions and the handoff skill no longer treat usage warnings as orders to stop.
+
+## [3.0.5] - 2026-10-08
+
+### Added
+
+- OpenAI Decisions is an optional Jev provider (`specweave jev setup --provider openai`), with typed answers, bounded requests, usage receipts, and fail-closed parsing. Existing TypeSafe defaults and deterministic authorization stay unchanged.
+- Claude Code gets a `StopFailure` hook from `specweave auto-handoff on`. When a turn fails on the usage limit before the 90% Stop hook could ask (one long turn can jump past it), the hook writes and pushes the handoff itself, as Grok Build's already did.
+- `specweave auto-handoff status` shows whether each tool's hooks are in place and the last usage Claude Code and Codex reported, and says to run `on` again when something is missing.
+- `specweave handoff --all` writes one index of every active increment (tasks done, open criteria, what it waits on, a resume prompt) plus every nested checkout with local-only work, and `specweave pickup --all` prints it with the increments you can act on first. It commits and pushes nothing. A hand-written `handoff.md` is no longer overwritten; the generated doc goes to `handoff.auto.md`, and `<!-- keep -->` blocks survive the next handoff.
+- Releases can be cut from GitHub alone: run the Release & Publish workflow on `develop` and it bumps, commits, tags and publishes.
+
+### Fixed
+
+- Stable releases refuse to replace npm `latest` with an older version, protecting concurrent release branches. Prereleases always use the `next` tag.
+- Claude Code no longer shows the 90% handoff request as "Stop hook error occurred". The Stop hook now passes it as context for the model and shows you "Auto-handoff: usage is at 92% of the 5-hour limit, so this session is handing off". Codex still gets a block, which is what it reads.
+- `specweave pickup` writes a `pickup` line to the ledger once per handoff, also when the handoff was made in the same checkout or kept local. Before, only a pickup that applied edits from git was recorded, so reports of handoffs between tools on one machine said "0 pickups".
+- Desktop, Remote Control and `claude -p` sessions run no status line, so the Stop hook never had a usage reading there. It now falls back to the desktop app's usage samples (`plan-usage-history.json`, newest sample of the session's organization, under 20 minutes old) or Claude Code's own usage cache in `~/.claude.json` (under an hour old), whichever is fresher. `auto-handoff status` says that such sessions otherwise hand off when a turn hits the limit.
+- `auto-handoff status` says when Codex has not trusted the Stop hook yet (Codex skips it until you approve it in a terminal).
 - The 90% Stop hook asked a session to hand off once and never again. A session that kept going after its 5-hour window reset was unguarded in the next window. It is now asked once per usage window.
 - A session the Stop hook had already asked to hand off was skipped by the limit-hit hook, so edits made after the 90% handoff were not handed off when the limit hit. The two hooks now keep separate markers.
+- `specweave update` no longer leaves an empty `# SpecWeave (added by specweave update)` header in `.gitignore` after removing the old log negations.
 
 ## [3.0.3] - 2026-09-26
 

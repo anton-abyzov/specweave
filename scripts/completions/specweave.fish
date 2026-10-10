@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -19,13 +19,14 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: hand off automatically at a share of the usage limit (default 90%)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: asks the agent to hand off once usage passes the auto-handoff threshold"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a autocompact -d "on | off | status: where Claude Code summarizes a long session (default 400k)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
@@ -119,6 +120,8 @@ complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l paren
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l json -d "Output result as JSON (for programmatic use)"
 
 # handoff
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l all -d "Write .specweave/handoffs/<date>-INDEX.md and index.json: every active increment and every nested repo with local-only work (writes nothing else)"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l dry-run -d "With --all: print the index instead of writing it"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l reason -d "Why you are handing off (e.g. \"out of tokens\")"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l summary -d "Short summary of where things stand"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l next -d "The exact next step for the resuming agent"
@@ -134,23 +137,33 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l keep-claims -d
 
 # pickup
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l no-apply -d "Only show the waiting handoff; do not apply it to this checkout"
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l all -d "Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing"
+complete -c specweave -n "__fish_seen_subcommand_from pickup" -l list -d "Print the pending handoffs with their ids, newest first; changes nothing"
 complete -c specweave -n "__fish_seen_subcommand_from pickup" -l json -d "Output as JSON"
 
 # report
 complete -c specweave -n "__fish_seen_subcommand_from report" -l out -d "Where to write it (default: the increment's reports/handoff-report.html)"
 
 # auto-handoff
-complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Threshold in percent of any usage window"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l mode -d "suggest (default): tell you once at the threshold and keep working; enforce: hand off and stop; checkpoint: only save local checkpoints"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l at -d "Threshold in percent of any usage window (default 95)"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l wait-under -d "Do nothing at the threshold when the limit resets sooner than this (default 30; 0 turns it off)"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l checkpoint-only -d "Same as --mode checkpoint"
+complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l handoff -d "Same as --mode enforce"
 
 # statusline
 complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
 
 # usage-guard
-complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook (Grok Build): hand off now, the turn hit the rate limit"
+complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)"
+
+# autocompact
+complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l at -d "Window for `on`, 100k to 1M (default 400k)"
+complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l project -d "Write .claude/settings.json in this project instead of ~/.claude/settings.json"
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"
-complete -c specweave -n "__fish_seen_subcommand_from jev" -l provider -d "setup: openrouter | typesafe"
+complete -c specweave -n "__fish_seen_subcommand_from jev" -l provider -d "setup: openrouter | typesafe | openai"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l model -d "setup: model id (defaults to the provider default)"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l guard-bash -d "setup: enable the opt-in PreToolUse Bash guard"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l no-guard-bash -d "setup: disable the Bash guard"

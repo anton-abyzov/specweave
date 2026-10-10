@@ -7,7 +7,7 @@ sidebar_position: 12
 
 # vskill CLI Reference
 
-`vskill` is the package manager for AI agent skills. It scans, verifies, installs, and manages skills across 49 AI coding agent platforms.
+`vskill` is the package manager for AI agent skills. It scans, verifies, installs, and manages skills across supported AI coding agent platforms. Run `vskill list --help` to inspect the current agent-list options.
 
 ```bash
 # Run without installing

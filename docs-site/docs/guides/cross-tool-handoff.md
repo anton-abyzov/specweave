@@ -50,24 +50,51 @@ specweave pickup
 
 The Claude Code SessionStart hook prints the same summary, and `AGENTS.md` tells every other tool to run `pickup` first. In 2.x, resuming meant finding and reading four or five files and pasting a prompt. Now it is one command.
 
+Several handoffs waiting, for example from sessions that each ran out on one machine? `specweave handoff list` shows them newest first, each with a short id (an increment's number such as `0874`, or a worktree's folder name). Say "pick up 0874" or "pick up the studio release" to take a specific one; plain "pick up" takes the newest and lists the rest. [Auto-handoff rules](/docs/guides/auto-handoff/#when-several-sessions-handed-off) has the details.
+
 To leave a message for whoever works on an increment next:
 
 ```bash
 specweave note "Draft restore works; expiry not started" 0042
 ```
 
+## Hand off everything at once
+
+Switching subscriptions with a dozen threads in flight is one command:
+
+```bash
+specweave handoff --all --reason "switching accounts"
+```
+
+It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json` with one row per active increment: tasks done, open acceptance criteria, last activity, what it waits on, and a resume prompt to paste into a new thread. In an umbrella workspace it also scans every checkout under `repositories/<org>/<repo>` and their worktrees, and lists each one with uncommitted files, unpushed commits or a branch with no remote, with the open PR for that branch when the GitHub CLI is installed. A checkout whose path or branch carries an increment's four-digit id is listed in that increment's row.
+
+`--all` changes nothing else: no claims are released, no ledger events are written, and nothing is committed or pushed in the umbrella or the nested repos. `--dry-run` prints the index instead of writing it.
+
+An increment waits on a person when its ledger has a `wait` line, such as `{"t":"*","e":"wait","by":"claude@mbp","at":"2026-10-03T05:00:00Z","note":"Anton: typed go for the cutover"}`, or its `handoff.md` has a `Waits on:` line. A `wait` with the note `resolved` clears the earlier ones.
+
+On the other side:
+
+```bash
+specweave pickup --all
+```
+
+prints the newest index with the increments you can act on now first, then the ones waiting on a person, then the checkouts with local-only work. Then `specweave pickup <id>` for the one you start with.
+
+`specweave handoff` never overwrites a `handoff.md` a person wrote (one without the generated `<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it. Anything between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next handoff.
+
 ## Hand off automatically
 
 On your own machine, SpecWeave can hand off for you before a session runs out:
 
 ```bash
-specweave auto-handoff on            # hand off at 90% of any usage window
-specweave auto-handoff on --at 80    # or pick your own threshold
+specweave auto-handoff on                 # heads-up at 95% of any usage window
+specweave auto-handoff on --mode enforce  # or hand off there by itself
+specweave auto-handoff on --at 90         # or pick your own threshold
 specweave auto-handoff status
 specweave auto-handoff off           # restores your previous setup
 ```
 
-At 90% of the fullest usage window, Claude Code and Codex stop once and run `specweave handoff`; when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
+At 95% of the fullest usage window, Claude Code and Codex tell you once that you can say "hand off" (in enforce mode they stop and run `specweave handoff`); when a Claude Code or Grok Build turn hits the limit outright, a hook writes the handoff itself. Then you say "pick up" in the next tool. [Auto-handoff rules](/docs/guides/auto-handoff/) has the details for each tool, including what happens mid-task and in cloud sessions.
 
 ## Who holds a task
 
