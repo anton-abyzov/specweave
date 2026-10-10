@@ -1,5 +1,5 @@
 import React, {createContext, useContext} from 'react';
-import {AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Easing, OffthreadVideo, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {C, FONT} from './theme';
 
 const ease = Easing.bezier(0.65, 0, 0.35, 1);
@@ -72,8 +72,8 @@ export type CamKey = {f: number; r: Rect};
 
 const ScaleCtx = createContext(1);
 
-/** Shows a screenshot through a moving camera. Keys are source-pixel rects; height follows the frame's aspect. */
-export const Shot: React.FC<{src: string; w: number; h: number; keys: CamKey[]; children?: React.ReactNode; srcW?: number; srcH?: number; opacity?: number}> = ({src, w, h, keys, children, srcW = 1600, srcH = 1000, opacity = 1}) => {
+/** Plays a screen recording through a moving camera. Keys are source-pixel rects; height follows the frame's aspect. */
+export const Shot: React.FC<{src: string; w: number; h: number; keys: CamKey[]; children?: React.ReactNode; srcW?: number; srcH?: number; opacity?: number; trimBefore?: number; rate?: number}> = ({src, w, h, keys, children, srcW = 1920, srcH = 1080, opacity = 1, trimBefore, rate = 1}) => {
   const frame = useCurrentFrame();
   let r = keys[0].r;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -86,7 +86,7 @@ export const Shot: React.FC<{src: string; w: number; h: number; keys: CamKey[]; 
   const s = w / r[2];
   return <div style={{position: 'absolute', inset: 0, opacity}}>
     <div style={{position: 'absolute', width: srcW, height: srcH, transformOrigin: '0 0', transform: `scale(${s}) translate(${-r[0]}px, ${-r[1]}px)`}}>
-      <Img src={staticFile(src)} style={{width: srcW, height: srcH, display: 'block'}} />
+      <OffthreadVideo src={staticFile(src)} muted trimBefore={trimBefore} playbackRate={rate} style={{width: srcW, height: srcH, display: 'block'}} />
       <ScaleCtx.Provider value={s}>{children}</ScaleCtx.Provider>
     </div>
   </div>;
