@@ -6,6 +6,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { execFileSync, spawnSync } from 'child_process';
 import { ensureSpecweaveGitignoreEntries } from '../../../../../src/cli/helpers/init/gitignore-generator.js';
 import { ensureGitattributes, LEDGER_MERGE_ATTRIBUTE } from '../../../../../src/cli/helpers/init/directory-structure.js';
 
@@ -49,6 +50,53 @@ describe('ensureSpecweaveGitignoreEntries', () => {
     const second = ensureSpecweaveGitignoreEntries(dir);
     expect(second.added).toEqual([]);
     expect(fs.readFileSync(path.join(dir, '.gitignore'), 'utf-8')).toBe(first);
+  });
+
+  it('removes the 3.0.0-3.0.2 negations: old logs stay ignored, .txt evidence stays committable', () => {
+    const dir = mk();
+    const broad = '!.specweave/increments/**/reports/*.log';
+    const scoped = '!.specweave/increments/**/reports/task-T-*.log';
+    fs.writeFileSync(path.join(dir, '.gitignore'), `*.log\n\n# SpecWeave (added by specweave update)\n.specweave/state/\n${broad}\n${scoped}\n`);
+    const reports = path.join('.specweave', 'increments', '0653-old', 'reports');
+    fs.mkdirSync(path.join(dir, reports), { recursive: true });
+    const oldLogs = [path.join(reports, 'run.log'), path.join(reports, 'task-T-01.log')];
+    for (const log of oldLogs) fs.writeFileSync(path.join(dir, log), 'old run\n');
+    const evidence = path.join(reports, 'task-T-02.txt');
+    fs.writeFileSync(path.join(dir, evidence), '$ npm test\n# exit 0\n');
+    execFileSync('git', ['init', '-q', dir]);
+
+    const { added } = ensureSpecweaveGitignoreEntries(dir);
+
+    const lines = fs.readFileSync(path.join(dir, '.gitignore'), 'utf-8').split('\n');
+    expect(lines).not.toContain(broad);
+    expect(lines).not.toContain(scoped);
+    expect(added.filter((l) => l.startsWith('!'))).toEqual([]);
+    expect(lines).toContain('*.log');
+    for (const log of oldLogs) {
+      expect(spawnSync('git', ['-C', dir, 'check-ignore', '-q', log]).status, log).toBe(0);
+    }
+    expect(spawnSync('git', ['-C', dir, 'check-ignore', '-q', evidence]).status).toBe(1);
+  });
+
+  it('drops an update header left with no rules under it', () => {
+    const dir = mk();
+    const file = path.join(dir, '.gitignore');
+    const header = '# SpecWeave (added by specweave update)';
+    fs.writeFileSync(file, '*.log\n');
+    ensureSpecweaveGitignoreEntries(dir);
+    const current = fs.readFileSync(file, 'utf-8');
+    // 3.0.0 to 3.0.2 left a second block holding only a comment and a negation.
+    fs.writeFileSync(
+      file,
+      `${current}\n${header}\n# \`task done --run\` writes its evidence to reports/task-<id>.log and the\n!.specweave/increments/**/reports/task-T-*.log\n`,
+    );
+
+    const { added } = ensureSpecweaveGitignoreEntries(dir);
+
+    expect(added).toEqual([]);
+    const content = fs.readFileSync(file, 'utf-8');
+    expect(content.split('\n').filter((l) => l === header)).toHaveLength(1);
+    expect(content).toBe(current);
   });
 
   it('creates .gitignore when the project has none', () => {

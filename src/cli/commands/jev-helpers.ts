@@ -462,8 +462,9 @@ export function extractSection(markdown: string, heading: string): string {
 }
 
 /** `0.0000155` → `$0.0000155`; small enough that toFixed(2) would read as $0.00. */
-export function formatCost(cost: number): string {
-  if (!Number.isFinite(cost) || cost === 0) return '$0';
+export function formatCost(cost: number | undefined): string {
+  if (cost === undefined || !Number.isFinite(cost)) return 'unknown';
+  if (cost === 0) return '$0';
   return cost < 0.01 ? `$${cost.toPrecision(3)}` : `$${cost.toFixed(4)}`;
 }
 
@@ -584,7 +585,7 @@ export async function jevDoctor(root: string, env: NodeJS.ProcessEnv, opts: JevC
   } else {
     out('  ping        skipped (Jev unavailable)');
   }
-  out(`  usage       ${summary.calls} call(s) · ${summary.input_tokens} input tokens · ${formatCost(summary.cost)}`);
+  out(`  usage       ${summary.calls} call(s) · ${summary.input_tokens} input tokens · ${formatCost(summary.unknownCostCalls ? undefined : summary.cost)}`);
   if (unavailable) err('Jev unavailable: run `specweave jev setup` (exit 4 = continue without Jev)');
   return code;
 }
@@ -613,8 +614,8 @@ export async function jevSetup(root: string, env: NodeJS.ProcessEnv, opts: JevCo
   }
 
   const requested = opts.provider?.trim().toLowerCase();
-  if (requested && requested !== 'openrouter' && requested !== 'typesafe') {
-    err(`Unknown provider "${opts.provider}". Use: openrouter | typesafe`);
+  if (requested && requested !== 'openrouter' && requested !== 'typesafe' && requested !== 'openai') {
+    err(`Unknown provider "${opts.provider}". Use: openrouter | typesafe | openai`);
     return EXIT.error;
   }
   const provider: JevProvider = (requested as JevProvider | undefined) ?? cfg.provider;
@@ -627,6 +628,7 @@ export async function jevSetup(root: string, env: NodeJS.ProcessEnv, opts: JevCo
     enabled: true,
     provider,
     model,
+    apiKeyEnv: provider === cfg.provider ? cfg.apiKeyEnv : undefined,
     guards: { bash: guardBash },
   };
 
@@ -653,6 +655,7 @@ export async function jevSetup(root: string, env: NodeJS.ProcessEnv, opts: JevCo
     enabled: true,
     provider,
     model,
+    apiKeyEnv: provider === cfg.provider ? cfg.apiKeyEnv : undefined,
     guards: { bash: guardBash },
   });
   const markerPresent = setGuardMarker(root, guardBash);

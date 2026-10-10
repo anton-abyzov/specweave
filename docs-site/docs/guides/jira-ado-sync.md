@@ -1,21 +1,22 @@
 ---
 title: Jira and Azure DevOps
-description: Jira and Azure DevOps as opt-in sync providers — what works, and what does not.
+description: Jira and Azure DevOps as opt-in sync providers in SpecWeave 3.0, what they do, and what they do not.
 ---
 
 # Jira and Azure DevOps
 
-:::warning Opt-in, community-maintained
-GitHub is the first-class provider. **Jira and Azure DevOps support push and close. Nothing beyond that is guaranteed.** If an agent promises richer Jira or ADO behaviour, it is guessing.
+:::warning Opt-in
+GitHub is the first-class provider. Jira and Azure DevOps are supported and opt-in: SpecWeave can create a work item for an increment, update it on `sync push`, and close it when the increment completes. Nothing beyond that is promised. If an agent offers richer Jira or Azure DevOps behaviour, it is guessing.
 :::
 
-SpecWeave 2.0 removed the 1.x Jira/ADO stacks for multi-project routing, hierarchy mapping and per-project field mapping, along with the per-provider `sw-jira:` / `sw-ado:` command namespaces. What remains is the same `specweave sync` surface as GitHub, pointed at a different provider.
+Both providers use the same `specweave sync` commands as GitHub, with `--provider` to pick the target. As with GitHub, 3.0 never syncs on a status change: only `specweave sync push` and the close-on-complete setting touch the tracker.
 
 ## Connect
 
 ```bash
 specweave sync setup --provider jira
 specweave sync setup --provider ado
+specweave sync setup --validate
 ```
 
 The wizard writes the provider block into `.specweave/config.json`:
@@ -38,11 +39,9 @@ The wizard writes the provider block into `.specweave/config.json`:
 }
 ```
 
-Both providers default to `enabled: false`. Validate an existing config with `specweave sync setup --validate`.
+Both providers default to `enabled: false`. Keep credentials in the environment or in the project's `.env`, never in `config.json`, and check them with `specweave sync setup --validate` or `specweave sync status --provider jira`.
 
 ## Use
-
-Every verb takes `--provider` so a multi-provider project stays explicit:
 
 ```bash
 specweave sync push 0042 --provider jira
@@ -51,29 +50,29 @@ specweave sync pull --provider jira --since 14
 specweave sync status --provider ado
 ```
 
-Closing an increment closes the linked work item when `sync.enabled` is true and the provider block is enabled.
+`--provider` accepts `github`, `jira` or `ado`. Without it, `push` writes to every enabled provider.
 
-## Mapping
+Closing an increment with `specweave complete` closes the linked work item when `hooks.post_increment_done.close_external_issue` is `true`. The setup wizard turns it on; set it to `false` to keep closure local.
 
-| SpecWeave | Jira | Azure DevOps |
-|-----------|------|--------------|
-| Increment | Issue | Work item |
-| Acceptance criteria | Description checklist | Description checklist |
-| Tasks | Checklist items | Checklist items |
-| `complete` | Issue transitioned to Done | Work item closed |
+Two helper commands exist for teams that key branches and pull requests to tickets:
 
-Increment ids and commit shas go into the issue body; the issue key comes back into `metadata.json` under `externalLinks`. Do not edit either side by hand.
+```bash
+specweave branch-name 0042          # branch name, with the ticket key when one is linked
+specweave link-pr --increment 0042 --pr-url <url> --pr-number <n>
+```
 
-## What was removed in 2.0
+## What is not supported
 
-| Removed | Replacement |
-|---------|-------------|
-| `sw-jira:*`, `sw-ado:*` command namespaces | `sw:sync` / `specweave sync --provider …` |
-| Jira/ADO multi-project routing and board import | Not supported. One project per repository. |
-| Hierarchy mapping (epic → story → task levels) | Not supported. Increment → issue, flat. |
-| Per-project field mapping configuration | Not supported. |
-| Queued sync mode (`sync.mode: "queued"`) | Removed — it dropped events on a partial flush. Sync is now a direct call that fails visibly. |
+| Not supported | What to do instead |
+|---|---|
+| Multi-project routing and board import | One tracker project per repository, or per repo in a workspace |
+| Epic, story and task hierarchy mapping | One work item per increment |
+| Per-project field mapping | Set fields in the tracker |
+| Sync on start, pause, resume or abandon | Run `specweave sync push` when you want the tracker updated |
 
-If you depended on any of these, keep the increments and drive the tracker manually; SpecWeave will not silently half-sync them.
+The 1.x `sw-jira:*` and `sw-ado:*` command namespaces are gone; use `specweave sync ... --provider`. A rewrite of sync around the 3.0 ledger is planned for 3.1 and will revisit what Jira and Azure DevOps receive.
 
-See also: [GitHub sync](/docs/guides/github-sync) · [`specweave sync` reference](/docs/reference/sync-cli)
+## See also
+
+- [GitHub sync](/docs/guides/github-sync)
+- [`specweave sync` reference](/docs/reference/sync-cli)

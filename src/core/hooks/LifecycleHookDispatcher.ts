@@ -201,7 +201,8 @@ export class LifecycleHookDispatcher {
       // and forwarded into result.syncErrors (and .specweave/logs/hooks.log) below.
       const shouldCloseIssue = doneConfig?.close_github_issue === true
         || doneConfig?.close_external_issue === true
-        || doneConfig?.close_jira_issue === true;
+        || doneConfig?.close_jira_issue === true
+        || doneConfig?.close_ado_work_item === true;
 
       // STEP 1: Living docs sync MUST run first.
       // It updates living docs files AND chains to GitHub via syncToExternalTools().

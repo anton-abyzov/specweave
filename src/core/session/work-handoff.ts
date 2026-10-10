@@ -20,7 +20,9 @@ import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { captureGitState } from './handoff-git-state.js';
 import { scrubSecrets } from './handoff-secret-scrub.js';
-import { getAgentId } from '../tasks/ledger.js';
+import { appendEvent, getAgentId, ledgerPath, INCREMENT_EVENT_TASK } from '../tasks/ledger.js';
+import { pushHandoff } from './handoff-remote.js';
+import { writeHandoffReport } from './handoff-report.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs } from '../tasks/verify-runner.js';
@@ -31,9 +33,11 @@ import {
   renderPastePrompt,
   DOC_FORMAT_MARKER,
   LEGACY_DOC_FORMAT_MARKER,
+  extractKeepBlocks,
   type HandoffDocInput,
   type HandoffIncrementInfo,
   type HandoffTaskRow,
+  type HandoffPushInfo,
 } from './handoff-doc-format.js';
 
 export interface WorkHandoffOptions {
@@ -46,6 +50,23 @@ export interface WorkHandoffOptions {
   inline?: boolean;
   out?: string;
   nonSpecweave?: boolean;
+  /**
+   * Push the branch and a snapshot of the working tree so `specweave pickup`
+   * finds it from any clone. Default: on when the repo has an `origin`
+   * remote (quietly skipped otherwise); `false` keeps the handoff local.
+   */
+  push?: boolean;
+  /** Keep this agent's claims instead of releasing them for the next agent. */
+  keepClaims?: boolean;
+  /**
+   * A checkpoint (PreCompact) rather than a handoff: the same session goes on
+   * working, so claims stay and no `handoff` event is written.
+   */
+  checkpoint?: boolean;
+  /** Automatic session checkpoint: capture this worktree, tolerate ambiguous
+   * increment context, and leave the shared handoff pointer untouched. Requires
+   * checkpoint:true and an isolated out path; explicit handoff is unchanged. */
+  checkpointRoot?: string;
   /** Override the agent id (tests). */
   agent?: string;
 }
@@ -57,6 +78,9 @@ export interface WorkHandoffResult {
   pastePrompt: string;
   isSpecWeave: boolean;
   incrementId?: string;
+  /** Task ids whose claims this handoff released. */
+  released: string[];
+  push?: HandoffPushInfo;
 }
 
 export class AmbiguousActiveIncrementError extends Error {
@@ -67,8 +91,11 @@ export class AmbiguousActiveIncrementError extends Error {
 }
 
 export const HANDOFF_POINTER_FILE = 'handoff-latest.txt';
+/** Where the generated doc goes when the increment's `handoff.md` was written by hand. */
+export const AUTO_HANDOFF_FILE = 'handoff.auto.md';
 
 export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOptions = {}): Promise<WorkHandoffResult> {
+  const isolatedCheckpoint = opts.checkpoint === true && !!opts.checkpointRoot && !!opts.out;
   const passedRoot = path.resolve(repoRoot);
   const resolved = resolveEffectiveRoot(passedRoot);
   const resolvedIsSpecWeave = fs.existsSync(path.join(resolved, '.specweave', 'config.json'));
@@ -85,7 +112,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
       incDir = r.dir;
     } catch (e) {
       if (e instanceof IncrementResolutionError) {
-        if (e.candidates.length > 1 && !opts.incrementId) throw new AmbiguousActiveIncrementError(e.candidates);
+        if (e.candidates.length > 1 && !opts.incrementId && !isolatedCheckpoint) throw new AmbiguousActiveIncrementError(e.candidates);
         if (opts.incrementId) throw e;
         // 0 active → git + notes handoff (no increment section)
       } else {
@@ -97,21 +124,35 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const agent = opts.agent ?? getAgentId();
   const leaseHours = isSpecWeave ? readLeaseHours(effectiveRoot) : undefined;
 
+  // ── Ledger: release this agent's claims, record the handoff ─────────────
+  // Both land before the Git capture so a pushed snapshot carries them.
+  const released: string[] = [];
+  if (!opts.checkpoint && incrementId && incDir && fs.existsSync(path.join(incDir, 'metadata.json'))) {
+    const ledger = ledgerPath(incDir);
+    const at = new Date().toISOString();
+    if (!opts.keepClaims) {
+      const board = loadTaskBoard(incDir, { leaseHours });
+      for (const t of board.tasks) {
+        if ((t.state.status === 'claimed' || t.state.status === 'stale') && t.state.by === agent) {
+          appendEvent(ledger, { t: t.id, e: 'release', by: agent, at, note: 'handoff' });
+          released.push(t.id);
+        }
+      }
+    }
+    const note = [opts.reason, opts.next ? `next: ${opts.next}` : undefined].filter(Boolean).join(' · ');
+    appendEvent(ledger, { t: INCREMENT_EVENT_TASK, e: 'handoff', by: agent, at, ...(note ? { note: scrubSecrets(note).scrubbed } : {}) });
+  }
+
   let increment: HandoffIncrementInfo | undefined;
-  let fileDecisions: string[] = [];
   if (incrementId && incDir && fs.existsSync(path.join(incDir, 'metadata.json'))) {
     increment = assembleIncrementInfo(incDir, incrementId, agent, leaseHours);
-    fileDecisions = [
-      ...readDecisions(path.join(incDir, 'spec.md')),
-      ...readDecisions(path.join(incDir, 'plan.md')),
-    ];
   }
 
   // ── Paths ──────────────────────────────────────────────────────────────
   const { docPath, diffPath } = resolveWritePaths(effectiveRoot, isSpecWeave, incDir, opts.out);
 
   // ── Git + scrub ────────────────────────────────────────────────────────
-  const git = captureGitState(effectiveRoot, diffPath);
+  const git = captureGitState(isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot, diffPath, { strict: isolatedCheckpoint });
   const intentRedactions: Record<string, number> = {};
   const intents = isSpecWeave ? readIntentContext(effectiveRoot, intentRedactions) : undefined;
   const intentLink = intents ? `[Open the intent board](${path.relative(path.dirname(docPath), path.join(effectiveRoot, INTENT_BOARD_PATH)).replace(/\\/g, '/')})` : undefined;
@@ -120,15 +161,17 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     summary: [opts.summary, intents, intentLink].filter(Boolean).join('\n\n') || undefined,
     next: opts.next,
     gotcha: opts.gotcha,
-    decisions: [...fileDecisions, ...(opts.decisions ?? [])],
+    // Decisions come from the agent; spec.md's Approach already holds the planned ones.
+    decisions: opts.decisions ?? [],
   });
   for (const [kind, count] of Object.entries(intentRedactions)) scrubbed.counts[kind] = (scrubbed.counts[kind] ?? 0) + count;
-  scrubDiffFileInPlace(diffPath, scrubbed.counts);
+  scrubDiffFileInPlace(diffPath, scrubbed.counts, isolatedCheckpoint);
 
   const docInput: HandoffDocInput = {
+    localCheckpoint: Boolean(opts.checkpointRoot),
     docPath,
     diffPath,
-    repoRoot: effectiveRoot,
+    repoRoot: isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot,
     generatedAt: new Date().toISOString(),
     isSpecWeave,
     agent,
@@ -142,13 +185,27 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     redactionCounts: scrubbed.counts,
   };
 
+  docInput.released = released;
+  // Hand-kept blocks of the previous version survive regeneration (scrubbed like the rest).
+  docInput.keep = readKeepBlocks(docPath).map((b) => {
+    const r = scrubSecrets(b);
+    for (const [k, v] of Object.entries(r.counts)) scrubbed.counts[k] = (scrubbed.counts[k] ?? 0) + v;
+    return r.scrubbed;
+  });
+  // The HTML timeline travels with the handoff as evidence of who did what.
+  if (!opts.checkpoint && incrementId && incDir) {
+    try { writeHandoffReport(incDir, incrementId); } catch { /* evidence is best-effort */ }
+  }
+  writeDoc(docPath, renderHandoffDoc(docInput));
+  if (isSpecWeave && !isolatedCheckpoint) writePointer(effectiveRoot, docPath);
+  // The snapshot is taken after the doc is written, so it carries the doc.
+  if (opts.push !== false && !opts.checkpoint) {
+    docInput.push = pushHandoff(effectiveRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
+  }
   const docMarkdown = renderHandoffDoc(docInput);
   const pastePrompt = renderPastePrompt(docInput, { inline: opts.inline });
 
-  writeDoc(docPath, docMarkdown);
-  if (isSpecWeave) writePointer(effectiveRoot, docPath);
-
-  return { docPath, diffPath, docMarkdown, pastePrompt, isSpecWeave, incrementId };
+  return { docPath, diffPath, docMarkdown, pastePrompt, isSpecWeave, incrementId, released, push: docInput.push };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -246,7 +303,9 @@ export function readDecisions(filePath: string): string[] {
  * Decide doc + diff paths.
  *
  * - explicit `out`: use it (diff is a sibling `.diff`).
- * - SpecWeave + active increment: the increment's own `handoff.md`.
+ * - SpecWeave + active increment: the increment's own `handoff.md`, unless a
+ *   hand-written one (no generator marker) is there: then `handoff.auto.md`,
+ *   so a person's handoff is never overwritten.
  * - SpecWeave, no active increment: `state/handoff-latest.md`.
  * - non-SpecWeave: `.handoff/HANDOFF.md`, unless a foreign root `./HANDOFF.md`
  *   without the marker exists (ownership sentinel still routes to `.handoff/`).
@@ -262,7 +321,9 @@ function resolveWritePaths(
     return { docPath: abs, diffPath: siblingDiff(abs) };
   }
   if (isSpecWeave && incDir) {
-    return { docPath: path.join(incDir, 'handoff.md'), diffPath: path.join(incDir, 'handoff.diff') };
+    const own = path.join(incDir, 'handoff.md');
+    const docPath = isForeignHandoffFile(own) ? path.join(incDir, AUTO_HANDOFF_FILE) : own;
+    return { docPath, diffPath: path.join(incDir, 'handoff.diff') };
   }
   // No increment (SpecWeave without an active one, or plain repo): root
   // ./HANDOFF.md if it is ours, else .handoff/ (gitignored).
@@ -291,6 +352,10 @@ export function isForeignHandoffFile(handoffPath: string): boolean {
   if (!fs.existsSync(handoffPath)) return false;
   const content = fs.readFileSync(handoffPath, 'utf-8');
   return !content.includes(DOC_FORMAT_MARKER) && !content.includes(LEGACY_DOC_FORMAT_MARKER);
+}
+
+function readKeepBlocks(docPath: string): string[] {
+  try { return extractKeepBlocks(fs.readFileSync(docPath, 'utf-8')); } catch { return []; }
 }
 
 function writeDoc(docPath: string, markdown: string): void {
@@ -328,15 +393,27 @@ function scrubFields(fields: { reason?: string; summary?: string; next?: string;
   return { reason: one(fields.reason), summary: one(fields.summary), next: one(fields.next), gotcha: one(fields.gotcha), decisions, counts };
 }
 
-function scrubDiffFileInPlace(diffPath: string, counts: Record<string, number>): void {
+function scrubDiffFileInPlace(diffPath: string, counts: Record<string, number>, strict = false): void {
+  const temporary = `${diffPath}.scrubbed`;
   try {
-    if (!fs.existsSync(diffPath)) return;
+    if (!fs.existsSync(diffPath)) {
+      if (strict) throw new Error('checkpoint diff is missing');
+      return;
+    }
     const raw = fs.readFileSync(diffPath, 'utf-8');
     if (!raw) return;
     const { scrubbed, counts: diffCounts } = scrubSecrets(raw);
-    fs.writeFileSync(diffPath, scrubbed, 'utf-8');
+    if (strict) {
+      fs.writeFileSync(temporary, scrubbed, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+      fs.renameSync(temporary, diffPath);
+    } else {
+      fs.writeFileSync(diffPath, scrubbed, 'utf-8');
+    }
     for (const [k, v] of Object.entries(diffCounts)) counts[k] = (counts[k] ?? 0) + v;
-  } catch {
-    // best-effort
+  } catch (error) {
+    if (strict) throw error;
+    // Explicit handoff keeps its existing best-effort behavior.
+  } finally {
+    if (strict) try { fs.unlinkSync(temporary); } catch { /* renamed or absent */ }
   }
 }

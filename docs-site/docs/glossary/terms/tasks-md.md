@@ -1,210 +1,40 @@
 ---
 id: tasks-md
-title: tasks.md (Task Checklist)
-sidebar_label: tasks.md
+title: tasks.md (legacy)
+sidebar_label: tasks.md (legacy)
+description: The separate task file used by increments created before SpecWeave 3.0 - still read, never created for new increments.
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# tasks.md (legacy)
 
-# tasks.md (Task Checklist)
+**`tasks.md`** was the separate task checklist of increments created with SpecWeave 1.x and 2.x. SpecWeave 3.0 does not create it any more. New increments keep their tasks in the `## Tasks` section of [spec.md](/docs/glossary/terms/spec-md), and task state lives only in the [ledger](/docs/glossary/terms/ledger).
 
-The **tasks.md** file is the implementation checklist for a SpecWeave [increment](/docs/glossary/terms/increments), containing tasks with embedded test plans.
+## Why it went away
 
-## Purpose
+An audit of a real 2.x project found that about two thirds of a typical `tasks.md` was derived state: checkboxes, status words and counts that repeated what the ledger already knew, and that drifted when two agents edited it. Keeping definitions in `spec.md` and state in the ledger means one file to read and nothing to reconcile.
 
-**tasks.md answers: "WHAT to implement and HOW to test?"**
+## Existing increments keep working
 
-- What tasks need to be completed?
-- What tests validate each task?
-- What are the dependencies?
-- What's the progress?
+If an increment folder has a `tasks.md`, the CLI treats it as the task source for that increment and ignores any Tasks section in `spec.md`. Nothing needs converting:
 
-## Location
-
-```
-.specweave/increments/0001-user-authentication/
-├── spec.md         ← Requirements (WHAT/WHY)
-├── plan.md         ← Architecture (HOW)
-├── tasks.md        ← Implementation checklist ←
-└── metadata.json
-```
-
-## Structure
-
-```markdown
----
-increment: 0001-user-authentication
-total_tasks: 8
-test_mode: TDD
-coverage_target: 88%
----
-
-# Tasks for Increment 0001: User Authentication
-
-## T-001: Implement AuthService
-
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01, AC-US1-02
-**Status**: [x] completed
-
-**Test Plan** (BDD format):
-- **Given** valid email and password
-- **When** login() is called
-- **Then** JWT token is returned within 200ms
-
-**Test Cases**:
-- Unit (`auth.test.ts`):
-  - `loginWithValidCredentials()` - returns token
-  - `loginWithInvalidPassword()` - throws AuthError
-  - **Coverage**: 95%
-
-**Implementation**:
-- Create `src/services/auth/AuthService.ts`
-- Implement login(), logout(), refresh() methods
-- Use bcrypt for password hashing
-
-**Dependencies**: None (can start immediately)
-
----
-
-## T-002: Implement JWTManager
-
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
-
-**Test Plan**:
-- **Given** user payload
-- **When** generate() is called
-- **Then** valid JWT is created with correct claims
-
-**Test Cases**:
-- Unit (`jwt.test.ts`):
-  - `generateToken()` - creates valid JWT
-  - `verifyToken()` - validates signature
-  - `decodeToken()` - extracts payload
-  - **Coverage**: 92%
-
-**Implementation**:
-- Create `src/utils/jwt.ts`
-- RS256 signing algorithm
-- 15-minute expiry
-
-**Dependencies**: T-001 (needs AuthService interface)
-
----
-
-## Summary
-
-**Total Coverage**: 88% (target achieved)
-- Unit: 92%
-- Integration: 86%
-- E2E: 100% critical paths
-
-**Test Count**: ~45 automated tests
-**AC-ID Coverage**: All 9 AC-IDs mapped to tests
-```
-
-## Key Elements
-
-### YAML Frontmatter
-```yaml
----
-increment: 0001-user-authentication
-total_tasks: 8
-test_mode: TDD          # or "standard"
-coverage_target: 88%
----
-```
-
-### Task Format
-```markdown
-## T-XXX: Task Title
-
-**User Story**: US-XXX           ← Links to spec.md
-**Satisfies ACs**: AC-USXX-XX    ← Traceability
-**Status**: [ ] pending / [x] completed
-
-**Test Plan** (BDD format):
-- Given...
-- When...
-- Then...
-
-**Test Cases**:
-- Unit/Integration tests with coverage
-
-**Implementation**:
-- Files to create/modify
-
-**Dependencies**: T-XXX (what must complete first)
-```
-
-### Status Tracking
-- `[ ] pending` - Not started
-- `[x] completed` - Done and tested
-
-## Embedded Tests
-
-Tasks include **embedded test plans** using BDD format:
-
-```markdown
-**Test Plan**:
-- **Given** user is on login page
-- **When** they enter valid credentials
-- **Then** they are redirected to dashboard
-```
-
-**Test cases** map to actual test files:
-```markdown
-**Test Cases**:
-- Unit (`auth.test.ts`):
-  - `loginWithValidCredentials()` - tests happy path
-  - `loginWithInvalidPassword()` - tests error case
-```
-
-## Who Creates It
-
-The **Test-Aware Planner** generates tasks.md based on [spec.md](/docs/glossary/terms/spec-md) and [plan.md](/docs/glossary/terms/spec-md):
-
-```mermaid
-graph LR
-    A[spec.md] --> B[plan.md]
-    B --> C[Test-Aware Planner]
-    C --> D[tasks.md]
-```
-
-## Progress Tracking
-
-Track progress by saying "what's the status?", using `specweave status` in Claude Code, or typing `progress` in other AI tools.
-
-<CommandTabs
-  natural="What's the status?"
-  claude="specweave status"
-  other="progress"
-/>
+- `specweave task next`, `claim`, `done` and `verify` read tasks from `tasks.md`.
+- Where a task has ledger events, the ledger decides its state. Where it has none, the old checkbox or `**Status**` line is used, so work finished under 2.x still counts as done.
+- State is not written back into the file. If you want the checkboxes refreshed from the ledger for people reading it, run:
 
 ```bash
-📊 Increment 0001: User Authentication
-Progress: 6/8 tasks (75%)
-
-✅ Completed:
-  - T-001: AuthService ✅
-  - T-002: JWTManager ✅
-  - T-003: PasswordHasher ✅
-  ...
-
-🔄 Current:
-  - T-007: E2E Tests [in_progress]
-
-⏳ Pending:
-  - T-008: Documentation
+specweave task render --write 0031
 ```
+
+## Moving an open increment to the 3.0 layout
+
+Optional, and only worth it for an increment you will keep working on for a while:
+
+1. Copy each task into a `## Tasks` section at the end of `spec.md` as `### T-01 Title`, followed by one line such as `- AC: AC-01 | Files: src/a.ts | Test: npm test -- a`.
+2. Delete `tasks.md`.
+3. Run `specweave task list` to check every task was found. The ledger is keyed by task id, so keep the same ids.
 
 ## Related
 
-- [Increments](/docs/glossary/terms/increments) - Contains tasks.md
-- [spec.md](/docs/glossary/terms/spec-md) - User stories and ACs
-- [plan.md](/docs/glossary/terms/spec-md) - Architecture
-- BDD - Test format
-- TDD - Test-first approach
-- [AC-ID](/docs/glossary/terms/ac-id) - Traceability
+- [spec.md](/docs/glossary/terms/spec-md)
+- [Ledger](/docs/glossary/terms/ledger)
+- [SpecWeave 3.0](/docs/guides/specweave-3)

@@ -228,6 +228,8 @@ describe('update command', () => {
 
       const output = consoleLogs.join('\n');
       expect(output).toContain('DRY RUN');
+      expect(mockRefreshPluginsCommand).not.toHaveBeenCalled();
+      expect(output).toContain('Would refresh (dry run)');
     });
 
     it('should update instructions for SpecWeave projects', async () => {
@@ -816,36 +818,52 @@ describe('update command', () => {
   // Deprecated memory directory removal
   // ==========================================================================
 
-  describe('deprecated memory directory removal', () => {
-    it('should remove .specweave/memory/ directory', async () => {
+  describe('skills (3.0)', () => {
+    it('replaces the unnamespaced SpecWeave copies with sw-* in both skill folders', async () => {
       setupSpecWeaveProject();
-      const memoryDir = path.join(tempDir, '.specweave', 'memory');
-      fs.mkdirSync(memoryDir, { recursive: true });
-      fs.writeFileSync(path.join(memoryDir, 'old.md'), 'old learning');
+      const legacy = path.join(tempDir, '.claude', 'skills', 'do');
+      fs.mkdirSync(legacy, { recursive: true });
+      fs.writeFileSync(path.join(legacy, 'SKILL.md'), '---\ndescription: x\n---\nRun `specweave task next` then claim.\n');
+      const mine = path.join(tempDir, '.claude', 'skills', 'review');
+      fs.mkdirSync(mine, { recursive: true });
+      fs.writeFileSync(path.join(mine, 'SKILL.md'), '---\ndescription: mine\n---\nMy own review steps.\n');
 
       await updateCommand({ noSelf: true, noPlugins: true });
 
-      expect(fs.existsSync(memoryDir)).toBe(false);
-      const output = consoleLogs.join('\n');
-      expect(output).toContain('Removed deprecated .specweave/memory/');
+      expect(fs.existsSync(legacy)).toBe(false);
+      expect(fs.existsSync(path.join(mine, 'SKILL.md'))).toBe(true);
+      for (const dir of ['.claude/skills', '.agents/skills']) {
+        expect(fs.existsSync(path.join(tempDir, dir, 'sw-do', 'SKILL.md')), dir).toBe(true);
+      }
     });
 
-    it('should report memory directory in check mode without deleting', async () => {
+    it('changes nothing in check mode', async () => {
+      setupSpecWeaveProject();
+      const legacy = path.join(tempDir, '.claude', 'skills', 'do');
+      fs.mkdirSync(legacy, { recursive: true });
+      fs.writeFileSync(path.join(legacy, 'SKILL.md'), 'Run `specweave task next`.\n');
+
+      await updateCommand({ noSelf: true, noPlugins: true, check: true });
+
+      expect(fs.existsSync(legacy)).toBe(true);
+      expect(fs.existsSync(path.join(tempDir, '.claude', 'skills', 'sw-do'))).toBe(false);
+      expect(consoleLogs.join('\n')).toContain('Would remove 1 unnamespaced SpecWeave skill copy');
+    });
+  });
+
+  describe('project memory (.specweave/memory/)', () => {
+    it('keeps .specweave/memory/: it is the committed project memory in 3.0', async () => {
       setupSpecWeaveProject();
       const memoryDir = path.join(tempDir, '.specweave', 'memory');
       fs.mkdirSync(memoryDir, { recursive: true });
+      fs.writeFileSync(path.join(memoryDir, 'MEMORY.md'), '# Project memory index\n- [Auth](auth.md): tokens rotate daily\n');
+      fs.writeFileSync(path.join(memoryDir, 'auth.md'), 'Tokens rotate daily.\n');
 
-      await updateCommand({
-        noSelf: true,
-        noPlugins: true,
-        check: true,
-      });
+      await updateCommand({ noSelf: true, noPlugins: true });
 
-      expect(fs.existsSync(memoryDir)).toBe(true);
-      const output = consoleLogs.join('\n');
-      expect(output).toContain(
-        'Deprecated .specweave/memory/ will be deleted'
-      );
+      expect(fs.readFileSync(path.join(memoryDir, 'auth.md'), 'utf-8')).toBe('Tokens rotate daily.\n');
+      expect(fs.existsSync(path.join(memoryDir, 'MEMORY.md'))).toBe(true);
+      expect(consoleLogs.join('\n')).not.toMatch(/deprecated \.specweave\/memory/i);
     });
 
     it('should do nothing if memory directory does not exist', async () => {
@@ -855,6 +873,50 @@ describe('update command', () => {
 
       const output = consoleLogs.join('\n');
       expect(output).not.toContain('memory');
+    });
+  });
+
+  describe('folders outside the project', () => {
+    it('never removes ~/.specweave or a .specweave/ above the project', async () => {
+      const home = path.join(tempDir, 'home');
+      const project = path.join(home, 'Projects', 'github', 'app');
+      const userLevel = path.join(home, '.specweave');
+      const parent = path.join(home, 'Projects', '.specweave');
+      for (const dir of [path.join(userLevel, 'logs'), path.join(userLevel, 'state'), path.join(parent, 'logs'), path.join(project, '.specweave')]) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(path.join(userLevel, 'plugins.lock'), '{}');
+      fs.writeFileSync(path.join(userLevel, 'auto-handoff.json'), '{"at":90}');
+      fs.writeFileSync(path.join(project, '.specweave', 'config.json'), '{}');
+      const originalHome = process.env.HOME;
+      process.env.HOME = home;
+      process.chdir(project);
+      try {
+        await updateCommand({ noSelf: true, noPlugins: true });
+      } finally {
+        process.env.HOME = originalHome;
+      }
+
+      expect(fs.readFileSync(path.join(userLevel, 'auto-handoff.json'), 'utf-8')).toBe('{"at":90}');
+      expect(fs.existsSync(path.join(userLevel, 'plugins.lock'))).toBe(true);
+      expect(fs.existsSync(path.join(parent, 'logs'))).toBe(true);
+      expect(consoleLogs.join('\n')).not.toMatch(/stale \.specweave/i);
+    });
+
+    it('keeps user folders under increments/, whatever their name', async () => {
+      setupSpecWeaveProject();
+      const increments = path.join(tempDir, '.specweave', 'increments');
+      for (const name of ['_research-basketball-stats', '_scratch-chat-perf', '_archive']) {
+        fs.mkdirSync(path.join(increments, name), { recursive: true });
+        fs.writeFileSync(path.join(increments, name, 'notes.md'), `# ${name}\n`);
+      }
+
+      await updateCommand({ noSelf: true, noPlugins: true });
+
+      for (const name of ['_research-basketball-stats', '_scratch-chat-perf', '_archive']) {
+        expect(fs.readFileSync(path.join(increments, name, 'notes.md'), 'utf-8')).toBe(`# ${name}\n`);
+      }
+      expect(consoleLogs.join('\n')).not.toMatch(/unrecognized folder/i);
     });
   });
 

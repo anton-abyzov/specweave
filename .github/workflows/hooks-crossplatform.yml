@@ -6,7 +6,6 @@ on:
     paths:
       - 'plugins/specweave/hooks/**'
       - 'src/core/hooks/**'
-      - 'src/cli/commands/hook.ts'
       - 'scripts/ci/hook-smoke.mjs'
       - '.github/workflows/hooks-crossplatform.yml'
       - 'package.json'
@@ -15,7 +14,6 @@ on:
     paths:
       - 'plugins/specweave/hooks/**'
       - 'src/core/hooks/**'
-      - 'src/cli/commands/hook.ts'
       - 'scripts/ci/hook-smoke.mjs'
       - 'tests/unit/hooks/**'
       - 'tests/unit/core/hooks/**'

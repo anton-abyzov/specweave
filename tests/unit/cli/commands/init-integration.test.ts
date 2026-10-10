@@ -245,15 +245,6 @@ vi.mock('ora', () => ({
   }),
 }));
 
-vi.mock('../../../../src/cli/helpers/init/living-docs-preflight.js', () => ({
-  displayJobScheduled: vi.fn(),
-  estimateDuration: vi.fn().mockReturnValue('30s'),
-}));
-
-vi.mock('../../../../src/core/background/index.js', () => ({
-  launchLivingDocsJob: vi.fn().mockResolvedValue({ isBackground: false }),
-}));
-
 vi.mock('../../../../src/cli/helpers/init/claude-settings-env.js', () => ({
   enableAgentTeamsEnvVar: vi.fn(),
 }));

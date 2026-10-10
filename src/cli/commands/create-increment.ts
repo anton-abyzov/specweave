@@ -106,14 +106,10 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   // Resolve increment ID: explicit or placeholder (template-creator handles atomic ID when autoId=true)
   const resolvedId = autoId ? '' : id!;
 
-  let testMode: string | undefined;
-  let coverageTarget: number | undefined;
   let deepInterview: 'off' | 'warn' | undefined;
   let configProjectName: string | undefined;
   try {
     const config = await readConfig(projectRoot);
-    testMode = config?.testing?.mode;
-    coverageTarget = config?.testing?.coverage?.unit;
     deepInterview = config?.planning?.deepInterview;
     configProjectName = config?.project?.name;
   } catch (error) {
@@ -133,8 +129,6 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     boardId: board,
     type,
     priority,
-    testMode,
-    coverageTarget,
     projectRoot,
     autoId,
     name,

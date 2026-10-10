@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { generateRubric } from '../../../../src/core/rubric/rubric-generator.js';
-import { parseRubric } from '../../../../src/core/rubric/rubric-parser.js';
 
 const SPEC_WITH_ACS = `---
 increment: 0663-test
@@ -58,10 +57,11 @@ describe('generateRubric', () => {
 
   it('TC-005: all generated criteria have PENDING result', () => {
     const md = generateRubric('0663-test', SPEC_WITH_ACS);
-    const doc = parseRubric(md);
-    for (const criterion of doc.criteria) {
-      expect(criterion.result).toBeNull();
-    }
+    const headers = md.match(/^### R-[A-Z0-9-]+\d+: .+ \[(blocking|advisory)\]$/gm) ?? [];
+    const results = md.match(/^- \*\*Result\*\*: .*$/gm) ?? [];
+    expect(headers.length).toBeGreaterThan(0);
+    expect(results).toHaveLength(headers.length);
+    expect(results.every(r => r === '- **Result**: [ ] PENDING')).toBe(true);
   });
 
   it('TC-006: coverage threshold from options', () => {
@@ -82,8 +82,8 @@ describe('generateRubric', () => {
     // moment an AC was inserted or removed. The generator now derives the id
     // from the AC id so a criterion always names the AC it grades.
     const md = generateRubric('0663-test', SPEC_WITH_ACS);
-    const doc = parseRubric(md);
-    const specCriteria = doc.criteria.filter(c => c.id.startsWith('R-') && !c.id.startsWith('R-D'));
-    expect(specCriteria.map(c => c.id)).toEqual(['R-US1-01', 'R-US1-02', 'R-US1-03']);
+    const ids = [...md.matchAll(/^### (R-[A-Z0-9-]+\d+):/gm)].map(m => m[1]);
+    const specCriteria = ids.filter(id => !id.startsWith('R-D'));
+    expect(specCriteria).toEqual(['R-US1-01', 'R-US1-02', 'R-US1-03']);
   });
 });

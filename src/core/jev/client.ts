@@ -22,6 +22,7 @@ import {
 } from './config.js';
 import { redactSecrets } from './redact.js';
 import { appendUsage } from './usage.js';
+import { decisionsRequest, decisionsResponse, DecisionsAdapterError, DECISIONS_BUDGET, decisionsEvidenceHash } from './openai.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
@@ -49,6 +50,8 @@ export interface JevResponse {
   usage: { input_tokens: number; output_tokens: number; cost?: number };
   latencyMs: number;
   id?: string;
+  requestId?: string;
+  evidenceHash?: string;
   /** How many secret-shaped spans {@link redactSecrets} masked out of the state. */
   redactions?: number;
 }
@@ -62,7 +65,8 @@ export type JevErrorCode =
   | 'overloaded'
   | 'transport'
   | 'timeout'
-  | 'schema';
+  | 'schema'
+  | 'refusal';
 
 export class JevError extends Error {
   readonly code: JevErrorCode;
@@ -114,14 +118,47 @@ function finite(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function probabilityMap(value: unknown): Record<string, number> | null {
+function probabilityMap(value: unknown, allowed: string[]): Record<string, number> | null {
   if (!isPlainObject(value)) return null;
+  if (Object.keys(value).length !== allowed.length || allowed.some((key) => !Object.prototype.hasOwnProperty.call(value, key))) return null;
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(value)) {
     if (!finite(v) || v < 0 || v > 1) return null;
     out[k] = v;
   }
+  // Allow tiny rounding differences, not a missing or impossible distribution.
+  if (Math.abs(Object.values(out).reduce((sum, p) => sum + p, 0) - 1) > 0.01) return null;
   return out;
+}
+
+function probability(value: unknown): value is number {
+  return finite(value) && value >= 0 && value <= 1;
+}
+
+/** Scrub each string before serialization, so masking cannot consume JSON delimiters. */
+function redactContent(value: Json): { value: Json; redactions: number } {
+  if (typeof value === 'string') {
+    const result = redactSecrets(value);
+    return { value: result.text, redactions: result.redactions };
+  }
+  if (value === null || typeof value !== 'object') return { value, redactions: 0 };
+  let redactions = 0;
+  if (Array.isArray(value)) {
+    const items = value.map((item) => {
+      const result = redactContent(item);
+      redactions += result.redactions;
+      return result.value;
+    });
+    return { value: items, redactions };
+  }
+  const entries = Object.entries(value).map(([key, item]) => {
+    // Renaming a choice/question ID silently would change the API contract.
+    if (redactSecrets(key).redactions) throw new JevError('validation', 'request contains a secret-shaped object key');
+    const result = redactContent(item);
+    redactions += result.redactions;
+    return [key, result.value];
+  });
+  return { value: Object.fromEntries(entries), redactions };
 }
 
 /**
@@ -189,20 +226,24 @@ function parseAnswers(body: unknown, questions: Record<string, Question>): Recor
       throw new JevError('schema', `response is missing an answer for question "${id}"`);
     }
     const type = a.type;
+    const question = questions[id];
+    if (type !== question.type) throw new JevError('schema', `answer "${id}" does not match the requested type`);
     if (type === 'noul') {
       if (!finite(a.noul) || a.noul < 0 || a.noul > 1) {
         throw new JevError('schema', `answer "${id}" has an out-of-range noul probability`);
       }
       answers[id] = { type: 'noul', noul: a.noul };
     } else if (type === 'choice') {
-      const probabilities = probabilityMap(a.probabilities);
-      if (typeof a.choice !== 'string' || !probabilities || !finite(a.confidence)) {
+      const allowed = Object.keys((question as Extract<Question, { type: 'choice' }>).criteria);
+      const probabilities = probabilityMap(a.probabilities, allowed);
+      if (typeof a.choice !== 'string' || !allowed.includes(a.choice) || !probabilities || !probability(a.confidence)) {
         throw new JevError('schema', `answer "${id}" is not a well-formed choice answer`);
       }
       answers[id] = { type: 'choice', choice: a.choice, probabilities, confidence: a.confidence };
     } else if (type === 'score') {
-      const probabilities = probabilityMap(a.probabilities);
-      if (!finite(a.score) || !probabilities || !finite(a.confidence)) {
+      const levels = (question as Extract<Question, { type: 'score' }>).criteria.length;
+      const probabilities = probabilityMap(a.probabilities, Array.from({ length: levels }, (_, i) => String(i)));
+      if (!finite(a.score) || a.score < 0 || a.score > levels - 1 || !probabilities || !probability(a.confidence)) {
         throw new JevError('schema', `answer "${id}" is not a well-formed score answer`);
       }
       const legend = isPlainObject(a.legend)
@@ -259,52 +300,38 @@ export class JevClient {
     const usageLog = opts.usageLog ?? this.usageLog;
     const url = jevEndpoint(this.config);
 
-    // THE choke point: nothing reaches the wire before this line. Redacting the
-    // serialized form catches secrets wherever a caller buried them — a command
-    // string, a diff hunk, a page excerpt — without every caller remembering to.
-    // A marker never contains a quote or a backslash, so the JSON normally still
-    // parses; when a mask swallowed a delimiter we send the redacted text itself
-    // rather than the unredacted object.
-    const redacted = redactSecrets(JSON.stringify(state) ?? '');
-    let safeState: Json;
-    try {
-      safeState = JSON.parse(redacted.text) as Json;
-    } catch {
-      safeState = redacted.text;
+    // Questions carry user-controlled AC text, skill descriptions and custom criteria.
+    // Scrub the whole payload, not only state. Round-trip first to preserve JSON semantics.
+    const isOpenAI = this.config.provider === 'openai';
+    if (isOpenAI && (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60_000
+      || !Number.isInteger(retries) || retries < 0 || retries > DEFAULT_RETRIES)) {
+      throw new JevError('validation', 'OpenAI Decisions requires a 1-60000ms deadline and 0-2 retries');
     }
-    const body = JSON.stringify({ model: this.config.model, state: safeState, questions });
+    let request: Json;
+    try {
+      request = isOpenAI ? decisionsRequest(this.config.model, state, questions)
+        : { model: this.config.model, state, questions } as unknown as Json;
+    } catch (error) { throw this.toJevError(error); }
+    const serialized = JSON.stringify(request);
+    if (isOpenAI && Buffer.byteLength(serialized, 'utf8') > DECISIONS_BUDGET.requestBytes) {
+      throw new JevError('validation', 'OpenAI Decisions request budget exceeded');
+    }
+    const redacted = redactContent(JSON.parse(serialized) as Json);
+    const body = JSON.stringify(redacted.value);
+    if (isOpenAI && Buffer.byteLength(body, 'utf8') > DECISIONS_BUDGET.requestBytes) {
+      throw new JevError('validation', 'OpenAI Decisions request budget exceeded');
+    }
 
     const started = Date.now();
     let lastError: JevError = new JevError('transport', 'request was never attempted');
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const response = await this.fetchImpl(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body,
-          signal: AbortSignal.timeout(timeoutMs),
-        });
+        const remainingMs = isOpenAI ? timeoutMs - (Date.now() - started) : timeoutMs;
+        if (remainingMs <= 0) throw new JevError('timeout', 'OpenAI Decisions deadline exceeded');
+        const { payload, requestId } = await this.requestPayload(url, body, remainingMs, isOpenAI);
 
-        if (!response.ok) {
-          throw new JevError(
-            statusToCode(response.status),
-            `Jev request failed with HTTP ${response.status}${await this.detail(response)}`,
-            { status: response.status },
-          );
-        }
-
-        let payload: unknown;
-        try {
-          payload = await response.json();
-        } catch {
-          throw new JevError('schema', 'Jev response was not valid JSON');
-        }
-
-        const answers = parseAnswers(payload, questions);
+        const answers = parseAnswers(isOpenAI ? decisionsResponse(payload, questions) : payload, questions);
         const raw = payload as Record<string, unknown>;
         const usage = isPlainObject(raw.usage) ? raw.usage : {};
         const latencyMs = Date.now() - started;
@@ -320,6 +347,8 @@ export class JevClient {
           },
           latencyMs,
           id: typeof raw.id === 'string' ? raw.id : undefined,
+          requestId,
+          evidenceHash: isOpenAI ? decisionsEvidenceHash(redacted.value) : undefined,
           redactions: redacted.redactions,
         };
 
@@ -328,12 +357,77 @@ export class JevClient {
       } catch (error) {
         lastError = this.toJevError(error);
         if (!lastError.retryable || attempt === retries) break;
-        await sleep(this.backoffMs * Math.pow(2, attempt));
+        const delay = this.backoffMs * Math.pow(2, attempt);
+        if (isOpenAI && Date.now() - started + delay >= timeoutMs) {
+          lastError = new JevError('timeout', 'OpenAI Decisions deadline exceeded');
+          break;
+        }
+        await sleep(delay);
       }
     }
 
     this.log(kind, null, false, usageLog, redacted.redactions);
     throw lastError;
+  }
+
+  private async requestPayload(url: string, body: string, timeoutMs: number, bounded: boolean): Promise<{ payload: unknown; requestId?: string }> {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_, reject) => {
+      if (bounded) timer = setTimeout(() => {
+        controller.abort();
+        reject(new JevError('timeout', 'OpenAI Decisions deadline exceeded'));
+      }, timeoutMs);
+    });
+    const request = async (): Promise<{ payload: unknown; requestId?: string }> => {
+      const response = await this.fetchImpl(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
+        body,
+        ...(bounded ? { redirect: 'error' as const } : {}),
+        signal: bounded ? controller.signal : AbortSignal.timeout(timeoutMs),
+      });
+      if (!response.ok) {
+        if (bounded) controller.abort();
+        // Provider errors can echo the request. Never put OpenAI response text in logs.
+        throw new JevError(statusToCode(response.status),
+          `Jev request failed with HTTP ${response.status}${bounded ? '' : await this.detail(response)}`,
+          { status: response.status });
+      }
+      let payload: unknown;
+      if (!bounded) {
+        try { payload = await response.json(); }
+        catch { throw new JevError('schema', 'Jev response was not valid JSON'); }
+      } else {
+        if (Number(response.headers.get('content-length')) > DECISIONS_BUDGET.responseBytes || !response.body) {
+          controller.abort();
+          throw new JevError('schema', 'OpenAI Decisions response is empty or exceeds its byte budget');
+        }
+        const reader = response.body.getReader();
+        const cancel = () => { void reader.cancel().catch(() => {}); };
+        controller.signal.addEventListener('abort', cancel, { once: true });
+        const decoder = new TextDecoder();
+        let size = 0, content = '';
+        try {
+          while (true) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            size += chunk.value.byteLength;
+            if (size > DECISIONS_BUDGET.responseBytes) {
+              cancel();
+              throw new JevError('schema', 'OpenAI Decisions response exceeds its byte budget');
+            }
+            content += decoder.decode(chunk.value, { stream: true });
+          }
+          content += decoder.decode();
+          try { payload = JSON.parse(content); }
+          catch { throw new JevError('schema', 'Jev response was not valid JSON'); }
+        } finally { controller.signal.removeEventListener('abort', cancel); reader.releaseLock(); }
+      }
+      return { payload, requestId: bounded ? response.headers.get('x-request-id') ?? undefined : undefined };
+    };
+    try { return await (bounded ? Promise.race([request(), deadline]) : request()); }
+    finally { if (timer) clearTimeout(timer); }
   }
 
   /** One tiny noul, no retries, no ledger entry. Never throws. */
@@ -372,6 +466,7 @@ export class JevClient {
   }
 
   private toJevError(error: unknown): JevError {
+    if (error instanceof DecisionsAdapterError) return new JevError(error.code, error.message);
     if (error instanceof JevError) {
       return new JevError(error.code, this.redact(error.message), {
         status: error.status,
@@ -379,7 +474,7 @@ export class JevClient {
       });
     }
     const name = (error as { name?: string } | null)?.name ?? '';
-    const message = this.redact(
+    const message = this.config.provider === 'openai' ? 'provider transport error' : this.redact(
       (error as { message?: string } | null)?.message ?? 'unknown transport failure',
     );
     if (name === 'AbortError' || name === 'TimeoutError') {
@@ -408,6 +503,8 @@ export class JevClient {
         cost: result?.usage.cost,
         latencyMs: result?.latencyMs ?? 0,
         redactions: result?.redactions ?? redactions,
+        requestId: result?.requestId,
+        evidenceHash: result?.evidenceHash,
         ok,
       });
     } catch {

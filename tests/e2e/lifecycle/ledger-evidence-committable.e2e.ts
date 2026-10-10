@@ -2,15 +2,13 @@
  * E2E: the evidence a ledger `done` event cites must be committable.
  *
  * `specweave task done T-01 --run "<cmd>"` writes the command's output to
- * `reports/task-T-01.log` and records that path in ledger.jsonl:
+ * `reports/task-T-01.txt` and records that path in ledger.jsonl:
  *
- *   {"t":"T-01","e":"done",…,"evidence":"… \nlog: .specweave/increments/<id>/reports/task-T-01.log\n…"}
+ *   {"t":"T-01","e":"done",…,"evidence":"… \nlog: .specweave/increments/<id>/reports/task-T-01.txt\n…"}
  *
- * The `.gitignore` SpecWeave itself writes carried a blanket `*.log` rule, so
- * that file was ignored: `git ls-files reports/` showed only verify.json and
- * verify.md, and a teammate cloning the repo could not read the evidence the
- * ledger pointed at. The design is explicit that `reports/` holds COMMITTED
- * evidence and only `reports/artifacts/` is ignored.
+ * Most .gitignore files carry a blanket `*.log` rule, so the evidence is `.txt`.
+ * Earlier versions wrote `.log` and added a `!…/reports/*.log` negation, which
+ * un-ignored hundreds of old logs in long-lived projects; update removes it.
  *
  * These drive the real binary end to end (init AND update), because the bug was
  * in generated content that no unit test ever handed to git.
@@ -120,24 +118,31 @@ describe('e2e: ledger evidence is trackable', () => {
     expect(isIgnored(artifact)).toBe(true);
   });
 
-  it('update: converges an existing project whose .gitignore still swallows the log', () => {
-    // A pre-2.0 project: blanket `*.log`, no SpecWeave block at all.
-    fs.writeFileSync(path.join(workDir, '.gitignore'), '# Logs\n*.log\nnode_modules/\n');
+  it('update: removes the old log negations so old logs stay ignored', () => {
+    // A project a 3.0.x update already touched: blanket `*.log` plus both negations.
+    fs.writeFileSync(
+      path.join(workDir, '.gitignore'),
+      '# Logs\n*.log\nnode_modules/\n\n# SpecWeave (added by specweave update)\n'
+        + '!.specweave/increments/**/reports/*.log\n!.specweave/increments/**/reports/task-T-*.log\n'
+    );
     fs.mkdirSync(path.join(workDir, '.specweave', 'increments'), { recursive: true });
     fs.writeFileSync(
       path.join(workDir, '.specweave', 'config.json'),
       JSON.stringify({ version: '2.0', project: { name: 'legacy' } }, null, 2)
     );
-    const rel = '.specweave/increments/0001-legacy/reports/task-T-01.log';
-    fs.mkdirSync(path.dirname(path.join(workDir, rel)), { recursive: true });
-    fs.writeFileSync(path.join(workDir, rel), 'echo hi → exit 0\n');
+    const oldLogs = [
+      '.specweave/increments/0001-legacy/reports/task-T-01.log',
+      '.specweave/increments/0001-legacy/reports/run.log',
+    ];
+    fs.mkdirSync(path.join(workDir, '.specweave/increments/0001-legacy/reports'), { recursive: true });
+    for (const rel of oldLogs) fs.writeFileSync(path.join(workDir, rel), 'echo hi → exit 0\n');
 
-    expect(isIgnored(rel), 'precondition: the 1.x .gitignore swallows it').toBe(true);
+    expect(isIgnored(oldLogs[0]), 'precondition: the negation un-ignores it').toBe(false);
 
     expect(sw('update', '--no-self', '--no-plugins').code).toBe(0);
 
-    expect(isIgnored(rel)).toBe(false);
+    for (const rel of oldLogs) expect(isIgnored(rel), rel).toBe(true);
     git('add', '-A');
-    expect(trackedUnder('.specweave/increments/0001-legacy/reports')).toContain(rel);
+    expect(trackedUnder('.specweave/increments/0001-legacy/reports')).toEqual([]);
   });
 });

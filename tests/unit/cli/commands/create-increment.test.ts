@@ -57,8 +57,8 @@ describe('create-increment CLI command', () => {
     const incPath = path.join(incrementsPath, '0001-test-feature');
     expect(fs.existsSync(path.join(incPath, 'metadata.json'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'spec.md'))).toBe(true);
-    expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(true);
-    // plan.md is an optional overflow in 2.0 — only with --with-plan.
+    // 3.0: tasks live in spec.md; plan.md only with --with-plan.
+    expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(false);
     expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(false);
   });
 
@@ -97,7 +97,7 @@ describe('create-increment CLI command', () => {
     expect(content).toContain('## Problem');
     expect(content).toContain('- [ ] AC-01:');
     expect(content).toContain('[Specific, testable criterion]');
-    expect(content).toContain('TEMPLATE FILE');
+    expect(content).toContain('## Tasks');
   });
 
   it('should set metadata with correct type and priority', async () => {
@@ -136,9 +136,8 @@ describe('create-increment CLI command', () => {
       projectRoot: tempDir,
     });
 
-    const specPath = path.join(incrementsPath, '0001-board-feature', 'spec.md');
-    const content = fs.readFileSync(specPath, 'utf-8');
-    expect(content).toContain('**Board**: frontend-team');
+    const metaPath = path.join(incrementsPath, '0001-board-feature', 'metadata.json');
+    expect(JSON.parse(fs.readFileSync(metaPath, 'utf-8')).board).toBe('frontend-team');
   });
 
   it('should output JSON result to stdout when --json flag is used', async () => {

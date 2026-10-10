@@ -10,12 +10,12 @@ vi.mock('@docusaurus/Link', () => ({
 import Footer from '../index';
 
 describe('Footer', () => {
-  it('renders 4 column headings: Product, Docs, Community, Open source', () => {
+  it('renders 4 column headings: Start, Switch tools, Reference, Project', () => {
     render(<Footer />);
-    expect(screen.getByText('Product')).toBeInTheDocument();
-    expect(screen.getByText('Docs')).toBeInTheDocument();
-    expect(screen.getByText('Community')).toBeInTheDocument();
-    expect(screen.getByText('Open source')).toBeInTheDocument();
+    expect(screen.getByText('Start')).toBeInTheDocument();
+    expect(screen.getByText('Switch tools')).toBeInTheDocument();
+    expect(screen.getByText('Reference')).toBeInTheDocument();
+    expect(screen.getByText('Project')).toBeInTheDocument();
   });
 
   it('renders social icon links', () => {
@@ -30,8 +30,7 @@ describe('Footer', () => {
   it('renders copyright with current year', () => {
     render(<Footer />);
     const year = new Date().getFullYear();
-    expect(screen.getByText(new RegExp(`${year}`))).toBeInTheDocument();
-    expect(screen.getByText(/SpecWeave/)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`${year}.*SpecWeave`))).toBeInTheDocument();
   });
 
   it('has dark background class on footer', () => {
@@ -42,8 +41,8 @@ describe('Footer', () => {
 
   it('renders documentation links', () => {
     render(<Footer />);
-    expect(screen.getByText('Introduction')).toBeInTheDocument();
-    expect(screen.getByText('Getting Started')).toBeInTheDocument();
-    expect(screen.getByText('Skills reference')).toBeInTheDocument();
+    expect(screen.getByText('What is SpecWeave?')).toHaveAttribute('href', '/docs/overview/introduction');
+    expect(screen.getByText('Quick start')).toHaveAttribute('href', '/docs/getting-started');
+    expect(screen.getByText('Handoff and pickup')).toHaveAttribute('href', '/docs/guides/cross-tool-handoff');
   });
 });

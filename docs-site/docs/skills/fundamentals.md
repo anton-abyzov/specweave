@@ -108,12 +108,12 @@ Skills can be triggered three ways:
 
 **1. Natural language** (easiest) — just describe what you want and Claude matches the right skill.
 **2. Slash command** (precise) — type `/skill-name` in Claude Code.
-**3. CLI keyword** (cross-tool) — type the skill name in Cursor, Copilot, and other AI tools.
+**3. Skill name** (cross-tool) — in Codex, type `$` plus the skill name; other AI tools that load skills match them by name or description.
 
 <CommandTabs
-  natural="Let's design the authentication architecture"
+  natural="Plan the authentication feature as an increment"
   claude='sw:increment'
-  other='architect'
+  other='$sw-increment'
 />
 
 ### Controlling Who Can Invoke
@@ -344,11 +344,13 @@ SpecWeave is delivered as Claude Code plugins through two marketplaces. Here's w
 
 ### The Marketplaces
 
-**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin** with **44 skills**:
+**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin**, `sw`, with the SpecWeave 3.0 skill set:
 
 | Plugin | Skills | Domain |
 |--------|--------|--------|
-| `sw` (unified) | 44 | Core lifecycle, PM, Architect, TDD, team orchestration, GitHub/JIRA/ADO sync, release management, diagrams, AI media |
+| `sw` (unified) | increment, do, auto, team, review, done, sync, handoff, project, brainstorm, jev | Increment lifecycle, parallel agents, review, cross-tool handoff, GitHub/Jira/Azure DevOps sync |
+
+The same skills are also generated as project skills (`sw-do`, `sw-review` and so on) in `.claude/skills/` and `.agents/skills/`, so cloud sessions and Codex get them without the plugin.
 
 **vskill marketplace** (`anton-abyzov/vskill`) provides **5 additional domain plugins**:
 
@@ -381,7 +383,7 @@ When building Node.js APIs, follow these patterns:
 
 ```yaml
 ---
-description: Plan and create SpecWeave increments
+description: Plan a feature, with guard hooks and a forked subagent (illustrative)
 argument-hint: "<feature-description>"
 context: fork
 model: opus
@@ -401,18 +403,18 @@ hooks:
 
 ### Skill Chaining
 
-Skills invoke other skills for multi-step workflows:
+Skills chain into multi-step workflows. The SpecWeave loop is one example:
 
 ```
-sw:increment "user auth"
-    → sw:increment skill activates (Product Manager writes spec)
-        → sw:increment skill activates (designs the system)
-            → backend:nodejs activates (implements)
+sw:increment "user auth"   → writes spec.md: ACs, approach, tasks
+    → sw:do                → claims each task, runs its test, records evidence
+        → sw:review        → reviews the change in a fresh session
+            → sw:done      → verifies and closes the increment
 ```
 
 ### Dynamic Context Injection
 
-SpecWeave skills inject project-specific overrides at load time using dynamic context injection blocks:
+A skill can inject project-specific overrides at load time using a dynamic context injection block. This pattern comes from the [Extensible Skills](/docs/skills/extensible/) standard:
 
 ```yaml
 ## Your Project's Customizations
@@ -421,15 +423,7 @@ SpecWeave skills inject project-specific overrides at load time using dynamic co
 done`
 ```
 
-This loads "skill memories" — corrections you've made that persist across sessions. You tell Claude "use React Hook Form" once, and it remembers next time the PM skill activates.
-
-### Plugins Load On-Demand
-
-Domain plugins load based on what you're working on:
-
-- Say "mobile app" → `mobile` activates
-- Say "post on social media" → `marketing` activates
-- Say "Google Drive" → `google-workspace` activates
+This loads "skill memories" — corrections you've made that persist across sessions. You tell Claude "use React Hook Form" once, and it remembers next time that skill activates. (SpecWeave's own 3.0 skills keep durable decisions in `.specweave/memory/` instead.)
 
 ---
 
@@ -440,8 +434,8 @@ Domain plugins load based on what you're working on:
 3. **Marketplace = a catalog** -- lists plugins and where to download them via `marketplace.json`
 4. **Commands = old name for skills** -- `.claude/commands/` still works, but skills are the current standard
 5. **Namespacing prevents conflicts** -- plugin skills become `/plugin:skill`
-6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or CLI keyword (`name` in other AI tools)
-7. **Real scale** -- SpecWeave ships 44 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
+6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or the skill name in other AI tools (`$sw-&lt;name&gt;` in Codex)
+7. **Real scale** -- SpecWeave ships 11 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
 
 ---
 
@@ -451,5 +445,5 @@ Domain plugins load based on what you're working on:
 - [Verified Skills](/docs/skills/verified/) — How to evaluate skill security and trust
 - [Claude Code Skills Docs](https://code.claude.com/docs/en/skills) — Official Anthropic documentation
 - [Claude Code Plugins Docs](https://code.claude.com/docs/en/plugins) — Creating and distributing plugins
-- [All 100+ SpecWeave Skills](/docs/reference/skills) — Browse the complete catalog
+- [SpecWeave Skills](/docs/reference/skills) — The SpecWeave skill set
 - [verified-skill.com](https://verified-skill.com) — The trusted skill registry

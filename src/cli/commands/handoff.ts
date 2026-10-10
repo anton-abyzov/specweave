@@ -10,23 +10,29 @@
  * Usage:
  *   specweave handoff [incrementId] \
  *     [--reason <r>] [--summary <s>] [--next <n>] [--gotcha <g>] \
- *     [--decision <d> ...] [--inline] [--non-specweave] [--out <path>] [--json]
+ *     [--decision <d> ...] [--inline] [--non-specweave] [--out <path>] [--json] \
+ *     [--push] [--keep-claims]
+ *   specweave handoff --all [--reason <r>] [--out <dir>] [--dry-run] [--json]
  *
- * Output order (AC-US1-02 / US-005 — STRICT):
- *   1. The absolute doc path as PLAIN TEXT (first line — for shell capture).
- *   2. A clickable markdown link to the doc.
- *   3. The `.diff` path.
- *   4. The fenced copy-paste resume prompt.
- *   5. A note that per-tool "find your source session" tips live inside the doc.
+ * Output is three or four lines: what was handed off, how to continue ("pick
+ * up" in the other tool), and where the details are. `--inline` prints a
+ * paste-able prompt for the rare case with no Git remote and another machine.
  *
  * With `--json`, the full {@link WorkHandoffResult} is printed as JSON instead
  * (for programmatic callers — e.g. the hook handler and tests).
+ *
+ * `--all` writes the handoff index instead (every active increment plus the
+ * nested checkouts with local-only work); see core/session/handoff-all.
  *
  * Part of increment 0867: Cross-Tool Work Handoff.
  *
  * @module cli/commands/handoff
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { writeHandoffIndex } from '../../core/session/handoff-all.js';
 import {
   buildWorkHandoff,
   AmbiguousActiveIncrementError,
@@ -54,11 +60,63 @@ export interface HandoffCommandOptions {
   out?: string;
   /** `--json` → print the full result as JSON. */
   json?: boolean;
+  /** `--no-push` → false: keep the handoff local. Default: push when there is a remote. */
+  push?: boolean;
+  /** `--keep-claims` → do not release this agent's task claims. */
+  keepClaims?: boolean;
+  /** `--all` → write the index of every active increment and nested repo. */
+  all?: boolean;
+  /** `--dry-run` (with `--all`) → print the index, write nothing. */
+  dryRun?: boolean;
   /** Override the starting directory for workspace resolution (tests). */
   cwd?: string;
 }
 
+/** `specweave handoff --all`: write (or with `--dry-run` print) the handoff index. */
+export async function handoffAllCommand(opts: HandoffCommandOptions = {}): Promise<number> {
+  const root = resolveEffectiveRoot(opts.cwd ?? process.cwd());
+  if (!fs.existsSync(path.join(root, '.specweave'))) {
+    process.stderr.write('Not a SpecWeave workspace: `handoff --all` needs a .specweave folder.\n');
+    return 1;
+  }
+  const result = await writeHandoffIndex(root, { reason: opts.reason, outDir: opts.out, dryRun: opts.dryRun });
+  if (opts.json) {
+    process.stdout.write(JSON.stringify(result.index, null, 2) + '\n');
+    return 0;
+  }
+  if (opts.dryRun) {
+    process.stdout.write(result.markdown);
+    return 0;
+  }
+  const rel = (p: string) => path.relative(root, p).split(path.sep).join('/');
+  const waiting = result.index.rows.filter((r) => r.waits.length).length;
+  const repos = result.index.repos;
+  const out = [
+    `Indexed ${result.index.rows.length} active increment${result.index.rows.length === 1 ? '' : 's'} (${result.index.rows.length - waiting} actionable, ${waiting} waiting on a person)` +
+      (repos ? `; ${repos.flagged.length} of ${repos.scanned} checkouts hold local-only work.` : '.'),
+    'Nothing was committed or pushed. Commit and push the local-only work listed there, or tell the next session about it.',
+    'On the other side, say "pick up all" (or run `specweave pickup --all`).',
+    `Details: ${rel(result.mdPath)} and ${rel(result.jsonPath)}`,
+  ];
+  process.stdout.write(out.join('\n') + '\n');
+  return 0;
+}
+
 export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<void> {
+  if (opts.all) {
+    if (opts.incrementId) {
+      process.stderr.write('`--all` covers every active increment; drop the increment id or drop --all.\n');
+      process.exitCode = 1;
+      return;
+    }
+    process.exitCode = await handoffAllCommand(opts);
+    return;
+  }
+  if (opts.dryRun) {
+    process.stderr.write('`--dry-run` works with `--all` only.\n');
+    process.exitCode = 1;
+    return;
+  }
   const startDir = opts.cwd ?? process.cwd();
 
   const builderOpts: WorkHandoffOptions = {
@@ -71,6 +129,8 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     inline: opts.inline,
     out: opts.out,
     nonSpecweave: opts.nonSpecweave,
+    push: opts.push,
+    keepClaims: opts.keepClaims,
   };
 
   let result;
@@ -96,25 +156,28 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     return;
   }
 
-  // ── Contractual output order (AC-US1-02) ──────────────────────────────────
+  // Short by design: the other side needs two words ("pick up"), not a prompt.
   const out: string[] = [];
-  // 1. Absolute doc path as PLAIN TEXT, first.
-  out.push(result.docPath);
-  // 2. Clickable markdown link.
-  out.push(`[handoff doc](${result.docPath})`);
-  // 3. The .diff path.
-  out.push(`Uncommitted diff: ${result.diffPath}`);
-  // 4. Fenced copy-paste resume prompt.
-  out.push('');
-  out.push('Copy-paste this prompt into the other tool:');
-  out.push('```');
-  out.push(result.pastePrompt);
-  out.push('```');
-  // 5. Note that per-tool tips live inside the doc.
-  out.push('');
-  out.push(
-    `Per-tool "find your source session" tips are inside the doc (How To Resume section): ${result.docPath}`,
-  );
+  const rel = path.relative(startDir, result.docPath).split(path.sep).join('/') || result.docPath;
+  const what: string[] = [];
+  if (result.released.length) what.push(`released ${result.released.join(', ')}`);
+  if (result.push?.branch) what.push(`pushed ${result.push.branch}`);
+  if (result.push?.wipRef) what.push('pushed your uncommitted edits');
+  else if (result.push?.handoffRef) what.push('pushed the handoff');
+  out.push(`Handed off${result.incrementId ? ` ${result.incrementId}` : ''}${what.length ? ` (${what.join(', ')})` : ''}.`);
+  for (const w of result.push?.warnings ?? []) out.push(`warning: ${w}`);
+  if (result.push?.handoffRef) {
+    out.push('To continue in any tool, machine or account, say "pick up" there (or run `specweave pickup`).');
+  } else if (opts.inline) {
+    out.push('Paste this into the other tool:');
+    out.push('```');
+    out.push(result.pastePrompt);
+    out.push('```');
+  } else {
+    out.push('To continue in another tool on this machine, say "pick up" there (or run `specweave pickup`).');
+    out.push('Nothing was pushed, so another machine or a cloud session will not see it; run `specweave handoff --inline` for a prompt you can paste instead.');
+  }
+  out.push(`Details: ${rel}`);
 
   process.stdout.write(out.join('\n') + '\n');
 }

@@ -48,7 +48,18 @@ function stubFetch(answers: Record<string, unknown> = {}, opts: StubOptions = {}
     };
     const out: Record<string, unknown> = {};
     for (const [id, question] of Object.entries(payload.questions)) {
-      if (answers[id] !== undefined) { out[id] = answers[id]; continue; }
+      if (answers[id] !== undefined) {
+        const answer = answers[id] as { type: string; probabilities?: Record<string, number> };
+        if (answer.type === 'choice' && answer.probabilities) {
+          // Abbreviated fixtures still need the full distribution the API promises.
+          const probabilities = { ...answer.probabilities };
+          const missing = Object.keys(question.criteria ?? {}).filter((key) => !(key in probabilities));
+          const remainder = 1 - Object.values(probabilities).reduce((sum, p) => sum + p, 0);
+          for (const key of missing) probabilities[key] = remainder / missing.length;
+          out[id] = { ...answer, probabilities };
+        } else out[id] = answer;
+        continue;
+      }
       if (question.type === 'noul') {
         out[id] = { type: 'noul', noul: 0.5 };
       } else {
@@ -198,6 +209,31 @@ describe('jev setup', () => {
     const config = JSON.parse(fs.readFileSync(path.join(tmp, '.specweave', 'config.json'), 'utf-8'));
     expect(config.jev.provider).toBe('typesafe');
     expect(config.jev.model).toBe('jev-latest');
+  });
+
+  it('enables OpenAI only after a successful predicate ping, preserving unrelated config', async () => {
+    writeConfig({ project: { name: 'kept' }, jev: { enabled: false, provider: 'openrouter', model: 'jev-1.13', apiKeyEnv: 'OLD_PROVIDER_KEY' } });
+    const fetch = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      expect(body.model).toBe('gpt-6-luna');
+      expect(init?.headers).toMatchObject({ Authorization: 'Bearer test-openai-key' });
+      expect(body.questions).toMatchObject([{ name: 'PING', type: 'predicate' }]);
+      return new Response(JSON.stringify({ answers: [{ name: 'PING', type: 'predicate', probability: 1 }] }));
+    });
+    expect(await jevCommand('setup', [], { cwd: tmp, env: { OPENAI_API_KEY: 'test-openai-key', OLD_PROVIDER_KEY: 'wrong-provider-key' }, fetch, provider: 'openai' })).toBe(0);
+    const config = JSON.parse(fs.readFileSync(path.join(tmp, '.specweave', 'config.json'), 'utf-8'));
+    expect(config.project.name).toBe('kept');
+    expect(config.jev.apiKeyEnv).toBeUndefined();
+    expect(config.jev).toMatchObject({ provider: 'openai', model: 'gpt-6-luna', enabled: true, guards: { bash: false } });
+    expect(allOut()).not.toContain('test-openai-key');
+  });
+
+  it('does not enable OpenAI when its ping is refused', async () => {
+    writeConfig({ jev: { enabled: false } });
+    const fetch = async () => new Response(JSON.stringify({ answers: [{ name: 'PING', type: 'refusal' }] }));
+    expect(await jevCommand('setup', [], { cwd: tmp, env: { OPENAI_API_KEY: 'test-openai-key' }, fetch, provider: 'openai' })).toBe(1);
+    expect(JSON.parse(fs.readFileSync(path.join(tmp, '.specweave', 'config.json'), 'utf-8')).jev.enabled).toBe(false);
+    expect(allOut()).toContain('refusal');
   });
 
   it('rejects an unknown provider', async () => {

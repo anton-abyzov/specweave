@@ -29,7 +29,6 @@ import { SpecFrontmatterUpdater } from './spec-frontmatter-updater.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { getProjectRoot, resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { validateIncrementId } from '../../utils/increment-id-validator.js';
-import { livingDocsEnabled } from '../living-docs/living-docs-enabled.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -327,9 +326,6 @@ export class MetadataManager {
     // we need to trigger living docs sync to create FS-XXX folders
     // This does NOT cause double-sync because updateStatus() only calls write()
     // when the file ALREADY EXISTS (for updates, not creation)
-    const isNewFile = !fs.existsSync(metadataPath);
-    const isActiveStatus = metadata.status === IncrementStatus.ACTIVE;
-
     const withUpdated = metadata as IncrementMetadata & { updated?: string };
     if (!withUpdated.updated) {
       // 2.0 shape: `updated` is the documented field. Back-fill it from the
@@ -352,47 +348,6 @@ export class MetadataManager {
         incrementId,
         error instanceof Error ? error : new Error(String(error))
       );
-    }
-
-    // NEW: Trigger living docs sync for NEW active increments
-    // This ensures FS-XXX folders are created when increment is created with ACTIVE status
-    // CRITICAL FIX (2025-11-24): Only trigger if spec.md EXISTS
-    // In single-prompt scenarios, metadata.json is created BEFORE spec.md
-    // Triggering sync before spec.md exists causes "Spec file not found" error
-    if (isNewFile && isActiveStatus && livingDocsEnabled(rootDir || resolveEffectiveRoot())) {
-      const specPath = path.join(incrementPath, 'spec.md');
-      const specExists = fs.existsSync(specPath);
-
-      if (!specExists) {
-        this.logger.log(`📚 New active increment detected, but spec.md not yet created`);
-        this.logger.log(`   Living docs sync will trigger when spec.md is ready`);
-        // Don't trigger sync yet - will happen via:
-        // 1. AutoTransitionManager.handleTasksCreated() → updateStatus() → StatusChangeSyncTrigger
-        // 2. Or manual sw:sync-docs command
-      } else {
-        this.logger.log(`📚 New active increment detected - triggering living docs sync...`);
-
-        // Non-blocking async sync (same pattern as updateStatus)
-        (async () => {
-          try {
-            const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
-            const sync = new LivingDocsSync(rootDir || resolveEffectiveRoot(), {
-              logger: this.logger
-            });
-
-            const result = await sync.syncIncrement(incrementId);
-
-            if (result.success) {
-              this.logger.log(`✅ Living docs synced for ${incrementId} → ${result.featureId}`);
-            } else {
-              this.logger.warn(`⚠️  Living docs sync completed with errors for ${incrementId}`);
-            }
-          } catch (error) {
-            this.logger.error(`❌ Living docs sync failed for ${incrementId}:`, error);
-            this.logger.log(`💡 Run sw:sync-docs ${incrementId} to retry`);
-          }
-        })();
-      }
     }
   }
 
@@ -542,30 +497,9 @@ export class MetadataManager {
       activeManager.smartUpdate();
     }
 
-    // **NEW (2025-11-24)**: Auto-trigger sync for meaningful status transitions
-    // This ensures GitHub issues update automatically when work starts/completes
-    // Safety: Non-blocking, circuit breaker protected, errors isolated
-    // CRITICAL: Use async import() not require() for ESM compatibility
-    (async () => {
-      try {
-        // Dynamic import to avoid circular dependency
-        const { StatusChangeSyncTrigger } = await import('./status-change-sync-trigger.js');
-
-        await StatusChangeSyncTrigger.triggerIfNeeded(
-          incrementId,
-          oldStatus,
-          newStatus
-        ).catch((error: Error) => {
-          // Log but don't throw - sync failure shouldn't break status update
-          this.logger.warn(
-            `Auto-sync failed for ${incrementId}: ${error.message}`
-          );
-        });
-      } catch (importError) {
-        // Module not available yet (during build?) - skip sync
-        this.logger.debug(`Status sync trigger not available: ${(importError as Error).message}`);
-      }
-    })(); // Execute immediately, but don't await (non-blocking)
+    // 3.0: a status change never touches an external tracker. Issues are
+    // created, updated and closed only by `specweave sync push` (and by the
+    // explicit close-on-complete settings `specweave complete` honours).
 
     return metadata;
   }
@@ -606,6 +540,11 @@ export class MetadataManager {
 
     // Read spec.md content (synchronously)
     const content = fs.readFileSync(specPath, 'utf-8');
+
+    // 3.0 specs carry no frontmatter: metadata.json is the only status store.
+    // Only specs that already mirror the status (created before 3.0) are kept
+    // in step; never add a frontmatter block to a spec that has none.
+    if (!/^---\r?\n/.test(content)) return;
 
     // Parse and update YAML frontmatter using gray-matter
     const parsed = matter(content);

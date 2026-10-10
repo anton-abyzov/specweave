@@ -125,7 +125,7 @@ sw:increment "user authentication"
 
 - [Documentation](https://spec-weave.com/docs/overview/introduction)
 - [GitHub Repository](https://github.com/anton-abyzov/specweave)
-- [Quick Start Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)
+- [Quick Start Guide](/docs/getting-started/)
 
 ---
 
