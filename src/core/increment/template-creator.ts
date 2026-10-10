@@ -37,8 +37,8 @@ export const TEMPLATE_MARKERS = {
   PROBLEM: '[What is wrong today, for whom',
   /** 2.0 spec.md: unfilled Scope section */
   SCOPE_IN: '[what this increment ships]',
-  /** 2.0 spec.md: unfilled Approach section */
-  APPROACH_FILES: '**Files that change** (and in what order): [src/...]',
+  /** spec.md: unfilled Approach section */
+  APPROACH_FILES: '[Files that change, in order',
   /** Marker for unfilled component */
   COMPONENT: '[Component 1]',
   /** Marker for unfilled description */
@@ -94,10 +94,6 @@ export interface CreateTemplateOptions {
   type?: string;
   /** Priority (P1, P2, P3) */
   priority?: string;
-  /** Test mode from config */
-  testMode?: string;
-  /** Coverage target from config */
-  coverageTarget?: number;
   /** Project root directory */
   projectRoot?: string;
   /** External source metadata for imported issues (v1.0.272) */
@@ -180,8 +176,6 @@ export async function createIncrementTemplates(
     boardId,
     type = 'feature',
     priority = 'P1',
-    testMode = 'TDD',
-    coverageTarget = 90,
     projectRoot = resolveEffectiveRoot(),
     externalSource,
     autoId,
@@ -258,12 +252,8 @@ export async function createIncrementTemplates(
       // are kept in step by MetadataManager and by every ledger append.
       updated: new Date().toISOString(),
       lastActivity: new Date().toISOString(),
-      testMode,
-      coverageTarget,
-      feature_id: null,
-      epic_id: null,
-      externalLinks: {},
-      planning: { parallel },
+      title,
+      ...(parallel ? { planning: { parallel } } : {}),
     };
 
     // Add external source tracking for imported issues (v1.0.272)
@@ -338,56 +328,29 @@ export async function createIncrementTemplates(
       // Config load failure is non-fatal for project detection
     }
 
+    if (boardId) metadata.board = boardId;
+
     fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     createdFiles.push('metadata.json');
 
-    // 2. Create spec.md — pre-filled from external source or template
+    // 2. Create spec.md — the one file an agent reads. 3.0 keeps the task
+    // definitions in its `## Tasks` section; there is no tasks.md and no
+    // frontmatter (metadata.json is the only status store).
     const specPath = path.join(incrementPath, 'spec.md');
     const specContent = externalSource
-      ? generateExternalSpecContent({
-          incrementId,
-          title,
-          description: externalSource.description || description,
-          projectId,
-          boardId,
-          type,
-          priority: externalSource.priority || priority,
-          testMode,
-          coverageTarget,
-          externalSource,
-          status: planned ? IncrementStatus.PLANNED : IncrementStatus.ACTIVE,
-        })
-      : generateSpecTemplate({
-          incrementId,
-          title,
-          description,
-          projectId,
-          boardId,
-          type,
-          priority,
-          testMode,
-          coverageTarget,
-          status: planned ? IncrementStatus.PLANNED : IncrementStatus.ACTIVE,
-        });
+      ? generateExternalSpecContent({ title, description, externalSource })
+      : generateSpecTemplate({ title, description });
     fs.writeFileSync(specPath, specContent);
     createdFiles.push('spec.md');
 
-    // 3. Create plan.md TEMPLATE — only on --with-plan. In 2.0 spec.md carries
-    // the Approach; plan.md is an optional overflow, recognized when present.
+    // 3. Create plan.md TEMPLATE — only on --with-plan. spec.md carries the
+    // Approach; plan.md is an optional overflow, recognized when present.
     if (withPlan) {
       const planPath = path.join(incrementPath, 'plan.md');
       const planContent = generatePlanTemplate({ title });
       fs.writeFileSync(planPath, planContent);
       createdFiles.push('plan.md');
     }
-
-    // 4. Create tasks.md — derived from external ACs or template
-    const tasksPath = path.join(incrementPath, 'tasks.md');
-    const tasksContent = externalSource?.acceptanceCriteria?.length
-      ? generateExternalTasksContent({ title, testMode, acceptanceCriteria: externalSource.acceptanceCriteria })
-      : generateTasksTemplate({ title, testMode });
-    fs.writeFileSync(tasksPath, tasksContent);
-    createdFiles.push('tasks.md');
 
     // 5. (0865 AC-US1-05) No rubric placeholder is scaffolded. The real,
     // AC-tied root rubric.md is produced post-planning by the generator
@@ -416,8 +379,7 @@ export async function createIncrementTemplates(
           `Start working: sw:auto ${incrementId}`,
         ]
       : [
-          `Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …) and Approach`,
-          `Fill in tasks.md — "### T-01 <title>" + "- AC: … | Files: … | Test: …"`,
+          `Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …), Approach and Tasks (### T-01 … + "- AC: … | Files: … | Test: …")`,
           ...(planned ? [`Start it: specweave start ${incrementId}`] : []),
           `Work it: specweave task next → task claim T-01 → task done T-01 --run "<test>"`,
           `Close it: specweave verify ${incrementId} → specweave complete ${incrementId}`,
@@ -589,97 +551,42 @@ export function validateSpecCompletion(specPath: string): {
 }
 
 /**
- * Generate spec.md template content.
+ * Generate the spec.md scaffold: one short file with every section an agent
+ * fills in, bracketed placeholders only (detected by isTemplateFile), and no
+ * instructional comment block to read and delete.
  */
-function generateSpecTemplate(options: {
-  incrementId: string;
-  title: string;
-  description: string;
-  projectId: string;
-  boardId?: string;
-  type: string;
-  priority: string;
-  testMode: string;
-  coverageTarget: number;
-  /** Must mirror metadata.json (an IncrementStatus value). */
-  status: string;
-}): string {
-  const {
-    incrementId,
-    title,
-    description,
-    projectId,
-    boardId,
-    type,
-    priority,
-    testMode,
-    coverageTarget,
-    status,
-  } = options;
-
-  const date = new Date().toISOString().split('T')[0];
-  const boardLine = boardId ? `**Board**: ${boardId}\n` : '';
-
-  return `---
-increment: ${incrementId}
-title: "${title}"
-type: ${type}
-priority: ${priority}
-status: ${status}
-created: ${date}
-test_mode: ${testMode}
-coverage_target: ${coverageTarget}
----
-
-# ${incrementId} — ${title}
-
-**Project**: ${projectId}
-${boardLine}
-<!--
-====================================================================
-  TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS
-====================================================================
-
-This is a TEMPLATE created by the increment skill.
-DO NOT ship it with the placeholders below still in place.
-
-To complete this specification, run:
-  Tell Claude: "Complete the spec for increment ${incrementId}"
-
-spec.md is ONE evolving document: Problem · Scope · Acceptance Criteria ·
-Approach · Open questions. \`plan.md\` is optional overflow for a genuinely
-large design (\`create-increment --with-plan\`); the Approach section is the
-default home.
-====================================================================
--->
+function generateSpecTemplate(options: { title: string; description: string }): string {
+  const { title, description } = options;
+  return `# ${title}
 
 ## Problem
 
-${description}
-
-[What is wrong today, for whom, and the evidence (issue, log, user quote). Not the solution.]
+${description ? `${description}\n\n` : ''}[What is wrong today, for whom, and the evidence. Not the solution.]
 
 ## Scope
 
-**In**: [what this increment ships]
-
-**Out**: [what it explicitly does not include — this list is what stops scope creep later]
+In: [what this increment ships]. Out: [what it does not include].
 
 ## Acceptance Criteria
 
 - [ ] AC-01: [Specific, testable criterion]
-- [ ] AC-02: [Another criterion]
+- [ ] AC-02: [Specific, testable criterion]
 
 ## Approach
 
-- **Files that change** (and in what order): [src/...]
-- **Key decisions** (+ ADR links): [decision — why]
-- **Rejected alternatives**: [alternative — why not]
-- **Risks**: [risk — mitigation]
+[Files that change, in order; key decisions; rejected alternatives; risks.]
 
 ## Open questions
 
-- [question] — blocking? who decides?
+- [question, or "none"]
+
+## Tasks
+
+### T-01 [First task]
+- AC: AC-01 | Files: [src/file.ts, src/file.test.ts] | Test: [command]
+
+### T-02 [Second task]
+- AC: AC-02 | Files: [src/other.ts] | Test: [command]
 `;
 }
 
@@ -763,151 +670,43 @@ This will activate the Architect skill which will:
 }
 
 /**
- * Generate tasks.md template content.
- *
- * IMPORTANT: TDD is an EXECUTION practice, NOT a planning practice.
- * Tasks.md templates are ALWAYS standard format during planning.
- * TDD discipline (RED-GREEN-REFACTOR) is enforced during task execution
- * via sw:tdd-cycle, sw:tdd-red, sw:tdd-green, sw:tdd-refactor commands.
- *
- * The testMode setting in config.json determines execution behavior, not template format.
- */
-function generateTasksTemplate(options: {
-  title: string;
-  testMode: string;
-}): string {
-  const { title } = options;
-
-  // ALWAYS use standard templates during planning
-  // TDD is enforced at EXECUTION time via sw:tdd-* commands
-  return generateStandardTasksTemplate(title);
-}
-
-/**
- * Generate standard tasks template.
- *
- * NOTE: TDD-specific task generation was removed from planning phase.
- * TDD discipline (RED-GREEN-REFACTOR) is applied at EXECUTION time; the
- * procedure ships as the optional skill skills-optional/tdd-cycle/.
- */
-function generateStandardTasksTemplate(title: string): string {
-  return `# Tasks: ${title}
-
-<!--
-====================================================================
-  TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL
-====================================================================
-
-Tell Claude: "Create tasks for increment [ID]".
-
-FORMAT (2.0) — one heading + one field line per task:
-
-  ### T-01 <short title>
-  - AC: AC-01, AC-02 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a
-
-  \`Files\` is the ownership unit: two agents never claim tasks that share a
-  file. \`Test\` is the command \`specweave task done T-01 --run\` executes as
-  evidence (or a Given/When/Then sentence when no command applies).
-
-STATE lives in ledger.jsonl, NOT here. Do not hand-edit the checkbox or the
-SW:BOARD table below — \`specweave task done|skip|render\` rewrites them.
-====================================================================
--->
-
-### T-01 [First task]
-- AC: AC-01 | Files: src/[file].ts | Test: [command or Given/When/Then]
-- [ ]
-
-### T-02 [Second task]
-- AC: AC-02 | Files: src/[file].ts, src/[file].test.ts | Test: [command]
-- [ ]
-`;
-}
-
-/**
- * Generate spec.md content pre-filled from an external issue.
- *
- * Unlike the template version, this generates real content from the
- * external issue's title, description, and acceptance criteria.
+ * Generate spec.md pre-filled from an external issue: its description as the
+ * Problem, its acceptance criteria as ACs, and one task per AC.
  *
  * @since 1.0.272
  */
 function generateExternalSpecContent(options: {
-  incrementId: string;
   title: string;
   description: string;
-  projectId: string;
-  boardId?: string;
-  type: string;
-  priority: string;
-  testMode: string;
-  coverageTarget: number;
   externalSource: ExternalSourceInfo;
-  /** Must mirror metadata.json (an IncrementStatus value). */
-  status: string;
 }): string {
-  const {
-    incrementId,
-    title,
-    description,
-    projectId,
-    boardId,
-    type,
-    priority,
-    testMode,
-    coverageTarget,
-    externalSource,
-    status,
-  } = options;
-
+  const { title, description, externalSource } = options;
   const date = new Date().toISOString().split('T')[0];
-  const boardLine = boardId ? `**Board**: ${boardId}\n` : '';
   const platformLabel = externalSource.platform === 'github' ? 'GitHub'
     : externalSource.platform === 'jira' ? 'JIRA'
     : 'Azure DevOps';
 
-  // Build acceptance criteria from external source
   const acs = externalSource.acceptanceCriteria ?? [];
   const acLines = acs.length > 0
     ? acs.map((ac, i) => `- [ ] AC-${String(i + 1).padStart(2, '0')}: ${ac}`).join('\n')
     : `- [ ] AC-01: [Review and define acceptance criteria from imported issue]`;
+  const taskLines = (acs.length > 0 ? acs : ['[First task]']).map((ac, i) => {
+    const num = String(i + 1).padStart(2, '0');
+    return `### T-${num} ${ac}\n- AC: AC-${num} | Files: [src/...] | Test: [command]`;
+  }).join('\n\n');
+  const labels = externalSource.labels?.length ? ` · labels: ${externalSource.labels.join(', ')}` : '';
 
-  // Build labels section
-  const labelsLine = externalSource.labels?.length
-    ? `\n**Labels**: ${externalSource.labels.join(', ')}`
-    : '';
-
-  return `---
-increment: ${incrementId}
-title: "${title}"
-type: ${type}
-priority: ${priority}
-status: ${status}
-created: ${date}
-structure: user-stories
-test_mode: ${testMode}
-coverage_target: ${coverageTarget}
-source_platform: ${externalSource.platform}
-external_ref: "${externalSource.externalId}"
----
-
-# ${incrementId} — ${title}
-
-**Project**: ${projectId}
-${boardLine}
-<!-- IMPORTED FROM ${platformLabel}: ${externalSource.externalUrl} -->
+  return `# ${title}
 
 ## Problem
 
 ${description || `Imported from ${platformLabel}. See the original issue for full context.`}
 
-**Source**: ${platformLabel} · ${externalSource.externalUrl} · id ${externalSource.externalId} · imported ${date}${labelsLine}
+Source: ${platformLabel} ${externalSource.externalUrl} (id ${externalSource.externalId}, imported ${date}${labels})
 
 ## Scope
 
-**In**: resolve the imported ${platformLabel} issue.
-
-**Out**: [what this increment explicitly does not include]
+In: resolve the imported ${platformLabel} issue. Out: [what it does not include].
 
 ## Acceptance Criteria
 
@@ -915,48 +714,15 @@ ${acLines}
 
 ## Approach
 
-- **Files that change** (and in what order): [src/...]
-- **Key decisions** (+ ADR links): [decision — why]
-- **Risks**: [risk — mitigation]
+[Files that change, in order; key decisions; rejected alternatives; risks.]
 
 ## Open questions
 
-- [question] — blocking? who decides?
-`;
-}
+- [question, or "none"]
 
-/**
- * Generate tasks.md content derived from external acceptance criteria.
- *
- * Each AC becomes a task with a BDD test skeleton.
- *
- * @since 1.0.272
- */
-function generateExternalTasksContent(options: {
-  title: string;
-  testMode: string;
-  acceptanceCriteria: string[];
-}): string {
-  const { title, acceptanceCriteria } = options;
+## Tasks
 
-  const taskEntries = acceptanceCriteria.map((ac, i) => {
-    const num = String(i + 1).padStart(2, '0');
-    return `### T-${num} ${ac}
-- AC: AC-${num} | Files: [src/...] | Test: Given the system is set up, When the feature is implemented, Then ${ac}
-- [ ]`;
-  }).join('\n\n');
-
-  return `# Tasks: ${title}
-
-<!--
-IMPORTED — one task per external acceptance criterion.
-Format: T-NN headings + one field line "- AC: ... | Files: ... | Test: ...".
-Fill in Files (the ownership unit) and turn each Test into a real command
-where possible. State lives in ledger.jsonl — "specweave task done|skip|render"
-owns the checkboxes below.
--->
-
-${taskEntries}
+${taskLines}
 `;
 }
 

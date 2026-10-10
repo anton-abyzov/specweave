@@ -11,7 +11,6 @@ import * as path from 'path';
 import * as os from 'os';
 import {
   launchCloneJob,
-  launchImportJob,
   isJobRunning,
   killJob,
   getJobLog,
@@ -165,75 +164,6 @@ describe('JobLauncher', () => {
       // Should fallback to foreground since worker path isn't found in test env
       expect(result.job).toBeDefined();
       // Note: isBackground depends on whether worker is found
-    });
-  });
-
-  describe('launchImportJob', () => {
-    it('should create an import job with GitHub config', async () => {
-      const result = await launchImportJob({
-        type: 'import-issues',
-        projectPath: testDir,
-        coordinatorConfig: {
-          github: true,
-          githubRepositories: [
-            { owner: 'org', repo: 'repo1' }
-          ],
-          importConfig: { timeRangeMonths: 6 }
-        },
-        estimatedTotal: 100,
-        foreground: true
-      });
-
-      expect(result.job).toBeDefined();
-      expect(result.job.type).toBe('import-issues');
-      expect(result.job.progress.total).toBe(100);
-      expect(result.isBackground).toBe(false);
-    });
-
-    it('should create an import job with JIRA config', async () => {
-      const result = await launchImportJob({
-        type: 'import-issues',
-        projectPath: testDir,
-        coordinatorConfig: {
-          jira: true,
-          importConfig: { timeRangeMonths: 3 }
-        },
-        foreground: true
-      });
-
-      expect(result.job).toBeDefined();
-      expect(result.job.type).toBe('import-issues');
-    });
-
-    it('should create an import job with ADO config', async () => {
-      const result = await launchImportJob({
-        type: 'import-issues',
-        projectPath: testDir,
-        coordinatorConfig: {
-          ado: true,
-          importConfig: { timeRangeMonths: 12 }
-        },
-        foreground: true
-      });
-
-      expect(result.job).toBeDefined();
-      expect(result.job.type).toBe('import-issues');
-    });
-
-    it('should use default time range if not specified', async () => {
-      const result = await launchImportJob({
-        type: 'import-issues',
-        projectPath: testDir,
-        coordinatorConfig: {
-          github: true
-        },
-        foreground: true
-      });
-
-      // Check config was written with default time range
-      const configPath = path.join(testDir, '.specweave', 'state', 'jobs', result.job.id, 'config.json');
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      expect(config).toBeDefined();
     });
   });
 

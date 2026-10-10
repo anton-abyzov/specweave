@@ -6,7 +6,7 @@
  * - Direct file copy fallback (.claude/skills/) when CLI is unavailable
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks
@@ -19,6 +19,7 @@ const {
   mockExistsSync,
   mockReadFileSync,
   mockGetProjectRoot,
+  mockFindProjectRoot,
   mockDetectClaudeCli,
   mockEnablePluginsInSettings,
 } = vi.hoisted(() => ({
@@ -28,8 +29,20 @@ const {
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
   mockGetProjectRoot: vi.fn(),
+  mockFindProjectRoot: vi.fn(),
   mockDetectClaudeCli: vi.fn(),
   mockEnablePluginsInSettings: vi.fn(),
+}));
+
+const { mockInstallProjectSkills, mockRemoveLegacySkillCopies } = vi.hoisted(() => ({
+  mockInstallProjectSkills: vi.fn(),
+  mockRemoveLegacySkillCopies: vi.fn(),
+}));
+
+// The core plugin's project copies are the sw-* skills (3.0)
+vi.mock('../../../../src/core/skills/project-skills.js', () => ({
+  installProjectSkills: mockInstallProjectSkills,
+  removeLegacySkillCopies: mockRemoveLegacySkillCopies,
 }));
 
 const {
@@ -61,6 +74,7 @@ vi.mock('../../../../src/utils/cleanup-stale-plugins.js', () => ({
 
 vi.mock('../../../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mockGetProjectRoot,
+  findProjectRoot: mockFindProjectRoot,
 }));
 
 // Mock Claude CLI detector
@@ -138,6 +152,15 @@ const MARKETPLACE_JSON = JSON.stringify({
   ],
 });
 
+const MARKETPLACE_WITH_EXTRA = JSON.stringify({
+  name: 'specweave',
+  version: '1.0.0',
+  plugins: [
+    { name: 'sw', source: './plugins/specweave', version: '1.0.272' },
+    { name: 'sw-github', source: './plugins/specweave-github', version: '1.0.0' },
+  ],
+});
+
 const CLI_UNAVAILABLE = {
   available: false,
   commandExists: false,
@@ -172,6 +195,7 @@ describe('refresh-plugins', () => {
 
     mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
     mockGetProjectRoot.mockReturnValue('/mock/project');
+    mockFindProjectRoot.mockReturnValue('/mock/project');
     mockDetectClaudeCli.mockReturnValue(CLI_UNAVAILABLE);
     mockEnablePluginsInSettings.mockReturnValue(true);
 
@@ -187,6 +211,8 @@ describe('refresh-plugins', () => {
 
     mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123def456' });
     mockInstallPlugin.mockReturnValue({ success: true, sha: 'abc123def456' });
+    mockInstallProjectSkills.mockReturnValue({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [] });
+    mockRemoveLegacySkillCopies.mockReturnValue([]);
 
     // Default: cleanup returns no-op results
     mockCleanupLegacyLockfiles.mockReturnValue({
@@ -212,12 +238,13 @@ describe('refresh-plugins', () => {
   // -------------------------------------------------------------------------
 
   describe('fallback mode (Claude CLI unavailable)', () => {
-    it('should use copyPluginSkillsToProject when Claude CLI is not available', async () => {
+    it('installs the core plugin as the sw-* project skills when Claude CLI is not available', async () => {
       mockDetectClaudeCli.mockReturnValue(CLI_UNAVAILABLE);
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(mockInstallProjectSkills).toHaveBeenCalledTimes(1);
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
       expect(mockInstallPlugin).not.toHaveBeenCalled();
     });
 
@@ -226,26 +253,33 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(mockInstallProjectSkills).toHaveBeenCalledTimes(1);
       expect(mockInstallPlugin).not.toHaveBeenCalled();
     });
 
     it('should install all plugins from marketplace.json', async () => {
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('marketplace.json')) return MARKETPLACE_WITH_EXTRA;
+        return '';
+      });
+
       await refreshPluginsCommand({ all: true });
 
+      expect(mockInstallProjectSkills).toHaveBeenCalledTimes(1);
       const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
-      expect(calledPlugins).toContain('sw');
+      expect(calledPlugins).toEqual(['sw-github']);
     });
 
-    it('should pass project root to copyPluginSkillsToProject', async () => {
+    it('removes the old unnamespaced copies, then installs sw-* into the project root', async () => {
+      const order: string[] = [];
+      mockRemoveLegacySkillCopies.mockImplementation(() => { order.push('remove'); return []; });
+      mockInstallProjectSkills.mockImplementation(() => { order.push('install'); return { written: [], unchanged: [], removed: [] }; });
+
       await refreshPluginsCommand({});
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
-        'sw',
-        '/mock/specweave',
-        '/mock/project',
-        { force: undefined },
-      );
+      expect(mockRemoveLegacySkillCopies).toHaveBeenCalledWith('/mock/project');
+      expect(mockInstallProjectSkills).toHaveBeenCalledWith('/mock/project');
+      expect(order).toEqual(['remove', 'install']);
     });
 
     it('should call enablePluginsInSettings even in fallback mode', async () => {
@@ -272,17 +306,31 @@ describe('refresh-plugins', () => {
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
 
-    it('should fall back to copyPluginSkillsToProject when native install fails for a plugin', async () => {
+    it('falls back to the sw-* project skills when the native install of the core plugin fails', async () => {
       mockInstallPlugin
+        .mockReturnValueOnce({ success: false, sha: '', error: 'CLI crash' });
+
+      await refreshPluginsCommand({ all: true });
+
+      expect(mockInstallProjectSkills).toHaveBeenCalledWith('/mock/project');
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+    });
+
+    it('falls back to a direct copy when the native install of another plugin fails', async () => {
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('marketplace.json')) return MARKETPLACE_WITH_EXTRA;
+        return '';
+      });
+      mockInstallPlugin
+        .mockReturnValueOnce({ success: true, sha: 'a' })
         .mockReturnValueOnce({ success: false, sha: '', error: 'CLI crash' });
       mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'fallback' });
 
       await refreshPluginsCommand({ all: true });
 
-      // sw failed natively, should have been retried via copy
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
-        'sw',
+        'sw-github',
         '/mock/specweave',
         '/mock/project',
         { force: undefined },
@@ -317,7 +365,7 @@ describe('refresh-plugins', () => {
       // Native fails for sw, AND fallback also fails
       mockInstallPlugin
         .mockReturnValueOnce({ success: false, sha: '', error: 'install failed' });
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'copy also failed' });
+      mockInstallProjectSkills.mockImplementation(() => { throw new Error('copy also failed'); });
 
       await refreshPluginsCommand({ all: true });
 
@@ -327,7 +375,7 @@ describe('refresh-plugins', () => {
     it('should not call enablePluginsInSettings when all plugins fail (native + fallback)', async () => {
       // Both native and fallback fail for every plugin
       mockInstallPlugin.mockReturnValue({ success: false, sha: '', error: 'native failed' });
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'copy also failed' });
+      mockInstallProjectSkills.mockImplementation(() => { throw new Error('copy also failed'); });
 
       await refreshPluginsCommand({ all: true });
 
@@ -348,19 +396,27 @@ describe('refresh-plugins', () => {
   // -------------------------------------------------------------------------
 
   describe('hash comparison and skip', () => {
-    it('should report skipped plugins when copyPluginSkillsToProject returns skipped=true', async () => {
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
+    it('reports the core plugin as active when the sw-* skills are already current', async () => {
+      mockInstallProjectSkills.mockReturnValue({ written: [], unchanged: ['.claude/skills/sw-do/SKILL.md'], removed: [] });
+      const consoleSpy = vi.spyOn(console, 'log');
 
-      await refreshPluginsCommand({ all: true });
+      const result = await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(result.failed).toBe(0);
+      expect(consoleSpy.mock.calls.some((args) => String(args[0]).includes('sw: active'))).toBe(true);
+      consoleSpy.mockRestore();
     });
 
     it('should pass force flag to copyPluginSkillsToProject', async () => {
-      await refreshPluginsCommand({ force: true });
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('marketplace.json')) return MARKETPLACE_WITH_EXTRA;
+        return '';
+      });
+
+      await refreshPluginsCommand({ all: true, force: true });
 
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
-        'sw',
+        'sw-github',
         '/mock/specweave',
         '/mock/project',
         { force: true },
@@ -368,11 +424,13 @@ describe('refresh-plugins', () => {
     });
 
     it('should handle plugin failures with error messages', async () => {
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
+      mockInstallProjectSkills.mockImplementation(() => { throw new Error('Source dir not found'); });
 
-      await refreshPluginsCommand({ all: true });
+      const result = await refreshPluginsCommand({ all: true });
 
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(mockInstallProjectSkills).toHaveBeenCalledTimes(1);
+      expect(result.failed).toBe(1);
+      expect(result.errors.join('\n')).toContain('Source dir not found');
     });
   });
 
@@ -411,7 +469,7 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({ all: true });
 
       // Should gracefully fall back to copy mode, not crash
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(mockInstallProjectSkills).toHaveBeenCalledTimes(1);
       expect(mockInstallPlugin).not.toHaveBeenCalled();
       // Even in fallback mode, enablement should happen
       expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
@@ -434,13 +492,12 @@ describe('refresh-plugins', () => {
     it('should recover when all native installs fail by falling back to copy', async () => {
       mockDetectClaudeCli.mockReturnValue(CLI_AVAILABLE);
       mockInstallPlugin.mockReturnValue({ success: false, sha: '', error: 'CLI broken' });
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'fallback123' });
 
       await refreshPluginsCommand({ all: true });
 
-      // Each plugin: native fails → fallback copy succeeds
+      // Each plugin: native fails → fallback (sw-* project skills) succeeds
       expect(mockInstallPlugin).toHaveBeenCalledTimes(1);
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(mockInstallProjectSkills).toHaveBeenCalledTimes(1);
       // All plugins recovered via copy, so enablement should still happen
       expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw']);
     });
@@ -460,9 +517,9 @@ describe('refresh-plugins', () => {
           removedPaths: [], skippedPaths: [], errors: [],
         };
       });
-      mockCopyPluginSkillsToProject.mockImplementation(() => {
+      mockInstallProjectSkills.mockImplementation(() => {
         callOrder.push('installPlugin');
-        return { success: true, sha: 'abc123' };
+        return { written: [], unchanged: [], removed: [] };
       });
 
       await refreshPluginsCommand({});
@@ -472,14 +529,10 @@ describe('refresh-plugins', () => {
       );
     });
 
-    it('T-017: orphan cleanup called in umbrella mode', async () => {
+    it('T-017: never deletes a child repo vskill.lock (it is that repo\'s own file)', async () => {
       await refreshPluginsCommand({});
 
-      expect(mockCleanupOrphanedChildLocks).toHaveBeenCalledTimes(1);
-      expect(mockCleanupOrphanedChildLocks).toHaveBeenCalledWith(
-        '/mock/project',
-        expect.objectContaining({})
-      );
+      expect(mockCleanupOrphanedChildLocks).not.toHaveBeenCalled();
     });
 
     it('T-018: verbose mode logs removed paths', async () => {
@@ -509,7 +562,7 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({ quiet: true });
 
       // Plugin installation should still have been called
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
+      expect(mockInstallProjectSkills).toHaveBeenCalled();
     });
   });
 
@@ -541,7 +594,86 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({ quiet: true });
 
       // Plugin installation should still have been called
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
+      expect(mockInstallProjectSkills).toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // No project found (0879): never fall back to process.cwd()
+  //
+  // getProjectRoot() returns process.cwd() when no .specweave/config.json is
+  // found upward; the legacy-lockfile scan then walked that whole tree (from
+  // $HOME: one core pinned for 6+ minutes). The command must stop instead.
+  // -------------------------------------------------------------------------
+
+  describe('no project found', () => {
+    let exitCodeBefore: typeof process.exitCode;
+
+    beforeEach(() => {
+      exitCodeBefore = process.exitCode;
+      process.exitCode = undefined;
+      mockFindProjectRoot.mockReturnValue(null);
+    });
+
+    afterEach(() => {
+      process.exitCode = exitCodeBefore;
+    });
+
+    it('bails out with failed=1, exit code 1 and a message naming the cwd and .specweave/config.json', async () => {
+      const result = await refreshPluginsCommand({ quiet: true });
+
+      expect(result.failed).toBe(1);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toContain('No SpecWeave project found');
+      expect(result.errors[0]).toContain('.specweave/config.json');
+      expect(result.errors[0]).toContain(process.cwd());
+      expect(process.exitCode).toBe(1);
+    });
+
+    it('prints the message and the remedy when not quiet', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      await refreshPluginsCommand({});
+
+      const output = consoleSpy.mock.calls.map((args) => String(args[0])).join('\n');
+      expect(output).toContain('No SpecWeave project found');
+      expect(output).toContain('specweave init');
+      consoleSpy.mockRestore();
+    });
+
+    it('stays silent with --quiet', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      await refreshPluginsCommand({ quiet: true });
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('does not scan, migrate, install, or touch settings', async () => {
+      await refreshPluginsCommand({ all: true });
+
+      expect(mockGetProjectRoot).not.toHaveBeenCalled();
+      expect(mockCleanupLegacyLockfiles).not.toHaveBeenCalled();
+      expect(mockCleanupOrphanedChildLocks).not.toHaveBeenCalled();
+      expect(mockDetectClaudeCli).not.toHaveBeenCalled();
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+      expect(mockInstallProjectSkills).not.toHaveBeenCalled();
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+      expect(mockCleanupStalePlugins).not.toHaveBeenCalled();
+      expect(mockMigrateUserLevelPlugins).not.toHaveBeenCalled();
+    });
+
+    it('runs normally once a project root is found', async () => {
+      mockFindProjectRoot.mockReturnValue('/mock/project');
+
+      const result = await refreshPluginsCommand({});
+
+      expect(result.failed).toBe(0);
+      expect(process.exitCode).toBeUndefined();
+      expect(mockCleanupLegacyLockfiles).toHaveBeenCalledWith('/mock/project', expect.any(Object));
+      expect(mockInstallProjectSkills).toHaveBeenCalledWith('/mock/project');
     });
   });
 });

@@ -440,6 +440,30 @@ describe('status-commands', () => {
       expect(result).toBe(false);
     });
 
+    it('closes GitHub issues only when the project set a close-on-complete flag', async () => {
+      const cwd = process.cwd();
+      const fs = await import('fs');
+      const os = await import('os');
+      const path = await import('path');
+      const run = async (hooks: unknown) => {
+        const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-close-'));
+        fs.mkdirSync(path.join(root, '.specweave'), { recursive: true });
+        fs.writeFileSync(path.join(root, '.specweave', 'config.json'), JSON.stringify({ hooks }));
+        mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
+        process.chdir(root);
+        try {
+          await completeIncrement({ incrementId: '0001-test', skipValidation: true });
+        } finally {
+          process.chdir(cwd);
+          fs.rmSync(root, { recursive: true, force: true });
+        }
+      };
+      await run(undefined);
+      expect(mockCloseCompletedIncrementIssues).not.toHaveBeenCalled();
+      await run({ post_increment_done: { close_github_issue: true } });
+      expect(mockCloseCompletedIncrementIssues).toHaveBeenCalledTimes(1);
+    });
+
     it('should run post-completion sync via LifecycleHookDispatcher', async () => {
       mockRead
         .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))

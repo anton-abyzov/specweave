@@ -37,7 +37,7 @@ function entry(tool: string): ToolResumeEntry {
 }
 
 describe('cross-tool resume command matrix (pinned)', () => {
-  it('covers exactly the six supported tools, in order', () => {
+  it('covers exactly the eight supported tools, in order', () => {
     expect(TOOL_RESUME_MATRIX.map((e) => e.tool)).toEqual([
       'Claude Code',
       'Codex',
@@ -45,6 +45,8 @@ describe('cross-tool resume command matrix (pinned)', () => {
       'Gemini CLI',
       'Antigravity',
       'Aider',
+      'Grok Build',
+      'Muse Code',
     ]);
   });
 
@@ -92,6 +94,18 @@ describe('cross-tool resume command matrix (pinned)', () => {
     const e = entry('Aider');
     expect(e.resumeCmd).toContain('aider --restore-chat-history');
     expect(e.findSession).toContain('.aider.chat.history.md');
+  });
+
+  it('Grok Build: `grok --resume <id>` from ~/.grok/sessions', () => {
+    const e = entry('Grok Build');
+    expect(e.resumeCmd).toContain('grok --resume <id>');
+    expect(e.findSession).toContain('~/.grok/sessions/');
+  });
+
+  it('Muse Code: `muse resume`, headless `muse exec --session-id`', () => {
+    const e = entry('Muse Code');
+    expect(e.resumeCmd).toContain('muse resume');
+    expect(e.resumeCmd).toContain('muse exec --session-id <uuid>');
   });
 
   it('every entry has non-empty tool / findSession / resumeCmd fields', () => {

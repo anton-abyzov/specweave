@@ -648,7 +648,6 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 - [Skill Discovery and Evaluation](/docs/skills/skill-discovery-evaluation) — 6-dimension quality scoring rubric and platform-by-platform discovery guide
 - [Secure Skill Factory Standard](./secure-skill-factory-standard.md) — RFC for mandatory SKILL.md sections, forbidden patterns, and author verification
 - [Skill Contradiction Resolution](/docs/skills/skill-contradiction-resolution) — how SpecWeave detects and resolves conflicting instructions between skills
-- [Agent Skills Extensibility Analysis](/docs/guides/agent-skills-extensibility-analysis) — compatibility matrix for the SKILL.md format across 39 AI coding agents
 - [Agent Security Best Practices](/docs/guides/agent-security-best-practices) — operational security guidelines for running AI agent swarms
 
 ---

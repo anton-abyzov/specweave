@@ -1,38 +1,36 @@
 ---
 title: Usage and cost estimates
-description: Understand exact model identities, unknown costs and the limits of local usage telemetry
+description: What the dashboard's Usage and estimates page reads, how it prices sessions, and why its numbers are estimates rather than bills.
 ---
 
 # Usage and cost estimates
 
-Open `specweave dashboard`, expand **Diagnostics & settings**, then choose **Usage & estimates**. Work progress and verification remain on the [Work board](/docs/guides/analytics-dashboard); this view provides secondary usage context.
+Run `specweave dashboard`, open **Diagnostics & settings** in the sidebar, then choose **Usage & estimates**. Work progress and verification stay on the Work board; see the [dashboard guide](/docs/guides/dashboard).
 
-## What 2.1 reads
+## What it reads
 
-The dashboard's cost aggregator reads available Claude Code JSONL session usage for the current project. It caches unchanged files and considers up to the most recent 200 session files. Recorded input, output and cache token fields supply its totals. This is not universal usage coverage across Codex, local models, providers or all of your accounts.
+The page reads Claude Code session logs for the current project, the `.jsonl` files under `~/.claude/projects/`, up to the 200 most recent. It sums the input, output and cache token counts recorded in them. Parsed files are cached until they change.
 
-The broader Sessions view can record Codex and Claude Code execution context. That does not mean the cost view has equivalent token or billing support for both. Linking a session or manually entering a model does not create a bill.
+It does not read Codex, local models or other providers, and it does not see usage from your other accounts. Linking a session or entering a model by hand does not create a cost.
 
-## Exact identities, explicit unknowns
+## How sessions are priced
 
-| Observation | Display and estimate behavior |
-|---|---|
-| One exact model ID matching the bundled rate table | A labeled legacy API estimate |
-| An unrecognized model ID | Original ID retained; cost Unknown |
-| Usage without model metadata | Unknown; no previous-message model is assumed |
-| Several model IDs in one session | Mixed, with observed IDs retained; session cost Unknown |
-| At least one unpriced session | Total estimate Unknown; priced subtotal shown separately |
+| What the log shows | What the page shows |
+|--------------------|---------------------|
+| One model id that matches the bundled rate table exactly | An estimate at those rates |
+| A model id not in the table | The id, with cost Unknown |
+| No model id | Unknown; no model is assumed |
+| Several model ids in one session | Mixed, with every id listed; cost Unknown |
+| Any unpriced session in the range | Total Unknown, with the priced subtotal shown separately |
 
-Unknown is not zero. The aggregator does not map a newer model to an older family member or charge a whole mixed session at its first model's rate.
+Unknown is not zero. A newer model is never priced as an older one from the same family.
 
 ## Estimates are not bills
 
-The bundled table is labeled **March 2026 legacy API estimates**. It is not a current pricing recommendation. Where an exact match exists, the estimate multiplies recorded input, output and cache tokens by those stored rates. Cache savings are also estimates against that table.
+The rate table is labeled as a legacy API rate table from March 2026. Estimates multiply recorded tokens by those rates, and cache savings are estimated the same way. Invoices, subscription allowances, negotiated rates and credits are not imported. Check your provider for what you actually pay.
 
-Provider invoices, subscription allowances, negotiated rates, credits and actual payment history are not imported. Configured API or subscription billing context does not make an estimate an invoice. Check your provider for actual charges.
+## Privacy
 
-## Privacy and refresh
+Parsing happens locally and makes no model API calls. The page shows session ids, timestamps, model ids and token counts, not prompts or responses. The session files themselves can contain full transcripts, so treat them as sensitive.
 
-Usage parsing runs locally and makes **no model API calls**. Its output contains session identifiers, timestamps, model identifiers and usage counts; those are operational metadata, not a claim of anonymous data. The source session files may contain sensitive transcripts. The cost API returns summaries rather than prompts or responses.
-
-`specweave analytics` is a separate command for recorded command, skill and agent events. It is not an increment billing export. See [models and execution context](/docs/guides/model-selection) for interpreting harness, model, effort, provider and surface alongside task evidence.
+For how model, effort and tool relate to task evidence, see [model selection](/docs/guides/model-selection).

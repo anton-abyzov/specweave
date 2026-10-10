@@ -36,4 +36,4 @@ An intent records the desired outcome. When a change needs explicit scope, an in
 
 This makes the next session easier to start: read the shared intent, inspect the specification and completed work, then continue from the next action. The same record remains useful when the coding agent, model, or person changes.
 
-For public development history, inspect the [SpecWeave repository](https://github.com/anton-abyzov/specweave) and [vskill repository](https://github.com/anton-abyzov/vskill). For the workflow, start with [your first project](/docs/getting-started), [the dashboard](/docs/guides/analytics-dashboard), or [cross-tool handoffs](/docs/guides/cross-tool-handoff).
+For public development history, inspect the [SpecWeave repository](https://github.com/anton-abyzov/specweave) and [vskill repository](https://github.com/anton-abyzov/vskill). For the workflow, start with [your first project](/docs/getting-started), [the dashboard](/docs/guides/dashboard), or [cross-tool handoffs](/docs/guides/cross-tool-handoff).

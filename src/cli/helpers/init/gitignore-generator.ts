@@ -54,7 +54,6 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.pnpm-store/',
     '.yarn/',
     '.npm/',
-    'package-lock.json',  // Optional: some teams commit this
     '*.tsbuildinfo',
     '.eslintcache',
   ],
@@ -88,13 +87,11 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
   rust: [
     '# Rust',
     'target/',
-    'Cargo.lock',  // For libraries (keep for binaries)
     '**/*.rs.bk',
   ],
   go: [
     '# Go',
     'vendor/',
-    'go.sum',
     '*.exe',
     '*.test',
     '*.out',
@@ -135,12 +132,10 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     'vendor/bundle/',
     '.ruby-version',
     '.ruby-gemset',
-    'Gemfile.lock',  // Optional for gems
   ],
   php: [
     '# PHP',
     'vendor/',
-    'composer.lock',
     '.phpunit.result.cache',
     '.php_cs.cache',
     '.php-cs-fixer.cache',
@@ -434,10 +429,6 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '# Binary evidence and agent worktrees (never committed)',
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
-    '# reports/ holds COMMITTED evidence: the generic `*.log` rule above would',
-    '# swallow the task evidence log a ledger `done` event cites, so a teammate',
-    '# cloning the repo could not read it. Only reports/artifacts/ is ignored.',
-    '!.specweave/increments/**/reports/*.log',
     '# Binary evidence in reports/ (videos, screenshots, app bundles)',
     '**/reports/*.mp4',
     '**/reports/*.png',
@@ -828,6 +819,44 @@ export async function generateSmartGitignore(
 }
 
 /**
+ * Lines an earlier `specweave update` wrote that it now removes again. Both
+ * negations un-ignored old logs by the hundred; task evidence is `.txt` now.
+ */
+const DROPPED_SPECWEAVE_LINES = new Set([
+  '!.specweave/increments/**/reports/*.log',
+  '!.specweave/increments/**/reports/task-T-*.log',
+  '# `task done --run` writes its evidence to reports/task-<id>.log and the',
+  '# ledger cites it, so that log is committed; every other *.log stays ignored.',
+  '# reports/ holds COMMITTED evidence: the generic `*.log` rule above would',
+  '# swallow the task evidence log a ledger `done` event cites, so a teammate',
+  '# cloning the repo could not read it. Only reports/artifacts/ is ignored.',
+])
+
+const UPDATE_HEADER = '# SpecWeave (added by specweave update)';
+
+/**
+ * Drop an update header whose block (up to the next blank line) has no rule
+ * left in it, together with the blank line written above it. Happens when
+ * every line under it was one of the dropped negations.
+ */
+function dropOrphanUpdateHeaders(lines: string[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === UPDATE_HEADER) {
+      let j = i + 1;
+      while (j < lines.length && lines[j].trim().startsWith('#')) j++;
+      if (j >= lines.length || lines[j].trim() === '') {
+        if (out.length > 0 && out[out.length - 1].trim() === '') out.pop();
+        i = j - 1;
+        continue;
+      }
+    }
+    out.push(lines[i]);
+  }
+  return out;
+}
+
+/**
  * Append the SpecWeave runtime-state entries (`.specweave/state/`, logs, jobs,
  * cache, backups, `reports/artifacts/`, `.claude/worktrees/`) to an existing
  * `.gitignore`, skipping every line that is already there.
@@ -839,13 +868,23 @@ export async function generateSmartGitignore(
 export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: string[]; path: string } {
   const gitignorePath = path.join(targetDir, '.gitignore');
   const wanted = GITIGNORE_ENTRIES.specweave;
-  const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
+  let existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
+
+  // 3.0.0 to 3.0.2 appended negations that un-ignored old logs under
+  // reports/ (hundreds in a long-lived project). Take them back out.
+  const withoutNegation = dropOrphanUpdateHeaders(
+    existing.split('\n').filter((line) => !DROPPED_SPECWEAVE_LINES.has(line.trim())),
+  ).join('\n');
+  if (withoutNegation !== existing) {
+    existing = withoutNegation;
+    fs.writeFileSync(gitignorePath, existing);
+  }
   const present = new Set(existing.split('\n').map((l) => l.trim()).filter(Boolean));
 
   const missing = wanted.filter((line) => !line.startsWith('#') && !present.has(line.trim()));
   if (missing.length === 0) return { added: [], path: gitignorePath };
 
   const prefix = existing && !existing.endsWith('\n') ? '\n' : '';
-  fs.writeFileSync(gitignorePath, `${existing}${prefix}\n# SpecWeave (added by specweave update)\n${missing.join('\n')}\n`);
+  fs.writeFileSync(gitignorePath, `${existing}${prefix}\n${UPDATE_HEADER}\n${missing.join('\n')}\n`);
   return { added: missing, path: gitignorePath };
 }

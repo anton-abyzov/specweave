@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Command } from 'commander';
+import { findProjectRoot } from '../../utils/find-project-root.js';
 import { getGlobalLSPManager, shutdownGlobalLSPManager } from '../../core/lsp/lsp-manager.js';
 
 /**
@@ -483,6 +484,19 @@ function getSymbolKindName(kind: number): string {
   return kinds[kind] || 'Unknown';
 }
 
+/** Resolve scan scope before any LSP initialization or filesystem discovery. */
+function findLspProjectRoot(quiet = false): string | null {
+  const root = findProjectRoot();
+  if (!root) {
+    if (!quiet) {
+      console.error(`No SpecWeave project found: no .specweave/config.json in ${process.cwd()} or any parent directory`);
+      console.error('Run `specweave init` first.');
+    }
+    process.exitCode = 1;
+  }
+  return root;
+}
+
 /**
  * Create the LSP command for Commander.js
  */
@@ -494,7 +508,8 @@ export function createLspCommand(): Command {
     .command('refs <file> <symbol>')
     .description('Find all references to a symbol')
     .action(async (file: string, symbol: string) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspRefs(projectRoot, file, symbol);
     });
 
@@ -503,7 +518,8 @@ export function createLspCommand(): Command {
     .command('def <file> <symbol>')
     .description('Go to definition of a symbol')
     .action(async (file: string, symbol: string) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspDef(projectRoot, file, symbol);
     });
 
@@ -512,7 +528,8 @@ export function createLspCommand(): Command {
     .command('hover <file> <symbol>')
     .description('Get type information for a symbol')
     .action(async (file: string, symbol: string) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspHover(projectRoot, file, symbol);
     });
 
@@ -521,7 +538,8 @@ export function createLspCommand(): Command {
     .command('symbols <file>')
     .description('List all symbols in a file')
     .action(async (file: string) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspSymbols(projectRoot, file);
     });
 
@@ -530,7 +548,8 @@ export function createLspCommand(): Command {
     .command('search <query>')
     .description('Search for symbols in workspace')
     .action(async (query: string) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspSearch(projectRoot, query);
     });
 
@@ -540,7 +559,8 @@ export function createLspCommand(): Command {
     .description('Warm up LSP by pre-indexing workspace (run on session start)')
     .option('--quiet', 'Suppress output')
     .action(async (files: string[], options: { quiet?: boolean }) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot(options.quiet);
+      if (!projectRoot) return;
       await handleLspWarmup(projectRoot, files, options.quiet ?? false);
     });
 
@@ -549,7 +569,8 @@ export function createLspCommand(): Command {
     .command('status')
     .description('Show LSP status and warm-up state')
     .action(async () => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspStatus(projectRoot);
     });
 
@@ -562,7 +583,8 @@ export function createLspCommand(): Command {
     .option('--dry-run', 'Show what would be installed without installing')
     .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
     .action(async (options: { max: string; minFiles: string; dryRun?: boolean; scope: string }) => {
-      const projectRoot = process.cwd();
+      const projectRoot = findLspProjectRoot();
+      if (!projectRoot) return;
       await handleLspSetup(projectRoot, {
         maxLanguages: parseInt(options.max, 10),
         minFileCount: parseInt(options.minFiles, 10),
@@ -963,7 +985,7 @@ export async function scanLanguagesAcrossRepos(
     for (const containerDir of REPO_CONTAINER_DIRS) {
       const containerPath = path.join(projectRoot, containerDir);
 
-      if (fs.existsSync(containerPath) && fs.statSync(containerPath).isDirectory()) {
+      if (fs.existsSync(containerPath) && fs.lstatSync(containerPath).isDirectory()) {
         const entries = fs.readdirSync(containerPath, { withFileTypes: true });
 
         for (const entry of entries) {

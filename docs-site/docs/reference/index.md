@@ -1,145 +1,30 @@
 ---
 sidebar_position: 0
 title: Reference
-description: Complete reference documentation for SpecWeave skills and commands
+description: Lookup pages for the SpecWeave 3.0 CLI, skills, configuration, increment files and sync.
 ---
 
-import CommandTabs from '@site/src/components/CommandTabs';
+# Reference
 
-# Reference Documentation
+These pages describe what the code does, flag by flag and field by field. For a walkthrough, start with [your first increment](/docs/getting-started/first-increment) or [what changed in 3.0](/docs/guides/specweave-3).
 
-Complete reference for all SpecWeave skills, commands, and capabilities.
+| Page | Use it to look up |
+|------|-------------------|
+| [Commands](/docs/reference/commands) | Every `specweave` command, grouped by task, with its most useful flags and the list of commands removed in 3.0. |
+| [Skills](/docs/reference/skills) | The skill set, how to call a skill in Claude Code, Codex and other tools, and the plain words that trigger each one. |
+| [Configuration](/docs/reference/configuration) | The keys in `.specweave/config.json`, what `init` writes, and which old keys are removed. |
+| [Metadata and ledger](/docs/reference/metadata-reference) | The files in an increment folder, the fields of `metadata.json`, and the `ledger.jsonl` event format. |
+| [`specweave sync`](/docs/reference/sync-cli) | `sync push`, `pull`, `status` and `setup`, and exactly when a tracker is touched. |
+| [Usage and cost estimates](/docs/reference/cost-tracking) | What the dashboard's usage page reads and how it prices sessions. |
+| [Changelog](/docs/reference/changelog) | Release history. |
 
-## What's the Difference?
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| **Skills** | Domain expertise and best practices | `sw:increment`, `/mobile:appstore` |
-| **Commands** | Execute specific actions | `sw:auto`, `sw:done`, `sw:review` |
-
-:::tip Both Are Slash Commands Now
-In Claude Code, skills and commands are invoked the same way - with `sw:&lt;name&gt;`. Skills provide domain knowledge; commands perform actions.
-:::
-
-## Quick Navigation
-
-### [Skills Reference](./skills)
-
-**80+ specialized skills** organized by domain:
-- **Core**: Planning, architecture, orchestration
-- **Frontend**: React, Vue, Next.js, design systems
-- **Backend**: Node.js, Python, .NET, databases
-- **Infrastructure**: DevOps, Kubernetes, observability
-- **Testing**: TDD, E2E, quality gates
-- **Security**: OWASP, compliance, threat modeling
-- **Data**: Kafka, streaming, ML/AI
-- **And more**: Mobile, payments, documentation, cost optimization
-
-### [Commands Reference](./commands)
-
-**All slash commands** organized by purpose:
-- **Planning**: `sw:increment`
-- **Execution**: `sw:auto`, `sw:do`, `sw:team`
-- **Quality**: `sw:review`, `sw:qa`
-- **Completion**: `specweave task next`, `sw:done`
-- **Sync**: `sw:sync` (push, pull, status, setup)
-
-### [Configuration Reference](./configuration)
-
-**Every config.json property** documented with types, defaults, and examples:
-- Quick reference table of all disableable features
-- config.json sections: testing, living docs, sync, CI/CD, and more
-- metadata.json fields for per-increment overrides
-- Environment variables for runtime control
-
-### [Use Case Guide](/docs/reference/commands)
-
-**Find the right tool** for your task:
-- "I want to..." quick lookup tables
-- Role-based recommendations (PM, Architect, Frontend, Backend, DevOps, QA)
-- Phase-based workflows (Plan → Implement → Quality → Complete)
-- Decision trees for choosing execution mode, quality checks, sync tools
-
----
-
-## Most Used
-
-### Planning
-
-<CommandTabs
-  natural="Let's build a new feature"
-  claude='sw:increment "Feature description"'
-  other='increment "Feature description"'
-/>
+## The loop in six commands
 
 ```bash
-sw:increment                                 # Product management
-sw:increment                          # System design
+specweave pickup                               # what to do next
+specweave create-increment "Add login form"    # plan
+specweave task claim T-01                      # take a task
+specweave task done T-01 --run "npm test"      # finish it with evidence
+specweave verify && specweave complete 0042    # check and close
+specweave handoff --reason "out of tokens"     # stop and hand over
 ```
-
-### Execution
-
-<CommandTabs
-  natural="Ship while I sleep"
-  claude="sw:auto"
-  other="auto"
-/>
-
-```bash
-sw:do                                # Manual task-by-task
-specweave status                          # Check status
-```
-
-### Quality
-
-<CommandTabs
-  natural="Check the quality of my work"
-  claude="sw:review"
-  other="validate"
-/>
-
-Additional: `sw:qa --gate` (AI quality gate), `sw:review` (deep audit).
-
-### Completion
-
-<CommandTabs
-  natural="What's next?"
-  claude="specweave task next"
-  other="next"
-/>
-
-Additional: `sw:sync 0007` (sync to GitHub).
-
----
-
-## Plugin Ecosystem
-
-Skills come from plugins. Core plugin `sw` is always installed. Domain plugins auto-load based on your tech stack:
-
-| Plugin | Skills Count | Domain |
-|--------|--------------|--------|
-| `sw` (core) | 44 | Planning, execution, quality, sync, utilities |
-| `mobile` | 1 | App Store Connect automation |
-| `marketing` | 3 | Marketing and social media |
-| `google-workspace` | 3 | Google Workspace CLI |
-| `productivity` | 1 | Personal productivity |
-| `skills` | 1 | Skill discovery |
-
-### Installing Plugins
-
-```bash
-# The sw plugin installs automatically via specweave init
-# Domain plugins install manually:
-npx vskill install --repo anton-abyzov/vskill --plugin mobile
-npx vskill install --repo anton-abyzov/vskill --plugin marketing
-npx vskill install --repo anton-abyzov/specweave --plugin sw
-```
-
----
-
-## Next Steps
-
-- [Skills Reference](./skills) - All skills by domain
-- [Commands Reference](./commands) - All commands by purpose
-- [Configuration Reference](./configuration) - All config properties
-- [Use Case Guide](/docs/reference/commands) - Find the right tool

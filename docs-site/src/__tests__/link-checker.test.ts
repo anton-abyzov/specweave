@@ -21,8 +21,8 @@ function flattenDocIds(items: SidebarItem[]): string[] {
   return ids;
 }
 
-describe('docs-site link checker (T-018)', () => {
-  it('all pre-existing critical doc IDs are preserved', () => {
+describe('docs-site sidebar coverage', () => {
+  it('keeps every page a reader needs in the sidebar', () => {
     const allIds: string[] = [];
     for (const [, sidebarItems] of Object.entries(sidebars as any)) {
       if (Array.isArray(sidebarItems)) {
@@ -32,56 +32,35 @@ describe('docs-site link checker (T-018)', () => {
 
     // Pre-existing doc IDs from before the restructure
     const criticalIds = [
-      // Overview
       'overview/introduction',
-      'overview/skills-as-structured-expertise',
+      'overview/how-it-works',
       'overview/why-specweave',
-      'overview/features',
-      'overview/philosophy',
-      // Getting Started
       'getting-started/index',
       'getting-started/installation',
       'getting-started/first-increment',
-      // Core Concepts
+      'guides/specweave-3',
       'guides/core-concepts/what-is-an-increment',
-      'guides/core-concepts/living-documentation',
-      // Workflows
+      'guides/cross-tool-handoff',
+      'guides/claude-code-projects',
+      'integrations/generic-ai-tools',
       'workflows/overview',
-      'workflows/planning',
-      'workflows/implementation',
-      // Integrations (2.0: the ~22 sync pages collapsed to three)
+      'workflows/brownfield',
       'guides/github-sync',
       'guides/jira-ado-sync',
       'reference/sync-cli',
-      // Agent Teams
       'guides/agent-teams-and-swarms',
       'guides/autonomous-execution',
-      // Guides
-      'guides/best-practices',
+      'guides/dashboard',
       'guides/model-selection',
-      // Skills (now in docsSidebar)
       'skills/index',
-      'skills/why-skills-matter',
-      'skills/fundamentals',
-      'skills/installation',
-      'skills/extensible/extensible-skills',
       'skills/verified/verified-skills',
-      // Reference (now in docsSidebar)
       'reference/index',
       'reference/commands',
       'reference/skills',
-      'reference/cost-tracking',
       'reference/configuration',
-      // 2.0 concept page
-      'guides/specweave-2',
-      // Standalone
       'faq',
       'metrics',
-      // Academy
-      'academy/index',
-      // Enterprise
       'enterprise/index',
-      // Glossary
       'glossary/overview',
     ];
 
@@ -98,11 +77,16 @@ describe('docs-site link checker (T-018)', () => {
     expect((sidebars as any).referenceSidebar).toBeUndefined();
   });
 
-  it('academySidebar still exists for the Learn nav item', () => {
-    expect((sidebars as any).academySidebar).toBeDefined();
+  it('has one docs sidebar; the academy and enterprise sidebars are gone', () => {
+    expect(Object.keys(sidebars as any)).toEqual(['docsSidebar']);
   });
 
-  it('enterpriseSidebar still exists', () => {
-    expect((sidebars as any).enterpriseSidebar).toBeDefined();
+  it('points old URLs of removed pages at a replacement', async () => {
+    const config = (await import('../../docusaurus.config')).default as any;
+    const redirectPlugin = config.plugins.find((p: any) => Array.isArray(p) && p[0] === '@docusaurus/plugin-client-redirects');
+    const froms = redirectPlugin[1].redirects.flatMap((r: any) => [].concat(r.from));
+    for (const old of ['/docs/academy', '/docs/guides/specweave-2', '/docs/workflows/planning', '/docs/guides/analytics-dashboard', '/docs/overview/features']) {
+      expect(froms).toContain(old);
+    }
   });
 });

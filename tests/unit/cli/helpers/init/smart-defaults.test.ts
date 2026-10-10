@@ -26,9 +26,9 @@ describe('smart-defaults', () => {
   describe('applySmartDefaults', () => {
     // ─── Testing defaults (2.0 shape) ─────────────────────────
 
-    it('should set testing.mode to TDD', () => {
+    it('writes no testing.mode (TDD is the user\'s choice, not a default)', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.testing.mode).toBe('TDD');
+      expect(config.testing.mode).toBeUndefined();
     });
 
     it('should seed an empty testing.commands list', () => {
@@ -36,9 +36,9 @@ describe('smart-defaults', () => {
       expect(config.testing.commands).toEqual([]);
     });
 
-    it('should set testing.coverage', () => {
+    it('writes no coverage targets', () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.testing.coverage).toEqual({ unit: 80, integration: 70, e2e: 100 });
+      expect(config.testing.coverage).toBeUndefined();
     });
 
     it('should preserve existing testing config', () => {

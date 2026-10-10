@@ -184,7 +184,7 @@ export function ServicesPage() {
                 <div className="flex items-center gap-3">
                   <LinkIcon type={link.type} />
                   <div>
-                    <div className="text-sm text-gray-300 group-hover:text-white transition-colors">{link.name}</div>
+                    <div className="text-sm text-gray-300 transition-colors">{link.name}</div>
                     <div className="text-[10px] text-gray-600 truncate max-w-[200px]">{link.url}</div>
                   </div>
                 </div>
@@ -203,12 +203,12 @@ export function ServicesPage() {
 function LinkIcon({ type }: { type: string }) {
   const colors: Record<string, string> = {
     docs: 'bg-indigo-600',
-    github: 'bg-gray-700',
+    github: 'bg-indigo-600',
     jira: 'bg-blue-700',
     ado: 'bg-blue-600',
   };
   return (
-    <div className={`w-8 h-8 rounded-lg ${colors[type] || 'bg-gray-700'} flex items-center justify-center`}>
+    <div className={`w-8 h-8 rounded-lg ${colors[type] || 'bg-indigo-600'} flex items-center justify-center`}>
       <span className="text-xs text-white font-bold">{type[0]?.toUpperCase()}</span>
     </div>
   );

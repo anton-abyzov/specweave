@@ -1,105 +1,79 @@
 ---
-description: Plan a unit of work as a SpecWeave increment - spec.md with Problem, Scope, numbered ACs and an Approach, plus tasks.md. Use when starting a feature, bug, hotfix or refactor.
-version: 2.0.0
-argument-hint: "<what you want to build> [--supersedes <id>]"
+description: Plan work as a SpecWeave increment - one spec.md with Problem, Scope, numbered ACs, Approach and Tasks - before writing code. Use for "plan a feature", "new increment", "let's build X".
+argument-hint: "\"<title>\" [--supersedes NNNN]"
+version: 3.0.0
 ---
+<!-- Generated from skills/sw-increment/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
-# Plan an Increment
+# sw-increment: plan the unit of work
 
-An increment is one folder — `.specweave/increments/NNNN-slug/` — holding
-`spec.md` (intent + ACs + approach), `tasks.md` (task definitions),
-`ledger.jsonl` (state, written by the CLI) and `metadata.json`. It is the unit of
-work and the tracker; every commit for it carries its id in the subject.
+An increment is one folder, `.specweave/increments/NNNN-slug/`, with one file you write:
+`spec.md`. `ledger.jsonl` beside it holds task state and is only appended to;
+`metadata.json` is machine state you never need to read. One increment is one branch
+and one PR.
 
-## Scope before implementation
+## Before writing
 
-Write a concise plan for work that needs shared acceptance criteria. Ask only about
-material ambiguity or actions beyond the user's authorization. When the user has
-asked for autonomous execution, make routine decisions and continue through
-implementation and verification. A small self-contained fix can remain a
-lightweight intent without this workflow.
+- A small self-contained fix needs no increment. Just do it.
+- An open increment already owns the files this touches (`specweave task list`)? Add
+  ACs and tasks to its spec.md instead of opening another.
+- Ask only what changes the spec: the problem behind the request, what is out of scope,
+  how you will know it works. A clear request needs no interview.
+- Read the code the change touches before writing Approach.
 
-## Steps
+## Create it
 
-1. **Understand the request.** Restate it in one sentence: what changes, for whom, why now.
-   - Scope clear enough to write ACs? Go to 2.
-   - Not clear (vague goal, unknown users, competing options, unclear done-condition)?
-     Interview first — ask only the questions whose answers change the spec, in one batch:
-     the problem behind the request, who hits it, what "done" looks like, what is explicitly
-     out of scope, constraints (stack, deadline, data), and the riskiest unknown.
-     Trivial fix → 0 questions. Do not interview to fill a quota.
-2. **Look before writing.** Read `.specweave/config.json` (testing commands, sync,
-   `workspace.repos`), skim existing increments for overlap (`specweave status`), and
-   read the code the change will touch. An Approach written without reading the files is a guess.
-3. **Create the folder** — the CLI owns id allocation (atomic, retried):
-   ```
-   specweave create-increment --auto-id --name "<kebab-slug>" --title "<Title>" \
-     --description "<one line>" --project "<project id from config>" \
-     [--type feature|bug|hotfix|refactor] [--supersedes <old-id>]
-   ```
-   Superseding an older increment: pass `--supersedes <old-id>`. That one command abandons the
-   old increment with `closeReason: "superseded by <new-id>"` and records `supersedes` on the new
-   one — do not split it into two steps. Name the old id in the new spec's Problem section.
-   No CLI: create the folder by hand, put `"supersedes": "<old-id>"` in the new `metadata.json`
-   and set the old one to `"status": "abandoned"` with the same `closeReason`.
-4. **Write `spec.md`** — one evolving document, these sections:
+`specweave create-increment "Add rate limiting"` prints the new folder with a scaffolded
+spec.md; replace every `[bracket]`. Add `--supersedes 0031` when this replaces an older
+increment (that one is abandoned for you), `--planned` for backlog work.
 
-   ```markdown
-   # NNNN — <Title>
+Manual path (no CLI): next id = highest folder number + 1, zero-padded to 4. Create
+`NNNN-kebab-slug/` with `spec.md`, an empty `ledger.jsonl` and this `metadata.json`:
 
-   ## Problem
-   What is wrong today, for whom, and the evidence (issue, log, user quote). Not the solution.
+```json
+{"id":"0042-ledger-fold","status":"active","type":"feature","created":"2026-09-02T10:00:00Z","lastActivity":"2026-09-02T10:00:00Z"}
+```
 
-   ## Scope
-   In: … · Out: … (the "out" list is what stops scope creep later.)
+Write UTF-8 without a BOM; in PowerShell use
+`[IO.File]::WriteAllText($p, $body, [Text.UTF8Encoding]::new($false))`, never `>`.
 
-   ## Acceptance Criteria
-   - [ ] AC-01: <observable, testable outcome — a reviewer can check it without asking you>
-   - [ ] AC-02: …
+## spec.md
 
-   ## Approach
-   Files that change and in what order · key decisions (+ ADR links) · rejected alternatives
-   and why · risks and the mitigation.
+```markdown
+# 0042 Ledger fold
 
-   ## Open questions
-   - <question> — blocking? who decides?
-   ```
+## Problem
+Two agents can both believe they own T-01. Who hits it, and the evidence.
 
-   ACs are numbered and observable. "Improve performance" is not an AC; "p95 of
-   `/search` under 300 ms with 10k rows" is. Keep them to what this increment ships.
-   `plan.md` is optional overflow for a genuinely large design — `--with-plan`; the
-   Approach section is the default home.
-5. **Write `tasks.md`** — definitions only; the ledger holds state:
+## Scope
+In: claim ordering, malformed lines. Out: a ledger server.
 
-   ```markdown
-   ### T-01 Add the ledger fold
-   - AC: AC-01, AC-02 | Files: src/core/tasks/ledger.ts, src/core/tasks/ledger.test.ts | Test: npm test -- ledger
-   ```
+## Acceptance Criteria
+- [ ] AC-01: Two agents claiming the same task never both get it
+- [ ] AC-02: A malformed ledger line is skipped and counted, never fatal
 
-   `Files:` is the ownership unit — two tasks that edit the same file cannot run in
-   parallel, so merge them or add `**Dependencies**: T-NN`. Every AC must be covered by at
-   least one task; every task needs a `Test:` that a machine can run (or an explicit
-   "manual: <what to check>"). Shared contracts (types, schema, migrations) go in an early
-   task everything else depends on.
-6. **Share the plan** (problem, ACs, tasks, material risks). Resolve any remaining decision that needs the user; otherwise continue within existing authorization.
-7. **Hand off to execution**: `sw:do <id>` for one agent; `sw:team <id>` when the work has
-   3+ disjoint lanes or 15+ tasks.
+## Approach
+Files that change and in what order, decisions, rejected alternatives, risks.
 
-## Rules
+## Tasks
 
-- **Never hand-edit `metadata.json` status** — CLI transitions own it. The vocabulary is
-  `planned | active | paused | completed | abandoned`; `create-increment` writes `active`
-  (use `--planned` for backlog work, then `specweave start <id>` when you pick it up).
-- **WIP is advisory.** The CLI prints one note when active increments exceed
-  `limits.activeIncrements` (`0` = off). It never blocks; do not invent a cap.
-- **One agent plans.** No planning fan-out — a second opinion on a spec costs more than it adds.
-- **Umbrella workspaces**: increments live in the umbrella root only. The `Project:` field on
-  a user story routes sync to a child repo; never create `.specweave/` inside a child repo.
-- **Bug / hotfix increments are still increments** — smaller spec (Problem, one or two ACs,
-  Approach), same folder shape. Do not skip the spec because it is "quick".
-- If the user says "don't create an increment", respect it and work in the conversation.
+### T-01 Fold the ledger
+- AC: AC-01 | Files: src/core/tasks/ledger.ts, src/core/tasks/ledger.test.ts | Test: npm test -- ledger
 
-## Resources
+### T-02 Skip malformed lines
+- AC: AC-02 | Files: src/core/tasks/ledger-parse.ts | Test: npm test -- ledger
+```
 
-- `specweave create-increment --help`, `specweave status`
-- [Official Documentation](https://verified-skill.com/docs/reference/skills#increment)
+- ACs are observable: "p95 of /search under 300 ms with 10k rows", not "faster".
+- Every AC is covered by at least one task; every task names its `Files` and a `Test`
+  command a machine can run.
+- `Files` is the ownership unit: two tasks that edit one file cannot run in parallel,
+  so merge them. Shared contracts (types, schema) go in an early task.
+- An AC is met when every task covering it is done. Nobody ticks the boxes; never
+  write state into spec.md.
+- `plan.md` is optional overflow for a genuinely large design.
+
+## Then
+
+Show the ACs and tasks. Unless the user asked to review the plan first, carry on with
+sw-do (one agent) or sw-team (three or more disjoint lanes).

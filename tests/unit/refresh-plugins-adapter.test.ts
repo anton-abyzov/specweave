@@ -19,6 +19,11 @@ vi.mock('fs', async (importOriginal) => {
 import { resolveActiveAdapter } from '../../src/cli/commands/refresh-plugins.js';
 
 describe('resolveActiveAdapter', () => {
+  it('refreshes Codex native skills without depending on Claude availability', () => {
+    mockReadFileSync.mockReturnValue(JSON.stringify({ adapters: { default: 'codex' } }));
+    expect(resolveActiveAdapter('/fake/project')).toEqual({ name: 'codex', method: 'file-copy', skillsDir: '.agents/skills' });
+    expect(mockDetectClaudeCli).not.toHaveBeenCalled();
+  });
   afterEach(() => {
     vi.restoreAllMocks();
   });

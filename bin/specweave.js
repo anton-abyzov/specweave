@@ -7,191 +7,17 @@
  * Provides commands for initializing projects, creating increments, and managing skills.
  */
 
-// ============================================================================
-// CRITICAL: Node.js Version Check (MUST run before ANY ESM imports)
-// ============================================================================
-// This check runs synchronously before any imports that use modern syntax
-// (like `import ... with { type: 'json' }`) which would crash on older Node.js
-// ============================================================================
-
-const MIN_NODE_VERSION = '20.12.0';
-const CURRENT_NODE_VERSION = process.versions.node;
-
-/**
- * Compare semver versions
- * @param {string} current - Current version (e.g., "18.17.0")
- * @param {string} required - Required version (e.g., "20.12.0")
- * @returns {boolean} true if current >= required
- */
-function isVersionSatisfied(current, required) {
-  const currentParts = current.split('.').map(Number);
-  const requiredParts = required.split('.').map(Number);
-
-  for (let i = 0; i < 3; i++) {
-    const curr = currentParts[i] || 0;
-    const req = requiredParts[i] || 0;
-    if (curr > req) return true;
-    if (curr < req) return false;
-  }
-  return true; // Equal versions
-}
-
-/**
- * Get platform-specific Node.js upgrade instructions
- */
-function getUpgradeInstructions() {
-  const platform = process.platform;
-  const isNvm = process.env.NVM_DIR || process.env.NVM_BIN;
-  const isFnm = process.env.FNM_DIR || process.env.FNM_MULTISHELL_PATH;
-  const isVolta = process.env.VOLTA_HOME;
-  const isAsdf = process.env.ASDF_DIR;
-
-  let instructions = [];
-
-  // Version manager detection (cross-platform)
-  if (isNvm) {
-    instructions.push('  Using nvm (detected):');
-    instructions.push('    nvm install 22');
-    instructions.push('    nvm use 22');
-    instructions.push('    nvm alias default 22');
-  } else if (isFnm) {
-    instructions.push('  Using fnm (detected):');
-    instructions.push('    fnm install 22');
-    instructions.push('    fnm use 22');
-    instructions.push('    fnm default 22');
-  } else if (isVolta) {
-    instructions.push('  Using Volta (detected):');
-    instructions.push('    volta install node@22');
-  } else if (isAsdf) {
-    instructions.push('  Using asdf (detected):');
-    instructions.push('    asdf install nodejs 22.0.0');
-    instructions.push('    asdf global nodejs 22.0.0');
-  } else {
-    // Platform-specific fallback
-    switch (platform) {
-      case 'darwin':
-        instructions.push('  macOS options:');
-        instructions.push('    # Using Homebrew:');
-        instructions.push('    brew install node@22');
-        instructions.push('');
-        instructions.push('    # Using nvm (recommended):');
-        instructions.push('    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash');
-        instructions.push('    nvm install 22 && nvm use 22');
-        break;
-      case 'linux':
-        instructions.push('  Linux options:');
-        instructions.push('    # Using nvm (recommended):');
-        instructions.push('    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash');
-        instructions.push('    nvm install 22 && nvm use 22');
-        instructions.push('');
-        instructions.push('    # Using NodeSource (Debian/Ubuntu):');
-        instructions.push('    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -');
-        instructions.push('    sudo apt-get install -y nodejs');
-        break;
-      case 'win32':
-        instructions.push('  Windows options:');
-        instructions.push('    # Using nvm-windows:');
-        instructions.push('    nvm install 22');
-        instructions.push('    nvm use 22');
-        instructions.push('');
-        instructions.push('    # Direct download:');
-        instructions.push('    https://nodejs.org/en/download/');
-        break;
-      default:
-        instructions.push('  Download Node.js 22+ from:');
-        instructions.push('    https://nodejs.org/en/download/');
-    }
-  }
-
-  return instructions.join('\n');
-}
-
-// Perform the version check
-if (!isVersionSatisfied(CURRENT_NODE_VERSION, MIN_NODE_VERSION)) {
-  // Use basic console methods (no chalk yet - it may fail to import)
-  const RED = '\x1b[31m';
-  const YELLOW = '\x1b[33m';
-  const CYAN = '\x1b[36m';
-  const BOLD = '\x1b[1m';
-  const RESET = '\x1b[0m';
-  const DIM = '\x1b[2m';
-  const UNDERLINE = '\x1b[4m';
-
-  console.error('');
-  console.error(`${RED}${BOLD}╔══════════════════════════════════════════════════════════════════╗${RESET}`);
-  console.error(`${RED}${BOLD}║  SpecWeave requires Node.js ${MIN_NODE_VERSION} or higher                     ║${RESET}`);
-  console.error(`${RED}${BOLD}╚══════════════════════════════════════════════════════════════════╝${RESET}`);
-  console.error('');
-  console.error(`${YELLOW}  Your version:${RESET}  ${RED}${CURRENT_NODE_VERSION}${RESET}`);
-  console.error(`${YELLOW}  Required:${RESET}      ${CYAN}≥${MIN_NODE_VERSION}${RESET} (Node.js 22 LTS recommended)`);
-  console.error('');
-  console.error(`${DIM}  Why? SpecWeave uses modern JavaScript features (ES2022+) including${RESET}`);
-  console.error(`${DIM}  import assertions which require Node.js 20.12.0+${RESET}`);
-  console.error('');
-  console.error(`${BOLD}Quick upgrade:${RESET}`);
-  console.error(getUpgradeInstructions());
-  console.error('');
-  console.error(`${BOLD}Full guide:${RESET}`);
-  console.error(`  ${CYAN}${UNDERLINE}https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error${RESET}`);
-  console.error('');
-  console.error(`${DIM}After upgrading, verify with: node --version${RESET}`);
-  console.error('');
-  process.exit(1);
-}
-
-// ============================================================================
-// Node.js version is OK - proceed with normal imports
-// ============================================================================
+import './check-node.js';
 
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-// ESM equivalents for __dirname and __filename
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // For importing package.json (need createRequire in ESM)
 const require = createRequire(import.meta.url);
 const packageJson = require('../package.json');
 
-// ============================================================================
-// DEVELOPMENT GUARD: Check if dist/ is built (prevents silent hangs)
-// ============================================================================
-// This only matters for developers running from source. NPM users always get
-// a pre-built package via prepublishOnly hook.
-// ============================================================================
-import { existsSync } from 'fs';
-import { join } from 'path';
-
-const distCliPath = join(__dirname, '..', 'dist', 'src', 'cli', 'commands', 'init.js');
-const isDevEnvironment = existsSync(join(__dirname, '..', 'tsconfig.json'));
-
-if (isDevEnvironment && !existsSync(distCliPath)) {
-  const RED = '\x1b[31m';
-  const YELLOW = '\x1b[33m';
-  const CYAN = '\x1b[36m';
-  const BOLD = '\x1b[1m';
-  const RESET = '\x1b[0m';
-  const DIM = '\x1b[2m';
-
-  console.error('');
-  console.error(`${RED}${BOLD}╔══════════════════════════════════════════════════════════════════╗${RESET}`);
-  console.error(`${RED}${BOLD}║  SpecWeave is not built! Run: npm run rebuild                    ║${RESET}`);
-  console.error(`${RED}${BOLD}╚══════════════════════════════════════════════════════════════════╝${RESET}`);
-  console.error('');
-  console.error(`${YELLOW}  Missing:${RESET}  ${DIM}dist/src/cli/commands/init.js${RESET}`);
-  console.error('');
-  console.error(`${BOLD}Quick fix:${RESET}`);
-  console.error(`  ${CYAN}npm run rebuild${RESET}`);
-  console.error('');
-  console.error(`${DIM}  This happens when 'npm run clean' runs without 'npm run build'.${RESET}`);
-  console.error(`${DIM}  NPM users never see this - packages are pre-built before publish.${RESET}`);
-  console.error('');
-  process.exit(1);
-}
+import './check-build.js';
 
 const program = new Command();
 
@@ -211,7 +37,7 @@ program
   .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
-  .option('--no-living-docs', 'Skip living docs builder setup')
+  .option('--git-hooks', 'Also install the SpecWeave pre-commit hook (off by default)')
   .option('--full', 'Install all plugins (skip lazy loading, longer init but all skills available immediately)')
   .option('-q, --quick', 'Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)')
   .option('--non-interactive', 'Alias for --quick (skip all prompts)')
@@ -226,16 +52,6 @@ program
     await initCommand(resolvedName, options);
   });
 
-// Increment commands (TODO: Implement in future versions)
-// program
-//   .command('increment <action> [name]')
-//   .description('Manage increments (create, list, status)')
-//   .option('-p, --priority <level>', 'Priority level (P1, P2, P3)', 'P1')
-//   .action(async (action, name, options) => {
-//     const { incrementCommand } = require('../dist/src/cli/commands/increment');
-//     await incrementCommand(action, name, options);
-//   });
-
 // Uninstall command - Remove SpecWeave from a project
 program
   .command('uninstall')
@@ -247,61 +63,6 @@ program
   .action(async (options) => {
     const { uninstallCommand } = await import('../dist/src/cli/commands/uninstall.js');
     await uninstallCommand(process.cwd(), options);
-  });
-
-// Install command - Install agents/skills
-program
-  .command('install [component-name]')
-  .description('Install agents/skills to .claude/ or ~/.claude/')
-  .option('-g, --global', 'Install globally to ~/.claude/')
-  .option('-l, --local', 'Install locally to .claude/ (default)')
-  .action(async (componentName, options) => {
-    const { installCommand } = await import('../dist/src/cli/commands/install.js');
-    await installCommand(componentName, options);
-  });
-
-// Scan skill command - Security scan a skill file
-program
-  .command('scan-skill <file>')
-  .description('Scan a skill file for security issues (Tier 1 pattern scanning)')
-  .option('--json', 'Output results as JSON', false)
-  .action(async (file, options) => {
-    const { scanSkillCommand } = await import('../dist/src/cli/commands/scan-skill.js');
-    await scanSkillCommand(file, options);
-  });
-
-// Scan plugins command - Batch security scan of all plugins/*/skills/*/SKILL.md files
-program
-  .command('scan-plugins')
-  .description('Batch-scan all plugin SKILL.md files for security issues (Gen Agent Trust Hub categories)')
-  .option('--json', 'Output results as JSON for CI integration', false)
-  .option('--verbose', 'Show per-skill reports in addition to batch summary', false)
-  .option('--dir <path>', 'Path to plugins directory (default: ./plugins)')
-  .action(async (options) => {
-    const { scanPluginsCommand } = await import('../dist/src/cli/commands/scan-plugins.js');
-    await scanPluginsCommand(options);
-  });
-
-// Judge skill command - Combined Tier 1 + Tier 2 LLM security analysis
-program
-  .command('judge-skill <file>')
-  .description('Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)')
-  .option('--json', 'Output results as JSON', false)
-  .option('--model <model>', 'LLM model to use (e.g., sonnet, opus)')
-  .option('--scan-only', 'Run Tier 1 only, skip LLM analysis', false)
-  .action(async (file, options) => {
-    const { judgeSkillCommand } = await import('../dist/src/cli/commands/judge-skill.js');
-    await judgeSkillCommand(file, options);
-  });
-
-// List command - List available/installed components
-program
-  .command('list')
-  .description('List available and installed components')
-  .option('--installed', 'Show only installed components')
-  .action(async (options) => {
-    const { listCommand } = await import('../dist/src/cli/commands/list.js');
-    await listCommand(options);
   });
 
 // Increment status commands
@@ -366,6 +127,7 @@ program
   .option('-n, --note <text>', 'Note (alias of --reason)')
   .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
+  .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
     const { taskCommand } = await import('../dist/src/cli/commands/task.js');
@@ -421,7 +183,9 @@ program
 // Handoff command - Assemble a portable cross-tool work-handoff doc + diff
 program
   .command('handoff [incrementId]')
-  .description('Write a portable, secret-scrubbed work-handoff doc + diff so you can resume in another AI tool')
+  .description('Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs')
+  .option('--all', 'Write .specweave/handoffs/<date>-INDEX.md and index.json: every active increment and every nested repo with local-only work (writes nothing else)')
+  .option('--dry-run', 'With --all: print the index instead of writing it')
   .option('--reason <reason>', 'Why you are handing off (e.g. "out of tokens")')
   .option('--summary <summary>', 'Short summary of where things stand')
   .option('--next <next>', 'The exact next step for the resuming agent')
@@ -432,7 +196,14 @@ program
   .option('--non-specweave', 'Force the .handoff/ fallback even inside a SpecWeave workspace')
   .option('--out <path>', 'Override the doc output path')
   .option('--json', 'Output the full result as JSON (for programmatic use)')
+  .option('--no-push', 'Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)')
+  .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
   .action(async (incrementId, options) => {
+    if (incrementId === 'list') {
+      const { handoffListCommand } = await import('../dist/src/cli/commands/pickup.js');
+      process.exitCode = await handoffListCommand({ json: options.json });
+      return;
+    }
     const { handoffCommand } = await import('../dist/src/cli/commands/handoff.js');
     await handoffCommand({
       incrementId,
@@ -445,7 +216,87 @@ program
       nonSpecweave: options.nonSpecweave,
       out: options.out,
       json: options.json,
+      push: options.push === false ? false : undefined,
+      keepClaims: options.keepClaims,
+      all: options.all,
+      dryRun: options.dryRun,
     });
+  });
+
+// Pickup command - everything a fresh session needs, in one read
+program
+  .command('pickup [target...]')
+  .description('Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest')
+  .option('--no-apply', 'Only show the waiting handoff; do not apply it to this checkout')
+  .option('--all', 'Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing')
+  .option('--list', 'Print the pending handoffs with their ids, newest first; changes nothing')
+  .option('--json', 'Output as JSON')
+  .action(async (target, options) => {
+    const { pickupCommand } = await import('../dist/src/cli/commands/pickup.js');
+    const incrementId = Array.isArray(target) && target.length ? target.join(' ') : undefined;
+    process.exitCode = await pickupCommand({ incrementId, json: options.json, apply: options.apply, all: options.all, list: options.list });
+  });
+
+// Report command - HTML timeline of an increment's ledger (handoff evidence)
+program
+  .command('report [incrementId]')
+  .description('Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)')
+  .option('--out <file>', 'Where to write it (default: the increment\'s reports/handoff-report.html)')
+  .action(async (incrementId, options) => {
+    const { reportCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await reportCommand({ incrementId, out: options.out });
+  });
+
+// Note command - leave a note on an increment for whoever works on it next
+program
+  .command('note <text> [incrementId]')
+  .description('Append a note to an increment\'s ledger; `specweave pickup` shows it to the next agent')
+  .action(async (text, incrementId) => {
+    const { noteCommand } = await import('../dist/src/cli/commands/pickup.js');
+    process.exitCode = await noteCommand(text, { incrementId });
+  });
+
+// Auto-handoff - suggest or make a handoff near the plan's usage limit, with local checkpoints (Claude Code, Codex, Grok Build)
+program
+  .command('auto-handoff [action]')
+  .description('on | off | status: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints')
+  .option('--mode <mode>', 'suggest (default): tell you once at the threshold and keep working; enforce: hand off and stop; checkpoint: only save local checkpoints')
+  .option('--at <percent>', 'Threshold in percent of any usage window (default 95)', (v) => Number(v))
+  .option('--wait-under <minutes>', 'Do nothing at the threshold when the limit resets sooner than this (default 30; 0 turns it off)', (v) => Number(v))
+  .option('--checkpoint-only', 'Same as --mode checkpoint')
+  .option('--handoff', 'Same as --mode enforce')
+  .action(async (action, options) => {
+    const { autoHandoffCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await autoHandoffCommand(action, { at: options.at, mode: options.mode, waitUnder: options.waitUnder, checkpointOnly: options.checkpointOnly === true, handoff: options.handoff === true });
+  });
+
+program
+  .command('statusline')
+  .description('Claude Code status line that records usage for auto-handoff')
+  .option('--wrap <command>', 'Print this status line command\'s output instead of the built-in line')
+  .action(async (options) => {
+    const { statuslineCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await statuslineCommand({ wrap: options.wrap });
+  });
+
+program
+  .command('usage-guard')
+  .description('Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once')
+  .option('--limit-hit', 'StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)')
+  .action(async (options) => {
+    const { usageGuardCommand } = await import('../dist/src/cli/commands/auto-handoff.js');
+    process.exitCode = await usageGuardCommand({ limitHit: options.limitHit === true });
+  });
+
+// Auto-compact window for Claude Code (400K keeps 1M-context turns small)
+program
+  .command('autocompact [action]')
+  .description('on | off | status: where Claude Code summarizes a long session (default 400k)')
+  .option('--at <tokens>', 'Window for `on`, 100k to 1M (default 400k)')
+  .option('--project', 'Write .claude/settings.json in this project instead of ~/.claude/settings.json')
+  .action(async (action, options) => {
+    const { autocompactCommand } = await import('../dist/src/cli/commands/autocompact.js');
+    process.exitCode = await autocompactCommand(action, { at: options.at, project: options.project === true });
   });
 
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions
@@ -453,7 +304,7 @@ program
   .command('jev <action> [args...]')
   .description('Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage')
   .option('--json', 'Machine-readable JSON output')
-  .option('--provider <name>', 'setup: openrouter | typesafe')
+  .option('--provider <name>', 'setup: openrouter | typesafe | openai')
   .option('--model <model>', 'setup: model id (defaults to the provider default)')
   .option('--guard-bash', 'setup: enable the opt-in PreToolUse Bash guard')
   .option('--no-guard-bash', 'setup: disable the Bash guard')
@@ -562,9 +413,6 @@ program
     });
   });
 
-// Delete feature command - Registered dynamically in startup
-// (See registerDeleteFeatureCommand call below)
-
 program
   .command('status')
   .alias('progress')
@@ -578,121 +426,6 @@ program
       options.verbose = true;
     }
     await statusCommand(options);
-  });
-
-// Interview command - Manage Deep Interview Mode state
-const interviewCmd = program
-  .command('interview <action> [increment-id] [category] [summary]')
-  .description('Manage Deep Interview Mode for increment planning')
-  .action(async (action, incrementId, category, summary) => {
-    const { interviewCommand } = await import('../dist/src/cli/commands/interview.js');
-    await interviewCommand(action, incrementId, category, summary);
-  });
-
-interviewCmd.addHelpText('after', `
-Actions:
-  start <increment-id>                    Start interview tracking
-  mark-covered <id> <category> [summary]  Mark category as covered
-  status [increment-id]                   Show interview status
-  clear <increment-id>                    Clear interview state
-
-Categories: architecture, integrations, ui-ux, performance, security, edge-cases
-
-Examples:
-  specweave interview start 0021-auth-feature
-  specweave interview mark-covered 0021-auth-feature architecture "Microservices with Redis"
-  specweave interview status 0021-auth-feature
-`);
-
-// Decision log command - Query structured decision logs
-program
-  .command('decision-log')
-  .description('Query structured decision logs from hooks')
-  .option('--hook <name>', 'Filter by hook name (e.g. stop-auto)')
-  .option('--decision <type>', 'Filter by decision type (approve, block)')
-  .option('--since <window>', 'Filter by time window (1h, 24h, 7d)')
-  .option('--limit <number>', 'Number of entries to show (default: 20)', '20')
-  .option('--json', 'Output raw JSON format')
-  .option('--tail', 'Follow log in real-time (like tail -f)')
-  .action(async (options) => {
-    const { decisionLogCommand, decisionLogTail } = await import('../dist/src/cli/commands/decision-log.js');
-    if (options.tail) {
-      await decisionLogTail({
-        hook: options.hook,
-        decision: options.decision
-      });
-    } else {
-      await decisionLogCommand({
-        hook: options.hook,
-        decision: options.decision,
-        since: options.since,
-        limit: parseInt(options.limit, 10),
-        json: options.json
-      });
-    }
-  });
-
-// Status line command - Display current increment progress
-program
-  .command('status-line')
-  .description('Display current increment status line')
-  .option('--json', 'Output JSON format')
-  .option('--clear', 'Clear status line cache')
-  .option('--config <path>', 'Path to config file')
-  .action(async (options) => {
-    const { registerStatusLineCommand } = await import('../dist/src/cli/commands/status-line.js');
-    const tempProgram = new Command();
-    registerStatusLineCommand(tempProgram);
-    // Execute action manually since we need the temp program
-    const manager = await import('../dist/src/core/status-line/status-line-manager.js').then(m => m.StatusLineManager);
-    const StatusLineManager = manager;
-    const path = await import('path');
-    const fs = await import('fs');
-
-    const rootDir = process.cwd();
-    let config = {};
-
-    if (options.config) {
-      const configPath = path.resolve(options.config);
-      if (fs.existsSync(configPath)) {
-        const configContent = fs.readFileSync(configPath, 'utf8');
-        const fullConfig = JSON.parse(configContent);
-        config = fullConfig.statusLine || {};
-      }
-    } else {
-      const defaultConfigPath = path.join(rootDir, '.specweave/config.json');
-      if (fs.existsSync(defaultConfigPath)) {
-        const configContent = fs.readFileSync(defaultConfigPath, 'utf8');
-        const fullConfig = JSON.parse(configContent);
-        config = fullConfig.statusLine || {};
-      }
-    }
-
-    const statusManager = new StatusLineManager(rootDir, config);
-
-    if (options.clear) {
-      statusManager.clearCache();
-      console.log('✅ Status line cache cleared');
-      return;
-    }
-
-    if (options.json) {
-      const cache = statusManager.getCacheData();
-      if (!cache) {
-        console.log(JSON.stringify({ error: 'No active increment' }, null, 2));
-        process.exit(1);
-      }
-      console.log(JSON.stringify(cache, null, 2));
-      return;
-    }
-
-    const statusLine = statusManager.render();
-    if (!statusLine) {
-      console.log('No active increment');
-      process.exit(1);
-    }
-
-    console.log(statusLine);
   });
 
 // Auto mode commands - Autonomous execution with stop hook feedback loop (v3.0)
@@ -789,10 +522,12 @@ program
   .option('--all', 'Install ALL plugins (not just router)')
   .option('--minimal', 'Clean /plugin output (removes marketplace, no lazy loading)')
   .option('--check', 'Dry run - show what would change without making changes')
+  .option('--dry-run', 'Same as --check')
   .option('-v, --verbose', 'Show detailed output')
   .option('-f, --force', 'Force refresh even if up to date')
   .action(async (options) => {
     const { updateCommand } = await import('../dist/src/cli/commands/update.js');
+    if (options.dryRun) options.check = true;
     await updateCommand(options);
   });
 
@@ -865,93 +600,12 @@ program
     await branchNameCommand(incrementId);
   });
 
-// Jobs command - Monitor and manage background jobs (imports, cloning, sync)
-program
-  .command('jobs')
-  .description('Monitor and manage background jobs (imports, cloning, sync)')
-  .option('--all', 'Show all jobs (including completed)')
-  .option('--id <jobId>', 'Show details for specific job')
-  .option('--logs <jobId>', 'Show worker log output')
-  .option('--follow <jobId>', 'Follow job progress in real-time')
-  .option('--kill <jobId>', 'Kill running background job')
-  .option('--resume <jobId>', 'Resume paused job')
-  .action(async (options) => {
-    const { jobsCommand } = await import('../dist/src/cli/commands/jobs.js');
-    await jobsCommand(options);
-  });
-
-// Living-docs command - Launch or resume Living Docs Builder independently
-program
-  .command('living-docs')
-  .description('Launch or resume Living Docs Builder independently')
-  .option('--resume <jobId>', 'Resume orphaned/paused job')
-  .option('--depth <level>', 'Analysis depth: quick, standard, deep-native, deep-api')
-  .option('--priority <modules>', 'Priority modules (comma-separated)')
-  .option('--sources <folders>', 'Additional doc folders (comma-separated)')
-  .option('--depends-on <jobIds>', 'Wait for jobs before starting (comma-separated)')
-  .option('--foreground', 'Run in current session instead of background')
-  .option('--force', 'Force run even for greenfield projects')
-  .option('--full-scan', 'Force full deep scan (all phases: repos, org, arch, inconsistencies, strategy)')
-  .action(async (options) => {
-    const { livingDocsCommand } = await import('../dist/src/cli/commands/living-docs.js');
-    await livingDocsCommand(options);
-  });
-
-// Cache command - Dashboard cache management
-program
-  .command('cache')
-  .description('Manage dashboard cache for instant status commands')
-  .option('--rebuild', 'Rebuild cache from increments')
-  .option('--status', 'Show cache status (default)')
-  .option('--clear', 'Clear cache')
-  .option('--quiet', 'Minimal output')
-  .option('--debug', 'Show debug information')
-  .action(async (options) => {
-    const { cacheCommand } = await import('../dist/src/cli/commands/cache.js');
-    await cacheCommand(options);
-  });
-
-// Analytics command - Usage analytics dashboard
-program
-  .command('analytics')
-  .description('Show usage analytics dashboard (commands, skills, agents)')
-  .option('--export <format>', 'Export data (json, csv)')
-  .option('--since <time>', 'Filter by time range (24h, 7d, 30d)')
-  .option('--type <type>', 'Filter by event type (command, skill, agent)')
-  .option('--json', 'Output raw JSON for scripting')
-  .option('--limit <n>', 'Number of top items to show', '10')
-  .action(async (options) => {
-    const { analyticsCommand } = await import('../dist/src/cli/commands/analytics.js');
-    await analyticsCommand({
-      export: options.export,
-      since: options.since,
-      type: options.type,
-      json: options.json,
-      limit: options.limit ? parseInt(options.limit, 10) : undefined,
-    });
-  });
-
-// Analytics push command - Record analytics events (replaces PostToolUse analytics hook)
-program
-  .command('analytics-push')
-  .description('Record a skill or agent analytics event (replaces PostToolUse analytics hook)')
-  .requiredOption('--type <type>', 'Event type: skill or agent')
-  .requiredOption('--name <name>', 'Skill or agent name')
-  .option('--plugin <plugin>', 'Source plugin name')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { analyticsPushCommand } = await import('../dist/src/cli/commands/analytics-push.js');
-    const result = await analyticsPushCommand({
-      projectRoot: process.cwd(),
-      type: options.type,
-      name: options.name,
-      plugin: options.plugin,
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
+// Route lazy CLI actions through the guarded command factory. Keep registrations
+// here so static shell-completion generation still sees every command and option.
+async function runLspCommand(args) {
+  const { createLspCommand } = await import('../dist/src/cli/commands/lsp.js');
+  await createLspCommand().parseAsync(args, { from: 'user' });
+}
 
 // LSP command - Code intelligence operations
 const lspCmd = program
@@ -962,40 +616,35 @@ lspCmd
   .command('refs <file> <symbol>')
   .description('Find all references to a symbol')
   .action(async (file, symbol) => {
-    const { handleLspRefs } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspRefs(process.cwd(), file, symbol);
+    await runLspCommand(['refs', '--', file, symbol]);
   });
 
 lspCmd
   .command('def <file> <symbol>')
   .description('Go to definition of a symbol')
   .action(async (file, symbol) => {
-    const { handleLspDef } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspDef(process.cwd(), file, symbol);
+    await runLspCommand(['def', '--', file, symbol]);
   });
 
 lspCmd
   .command('hover <file> <symbol>')
   .description('Get type information for a symbol')
   .action(async (file, symbol) => {
-    const { handleLspHover } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspHover(process.cwd(), file, symbol);
+    await runLspCommand(['hover', '--', file, symbol]);
   });
 
 lspCmd
   .command('symbols <file>')
   .description('List all symbols in a file')
   .action(async (file) => {
-    const { handleLspSymbols } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSymbols(process.cwd(), file);
+    await runLspCommand(['symbols', '--', file]);
   });
 
 lspCmd
   .command('search <query>')
   .description('Search for symbols in workspace')
   .action(async (query) => {
-    const { handleLspSearch } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSearch(process.cwd(), query);
+    await runLspCommand(['search', '--', query]);
   });
 
 lspCmd
@@ -1003,16 +652,14 @@ lspCmd
   .description('Warm up LSP by pre-indexing workspace (run on session start)')
   .option('--quiet', 'Suppress output')
   .action(async (files, options) => {
-    const { handleLspWarmup } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspWarmup(process.cwd(), files, options.quiet ?? false);
+    await runLspCommand(['warmup', ...(options.quiet ? ['--quiet'] : []), '--', ...files]);
   });
 
 lspCmd
   .command('status')
   .description('Show LSP status and warm-up state')
   .action(async () => {
-    const { handleLspStatus } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspStatus(process.cwd());
+    await runLspCommand(['status']);
   });
 
 lspCmd
@@ -1023,22 +670,10 @@ lspCmd
   .option('--dry-run', 'Show what would be installed without installing')
   .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
   .action(async (options) => {
-    const { handleLspSetup } = await import('../dist/src/cli/commands/lsp.js');
-    await handleLspSetup(process.cwd(), {
-      maxLanguages: parseInt(options.max, 10),
-      minFileCount: parseInt(options.minFiles, 10),
-      dryRun: options.dryRun ?? false,
-      scope: options.scope,
-    });
-  });
-
-// Commits command - Display last 2 git commits
-program
-  .command('commits')
-  .description('Display the last 2 git commits')
-  .action(async () => {
-    const { commitsCommand } = await import('../dist/src/cli/commands/commits.js');
-    await commitsCommand();
+    await runLspCommand([
+      'setup', '--max', options.max, '--min-files', options.minFiles,
+      '--scope', options.scope, ...(options.dryRun ? ['--dry-run'] : []),
+    ]);
   });
 
 // Sync command group - the ONE external tracker sync surface (GitHub / Jira / ADO)
@@ -1100,216 +735,6 @@ syncCmd
     process.exitCode = await syncSetup({ provider: parseProvider(opts.provider), validate: opts.validate, quick: opts.quick });
   });
 
-// Deprecated top-level sync verbs: hidden aliases that print a one-line notice and delegate
-async function deprecatedSync(oldVerb) {
-  const { deprecationNotice } = await import('../dist/src/cli/commands/sync.js');
-  console.error(deprecationNotice(oldVerb));
-}
-
-program
-  .command('sync-progress [increment-id]', { hidden: true })
-  .option('--dry-run')
-  .option('--no-create')
-  .option('--no-github')
-  .option('--no-jira')
-  .option('--no-ado')
-  .option('--force')
-  .action(async (incrementId, opts) => {
-    await deprecatedSync('sync-progress');
-    const { syncProgress } = await import('../dist/src/cli/commands/sync-progress.js');
-    const args = [];
-    if (incrementId) args.push(incrementId);
-    if (opts.dryRun) args.push('--dry-run');
-    if (!opts.create) args.push('--no-create');
-    if (!opts.github) args.push('--no-github');
-    if (!opts.jira) args.push('--no-jira');
-    if (!opts.ado) args.push('--no-ado');
-    if (opts.force) args.push('--force');
-    await syncProgress(args);
-  });
-
-program
-  .command('sync-living-docs [increment-id]', { hidden: true })
-  .option('--dry-run')
-  .option('--force')
-  .action(async (incrementId, opts) => {
-    await deprecatedSync('sync-living-docs');
-    const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
-    const args = [];
-    if (incrementId) args.push(incrementId);
-    if (opts.dryRun) args.push('--dry-run');
-    if (opts.force) args.push('--force');
-    await syncLivingDocs(args);
-  });
-
-program
-  .command('sync-retry', { hidden: true })
-  .option('--dry-run')
-  .option('--force')
-  .option('--clear')
-  .action(async (opts) => {
-    await deprecatedSync('sync-retry');
-    const { syncRetryCommand } = await import('../dist/src/cli/commands/sync-retry.js');
-    const result = await syncRetryCommand(process.cwd(), opts);
-    if (result.failed > 0) process.exitCode = 1;
-  });
-
-for (const oldVerb of ['sync-status', 'sync-health', 'sync-gaps']) {
-  program
-    .command(oldVerb, { hidden: true })
-    .option('--json')
-    .option('--provider <name>')
-    .action(async (opts) => {
-      await deprecatedSync(oldVerb);
-      const { syncStatus, parseProvider } = await import('../dist/src/cli/commands/sync.js');
-      const report = await syncStatus({ json: opts.json, provider: parseProvider(opts.provider) });
-      process.exitCode = report.exitCode;
-    });
-}
-
-program
-  .command('sync-setup', { hidden: true })
-  .option('--provider <name>')
-  .option('--quick')
-  .action(async (opts) => {
-    await deprecatedSync('sync-setup');
-    const { syncSetup, parseProvider } = await import('../dist/src/cli/commands/sync.js');
-    process.exitCode = await syncSetup({ provider: parseProvider(opts.provider), quick: opts.quick });
-  });
-
-program
-  .command('validate-jira', { hidden: true })
-  .action(async () => {
-    await deprecatedSync('validate-jira');
-    const { syncSetup } = await import('../dist/src/cli/commands/sync.js');
-    process.exitCode = await syncSetup({ provider: 'jira', validate: true });
-  });
-
-// Docs command - Documentation preview, build, validation
-const docsCmd = program
-  .command('docs')
-  .description('Documentation preview, build, and validation (works in any SpecWeave project)');
-
-docsCmd
-  .command('preview')
-  .description('Start documentation preview server with hot reload')
-  .option('-p, --port <number>', 'Port number (default: 3015 internal, 3016 public)')
-  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('-f, --force', 'Force reinstall Docusaurus')
-  .option('--no-browser', 'Do not open browser automatically')
-  .option('--no-validate', 'Skip pre-flight validation')
-  .option('--no-auto-fix', 'Do not auto-fix validation issues')
-  .action(async (options) => {
-    const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsPreviewCommand({
-      port: options.port ? parseInt(options.port, 10) : undefined,
-      force: options.force,
-      noBrowser: !options.browser,
-      validate: options.validate,
-      autoFix: options.autoFix,
-      scope: options.scope || 'internal',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('build')
-  .description('Build static documentation site for deployment')
-  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('--no-validate', 'Skip pre-build validation')
-  .option('--no-auto-fix', 'Do not auto-fix validation issues')
-  .option('-o, --output <path>', 'Output directory')
-  .action(async (options) => {
-    const { docsBuildCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsBuildCommand({
-      validate: options.validate,
-      autoFix: options.autoFix,
-      output: options.output,
-      scope: options.scope || 'internal',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('validate')
-  .description('Validate documentation without starting server')
-  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('--auto-fix', 'Auto-fix common issues')
-  .option('-v, --verbose', 'Show all issues (not just errors)')
-  .action(async (options) => {
-    const { docsValidateCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsValidateCommand({
-      autoFix: options.autoFix,
-      verbose: options.verbose,
-      scope: options.scope || 'internal',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('public')
-  .description('Preview public documentation (shorthand for preview --scope public)')
-  .option('-p, --port <number>', 'Port number (default: 3016)')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .option('-f, --force', 'Force reinstall Docusaurus')
-  .option('--no-browser', 'Do not open browser automatically')
-  .option('--no-validate', 'Skip pre-flight validation')
-  .option('--no-auto-fix', 'Do not auto-fix validation issues')
-  .action(async (options) => {
-    const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsPreviewCommand({
-      port: options.port ? parseInt(options.port, 10) : undefined,
-      force: options.force,
-      noBrowser: !options.browser,
-      validate: options.validate,
-      autoFix: options.autoFix,
-      scope: 'public',
-      project: options.project,
-    });
-  });
-
-docsCmd
-  .command('kill')
-  .description('Stop all running documentation servers')
-  .action(async () => {
-    const { docsKillCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsKillCommand();
-  });
-
-docsCmd
-  .command('status')
-  .description('Show documentation status and help')
-  .option('--project <id>', 'Target child repo docs in umbrella project')
-  .action(async (options) => {
-    const { docsStatusCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsStatusCommand({ project: options.project });
-  });
-
-// Default action for 'specweave docs' without subcommand — launches internal preview
-docsCmd
-  .command('sync [increment-id]')
-  .description('Sync living documentation for an increment (feature spec + user story files)')
-  .option('--dry-run', 'Preview without making changes')
-  .option('--force', 'Force sync even if no changes detected')
-  .action(async (incrementId, options) => {
-    const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
-    const args = [];
-    if (incrementId) args.push(incrementId);
-    if (options.dryRun) args.push('--dry-run');
-    if (options.force) args.push('--force');
-    await syncLivingDocs(args);
-  });
-
-
-docsCmd.action(async () => {
-  const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
-  await docsPreviewCommand({ scope: 'internal' });
-});
-
-
 // Refresh plugins command - Copy first-party plugins to ~/.claude/commands/
 program
   .command('refresh-plugins')
@@ -1351,131 +776,6 @@ program
     }
   });
 
-// Health command - Quick deployment verification
-program
-  .command('health')
-  .description('Quick deployment health check (config, plugins, sync connectivity)')
-  .option('--json', 'Output as JSON for CI/CD pipelines')
-  .option('--verbose', 'Show detailed output')
-  .action(async (options) => {
-    const { runHealthCheck } = await import('../dist/src/cli/commands/health.js');
-    const report = await runHealthCheck(process.cwd(), {
-      json: options.json,
-      verbose: options.verbose,
-    });
-
-    if (report.status === 'unhealthy') {
-      process.exit(1);
-    }
-  });
-
-// Session command - Session lifecycle management (replaces SessionStart/Stop hooks)
-const sessionCmd = program
-  .command('session')
-  .description('Session lifecycle management (start, end)');
-
-sessionCmd
-  .command('start')
-  .description('Initialize session (replaces SessionStart hook)')
-  .option('--session-id <id>', 'Session identifier for isolated state')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { sessionStartCommand } = await import('../dist/src/cli/commands/session.js');
-    const result = await sessionStartCommand({
-      projectRoot: process.cwd(),
-      sessionId: options.sessionId,
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
-
-sessionCmd
-  .command('end')
-  .description('End session: auto scan, sync flush (replaces Stop hooks)')
-  .option('--json', 'Output as JSON')
-  .option('--silent', 'Suppress output')
-  .action(async (options) => {
-    const { sessionEndCommand } = await import('../dist/src/cli/commands/session.js');
-    const result = await sessionEndCommand({
-      projectRoot: process.cwd(),
-      json: options.json,
-      silent: options.silent,
-    });
-    if (!result.success) process.exit(1);
-  });
-
-// Hook command - CLI delegation entry point for Claude Code hooks (internal)
-program
-  .command('hook <event-type>')
-  .description('Handle Claude Code hook events (internal)')
-  .action(async (eventType) => {
-    try {
-      const { handleHook } = await import('../dist/src/cli/commands/hook.js');
-      await handleHook(eventType);
-    } catch {
-      // Never crash — `{}` is the schema-valid pass-through for every event
-      process.stdout.write('{}');
-    }
-    process.exit(0);
-  });
-
-// Detect intent command - Hook helper for automatic plugin loading (internal)
-program
-  .command('detect-intent [prompt]')
-  .description('Detect SpecWeave intent from a prompt and optionally install plugins')
-
-  .option('--install', 'Also install detected plugins after detection')
-  .option('--silent', 'Silent mode - no stdout output (for hooks)')
-  .option('--file <path>', 'Read prompt from file instead of argument (avoids shell escaping issues)')
-  .action(async (promptArg, options) => {
-    const { detectIntentCommand } = await import('../dist/src/cli/commands/detect-intent.js');
-    const fs = await import('fs');
-
-    // Read prompt from file if specified, otherwise use argument
-    let prompt = promptArg || '';
-    if (options.file) {
-      try {
-        prompt = fs.readFileSync(options.file, 'utf8').trim();
-      } catch (fileError) {
-        if (!options.silent) {
-          console.error(`Error reading file: ${fileError.message}`);
-        }
-        process.exit(1);
-      }
-    }
-
-    if (!prompt) {
-      if (!options.silent) {
-        console.error('Error: No prompt provided. Use positional argument or --file option.');
-      }
-      process.exit(1);
-    }
-
-    const result = await detectIntentCommand(prompt, options);
-    // Exit code: 0 if plugins detected, 1 if none
-    process.exit(result.detected ? 0 : 1);
-  });
-
-// Evaluate completion command - LLM-based completion evaluation for auto mode (internal)
-program
-  .command('evaluate-completion <increment-id>')
-  .description('Evaluate whether an auto mode session should be considered complete')
-
-  .option('--model <model>', 'Model for LLM evaluation: haiku or sonnet (default: sonnet)')
-  .option('--timeout <ms>', 'Timeout in milliseconds (default: 45000)', parseInt)
-  .option('--silent', 'Minimal output')
-  .action(async (incrementId, options) => {
-    const { evaluateCompletionCommand } = await import('../dist/src/cli/commands/evaluate-completion.js');
-    const result = await evaluateCompletionCommand(incrementId, options);
-    if (!options.silent) {
-      console.log(JSON.stringify(result, null, 2));
-    }
-    // Exit code: 0 if complete, 1 if not
-    process.exit(result.complete ? 0 : 1);
-  });
-
 // Generate rubric command - emit the AC-tied quality contract rubric.md (0865)
 program
   .command('generate-rubric <increment-id>')
@@ -1489,161 +789,13 @@ program
     process.exit(result.success ? 0 : 1);
   });
 
-// Detect project command - Analyze project files and suggest plugins (internal)
-program
-  .command('detect-project [path]')
-  .description('Detect project type from files and suggest plugins to install')
+// Supplementary CLI help and project coordination.
+import { registerHelp } from './help.js';
+import { registerProjectCommand } from './project.js';
+registerHelp(program);
+registerProjectCommand(program);
 
-  .option('--name <name>', 'Increment name for legacy name-based detection')
-  .option('--description <text>', 'Description for legacy name-based detection')
-  .option('--install', 'Also install detected plugins after detection')
-  .option('--silent', 'Silent mode - no stdout output (for hooks)')
-  .action(async (path, options) => {
-    const { detectProjectCommand } = await import('../dist/src/cli/commands/detect-project.js');
-    const result = await detectProjectCommand(path, options);
-    // Exit code: 0 if types detected, 1 if none
-    process.exit(result.types.length > 0 ? 0 : 1);
-  });
-
-// Resolve structure command - REMOVED (all workspaces use repositories/ structure)
-program
-  .command('resolve-structure')
-  .description('[REMOVED] All workspaces now use the repositories/ structure')
-  .action(() => {
-    console.log('This command has been removed. All workspaces now use the repositories/ structure.');
-    process.exit(0);
-  });
-
-// Export skills command - Export to Agent Skills open standard
-program
-  .command('export-skills')
-  .description('Export SpecWeave skills to Agent Skills open standard format (agentskills.io)')
-  .option('-o, --output <dir>', 'Output directory (default: .agent-skills)')
-  .option('-p, --plugin <name>', 'Export specific plugin only')
-  .option('-s, --skill <name>', 'Export specific skill only')
-  .option('--dry-run', 'Preview without writing files')
-  .option('--validate', 'Validate output against Agent Skills spec')
-  .option('-v, --verbose', 'Show detailed output')
-  .action(async (options) => {
-    const { exportSkillsCommand } = await import('../dist/src/cli/commands/export-skills.js');
-    await exportSkillsCommand({
-      output: options.output,
-      plugin: options.plugin,
-      skill: options.skill,
-      dryRun: options.dryRun,
-      validate: options.validate,
-      verbose: options.verbose,
-    });
-  });
-
-// Help text
-program.on('--help', () => {
-  console.log('');
-  console.log('Examples:');
-  console.log('  $ specweave init my-saas                    # Create new project (auto-detect tool)');
-  console.log('  $ specweave init my-saas --adapter cursor   # Create project for Cursor');
-  console.log('  $ specweave init my-saas --language ru      # Create project with Russian language');
-  console.log('  $ specweave install pm --local              # Install PM agent locally');
-  console.log('  $ specweave install --global                # Install all (interactive)');
-  console.log('  $ specweave list                            # List all available components');
-  console.log('  $ specweave list --installed                # Show installed components');
-  console.log('  $ specweave status                          # Show all increments status');
-  console.log('  $ specweave status --verbose                # Show detailed increment info');
-  console.log('  $ specweave status-line                     # Display current increment progress');
-  console.log('  $ specweave status-line --json              # Output progress as JSON');
-  console.log('  $ specweave pause 0007 --reason "blocked"   # Pause increment 0007');
-  console.log('  $ specweave resume 0007                     # Resume increment 0007');
-  console.log('  $ specweave abandon 0007 --reason "obsolete" # Abandon increment 0007');
-  console.log('  $ specweave qa 0008                         # Quick quality check');
-  console.log('  $ specweave qa 0008 --pre                   # Pre-implementation check');
-  console.log('  $ specweave qa 0008 --gate --export         # Quality gate + export to tasks');
-  console.log('  $ specweave sync status                     # Token/account, provider health, sync gaps');
-  console.log('  $ specweave jobs                            # Show active background jobs');
-  console.log('  $ specweave jobs --follow <jobId>           # Follow job progress live');
-  console.log('  $ specweave jobs --logs <jobId>             # View worker logs');
-  console.log('  $ specweave jobs --resume <jobId>           # Resume paused job');
-  console.log('  $ specweave living-docs                     # Launch Living Docs (interactive)');
-  console.log('  $ specweave living-docs --depth deep-native # AI-powered analysis (FREE w/ MAX)');
-  console.log('  $ specweave living-docs --full-scan         # Full deep scan (all phases)');
-  console.log('  $ specweave living-docs --resume <jobId>    # Resume orphaned job');
-  console.log('  $ specweave sync push 0008                  # Push increment progress to GitHub/Jira/ADO');
-  console.log('  $ specweave sync pull --since 3             # Show external changes from the last 3 days');
-  console.log('  $ specweave cache                           # Show cache status');
-  console.log('  $ specweave cache --rebuild                 # Rebuild dashboard cache');
-  console.log('  $ specweave cache --debug                   # Show cache debug info');
-  console.log('  $ specweave sync setup --validate           # Validate tracker configuration + credentials');
-  console.log('  $ specweave docs                            # Preview internal docs (port 3015)');
-  console.log('  $ specweave docs public                     # Preview public docs (port 3016)');
-  console.log('  $ specweave docs build                      # Build internal site');
-  console.log('  $ specweave docs build --scope public       # Build public site');
-  console.log('  $ specweave docs validate                   # Check for docs errors');
-  console.log('  $ specweave docs status                     # Show docs status');
-  console.log('  $ specweave docs kill                       # Stop all docs servers');
-  console.log('  $ specweave doctor --fix-status             # Fix metadata/spec status desyncs');
-  console.log('  $ specweave refresh-plugins                 # Refresh core SpecWeave plugin');
-  console.log('  $ specweave refresh-plugins --all           # Refresh every installed plugin');
-  console.log('  $ specweave refresh-plugins --force         # Force reinstall (skip hash check)');
-  console.log('  $ specweave update                          # Update CLI + instructions + config');
-  console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
-  console.log('  $ specweave update --no-self                # Skip CLI update, only project files');
-  console.log('  $ specweave update --check                  # Dry run - preview changes');
-  console.log('');
-  console.log('Plugin Management (use Claude CLI commands):');
-  console.log('  $ claude plugin install sw@specweave        # Install core SpecWeave');
-  console.log('  $ claude plugin list                        # Show installed plugins');
-  console.log('  $ vskill install anton-abyzov/vskill --plugin mobile  # Install domain plugin');
-  console.log('');
-  console.log('Supported AI Tools:');
-  console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
-  console.log('  - Cursor (semi-automation) - .cursorrules, @ shortcuts');
-  console.log('  - GitHub Copilot (basic) - Workspace instructions');
-  console.log('  - Generic (manual) - Works with ANY AI (ChatGPT, Gemini, etc.)');
-  console.log('');
-  console.log('For more information, visit: https://spec-weave.com');
-});
-
-// Startup duplicate check (runs before any command)
-async function checkForDuplicates() {
-  try {
-    // Skip check for init command (no .specweave yet)
-    const args = process.argv.slice(2);
-    if (args.length === 0 || args[0] === 'init' || args[0] === '--help' || args[0] === '-h' || args[0] === '--version' || args[0] === '-V') {
-      return;
-    }
-
-    // Check if .specweave exists
-    const { default: fs } = await import('fs-extra');
-    const { default: path } = await import('path');
-    const specweavePath = path.join(process.cwd(), '.specweave');
-
-    if (!fs.existsSync(specweavePath)) {
-      return; // No .specweave directory, skip check
-    }
-
-    // Detect duplicates
-    const { detectAllDuplicates } = await import('../dist/src/core/increment/duplicate-detector.js');
-    const report = await detectAllDuplicates(process.cwd());
-
-    if (report.duplicateCount > 0) {
-      console.log(chalk.yellow('\n⚠️  Duplicate increment(s) detected:\n'));
-
-      for (const duplicate of report.duplicates) {
-        console.log(chalk.dim(`  ${duplicate.incrementNumber}:`));
-        for (const location of duplicate.locations) {
-          const indicator = location === duplicate.recommendedWinner ? chalk.green('→') : chalk.red('✗');
-          console.log(`    ${indicator} ${location.name} [${location.status}]`);
-        }
-      }
-
-      console.log(chalk.dim('\n  Run sw:fix-duplicates to resolve\n'));
-    }
-  } catch (error) {
-    // Silently ignore errors (don't block CLI startup)
-    if (process.env.DEBUG) {
-      console.error(chalk.dim(`[DEBUG] Duplicate check failed: ${error}`));
-    }
-  }
-}
+import { checkForDuplicates } from './startup-check.js';
 
 // Dashboard command - Real-time observability dashboard
 program
@@ -1708,24 +860,9 @@ program
     await getCommand(source, opts);
   });
 
-// Migrate-to-umbrella command - REMOVED (all workspaces use repositories/ structure)
-program
-  .command('migrate-to-umbrella')
-  .description('[REMOVED] Use specweave get to add repositories')
-  .action(() => {
-    console.log('This command has been removed. Use `specweave get` to add repositories.');
-    process.exit(0);
-  });
-
 // Run startup check, then parse arguments
 (async () => {
   await checkForDuplicates();
-
-  // Hide internal-only commands from --help (still callable by hooks)
-  for (const name of ['hook', 'detect-intent', 'evaluate-completion', 'detect-project']) {
-    const cmd = program.commands.find(c => c.name() === name);
-    if (cmd) cmd._hidden = true;
-  }
 
   // Parse arguments
   program.parse(process.argv);

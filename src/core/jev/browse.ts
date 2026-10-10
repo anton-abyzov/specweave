@@ -4,10 +4,10 @@
  * A mechanical navigation loop where Jev picks the next action from an enumerated set
  * of things visible on the page. The loop is always HEADLESS: it never launches a
  * visible window, never types text the model chose (values come from `inputs` only),
- * never leaves `allowDomains`, and hands control back to the agent the moment the page
+ * blocks main-frame document navigation outside `allowDomains`, and hands control back when the page
  * needs judgement (login, captcha, payment, free text).
  *
- * Playwright is loaded lazily — it is not a dependency of this package.
+ * Subresources are not confined by this navigation policy. Playwright is loaded lazily.
  *
  * @module core/jev/browse
  */
@@ -128,6 +128,7 @@ interface PwLocator {
   nth(index: number): PwElement;
 }
 interface PwPage {
+  context(): { newCDPSession(page: PwPage): Promise<PwCdpSession> };
   goto(url: string, opts?: Record<string, unknown>): Promise<unknown>;
   url(): string;
   waitForLoadState?(state: string, opts?: Record<string, unknown>): Promise<unknown>;
@@ -137,6 +138,10 @@ interface PwPage {
   screenshot(opts: { path: string; fullPage?: boolean }): Promise<unknown>;
   goBack(opts?: Record<string, unknown>): Promise<unknown>;
   close?(): Promise<unknown>;
+}
+interface PwCdpSession {
+  send(method: string, params?: Record<string, unknown>): Promise<any>;
+  on(event: string, handler: (event: { requestId: string; frameId: string; request: { url: string } }) => void): void;
 }
 interface PwBrowser {
   newPage(opts?: Record<string, unknown>): Promise<PwPage>;
@@ -170,7 +175,8 @@ function messageOf(error: unknown): string {
 
 function hostOf(url: string): string {
   try {
-    return new URL(url).hostname.toLowerCase();
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.hostname.toLowerCase() : '';
   } catch {
     return '';
   }
@@ -433,6 +439,7 @@ function buildCandidates(
   inputs: Record<string, string>,
   allowSensitive: boolean,
   baseUrl: string,
+  allowDomains: string[],
 ): { candidates: Map<string, Candidate>; criteria: Record<string, Json> } {
   const candidates = new Map<string, Candidate>();
   const criteria: Record<string, Json> = {};
@@ -441,6 +448,7 @@ function buildCandidates(
   for (const el of elements) {
     if (!allowSensitive && SENSITIVE.test(el.name)) continue;
     if (linkRefusal(el.href, baseUrl, allowSensitive)) continue;
+    if (el.href && !hostAllowed(hostOf(new URL(el.href, baseUrl).href), allowDomains)) continue;
     const key = `a${el.i}`;
 
     if (el.kind === 'clickable') {
@@ -476,6 +484,7 @@ async function recheckTarget(
   chosen: Candidate,
   allowSensitive: boolean,
   baseUrl: string,
+  allowDomains: string[],
 ): Promise<string | null> {
   let live: Observed['elements'][number] | null = null;
   try {
@@ -494,7 +503,9 @@ async function recheckTarget(
   }
   if (!allowSensitive && SENSITIVE.test(name)) return 'the element is now a sensitive control';
   const refusal = linkRefusal(live.href, baseUrl, allowSensitive);
-  return refusal ? `refusing to act: ${refusal}` : null;
+  if (refusal) return `refusing to act: ${refusal}`;
+  if (live.href && !hostAllowed(hostOf(new URL(live.href, baseUrl).href), allowDomains)) return 'link destination is outside allowed domains';
+  return null;
 }
 
 function fingerprint(url: string, elements: Observed['elements']): string {
@@ -609,12 +620,32 @@ export async function runBrowse(opts: BrowseOptions): Promise<BrowseResult> {
     });
   }
   let page: PwPage | null = null;
+  let blockedNavigation = '';
 
   try {
-    page = await browser.newPage();
+    page = await browser.newPage({ serviceWorkers: 'block' });
+    // Playwright route() sees only the first URL in an HTTP redirect chain.
+    // Chromium Fetch pauses every document request, including each redirect,
+    // before network dispatch. Fail closed when interception cannot be installed.
+    const cdp = await page.context().newCDPSession(page);
+    const { frameTree } = await cdp.send('Page.getFrameTree');
+    const mainFrameId = frameTree.frame.id as string;
+    cdp.on('Fetch.requestPaused', (event) => {
+      const blocked = event.frameId === mainFrameId && !hostAllowed(hostOf(event.request.url), allow);
+      if (blocked) blockedNavigation = event.request.url;
+      void cdp.send(blocked ? 'Fetch.failRequest' : 'Fetch.continueRequest', blocked
+        ? { requestId: event.requestId, errorReason: 'BlockedByClient' }
+        : { requestId: event.requestId }).catch((e: unknown) => {
+          error = `navigation interception failed: ${messageOf(e)}`;
+          void browser.close().catch(() => {});
+        });
+    });
+    await cdp.send('Fetch.enable', { patterns: [{ urlPattern: '*', resourceType: 'Document', requestStage: 'Request' }] });
     await page.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: ACTION_TIMEOUT_MS * 3 });
 
     for (let n = 1; n <= maxSteps; n++) {
+      if (blockedNavigation) { status = 'blocked'; break; }
+      if (error) { status = 'error'; break; }
       if (Date.now() - started > maxMs) {
         status = 'budget';
         break;
@@ -650,7 +681,7 @@ export async function runBrowse(opts: BrowseOptions): Promise<BrowseResult> {
       const shot = await capture(page, dir, n);
       if (shot) screenshots.push(shot);
 
-      const { candidates, criteria } = buildCandidates(obs.elements, inputs, allowSensitive, obs.url);
+      const { candidates, criteria } = buildCandidates(obs.elements, inputs, allowSensitive, obs.url, allow);
       const state: Json = {
         goal,
         url: obs.url,
@@ -760,7 +791,7 @@ export async function runBrowse(opts: BrowseOptions): Promise<BrowseResult> {
             } else if (chosen.index !== undefined) {
               // Act on the element itself, never on its ordinal: `observe()` stamped it,
               // and this re-check refuses the step if the page swapped it meanwhile.
-              const stale = await recheckTarget(page, chosen, allowSensitive, obs.url);
+              const stale = await recheckTarget(page, chosen, allowSensitive, obs.url, allow);
               if (stale) {
                 step.reason = stale;
                 steps.push(step);
@@ -776,6 +807,12 @@ export async function runBrowse(opts: BrowseOptions): Promise<BrowseResult> {
             }
             step.executed = true;
           } catch (e) {
+            if (blockedNavigation) {
+              step.reason = 'navigation blocked before contacting an excluded domain';
+              steps.push(step);
+              status = 'blocked';
+              break;
+            }
             step.reason = `action failed: ${messageOf(e)}`;
             steps.push(step);
             history.push({ action, outcome: 'action failed' });
@@ -785,6 +822,12 @@ export async function runBrowse(opts: BrowseOptions): Promise<BrowseResult> {
           // Wait for any navigation the action started to commit — `page.url()` read
           // straight after `click()` still reports the previous, allowed page.
           await settle(page);
+          if (blockedNavigation) {
+            step.reason = 'navigation blocked before contacting an excluded domain';
+            steps.push(step);
+            status = 'blocked';
+            break;
+          }
 
           const landed = page.url();
           if (!hostAllowed(hostOf(landed), allow)) {
@@ -821,8 +864,8 @@ export async function runBrowse(opts: BrowseOptions): Promise<BrowseResult> {
       }
     }
   } catch (e) {
-    status = 'error';
-    error = messageOf(e);
+    status = blockedNavigation ? 'blocked' : 'error';
+    error = blockedNavigation ? 'navigation blocked before contacting an excluded domain' : messageOf(e);
   } finally {
     try {
       if (page?.close) await page.close();

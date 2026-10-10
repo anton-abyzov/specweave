@@ -57,7 +57,7 @@ function dirsIn(rel) {
 
 /** Every command and sub-command registered on the commander program. */
 function cliCommands() {
-  const src = read('bin/specweave.js');
+  const src = fs.readdirSync(path.join(ROOT, 'bin')).filter(file => file.endsWith('.js')).map(file => read(`bin/${file}`)).join('\n');
   const names = new Set();
   // A `.command('x')` whose next `.description(...)` starts with [REMOVED] is a
   // tombstone that only prints a migration message — not a documentable command.
@@ -216,7 +216,7 @@ for (const file of collectFiles()) {
       const cmd = m[1];
       if (ALLOWLIST_TOKENS.has(`specweave ${cmd}`)) continue;
       if (!COMMANDS.has(cmd)) {
-        add(file, lineNo, 'unknown-command', `\`specweave ${cmd}\` is not registered in bin/specweave.js`);
+        add(file, lineNo, 'unknown-command', `\`specweave ${cmd}\` is not registered in bin/*.js`);
       }
     }
 

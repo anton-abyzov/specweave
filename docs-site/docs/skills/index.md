@@ -12,7 +12,7 @@ Skills extend what AI coding agents can do -- structured markdown files that def
 Every skill supports three invocation methods:
 1. **Natural language** -- just describe what you need (e.g., "design the system architecture")
 2. **Slash command** -- `sw:&lt;name&gt;` in Claude Code (e.g., `sw:increment`)
-3. **CLI keyword** -- `skill-name` in Cursor, Copilot, and other AI tools (e.g., `architect`)
+3. **Skill name** -- `$sw-&lt;name&gt;` in Codex, or the skill name in other AI tools that load skills (e.g., `$sw-increment`)
 
 Start with **[Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals)** for a deeper guide.
 :::
@@ -92,6 +92,5 @@ A skill can be both **verified** (passed security certification) and **extensibl
 - **[Verified Skills Hub](/docs/skills/verified/)** — All docs about security certification, trust tiers, and the skills ecosystem
 - **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find skills and how to evaluate them
 - **[vskill CLI Reference](/docs/skills/vskill-cli)** — Complete command reference for the skill package manager
-- **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 49 AI coding agents
-- **[All 100+ Skills](/docs/reference/skills)** — Complete SpecWeave skill catalog
+- **[SpecWeave Skills](/docs/reference/skills)** — The SpecWeave skill set
 - **[verified-skill.com](https://verified-skill.com)** — The trusted skill registry

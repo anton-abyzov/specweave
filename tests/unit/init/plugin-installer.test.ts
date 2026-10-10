@@ -139,32 +139,12 @@ describe('Plugin Installer - Marketplace Protection', () => {
   });
 });
 
-describe('Plugin Installer - Continue Existing Mode', () => {
-  it('should skip plugin installation in continue existing mode', async () => {
-    const initFile = path.join(process.cwd(), 'src/cli/commands/init.ts');
-
-    if (await fs.pathExists(initFile)) {
-      const content = await fs.readFile(initFile, 'utf-8');
-
-      // Verify continueExisting check exists
-      expect(content).toContain('if (continueExisting)');
-      expect(content).toContain('Keeping existing plugin configuration');
-
-      // Verify the fix is documented
-      expect(content).toContain('CRITICAL FIX');
-      expect(content).toContain('v0.34.6');
-    }
-  });
-
-  it('should set autoInstallSucceeded=true when continuing existing', async () => {
-    const initFile = path.join(process.cwd(), 'src/cli/commands/init.ts');
-
-    if (await fs.pathExists(initFile)) {
-      const content = await fs.readFile(initFile, 'utf-8');
-
-      // Verify autoInstallSucceeded is set to true for continueExisting
-      expect(content).toContain('autoInstallSucceeded = true');
-    }
+describe('Plugin Installer - init no longer installs the plugin (3.0)', () => {
+  it('installs the sw-* project skills instead of the Claude plugin', async () => {
+    const content = await fs.readFile(path.join(process.cwd(), 'src/cli/commands/init.ts'), 'utf-8');
+    expect(content).toContain('installProjectSkills(targetDir)');
+    expect(content).not.toContain('installAllPlugins');
+    expect(content).not.toContain('enablePluginsInSettings');
   });
 });
 
@@ -447,42 +427,10 @@ describe('Plugin Installer - All Plugin Installation on INIT', () => {
   // =========================================================================
   // Native Plugin Skip — init.ts source validation
   // =========================================================================
-  describe('Native Plugin Skip in init.ts', () => {
-    it('should check isSwPluginInstalledNatively before calling installAllPlugins', async () => {
-      const initFile = path.join(
-        process.cwd(),
-        'src/cli/commands/init.ts'
-      );
-
-      if (await fs.pathExists(initFile)) {
-        const content = await fs.readFile(initFile, 'utf-8');
-        expect(content).toContain('isSwPluginInstalledNatively');
-      }
-    });
-
-    it('should bypass native check when forceRefresh is set', async () => {
-      const initFile = path.join(
-        process.cwd(),
-        'src/cli/commands/init.ts'
-      );
-
-      if (await fs.pathExists(initFile)) {
-        const content = await fs.readFile(initFile, 'utf-8');
-        // forceRefresh must be checked before native plugin detection
-        expect(content).toContain('!options.forceRefresh && isSwPluginInstalledNatively');
-      }
-    });
-
-    it('should display skip message when native plugin is detected', async () => {
-      const initFile = path.join(
-        process.cwd(),
-        'src/cli/commands/init.ts'
-      );
-
-      if (await fs.pathExists(initFile)) {
-        const content = await fs.readFile(initFile, 'utf-8');
-        expect(content).toContain('already installed natively');
-      }
+  describe('No native plugin check in init.ts', () => {
+    it('does not look for a natively installed plugin, since init never installs one', async () => {
+      const content = await fs.readFile(path.join(process.cwd(), 'src/cli/commands/init.ts'), 'utf-8');
+      expect(content).not.toContain('isSwPluginInstalledNatively');
     });
   });
 });

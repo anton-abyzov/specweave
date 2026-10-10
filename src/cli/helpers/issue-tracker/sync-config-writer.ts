@@ -253,7 +253,7 @@ async function buildGitHubSyncConfig(
       const resolvedOwner = profile.owner || resolveProfileOwner(profile, config, projectPath);
       if (!resolvedOwner) {
         console.log(chalk.yellow(`   ⚠️  Profile "${profile.id}" has empty owner — GitHub sync will not work until owner is set`));
-        console.log(chalk.yellow(`      Run: specweave sync-setup to configure`));
+        console.log(chalk.yellow(`      Run: specweave sync setup to configure`));
       }
       profiles[profile.id] = {
         provider: 'github',

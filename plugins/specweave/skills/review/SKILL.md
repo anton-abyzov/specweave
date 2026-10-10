@@ -1,102 +1,63 @@
 ---
-description: Adversarial fresh-context review of an increment before it ships. Every finding cites path:line and is re-verified. Use when saying "review", "grill this", or "critique the implementation".
-version: 2.0.0
-argument-hint: "<increment-id> [--full]"
+description: Adversarial fresh-context review and risk check of an increment before it ships; every finding cites path:line and is re-verified. Use for "review", "qa", "quality check", "critique this".
+argument-hint: "[increment-id] [--full]"
+version: 3.0.0
 ---
+<!-- Generated from skills/sw-review/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
-# Review Increment
+# sw-review: adversarial review with citations
 
-One review surface (it replaces the old grill / code-reviewer / judge-llm passes).
-Reads the increment's spec, its diff and the code around it, then reports what is
-actually wrong — with `path:line` for every claim. Writes
-`reports/review.md` + `reports/review.json` under the increment.
-`specweave complete` prints a notice when review.md is absent but never blocks.
+A fresh reader hunts for real failures in the increment's diff, cites `path:line` for
+each, re-checks every claim, and writes `.specweave/increments/<id>/reports/review.md`.
+This is also the quality check: its verdict says whether the increment is ready.
 
-## Usage
+## Non-negotiables
 
-```
-sw:review <increment-id>            # single adversarial pass
-sw:review <increment-id> --full     # 3 parallel lenses: correctness, security, spec-compliance
-```
-
-## Rules
-
-1. **Fresh context. The session that wrote the code never approves it.** Run the pass
-   through a subagent (Claude Code: `Task({ subagent_type: "general-purpose", … })`) or a
-   new session in any other tool. If you wrote this code in this context and cannot spawn
-   one, say so in the report instead of claiming an independent review.
-2. **Every finding cites `path:line`** and states a concrete failure: inputs or state →
-   wrong output, crash, data loss, or leak. No "consider refactoring", no style opinions.
-3. **Re-verify before reporting.** Re-open the cited lines — and run the test that would
-   fail — and drop anything that does not survive. A wrong finding costs more than a
-   missed one. Unverifiable but plausible findings are reported as `plausible`, not as fact.
-4. **Severity**: critical / high / medium / low. Only critical and high are blocking.
-5. **Nit cap 5.** At most five low findings; if there are more, report the five worst and
-   one line saying how many were dropped.
-6. **Scope is the increment's diff**, not the repository:
-   `git diff $(git merge-base HEAD <base>)...HEAD -- <the tasks' Files>`.
+- **Fresh context.** The session that wrote the code never approves it. Use a new
+  session, or a subagent if your tool supports them. If you wrote this code here and
+  cannot get a fresh context, say so in the report.
+- **Every finding cites `path:line`** and a concrete failure: input or state leads to
+  wrong output, a crash, a hang, data loss or a leak. "Consider refactoring" is not one.
+- **Re-verify.** Re-open the lines and, where a test can show it, run one. Drop what
+  does not survive; mark what you could not prove as `plausible`.
+- **Severity** is critical, high, medium or low. Critical and high block the close.
+- **At most 5 nits**, in one line at the end.
 
 ## Steps
 
-1. **Scope**: read `spec.md` (ACs + Approach) and the `Files:` fields in `tasks.md`.
-   Collect the diff for those files plus the code they call.
-2. **Pass** — in this order:
-   - correctness: wrong logic, unhandled error paths, races, off-by-one, resource leaks;
-   - security: injection, path traversal, secret leakage, missing authz, unsafe spawn/exec;
-   - spec-compliance: ACs marked done but not implemented, tests that assert nothing,
-     behaviour that contradicts spec.md.
-   With `--full`, run those three as parallel subagents and merge their findings
-   (dedupe by `file:line + summary`).
-3. **Verify** each candidate finding as per rule 3.
-4. **Report**: write both files (shapes below).
-5. **Hand back**: fix critical/high findings yourself or hand them to `sw:do`, then re-run
-   `specweave verify <id>` and close with `sw:done`.
+1. **Evidence first.** `specweave verify` (or its existing `reports/verify.md`): red
+   tests, lint or build are findings before any reading.
+2. **Scope.** Read spec.md (ACs, Approach, the tasks' `Files`) and review that diff,
+   not the repository: `git diff $(git merge-base HEAD origin/HEAD)...HEAD -- <Files>`.
+3. **Pass**, in this order: correctness (logic, error paths, races, off-by-one) →
+   security (injection, path traversal, secrets, unsafe exec) → spec compliance (ACs
+   claimed but not implemented, tests that assert nothing or mock the subject) →
+   portability (bash-only commands, `\` paths, BOMs, `>>` in PowerShell).
+   `--full`: run the three lenses correctness, security and spec compliance separately
+   (in parallel if your tool has subagents) and merge, dropping duplicates.
+4. **Report** in the shape below. Optional machine form, `reports/review.json`:
+   `{"ok":false,"findings":[{"severity":"high","file":"src/a.ts","line":88,"summary":"..."}]}`.
+5. **Hand back.** Each critical or high finding becomes a task in spec.md
+   (`### T-09 Fix empty evidence` + `- AC: AC-02 | Files: ... | Test: ...`) for sw-do, or
+   is fixed and re-tested now. Then verify again and close with sw-done.
 
-## Report shape
-
-`reports/review.md`:
+## reports/review.md
 
 ```markdown
-# Review — <id> <title>
-Verdict: fix first | ship · reviewed <n> files · <n> findings (<n> critical, <n> high)
-Reviewer context: subagent | new session | same session (NOT independent)
+# Review: 0042 Ledger fold
+Verdict: fix first · risk: high · 6 files · 2 findings (1 critical, 1 high)
+Reviewer context: new session
 
-## [critical] src/core/tasks/ledger.ts:142 — stale claim never released
-Given two agents claim T-01 inside the lease window … → the second write wins and the
-first agent's `done` line is dropped.
-Fix: compare-and-append on the claim line before writing.
+## [critical] src/core/tasks/ledger.ts:142 lost claim under equal timestamps
+Two agents claim T-01 in the same second; the fold sorts only by `at`, so both read
+themselves as owner. Fix: break ties by `by`, then file order.
+
+Nits: naming in ledger.ts:31.
 ```
 
-`reports/review.json` (machine-readable, same findings):
+Verdict is `fix first` while any critical or high finding survives, else `ship`.
 
-```json
-{
-  "ok": false,
-  "increment": "0042",
-  "reviewedAt": "2026-09-02T12:00:00Z",
-  "mode": "single",
-  "findings": [
-    {
-      "severity": "critical",
-      "file": "src/core/tasks/ledger.ts",
-      "line": 142,
-      "summary": "stale claim never released; second writer drops the first done line",
-      "confidence": "confirmed"
-    }
-  ],
-  "droppedNits": 0
-}
-```
+## Manual path (no CLI)
 
-`ok` is `true` only when there is no critical or high finding.
-
-## Anti-patterns
-
-- Approving your own work in the same context — that is the one thing this skill exists to prevent.
-- Findings without a line number, or with a line number you did not re-read.
-- Padding the count with style nits (see the nit cap).
-- Reviewing the whole repo instead of the increment's diff.
-
-## Resources
-
-- [Official Documentation](https://verified-skill.com/docs/reference/skills#review)
+Nothing changes: `git diff` and the project's own test runner are the whole toolchain,
+and you write `reports/review.md` yourself.

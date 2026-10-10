@@ -252,6 +252,26 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
+  // Step 1b2: Skills. Install the 11 skills as sw-<name> in .claude/skills and
+  // .agents/skills, and remove the unnamespaced copies (`do`, `review`, ...)
+  // that 2.x installed — only folders whose content identifies them as ours.
+  if (isSpecWeaveProject) {
+    try {
+      const { installProjectSkills, removeLegacySkillCopies } = await import('../../core/skills/project-skills.js');
+      const legacy = removeLegacySkillCopies(projectPath, { dryRun: options.check });
+      const skills = installProjectSkills(projectPath, { dryRun: options.check });
+      const verb = options.check ? 'Would' : '';
+      if (legacy.length > 0) {
+        console.log(chalk.green(`  ✓ ${verb ? 'Would remove' : 'Removed'} ${legacy.length} unnamespaced SpecWeave skill cop${legacy.length === 1 ? 'y' : 'ies'}: ${legacy.join(', ')}`));
+      }
+      if (skills.written.length > 0 || skills.removed.length > 0) {
+        console.log(chalk.green(`  ✓ ${verb ? 'Would update' : 'Updated'} skills sw-* in .claude/skills and .agents/skills (${skills.written.length} file(s))`));
+      }
+    } catch (error) {
+      result.warnings.push(`Skill install failed: ${error}`);
+    }
+  }
+
   // Step 1c: Refresh the SpecWeave-managed git pre-commit hook.
   // The 1.x hook body rejects `ledger.jsonl` at the increment root and reports
   // a false duplicate id for any increment with a `reports/` folder, so an
@@ -330,55 +350,12 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 2.5: Remove deprecated .specweave/memory/ directory
-  // No migration needed - just delete. Learnings now go to CLAUDE.md
-  if (isSpecWeaveProject) {
-    const memoryDir = path.join(projectPath, '.specweave', 'memory');
-    if (fs.existsSync(memoryDir)) {
-      if (options.check) {
-        console.log(chalk.yellow(`  ⚠️  Deprecated .specweave/memory/ will be deleted`));
-      } else {
-        fs.rmSync(memoryDir, { recursive: true, force: true });
-        console.log(chalk.green(`  ✓ Removed deprecated .specweave/memory/`));
-      }
-    }
-  }
+  // Step 2.5 (removed in 3.0): `.specweave/memory/` is the committed project
+  // memory again (MEMORY.md + one file per fact), so update never deletes it.
 
-  // Step 2.5b: Clean up invalid folders in .specweave/increments/ (v1.0.257+)
-  // Removes: unrecognized underscore folders (_analysis, etc.) and nested .specweave
-  if (isSpecWeaveProject) {
-    const { RECOGNIZED_LIFECYCLE_FOLDERS } = await import('../../core/increment/increment-utils.js');
-    const incrementsDir = path.join(projectPath, '.specweave', 'increments');
-    if (fs.existsSync(incrementsDir)) {
-      const recognizedSet = new Set<string>(RECOGNIZED_LIFECYCLE_FOLDERS);
-      const entries = fs.readdirSync(incrementsDir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
-        const fullPath = path.join(incrementsDir, entry.name);
-
-        // Remove nested .specweave folder (accidental init artifact)
-        if (entry.name === '.specweave') {
-          if (options.check) {
-            console.log(chalk.yellow(`  ⚠️  Nested .specweave/ inside increments will be removed`));
-          } else {
-            fs.rmSync(fullPath, { recursive: true, force: true });
-            console.log(chalk.green(`  ✓ Removed nested .specweave/ from increments/`));
-          }
-          continue;
-        }
-
-        // Remove unrecognized underscore folders
-        if (entry.name.startsWith('_') && !recognizedSet.has(entry.name)) {
-          if (options.check) {
-            console.log(chalk.yellow(`  ⚠️  Unrecognized folder ${entry.name} will be removed`));
-          } else {
-            fs.rmSync(fullPath, { recursive: true, force: true });
-            console.log(chalk.green(`  ✓ Removed unrecognized folder: increments/${entry.name}`));
-          }
-        }
-      }
-    }
-  }
+  // Step 2.5b (removed in 3.0.2): update never deletes folders under
+  // .specweave/increments/. An underscore folder the lifecycle does not know
+  // (_research-*, _scratch-*) is the user's own work and is often tracked.
 
   // Step 2.6: Remove the dropped reflect subsystem's state (2.0).
   // `reflect` has no reader in 2.0 and is a key the config migration deletes.
@@ -400,25 +377,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Users who want LSP should run: specweave lsp enable
   // Removed: forced ensureLspSettingsOnUpdate, setupLspEnvVar, migrateLspConfig
 
-  // Step 2.11: Clean up stale .specweave/ folders in parent directories (v1.0.262+)
-  // These are created by bugs in hooks that use process.cwd() without config.json validation
-  if (isSpecWeaveProject) {
-    const staleFolders = findStaleSpecweaveFolders(projectPath);
-    if (staleFolders.length > 0) {
-      for (const staleDir of staleFolders) {
-        if (options.check) {
-          console.log(chalk.yellow(`  ⚠️  Stale .specweave/ found at ${staleDir} (will be removed)`));
-        } else {
-          try {
-            fs.rmSync(staleDir, { recursive: true, force: true });
-            console.log(chalk.green(`  ✓ Removed stale .specweave/ at ${staleDir}`));
-          } catch {
-            console.log(chalk.yellow(`  ⚠️  Could not remove stale .specweave/ at ${staleDir}`));
-          }
-        }
-      }
-    }
-  }
+  // update never deletes outside the project: ~/.specweave holds user-level
+  // state (plugins, auto-handoff), and a parent folder is not ours to judge.
 
   // Step 3: Validate project health (quick checks)
   if (isSpecWeaveProject && !options.check) {
@@ -454,8 +414,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 4: Refresh plugins (DEFAULT - unless --no-plugins specified)
-  if (!skipPlugins) {
+  // Step 4: Refresh plugins (DEFAULT - unless --no-plugins or dry run).
+  if (!skipPlugins && !options.check) {
     console.log('');
     spinner.start('Refreshing marketplace plugins...');
     spinner.stop();
@@ -505,7 +465,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   }
 
   if (!skipPlugins) {
-    console.log(`  Plugins:      ${result.pluginsRefreshed ? chalk.green('✓ Refreshed') : chalk.red('Failed')}`);
+    console.log(`  Plugins:      ${options.check ? chalk.gray('Would refresh (dry run)') : result.pluginsRefreshed ? chalk.green('✓ Refreshed') : chalk.red('Failed')}`);
   } else {
     console.log(chalk.gray(`  Plugins:      Skipped (--no-plugins specified)`));
   }
@@ -527,7 +487,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Next steps
   console.log(chalk.blue('\n  Next steps:'));
 
-  if (!skipPlugins) {
+  if (options.check) {
+    console.log(chalk.gray('    1. Run specweave update without --check to apply changes'));
+  } else if (!skipPlugins) {
     console.log(chalk.gray('    1. Restart Claude Code for plugin changes'));
     if (result.warnings.length > 0) {
       console.log(chalk.gray('    2. Review warnings above'));
@@ -630,59 +592,6 @@ async function cleanupStaleAutoState(
   }
 
   return result;
-}
-
-/**
- * Find stale .specweave/ folders in parent directories (no config.json = stale)
- *
- * These are typically created by bugs in hooks that use process.cwd() or
- * ${SW_PROJECT_ROOT:-.} before project root detection runs. They contain
- * only logs/ and state/ subdirectories but no config.json.
- *
- * Only scans UP to 3 levels above the project, plus $HOME/.specweave.
- */
-function findStaleSpecweaveFolders(projectPath: string): string[] {
-  const staleFolders: string[] = [];
-  const projectResolved = path.resolve(projectPath);
-
-  // Scan parent directories (up to 3 levels)
-  let current = path.dirname(projectResolved);
-  const root = path.parse(current).root;
-  let depth = 0;
-
-  while (current !== root && depth < 3) {
-    const candidate = path.join(current, '.specweave');
-    if (
-      fs.existsSync(candidate) &&
-      fs.statSync(candidate).isDirectory() &&
-      !fs.existsSync(path.join(candidate, 'config.json'))
-    ) {
-      staleFolders.push(candidate);
-    }
-    current = path.dirname(current);
-    depth++;
-  }
-
-  // Also check $HOME/.specweave (created by hooks using $HOME paths)
-  const homeSpecweave = path.join(process.env.HOME || process.env.USERPROFILE || '', '.specweave');
-  if (
-    homeSpecweave &&
-    fs.existsSync(homeSpecweave) &&
-    fs.statSync(homeSpecweave).isDirectory() &&
-    !fs.existsSync(path.join(homeSpecweave, 'config.json'))
-  ) {
-    // Don't remove ~/.specweave if it's the user-level config dir
-    // Only remove if it just has logs/state (no meaningful content)
-    const entries = fs.readdirSync(homeSpecweave);
-    const onlyRuntimeDirs = entries.every(e =>
-      ['logs', 'state', 'cache'].includes(e)
-    );
-    if (onlyRuntimeDirs && entries.length > 0) {
-      staleFolders.push(homeSpecweave);
-    }
-  }
-
-  return staleFolders;
 }
 
 /**

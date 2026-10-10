@@ -235,6 +235,15 @@ export class ExternalIssueAutoCreator {
           // Ignore parse errors
         }
       }
+      // 3.0 specs carry no frontmatter or **Project** line: metadata.json has it.
+      if (!projectName) {
+        try {
+          const meta = JSON.parse(await fs.readFile(path.join(path.dirname(specPath), 'metadata.json'), 'utf-8'));
+          if (typeof meta?.project === 'string' && meta.project) projectName = meta.project;
+        } catch {
+          // no metadata project
+        }
+      }
       // Final fallback: use first user story's project field
       if (!projectName && incrementInfo.userStories.length > 0) {
         projectName = incrementInfo.userStories[0].project;

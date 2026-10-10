@@ -1,278 +1,123 @@
 ---
 sidebar_position: 2
 title: "Your First Increment"
-description: "Create and complete your first SpecWeave increment in 15 minutes"
+description: "Create, work through and close your first SpecWeave increment, then carry it to another tool."
 ---
 
 import CommandTabs from '@site/src/components/CommandTabs';
 
 # Your First Increment
 
-**Build a real feature in 15 minutes.**
+This walks through one small change from request to closed increment, and shows how to move it to another tool halfway through.
 
-This hands-on tutorial walks you through the complete SpecWeave workflow — from idea to shipped code.
+## Before you start
 
----
+- SpecWeave installed: `npm install -g specweave`
+- The project initialized: `specweave init`
+- A coding agent: Claude Code, Codex, Grok Build, Cursor or any tool that reads `AGENTS.md`
 
-## Prerequisites
+We will use a small example: **"Add a greeting that uses the signed-in user's name."**
 
-- SpecWeave installed (`npm install -g specweave`)
-- Project initialized (`specweave init .`)
-- Claude Code (or another AI tool) ready
-
----
-
-## Step 1: Define Your Feature
-
-Think of something simple for your project. Examples:
-
-| Project Type | Example Feature |
-|--------------|-----------------|
-| **Web App** | "Add dark mode toggle" |
-| **API** | "Add health check endpoint" |
-| **Mobile** | "Add pull-to-refresh" |
-| **CLI** | "Add --verbose flag" |
-
-For this tutorial, we'll use: **"Add a greeting message component"**
-
----
-
-## Step 2: Create the Increment
-
-Describe what you want to build:
+## 1. Create the increment
 
 <CommandTabs
-  natural="I want to add a greeting message component"
-  claude='sw:increment "Add greeting message component"'
-  other='increment "Add greeting message component"'
+  natural="Add a greeting that uses the signed-in user's name"
+  claude='sw:increment "personal greeting"'
+  other='specweave create-increment "personal greeting"'
 />
 
-**What happens:**
-
-1. **PM Agent** analyzes your request and creates user stories
-2. **Architect Agent** designs the implementation approach
-3. **Planner Agent** generates tasks with embedded tests
-
-**Output** — Three files in `.specweave/increments/0001-greeting-message/`:
-
-```
-├── spec.md      # WHAT: User stories, acceptance criteria
-├── plan.md      # HOW: Architecture, design decisions
-└── tasks.md     # DO: Implementation tasks with tests
-```
-
----
-
-## Step 3: Review the Spec
-
-Open `spec.md` and review the generated content:
+You get one file, `.specweave/increments/0001-personal-greeting/spec.md`:
 
 ```markdown
-## User Stories
+# Personal greeting
 
-### US-001: Greeting Message Display
-**As a** user,
-**I want** to see a personalized greeting,
-**So that** I feel welcomed when using the application.
+## Problem
+Signed-in users see a generic welcome.
 
-**Acceptance Criteria:**
-- [ ] AC-US1-01: Greeting displays user's name when logged in
-- [ ] AC-US1-02: Greeting shows generic message when not logged in
-- [ ] AC-US1-03: Greeting updates immediately on name change
+## Scope
+The header greeting. Not emails.
+
+## Acceptance Criteria
+- [ ] AC-01: A signed-in user sees "Hi, <first name>"
+- [ ] AC-02: A signed-out visitor sees "Welcome"
+
+## Approach
+Read the name from the session in the header component.
+
+## Open questions
+- none
+
+## Tasks
+
+### T-01 Render the name from the session
+- AC: AC-01 | Files: src/header/Greeting.tsx | Test: npm test -- greeting
+
+### T-02 Fall back for signed-out visitors
+- AC: AC-02 | Files: src/header/Greeting.tsx | Test: npm test -- greeting
 ```
 
-**Edit if needed** — Add missing requirements, adjust acceptance criteria.
+Read it before any code is written. Adjust the criteria until they say exactly what done means.
 
----
-
-## Step 4: Execute Tasks
-
-### Option A: Autonomous Mode
+## 2. Work through the tasks
 
 <CommandTabs
-  natural="Ship it while I sleep"
-  claude="sw:auto"
-  other="auto"
-/>
-
-Watch SpecWeave:
-1. Pick up the first task
-2. Implement it
-3. Run tests
-4. Update docs
-5. Move to next task
-6. Repeat until done
-
-**Real-time labels** show progress:
-```
-🔄 AUTO SESSION CONTINUING
-Iteration: 3/2500
-Increment: 0001-greeting-message
-Tests: 4 passed, 0 failed
-```
-
-### Option B: Step-by-Step
-
-<CommandTabs
-  natural="Start implementing the tasks"
+  natural="Start implementing"
   claude="sw:do"
-  other="do"
+  other="specweave task next"
 />
 
-Executes one task at a time. Check progress:
+Under the hood the agent runs:
 
-<CommandTabs
-  natural="What's the status?"
-  claude="specweave status"
-  other="progress"
-/>
-
-Output:
-```
-📊 Increment 0001-greeting-message
-├── Tasks: 3/5 completed (60%)
-├── Tests: 12 passing
-├── Coverage: 78%
-└── Next: T-004: Add responsive styles
+```bash
+specweave task next                        # T-01 and the text of AC-01
+specweave task claim T-01
+specweave task done T-01 --run "npm test -- greeting"  # records the real check
 ```
 
----
+Each task arrives with its own criteria, so the agent does not reread the whole spec. When every task covering a criterion is done, that criterion is met.
 
-## Step 5: Validate Quality
+## 3. Switch tools halfway (optional)
 
-Before closing, run validation:
+Say you run out of usage after T-01. Tell the agent "hand off", or run:
+
+```bash
+specweave handoff
+```
+
+It pushes your branch and uncommitted edits to git. Then open the project in another tool, or the same tool under another subscription, and run:
+
+```bash
+specweave pickup
+```
+
+It fetches the handoff, applies your edits, and shows increment 0001, T-02 with AC-02, any notes and the project memory. Continue from there. Nothing to copy or paste. See [Cross-tool handoff](/docs/guides/cross-tool-handoff).
+
+## 4. Review and close
 
 <CommandTabs
-  natural="Check quality on increment 0001"
+  natural="Review increment 0001"
   claude="sw:review 0001"
-  other="validate 0001"
+  other="specweave verify 0001"
 />
-
-SpecWeave checks:
-- All tasks marked complete
-- Test coverage meets threshold (60%+ default)
-- Acceptance criteria satisfied
-- Living docs synced
-
-**If validation fails**, SpecWeave tells you exactly what's missing.
-
----
-
-## Step 6: Complete the Increment
-
-When all checks pass:
 
 <CommandTabs
   natural="We're done with increment 0001"
   claude="sw:done 0001"
-  other="done 0001"
+  other="specweave complete 0001"
 />
 
-SpecWeave:
-1. Validates quality gates one final time
-2. Updates status to `completed`
-3. Syncs to external tools (GitHub/JIRA/ADO if configured)
-4. Archives the increment
+`verify` runs your project's build, test and lint commands and writes a report. `complete` closes the increment only when the tasks are done and the checks passed. Closing does not touch GitHub, Jira or Azure DevOps unless you set that up.
 
----
+## Common questions
 
-## What You Just Did
+**Can I change the spec halfway?** Yes. Edit `spec.md`; add criteria and tasks as you learn more.
 
-```mermaid
-flowchart LR
-    A["Your Idea"] --> B["Spec ✓"]
-    B --> C["Plan ✓"]
-    C --> D["Tasks ✓"]
-    D --> E["Code"]
-    E --> F["Living Docs"]
+**What if a task turns out to be unnecessary?** Skip it with a reason: `specweave task skip T-02 --reason "covered by T-01"`.
 
-    style B fill:#d4edda,stroke:#28a745
-    style C fill:#d4edda,stroke:#28a745
-    style D fill:#d4edda,stroke:#28a745
-    style F fill:#cce5ff,stroke:#0d6efd
-```
+**Do I need `plan.md`?** Only for a genuinely large design. Most increments never need one.
 
-**Permanent artifacts created:**
-- Specification with traceable requirements
-- Architecture decisions documented
-- Implementation with tests
-- Living documentation that never goes stale
+## Next
 
----
-
-## Understanding the Three Files
-
-### spec.md — The WHAT
-
-Business requirements, user stories, acceptance criteria.
-
-```markdown
-### US-001: Feature Name
-**As a** [user type],
-**I want** [capability],
-**So that** [benefit].
-
-**Acceptance Criteria:**
-- [ ] AC-US1-01: Specific, testable condition
-```
-
-### plan.md — The HOW
-
-Architecture, design decisions, technical approach.
-
-```markdown
-## Design Decisions
-
-### ADR-001: Component Architecture
-**Decision**: Use React functional components with hooks
-**Rationale**: Consistent with existing codebase, better testing
-```
-
-### tasks.md — The DO
-
-Implementation tasks with embedded tests.
-
-```markdown
-### T-001: Create Greeting Component
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01, AC-US1-02
-**Status**: [ ] pending
-
-**Test Cases:**
-- test_greeting_shows_user_name_when_logged_in
-- test_greeting_shows_generic_when_anonymous
-```
-
----
-
-## Next Steps
-
-| Goal | How |
-|------|-----|
-| **Start next feature** | Say "Let's build [next feature]" or `sw:increment "next feature"` |
-| **Check all progress** | Say "What's the status?" or `specweave status` |
-| **Learn TDD workflow** | [Lesson 6: TDD](/docs/academy/specweave-essentials/06-tdd-workflow) |
-| **Connect GitHub** | [GitHub Integration](/docs/guides/github-sync) |
-| **Full curriculum** | [SpecWeave Essentials](/docs/academy/specweave-essentials/) |
-
----
-
-## Common Questions
-
-### What if I need to change the spec mid-way?
-
-Edit `spec.md` directly. SpecWeave tracks changes and adapts tasks accordingly.
-
-### What if tests fail?
-
-In autonomous mode (`sw:auto` or "ship while I sleep"), SpecWeave automatically tries to fix failing tests (up to 3 attempts). In step-by-step mode (`sw:do` or "start implementing"), you'll be prompted to fix them.
-
-### Can I skip tasks?
-
-Mark irrelevant tasks as `[x] skipped` with a note. SpecWeave respects this during validation.
-
----
-
-**Congratulations!** You've completed your first increment.
-
-→ [Learn the full workflow](/docs/academy/specweave-essentials/04-the-next-command)
+- [What is an increment?](/docs/guides/core-concepts/what-is-an-increment)
+- [Claude Code Projects and threads](/docs/guides/claude-code-projects)
+- [SpecWeave 3.0](/docs/guides/specweave-3)

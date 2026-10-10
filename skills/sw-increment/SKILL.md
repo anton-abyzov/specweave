@@ -1,104 +1,78 @@
 ---
-description: Open a SpecWeave increment - a numbered folder with spec.md (problem, scope, numbered ACs, approach) and tasks.md - before any code. Use for "plan a feature", "new increment", "let's build X".
-argument-hint: "\"<feature title>\" [--supersedes NNNN]"
-version: "2.0.0"
+description: Plan work as a SpecWeave increment - one spec.md with Problem, Scope, numbered ACs, Approach and Tasks - before writing code. Use for "plan a feature", "new increment", "let's build X".
+argument-hint: "\"<title>\" [--supersedes NNNN]"
+version: 3.0.0
 ---
 
-# sw-increment — plan the unit of work
+# sw-increment: plan the unit of work
 
-An increment is one folder, `.specweave/increments/NNNN-slug/`, and it is the
-tracker: spec + tasks + ledger + evidence live together and travel in git.
-Write the spec, get it approved, then implement (`sw-do`). No code before the
-ACs exist.
+An increment is one folder, `.specweave/increments/NNNN-slug/`, with one file you write:
+`spec.md`. `ledger.jsonl` beside it holds task state and is only appended to;
+`metadata.json` is machine state you never need to read. One increment is one branch
+and one PR.
 
-Run `specweave --version`: exit 0 → **CLI path**. Not found → **manual path**.
+## Before writing
 
-## 1. Understand before writing
+- A small self-contained fix needs no increment. Just do it.
+- An open increment already owns the files this touches (`specweave task list`)? Add
+  ACs and tasks to its spec.md instead of opening another.
+- Ask only what changes the spec: the problem behind the request, what is out of scope,
+  how you will know it works. A clear request needs no interview.
+- Read the code the change touches before writing Approach.
 
-Ask only what you cannot infer from the repo — typically: the problem behind the
-request, what is explicitly out of scope, and how you will know it works.
-Scope clear from the request? Skip the interview and write the spec.
+## Create it
 
-## 2. Create the folder
+`specweave create-increment "Add rate limiting"` prints the new folder with a scaffolded
+spec.md; replace every `[bracket]`. Add `--supersedes 0031` when this replaces an older
+increment (that one is abandoned for you), `--planned` for backlog work.
 
-CLI:
-
-```bash
-specweave create-increment --auto-id --name "<slug>" --title "<Title>" \
-  --description "<one line>" --project "<project id from .specweave/config.json>" \
-  [--type feature|bug|hotfix|refactor|experiment]
-```
-
-Manual: next id = highest existing number + 1, zero-padded to 4
-(`ls .specweave/increments`), folder `NNNN-kebab-slug`, then write
-`metadata.json`, `spec.md`, `tasks.md`, and an empty `ledger.jsonl`:
+Manual path (no CLI): next id = highest folder number + 1, zero-padded to 4. Create
+`NNNN-kebab-slug/` with `spec.md`, an empty `ledger.jsonl` and this `metadata.json`:
 
 ```json
 {"id":"0042-ledger-fold","status":"active","type":"feature","created":"2026-09-02T10:00:00Z","lastActivity":"2026-09-02T10:00:00Z"}
 ```
 
-Write every file as UTF-8 **without a BOM** (PowerShell:
-`[IO.File]::WriteAllText($p, $body, [Text.UTF8Encoding]::new($false))`, never `>`)
-— a BOM breaks the parsers that read these files on the next machine.
+Write UTF-8 without a BOM; in PowerShell use
+`[IO.File]::WriteAllText($p, $body, [Text.UTF8Encoding]::new($false))`, never `>`.
 
-Status is one of `planning` `active` `paused` `ready_for_review` `completed`
-`abandoned`, and only lifecycle commands change it. Replacing an older
-increment? Add `"supersedes":"0031-old-slug"` here and close that one as
-abandoned with the reason `superseded by 0042-ledger-fold`.
-
-## 3. spec.md — one evolving document
+## spec.md
 
 ```markdown
 # 0042 Ledger fold
 
 ## Problem
-What is wrong today and for whom. The intent, not the solution.
+Two agents can both believe they own T-01. Who hits it, and the evidence.
 
 ## Scope
-In: … · Out: … (say what you are deliberately not doing)
+In: claim ordering, malformed lines. Out: a ledger server.
 
-## Acceptance criteria
-- [ ] AC-01 Two agents claiming the same task never both get it
-- [ ] AC-02 A malformed ledger line is skipped and counted, never fatal
+## Acceptance Criteria
+- [ ] AC-01: Two agents claiming the same task never both get it
+- [ ] AC-02: A malformed ledger line is skipped and counted, never fatal
 
 ## Approach
-Files that change and in what order · risks · decisions taken (link ADRs) ·
-alternatives rejected and why.
+Files that change and in what order, decisions, rejected alternatives, risks.
 
-## Open questions
-- …
-```
-
-ACs are numbered, checkable, and each one is testable by a command or an
-observation. `plan.md` is optional overflow when the Approach outgrows the spec.
-
-## 4. tasks.md — definitions only
-
-```markdown
-# Tasks — 0042 Ledger fold
+## Tasks
 
 ### T-01 Fold the ledger
 - AC: AC-01 | Files: src/core/tasks/ledger.ts, src/core/tasks/ledger.test.ts | Test: npm test -- ledger
 
 ### T-02 Skip malformed lines
-- AC: AC-02 | Files: src/core/tasks/ledger.ts | Test: npm test -- ledger
+- AC: AC-02 | Files: src/core/tasks/ledger-parse.ts | Test: npm test -- ledger
 ```
 
-- Every AC is covered by at least one task; every task names its `Files:` (the ownership unit for parallel agents) and a `Test:` command that proves it.
-- Split tasks so two agents never need the same file. Task state is NOT written here — the ledger owns it (`sw-task`).
+- ACs are observable: "p95 of /search under 300 ms with 10k rows", not "faster".
+- Every AC is covered by at least one task; every task names its `Files` and a `Test`
+  command a machine can run.
+- `Files` is the ownership unit: two tasks that edit one file cannot run in parallel,
+  so merge them. Shared contracts (types, schema) go in an early task.
+- An AC is met when every task covering it is done. Nobody ticks the boxes; never
+  write state into spec.md.
+- `plan.md` is optional overflow for a genuinely large design.
 
-## 5. Approve, then hand off
+## Then
 
-Show the ACs and the task list, get an explicit go-ahead, then run `sw-do`.
-Set `metadata.json.status` to `active` when work starts.
-
-## Rules
-
-- No code, no scaffolding, no dependencies before the spec is approved.
-- One increment = one shippable outcome. Two outcomes = two increments.
-- ACs are the definition of done; `specweave verify` counts them and
-  `specweave complete` refuses to close without passing evidence.
-
-## Related
-
-- `sw-do` — implement it. · `sw-task` — the ledger. · `sw-review` — adversarial pass before closing.
+Show the ACs and tasks. Unless the user asked to review the plan first, carry on with
+sw-do (one agent) or sw-team (three or more disjoint lanes).

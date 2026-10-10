@@ -1,26 +1,15 @@
 import { spawn, ChildProcess } from 'child_process';
 import { randomUUID } from 'crypto';
 import type { CommandExecution } from '../types.js';
-import { killProcessOnPort } from '../../utils/docs-preview/server-manager.js';
-import { SCOPE_PORTS } from '../../utils/docs-preview/types.js';
 
-type CommandSpec =
-  | { cmd: string; args: string[] }
-  | { handler: () => Promise<void> };
+type CommandSpec = { cmd: string; args: string[] };
 
 /** Whitelisted commands that can be executed from the dashboard */
 const ALLOWED_COMMANDS: Record<string, CommandSpec> = {
-  'sync-push': { cmd: 'specweave', args: ['sync-progress'] },
+  'sync-push': { cmd: 'specweave', args: ['sync', 'push'] },
   'refresh-plugins': { cmd: 'specweave', args: ['refresh-plugins'] },
-  'living-docs': { cmd: 'specweave', args: ['living-docs'] },
   'lsp-status': { cmd: 'specweave', args: ['lsp', 'status'] },
-  'analytics': { cmd: 'specweave', args: ['analytics'] },
   'doctor': { cmd: 'specweave', args: ['doctor'] },
-  'docs-internal-start': { cmd: 'specweave', args: ['docs', 'preview'] },
-  'docs-internal-stop': { handler: async () => { await killProcessOnPort(SCOPE_PORTS.internal); } },
-  'docs-public-start': { cmd: 'specweave', args: ['docs', 'preview', '--scope', 'public'] },
-  'docs-public-stop': { handler: async () => { await killProcessOnPort(SCOPE_PORTS.public); } },
-  'clone-repos': { cmd: 'specweave', args: ['clone'] },
 };
 
 export class CommandRunner {
@@ -52,32 +41,13 @@ export class CommandRunner {
     const execution: CommandExecution = {
       id: randomUUID().slice(0, 8),
       command: commandName,
-      args: 'args' in spec ? spec.args : [],
+      args: spec.args,
       status: 'running',
       startedAt: new Date().toISOString(),
       output: [],
     };
 
     this.active = execution;
-
-    // Handler-based commands run in-process (e.g. port-specific kill)
-    if ('handler' in spec) {
-      spec.handler()
-        .then(() => {
-          execution.status = 'completed';
-          execution.exitCode = 0;
-          execution.output.push('Done.');
-          this.onOutput?.(execution.id, 'Done.', 'stdout');
-          this.onComplete?.(execution.id, 0);
-        })
-        .catch((err: Error) => {
-          execution.status = 'failed';
-          execution.output.push(`Error: ${err.message}`);
-          this.onOutput?.(execution.id, `Error: ${err.message}`, 'stderr');
-          this.onComplete?.(execution.id, 1);
-        });
-      return execution;
-    }
 
     const proc = spawn(spec.cmd, spec.args, {
       cwd: options?.cwd || this.projectRoot,

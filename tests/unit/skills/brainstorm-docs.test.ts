@@ -40,8 +40,8 @@ describe('Brainstorm Skill — Docs & Template (US-003: AC-US3-07/08)', () => {
     });
   });
 
-  describe('AC-US3-08: docs-site planning workflow', () => {
-    const planning = readFile('docs-site/docs/workflows/planning.md');
+  describe('AC-US3-08: docs-site daily loop', () => {
+    const planning = readFile('docs-site/docs/workflows/overview.md');
 
     it('references brainstorm as pre-increment step', () => {
       expect(planning).toMatch(/brainstorm/i);

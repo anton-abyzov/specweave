@@ -20,6 +20,7 @@ import { applyInstructionTemplate } from '../../cli/helpers/init/instruction-fil
 import { findSourceDir } from '../../cli/helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import type { Plugin } from '../../core/types/plugin.js';
+import { ensureGeminiReadsAgentsMd } from './context-setting.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -76,6 +77,10 @@ export class GeminiAdapter extends AdapterBase {
     const agentsMdPath = path.join(options.projectPath, 'AGENTS.md');
     await this.generateAgentsMd(agentsMdPath, options);
 
+    // Gemini CLI reads GEMINI.md only, unless told to read AGENTS.md too
+    const context = ensureGeminiReadsAgentsMd(options.projectPath);
+    if (context === 'invalid') console.log('  ⚠ .gemini/settings.json is not valid JSON; add "AGENTS.md" to context.fileName yourself');
+
     // Copy README
     const readmePath = path.join(__dirname, 'README.md');
     if (await fs.pathExists(readmePath)) {
@@ -85,6 +90,7 @@ export class GeminiAdapter extends AdapterBase {
     console.log('\n✨ Gemini adapter installed!');
     console.log('\n📋 Files created:');
     console.log('   - AGENTS.md (universal instructions)');
+    console.log('   - .gemini/settings.json (reads AGENTS.md as context)');
     console.log('   - .gemini/README.md (adapter documentation)');
   }
 

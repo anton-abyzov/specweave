@@ -278,46 +278,6 @@ Stakeholders need full visibility without repo access.
     expect(result.labels).toContain('project:product');
   });
 
-  it('should handle repo name detection for project naming', async () => {
-    process.chdir(tmpDir);
-
-    // Test different git remote formats
-    const testCases = [
-      {
-        remote: 'https://github.com/mycompany/awesome-app.git',
-        expectedProject: 'awesome-app',
-      },
-      {
-        remote: 'git@github.com:mycompany/backend-api.git',
-        expectedProject: 'backend-api',
-      },
-      {
-        remote: 'https://gitlab.com/team/frontend-web.git',
-        expectedProject: 'frontend-web',
-      },
-    ];
-
-    for (const testCase of testCases) {
-      // Clean up previous git config
-      await fs.remove(path.join(tmpDir, '.git'));
-
-      execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
-      execSync(`git remote add origin ${testCase.remote}`, { cwd: tmpDir, env: getCleanEnv() });
-
-      // Create .specweave folder so getProjectRoot() returns tmpDir (not the real specweave root)
-      await fs.ensureDir(path.join(tmpDir, '.specweave'));
-
-      // Import fresh ProjectDetector
-      // Note: In ESM, imports are cached. We work around this by passing different config paths
-      const { ProjectDetector } = await import('../../../../src/core/living-docs/project-detector.js');
-
-      const detector = new ProjectDetector({ configPath: path.join(tmpDir, '.specweave', 'config.json') });
-      const projects = detector.getProjects();
-
-      expect(projects[0].id).toBe(testCase.expectedProject);
-    }
-  });
-
   it('should skip features not present in a project', async () => {
     process.chdir(tmpDir);
 

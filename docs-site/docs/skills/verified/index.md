@@ -1,5 +1,5 @@
 ---
-title: "Verified Skills Standard"
+title: "Verified Skills: trust and security overview"
 description: "The trust layer for AI agent skills — three-tier security certification addressing the 36.82% flaw rate in public skill registries"
 keywords: [verified-skills, v-skills, security, certification, trust, ToxicSkills, verified-skill.com]
 ---

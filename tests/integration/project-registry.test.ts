@@ -11,7 +11,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { ProjectRegistry } from '../../src/core/project/project-registry.js';
 import { ProjectEventBus } from '../../src/core/project/project-event-bus.js';
-import { GitHubProjectAdapter } from '../../src/core/project/adapters/github-project-adapter.js';
 import { ProjectResolutionService } from '../../src/core/project/project-resolution.js';
 
 describe('Project Registry Integration Tests', () => {

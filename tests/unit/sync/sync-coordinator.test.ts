@@ -362,10 +362,6 @@ vi.mock('../../../src/sync/format-preservation-sync.js', () => ({
   FormatPreservationSyncService: MockFormatPreservationSyncService,
 }));
 
-vi.mock('../../../plugins/specweave/lib/integrations/github/user-story-content-builder.js', () => ({
-  UserStoryContentBuilder: MockUserStoryContentBuilder,
-}));
-
 vi.mock('../../../src/integrations/jira/jira-client.js', () => ({
   JiraClient: MockJiraClient,
 }));

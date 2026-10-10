@@ -1,89 +1,70 @@
 ---
-description: Run one increment with several agents in parallel - a worktree each, claims through the ledger, one closure. Use when the work has 3+ disjoint lanes, or when saying "team" or "parallel agents".
-version: 2.0.0
+description: Run one SpecWeave increment with several agents in parallel - any tool or account, a worktree each, claims through the ledger, one close. Use for "team", "parallel agents", 3+ disjoint lanes.
+argument-hint: "[increment-id]"
+version: 3.0.0
 ---
+<!-- Generated from skills/sw-team/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
-# Team
+# sw-team: several agents, one increment
 
-Run one increment with N agents in parallel — **any vendor, any subscription**
-(Claude Code, Codex, OpenCode, Cursor, Gemini, a human). Coordination happens
-only through committed files: `tasks.md` (definitions), `ledger.jsonl`
-(append-only state), `handoff.md`. No message bus, no shared memory; Claude
-Code's TeamCreate/Task tools are accelerators, never requirements.
+Agents can be Claude Code, Codex, Cursor, Grok, another account or a person. They
+coordinate only through committed files: spec.md (tasks), `ledger.jsonl` (claims and
+evidence) and handoffs. No message bus is needed; your tool's subagents or agent teams
+are an accelerator, never a requirement.
 
-## You are the orchestrator
+## You are the lead
 
-- You plan, split, spawn, watch, merge, close. You do **not** implement.
-- Fan out when domains ≥ 3 or tasks ≥ 15 or the user asked for parallel work; otherwise `sw:do` directly.
-- One increment, one `tasks.md`, one ledger. Do not create per-agent increments.
+You split, start, watch, merge and close. You do not implement. Fan out only with three
+or more disjoint lanes or 15+ tasks; otherwise use sw-do.
 
-## The 5 rules every agent gets (paste verbatim into each agent prompt)
+## 1. Split
 
-1. **One worktree per agent**: `git worktree add ../<id>-<agent> -b inc/<id>-<agent>` (Claude: `claude --worktree <id>-<agent>`). Branch name contains the increment id. Set `SPECWEAVE_AGENT=<agent>` (else id = `<tool>@<host>`).
-2. **Claim before edit**: `specweave task next <id>` → `specweave task claim T-NN <id>`. Edit only that task's `Files`. Need another file → claim its task or add a task.
-3. **Append only**: never edit or delete ledger lines, never edit another task's state line. On a ledger merge conflict keep every line from both sides (`.gitattributes` has `**/ledger.jsonl merge=union`).
-4. **Done needs evidence**: commit with the id in the subject, then `specweave task done T-NN <id> --run "<Test>"` (exit 0 required). Paste the output in your reply.
-5. **When stopping**: `specweave task release --all-mine` then `specweave handoff <id>`.
+1. `Files` is the ownership unit. Two tasks that touch one file cannot run in parallel:
+   merge them, or put `**Dependencies**: T-01` under the later one. Shared contracts
+   (types, schema, migrations) go in an early task the others depend on.
+2. Group tasks into lanes with disjoint `Files`: 2 to 5 lanes, one agent each.
+3. `specweave task list 0042` shows every task open. Commit spec.md.
 
-No CLI on that machine? The agent appends the JSON line itself:
-`{"t":"T-NN","e":"claim|done|release|block|skip","by":"<agent>","at":"<ISO UTC>","evidence":"<sha + test>","note":"…"}`.
+## 2. Start each agent
 
-## Phase 1 — Split (before spawning)
+One worktree and branch per agent:
+`git worktree add ../0042-api -b inc/0042-api`. Then give that agent (a subagent, a
+terminal in the worktree, another tool or account) this brief:
 
-1. Read `spec.md` once. Confirm `tasks.md` is in 2.0 form: `### T-NN Title` + `- AC: … | Files: … | Test: …`. If not, rewrite it (this is the only time tasks.md changes structure).
-2. **Files are the ownership unit.** Two tasks that touch the same file cannot run in parallel: merge them into one task or add `**Dependencies**: T-NN`. Shared contracts (types, API schemas, migrations) go into an early task that everything else depends on.
-3. Group tasks into lanes (backend / frontend / db / tests / docs …) so each lane's Files are disjoint. Lanes = agents. 2–5 agents; more rarely helps.
-4. Run `specweave task list <id>` — it must show every task `open`. Commit `tasks.md`.
-
-## Phase 2 — Spawn
-
-For each lane spawn one agent (Claude: `Task({ subagent_type: "general-purpose", … })` or a TeamCreate teammate; other vendors: a terminal in the lane's worktree with the prompt below). Prompt template:
-
-```
-You are agent <agent> on increment <id> (<title>). Worktree: <path>. Branch inc/<id>-<agent>.
-Your lane: <lane name>. Tasks you may claim: T-NN, T-MM (others belong to other lanes).
-Rules: <the 5 rules above>.
-Loop: specweave task next <id> → claim → implement inside Files → commit "<id>: …" → task done --run.
-Contract: <shared types / API / schema the lane must respect>.
-When your tasks are done or you are blocked: task release --all-mine, specweave handoff <id>, then reply with:
-  DONE: T-NN (sha, test output tail) | BLOCKED: T-MM (reason) | HANDOFF: <handoff.md path>
+```text
+You are agent "api" on increment 0042 in ../0042-api (branch inc/0042-api).
+Your tasks: T-01, T-02. Run the sw-do loop (`specweave task next 0042`, claim, ...)
+on your tasks only. Edit only their Files. Commit as "0042: ...". `task done --run`
+needs exit 0. When done or blocked: `specweave task release --all-mine`,
+`specweave note "api: <done | blocked: why>" 0042`, commit and push your branch.
 ```
 
-Agent templates for common lanes live in `agents/` (backend, frontend, database, security, testing, pm, architect, researcher, reviewer-security, brainstorm-*). `_protocol.md` is prepended automatically by `specweave team`.
+Set `SPECWEAVE_AGENT=api` in that agent's environment so its claims are distinct.
+In Claude Code, `specweave team` opens agent-team panes for the same setup.
 
-## Phase 3 — Watch (cheap)
+## 3. Watch cheaply
 
-- Poll `specweave task list <id>` (or read `ledger.jsonl`) instead of chatting. `blocked` rows are your queue: unblock (provide the secret, split the task, decide) and reply to that agent only.
-- Stale claim (older than `tasks.leaseHours`, default 2h) with no progress → the agent is gone: `task claim --force` by a replacement agent, or reassign the lane.
-- Do not re-read agents' full diffs; read their DONE lines and the ledger evidence.
+Poll `specweave task list 0042` instead of chatting. `blocked` rows are your queue:
+unblock (supply the secret, split the task, decide) and tell only that agent. A claim
+older than 2 hours with no progress is stale; a replacement agent claims it with
+`specweave task claim T-NN --force`. Agents' notes show in `specweave pickup --no-apply`.
+Lane agents do not use `specweave handoff`: it moves the one shared handoff pointer.
 
-## Phase 4 — Merge
+## 4. Merge and close
 
-1. Every agent has released + handed off. Merge lane branches into the increment branch in dependency order; ledger conflicts resolve by union (keep all lines). tasks.md conflicts: keep both agents' state lines, then `specweave task render <id>`.
-2. `specweave verify <id>` on the merged tree → `reports/verify.json`. Red → open a fix task, assign one agent, repeat.
-3. `sw:review` (optional, recommended) on the merged diff → `reports/review.md`.
-4. `specweave complete <id> --yes` (add `--reason` only if the user accepts a red verify). Only the lead closes.
-5. Remove worktrees: `git worktree remove ../<id>-<agent>`.
+1. Merge the lane branches in dependency order. `ledger.jsonl` conflicts resolve by
+   keeping every line from both sides.
+2. `specweave verify 0042` on the merged tree; red becomes a fix task for one agent.
+3. sw-review on the merged diff, then `specweave complete 0042`. Only the lead closes.
+4. `git worktree remove ../0042-api` for each lane.
 
-## Other modes (same skeleton, different lanes)
+## Manual path (no CLI)
 
-| Mode | Lanes | Merge artifact |
-|---|---|---|
-| brainstorm | advocate / critic / pragmatist (see `agents/brainstorm-*.md`) | `reports/brainstorm.md`, then `sw:increment` |
-| plan | pm (spec.md) + architect (Approach/plan.md) in parallel | reviewed spec.md before any task is claimed |
-| review | correctness / security / spec-compliance lenses (`sw:review --full` runs these) | `reports/review.md` |
-| research | one topic per agent | `reports/research-<topic>.md` |
-| test | unit / integration / e2e | `specweave verify` commands in `testing.commands` |
+Same split and brief; each agent appends its own `claim`, `done` and `release` lines to
+`ledger.jsonl` as in sw-do's manual path, plus a `note` line as in sw-handoff's.
 
 ## Anti-patterns
 
-- Agents editing files outside their task's `Files` ("I just fixed a typo there") — that is how merges break. Add a task.
-- Marking `[x]` in tasks.md by hand. The ledger wins; `task render` overwrites it.
-- Per-agent increments to avoid conflicts — you lose the single ledger and the single verify.
-- The lead implementing "just this small piece". Spawn an agent or finish the team first.
-- Closing while a claim is live. Wait for release/handoff or take it over explicitly.
-
-## Resources
-
-- `specweave task --help`, `specweave verify --help`, `specweave handoff --help`
-- [Official Documentation](https://verified-skill.com/docs/reference/skills#team)
+- An agent editing outside its tasks' `Files`. Add a task instead.
+- One increment per agent: you lose the single ledger and the single verify.
+- The lead implementing "just this small piece", or closing while a claim is live.

@@ -1,41 +1,133 @@
 ---
-disable-model-invocation: true
-description: Write a portable, secret-scrubbed handoff doc so this work can continue in any AI tool or on any machine. Use when saying "handoff", "running out of tokens", or "continue elsewhere".
-version: 2.0.0
-argument-hint: "[incrementId] [--reason ...] [--summary ...] [--next ...] [--gotcha ...] [--decision ...] [--inline]"
+description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "hand off all", "out of tokens", "switching accounts", "pick up" or "continue".
+argument-hint: "[--reason \"...\"] [--next \"...\"]"
+version: 3.0.0
 ---
+<!-- Generated from skills/sw-handoff/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
-# Work Handoff (Cross-Tool)
+# sw-handoff: "hand off" here, "pick up" there
 
-No tool can read another's transcript. The portable thing is a ≤1-page
-`handoff.md` next to the increment, built from durable state (ledger fold,
-spec ACs, decisions, git diff) — any agent from any vendor resumes from it.
+The user should never have to copy a prompt. Two words each way.
 
-## Steps
+## Hand off
 
-1. **Release your claims** (rule 5): `specweave task release --all-mine`.
-2. **Write the doc**, adding only what the files cannot know:
+When the user says "hand off", "handoff", "I'm out of tokens", "switching to Codex" or
+"switching accounts", run:
 
-   ```bash
-   specweave handoff [incrementId] [--reason "…"] [--summary "…"] [--next "…"] [--gotcha "…"] [--decision "…"] [--inline]
-   ```
+```bash
+specweave handoff --reason "<their words>"
+```
 
-   - id optional when exactly one increment is `active`; 2+ active → the CLI lists candidates, re-run with one.
-   - `--inline` embeds the full body in the paste prompt (moving machines).
-   - No SpecWeave workspace / no active increment → a git + notes handoff still gets written.
-3. **Surface the CLI output verbatim**: doc path first, then the `.diff` path, then the fenced paste prompt.
+It releases your task claims, records the handoff in the ledger, writes `handoff.md`
+next to the increment, pushes the branch, and pushes a snapshot of your uncommitted
+edits to the `specweave-handoff` branch (and `wip/<branch>`). Your working tree,
+index and branch are untouched. Relay its two or three lines as they are, then tell
+the user: say "pick up" in the other tool.
 
-## What is written
+Add `--next "<exact next step>"`, `--gotcha "..."` or `--decision "..."` only for what
+the files cannot tell the next agent. No Git remote and another machine:
+`--inline` prints a prompt to paste instead. `--no-push` keeps it local.
 
-- `.specweave/increments/<id>/handoff.md` (+ `handoff.diff` with the full uncommitted diff) — the single location; `.specweave/state/handoff-latest.txt` points at it.
-- Sections: **Where I left off · Done / Pending (ledger table) · Decisions · Files touched · Next steps · Resume**, ending with the `Doc format v2` marker. Header line = agent id, branch @ sha, uncommitted count, redaction count, active claims. The doc format is specified once, in the standalone `sw-handoff` skill (`skills/sw-handoff/SKILL.md`) — read it there when writing or checking a handoff by hand.
-- Secrets are scrubbed heuristically — review before sharing. Nothing is committed for you; commit `handoff.md` if the next agent works from another clone.
+## Hand off everything (switching accounts with many threads)
 
-## Resuming from a handoff
+When the user switches accounts or tools with several increments in flight ("hand off
+all", "switching subscriptions"), run:
 
-Read `handoff.md` → `specweave task next <id>` → claim → go. If the path does not exist on this machine, ask for the doc to be pasted; do not improvise context.
+```bash
+specweave handoff --all --reason "<their words>"
+```
 
-## Related
+It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json`: one row per active
+increment (tasks done/total, open ACs, last activity, what it waits on, a paste-ready
+resume prompt) and, in an umbrella workspace, every checkout under
+`repositories/<org>/<repo>` (and its worktrees) with uncommitted files, unpushed
+commits or a branch with no remote, with its open PR when `gh` is installed. It is
+read-only toward everything else: no claims released, nothing committed or pushed in
+the umbrella or the nested repos. Commit and push the local-only work it lists, or say
+so in your reply. `--dry-run` prints the index without writing it.
 
-- `specweave status` — where things stand, without writing a handoff. PreCompact hook writes the same doc automatically.
-- `skills/sw-handoff/SKILL.md` — the standalone, CLI-less version (vskill: `npx vskill install anton-abyzov/specweave/sw-handoff`) and the single source of truth for the document format.
+A wait is a ledger line `{"t":"*","e":"wait","by":"<you>","at":"<ISO time>","note":"Anton: typed go for the cutover"}`
+or a `Waits on: ...` line in the increment's `handoff.md`; a `wait` with the note
+`resolved` clears the earlier ones.
+
+On the other side, "pick up all" is `specweave pickup --all`: the newest index,
+actionable increments first, then the ones waiting on a person. Start each topic with
+its resume prompt, then `specweave pickup <id>`.
+
+## Your hand-written handoff is kept
+
+`specweave handoff` never overwrites a `handoff.md` that a person wrote (one without the
+`<!-- Doc format v2 -->` marker); the generated doc goes to `handoff.auto.md` beside it.
+Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next
+`handoff`.
+
+## Hand off by itself
+
+The user runs `specweave auto-handoff on` once (Claude Code, Codex and Grok Build, on
+their own machine; not in cloud sessions). By default (`--mode suggest`) a session that
+reaches 95% of the 5-hour or weekly limit gets a heads-up from the Stop hook: tell the
+user in one line that they can say "hand off", and keep working. Do not hand off on a
+heads-up. With `--mode enforce` the Stop hook instead asks you to hand off: run the
+handoff it names and stop. Neither happens when the full windows reset within 30 minutes
+(`--wait-under`), since waiting is cheaper. In both modes a Claude Code or Grok turn that
+hits the limit outright hands off from a hook. `auto-handoff status` shows the mode, the
+hooks and the last usage reading.
+
+Claude Code also warns the model itself near and at the 5-hour limit, with a note that
+starts "[Usage limit approaching" or "[Usage limit reached". "Approaching" is a
+heads-up: mention it in one line and keep working. "Reached" is the handoff moment:
+finish the current edit, run `specweave handoff --reason "usage limit"` (one command; it
+needs no summary from you) and stop.
+
+Between handoffs every hook also saves a local checkpoint under
+`~/.specweave/checkpoints/` (no model, network, push or claim change; `pickup` does
+not apply it). `auto-handoff on --checkpoint-only` keeps only those checkpoints, for
+plans where credits or a proxy keep working past the limit. Inside SpecWeave Studio
+(`SPECWEAVE_STUDIO_THREAD_ID` is set) do not hand off on a usage note: Studio switches
+the thread to another provider between turns, and a handoff would release its claims.
+
+## Pick up
+
+When the user says "pick up", "pick up here", "continue" or "continue from the other
+account", run `specweave pickup`. It fetches the last handoff, moves this branch
+forward to it and applies the handed-off edits (only on a clean tree), then prints the
+increment, the next task with its acceptance criteria and any notes. If it reports
+uncommitted changes or a diverged branch, do what it says; never discard the user's
+edits. Then continue with sw-do.
+
+Several sessions can hand off in one project (each increment's handoff, and a session
+that hit the limit in a worktree or with several increments active). `specweave handoff
+list` shows them, newest first, with short ids: an increment's number such as `0874`,
+or the worktree's folder name. When the user names one ("pick up 0874", "pick up the
+studio release"), run `specweave pickup <what they named>`. With none named, `pickup`
+takes the newest and lists the others; say in one line which one you took. If the name
+matches several, it lists them and changes nothing: ask which one, or take the one the
+conversation makes clear. A session handoff's edits are still in its own checkout:
+work there.
+
+## Notes and the record
+
+- `specweave note "<text>"` leaves a message for whoever works on the increment next.
+- `specweave report` writes an HTML timeline of who did what: tools, sessions,
+  handoffs, pickups, evidence.
+
+## Manual path (no CLI)
+
+1. Release each task you hold by appending a line to its `ledger.jsonl`:
+   `{"t":"T-03","e":"release","by":"codex@mbp","at":"2026-09-02T12:00:00Z"}`, and a note
+   for the next agent: `{"t":"*","e":"note","by":"codex@mbp","at":"2026-09-02T12:00:00Z","note":"T-03 half done, see handoff.md"}`.
+   In PowerShell append with `[IO.File]::AppendAllText` and UTF-8 without a BOM, never `>>`.
+2. Write `.specweave/increments/<id>/handoff.md` (UTF-8, no BOM) with these sections in
+   this order: `## Where I left off`, `## Done / Pending`, `## Decisions`,
+   `## Files touched`, `## Next steps`, `## Resume`, and a last line
+   `<!-- Doc format v2 -->`. Scrub tokens, keys and passwords from it first.
+3. Commit the work in progress and push the branch:
+
+```bash
+git add -A
+git commit -m "0042: work in progress (handoff)"
+git push -u origin HEAD
+```
+
+To pick up by hand: `git fetch origin`, check out that branch, read its `handoff.md`,
+and continue at the first task in spec.md with no `done` line in the ledger.

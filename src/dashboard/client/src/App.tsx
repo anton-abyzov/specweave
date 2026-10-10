@@ -1,4 +1,5 @@
 import { WorkPage } from './pages/WorkPage';
+import { ProjectHubPage } from './pages/ProjectHubPage';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -38,6 +39,7 @@ export default function App() {
             <ErrorBoundary resetKey={location.pathname}>
             <Routes>
               <Route path="/" element={<WorkPage />} />
+              <Route path="/project" element={<ProjectHubPage />} />
               <Route path="/sessions" element={<WorkPage sessionsOnly />} />
               <Route path="/overview" element={<OverviewPage />} />
               <Route path="/increments" element={<IncrementsPage />} />

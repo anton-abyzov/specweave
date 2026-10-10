@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // Copy Hook Dependencies
 //
-// Problem: Hooks import from ../../../../dist/src/... which doesn't exist in marketplace
-// Solution: Copy required compiled files from dist/src/ to plugins/*/lib/vendor/
+// Problem: plugin lib integrations import shared src/ modules, which are not
+// reachable by a relative path from a marketplace install of the plugin
+// Solution: Copy the required compiled files from dist/src/ to plugins/*/lib/vendor/
 //
 // Architecture:
 // - Build: tsc compiles src/**/*.ts → dist/src/**/*.js
-// - Copy: This script copies dist/src/core → plugins/*/lib/vendor/core
-// - Hooks: Import from ./vendor/core/... instead of ../../../../dist/src/core/...
+// - Copy: This script copies the listed dist/src files → plugins/*/lib/vendor/
+// - Plugin lib: imports ../../vendor/... instead of ../../../../dist/src/...
 //
 // Benefits:
 // - Self-contained plugins (work with or without dist/)
@@ -40,48 +41,19 @@ const fs = {
   }
 };
 
-// Dependencies to copy for each plugin
-// Auto-detected by scripts/find-hook-dependencies.js
+// Runtime modules imported by plugins/specweave/lib/integrations/** through
+// ../../vendor/... (their full transitive closure; type-only imports are elided).
 const PLUGIN_DEPENDENCIES = {
   'specweave': [
-    'dist/src/core/increment/ac-status-manager.js',
-    'dist/src/core/increment/active-increment-manager.js',
-    'dist/src/core/increment/auto-transition-manager.js',
-    'dist/src/core/increment/duplicate-detector.js',
-    'dist/src/core/increment/metadata-manager.js',
-    // Status Auto-Transition (v0.35.0+) - CRITICAL for preventing auto-completion bug
-    // Detects when all tasks complete and transitions ACTIVE → READY_FOR_REVIEW
-    // Only sw:done can then transition to COMPLETED with user approval
-    'dist/src/core/increment/status-auto-transition.js',
-    'dist/src/core/types/increment-metadata.js',
-    'dist/src/generators/spec/task-parser.js',
-    // Canonical task-id grammar — task-parser imports it, so the vendored
-    // copy is unloadable without it (hooks die with ERR_MODULE_NOT_FOUND).
-    'dist/src/core/tasks/task-id.js',
     'dist/src/utils/logger.js',
     'dist/src/utils/credential-masker.js',
-    'dist/src/utils/translation.js',
-    // AC Test Validator - validates acceptance criteria have passing tests before task completion
-    // Used by pre-task-completion.sh hook for marketplace plugin users
-    'dist/src/core/ac-test-validator.js',
-    'dist/src/core/ac-test-validator-cli.js',
-    'dist/src/utils/fs-native.js',
-    'dist/src/utils/chalk-fallback.js',
-    // GitHub Reconciler - reconciles GitHub issue states with increment statuses
-    // Used by reopen-github-issues.js and close-github-issues-abandoned.js hooks
-    'dist/src/sync/github-reconciler.js',
-    // Universal Auto-Create - creates per-user-story items in JIRA/ADO
-    // Used by universal-auto-create-dispatcher.sh hook
-    'dist/src/core/universal-auto-create.js',
     'dist/src/utils/feature-id-derivation.js',
-    // AC Checkbox Sync (GitHub) — provider routing + config utils
-    'dist/src/sync/provider-router.js',
-    'dist/src/sync/status-mapper.js',
-    'dist/src/sync/config.js',
-    // github-client-v2 + github-feature-sync transitive deps
     'dist/src/utils/execFileNoThrow.js',
     'dist/src/utils/clean-env.js',
     'dist/src/utils/auth-helpers.js',
+    'dist/src/sync/provider-router.js',
+    'dist/src/sync/status-mapper.js',
+    'dist/src/sync/config.js',
   ]
 };
 

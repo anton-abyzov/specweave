@@ -1,14 +1,15 @@
 /**
- * Task Board — tasks.md definitions + ledger.jsonl state, folded into one view.
+ * Task Board — task definitions + ledger.jsonl state, folded into one view.
  *
- * tasks.md holds task DEFINITIONS (`### T-01 Title` + `- AC: … | Files: … | Test: …`).
- * ledger.jsonl holds STATE (claim/done/release/block/skip events).
+ * Definitions (`### T-01 Title` + `- AC: … | Files: … | Test: …`) live in the
+ * `## Tasks` section of spec.md (3.0), or in tasks.md for increments created
+ * before 3.0. ledger.jsonl holds STATE (claim/done/release/block/skip events).
  * The board joins them: ledger wins; a task with no ledger events falls back to
  * its tasks.md checkbox/`**Status**` (legacy increments keep working).
  *
- * `renderTasksMd` writes the derived state back into tasks.md as
- * `- [x] done …` lines (one per task) + a `<!-- SW:BOARD -->` table, so the
- * file stays the human-readable view and legacy checkbox counters keep working.
+ * State is never written back into markdown: the ledger is the only store, and
+ * `specweave task list` renders the board on demand. `renderTasksMd` remains
+ * for `task render --write`, which refreshes a legacy tasks.md explicitly.
  *
  * @module core/tasks/task-board
  */
@@ -17,6 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseTasksWithUSLinks, getAllTasks, type Task } from '../../generators/spec/task-parser.js';
 import { TASK_HEADER_RE } from './task-id.js';
+import { tasksFileFor } from './tasks-source.js';
 import {
   foldLedgerFile,
   ledgerPath,
@@ -78,7 +80,7 @@ export function normalizeTaskId(input: string, known: string[]): string | undefi
 
 /** Load the board for an increment directory. */
 export function loadTaskBoard(incrementDir: string, opts: FoldOptions = {}): TaskBoard {
-  const tasksFile = path.join(incrementDir, 'tasks.md');
+  const tasksFile = tasksFileFor(incrementDir);
   const warnings: string[] = [];
   const defs = fs.existsSync(tasksFile)
     ? getAllTasks(parseTasksWithUSLinks(tasksFile, { onWarning: (w) => warnings.push(w) }))
@@ -269,7 +271,7 @@ function upsertBoardBlock(content: string, board: TaskBoard): string {
   return lines.join('\n');
 }
 
-/** Render + write tasks.md for an increment; no-op when tasks.md is absent. */
+/** Render + write a legacy tasks.md for an increment; no-op when tasks.md is absent. */
 export function writeRenderedTasksMd(board: TaskBoard): boolean {
   const tasksFile = path.join(board.incrementDir, 'tasks.md');
   if (!fs.existsSync(tasksFile)) return false;

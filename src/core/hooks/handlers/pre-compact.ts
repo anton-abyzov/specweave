@@ -61,6 +61,7 @@ export async function writeAutoHandoff(
       next: str(input, 'next', 'next_step', 'nextStep'),
       gotcha: str(input, 'gotcha'),
       decisions,
+      checkpoint: true,
     });
     const outcome = await Promise.race([build, timeout]);
     if (outcome === 'timeout') {

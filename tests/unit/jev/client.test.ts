@@ -310,16 +310,14 @@ describe('JevClient.ask — state redaction', () => {
     expect(sent).toContain('@db.example.com/prod'); // shape preserved
   });
 
-  // A mask can swallow a JSON delimiter (`--otp=123456"}` is one \S+ run). Sending the
-  // redacted text is the correct trade: never the unredacted object.
-  it('falls back to the redacted string when the mask breaks the JSON', async () => {
+  it('preserves structured state when a secret appears immediately before a JSON delimiter', async () => {
     const { fetch: fetchStub, body } = capture();
     await client(fetchStub).ask({ command: 'npm publish --otp=123456' }, TWO_QUESTIONS);
 
-    const sent = JSON.parse(body()) as { state: unknown };
-    expect(typeof sent.state).toBe('string');
-    expect(sent.state).not.toContain('123456');
-    expect(sent.state).toContain('npm publish');
+    const sent = JSON.parse(body()) as { state: { command: string } };
+    expect(typeof sent.state).toBe('object');
+    expect(sent.state.command).not.toContain('123456');
+    expect(sent.state.command).toContain('npm publish');
   });
 
   it('records the redaction count in the usage ledger', async () => {

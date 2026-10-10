@@ -47,3 +47,43 @@ integration:
   label: Integration
   permalink: /integration
   description: Third-party integrations (JIRA, GitHub, ADO, Figma)
+
+seo:
+  label: SEO
+  permalink: /seo
+  description: Technical search optimization for developer documentation
+
+documentation:
+  label: Documentation
+  permalink: /documentation
+  description: Clear, discoverable developer documentation
+
+performance:
+  label: Performance
+  permalink: /performance
+  description: Loading, rendering and verification of developer sites
+
+security:
+  label: Security
+  permalink: /security
+  description: Security risks and defenses for AI agent skills
+
+verified-skills:
+  label: Verified Skills
+  permalink: /verified-skills
+  description: Source inspection and verification of AI agent skills
+
+ToxicSkills:
+  label: ToxicSkills
+  permalink: /toxic-skills
+  description: Research into malicious and vulnerable AI agent skills
+
+supply-chain:
+  label: Supply Chain
+  permalink: /supply-chain
+  description: Software supply chain risks in agent skill registries
+
+Snyk:
+  label: Snyk
+  permalink: /snyk
+  description: Snyk research cited in agent skill security articles

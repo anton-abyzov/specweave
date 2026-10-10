@@ -1,5 +1,5 @@
 /**
- * Unit tests for cleanupLegacyLockfiles and cleanupOrphanedChildLocks
+ * Unit tests for cleanupLegacyLockfiles
  *
  * Uses real temporary directories for filesystem operations.
  * Covers US-001 (T-001 through T-006) and US-002 (T-007 through T-011).
@@ -11,7 +11,7 @@ import * as path from 'path';
 import * as os from 'os';
 import {
   cleanupLegacyLockfiles,
-  cleanupOrphanedChildLocks,
+  DEFAULT_MAX_WALK_DEPTH,
 } from '../../../src/utils/cleanup-stale-plugins.js';
 
 let tmpDir: string;
@@ -145,139 +145,59 @@ describe('cleanupLegacyLockfiles', () => {
     expect(result.success).toBe(true);
     expect(result.removedCount).toBe(0);
   });
-});
 
-// ===========================================================================
-// US-002: cleanupOrphanedChildLocks
-// ===========================================================================
-
-describe('cleanupOrphanedChildLocks', () => {
-  function makeUmbrella(root: string): void {
-    const configDir = path.join(root, '.specweave');
-    fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(configDir, 'config.json'),
-      JSON.stringify({ umbrella: { enabled: true } })
-    );
-  }
-
-  function makeNonUmbrella(root: string): void {
-    const configDir = path.join(root, '.specweave');
-    fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(configDir, 'config.json'),
-      JSON.stringify({ project: { name: 'test' } })
-    );
-  }
-
-  // T-007: Non-umbrella project returns early with no changes
-  it('T-007: should return early with no changes for non-umbrella project', () => {
-    makeNonUmbrella(tmpDir);
-
-    const result = cleanupOrphanedChildLocks(tmpDir);
-
-    expect(result.success).toBe(true);
-    expect(result.removedCount).toBe(0);
-    expect(result.skippedCount).toBe(0);
-    expect(result.removedPaths).toEqual([]);
-    expect(result.skippedPaths).toEqual([]);
-    expect(result.errors).toEqual([]);
-  });
-
-  // T-008: Removes child vskill.lock, preserves root
-  it('T-008: should remove child vskill.lock and preserve root lock', () => {
-    makeUmbrella(tmpDir);
-
-    // Create root vskill.lock (should NOT be deleted)
-    const rootLock = path.join(tmpDir, 'vskill.lock');
-    fs.writeFileSync(rootLock, '{"skills":{}}');
-
-    // Create child repo lock (should be deleted)
-    const childDir = path.join(tmpDir, 'repositories', 'org', 'child-repo');
-    fs.mkdirSync(childDir, { recursive: true });
-    const childLock = path.join(childDir, 'vskill.lock');
-    fs.writeFileSync(childLock, '{"skills":{}}');
-    const oldTime = new Date(Date.now() - 60_000);
-    fs.utimesSync(childLock, oldTime, oldTime);
-
-    const result = cleanupOrphanedChildLocks(tmpDir, { mtimeThresholdMs: 0 });
-
-    expect(result.success).toBe(true);
-    expect(result.removedCount).toBe(1);
-    expect(result.removedPaths).toContain(childLock);
-    expect(fs.existsSync(rootLock)).toBe(true);
-    expect(fs.existsSync(childLock)).toBe(false);
-  });
-
-  // T-009: mtime guard skips recently modified child locks
-  it('T-009: should skip recently modified child locks', () => {
-    makeUmbrella(tmpDir);
-
-    // Create child repo lock with recent mtime
-    const childDir = path.join(tmpDir, 'repositories', 'org', 'child-repo');
-    fs.mkdirSync(childDir, { recursive: true });
-    const childLock = path.join(childDir, 'vskill.lock');
-    fs.writeFileSync(childLock, '{"skills":{}}');
-    // File is freshly created, mtime is now
-
-    const result = cleanupOrphanedChildLocks(tmpDir, { mtimeThresholdMs: 5000 });
-
-    expect(result.success).toBe(true);
-    expect(result.removedCount).toBe(0);
-    expect(result.skippedCount).toBe(1);
-    expect(result.skippedPaths).toContain(childLock);
-    expect(fs.existsSync(childLock)).toBe(true);
-  });
-
-  // T-010: Symlink escape — doesn't delete through symlinks pointing outside project
-  it('T-010: should not delete through symlinks pointing outside project', () => {
-    makeUmbrella(tmpDir);
-
-    // Create an external directory with a vskill.lock
+  // T-012 (0879): symlinked directories are never followed. A link such as
+  // `~/Google Drive -> ~/Library/CloudStorage/...` or `link -> /` must not pull
+  // the whole disk into the scan, nor let the scan delete files outside the tree.
+  it('T-012: should not follow symlinked directories', () => {
     const externalDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-external-'));
-    const externalLock = path.join(externalDir, 'vskill.lock');
-    fs.writeFileSync(externalLock, '{"skills":{}}');
-    const oldTime = new Date(Date.now() - 60_000);
-    fs.utimesSync(externalLock, oldTime, oldTime);
+    try {
+      const externalLock = path.join(externalDir, 'skills-lock.json');
+      fs.writeFileSync(externalLock, '{}');
+      const oldTime = new Date(Date.now() - 60_000);
+      fs.utimesSync(externalLock, oldTime, oldTime);
 
-    // Create symlink inside repositories that points outside
-    const repoDir = path.join(tmpDir, 'repositories', 'org');
-    fs.mkdirSync(repoDir, { recursive: true });
-    fs.symlinkSync(externalDir, path.join(repoDir, 'symlinked-repo'));
+      fs.symlinkSync(externalDir, path.join(tmpDir, 'escape'));
 
-    const result = cleanupOrphanedChildLocks(tmpDir, { mtimeThresholdMs: 0 });
+      const result = cleanupLegacyLockfiles(tmpDir, { mtimeThresholdMs: 0 });
 
-    expect(result.success).toBe(true);
-    expect(result.removedCount).toBe(0);
-    // Should have a warning in errors about symlink escape
-    expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.errors[0].error).toMatch(/outside project/i);
-    // External file should still exist
-    expect(fs.existsSync(externalLock)).toBe(true);
-
-    // Cleanup external dir
-    fs.rmSync(externalDir, { recursive: true, force: true });
+      expect(result.success).toBe(true);
+      expect(result.removedCount).toBe(0);
+      expect(result.removedPaths).toEqual([]);
+      expect(fs.existsSync(externalLock)).toBe(true);
+    } finally {
+      fs.rmSync(externalDir, { recursive: true, force: true });
+    }
   });
 
-  // T-011: Missing root lock still cleans child locks
-  it('T-011: should clean child locks even when root vskill.lock is absent', () => {
-    makeUmbrella(tmpDir);
-
-    // No root vskill.lock created
-
-    // Create child repo lock
-    const childDir = path.join(tmpDir, 'repositories', 'org', 'child-repo');
-    fs.mkdirSync(childDir, { recursive: true });
-    const childLock = path.join(childDir, 'vskill.lock');
-    fs.writeFileSync(childLock, '{"skills":{}}');
+  // T-013 (0879): the descent is depth-bounded, so a huge tree (e.g. $HOME when
+  // no project is found) cannot pin a core for minutes.
+  it('T-013: should stop descending at maxDepth', () => {
     const oldTime = new Date(Date.now() - 60_000);
-    fs.utimesSync(childLock, oldTime, oldTime);
+    const makeLock = (segments: string[]): string => {
+      const dir = path.join(tmpDir, ...segments);
+      fs.mkdirSync(dir, { recursive: true });
+      const lock = path.join(dir, 'skills-lock.json');
+      fs.writeFileSync(lock, '{}');
+      fs.utimesSync(lock, oldTime, oldTime);
+      return lock;
+    };
+    const depthSegments = (prefix: string, depth: number): string[] =>
+      Array.from({ length: depth }, (_, i) => `${prefix}${i + 1}`);
 
-    const result = cleanupOrphanedChildLocks(tmpDir, { mtimeThresholdMs: 0 });
+    const atLimit = makeLock(depthSegments('d', DEFAULT_MAX_WALK_DEPTH));
+    const pastLimit = makeLock(depthSegments('e', DEFAULT_MAX_WALK_DEPTH + 1));
 
-    expect(result.success).toBe(true);
-    expect(result.removedCount).toBe(1);
-    expect(result.removedPaths).toContain(childLock);
-    expect(fs.existsSync(childLock)).toBe(false);
+    const bounded = cleanupLegacyLockfiles(tmpDir, { mtimeThresholdMs: 0 });
+    expect(bounded.removedPaths).toEqual([atLimit]);
+    expect(fs.existsSync(atLimit)).toBe(false);
+    expect(fs.existsSync(pastLimit)).toBe(true);
+
+    const deeper = cleanupLegacyLockfiles(tmpDir, {
+      mtimeThresholdMs: 0,
+      maxDepth: DEFAULT_MAX_WALK_DEPTH + 1,
+    });
+    expect(deeper.removedPaths).toEqual([pastLimit]);
+    expect(fs.existsSync(pastLimit)).toBe(false);
   });
 });

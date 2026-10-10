@@ -1,26 +1,32 @@
 ---
 title: Jev (System One)
-description: Delegate closed-set decisions — routing, shell-command safety, text screening, failure triage, headless browsing — to TypeSafe's Jev instead of a frontier-model turn.
+description: Delegate closed-set decisions (routing, shell-command safety, text screening, failure triage, headless browsing) to TypeSafe's Jev instead of a frontier-model turn.
 sidebar_label: Jev (System One)
 ---
 
 # Jev (System One)
 
-Agents running SpecWeave burn frontier-model turns on decisions whose answers were
-never open-ended: which skill a prompt needs, which model tier a task deserves, whether
-a shell command is safe to run unattended, whether a red test run is a regression or a
-flake, whether pulled issue text carries instructions aimed at the agent.
+Jev is an optional classifier for decisions with a known set of answers: suggest a
+route, classify a failure, or recommend a task's model tier. Your main coding model
+still writes code and explanations. Deterministic code keeps authorization and policy.
 
-[Jev](https://docs.typesafe.ai) is TypeSafe's System One model. It answers exactly that
-shape of question in roughly 250 ms for roughly $0.00002, with calibrated probabilities
-and a schema it cannot violate. It is a **selection** model: it never generates code,
-prose or explanations.
+[See the practical EasyChamp example and inspect recorded calls](/jev). The published
+26-input intent benchmark uses **synthetic, author-labelled messages**, not production
+traffic. It records 25/26 correct Jev labels versus 12/26 for the ported regex baseline,
+with 258 ms median API latency and $0.00073853 total API cost. These are measurements of
+that run, not a service guarantee or evidence of developer time saved.
+
+[Jev](https://docs.typesafe.ai) is TypeSafe's System One model. It selects among specified
+outcomes and returns confidence information. Validate responses and apply confidence
+thresholds; a score is not proof that a decision is correct or safe.
 
 ## The one test
 
 > Can every possible answer be written down before the call?
 
-Yes, Jev. No, keep the work in the frontier model. That is the whole rule.
+If yes, first check whether a rule, lookup, or existing parser already solves it.
+Use Jev for the remaining language ambiguity. If no, keep the task with a generative
+model or a human. Count total latency and cost, including fallbacks, before enabling it.
 
 Three primitives, nothing else:
 
@@ -45,18 +51,54 @@ The key lives in the environment, never in a config file or a log:
 |---|---|---|---|
 | `openrouter` (default) | `https://openrouter.ai/api/v1/systemone` | `jev-1.13` | `OPENROUTER_API_KEY` |
 | `typesafe` | `https://api.typesafe.ai/v1/systemone` | `jev-latest` | `TYPESAFE_API_KEY` |
+| `openai` | `https://api.openai.com/v1/decisions` | `gpt-6-luna` | `OPENAI_API_KEY` |
 
-`JEV_API_KEY` is honoured for either. Every SpecWeave surface reports the variable
+`JEV_API_KEY` is honoured for all three providers. Every SpecWeave surface reports the variable
 **name** only and never its value. `SPECWEAVE_JEV=0` disables Jev for one process;
 `SPECWEAVE_JEV=1` enables it ad hoc.
+
+### Optional OpenAI Decisions provider
+
+```bash
+# OPENAI_API_KEY must already be in the environment; do not put it in config.
+specweave jev setup --provider openai
+specweave jev doctor
+specweave jev route "Explain the retry error" --json
+```
+
+Setup makes one small live ping and enables the provider only if it succeeds. Jev
+remains off by default; no global installation settings or other projects change.
+The adapter uses raw HTTP, so it does not require an OpenAI SDK upgrade.
+
+The [Decisions API](https://developers.openai.com/api/docs/guides/decisions) is in public
+beta. Its `predicate` answer maps to Jev's `noul`; choices retain both their probability
+map and separate confidence. Score levels use zero-based indices and scores remain
+fractional probability-weighted averages. This adapter accepts text/JSON state only;
+it does not fetch images, listen to audio, invoke tools or generate explanations.
+
+Evaluate labeled examples before routing real work. Thresholds configured for Jev
+have **not** been calibrated for OpenAI. Test abstention and false positives, preserve
+all deterministic permissions and require real tests for completion; a classifier
+cannot authorize a command or certify an acceptance criterion.
+
+Each request is capped locally at 40 questions and 512 KiB, its streamed response
+at 1 MiB, with at most two retries
+inside the total configured deadline (1–60,000 ms). Refusal, unknown/duplicate answers,
+invalid probabilities, timeouts and exhausted retries are unavailable results
+(a refusal makes the entire batch unavailable): callers
+retain their normal fallback. These are application budgets, not provider limits.
+Redirects are rejected. Provider error bodies and source text are excluded from errors
+and the usage ledger. The ledger retains a request ID and a hash of the redacted,
+versioned request for comparisons without storing source text.
+Token usage is recorded; cost remains unknown unless the provider supplies it.
 
 ### What leaves the machine
 
 Every `specweave jev` call sends the question state to the configured provider
-(OpenRouter or TypeSafe) under your own key: the prompt text, task titles and acceptance
+(OpenRouter, TypeSafe or OpenAI) under your own key: the prompt text, task titles and acceptance
 criteria, the shell command, test-output tails, screened text, and page text and element
-names while browsing. Secret-shaped values — tokens, `--password` and `--token` flags,
-`KEY=value` assignments, bearer headers and URL credentials — are masked heuristically
+names while browsing. Secret-shaped values (tokens, `--password` and `--token` flags,
+`KEY=value` assignments, bearer headers and URL credentials) are masked heuristically
 before the request and the number of masked values is reported, but the masking is
 best-effort and never a guarantee. Treat Jev like any other third-party API: if you would
 not paste the state into one, do not send it.
@@ -73,7 +115,6 @@ not paste the state into one, do not send it.
     "timeoutMs": 4000,
     "thresholds": { "route": 0.7, "guardDeny": 0.85, "guardWarn": 0.5 },
     "guards": { "bash": false },
-    "modelRouting": true,
     "browse": { "allowDomains": [], "maxSteps": 20 }
   }
 }
@@ -82,10 +123,11 @@ not paste the state into one, do not send it.
 Every field, its default and the `SPECWEAVE_JEV` / `SPECWEAVE_JEV_PROVIDER` /
 `SPECWEAVE_JEV_MODEL` overrides are in the
 [configuration reference](/docs/reference/configuration#jev). Thresholds are clamped to
-0–1 on load, and `guardDeny` is never allowed below `guardWarn`.
+0 to 1 on load, and `guardDeny` is never allowed below `guardWarn`.
 
-With `jev.enabled` true, `specweave update-instructions` renders a Jev section into
-`CLAUDE.md` and `AGENTS.md` so every agent in the project knows when to delegate.
+With `jev.enabled` true, `specweave update-instructions` adds a Jev section to `AGENTS.md`
+and a one-line pointer to it in `CLAUDE.md`, so every agent in the project knows when to
+delegate.
 
 ## Commands
 
@@ -112,14 +154,11 @@ the agent should continue with its own judgement.
 
 ## What SpecWeave uses it for
 
-- **Model tier routing.** With `jev.modelRouting`, `selectModelTierForTask()` asks Jev how
-  much reasoning a task needs (trivial to haiku, moderate to sonnet, complex to opus) and
-  falls back to the keyword heuristic when Jev is unavailable or unsure. The live surface
-  for the same judgement is `specweave jev task T-NN`. SpecWeave does **not** silently
-  re-route model tiers inside task generation: the tier is a suggestion you act on.
-- **Completion evaluation.** The binary "did this command output show a clean run?" check
-  becomes a `noul` instead of a Haiku call, and it is **downgrade-only** — a Jev verdict
-  can mark an exit-0 run as failed, and can never turn a failed run into a pass.
+- **Task tier suggestions.** `specweave jev task T-NN` asks how much reasoning one task
+  in the ledger needs (trivial to haiku, moderate to sonnet, complex to opus). It is a
+  suggestion you act on: SpecWeave does **not** re-route model tiers behind your back.
+- **Skill and request routing.** `specweave jev route "<prompt>"` suggests the skill,
+  the request kind, a model tier and whether the work needs an increment.
 - **Bash guard, per project.** See [the guard](#the-bash-guard-is-per-project) below.
 - **Headless browsing.** `specweave jev browse` runs a Playwright loop where Jev picks the
   next click, scroll, back or done from the observed interactive elements, and no visible
@@ -127,9 +166,9 @@ the agent should continue with its own judgement.
 
 ## The guard verdict
 
-`specweave jev guard "the command"` asks two questions — a `choice` over the command's
+`specweave jev guard "the command"` asks two questions, a `choice` over the command's
 scope and a `noul` for "would this destroy data that cannot be recovered from git or by
-re-running a build?" — and turns the pair into one verdict.
+re-running a build?", and turns the pair into one verdict.
 
 It **denies** on any of four arms:
 
@@ -139,7 +178,7 @@ It **denies** on any of four arms:
 3. scope `local_irreversible` with confidence at or above `guardDeny` **and**
    destructiveness at or above `guardWarn` (0.5);
 4. the probabilities of `local_irreversible` and `destructive_remote` **summed** at or
-   above `guardDeny`, with destructiveness at or above `guardWarn` — a `deleteMany`
+   above `guardDeny`, with destructiveness at or above `guardWarn`. A `deleteMany`
    against a database Jev cannot place splits the scope 0.50 / 0.45 and would otherwise
    fall to a warn.
 
@@ -148,7 +187,7 @@ The third arm exists because a near-certain local wipe scores its *scope* high a
 0.99 with destructive 0.81, which the first two arms alone let through as a warn.
 
 It **warns** when destructiveness reaches `guardWarn`, or the scope is `shared_or_remote`,
-`local_irreversible` or `destructive_remote` — `destructive_remote` is in the warn set so
+`local_irreversible` or `destructive_remote`. `destructive_remote` is in the warn set so
 a low-confidence remote-destruction reading degrades to warn instead of falling through to
 allow. Everything else is allowed.
 
@@ -156,15 +195,18 @@ allow. Everything else is allowed.
 
 A regex prefilter runs before any call. `npm test`, `npm run build` / `test` / `lint`,
 `pnpm test`, `yarn test`, `cargo test`, `go test` and plain read commands (`ls`, `cat`,
-`grep`, `rg`, `find`, `git status` / `log` / `diff` / `show`, and friends) skip Jev
-entirely, so the common case costs nothing — and **project-defined scripts are therefore
+`grep`, `git status` / `log` / `diff` / `show`, and friends) skip Jev
+entirely, so the common case costs nothing, and **project-defined scripts are therefore
 trusted by the guard**: whatever `npm test` runs in a repo is never scored.
+
+Commands containing shell quotes or backslashes go through the guard. Helper-capable
+search tools such as `rg`, `find`, and `file` also go through it, even for ordinary
+reads; their optional execution and output modes are not a safe bypass.
 
 ### The Bash guard is per project
 
-Default hooks are unchanged from 2.1.0: `SessionStart` and `Stop`. `PreToolUse` is **not**
-registered in `plugins/specweave/hooks/hooks.json`, so upgrading does not turn a guard on
-anywhere. You enable the Bash guard one project at a time:
+The default hooks are `SessionStart` and `Stop`. `PreToolUse` is **not** registered in
+`plugins/specweave/hooks/hooks.json`, so upgrading does not turn a guard on anywhere. You enable the Bash guard one project at a time:
 
 ```bash
 specweave jev setup --guard-bash      # config flag + marker + project hook
@@ -173,7 +215,7 @@ specweave jev setup --no-guard-bash   # removes all three
 
 `--guard-bash` does three things: it sets `jev.guards.bash` in `.specweave/config.json`,
 writes the marker `.specweave/state/jev-guard.enabled`, and registers a project-level
-Claude Code hook in `.claude/settings.json` — `hooks.PreToolUse`, matcher `Bash`, command
+Claude Code hook in `.claude/settings.json`: `hooks.PreToolUse`, matcher `Bash`, command
 `node "<installed specweave>/plugins/specweave/hooks/run.mjs" pre-tool-use`.
 `specweave jev doctor` shows the marker and the project hook.
 
@@ -181,7 +223,7 @@ A deny verdict blocks the command with the probabilities in the reason; a warn v
 attaches them as context; any error, timeout, missing key or disabled config fails open.
 Without the marker the hook returns `{}` without loading anything.
 
-This is a Claude Code surface. Other tools — Codex, Cursor, Gemini CLI — call
+This is a Claude Code surface. Other tools (Codex, Cursor, Gemini CLI) call
 `specweave jev guard "the command"` explicitly before running anything unattended.
 
 The guard's escape hatch is an environment variable set in the shell that launches the
@@ -192,12 +234,12 @@ denied command is for the user to approve, not for the agent to route around.
 
 | Tool | Use |
 |---|---|
-| Claude Code, Cursor, Gemini CLI | `specweave jev browse` — one headless Playwright loop, the same JSON everywhere |
+| Claude Code, Cursor, Gemini CLI | `specweave jev browse`: one headless Playwright loop, the same JSON everywhere |
 | Codex app, with Computer Use and a browser attached | the community `jev-browser-use` skill |
 | Codex app, without a browser attached | `specweave jev browse` |
 
 The loop is headless by definition and never opens a visible window. Text is typed only
-from `--input Label=value` — never a string Jev chose. `jev.browse.allowDomains` and the
+from `--input Label=value`, never a string Jev chose. `jev.browse.allowDomains` and the
 repeatable `--allow-domain` flag are **merged**, and the `--url` a run starts from must
 already be inside that allow-list. A control counts as sensitive by its **label or its
 link target** (pay, delete, buy, sign out, and similar) and is skipped unless

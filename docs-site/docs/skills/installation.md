@@ -95,7 +95,7 @@ A **plugin** bundles multiple related skills into a single installable package. 
 npx vskill install --repo anton-abyzov/vskill --plugin mobile
 
 # From the SpecWeave marketplace
-npx vskill install --repo anton-abyzov/specweave --plugin sw-github
+npx vskill install --repo anton-abyzov/specweave --plugin sw
 ```
 
 ### Install all plugins from a marketplace
@@ -110,7 +110,7 @@ The `--repo` flag requires a GitHub repository that contains a `.claude-plugin/m
 
 ### Available SpecWeave plugins
 
-SpecWeave ships its skills as plugins through its own marketplace:
+SpecWeave ships its skills as one plugin through its own marketplace:
 
 ```bash
 npx vskill install --repo anton-abyzov/specweave --plugin sw
@@ -118,14 +118,9 @@ npx vskill install --repo anton-abyzov/specweave --plugin sw
 
 | Plugin | Description |
 |--------|-------------|
-| `sw` | SpecWeave framework — increment lifecycle, living docs, PM-led planning |
-| `sw-github` | GitHub integration — bidirectional sync, issue tracking |
-| `sw-jira` | JIRA integration — bidirectional sync with epics/stories |
-| `sw-ado` | Azure DevOps integration — bidirectional sync with work items |
-| `sw-release` | Release management — versioning, RC workflows |
-| `sw-diagrams` | Architecture diagrams — Mermaid, C4 Model, sequence diagrams |
-| `docs` | Living documentation — build, validation, organization |
-| `sw-media` | Media generation — AI images, video, programmatic video |
+| `sw` | SpecWeave: increment lifecycle (plan, work the ledger, verify, review, complete), cross-tool handoff, GitHub/Jira/Azure DevOps sync |
+
+The separate `sw-github`, `sw-jira`, `sw-ado`, `sw-release`, `sw-diagrams`, `docs` and `sw-media` plugins no longer exist. Sync with GitHub, Jira and Azure DevOps is part of `sw`.
 
 Additional domain plugins are available from the vskill marketplace:
 
@@ -320,25 +315,13 @@ Global skills install to your home directory (e.g., `~/.claude/skills/`) and are
 
 ---
 
-## SpecWeave Plugin Auto-Loading
+## SpecWeave Plugin Setup
 
-If you use SpecWeave, plugins load automatically based on natural language keywords in your conversation:
-
-- Say "mobile app" → `mobile` plugin activates (or use `/mobile:appstore` / `appstore`)
-- Say "post on social media" → `marketing` plugin activates (or use `/marketing:slack-messaging` / `slack-messaging`)
-- Say "Google Drive" → `google-workspace` plugin activates
-
-You don't need to manually install SpecWeave plugins — `specweave init` handles setup. However, you can manually control loading:
+You don't need to install the SpecWeave plugin by hand: `specweave init` sets it up, and `specweave refresh-plugins` refreshes it. SpecWeave 3.0 does not load other plugins by keyword; install domain plugins such as `mobile` or `marketing` explicitly:
 
 ```bash
-# Install a specific SpecWeave plugin
-npx vskill install --repo anton-abyzov/specweave --plugin sw-github
-
-# Disable auto-loading
-export SPECWEAVE_DISABLE_AUTO_LOAD=1
+npx vskill install --repo anton-abyzov/vskill --plugin mobile
 ```
-
-For details on how lazy loading works, see the [Skills & Capabilities](/docs/overview/skills-and-capabilities) guide.
 
 ---
 
@@ -356,7 +339,7 @@ vskill detects agents by checking for their CLI tools and configuration director
 
 The `--repo` flag requires a repository that publishes a `.claude-plugin/marketplace.json` file. Known marketplace repos:
 
-- `anton-abyzov/specweave` — SpecWeave core plugins (sw, sw-github, sw-jira, sw-ado, etc.)
+- `anton-abyzov/specweave` — the SpecWeave plugin (`sw`)
 - `anton-abyzov/vskill` — Community plugins (mobile, marketing, google-workspace, etc.)
 
 If you're installing from a repo that doesn't have a marketplace, use the direct install syntax instead:

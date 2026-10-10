@@ -539,11 +539,12 @@ describe('plugin-copier', () => {
       fs.mkdirSync(projectDir, { recursive: true });
     });
 
-    it('moves bundled entries to global lock, keeps user entries in project lock', () => {
-      // Project lock has one bundled + one user entry
-      const projectLock = {
+    it('copies bundled entries to the global lock and leaves the project vskill.lock byte-for-byte', () => {
+      // A vskill-written lock: 15 agents, a bundled entry and a user entry.
+      const original = JSON.stringify({
         version: 1,
-        agents: ['claude-code'],
+        agents: ['claude-code', 'codex', 'cursor', 'gemini-cli', 'github-copilot', 'opencode', 'windsurf',
+          'cline', 'roo', 'kilo', 'amp', 'goose', 'zed', 'aider', 'continue'],
         skills: {
           sw: {
             version: '1.0.0', sha: 'bundled123', tier: 'BUNDLED',
@@ -556,27 +557,17 @@ describe('plugin-copier', () => {
         },
         createdAt: '2026-03-17T00:00:00Z',
         updatedAt: '2026-03-17T00:00:00Z',
-      };
-      writeLockfile(projectLock, projectDir);
+      }, null, 2) + '\n';
+      fs.writeFileSync(path.join(projectDir, 'vskill.lock'), original);
 
       const result = migrateBundledToGlobalLock(projectDir, fakeHome);
 
       expect(result.migratedCount).toBe(1);
-      expect(result.deletedProjectLock).toBe(false);
-
-      // Global lock should have bundled entry
-      const globalLock = readGlobalLockfile(fakeHome);
-      expect(globalLock).not.toBeNull();
-      expect(globalLock!.skills.sw.sha).toBe('bundled123');
-
-      // Project lock should only have user entry
-      const updatedProjectLock = readLockfile(projectDir);
-      expect(updatedProjectLock).not.toBeNull();
-      expect(updatedProjectLock!.skills['my-skill']).toBeDefined();
-      expect(updatedProjectLock!.skills.sw).toBeUndefined();
+      expect(readGlobalLockfile(fakeHome)!.skills.sw.sha).toBe('bundled123');
+      expect(fs.readFileSync(path.join(projectDir, 'vskill.lock'), 'utf-8')).toBe(original);
     });
 
-    it('deletes project lock when only bundled entries exist', () => {
+    it('never deletes a project lock that holds only bundled entries', () => {
       const projectLock = {
         version: 1,
         agents: ['claude-code'],
@@ -594,8 +585,7 @@ describe('plugin-copier', () => {
       const result = migrateBundledToGlobalLock(projectDir, fakeHome);
 
       expect(result.migratedCount).toBe(1);
-      expect(result.deletedProjectLock).toBe(true);
-      expect(fs.existsSync(path.join(projectDir, 'vskill.lock'))).toBe(false);
+      expect(fs.existsSync(path.join(projectDir, 'vskill.lock'))).toBe(true);
     });
 
     it('is idempotent — second call is no-op', () => {
@@ -617,7 +607,6 @@ describe('plugin-copier', () => {
       const result2 = migrateBundledToGlobalLock(projectDir, fakeHome);
 
       expect(result2.migratedCount).toBe(0);
-      expect(result2.deletedProjectLock).toBe(false);
     });
 
     it('keeps newer global entry when project entry is older', () => {

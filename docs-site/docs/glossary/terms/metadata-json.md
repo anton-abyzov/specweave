@@ -2,97 +2,63 @@
 id: metadata-json
 title: metadata.json
 sidebar_label: metadata.json
+description: The machine-state file of an increment - status, type, priority and timestamps, written only by the SpecWeave CLI.
 ---
 
 # metadata.json
 
-The **`metadata.json`** file tracks [increment](/docs/glossary/terms/increments) status, timestamps, and external tool integration within each increment folder.
+Every increment folder has a **`metadata.json`**. It is machine state: the increment's status, type and timestamps. The CLI writes it; people and agents do not edit it, and an agent does not need to read it to do the work. What to build is in [spec.md](/docs/glossary/terms/spec-md), and task progress is in the [ledger](/docs/glossary/terms/ledger).
 
-## Location
-
-```
-.specweave/increments/0007-feature-name/
-├── spec.md
-├── plan.md
-├── tasks.md
-└── metadata.json     ← Status tracking
-```
-
-## Structure
+## What `create-increment` writes
 
 ```json
 {
-  "id": "0007-user-authentication",
-  "type": "feature",
+  "id": "0042-keep-checkout-resumable",
   "status": "active",
-  "created": "2025-11-01T10:00:00Z",
-  "lastActivity": "2025-11-15T14:30:00Z",
-  "featureId": "FS-001",
-  "github": {
-    "issueNumber": 123,
-    "issueUrl": "https://github.com/org/repo/issues/123",
-    "lastSync": "2025-11-15T14:30:00Z"
-  }
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-09-20T10:00:00.000Z",
+  "updated": "2026-09-20T10:00:00.000Z",
+  "lastActivity": "2026-09-20T10:00:00.000Z",
+  "title": "Keep checkout resumable"
 }
 ```
 
-## Fields
+## Common fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Increment identifier (e.g., `0007-user-authentication`) |
-| `type` | string | Increment type (`feature`, `hotfix`, `bug`, `refactor`, `experiment`) |
-| `status` | string | Current status (`active`, `paused`, `completed`, `abandoned`) |
-| `created` | ISO date | Creation timestamp |
-| `lastActivity` | ISO date | Last modification time |
-| `featureId` | string | Link to living docs feature (e.g., `FS-001`) |
-| `pausedReason` | string | Reason if paused |
-| `abandonedReason` | string | Reason if abandoned |
-| `github` | object | GitHub integration data |
-| `jira` | object | JIRA integration data |
-| `ado` | object | Azure DevOps integration data |
+| Field | Meaning |
+|---|---|
+| `id` | Folder name, number plus slug. |
+| `status` | `planned`, `active`, `paused`, `completed` or `abandoned`. |
+| `type` | `feature`, `hotfix`, `bug`, `refactor` or `experiment` (`--type` on create). |
+| `priority` | `P1`, `P2` or `P3` (`--priority` on create). |
+| `created`, `updated` | ISO timestamps. `lastActivity` is kept in step for older readers. |
+| `title` | The title given on create. |
+| `pausedReason`, `abandonedReason` | Set by `specweave pause --reason` and `specweave abandon --reason`. |
+| `closeReason` | Why it was closed without a passing verify (`specweave complete --reason`), or which increment superseded it. |
+| `supersedes`, `parent` | Set by `--supersedes` and `--parent` on create. |
+| `project`, `board` | Routing for multi-repo workspaces, when configured. |
 
-## Status Values
+Links to external issues (`github`, `jira`, `ado` objects) appear only after you run `specweave sync push`. See the [metadata reference](/docs/reference/metadata-reference) for every field.
 
-| Status | Meaning | WIP Limit |
-|--------|---------|---------------------------------------------|
-| `active` | Currently being worked on | Counts |
-| `paused` | Temporarily blocked | Does not count |
-| `completed` | All tasks done | Does not count |
-| `abandoned` | Work cancelled | Does not count |
+## Changing the status
 
-## External Tool Integration
+Use the commands, never an editor:
 
-### GitHub
-
-```json
-{
-  "github": {
-    "issueNumber": 123,
-    "issueUrl": "https://github.com/org/repo/issues/123",
-    "labels": ["feature", "in-progress"],
-    "milestone": "v1.0",
-    "lastSync": "2025-11-15T14:30:00Z"
-  }
-}
+```bash
+specweave start 0042
+specweave pause 0042 --reason "waiting on API keys"
+specweave resume 0042
+specweave abandon 0042 --reason "no longer needed"
+specweave complete 0042
 ```
 
-### JIRA
+Claiming the first task (`specweave task claim`) also moves a `planned` increment to `active`.
 
-```json
-{
-  "jira": {
-    "epicKey": "PROJ-123",
-    "epicUrl": "https://company.atlassian.net/browse/PROJ-123",
-    "lastSync": "2025-11-15T14:30:00Z"
-  }
-}
-```
+If an older increment's `spec.md` frontmatter disagrees with `metadata.json`, `specweave doctor --fix-status` rewrites the spec to match; `metadata.json` wins.
 
 ## Related
 
-- [Increments](/docs/glossary/terms/increments) - Work units
-- [spec.md](/docs/glossary/terms/spec-md) - Specifications
-- [plan.md](/docs/glossary/terms/spec-md) - Architecture plans
-- [tasks.md](/docs/glossary/terms/tasks-md) - Task tracking
-- WIP Limits - Work-in-progress limits
+- [Increment](/docs/glossary/terms/increments)
+- [Increment status reference](/docs/guides/increment-status-reference)
+- [Metadata reference](/docs/reference/metadata-reference)
