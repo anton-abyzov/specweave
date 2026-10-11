@@ -79,6 +79,29 @@ describe('buildPickup', () => {
     expect(text).toContain('  - [Auth](auth.md): sessions, not JWT');
   });
 
+  it('shows the newest local checkpoint only when it is newer than the last handoff', () => {
+    writeIncrement('0001-login', 'active', [
+      { t: '*', e: 'handoff', by: 'claude@mbp', at: ago(60), note: 'out of tokens' },
+    ]);
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-home-'));
+    try {
+      const snapshot = path.join(home, '.specweave', 'checkpoints', 'abc', 'snapshot-1');
+      fs.mkdirSync(snapshot, { recursive: true });
+      fs.writeFileSync(path.join(snapshot, 'handoff.md'), '# checkpoint');
+      fs.writeFileSync(path.join(snapshot, 'handoff.diff'), '');
+      const receipt = (savedAt: string) => fs.writeFileSync(path.join(home, '.specweave', 'checkpoints', 'abc', 'current.json'), JSON.stringify({
+        version: 1, sessionId: 's1', cwd: fs.realpathSync(root), savedAt,
+        docPath: path.join(snapshot, 'handoff.md'), diffPath: path.join(snapshot, 'handoff.diff'),
+      }));
+      receipt(ago(90));
+      expect(buildPickup(root, { agent: 'claude@cloud', checkpointHome: home }).text).not.toContain('Local checkpoint');
+      receipt(ago(5));
+      const { text } = buildPickup(root, { agent: 'claude@cloud', checkpointHome: home });
+      expect(text).toContain(`Local checkpoint: session s1 5m ago, newer than the last handoff → ${path.join(snapshot, 'handoff.md')} + ${path.join(snapshot, 'handoff.diff')}`);
+      expect(buildPickup(root, { agent: 'claude@cloud', compact: true, checkpointHome: home }).text).not.toContain('Local checkpoint');
+    } finally { fs.rmSync(home, { recursive: true, force: true }); }
+  });
+
   it('lists several open increments and asks for one', () => {
     writeIncrement('0001-login');
     writeIncrement('0002-signup');

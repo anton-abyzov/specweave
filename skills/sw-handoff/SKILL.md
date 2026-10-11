@@ -60,27 +60,30 @@ its resume prompt, then `specweave pickup <id>`.
 Text between `<!-- keep -->` and `<!-- /keep -->` in a generated doc survives the next
 `handoff`.
 
-## Keep local checkpoints while working
+## Hand off by itself
 
-`specweave auto-handoff on` enables silent background checkpoints on the user's
-machine. Claude Code and Codex queue them after a `Stop`, at most once every five
-minutes per canonical worktree and session. Claude Code and Grok Build also queue
-the same local worker after a `StopFailure` with `rate_limit`. The worker uses no
-model or network, never pushes or releases claims, and leaves the checkout untouched.
-There is no daemon. `auto-handoff status` shows the checkpoint directory.
+The user runs `specweave auto-handoff on` once (Claude Code, Codex and Grok Build, on
+their own machine; not in cloud sessions). By default (`--mode suggest`) a session that
+reaches 95% of the 5-hour or weekly limit gets a heads-up from the Stop hook: tell the
+user in one line that they can say "hand off", and keep working. Do not hand off on a
+heads-up. With `--mode enforce` the Stop hook instead asks you to hand off: run the
+handoff it names and stop. Neither happens when the full windows reset within 30 minutes
+(`--wait-under`), since waiting is cheaper. In both modes a Claude Code or Grok turn that
+hits the limit outright hands off from a hook. `auto-handoff status` shows the mode, the
+hooks and the last usage reading.
 
-A successful save writes `~/.specweave/checkpoints/<hash>/current.json`, pointing to
-the saved handoff document and diff. These are local recovery files, not an ownership
-transfer. Inspect them before recovering; `specweave pickup` does not apply them.
-Use explicit `specweave handoff` when the user chooses to switch, especially to
-another machine that cannot see the local files.
+Claude Code also warns the model itself near and at the 5-hour limit, with a note that
+starts "[Usage limit approaching" or "[Usage limit reached". "Approaching" is a
+heads-up: mention it in one line and keep working. "Reached" is the handoff moment:
+finish the current edit, run `specweave handoff --reason "usage limit"` (one command; it
+needs no summary from you) and stop.
 
-Usage percentages, including 100%, and notes starting "[Usage limit approaching" or
-"[Usage limit reached" are informational. They do not authorize a handoff or a stop:
-credits, a proxy or another provider may still let work continue. Saving does not
-require a usage reading. Existing enabled settings adopt this behavior after a CLI
-upgrade without changing hook commands. Legacy `--at` is accepted but does not set
-a checkpoint threshold.
+Between handoffs every hook also saves a local checkpoint under
+`~/.specweave/checkpoints/` (no model, network, push or claim change; `pickup` does
+not apply it). `auto-handoff on --checkpoint-only` keeps only those checkpoints, for
+plans where credits or a proxy keep working past the limit. Inside SpecWeave Studio
+(`SPECWEAVE_STUDIO_THREAD_ID` is set) do not hand off on a usage note: Studio switches
+the thread to another provider between turns, and a handoff would release its claims.
 
 ## Pick up
 
@@ -90,6 +93,16 @@ forward to it and applies the handed-off edits (only on a clean tree), then prin
 increment, the next task with its acceptance criteria and any notes. If it reports
 uncommitted changes or a diverged branch, do what it says; never discard the user's
 edits. Then continue with sw-do.
+
+Several sessions can hand off in one project (each increment's handoff, and a session
+that hit the limit in a worktree or with several increments active). `specweave handoff
+list` shows them, newest first, with short ids: an increment's number such as `0874`,
+or the worktree's folder name. When the user names one ("pick up 0874", "pick up the
+studio release"), run `specweave pickup <what they named>`. With none named, `pickup`
+takes the newest and lists the others; say in one line which one you took. If the name
+matches several, it lists them and changes nothing: ask which one, or take the one the
+conversation makes clear. A session handoff's edits are still in its own checkout:
+work there.
 
 ## Notes and the record
 

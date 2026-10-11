@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tutorial": "personal-and-connections",
+  "version": "0.2.0",
+  "sourceCommit": "8d40b4e8dce1224feadac1a528630a6cb1df9bd6",
+  "buildSha256": "f7286863cee28a05c7b365fb827c4f1610810bf22ccbfc6566fcf81fc5c1ab5d",
+  "recordedAt": "2026-10-09T17:25:57.190Z",
+  "actualApplication": true,
+  "syntheticDataOnly": true,
+  "headless": true,
+  "acceptancePassed": true,
+  "nativeProviders": {
+    "claude": "not_recorded",
+    "codex": "not_recorded"
+  },
+  "nativeReceiptSha256": null,
+  "providerTurnsStartedByRecorder": 0,
+  "crop": [
+    256,
+    0,
+    1664,
+    1000
+  ],
+  "rendererVersion": "0.8.143",
+  "personalEnvironmentProof": {
+    "managedStorage": true,
+    "noGit": true,
+    "repositoryMatch": "passed",
+    "connectionDiscovery": "owned-inert-mcp",
+    "externalAccountAuthentication": "not_tested",
+    "toolInvocation": "not_requested"
+  },
+  "duration": 81.633333,
+  "privacyReviewed": true,
+  "visualReviewPassed": true,
+  "captionsReviewed": true,
+  "normalPlaybackPassed": true,
+  "videoSha256": "4b76c40772a0383ed4cc848b2035ce87e59c145834ed02e1a155044b577314eb",
+  "reviewMethod": "Actual application footage with synthetic projects. Geometric cropping excludes machine and account labels. Every caption beat, poster and last frame was reviewed. Final playback completed headlessly at normal speed, with every English cue parsed and matched.",
+  "syntheticWorkspacePathsVisible": true,
+  "personalIdentityVisible": false,
+  "audio": "silent",
+  "providerExecutionStartedByRecorder": false
+}
