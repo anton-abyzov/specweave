@@ -1,0 +1,9 @@
+{
+  "command": "git log --oneline",
+  "cwd": "~/specweave-tutorial-sandbox/codex",
+  "exitCode": 0,
+  "stdout": "c5b3b55 0001: record branch creation restriction\n31a4a7d 0001: support personal greetings\nf6138aa Add SpecWeave\n8b2b352 Initial greet-app\n",
+  "stderr": "",
+  "durationMs": 47,
+  "capturedAt": "2026-10-11T05:07:03.902Z"
+}

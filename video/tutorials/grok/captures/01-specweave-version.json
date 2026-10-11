@@ -1,0 +1,9 @@
+{
+  "command": "specweave --version",
+  "cwd": "~/specweave-tutorial-sandbox/grok",
+  "exitCode": 0,
+  "stdout": "3.0.12\n",
+  "stderr": "",
+  "durationMs": 476,
+  "capturedAt": "2026-10-11T05:01:15.831Z"
+}

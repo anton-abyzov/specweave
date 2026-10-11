@@ -1,0 +1,9 @@
+{
+  "command": "git init -q -b main && git add -A && git -c user.name=\"Demo User\" -c user.email=<redacted-email> commit -qm \"Initial greet-app\" && git log --oneline",
+  "cwd": "~/specweave-tutorial-sandbox/claude-code",
+  "exitCode": 0,
+  "stdout": "81a4b21 Initial greet-app\n",
+  "stderr": "── Malware pre-commit scan ──\nPre-commit malware + secret scan passed.\n",
+  "durationMs": 970,
+  "capturedAt": "2026-10-11T05:02:34+00:00"
+}

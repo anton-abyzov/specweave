@@ -1,0 +1,9 @@
+{
+  "command": "specweave --version",
+  "cwd": "~/specweave-tutorial-sandbox/codex",
+  "exitCode": 0,
+  "stdout": "3.0.12\n",
+  "stderr": "",
+  "durationMs": 2381,
+  "capturedAt": "2026-10-11T05:01:15.812Z"
+}

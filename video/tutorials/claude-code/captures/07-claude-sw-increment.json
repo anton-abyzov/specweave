@@ -1,0 +1,9 @@
+{
+  "command": "claude -p --model sonnet --max-turns 25 --permission-mode acceptEdits --allowedTools \"Bash(specweave:*)\" \"Bash(git status:*)\" \"Bash(git diff:*)\" \"Bash(ls:*)\" Read Write Edit Glob Grep -- '/sw-increment \"Personal greeting\" - greet(name) returns \"Hello, <name>!\" and falls back to \"Hello, world!\" when no name is given. Use Ada as the example name. Write the spec with ACs and tasks only; do not implement yet.'",
+  "cwd": "~/specweave-tutorial-sandbox/claude-code",
+  "exitCode": 0,
+  "stdout": "Spec for increment 0001-personal-greeting is written. Nothing is implemented, as you asked.\n\n- **AC-01:** `greet(\"Ada\")` returns \"Hello, Ada!\"\n- **AC-02:** `greet()` returns \"Hello, world!\"\n- **T-01:** Greet by name with world fallback. It covers both ACs, edits `src/greeting.js` and `test/greeting.test.js`, and runs `npm test`.\n\nI merged the two tasks I first drafted into T-01, because both edited the same test file. Next is `/sw-do`.\n",
+  "stderr": "",
+  "durationMs": 24301,
+  "capturedAt": "2026-10-11T05:04:21+00:00"
+}

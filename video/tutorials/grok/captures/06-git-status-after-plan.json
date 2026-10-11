@@ -1,0 +1,9 @@
+{
+  "command": "git status --short",
+  "cwd": "~/specweave-tutorial-sandbox/grok",
+  "exitCode": 0,
+  "stdout": "?? .agents/\n?? .claude/\n?? .gitattributes\n?? .gitignore\n?? .specweave/\n?? AGENTS.md\n?? CLAUDE.md\n",
+  "stderr": "",
+  "durationMs": 104,
+  "capturedAt": "2026-10-11T05:05:19.495Z"
+}

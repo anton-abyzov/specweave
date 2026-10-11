@@ -1,0 +1,10 @@
+{
+  "command": "git init -b main",
+  "cwd": "~/specweave-tutorial-sandbox/antigravity",
+  "exitCode": 0,
+  "stdout": "Initialized empty Git repository in ~/specweave-tutorial-sandbox/antigravity/.git/\n",
+  "stderr": "",
+  "durationMs": 84,
+  "capturedAt": "2026-10-11T05:01:24.063Z",
+  "note": "ANSI color codes stripped; home path, user name and host name redacted."
+}
