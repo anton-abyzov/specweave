@@ -13,6 +13,8 @@ export interface TutorialVideoProps {
   captionsVtt?: string | null;
   /** Show the captions track by default. Leave off when captions are burned into the picture. */
   captionsOn?: boolean;
+  /** Captions are burned into the picture, so no captions track is offered (it would show a second set). */
+  captionsBurnedIn?: boolean;
   durationSeconds?: number | null;
   chapters?: readonly TutorialChapter[];
   /** Agent name shown on the placeholder card (and in the meta row). */
@@ -50,6 +52,7 @@ export default function TutorialVideo({
   poster,
   captionsVtt,
   captionsOn = false,
+  captionsBurnedIn = false,
   durationSeconds,
   chapters = [],
   agentLabel,
@@ -135,7 +138,7 @@ export default function TutorialVideo({
           onTimeUpdate={onTimeUpdate}
         >
           <source src={src} type="video/mp4" />
-          {captionsVtt && <track kind="captions" src={captionsVtt} srcLang="en" label="English" default={captionsOn} />}
+          {captionsVtt && !captionsBurnedIn && <track kind="captions" src={captionsVtt} srcLang="en" label="English" default={captionsOn} />}
           Your browser does not support embedded video. <a href={src}>Download the video</a>.
         </video>
       </div>

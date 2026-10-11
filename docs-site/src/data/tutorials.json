@@ -160,6 +160,7 @@
       "src": "/video/tutorials/claude-code.mp4",
       "poster": "/video/tutorials/claude-code.jpg",
       "captionsVtt": "/video/tutorials/claude-code.en.vtt",
+      "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
       "guide": null,
@@ -173,7 +174,7 @@
         {"start": 54.7, "title": "Review"},
         {"start": 62.7, "title": "Next"}
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 in a demo account, 11 October 2026; some waits are sped up. AI narration using Anton’s voice; captions are burned in."
+      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
     },
     {
       "slug": "specwithcode-codex",
@@ -186,6 +187,7 @@
       "src": "/video/tutorials/codex.mp4",
       "poster": "/video/tutorials/codex.jpg",
       "captionsVtt": "/video/tutorials/codex.en.vtt",
+      "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
       "guide": null,
@@ -199,7 +201,7 @@
         {"start": 60.7, "title": "Review"},
         {"start": 68.7, "title": "Next"}
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 in a demo account, 11 October 2026; some waits are sped up. AI narration using Anton’s voice; captions are burned in."
+      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
     },
     {
       "slug": "specwithcode-opencode",
@@ -212,6 +214,7 @@
       "src": "/video/tutorials/opencode.mp4",
       "poster": "/video/tutorials/opencode.jpg",
       "captionsVtt": "/video/tutorials/opencode.en.vtt",
+      "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
       "guide": null,
@@ -225,7 +228,7 @@
         {"start": 58.9, "title": "Review"},
         {"start": 66.9, "title": "Next"}
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 with OpenCode 2.0.26 in a demo account, 11 October 2026; some waits are sped up. AI narration using Anton’s voice; captions are burned in."
+      "note": "Recorded on SpecWithCode 0.2.6 with OpenCode 2.0.26 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
     },
     {
       "slug": "specwithcode-antigravity",
@@ -255,6 +258,7 @@
       "src": "/video/tutorials/grok.mp4",
       "poster": "/video/tutorials/grok.jpg",
       "captionsVtt": "/video/tutorials/grok.en.vtt",
+      "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
       "guide": null,
@@ -268,7 +272,7 @@
         {"start": 71.6, "title": "Review"},
         {"start": 79.6, "title": "Next"}
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 in a demo account, 11 October 2026; some waits are sped up. AI narration using Anton’s voice; captions are burned in."
+      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
     },
     {
       "slug": "specwithcode-cursor",

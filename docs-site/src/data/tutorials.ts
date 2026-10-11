@@ -30,6 +30,8 @@ export interface Tutorial {
   captionsVtt: string | null;
   /** True when the captions are not burned into the video, so the track starts on. */
   captionsOn?: boolean;
+  /** True when captions are burned into the picture; the VTT then serves search and transcripts only. */
+  captionsBurnedIn?: boolean;
   audio: 'silent' | 'narrated' | null;
   /** ISO date (YYYY-MM-DD) the video was published. */
   uploadDate: string | null;

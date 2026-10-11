@@ -13,7 +13,7 @@ The scripts are in `claude-code/scripts/`. They take the episode folder or demo 
   - Rehearsal: `home/`, `studio/`, `shim/`, `secret/` (mode 700).
   - Final take: `final/` with the same folders plus `out/` (take.webm, cues.json, stills).
   - Media and builds: `vo/` (raw and trimmed VO), `media/` (take.mp4 plus VO WAVs; `hyperframes/assets/media` symlinks here) and `build/` (render, VTTs, stills).
-- **Published** (`docs-site/static/video/tutorials/`): `<agent>.mp4`, `<agent>.jpg`, `<agent>.en.vtt`, `<agent>.chapters.vtt`. Then the entry in `docs-site/src/data/tutorials.json`.
+- **Published** (`docs-site/static/video/tutorials/`): `<agent>.mp4`, `<agent>.jpg`, `<agent>.en.vtt`, `<agent>.chapters.vtt` (the page reads chapters from `tutorials.json`; the VTT is for other players). Then the entry in `docs-site/src/data/tutorials.json`.
 
 ## Steps
 
@@ -81,7 +81,7 @@ The scripts are in `claude-code/scripts/`. They take the episode folder or demo 
 10. **Pairing survives `storageState`.** No in-recording pairing was needed.
 11. **Captions:**
     - The ffmpeg here has no libass/drawtext, so captions are burned in by the HyperFrames composition.
-    - The `.en.vtt` ships too, for search and for screen readers.
+    - The `.en.vtt` ships too, for search and transcripts. Set `captionsBurnedIn: true` on the entry so the player offers no captions track; turning one on would show a second set over the burned-in captions.
     - `captionsOn` stays unset.
 12. **Zoom holds** from DPR-2 stills were not used. Highlight boxes on the 1080p footage read well enough.
 13. **Music:** none. No licensed track is in the repo, so the video is voice only.
@@ -93,11 +93,11 @@ Never sign in on camera, and never run a status command that prints the account 
 | Agent | Sign-in on 0.2.6 |
 |---|---|
 | Claude Code | Verified. On this Mac the login lives in the Keychain, which a disposable HOME cannot reach, and `claude auth login` would need a browser. Instead, write `<demo>/home/.claude/.credentials.json` (mode 600) holding only the current access token, with `refreshToken: null` and the real expiry. Do it in a command that never prints the token. It lasts until that token expires (hours), so take soon after. Delete the file at teardown. |
-| Codex | Unverified. Signs in inside the app (the agents step offers "Continue with ChatGPT" and "Use existing CLI"). Alternatively, copy `~/.codex/auth.json` into `<demo>/home/.codex/` off camera, mode 600, and delete it after. Cut every browser frame. |
-| OpenCode | Unverified. `HOME=<demo>/home opencode auth login` off camera, or copy only the provider entry the take needs into `<demo>/home/.local/share/opencode/auth.json`. |
-| Grok | Unverified. `HOME=<demo>/home grok login` off camera, then `grok --trust` inside `greet-app`. |
-| Cursor | Unverified. Signs in inside the app; the browser part is cut. Check whether the Cursor SDK honours HOME or reads the Keychain like Claude does. |
-| Antigravity | Unverified. Signs in inside the app; the browser part is cut. |
+| Codex | Verified (episode 2). `codex/scripts/codex-auth.sh` copies `~/.codex/auth.json` into `<demo>/home/.codex/` (mode 600, refresh token blanked) right before the take clicks "Use existing CLI". Copied earlier, the server signs in on its own and shows a masked "Signed in as" row. "Continue with ChatGPT" is only hovered. Delete the copy at teardown. |
+| OpenCode | Verified (episode 4). 0.2.6 rates OpenCode 1.x as limited, so install OpenCode 2 into the demo tools folder (`opencode/scripts/install-opencode2.sh`). OpenCode 2 keeps logins in `opencode.db`; move them with `opencode auth export --standalone` piped into `HOME=<demo>/home opencode auth import --standalone`, printing nothing. Delete `auth.json` and `opencode.db*` at teardown. |
+| Grok | Verified (episode 5). `grok/scripts/grok-signin.sh` refreshes the real login with `grok models`, then writes a sanitized `<demo>/home/.grok/auth.json` (access key only, no refresh token, demo name and email). Then run `grok --trust` inside `greet-app`. Delete it at teardown. |
+| Cursor | Blocked. 0.2.6 runs Cursor through `@cursor/sdk`, which accepts only a Cursor user API key: `CURSOR_API_KEY` in the server environment, or an in-app browser sign-in that stores a key in the server's own `<base-dir>/secrets` (not HOME). The Cursor CLI login is not used. |
+| Antigravity | Blocked. 0.2.6 runs `agy_acp_server` with a private `GEMINI_HOME`; its Google login is written only by the in-app Sign in (browser OAuth to a 127.0.0.1 callback) into `<base-dir>/userdata/providers/antigravity/<hash>/antigravity-acp/acp_token.json`. Sign in once off camera on the demo `--base-dir`, then record. |
 
 For agents whose credentials sit in the macOS Keychain, use the Claude approach: copy only short-lived tokens into the demo HOME, never refresh tokens, and delete them at teardown.
 
