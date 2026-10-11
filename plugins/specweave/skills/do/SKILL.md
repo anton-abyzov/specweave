@@ -23,9 +23,12 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
    claim; 6: its dependencies are not done. Pick another. Never edit before claiming.
 3. Implement inside that task's `Files` only. Need another file? Claim the task that
    owns it, or add a task to spec.md `## Tasks`.
-4. Run the task's `Test`. Red means fix it; never skip, weaken or delete a test.
+4. Run the task's `Test`. Red means fix the code; never skip, weaken or delete a test.
+   Don't write tests first or add unit tests the task did not ask for (unless the
+   project's `testing` config or conventions require them): check the AC end to end,
+   the way a user would hit it.
 5. Commit with the increment id first: `git commit -m "0042: fold the ledger"`.
-6. `specweave task done T-03 --run "npm test -- ledger"`. Exit 5: the command failed and
+6. `specweave task done T-03 --run "npm run test:e2e -- double-claim"`. Exit 5: the command failed and
    the task stays open. No `Test`? `--evidence "<sha> + what you checked"`.
 7. Stuck: `specweave task block T-03 --reason "<what is missing>"`. Not needed:
    `specweave task skip T-03 --reason "<why>"`. Then back to 1.
@@ -55,7 +58,7 @@ printf '%s\n' '{"t":"T-01","e":"claim","by":"codex@mbp","at":"2026-09-02T10:00:0
 
 ```powershell
 $L = '.specweave\increments\0042-ledger-fold\ledger.jsonl'
-$line = '{"t":"T-01","e":"done","by":"codex@win","at":"2026-09-02T11:30:00Z","evidence":"npm test -- ledger exit 0 / a1b2c3d"}'
+$line = '{"t":"T-01","e":"done","by":"codex@win","at":"2026-09-02T11:30:00Z","evidence":"npm run test:e2e -- double-claim exit 0 / a1b2c3d"}'
 [IO.File]::AppendAllText($L, $line + "`n", [Text.UTF8Encoding]::new($false))
 ```
 
