@@ -187,7 +187,7 @@ describe('documented formats match the CLI', () => {
     expect(board.tasks.map((t) => t.id)).toEqual(['T-01', 'T-02']);
     expect(board.tasks[0].acs).toContain('AC-01');
     expect(board.tasks[0].filesAffected).toContain('src/core/tasks/ledger.ts');
-    expect(board.tasks[0].test).toBe('npm test -- ledger');
+    expect(board.tasks[0].test).toBe('npm run e2e -- double-claim');
     expect(board.tasks.every((t) => t.state.status === 'open')).toBe(true);
   });
 

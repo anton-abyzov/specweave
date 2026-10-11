@@ -877,14 +877,10 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   adapters: {
     default: 'claude',
   },
+  // No test mode or coverage target by default: agent-written tests are judged by
+  // the acceptance criteria they check, not by test-first order or line coverage.
   testing: {
-    mode: 'TDD',
     commands: [],
-    coverage: {
-      unit: 95,
-      integration: 90,
-      e2e: 100,
-    },
   },
   limits: {
     activeIncrements: 3,
