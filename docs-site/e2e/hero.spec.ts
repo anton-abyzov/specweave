@@ -7,9 +7,9 @@ test.describe('3.0 landing page', () => {
 
   test('hero headline and primary action are visible', async ({ page }) => {
     const hero = page.locator('section').first();
-    await expect(hero.locator('h1')).toContainText('Every coding agent.');
-    await expect(hero.locator('h1')).toContainText('One project.');
-    const studio = hero.getByRole('link', { name: /See SpecWeave Studio/ });
+    await expect(hero.locator('h1')).toContainText('Every AI agent.');
+    await expect(hero.locator('h1')).toContainText('One workspace.');
+    const studio = hero.getByRole('link', { name: /See SpecWithCode/ });
     await expect(studio).toBeVisible();
     await expect(studio).toHaveAttribute('href', /^\/studio\/?$/);
     await expect(hero.getByRole('link', { name: /Start free with the CLI/ })).toHaveAttribute('href', /^\/docs\/getting-started\/?$/);
