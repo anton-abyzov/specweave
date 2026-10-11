@@ -131,7 +131,7 @@ In checkpoint-only mode the Stop hook never steers the model and a rate-limited 
 
 ## Inside SpecWithCode
 
-[SpecWithCode](/studio) runs Claude Code and Codex sessions itself and can switch a thread from one provider to the other between turns, by a per-project rule: offer the fallback, wait for the reset, or switch automatically at a percentage you pick. When Studio starts a provider session it sets `SPECWEAVE_STUDIO_THREAD_ID`. With that variable set, the hooks never ask the model to hand off, because a pushed handoff in the middle of a Studio thread would release claims the next provider still needs. They only save the checkpoint, and also write it to `~/.specweave/checkpoints/studio/<thread>.json`, one file per Studio thread whichever provider wrote it. Outside Studio, the same machine keeps handing off as above.
+[SpecWithCode](/studio) runs Claude Code and Codex sessions itself and can switch a thread from one provider to the other between turns, by a per-project rule: offer the fallback, wait for the reset, or switch automatically at a percentage you pick. When SpecWithCode starts a provider session it sets `SPECWEAVE_STUDIO_THREAD_ID`. With that variable set, the hooks never ask the model to hand off, because a pushed handoff in the middle of a SpecWithCode thread would release claims the next provider still needs. They only save the checkpoint, and also write it to `~/.specweave/checkpoints/studio/<thread>.json`, one file per SpecWithCode thread whichever provider wrote it. Outside SpecWithCode, the same machine keeps handing off as above.
 
 ## Pick up in the next tool
 

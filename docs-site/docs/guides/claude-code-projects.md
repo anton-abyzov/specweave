@@ -1,6 +1,6 @@
 ---
 title: Claude Projects and portable work
-description: Distinguish Claude knowledge projects, the coordinating Claude Code Projects beta, and portable plans used by SpecWeave and Studio.
+description: Distinguish Claude knowledge projects, the coordinating Claude Code Projects beta, and portable plans used by SpecWeave and SpecWithCode.
 ---
 
 # Claude Projects and portable work
@@ -25,6 +25,6 @@ Git can carry reviewed source changes, instructions, specifications, factual mem
 
 Use [handoff and pickup](./cross-tool-handoff.md) for a deliberate SpecWeave continuation. Preserve the current owner until the handoff is acknowledged; an idle or disconnected session is not permission to take over its work.
 
-[Studio projects](../studio/projects.md) offer a separate provider-neutral workspace, with native Claude Code and Codex threads. Studio's selected-thread replies route through its coordinator, which differs from Claude's documented direct worker composer. Studio's plain planning mode does not require the CLI; its optional SpecWeave adapter preserves an existing increment as the authority.
+[SpecWithCode projects](../studio/projects.md) offer a separate provider-neutral workspace, with native Claude Code and Codex threads. SpecWithCode's selected-thread replies route through its coordinator, which differs from Claude's documented direct worker composer. SpecWithCode's plain planning mode does not require the CLI; its optional SpecWeave adapter preserves an existing increment as the authority.
 
 *Official Claude sources checked 9 October 2026. Beta behavior can change.*
