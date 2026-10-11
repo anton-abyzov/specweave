@@ -89,6 +89,12 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(agents).not.toContain('tasks.md');
   });
 
+  it('AGENTS.md has agents check ACs from the outside, not add unit tests by default', () => {
+    expect(agents).toContain('A Test checks the AC as users would (CLI, HTTP, UI, API)');
+    expect(agents).toContain('add unit tests only when asked');
+    expect(agents).not.toMatch(/Files: src\/a\.ts, src\/a\.test\.ts/);
+  });
+
   it.each([
     ['CLAUDE.md.template', claude],
     ['AGENTS.md.template', agents],
@@ -119,8 +125,8 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     const t = parseTemplate(content);
     const unconditional = t.sections.filter(s => !s.when);
     const rendered = [...unconditional.map(s => s.content), t.tail].join('\n\n');
-    // About 800 tokens for AGENTS.md (it was 1,860 in 2.x).
-    expect(rendered.length).toBeLessThanOrEqual(3300);
+    // About 850 tokens for AGENTS.md (it was 1,860 in 2.x).
+    expect(rendered.length).toBeLessThanOrEqual(3450);
     expect(t.tail).toContain('## Project notes');
     expect(t.sections.map(s => s.content).join('\n')).not.toContain('## Commands');
   });
