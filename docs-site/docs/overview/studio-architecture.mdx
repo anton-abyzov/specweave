@@ -43,7 +43,7 @@ Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel
 
 ### Providers and switching
 
-SpecWithCode runs each provider's own agent (Claude Code, Codex, OpenCode, Cursor, Pi) with the sign-ins already on that machine. Each thread picks its provider, model and effort. You can change provider inside a thread: SpecWithCode passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. SpecWithCode does not yet switch on its own when a provider reaches a usage limit; the limit banner offers to wait for the reset or check again.
+SpecWithCode runs each provider's own agent (Claude Code, Codex, OpenCode, Cursor, Pi) with the sign-ins already on that machine. Each thread picks its provider, model and effort. You can change provider inside a thread: SpecWithCode passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. When a provider hits its usage limit, the project’s rule decides: offer another provider (the default), wait for the reset, or switch to another signed-in provider on its own.
 
 ### Optional components
 
@@ -75,6 +75,8 @@ The optional [Jev / Decisions integration](/docs/guides/jev-system-one) handles 
 
 The accepted **8 October 2026, 4:14 PM EDT** private fleet run completed three native Codex marker-reading turns, one per host, sequentially. The delivery record binds that bounded result to source `5d25f9ab` and its packaged artifact. This is a dated observation, not a promise that every account currently has capacity.
 
+Release 0.2.0 recorded five native project runs with a Codex coordinator and Claude Code workers, including reuse of a worker after a project-memory update. Each is a dated observation of that build, not a success rate.
+
 That demonstrates bounded native routing in the tested fleet. It does not establish concurrent enterprise load, generalized task success rates, measured productivity gains, compliance certification, a public installer or a service-level agreement. New UI and fleet work continue separately; a source commit alone is not installed-runtime proof.
 
 ## Watch agents work in SpecWithCode
@@ -103,7 +105,7 @@ In **SpecWeave 3.0.6**, `specweave auto-handoff on` enables silent local recover
 
 <StudioOverviewVideo />
 
-For an already provisioned early-access install, use the operator-supplied private URL and current host-specific instructions:
+For an early-access install, use the pairing link and host instructions you were sent:
 
 1. Make sure you can reach the target machine: same network, SSH, or the approved tailnet.
 2. Pair the browser to that SpecWithCode host with the provided scoped pairing flow. Being on the network is not enough.

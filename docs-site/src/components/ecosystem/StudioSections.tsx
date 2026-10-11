@@ -13,15 +13,15 @@ const features: [string, string, React.ReactNode][] = [
   ['Routines and Personal', 'Recurring work, not only code.', <>Schedule routines inside a project. A Personal project gets its own working folder and per-project tool grants for research, notes and everyday tasks.</>],
 ];
 
-type UmbrellaStatus = 'pilot' | 'testing' | 'open';
-const statusLabel: Record<UmbrellaStatus, string> = { pilot: 'In the app', testing: 'In testing', open: 'Open source now' };
+type UmbrellaStatus = 'app' | 'open';
+const statusLabel: Record<UmbrellaStatus, string> = { app: 'In the app', open: 'Open source now' };
 
 const umbrella: { job: string; instead: string[]; title: string; body: React.ReactNode; gap?: string; status: UmbrellaStatus }[] = [
-  { job: 'Project agents', instead: ['Claude Code Projects', 'Codex cloud tasks'], title: 'A coordinator, and workers on any model.', body: 'One conversation per goal. Each worker picks its own provider, model, machine and worktree, and you can step into any of them.', status: 'pilot' },
-  { job: 'Personal agents', instead: ['OpenAI Dots', 'xAI Grok Bot', 'Meta Muse'], title: 'Personal projects that keep working.', body: 'A project with its own folder, memory and plan, scheduled routines, tasks a webhook can start, and an opt-in browser profile with your saved logins.', gap: 'Runs while your machine is awake, not in a vendor cloud. Message the coordinator from Telegram.', status: 'pilot' },
-  { job: 'Self-hosted agents', instead: ['Hermes Agent', 'OpenClaw'], title: 'Local first, with tools you grant.', body: 'Agents run on your machines. Tools come from local MCP servers you approve one tool at a time, and memory is plain files in the project.', gap: 'Telegram works today; WhatsApp and Slack do not yet.', status: 'pilot' },
-  { job: 'Coding agents', instead: ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'Copilot'], title: 'Every lab’s official agent.', body: 'SpecWithCode drives each provider’s own agent, so its sign-in, approvals and limits apply. Switch a thread to another provider mid-conversation.', status: 'pilot' },
-  { job: 'Usage limits', instead: ['One usage page per account'], title: 'Every account’s limits on one screen.', body: 'When a provider runs out, a thread can ask, wait for the reset or switch to another provider on its own. A capacity policy picks a fresh account for new work.', status: 'pilot' },
+  { job: 'Project agents', instead: ['Claude Code Projects', 'Codex cloud tasks'], title: 'A coordinator, and workers on any model.', body: 'One conversation per goal. Each worker picks its own provider and model and runs on the project’s machine, and you can step into any of them.', status: 'app' },
+  { job: 'Personal agents', instead: ['OpenAI Dots', 'xAI Grok Bot', 'Meta Muse'], title: 'Personal projects that keep working.', body: 'A project with its own folder, memory and plan, scheduled routines, a Telegram channel to its coordinator through your own bot, and an opt-in browser profile with your saved logins.', gap: 'Runs while your machine is awake, not in a vendor cloud. Webhook-started tasks need remote access turned on.', status: 'app' },
+  { job: 'Self-hosted agents', instead: ['Hermes Agent', 'OpenClaw'], title: 'Local first, with tools you grant.', body: 'Agents run on your machines. Tools come from local MCP servers you approve one tool at a time, and memory is plain files in the project.', gap: 'Telegram works with your own bot; WhatsApp and Slack do not yet.', status: 'app' },
+  { job: 'Coding agents', instead: ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'Copilot'], title: 'Every lab’s official agent.', body: 'SpecWithCode drives each provider’s own agent, so its sign-in, approvals and limits apply. Switch a thread to another provider mid-conversation.', status: 'app' },
+  { job: 'Usage limits', instead: ['One usage page per account'], title: 'Every account’s limits on one screen.', body: 'When a provider runs out, a thread offers another provider, waits for the reset or switches on its own; you set the rule per project. With the optional Switch companion, a capacity policy drafts new work on a fresh account.', status: 'app' },
   { job: 'The record', instead: ['Memory locked in one vendor'], title: 'Spec, evidence and handoff in git.', body: <>The open-source SpecWeave CLI keeps it, and any tool continues with <code>specweave pickup</code>.</>, status: 'open' },
 ];
 
@@ -56,7 +56,7 @@ const rows: [string, string, string][] = [
   ['Where work runs', 'A cloud container per thread, with a bridge to your computer in some products.', 'On machines you own: this computer, plus any you pair over your network, SSH or Tailscale.'],
   ['Models', 'One vendor’s models.', 'Claude Code, Codex, Grok Build, Cursor, OpenCode, Copilot and more. The coordinator and each worker choose their own.'],
   ['Your skills and folders', 'Upload skills to the account or a repository. Neighbouring local folders are out of reach.', 'The agent runs on your machine with its provider’s local configuration, so local skills, MCP servers and folders you approve are within reach.'],
-  ['When a limit hits', 'Wait for the reset or change plans.', 'The thread switches to another provider on its own, carrying the recent conversation over, or waits and resumes on the same account; you choose the rule per project. Or hand off to another tool with SpecWeave.'],
+  ['When a limit hits', 'Wait for the reset or change plans.', 'By default the thread offers to continue on another provider, carrying the recent conversation over; per project you can have it wait and resume on the same account, or switch on its own. Or hand off to another tool with SpecWeave.'],
   ['The record', 'Inside the vendor’s project.', 'Specs, task evidence and handoffs in git, readable by any tool.'],
   ['Laptop closed', 'Keeps running in the cloud.', 'Runs while the executing machine is awake, so a desktop or Mac mini can carry work while your laptop sleeps.'],
 ];
@@ -89,13 +89,13 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>How does handoff fit in?</h3>
-      <p>Inside a thread you can switch provider: SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. When a provider runs out, each project’s rule decides: ask you, wait and resume on the same account, or switch to another provider on its own.</p>
+      <p>Inside a thread you can switch provider: SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. When a provider runs out, each project’s rule decides: offer you another provider (the default), wait and resume on the same account, or switch on its own.</p>
       <p>To continue in another tool, <Link to="/docs/guides/cross-tool-handoff/">hand off with SpecWeave</Link>: the spec, ledger and work in progress are committed, and the next agent runs <code>specweave pickup</code>.</p>
     </article>
     <article>
       <h3>Is it a personal agent like Dots or Hermes?</h3>
-      <p>Partly. A Personal project has its own folder, memory and plan, runs scheduled routines and can be started by a webhook, all on your machine with the model you choose. It uses tools only from local MCP servers you grant tool by tool.</p>
-      <p>It is not always on in a cloud: it works while the machine running it is awake. You can message its coordinator from Telegram (not WhatsApp or Slack yet), and an optional Google sign-in gives it read-only Gmail, Calendar and Drive.</p>
+      <p>Partly. A Personal project has its own folder, memory and plan, runs scheduled routines and can be started by a webhook, all on your machine with the model you choose. Its tools come from local MCP servers you grant tool by tool, plus an optional read-only Google sign-in and an opt-in browser profile.</p>
+      <p>It is not always on in a cloud: it works while the machine running it is awake. Connect your own Telegram bot in Settings to message a project’s coordinator from your phone (not WhatsApp or Slack yet), and an optional Google sign-in, turned on per project, gives it read-only Gmail, Calendar and Drive.</p>
     </article>
     <article>
       <h3>Does it replace Claude Code or Codex?</h3>
@@ -104,7 +104,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>Is it a cloud service?</h3>
-      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs, also usable from a browser. Windows and Intel Macs are not built yet. Telemetry and the hosted relay are off by default; the desktop app checks GitHub for updates, which you can turn off. Model calls still go to the providers you choose.</p>
+      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. Windows and Intel Macs are not built yet. Telemetry and the hosted relay are off by default. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
     </article>
     <article>
       <h3>Can I use it today?</h3>

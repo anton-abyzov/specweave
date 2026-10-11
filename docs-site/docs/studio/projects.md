@@ -23,7 +23,7 @@ Use **Memory → Project instructions** for standing rules: the target branch, u
 
 Open **New project**, then choose **Personal project** for your preferences, planning, research or ongoing personal work. SpecWithCode creates a managed folder on the selected device without initializing Git. You get the same coordinator, threads, memory, plans, routines and usage views as a code project. Add repositories or additional folders later if they become useful.
 
-Personal memory belongs to that project. It does not automatically include other projects, your home directory, Gmail, Calendar or Drive. Connect tools explicitly under **Project settings → Environment → Connections**. A Personal project is our version of a personal assistant workspace; it does not connect to or synchronize an OpenAI Dot.
+Personal memory belongs to that project. It does not automatically include other projects, your home directory, Gmail, Calendar or Drive. Turn on Google per project and connect other tools explicitly under **Project settings → Environment → Connections**. A Personal project is our version of a personal assistant workspace; it does not connect to or synchronize an OpenAI Dot.
 
 Choose **New thread without a project** for a one-off question, or **Standalone chat on…** to select its execution machine explicitly. SpecWithCode creates the working location automatically, so you do not need to select a repository or project folder just to ask something.
 
@@ -66,7 +66,7 @@ The command runs as the device's user account, so enable only servers you trust.
 
 The [official GitHub MCP server](https://github.com/github/github-mcp-server#local-github-mcp-server) is one example: use its installed executable with the `stdio` argument and the required host environment variable names. Its remote HTTP/OAuth endpoint is a separate transport and is not a stdio executable.
 
-For Gmail, Calendar or Drive, choose a compatible Workspace MCP server and follow that server's OAuth setup. For example, the [community Google Workspace MCP server](https://github.com/taylorwilsdon/google_workspace_mcp) documents its own Google OAuth configuration. It is a separate community project, not a built-in Google connection or an authentication service operated by SpecWithCode. The [Google Workspace CLI](https://github.com/googleworkspace/cli) is also a separate tool; do not assume a CLI command implements the MCP protocol.
+For read-only Gmail, Calendar or Drive, connect a Google account under **Settings → Google account** and turn the services on per project; SpecWithCode asks only for read-only scopes. For write access or other Google services, choose a compatible Workspace MCP server and follow that server's OAuth setup. For example, the [community Google Workspace MCP server](https://github.com/taylorwilsdon/google_workspace_mcp) documents its own Google OAuth configuration. It is a separate community project, not an authentication service operated by SpecWithCode. The [Google Workspace CLI](https://github.com/googleworkspace/cli) is also a separate tool; do not assume a CLI command implements the MCP protocol.
 
 To use a revoked connection again, choose **Restore configuration**, then **Check and discover tools**, select tools and **Save connection**. Restoring does not restore previous tool grants.
 

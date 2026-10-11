@@ -22,7 +22,7 @@ export default function Home() {
     <main className={clsx(base.page, styles.landing)}>
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <Link to="/studio" className={styles.releasePill}><b>SpecWithCode</b> The spec travels with the code <span aria-hidden="true">↗</span></Link>
+          <Link to="/studio" className={styles.releasePill}><b>SpecWithCode</b> Free, in early access <span aria-hidden="true">↗</span></Link>
           <h1>Every AI agent.<br /><em>One workspace.</em></h1>
           <p className={styles.lead}>Projects like Claude Code. A personal agent like Dots or Hermes. Coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. SpecWithCode runs them as one project on machines you own, gives each job the model that fits, and keeps the record in git so any agent can carry on.</p>
           <div className={base.actions}>
@@ -107,7 +107,7 @@ export default function Home() {
       <section className={base.finalCta}>
         <span className={styles.eyebrow}>Your next session can start here</span>
         <h2>Bring every agent.<br /><em>Keep your machines.</em></h2>
-        <Link className={base.primary} to="/studio">Get SpecWithCode free ↗</Link>
+        <Link className={base.primary} to="/studio">Get early access, free ↗</Link>
         <Link className={base.textLink} to="/docs/getting-started">Get started with the CLI</Link>
       </section>
     </main>
