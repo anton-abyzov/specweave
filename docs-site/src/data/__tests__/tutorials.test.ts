@@ -14,9 +14,10 @@ import {
 const staticDir = join(process.cwd(), 'static');
 
 describe('tutorial catalogue', () => {
-  it('plans one coming-soon SpecWithCode tutorial per agent, with no media yet', () => {
+  it('has one SpecWithCode tutorial per agent; upcoming ones claim no media yet', () => {
+    const perAgent = TUTORIALS.filter(t => AGENTS.some(a => a.id === t.agent));
+    expect(perAgent.map(t => t.agent).sort()).toEqual(AGENTS.map(a => a.id).sort());
     const upcoming = TUTORIALS.filter(t => t.status === 'coming-soon');
-    expect(upcoming.map(t => t.agent).sort()).toEqual(AGENTS.map(a => a.id).sort());
     for (const t of upcoming) {
       expect(t.src).toBeNull();
       expect(t.poster).toBeNull();
