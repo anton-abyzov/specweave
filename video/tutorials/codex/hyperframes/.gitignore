@@ -3,3 +3,5 @@ assets/media
 renders/
 snapshots/
 node_modules/
+AGENTS.md
+CLAUDE.md

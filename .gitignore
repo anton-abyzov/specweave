@@ -273,3 +273,8 @@ vskill/
 vskill.lock
 /video/*
 !/video/tutorials/
+/video/tutorials/**/*.webm
+/video/tutorials/**/*.wav
+/video/tutorials/**/*.mp3
+/video/tutorials/**/*.mov
+/video/tutorials/**/out/
