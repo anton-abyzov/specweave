@@ -90,3 +90,4 @@
 .uStatus[data-status=open]{background:var(--sw-brand-ink);color:var(--sw-brand-paper)}
 @media(max-width:900px){.uRow{grid-template-columns:minmax(0,1fr) auto;gap:10px 16px}.uArrow{display:none}.uJob{grid-column:1}.uStatus{grid-column:2;grid-row:1}.uStudio{grid-column:1 / -1}}
 .uStudio code{white-space:nowrap}
+.builtOn{margin-top:18px!important;font-size:14px!important}.builtOn strong{color:var(--sw-brand-ink, inherit);font-weight:600}.builtOn a{display:flex!important;width:max-content;margin-top:6px}

@@ -9,7 +9,7 @@ test.describe('3.0 landing page', () => {
     const hero = page.locator('section').first();
     await expect(hero.locator('h1')).toContainText('Every coding agent.');
     await expect(hero.locator('h1')).toContainText('One project.');
-    const studio = hero.getByRole('link', { name: /See SpecWeave Studio/ });
+    const studio = hero.getByRole('link', { name: /See SpecWithCode/ });
     await expect(studio).toBeVisible();
     await expect(studio).toHaveAttribute('href', /^\/studio\/?$/);
     await expect(hero.getByRole('link', { name: /Start free with the CLI/ })).toHaveAttribute('href', /^\/docs\/getting-started\/?$/);
