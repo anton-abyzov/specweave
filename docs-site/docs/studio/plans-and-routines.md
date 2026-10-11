@@ -7,8 +7,8 @@ description: Use an optional plan for acceptance and evidence, preserve existing
 
 Start with a conversation. Add a plan when work needs acceptance criteria, owners or verification. Ordinary SpecWithCode chat does not require a SpecWeave increment or CLI installation.
 
-:::info SpecWithCode 0.2.0 private prerelease
-These features are part of SpecWithCode 0.2.0. Its private release requires repository access, and each execution host needs the corresponding version installed. See [SpecWithCode projects](./projects.md) for release availability.
+:::info Early access
+These features have been in every SpecWithCode build since 0.2.0. SpecWithCode is free and in early access until its first public release; each machine that runs work needs the current version installed. See [SpecWithCode projects](./projects.md) for availability.
 :::
 
 ## One plan authority

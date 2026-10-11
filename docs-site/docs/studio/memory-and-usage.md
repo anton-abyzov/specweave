@@ -7,8 +7,8 @@ description: Understand shared memory, independent native conversations, cache r
 
 Share durable facts across your project. Keep each worker's conversation and provider cache with the provider that owns it.
 
-:::info SpecWithCode 0.2.0 private prerelease
-These features are part of SpecWithCode 0.2.0. Its private release requires repository access, and each execution host needs the corresponding version installed. See [SpecWithCode projects](./projects.md) for release availability.
+:::info Early access
+These features have been in every SpecWithCode build since 0.2.0. SpecWithCode is free and in early access until its first public release; each machine that runs work needs the current version installed. See [SpecWithCode projects](./projects.md) for availability.
 :::
 
 | Kind of context | What belongs there |
