@@ -572,7 +572,7 @@
           "type": "string",
           "description": "Default test mode for new increments",
           "enum": ["TDD", "test-first", "test-after"],
-          "default": "TDD"
+          "default": "test-after"
         },
         "defaultCoverageTarget": {
           "type": "number",

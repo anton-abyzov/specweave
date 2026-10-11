@@ -60,7 +60,8 @@ describe('ConfigManager', () => {
       const config = await configManager.read();
       expect(config.issueTracker?.provider).toBe('jira');
       // 2.0 defaults are merged in for keys the user did not set
-      expect(config.testing?.mode).toBe('TDD');
+      expect(config.testing?.commands).toEqual([]);
+      expect(config.testing?.mode).toBeUndefined();
       expect(config.livingDocs).toBe(false);
     });
 
@@ -182,9 +183,9 @@ describe('ConfigManager', () => {
     });
 
     it('has the 2.0 testing shape', () => {
-      expect(DEFAULT_CONFIG.testing?.mode).toBe('TDD');
+      expect(DEFAULT_CONFIG.testing?.mode).toBeUndefined();
       expect(DEFAULT_CONFIG.testing?.commands).toEqual([]);
-      expect(DEFAULT_CONFIG.testing?.coverage?.unit).toBe(95);
+      expect(DEFAULT_CONFIG.testing?.coverage).toBeUndefined();
     });
 
     it('has an advisory limits block with no hard cap', () => {

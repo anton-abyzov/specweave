@@ -120,7 +120,7 @@ describe('init config.json ordering (AD-3)', () => {
       expect(config.version).toBe('2.0');
       expect(config.project.name).toBe('new-project');
       expect(config.adapters.default).toBe('claude');
-      expect(config.testing.mode).toBe('TDD');
+      expect(config.testing.mode).toBeUndefined();
       expect(config.livingDocs).toBe(false);
     });
   });
