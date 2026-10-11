@@ -3,13 +3,26 @@
   "episode": 3,
   "agent": "cursor",
   "title": "Cursor in SpecWithCode",
-  "durationSec": 88,
-  "spokenWords": 192,
+  "durationSec": 78.7,
+  "status": "not recorded: Cursor could not be signed in off camera (see SCRIPT.md)",
+  "spokenWords": 176,
   "resolution": "1920x1080",
   "fps": 30,
   "demoRepo": "greet-app",
   "ledgerAgent": "cursor@demo",
-  "labelsCheckedAt": "specweave-studio 618bfeca (v0.2.4); record on the renamed SpecWithCode build",
+  "labelsCheckedAt": "SpecWithCode 0.2.6 (specweave-studio v0.2.6), 2026-10-11: Settings → Providers → Add provider → Cursor → Sign in → Open browser rendered in a demo server; shared beats checked in episode 1",
+  "stepVerbs": {
+    "expect": "text must be visible within 20 s, else the take stops",
+    "click": "move the cursor to the element (role + name, or text), outline it, click",
+    "clickIfPresent": "click only when the element exists (optional wizard steps)",
+    "hover": "move the cursor to the element and hold",
+    "type": "type text (into a placeholder or the focused element)",
+    "press": "press a key",
+    "pause": "hold for ms",
+    "waitTurn": "wait until the agent turn ends (no Stop button); the edit speed-ramps this span",
+    "ensureOption": "open a combobox and pick an option only when it does not already show it",
+    "cut": "hard cut in the edit; nothing is recorded across it"
+  },
   "shots": [
     {
       "id": "01-intro",
@@ -18,7 +31,7 @@
       "startSec": 0,
       "durationSec": 4,
       "vo": "Cursor in SpecWithCode: plan, build, review.",
-      "spokenWords": 8,
+      "spokenWords": 7,
       "card": {
         "eyebrow": "SpecWithCode tutorial 03",
         "title": "Cursor in SpecWithCode",
@@ -30,7 +43,7 @@
       "kind": "TERM",
       "chapter": "Set up the repo",
       "startSec": 4,
-      "durationSec": 10,
+      "durationSec": 8,
       "vo": "In your repo, run specweave init with the Cursor adapter. It adds AGENTS.md and eleven SpecWeave skills.",
       "spokenWords": 22,
       "stepChip": "In your repo: specweave init . --quick --adapter cursor",
@@ -56,50 +69,69 @@
       "id": "03-add-provider",
       "kind": "APP",
       "chapter": "Connect Cursor",
-      "startSec": 14,
+      "startSec": 12,
       "durationSec": 11,
       "vo": "Open SpecWithCode, then Settings, Providers. Cursor is off by default: click Add provider, pick Cursor, click Next twice, then Add instance.",
       "spokenWords": 23,
-      "stepChip": "Settings → Providers → Add provider → Cursor → Next → Next → Add instance",
+      "stepChip": "Settings → Providers → + → Cursor → Next → Next → Add instance",
+      "verified": "every step rendered on 0.2.6, 2026-10-11",
       "steps": [
         {
           "do": "click",
           "role": "button",
-          "name": "Settings",
-          "note": "sidebar footer"
+          "name": "Account: Demo Mac",
+          "note": "sidebar footer; opens the account menu"
         },
         {
           "do": "click",
-          "role": "link",
+          "role": "menuitem",
+          "name": "Settings"
+        },
+        {
+          "do": "click",
+          "role": "button",
           "name": "Providers",
-          "note": "route /settings/providers; only Codex and Claude rows show"
+          "exact": true,
+          "note": "settings nav; route /settings/providers; only Codex and Claude rows show"
         },
         {
           "do": "click",
           "role": "button",
           "name": "Add provider",
-          "note": "the + in the section header"
+          "note": "the + at the right of the Providers header"
         },
         {
           "do": "expect",
-          "text": "Add provider",
-          "note": "dialog title; steps Provider, Identity, Config"
+          "text": "Add an account or configure a provider on Demo Mac.",
+          "note": "dialog \"Add provider\", steps Provider, Identity, Config"
         },
         {
           "do": "click",
           "role": "radio",
-          "name": "Cursor"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Next"
+          "name": "Cursor",
+          "exact": true,
+          "note": "the ACP Registry list below also has an \"Add Cursor\" button; do not use it"
         },
         {
           "do": "click",
           "role": "button",
           "name": "Next",
-          "note": "leave Label as is"
+          "exact": true
+        },
+        {
+          "do": "expect",
+          "text": "Instance ID",
+          "note": "Identity step: Label, Instance ID, Accent color; leave as is"
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Next",
+          "exact": true
+        },
+        {
+          "do": "expect",
+          "text": "This driver has no required configuration."
         },
         {
           "do": "click",
@@ -108,8 +140,8 @@
         },
         {
           "do": "expect",
-          "text": "Provider instance added",
-          "note": "toast"
+          "text": "Sign in with Cursor or add CURSOR_API_KEY",
+          "note": "the new Cursor row reads Not authenticated until sign-in"
         }
       ]
     },
@@ -117,11 +149,12 @@
       "id": "04-sign-in",
       "kind": "APP",
       "chapter": "Connect Cursor",
-      "startSec": 25,
-      "durationSec": 12,
-      "vo": "Select it, click Sign in, then Open browser, and approve. It runs on the Cursor SDK, so you don't need the Cursor CLI.",
-      "spokenWords": 28,
-      "stepChip": "Cursor → Account → Sign in → Open browser · no Cursor CLI needed",
+      "startSec": 23,
+      "durationSec": 11,
+      "vo": "Click Sign in, then Open browser, and approve. It runs on the Cursor SDK, so you don't need the Cursor CLI.",
+      "spokenWords": 21,
+      "stepChip": "Cursor → Account: Sign in → Open browser · no Cursor CLI needed",
+      "verified": "steps up to Open browser rendered on 0.2.6; the steps after the browser hand-off are not verified (no sign-in was possible)",
       "steps": [
         {
           "do": "click",
@@ -132,24 +165,33 @@
           "do": "click",
           "role": "button",
           "name": "Sign in",
-          "note": "Account row"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Open browser"
-        },
-        {
-          "do": "cut",
-          "note": "never record the Cursor browser page; it shows the account"
+          "exact": true,
+          "note": "Account row, \"Sign in on Demo Mac.\""
         },
         {
           "do": "expect",
-          "text": "Signed in with Cursor."
+          "text": "Finish signing in in your browser."
         },
         {
-          "do": "pan",
-          "target": "Cursor API key field (\"Paste API key\"), left empty"
+          "do": "hover",
+          "role": "button",
+          "name": "Open browser",
+          "ms": 1200,
+          "note": "never click it in the take and never use \"Copy sign-in link\"; the browser page shows the account"
+        },
+        {
+          "do": "cut",
+          "note": "sign-in happens off camera, then the take resumes on the signed-in card"
+        },
+        {
+          "do": "expect",
+          "text": "Signed in with Cursor.",
+          "note": "UNVERIFIED on 0.2.6"
+        },
+        {
+          "do": "pause",
+          "ms": 1200,
+          "note": "keep the Cursor API key field (\"Paste API key\", \"Optional. Overrides browser sign-in for this provider.\") empty"
         }
       ]
     },
@@ -157,27 +199,27 @@
       "id": "05-project-chat",
       "kind": "APP",
       "chapter": "Add the project",
-      "startSec": 37,
-      "durationSec": 13,
-      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Cursor in the model picker, and set Full access for this demo.",
-      "spokenWords": 29,
-      "stepChip": "Projects + → Local folder → ~/greet-app · New chat → Cursor · Full access",
+      "startSec": 34,
+      "durationSec": 11,
+      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Cursor in the model picker, and set Full access for this demo.",
+      "spokenWords": 30,
+      "stepChip": "+ → Local folder → ~/greet-app · Cursor · Full access",
       "steps": [
         {
           "do": "click",
           "role": "button",
           "name": "Add project",
-          "note": "the + next to Projects; tooltip \"New project or assistant\""
+          "note": "the + next to Projects"
         },
         {
           "do": "click",
           "role": "option",
-          "name": "Local folder",
-          "note": "\"New project\" and \"Personal assistant\" rows can sit above it"
+          "nameRegex": "^Local folder",
+          "note": "\"New project\" and \"Personal assistant\" rows sit above it"
         },
         {
           "do": "type",
-          "into": "Enter path (e.g. ~/projects/my-app)",
+          "placeholder": "Enter path (e.g. ~/projects/my-app)",
           "text": "~/greet-app"
         },
         {
@@ -186,51 +228,59 @@
         },
         {
           "do": "expect",
-          "text": "greet-app",
-          "note": "listed under Projects"
+          "text": "What should we build in",
+          "note": "adding the folder opens a new chat; no separate New chat click"
+        },
+        {
+          "do": "ensureOption",
+          "combobox": "Workspace",
+          "option": "Current checkout"
         },
         {
           "do": "click",
           "role": "button",
-          "name": "New chat"
-        },
-        {
-          "do": "expect",
-          "text": "What should we build in greet-app?"
+          "nameRegex": "^(Claude|GPT|Cursor|Auto|Composer)",
+          "note": "the model picker is labelled with the current model; UNVERIFIED for Cursor"
         },
         {
           "do": "click",
-          "target": "model picker (labelled with the current model)"
+          "role": "option",
+          "textRegex": "^Cursor$",
+          "note": "Providers rail → Cursor, then its default model (\"Auto\" in source, sent to the SDK as default); UNVERIFIED"
         },
         {
           "do": "click",
-          "target": "Providers rail → Cursor → Auto"
+          "role": "combobox",
+          "name": "Runtime mode",
+          "note": "defaults to Supervised"
         },
         {
           "do": "click",
-          "target": "Runtime mode → Full access"
+          "role": "option",
+          "nameRegex": "^Full access"
         },
         {
-          "do": "expect",
-          "text": "Current checkout",
-          "note": "leave the workspace on the current checkout"
+          "do": "pause",
+          "ms": 800
         }
-      ]
+      ],
+      "verified": "shared steps verified on 0.2.6 with Claude (episode 1); the Cursor model picker entries are not verified (Cursor reports no models until signed in)"
     },
     {
       "id": "06-plan",
       "kind": "APP",
       "chapter": "Plan",
-      "startSec": 50,
-      "durationSec": 13,
+      "startSec": 45,
+      "durationSec": 11,
       "vo": "Type a dollar sign, pick sw-increment, and describe the change. Cursor writes spec.md: acceptance criteria and a task with its files and test.",
-      "spokenWords": 28,
-      "stepChip": "$ → sw-increment → describe the change → Enter",
+      "spokenWords": 23,
+      "stepChip": "$ → Sw Increment → describe the change → Enter",
       "steps": [
         {
           "do": "click",
-          "target": "composer",
-          "note": "placeholder \"Ask anything, @tag files/folders, $use skills, or / for commands\""
+          "role": "textbox",
+          "name": "Message",
+          "note": "placeholder \"Ask for changes, send follow-ups, or attach images\" on a new chat"
         },
         {
           "do": "type",
@@ -238,17 +288,18 @@
         },
         {
           "do": "expect",
-          "text": "Searching workspace skills...",
-          "note": "then the 11 sw-* skills"
+          "text": "Sw Increment",
+          "note": "the menu lists the 11 skills title-cased: Sw Auto … Sw Team, each tagged Project Skill"
         },
         {
           "do": "click",
           "role": "option",
-          "name": "sw-increment"
+          "nameRegex": "^Sw Increment"
         },
         {
           "do": "type",
-          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet."
+          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet.",
+          "delay": 14
         },
         {
           "do": "press",
@@ -256,32 +307,36 @@
           "note": "send button aria-label \"Submit message\""
         },
         {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "the reply ends"
+          "do": "waitTurn",
+          "note": "speed-ramped in the edit, with the Sped up chip"
         },
         {
-          "do": "highlight",
-          "in": ".specweave/increments/0001-…/spec.md (the edit in the thread)",
-          "lines": [
-            "- [ ] AC-01 …",
-            "- [ ] AC-02 …",
-            "### T-01 …",
-            "- AC: … | Files: … | Test: …"
-          ]
+          "do": "expect",
+          "text": "AC-01"
+        },
+        {
+          "do": "pause",
+          "ms": 2500,
+          "note": "hold on the reply: AC-01, AC-02, T-01 with its files and npm test"
         }
-      ]
+      ],
+      "verified": "skill menu verified on 0.2.6 with Claude; Cursor's skill list is not verified"
     },
     {
       "id": "07-build",
       "kind": "APP",
       "chapter": "Build",
-      "startSec": 63,
-      "durationSec": 12,
+      "startSec": 56,
+      "durationSec": 10.7,
       "vo": "Then send sw-do. Cursor claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spokenWords": 26,
-      "stepChip": "$ → sw-do → claim → edit → test → done",
+      "spokenWords": 24,
+      "stepChip": "$ → Sw Do → claim → edit → test → done",
       "steps": [
+        {
+          "do": "click",
+          "role": "textbox",
+          "name": "Message"
+        },
         {
           "do": "type",
           "text": "$"
@@ -289,49 +344,45 @@
         {
           "do": "click",
           "role": "option",
-          "name": "sw-do"
+          "nameRegex": "^Sw Do(?!ne)"
         },
         {
           "do": "type",
-          "text": "Do T-01, then stop. I will close the increment myself."
+          "text": "Do T-01, then stop. I will close the increment myself.",
+          "delay": 14
         },
         {
           "do": "press",
           "key": "Enter"
         },
         {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "T-01 is done"
+          "do": "waitTurn"
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task claim T-01"
+          "do": "click",
+          "textRegex": "^Worked for",
+          "last": true,
+          "note": "expands the turn's steps"
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "the edit to src/greeting.js"
+          "do": "clickIfPresent",
+          "textRegex": "^Ran \\d+ commands",
+          "last": true
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "npm test passing"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task done T-01 … --run \"npm test\""
+          "do": "pause",
+          "ms": 2500,
+          "note": "hold on: specweave task claim T-01, the edit to src/greeting.js, the commit with specweave task done … --run \"npm test\""
         }
-      ]
+      ],
+      "verified": "not verified for Cursor (no Cursor turn was run)"
     },
     {
       "id": "08-review",
       "kind": "APP",
       "chapter": "Review",
-      "startSec": 75,
-      "durationSec": 9,
+      "startSec": 66.7,
+      "durationSec": 8,
       "vo": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
       "spokenWords": 19,
       "stepChip": "Open diff → code · test · ledger.jsonl",
@@ -339,34 +390,57 @@
         {
           "do": "click",
           "role": "button",
-          "name": "Open diff",
-          "note": "on the last turn's \"N changed files\" card; tooltip \"Open the full diff\""
+          "nameRegex": "Open diff",
+          "last": true,
+          "note": "on the last turn's \"5 changed files\" card"
         },
         {
-          "do": "step",
-          "files": [
-            "src/greeting.js",
-            "test/greeting.test.js",
-            ".specweave/increments/0001-…/ledger.jsonl"
-          ]
+          "do": "expect",
+          "text": "Latest turn"
         },
         {
-          "do": "highlight",
-          "in": "ledger.jsonl",
-          "lines": [
-            "\"e\":\"done\" with \"by\":\"cursor@demo\" and \"evidence\""
-          ]
+          "do": "click",
+          "role": "button",
+          "name": "Expand src/greeting.js"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Expand test/greeting.test.js"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "nameRegex": "^Expand .*ledger\\.jsonl$"
+        },
+        {
+          "do": "expect",
+          "text": "cursor@demo"
+        },
+        {
+          "do": "pause",
+          "ms": 3000,
+          "note": "the done line: \"by\":\"cursor@demo\" with its evidence"
         }
-      ]
+      ],
+      "verified": "Open diff verified on 0.2.6 with Claude; whether Cursor threads show the changed-files card is not verified"
     },
     {
       "id": "09-outro",
       "kind": "MG",
       "chapter": "Next",
-      "startSec": 84,
+      "startSec": 74.7,
       "durationSec": 4,
       "vo": "Next, sw-done verifies and closes the increment.",
-      "spokenWords": 9,
+      "spokenWords": 7,
       "card": {
         "lines": [
           "Next: $sw-done · verify and close",
