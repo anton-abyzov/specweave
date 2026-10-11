@@ -3,13 +3,24 @@
   "episode": 1,
   "agent": "claude-code",
   "title": "Claude Code in SpecWithCode",
-  "durationSec": 79,
-  "spokenWords": 174,
+  "durationSec": 66.7,
+  "spokenWords": 152,
   "resolution": "1920x1080",
   "fps": 30,
   "demoRepo": "greet-app",
   "ledgerAgent": "claude@demo",
-  "labelsCheckedAt": "specweave-studio 618bfeca (v0.2.4); record on the renamed SpecWithCode build",
+  "labelsCheckedAt": "SpecWithCode 0.2.6 (specweave-studio v0.2.6), rendered and recorded 2026-10-11",
+  "stepVerbs": {
+    "expect": "text must be visible within 20 s, else the take stops",
+    "click": "move the cursor to the element (role + name, or text), outline it, click",
+    "clickIfPresent": "click only when the element exists (optional wizard steps)",
+    "hover": "move the cursor to the element and hold",
+    "type": "type text (into a placeholder or the focused element)",
+    "press": "press a key",
+    "pause": "hold for ms",
+    "waitTurn": "wait until the agent turn ends (no Stop button); the edit speed-ramps this span",
+    "ensureOption": "open a combobox and pick an option only when it does not already show it"
+  },
   "shots": [
     {
       "id": "01-intro",
@@ -18,7 +29,7 @@
       "startSec": 0,
       "durationSec": 4,
       "vo": "Claude Code in SpecWithCode: plan, build, review.",
-      "spokenWords": 9,
+      "spokenWords": 7,
       "card": {
         "eyebrow": "SpecWithCode tutorial 01",
         "title": "Claude Code in SpecWithCode",
@@ -30,9 +41,9 @@
       "kind": "TERM",
       "chapter": "Set up the repo",
       "startSec": 4,
-      "durationSec": 8,
+      "durationSec": 6.5,
       "vo": "In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spokenWords": 18,
+      "spokenWords": 13,
       "stepChip": "In your repo: specweave init . --quick",
       "steps": [
         {
@@ -44,10 +55,7 @@
             "   ✓ AGENTS.md created",
             "   ✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/"
           ],
-          "lineNumbers": [
-            12,
-            16
-          ],
+          "lineNumbers": [12, 16],
           "elide": "dim … row between and after the two lines"
         }
       ]
@@ -56,270 +64,119 @@
       "id": "03-connect",
       "kind": "APP",
       "chapter": "Connect Claude Code",
-      "startSec": 12,
-      "durationSec": 16,
-      "vo": "Open SpecWithCode. In setup, keep this computer and click Continue. The Claude Code card should say Ready to code. If it says Sign in, click it, then press Enter to run claude auth login.",
-      "spokenWords": 36,
-      "stepChip": "Setup → Continue → Claude Code: Ready to code (or Sign in) → Continue → Do not import projects",
+      "startSec": 10.5,
+      "durationSec": 11.5,
+      "vo": "Open SpecWithCode. In setup, keep this computer and click Continue. The Claude card should say Ready to code. If it doesn't, run claude auth login in a terminal first.",
+      "spokenWords": 29,
+      "stepChip": "Setup → Continue → Claude: Ready to code → Continue",
       "steps": [
-        {
-          "do": "expect",
-          "text": "Set up SpecWithCode",
-          "note": "v0.2.4 says \"Set up SpecWeave Studio\"; steps Connect, Agents, Projects"
-        },
-        {
-          "do": "expect",
-          "text": "Connect your computers"
-        },
-        {
-          "do": "blur",
-          "target": "computer row label (host name)"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Continue"
-        },
-        {
-          "do": "expect",
-          "text": "Connect your agents"
-        },
-        {
-          "do": "hover",
-          "target": "Claude Code card",
-          "expect": "Ready to code."
-        },
-        {
-          "do": "insert",
-          "sec": 3,
-          "note": "second take where the card shows Sign in: click it; the terminal opens with `claude auth login` typed, not sent. Cut before Enter."
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Continue"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Do not import projects"
-        }
+        { "do": "expect", "text": "Connect your computers" },
+        { "do": "expect", "text": "Demo Mac", "note": "the computer is named by a scutil shim in the demo PATH" },
+        { "do": "pause", "ms": 1200 },
+        { "do": "click", "role": "button", "name": "Continue", "exact": true },
+        { "do": "expect", "text": "Connect your agents" },
+        { "do": "expect", "text": "Ready to code." },
+        { "do": "hover", "text": "Ready to code.", "ms": 1600, "note": "the card is labelled \"Claude\", not \"Claude Code\"" },
+        { "do": "click", "role": "button", "name": "Continue", "exact": true },
+        { "do": "pause", "ms": 1200 },
+        { "do": "clickIfPresent", "role": "button", "name": "Do not import projects" },
+        { "do": "clickIfPresent", "role": "button", "name": "Continue", "exact": true }
       ]
     },
     {
       "id": "04-project-chat",
       "kind": "APP",
       "chapter": "Add the project",
-      "startSec": 28,
-      "durationSec": 13,
-      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Claude in the model picker, and set Full access for this demo.",
-      "spokenWords": 29,
-      "stepChip": "Projects + → Local folder → ~/greet-app · New chat → Claude · Full access",
+      "startSec": 22,
+      "durationSec": 11,
+      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Claude in the model picker, and set Full access for this demo.",
+      "spokenWords": 30,
+      "stepChip": "+ → Local folder → ~/greet-app · Claude Sonnet 5.5 · Full access",
       "steps": [
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Add project",
-          "note": "the + next to Projects; tooltip \"New project or assistant\""
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "name": "Local folder",
-          "note": "\"New project\" and \"Personal assistant\" rows can sit above it"
-        },
-        {
-          "do": "type",
-          "into": "Enter path (e.g. ~/projects/my-app)",
-          "text": "~/greet-app"
-        },
-        {
-          "do": "press",
-          "key": "Enter"
-        },
-        {
-          "do": "expect",
-          "text": "greet-app",
-          "note": "listed under Projects"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "New chat"
-        },
-        {
-          "do": "expect",
-          "text": "What should we build in greet-app?"
-        },
-        {
-          "do": "click",
-          "target": "model picker (labelled with the current model)"
-        },
-        {
-          "do": "click",
-          "target": "Providers rail → Claude → Claude Sonnet 5.5"
-        },
-        {
-          "do": "click",
-          "target": "Runtime mode → Full access"
-        },
-        {
-          "do": "expect",
-          "text": "Current checkout",
-          "note": "leave the workspace on the current checkout"
-        }
+        { "do": "click", "role": "button", "name": "Add project", "note": "the + next to Projects" },
+        { "do": "click", "role": "option", "nameRegex": "^Local folder", "note": "\"New project\" and \"Personal assistant\" rows sit above it" },
+        { "do": "type", "placeholder": "Enter path (e.g. ~/projects/my-app)", "text": "~/greet-app" },
+        { "do": "press", "key": "Enter" },
+        { "do": "expect", "text": "What should we build in", "note": "adding the folder opens a new chat; no separate New chat click" },
+        { "do": "ensureOption", "combobox": "Workspace", "option": "Current checkout" },
+        { "do": "click", "role": "button", "nameRegex": "^Claude (Opus|Sonnet|Haiku|Fable) [0-9.]+$", "note": "the model picker is labelled with the current model (Claude Opus 5.5 by default)" },
+        { "do": "click", "role": "option", "nameRegex": "^Claude Sonnet 5\\.5" },
+        { "do": "click", "role": "combobox", "name": "Runtime mode", "note": "defaults to Supervised" },
+        { "do": "click", "role": "option", "nameRegex": "^Full access" },
+        { "do": "pause", "ms": 800 }
       ]
     },
     {
       "id": "05-plan",
       "kind": "APP",
       "chapter": "Plan",
-      "startSec": 41,
-      "durationSec": 13,
+      "startSec": 33,
+      "durationSec": 11,
       "vo": "Type a dollar sign, pick sw-increment, and describe the change. Claude writes spec.md: acceptance criteria and a task with its files and test.",
-      "spokenWords": 28,
-      "stepChip": "$ → sw-increment → describe the change → Enter",
+      "spokenWords": 23,
+      "stepChip": "$ → Sw Increment → describe the change → Enter",
       "steps": [
-        {
-          "do": "click",
-          "target": "composer",
-          "note": "placeholder \"Ask anything, @tag files/folders, $use skills, or / for commands\""
-        },
-        {
-          "do": "type",
-          "text": "$"
-        },
-        {
-          "do": "expect",
-          "text": "Searching workspace skills...",
-          "note": "then the 11 sw-* skills"
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "name": "sw-increment"
-        },
-        {
-          "do": "type",
-          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet."
-        },
-        {
-          "do": "press",
-          "key": "Enter",
-          "note": "send button aria-label \"Submit message\""
-        },
-        {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "the reply ends"
-        },
-        {
-          "do": "highlight",
-          "in": ".specweave/increments/0001-…/spec.md (the edit in the thread)",
-          "lines": [
-            "- [ ] AC-01 …",
-            "- [ ] AC-02 …",
-            "### T-01 …",
-            "- AC: … | Files: … | Test: …"
-          ]
-        }
+        { "do": "click", "role": "textbox", "name": "Message", "note": "placeholder \"Ask for changes, send follow-ups, or attach images\" on a new chat" },
+        { "do": "type", "text": "$" },
+        { "do": "expect", "text": "Sw Increment", "note": "the menu lists the 11 skills title-cased: Sw Auto … Sw Team, each tagged Project Skill" },
+        { "do": "click", "role": "option", "nameRegex": "^Sw Increment" },
+        { "do": "type", "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet.", "delay": 14 },
+        { "do": "press", "key": "Enter", "note": "send button aria-label \"Submit message\"" },
+        { "do": "waitTurn", "note": "speed-ramped in the edit, with the Sped up chip" },
+        { "do": "expect", "text": "AC-01" },
+        { "do": "pause", "ms": 2500, "note": "hold on the reply: AC-01, AC-02, T-01 with its files and npm test" }
       ]
     },
     {
       "id": "06-build",
       "kind": "APP",
       "chapter": "Build",
-      "startSec": 54,
-      "durationSec": 12,
+      "startSec": 44,
+      "durationSec": 10.7,
       "vo": "Then send sw-do. Claude claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spokenWords": 26,
-      "stepChip": "$ → sw-do → claim → edit → test → done",
+      "spokenWords": 24,
+      "stepChip": "$ → Sw Do → claim → edit → test → done",
       "steps": [
-        {
-          "do": "type",
-          "text": "$"
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "name": "sw-do"
-        },
-        {
-          "do": "type",
-          "text": "Do T-01, then stop. I will close the increment myself."
-        },
-        {
-          "do": "press",
-          "key": "Enter"
-        },
-        {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "T-01 is done"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task claim T-01"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "the edit to src/greeting.js"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "npm test passing"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task done T-01 … --run \"npm test\""
-        }
+        { "do": "click", "role": "textbox", "name": "Message" },
+        { "do": "type", "text": "$" },
+        { "do": "click", "role": "option", "nameRegex": "^Sw Do(?!ne)" },
+        { "do": "type", "text": "Do T-01, then stop. I will close the increment myself.", "delay": 14 },
+        { "do": "press", "key": "Enter" },
+        { "do": "waitTurn" },
+        { "do": "click", "textRegex": "^Worked for", "last": true, "note": "expands the turn's steps" },
+        { "do": "clickIfPresent", "textRegex": "^Ran \\d+ commands", "last": true },
+        { "do": "pause", "ms": 2500, "note": "hold on: specweave task claim T-01, the edit to src/greeting.js, the commit with specweave task done … --run \"npm test\"" }
       ]
     },
     {
       "id": "07-review",
       "kind": "APP",
       "chapter": "Review",
-      "startSec": 66,
-      "durationSec": 9,
+      "startSec": 54.7,
+      "durationSec": 8,
       "vo": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
       "spokenWords": 19,
       "stepChip": "Open diff → code · test · ledger.jsonl",
       "steps": [
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Open diff",
-          "note": "on the last turn's \"N changed files\" card; tooltip \"Open the full diff\""
-        },
-        {
-          "do": "step",
-          "files": [
-            "src/greeting.js",
-            "test/greeting.test.js",
-            ".specweave/increments/0001-…/ledger.jsonl"
-          ]
-        },
-        {
-          "do": "highlight",
-          "in": "ledger.jsonl",
-          "lines": [
-            "\"e\":\"done\" with \"by\":\"claude@demo\" and \"evidence\""
-          ]
-        }
+        { "do": "click", "role": "button", "nameRegex": "Open diff", "last": true, "note": "on the last turn's \"5 changed files\" card" },
+        { "do": "expect", "text": "Latest turn" },
+        { "do": "click", "role": "button", "name": "Expand src/greeting.js" },
+        { "do": "pause", "ms": 1200 },
+        { "do": "click", "role": "button", "name": "Expand test/greeting.test.js" },
+        { "do": "pause", "ms": 1200 },
+        { "do": "click", "role": "button", "nameRegex": "^Expand .*ledger\\.jsonl$" },
+        { "do": "expect", "text": "claude@demo" },
+        { "do": "pause", "ms": 3000, "note": "the done line: \"by\":\"claude@demo\" with its evidence" }
       ]
     },
     {
       "id": "08-outro",
       "kind": "MG",
       "chapter": "Next",
-      "startSec": 75,
+      "startSec": 62.7,
       "durationSec": 4,
       "vo": "Next, sw-done verifies and closes the increment.",
-      "spokenWords": 9,
+      "spokenWords": 7,
       "card": {
         "lines": [
           "Next: $sw-done · verify and close",
