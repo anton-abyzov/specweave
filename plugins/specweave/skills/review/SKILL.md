@@ -31,7 +31,8 @@ This is also the quality check: its verdict says whether the increment is ready.
    not the repository: `git diff $(git merge-base HEAD origin/HEAD)...HEAD -- <Files>`.
 3. **Pass**, in this order: correctness (logic, error paths, races, off-by-one) →
    security (injection, path traversal, secrets, unsafe exec) → spec compliance (ACs
-   claimed but not implemented, tests that assert nothing or mock the subject) →
+   claimed but not implemented, tests that assert nothing, mock the subject or only
+   restate the implementation) →
    portability (bash-only commands, `\` paths, BOMs, `>>` in PowerShell).
    `--full`: run the three lenses correctness, security and spec compliance separately
    (in parallel if your tool has subagents) and merge, dropping duplicates.

@@ -22,7 +22,9 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
    claim; 6: its dependencies are not done. Pick another. Never edit before claiming.
 3. Implement inside that task's `Files` only. Need another file? Claim the task that
    owns it, or add a task to spec.md `## Tasks`.
-4. Run the task's `Test`. Red means fix it; never skip, weaken or delete a test.
+4. Run the task's `Test`. Red means fix the code; never skip, weaken or delete a test.
+   Don't write tests first or add unit tests the task did not ask for: check the AC
+   end to end, the way a user would hit it.
 5. Commit with the increment id first: `git commit -m "0042: fold the ledger"`.
 6. `specweave task done T-03 --run "npm test -- ledger"`. Exit 5: the command failed and
    the task stays open. No `Test`? `--evidence "<sha> + what you checked"`.

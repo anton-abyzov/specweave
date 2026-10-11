@@ -7,7 +7,7 @@ This project uses SpecWeave. Work is planned in increments: `.specweave/incremen
 <!-- SECTION:loop required -->
 ## The loop
 
-1. `specweave pickup`: brings in the latest handoff, then prints the open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory.
+1. `specweave pickup`: pulls the latest handoff, then prints the open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory.
 2. New work that needs acceptance criteria or a handoff: `specweave create-increment "title"`, then fill in spec.md. If an open increment already owns the files, add ACs and tasks to it instead of opening another. Small self-contained fixes need no increment.
 3. `specweave task claim T-NN`, edit only that task's Files, commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`.
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
@@ -15,15 +15,15 @@ This project uses SpecWeave. Work is planned in increments: `.specweave/incremen
 
 **Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or a "[Usage limit reached" note appears (outside SpecWeave Studio), run `specweave handoff --reason "<why>"` and tell the user to say "pick up" in the other tool. A "[Usage limit approaching" note or a usage heads-up is not a stop: say so in one line and keep working. When the user says "pick up", run `specweave pickup` and continue with the task it names; "pick up <id or title>" passes it on. Of several it takes the newest: say which.
 
-Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts, src/a.test.ts | Test: npm test -- a`. An AC is met when the tasks covering it are done. Leave a message for whoever works on an increment next with `specweave note "<text>"`. Each step is a skill in `.agents/skills/sw-*` and `.claude/skills/sw-*`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
+Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts | Test: npm run e2e -- a`. An AC is met when the tasks covering it are done. Leave a note for the next agent with `specweave note "<text>"`. Each step is an `sw-*` skill in `.agents/skills` and `.claude/skills`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
 <!-- /SECTION -->
 
 <!-- SECTION:rules required -->
 ## Rules
 
-- A task is done when its Test exits 0 and you have seen the real output. Never skip, weaken or delete a test to pass, and never set a status by hand.
+- A task is done when its Test exits 0 and you saw the output. Tests check ACs as users would (CLI, HTTP, UI, API); unit tests only if asked. Never skip, weaken or delete a test, or set a status by hand.
 - One agent per branch and worktree: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>`. A claim older than 2h is stale. On a merge conflict in `ledger.jsonl` keep every line from both sides.
-- Decisions that must outlive this session go in spec.md Approach, or as one file per fact in `.specweave/memory/` with a line in its `MEMORY.md` index. Memory is committed, so every tool and account sees it.
+- Decisions that must outlive this session go in spec.md Approach, or as one file per fact in `.specweave/memory/` with a line in its `MEMORY.md` index. Memory is committed, so every tool sees it.
 - Check a secret exists without printing it; never commit `.env*`.
 - Without the CLI, append ledger lines yourself, one JSON object per line, UTF-8, LF: `{"t":"T-01","e":"claim","by":"<tool>@<host>","at":"<ISO time>"}` (`e` is claim, done, release, skip or block; `done` needs `"evidence":"<commit sha>"`, `skip` needs `"note":"<why>"`).
 <!-- /SECTION -->

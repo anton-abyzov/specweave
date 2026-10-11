@@ -57,15 +57,18 @@ Files that change and in what order, decisions, rejected alternatives, risks.
 ## Tasks
 
 ### T-01 Fold the ledger
-- AC: AC-01 | Files: src/core/tasks/ledger.ts, src/core/tasks/ledger.test.ts | Test: npm test -- ledger
+- AC: AC-01 | Files: src/core/tasks/ledger.ts | Test: npm run e2e -- double-claim
 
 ### T-02 Skip malformed lines
-- AC: AC-02 | Files: src/core/tasks/ledger-parse.ts | Test: npm test -- ledger
+- AC: AC-02 | Files: src/core/tasks/ledger-parse.ts | Test: npm run e2e -- malformed-ledger
 ```
 
 - ACs are observable: "p95 of /search under 300 ms with 10k rows", not "faster".
 - Every AC is covered by at least one task; every task names its `Files` and a `Test`
   command a machine can run.
+- A `Test` checks the AC from the outside: the CLI, HTTP route, UI or public API a user
+  or caller touches. Reuse existing tests; plan new unit or integration tests only when
+  the user asks for them. The human-approved AC is the oracle, not a test the agent wrote.
 - `Files` is the ownership unit: two tasks that edit one file cannot run in parallel,
   so merge them. Shared contracts (types, schema) go in an early task.
 - An AC is met when every task covering it is done. Nobody ticks the boxes; never
