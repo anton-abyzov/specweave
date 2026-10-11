@@ -1,0 +1,73 @@
+WEBVTT
+
+1
+00:00:00.200 --> 00:00:03.333
+Codex in SpecWithCode: plan, build, review.
+
+2
+00:00:04.200 --> 00:00:06.133
+In your repo, run specweave init.
+
+3
+00:00:06.133 --> 00:00:09.933
+It adds AGENTS.md and eleven SpecWeave skills.
+
+4
+00:00:10.700 --> 00:00:15.967
+Open SpecWithCode. In setup, keep this computer and click Continue.
+
+5
+00:00:15.967 --> 00:00:20.333
+On the Codex card, click Continue with ChatGPT,
+
+6
+00:00:20.333 --> 00:00:24.267
+or run codex login, then Use existing CLI.
+
+7
+00:00:24.267 --> 00:00:26.733
+The card says Ready to code.
+
+8
+00:00:28.200 --> 00:00:32.367
+Add the repo: the plus next to Projects, Local folder, then its path.
+
+9
+00:00:32.367 --> 00:00:33.467
+A new chat opens.
+
+10
+00:00:33.467 --> 00:00:37.367
+Pick Codex in the model picker, and set Full access for this demo.
+
+11
+00:00:39.200 --> 00:00:43.233
+Type a dollar sign, pick sw-increment, and describe the change.
+
+12
+00:00:43.233 --> 00:00:49.233
+Codex writes spec.md: acceptance criteria and a task with its files and test.
+
+13
+00:00:50.200 --> 00:00:52.167
+Then send sw-do.
+
+14
+00:00:52.167 --> 00:00:55.733
+Codex claims the task, changes the code, and runs the test.
+
+15
+00:00:55.733 --> 00:00:59.200
+The task is marked done only when the test passes.
+
+16
+00:01:00.900 --> 00:01:03.467
+Click Open diff to review the code, the test,
+
+17
+00:01:03.467 --> 00:01:06.933
+and the ledger line that records who finished the task.
+
+18
+00:01:08.900 --> 00:01:11.867
+Next, sw-done verifies and closes the increment.
