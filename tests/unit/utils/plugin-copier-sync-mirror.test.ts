@@ -93,4 +93,37 @@ describe('syncNativePluginContent mirror (0894)', () => {
     expect(res.synced).toBe(0);
     expect(fs.existsSync(path.join(installPath, 'skills', 'qa'))).toBe(true);
   });
+
+  it('refuses a cache ancestor that is a symlink to a folder outside the cache', () => {
+    // cache/specweave/sw -> <tmp>/devsw, a dev checkout outside the cache.
+    const swDir = path.join(home, '.claude', 'plugins', 'cache', 'specweave', 'sw');
+    fs.rmSync(swDir, { recursive: true, force: true });
+    const devsw = path.join(tmp, 'devsw');
+    write(path.join(devsw, '2.1.0', 'UNTRACKED.md'), 'wip');
+    write(path.join(devsw, '2.1.0', 'skills', 'wip', 'SKILL.md'), 'wip skill');
+    fs.symlinkSync(devsw, swDir, 'dir');
+    recordInstallPath(installPath);
+
+    const res = syncNativePluginContent('sw', specweaveRoot, { homeOverride: home });
+
+    expect(res.synced).toBe(0);
+    expect(fs.readFileSync(path.join(devsw, '2.1.0', 'UNTRACKED.md'), 'utf8')).toBe('wip');
+    expect(fs.existsSync(path.join(devsw, '2.1.0', 'skills', 'wip', 'SKILL.md'))).toBe(true);
+    expect(fs.existsSync(path.join(devsw, '2.1.0', 'skills', 'do'))).toBe(false);
+  });
+
+  it('mirrors into the real path when the cache itself is reached through a symlink', () => {
+    // ~/.claude/plugins -> <tmp>/real-plugins: still inside the (real) cache.
+    const pluginsDir = path.join(home, '.claude', 'plugins');
+    const realPlugins = path.join(tmp, 'real-plugins');
+    fs.renameSync(pluginsDir, realPlugins);
+    fs.symlinkSync(realPlugins, pluginsDir, 'dir');
+
+    const res = syncNativePluginContent('sw', specweaveRoot, { homeOverride: home });
+
+    expect(res.synced).toBe(1);
+    const realInstall = path.join(realPlugins, 'cache', 'specweave', 'sw', '2.1.0');
+    expect(fs.readFileSync(path.join(realInstall, 'skills', 'do', 'SKILL.md'), 'utf8')).toBe('do v3');
+    expect(fs.existsSync(path.join(realInstall, 'skills', 'qa'))).toBe(false);
+  });
 });
