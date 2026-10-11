@@ -36,6 +36,11 @@ describe('TutorialVideo', () => {
     expect(container.querySelector('track')!.default).toBe(true);
   });
 
+  it('offers no captions track when the captions are burned in', () => {
+    const {container} = render(<TutorialVideo title="Tour" src="/video/tour.mp4" captionsVtt="/video/tour.vtt" captionsBurnedIn />);
+    expect(container.querySelector('track')).toBeNull();
+  });
+
   it('seeks to startAt when metadata loaded before hydration', () => {
     const desc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'readyState');
     Object.defineProperty(HTMLMediaElement.prototype, 'readyState', {configurable: true, get: () => 1});

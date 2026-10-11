@@ -1,29 +1,29 @@
 # Claude Code in SpecWithCode
 
-Episode 1 of 6 in **Your agent in SpecWithCode**. Series rules, shared sources, visual system and recording plan: [../SERIES.md](../SERIES.md).
+Episode 1 of 6 in **Your agent in SpecWithCode**. Series rules, shared sources, visual system and recording plan: [../SERIES.md](../SERIES.md). How it was made: [../PIPELINE.md](../PIPELINE.md).
 
-**Promise:** in 79 seconds, connect Claude Code to SpecWithCode, plan one small change with a SpecWeave skill, build it, and review the code, the test and the ledger.
+**Promise:** in 67 seconds, connect Claude Code to SpecWithCode, plan one small change with a SpecWeave skill, build it, and review the code, the test and the ledger.
 
 - Audience: a developer who already uses Claude Code.
-- Runtime: 79 s. Narration: 174 spoken words, about 69.6 s at 150 wpm.
+- Runtime: 66.7 s, published 2026-10-11 as `docs-site/static/video/tutorials/claude-code.mp4`. Narration: 152 spoken words.
 - Demo repo: `greet-app` (seed in SERIES.md). Task: "Personal greeting": `greet(name)` returns `Hello, <name>!`, `greet()` still returns `Hello, world!`.
 - Source keys: `S:` = specweave-studio at `618bfeca` (v0.2.4), `path:line`. `C:NN` = `captures/NN-*.json` (real runs, 2026-10-11, specweave 3.0.12, Node 22.20.0; home, user and host redacted). `W:` = this specweave repo. Labels used by every episode are sourced once in SERIES.md, "Shared beats".
-- App name: written as SpecWithCode. v0.2.4 still renders "SpecWeave Studio"; record only on the renamed build.
+- Labels checked on the running SpecWithCode 0.2.6 build (2026-10-11). Where 0.2.6 differs from the v0.2.4 source lines below, the 0.2.6 label is used and the difference is noted.
 
 ## Beats
 
-| # | Time | Kind | Chapter | Beat | Spoken |
-|---|---|---|---|---|---|
-| 01 | 0:00-0:04 | MG | Intro | Intro (shared) | 3.6 s / 4 s |
-| 02 | 0:04-0:12 | TERM | Set up the repo | Add SpecWeave to the repo (shared) | 7.2 s / 8 s |
-| 03 | 0:12-0:28 | APP | Connect Claude Code | Connect Claude Code | 14.4 s / 16 s |
-| 04 | 0:28-0:41 | APP | Add the project | Add the project and open a chat (shared) | 11.6 s / 13 s |
-| 05 | 0:41-0:54 | APP | Plan | Plan with sw-increment (shared) | 11.2 s / 13 s |
-| 06 | 0:54-1:06 | APP | Build | Build with sw-do (shared) | 10.4 s / 12 s |
-| 07 | 1:06-1:15 | APP | Review | Review the diff (shared) | 7.6 s / 9 s |
-| 08 | 1:15-1:19 | MG | Next | Outro (shared) | 3.6 s / 4 s |
+| # | Time | Kind | Chapter | Beat |
+|---|---|---|---|---|
+| 01 | 0:00-0:04 | MG | Intro | Intro (shared) |
+| 02 | 0:04-0:10.5 | TERM | Set up the repo | Add SpecWeave to the repo (shared) |
+| 03 | 0:10.5-0:22 | APP | Connect Claude Code | Connect Claude Code |
+| 04 | 0:22-0:33 | APP | Add the project | Add the project and open a chat (shared) |
+| 05 | 0:33-0:44 | APP | Plan | Plan with sw-increment (shared) |
+| 06 | 0:44-0:54.7 | APP | Build | Build with sw-do (shared) |
+| 07 | 0:54.7-1:02.7 | APP | Review | Review the diff (shared) |
+| 08 | 1:02.7-1:06.7 | MG | Next | Outro (shared) |
 
-Total: 79 s.
+Total: 66.7 s. Executable steps for every APP beat are in `SHOTLIST.json`; cuts, speed ramps and highlights are in `edit.json`.
 
 ### 01 Intro (0:00-0:04, MG)
 
@@ -32,7 +32,7 @@ Total: 79 s.
 - **Sources:**
   - Shared card, see SERIES.md "Intro and outro".
 
-### 02 Add SpecWeave to the repo (0:04-0:12, TERM)
+### 02 Add SpecWeave to the repo (0:04-0:10.5, TERM)
 
 - **VO:** "In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills."
 - **Step chip:** In your repo: specweave init . --quick
@@ -42,95 +42,85 @@ Total: 79 s.
   - C:03 (exit 0): the command and both lines, stdout lines 12 and 16.
   - Claude reads project skills from `.claude/skills` only (S:apps/server/src/provider/Drivers/ClaudeSkills.ts:4-9).
 
-### 03 Connect Claude Code (0:12-0:28, APP)
+### 03 Connect Claude Code (0:10.5-0:22, APP)
 
-- **VO:** "Open SpecWithCode. In setup, keep this computer and click Continue. The Claude Code card should say Ready to code. If it says Sign in, click it, then press Enter to run claude auth login."
-- **Step chip:** Setup → Continue → Claude Code: Ready to code (or Sign in) → Continue → Do not import projects
+- **VO:** "Open SpecWithCode. In setup, keep this computer and click Continue. The Claude card should say Ready to code. If it doesn't, run claude auth login in a terminal first."
+- **Step chip:** Setup → Continue → Claude: Ready to code → Continue
 - **Shot (APP):**
-  1. Check: "Set up SpecWithCode" (v0.2.4 says "Set up SpecWeave Studio"; steps Connect, Agents, Projects).
-  2. Check: "Connect your computers".
-  3. Blur the computer row label (host name).
-  4. Click **Continue**.
-  5. Check: "Connect your agents".
-  6. Hover **Claude Code card**; it shows "Ready to code.".
-  7. Insert, 3 s: second take where the card shows Sign in: click it; the terminal opens with `claude auth login` typed, not sent. Cut before Enter.
-  8. Click **Continue**.
-  9. Click **Do not import projects**.
+  1. Check: "Connect your computers" (the wizard opens on its Connect step; the steps are Connect, Agents, Projects).
+  2. Check: "Demo Mac" (the computer row; named by the scutil shim, so nothing is blurred).
+  3. Click **Continue**.
+  4. Check: "Connect your agents".
+  5. Hover the **Claude** card; it shows "Ready to code." and "Ready".
+  6. Click **Continue**.
+  7. Click **Do not import projects** when it is offered (0.2.6 shows "No existing Claude Code or Codex projects found." in a fresh HOME), then **Continue** when present.
+- **0.2.6 differences:** the card is labelled "Claude", not "Claude Code". The Sign in insert was dropped: on 0.2.6 a signed-out Claude card showed "Needs attention" rather than a Sign in button, so the VO points to `claude auth login` in a terminal instead.
 - **Sources:**
-  - Title (S:apps/web/src/components/onboarding/WelcomeWizard.tsx:227), stages (:110), "Connect your computers" (:338), Continue (:435), "Connect your agents" (:665), card "Claude Code" (:960), "Ready to code." (:974), Sign in or Install (:998), command typed but not sent (:1007-1010), "Do not import projects" (:1531).
+  - Stages (S:apps/web/src/components/onboarding/WelcomeWizard.tsx:110), "Connect your computers" (:338), Continue (:435), "Connect your agents" (:665), "Ready to code." (:974), "Do not import projects" (:1531).
   - Login command `claude auth login` (S:apps/web/src/onboarding/providerReadiness.logic.ts:114-119).
   - Claude is on by default (S:packages/contracts/src/settings.ts:673-676).
 
-### 04 Add the project and open a chat (0:28-0:41, APP)
+### 04 Add the project and open a chat (0:22-0:33, APP)
 
-- **VO:** "Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Claude in the model picker, and set Full access for this demo."
-- **Step chip:** Projects + → Local folder → ~/greet-app · New chat → Claude · Full access
+- **VO:** "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Claude in the model picker, and set Full access for this demo."
+- **Step chip:** + → Local folder → ~/greet-app · Claude Sonnet 5.5 · Full access
 - **Shot (APP):**
-  1. Click **Add project** (the + next to Projects; tooltip "New project or assistant").
-  2. Click **Local folder** ("New project" and "Personal assistant" rows can sit above it).
+  1. Click **Add project** (the + next to Projects).
+  2. Click **Local folder**.
   3. Type `~/greet-app` into "Enter path (e.g. ~/projects/my-app)".
   4. Press Enter.
-  5. Check: "greet-app" (listed under Projects).
-  6. Click **New chat**.
-  7. Check: "What should we build in greet-app?".
-  8. Click the model picker (labelled with the current model).
-  9. Click the Providers rail → Claude → Claude Sonnet 5.5.
-  10. Click the Runtime mode → Full access.
-  11. Check: "Current checkout" (leave the workspace on the current checkout).
+  5. Check: "What should we build in greet-app?" (adding the folder opens a new chat; there is no separate New chat click on 0.2.6).
+  6. Leave the workspace on "Current checkout".
+  7. Click the model picker (labelled with the current model, "Claude Opus 5.5" by default) → **Claude Sonnet 5.5**.
+  8. Click **Runtime mode** ("Supervised" by default) → **Full access**.
 - **Sources:**
   - Shared labels, see SERIES.md "Shared beats".
   - "Claude Sonnet 5.5" (S:apps/server/src/provider/model-manifest.json:695-696); driver label "Claude" (S:apps/web/src/components/settings/providerDriverMeta.ts:56-57).
 
-### 05 Plan with sw-increment (0:41-0:54, APP)
+### 05 Plan with sw-increment (0:33-0:44, APP)
 
 - **VO:** "Type a dollar sign, pick sw-increment, and describe the change. Claude writes spec.md: acceptance criteria and a task with its files and test."
-- **Step chip:** $ → sw-increment → describe the change → Enter
+- **Step chip:** $ → Sw Increment → describe the change → Enter
 - **Shot (APP):**
-  1. Click the composer (placeholder "Ask anything, @tag files/folders, $use skills, or / for commands").
+  1. Click the composer (a new chat's placeholder is "Ask for changes, send follow-ups, or attach images").
   2. Type `$`.
-  3. Check: "Searching workspace skills..." (then the 11 sw-* skills).
-  4. Click **sw-increment**.
+  3. Check: "Sw Increment" (0.2.6 lists the 11 skills title-cased, Sw Auto … Sw Team, each tagged "Project Skill").
+  4. Click **Sw Increment**.
   5. Type `Personal greeting: greet(name) returns "Hello, <name>!" and greet() still returns "Hello, world!". Use Ada in examples. Plan only, no code yet.`.
-  6. Press Enter (send button aria-label "Submit message").
-  7. Speed-ramp 4-8x until the reply ends, with the "sped up" chip.
-  8. Highlight in .specweave/increments/0001-…/spec.md (the edit in the thread): `- [ ] AC-01 …`, `- [ ] AC-02 …`, `### T-01 …`, `- AC: … | Files: … | Test: …`.
+  6. Press Enter.
+  7. Speed-ramp 8x until the reply ends, with the "Sped up 8×" chip.
+  8. Highlight the reply's AC-01, AC-02 and T-01 (files and `npm test`).
 - **Sources:**
   - Shared labels, see SERIES.md "Shared beats".
   - `$skill` is sent to Claude as `/skill` (S:apps/server/src/provider/Drivers/ClaudeSkillDispatch.ts:2-9).
-  - The same task, worded slightly differently, through `claude -p` and `/sw-increment` finished in 24 s and wrote AC-01, AC-02 and T-01 with Files `src/greeting.js, test/greeting.test.js` and Test `npm test` (C:07, C:09).
+  - In the take, Claude wrote `0001-personal-greeting/spec.md` with AC-01, AC-02 and T-01 in 19 s.
 
-### 06 Build with sw-do (0:54-1:06, APP)
+### 06 Build with sw-do (0:44-0:54.7, APP)
 
 - **VO:** "Then send sw-do. Claude claims the task, changes the code, and runs the test. The task is marked done only when the test passes."
-- **Step chip:** $ → sw-do → claim → edit → test → done
+- **Step chip:** $ → Sw Do → claim → edit → test → done
 - **Shot (APP):**
-  1. Type `$`.
-  2. Click **sw-do**.
-  3. Type `Do T-01, then stop. I will close the increment myself.`.
-  4. Press Enter.
-  5. Speed-ramp 4-8x until T-01 is done, with the "sped up" chip.
-  6. Hold 1 s on specweave task claim T-01.
-  7. Hold 1 s on the edit to src/greeting.js.
-  8. Hold 1 s on npm test passing.
-  9. Hold 1 s on specweave task done T-01 … --run "npm test".
+  1. Type `$`, click **Sw Do** (not Sw Done).
+  2. Type `Do T-01, then stop. I will close the increment myself.`, press Enter.
+  3. Speed-ramp 6x until the turn ends, with the "Sped up 6×" chip.
+  4. Expand **Worked for …** and hold on the steps: `specweave task claim T-01`, the edits to `src/greeting.js`, `test/greeting.test.js` and `README.md`, then `npm test` and the commit.
 - **Sources:**
   - `specweave task done --run` exits 5 and records nothing when the command fails; on exit 0 it records the command and log as evidence (W:src/cli/commands/task.ts:8,64,207-209).
   - `sw-do`: "claim, implement inside the task's Files, test, commit, done with evidence" (W:skills/sw-do/SKILL.md:2).
-  - Not captured: no `sw-do` run was made through Claude; the recording is the evidence.
 
-### 07 Review the diff (1:06-1:15, APP)
+### 07 Review the diff (0:54.7-1:02.7, APP)
 
 - **VO:** "Click Open diff to review the code, the test, and the ledger line that records who finished the task."
 - **Step chip:** Open diff → code · test · ledger.jsonl
 - **Shot (APP):**
-  1. Click **Open diff** (on the last turn's "N changed files" card; tooltip "Open the full diff").
-  2. Step through `src/greeting.js`, `test/greeting.test.js`, `.specweave/increments/0001-…/ledger.jsonl`.
-  3. Highlight in ledger.jsonl: `"e":"done" with "by":"claude@demo" and "evidence"`.
+  1. Click **Open diff** on the last turn's "6 changed files" card. The diff panel opens on "Latest turn".
+  2. Click **Expand src/greeting.js**, then **Expand test/greeting.test.js**, then the `ledger.jsonl` row. (Clicking a file name opens the file instead of expanding it.)
+  3. Highlight the `done` line: `"by":"claude@demo"` with its `npm test` evidence.
 - **Sources:**
   - Ledger lines: one JSON object per line, `done` carries evidence (generated AGENTS.md, Rules).
   - Agent id is `SPECWEAVE_AGENT`, else `<tool>@<host>`; `SPECWEAVE_TOOL` and `SPECWEAVE_HOST` override detection (W:src/core/tasks/ledger.ts:95-133).
 
-### 08 Outro (1:15-1:19, MG)
+### 08 Outro (1:02.7-1:06.7, MG)
 
 - **VO:** "Next, sw-done verifies and closes the increment."
 - **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode is in private pilot · spec-weave.com/studio" / "All tutorials · spec-weave.com/tutorials".
@@ -142,28 +132,31 @@ Total: 79 s.
 
 Claude Code in SpecWithCode: plan, build, review.
 In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills.
-Open SpecWithCode. In setup, keep this computer and click Continue. The Claude Code card should say Ready to code. If it says Sign in, click it, then press Enter to run claude auth login.
-Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Claude in the model picker, and set Full access for this demo.
+Open SpecWithCode. In setup, keep this computer and click Continue. The Claude card should say Ready to code. If it doesn't, run claude auth login in a terminal first.
+Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Claude in the model picker, and set Full access for this demo.
 Type a dollar sign, pick sw-increment, and describe the change. Claude writes spec.md: acceptance criteria and a task with its files and test.
 Then send sw-do. Claude claims the task, changes the code, and runs the test. The task is marked done only when the test passes.
 Click Open diff to review the code, the test, and the ledger line that records who finished the task.
 Next, sw-done verifies and closes the increment.
 
+The TTS input spells some words out (for example "Spec With Code", "S W increment"); see `scripts/vo-lines.json`. Narration is AI-generated with Anton's cloned voice; there is no music bed.
+
 ## Claude Code recording notes
 
 Shared rules (demo home, environment, credentials, rename) are in SERIES.md. These apply to this episode only.
 
-1. **Sign-in insert.** Never let `claude auth login` or `claude auth status` run on camera: status prints the account email and org (C:06, redacted, reference only). Sign the demo HOME in off camera before the take and confirm with `claude auth status` off screen.
+1. **Sign-in.** Never run `claude auth login` or `claude auth status` on camera: status prints the account email and org (C:06, redacted, reference only). The demo HOME was signed in off camera by writing only the current access token to `<demo HOME>/.claude/.credentials.json` (no refresh token), and deleting that file after the take. See PIPELINE.md.
 2. **Skills folder.** Claude ignores `.agents/skills`; only `.claude/skills` entries appear in its `$` menu (S:…/ClaudeSkills.ts:7-9). `specweave init` writes both, so nothing extra is needed.
 3. **"All plugins ready".** `specweave init` prints `✔ All plugins ready` (C:03) without installing the `sw@specweave` Claude plugin. Never typeset that line. The project skills used here need no plugin.
-4. **Version badge.** The Claude card can show a version advisory (S:apps/web/src/components/settings/ProviderInstanceCard.tsx:794). Claude Code 2.1.296 meets the manifest's `>=2.1.280`; update before recording if a newer one is out.
+4. **Host name.** The Claude Code login shell puts its own PATH first, so the scutil shim also needs `<demo HOME>/.zprofile` prepending the shim directory; without it the host name came back in the computer label.
 5. **Old sandbox.** `~/specweave-tutorial-sandbox/claude-code` holds an uncommitted `0001-personal-greeting` from C:07. Record from a fresh seed copy, never from the sandbox.
 
 ## Not verified
 
 Shared gaps are listed in SERIES.md. Specific to this episode:
 
-- Whether Claude Code's sign-in carries over to a demo HOME (part of it lives in the macOS keychain). Check with `claude auth status` off camera.
+- What a signed-out Claude card offers on 0.2.6 beyond "Needs attention" (no Sign in insert was recorded).
+- The "Hosts & capacity" panel in beat 04 shows a stale "Codex 1" usage row in the demo account; it carries no account name, but a later episode may want to hide it.
 
 ## Captures
 

@@ -3,13 +3,25 @@
   "episode": 2,
   "agent": "codex",
   "title": "Codex in SpecWithCode",
-  "durationSec": 80,
-  "spokenWords": 175,
+  "durationSec": 72.7,
+  "spokenWords": 154,
   "resolution": "1920x1080",
   "fps": 30,
   "demoRepo": "greet-app",
   "ledgerAgent": "codex@demo",
-  "labelsCheckedAt": "specweave-studio 618bfeca (v0.2.4); record on the renamed SpecWithCode build",
+  "labelsCheckedAt": "SpecWithCode 0.2.6 (specweave-studio v0.2.6), rendered and recorded 2026-10-11",
+  "stepVerbs": {
+    "expect": "text must be visible within 20 s, else the take stops",
+    "click": "move the cursor to the element (role + name, or text), outline it, click",
+    "clickIfPresent": "click only when the element exists (optional wizard steps)",
+    "hover": "move the cursor to the element and hold",
+    "type": "type text (into a placeholder or the focused element)",
+    "press": "press a key",
+    "pause": "hold for ms",
+    "waitTurn": "wait until the agent turn ends (no Stop button); the edit speed-ramps this span",
+    "ensureOption": "open a combobox and pick an option only when it does not already show it",
+    "offCamera": "run scripts/<script> against the demo HOME between frames; nothing changes on screen. A click step can carry it as offCameraBeforeClick"
+  },
   "shots": [
     {
       "id": "01-intro",
@@ -18,7 +30,7 @@
       "startSec": 0,
       "durationSec": 4,
       "vo": "Codex in SpecWithCode: plan, build, review.",
-      "spokenWords": 8,
+      "spokenWords": 6,
       "card": {
         "eyebrow": "SpecWithCode tutorial 02",
         "title": "Codex in SpecWithCode",
@@ -30,23 +42,23 @@
       "kind": "TERM",
       "chapter": "Set up the repo",
       "startSec": 4,
-      "durationSec": 10,
-      "vo": "In your repo, run specweave init with the Codex adapter. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spokenWords": 22,
-      "stepChip": "In your repo: specweave init . --quick --adapter codex",
+      "durationSec": 6.5,
+      "vo": "In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills.",
+      "spokenWords": 13,
+      "stepChip": "In your repo: specweave init . --quick",
       "steps": [
         {
           "do": "command",
           "prompt": "greet-app %",
-          "command": "specweave init . --quick --adapter codex",
-          "capture": "captures/02-specweave-init.json",
+          "command": "specweave init . --quick",
+          "capture": "captures/10-specweave-init-quick.json",
           "showLines": [
             "   ✓ AGENTS.md created",
             "   ✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/"
           ],
           "lineNumbers": [
-            7,
-            40
+            12,
+            48
           ],
           "elide": "dim … row between and after the two lines"
         }
@@ -56,58 +68,89 @@
       "id": "03-connect",
       "kind": "APP",
       "chapter": "Connect Codex",
-      "startSec": 14,
-      "durationSec": 15,
-      "vo": "Open SpecWithCode. In setup, keep this computer and click Continue. On the Codex card, click Continue with ChatGPT, or Use existing CLI if you already run Codex.",
-      "spokenWords": 34,
-      "stepChip": "Setup → Continue → Codex: Continue with ChatGPT (or Use existing CLI) → Continue → Do not import projects",
+      "startSec": 10.5,
+      "durationSec": 17.5,
+      "vo": "Open SpecWithCode. In setup, keep this computer and click Continue. On the Codex card, click Continue with ChatGPT, or run codex login, then Use existing CLI. The card says Ready to code.",
+      "spokenWords": 32,
+      "stepChip": "Setup → Continue → Codex: Use existing CLI → Ready to code",
       "steps": [
         {
           "do": "expect",
-          "text": "Set up SpecWithCode",
-          "note": "v0.2.4 says \"Set up SpecWeave Studio\""
+          "text": "Connect your computers"
         },
         {
-          "do": "blur",
-          "target": "computer row label (host name)"
+          "do": "expect",
+          "text": "Demo Mac",
+          "note": "the computer is named by a scutil shim in the demo PATH"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
         },
         {
           "do": "click",
           "role": "button",
-          "name": "Continue"
+          "name": "Continue",
+          "exact": true
         },
         {
           "do": "expect",
-          "text": "Code with your ChatGPT subscription."
+          "text": "Connect your agents"
+        },
+        {
+          "do": "expect",
+          "text": "Not authenticated",
+          "note": "the demo HOME starts signed out"
+        },
+        {
+          "do": "hover",
+          "role": "button",
+          "name": "Continue with ChatGPT",
+          "ms": 1800,
+          "note": "never clicked on camera: it opens the OpenAI sign-in page"
         },
         {
           "do": "hover",
           "role": "button",
           "name": "Use existing CLI",
-          "note": "pre-sign-in take"
+          "ms": 700
         },
         {
           "do": "click",
           "role": "button",
-          "name": "Continue with ChatGPT"
-        },
-        {
-          "do": "cut",
-          "note": "browser sign-in happens off camera; never record the OpenAI page or the account"
+          "name": "Use existing CLI",
+          "offCameraBeforeClick": "codex-auth.sh",
+          "note": "codex-auth.sh runs right before the click and stands in for `codex login` in a terminal: it copies this Mac's Codex login into the demo HOME. Run any earlier and the card turns Ready on its own, showing the (masked) account row"
         },
         {
           "do": "expect",
-          "text": "Ready"
+          "text": "Ready to code.",
+          "note": "the card reads \"Ready to code.\" and \"Ready\"; no account email is shown"
+        },
+        {
+          "do": "pause",
+          "ms": 1600
         },
         {
           "do": "click",
           "role": "button",
-          "name": "Continue"
+          "name": "Continue",
+          "exact": true
         },
         {
-          "do": "click",
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "clickIfPresent",
           "role": "button",
           "name": "Do not import projects"
+        },
+        {
+          "do": "clickIfPresent",
+          "role": "button",
+          "name": "Continue",
+          "exact": true
         }
       ]
     },
@@ -115,27 +158,27 @@
       "id": "04-project-chat",
       "kind": "APP",
       "chapter": "Add the project",
-      "startSec": 29,
-      "durationSec": 13,
-      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Codex in the model picker, and set Full access for this demo.",
-      "spokenWords": 29,
-      "stepChip": "Projects + → Local folder → ~/greet-app · New chat → Codex · Full access",
+      "startSec": 28.0,
+      "durationSec": 11,
+      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Codex in the model picker, and set Full access for this demo.",
+      "spokenWords": 30,
+      "stepChip": "+ → Local folder → ~/greet-app · GPT-6.1-Sol · Full access",
       "steps": [
         {
           "do": "click",
           "role": "button",
           "name": "Add project",
-          "note": "the + next to Projects; tooltip \"New project or assistant\""
+          "note": "the + next to Projects"
         },
         {
           "do": "click",
           "role": "option",
-          "name": "Local folder",
-          "note": "\"New project\" and \"Personal assistant\" rows can sit above it"
+          "nameRegex": "^Local folder",
+          "note": "\"New project\" and \"Personal assistant\" rows sit above it"
         },
         {
           "do": "type",
-          "into": "Enter path (e.g. ~/projects/my-app)",
+          "placeholder": "Enter path (e.g. ~/projects/my-app)",
           "text": "~/greet-app"
         },
         {
@@ -144,34 +187,40 @@
         },
         {
           "do": "expect",
-          "text": "greet-app",
-          "note": "listed under Projects"
+          "text": "What should we build in",
+          "note": "adding the folder opens a new chat; no separate New chat click"
+        },
+        {
+          "do": "ensureOption",
+          "combobox": "Workspace",
+          "option": "Current checkout"
         },
         {
           "do": "click",
           "role": "button",
-          "name": "New chat"
-        },
-        {
-          "do": "expect",
-          "text": "What should we build in greet-app?"
+          "nameRegex": "^GPT-[0-9.]+-[A-Za-z]+$",
+          "note": "the model picker is labelled with the current model (GPT-6.1-Sol, Codex's default, once Codex is ready)"
         },
         {
           "do": "click",
-          "target": "model picker (labelled with the current model)"
+          "role": "option",
+          "nameRegex": "^GPT-6\\.1-Sol",
+          "note": "every model in the list is tagged Codex"
         },
         {
           "do": "click",
-          "target": "Providers rail → Codex → the default Codex model"
+          "role": "combobox",
+          "name": "Runtime mode",
+          "note": "defaults to Supervised"
         },
         {
           "do": "click",
-          "target": "Runtime mode → Full access"
+          "role": "option",
+          "nameRegex": "^Full access"
         },
         {
-          "do": "expect",
-          "text": "Current checkout",
-          "note": "leave the workspace on the current checkout"
+          "do": "pause",
+          "ms": 800
         }
       ]
     },
@@ -179,16 +228,17 @@
       "id": "05-plan",
       "kind": "APP",
       "chapter": "Plan",
-      "startSec": 42,
-      "durationSec": 13,
+      "startSec": 39.0,
+      "durationSec": 11,
       "vo": "Type a dollar sign, pick sw-increment, and describe the change. Codex writes spec.md: acceptance criteria and a task with its files and test.",
-      "spokenWords": 28,
-      "stepChip": "$ → sw-increment → describe the change → Enter",
+      "spokenWords": 23,
+      "stepChip": "$ → Sw Increment → describe the change → Enter",
       "steps": [
         {
           "do": "click",
-          "target": "composer",
-          "note": "placeholder \"Ask anything, @tag files/folders, $use skills, or / for commands\""
+          "role": "textbox",
+          "name": "Message",
+          "note": "placeholder \"Ask for changes, send follow-ups, or attach images\" on a new chat"
         },
         {
           "do": "type",
@@ -196,17 +246,18 @@
         },
         {
           "do": "expect",
-          "text": "Searching workspace skills...",
-          "note": "then the 11 sw-* skills"
+          "text": "Sw Increment",
+          "note": "the menu lists the 11 skills title-cased: Sw Auto … Sw Team, each tagged Repo Skill"
         },
         {
           "do": "click",
           "role": "option",
-          "name": "sw-increment"
+          "nameRegex": "^Sw Increment"
         },
         {
           "do": "type",
-          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet."
+          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet.",
+          "delay": 14
         },
         {
           "do": "press",
@@ -214,19 +265,18 @@
           "note": "send button aria-label \"Submit message\""
         },
         {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "the reply ends"
+          "do": "waitTurn",
+          "note": "speed-ramped in the edit, with the Sped up chip"
         },
         {
-          "do": "highlight",
-          "in": ".specweave/increments/0001-…/spec.md (the edit in the thread)",
-          "lines": [
-            "- [ ] AC-01 …",
-            "- [ ] AC-02 …",
-            "### T-01 …",
-            "- AC: … | Files: … | Test: …"
-          ]
+          "do": "expect",
+          "text": "spec.md",
+          "note": "Codex's reply starts \"Created spec.md\", then the acceptance criteria and the tasks"
+        },
+        {
+          "do": "pause",
+          "ms": 2500,
+          "note": "hold on the reply: Created spec.md, the acceptance criteria, the tasks with npm test"
         }
       ]
     },
@@ -234,12 +284,17 @@
       "id": "06-build",
       "kind": "APP",
       "chapter": "Build",
-      "startSec": 55,
-      "durationSec": 12,
+      "startSec": 50.0,
+      "durationSec": 10.7,
       "vo": "Then send sw-do. Codex claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spokenWords": 26,
-      "stepChip": "$ → sw-do → claim → edit → test → done",
+      "spokenWords": 24,
+      "stepChip": "$ → Sw Do → claim → edit → test → done",
       "steps": [
+        {
+          "do": "click",
+          "role": "textbox",
+          "name": "Message"
+        },
         {
           "do": "type",
           "text": "$"
@@ -247,40 +302,35 @@
         {
           "do": "click",
           "role": "option",
-          "name": "sw-do"
+          "nameRegex": "^Sw Do(?!ne)"
         },
         {
           "do": "type",
-          "text": "Do T-01, then stop. I will close the increment myself."
+          "text": "Do T-01, then stop. I will close the increment myself.",
+          "delay": 14
         },
         {
           "do": "press",
           "key": "Enter"
         },
         {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "T-01 is done"
+          "do": "waitTurn"
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task claim T-01"
+          "do": "click",
+          "textRegex": "^Worked for",
+          "last": true,
+          "note": "expands the turn's steps"
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "the edit to src/greeting.js"
+          "do": "clickIfPresent",
+          "textRegex": "^Ran \\d+ commands",
+          "last": true
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "npm test passing"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task done T-01 … --run \"npm test\""
+          "do": "pause",
+          "ms": 2500,
+          "note": "hold on the expanded steps: git add and commit, specweave task done T-01 0001 --run \"npm test\", git merge --ff-only inc/0001-codex, and the reply \"T-01 is committed and marked done.\""
         }
       ]
     },
@@ -288,8 +338,8 @@
       "id": "07-review",
       "kind": "APP",
       "chapter": "Review",
-      "startSec": 67,
-      "durationSec": 9,
+      "startSec": 60.7,
+      "durationSec": 8,
       "vo": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
       "spokenWords": 19,
       "stepChip": "Open diff → code · test · ledger.jsonl",
@@ -297,23 +347,45 @@
         {
           "do": "click",
           "role": "button",
-          "name": "Open diff",
-          "note": "on the last turn's \"N changed files\" card; tooltip \"Open the full diff\""
+          "nameRegex": "Open diff",
+          "last": true,
+          "note": "on the last turn's \"8 changed files\" card (increment files, src, test, README.md)"
         },
         {
-          "do": "step",
-          "files": [
-            "src/greeting.js",
-            "test/greeting.test.js",
-            ".specweave/increments/0001-…/ledger.jsonl"
-          ]
+          "do": "expect",
+          "text": "Latest turn"
         },
         {
-          "do": "highlight",
-          "in": "ledger.jsonl",
-          "lines": [
-            "\"e\":\"done\" with \"by\":\"codex@demo\" and \"evidence\""
-          ]
+          "do": "click",
+          "role": "button",
+          "name": "Expand src/greeting.js"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Expand test/greeting.test.js"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "nameRegex": "^Expand .*ledger\\.jsonl$"
+        },
+        {
+          "do": "expect",
+          "text": "codex@demo"
+        },
+        {
+          "do": "pause",
+          "ms": 3000,
+          "note": "the done line: \"by\":\"codex@demo\" with its evidence"
         }
       ]
     },
@@ -321,10 +393,10 @@
       "id": "08-outro",
       "kind": "MG",
       "chapter": "Next",
-      "startSec": 76,
+      "startSec": 68.7,
       "durationSec": 4,
       "vo": "Next, sw-done verifies and closes the increment.",
-      "spokenWords": 9,
+      "spokenWords": 7,
       "card": {
         "lines": [
           "Next: $sw-done · verify and close",
