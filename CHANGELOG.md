@@ -1,3 +1,20 @@
+## [3.0.14] - 2026-10-11
+
+### Changed
+
+- Task Tests now check the acceptance criterion the way a user or caller would (CLI, HTTP, UI or public API). The `AGENTS.md` that `specweave init` writes and the `sw-increment`, `sw-do` and `sw-review` skills no longer pair every task with a new unit-test file; agents reuse existing tests and add unit tests only when asked or when the project's config or conventions require them. `sw-review` flags tests that only restate the implementation (#2019).
+- No test mode or coverage target is set by default any more: the built-in `testing` config is empty instead of TDD with 95/90/100 coverage, and the legacy `defaultTestMode` schema default is `test-after` (#2019).
+
+### Fixed
+
+- After a plugin update, `refresh-plugins` mirrors the plugin into each Claude Code plugin cache path, so skills and files the new version no longer ships (such as the retired 2.x `sw:qa` skill) disappear instead of lingering (#2016).
+- `update` and `refresh-plugins` remove retired `sw-*` project skills that SpecWeave installed (`sw-qa` and `sw-task` in projects upgraded from 2.x) and files a shipped skill no longer has (such as `sw-team/agents/`), and leave a user's own `sw-*` skills alone (#2016).
+
+### Docs
+
+- spec-weave.com has a privacy policy page, linked from the footer, covering the SpecWeave CLI, the SpecWithCode desktop app and the website (#2018, #2022).
+- The docs link check skips the Google account permissions link on that page, which only answers a signed-in browser (#2024).
+
 ## [3.0.13] - 2026-10-11
 
 ### Changed
