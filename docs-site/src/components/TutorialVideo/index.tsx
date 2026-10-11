@@ -9,8 +9,10 @@ export interface TutorialVideoProps {
   /** MP4 source. When missing, a "Coming soon" placeholder renders instead of a player. */
   src?: string | null;
   poster?: string | null;
-  /** WebVTT captions; rendered as the default English captions track. */
+  /** WebVTT captions, offered as the English captions track. */
   captionsVtt?: string | null;
+  /** Show the captions track by default. Leave off when captions are burned into the picture. */
+  captionsOn?: boolean;
   durationSeconds?: number | null;
   chapters?: readonly TutorialChapter[];
   /** Agent name shown on the placeholder card (and in the meta row). */
@@ -47,6 +49,7 @@ export default function TutorialVideo({
   src,
   poster,
   captionsVtt,
+  captionsOn = false,
   durationSeconds,
   chapters = [],
   agentLabel,
@@ -66,6 +69,13 @@ export default function TutorialVideo({
   const [active, setActive] = useState(chapters.length ? 0 : -1);
 
   useEffect(() => setDuration(durationSeconds ?? null), [durationSeconds]);
+
+  // A video rendered on the server may load its metadata before hydration, so
+  // onLoadedMetadata never fires for it; seek here as well.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && startAt && startAt > 0 && video.readyState >= 1 && video.currentTime < 0.1) video.currentTime = startAt;
+  }, [startAt]);
 
   const onLoadedMetadata = useCallback(() => {
     const video = videoRef.current;
@@ -125,7 +135,7 @@ export default function TutorialVideo({
           onTimeUpdate={onTimeUpdate}
         >
           <source src={src} type="video/mp4" />
-          {captionsVtt && <track kind="captions" src={captionsVtt} srcLang="en" label="English" default />}
+          {captionsVtt && <track kind="captions" src={captionsVtt} srcLang="en" label="English" default={captionsOn} />}
           Your browser does not support embedded video. <a href={src}>Download the video</a>.
         </video>
       </div>

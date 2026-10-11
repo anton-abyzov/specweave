@@ -10,6 +10,7 @@ export default function StudioAgentVideo() {
     src={walkthrough.src}
     poster={walkthrough.poster}
     captionsVtt={walkthrough.captionsVtt}
+    preload="none"
     durationSeconds={walkthrough.durationSeconds}
     chapters={walkthrough.chapters}
     style={{margin: 0}}

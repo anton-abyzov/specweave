@@ -14,7 +14,7 @@ describe('TutorialVideo', () => {
     vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(() => Promise.resolve());
   });
 
-  it('renders a native player with poster, metadata preload and a default English captions track', () => {
+  it('renders a native player with poster, metadata preload and an English captions track that starts off', () => {
     const {container} = render(
       <TutorialVideo title="Tour" src="/video/tour.mp4" poster="/img/tour.jpg" captionsVtt="/video/tour.vtt" durationSeconds={61} />,
     );
@@ -27,8 +27,24 @@ describe('TutorialVideo', () => {
     expect(track).toHaveAttribute('kind', 'captions');
     expect(track).toHaveAttribute('srclang', 'en');
     expect(track).toHaveAttribute('src', '/video/tour.vtt');
-    expect(track.default).toBe(true);
+    expect(track.default).toBe(false);
     expect(screen.getByText('1:01')).toBeInTheDocument();
+  });
+
+  it('turns captions on by default only when captionsOn is set (captions not burned in)', () => {
+    const {container} = render(<TutorialVideo title="Tour" src="/video/tour.mp4" captionsVtt="/video/tour.vtt" captionsOn />);
+    expect(container.querySelector('track')!.default).toBe(true);
+  });
+
+  it('seeks to startAt when metadata loaded before hydration', () => {
+    const desc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'readyState');
+    Object.defineProperty(HTMLMediaElement.prototype, 'readyState', {configurable: true, get: () => 1});
+    try {
+      const {container} = render(<TutorialVideo title="Tour" src="/video/tour.mp4" startAt={31} />);
+      expect(container.querySelector('video')!.currentTime).toBe(31);
+    } finally {
+      if (desc) Object.defineProperty(HTMLMediaElement.prototype, 'readyState', desc);
+    }
   });
 
   it('omits the captions track when no VTT exists', () => {

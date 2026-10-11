@@ -11,6 +11,8 @@ export default function StudioTutorialVideo() {
     src={tour.src}
     poster={tour.poster}
     captionsVtt={tour.captionsVtt}
+    captionsOn={tour.captionsOn}
+    preload="none"
     durationSeconds={tour.durationSeconds}
     chapters={tour.chapters}
     style={{marginTop: 40}}

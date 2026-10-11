@@ -13,6 +13,7 @@
       "src": "/video/studio-tutorial.mp4",
       "poster": "/img/studio/studio-tutorial-cover.jpg",
       "captionsVtt": "/video/studio-tutorial.vtt",
+      "captionsOn": true,
       "audio": "silent",
       "uploadDate": "2026-10-10",
       "guide": "/studio",

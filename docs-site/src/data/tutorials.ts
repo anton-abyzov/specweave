@@ -28,6 +28,8 @@ export interface Tutorial {
   src: string | null;
   poster: string | null;
   captionsVtt: string | null;
+  /** True when the captions are not burned into the video, so the track starts on. */
+  captionsOn?: boolean;
   audio: 'silent' | 'narrated' | null;
   /** ISO date (YYYY-MM-DD) the video was published. */
   uploadDate: string | null;

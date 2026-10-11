@@ -157,6 +157,7 @@ export default function Tutorials() {
             src={selected.src}
             poster={selected.poster}
             captionsVtt={selected.captionsVtt}
+            captionsOn={selected.captionsOn}
             durationSeconds={selected.durationSeconds}
             chapters={selected.chapters}
             outline={selected.outline}
