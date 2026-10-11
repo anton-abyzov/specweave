@@ -109,8 +109,8 @@ describe('Docusaurus navbar items (T-017)', () => {
     ]));
   });
 
-  it('leads with Studio, then the CLI and Integrations', () => {
-    expect(navItems[0]).toEqual(expect.objectContaining({label: 'Studio', to: '/studio'}));
+  it('leads with SpecWithCode, then the CLI and Integrations', () => {
+    expect(navItems[0]).toEqual(expect.objectContaining({label: 'SpecWithCode', to: '/studio'}));
     expect(navItems).toEqual(expect.arrayContaining([
       expect.objectContaining({label: 'CLI', to: '/product'}),
       expect.objectContaining({label: 'Integrations', to: '/integrations'}),
@@ -121,6 +121,12 @@ describe('Docusaurus navbar items (T-017)', () => {
     expect(navItems).toEqual(expect.arrayContaining([
       expect.objectContaining({label: 'Docs', sidebarId: 'docsSidebar'}),
       expect.objectContaining({label: 'Verified Skills', href: 'https://verified-skill.com'}),
+    ]));
+  });
+
+  it('links Tutorials from the navbar', () => {
+    expect(themeConfig.navbar.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({label: 'Tutorials', to: '/tutorials'}),
     ]));
   });
 
