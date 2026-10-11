@@ -1,0 +1,521 @@
+/* /tutorials. Builds on continuity.module.css (.page, .eyebrow, .lead); every color is a
+   brand token from src/styles/brand-tokens.css, so light and dark both come for free. */
+.tutorials {
+  --tut-gutter: 48px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 32px 64px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 60px var(--tut-gutter) 40px;
+}
+
+.heroText {
+  min-width: 0;
+}
+
+.tutorials .hero h1 {
+  font-size: clamp(52px, 5vw, 76px);
+}
+
+.tutorials .hero p {
+  max-width: 600px;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 40px;
+  margin: 0;
+  padding: 0 0 6px 32px;
+  border-left: 1px solid var(--sw-brand-line);
+}
+
+.stats div {
+  display: grid;
+  gap: 2px;
+}
+
+.stats dt {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sw-brand-muted);
+}
+
+.stats dd {
+  margin: 0;
+  font-family: var(--sw-brand-display);
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--sw-brand-ink);
+}
+
+/* Player */
+.player {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 8px var(--tut-gutter) 72px;
+  scroll-margin-top: 84px;
+}
+
+.playerInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px 40px;
+  margin-bottom: 22px;
+}
+
+.playerInfo > div {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+}
+
+.playerAgent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sw-brand-muted);
+}
+
+.playerAgent span:first-child {
+  color: var(--sw-brand-accent);
+}
+
+.playerAgent span + span::before {
+  content: '/';
+  margin-right: 8px;
+  color: var(--sw-brand-line-strong);
+}
+
+.tutorials .playerTitle {
+  font-family: var(--sw-brand-display);
+  font-size: 36px;
+  font-weight: 450;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.playerTitle:focus {
+  outline: none;
+}
+
+.playerTitle:focus-visible {
+  outline: 3px solid var(--sw-brand-accent);
+  outline-offset: 4px;
+}
+
+.tutorials .playerSummary {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sw-brand-ink);
+}
+
+.tutorials .guideLink {
+  flex-shrink: 0;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--sw-brand-line-strong);
+}
+
+.tutorials .guideLink:hover {
+  border-bottom-color: var(--sw-brand-accent);
+}
+
+/* Gallery */
+.gallery {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 72px var(--tut-gutter) 40px;
+  border-top: 1px solid var(--sw-brand-line);
+}
+
+.galleryHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 50px;
+  margin-bottom: 34px;
+}
+
+.tutorials .galleryHeading h2 {
+  font-size: clamp(38px, 3.8vw, 58px);
+}
+
+.tutorials .galleryHeading p {
+  max-width: 400px;
+  font-size: 16px;
+  color: var(--sw-brand-muted);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  margin-right: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sw-brand-muted);
+}
+
+.tutorials .filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--sw-brand-line);
+  border-radius: 999px;
+  background: var(--sw-brand-card);
+  color: var(--sw-brand-ink);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.tutorials .filter:hover {
+  border-color: var(--sw-brand-control-border);
+  background: var(--sw-brand-hover);
+}
+
+.tutorials .filter[aria-pressed='true'] {
+  background: var(--sw-brand-action);
+  border-color: var(--sw-brand-action);
+  color: var(--sw-brand-on-action);
+}
+
+.count {
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--sw-brand-soft);
+  color: var(--sw-brand-muted);
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter[aria-pressed='true'] .count {
+  background: color-mix(in srgb, var(--sw-brand-on-action) 18%, transparent);
+  color: var(--sw-brand-on-action);
+}
+
+.tutorials .resultCount {
+  margin: 16px 0 26px;
+  font-size: 13px;
+  color: var(--sw-brand-muted);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px 24px;
+}
+
+.grid > li {
+  display: flex;
+  margin: 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--sw-brand-line);
+  border-radius: calc(var(--sw-brand-radius) * 1.5);
+  overflow: hidden;
+  background: var(--sw-brand-card);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.card:hover {
+  border-color: var(--sw-brand-control-border);
+  box-shadow: var(--sw-brand-shadow);
+  transform: translateY(-2px);
+}
+
+.card:has(.cardButton:focus-visible) {
+  outline: 3px solid var(--sw-brand-accent);
+  outline-offset: 3px;
+}
+
+.cardSelected {
+  border-color: var(--sw-brand-accent);
+  box-shadow: inset 0 0 0 1px var(--sw-brand-accent);
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--sw-brand-term-bg);
+  border-bottom: 1px solid var(--sw-brand-line);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  background-color: var(--sw-brand-soft);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 16px,
+    color-mix(in srgb, var(--sw-brand-line) 60%, transparent) 16px 17px
+  );
+  border-left: 4px solid var(--sw-brand-accent);
+}
+
+.thumbAgent {
+  font-family: var(--sw-brand-display);
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--sw-brand-ink);
+}
+
+.badge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 8px;
+  border-radius: var(--sw-brand-radius);
+  background: var(--sw-brand-term-bg);
+  color: var(--sw-brand-term-ink);
+  font-family: var(--sw-brand-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.badgeSoon {
+  background: var(--sw-brand-card);
+  color: var(--sw-brand-accent);
+  border: 1px solid var(--sw-brand-accent);
+  font-family: var(--sw-brand-sans);
+  font-weight: 600;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  padding: 18px 18px 16px;
+}
+
+.tutorials .cardAgent {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sw-brand-accent);
+}
+
+.tutorials .cardTitle {
+  font-size: 19px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+.tutorials .cardButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sw-brand-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tutorials .cardButton:focus-visible {
+  outline: none;
+}
+
+/* The whole card is the button's hit area. */
+.cardButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.tutorials .cardSummary {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--sw-brand-muted);
+}
+
+.tutorials .cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--sw-brand-line-soft);
+  font-size: 12px;
+  color: var(--sw-brand-muted);
+}
+
+/* Standards */
+.standards {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 44px var(--tut-gutter) 96px;
+}
+
+.tutorials .standardsTitle {
+  font-size: 30px;
+  margin-bottom: 22px;
+}
+
+.standards ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.standards li {
+  margin: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--sw-brand-line-strong);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sw-brand-muted);
+}
+
+.standards strong {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--sw-brand-ink);
+}
+
+@media (max-width: 1100px) {
+  .tutorials {
+    --tut-gutter: 32px;
+  }
+}
+
+@media (max-width: 760px) {
+  .tutorials {
+    --tut-gutter: 16px;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding-top: 40px;
+    padding-bottom: 28px;
+  }
+
+  .stats {
+    padding: 18px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--sw-brand-line);
+  }
+
+  .tutorials .hero h1 {
+    font-size: clamp(44px, 12vw, 60px);
+  }
+
+  .stats {
+    gap: 12px 28px;
+  }
+
+  .stats dd {
+    font-size: 28px;
+  }
+
+  .player {
+    padding-bottom: 48px;
+  }
+
+  .tutorials .playerTitle {
+    font-size: 26px;
+  }
+
+  .playerInfo {
+    display: grid;
+    margin-bottom: 18px;
+  }
+
+  .gallery {
+    padding-top: 48px;
+  }
+
+  .galleryHeading {
+    display: block;
+    margin-bottom: 24px;
+  }
+
+  .tutorials .galleryHeading p {
+    margin-top: 16px;
+    font-size: 15px;
+  }
+
+  .tutorials .filter {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .filterLabel {
+    width: 100%;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .standards ul {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .tutorials .filter {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
