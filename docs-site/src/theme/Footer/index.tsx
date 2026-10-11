@@ -43,6 +43,7 @@ const COLUMNS = [
       {label: 'Pricing for teams', to: '/pricing'},
       {label: 'Verified Skills', href: 'https://verified-skill.com'},
       {label: 'Blog', to: '/blog'},
+      {label: 'Privacy', to: '/privacy'},
     ],
   },
 ];
