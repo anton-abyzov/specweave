@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Codex in SpecWithCode</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; src: url(assets/fonts/ibm-plex-sans-latin.woff2) format("woff2"); }
+      @font-face { font-family: "Newsreader"; font-style: normal; font-weight: 200 800; src: url(assets/fonts/newsreader-latin.woff2) format("woff2"); }
+      @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 200 800; src: url(assets/fonts/newsreader-italic-latin.woff2) format("woff2"); }
+      :root {
+        --paper: #f6f4ee; --ink: #252820; --muted: #65695e; --line: #d9dcd0; --soft: #eff2e8; --accent: #bd481f;
+        --term-bg: #20231c; --term-ink: #e8ecdf; --dark-paper: #181914; --dark-ink: #ece8dc; --dark-soft: #23261e;
+        --sans: "IBM Plex Sans", sans-serif; --display: "Newsreader", serif; --mono: ui-monospace, monospace;
+      }
+      body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
+      .clip { position: absolute; }
+      .footage { inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .card, .termstage { inset: 0; background: var(--paper); }
+      .card-inner { position: absolute; inset: 96px; }
+      .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); }
+      .title { margin: 236px 0 0; font: italic 400 120px/1.05 var(--display); color: var(--ink); }
+      .title .roman { font-style: normal; }
+      .thread { height: 4px; width: 0; background: var(--accent); margin-top: 36px; }
+      .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
+      .footer { position: absolute; left: 0; bottom: 0; font: 500 24px/1.2 var(--sans); color: var(--muted); }
+      .outro-l1 { margin-top: 300px; font: 400 72px/1.1 var(--display); color: var(--ink); }
+      .outro-l1 code { font-family: var(--mono); font-size: 62px; color: var(--accent); }
+      .outro-l2 { margin-top: 40px; font: 400 32px/1.4 var(--sans); color: var(--ink); }
+      .outro-l3 { margin-top: 12px; font: 400 32px/1.4 var(--sans); color: var(--muted); }
+      .term { position: absolute; left: 50%; top: 50%; width: 1500px; margin-left: -750px; margin-top: -200px; box-sizing: border-box;
+        background: var(--term-bg); color: var(--term-ink); border: 1px solid var(--line); border-radius: 4px; padding: 40px 48px;
+        font: 400 30px/1.5 var(--mono); }
+      .term-row { white-space: pre; min-height: 45px; position: relative; }
+      .term-row.out { opacity: 0; }
+      .term-row.hl::before { content: ""; position: absolute; left: -48px; top: 4px; bottom: 4px; width: 3px; background: var(--accent); }
+      .prompt { color: #a8ab9d; }
+      .caret { display: inline-block; width: 16px; height: 34px; background: var(--term-ink); vertical-align: -6px; margin-left: 2px; }
+      .chip { top: 48px; z-index: 10; }
+      .chip.step { left: 272px; }
+      .chip-inner, .chip.sped { display: inline-block; background: rgba(239, 242, 232, 0.92); border: 1px solid var(--line); border-radius: 4px;
+        padding: 10px 18px; font: 500 22px/1.3 var(--sans); color: var(--ink); box-shadow: 0 18px 50px #25282008; white-space: nowrap; }
+      .chip.sped { top: auto; right: 48px; bottom: 48px; color: var(--muted); }
+      .chip .arrow { color: var(--accent); }
+      .chip code { font-family: var(--mono); font-size: 0.92em; }
+      .hl-box { z-index: 8; background: rgba(189, 72, 31, 0.12); outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+      .caption { left: 0; right: 0; bottom: 64px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; max-width: 880px; text-wrap: balance; background: rgba(246, 244, 238, 0.92); color: var(--ink);
+        padding: 12px 24px; border-radius: 4px; font: 600 40px/1.3 var(--sans); }
+      .caption.dark .pill { background: rgba(24, 25, 20, 0.92); color: var(--dark-ink); }
+      .caption code { font-family: var(--mono); font-weight: 600; font-size: 0.92em; background: var(--soft); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+      .caption.dark code { background: var(--dark-soft); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="72.7">
+
+      <section id="intro" class="clip card" data-start="0" data-duration="4" data-track-index="1">
+        <div class="card-inner">
+          <div class="eyebrow rise">SPECWITHCODE TUTORIAL 02</div>
+          <h1 class="title rise">Codex<span class="roman"> in SpecWithCode</span></h1>
+          <div class="thread" id="intro-thread"></div>
+          <p class="subtitle rise">Plan, build and review one task. The plan stays in your repo.</p>
+          <div class="footer rise">spec-weave.com</div>
+        </div>
+      </section>
+
+      <audio id="vo-01-intro" src="assets/media/01-intro.wav" data-start="0.2" data-duration="2.972" data-track-index="6" data-volume="1"></audio>
+
+      <section id="term" class="clip termstage" data-start="4" data-duration="6.5" data-track-index="1">
+        <div class="term">
+          <div class="term-row"><span class="prompt">greet-app %</span> <span id="term-cmd"></span><span class="caret" id="term-caret"></span></div>
+          <div class="term-row out elide" id="term-out-0">…</div>
+          <div class="term-row out hl" id="term-out-1">✓ AGENTS.md created</div>
+          <div class="term-row out elide" id="term-out-2">…</div>
+          <div class="term-row out hl" id="term-out-3">✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/</div>
+          <div class="term-row out elide" id="term-out-4">…</div>
+        </div>
+      </section>
+
+      <div id="chip-02-init" class="clip chip step" data-start="4" data-duration="6.5" data-track-index="2"><span class="chip-inner" id="chipi-02-init">In your repo: <code>specweave init . --quick</code></span></div>
+
+      <audio id="vo-02-init" src="assets/media/02-init.wav" data-start="4.2" data-duration="5.619" data-track-index="6" data-volume="1"></audio>
+
+      <video id="v1" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="10.5" data-duration="2.4" data-media-start="0.49" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v2" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="12.9" data-duration="3.5" data-media-start="3.39" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v3" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="16.4" data-duration="3.133" data-media-start="6.89" data-playback-rate="0.7" data-track-index="0"></video>
+
+      <video id="v4" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="19.533" data-duration="2.9" data-media-start="9.09" data-playback-rate="0.45" data-track-index="0"></video>
+
+      <video id="v5" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="22.433" data-duration="2.833" data-media-start="11.64" data-playback-rate="0.55" data-track-index="0"></video>
+
+      <video id="v6" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="25.267" data-duration="2.733" data-media-start="13.19" data-playback-rate="1" data-track-index="0"></video>
+
+      <div id="chip-03-connect" class="clip chip step" data-start="10.5" data-duration="17.5" data-track-index="2"><span class="chip-inner" id="chipi-03-connect">Setup <span class="arrow">→</span> Continue <span class="arrow">→</span> Codex: Use existing CLI <span class="arrow">→</span> Ready to code</span></div>
+
+      <audio id="vo-03-connect" src="assets/media/03-connect.wav" data-start="10.7" data-duration="15.836" data-track-index="6" data-volume="1"></audio>
+
+      <video id="v7" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="28" data-duration="5.467" data-media-start="16.83" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v8" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="33.467" data-duration="5.533" data-media-start="23.79" data-playback-rate="1" data-track-index="0"></video>
+
+      <div id="chip-04-project-chat" class="clip chip step" data-start="28" data-duration="11" data-track-index="2"><span class="chip-inner" id="chipi-04-project-chat">+ <span class="arrow">→</span> Local folder <span class="arrow">→</span> <code>~/greet-app</code> · GPT-6.1-Sol · Full access</span></div>
+
+      <audio id="vo-04-project-chat" src="assets/media/04-project-chat.wav" data-start="28.2" data-duration="8.963" data-track-index="6" data-volume="1"></audio>
+
+      <video id="v9" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="39" data-duration="2.5" data-media-start="29.49" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v10" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="41.5" data-duration="1.7" data-media-start="31.99" data-playback-rate="2" data-track-index="0"></video>
+
+      <div id="sped-10" class="clip chip sped" data-start="41.5" data-duration="1.7" data-track-index="3">Sped up 2×</div>
+
+      <video id="v11" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="43.2" data-duration="2.5" data-media-start="35.39" data-playback-rate="8" data-track-index="0"></video>
+
+      <div id="sped-11" class="clip chip sped" data-start="43.2" data-duration="2.5" data-track-index="3">Sped up 8×</div>
+
+      <video id="v12" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="45.7" data-duration="1.6" data-media-start="74.59" data-playback-rate="8" data-track-index="0"></video>
+
+      <div id="sped-12" class="clip chip sped" data-start="45.7" data-duration="1.6" data-track-index="3">Sped up 8×</div>
+
+      <video id="v13" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="47.3" data-duration="2.7" data-media-start="87.49" data-playback-rate="1" data-track-index="0"></video>
+
+      <div id="hl-05-plan-0" class="clip hl-box" data-start="47.5" data-duration="2.5" data-track-index="4" style="left:720px;top:226px;width:730px;height:180px"></div>
+
+      <div id="chip-05-plan" class="clip chip step" data-start="39" data-duration="11" data-track-index="2"><span class="chip-inner" id="chipi-05-plan"><code>$</code> <span class="arrow">→</span> Sw Increment <span class="arrow">→</span> describe the change <span class="arrow">→</span> Enter</span></div>
+
+      <audio id="vo-05-plan" src="assets/media/05-plan.wav" data-start="39.2" data-duration="9.845" data-track-index="6" data-volume="1"></audio>
+
+      <video id="v14" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="50" data-duration="4.7" data-media-start="90.19" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v15" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="54.7" data-duration="1.5" data-media-start="94.89" data-playback-rate="8" data-track-index="0"></video>
+
+      <div id="sped-15" class="clip chip sped" data-start="54.7" data-duration="1.5" data-track-index="3">Sped up 8×</div>
+
+      <video id="v16" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="56.2" data-duration="1" data-media-start="135.19" data-playback-rate="8" data-track-index="0"></video>
+
+      <div id="sped-16" class="clip chip sped" data-start="56.2" data-duration="1" data-track-index="3">Sped up 8×</div>
+
+      <video id="v17" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="57.2" data-duration="3.5" data-media-start="143.19" data-playback-rate="1" data-track-index="0"></video>
+
+      <div id="chip-06-build" class="clip chip step" data-start="50" data-duration="10.7" data-track-index="2"><span class="chip-inner" id="chipi-06-build"><code>$</code> <span class="arrow">→</span> Sw Do <span class="arrow">→</span> claim <span class="arrow">→</span> edit <span class="arrow">→</span> test <span class="arrow">→</span> done</span></div>
+
+      <audio id="vo-06-build" src="assets/media/06-build.wav" data-start="50.2" data-duration="8.87" data-track-index="6" data-volume="1"></audio>
+
+      <video id="v18" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="60.7" data-duration="2.4" data-media-start="147.99" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v19" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="63.1" data-duration="1.3" data-media-start="151.69" data-playback-rate="1" data-track-index="0"></video>
+
+      <video id="v20" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="64.4" data-duration="4.3" data-media-start="153.89" data-playback-rate="1" data-track-index="0"></video>
+
+      <div id="hl-07-review-0" class="clip hl-box" data-start="65.6" data-duration="3.1" data-track-index="4" style="left:1388px;top:347px;width:527px;height:200px"></div>
+
+      <div id="chip-07-review" class="clip chip step" data-start="60.7" data-duration="8" data-track-index="2"><span class="chip-inner" id="chipi-07-review">Open diff <span class="arrow">→</span> code · test · <code>ledger.jsonl</code></span></div>
+
+      <audio id="vo-07-review" src="assets/media/07-review.wav" data-start="60.9" data-duration="5.898" data-track-index="6" data-volume="1"></audio>
+
+      <section id="outro" class="clip card" data-start="68.7" data-duration="4" data-track-index="1">
+        <div class="card-inner outro">
+          <div class="eyebrow rise">SPECWITHCODE TUTORIAL 02</div>
+          <div class="outro-l1 rise">Next: <code class="accent">$sw-done</code> · verify and close</div>
+          <div class="thread" id="outro-thread"></div>
+          <div class="outro-l2 rise">SpecWithCode is in private pilot · spec-weave.com/studio</div>
+          <div class="outro-l3 rise">All tutorials · spec-weave.com/tutorials</div>
+        </div>
+      </section>
+
+      <audio id="vo-08-outro" src="assets/media/08-outro.wav" data-start="68.9" data-duration="2.926" data-track-index="6" data-volume="1"></audio>
+
+      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="3.133" data-track-index="5"><span class="pill">Codex in SpecWithCode: plan, build, review.</span></div>
+
+      <div id="cap-2" class="clip caption dark" data-start="4.2" data-duration="1.933" data-track-index="5"><span class="pill">In your repo, run <code>specweave init</code>.</span></div>
+
+      <div id="cap-3" class="clip caption dark" data-start="6.133" data-duration="3.8" data-track-index="5"><span class="pill">It adds <code>AGENTS.md</code> and eleven SpecWeave skills.</span></div>
+
+      <div id="cap-4" class="clip caption" data-start="10.7" data-duration="5.267" data-track-index="5"><span class="pill">Open SpecWithCode. In setup, keep this computer and click Continue.</span></div>
+
+      <div id="cap-5" class="clip caption" data-start="15.967" data-duration="4.367" data-track-index="5"><span class="pill">On the Codex card, click Continue with ChatGPT,</span></div>
+
+      <div id="cap-6" class="clip caption" data-start="20.333" data-duration="3.933" data-track-index="5"><span class="pill">or run <code>codex login</code>, then Use existing CLI.</span></div>
+
+      <div id="cap-7" class="clip caption" data-start="24.267" data-duration="2.467" data-track-index="5"><span class="pill">The card says Ready to code.</span></div>
+
+      <div id="cap-8" class="clip caption" data-start="28.2" data-duration="4.167" data-track-index="5"><span class="pill">Add the repo: the plus next to Projects, Local folder, then its path.</span></div>
+
+      <div id="cap-9" class="clip caption" data-start="32.367" data-duration="1.1" data-track-index="5"><span class="pill">A new chat opens.</span></div>
+
+      <div id="cap-10" class="clip caption" data-start="33.467" data-duration="3.9" data-track-index="5"><span class="pill">Pick Codex in the model picker, and set Full access for this demo.</span></div>
+
+      <div id="cap-11" class="clip caption" data-start="39.2" data-duration="4.033" data-track-index="5"><span class="pill">Type a dollar sign, pick <code>sw-increment</code>, and describe the change.</span></div>
+
+      <div id="cap-12" class="clip caption" data-start="43.233" data-duration="6" data-track-index="5"><span class="pill">Codex writes <code>spec.md</code>: acceptance criteria and a task with its files and test.</span></div>
+
+      <div id="cap-13" class="clip caption" data-start="50.2" data-duration="1.967" data-track-index="5" style="bottom:214px"><span class="pill">Then send <code>sw-do</code>.</span></div>
+
+      <div id="cap-14" class="clip caption" data-start="52.167" data-duration="3.567" data-track-index="5" style="bottom:214px"><span class="pill">Codex claims the task, changes the code, and runs the test.</span></div>
+
+      <div id="cap-15" class="clip caption" data-start="55.733" data-duration="3.467" data-track-index="5"><span class="pill">The task is marked done only when the test passes.</span></div>
+
+      <div id="cap-16" class="clip caption" data-start="60.9" data-duration="2.567" data-track-index="5"><span class="pill">Click Open diff to review the code, the test,</span></div>
+
+      <div id="cap-17" class="clip caption" data-start="63.467" data-duration="3.467" data-track-index="5"><span class="pill">and the ledger line that records who finished the task.</span></div>
+
+      <div id="cap-18" class="clip caption" data-start="68.9" data-duration="2.967" data-track-index="5"><span class="pill">Next, <code>sw-done</code> verifies and closes the increment.</span></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 0);
+      tl.fromTo("#intro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 0.3);
+      tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, 3.75);
+      { const o = { n: 0 }; const el = document.getElementById("term-cmd"); const cmd = "specweave init . --quick";
+      tl.to(o, { n: cmd.length, duration: 0.6, ease: "none", onUpdate: () => { el.textContent = cmd.slice(0, Math.round(o.n)); } }, 4.35); }
+      tl.set("#term-caret", { opacity: 0 }, 5.2);
+      tl.fromTo("#term-out-0", { opacity: 0 }, { opacity: 0.5, duration: 0.12, ease: "none" }, 5.3);
+      tl.fromTo("#term-out-1", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, 5.36);
+      tl.fromTo("#term-out-2", { opacity: 0 }, { opacity: 0.5, duration: 0.12, ease: "none" }, 5.42);
+      tl.fromTo("#term-out-3", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, 5.48);
+      tl.fromTo("#term-out-4", { opacity: 0 }, { opacity: 0.5, duration: 0.12, ease: "none" }, 5.54);
+      tl.fromTo("#chipi-02-init", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 4.2);
+      tl.fromTo("#chipi-03-connect", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 10.7);
+      tl.fromTo("#chipi-04-project-chat", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 28.2);
+      tl.fromTo("#chipi-05-plan", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 39.2);
+      tl.fromTo("#chipi-06-build", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 50.2);
+      tl.fromTo("#chipi-07-review", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 60.9);
+      tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 68.7);
+      tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 69);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

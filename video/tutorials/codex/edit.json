@@ -1,0 +1,48 @@
+{
+  "comment": "Edit decisions for episode 2. Times in seconds. segments are [sourceStart, sourceEnd, rate] in take.mp4 (cue log time = video time, sync offset measured with blackdetect). Highlights are frame boxes in 1920x1080 pixels, times relative to the beat. lift raises a caption above the composer while it is in use. Beat 03 jump-cuts from the Use existing CLI click (10.4) to the Ready card (11.65), dropping 1.2 s of the card re-checking. Beats 05 and 06 jump-cut inside the 8x turn (about 20 s and 28 s of agent work) so the shared beat lengths match episode 1; typing in 05 runs at 2x.",
+  "take": "assets/media/take.mp4",
+  "voDir": "assets/media",
+  "syncOffset": -0.01,
+  "voOffset": 0.2,
+  "beats": [
+    { "id": "01-intro", "dur": 4,
+      "captions": [ { "text": "Codex in SpecWithCode: plan, build, review." } ] },
+    { "id": "02-init", "dur": 6.5,
+      "captions": [
+        { "text": "In your repo, run `specweave init`." },
+        { "text": "It adds `AGENTS.md` and eleven SpecWeave skills." } ] },
+    { "id": "03-connect", "dur": 17.5,
+      "segments": [ [0.5, 2.9, 1.0], [3.4, 6.9, 1.0], [6.9, 9.1, 0.7], [9.1, 10.4, 0.45], [11.65, 13.2, 0.55], [13.2, 16.8, 1.0] ],
+      "captions": [
+        { "text": "Open SpecWithCode. In setup, keep this computer and click Continue." },
+        { "text": "On the Codex card, click Continue with ChatGPT," },
+        { "text": "or run `codex login`, then Use existing CLI." },
+        { "text": "The card says Ready to code." } ] },
+    { "id": "04-project-chat", "dur": 11,
+      "segments": [ [16.84, 22.3, 1.0], [23.8, 29.4, 1.0] ],
+      "captions": [
+        { "text": "Add the repo: the plus next to Projects, Local folder, then its path." },
+        { "text": "A new chat opens." },
+        { "text": "Pick Codex in the model picker, and set Full access for this demo." } ] },
+    { "id": "05-plan", "dur": 11,
+      "segments": [ [29.5, 32.0, 1.0], [32.0, 35.4, 2.0], [35.4, 55.4, 8.0], [74.6, 87.5, 8.0], [87.5, 90.3, 1.0] ],
+      "highlights": [ { "x": 720, "y": 226, "w": 730, "h": 180, "from": 8.5, "to": 11 } ],
+      "captions": [
+        { "text": "Type a dollar sign, pick `sw-increment`, and describe the change." },
+        { "text": "Codex writes `spec.md`: acceptance criteria and a task with its files and test." } ] },
+    { "id": "06-build", "dur": 10.7,
+      "segments": [ [90.2, 94.9, 1.0], [94.9, 106.9, 8.0], [135.2, 143.2, 8.0], [143.2, 147.9, 1.0] ],
+      "captions": [
+        { "text": "Then send `sw-do`.", "lift": 150 },
+        { "text": "Codex claims the task, changes the code, and runs the test.", "lift": 150 },
+        { "text": "The task is marked done only when the test passes." } ] },
+    { "id": "07-review", "dur": 8,
+      "segments": [ [148.0, 150.4, 1.0], [151.7, 153.0, 1.0], [153.9, 158.1, 1.0] ],
+      "highlights": [ { "x": 1388, "y": 347, "w": 527, "h": 200, "from": 4.9, "to": 8 } ],
+      "captions": [
+        { "text": "Click Open diff to review the code, the test," },
+        { "text": "and the ledger line that records who finished the task." } ] },
+    { "id": "08-outro", "dur": 4,
+      "captions": [ { "text": "Next, `sw-done` verifies and closes the increment." } ] }
+  ]
+}
