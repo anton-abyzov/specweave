@@ -118,7 +118,7 @@ export default function Tutorials() {
   return (
     <Layout
       title="Tutorials: SpecWithCode and specweave videos"
-      description="Short, captioned video tutorials for SpecWithCode and the specweave CLI: projects, threads, memory, plans and handoff, with one walkthrough per agent coming for Claude Code, Codex, OpenCode, Antigravity, Grok and Cursor."
+      description="Short, captioned video tutorials for SpecWithCode and the specweave CLI: projects, threads, memory, plans and handoff, plus one narrated walkthrough per agent for Claude Code, Codex, OpenCode and Grok, with Antigravity and Cursor next."
     >
       <Head>
         <script type="application/ld+json">{jsonLd}</script>
@@ -158,6 +158,7 @@ export default function Tutorials() {
             poster={selected.poster}
             captionsVtt={selected.captionsVtt}
             captionsOn={selected.captionsOn}
+            captionsBurnedIn={selected.captionsBurnedIn}
             durationSeconds={selected.durationSeconds}
             chapters={selected.chapters}
             outline={selected.outline}
@@ -173,7 +174,7 @@ export default function Tutorials() {
               <span className={base.eyebrow}>All tutorials</span>
               <h2 id="gallery-title">Pick a walkthrough.<br /><em>Or pick your agent.</em></h2>
             </div>
-            <p>One tutorial per agent is in production: setup, one real task through a project, and the result, in 60 to 120 seconds.</p>
+            <p>Each agent gets one tutorial: setup, one real task through a project, and the result, in 60 to 90 seconds.</p>
           </div>
           <div className={styles.filters} role="group" aria-labelledby="filter-label">
             <span id="filter-label" className={styles.filterLabel}>Agent</span>

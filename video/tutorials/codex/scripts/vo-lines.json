@@ -1,0 +1,54 @@
+{
+  "voiceId": "CXBq9AgXLrBIJkfnV9hg",
+  "modelId": "eleven_multilingual_v2",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "text": "Codex in SpecWithCode: plan, build, review.",
+      "spoken": "Codex in Spec With Code: plan, build, review."
+    },
+    {
+      "id": "02-init",
+      "text": "In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills.",
+      "spoken": "In your repo, run spec weave init. It adds agents dot M D, and eleven spec weave skills."
+    },
+    {
+      "id": "03-connect",
+      "text": "Open SpecWithCode. In setup, keep this computer and click Continue. On the Codex card, click Continue with ChatGPT, or run codex login, then Use existing CLI. The card says Ready to code.",
+      "spoken": "Open Spec With Code. In setup, keep this computer and click Continue. On the Codex card, click Continue with Chat G P T, or run codex login, then Use existing C L I. The card says: Ready to code."
+    },
+    {
+      "id": "04-project-chat",
+      "text": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Codex in the model picker, and set Full access for this demo.",
+      "spoken": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Codex in the model picker, and set Full access for this demo."
+    },
+    {
+      "id": "05-plan",
+      "text": "Type a dollar sign, pick sw-increment, and describe the change. Codex writes spec.md: acceptance criteria and a task with its files and test.",
+      "spoken": "Type a dollar sign, pick S W increment, and describe the change. Codex writes spec dot M D: acceptance criteria, and a task with its files and test."
+    },
+    {
+      "id": "06-build",
+      "text": "Then send sw-do. Codex claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
+      "spoken": "Then send S W do. Codex claims the task, changes the code, and runs the test. The task is marked done only when the test passes."
+    },
+    {
+      "id": "07-review",
+      "text": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
+      "spoken": "Click Open diff to review the code, the test, and the ledger line that records who finished the task."
+    },
+    {
+      "id": "08-outro",
+      "text": "Next, sw-done verifies and closes the increment.",
+      "spoken": "Next, S W done verifies and closes the increment."
+    }
+  ],
+  "reused": "02-init, 07-review and 08-outro have the same text as episode 1; their files are copied from episode 1's vo folder instead of generated again."
+}

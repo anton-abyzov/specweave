@@ -3,13 +3,13 @@
   "episode": 5,
   "agent": "grok",
   "title": "Grok in SpecWithCode",
-  "durationSec": 88,
-  "spokenWords": 193,
+  "durationSec": 83.6,
+  "spokenWords": 176,
   "resolution": "1920x1080",
   "fps": 30,
   "demoRepo": "greet-app",
   "ledgerAgent": "grok@demo",
-  "labelsCheckedAt": "specweave-studio 618bfeca (v0.2.4); record on the renamed SpecWithCode build",
+  "labelsCheckedAt": "SpecWithCode 0.2.6 (specweave-studio v0.2.6), rendered and recorded 2026-10-11",
   "shots": [
     {
       "id": "01-intro",
@@ -18,7 +18,7 @@
       "startSec": 0,
       "durationSec": 4,
       "vo": "Grok in SpecWithCode: plan, build, review.",
-      "spokenWords": 8,
+      "spokenWords": 6,
       "card": {
         "eyebrow": "SpecWithCode tutorial 05",
         "title": "Grok in SpecWithCode",
@@ -30,9 +30,9 @@
       "kind": "TERM",
       "chapter": "Set up the repo",
       "startSec": 4,
-      "durationSec": 10,
+      "durationSec": 7.7,
       "vo": "In your repo, run specweave init with the generic adapter. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spokenWords": 22,
+      "spokenWords": 17,
       "stepChip": "In your repo: specweave init . --quick --adapter generic",
       "steps": [
         {
@@ -56,10 +56,10 @@
       "id": "03-trust",
       "kind": "TERM",
       "chapter": "Set up the repo",
-      "startSec": 14,
-      "durationSec": 11,
+      "startSec": 11.7,
+      "durationSec": 10.9,
       "vo": "Grok skips project skills in folders it doesn't trust. In the repo, run grok --trust once. Signed out? Run grok login first.",
-      "spokenWords": 25,
+      "spokenWords": 22,
       "stepChip": "Trust the folder once: grok --trust · signed out: grok login",
       "steps": [
         {
@@ -67,7 +67,11 @@
           "prompt": "greet-app %",
           "command": "grok --trust inspect --json | jq -r '.skills[].name | select(startswith(\"sw-\"))'",
           "capture": "captures/04-grok-trust-skills.json",
-          "showLines": "all 11 lines (sw-auto … sw-team)"
+          "showLines": "all 11 lines (sw-auto … sw-team)",
+          "highlight": [
+            "sw-increment",
+            "sw-do"
+          ]
         }
       ]
     },
@@ -75,51 +79,76 @@
       "id": "04-add-provider",
       "kind": "APP",
       "chapter": "Connect Grok",
-      "startSec": 25,
-      "durationSec": 12,
-      "vo": "Open SpecWithCode, then Settings, Providers. Grok is off by default: click Add provider, pick Grok, existing CLI, click Next twice, then Add instance.",
-      "spokenWords": 27,
-      "stepChip": "Settings → Providers → Add provider → Grok (existing CLI) → Next → Next → Add instance",
+      "startSec": 22.6,
+      "durationSec": 13.7,
+      "vo": "Open SpecWithCode. In the account menu, pick Settings, then Providers. Grok is off by default: click Add provider, pick Grok, existing CLI, click Next twice, then Add instance.",
+      "spokenWords": 28,
+      "stepChip": "Settings → Providers → Add provider → Grok (existing CLI)",
       "steps": [
         {
-          "do": "click",
-          "role": "button",
-          "name": "Settings",
-          "note": "sidebar footer"
+          "do": "expect",
+          "text": "Control desk",
+          "note": "the wizard was finished off camera (SERIES.md, recording plan step 7)"
+        },
+        {
+          "do": "pause",
+          "ms": 800
         },
         {
           "do": "click",
-          "role": "link",
+          "role": "button",
+          "name": "Account: Demo Mac",
+          "note": "Settings sits in the menu under the computer name at the foot of the sidebar"
+        },
+        {
+          "do": "click",
+          "role": "menuitem",
+          "name": "Settings"
+        },
+        {
+          "do": "click",
+          "role": "button",
           "name": "Providers",
+          "exact": true,
           "note": "route /settings/providers; only Codex and Claude rows show"
         },
         {
           "do": "click",
           "role": "button",
-          "name": "Add provider",
-          "note": "the + in the section header"
+          "name": "Add provider"
         },
         {
           "do": "expect",
-          "text": "Add provider",
-          "note": "dialog title; steps Provider, Identity, Config"
+          "text": "Add an account or configure a provider",
+          "note": "dialog \"Add provider\"; steps Provider, Identity, Config"
         },
         {
           "do": "click",
           "role": "radio",
           "name": "Grok (existing CLI)",
-          "note": "not the \"Grok Build\" registry card"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Next"
+          "note": "not the \"Grok Build\" ACP Registry card"
         },
         {
           "do": "click",
           "role": "button",
           "name": "Next",
-          "note": "leave Label as is"
+          "exact": true
+        },
+        {
+          "do": "pause",
+          "ms": 600,
+          "note": "Identity: Label Grok, Instance ID grok"
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Next",
+          "exact": true
+        },
+        {
+          "do": "pause",
+          "ms": 600,
+          "note": "Config: Binary path grok"
         },
         {
           "do": "click",
@@ -129,11 +158,16 @@
         {
           "do": "expect",
           "text": "Provider instance added",
-          "note": "toast"
+          "note": "toast: Grok instance 'grok' was added."
         },
         {
           "do": "expect",
-          "text": "Authenticated · Grok account"
+          "text": "Authenticated · Grok account",
+          "note": "never click \"Toggle account email visibility\""
+        },
+        {
+          "do": "pause",
+          "ms": 1500
         }
       ]
     },
@@ -141,27 +175,34 @@
       "id": "05-project-chat",
       "kind": "APP",
       "chapter": "Add the project",
-      "startSec": 37,
-      "durationSec": 13,
-      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Grok in the model picker, and set Full access for this demo.",
-      "spokenWords": 29,
-      "stepChip": "Projects + → Local folder → ~/greet-app · New chat → Grok · Full access",
+      "startSec": 36.3,
+      "durationSec": 12,
+      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Grok in the model picker, and set Full access for this demo.",
+      "spokenWords": 30,
+      "stepChip": "+ → Local folder → ~/greet-app · Grok 4.7 · Full access",
       "steps": [
         {
           "do": "click",
           "role": "button",
+          "name": "Back",
+          "exact": true,
+          "note": "leaves Settings (sidebar foot)"
+        },
+        {
+          "do": "click",
+          "role": "button",
           "name": "Add project",
-          "note": "the + next to Projects; tooltip \"New project or assistant\""
+          "note": "the + next to Projects"
         },
         {
           "do": "click",
           "role": "option",
-          "name": "Local folder",
-          "note": "\"New project\" and \"Personal assistant\" rows can sit above it"
+          "nameRegex": "^Local folder",
+          "note": "\"New project\" and \"Personal assistant\" rows sit above it"
         },
         {
           "do": "type",
-          "into": "Enter path (e.g. ~/projects/my-app)",
+          "placeholder": "Enter path (e.g. ~/projects/my-app)",
           "text": "~/greet-app"
         },
         {
@@ -170,34 +211,40 @@
         },
         {
           "do": "expect",
-          "text": "greet-app",
-          "note": "listed under Projects"
+          "text": "What should we build in",
+          "note": "adding the folder opens a new chat; no separate New chat click"
+        },
+        {
+          "do": "ensureOption",
+          "combobox": "Workspace",
+          "option": "Current checkout"
         },
         {
           "do": "click",
           "role": "button",
-          "name": "New chat"
-        },
-        {
-          "do": "expect",
-          "text": "What should we build in greet-app?"
+          "nameRegex": "^(Grok [0-9.]+|Claude (Opus|Sonnet|Haiku|Fable) [0-9.]+)$",
+          "note": "the model picker is labelled with the current model"
         },
         {
           "do": "click",
-          "target": "model picker (labelled with the current model)"
+          "role": "option",
+          "nameRegex": "^Grok 4\\.7 Grok",
+          "note": "Grok rail: Grok 4.7, Grok 4.7 Fast, Grok 4.6, Grok 4.5, Grok Build"
         },
         {
           "do": "click",
-          "target": "Providers rail → Grok → the default Grok model"
+          "role": "combobox",
+          "name": "Runtime mode",
+          "note": "defaults to Supervised"
         },
         {
           "do": "click",
-          "target": "Runtime mode → Full access"
+          "role": "option",
+          "nameRegex": "^Full access"
         },
         {
-          "do": "expect",
-          "text": "Current checkout",
-          "note": "leave the workspace on the current checkout"
+          "do": "pause",
+          "ms": 800
         }
       ]
     },
@@ -205,16 +252,17 @@
       "id": "06-plan",
       "kind": "APP",
       "chapter": "Plan",
-      "startSec": 50,
+      "startSec": 48.3,
       "durationSec": 13,
       "vo": "Type a dollar sign, pick sw-increment, and describe the change. Grok writes spec.md: acceptance criteria and a task with its files and test.",
-      "spokenWords": 28,
-      "stepChip": "$ → sw-increment → describe the change → Enter",
+      "spokenWords": 23,
+      "stepChip": "$ → Sw Increment → describe the change → Enter",
       "steps": [
         {
           "do": "click",
-          "target": "composer",
-          "note": "placeholder \"Ask anything, @tag files/folders, $use skills, or / for commands\""
+          "role": "textbox",
+          "name": "Message",
+          "note": "placeholder \"Ask for changes, send follow-ups, or attach images\" on a new chat"
         },
         {
           "do": "type",
@@ -222,17 +270,18 @@
         },
         {
           "do": "expect",
-          "text": "Searching workspace skills...",
-          "note": "then the 11 sw-* skills"
+          "text": "Sw Increment",
+          "note": "the menu lists the 11 skills title-cased: Sw Auto … Sw Team, each tagged Project Skill"
         },
         {
           "do": "click",
           "role": "option",
-          "name": "sw-increment"
+          "nameRegex": "^Sw Increment"
         },
         {
           "do": "type",
-          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet."
+          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet.",
+          "delay": 14
         },
         {
           "do": "press",
@@ -240,19 +289,17 @@
           "note": "send button aria-label \"Submit message\""
         },
         {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "the reply ends"
+          "do": "waitTurn",
+          "note": "speed-ramped 21x in the edit (the take ran 89 s), with the Sped up chip"
         },
         {
-          "do": "highlight",
-          "in": ".specweave/increments/0001-…/spec.md (the edit in the thread)",
-          "lines": [
-            "- [ ] AC-01 …",
-            "- [ ] AC-02 …",
-            "### T-01 …",
-            "- AC: … | Files: … | Test: …"
-          ]
+          "do": "expect",
+          "text": "AC-01"
+        },
+        {
+          "do": "pause",
+          "ms": 2500,
+          "note": "hold on the reply: AC-01, AC-02, T-01 with its files and npm test"
         }
       ]
     },
@@ -260,12 +307,17 @@
       "id": "07-build",
       "kind": "APP",
       "chapter": "Build",
-      "startSec": 63,
-      "durationSec": 12,
+      "startSec": 61.3,
+      "durationSec": 10.3,
       "vo": "Then send sw-do. Grok claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spokenWords": 26,
-      "stepChip": "$ → sw-do → claim → edit → test → done",
+      "spokenWords": 24,
+      "stepChip": "$ → Sw Do → claim → edit → test → done",
       "steps": [
+        {
+          "do": "click",
+          "role": "textbox",
+          "name": "Message"
+        },
         {
           "do": "type",
           "text": "$"
@@ -273,40 +325,36 @@
         {
           "do": "click",
           "role": "option",
-          "name": "sw-do"
+          "nameRegex": "^Sw Do(?!ne)"
         },
         {
           "do": "type",
-          "text": "Do T-01, then stop. I will close the increment myself."
+          "text": "Do T-01, then stop. I will close the increment myself.",
+          "delay": 14
         },
         {
           "do": "press",
           "key": "Enter"
         },
         {
-          "do": "ramp",
-          "factor": "4-8x",
-          "until": "T-01 is done"
+          "do": "waitTurn",
+          "note": "speed-ramped 24x in the edit (the take ran 77 s), with the Sped up chip"
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task claim T-01"
+          "do": "click",
+          "textRegex": "^Worked for",
+          "last": true,
+          "note": "expands the turn's steps"
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "the edit to src/greeting.js"
+          "do": "clickIfPresent",
+          "textRegex": "^Ran \\d+ commands",
+          "last": true
         },
         {
-          "do": "hold",
-          "sec": 1,
-          "on": "npm test passing"
-        },
-        {
-          "do": "hold",
-          "sec": 1,
-          "on": "specweave task done T-01 … --run \"npm test\""
+          "do": "pause",
+          "ms": 2500,
+          "note": "hold on Ran 3 commands: git add …, specweave task done T-01 0001-personal-greeting --run \"npm test -- test/greeting.test.js\", then \"T-01 is complete. I will stop as requested.\""
         }
       ]
     },
@@ -314,8 +362,8 @@
       "id": "08-review",
       "kind": "APP",
       "chapter": "Review",
-      "startSec": 75,
-      "durationSec": 9,
+      "startSec": 71.6,
+      "durationSec": 8,
       "vo": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
       "spokenWords": 19,
       "stepChip": "Open diff → code · test · ledger.jsonl",
@@ -323,23 +371,45 @@
         {
           "do": "click",
           "role": "button",
-          "name": "Open diff",
-          "note": "on the last turn's \"N changed files\" card; tooltip \"Open the full diff\""
+          "nameRegex": "Open diff",
+          "last": true,
+          "note": "on the last turn's \"5 changed files\" card"
         },
         {
-          "do": "step",
-          "files": [
-            "src/greeting.js",
-            "test/greeting.test.js",
-            ".specweave/increments/0001-…/ledger.jsonl"
-          ]
+          "do": "expect",
+          "text": "Latest turn"
         },
         {
-          "do": "highlight",
-          "in": "ledger.jsonl",
-          "lines": [
-            "\"e\":\"done\" with \"by\":\"grok@demo\" and \"evidence\""
-          ]
+          "do": "click",
+          "role": "button",
+          "name": "Expand src/greeting.js"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Expand test/greeting.test.js"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "nameRegex": "^Expand .*ledger\\.jsonl$"
+        },
+        {
+          "do": "expect",
+          "text": "grok@demo"
+        },
+        {
+          "do": "pause",
+          "ms": 3000,
+          "note": "the done line: \"by\":\"grok@demo\" with its evidence"
         }
       ]
     },
@@ -347,10 +417,10 @@
       "id": "09-outro",
       "kind": "MG",
       "chapter": "Next",
-      "startSec": 84,
+      "startSec": 79.6,
       "durationSec": 4,
       "vo": "Next, sw-done verifies and closes the increment.",
-      "spokenWords": 9,
+      "spokenWords": 7,
       "card": {
         "lines": [
           "Next: $sw-done · verify and close",
@@ -359,5 +429,16 @@
         ]
       }
     }
-  ]
+  ],
+  "stepVerbs": {
+    "expect": "text must be visible within 20 s, else the take stops",
+    "click": "move the cursor to the element (role + name, or text), outline it, click",
+    "clickIfPresent": "click only when the element exists (optional wizard steps)",
+    "hover": "move the cursor to the element and hold",
+    "type": "type text (into a placeholder or the focused element)",
+    "press": "press a key",
+    "pause": "hold for ms",
+    "waitTurn": "wait until the agent turn ends (no Stop button); the edit speed-ramps this span",
+    "ensureOption": "open a combobox and pick an option only when it does not already show it"
+  }
 }

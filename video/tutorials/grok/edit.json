@@ -1,0 +1,52 @@
+{
+  "comment": "Edit decisions for episode 5. Times in seconds. segments are [sourceStart, sourceEnd, rate] in take.mp4 (cue log time = video time, sync offset measured with blackdetect). Segments faster than 8x are pre-rendered by build-composition.mjs and labelled with their real rate. Highlights are frame boxes in 1920x1080 pixels, times relative to the beat. lift raises a caption above the composer while it is in use.",
+  "take": "assets/media/take.mp4",
+  "voDir": "assets/media",
+  "syncOffset": -0.04,
+  "voOffset": 0.2,
+  "beats": [
+    { "id": "01-intro", "dur": 4,
+      "captions": [ { "text": "Grok in SpecWithCode: plan, build, review." } ] },
+    { "id": "02-init", "dur": 7.7,
+      "captions": [
+        { "text": "In your repo, run `specweave init` with the generic adapter." },
+        { "text": "It adds `AGENTS.md` and eleven SpecWeave skills." } ] },
+    { "id": "03-trust", "dur": 10.9,
+      "captions": [
+        { "text": "Grok skips project skills in folders it doesn't trust." },
+        { "text": "In the repo, run `grok --trust` once." },
+        { "text": "Signed out? Run `grok login` first." } ] },
+    { "id": "04-add-provider", "dur": 13.7,
+      "segments": [ [3.6, 8.4, 1.0], [8.4, 9.6, 0.6], [9.6, 12.9, 1.0], [12.9, 17.4, 3.0], [17.4, 19.5, 1.0] ],
+      "captions": [
+        { "text": "Open SpecWithCode. In the account menu, pick Settings, then Providers." },
+        { "text": "Grok is off by default: click Add provider, pick Grok, existing CLI," },
+        { "text": "click Next twice, then Add instance." } ] },
+    { "id": "05-project-chat", "dur": 12,
+      "segments": [ [20.6, 23.8, 1.0], [23.8, 27.5, 1.5], [29.1, 35.43, 1.0] ],
+      "captions": [
+        { "text": "Add the repo: the plus next to Projects, Local folder, then its path." },
+        { "text": "A new chat opens." },
+        { "text": "Pick Grok in the model picker, and set Full access for this demo." } ] },
+    { "id": "06-plan", "dur": 13,
+      "segments": [ [35.43, 40.4, 1.0], [40.4, 129.2, 21.0], [129.2, 133.0, 1.0] ],
+      "highlights": [ { "x": 718, "y": 316, "w": 734, "h": 172, "from": 8.9, "to": 13 } ],
+      "captions": [
+        { "text": "Type a dollar sign, pick `sw-increment`, and describe the change." },
+        { "text": "Grok writes `spec.md`: acceptance criteria and a task with its files and test." } ] },
+    { "id": "07-build", "dur": 10.3,
+      "segments": [ [133.0, 136.3, 1.0], [136.3, 213.1, 24.0], [213.1, 216.9, 1.0] ],
+      "captions": [
+        { "text": "Then send `sw-do`.", "lift": 150 },
+        { "text": "Grok claims the task, changes the code, and runs the test.", "lift": 150 },
+        { "text": "The task is marked done only when the test passes." } ] },
+    { "id": "08-review", "dur": 8,
+      "segments": [ [217.9, 220.2, 1.0], [221.9, 223.2, 1.0], [223.8, 228.2, 1.0] ],
+      "highlights": [ { "x": 1392, "y": 159, "w": 518, "h": 377, "from": 4.9, "to": 8 } ],
+      "captions": [
+        { "text": "Click Open diff to review the code, the test," },
+        { "text": "and the ledger line that records who finished the task." } ] },
+    { "id": "09-outro", "dur": 4,
+      "captions": [ { "text": "Next, `sw-done` verifies and closes the increment." } ] }
+  ]
+}

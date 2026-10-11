@@ -1,171 +1,94 @@
 # Cursor in SpecWithCode
 
-Episode 3 of 6 in **Your agent in SpecWithCode**. Series rules, shared sources, visual system and recording plan: [../SERIES.md](../SERIES.md).
+Episode 3 of 6 in **Your agent in SpecWithCode**. Series rules, shared sources, visual system and recording plan: [../SERIES.md](../SERIES.md). How episodes are made: [../PIPELINE.md](../PIPELINE.md).
 
-**Promise:** in 88 seconds, connect Cursor to SpecWithCode, plan one small change with a SpecWeave skill, build it, and review the code, the test and the ledger.
+**Status: not recorded.** On SpecWithCode 0.2.6 Cursor could not be signed in off camera (see "Sign-in on 0.2.6" below). Every label up to the browser hand-off was checked on a running 0.2.6 demo server on 2026-10-11; the shared beats follow episode 1, which was checked on the same build.
+
+**Promise:** in about 79 seconds, connect Cursor to SpecWithCode, plan one small change with a SpecWeave skill, build it, and review the code, the test and the ledger.
 
 - Audience: a developer who already uses Cursor.
-- Runtime: 88 s. Narration: 192 spoken words, about 76.8 s at 150 wpm.
-- Demo repo: `greet-app` (seed in SERIES.md). Task: "Personal greeting": `greet(name)` returns `Hello, <name>!`, `greet()` still returns `Hello, world!`.
-- Source keys: `S:` = specweave-studio at `618bfeca` (v0.2.4), `path:line`. `C:NN` = `captures/NN-*.json` (real runs, 2026-10-11, specweave 3.0.12, Node 22.20.0; home, user and host redacted). `W:` = this specweave repo. Labels used by every episode are sourced once in SERIES.md, "Shared beats".
-- App name: written as SpecWithCode. v0.2.4 still renders "SpecWeave Studio"; record only on the renamed build.
+- Planned runtime: 78.7 s (episode 1's timing for the shared beats, plus two Connect beats). Narration: 9 lines, about 995 TTS characters.
+- Demo repo: `greet-app` (seed in SERIES.md), initialised with `specweave init . --quick --adapter cursor`. Task: "Personal greeting": `greet(name)` returns `Hello, <name>!`, `greet()` still returns `Hello, world!`.
+- Source keys: `S:` = specweave-studio at `618bfeca` (v0.2.4), `path:line`. `R:` = the installed 0.2.6 release bundle (`binCli-*.mjs`, `node_modules/@cursor/sdk` 1.0.35). `C:NN` = `captures/NN-*.json`. `W:` = this specweave repo.
+- Executable steps: `SHOTLIST.json` (each APP shot says what was verified). VO lines: `scripts/vo-lines.json` (not generated yet).
 
 ## Beats
 
-| # | Time | Kind | Chapter | Beat | Spoken |
-|---|---|---|---|---|---|
-| 01 | 0:00-0:04 | MG | Intro | Intro (shared) | 3.2 s / 4 s |
-| 02 | 0:04-0:14 | TERM | Set up the repo | Add SpecWeave to the repo (shared) | 8.8 s / 10 s |
-| 03 | 0:14-0:25 | APP | Connect Cursor | Turn on Cursor | 9.2 s / 11 s |
-| 04 | 0:25-0:37 | APP | Connect Cursor | Sign in to Cursor | 11.2 s / 12 s |
-| 05 | 0:37-0:50 | APP | Add the project | Add the project and open a chat (shared) | 11.6 s / 13 s |
-| 06 | 0:50-1:03 | APP | Plan | Plan with sw-increment (shared) | 11.2 s / 13 s |
-| 07 | 1:03-1:15 | APP | Build | Build with sw-do (shared) | 10.4 s / 12 s |
-| 08 | 1:15-1:24 | APP | Review | Review the diff (shared) | 7.6 s / 9 s |
-| 09 | 1:24-1:28 | MG | Next | Outro (shared) | 3.6 s / 4 s |
+| # | Time | Kind | Chapter | Beat |
+|---|---|---|---|---|
+| 01 | 0:00-0:04 | MG | Intro | Intro (shared) |
+| 02 | 0:04-0:12 | TERM | Set up the repo | Add SpecWeave to the repo (shared, with the Cursor adapter) |
+| 03 | 0:12-0:23 | APP | Connect Cursor | Add Cursor as a provider |
+| 04 | 0:23-0:34 | APP | Connect Cursor | Sign in to Cursor |
+| 05 | 0:34-0:45 | APP | Add the project | Add the project and open a chat (shared) |
+| 06 | 0:45-0:56 | APP | Plan | Plan with sw-increment (shared) |
+| 07 | 0:56-1:06.7 | APP | Build | Build with sw-do (shared) |
+| 08 | 1:06.7-1:14.7 | APP | Review | Review the diff (shared) |
+| 09 | 1:14.7-1:18.7 | MG | Next | Outro (shared) |
 
-Total: 88 s.
+Shared beats 01, 05-09 use episode 1's wording and timing with the agent name changed; see `../claude-code/SCRIPT.md` for their steps and sources.
 
-### 01 Intro (0:00-0:04, MG)
-
-- **VO:** "Cursor in SpecWithCode: plan, build, review."
-- **Card:** eyebrow "SpecWithCode tutorial 03", title "Cursor in SpecWithCode", subtitle "Plan, build and review one task. The plan stays in your repo.".
-- **Sources:**
-  - Shared card, see SERIES.md "Intro and outro".
-
-### 02 Add SpecWeave to the repo (0:04-0:14, TERM)
+### 02 Add SpecWeave to the repo (0:04-0:12, TERM)
 
 - **VO:** "In your repo, run specweave init with the Cursor adapter. It adds AGENTS.md and eleven SpecWeave skills."
 - **Step chip:** In your repo: specweave init . --quick --adapter cursor
-- **Shot (TERM):**
-  1. Typeset `specweave init . --quick --adapter cursor` from `captures/02-specweave-init-cursor.json`, prompt `greet-app %`. Show `✓ AGENTS.md created`, `✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/`.
-- **Sources:**
-  - C:02 (exit 0): the command and both lines, stdout lines 7 and 43.
-  - Cursor reads `.cursor/skills`, `.agents/skills`, `.codex/skills` and `.claude/skills` in the project and the user home (S:apps/server/src/provider/Drivers/CursorSkills.ts:220-231). Names it will list: C:04.
+- **Shot:** typeset from C:02, prompt `greet-app %`, lines 7 and 43: `✓ AGENTS.md created`, `✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/`. Never typeset the adapter's "Semi-Automation", "Composer (Cmd+I)" or `specweave validate` lines.
+- Without `--adapter cursor`, init detects Claude Code from PATH and reports "Adapter: Claude Code"; the seed for this episode must pass the adapter.
 
-### 03 Turn on Cursor (0:14-0:25, APP)
+### 03 Add Cursor as a provider (0:12-0:23, APP)
 
 - **VO:** "Open SpecWithCode, then Settings, Providers. Cursor is off by default: click Add provider, pick Cursor, click Next twice, then Add instance."
-- **Step chip:** Settings → Providers → Add provider → Cursor → Next → Next → Add instance
-- **Shot (APP):**
-  1. Click **Settings** (sidebar footer).
-  2. Click **Providers** (route /settings/providers; only Codex and Claude rows show).
-  3. Click **Add provider** (the + in the section header).
-  4. Check: "Add provider" (dialog title; steps Provider, Identity, Config).
-  5. Click **Cursor**.
-  6. Click **Next**.
-  7. Click **Next** (leave Label as is).
-  8. Click **Add instance**.
-  9. Check: "Provider instance added" (toast).
-- **Sources:**
-  - Settings (S:apps/web/src/components/sidebar/SidebarChrome.tsx:218); Providers (S:apps/web/src/components/settings/settingsSearch.ts:98).
-  - A default-off provider has no row until it is added or enabled; Codex and Claude always show (S:apps/web/src/components/settings/ProviderSettingsPanel.tsx:788-806).
-  - Add provider button (S:…/ProviderSettingsPanel.tsx:1215), dialog title (S:…/AddProviderInstanceDialog.tsx:383), steps Provider, Identity, Config (S:…/AddProviderInstanceDialog.logic.ts:8), Next (:699), Add instance (:711), toast (:364), saved with enabled: true (:328).
-  - Cursor is off by default (S:packages/contracts/src/settings.ts:733-735).
+- **Step chip:** Settings → Providers → + → Cursor → Next → Next → Add instance
+- **Shot (checked on 0.2.6):**
+  1. Click the sidebar footer account button ("Account: Demo Mac"), then the **Settings** menu item (it opens on General).
+  2. Click **Providers** in the settings nav. Only Codex and Claude rows show; a "Cursor account usage" switch sits under Usage providers (leave it off).
+  3. Click **Add provider** (the + at the right of the Providers header, next to "Checked just now").
+  4. The dialog "Add provider" reads "Add an account or configure a provider on Demo Mac." with steps Provider, Identity, Config.
+  5. Click the **Cursor** radio in the Provider row (not "Add Cursor" in the ACP Registry list below it).
+  6. Click **Next**. Identity shows Label ("e.g. Work"), Instance ID ("cursor_work") and Accent color; leave them.
+  7. Click **Next**. Config reads "This driver has no required configuration. You can add the instance now."
+  8. Click **Add instance**. The Cursor row appears: "Not authenticated · Sign in with Cursor or add CURSOR_API_KEY in provider settings."
+- **0.2.6 differences from the v0.2.4 draft:** Settings is a menu item under the footer account button, and Providers is a nav button, not a link. No "Provider instance added" toast was seen; the account row reads "Sign in on Demo Mac.".
 
-### 04 Sign in to Cursor (0:25-0:37, APP)
+### 04 Sign in to Cursor (0:23-0:34, APP)
 
-- **VO:** "Select it, click Sign in, then Open browser, and approve. It runs on the Cursor SDK, so you don't need the Cursor CLI."
-- **Step chip:** Cursor → Account → Sign in → Open browser · no Cursor CLI needed
-- **Shot (APP):**
-  1. Click **Select Cursor**.
-  2. Click **Sign in** (Account row).
-  3. Click **Open browser**.
-  4. Hard cut: never record the Cursor browser page; it shows the account.
-  5. Check: "Signed in with Cursor.".
-  6. Pan to the Cursor API key field ("Paste API key"), left empty.
-- **Sources:**
-  - "Select Cursor" (S:apps/web/src/components/settings/ProviderInstanceCard.tsx:896); Account row (S:apps/web/src/components/settings/ProviderAuthenticationSection.tsx:164), "Open browser" (:221), "Sign in" (:295-298); "Signed in with Cursor." (S:apps/server/src/provider/CursorAuth.ts:244).
-  - Runs the in-process `@cursor/sdk`, never `cursor-agent` (S:apps/server/src/provider/Drivers/CursorDriver.ts:1-8; S:docs/user/cursor.md:3-4,67).
-  - Optional "Cursor API key" field (S:apps/web/src/components/settings/providerDriverMeta.ts:66-69).
-
-### 05 Add the project and open a chat (0:37-0:50, APP)
-
-- **VO:** "Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Cursor in the model picker, and set Full access for this demo."
-- **Step chip:** Projects + → Local folder → ~/greet-app · New chat → Cursor · Full access
-- **Shot (APP):**
-  1. Click **Add project** (the + next to Projects; tooltip "New project or assistant").
-  2. Click **Local folder** ("New project" and "Personal assistant" rows can sit above it).
-  3. Type `~/greet-app` into "Enter path (e.g. ~/projects/my-app)".
-  4. Press Enter.
-  5. Check: "greet-app" (listed under Projects).
-  6. Click **New chat**.
-  7. Check: "What should we build in greet-app?".
-  8. Click the model picker (labelled with the current model).
-  9. Click the Providers rail → Cursor → Auto.
-  10. Click the Runtime mode → Full access.
-  11. Check: "Current checkout" (leave the workspace on the current checkout).
-- **Sources:**
-  - Shared labels, see SERIES.md "Shared beats".
-  - "Auto" is sent to the SDK as `default` (S:apps/server/src/provider/cursorSdkModel.ts:40); the label "Auto" appears only in a driver test (S:apps/server/src/provider/Drivers/CursorDriver.test.ts:81).
-
-### 06 Plan with sw-increment (0:50-1:03, APP)
-
-- **VO:** "Type a dollar sign, pick sw-increment, and describe the change. Cursor writes spec.md: acceptance criteria and a task with its files and test."
-- **Step chip:** $ → sw-increment → describe the change → Enter
-- **Shot (APP):**
-  1. Click the composer (placeholder "Ask anything, @tag files/folders, $use skills, or / for commands").
-  2. Type `$`.
-  3. Check: "Searching workspace skills..." (then the 11 sw-* skills).
-  4. Click **sw-increment**.
-  5. Type `Personal greeting: greet(name) returns "Hello, <name>!" and greet() still returns "Hello, world!". Use Ada in examples. Plan only, no code yet.`.
-  6. Press Enter (send button aria-label "Submit message").
-  7. Speed-ramp 4-8x until the reply ends, with the "sped up" chip.
-  8. Highlight in .specweave/increments/0001-…/spec.md (the edit in the thread): `- [ ] AC-01 …`, `- [ ] AC-02 …`, `### T-01 …`, `- AC: … | Files: … | Test: …`.
-- **Sources:**
-  - Shared labels, see SERIES.md "Shared beats".
-  - `$name` is rewritten to Cursor's `/name` skill call (S:apps/server/src/provider/Drivers/CursorSkills.ts:278-288).
-
-### 07 Build with sw-do (1:03-1:15, APP)
-
-- **VO:** "Then send sw-do. Cursor claims the task, changes the code, and runs the test. The task is marked done only when the test passes."
-- **Step chip:** $ → sw-do → claim → edit → test → done
-- **Shot (APP):**
-  1. Type `$`.
-  2. Click **sw-do**.
-  3. Type `Do T-01, then stop. I will close the increment myself.`.
-  4. Press Enter.
-  5. Speed-ramp 4-8x until T-01 is done, with the "sped up" chip.
-  6. Hold 1 s on specweave task claim T-01.
-  7. Hold 1 s on the edit to src/greeting.js.
-  8. Hold 1 s on npm test passing.
-  9. Hold 1 s on specweave task done T-01 … --run "npm test".
-- **Sources:**
-  - `specweave task done --run` exits 5 and records nothing when the command fails; on exit 0 it records the command and log as evidence (W:src/cli/commands/task.ts:8,64,207-209).
-  - `sw-do`: "claim, implement inside the task's Files, test, commit, done with evidence" (W:skills/sw-do/SKILL.md:2).
-  - Not captured: no Cursor run was made (it needs a Cursor sign-in); the recording is the evidence.
-
-### 08 Review the diff (1:15-1:24, APP)
-
-- **VO:** "Click Open diff to review the code, the test, and the ledger line that records who finished the task."
-- **Step chip:** Open diff → code · test · ledger.jsonl
-- **Shot (APP):**
-  1. Click **Open diff** (on the last turn's "N changed files" card; tooltip "Open the full diff").
-  2. Step through `src/greeting.js`, `test/greeting.test.js`, `.specweave/increments/0001-…/ledger.jsonl`.
-  3. Highlight in ledger.jsonl: `"e":"done" with "by":"cursor@demo" and "evidence"`.
-- **Sources:**
-  - Ledger lines: one JSON object per line, `done` carries evidence (generated AGENTS.md, Rules).
-  - Agent id is `SPECWEAVE_AGENT`, else `<tool>@<host>`; `SPECWEAVE_TOOL` and `SPECWEAVE_HOST` override detection (W:src/core/tasks/ledger.ts:95-133).
-
-### 09 Outro (1:24-1:28, MG)
-
-- **VO:** "Next, sw-done verifies and closes the increment."
-- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode is in private pilot · spec-weave.com/studio" / "All tutorials · spec-weave.com/tutorials".
-- **Sources:**
-  - `sw-done`: "every task done or skipped, specweave verify green, a fresh-context review, then specweave complete" (W:skills/sw-done/SKILL.md:2).
-  - Private pilot, no public download: W:docs-site/src/pages/studio.tsx:19,22.
+- **VO:** "Click Sign in, then Open browser, and approve. It runs on the Cursor SDK, so you don't need the Cursor CLI."
+- **Step chip:** Cursor → Account: Sign in → Open browser · no Cursor CLI needed
+- **Shot:**
+  1. Click **Select Cursor**. (Checked.)
+  2. Click **Sign in** on the Account row ("Sign in on Demo Mac."). (Checked.)
+  3. The row reads "Finish signing in in your browser." with **Open browser**, **Copy sign-in link** and **Cancel sign-in**. (Checked.) Hover Open browser; never click it or Copy sign-in link on camera.
+  4. Hard cut. The browser page shows the account and is never recorded.
+  5. The card reads "Signed in with Cursor." (Not checked: no sign-in was possible.)
+  6. The "Cursor API key" field ("Paste API key", "Optional. Overrides browser sign-in for this provider.") stays empty.
+- **Sources:** "Signed in with Cursor." and the 5-minute sign-in timeout (R: CursorAuth); the provider runs the in-process `@cursor/sdk`, not `cursor-agent` (R: CursorDriver).
+- The VO drops "Select it," from the draft: after Add instance the Cursor card is a click away, and the step is shown, not narrated.
 
 ## Narration (read straight through)
 
 Cursor in SpecWithCode: plan, build, review.
 In your repo, run specweave init with the Cursor adapter. It adds AGENTS.md and eleven SpecWeave skills.
 Open SpecWithCode, then Settings, Providers. Cursor is off by default: click Add provider, pick Cursor, click Next twice, then Add instance.
-Select it, click Sign in, then Open browser, and approve. It runs on the Cursor SDK, so you don't need the Cursor CLI.
-Add the repo: the plus next to Projects, Local folder, then its path. Click New chat, pick Cursor in the model picker, and set Full access for this demo.
+Click Sign in, then Open browser, and approve. It runs on the Cursor SDK, so you don't need the Cursor CLI.
+Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Cursor in the model picker, and set Full access for this demo.
 Type a dollar sign, pick sw-increment, and describe the change. Cursor writes spec.md: acceptance criteria and a task with its files and test.
 Then send sw-do. Cursor claims the task, changes the code, and runs the test. The task is marked done only when the test passes.
 Click Open diff to review the code, the test, and the ledger line that records who finished the task.
 Next, sw-done verifies and closes the increment.
+
+Narration is to be AI-generated with Anton's cloned voice (same voice, model and settings as episode 1); no music bed.
+
+## Sign-in on 0.2.6 (why this episode is not recorded)
+
+- The 0.2.6 Cursor provider authenticates only with a **Cursor user API key**: either `CURSOR_API_KEY` (server environment or the provider's "Cursor API key" field) or a browser sign-in that mints a key named "SpecWithCode - Cursor" and stores it in the server's state (`<base-dir>/…/secrets`), not in HOME (R: CursorDriver, CursorCredentialStore, CursorAuth). The SDK exchanges that key at `/auth/exchange_user_api_key`; a CLI session token is not accepted (R: @cursor/sdk `auth/credential-store.d.ts`).
+- The Cursor CLI login is only read for the optional "Cursor account usage" panel (Keychain items `cursor-access-token` / `cursor-user`), never for running the agent.
+- On this Mac `cursor-agent status` reports "Not logged in", the Keychain has no Cursor CLI items, and there is no `~/.cursor/auth.json` or `~/.cursor/sdk/auth.json`. There was nothing to copy.
+- A demo server on port 8332 with a fresh HOME confirmed it: after Add instance the card reads "Not authenticated · Sign in with Cursor or add CURSOR_API_KEY in provider settings.".
+
+To record, one of these is needed off camera:
+
+1. Anton completes the Cursor browser sign-in once for the demo server's Cursor instance (Sign in → Open browser on the demo server, outside any recording). The minted key lives in the demo `studio/` folder and is deleted with it. The take then starts at Add project, with beats 03-04 recorded first on a second, unsigned instance or cut from the rehearsal footage up to "Open browser".
+2. Or Anton creates a Cursor user API key in the Cursor dashboard and provides it for the demo server as `CURSOR_API_KEY` (never typed on camera). With a key the card shows "Cursor API key" auth and no Sign in button, so beat 04 must then be recorded on a separate unsigned instance.
 
 ## Cursor recording notes
 
@@ -182,9 +105,8 @@ Shared rules (demo home, environment, credentials, rename) are in SERIES.md. The
 
 Shared gaps are listed in SERIES.md. Specific to this episode:
 
-- The whole Cursor run: what Cursor writes for `$sw-increment` and `$sw-do`, and whether the changed-files card appears for Cursor threads.
-- The exact model names Cursor's catalog returns.
-- Whether `specweave` and `git commit` work under the SDK sandbox in modes other than Full access.
+- Everything after the browser hand-off: "Signed in with Cursor.", the Cursor models in the model picker, Cursor's `$` skill list, what Cursor writes for `$sw-increment` and `$sw-do`, whether it stops after "Do T-01, then stop", and whether Cursor threads show the changed-files card and Open diff.
+- Whether `specweave` and `git commit` work under the SDK sandbox outside Full access.
 
 ## Captures
 
