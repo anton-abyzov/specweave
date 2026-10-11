@@ -30,7 +30,7 @@
 
 [data-theme='dark'] .card:hover {
   border-color: var(--sw-color-primary-500);
-  box-shadow: 0 4px 24px rgba(107, 88, 184, 0.15);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--sw-brand-accent) 15%, transparent);
 }
 
 .iconCircle {
@@ -46,7 +46,7 @@
 }
 
 [data-theme='dark'] .iconCircle {
-  background: rgba(107, 88, 184, 0.15);
+  background: color-mix(in srgb, var(--sw-brand-accent) 15%, transparent);
   color: var(--sw-color-primary-400);
 }
 

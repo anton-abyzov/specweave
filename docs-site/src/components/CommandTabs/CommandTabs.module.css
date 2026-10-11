@@ -51,7 +51,7 @@
 
 .tab:hover {
   color: var(--sw-text-primary);
-  background: rgba(107, 88, 184, 0.04);
+  background: color-mix(in srgb, var(--sw-brand-accent) 4%, transparent);
 }
 
 .tabActive {
@@ -105,9 +105,9 @@
   background: linear-gradient(
     135deg,
     var(--sw-color-primary-50) 0%,
-    rgba(107, 88, 184, 0.08) 100%
+    color-mix(in srgb, var(--sw-brand-accent) 8%, transparent) 100%
   );
-  border: 1px solid rgba(107, 88, 184, 0.1);
+  border: 1px solid color-mix(in srgb, var(--sw-brand-accent) 10%, transparent);
   color: var(--sw-text-primary);
   font-size: var(--sw-font-size-sm);
   line-height: var(--sw-line-height-relaxed);
@@ -197,7 +197,7 @@
 }
 
 :global([data-theme='dark']) .tab:hover {
-  background: rgba(169, 155, 216, 0.08);
+  background: color-mix(in srgb, var(--sw-brand-accent) 8%, transparent);
 }
 
 :global([data-theme='dark']) .tabActive {
@@ -207,10 +207,10 @@
 :global([data-theme='dark']) .bubble {
   background: linear-gradient(
     135deg,
-    rgba(169, 155, 216, 0.1) 0%,
-    rgba(107, 88, 184, 0.06) 100%
+    color-mix(in srgb, var(--sw-brand-accent) 10%, transparent) 0%,
+    color-mix(in srgb, var(--sw-brand-accent) 6%, transparent) 100%
   );
-  border-color: rgba(169, 155, 216, 0.15);
+  border-color: color-mix(in srgb, var(--sw-brand-accent) 15%, transparent);
 }
 
 :global([data-theme='dark']) .copyButton:hover {
