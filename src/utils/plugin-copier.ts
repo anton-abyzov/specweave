@@ -18,12 +18,13 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   statSync,
   writeFileSync,
   existsSync,
   rmSync,
 } from 'node:fs';
-import { join, resolve, dirname, normalize, relative, isAbsolute } from 'node:path';
+import { join, resolve, dirname, normalize, relative, isAbsolute, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { execFileNoThrowSync } from './execFileNoThrow.js';
@@ -210,6 +211,26 @@ function isInsideDir(dir: string, target: string): boolean {
 }
 
 /**
+ * Real path of `p` with every symlink resolved. A missing tail is resolved
+ * through its nearest existing ancestor, so a path that does not exist yet
+ * still shows where creating it would land.
+ */
+function realpathOrAncestor(p: string): string {
+  const missing: string[] = [];
+  let current = resolve(p);
+  for (;;) {
+    try {
+      return join(realpathSync(current), ...missing.reverse());
+    } catch {
+      const parent = dirname(current);
+      if (parent === current) return resolve(p);
+      missing.push(basename(current));
+      current = parent;
+    }
+  }
+}
+
+/**
  * Delete everything under `dest` that has no counterpart under `src`, so a
  * plugin update drops files and skills the new version no longer ships
  * (3.x left the 2.x `qa` skill behind). Dotfiles at the root of `dest` are
@@ -295,15 +316,19 @@ export function syncNativePluginContent(
     for (const rec of records) {
       const installPath = typeof rec?.installPath === 'string' ? rec.installPath : '';
       if (!installPath) continue;
-      if (!isInsideDir(cacheRoot, installPath)) {
+      // Compare real paths: a symlinked install path or ancestor inside the
+      // cache must not let the mirror write or delete outside it.
+      const realCache = realpathOrAncestor(cacheRoot);
+      const realInstall = realpathOrAncestor(installPath);
+      if (!isInsideDir(cacheRoot, installPath) || !isInsideDir(realCache, realInstall)) {
         consoleLogger.debug(`syncNativePluginContent: skipping ${installPath}, not inside ${cacheRoot}`);
         continue;
       }
       try {
-        mkdirSync(installPath, { recursive: true });
-        cpSync(sourceDir, installPath, { recursive: true, force: true });
-        removeEntriesNotIn(sourceDir, installPath, true);
-        fixHookPermissions(installPath);
+        mkdirSync(realInstall, { recursive: true });
+        cpSync(sourceDir, realInstall, { recursive: true, force: true });
+        removeEntriesNotIn(sourceDir, realInstall, true);
+        fixHookPermissions(realInstall);
         paths.push(installPath);
         if (toVersion && rec.version !== toVersion) {
           rec.version = toVersion;
