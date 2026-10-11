@@ -17,7 +17,7 @@ Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the sp
 <StudioProjectMock />
 
 :::info Availability
-SpecWithCode is in a private pilot and has no public download yet. Sessions, machines, approvals and usage limits are in the pilot build. Projects (coordinator, workers, memory, plans and routines) are being tested for the next pilot build. [Ask about a pilot](/studio/).
+SpecWithCode is free and in early access; the public macOS download opens with its first public release. Sessions, machines, approvals, usage limits and projects (coordinator, workers, memory, plans and routines) are all in the current build. It runs on Apple silicon Macs with macOS 13 or later; the build is not notarized yet, so the first launch needs **System Settings → Privacy & Security → Open Anyway**. [Get early access](/studio/).
 :::
 
 ## One workspace for many agents
@@ -26,7 +26,7 @@ Each row is a kind of product you may already use, and the closest thing in Spec
 
 <UmbrellaMap />
 
-SpecWithCode is not a cloud service, so a personal project works while the machine running it is awake. It cannot be messaged from Telegram, WhatsApp or Slack yet, has no managed Gmail or Calendar sign-in, and does not connect to remote OAuth MCP servers.
+SpecWithCode is not a cloud service, so a personal project works while the machine running it is awake. You can message a project’s coordinator from Telegram through your own bot (not WhatsApp or Slack yet), an optional Google sign-in gives its agents read-only Gmail, Calendar and Drive, and it does not connect to remote OAuth MCP servers.
 
 ## What a project holds
 
@@ -51,7 +51,7 @@ The trade-off is simple. Cloud project agents keep running when every one of you
 
 ## Machines and networking
 
-SpecWithCode runs as a small service on each machine, at `localhost:8319`, and you use it from a browser. A desktop app for Mac and Windows is in development.
+SpecWithCode runs as a small service on each machine, at `localhost:8319`. You use it from the desktop app for Apple silicon Macs (macOS 13 or later) or from a browser. Windows and Intel Macs are not built yet.
 
 - **One machine** needs nothing else.
 - **Other machines on your home or office network** can be paired directly once their network access is on.
@@ -66,7 +66,7 @@ Being reachable is not permission. Every machine and every browser is paired wit
 
 SpecWithCode reads the limits of the accounts on each machine. When you start new work, a capacity policy (Reset first, Balanced or Spend first) picks a fresh eligible subscription. When a conversation hits a limit, **Resume when available** continues it on the same account once the provider allows it again.
 
-You can also switch a thread to another provider yourself. SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. SpecWithCode does not yet switch on its own when a provider reaches a usage limit. Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in SpecWithCode or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point.
+You can also switch a thread to another provider yourself. SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. When a provider runs out, the project’s rule decides whether the thread asks you, waits and resumes on the same account, or switches to another provider on its own. Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in SpecWithCode or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point.
 
 ## Optional pieces
 
@@ -75,12 +75,12 @@ You can also switch a thread to another provider yourself. SpecWithCode passes a
 | Tailscale | Only for private HTTPS beyond your local network or from a phone | Private HTTPS transport. SpecWithCode pairing is still required. |
 | CLIProxyAPI | No | If you already run a CLIProxyAPI hub, SpecWithCode can show its pooled accounts' limits and redeem Codex reset credits. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
 | AnyModel | No | An adapter for API and local models that a native agent does not support. |
-| Switch | Optional, part of the pilot install | Reads account sign-in and limit observations on each machine for the capacity policy. |
+| Switch | Optional, installed separately from SpecWeave’s `contrib/subscription-switch` | Reads account sign-in and limit observations on each machine for the capacity policy. |
 
 ## Questions
 
 **Will my local skills work?** Yes, on the machine where the agent runs. SpecWithCode starts the provider's own agent there with its configuration, so the skills, MCP servers and settings you set up for it apply. A skill on another machine has to be installed on that machine too.
 
-**Is my code sent anywhere new?** No. Folders, sessions and project data stay on the machine. Hosted relay, telemetry and self-update are off by default. Model calls go to the providers you choose, as they would from your terminal.
+**Is my code sent anywhere new?** No. Folders, sessions and project data stay on the machine. Telemetry and the hosted relay are off by default. The desktop app checks GitHub for new releases and installs them by default, which you can turn off in Settings. Model calls go to the providers you choose, as they would from your terminal.
 
 **Is SpecWithCode the same as Skill Studio?** No. `npx vskill studio` opens [Skill Studio](/docs/skills/skill-studio/), which develops and evaluates skills.
