@@ -191,13 +191,38 @@ export function isSpecweaveOwnedCopy(dir: string, name: string): boolean {
   return drivesCli || namesSkill;
 }
 
-/** Remove unnamespaced SpecWeave skill copies from `.claude/skills/` and `.agents/skills/`. */
+/**
+ * `sw-<name>` folders a project holds for skills SpecWeave no longer ships
+ * (`sw-qa` after 3.0), as `[folder, name]` pairs.
+ */
+function retiredSkillFolders(dir: string): Array<[string, string]> {
+  const shipped = new Set<string>(SPECWEAVE_SKILLS.map(projectSkillName));
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((e) => e.isDirectory() && /^sw-[a-z][a-z-]*$/.test(e.name) && !shipped.has(e.name))
+    .map((e) => [e.name, e.name.slice(3)]);
+}
+
+/**
+ * Remove SpecWeave's own stale skill copies from `.claude/skills/` and
+ * `.agents/skills/`: the unnamespaced 2.x folders and `sw-<name>` folders for
+ * skills SpecWeave no longer ships.
+ */
 export function removeLegacySkillCopies(projectRoot: string, options: { dryRun?: boolean } = {}): string[] {
   const root = path.resolve(projectRoot);
   const removed: string[] = [];
   for (const base of PROJECT_SKILL_DIRS) {
-    for (const name of LEGACY_SKILL_NAMES) {
-      const rel = path.posix.join(base, name);
+    const candidates: Array<[string, string]> = [
+      ...LEGACY_SKILL_NAMES.map((name): [string, string] => [name, name]),
+      ...retiredSkillFolders(path.join(root, base)),
+    ];
+    for (const [folder, name] of candidates) {
+      const rel = path.posix.join(base, folder);
       const dir = path.join(root, rel);
       try {
         if (!fs.lstatSync(dir).isDirectory()) continue;
