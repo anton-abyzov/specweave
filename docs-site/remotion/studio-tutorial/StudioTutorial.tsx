@@ -6,10 +6,10 @@ import {slide} from '@remotion/transitions/slide';
 import {C, FONT} from './theme';
 import {Backdrop, Chip, Copy, Eyebrow, Highlight, Pop, Reveal, Shot, SourceNote, Window} from './primitives';
 
-// Product scenes: copy on the left, a Studio screen recording on the right.
+// Product scenes: copy on the left, a SpecWithCode screen recording on the right.
 // The recordings are 1920x1080, so the window keeps 16:9.
 const WIN = {left: 740, top: 200, w: 1060, h: 596};
-const REC = 'Screen recordings of SpecWeave Studio on a Mac, 10 October 2026';
+const REC = 'Screen recordings of SpecWithCode on a Mac, 10 October 2026';
 
 const Split: React.FC<{copy: React.ReactNode; children: React.ReactNode; note?: string}> = ({copy, children, note}) =>
   <AbsoluteFill>
@@ -30,7 +30,7 @@ const Opening: React.FC = () =>
   <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
     <Backdrop />
     <div style={{textAlign: 'center'}}>
-      <Eyebrow delay={2} color={C.muted}>SpecWeave Studio</Eyebrow>
+      <Eyebrow delay={2} color={C.muted}>SpecWithCode</Eyebrow>
       <div style={{height: 36}} />
       <Reveal delay={8}><div style={{fontFamily: FONT.serif, fontSize: 140, lineHeight: 1, color: C.ink, letterSpacing: '-0.03em'}}>Every AI agent.</div></Reveal>
       <Reveal delay={16}><div style={{fontFamily: FONT.serif, fontStyle: 'italic', fontSize: 140, lineHeight: 1.12, color: C.olive, letterSpacing: '-0.03em'}}>One workspace you own.</div></Reveal>
@@ -114,7 +114,7 @@ const Handoff: React.FC = () => {
   const frame = useCurrentFrame();
   const swap = interpolate(frame, [SWAP - 12, SWAP + 8], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return <Split note="Screen recordings on a Mac, 10 October 2026. The usage limit in the handoff clip is simulated." copy={<div>
-    <Copy eyebrow="04 / Limits" line1="Hit a limit?" line2="Switch and keep going." body="Studio shows every account’s limits. When Claude runs out, Continue with Codex carries the conversation over, so Codex knows the word only Claude was told." />
+    <Copy eyebrow="04 / Limits" line1="Hit a limit?" line2="Switch and keep going." body="SpecWithCode shows every account’s limits. When Claude runs out, Continue with Codex carries the conversation over, so Codex knows the word only Claude was told." />
     <HandoffFlow at={SWAP + 210} />
   </div>}>
     <InWindow title={frame < SWAP ? 'Usage · Limits' : 'handoff-demo · Code Word Acknowledgment'}>
@@ -149,7 +149,7 @@ const TermLine: React.FC<{at: number; text: string; prompt?: boolean; color?: st
 };
 
 const Git: React.FC = () =>
-  <Split note="Output of specweave 3.0.7" copy={<Copy eyebrow="05 / In git" line1="One record in git." line2="Any agent picks it up." body="Outside Studio, the open-source CLI hands off at 90% of a usage window, from Claude Code, Codex or Grok Build." />}>
+  <Split note="Output of specweave 3.0.7" copy={<Copy eyebrow="05 / In git" line1="One record in git." line2="Any agent picks it up." body="Outside SpecWithCode, the open-source CLI hands off at 90% of a usage window, from Claude Code, Codex or Grok Build." />}>
     <div style={{position: 'absolute', left: WIN.left, top: 330}}>
       <Window w={WIN.w} h={380} title="~/projects/checkout" delay={4} dark>
         <div style={{padding: '34px 40px'}}>
@@ -172,7 +172,7 @@ const Cta: React.FC = () =>
   <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
     <Backdrop />
     <div style={{textAlign: 'center'}}>
-      <Eyebrow delay={2} color={C.muted}>SpecWeave Studio · private pilot</Eyebrow>
+      <Eyebrow delay={2} color={C.muted}>SpecWithCode · free, early access</Eyebrow>
       <div style={{height: 34}} />
       <Reveal delay={8}><div style={{fontFamily: FONT.serif, fontSize: 130, lineHeight: 1, color: C.ink, letterSpacing: '-0.03em'}}>Bring your agents.</div></Reveal>
       <Reveal delay={16}><div style={{fontFamily: FONT.serif, fontStyle: 'italic', fontSize: 130, lineHeight: 1.12, color: C.olive, letterSpacing: '-0.03em'}}>Keep your machines.</div></Reveal>
