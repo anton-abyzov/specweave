@@ -1,0 +1,9 @@
+{
+  "command": "grok --version && grok models",
+  "cwd": "~/specweave-tutorial-sandbox/grok",
+  "exitCode": 0,
+  "stdout": "grok 1.0.50 (c58f321264ba) [stable]\nYou are logged in with grok.com.\n\nDefault model: grok-4.7\n\nAvailable models:\n  * grok-4.7 (default)\n  - grok-4.7-build-fast\n  - grok-4.6\n  - grok-4.5\n",
+  "stderr": "",
+  "durationMs": 1421,
+  "capturedAt": "2026-10-11T05:07:57.438Z"
+}

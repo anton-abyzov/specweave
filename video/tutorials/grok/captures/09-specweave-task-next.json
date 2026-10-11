@@ -1,0 +1,9 @@
+{
+  "command": "specweave task next",
+  "cwd": "~/specweave-tutorial-sandbox/grok",
+  "exitCode": 0,
+  "stdout": "T-01 Add the shout flag and its tests\n  AC-01: `greet(name)` and `greet(name, { shout: false })` still return `Hello, ${name}!`\n  AC-02: `greet(name, { shout: true })` returns that same greeting in upper case (`greet(\"Ada\", { shout: true })` is `HELLO, ADA!`)\n  Files: src/greet.js, src/greet.test.js | Test: npm test -- src/greet.test.js\n  state: open\n  when done: specweave task done T-01 0001-optional-shout-flag-for-greet --run \"npm test -- src/greet.test.js\"\n",
+  "stderr": "",
+  "durationMs": 414,
+  "capturedAt": "2026-10-11T05:05:38.970Z"
+}

@@ -1,0 +1,245 @@
+/* Shared tutorial player. Colors, type and radius come only from src/styles/brand-tokens.css,
+   which flips light and dark on its own. */
+.root {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid var(--sw-brand-line);
+  border-radius: calc(var(--sw-brand-radius) * 1.5);
+  overflow: hidden;
+  background: var(--sw-brand-surface);
+  color: var(--sw-brand-ink);
+  font-family: var(--sw-brand-sans);
+}
+
+.frame {
+  display: flex;
+  align-items: center;
+  background: var(--sw-brand-term-bg);
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  background: var(--sw-brand-term-bg);
+}
+
+.video:focus-visible {
+  outline: 3px solid var(--sw-brand-accent);
+  outline-offset: -3px;
+}
+
+.details {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px 20px 20px;
+  border-top: 1px solid var(--sw-brand-line);
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--sw-brand-muted);
+}
+
+.meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--sw-brand-line);
+  border-radius: 999px;
+  background: var(--sw-brand-card);
+}
+
+.metaKey {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chapters ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 4px 10px;
+}
+
+.chapters ol > li,
+.chapters ol > li + li {
+  margin: 0;
+}
+
+.chapter {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--sw-brand-radius);
+  background: transparent;
+  color: var(--sw-brand-ink);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.chapter:hover {
+  background: var(--sw-brand-hover);
+}
+
+.chapter:focus-visible {
+  outline: 3px solid var(--sw-brand-accent);
+  outline-offset: 2px;
+}
+
+.chapter[aria-current='true'] {
+  background: var(--sw-brand-selected);
+  border-color: var(--sw-brand-line-strong);
+}
+
+.time {
+  flex-shrink: 0;
+  min-width: 3.4em;
+  font-family: var(--sw-brand-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sw-brand-muted);
+}
+
+.chapter[aria-current='true'] .time {
+  color: var(--sw-brand-accent-ink);
+  font-weight: 600;
+}
+
+.chapterTitle {
+  min-width: 0;
+}
+
+.caption {
+  padding: 14px 20px 16px;
+  border-top: 1px solid var(--sw-brand-line);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--sw-brand-muted);
+}
+
+.root .caption a {
+  color: var(--sw-brand-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Placeholder card for a tutorial that is not recorded yet. */
+.placeholder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  aspect-ratio: 16 / 9;
+  padding: clamp(22px, 6%, 56px);
+  background-color: var(--sw-brand-soft);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 22px,
+    color-mix(in srgb, var(--sw-brand-line) 60%, transparent) 22px 23px
+  );
+  color: var(--sw-brand-ink);
+}
+
+.placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--sw-brand-accent);
+}
+
+.placeholderEyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sw-brand-muted);
+}
+
+.placeholderAgent {
+  font-family: var(--sw-brand-display);
+  font-size: clamp(32px, 4.6vw, 64px);
+  font-weight: 450;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.soon {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border: 1px solid var(--sw-brand-accent);
+  border-radius: 999px;
+  background: var(--sw-brand-card);
+  color: var(--sw-brand-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.outline {
+  font-size: 13px;
+  color: var(--sw-brand-muted);
+}
+
+/* Split: chapters beside the player on wide screens. */
+@media (min-width: 997px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  }
+
+  .split > .frame,
+  .split > .placeholder {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* The player sets the row height; a long chapter list scrolls inside the column. */
+  .split .details {
+    grid-column: 2;
+    grid-row: 1;
+    contain: size;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 0;
+    border-left: 1px solid var(--sw-brand-line);
+  }
+
+  .split .chapters ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .split .caption {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapter {
+    transition: none;
+  }
+}

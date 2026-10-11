@@ -133,10 +133,89 @@ export function verifyDocs(siteRoot, manifest, {built = false} = {}) {
   }
   return pages.length;
 }
+const GALLERY_AGENTS = ['claude-code', 'codex', 'opencode', 'antigravity', 'grok', 'cursor'];
+const GALLERY_STATUSES = ['published', 'coming-soon'];
+function firstParty(siteRoot, path, extension) {
+  assert(typeof path === 'string' && /^\/[a-z0-9][a-z0-9/_.-]*$/i.test(path) && !path.includes('..'), `tutorial asset must be a first-party site path: ${path}`);
+  assert(path.endsWith(extension), `tutorial asset must end with ${extension}: ${path}`);
+  return inside(resolve(siteRoot, 'static'), path.slice(1));
+}
+function probeDuration(video) {
+  const result = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'json', video], {encoding: 'utf8'});
+  assert.equal(result.status, 0, `ffprobe must validate gallery video: ${video}`);
+  return Number(JSON.parse(result.stdout).format?.duration);
+}
+/** The /tutorials catalogue (src/data/tutorials.json): every verified tutorial is listed with its exact
+    media, every published entry plays from first-party files with captions and chapters, and every
+    upcoming agent tutorial claims no media yet. */
+export function verifyGallery(siteRoot, manifest, {probe = true} = {}) {
+  const gallery = JSON.parse(readFileSync(resolve(siteRoot, 'src/data/tutorials.json'), 'utf8'));
+  assert.equal(gallery.schemaVersion, 1);
+  assert.deepEqual(gallery.requiredAgents, GALLERY_AGENTS, 'gallery must plan one tutorial per required agent');
+  assert(Array.isArray(gallery.tutorials) && gallery.tutorials.length > 0);
+  const slugs = new Set();
+  for (const t of gallery.tutorials) {
+    assert(/^[a-z][a-z0-9-]+$/.test(t.slug), `invalid gallery slug: ${t.slug}`);
+    assert(!slugs.has(t.slug), `duplicate gallery slug: ${t.slug}`);
+    slugs.add(t.slug);
+    assert(typeof t.title === 'string' && t.title.trim() && typeof t.summary === 'string' && t.summary.trim(), `title and summary required: ${t.slug}`);
+    assert(GALLERY_STATUSES.includes(t.status), `unknown gallery status: ${t.slug}`);
+    assert([...GALLERY_AGENTS, 'multi', 'any'].includes(t.agent), `unknown agent: ${t.slug}`);
+    assert(Array.isArray(t.agentsShown) && t.agentsShown.every(a => GALLERY_AGENTS.includes(a)), `unknown agentsShown: ${t.slug}`);
+    assert.equal(t.agent === 'multi', t.agentsShown.length > 0, `only a multi-agent tutorial lists agentsShown: ${t.slug}`);
+    assert(Array.isArray(t.chapters), `chapters must be a list: ${t.slug}`);
+    if (t.status === 'coming-soon') {
+      for (const key of ['src', 'poster', 'captionsVtt', 'durationSeconds', 'uploadDate', 'audio']) {
+        assert.equal(t[key], null, `upcoming tutorials must not imply finished media: ${t.slug}.${key}`);
+      }
+      assert.equal(t.chapters.length, 0, `upcoming tutorials must not list chapters: ${t.slug}`);
+      continue;
+    }
+    const video = firstParty(siteRoot, t.src, '.mp4');
+    firstParty(siteRoot, t.poster, '.jpg');
+    const captions = firstParty(siteRoot, t.captionsVtt, '.vtt');
+    assert(readFileSync(captions, 'utf8').startsWith('WEBVTT'), `gallery captions must be WebVTT: ${t.slug}`);
+    assert(['silent', 'narrated'].includes(t.audio), `published tutorial needs its audio kind: ${t.slug}`);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(t.uploadDate) && !Number.isNaN(Date.parse(t.uploadDate)), `published tutorial needs its upload date: ${t.slug}`);
+    assert(typeof t.durationSeconds === 'number' && t.durationSeconds >= 20 && t.durationSeconds <= 180, `published duration out of range: ${t.slug}`);
+    assert(t.chapters.length >= 2, `published tutorial needs chapters: ${t.slug}`);
+    assert.equal(t.chapters[0].start, 0, `first chapter starts at 0: ${t.slug}`);
+    t.chapters.forEach((c, i) => {
+      assert(typeof c.title === 'string' && c.title.trim(), `chapter needs a title: ${t.slug}`);
+      assert(typeof c.start === 'number' && c.start < t.durationSeconds, `chapter beyond the video: ${t.slug}`);
+      if (i) assert(c.start > t.chapters[i - 1].start, `chapters must ascend: ${t.slug}`);
+    });
+    if (probe) {
+      const actual = probeDuration(video);
+      assert(Math.abs(actual - t.durationSeconds) <= 0.5, `gallery duration ${t.durationSeconds}s disagrees with the file (${actual}s): ${t.slug}`);
+    }
+  }
+  for (const agent of GALLERY_AGENTS) {
+    assert(gallery.tutorials.some(t => t.agent === agent), `gallery is missing the ${agent} tutorial`);
+  }
+  if (manifest.status === 'ready') {
+    for (const tutorial of manifest.tutorials) {
+      const entry = gallery.tutorials.find(t => t.slug === tutorial.id);
+      assert(entry && entry.status === 'published', `verified tutorial missing from the gallery: ${tutorial.id}`);
+      assert.equal(entry.src, `/video/studio-projects/${tutorial.media.video.file}`, `gallery video must be the verified file: ${tutorial.id}`);
+      assert.equal(entry.poster, `/video/studio-projects/${tutorial.media.poster.file}`, `gallery poster must be the verified file: ${tutorial.id}`);
+      assert.equal(entry.captionsVtt, `/video/studio-projects/${tutorial.media.captions.file}`, `gallery captions must be the verified file: ${tutorial.id}`);
+      assert.equal(entry.guide, `/docs/${tutorial.guide.replace(/\.md$/, '')}`, `gallery guide must match the manifest: ${tutorial.id}`);
+    }
+  } else {
+    for (const tutorial of manifest.tutorials) {
+      const entry = gallery.tutorials.find(t => t.slug === tutorial.id);
+      assert(!entry || entry.status !== 'published', `planned tutorial cannot be published in the gallery: ${tutorial.id}`);
+    }
+  }
+  return gallery.tutorials.length;
+}
 if (process.argv[1] && resolve(process.argv[1]) === ownPath) {
   const flags = process.argv.slice(2);
   assert(flags.every(f => ['--release', '--built'].includes(f)), 'unknown verifier option');
   const manifest = verifyManifest(defaultRoot, {release: flags.includes('--release')});
-  const count = verifyDocs(resolve(defaultRoot, '../../..'), manifest, {built: flags.includes('--built')});
-  console.log(`${count} guide pages verified; tutorial status: ${manifest.status}. ${manifest.status === 'planned' ? 'No rendered or published video claimed.' : 'Media files, provenance and video streams verified.'}`);
+  const siteRoot = resolve(defaultRoot, '../../..');
+  const count = verifyDocs(siteRoot, manifest, {built: flags.includes('--built')});
+  const galleryCount = verifyGallery(siteRoot, manifest);
+  console.log(`${count} guide pages verified; tutorial status: ${manifest.status}. ${manifest.status === 'planned' ? 'No rendered or published video claimed.' : 'Media files, provenance and video streams verified.'} ${galleryCount} gallery entries verified.`);
 }

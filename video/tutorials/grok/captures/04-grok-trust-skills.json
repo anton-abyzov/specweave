@@ -1,0 +1,9 @@
+{
+  "command": "grok --trust inspect --json | jq -r '.skills[].name | select(startswith(\"sw-\"))'",
+  "cwd": "~/specweave-tutorial-sandbox/grok",
+  "exitCode": 0,
+  "stdout": "sw-auto\nsw-brainstorm\nsw-do\nsw-done\nsw-handoff\nsw-increment\nsw-jev\nsw-project\nsw-review\nsw-sync\nsw-team\n",
+  "stderr": "",
+  "durationMs": 188,
+  "capturedAt": "2026-10-11T05:03:35.230Z"
+}

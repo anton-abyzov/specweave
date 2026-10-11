@@ -1,0 +1,9 @@
+{
+  "command": "specweave --version && opencode --version",
+  "cwd": "~/specweave-tutorial-sandbox/opencode",
+  "exitCode": 0,
+  "stdout": "3.0.12\n1.14.33\n",
+  "stderr": "",
+  "durationMs": 3634,
+  "capturedAt": "2026-10-11T05:04:45.964Z"
+}

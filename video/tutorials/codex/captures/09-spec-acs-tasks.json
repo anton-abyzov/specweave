@@ -1,0 +1,9 @@
+{
+  "command": "grep -E '^# |^- \\[.\\] AC-|^### T-|^- AC:' .specweave/increments/0001-personal-greeting/spec.md",
+  "cwd": "~/specweave-tutorial-sandbox/codex",
+  "exitCode": 0,
+  "stdout": "# 0001 Personal greeting\n- [ ] AC-01: `greet(name)` returns `Hello, <name>!` with the supplied name preserved.\n- [ ] AC-02: `greet()` continues to return `Hello, world!`.\n### T-01 Support personal greetings and preserve the default\n- AC: AC-01, AC-02 | Files: src/greeting.js, test/greeting.test.js, README.md, CHANGELOG.md, AGENTS.md | Test: npm test\n",
+  "stderr": "",
+  "durationMs": 13,
+  "capturedAt": "2026-10-11T05:07:18.412Z"
+}

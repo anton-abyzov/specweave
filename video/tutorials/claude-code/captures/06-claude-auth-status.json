@@ -1,0 +1,9 @@
+{
+  "command": "claude --version && claude auth status",
+  "cwd": "~/specweave-tutorial-sandbox/claude-code",
+  "exitCode": 0,
+  "stdout": "2.1.296 (Claude Code)\n{\n  \"loggedIn\": true,\n  \"authMethod\": \"claude.ai\",\n  \"apiProvider\": \"firstParty\",\n  \"analyticsDisabled\": false,\n  \"projectsDirectory\": \"~/.claude/projects\",\n  \"configDirectory\": \"~/.claude\",\n  \"email\": \"<redacted-email>\",\n  \"orgId\": \"<redacted>\",\n  \"orgName\": \"<redacted>\",\n  \"subscriptionType\": \"max\"\n}\n",
+  "stderr": "",
+  "durationMs": 517,
+  "capturedAt": "2026-10-11T05:02:53+00:00"
+}

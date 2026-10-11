@@ -1,0 +1,9 @@
+{
+  "command": "git add -A && git -c user.name=\"Demo User\" -c user.email=<redacted-email> commit -qm \"Add SpecWeave\" && git log --oneline",
+  "cwd": "~/specweave-tutorial-sandbox/claude-code",
+  "exitCode": 0,
+  "stdout": "a856a32 Add SpecWeave\n81a4b21 Initial greet-app\n",
+  "stderr": "── Malware pre-commit scan ──\nPre-commit malware + secret scan passed.\n",
+  "durationMs": 1262,
+  "capturedAt": "2026-10-11T05:02:53+00:00"
+}

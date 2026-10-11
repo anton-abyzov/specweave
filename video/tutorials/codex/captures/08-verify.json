@@ -1,0 +1,9 @@
+{
+  "command": "specweave verify 0001",
+  "cwd": "~/specweave-tutorial-sandbox/codex",
+  "exitCode": 0,
+  "stdout": "▶ npm run test\nok   npm run test (exit 0)\nACs 2/2 · tasks 1/1 done (0 skipped)\nPASS → ~/specweave-tutorial-sandbox/codex/.specweave/increments/0001-personal-greeting/reports/verify.md\nNext: specweave complete 0001-personal-greeting\n",
+  "stderr": "",
+  "durationMs": 2164,
+  "capturedAt": "2026-10-11T05:07:07.216Z"
+}

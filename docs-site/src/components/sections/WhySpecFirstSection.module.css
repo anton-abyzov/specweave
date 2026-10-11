@@ -24,7 +24,7 @@
 
 [data-theme='dark'] .columnAfter {
   border-color: var(--sw-color-primary-500);
-  background: rgba(107, 88, 184, 0.08);
+  background: color-mix(in srgb, var(--sw-brand-accent) 8%, transparent);
 }
 
 .columnTitle {

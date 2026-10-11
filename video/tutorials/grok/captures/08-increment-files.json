@@ -1,0 +1,9 @@
+{
+  "command": "ls .specweave/increments/0001-optional-shout-flag-for-greet",
+  "cwd": "~/specweave-tutorial-sandbox/grok",
+  "exitCode": 0,
+  "stdout": "metadata.json\nspec.md\n",
+  "stderr": "",
+  "durationMs": 72,
+  "capturedAt": "2026-10-11T05:05:36.935Z"
+}

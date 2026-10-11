@@ -57,6 +57,6 @@
 }
 
 :global([data-theme='dark']) .primary {
-  background: rgba(107, 88, 184, 0.2);
+  background: color-mix(in srgb, var(--sw-brand-accent) 20%, transparent);
   color: var(--sw-color-primary-500);
 }

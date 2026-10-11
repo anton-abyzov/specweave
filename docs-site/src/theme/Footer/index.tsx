@@ -11,6 +11,7 @@ const COLUMNS = [
     links: [
       {label: 'What is SpecWeave?', to: '/docs/overview/introduction'},
       {label: 'Quick start', to: '/docs/getting-started'},
+      {label: 'Tutorials', to: '/tutorials'},
       {label: 'How it works', to: '/docs/overview/how-it-works'},
       {label: 'What changed in 3.0', to: '/docs/guides/specweave-3'},
     ],

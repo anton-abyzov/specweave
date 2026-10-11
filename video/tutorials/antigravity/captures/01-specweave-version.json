@@ -1,0 +1,10 @@
+{
+  "command": "specweave --version",
+  "cwd": "~/specweave-tutorial-sandbox/antigravity",
+  "exitCode": 0,
+  "stdout": "3.0.12\n",
+  "stderr": "",
+  "durationMs": 3989,
+  "capturedAt": "2026-10-11T05:01:20.033Z",
+  "note": "ANSI color codes stripped; home path, user name and host name redacted."
+}

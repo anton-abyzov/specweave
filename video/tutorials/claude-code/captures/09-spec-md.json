@@ -1,0 +1,9 @@
+{
+  "command": "git status --short && sed -n \"1,40p\" .specweave/increments/0001-personal-greeting/spec.md",
+  "cwd": "~/specweave-tutorial-sandbox/claude-code",
+  "exitCode": 0,
+  "stdout": "?? .specweave/increments/\n# 0001 Personal greeting\n\n## Problem\n`greet()` in `src/greeting.js` takes no argument and always returns \"Hello, world!\", so callers cannot greet a specific person.\n\n## Scope\nIn: `greet(name)` returns \"Hello, <name>!\"; falls back to \"Hello, world!\" when no name is given. Out: localization, name validation or trimming, any CLI or UI.\n\n## Acceptance Criteria\n- [ ] AC-01: `greet(\"Ada\")` returns \"Hello, Ada!\"\n- [ ] AC-02: `greet()` returns \"Hello, world!\" (existing behavior preserved)\n\n## Approach\nSingle change in `src/greeting.js`: add a `name` parameter defaulting to \"world\" and return `` `Hello, ${name}!` ``. Tests go in `test/greeting.test.js`, next to the existing \"greets the world\" test. Rejected: explicit `if (!name)` branching; a default parameter is simpler (empty string and null are out of scope).\n\n## Open questions\n- none\n\n## Tasks\n\n### T-01 Greet by name with world fallback\n- AC: AC-01, AC-02 | Files: src/greeting.js, test/greeting.test.js | Test: npm test\n",
+  "stderr": "",
+  "durationMs": 32,
+  "capturedAt": "2026-10-11T05:04:31+00:00"
+}

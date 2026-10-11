@@ -25,4 +25,46 @@
   --sw-brand-radius: 4px;
   --sw-brand-shadow: 0 18px 50px #25282008;
   --sw-brand-overlay: #25282066;
+  --sw-brand-line-soft: #e5e7df;
+  --sw-brand-line-strong: #b9c0ae;
+  --sw-brand-term-bg: #20231c;
+  --sw-brand-term-ink: #e8ecdf;
+  --sw-brand-on-accent: #ffffff;
+  /* Accent and success text on tinted surfaces (selected, soft): 4.5:1+ where the base hue is not. */
+  --sw-brand-accent-ink: #a6431f;
+  --sw-brand-success-ink: #4a6847;
+}
+
+/* Dark mode (website: Docusaurus sets data-theme on <html>). Warm near-black paper,
+   light ink; accent #e5794c keeps 6.0:1 on paper and 5.1:1+ on every surface.
+   :root[...] outranks the plain :root above even when a CSS module re-imports this file later. */
+:root[data-theme='dark'] {
+  --sw-brand-paper: #181914;
+  --sw-brand-ink: #ece8dc;
+  --sw-brand-muted: #a8ab9d;
+  --sw-brand-line: #34372e;
+  --sw-brand-accent: #e5794c;
+  --sw-brand-surface: #1e201a;
+  --sw-brand-card: #22241d;
+  --sw-brand-soft: #23261e;
+  --sw-brand-hover: #2c2f26;
+  --sw-brand-selected: #2a2e24;
+  --sw-brand-control-border: #6b755f;
+  --sw-brand-action: #ece8dc;
+  --sw-brand-action-hover: #d4d0c3;
+  --sw-brand-on-action: #181914;
+  --sw-brand-success: #8fb58a;
+  --sw-brand-warning: #d9a066;
+  --sw-brand-danger: #e8836f;
+  --sw-brand-danger-soft: #3a2520;
+  --sw-brand-review: #a3aedb;
+  --sw-brand-shadow: 0 18px 50px #00000040;
+  --sw-brand-overlay: #000000aa;
+  --sw-brand-line-soft: #2a2d24;
+  --sw-brand-line-strong: #4a4f41;
+  --sw-brand-term-bg: #0f100c;
+  --sw-brand-term-ink: #e8ecdf;
+  --sw-brand-on-accent: #181914;
+  --sw-brand-accent-ink: #e5794c;
+  --sw-brand-success-ink: #8fb58a;
 }

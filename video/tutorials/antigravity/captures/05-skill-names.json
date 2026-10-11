@@ -1,0 +1,10 @@
+{
+  "command": "grep -h '^name:' .agents/skills/*/SKILL.md",
+  "cwd": "~/specweave-tutorial-sandbox/antigravity",
+  "exitCode": 0,
+  "stdout": "name: sw-auto\nname: sw-brainstorm\nname: sw-do\nname: sw-done\nname: sw-handoff\nname: sw-increment\nname: sw-jev\nname: sw-project\nname: sw-review\nname: sw-sync\nname: sw-team\n",
+  "stderr": "",
+  "durationMs": 16,
+  "capturedAt": "2026-10-11T05:02:03.188Z",
+  "note": "ANSI color codes stripped; home path, user name and host name redacted."
+}

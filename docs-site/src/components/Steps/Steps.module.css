@@ -34,7 +34,7 @@
   font-size: var(--sw-font-size-sm);
   font-weight: var(--sw-font-weight-bold);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(107, 88, 184, 0.25);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sw-brand-accent) 25%, transparent);
 }
 
 .stepCircle::before {
