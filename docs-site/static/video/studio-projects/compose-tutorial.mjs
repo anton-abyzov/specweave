@@ -89,7 +89,7 @@ video { display: block; width: 100%; height: 100%; object-fit: contain; }
 .caption { position: absolute; inset: 22px 110px 24px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 34px; font-weight: 400; line-height: 1.35; }
 </style></head>
 <body><div id="root" data-composition-id="${capture.tutorial}" data-no-timeline data-duration="${duration}" data-width="1920" data-height="1080">
-<header><h1>${html(titles[capture.tutorial])}</h1><p class="brand">SPECWEAVE STUDIO · ACTUAL UI</p></header>
+<header><h1>${html(titles[capture.tutorial])}</h1><p class="brand">SPECWITHCODE · ACTUAL UI</p></header>
 <div class="screen"><video id="recorded-ui" class="clip" src="assets/recording.mp4" playsinline muted data-start="0" data-duration="${duration}" data-track-index="0"></video></div>
 <div class="captions">${captions}</div>
 </div></body></html>\n`;
