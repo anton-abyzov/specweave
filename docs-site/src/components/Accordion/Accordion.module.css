@@ -37,7 +37,7 @@
 }
 
 [data-theme='dark'] .summary:hover {
-  background: rgba(169, 155, 216, 0.06);
+  background: color-mix(in srgb, var(--sw-brand-accent) 6%, transparent);
 }
 
 .summaryText {

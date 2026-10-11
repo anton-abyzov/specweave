@@ -1,11 +1,11 @@
 /* SpecWeave 3.0 landing page. Builds on continuity.module.css (.page tokens and type). */
 
 .landing {
-  --orange: #bd481f;
-  --orange-soft: #df692f;
-  --ink-2: #3f4835;
-  --term-bg: #20231c;
-  --term-ink: #e8ecdf;
+  --orange: var(--sw-brand-accent);
+  --orange-soft: var(--sw-brand-accent);
+  --ink-2: var(--sw-brand-action-hover);
+  --term-bg: var(--sw-brand-term-bg);
+  --term-ink: var(--sw-brand-term-ink);
 }
 
 .eyebrow {
@@ -58,7 +58,7 @@
   font-size: 12px;
   color: var(--ink);
   border: 1px solid var(--line);
-  background: #fbfcf8;
+  background: var(--sw-brand-surface);
   border-radius: 999px;
   padding: 5px 14px 5px 5px;
   margin-bottom: 30px;
@@ -67,7 +67,7 @@
 
 .releasePill b {
   background: var(--ink);
-  color: #fff;
+  color: var(--paper);
   font-weight: 500;
   border-radius: 999px;
   padding: 2px 10px;
@@ -100,7 +100,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, var(--paper) 0%, rgba(246, 244, 238, .92) 30%, rgba(246, 244, 238, 0) 58%);
+  background: linear-gradient(90deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 92%, transparent) 30%, color-mix(in srgb, var(--paper) 0%, transparent) 58%);
   pointer-events: none;
 }
 
@@ -135,7 +135,7 @@
   font-size: 12px;
   font-family: var(--sw-brand-mono);
   color: var(--ink);
-  background: rgba(251, 252, 248, .92);
+  background: color-mix(in srgb, var(--sw-brand-surface) 92%, transparent);
   backdrop-filter: blur(6px);
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -164,7 +164,7 @@
   background: var(--orange-soft);
 }
 
-.chipDot[data-tone='ok'] { background: #547451; }
+.chipDot[data-tone='ok'] { background: var(--sw-brand-success); }
 
 /* ---------- Tool rail ---------- */
 
@@ -288,7 +288,7 @@
 
 .storyStep h3 em {
   font-weight: 400;
-  color: #69705c;
+  color: var(--soft);
 }
 
 .storyStep p {
@@ -302,7 +302,7 @@
 .storyStep code,
 .body code {
   font-size: .88em;
-  background: #eceee4;
+  background: var(--sw-brand-soft);
   border: none;
   padding: 1px 5px;
 }
@@ -361,7 +361,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  border: 1px solid #9aa08f;
+  border: 1px solid var(--sw-brand-control-border);
   transition: background .3s;
 }
 
@@ -395,7 +395,7 @@
   right: -10%;
   top: 48%;
   height: 26px;
-  background: linear-gradient(90deg, #a83c17, var(--orange-soft) 40%, #b1411c 70%, #d96a31);
+  background: linear-gradient(90deg, #a83c17, var(--orange-soft) 40%, var(--orange) 70%, #d96a31);
   border-radius: 50%;
   transform: rotate(-4deg) translateY(calc(var(--progress) * -60px));
   opacity: .82;
@@ -538,7 +538,7 @@
 
 .mapRow {
   padding: 17px 0;
-  border-bottom: 1px solid #e8eadf;
+  border-bottom: 1px solid var(--sw-brand-line-soft);
   font-size: 14px;
   opacity: 0;
   transform: translate3d(-12px, 0, 0);
@@ -604,7 +604,7 @@
 }
 
 .stat {
-  border-top: 1px solid #b9c0ae;
+  border-top: 1px solid var(--sw-brand-line-strong);
   padding-top: 22px;
 }
 
@@ -752,4 +752,15 @@
   .stats { grid-template-columns: 1fr; }
 
   .evidence { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* Dark mode: the photo plates and art panels sit back so the type leads. */
+:global([data-theme='dark']) .panelArt {
+  background:
+    radial-gradient(120% 90% at 18% 10%, #2a2c24 0%, transparent 55%),
+    linear-gradient(180deg, #23251e 0%, #1e201a 62%, #191a15 62.2%, #1c1e18 100%);
+}
+:global([data-theme='dark']) .heroPhoto,
+:global([data-theme='dark']) .panelArt img {
+  filter: brightness(.72) saturate(.9);
 }

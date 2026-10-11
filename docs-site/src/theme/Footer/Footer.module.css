@@ -1,5 +1,5 @@
 .footer {
-  background: #252820;
+  background: var(--ifm-footer-background-color, #252820);
   color: var(--sw-color-text-on-dark, rgba(255, 255, 255, 0.7));
   padding: var(--sw-space-12, 48px) 0 var(--sw-space-6, 24px);
 }

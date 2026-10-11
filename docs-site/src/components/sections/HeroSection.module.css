@@ -21,7 +21,7 @@
   border-radius: var(--sw-radius-full);
   background: radial-gradient(
     circle,
-    rgba(107, 88, 184, 0.25) 0%,
+    color-mix(in srgb, var(--sw-brand-accent) 25%, transparent) 0%,
     transparent 70%
   );
   animation: sw-glow-pulse 4s ease-in-out infinite;
