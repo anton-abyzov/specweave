@@ -85,7 +85,7 @@
 .uStudio p+p{margin-top:6px!important}
 .uStudio .uGap{font-size:13px;color:var(--sw-brand-warning)}
 .uStatus{justify-self:end;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;border-radius:20px;padding:4px 10px;white-space:nowrap;margin-top:2px}
-.uStatus[data-status=pilot]{background:var(--sw-brand-selected);color:var(--sw-brand-success-ink)}
+.uStatus[data-status=app]{background:var(--sw-brand-selected);color:var(--sw-brand-success-ink)}
 .uStatus[data-status=testing]{background:var(--sw-brand-danger-soft);color:var(--sw-brand-warning)}
 .uStatus[data-status=open]{background:var(--sw-brand-ink);color:var(--sw-brand-paper)}
 @media(max-width:900px){.uRow{grid-template-columns:minmax(0,1fr) auto;gap:10px 16px}.uArrow{display:none}.uJob{grid-column:1}.uStatus{grid-column:2;grid-row:1}.uStudio{grid-column:1 / -1}}
