@@ -39,9 +39,9 @@ fixture = {
     ],
     "policy": {"mode": "balanced", "preferredProvider": None, "selectedAccount": None},
     "hosts": [
-        {"id": "m4", "label": "M4 Max", "role": "main", "hostname": "Antons-MacBook-M4MAX.local", "status": "local", "sshReachable": None, "installed": True},
-        {"id": "m1", "label": "M1 Max", "role": "worker", "hostname": "Antons-MacBook-Pro-M1MAX-2.local", "status": "auth-required", "sshReachable": True, "installed": False},
-        {"id": "m3", "label": "M3 / Olympus", "role": "worker", "hostname": "Antons-MacBook-Pro.local", "status": "offline", "sshReachable": False, "installed": None},
+        {"id": "m4", "label": "M4 Max", "role": "main", "hostname": "m4.local", "status": "local", "sshReachable": None, "installed": True},
+        {"id": "m1", "label": "M1 Max", "role": "worker", "hostname": "m1.local", "status": "auth-required", "sshReachable": True, "installed": False},
+        {"id": "m3", "label": "M3 / Olympus", "role": "worker", "hostname": "m3.local", "status": "offline", "sshReachable": False, "installed": None},
     ],
     "services": [{"id": "t3", "label": "T3 Code stable", "port": 3773, "status": "running"}, {"id": "proxy", "label": "CLIProxyAPI", "port": 8317, "status": "unavailable"}],
     "runs": [],

@@ -4,9 +4,10 @@ set -euo pipefail
 role="${1:-}"
 case "$role" in m1|m3) ;; *) echo 'Usage: worker-bootstrap.sh m1|m3' >&2; exit 2;; esac
 [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || { echo 'Apple Silicon macOS required' >&2; exit 2; }
-expected_host='Antons-MacBook-Pro'
-expected_user='antonabyzov'
-if [ "$role" = m1 ]; then expected_host='Antons-MacBook-Pro-M1MAX-2'; expected_user='anton'; fi
+# The verified identity comes from the operator, never from the public source tree.
+expected_host="${SPECWEAVE_WORKER_HOST:-}"
+expected_user="${SPECWEAVE_WORKER_USER:-}"
+[ -n "$expected_host" ] && [ -n "$expected_user" ] || { echo 'Set SPECWEAVE_WORKER_HOST (LocalHostName) and SPECWEAVE_WORKER_USER for this worker' >&2; exit 2; }
 [ "$(scutil --get LocalHostName)" = "$expected_host" ] && [ "$(id -un)" = "$expected_user" ] || { echo 'Worker identity does not match its verified native user; preserve this host' >&2; exit 2; }
 command -v node >/dev/null && command -v npm >/dev/null || { echo 'Install Node 22 first' >&2; exit 2; }
 [ "$(node -p 'process.versions.node.split(".")[0]')" = 22 ] || { echo 'Node 22 required' >&2; exit 2; }
