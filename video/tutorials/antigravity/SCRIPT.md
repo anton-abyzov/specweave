@@ -2,7 +2,9 @@
 
 Episode 6 of 6 in **Your agent in SpecWithCode**. Series rules, shared sources, visual system and recording plan: [../SERIES.md](../SERIES.md).
 
-**Promise:** in 89 seconds, connect Antigravity to SpecWithCode, plan one small change with a SpecWeave skill, build it, and review the code, the test and the ledger.
+**As recorded (SpecWithCode 0.2.8, 11 October 2026):** 75 s in eight beats. Beats 03 and 04 below became one "Connect Antigravity" beat, because the instance was added, installed and signed in off camera: the take opens the Add provider dialog, closes it, and shows the signed-in row. The model is Gemini 3.8 Flash (High). `SHOTLIST.json`, `edit.json` and `scripts/vo-lines.json` are the source of truth for what was recorded and said.
+
+**Promise (planned):** in 89 seconds, connect Antigravity to SpecWithCode, plan one small change with a SpecWeave skill, build it, and review the code, the test and the ledger.
 
 - Audience: a developer who already uses Antigravity.
 - Runtime: 89 s. Narration: 190 spoken words, about 76.0 s at 150 wpm.
@@ -152,7 +154,7 @@ Total: 89 s.
 ### 09 Outro (1:25-1:29, MG)
 
 - **VO:** "Next, sw-done verifies and closes the increment."
-- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode is in private pilot · spec-weave.com/studio" / "All tutorials · spec-weave.com/tutorials".
+- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode · spec-weave.com/studio" / "All tutorials · spec-weave.com/tutorials".
 - **Sources:**
   - `sw-done`: "every task done or skipped, specweave verify green, a fresh-context review, then specweave complete" (W:skills/sw-done/SKILL.md:2).
   - Private pilot, no public download: W:docs-site/src/pages/studio.tsx:19,22.
@@ -183,9 +185,7 @@ Shared rules (demo home, environment, credentials, rename) are in SERIES.md. The
 
 ## Not verified
 
-Shared gaps are listed in SERIES.md. Specific to this episode:
-
-- Everything Antigravity does in the plan and build beats (no Antigravity sign-in was done; the local `agy` 1.107.0 is an editor launcher with no prompt mode).
+Shared gaps are listed in SERIES.md. The plan and build beats were verified by the recording: Gemini 3.8 Flash wrote spec.md, claimed T-01, changed `src/greeting.js` and its test, ran `npm test` (2 passing) and recorded `specweave task done` as `antigravity@demo`.
 
 ## Captures
 

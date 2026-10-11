@@ -118,7 +118,7 @@ export default function Tutorials() {
   return (
     <Layout
       title="Tutorials: SpecWithCode and specweave videos"
-      description="Short, captioned video tutorials for SpecWithCode and the specweave CLI: projects, threads, memory, plans and handoff, plus one narrated walkthrough per agent for Claude Code, Codex, OpenCode and Grok, with Antigravity and Cursor next."
+      description="Short, captioned video tutorials for SpecWithCode and the specweave CLI: projects, threads, memory, plans and handoff, plus one narrated walkthrough per agent for Claude Code, Codex, OpenCode, Grok and Antigravity with Gemini, with Cursor next."
     >
       <Head>
         <script type="application/ld+json">{jsonLd}</script>
