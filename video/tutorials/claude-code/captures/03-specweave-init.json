@@ -1,0 +1,9 @@
+{
+  "command": "specweave init . --quick",
+  "cwd": "~/specweave-tutorial-sandbox/claude-code",
+  "exitCode": 0,
+  "stdout": "\n⚡ Quick mode: Using sensible defaults\n\n🚀 SpecWeave Initialization\n\n🔍 Detecting AI coding tool...\n\n✅ Detected: Claude Code (native plugin system, full automation)\n   Found 'claude' command in PATH\n\n   ✓ CLAUDE.md created\n   ✓ AGENTS.md created\n   ✓ .gitignore created (1 tech patterns detected)\n\n✨ Claude Code native installation complete!\n   ✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/\n   ✓ Claude Code compacts at 400K tokens in this project (.claude/settings.json); `specweave autocompact off --project` undoes it\n\n✅ SpecWeave initialized for claude-code!\n\n  Provider:  Local\n  Structure: Single repo\n  Adapter:   Claude Code\n  Config:    .specweave/config.json\n\n  Enabled by default:\n    • Skills sw-* in .claude/skills/ and .agents/skills/\n    • LSP code intelligence\n\n  Quick reference:\n    specweave help              Full command reference\n    specweave doctor            Verify project health\n    specweave config <section>  Customize settings\n\n\n🎯 Next steps:\n\n   1. ✔ All plugins ready\n\n   2. specweave sync setup          Connect GitHub Issues, JIRA, or ADO\n   3. specweave create-increment     Start your first feature\n   4. specweave get owner/repo        Add a repository to your workspace\n      specweave get \"org/*\"          Add all repos from an org\n\n   Tip: AutoVerify is on by default in Claude Code Desktop — changes are verified automatically\n\n🚀 Ready to build with SpecWeave!\n\nDocumentation: https://spec-weave.com\nGitHub: https://github.com/anton-abyzov/specweave\n\n",
+  "stderr": "- Creating SpecWeave project...\n- Using claude...\n✔ SpecWeave project created successfully!\n",
+  "durationMs": 464,
+  "capturedAt": "2026-10-11T05:02:41+00:00"
+}

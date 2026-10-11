@@ -43,5 +43,5 @@
 }
 
 :global([data-theme='dark']) .iconArea {
-  background: rgba(107, 88, 184, 0.15);
+  background: color-mix(in srgb, var(--sw-brand-accent) 15%, transparent);
 }

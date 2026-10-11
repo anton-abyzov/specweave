@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
     <linearGradient id="gradient-light" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#252820;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3f4835;stop-opacity:1" />
     </linearGradient>
   </defs>
 
@@ -38,14 +38,14 @@
 
     <!-- Diagonal accent threads -->
     <path d="M -50,-50 Q -10,-10 30,30"
-          stroke="#667eea"
+          stroke="#bd481f"
           stroke-width="6"
           fill="none"
           stroke-linecap="round"
           opacity="0.5"/>
 
     <path d="M 50,-50 Q 10,-10 -30,30"
-          stroke="#764ba2"
+          stroke="#252820"
           stroke-width="6"
           fill="none"
           stroke-linecap="round"

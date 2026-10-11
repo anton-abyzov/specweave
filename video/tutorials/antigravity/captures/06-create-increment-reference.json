@@ -1,0 +1,10 @@
+{
+  "command": "specweave create-increment \"Add a greet function\"",
+  "cwd": "~/specweave-tutorial-sandbox/antigravity-dryrun",
+  "exitCode": 0,
+  "stdout": "\nIncrement created: 0001-add-a-greet-function (active)\n  Path: ~/specweave-tutorial-sandbox/antigravity-dryrun/.specweave/increments/0001-add-a-greet-function\n  Files: metadata.json, spec.md\n\nNext steps:\n  1. Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …), Approach and Tasks (### T-01 … + \"- AC: … | Files: … | Test: …\")\n  2. Work it: specweave task next → task claim T-01 → task done T-01 --run \"<test>\"\n  3. Close it: specweave verify 0001-add-a-greet-function → specweave complete 0001-add-a-greet-function\n",
+  "stderr": "",
+  "durationMs": 212,
+  "capturedAt": "2026-10-11T05:02:24.520Z",
+  "note": "ANSI color codes stripped; home path, user name and host name redacted."
+}

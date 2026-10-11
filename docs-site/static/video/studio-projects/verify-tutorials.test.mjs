@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
-import {join, dirname} from 'node:path';
-import {verifyManifest, verifyDocs} from './verify-tutorials.mjs';
+import {join, dirname, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {verifyManifest, verifyDocs, verifyGallery} from './verify-tutorials.mjs';
 import {NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
 const base = new URL('./manifest.json', import.meta.url);
 function fixture(fn) {
@@ -143,3 +144,54 @@ test('published native transcript cannot omit the account-metadata limitation', 
   const page=join(root,'docs/studio/projects.md'); writeFileSync(page,readFileSync(page,'utf8')+NATIVE_PROOF_NOTE+'\n');
   assert.equal(verifyDocs(root,m),4);
 }));
+
+const siteRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const realGallery = () => JSON.parse(readFileSync(join(siteRoot, 'src/data/tutorials.json'), 'utf8'));
+const realManifest = () => JSON.parse(readFileSync(base, 'utf8'));
+function galleryFixture(mutate, fn) {
+  const root = mkdtempSync(join(tmpdir(), '0895-gallery-validation-'));
+  try {
+    mkdirSync(join(root, 'src/data'), {recursive: true});
+    symlinkSync(join(siteRoot, 'static'), join(root, 'static'));
+    const gallery = realGallery(); mutate(gallery);
+    writeFileSync(join(root, 'src/data/tutorials.json'), JSON.stringify(gallery));
+    fn(root);
+  } finally {rmSync(root, {recursive: true, force: true});}
+}
+const bySlug = (g, slug) => g.tutorials.find(t => t.slug === slug);
+test('the /tutorials catalogue lists every verified tutorial with first-party media, captions and chapters', () => {
+  assert.equal(verifyGallery(siteRoot, realManifest(), {probe: false}), realGallery().tutorials.length);
+});
+test('upcoming agent tutorials cannot advertise media they do not have', () => {
+  for (const [key, value] of [['src', '/video/studio-tutorial.mp4'], ['durationSeconds', 90], ['captionsVtt', '/video/studio-tutorial.vtt']]) {
+    galleryFixture(g => {bySlug(g, 'specwithcode-codex')[key] = value;}, root =>
+      assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /must not imply finished media/));
+  }
+  galleryFixture(g => {bySlug(g, 'specwithcode-grok').chapters = [{start: 0, title: 'Intro'}];}, root =>
+    assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /must not list chapters/));
+});
+test('every required agent keeps a planned or published tutorial', () => galleryFixture(
+  g => {g.tutorials = g.tutorials.filter(t => t.agent !== 'opencode');},
+  root => assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /missing the opencode tutorial/)));
+test('published gallery videos must be first-party, captioned and chaptered', () => {
+  const cases = [
+    [g => {bySlug(g, 'specwithcode-tour').src = 'https://postiz.easychamp.com/uploads/x.mp4';}, /first-party site path/],
+    [g => {bySlug(g, 'specwithcode-tour').captionsVtt = null;}, /first-party site path/],
+    [g => {bySlug(g, 'specwithcode-tour').src = '/video/missing.mp4';}, /ENOENT|no such file/],
+    [g => {bySlug(g, 'specwithcode-tour').chapters.reverse();}, /first chapter starts at 0|chapters must ascend/],
+    [g => {bySlug(g, 'specwithcode-tour').chapters.push({start: 500, title: 'Late'});}, /chapter beyond the video/],
+    [g => {bySlug(g, 'memory-and-usage').agentsShown = ['codex'];}, /only a multi-agent tutorial/],
+  ];
+  for (const [mutate, error] of cases) {
+    galleryFixture(mutate, root => assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), error));
+  }
+});
+test('the gallery cannot drop or swap a verified tutorial', () => {
+  galleryFixture(g => {g.tutorials = g.tutorials.filter(t => t.slug !== 'plans-and-routines');}, root =>
+    assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /missing from the gallery: plans-and-routines/));
+  galleryFixture(g => {bySlug(g, 'memory-and-usage').src = '/video/studio-projects/plans-and-routines.mp4';}, root =>
+    assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /must be the verified file/));
+});
+test('gallery durations are checked against the real video files', () => galleryFixture(
+  g => {bySlug(g, 'memory-and-usage').durationSeconds = 120;},
+  root => assert.throws(() => verifyGallery(root, realManifest()), /disagrees with the file/)));

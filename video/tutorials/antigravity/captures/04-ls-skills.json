@@ -1,0 +1,10 @@
+{
+  "command": "ls .agents/skills .claude/skills",
+  "cwd": "~/specweave-tutorial-sandbox/antigravity",
+  "exitCode": 0,
+  "stdout": ".agents/skills:\nsw-auto\nsw-brainstorm\nsw-do\nsw-done\nsw-handoff\nsw-increment\nsw-jev\nsw-project\nsw-review\nsw-sync\nsw-team\n\n.claude/skills:\nsw-auto\nsw-brainstorm\nsw-do\nsw-done\nsw-handoff\nsw-increment\nsw-jev\nsw-project\nsw-review\nsw-sync\nsw-team\n",
+  "stderr": "",
+  "durationMs": 11,
+  "capturedAt": "2026-10-11T05:01:59.884Z",
+  "note": "ANSI color codes stripped; home path, user name and host name redacted."
+}

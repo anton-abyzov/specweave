@@ -43,6 +43,7 @@ describe('Footer', () => {
     render(<Footer />);
     expect(screen.getByText('What is SpecWeave?')).toHaveAttribute('href', '/docs/overview/introduction');
     expect(screen.getByText('Quick start')).toHaveAttribute('href', '/docs/getting-started');
+    expect(screen.getByText('Tutorials')).toHaveAttribute('href', '/tutorials');
     expect(screen.getByText('Handoff and pickup')).toHaveAttribute('href', '/docs/guides/cross-tool-handoff');
   });
 });

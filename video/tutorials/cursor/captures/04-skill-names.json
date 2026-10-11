@@ -1,0 +1,9 @@
+{
+  "command": "grep -h '^name:' .agents/skills/*/SKILL.md",
+  "cwd": "~/specweave-tutorial-sandbox/cursor",
+  "exitCode": 0,
+  "stdout": "name: sw-auto\nname: sw-brainstorm\nname: sw-do\nname: sw-done\nname: sw-handoff\nname: sw-increment\nname: sw-jev\nname: sw-project\nname: sw-review\nname: sw-sync\nname: sw-team\n",
+  "stderr": "",
+  "durationMs": 76,
+  "capturedAt": "2026-10-11T05:01:26.992Z"
+}

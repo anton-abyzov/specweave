@@ -1,0 +1,43 @@
+WEBVTT
+
+NOTE Descriptive captions for a silent screen recording. Cue times follow the on-screen section changes.
+
+1
+00:00:00.000 --> 00:00:04.000
+[No sound] Every AI agent. One workspace you own.
+
+2
+00:00:04.000 --> 00:00:09.500
+Projects: give the coordinator a goal.
+
+3
+00:00:09.500 --> 00:00:15.000
+It starts a worker for each part and lists them in the Threads rail.
+
+4
+00:00:15.000 --> 00:00:20.000
+Each job gets the model that fits.
+
+5
+00:00:20.000 --> 00:00:25.000
+Here Codex writes tip.py while Claude writes the README.
+
+6
+00:00:25.000 --> 00:00:31.000
+Results come back to one conversation. The coordinator checks each worker's output against the goal.
+
+7
+00:00:31.000 --> 00:00:38.000
+Hit a limit? The usage view shows every account's limits.
+
+8
+00:00:38.000 --> 00:00:48.000
+When Claude runs out, Continue with Codex carries the conversation over, so Codex knows the code word only Claude was told. The limit in this clip is simulated.
+
+9
+00:00:48.000 --> 00:00:56.000
+One record in git. The open-source specweave CLI hands off at 90% of a usage window, and any agent continues with specweave pickup.
+
+10
+00:00:56.000 --> 00:01:01.000
+Bring your agents. Keep your machines. spec-weave.com/studio

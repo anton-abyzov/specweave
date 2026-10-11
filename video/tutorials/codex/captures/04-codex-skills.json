@@ -1,0 +1,9 @@
+{
+  "command": "codex debug prompt-input | grep -oE -- '- sw-[a-z]+:|[^ `]*/\\.agents/skills' | sort -u",
+  "cwd": "~/specweave-tutorial-sandbox/codex",
+  "exitCode": 0,
+  "stdout": "- sw-auto:\n- sw-brainstorm:\n- sw-do:\n- sw-done:\n- sw-handoff:\n- sw-increment:\n- sw-jev:\n- sw-project:\n- sw-review:\n- sw-sync:\n- sw-team:\n~/.agents/skills\n~/specweave-tutorial-sandbox/codex/.agents/skills\n",
+  "stderr": "",
+  "durationMs": 2964,
+  "capturedAt": "2026-10-11T05:02:41.947Z"
+}
