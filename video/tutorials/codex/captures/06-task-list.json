@@ -1,0 +1,9 @@
+{
+  "command": "specweave task list",
+  "cwd": "~/specweave-tutorial-sandbox/codex",
+  "exitCode": 0,
+  "stdout": "0001-personal-greeting — agent claude@<host>\n| Task | State | By | Evidence | Note |\n|---|---|---|---|---|\n| T-01 | done | codex@<host> | npm test → exit 0 log: .specweave/increments/0001-personal-… |  |\n\n1/1 done · 0 skipped · 0 claimed · 0 blocked · 0 stale · 0 open\n",
+  "stderr": "",
+  "durationMs": 2025,
+  "capturedAt": "2026-10-11T05:07:03.650Z"
+}

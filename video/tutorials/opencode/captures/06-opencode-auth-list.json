@@ -1,0 +1,9 @@
+{
+  "command": "opencode auth list",
+  "cwd": "~/specweave-tutorial-sandbox/opencode",
+  "exitCode": 0,
+  "stdout": "┌  Credentials ~/.local/share/opencode/auth.json\n│\n●  OpenRouter api\n│\n└  1 credentials\n\n",
+  "stderr": "\n",
+  "durationMs": 1781,
+  "capturedAt": "2026-10-11T05:07:39.033Z"
+}

@@ -1,0 +1,9 @@
+{
+  "command": "opencode debug skill > /tmp/skills.json && jq -r '[.[] | select(.name | startswith(\"sw-\"))] | sort_by(.name)[] | .name + \"  \" + (.location | sub(\".*/opencode/\"; \"\"))' /tmp/skills.json",
+  "cwd": "~/specweave-tutorial-sandbox/opencode",
+  "exitCode": 0,
+  "stdout": "sw-auto  .claude/skills/sw-auto/SKILL.md\nsw-brainstorm  .agents/skills/sw-brainstorm/SKILL.md\nsw-do  .claude/skills/sw-do/SKILL.md\nsw-done  .claude/skills/sw-done/SKILL.md\nsw-handoff  .claude/skills/sw-handoff/SKILL.md\nsw-increment  .claude/skills/sw-increment/SKILL.md\nsw-jev  .agents/skills/sw-jev/SKILL.md\nsw-project  .agents/skills/sw-project/SKILL.md\nsw-review  .claude/skills/sw-review/SKILL.md\nsw-sync  .claude/skills/sw-sync/SKILL.md\nsw-team  .claude/skills/sw-team/SKILL.md\n",
+  "stderr": "",
+  "durationMs": 3251,
+  "capturedAt": "2026-10-11T05:04:50.996Z"
+}
