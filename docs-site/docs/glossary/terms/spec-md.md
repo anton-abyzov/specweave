@@ -40,7 +40,7 @@ Files that change, in order; key decisions; rejected alternatives; risks.
 ## Tasks
 
 ### T-01 First task
-- AC: AC-01 | Files: src/file.ts, src/file.test.ts | Test: npm test -- file
+- AC: AC-01 | Files: src/file.ts, tests/e2e/file.test.ts | Test: npm test -- e2e/file
 
 ### T-02 Second task
 - AC: AC-02 | Files: src/other.ts | Test: npm test -- other
