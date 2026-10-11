@@ -1,3 +1,18 @@
+## [3.0.13] - 2026-10-11
+
+### Changed
+
+- Runtime dependencies updated: `@anthropic-ai/sdk` ^0.131.0 (was ^0.122.0), `@inquirer/prompts` 8.7.2, `fs-extra` 11.4.1, `open` 11.0.4, `yaml` 2.9.1 and `zod` 4.6.5.
+- Development dependencies updated (Playwright 1.63, React 19.3, mermaid-cli 11.17, memfs, react-router-dom, @types/node) and CI actions moved to `actions/checkout@v7` and `actions/setup-node@v7`.
+
+### Added
+
+- `contrib/subscription-switch`: a local companion for choosing which native coding subscription runs a task and restoring reviewed Git work. It lives in the repository only and is not part of the npm package.
+
+### Docs
+
+- Studio setup guide matches the project control labels; Studio tutorials, walkthrough page and homepage story panels updated on spec-weave.com.
+
 ## [3.0.12] - 2026-10-10
 
 ### Added
