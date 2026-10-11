@@ -8,7 +8,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import ts from 'typescript';
 import {
   CHECKPOINT_INTERVAL_MS, CHECKPOINT_LOCK_STALE_MS, CHECKPOINT_MAX_WORKERS,
-  checkpointDirectory, cleanupCheckpointRequest, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint,
+  checkpointDirectory, cleanupCheckpointRequest, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint, studioCheckpointFile,
 } from '../../../../src/core/session/session-checkpoint.js';
 
 let root: string;
@@ -81,6 +81,38 @@ describe('local session checkpoints', () => {
     expect(git('show-ref')).toBe(refs);
     expect(fs.readFileSync(path.join(state, 'handoff-latest.txt'), 'utf8')).toBe('existing-manual-handoff.md\n');
     expect(fs.existsSync(path.join(inc, 'handoff.md'))).toBe(false);
+  });
+
+  it('inside Studio, every provider session of one thread updates the same thread pointer', async () => {
+    vi.stubEnv('SPECWEAVE_STUDIO_THREAD_ID', 'thread:01');
+    const claude = await capture({ session_id: 'claude-session' });
+    expect(claude?.studioThreadId).toBe('thread:01');
+    const pointer = studioCheckpointFile('thread:01', home);
+    expect(path.basename(pointer)).toBe('thread_01.json');
+    expect(JSON.parse(fs.readFileSync(pointer, 'utf8')).sessionId).toBe('claude-session');
+    fs.writeFileSync(path.join(repo, 'app.txt'), 'codex edit\n');
+    await capture({ session_id: 'codex-session' });
+    const shared = JSON.parse(fs.readFileSync(pointer, 'utf8'));
+    expect(shared.sessionId).toBe('codex-session');
+    expect(fs.readFileSync(shared.diffPath, 'utf8')).toContain('codex edit');
+  });
+
+  it('a delegated Studio worker writes the pointer Studio reads for its thread id', async () => {
+    const worker = 'thread:delegated-task:command%3Amcp%3A6f1c2b9e-3d4a-4e8b-9c1f-2a7d5e8b0c43%3Adelegate-task%3Arecord-footage';
+    vi.stubEnv('SPECWEAVE_STUDIO_THREAD_ID', worker);
+    const receipt = await capture({ session_id: 'worker-session' });
+    expect(receipt?.studioThreadId).toBe(worker);
+    // Studio's SpecweaveCheckpoint.ts names the file `${threadId.replace(/[^\w.-]/g, "_")}.json`.
+    const pointer = studioCheckpointFile(worker, home);
+    expect(path.basename(pointer)).toBe(`${worker.replace(/[^\w.-]/g, '_')}.json`);
+    expect(JSON.parse(fs.readFileSync(pointer, 'utf8')).sessionId).toBe('worker-session');
+  });
+
+  it('caps an over-long Studio thread id with a hash so distinct ids keep distinct pointers', () => {
+    const a = studioCheckpointFile(`thread:${'x'.repeat(300)}a`, home);
+    const b = studioCheckpointFile(`thread:${'x'.repeat(300)}b`, home);
+    expect(path.basename(a).length).toBeLessThanOrEqual(205);
+    expect(a).not.toBe(b);
   });
 
   it('isolates sessions and Git worktrees while canonicalizing subdirectories and symlinks', () => {

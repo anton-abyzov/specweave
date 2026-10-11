@@ -2,8 +2,8 @@
  * What `specweave init` writes (3.0, decision D6): only what the user needs.
  *
  * Runs the real CLI in a scratch project with HOME pointed at a scratch home,
- * then checks the project for the skills in both tool folders and the memory
- * index, and checks that nothing else crept back in: no living-docs scaffold,
+ * then checks the project for the skills in both tool folders, the memory
+ * index and the 400K auto-compact window, and checks that nothing else crept back in: no living-docs scaffold,
  * no git hook unless --git-hooks, no TDD or coverage defaults, no lockfile in
  * .gitignore, no project agent-teams env, and nothing written to the home
  * directory (~/.claude/settings.json, shell rc files, ~/.specweave).
@@ -165,9 +165,14 @@ describe('specweave init footprint', () => {
   it('stays small', () => {
     const outsideSkills = files.filter((f) => !f.startsWith('.claude/skills/') && !f.startsWith('.agents/skills/'));
     expect(outsideSkills.sort()).toEqual([
-      '.gitattributes', '.gitignore', '.specweave/config.json', '.specweave/memory/MEMORY.md',
+      '.claude/settings.json', '.gitattributes', '.gitignore', '.specweave/config.json', '.specweave/memory/MEMORY.md',
       'AGENTS.md', 'CLAUDE.md', 'README.md', 'package.json',
     ].sort());
+  });
+
+  it('sets only the 400K auto-compact window in the project Claude settings', () => {
+    const settings = JSON.parse(fs.readFileSync(path.join(proj, '.claude', 'settings.json'), 'utf-8'));
+    expect(settings).toEqual({ autoCompactWindow: 400000 });
   });
 });
 

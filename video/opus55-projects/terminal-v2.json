@@ -1,0 +1,30 @@
+[
+ {
+  "prompt": "~/todo-app (Claude Code)",
+  "cmd": "specweave auto-handoff status",
+  "out": [
+   "Auto-handoff is on at 90% (since 2026-09-26T03:22:09.356Z)."
+  ]
+ },
+ {
+  "prompt": "~/todo-app (Claude Code)",
+  "cmd": "specweave handoff --reason \"Claude weekly limit at 90%\"",
+  "out": [
+   "Handed off 0001-add-due-dates-to-todos (released T-02, pushed main, pushed your uncommitted edits).",
+   "To continue in any tool, machine or account, say \"pick up\" there (or run `specweave pickup`).",
+   "Details: .specweave/increments/0001-add-due-dates-to-todos/handoff.md"
+  ]
+ },
+ {
+  "prompt": "~/codex-side (fresh clone, another tool)",
+  "cmd": "specweave pickup",
+  "out": [
+   "Picked up the handoff from claude@antons-macbook-m4max 0m ago (Claude weekly limit at 90%): applied 6 uncommitted files.",
+   "Increment 0001-add-due-dates-to-todos \"Add due dates to todos\" (active) \u00b7 tasks 1/2 done \u00b7 ACs 1/2 met",
+   "Next: T-02 Show the Overdue badge",
+   "  AC-02: Todos past their due date show an \"Overdue\" badge",
+   "  Files: src/list.js, src/list.test.js | Test: node --test src/list.test.js",
+   "Branch: main @ 7a631db \u00b7 in sync with origin/main \u00b7 3 uncommitted files"
+  ]
+ }
+]
