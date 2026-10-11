@@ -17,7 +17,7 @@ Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the sp
 <StudioProjectMock />
 
 :::info Availability
-SpecWithCode is in a private pilot and has no public download yet. Sessions, machines, approvals and usage limits are in the pilot build. Projects (coordinator, workers, memory, plans and routines) are being tested for the next pilot build. [Ask about a pilot](/studio/).
+SpecWithCode is free and in early access; the public macOS download opens with its first public release. Sessions, machines, approvals, usage limits and projects (coordinator, workers, memory, plans and routines) are all in the current build; it runs on Apple silicon Macs. [Get early access](/studio/).
 :::
 
 ## One workspace for many agents
@@ -66,7 +66,7 @@ Being reachable is not permission. Every machine and every browser is paired wit
 
 SpecWithCode reads the limits of the accounts on each machine. When you start new work, a capacity policy (Reset first, Balanced or Spend first) picks a fresh eligible subscription. When a conversation hits a limit, **Resume when available** continues it on the same account once the provider allows it again.
 
-You can also switch a thread to another provider yourself. SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. SpecWithCode does not yet switch on its own when a provider reaches a usage limit. Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in SpecWithCode or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point.
+You can also switch a thread to another provider yourself. SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. When a provider runs out, the project’s rule decides whether the thread asks you, waits and resumes on the same account, or switches to another provider on its own. Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in SpecWithCode or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point.
 
 ## Optional pieces
 
@@ -75,7 +75,7 @@ You can also switch a thread to another provider yourself. SpecWithCode passes a
 | Tailscale | Only for private HTTPS beyond your local network or from a phone | Private HTTPS transport. SpecWithCode pairing is still required. |
 | CLIProxyAPI | No | If you already run a CLIProxyAPI hub, SpecWithCode can show its pooled accounts' limits and redeem Codex reset credits. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
 | AnyModel | No | An adapter for API and local models that a native agent does not support. |
-| Switch | Optional, part of the pilot install | Reads account sign-in and limit observations on each machine for the capacity policy. |
+| Switch | Optional, part of the install | Reads account sign-in and limit observations on each machine for the capacity policy. |
 
 ## Questions
 

@@ -10,16 +10,17 @@ import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import { CloudCompare, ProjectFeatures, StudioFaq, StudioStack, UmbrellaMap } from '../components/ecosystem/StudioSections';
 
-const pilot = 'mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20pilot&body=Team%20size%3A%0ACoding%20tools%3A%0AMachines%20and%20operating%20systems%3A%0AWorkflow%20to%20evaluate%3A%0A';
+const earlyAccess = 'mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20early%20access&body=Machines%20and%20operating%20systems%3A%0ACoding%20agents%20you%20use%3A%0A';
+const specweaveRepo = 'https://github.com/anton-abyzov/specweave';
 
 export default function Studio() {
-  return <Layout title="SpecWithCode: the spec travels with the code" description="SpecWithCode, built on SpecWeave, brings projects, personal agents and coding agents from Anthropic, OpenAI, xAI and others into one workspace on machines you own, with memory, plans, routines, approvals and handoff in git.">
+  return <Layout title="SpecWithCode: write the spec, get the code" description="SpecWithCode is a free app, built on the open-source SpecWeave CLI, that brings projects, personal agents and coding agents from Anthropic, OpenAI, xAI and others into one workspace on machines you own, with memory, plans, routines, approvals and handoff in git.">
     <main className={styles.page}>
       <header className={ecosystem.studioHero}>
-        <div><span className={ecosystem.status}>Private pilot / built on SpecWeave</span><h1>SpecWithCode.<br /><em>The spec travels with the code.</em></h1>
+        <div><span className={ecosystem.status}>Free · built on open-source SpecWeave</span><h1>Write the spec.<br /><em>Get the code.</em></h1>
           <p className={styles.lead}>Every AI agent, on your machines, in one workspace. Projects like Claude Code, a personal agent like Dots or Hermes, and every lab’s coding agent, in one place. Give a project a goal and a coordinator splits it across workers on Claude Code, Codex, Grok Build or Cursor, each with the model you pick, on the machines where your code and skills already live.</p>
-          <div className={styles.actions}><a className={styles.primary} href={pilot}>Discuss a pilot ↗</a><Link className={styles.textLink} to="/docs/overview/studio/">Read the SpecWithCode overview</Link></div>
-          <p className={ecosystem.note}>Private pilot, tested on three Macs. There is no public download yet; projects are being tested for the next pilot build.</p>
+          <div className={styles.actions}><a className={styles.primary} href={earlyAccess}>Get early access, free ↗</a><a className={styles.textLink} href={specweaveRepo}>Star SpecWeave on GitHub ↗</a></div>
+          <p className={ecosystem.note}>SpecWithCode is free. The public macOS download opens with the first public release; until then, ask for early access. <Link to="/docs/overview/studio/">Read the overview</Link>.</p>
         </div><StudioProjectMock />
       </header>
 
@@ -29,7 +30,7 @@ export default function Studio() {
         <UmbrellaMap />
       </section>
 
-      <section className={styles.section} aria-labelledby="projects-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>02 / Projects</span><h2 id="projects-title">A coordinator.<br /><em>Workers on any model.</em></h2></div><p>A project is one long conversation. Add tasks as they come up; the coordinator hands them out, collects results and keeps the plan honest. <span className={studio.badge}>Testing for the next pilot build</span></p></div>
+      <section className={styles.section} aria-labelledby="projects-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>02 / Projects</span><h2 id="projects-title">A coordinator.<br /><em>Workers on any model.</em></h2></div><p>A project is one long conversation. Add tasks as they come up; the coordinator hands them out, collects results and keeps the plan honest.</p></div>
         <ProjectFeatures />
         <StudioTutorialVideo />
       </section>
@@ -40,7 +41,7 @@ export default function Studio() {
 
       <section className={styles.section} aria-labelledby="inside-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>04 / Sessions</span><h2 id="inside-title">Steer every worker.<br /><em>See every approval.</em></h2></div><p>Each worker is a native session with its own model, effort and supervision. Switch its provider mid-thread, queue a follow-up, steer a running turn or restore a checkpoint.</p></div>
         <StudioOverviewVideo />
-        <div className={ecosystem.captures}><figure><img src="/img/studio/native-controls-20261008.png" width="739" height="151" alt="Actual SpecWithCode composer showing GPT-6.1-Sol, Low effort and Supervised controls" loading="lazy" /><figcaption>Native composer / model, effort and supervision remain separate choices.</figcaption></figure><figure><img src="/img/studio/provider-status-20261008.png" width="280" height="195" alt="Actual provider status: Codex authenticated; Claude needs attention" loading="lazy" /><figcaption>Provider status / this capture shows a Claude warning, not successful Claude execution.</figcaption></figure></div><p className={ecosystem.note}>Actual private-pilot UI, 8 October 2026. Cropped to exclude private account and workspace details.</p>
+        <div className={ecosystem.captures}><figure><img src="/img/studio/native-controls-20261008.png" width="739" height="151" alt="Actual SpecWithCode composer showing GPT-6.1-Sol, Low effort and Supervised controls" loading="lazy" /><figcaption>Native composer / model, effort and supervision remain separate choices.</figcaption></figure><figure><img src="/img/studio/provider-status-20261008.png" width="280" height="195" alt="Actual provider status: Codex authenticated; Claude needs attention" loading="lazy" /><figcaption>Provider status / this capture shows a Claude warning, not successful Claude execution.</figcaption></figure></div><p className={ecosystem.note}>Actual SpecWithCode UI, 8 October 2026. Cropped to exclude private account and workspace details.</p>
       </section>
 
       <section className={styles.section} aria-labelledby="machines-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>05 / Machines</span><h2 id="machines-title">One screen.<br /><em>Every machine you pair.</em></h2></div><p>SpecWithCode runs on each machine. Reach the others over your local network, an SSH tunnel the desktop app opens, or private HTTPS over Tailscale, and pair each one separately. New work can go to the machine with free capacity.</p></div>
@@ -56,8 +57,8 @@ export default function Studio() {
         <StudioFaq />
       </section>
 
-      <section className={styles.section}><div className={ecosystem.proof}><div><span className={styles.eyebrow}>Evidence / 8 October 2026</span><h3>Tested privately.<br />Described precisely.</h3><p>The accepted fleet delivery recorded native Codex execution on three Macs, with source and artifact readback. The smoke test completed one marker-reading turn per host, sequentially. Claude execution and the project coordinator still need their own live acceptance.</p><Link className={styles.textLink} to="/docs/overview/studio-architecture/#what-is-verified">Read the verification scope ↗</Link></div><div><h3>Evaluate the fit.</h3><ul><li>Start with one repository and one real workflow.</li><li>Check account ownership, approvals and reconnect behavior.</li><li>Measure accepted work and time spent recovering context.</li><li>Agree security, support and rollout needs before expanding.</li></ul><p>These checks do not establish enterprise concurrency, production ROI, certification or a service-level agreement.</p></div></div></section>
-      <section className={styles.finalCta}><span className={styles.eyebrow}>For developers and teams running more than one agent</span><h2>Bring your agents.<br /><em>Keep your machines.</em></h2><a className={styles.primary} href={pilot}>Discuss a pilot ↗</a><Link className={styles.textLink} to="/docs/getting-started">Start with the open-source CLI</Link></section>
+      <section className={styles.section}><div className={ecosystem.proof}><div><span className={styles.eyebrow}>Evidence / October 2026</span><h3>Used daily.<br />Described precisely.</h3><p>The accepted fleet delivery recorded native Codex execution on three Macs, with source and artifact readback. Release 0.2.0 recorded five native project runs with a Codex coordinator and Claude Code workers, including reuse of a worker after a project-memory update. Grok Build, Cursor and OpenCode workers still need their own live acceptance.</p><Link className={styles.textLink} to="/docs/overview/studio-architecture/#what-is-verified">Read the verification scope ↗</Link></div><div><h3>Evaluate the fit.</h3><ul><li>Start with one repository and one real workflow.</li><li>Check account ownership, approvals and reconnect behavior.</li><li>Measure accepted work and time spent recovering context.</li><li>Agree security, support and rollout needs before expanding.</li></ul><p>These checks do not establish enterprise concurrency, production ROI, certification or a service-level agreement.</p></div></div></section>
+      <section className={styles.finalCta}><span className={styles.eyebrow}>For developers and teams running more than one agent</span><h2>Bring your agents.<br /><em>Keep your machines.</em></h2><a className={styles.primary} href={earlyAccess}>Get early access, free ↗</a><Link className={styles.textLink} to="/docs/getting-started">Start with the open-source CLI</Link></section>
     </main>
   </Layout>;
 }

@@ -10,7 +10,6 @@ import { ProductMap } from '../components/ecosystem/Architecture';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import { CloudCompare, ProjectFeatures, UmbrellaMap } from '../components/ecosystem/StudioSections';
-import studio from '../components/ecosystem/studio.module.css';
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
@@ -48,7 +47,7 @@ export default function Home() {
       </section>
 
       <section className={base.section} id="projects" aria-labelledby="projects-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>02 / SpecWithCode projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it. <span className={studio.badge}>Projects: testing for the next pilot build</span></p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>02 / SpecWithCode projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it.</p></div>
         <ProjectFeatures />
         <StudioTutorialVideo />
       </section>
@@ -108,7 +107,7 @@ export default function Home() {
       <section className={base.finalCta}>
         <span className={styles.eyebrow}>Your next session can start here</span>
         <h2>Bring every agent.<br /><em>Keep your machines.</em></h2>
-        <Link className={base.primary} to="/studio">Discuss a SpecWithCode pilot ↗</Link>
+        <Link className={base.primary} to="/studio">Get SpecWithCode free ↗</Link>
         <Link className={base.textLink} to="/docs/getting-started">Get started with the CLI</Link>
       </section>
     </main>
