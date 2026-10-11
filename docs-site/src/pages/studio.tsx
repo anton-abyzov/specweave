@@ -13,16 +13,17 @@ import { CloudCompare, ProjectFeatures, StudioFaq, StudioStack, UmbrellaMap } fr
 const pilot = 'mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20pilot&body=Team%20size%3A%0ACoding%20tools%3A%0AMachines%20and%20operating%20systems%3A%0AWorkflow%20to%20evaluate%3A%0A';
 
 export default function Studio() {
-  return <Layout title="SpecWithCode: every AI agent in one workspace on your machines" description="SpecWithCode brings projects, personal agents and coding agents from Anthropic, OpenAI, xAI and others into one workspace on machines you own, with memory, plans, routines, approvals and handoff in git.">
+  return <Layout title="SpecWithCode: the spec travels with the code" description="SpecWithCode, built on SpecWeave, brings projects, personal agents and coding agents from Anthropic, OpenAI, xAI and others into one workspace on machines you own, with memory, plans, routines, approvals and handoff in git.">
     <main className={styles.page}>
       <header className={ecosystem.studioHero}>
-        <div><span className={ecosystem.status}>SpecWithCode / private pilot</span><h1>Every AI agent.<br />Your machines.<br /><em>One workspace.</em></h1>
-          <p className={styles.lead}>SpecWithCode is where your spec and your code meet: you describe the work, your coding agents build it, and the spec keeps every agent on the same plan.</p>
-          <p className={styles.lead}>Projects like Claude Code, a personal agent like Dots or Hermes, and every lab’s coding agent, in one place. Give a project a goal and a coordinator splits it across workers on Claude Code, Codex, Grok Build or Cursor, each with the model you pick, on the machines where your code and skills already live.</p>
+        <div><span className={ecosystem.status}>Private pilot / built on SpecWeave</span><h1>SpecWithCode.<br /><em>The spec travels with the code.</em></h1>
+          <p className={styles.lead}>Every AI agent, on your machines, in one workspace. Projects like Claude Code, a personal agent like Dots or Hermes, and every lab’s coding agent, in one place. Give a project a goal and a coordinator splits it across workers on Claude Code, Codex, Grok Build or Cursor, each with the model you pick, on the machines where your code and skills already live.</p>
           <div className={styles.actions}><a className={styles.primary} href={pilot}>Discuss a pilot ↗</a><Link className={styles.textLink} to="/docs/overview/studio/">Read the SpecWithCode overview</Link></div>
           <p className={ecosystem.note}>Private pilot, tested on three Macs. There is no public download yet; projects are being tested for the next pilot build.</p>
         </div><StudioProjectMock />
       </header>
+
+      <section className={styles.section} aria-labelledby="why-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>00 / The name</span><h2 id="why-title">Why<br /><em>SpecWithCode.</em></h2></div><div><p>Every change an agent makes lands with its spec: what was asked, what counts as done, and the proof, in the same repo as the code, so any agent on any machine can pick it up.</p><p className={studio.builtOn}>Built on <strong>SpecWeave</strong>, the open-source CLI that keeps that record in git. <Link className={styles.textLink} to="/docs/getting-started/">Read the CLI docs ↗</Link></p></div></div></section>
 
       <section className={styles.section} aria-labelledby="umbrella-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">What you use today.<br /><em>Under one roof.</em></h2></div><p>Project agents, personal agents and coding agents each live in their own app and their own vendor’s cloud. SpecWithCode offers all three kinds in one workspace on your machines, with one memory, one plan and one record.</p></div>
         <UmbrellaMap />

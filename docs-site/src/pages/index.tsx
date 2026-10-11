@@ -23,7 +23,7 @@ export default function Home() {
     <main className={clsx(base.page, styles.landing)}>
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <Link to="/studio" className={styles.releasePill}><b>SpecWithCode</b> Projects, personal agents and every coding agent <span aria-hidden="true">↗</span></Link>
+          <Link to="/studio" className={styles.releasePill}><b>SpecWithCode</b> The spec travels with the code <span aria-hidden="true">↗</span></Link>
           <h1>Every AI agent.<br /><em>One workspace.</em></h1>
           <p className={styles.lead}>Projects like Claude Code. A personal agent like Dots or Hermes. Coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. SpecWithCode runs them as one project on machines you own, gives each job the model that fits, and keeps the record in git so any agent can carry on.</p>
           <div className={base.actions}>
