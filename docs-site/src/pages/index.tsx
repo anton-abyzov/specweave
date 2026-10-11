@@ -19,19 +19,19 @@ export default function Home() {
     try { await navigator.clipboard.writeText('npm install -g specweave'); setCopied(true); setCopyError(false); }
     catch { setCopyError(true); }
   }
-  return <Layout title="Every AI agent in one workspace you own" description="SpecWeave Studio brings project agents like Claude Code Projects, personal agents like Dots or Hermes, and coding agents from every lab into one workspace on your machines. The open-source SpecWeave CLI keeps the spec, evidence and handoff in git.">
+  return <Layout title="Every AI agent in one workspace you own" description="SpecWithCode brings project agents like Claude Code Projects, personal agents like Dots or Hermes, and coding agents from every lab into one workspace on your machines. The open-source SpecWeave CLI keeps the spec, evidence and handoff in git.">
     <main className={clsx(base.page, styles.landing)}>
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <Link to="/studio" className={styles.releasePill}><b>Studio</b> Projects, personal agents and every coding agent <span aria-hidden="true">↗</span></Link>
+          <Link to="/studio" className={styles.releasePill}><b>SpecWithCode</b> The spec travels with the code <span aria-hidden="true">↗</span></Link>
           <h1>Every AI agent.<br /><em>One workspace.</em></h1>
-          <p className={styles.lead}>Projects like Claude Code. A personal agent like Dots or Hermes. Coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. SpecWeave Studio runs them as one project on machines you own, gives each job the model that fits, and keeps the record in git so any agent can carry on.</p>
+          <p className={styles.lead}>Projects like Claude Code. A personal agent like Dots or Hermes. Coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. SpecWithCode runs them as one project on machines you own, gives each job the model that fits, and keeps the record in git so any agent can carry on.</p>
           <div className={base.actions}>
-            <Link className={base.primary} to="/studio">See SpecWeave Studio <span aria-hidden="true">↗</span></Link>
+            <Link className={base.primary} to="/studio">See SpecWithCode <span aria-hidden="true">↗</span></Link>
             <Link className={base.textLink} to="/docs/getting-started">Start free with the CLI</Link>
           </div>
           <div className={base.install}><code>npm install -g specweave</code><button onClick={copyCommand} aria-label="Copy installation command">{copied ? 'Copied' : 'Copy'}</button></div>
-          <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'The open-source CLI Studio builds on. MIT, local first, no account.'}</span>
+          <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'The open-source CLI SpecWithCode builds on. MIT, local first, no account.'}</span>
         </div>
         <div className={styles.heroMock}><StudioProjectMock /></div>
       </section>
@@ -43,26 +43,26 @@ export default function Home() {
       </div>
 
       <section className={base.section} id="umbrella" aria-labelledby="umbrella-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">Many agents.<br /><em>One place to run them.</em></h2></div><p>Every lab now ships a project agent, a personal agent and a coding agent, each in its own app and its own cloud. Studio gives you all three kinds in one workspace on your machines and runs every lab’s coding agent side by side, so each job gets the model that fits it, not the one from the app you happen to have open.</p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">Many agents.<br /><em>One place to run them.</em></h2></div><p>Every lab now ships a project agent, a personal agent and a coding agent, each in its own app and its own cloud. SpecWithCode gives you all three kinds in one workspace on your machines and runs every lab’s coding agent side by side, so each job gets the model that fits it, not the one from the app you happen to have open.</p></div>
         <UmbrellaMap />
       </section>
 
       <section className={base.section} id="projects" aria-labelledby="projects-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>02 / Studio projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it. <span className={studio.badge}>Projects: testing for the next pilot build</span></p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>02 / SpecWithCode projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it. <span className={studio.badge}>Projects: testing for the next pilot build</span></p></div>
         <ProjectFeatures />
         <StudioTutorialVideo />
       </section>
 
       <section className={base.section} id="local" aria-labelledby="local-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>03 / Local first</span><h2 id="local-title">Your machines.<br /><em>Not a cloud container.</em></h2></div><p>Cloud project agents are simple to start and live with one vendor. Studio keeps the work where your code, skills and accounts already are, and lets you mix vendors inside one project.</p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>03 / Local first</span><h2 id="local-title">Your machines.<br /><em>Not a cloud container.</em></h2></div><p>Cloud project agents are simple to start and live with one vendor. SpecWithCode keeps the work where your code, skills and accounts already are, and lets you mix vendors inside one project.</p></div>
         <CloudCompare />
-        <Link className={base.textLink} to="/docs/overview/studio/">Read the Studio overview ↗</Link>
+        <Link className={base.textLink} to="/docs/overview/studio/">Read the SpecWithCode overview ↗</Link>
       </section>
 
       <ScrollStory />
 
       <section className={base.section} id="ecosystem" aria-labelledby="ecosystem-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>05 / The stack</span><h2 id="ecosystem-title">One workspace.<br /><em>One record.</em></h2></div><p>Studio is where you work. SpecWeave keeps what survives the session in git. vskill brings tested expertise to every agent.</p></div>
+        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>05 / The stack</span><h2 id="ecosystem-title">One workspace.<br /><em>One record.</em></h2></div><p>SpecWithCode is where you work. SpecWeave keeps what survives the session in git. vskill brings tested expertise to every agent.</p></div>
         <ProductMap />
         <Link className={base.textLink} to="/docs/overview/studio-architecture/">See the architecture, including how machines connect ↗</Link>
       </section>
@@ -72,7 +72,7 @@ export default function Home() {
           <div>
             <span className={styles.eyebrow}>06 / Parallel work</span>
             <h2 id="threads-title">One thread.<br /><em>One increment.</em></h2>
-            <p className={styles.body}>A Studio worker or a Claude Code Projects thread works on one branch and opens one pull request. So does an increment. SpecWeave maps the two, and keeps everything that matters in git, where every tool and every account can read it.</p>
+            <p className={styles.body}>A SpecWithCode worker or a Claude Code Projects thread works on one branch and opens one pull request. So does an increment. SpecWeave maps the two, and keeps everything that matters in git, where every tool and every account can read it.</p>
             <Link className={base.textLink} to="/docs/guides/claude-code-projects">How threads map to increments ↗</Link>
           </div>
           <ThreadMap />
@@ -108,7 +108,7 @@ export default function Home() {
       <section className={base.finalCta}>
         <span className={styles.eyebrow}>Your next session can start here</span>
         <h2>Bring every agent.<br /><em>Keep your machines.</em></h2>
-        <Link className={base.primary} to="/studio">Discuss a Studio pilot ↗</Link>
+        <Link className={base.primary} to="/studio">Discuss a SpecWithCode pilot ↗</Link>
         <Link className={base.textLink} to="/docs/getting-started">Get started with the CLI</Link>
       </section>
     </main>

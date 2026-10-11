@@ -7,9 +7,9 @@ const workers = [
   { task: 'T-03 Never restore a paid order', agent: 'Claude Code', model: 'Sonnet 5.5', host: 'This Mac', place: 'worktree', state: 'Verified · npm test', tone: 'done' },
 ];
 
-/** An illustration of a Studio project: one coordinator, workers on different providers and machines, one plan. */
+/** An illustration of a SpecWithCode project: one coordinator, workers on different providers and machines, one plan. */
 export default function StudioProjectMock({ caption = true }: { caption?: boolean }) {
-  return <figure className={styles.mock} aria-label="Illustration of a Studio project: a Claude Code coordinator assigns three tasks to workers running Codex, Grok Build and Claude Code on three machines, and one plan tracks what is verified.">
+  return <figure className={styles.mock} aria-label="Illustration of a SpecWithCode project: a Claude Code coordinator assigns three tasks to workers running Codex, Grok Build and Claude Code on three machines, and one plan tracks what is verified.">
     <div className={styles.window} aria-hidden="true">
       <div className={styles.bar}><i /><i /><i /><span>Checkout recovery</span><b>Project · 3 machines</b></div>
       <div className={styles.body}>

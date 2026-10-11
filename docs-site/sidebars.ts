@@ -24,7 +24,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Studio',
+      label: 'SpecWithCode',
       collapsed: false,
       items: [
         {type: 'doc', id: 'studio/projects', label: 'Projects and threads'},
@@ -37,9 +37,9 @@ const sidebars: SidebarsConfig = {
       label: 'Concepts',
       collapsed: false,
       items: [
-        {type: 'doc', id: 'overview/studio', label: 'SpecWeave Studio'},
+        {type: 'doc', id: 'overview/studio', label: 'What is SpecWithCode'},
         {type: 'doc', id: 'overview/how-it-works', label: 'How it works'},
-        {type: 'doc', id: 'overview/studio-architecture', label: 'Studio architecture'},
+        {type: 'doc', id: 'overview/studio-architecture', label: 'SpecWithCode architecture'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'Increments'},
         {type: 'doc', id: 'guides/increment-status-reference', label: 'Increment status'},
         {type: 'doc', id: 'overview/why-specweave', label: 'Why SpecWeave'},

@@ -1,6 +1,6 @@
 ---
 title: "Claude Code auto-compact: compact at 400K to save usage"
-description: "Why Claude Code sessions on 1M-context models burn usage before they compact, how /autocompact 400k fixes it, and how SpecWeave and SpecWeave Studio set it for you. Codex keeps its own compaction."
+description: "Why Claude Code sessions on 1M-context models burn usage before they compact, how /autocompact 400k fixes it, and how SpecWeave and SpecWithCode set it for you. Codex keeps its own compaction."
 slug: /guides/claude-code-auto-compact
 keywords: [claude code autocompact, claude code auto compact, /autocompact, autoCompactWindow, claude code 1m context usage, claude code compaction usage, claude code context window cost]
 ---
@@ -27,7 +27,7 @@ recommends `/autocompact 400k`.
 | `specweave autocompact on` | Writes the same to `~/.claude/settings.json`, for every project on this machine. `--at 600k` picks another window; `--project` writes the project file instead. |
 | `specweave autocompact off` | Removes the window from that file, so Claude Code picks its own again. |
 | `specweave autocompact status` | Shows the window Claude Code will use, which file it comes from, any per-model values saved by `/autocompact`, and Codex's cap. |
-| SpecWeave Studio | Starts Claude sessions with a 400K window. Change it per Claude provider instance under **Auto-compact after**, or enter `auto` to leave it to Claude Code. |
+| SpecWithCode | Starts Claude sessions with a 400K window. Change it per Claude provider instance under **Auto-compact after**, or enter `auto` to leave it to Claude Code. |
 
 Claude Code compacts at the smaller of the setting and the model's context window,
 so 400K changes nothing on 200K models. It only acts on the 1M-context models,

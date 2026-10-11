@@ -6,7 +6,7 @@ sidebar_position: 4
 
 # Skill Studio
 
-**Skill Studio is vskill's skill development and evaluation workspace.** It is distinct from [SpecWeave Studio](/studio), the separate private pilot for native coding sessions across machines. See the [ecosystem architecture](/docs/overview/studio-architecture) for how the products fit together.
+**Skill Studio is vskill's skill development and evaluation workspace.** It is distinct from [SpecWithCode](/studio), the separate private pilot for native coding sessions across machines. See the [ecosystem architecture](/docs/overview/studio-architecture) for how the products fit together.
 
 ## Start the local workspace
 
