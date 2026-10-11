@@ -28,7 +28,7 @@ describe('syncNativePluginContent (0872)', () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sync-plugin-'));
     home = path.join(tmp, 'home');
     specweaveRoot = path.join(tmp, 'pkg');
-    installPath = path.join(tmp, 'cache', 'specweave', 'sw', '1.0.0');
+    installPath = path.join(home, '.claude', 'plugins', 'cache', 'specweave', 'sw', '1.0.0');
 
     // Fake specweave package: marketplace.json (source mapping) + the plugin source.
     writeJson(path.join(specweaveRoot, '.claude-plugin', 'marketplace.json'), {

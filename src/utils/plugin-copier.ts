@@ -18,12 +18,13 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   statSync,
   writeFileSync,
   existsSync,
   rmSync,
 } from 'node:fs';
-import { join, resolve, dirname, normalize } from 'node:path';
+import { join, resolve, dirname, normalize, relative, isAbsolute, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { execFileNoThrowSync } from './execFileNoThrow.js';
@@ -203,6 +204,57 @@ export interface SyncContentResult {
   toVersion?: string;
 }
 
+/** True when `target` is strictly below `dir` (after resolving both). */
+function isInsideDir(dir: string, target: string): boolean {
+  const rel = relative(resolve(dir), resolve(target));
+  return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
+}
+
+/**
+ * Real path of `p` with every symlink resolved. A missing tail is resolved
+ * through its nearest existing ancestor, so a path that does not exist yet
+ * still shows where creating it would land.
+ */
+function realpathOrAncestor(p: string): string {
+  const missing: string[] = [];
+  let current = resolve(p);
+  for (;;) {
+    try {
+      return join(realpathSync(current), ...missing.reverse());
+    } catch {
+      const parent = dirname(current);
+      if (parent === current) return resolve(p);
+      missing.push(basename(current));
+      current = parent;
+    }
+  }
+}
+
+/**
+ * Delete everything under `dest` that has no counterpart under `src`, so a
+ * plugin update drops files and skills the new version no longer ships
+ * (3.x left the 2.x `qa` skill behind). Dotfiles at the root of `dest` are
+ * Claude Code's own markers (`.in_use`) and are kept.
+ */
+function removeEntriesNotIn(src: string, dest: string, isRoot: boolean): void {
+  for (const entry of readdirSync(dest, { withFileTypes: true })) {
+    if (isRoot && entry.name.startsWith('.') && !existsSync(join(src, entry.name))) continue;
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
+    let srcStat;
+    try {
+      srcStat = lstatSync(srcPath);
+    } catch {
+      rmSync(destPath, { recursive: true, force: true });
+      continue;
+    }
+    if (entry.isDirectory() && !entry.isSymbolicLink()) {
+      if (srcStat.isDirectory()) removeEntriesNotIn(srcPath, destPath, false);
+      else rmSync(destPath, { recursive: true, force: true });
+    }
+  }
+}
+
 /**
  * Force the installed plugin CONTENT to match the current package.
  *
@@ -254,17 +306,29 @@ export function syncNativePluginContent(
       toVersion = typeof manifest?.version === 'string' ? manifest.version : undefined;
     } catch { /* no manifest — leave version label as-is */ }
 
-    // 4. Copy source → each installPath (recreate if wiped) + fix perms + label.
+    // 4. Mirror source → each installPath (recreate if wiped) + fix perms + label.
+    //    Only paths inside Claude's plugin cache are touched, because mirroring
+    //    deletes whatever the source no longer ships.
+    const cacheRoot = join(home, '.claude', 'plugins', 'cache');
     const paths: string[] = [];
     let recordsChanged = false;
     const now = new Date().toISOString();
     for (const rec of records) {
       const installPath = typeof rec?.installPath === 'string' ? rec.installPath : '';
       if (!installPath) continue;
+      // Compare real paths: a symlinked install path or ancestor inside the
+      // cache must not let the mirror write or delete outside it.
+      const realCache = realpathOrAncestor(cacheRoot);
+      const realInstall = realpathOrAncestor(installPath);
+      if (!isInsideDir(cacheRoot, installPath) || !isInsideDir(realCache, realInstall)) {
+        consoleLogger.debug(`syncNativePluginContent: skipping ${installPath}, not inside ${cacheRoot}`);
+        continue;
+      }
       try {
-        mkdirSync(installPath, { recursive: true });
-        cpSync(sourceDir, installPath, { recursive: true, force: true });
-        fixHookPermissions(installPath);
+        mkdirSync(realInstall, { recursive: true });
+        cpSync(sourceDir, realInstall, { recursive: true, force: true });
+        removeEntriesNotIn(sourceDir, realInstall, true);
+        fixHookPermissions(realInstall);
         paths.push(installPath);
         if (toVersion && rec.version !== toVersion) {
           rec.version = toVersion;

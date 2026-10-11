@@ -42,6 +42,14 @@ export const LEGACY_SKILL_NAMES = [
   'jev', 'project', 'qa', 'review', 'sync', 'team',
 ] as const;
 
+/**
+ * Skills SpecWeave once installed as `sw-<name>` and no longer ships. Only these
+ * names are candidates; any other `sw-*` folder belongs to the user.
+ *   qa    2.x Codex adapter wrote every plugin skill as `.agents/skills/sw-<name>`; qa was dropped in 3.0
+ *   task  standalone `skills/sw-task` (vskill-installable, 2.0.0 to 2.3.0), folded into sw-do in 3.0
+ */
+export const RETIRED_SKILL_NAMES = ['qa', 'task'] as const;
+
 const GENERATED_MARKER = /^<!-- Generated from skills\/sw-[a-z-]+\/SKILL\.md[^\n]*-->\n/m;
 
 export function projectSkillName(name: string): string {
@@ -191,13 +199,38 @@ export function isSpecweaveOwnedCopy(dir: string, name: string): boolean {
   return drivesCli || namesSkill;
 }
 
-/** Remove unnamespaced SpecWeave skill copies from `.claude/skills/` and `.agents/skills/`. */
+/** True when any path segment from the project root down to `rel` is a symlink. */
+function hasSymlinkSegment(root: string, rel: string): boolean {
+  let current = root;
+  for (const segment of rel.split(/[\\/]/).filter(Boolean)) {
+    current = path.join(current, segment);
+    try {
+      if (fs.lstatSync(current).isSymbolicLink()) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+/**
+ * Remove SpecWeave's own stale skill copies from `.claude/skills/` and
+ * `.agents/skills/`: the unnamespaced 2.x folders and the `sw-<name>` folders
+ * of RETIRED_SKILL_NAMES. Skips a skills folder reached through a symlink.
+ */
 export function removeLegacySkillCopies(projectRoot: string, options: { dryRun?: boolean } = {}): string[] {
   const root = path.resolve(projectRoot);
   const removed: string[] = [];
   for (const base of PROJECT_SKILL_DIRS) {
-    for (const name of LEGACY_SKILL_NAMES) {
-      const rel = path.posix.join(base, name);
+    // A symlinked skills folder may be shared with other projects or the user's
+    // global skills; never delete through it.
+    if (hasSymlinkSegment(root, base)) continue;
+    const candidates: Array<[string, string]> = [
+      ...LEGACY_SKILL_NAMES.map((name): [string, string] => [name, name]),
+      ...RETIRED_SKILL_NAMES.map((name): [string, string] => [projectSkillName(name), name]),
+    ];
+    for (const [folder, name] of candidates) {
+      const rel = path.posix.join(base, folder);
       const dir = path.join(root, rel);
       try {
         if (!fs.lstatSync(dir).isDirectory()) continue;
