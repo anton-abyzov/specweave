@@ -23,7 +23,7 @@
         },
         "receipt": {
           "file": "projects-and-threads.receipt.json",
-          "sha256": "b24144102b244dbf0174dd21a5fda1c65e048737b2126bb4accd4bf8e208b4fb"
+          "sha256": "e730d9c3e805de73a0b162aac646ccff954d957f3e0439e4d466bc80d5e0a7bb"
         }
       }
     },
@@ -35,19 +35,19 @@
       "media": {
         "video": {
           "file": "memory-and-usage.mp4",
-          "sha256": "9ee335d203c6b741ee6e6f1f98b76668c1cc3baed1d18356883c2593998335c5"
+          "sha256": "e3f3f7bf854c2d15cb246aa73ecc65d1875588552b05ccca54aba53c35746571"
         },
         "poster": {
           "file": "memory-and-usage.jpg",
-          "sha256": "0d8dad9df9706d563e3b5257942dbf9e4881b3fada10d6e06d28efe5d6816bb4"
+          "sha256": "690a71af9d6d2300a892e4a2cb99c1e309a79d65245afcff1c6b6fe46412770e"
         },
         "captions": {
           "file": "memory-and-usage.vtt",
-          "sha256": "d5793030dc5e6b291299b7ed7b7695d8cc0681fa5a4f751aa04ca63e52b25c45"
+          "sha256": "109f327eb9cc5836ccbf2078966bb599163f7f88f0951e13268b7dd9d07a592d"
         },
         "receipt": {
           "file": "memory-and-usage.receipt.json",
-          "sha256": "58599b1562f1c1498d26fde6c94ac42c7611707f9dc3ba6fa3a620edb58627e7"
+          "sha256": "da4f2ebbfd90d9195cdbcad056b851eb1bfd68f0f1eecfe1c75b09858fa3683b"
         }
       }
     },
@@ -71,7 +71,7 @@
         },
         "receipt": {
           "file": "plans-and-routines.receipt.json",
-          "sha256": "09f95f81a156be58ed2fd20e5855f46f39b1cf146ae7d2bcb1703a273f818393"
+          "sha256": "ac50a319e1c80b051d9fe7688c6c62bb2e67e36793ec04ae18b67f6b4c2cec12"
         }
       }
     },
@@ -83,7 +83,7 @@
       "media": {
         "video": {
           "file": "personal-and-connections.mp4",
-          "sha256": "99edf0bd4183dea857602dce2384671facb5187e4c68d3c26d9117d81630ecc5"
+          "sha256": "99eaf8f6637fce01f9fbd26985f54ac635d8594b53b0121e56fad60373433005"
         },
         "poster": {
           "file": "personal-and-connections.jpg",
@@ -91,11 +91,11 @@
         },
         "captions": {
           "file": "personal-and-connections.vtt",
-          "sha256": "cc8d55f5a02e9faf610db29da2b264ec4d4ad644fbc8717d1cbb2b7911bb677d"
+          "sha256": "da729933188473754cd42f32dd11c628c46553aa8002f52d25f67f79d744a309"
         },
         "receipt": {
           "file": "personal-and-connections.receipt.json",
-          "sha256": "4325ee2777337241d1295aa10d85644ea08c27dd12653b3904da8840972002f4"
+          "sha256": "0bb2188e752fc0967d74a0891a29d41c2293a19d317aafccc2ea67764e753760"
         }
       }
     }
