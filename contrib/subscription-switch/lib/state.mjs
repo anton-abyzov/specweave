@@ -22,6 +22,8 @@ export function findBinary(provider, home = homedir()) {
   // Never return a bare name: spawning it would search rejected PATH entries again.
   return candidates.map(file => resolve(file)).find(file => { try { validateNativeBinary(file); return true; } catch { return false; } }) || null;
 }
+/** Service rows left in older state files by the retired pre-Studio workbench; never probed or shown. */
+export const isRetiredService = s => String(s?.id ?? '').startsWith('t3');
 const legacyWorkbenchPath = /(?:^|\/)\.local\/share\/t3(?:-nightly)?(?:\/|$)/i;
 /** Validate both the requested path and its actual target without running it. */
 export function validateNativeBinary(binary) {

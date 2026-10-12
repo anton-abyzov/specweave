@@ -1,3 +1,4 @@
+import { isRetiredService } from './state.mjs';
 export const MODES = ['balanced', 'reset-first', 'spend-first'];
 export const QUOTA_TTL_MS = 15 * 60 * 1000;
 export const CLAUDE_CONSUMER_PLANS = ['pro', 'max', 'team', 'enterprise'];
@@ -82,7 +83,7 @@ export function publicState(state) {
     identity: typeof identity === 'string' && /^[0-9a-f]{16}$/.test(identity) ? identity : null,
     lastQuotaErrorAt: Number.isFinite(Date.parse(lastQuotaErrorAt)) ? new Date(lastQuotaErrorAt).toISOString() : null,
     status: accountStatus(state.accounts.find(a => a.id === id), state.runs), quota: quota || { window: null, weekly: null, observedAt: null, expiresAt: null, source: null } })),
-    policy: state.policy, hosts: state.hosts, services: (state.services || []).filter(s => !String(s.id).startsWith('t3')),
+    policy: state.policy, hosts: state.hosts, services: (state.services || []).filter(s => !isRetiredService(s)),
     runs: state.runs.slice(-30).reverse().map(({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error }) => ({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error })),
     recommendations: [null, 'codex', 'claude'].map(provider => recommend(state, { provider })), };
 }
