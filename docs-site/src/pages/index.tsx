@@ -10,6 +10,7 @@ import { ProductMap } from '../components/ecosystem/Architecture';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import { CloudCompare, ProjectFeatures, UmbrellaMap } from '../components/ecosystem/StudioSections';
+import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
@@ -107,7 +108,8 @@ export default function Home() {
       <section className={base.finalCta}>
         <span className={styles.eyebrow}>Your next session can start here</span>
         <h2>Bring every agent.<br /><em>Keep your machines.</em></h2>
-        <Link className={base.primary} to="/studio">Get early access, free ↗</Link>
+        <a className={base.primary} href={release.dmgUrl} aria-label={`Download SpecWithCode ${release.version} for macOS, Apple silicon, ${release.size}`}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a>
+        <Link className={base.textLink} to="/studio">About SpecWithCode</Link>
         <Link className={base.textLink} to="/docs/getting-started">Get started with the CLI</Link>
       </section>
     </main>

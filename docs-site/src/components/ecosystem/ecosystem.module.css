@@ -28,6 +28,7 @@
 .studioHero h1{font-size:clamp(48px,5vw,78px)!important}.studioHero p{max-width:500px}
 .status{display:inline-flex;align-items:center;gap:8px;color:var(--sw-brand-accent);font-size:11px;margin-bottom:25px}.status::before{content:'';width:7px;height:7px;background:currentColor;border-radius:50%}
 .note{font-size:12px!important;line-height:1.7!important;margin-top:22px!important;color:var(--sw-brand-muted)}
+.downloadMeta{display:flex;flex-wrap:wrap;gap:2px 14px;margin-top:16px!important;font-size:13px;line-height:1.6;color:var(--sw-brand-muted)}.downloadMeta a{display:inline-flex;align-items:center;min-height:32px;color:var(--ink)!important;text-decoration:underline!important;text-underline-offset:3px}.downloadMeta span{display:inline-flex;align-items:center;min-height:32px}.studioHero .note a{text-decoration:underline!important;text-underline-offset:3px}
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;counter-reset:step}
 .steps article{border-top:1px solid var(--sw-brand-line);padding-top:24px}.steps h3{font:450 30px/1.2 var(--sw-brand-display);margin:16px 0!important}.steps p{font-size:15px;color:var(--sw-brand-muted);line-height:1.7}
 .proof{display:grid;grid-template-columns:1fr 1fr;gap:50px;background:var(--sw-brand-soft);padding:40px;border:1px solid var(--sw-brand-line);border-radius:5px}
