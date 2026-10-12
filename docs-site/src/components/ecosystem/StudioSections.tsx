@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from '@docusaurus/Link';
 import styles from './studio.module.css';
+import { SPECWITHCODE_RELEASE as release } from '../../data/specwithcodeRelease';
 
 export const providers = ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'OpenCode', 'GitHub Copilot', 'Antigravity', 'Pi'];
 
@@ -108,7 +109,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>Can I use it today?</h3>
-      <p>SpecWithCode is free. It is in early access: the public download for Apple silicon Macs opens with the first public release, and until then you can ask for early access. The SpecWeave CLI it builds on is open source and available now with <code>npm install -g specweave</code>.</p>
+      <p>Yes. SpecWithCode is free and in early access. <a href={release.dmgUrl}>Download version {release.version} for Apple silicon Macs</a> ({release.size}), or see <a href={release.releasesUrl}>all releases on GitHub</a>. The SpecWeave CLI it builds on is open source and available with <code>npm install -g specweave</code>.</p>
     </article>
   </div>;
 }
