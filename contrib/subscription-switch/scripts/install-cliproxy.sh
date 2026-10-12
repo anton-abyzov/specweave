@@ -196,7 +196,9 @@ StandardError=append:$root/logs/service.stderr.log
 WantedBy=default.target
 EOF
   systemctl --user daemon-reload
-  systemctl --user enable --now specweave-cliproxy.service
+  systemctl --user enable specweave-cliproxy.service
+  # restart, not start: a --force reinstall must load the new binary and config.
+  systemctl --user restart specweave-cliproxy.service
   # Keep the user service running after logout on a headless server.
   loginctl enable-linger "$(id -un)" 2>/dev/null || echo 'Run "sudo loginctl enable-linger $USER" so the proxy survives logout.' >&2
 fi

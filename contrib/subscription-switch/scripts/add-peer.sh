@@ -4,7 +4,7 @@
 #
 #   add-peer.sh ID "Label" USER@HOST SLOT      e.g. add-peer.sh m1 "M1 Max" anton@192.168.40.134 1
 #
-# SLOT 1-9 picks local port SLOT8318 (M1 = 1, M3 = 2, next machine = 3, ...).
+# SLOT 1-6 picks local port SLOT8318 (M1 = 1, M3 = 2, next machine = 3, ...).
 # Uses the fleet key and host pins in ~/.local/share/specweave/fleet; the remote
 # host key must already be pinned there. The remote machine needs Switch running
 # on its own 127.0.0.1:8318 (worker-bootstrap.sh, or install-switch.py --service).
@@ -12,12 +12,20 @@ set -euo pipefail
 [ $# -eq 4 ] || { sed -n '2,11p' "$0"; exit 2; }
 id="$1"; label="$2"; target="$3"; slot="$4"
 [[ "$id" =~ ^[a-z0-9-]{1,32}$ && "$id" != local ]] || { echo 'ID must be lowercase letters, digits or dashes' >&2; exit 2; }
-[[ "$slot" =~ ^[1-9]$ ]] || { echo 'SLOT must be 1-9' >&2; exit 2; }
+[[ "$slot" =~ ^[1-6]$ ]] || { echo 'SLOT must be 1-6' >&2; exit 2; }
 [[ "$target" =~ ^[A-Za-z0-9._-]+@[A-Za-z0-9.:-]+$ ]] || { echo 'Target must be USER@HOST' >&2; exit 2; }
 [ "$(uname -s)" = Darwin ] || { echo 'The main host helper uses launchd (macOS)' >&2; exit 2; }
 fleet="$HOME/.local/share/specweave/fleet"
 state="${SPECWEAVE_SWITCH_STATE:-$HOME/.local/share/specweave/switch}"
 port="${slot}8318"
+# A port already given to another machine would show that machine's accounts under this label.
+if [ -f "$state/peers.json" ]; then
+  owner="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(next((p.get("id","") for p in d.get("peers",[]) if p.get("url")==sys.argv[2] and p.get("id")!=sys.argv[3]),""))' "$state/peers.json" "http://127.0.0.1:$port" "$id")"
+  [ -z "$owner" ] || { echo "Slot $slot (port $port) already belongs to $owner; pick another slot." >&2; exit 2; }
+fi
+if ! launchctl print "gui/$(id -u)/com.specweave.switch.tunnel-$id" >/dev/null 2>&1 && (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+  echo "Port $port is already in use on this Mac; pick another slot." >&2; exit 2
+fi
 ssh_opts=(-F /dev/null -i "$fleet/id_ed25519" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$fleet/known_hosts" -o ConnectTimeout=5 -o ControlMaster=no)
 /usr/bin/ssh "${ssh_opts[@]}" "$target" "curl -s -o /dev/null -w '%{http_code}' -H 'Host: 127.0.0.1:$port' http://127.0.0.1:8318/api/state" | grep -q 200 \
   || { echo "Switch is not answering on $target (or the host key is not pinned in $fleet/known_hosts)" >&2; exit 3; }

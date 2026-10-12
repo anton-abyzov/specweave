@@ -140,7 +140,8 @@ export function readClaudeUsage(account, timeoutMs = 30000) {
         const { request_id: requestId, subtype, response } = msg.response || {};
         if (requestId === 'init') {
           if (subtype !== 'success') { error = 'usage-initialize-rejected'; stop(); return; }
-          write({ type: 'control_request', request_id: 'usage', request: { subtype: 'get_usage' } });
+          // skip_behaviors: plan limits only; no seven-day transcript scan.
+          write({ type: 'control_request', request_id: 'usage', request: { subtype: 'get_usage', skip_behaviors: true } });
         } else if (requestId === 'usage') {
           if (subtype === 'success') answer = response; else error = 'usage-read-unavailable';
           stop(); return;
@@ -155,26 +156,36 @@ const CLAUDE_WINDOWS = { five_hour: ['window', 300], seven_day: ['weekly', 10080
 export function normalizeClaudeUsage(result, now = Date.now()) {
   const limits = result?.rate_limits;
   if (!result || result.rate_limits_available !== true || !limits || typeof limits !== 'object') return null;
+  // A live read carries the derived limits list. When the usage endpoint fails
+  // (network, 429) Claude Code answers from a persisted snapshot up to an hour
+  // old without it; that snapshot is not a fresh observation.
+  if (!Array.isArray(limits.limits)) return null;
   const toWindow = (value, mins) => {
-    const used = value?.utilization, reset = Date.parse(value?.resets_at);
-    if (!Number.isFinite(used) || used < 0 || used > 100 || !Number.isFinite(reset) || reset <= 0) return null;
-    return { usedPercent: used, resetsAt: Math.floor(reset / 1000), windowDurationMins: mins };
+    const used = value?.utilization;
+    if (!Number.isFinite(used) || used < 0) return undefined;
+    // A window that has not started yet reports resets_at null.
+    const reset = value.resets_at == null ? null : Date.parse(value.resets_at);
+    if (reset !== null && (!Number.isFinite(reset) || reset <= 0)) return undefined;
+    return { usedPercent: Math.min(used, 100), resetsAt: reset === null ? null : Math.floor(reset / 1000), windowDurationMins: mins };
   };
   const quota = { window: null, weekly: null, windows: [] };
   let locked = false;
   for (const [key, value] of Object.entries(limits).slice(0, 64)) {
-    if (!value || typeof value !== 'object' || !/^[a-z0-9_]{1,64}$/.test(key) || key === 'extra_usage') continue;
+    if (!value || typeof value !== 'object' || Array.isArray(value) || !/^[a-z0-9_]{1,64}$/.test(key) || key === 'extra_usage') continue;
     const main = CLAUDE_WINDOWS[key];
+    if (!main && !key.startsWith('seven_day')) continue;
     if (main && typeof value.locked_reason === 'string' && value.locked_reason) locked = true;
-    // Model-scoped weeklies are additive; only the account-wide windows gate selection.
-    const w = toWindow(value, main ? main[1] : key.startsWith('seven_day') ? 10080 : undefined);
-    if (!w || (!main && !key.startsWith('seven_day'))) continue;
+    const w = toWindow(value, main ? main[1] : 10080);
+    // An unreadable account-wide window makes the whole read unusable; a model-scoped one is skipped.
+    if (!w) { if (main) return null; continue; }
     if (main) quota[main[0]] = w;
+    // Model-scoped weeklies are additive; only the account-wide windows gate selection.
     if (quota.windows.length < 16) quota.windows.push({ ...w, id: `claude:${key}`, bucketId: key, appliesToSelection: !!main });
   }
   if (!quota.window && !quota.weekly) return null;
+  const full = [quota.window, quota.weekly].some(w => w && w.usedPercent >= 100);
   return { ...quota, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'native-app-server',
-    ...(locked ? { denied: true, ordinaryUsageAllowed: false } : {}) };
+    ordinaryUsageAllowed: !locked && !full, ...(locked || full ? { denied: true } : {}) };
 }
 export function claudeSubscriptionType(result) {
   const type = typeof result?.subscription_type === 'string' ? result.subscription_type.toLowerCase() : null;

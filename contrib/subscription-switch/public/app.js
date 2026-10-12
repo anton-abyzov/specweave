@@ -9,6 +9,7 @@ const MODE_HELP = {
 };
 let fleet = null;
 let busy = false;
+let refreshing = false;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -108,7 +109,8 @@ function row(host, account, state) {
   const name = el('b', '', account.provider === 'claude' ? 'Claude' : 'Codex');
   if (!account.id.endsWith('-1')) name.append(` ${account.id.split('-')[1]}`);
   const pinned = state.policy?.selectedAccount === account.id;
-  const next = !pinned && state.recommendations?.find((r) => r.provider === 'any')?.id === account.id;
+  const preferred = state.policy?.preferredProvider || 'any';
+  const next = !pinned && state.recommendations?.find((r) => r.provider === preferred)?.id === account.id;
   if (pinned) name.append(el('span', 'tag', 'Pinned'));
   if (next) { const tag = el('span', 'tag next', 'Next'); tag.title = 'The account the current policy picks for the next run on this Mac'; name.append(tag); }
   text.append(name, el('span', '', plan(account)));
@@ -178,7 +180,7 @@ function render() {
   help.textContent = `${MODE_HELP[mode] || ''} ${modes.size > 1 ? 'Macs currently differ; pick one to align them.' : 'Applies on every Mac to new runs only.'}`;
   const seen = local ? newest(local.state) : null;
   const every = fleet?.autoRefreshMinutes;
-  $('#updated').textContent = local?.refreshing ? 'Refreshing…' : `Checked ${ago(seen)}${every ? ` · auto every ${every} min` : ''}`;
+  $('#updated').textContent = refreshing ? 'Refreshing every Mac…' : local?.refreshing ? 'Refreshing…' : `Checked ${ago(seen)}${every ? ` · auto every ${every} min` : ''}`;
   $('#refresh').disabled = busy;
 }
 
@@ -188,9 +190,10 @@ async function load() {
     const value = await response.json();
     if (!response.ok) throw new Error(value.error || `HTTP ${response.status}`);
     fleet = value;
+    if ($('#notice').dataset.kind === 'load') notice('');
     render();
   } catch (error) {
-    notice(`Could not read Switch: ${error.message}`);
+    notice(`Could not read Switch: ${error.message}`, 'load');
   }
 }
 async function act(path, payload, done) {
@@ -218,8 +221,8 @@ try { applyTheme(localStorage.getItem('switch-theme')); } catch { /* storage una
 
 document.addEventListener('DOMContentLoaded', () => {
   $('#refresh').addEventListener('click', () => {
-    $('#updated').textContent = 'Refreshing every Mac…';
-    act('/api/fleet/refresh', {}, 'Refreshed.');
+    refreshing = true;
+    act('/api/fleet/refresh', {}, 'Refreshed.').finally(() => { refreshing = false; render(); });
   });
   for (const button of document.querySelectorAll('[data-mode]')) {
     button.addEventListener('click', () => act('/api/fleet/policy', { mode: button.dataset.mode }, `${button.textContent} is now the policy on every Mac.`));

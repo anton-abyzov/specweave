@@ -15,7 +15,7 @@ const usage = (now, over = {}) => ({
     seven_day: { utilization: 32, resets_at: new Date(now + 5 * 864e5).toISOString(), locked_reason: null },
     seven_day_opus: { utilization: 90, resets_at: new Date(now + 5 * 864e5).toISOString() },
     iguana_necktie: { utilization: 0, resets_at: new Date(now + 20 * 864e5).toISOString(), limit_dollars: 250 },
-    seven_day_sonnet: null, extra_usage: { is_enabled: false },
+    seven_day_sonnet: null, extra_usage: { is_enabled: false }, limits: [],
     ...over,
   },
 });
@@ -30,7 +30,16 @@ test('Claude get_usage maps to session and weekly windows; model weeklies never 
   const locked = normalizeClaudeUsage(usage(now, { five_hour: { utilization: 100, resets_at: new Date(now + 60e3).toISOString(), locked_reason: 'rate_limited' } }), now);
   assert.equal(locked.denied, true);
   assert.equal(normalizeClaudeUsage({ rate_limits_available: false, rate_limits: {} }), null);
-  assert.equal(normalizeClaudeUsage(usage(now, { five_hour: { utilization: 5, resets_at: null }, seven_day: null })), null);
+  const idle = normalizeClaudeUsage(usage(now, { five_hour: { utilization: 0, resets_at: null }, seven_day: { utilization: 0, resets_at: null } }), now);
+  assert.deepEqual([idle.window.resetsAt, idle.weekly.resetsAt, idle.ordinaryUsageAllowed], [null, null, true]);
+  assert.equal(accountStatus({ id: 'claude-1', provider: 'claude', nativeDefault: true, authenticated: true, authKind: 'claude.ai', quota: idle }, [], now), 'ready');
+  assert.equal(normalizeClaudeUsage(usage(now, { five_hour: { utilization: null, resets_at: null } }), now), null, 'unreadable gating window');
+  const seeded = usage(now); delete seeded.rate_limits.limits;
+  assert.equal(normalizeClaudeUsage(seeded, now), null, 'cached snapshot is not a fresh observation');
+  const over = normalizeClaudeUsage(usage(now, { seven_day: { utilization: 104, resets_at: new Date(now + 864e5).toISOString() } }), now);
+  assert.deepEqual([over.weekly.usedPercent, over.denied, over.ordinaryUsageAllowed], [100, true, false]);
+  const weeklyOnly = normalizeClaudeUsage(usage(now, { five_hour: null, seven_day: { utilization: 100, resets_at: new Date(now + 864e5).toISOString() } }), now);
+  assert.equal(weeklyOnly.window, null); assert.equal(accountStatus({ id: 'claude-1', provider: 'claude', nativeDefault: true, authenticated: true, authKind: 'claude.ai', quota: weeklyOnly }, [], now), 'exhausted');
   assert.equal(claudeSubscriptionType(usage(now)), 'max');
   assert.equal(claudeSubscriptionType({ subscription_type: 'api' }), null);
 });
@@ -63,6 +72,7 @@ process.stdin.on('data', d => {
   assert.equal(result.data.subscription_type, 'max');
   const sent = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
   assert.deepEqual(sent.map(m => [m.type, m.request.subtype]), [['control_request', 'initialize'], ['control_request', 'get_usage']]);
+  assert.equal(sent[1].request.skip_behaviors, true);
 });
 
 test('peers.json accepts only loopback tunnel origins', async t => {
