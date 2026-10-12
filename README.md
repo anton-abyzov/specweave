@@ -26,6 +26,10 @@ specweave init .
 
 `init` writes `AGENTS.md` (read by Codex, Grok, Cursor, Gemini and Copilot), a two-line `CLAUDE.md` that imports it, and the skills for Claude Code and Codex. Nothing else runs in the background.
 
+## SpecWithCode: the free workspace on top
+
+[SpecWithCode](https://spec-weave.com/studio) is a desktop app built on SpecWeave. Describe the work once and a coordinator splits it across Claude Code, Codex, Grok or Cursor workers on your own machines, with the spec, evidence and handoff in git. It is free for every developer and team: no markup, no token resale, no seat fee to run agents on your own machines. Early access, Apple silicon Macs. [Download](https://spec-weave.com/studio) · [Pricing](https://spec-weave.com/pricing)
+
 ## Out of tokens? Say "hand off"
 
 ```text

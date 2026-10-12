@@ -161,6 +161,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/specweave-vs-speckit', label: 'SpecWeave vs Spec Kit'},
         {type: 'doc', id: 'guides/specweave-vs-openspec', label: 'SpecWeave vs OpenSpec'},
         {type: 'doc', id: 'guides/specweave-vs-bmad', label: 'SpecWeave vs BMAD'},
+        {type: 'doc', id: 'guides/specwithcode-vs-bridgemind', label: 'SpecWithCode vs BridgeMind'},
         {type: 'doc', id: 'enterprise/index', label: 'Enterprise'},
         {type: 'doc', id: 'metrics', label: 'DORA metrics'},
       ],
