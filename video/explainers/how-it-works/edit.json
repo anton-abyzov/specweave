@@ -1,0 +1,422 @@
+{
+ "main": {
+  "title": "How SpecWithCode works",
+  "dir": "hyperframes",
+  "W": 1920,
+  "H": 1080,
+  "voOffset": 0.3,
+  "captionWords": 8,
+  "diagramScale": 0.86,
+  "beats": [
+   {
+    "id": "B01",
+    "vo": "b01",
+    "dur": 7.6,
+    "chip": "SpecWithCode · how it works",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/b01-juggling.mp4",
+      "segments": [
+       [
+        0.2,
+        8
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "B02",
+    "vo": "b02",
+    "dur": 7.0,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d1",
+      "variant": "h"
+     }
+    ]
+   },
+   {
+    "id": "B03",
+    "vo": "b03",
+    "dur": 13.6,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d3",
+      "variant": "h"
+     }
+    ]
+   },
+   {
+    "id": "B04",
+    "vo": "b04",
+    "dur": 9.2,
+    "chip": "Projects + → New project",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take2c.mp4",
+      "segments": [
+       [
+        9.6,
+        13.4
+       ],
+       [
+        13.4,
+        20.6,
+        2
+       ]
+      ],
+      "dur": 7.4
+     },
+     {
+      "type": "video",
+      "src": "media/take2.mp4",
+      "at": 7.4,
+      "segments": [
+       [
+        12.2,
+        15
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "B05",
+    "vo": "b05",
+    "dur": 8.6,
+    "chip": "Describe the work once",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/b02-typing.mp4",
+      "segments": [
+       [
+        1,
+        3
+       ]
+      ],
+      "dur": 2.0
+     },
+     {
+      "type": "video",
+      "src": "media/take1.mp4",
+      "at": 2.0,
+      "segments": [
+       [
+        3.6,
+        11
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "B06",
+    "vo": "b06",
+    "dur": 11.6,
+    "chip": "Two worker threads, one card each",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take1.mp4",
+      "segments": [
+       [
+        11,
+        21,
+        4
+       ],
+       [
+        21,
+        33
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "B07",
+    "vo": "b07",
+    "dur": 11.0,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d2",
+      "variant": "h"
+     }
+    ]
+   },
+   {
+    "id": "B08",
+    "vo": "b08",
+    "dur": 11.8,
+    "chip": "Model picker · Project settings → General",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take2.mp4",
+      "crop": {
+       "cx": 1076,
+       "cy": 720,
+       "scale": 1.45
+      },
+      "segments": [
+       [
+        15.2,
+        20.6
+       ]
+      ],
+      "dur": 5.4
+     },
+     {
+      "type": "video",
+      "src": "media/take2.mp4",
+      "at": 5.4,
+      "segments": [
+       [
+        21.3,
+        31.2,
+        1.5
+       ]
+      ],
+      "zoom": {
+       "cx": 960,
+       "cy": 620,
+       "scale": 1.4,
+       "at": 0.6,
+       "dur": 1.0
+      }
+     }
+    ]
+   },
+   {
+    "id": "B09",
+    "vo": "b09",
+    "dur": 12.6,
+    "chip": "Usage chip · one ring per subscription",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take2.mp4",
+      "segments": [
+       [
+        32.4,
+        39.8,
+        0.587
+       ]
+      ],
+      "zoom": {
+       "cx": 800,
+       "cy": 760,
+       "scale": 1.6,
+       "at": 3.0,
+       "dur": 1.2
+      }
+     }
+    ]
+   },
+   {
+    "id": "B10",
+    "vo": "b10",
+    "dur": 6.6,
+    "chip": "⋮ More project actions → Plan",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/b08-cards.mp4",
+      "segments": [
+       [
+        1,
+        3
+       ]
+      ],
+      "dur": 2.0
+     },
+     {
+      "type": "video",
+      "src": "media/take2.mp4",
+      "at": 2.0,
+      "segments": [
+       [
+        68.0,
+        75.5,
+        1.6
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "B11",
+    "vo": "b11",
+    "dur": 7.4,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d4",
+      "variant": "h"
+     }
+    ]
+   },
+   {
+    "id": "B12",
+    "vo": "b12",
+    "dur": 5.4,
+    "chip": "Reports come back on their own",
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take1.mp4",
+      "segments": [
+       [
+        30,
+        73,
+        8
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "B13",
+    "vo": "b13",
+    "dur": 7.2,
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/b03-loom.mp4",
+      "segments": [
+       [
+        0,
+        8
+       ]
+      ]
+     },
+     {
+      "type": "outro"
+     }
+    ]
+   }
+  ]
+ },
+ "short": {
+  "title": "SpecWithCode in 35 seconds",
+  "dir": "short",
+  "W": 1080,
+  "H": 1920,
+  "voOffset": 0.25,
+  "captionWords": 5,
+  "beats": [
+   {
+    "id": "S01",
+    "vo": "s01",
+    "dur": 3.4,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d1",
+      "variant": "v"
+     }
+    ]
+   },
+   {
+    "id": "S02",
+    "vo": "s02",
+    "dur": 7.6,
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take1.mp4",
+      "crop": {
+       "cx": 858,
+       "cy": 560,
+       "scale": 1.8
+      },
+      "segments": [
+       [
+        6,
+        10.6
+       ],
+       [
+        21,
+        30,
+        3
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "S03",
+    "vo": "s03",
+    "dur": 6.2,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d2",
+      "variant": "v",
+      "scale": 0.88
+     }
+    ]
+   },
+   {
+    "id": "S04",
+    "vo": "s04",
+    "dur": 4.8,
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/take1.mp4",
+      "crop": {
+       "cx": 1690,
+       "cy": 330,
+       "scale": 2.3
+      },
+      "segments": [
+       [
+        28,
+        33
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "S05",
+    "vo": "s05",
+    "dur": 5.4,
+    "layers": [
+     {
+      "type": "diagram",
+      "mod": "d4",
+      "variant": "v"
+     }
+    ]
+   },
+   {
+    "id": "S06",
+    "vo": "s06",
+    "dur": 7.8,
+    "layers": [
+     {
+      "type": "video",
+      "src": "media/v02-loom.mp4",
+      "segments": [
+       [
+        0,
+        8
+       ]
+      ]
+     },
+     {
+      "type": "outro"
+     }
+    ]
+   }
+  ]
+ }
+}
