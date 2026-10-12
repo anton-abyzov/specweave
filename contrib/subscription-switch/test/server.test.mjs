@@ -43,7 +43,7 @@ test('dedicated SSH dashboard aliases require exact same-origin JSON and exclude
     });
     req.on('error', reject); req.end(method === 'POST' ? JSON.stringify(payload) : undefined);
   });
-  for (const port of [18318, 28318]) {
+  for (const port of [18318, 28318, 38318]) {
     const host = `127.0.0.1:${port}`, origin = `http://${host}`;
     const page = await send(host, undefined, '/', undefined, 'GET'); assert.equal(page.status, 200); assert.match(page.data, /tunneled dashboard/);
     const state = await send(host, undefined, '/api/state', undefined, 'GET'); assert.equal(state.status, 200); assert.equal(JSON.parse(state.data).accounts.length, 7);

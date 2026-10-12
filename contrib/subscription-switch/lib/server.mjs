@@ -11,10 +11,11 @@ const defaultPublic = fileURLToPath(new URL('../public/', import.meta.url));
 function fail(status, message) { return Object.assign(new Error(message), { status }); }
 function guarded(req, port, mutation = false) {
   const host = req.headers.host;
-  // Dedicated pinned SSH dashboard tunnels use these two M4 loopback ports.
-  // Keep an explicit host list; mutations still require this exact Host origin.
-  const allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`, '127.0.0.1:18318', '127.0.0.1:28318'];
-  if (!allowedHosts.includes(host)) throw fail(403, 'Invalid loopback Host');
+  // Pinned SSH tunnels from the main Mac reach a peer on 127.0.0.1:N8318 (N = 1-9,
+  // one per peer). Only literal loopback IP hosts pass, so DNS rebinding cannot;
+  // mutations still require this exact Host origin.
+  const allowed = host === `127.0.0.1:${port}` || host === `localhost:${port}` || /^127\.0\.0\.1:[1-9]8318$/.test(host || '');
+  if (!allowed) throw fail(403, 'Invalid loopback Host');
   if (mutation && (req.headers.origin !== `http://${host}` || !/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || ''))) throw fail(403, 'Mutation requires same-origin JSON');
 }
 async function body(req) {
