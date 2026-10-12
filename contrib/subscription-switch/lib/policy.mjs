@@ -20,7 +20,7 @@ export function validateQuota(quota, now = Date.now()) {
   if (!Number.isFinite(observed) || !Number.isFinite(expiry) || observed > now + 5000 || expiry <= observed || expiry - observed > 60 * 60 * 1000) throw new Error('Quota observation timestamp or expiry is invalid');
   for (const name of ['window', 'weekly']) {
     const q = quota[name]; if (q == null) continue;
-    if (!Number.isFinite(q.usedPercent) || q.usedPercent < 0 || q.usedPercent > 100 || (!(quota.source === 'native-app-server' && quota.ordinaryUsageAllowed === true && q.resetsAt === null) && (!Number.isFinite(q.resetsAt) || q.resetsAt <= 0))) throw new Error('Invalid quota percentage or reset timestamp');
+    if (!Number.isFinite(q.usedPercent) || q.usedPercent < 0 || q.usedPercent > 100 || (!(quota.source === 'native-app-server' && typeof quota.ordinaryUsageAllowed === 'boolean' && q.resetsAt === null) && (!Number.isFinite(q.resetsAt) || q.resetsAt <= 0))) throw new Error('Invalid quota percentage or reset timestamp');
   }
   if (!quota.window && !quota.weekly && !(quota.source === 'native-app-server' && (typeof quota.ordinaryUsageAllowed === 'boolean' || quota.denied === true || quota.credits || quota.resetCredits || quota.windows?.length))) throw new Error('Quota observation requires an observed window or authoritative native metadata');
   return quota;

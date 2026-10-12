@@ -40,6 +40,9 @@ test('Claude get_usage maps to session and weekly windows; model weeklies never 
   assert.deepEqual([over.weekly.usedPercent, over.denied, over.ordinaryUsageAllowed], [100, true, false]);
   const weeklyOnly = normalizeClaudeUsage(usage(now, { five_hour: null, seven_day: { utilization: 100, resets_at: new Date(now + 864e5).toISOString() } }), now);
   assert.equal(weeklyOnly.window, null); assert.equal(accountStatus({ id: 'claude-1', provider: 'claude', nativeDefault: true, authenticated: true, authKind: 'claude.ai', quota: weeklyOnly }, [], now), 'exhausted');
+  // An idle session window (no reset yet) beside a spent week is a limit, not a stale read.
+  const spentWeek = normalizeClaudeUsage(usage(now, { five_hour: { utilization: 0, resets_at: null }, seven_day: { utilization: 100, resets_at: new Date(now + 864e5).toISOString() } }), now);
+  assert.equal(accountStatus({ id: 'claude-1', provider: 'claude', nativeDefault: true, authenticated: true, authKind: 'claude.ai', quota: spentWeek }, [], now), 'exhausted');
   assert.equal(claudeSubscriptionType(usage(now)), 'max');
   assert.equal(claudeSubscriptionType({ subscription_type: 'api' }), null);
 });
