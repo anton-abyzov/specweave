@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { execute, iso } from './util.mjs';
 import { QUOTA_TTL_MS, claudeProfileIsolationUnverified, CLAUDE_CONSUMER_PLANS } from './policy.mjs';
-import { ensureState, mutateState } from './state.mjs';
+import { ensureState, isRetiredService, mutateState } from './state.mjs';
 import { readCopilot, readProxyAccounts } from './providers.mjs';
 
 export function nativeEnv(account) {
@@ -264,7 +264,7 @@ export async function refresh(root) {
     if (auth.authenticated === false) identity = null;
     return { ...account, ...auth, quota, quotaError, subscriptionType, identity };
   })());
-  const services = await Promise.all(state.services.filter(s => !s.id.startsWith('t3')).map(serviceProbe));
+  const services = await Promise.all(state.services.filter(s => !isRetiredService(s)).map(serviceProbe));
   for (const service of services) if (service.id === 'cli-proxy' && service.status === 'running') service.accounts = await readProxyAccounts({ port: service.port });
   const providers = await readCopilot().catch(() => []);
   return mutateState(root, current => {

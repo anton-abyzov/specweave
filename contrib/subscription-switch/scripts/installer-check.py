@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Installer regressions: temporary HOME, synthetic profiles, fake launchctl/Node."""
 import importlib.util
-import io
 import json
 import os
 import pathlib
@@ -9,7 +8,6 @@ import plistlib
 import shutil
 import subprocess
 import sys
-import tarfile
 import tempfile
 import unittest
 from unittest import mock
@@ -25,7 +23,6 @@ def load(name, path):
 
 
 installer = load('switch_installer', SCRIPTS / 'install-switch.py')
-nightly = load('nightly_installer', SCRIPTS / 'install-local.py')
 
 
 class InstallerTests(unittest.TestCase):
@@ -249,46 +246,6 @@ sys.exit(1)
         self.assert_preserved()
         self.assertEqual(lock.read_text(),'another installer owns this\n')
         self.assertFalse(any(call[0]=='bootout' for call in self.calls()))
-
-
-class ArchiveTests(unittest.TestCase):
-    def archive(self, members):
-        stream=io.BytesIO()
-        with tarfile.open(fileobj=stream,mode='w') as tar:
-            for name,kind in members:
-                member=tarfile.TarInfo(name)
-                if kind=='file':
-                    member.size=3; member.mode=0o755
-                    tar.addfile(member,io.BytesIO(b't3\n'))
-                elif kind=='dir':
-                    member.type=tarfile.DIRTYPE; tar.addfile(member)
-                elif kind=='link':
-                    member.type=tarfile.SYMTYPE; member.linkname='../outside'; tar.addfile(member)
-                elif kind=='hardlink':
-                    member.type=tarfile.LNKTYPE; member.linkname='t3'; tar.addfile(member)
-                else:
-                    member.type=tarfile.FIFOTYPE; tar.addfile(member)
-        stream.seek(0)
-        return tarfile.open(fileobj=stream,mode='r')
-
-    def test_regular_archive_and_executable_mode(self):
-        with tempfile.TemporaryDirectory() as root,self.archive([('.', 'dir'),('./bin','dir'),('./bin/t3','file')]) as tar:
-            nightly.safe_extract(tar,root)
-            path=pathlib.Path(root)/'bin/t3'
-            self.assertEqual(path.read_bytes(),b't3\n')
-            self.assertEqual(path.stat().st_mode & 0o777,0o755)
-
-    def test_unsafe_archive_rejected_before_any_file_created(self):
-        cases=[('../escape','file'),('/absolute','file'),('dir\\escape','file'),('link','link'),('hard','hardlink'),('fifo','fifo')]
-        for member in cases:
-            with self.subTest(member=member),tempfile.TemporaryDirectory() as root,self.archive([('safe','file'),member]) as tar:
-                with self.assertRaises(ValueError): nightly.safe_extract(tar,root)
-                self.assertEqual(list(pathlib.Path(root).iterdir()),[])
-
-    def test_duplicate_members_rejected(self):
-        with tempfile.TemporaryDirectory() as root,self.archive([('t3','file'),('./t3','file')]) as tar:
-            with self.assertRaises(ValueError): nightly.safe_extract(tar,root)
-            self.assertEqual(list(pathlib.Path(root).iterdir()),[])
 
 
 if __name__=='__main__':
