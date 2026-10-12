@@ -4,9 +4,9 @@ import {SPECWITHCODE_RELEASE as release} from '../specwithcodeRelease';
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 
 describe('SpecWithCode download constant', () => {
-  it('points every link at the same release tag', () => {
+  it('links the stable Latest installer and the release notes of the recorded version', () => {
     expect(release.version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(release.dmgUrl).toMatch(new RegExp(`^${REPO}/releases/download/v${release.version.replace(/\./g, '\\.')}/[^/]+-${release.version.replace(/\./g, '\\.')}-arm64\\.dmg$`));
+    expect(release.dmgUrl).toBe(`${REPO}/releases/latest/download/SpecWithCode-arm64.dmg`);
     expect(release.notesUrl).toBe(`${REPO}/releases/tag/v${release.version}`);
     expect(release.releasesUrl).toBe(`${REPO}/releases`);
   });
