@@ -49,7 +49,7 @@ export async function inspectAuth(account) {
 
 // Supported Codex app-server protocol: initialize -> initialized notification ->
 // account/rateLimits/read. No credential files or token payloads are inspected.
-export function readCodexRateLimits(account, timeoutMs = 15000) {
+export function readCodexRateLimits(account, timeoutMs = 25000) {
   return new Promise(resolve => {
     const child = spawn(account.binary, ['app-server', '--stdio'], { env: nativeEnv(account), stdio: ['pipe', 'pipe', 'pipe'] });
     let buffer = '', byteCount = 0, answer = null, signedIn = null, error = null, phase = 'initialize', pending = 2, hardTimer;
@@ -213,7 +213,10 @@ function serviceProbe(service) {
 }
 export async function refresh(root) {
   const state = await ensureState(root);
-  const accounts = await Promise.all(state.accounts.map(async account => {
+  // One account at a time: launching every CLI at once on a busy Mac made the
+  // reads time out. A refresh runs every few minutes, so a few seconds more is fine.
+  const accounts = [];
+  for (const account of state.accounts) accounts.push(await (async () => {
     const auth = await inspectAuth(account);
     let quota = account.quota, quotaError = null;
     let subscriptionType = account.subscriptionType || null, identity = auth.identity ?? account.identity ?? null;
@@ -244,7 +247,7 @@ export async function refresh(root) {
     }
     if (auth.authenticated === false) identity = null;
     return { ...account, ...auth, quota, quotaError, subscriptionType, identity };
-  }));
+  })());
   const services = await Promise.all(state.services.filter(s => !s.id.startsWith('t3')).map(serviceProbe));
   return mutateState(root, current => {
     for (const update of accounts) {
