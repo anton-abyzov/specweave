@@ -164,10 +164,10 @@ test('the /tutorials catalogue lists every verified tutorial with first-party me
 });
 test('upcoming agent tutorials cannot advertise media they do not have', () => {
   for (const [key, value] of [['src', '/video/studio-tutorial.mp4'], ['durationSeconds', 90], ['captionsVtt', '/video/studio-tutorial.vtt']]) {
-    galleryFixture(g => {bySlug(g, 'specwithcode-codex')[key] = value;}, root =>
+    galleryFixture(g => {bySlug(g, 'specwithcode-cursor')[key] = value;}, root =>
       assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /must not imply finished media/));
   }
-  galleryFixture(g => {bySlug(g, 'specwithcode-grok').chapters = [{start: 0, title: 'Intro'}];}, root =>
+  galleryFixture(g => {bySlug(g, 'specwithcode-cursor').chapters = [{start: 0, title: 'Intro'}];}, root =>
     assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), /must not list chapters/));
 });
 test('every required agent keeps a planned or published tutorial', () => galleryFixture(
