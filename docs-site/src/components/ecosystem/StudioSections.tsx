@@ -109,7 +109,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>Can I use it today?</h3>
-      <p>Yes. SpecWithCode is free for every developer and team, with no markup on your subscriptions, no token resale and no seat fee to run agents on your own machines. What is free today stays free; companies pay only for hosting and support (<a href="/pricing">pricing</a>). It is in early access: <a href={release.dmgUrl}>Download version {release.version} for Apple silicon Macs</a> ({release.size}), or see <a href={release.releasesUrl}>all releases on GitHub</a>. The SpecWeave CLI it builds on is open source and available with <code>npm install -g specweave</code>.</p>
+      <p>Yes. SpecWithCode is free and open source under MIT for every developer and team, with no markup on your subscriptions, no token resale and no seat fee to run agents on your own machines. What is free today stays free; companies pay only for hosting and support (<a href="/pricing">pricing</a>). It is in early access: <a href={release.dmgUrl}>Download version {release.version} for Apple silicon Macs</a> ({release.size}), or see <a href={release.releasesUrl}>all releases on GitHub</a>. The SpecWeave CLI it builds on is open source and available with <code>npm install -g specweave</code>.</p>
     </article>
   </div>;
 }
