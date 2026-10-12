@@ -1,0 +1,77 @@
+WEBVTT
+
+1
+00:00:00.267 --> 00:00:03.100
+Still pasting context between agent terminals?
+
+2
+00:00:03.667 --> 00:00:05.833
+In SpecWithCode you describe the
+
+3
+00:00:05.833 --> 00:00:08.100
+work once. A coordinator starts
+
+4
+00:00:08.100 --> 00:00:09.767
+worker threads and links each
+
+5
+00:00:09.767 --> 00:00:10.700
+one back.
+
+6
+00:00:11.267 --> 00:00:12.400
+Follow-ups go to the thread
+
+7
+00:00:12.400 --> 00:00:13.833
+that owns that area,
+
+8
+00:00:13.833 --> 00:00:15.067
+and each report comes back
+
+9
+00:00:15.067 --> 00:00:15.867
+on its own.
+
+10
+00:00:15.867 --> 00:00:16.900
+No pasting.
+
+11
+00:00:17.467 --> 00:00:19.033
+Run the coordinator on Claude
+
+12
+00:00:19.033 --> 00:00:20.567
+Opus 5.5 and a worker
+
+13
+00:00:20.567 --> 00:00:21.800
+on Codex.
+
+14
+00:00:22.267 --> 00:00:23.500
+A worker can report a
+
+15
+00:00:23.500 --> 00:00:24.900
+task done. Only you make
+
+16
+00:00:24.900 --> 00:00:27.000
+it Verified, by running its check.
+
+17
+00:00:27.667 --> 00:00:29.233
+SpecWithCode works with the agents
+
+18
+00:00:29.233 --> 00:00:30.467
+you already pay for.
+
+19
+00:00:30.467 --> 00:00:34.833
+Free for Apple silicon Macs: spec-weave.com/studio.

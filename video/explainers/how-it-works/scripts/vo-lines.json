@@ -1,0 +1,108 @@
+{
+ "voiceId": "CXBq9AgXLrBIJkfnV9hg",
+ "modelId": "eleven_multilingual_v2",
+ "voiceSettings": {
+  "stability": 0.5,
+  "similarity_boost": 0.75,
+  "style": 0,
+  "use_speaker_boost": true,
+  "speed": 1
+ },
+ "lines": [
+  {
+   "id": "b01",
+   "text": "Claude Code in one terminal. Codex in another. And you in the middle, copying context between them all day.",
+   "spoken": "Claude Code in one terminal. Codex in another. And you in the middle, copying context between them all day."
+  },
+  {
+   "id": "b02",
+   "text": "You paste the goal, the error, what the other agent decided. The agents write the code. You do the routing.",
+   "spoken": "You paste the goal, the error, what the other agent decided. The agents write the code. You do the routing."
+  },
+  {
+   "id": "b03",
+   "text": "SpecWithCode is a free Mac app for the coding agents you already pay for: Claude Code, Codex, Grok Build, Cursor, OpenCode, Copilot, Antigravity and Pi. It takes the routing off your hands.",
+   "spoken": "Spec With Code is a free Mac app for the coding agents you already pay for: Claude Code, Codex, Grok Build, Cursor, Open Code, Copilot, Antigravity, and Pi. It takes the routing off your hands."
+  },
+  {
+   "id": "b04",
+   "text": "Add a project over a real folder. It gets one coordinator: a conversation that routes and tracks the work, while worker threads write the code.",
+   "spoken": "Add a project over a real folder. It gets one coordinator: a conversation that routes and tracks the work, while worker threads write the code."
+  },
+  {
+   "id": "b05",
+   "text": "Describe the work once. Quick questions it answers itself. Code changes, long research and tool work go to worker threads it starts.",
+   "spoken": "Describe the work once. Quick questions it answers itself. Code changes, long research and tool work go to worker threads it starts."
+  },
+  {
+   "id": "b06",
+   "text": "Here it started two workers: Claude on the greeting, and Codex on the CI workflow, because the ask named Codex. Each one gets a card and a link.",
+   "spoken": "Here it started two workers: Claude on the greeting, and Codex on the C I workflow, because the ask named Codex. Each one gets a card and a link."
+  },
+  {
+   "id": "b07",
+   "text": "Follow-ups go to the worker already on that area, so nothing is assigned twice. When a worker finishes, its report comes back on its own. No polling, no pasting.",
+   "spoken": "Follow-ups go to the worker already on that area, so nothing is assigned twice. When a worker finishes, its report comes back on its own. No polling, no pasting."
+  },
+  {
+   "id": "b08",
+   "text": "The coordinator and the workers have separate models. Keep the coordinator on Claude Opus 5.5, set a default worker model, or name one in the ask, like Codex here.",
+   "spoken": "The coordinator and the workers have separate models. Keep the coordinator on Claude Opus five point five, set a default worker model, or name one in the ask, like Codex here."
+  },
+  {
+   "id": "b09",
+   "text": "The usage chip shows one ring per subscription, amber at 80 percent, red at 95. If one runs out, the thread offers to continue on another signed-in provider.",
+   "spoken": "The usage chip shows one ring per subscription: amber at eighty percent, red at ninety-five. If one runs out, the thread offers to continue on another signed-in provider."
+  },
+  {
+   "id": "b10",
+   "text": "For bigger work, the Plan holds a short spec, acceptance criteria and tasks, and who owns each.",
+   "spoken": "For bigger work, the Plan holds a short spec, acceptance criteria and tasks, and who owns each."
+  },
+  {
+   "id": "b11",
+   "text": "A worker can report a task done. Only you make it Verified: Run verification runs its check and keeps a receipt.",
+   "spoken": "A worker can report a task done. Only you make it verified: Run verification runs its check, and keeps a receipt."
+  },
+  {
+   "id": "b12",
+   "text": "The agents write the code. The coordinator routes it. You review the results.",
+   "spoken": "The agents write the code. The coordinator routes it. You review the results."
+  },
+  {
+   "id": "b13",
+   "text": "SpecWithCode is free, with no account, for Apple silicon Macs. Get it at spec-weave.com/studio.",
+   "spoken": "Spec With Code is free, with no account, for Apple silicon Macs. Get it at spec weave dot com, slash studio."
+  },
+  {
+   "id": "s01",
+   "text": "Still pasting context between agent terminals?",
+   "spoken": "Still pasting context between agent terminals?"
+  },
+  {
+   "id": "s02",
+   "text": "In SpecWithCode you describe the work once. A coordinator starts worker threads and links each one back.",
+   "spoken": "In Spec With Code, you describe the work once. A coordinator starts worker threads, and links each one back."
+  },
+  {
+   "id": "s03",
+   "text": "Follow-ups go to the thread that owns that area, and each report comes back on its own. No pasting.",
+   "spoken": "Follow-ups go to the thread that owns that area, and each report comes back on its own. No pasting."
+  },
+  {
+   "id": "s04",
+   "text": "Run the coordinator on Claude Opus 5.5 and a worker on Codex.",
+   "spoken": "Run the coordinator on Claude Opus five point five, and a worker on Codex."
+  },
+  {
+   "id": "s05",
+   "text": "A worker can report a task done. Only you make it Verified, by running its check.",
+   "spoken": "A worker can report a task done. Only you make it verified, by running its check."
+  },
+  {
+   "id": "s06",
+   "text": "SpecWithCode works with the agents you already pay for. Free for Apple silicon Macs: spec-weave.com/studio.",
+   "spoken": "Spec With Code works with the agents you already pay for. Free for Apple silicon Macs, at spec weave dot com, slash studio."
+  }
+ ]
+}

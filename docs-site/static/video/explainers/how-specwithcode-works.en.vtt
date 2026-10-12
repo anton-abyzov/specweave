@@ -1,0 +1,225 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:02.233
+Claude Code in one terminal.
+
+2
+00:00:02.233 --> 00:00:03.300
+Codex in another.
+
+3
+00:00:03.300 --> 00:00:04.633
+And you in the middle,
+
+4
+00:00:04.633 --> 00:00:07.333
+copying context between them all day.
+
+5
+00:00:07.900 --> 00:00:08.867
+You paste the goal,
+
+6
+00:00:08.867 --> 00:00:11.167
+the error, what the other agent decided.
+
+7
+00:00:11.167 --> 00:00:12.567
+The agents write the code.
+
+8
+00:00:12.567 --> 00:00:14.033
+You do the routing.
+
+9
+00:00:14.900 --> 00:00:17.600
+SpecWithCode is a free Mac app for the
+
+10
+00:00:17.600 --> 00:00:20.033
+coding agents you already pay for:
+
+11
+00:00:20.033 --> 00:00:21.933
+Claude Code, Codex,
+
+12
+00:00:21.933 --> 00:00:22.733
+Grok Build, Cursor,
+
+13
+00:00:22.733 --> 00:00:25.600
+OpenCode, Copilot, Antigravity and Pi.
+
+14
+00:00:25.600 --> 00:00:27.767
+It takes the routing off your hands.
+
+15
+00:00:28.500 --> 00:00:30.533
+Add a project over a real folder.
+
+16
+00:00:30.533 --> 00:00:32.033
+It gets one coordinator:
+
+17
+00:00:32.033 --> 00:00:34.533
+a conversation that routes and tracks the work,
+
+18
+00:00:34.533 --> 00:00:37.033
+while worker threads write the code.
+
+19
+00:00:37.700 --> 00:00:39.267
+Describe the work once.
+
+20
+00:00:39.267 --> 00:00:41.267
+Quick questions it answers itself.
+
+21
+00:00:41.267 --> 00:00:43.767
+Code changes, long research and tool work go
+
+22
+00:00:43.767 --> 00:00:45.433
+to worker threads it starts.
+
+23
+00:00:46.300 --> 00:00:48.700
+Here it started two workers:
+
+24
+00:00:48.700 --> 00:00:49.567
+Claude on the greeting,
+
+25
+00:00:49.567 --> 00:00:52.067
+and Codex on the CI workflow,
+
+26
+00:00:52.067 --> 00:00:54.733
+because the ask named Codex.
+
+27
+00:00:54.733 --> 00:00:57.100
+Each one gets a card and a link.
+
+28
+00:00:57.900 --> 00:01:00.467
+Follow-ups go to the worker already on that
+
+29
+00:01:00.467 --> 00:01:02.733
+area, so nothing is assigned twice.
+
+30
+00:01:02.733 --> 00:01:04.367
+When a worker finishes,
+
+31
+00:01:04.367 --> 00:01:06.333
+its report comes back on its own.
+
+32
+00:01:06.333 --> 00:01:08.200
+No polling, no pasting.
+
+33
+00:01:08.900 --> 00:01:11.633
+The coordinator and the workers have separate models.
+
+34
+00:01:11.633 --> 00:01:15.067
+Keep the coordinator on Claude Opus 5.5,
+
+35
+00:01:15.067 --> 00:01:16.933
+set a default worker model,
+
+36
+00:01:16.933 --> 00:01:18.600
+or name one in the ask,
+
+37
+00:01:18.600 --> 00:01:20.000
+like Codex here.
+
+38
+00:01:20.700 --> 00:01:24.000
+The usage chip shows one ring per subscription,
+
+39
+00:01:24.000 --> 00:01:25.367
+amber at 80 percent,
+
+40
+00:01:25.367 --> 00:01:27.167
+red at 95.
+
+41
+00:01:27.167 --> 00:01:28.467
+If one runs out,
+
+42
+00:01:28.467 --> 00:01:32.267
+the thread offers to continue on another signed-in provider.
+
+43
+00:01:33.300 --> 00:01:34.233
+For bigger work,
+
+44
+00:01:34.233 --> 00:01:35.900
+the Plan holds a short spec,
+
+45
+00:01:35.900 --> 00:01:37.733
+acceptance criteria and tasks,
+
+46
+00:01:37.733 --> 00:01:39.067
+and who owns each.
+
+47
+00:01:39.900 --> 00:01:41.867
+A worker can report a task done.
+
+48
+00:01:41.867 --> 00:01:43.333
+Only you make it Verified:
+
+49
+00:01:43.333 --> 00:01:46.500
+Run verification runs its check and keeps a receipt.
+
+50
+00:01:47.300 --> 00:01:48.900
+The agents write the code.
+
+51
+00:01:48.900 --> 00:01:50.333
+The coordinator routes it.
+
+52
+00:01:50.333 --> 00:01:51.800
+You review the results.
+
+53
+00:01:52.700 --> 00:01:53.833
+SpecWithCode is free,
+
+54
+00:01:53.833 --> 00:01:54.633
+with no account,
+
+55
+00:01:54.633 --> 00:01:56.167
+for Apple silicon Macs.
+
+56
+00:01:56.167 --> 00:01:58.067
+Get it at spec-weave.com/studio.

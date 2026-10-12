@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>SpecWithCode in 35 seconds</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; src: url(assets/fonts/ibm-plex-sans-latin.woff2) format("woff2"); }
+      @font-face { font-family: "Newsreader"; font-style: normal; font-weight: 200 800; src: url(assets/fonts/newsreader-latin.woff2) format("woff2"); }
+      @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 200 800; src: url(assets/fonts/newsreader-italic-latin.woff2) format("woff2"); }
+      :root { --paper: #f6f4ee; --ink: #252820; --muted: #65695e; --line: #d9dcd0; --soft: #eff2e8; --cream: #fffdf7; --accent: #bd481f;
+        --sans: "IBM Plex Sans", sans-serif; --display: "Newsreader", serif; }
+      body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
+      .clip { position: absolute; }
+      .media { object-fit: cover; }
+      .chip { top: 120px; z-index: 10; }
+      .chip.step { left: 60px; right: 60; }
+      .chip-inner, .chip.sped { display: inline-block; background: rgba(255, 253, 247, 0.94); border: 1px solid var(--line); border-radius: 4px;
+        padding: 10px 18px; font: 500 30px/1.3 var(--sans); color: var(--ink); box-shadow: 0 18px 50px #2528200d; white-space: nowrap; }
+      .chip.sped { right: 60px; top: 190px; font-size: 22px; color: var(--muted); }
+      .chip .arrow { color: var(--accent); }
+      .caption { left: 0; right: 0; bottom: 300px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; max-width: 900px; text-wrap: balance; background: rgba(37, 40, 32, 0.9); color: #f6f4ee;
+        padding: 16px 28px; border-radius: 6px; font: 600 52px/1.3 var(--sans); }
+      .outro { inset: 0; display: flex; align-items: center; justify-content: center; }
+      .outro-card { background: rgba(255, 253, 247, 0.95); border: 1px solid var(--line); border-radius: 8px; padding: 72px 64px;
+        width: 820px; box-sizing: border-box; box-shadow: 0 30px 80px #25282024; }
+      .eyebrow { font: 500 24px/1.3 var(--sans); letter-spacing: 0.12em; color: var(--muted); }
+      .outro-title { margin-top: 28px; font: italic 400 112px/1 var(--display); color: var(--ink); }
+      .thread { height: 4px; width: 0; background: var(--accent); margin-top: 28px; }
+      .outro-sub { margin-top: 32px; font: 400 38px/1.35 var(--sans); color: var(--ink); }
+      .outro-url { margin-top: 28px; font: 600 44px/1.2 var(--sans); color: var(--accent); }
+
+#d1-v { position: absolute; inset: 0; width: 1080px; height: 1920px; background: #f6f4ee; overflow: hidden; font-family: "IBM Plex Sans", sans-serif; color: #252820; }
+#d1-v .d1-v-win { position: absolute; width: 440px; height: 252px; }
+#d1-v .d1-v-tilt { position: absolute; inset: 0; box-sizing: border-box; background: #fffdf7; border: 2px solid #252820; border-radius: 10px; overflow: hidden; }
+#d1-v .d1-v-bar { height: 52px; background: #252820; display: flex; align-items: center; gap: 16px; padding: 0 18px; }
+#d1-v .d1-v-dots { display: flex; gap: 8px; }
+#d1-v .d1-v-dots b { width: 12px; height: 12px; border-radius: 50%; background: #f6f4ee; opacity: 0.32; display: block; }
+#d1-v .d1-v-name { font: 500 28px/1 "IBM Plex Sans", sans-serif; color: #f6f4ee; letter-spacing: 0.01em; }
+#d1-v .d1-v-body { padding: 32px 32px 0; display: flex; flex-direction: column; gap: 22px; }
+#d1-v .d1-v-ln { display: block; height: 14px; border-radius: 7px; background: #d9dcd0; transform-origin: 0 50%; }
+#d1-v .d1-v-ln:first-child { background: #c9cdbf; }
+#d1-v .d1-v-svg { position: absolute; left: 0; top: 0; overflow: visible; }
+#d1-v .d1-v-arrow { fill: none; stroke: #bd481f; stroke-width: 4; stroke-dasharray: 12 10; stroke-linecap: round; }
+#d1-v .d1-v-head { fill: #bd481f; }
+#d1-v .d1-v-pulse { fill: none; stroke: #bd481f; stroke-width: 16; stroke-linecap: round; stroke-dasharray: 0.01 1000; }
+#d1-v .d1-v-lab { position: absolute; width: 0; height: 0; }
+#d1-v .d1-v-lab span { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); white-space: nowrap; font: 500 30px/1.2 "IBM Plex Sans", sans-serif; color: #252820; background: #f6f4ee; padding: 2px 8px; border-radius: 4px; }
+#d1-v .d1-v-you { position: absolute; width: 172px; height: 172px; box-sizing: border-box; border: 3px solid #bd481f; border-radius: 50%; background: #f6f4ee; display: flex; align-items: center; justify-content: center; }
+#d1-v .d1-v-you span { font: italic 400 52px/1 "Newsreader", serif; color: #252820; margin-top: -4px; }
+#d1-v .d1-v-cap { position: absolute; left: 0; right: 0; text-align: center; }
+#d1-v .d1-v-capt { display: inline-block; padding: 0 0.2em 0.16em; font: italic 400 96px/1.1 "Newsreader", serif; color: #252820; clip-path: inset(-10% -2% -20% -2%); }
+#d1-v .d1-v-rt { position: relative; display: inline-block; }
+#d1-v .d1-v-rt i { position: absolute; left: 0.04em; right: -0.02em; bottom: -0.04em; height: 6px; background: #bd481f; transform-origin: 0 50%; display: block; }
+
+
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; src: url(assets/fonts/ibm-plex-sans-latin.woff2) format("woff2"); }
+@font-face { font-family: "Newsreader"; font-style: normal; font-weight: 200 800; src: url(assets/fonts/newsreader-latin.woff2) format("woff2"); }
+@font-face { font-family: "Newsreader"; font-style: italic; font-weight: 200 800; src: url(assets/fonts/newsreader-italic-latin.woff2) format("woff2"); }
+#d2-v { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; background: #f6f4ee; color: #252820; font-family: "IBM Plex Sans", sans-serif; }
+#d2-v .d2-v-stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+#d2-v .d2-v-svg { position: absolute; left: 0; top: 0; z-index: 1; overflow: visible; }
+#d2-v .d2-v-title { position: absolute; font: italic 400 68px/1.08 "Newsreader", serif; color: #252820; letter-spacing: -0.005em; }
+#d2-v .d2-v-label { font: 600 28px/1.2 "IBM Plex Sans", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: #65695e; }
+#d2-v .d2-v-tl { position: absolute; z-index: 2; }
+#d2-v .d2-v-ask { position: absolute; z-index: 2; box-sizing: border-box; background: #fffdf7; border: 1.5px solid #252820; border-radius: 6px; padding: 24px 26px 26px; }
+#d2-v .d2-v-asktext { margin-top: 12px; font: 400 30px/1.42 "IBM Plex Sans", sans-serif; color: #252820; }
+#d2-v .d2-v-follow { position: absolute; z-index: 2; box-sizing: border-box; background: #fffdf7; border: 1.5px solid #252820; border-left: 6px solid #bd481f; border-radius: 6px; padding: 0 24px; display: flex; align-items: center; }
+#d2-v .d2-v-ftext { font: 400 30px/1.3 "IBM Plex Sans", sans-serif; color: #252820; white-space: nowrap; }
+#d2-v .d2-v-ftext b { font-weight: 600; }
+#d2-v .d2-v-coord { position: absolute; z-index: 2; box-sizing: border-box; background: #f6f4ee; border: 3px solid #bd481f; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+#d2-v .d2-v-coordtitle { font: italic 400 56px/1.05 "Newsreader", serif; color: #252820; }
+#d2-v .d2-v-coordsub { margin-top: 12px; font: 400 28px/1.2 "IBM Plex Sans", sans-serif; color: #65695e; }
+#d2-v .d2-v-card { position: absolute; z-index: 2; box-sizing: border-box; background: #fffdf7; border: 1.5px solid #252820; border-radius: 8px; padding: 0 28px; display: flex; flex-direction: column; justify-content: center; gap: 13px; }
+#d2-v .d2-v-name, #d2-v .d2-v-row2 { position: relative; z-index: 2; }
+#d2-v .d2-v-row2 { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+#d2-v .d2-v-name { font: 500 32px/1.2 "IBM Plex Sans", sans-serif; color: #252820; white-space: nowrap; }
+#d2-v .d2-v-sub { font: 400 28px/1.2 "IBM Plex Sans", sans-serif; color: #65695e; white-space: nowrap; }
+#d2-v .d2-v-st { position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; flex: none; }
+#d2-v .d2-v-dot { position: relative; width: 14px; height: 14px; border-radius: 50%; background: #252820; flex: none; }
+#d2-v .d2-v-ring { position: absolute; left: -2px; top: -2px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #bd481f; opacity: 0; }
+#d2-v .d2-v-ww { position: relative; display: inline-block; min-width: 123px; }
+#d2-v .d2-v-w { font: 500 28px/1.2 "IBM Plex Sans", sans-serif; color: #252820; white-space: nowrap; }
+#d2-v .d2-v-w2 { position: absolute; left: 0; top: 0; opacity: 0; }
+#d2-v .d2-v-flash { position: absolute; inset: 0; border-radius: 7px; background: #eff2e8; opacity: 0; z-index: 1; }
+#d2-v .d2-v-own { position: absolute; inset: -8px; border-radius: 13px; border: 2.5px solid #bd481f; opacity: 0; z-index: 0; }
+#d2-v .d2-v-scan { position: absolute; z-index: 1; height: 0; border-top: 2px dashed #252820; opacity: 0; }
+#d2-v .d2-v-ghost { position: absolute; z-index: 2; box-sizing: border-box; border: 2px dashed rgba(37, 40, 32, 0.4); border-radius: 8px; padding: 0 28px; display: flex; align-items: center; opacity: 0; }
+#d2-v .d2-v-ghosttext { position: relative; font: 400 30px/1.2 "IBM Plex Sans", sans-serif; color: #65695e; white-space: nowrap; }
+#d2-v .d2-v-strike { position: absolute; left: -6px; right: -6px; top: 54%; height: 3px; background: #bd481f; transform-origin: 0 50%; transform: scaleX(0); }
+#d2-v .d2-v-nodup { position: absolute; z-index: 2; font: 500 28px/1.2 "IBM Plex Sans", sans-serif; color: #bd481f; opacity: 0; }
+#d2-v .d2-v-lbl { position: absolute; z-index: 2; font: 500 28px/1.25 "IBM Plex Sans", sans-serif; color: #252820; white-space: nowrap; opacity: 0; }
+#d2-v .d2-v-reuselbl { transform: translateX(-100%); text-align: right; }
+#d2-v .d2-v-retlbl { transform: translateX(-100%); text-align: right; color: #bd481f; }
+#d2-v .d2-v-report { position: absolute; z-index: 5; box-sizing: border-box; background: #fffdf7; border: 1.5px solid #252820; border-radius: 6px; padding: 20px 24px 14px; opacity: 0; transform-origin: 50% 50%; }
+#d2-v .d2-v-row { display: flex; align-items: center; gap: 16px; padding: 9px 0; border-top: 1px solid #d9dcd0; opacity: 0; }
+#d2-v .d2-v-report .d2-v-label { padding-bottom: 10px; }
+#d2-v .d2-v-rowk { font: 500 28px/1.25 "IBM Plex Sans", sans-serif; color: #252820; flex: none; width: 140px; }
+#d2-v .d2-v-rowbar { display: block; height: 10px; border-radius: 4px; background: #d9dcd0; }
+#d2-v .d2-v-cap { position: absolute; left: 0; right: 0; z-index: 4; text-align: center; font: italic 400 68px/1.15 "Newsreader", serif; color: #252820; white-space: nowrap; }
+#d2-v .d2-v-capa, #d2-v .d2-v-capb { position: relative; display: inline-block; clip-path: inset(-10% 100% -30% 0); }
+#d2-v .d2-v-capa { margin-right: 0.28em; }
+#d2-v .d2-v-under { position: absolute; left: 0; right: 0; bottom: -0.08em; height: 4px; background: #bd481f; transform-origin: 0 50%; transform: scaleX(0); }
+
+#d2-v { transform: scale(0.88); transform-origin: 50% 0%; }
+
+#d4-v { position: absolute; inset: 0; width: 1080px; height: 1920px; overflow: hidden; background: #f6f4ee; color: #252820; font-family: "IBM Plex Sans", sans-serif; }
+#d4-v .d4-v-svg { position: absolute; left: 0; top: 0; }
+#d4-v .d4-v-stroke { fill: none; stroke: #252820; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#d4-v .d4-v-head { opacity: 0; }
+#d4-v .d4-v-dashed { stroke-dasharray: 6 7; opacity: 0; }
+#d4-v .d4-v-bracket { fill: none; stroke: #bd481f; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+#d4-v .d4-v-title { position: absolute; font: italic 400 84px/1.06 "Newsreader", serif; color: #252820; letter-spacing: -0.01em; }
+#d4-v .d4-v-anchor { position: absolute; width: 0; height: 0; }
+#d4-v .d4-v-anchor > * { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); }
+#d4-v .d4-v-anchor-top > * { transform: translate(-50%, 0); }
+#d4-v .d4-v-pill { box-sizing: border-box; height: 68px; display: flex; align-items: center; justify-content: center; white-space: nowrap;
+  border: 1.5px solid #252820; border-radius: 34px; background: #fffdf7; font: 500 28px/1 "IBM Plex Sans", sans-serif; color: #252820; }
+#d4-v .d4-v-pill-blocked { border-color: #65695e; color: #65695e; }
+#d4-v #d4-v-pa0, #d4-v #d4-v-pa1, #d4-v #d4-v-pa2, #d4-v #d4-v-pa3, #d4-v #d4-v-blocked { opacity: 0; }
+#d4-v .d4-v-token { box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 20px;
+  background: #fffdf7; border: 1.5px solid #252820; border-radius: 6px; font: 500 28px/1.25 "IBM Plex Sans", sans-serif; color: #252820; text-wrap: balance;
+   }
+#d4-v #d4-v-token, #d4-v #d4-v-worker { opacity: 0; }
+#d4-v .d4-v-worker { box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #252820; color: #f6f4ee;
+  font: 500 28px/1 "IBM Plex Sans", sans-serif; }
+#d4-v .d4-v-gate { position: absolute; background: #bd481f; border-radius: 4px; opacity: 0; }
+#d4-v .d4-v-btn { box-sizing: border-box; display: flex; align-items: center; justify-content: center; white-space: nowrap; border: 2px solid #bd481f; border-radius: 8px;
+  background: #fffdf7; color: #bd481f; font: 600 28px/1 "IBM Plex Sans", sans-serif; }
+#d4-v #d4-v-btn-a { opacity: 0; }
+#d4-v .d4-v-small { white-space: nowrap; font: 400 28px/1.2 "IBM Plex Sans", sans-serif; color: #65695e; }
+#d4-v .d4-v-accent-text { color: #bd481f; font-weight: 500; }
+#d4-v #d4-v-press, #d4-v #d4-v-br-label, #d4-v #d4-v-person, #d4-v #d4-v-cap { opacity: 0; }
+#d4-v .d4-v-person { display: flex; align-items: center; gap: 14px; }
+#d4-v .d4-v-person > svg { display: block; }
+#d4-v .d4-v-person-label { font: 500 28px/1 "IBM Plex Sans", sans-serif; color: #252820; }
+#d4-v .d4-v-caption { white-space: nowrap; font: italic 400 35px/1.1 "Newsreader", serif; color: #65695e; }
+#d4-v .d4-v-cursor { position: absolute; opacity: 0; transform-origin: 4px 3px; }
+#d4-v .d4-v-cursor svg { display: block; }
+#d4-v .d4-v-slot { position: absolute; height: 6px; border-radius: 3px; background: #252820; opacity: 0; }
+#d4-v .d4-v-receipt { position: absolute; box-sizing: border-box; padding: 16px 22px 18px; background: #fffdf7; border: 1.5px solid #d9dcd0; border-bottom: none;
+  font: 400 22px/1 "IBM Plex Sans", sans-serif; color: #252820; clip-path: inset(0% 0% 100% 0%); }
+#d4-v .d4-v-rhead { font: 500 22px/1 "IBM Plex Sans", sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #65695e; padding-bottom: 12px; border-bottom: 1.5px dashed #d9dcd0; }
+#d4-v .d4-v-row { display: flex; align-items: center; justify-content: space-between; height: 46px; border-bottom: 1px dashed #d9dcd0; opacity: 0; }
+#d4-v .d4-v-row:last-of-type { border-bottom: none; }
+#d4-v .d4-v-mono { font: 500 22px/1 ui-monospace, Menlo, monospace; }
+#d4-v .d4-v-bars { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+#d4-v .d4-v-rbar { display: block; height: 6px; border-radius: 3px; background: #d9dcd0; }
+#d4-v .d4-v-zig { position: absolute; left: -1.5px; bottom: -11px; width: calc(100% + 3px); display: block; }
+
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="35.2">
+<section id="d1-v" class="clip diagram" data-start="0" data-duration="3.4" data-track-index="1">
+  <div class="d1-v-win" id="d1-v-win-cc" style="left:60px;top:330px"><div class="d1-v-tilt" style="transform:rotate(-1.6deg)"><div class="d1-v-bar"><span class="d1-v-dots"><b></b><b></b><b></b></span><span class="d1-v-name">Claude Code</span></div><div class="d1-v-body"><i class="d1-v-ln d1-v-ln-cc" style="width:62%"></i><i class="d1-v-ln d1-v-ln-cc" style="width:38%"></i><i class="d1-v-ln d1-v-ln-cc" style="width:80%"></i><i class="d1-v-ln d1-v-ln-x" id="d1-v-lnx-cc" style="width:66%"></i></div></div></div><div class="d1-v-win" id="d1-v-win-cx" style="left:580px;top:318px"><div class="d1-v-tilt" style="transform:rotate(1.4deg)"><div class="d1-v-bar"><span class="d1-v-dots"><b></b><b></b><b></b></span><span class="d1-v-name">Codex</span></div><div class="d1-v-body"><i class="d1-v-ln d1-v-ln-cx" style="width:48%"></i><i class="d1-v-ln d1-v-ln-cx" style="width:72%"></i><i class="d1-v-ln d1-v-ln-cx" style="width:56%"></i><i class="d1-v-ln d1-v-ln-x" id="d1-v-lnx-cx" style="width:50%"></i></div></div></div><div class="d1-v-win" id="d1-v-win-gb" style="left:64px;top:1040px"><div class="d1-v-tilt" style="transform:rotate(1.8deg)"><div class="d1-v-bar"><span class="d1-v-dots"><b></b><b></b><b></b></span><span class="d1-v-name">Grok Build</span></div><div class="d1-v-body"><i class="d1-v-ln d1-v-ln-gb" style="width:70%"></i><i class="d1-v-ln d1-v-ln-gb" style="width:44%"></i><i class="d1-v-ln d1-v-ln-gb" style="width:60%"></i><i class="d1-v-ln d1-v-ln-x" id="d1-v-lnx-gb" style="width:74%"></i></div></div></div><div class="d1-v-win" id="d1-v-win-cu" style="left:576px;top:1052px"><div class="d1-v-tilt" style="transform:rotate(-1.2deg)"><div class="d1-v-bar"><span class="d1-v-dots"><b></b><b></b><b></b></span><span class="d1-v-name">Cursor</span></div><div class="d1-v-body"><i class="d1-v-ln d1-v-ln-cu" style="width:54%"></i><i class="d1-v-ln d1-v-ln-cu" style="width:78%"></i><i class="d1-v-ln d1-v-ln-cu" style="width:40%"></i><i class="d1-v-ln d1-v-ln-x" id="d1-v-lnx-cu" style="width:58%"></i></div></div></div>
+  <svg class="d1-v-svg" viewBox="0 0 1080 1920" width="1080" height="1920"><defs><mask id="d1-v-mask-goal" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><path id="d1-v-mp-goal" d="M478 746 Q398.036 697.711 373.672 613.762" pathLength="100" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="0"/></mask><mask id="d1-v-mask-error" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><path id="d1-v-mp-error" d="M708 600 Q682.513 692.975 607.011 742.7" pathLength="100" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="0"/></mask><mask id="d1-v-mask-decision" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><path id="d1-v-mp-decision" d="M478 878 Q397.619 929.844 373.607 1016.219" pathLength="100" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="0"/></mask><mask id="d1-v-mask-context" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><path id="d1-v-mp-context" d="M330 312 Q539.621 186.048 750.691 297.204" pathLength="100" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="0"/></mask><mask id="d1-v-mask-diff" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><path id="d1-v-mp-diff" d="M708 1030 Q682.888 934.552 606.917 881.438" pathLength="100" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="0"/></mask></defs><path class="d1-v-arrow" d="M478 746 Q398.036 697.711 373.672 613.762" mask="url(#d1-v-mask-goal)"/><g id="d1-v-head-goal" class="d1-v-head" transform="translate(372 608) rotate(-106.184) scale(1.25)"><path d="M0 0 L-17 -8 L-13 0 L-17 8 Z"/></g><path id="d1-v-pulse-goal" class="d1-v-pulse" d="M478 746 Q398.036 697.711 373.672 613.762" pathLength="100"/><path class="d1-v-arrow" d="M708 600 Q682.513 692.975 607.011 742.7" mask="url(#d1-v-mask-error)"/><g id="d1-v-head-error" class="d1-v-head" transform="translate(602 746) rotate(146.632) scale(1.25)"><path d="M0 0 L-17 -8 L-13 0 L-17 8 Z"/></g><path id="d1-v-pulse-error" class="d1-v-pulse" d="M708 600 Q682.513 692.975 607.011 742.7" pathLength="100"/><path class="d1-v-arrow" d="M478 878 Q397.619 929.844 373.607 1016.219" mask="url(#d1-v-mask-decision)"/><g id="d1-v-head-decision" class="d1-v-head" transform="translate(372 1022) rotate(105.535) scale(1.25)"><path d="M0 0 L-17 -8 L-13 0 L-17 8 Z"/></g><path id="d1-v-pulse-decision" class="d1-v-pulse" d="M478 878 Q397.619 929.844 373.607 1016.219" pathLength="100"/><path class="d1-v-arrow" d="M330 312 Q539.621 186.048 750.691 297.204" mask="url(#d1-v-mask-context)"/><g id="d1-v-head-context" class="d1-v-head" transform="translate(756 300) rotate(27.773) scale(1.25)"><path d="M0 0 L-17 -8 L-13 0 L-17 8 Z"/></g><path id="d1-v-pulse-context" class="d1-v-pulse" d="M330 312 Q539.621 186.048 750.691 297.204" pathLength="100"/><path class="d1-v-arrow" d="M708 1030 Q682.888 934.552 606.917 881.438" mask="url(#d1-v-mask-diff)"/><g id="d1-v-head-diff" class="d1-v-head" transform="translate(602 878) rotate(-145.041) scale(1.25)"><path d="M0 0 L-17 -8 L-13 0 L-17 8 Z"/></g><path id="d1-v-pulse-diff" class="d1-v-pulse" d="M708 1030 Q682.888 934.552 606.917 881.438" pathLength="100"/></svg>
+  <div class="d1-v-lab" id="d1-v-lab-goal" style="left:296px;top:700px"><span>paste goal</span></div>
+  <div class="d1-v-lab" id="d1-v-lab-error" style="left:784px;top:700px"><span>paste error</span></div>
+  <div class="d1-v-lab" id="d1-v-lab-decision" style="left:270px;top:928px"><span>paste decision</span></div>
+  <div class="d1-v-lab" id="d1-v-lab-context" style="left:540px;top:194px"><span>paste context</span></div>
+  <div class="d1-v-lab" id="d1-v-lab-diff" style="left:800px;top:928px"><span>paste diff</span></div>
+  <div class="d1-v-you" id="d1-v-you" style="left:454px;top:726px"><span>you</span></div>
+  <div class="d1-v-cap" id="d1-v-cap" style="top:1470px"><span class="d1-v-capt" id="d1-v-capt">You = the <span class="d1-v-rt">router<i id="d1-v-ul"></i></span></span></div>
+</section>
+<audio id="vo-S01" src="media/vo/s01.wav" data-start="0.25" data-duration="2.879" data-track-index="6" data-volume="1"></audio>
+<video id="v1" class="clip media" src="media/take1.mp4" muted playsinline data-start="3.4" data-duration="4.6" data-media-start="6" data-playback-rate="1" data-track-index="0" style="left:-1004.4px;top:-24px;width:3456px;height:1944px;transform-origin:0 0"></video>
+<video id="v2" class="clip media" src="media/take1.mp4" muted playsinline data-start="8" data-duration="3" data-media-start="21" data-playback-rate="3" data-track-index="0" style="left:-1004.4px;top:-24px;width:3456px;height:1944px;transform-origin:0 0"></video>
+<div class="clip chip sped" data-start="8" data-duration="3" data-track-index="3">Sped up 3×</div>
+<audio id="vo-S02" src="media/vo/s02.wav" data-start="3.65" data-duration="7.059" data-track-index="6" data-volume="1"></audio>
+
+<section id="d2-v" class="clip diagram" data-start="11" data-duration="6.2" data-track-index="1">
+  <div class="d2-v-stage" id="d2-v-stage">
+    <div class="d2-v-title" id="d2-v-title" style="left:80px;top:120px;width:920px">Reuse the owner,<br>reports come back</div>
+    <svg class="d2-v-svg" viewBox="0 0 1080 1920" width="1080" height="1920" aria-hidden="true">
+      <defs><mask id="d2-v-gmask" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><path id="d2-v-gmaskpath" d="M 520 810 L 600 810" fill="none" stroke="#fff" stroke-width="40" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1"/></mask></defs>
+      <path id="d2-v-fline" d="M 300 646 L 300 708" fill="none" stroke="#252820" stroke-width="2.5" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1"/>
+      <path id="d2-v-fhead" class="d2-v-head" d="M -15 -9 L 0 0 L -15 9" fill="none" stroke="#252820" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(300 708) rotate(90)"/>
+      <g mask="url(#d2-v-gmask)"><path d="M 520 810 L 600 810" fill="none" stroke="#252820" stroke-opacity="0.45" stroke-width="2.5" stroke-dasharray="10 9"/></g>
+      <path id="d2-v-ghead" class="d2-v-head" d="M -15 -9 L 0 0 L -15 9" fill="none" stroke="#252820" stroke-width="2.5" stroke-opacity="0.45" stroke-linecap="round" stroke-linejoin="round" transform="translate(600 810) rotate(0)"/>
+      <path id="d2-v-e4" d="M 440 910 L 440 1126" fill="none" stroke="#bd481f" stroke-width="4" stroke-linecap="round" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1"/>
+      <path id="d2-v-e4head" class="d2-v-head" d="M -15 -9 L 0 0 L -15 9" fill="none" stroke="#bd481f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(440 1126) rotate(90)"/>
+      <path id="d2-v-e5" d="M 880 1190 Q 1050 1080 905 950" fill="none" stroke="#bd481f" stroke-width="3" stroke-linecap="round" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1"/>
+      <path id="d2-v-e5head" class="d2-v-head" d="M -15 -9 L 0 0 L -15 9" fill="none" stroke="#bd481f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" transform="translate(905 950) rotate(-135.06)"/>
+      <path id="d2-v-x1" d="M 542 792 L 578 828" fill="none" stroke="#bd481f" stroke-width="5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1"/>
+      <path id="d2-v-x2" d="M 578 792 L 542 828" fill="none" stroke="#bd481f" stroke-width="5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1"/>
+    </svg>
+    <div class="d2-v-ask" id="d2-v-ask" style="left:80px;top:340px;width:920px">
+      <div class="d2-v-label">Your ask</div>
+      <div class="d2-v-asktext">Two jobs: let greet take a name&nbsp;· add a CI workflow (give&nbsp;it&nbsp;to&nbsp;Codex)</div>
+    </div>
+    <div class="d2-v-follow" id="d2-v-follow" style="left:80px;top:540px;width:620px;height:104px">
+      <div class="d2-v-ftext"><b>Follow-up:</b> greet() trims spaces</div>
+    </div>
+    <div class="d2-v-coord" id="d2-v-coord" style="left:80px;top:710px;width:440px;height:200px">
+      <div class="d2-v-coordtitle">Coordinator</div>
+      <div class="d2-v-coordsub">routes and tracks</div>
+    </div>
+    <div class="d2-v-label d2-v-tl" id="d2-v-threadslabel" style="left:80px;top:1072px">Worker threads</div>
+    
+      <div class="d2-v-card" id="d2-v-c1" style="left:80px;top:1126px;width:800px;height:156px">
+        <div class="d2-v-name">greet takes a name</div>
+        <div class="d2-v-row2">
+          <div class="d2-v-sub">Claude Opus 5.5</div>
+        <div class="d2-v-st">
+          <span class="d2-v-dot"><span class="d2-v-ring" id="d2-v-c1-ring"></span></span>
+          <span class="d2-v-ww">
+            <span class="d2-v-w" id="d2-v-c1-w">Working</span><span class="d2-v-w d2-v-w2" id="d2-v-c1-done" data-layout-allow-overlap>Done</span>
+          </span>
+        </div>
+        </div>
+        <div class="d2-v-flash" id="d2-v-c1-flash"></div>
+        <div class="d2-v-own" id="d2-v-c1-own"></div>
+      </div>
+    
+      <div class="d2-v-card" id="d2-v-c2" style="left:80px;top:1312px;width:800px;height:156px">
+        <div class="d2-v-name">CI workflow for npm test</div>
+        <div class="d2-v-row2">
+          <div class="d2-v-sub">Codex</div>
+        <div class="d2-v-st">
+          <span class="d2-v-dot"><span class="d2-v-ring" id="d2-v-c2-ring"></span></span>
+          <span class="d2-v-ww">
+            <span class="d2-v-w" id="d2-v-c2-w">Working</span>
+          </span>
+        </div>
+        </div>
+        <div class="d2-v-flash" id="d2-v-c2-flash"></div>
+        
+      </div>
+    
+      <div class="d2-v-card" id="d2-v-c3" style="left:80px;top:1498px;width:800px;height:156px">
+        <div class="d2-v-name">Write project memory</div>
+        <div class="d2-v-row2">
+          <div class="d2-v-sub">Claude</div>
+        <div class="d2-v-st">
+          <span class="d2-v-dot"></span>
+          <span class="d2-v-ww">
+            <span class="d2-v-w" id="d2-v-c3-w">Idle</span>
+          </span>
+        </div>
+        </div>
+        <div class="d2-v-flash" id="d2-v-c3-flash"></div>
+        
+      </div>
+    <div class="d2-v-scan" id="d2-v-scan" style="left:46px;width:868px;top:0"></div>
+    <div class="d2-v-ghost" id="d2-v-ghost" style="left:600px;top:740px;width:400px;height:140px">
+      <span class="d2-v-ghosttext">new duplicate thread<span class="d2-v-strike" id="d2-v-strike"></span></span>
+    </div>
+    <div class="d2-v-nodup" id="d2-v-nodup" style="left:600px;top:892px">no duplicate</div>
+    <div class="d2-v-lbl d2-v-reuselbl" id="d2-v-reuselbl" style="left:414px;top:984px">reuse the owner</div>
+    <div class="d2-v-lbl d2-v-retlbl" id="d2-v-retlbl" style="left:892px;top:990px">report comes back<br>on its own</div>
+    <div class="d2-v-report" id="d2-v-report" data-layout-allow-occlusion data-layout-allow-overlap style="left:600px;top:700px;width:400px">
+      <div class="d2-v-label">Report</div>
+      <div class="d2-v-row" id="d2-v-row0"><span class="d2-v-rowk">Outcome</span><span class="d2-v-rowbar" style="width:46%"></span></div>
+      <div class="d2-v-row" id="d2-v-row1"><span class="d2-v-rowk">Evidence</span><span class="d2-v-rowbar" style="width:38%"></span></div>
+      <div class="d2-v-row" id="d2-v-row2"><span class="d2-v-rowk">Blockers</span><span class="d2-v-rowbar" style="width:30%"></span></div>
+    </div>
+    <div class="d2-v-cap" id="d2-v-cap" style="top:1730px">
+      <span class="d2-v-capa" id="d2-v-cap1">No polling.</span>
+      <span class="d2-v-capb" id="d2-v-cap2">No pasting.<span class="d2-v-under" id="d2-v-under"></span></span>
+    </div>
+  </div>
+</section>
+<audio id="vo-S03" src="media/vo/s03.wav" data-start="11.25" data-duration="5.526" data-track-index="6" data-volume="1"></audio>
+<video id="v3" class="clip media" src="media/take1.mp4" muted playsinline data-start="17.2" data-duration="4.8" data-media-start="28" data-playback-rate="1" data-track-index="0" style="left:-3336px;top:0px;width:4416px;height:2484px;transform-origin:0 0"></video>
+<audio id="vo-S04" src="media/vo/s04.wav" data-start="17.45" data-duration="4.273" data-track-index="6" data-volume="1"></audio>
+<section id="d4-v" class="clip diagram" data-start="22" data-duration="5.4" data-track-index="1">
+<div id="d4-v-title" class="d4-v-title" style="left:96px;top:236px;width:900px">Reported done<br>is not Verified</div>
+<svg class="d4-v-svg" width="1080" height="1920" viewBox="0 0 1080 1920" aria-hidden="true">
+  <path id="d4-v-ar0" d="M 650 708 V 832" class="d4-v-stroke" stroke-dasharray="124" stroke-dashoffset="124"/><path id="d4-v-ah0" d="M 643 821 L 650 832 L 657 821" class="d4-v-stroke d4-v-head"/>
+  <path id="d4-v-ar1" d="M 650 928 V 1052" class="d4-v-stroke" stroke-dasharray="124" stroke-dashoffset="124"/><path id="d4-v-ah1" d="M 643 1041 L 650 1052 L 657 1041" class="d4-v-stroke d4-v-head"/>
+  <path id="d4-v-ar2" d="M 650 1206 V 1422" class="d4-v-stroke" stroke-dasharray="216" stroke-dashoffset="216"/><path id="d4-v-ah2" d="M 643 1411 L 650 1422 L 657 1411" class="d4-v-stroke d4-v-head"/>
+  <path id="d4-v-bconn" d="M 769 880 H 810" class="d4-v-stroke d4-v-dashed"/>
+  
+</svg>
+
+<div id="d4-v-blocked" class="d4-v-anchor " style="left:892px;top:880px"><div class="d4-v-pill d4-v-pill-blocked" style="width:164px">Blocked</div></div>
+<div id="d4-v-pa0" class="d4-v-anchor " style="left:650px;top:660px"><div id="d4-v-pill0" class="d4-v-pill" style="width:190px">Planned</div></div>
+<div id="d4-v-pa1" class="d4-v-anchor " style="left:650px;top:880px"><div id="d4-v-pill1" class="d4-v-pill" style="width:238px">In progress</div></div>
+<div id="d4-v-pa2" class="d4-v-anchor " style="left:650px;top:1100px"><div id="d4-v-pill2" class="d4-v-pill" style="width:272px">Reported done</div></div>
+<div id="d4-v-pa3" class="d4-v-anchor " style="left:650px;top:1470px"><div id="d4-v-pill3" class="d4-v-pill" style="width:194px">Verified</div></div>
+<div id="d4-v-gate" class="d4-v-gate" style="left:92px;top:1281px;width:620px;height:8px;transform-origin:100% 50%"></div>
+<div id="d4-v-btn-a" class="d4-v-anchor " style="left:856px;top:1285px"><div id="d4-v-btn" class="d4-v-btn" style="width:284px;height:68px">Run verification</div></div>
+<div id="d4-v-press" class="d4-v-anchor " style="left:926px;top:1224px"><div class="d4-v-small">you press it</div></div>
+<div id="d4-v-person" class="d4-v-anchor " style="left:830px;top:1430px"><div class="d4-v-person"><svg class="d4-v-person-svg" width="48" height="60" viewBox="0 0 48 60" aria-hidden="true"><circle cx="24" cy="17" r="12" fill="none" stroke="#252820" stroke-width="3"/><path d="M4 58 C4 41 13 34 24 34 C35 34 44 41 44 58" fill="none" stroke="#252820" stroke-width="3" stroke-linecap="round"/></svg><span class="d4-v-person-label">you</span></div></div>
+<div id="d4-v-cap" class="d4-v-anchor d4-v-anchor-top" style="left:650px;top:1150px"><div class="d4-v-caption">a report, not proof</div></div>
+
+<div id="d4-v-worker" class="d4-v-anchor " style="left:285px;top:556px"><div class="d4-v-worker" style="width:132px;height:64px">worker</div></div>
+<div id="d4-v-token" class="d4-v-anchor " style="left:285px;top:660px"><div id="d4-v-token-card" class="d4-v-token" style="width:372px;height:112px">Task: CI workflow runs npm test</div></div>
+<div id="d4-v-cursor" class="d4-v-cursor" style="left:820px;top:1440px"><svg width="40" height="48" viewBox="0 0 40 48" aria-hidden="true"><path d="M4 3 L4 38 L13 30 L19.5 44 L26 41 L19.5 27.5 L31 27.5 Z" fill="#252820" stroke="#f6f4ee" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
+</section>
+<audio id="vo-S05" src="media/vo/s05.wav" data-start="22.25" data-duration="4.783" data-track-index="6" data-volume="1"></audio>
+<video id="v4" class="clip media" src="media/v02-loom.mp4" muted playsinline data-start="27.4" data-duration="7.8" data-media-start="0" data-playback-rate="1" data-track-index="0" style="left:0;top:0;width:100%;height:100%;object-fit:cover"></video>
+<section id="outro" class="clip outro" data-start="27.4" data-duration="7.8" data-track-index="2">
+  <div class="outro-card"><div class="eyebrow rise">FREE · NO ACCOUNT · APPLE SILICON MACS</div><div class="outro-title rise">SpecWithCode</div><div class="thread" id="outro-thread"></div><div class="outro-sub rise">One coordinator for the coding agents you already pay for.</div><div class="outro-url rise">spec-weave.com/studio</div></div></section>
+<audio id="vo-S06" src="media/vo/s06.wav" data-start="27.65" data-duration="7.245" data-track-index="6" data-volume="1"></audio>
+<div class="clip caption" data-start="0.267" data-duration="2.833" data-track-index="5"><span class="pill">Still pasting context between agent terminals?</span></div>
+<div class="clip caption" data-start="3.667" data-duration="2.167" data-track-index="5"><span class="pill">In SpecWithCode you describe the</span></div>
+<div class="clip caption" data-start="5.833" data-duration="2.267" data-track-index="5"><span class="pill">work once. A coordinator starts</span></div>
+<div class="clip caption" data-start="8.1" data-duration="1.667" data-track-index="5"><span class="pill">worker threads and links each</span></div>
+<div class="clip caption" data-start="9.767" data-duration="0.933" data-track-index="5"><span class="pill">one back.</span></div>
+<div class="clip caption" data-start="11.267" data-duration="1.133" data-track-index="5"><span class="pill">Follow-ups go to the thread</span></div>
+<div class="clip caption" data-start="12.4" data-duration="1.433" data-track-index="5"><span class="pill">that owns that area,</span></div>
+<div class="clip caption" data-start="13.833" data-duration="1.233" data-track-index="5"><span class="pill">and each report comes back</span></div>
+<div class="clip caption" data-start="15.067" data-duration="0.8" data-track-index="5"><span class="pill">on its own.</span></div>
+<div class="clip caption" data-start="15.867" data-duration="1.033" data-track-index="5"><span class="pill">No pasting.</span></div>
+<div class="clip caption" data-start="17.467" data-duration="1.567" data-track-index="5"><span class="pill">Run the coordinator on Claude</span></div>
+<div class="clip caption" data-start="19.033" data-duration="1.533" data-track-index="5"><span class="pill">Opus 5.5 and a worker</span></div>
+<div class="clip caption" data-start="20.567" data-duration="1.233" data-track-index="5"><span class="pill">on Codex.</span></div>
+<div class="clip caption" data-start="22.267" data-duration="1.233" data-track-index="5"><span class="pill">A worker can report a</span></div>
+<div class="clip caption" data-start="23.5" data-duration="1.4" data-track-index="5"><span class="pill">task done. Only you make</span></div>
+<div class="clip caption" data-start="24.9" data-duration="2.1" data-track-index="5"><span class="pill">it Verified, by running its check.</span></div>
+<div class="clip caption" data-start="27.667" data-duration="1.567" data-track-index="5"><span class="pill">SpecWithCode works with the agents</span></div>
+<div class="clip caption" data-start="29.233" data-duration="1.233" data-track-index="5"><span class="pill">you already pay for.</span></div>
+<div class="clip caption" data-start="30.467" data-duration="4.367" data-track-index="5"><span class="pill">Free for Apple silicon Macs: spec-weave.com/studio.</span></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      tl.to("#d1-v-win-cc", { x: 2.881, y: -0.421, duration: 0.079, ease: "none" }, 0);
+tl.to("#d1-v-win-cc", { x: -0.244, y: 1.436, duration: 0.079, ease: "none" }, 0.08);
+tl.to("#d1-v-win-cc", { x: 2.996, y: -1.64, duration: 0.079, ease: "none" }, 0.16);
+tl.to("#d1-v-win-cc", { x: 2.609, y: 0.922, duration: 0.079, ease: "none" }, 0.24);
+tl.to("#d1-v-win-cc", { x: -1.555, y: 2.297, duration: 0.079, ease: "none" }, 0.32);
+tl.to("#d1-v-win-cc", { x: 2.7, y: 0.462, duration: 0.079, ease: "none" }, 0.4);
+tl.to("#d1-v-win-cc", { x: -1.876, y: -0.75, duration: 0.079, ease: "none" }, 0.48);
+tl.to("#d1-v-win-cc", { x: -0.636, y: -0.495, duration: 0.079, ease: "none" }, 0.56);
+tl.to("#d1-v-win-cc", { x: 1.583, y: -0.022, duration: 0.079, ease: "none" }, 0.64);
+tl.to("#d1-v-win-cc", { x: 0.994, y: -1.418, duration: 0.079, ease: "none" }, 0.72);
+tl.to("#d1-v-win-cc", { x: -0.529, y: -1.962, duration: 0.079, ease: "none" }, 0.8);
+tl.to("#d1-v-win-cc", { x: -1.518, y: 2.576, duration: 0.079, ease: "none" }, 0.88);
+tl.to("#d1-v-win-cc", { x: -0.504, y: 0.256, duration: 0.079, ease: "none" }, 0.96);
+tl.to("#d1-v-win-cc", { x: 1.148, y: -0.621, duration: 0.079, ease: "none" }, 1.04);
+tl.to("#d1-v-win-cc", { x: -0.775, y: -0.762, duration: 0.079, ease: "none" }, 1.12);
+tl.to("#d1-v-win-cc", { x: 0.254, y: 2.142, duration: 0.079, ease: "none" }, 1.2);
+tl.to("#d1-v-win-cc", { x: 2.584, y: 0.902, duration: 0.079, ease: "none" }, 1.28);
+tl.to("#d1-v-win-cc", { x: 2.696, y: -1.179, duration: 0.079, ease: "none" }, 1.36);
+tl.to("#d1-v-win-cc", { x: -1.61, y: -0.51, duration: 0.079, ease: "none" }, 1.44);
+tl.to("#d1-v-win-cc", { x: 2.967, y: 2.269, duration: 0.079, ease: "none" }, 1.52);
+tl.to("#d1-v-win-cc", { x: 0.767, y: -1.97, duration: 0.079, ease: "none" }, 1.6);
+tl.to("#d1-v-win-cc", { x: 2.987, y: -0.434, duration: 0.079, ease: "none" }, 1.68);
+tl.to("#d1-v-win-cc", { x: 0.791, y: -0.281, duration: 0.079, ease: "none" }, 1.76);
+tl.to("#d1-v-win-cc", { x: -1.111, y: 2.821, duration: 0.079, ease: "none" }, 1.84);
+tl.to("#d1-v-win-cc", { x: -1.812, y: -0.808, duration: 0.079, ease: "none" }, 1.92);
+tl.to("#d1-v-win-cc", { x: -0.641, y: -2.847, duration: 0.079, ease: "none" }, 2);
+tl.to("#d1-v-win-cc", { x: 1.467, y: -1.843, duration: 0.079, ease: "none" }, 2.08);
+tl.to("#d1-v-win-cc", { x: -2.376, y: -2.915, duration: 0.079, ease: "none" }, 2.16);
+tl.to("#d1-v-win-cc", { x: 0.284, y: -0.659, duration: 0.079, ease: "none" }, 2.24);
+tl.to("#d1-v-win-cc", { x: 0.678, y: -1.947, duration: 0.079, ease: "none" }, 2.32);
+tl.to("#d1-v-win-cc", { x: 0, y: 0, duration: 0.14, ease: "power2.out" }, 2.4);
+tl.to("#d1-v-win-cx", { x: -0.571, y: 0.249, duration: 0.079, ease: "none" }, 0);
+tl.to("#d1-v-win-cx", { x: -1.158, y: 1.265, duration: 0.079, ease: "none" }, 0.08);
+tl.to("#d1-v-win-cx", { x: 1.237, y: -2.329, duration: 0.079, ease: "none" }, 0.16);
+tl.to("#d1-v-win-cx", { x: 0.256, y: -2.391, duration: 0.079, ease: "none" }, 0.24);
+tl.to("#d1-v-win-cx", { x: -1.202, y: -2.57, duration: 0.079, ease: "none" }, 0.32);
+tl.to("#d1-v-win-cx", { x: -1.617, y: 1.854, duration: 0.079, ease: "none" }, 0.4);
+tl.to("#d1-v-win-cx", { x: 1.796, y: 1.331, duration: 0.079, ease: "none" }, 0.48);
+tl.to("#d1-v-win-cx", { x: 0.144, y: 1.838, duration: 0.079, ease: "none" }, 0.56);
+tl.to("#d1-v-win-cx", { x: -1.683, y: -1.225, duration: 0.079, ease: "none" }, 0.64);
+tl.to("#d1-v-win-cx", { x: -2.26, y: 0.881, duration: 0.079, ease: "none" }, 0.72);
+tl.to("#d1-v-win-cx", { x: -2.518, y: -1.983, duration: 0.079, ease: "none" }, 0.8);
+tl.to("#d1-v-win-cx", { x: 2.802, y: -2.877, duration: 0.079, ease: "none" }, 0.88);
+tl.to("#d1-v-win-cx", { x: -0.763, y: 1.529, duration: 0.079, ease: "none" }, 0.96);
+tl.to("#d1-v-win-cx", { x: -1.088, y: -2.971, duration: 0.079, ease: "none" }, 1.04);
+tl.to("#d1-v-win-cx", { x: -2.846, y: -0.564, duration: 0.079, ease: "none" }, 1.12);
+tl.to("#d1-v-win-cx", { x: 0.139, y: -0.239, duration: 0.079, ease: "none" }, 1.2);
+tl.to("#d1-v-win-cx", { x: 1.577, y: 2.506, duration: 0.079, ease: "none" }, 1.28);
+tl.to("#d1-v-win-cx", { x: 2.637, y: -1.363, duration: 0.079, ease: "none" }, 1.36);
+tl.to("#d1-v-win-cx", { x: -0.036, y: -0.356, duration: 0.079, ease: "none" }, 1.44);
+tl.to("#d1-v-win-cx", { x: 1.935, y: -0.592, duration: 0.079, ease: "none" }, 1.52);
+tl.to("#d1-v-win-cx", { x: 0.765, y: 2.372, duration: 0.079, ease: "none" }, 1.6);
+tl.to("#d1-v-win-cx", { x: -2.005, y: 2.564, duration: 0.079, ease: "none" }, 1.68);
+tl.to("#d1-v-win-cx", { x: 2.681, y: -1.737, duration: 0.079, ease: "none" }, 1.76);
+tl.to("#d1-v-win-cx", { x: 1.63, y: 0.379, duration: 0.079, ease: "none" }, 1.84);
+tl.to("#d1-v-win-cx", { x: 2.647, y: 2.791, duration: 0.079, ease: "none" }, 1.92);
+tl.to("#d1-v-win-cx", { x: -2.61, y: -1.062, duration: 0.079, ease: "none" }, 2);
+tl.to("#d1-v-win-cx", { x: 1.386, y: -1.429, duration: 0.079, ease: "none" }, 2.08);
+tl.to("#d1-v-win-cx", { x: -0.508, y: -1.166, duration: 0.079, ease: "none" }, 2.16);
+tl.to("#d1-v-win-cx", { x: 2.873, y: 2.457, duration: 0.079, ease: "none" }, 2.24);
+tl.to("#d1-v-win-cx", { x: 2.904, y: 1.781, duration: 0.079, ease: "none" }, 2.32);
+tl.to("#d1-v-win-cx", { x: 0, y: 0, duration: 0.14, ease: "power2.out" }, 2.4);
+tl.to("#d1-v-win-gb", { x: -0.448, y: -1.535, duration: 0.079, ease: "none" }, 0);
+tl.to("#d1-v-win-gb", { x: -0.836, y: -2.16, duration: 0.079, ease: "none" }, 0.08);
+tl.to("#d1-v-win-gb", { x: 2.659, y: -2.008, duration: 0.079, ease: "none" }, 0.16);
+tl.to("#d1-v-win-gb", { x: 0.032, y: -2.502, duration: 0.079, ease: "none" }, 0.24);
+tl.to("#d1-v-win-gb", { x: -1.513, y: -1.699, duration: 0.079, ease: "none" }, 0.32);
+tl.to("#d1-v-win-gb", { x: 1.578, y: 0.298, duration: 0.079, ease: "none" }, 0.4);
+tl.to("#d1-v-win-gb", { x: 0.928, y: 1.729, duration: 0.079, ease: "none" }, 0.48);
+tl.to("#d1-v-win-gb", { x: 2.78, y: -2.746, duration: 0.079, ease: "none" }, 0.56);
+tl.to("#d1-v-win-gb", { x: 0.164, y: 1.611, duration: 0.079, ease: "none" }, 0.64);
+tl.to("#d1-v-win-gb", { x: 2.249, y: -2.241, duration: 0.079, ease: "none" }, 0.72);
+tl.to("#d1-v-win-gb", { x: -1.185, y: -1.641, duration: 0.079, ease: "none" }, 0.8);
+tl.to("#d1-v-win-gb", { x: 0.152, y: 1.216, duration: 0.079, ease: "none" }, 0.88);
+tl.to("#d1-v-win-gb", { x: -1.583, y: 2.692, duration: 0.079, ease: "none" }, 0.96);
+tl.to("#d1-v-win-gb", { x: -2.055, y: -2.899, duration: 0.079, ease: "none" }, 1.04);
+tl.to("#d1-v-win-gb", { x: -1.442, y: 2.462, duration: 0.079, ease: "none" }, 1.12);
+tl.to("#d1-v-win-gb", { x: 2.001, y: 0.678, duration: 0.079, ease: "none" }, 1.2);
+tl.to("#d1-v-win-gb", { x: 0.517, y: -2.931, duration: 0.079, ease: "none" }, 1.28);
+tl.to("#d1-v-win-gb", { x: 2.727, y: 1.093, duration: 0.079, ease: "none" }, 1.36);
+tl.to("#d1-v-win-gb", { x: 2.758, y: 0.907, duration: 0.079, ease: "none" }, 1.44);
+tl.to("#d1-v-win-gb", { x: -1.736, y: 0.053, duration: 0.079, ease: "none" }, 1.52);
+tl.to("#d1-v-win-gb", { x: 1.117, y: 2.837, duration: 0.079, ease: "none" }, 1.6);
+tl.to("#d1-v-win-gb", { x: 1.369, y: 2.824, duration: 0.079, ease: "none" }, 1.68);
+tl.to("#d1-v-win-gb", { x: 2.018, y: 2.131, duration: 0.079, ease: "none" }, 1.76);
+tl.to("#d1-v-win-gb", { x: -0.438, y: -1.252, duration: 0.079, ease: "none" }, 1.84);
+tl.to("#d1-v-win-gb", { x: -1.418, y: 2.875, duration: 0.079, ease: "none" }, 1.92);
+tl.to("#d1-v-win-gb", { x: 2.149, y: 0.016, duration: 0.079, ease: "none" }, 2);
+tl.to("#d1-v-win-gb", { x: -1.048, y: 0.289, duration: 0.079, ease: "none" }, 2.08);
+tl.to("#d1-v-win-gb", { x: -2.814, y: -1.094, duration: 0.079, ease: "none" }, 2.16);
+tl.to("#d1-v-win-gb", { x: -0.314, y: -0.065, duration: 0.079, ease: "none" }, 2.24);
+tl.to("#d1-v-win-gb", { x: -2.981, y: -0.797, duration: 0.079, ease: "none" }, 2.32);
+tl.to("#d1-v-win-gb", { x: 0, y: 0, duration: 0.14, ease: "power2.out" }, 2.4);
+tl.to("#d1-v-win-cu", { x: 2.571, y: -1.715, duration: 0.079, ease: "none" }, 0);
+tl.to("#d1-v-win-cu", { x: -1.552, y: -2.97, duration: 0.079, ease: "none" }, 0.08);
+tl.to("#d1-v-win-cu", { x: 0.683, y: -1.39, duration: 0.079, ease: "none" }, 0.16);
+tl.to("#d1-v-win-cu", { x: -2.852, y: -2.207, duration: 0.079, ease: "none" }, 0.24);
+tl.to("#d1-v-win-cu", { x: -0.949, y: -0.329, duration: 0.079, ease: "none" }, 0.32);
+tl.to("#d1-v-win-cu", { x: -0.586, y: 1.479, duration: 0.079, ease: "none" }, 0.4);
+tl.to("#d1-v-win-cu", { x: -1.238, y: -1.831, duration: 0.079, ease: "none" }, 0.48);
+tl.to("#d1-v-win-cu", { x: -0.162, y: -1.998, duration: 0.079, ease: "none" }, 0.56);
+tl.to("#d1-v-win-cu", { x: 0.86, y: -0.573, duration: 0.079, ease: "none" }, 0.64);
+tl.to("#d1-v-win-cu", { x: -2.992, y: -2.161, duration: 0.079, ease: "none" }, 0.72);
+tl.to("#d1-v-win-cu", { x: -2.134, y: 2.276, duration: 0.079, ease: "none" }, 0.8);
+tl.to("#d1-v-win-cu", { x: 0.819, y: -1.342, duration: 0.079, ease: "none" }, 0.88);
+tl.to("#d1-v-win-cu", { x: 0.28, y: -2.39, duration: 0.079, ease: "none" }, 0.96);
+tl.to("#d1-v-win-cu", { x: -1.505, y: 0.166, duration: 0.079, ease: "none" }, 1.04);
+tl.to("#d1-v-win-cu", { x: 2.895, y: -2.423, duration: 0.079, ease: "none" }, 1.12);
+tl.to("#d1-v-win-cu", { x: -2.085, y: 0.89, duration: 0.079, ease: "none" }, 1.2);
+tl.to("#d1-v-win-cu", { x: 1.284, y: -0.116, duration: 0.079, ease: "none" }, 1.28);
+tl.to("#d1-v-win-cu", { x: -1.667, y: 2.113, duration: 0.079, ease: "none" }, 1.36);
+tl.to("#d1-v-win-cu", { x: 2.278, y: -2.832, duration: 0.079, ease: "none" }, 1.44);
+tl.to("#d1-v-win-cu", { x: -1.911, y: -2.316, duration: 0.079, ease: "none" }, 1.52);
+tl.to("#d1-v-win-cu", { x: -2.194, y: -1.077, duration: 0.079, ease: "none" }, 1.6);
+tl.to("#d1-v-win-cu", { x: 0.406, y: 1.92, duration: 0.079, ease: "none" }, 1.68);
+tl.to("#d1-v-win-cu", { x: -1.077, y: -1.068, duration: 0.079, ease: "none" }, 1.76);
+tl.to("#d1-v-win-cu", { x: -2.14, y: 1.316, duration: 0.079, ease: "none" }, 1.84);
+tl.to("#d1-v-win-cu", { x: 0.373, y: 2.686, duration: 0.079, ease: "none" }, 1.92);
+tl.to("#d1-v-win-cu", { x: 1.628, y: -0.712, duration: 0.079, ease: "none" }, 2);
+tl.to("#d1-v-win-cu", { x: -0.46, y: 2.753, duration: 0.079, ease: "none" }, 2.08);
+tl.to("#d1-v-win-cu", { x: -2.905, y: 0.662, duration: 0.079, ease: "none" }, 2.16);
+tl.to("#d1-v-win-cu", { x: -2.883, y: 1.569, duration: 0.079, ease: "none" }, 2.24);
+tl.to("#d1-v-win-cu", { x: 2.925, y: 0.127, duration: 0.079, ease: "none" }, 2.32);
+tl.to("#d1-v-win-cu", { x: 0, y: 0, duration: 0.14, ease: "power2.out" }, 2.4);
+tl.to("#d1-v-lab-context span", { color: "#bd481f", duration: 0.2, ease: "none" }, 0.55);
+tl.to("#d1-v-lab-context span", { color: "#252820", duration: 0.3, ease: "none" }, 1.55);
+tl.set("#d1-v-pulse-goal", { opacity: 1 }, 0);
+tl.fromTo("#d1-v-pulse-goal", { strokeDashoffset: -10 }, { strokeDashoffset: -100, duration: 0.674, ease: "none", immediateRender: false }, 0);
+tl.fromTo("#d1-v-pulse-goal", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 0.675);
+tl.fromTo("#d1-v-pulse-goal", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.425);
+tl.fromTo("#d1-v-pulse-goal", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 2.175);
+tl.fromTo("#d1-v-pulse-goal", { strokeDashoffset: 0 }, { strokeDashoffset: -63.333, duration: 0.474, ease: "none", immediateRender: false }, 2.925);
+tl.set("#d1-v-pulse-error", { opacity: 1 }, 0);
+tl.fromTo("#d1-v-pulse-error", { strokeDashoffset: -55 }, { strokeDashoffset: -100, duration: 0.336, ease: "none", immediateRender: false }, 0);
+tl.fromTo("#d1-v-pulse-error", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 0.337);
+tl.fromTo("#d1-v-pulse-error", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.087);
+tl.fromTo("#d1-v-pulse-error", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.837);
+tl.fromTo("#d1-v-pulse-error", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 2.587);
+tl.fromTo("#d1-v-pulse-error", { strokeDashoffset: 0 }, { strokeDashoffset: -8.333, duration: 0.062, ease: "none", immediateRender: false }, 3.337);
+tl.set("#d1-v-pulse-decision", { opacity: 1 }, 0);
+tl.fromTo("#d1-v-pulse-decision", { strokeDashoffset: -30 }, { strokeDashoffset: -100, duration: 0.524, ease: "none", immediateRender: false }, 0);
+tl.fromTo("#d1-v-pulse-decision", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 0.525);
+tl.fromTo("#d1-v-pulse-decision", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.275);
+tl.fromTo("#d1-v-pulse-decision", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 2.025);
+tl.fromTo("#d1-v-pulse-decision", { strokeDashoffset: 0 }, { strokeDashoffset: -83.333, duration: 0.624, ease: "none", immediateRender: false }, 2.775);
+tl.set("#d1-v-pulse-context", { opacity: 1 }, 0);
+tl.fromTo("#d1-v-pulse-context", { strokeDashoffset: -80 }, { strokeDashoffset: -100, duration: 0.149, ease: "none", immediateRender: false }, 0);
+tl.fromTo("#d1-v-pulse-context", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 0.15);
+tl.fromTo("#d1-v-pulse-context", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 0.9);
+tl.fromTo("#d1-v-pulse-context", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.65);
+tl.fromTo("#d1-v-pulse-context", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 2.4);
+tl.fromTo("#d1-v-pulse-context", { strokeDashoffset: 0 }, { strokeDashoffset: -33.333, duration: 0.249, ease: "none", immediateRender: false }, 3.15);
+tl.set("#d1-v-pulse-diff", { opacity: 1 }, 0);
+tl.fromTo("#d1-v-pulse-diff", { strokeDashoffset: -45 }, { strokeDashoffset: -100, duration: 0.412, ease: "none", immediateRender: false }, 0);
+tl.fromTo("#d1-v-pulse-diff", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 0.413);
+tl.fromTo("#d1-v-pulse-diff", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.163);
+tl.fromTo("#d1-v-pulse-diff", { strokeDashoffset: 0 }, { strokeDashoffset: -100, duration: 0.749, ease: "none", immediateRender: false }, 1.913);
+tl.fromTo("#d1-v-pulse-diff", { strokeDashoffset: 0 }, { strokeDashoffset: -98.333, duration: 0.736, ease: "none", immediateRender: false }, 2.663);
+      tl.fromTo("#d1-v", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 0);
+      tl.fromTo("#v1", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 3.4);
+      tl.fromTo("#d2-v-c2-ring", { scale: 1, opacity: 0.75 }, { scale: 2.6, opacity: 0, duration: 1.2, ease: "power1.out", repeat: 4 }, 11.1);
+tl.fromTo("#d2-v-c1-ring", { scale: 1, opacity: 0.75 }, { scale: 2.6, opacity: 0, duration: 1.2, ease: "power1.out", repeat: 1 }, 11.1);
+tl.fromTo("#d2-v-follow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 11.2);
+tl.fromTo("#d2-v-fline", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.4, ease: "power2.inOut" }, 11.55);
+tl.fromTo("#d2-v-fhead", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out" }, 11.91);
+tl.fromTo("#d2-v-scan", { y: 1112, opacity: 0 }, { y: 1668, duration: 0.7, ease: "none" }, 11.75);
+tl.to("#d2-v-scan", { opacity: 0.55, duration: 0.12, ease: "none" }, 11.75);
+tl.to("#d2-v-scan", { opacity: 0, duration: 0.15, ease: "none" }, 12.33);
+tl.fromTo("#d2-v-c1-flash", { opacity: 0 }, { opacity: 1, duration: 0.14, yoyo: true, repeat: 1, ease: "power1.inOut", immediateRender: false }, 11.77);
+tl.fromTo("#d2-v-c2-flash", { opacity: 0 }, { opacity: 1, duration: 0.14, yoyo: true, repeat: 1, ease: "power1.inOut", immediateRender: false }, 12);
+tl.fromTo("#d2-v-c3-flash", { opacity: 0 }, { opacity: 1, duration: 0.14, yoyo: true, repeat: 1, ease: "power1.inOut", immediateRender: false }, 12.23);
+tl.fromTo("#d2-v-c1-own", { opacity: 0, scale: 1.03 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out" }, 12.56);
+tl.fromTo("#d2-v-gmaskpath", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.inOut" }, 12.45);
+tl.fromTo("#d2-v-ghead", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out" }, 12.85);
+tl.fromTo("#d2-v-ghost", { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out" }, 12.7);
+tl.fromTo("#d2-v-x1", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.16, ease: "power1.out" }, 13);
+tl.fromTo("#d2-v-x2", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.16, ease: "power1.out" }, 13.13);
+tl.fromTo("#d2-v-strike", { scaleX: 0 }, { scaleX: 1, duration: 0.25, ease: "power2.out" }, 13.1);
+tl.fromTo("#d2-v-nodup", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power1.out" }, 13.15);
+tl.fromTo("#d2-v-e4", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.inOut" }, 12.95);
+tl.fromTo("#d2-v-e4head", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out" }, 13.35);
+tl.fromTo("#d2-v-reuselbl", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out" }, 13.25);
+tl.to("#d2-v-ghost", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.6);
+tl.to("#d2-v-ghead", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.6);
+tl.to("#d2-v-x1", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.6);
+tl.to("#d2-v-x2", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.6);
+tl.to("#d2-v-nodup", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.6);
+tl.to("#d2-v g[mask]", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.6);
+tl.to("#d2-v-c1-w", { opacity: 0, duration: 0.16, ease: "power1.in" }, 13.86);
+tl.fromTo("#d2-v-c1-done", { opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power1.out" }, 14);
+tl.to("#d2-v-c1-own", { opacity: 0.35, duration: 0.4, ease: "power1.inOut" }, 14.06);
+tl.fromTo("#d2-v-e5", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.9, ease: "power1.inOut" }, 14);
+tl.fromTo("#d2-v-e5head", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out" }, 14.85);
+tl.fromTo("#d2-v-retlbl", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power1.out" }, 14.9);
+tl.set("#d2-v-report", { transformOrigin: "76.25% 100%" }, 14);
+tl.fromTo("#d2-v-report", { opacity: 0, x: -25, y: 240, scale: 0.32 }, { opacity: 1, scale: 0.45, duration: 0.2, ease: "power1.out" }, 14);
+tl.to("#d2-v-report", { keyframes: { x: [-4.98,12.58,27.68,40.31,50.49,58.2,63.46,66.25,66.58,64.45,59.86,52.81,43.3,31.33,16.89,0], y: [226.17,212.19,198.05,183.75,169.3,154.69,139.92,125,109.92,94.69,79.3,63.75,48.05,32.19,16.17,0], easeEach: "none" }, duration: 0.8, ease: "power1.inOut" }, 14.08);
+tl.to("#d2-v-report", { scale: 1, duration: 0.44, ease: "power2.inOut" }, 14.44);
+tl.fromTo("#d2-v-row0", { opacity: 0, x: -8 }, { opacity: 1, x: 0, duration: 0.18, ease: "power2.out" }, 14.95);
+tl.fromTo("#d2-v-row1", { opacity: 0, x: -8 }, { opacity: 1, x: 0, duration: 0.18, ease: "power2.out" }, 15.1);
+tl.fromTo("#d2-v-row2", { opacity: 0, x: -8 }, { opacity: 1, x: 0, duration: 0.18, ease: "power2.out" }, 15.25);
+tl.fromTo("#d2-v-cap1", { clipPath: "inset(-10% 100% -30% 0%)" }, { clipPath: "inset(-10% 0% -30% 0%)", duration: 0.45, ease: "power1.inOut" }, 15.55);
+tl.fromTo("#d2-v-cap2", { clipPath: "inset(-10% 100% -30% 0%)" }, { clipPath: "inset(-10% 0% -30% 0%)", duration: 0.45, ease: "power1.inOut" }, 15.9);
+tl.fromTo("#d2-v-under", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 16.15);
+      tl.fromTo("#d2-v", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 11);
+      tl.fromTo("#v3", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 17.2);
+      tl.fromTo("#d4-v-pa0", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 22.2);
+tl.fromTo("#d4-v-pa1", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 22.32);
+tl.fromTo("#d4-v-pa2", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 22.44);
+tl.fromTo("#d4-v-pa3", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 22.56);
+tl.to("#d4-v-ar0", { strokeDashoffset: 0, duration: 0.28, ease: "power1.inOut" }, 22.32);
+tl.to("#d4-v-ah0", { opacity: 1, duration: 0.1, ease: "none" }, 22.56);
+tl.to("#d4-v-ar1", { strokeDashoffset: 0, duration: 0.28, ease: "power1.inOut" }, 22.44);
+tl.to("#d4-v-ah1", { opacity: 1, duration: 0.1, ease: "none" }, 22.68);
+tl.to("#d4-v-ar2", { strokeDashoffset: 0, duration: 0.28, ease: "power1.inOut" }, 22.56);
+tl.to("#d4-v-ah2", { opacity: 1, duration: 0.1, ease: "none" }, 22.8);
+tl.to("#d4-v-bconn", { opacity: 0.4, duration: 0.25, ease: "none" }, 22.5);
+tl.fromTo("#d4-v-blocked", { x: -12, opacity: 0 }, { x: 0, opacity: 0.4, duration: 0.3, ease: "power2.out" }, 22.5);
+tl.fromTo("#d4-v-gate", { scaleX: 0, opacity: 1 }, { scaleX: 1, opacity: 1, duration: 0.35, ease: "power2.out" }, 22.7);
+tl.fromTo("#d4-v-btn-a", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" }, 22.65);
+tl.fromTo("#d4-v-token", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, 22.3);
+tl.set("#d4-v-pill0", { backgroundColor: "#eff2e8" }, 22.55);
+tl.fromTo("#d4-v-worker", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, 22.34);
+tl.to("#d4-v-token", { y: 220, duration: 0.4, ease: "power2.inOut" }, 22.86);
+tl.to("#d4-v-worker", { y: 220, duration: 0.4, ease: "power2.inOut" }, 22.86);
+tl.to("#d4-v-token-card", { scale: 1.04, duration: 0.08, ease: "power1.out", yoyo: true, repeat: 1 }, 23.24);
+tl.set("#d4-v-pill0", { backgroundColor: "#fffdf7" }, 23.26);
+tl.set("#d4-v-pill1", { backgroundColor: "#eff2e8" }, 23.26);
+tl.to("#d4-v-token", { y: 440, duration: 0.4, ease: "power2.inOut" }, 23.44);
+tl.to("#d4-v-worker", { y: 440, duration: 0.4, ease: "power2.inOut" }, 23.44);
+tl.to("#d4-v-token-card", { scale: 1.04, duration: 0.08, ease: "power1.out", yoyo: true, repeat: 1 }, 23.82);
+tl.set("#d4-v-pill1", { backgroundColor: "#fffdf7" }, 23.84);
+tl.set("#d4-v-pill2", { backgroundColor: "#eff2e8" }, 23.84);
+tl.set("#d4-v-pill2", { borderStyle: "dashed", borderWidth: 2 }, 23.84);
+tl.to("#d4-v-token", { y: 563, duration: 0.12, ease: "power2.in" }, 23.94);
+tl.to("#d4-v-token", { y: 440, duration: 0.3, ease: "power3.out" }, 24.06);
+tl.to("#d4-v-token-card", { keyframes: [{ rotation: -2, duration: 0.05 }, { rotation: 2, duration: 0.07 }, { rotation: -1, duration: 0.06 }, { rotation: 0, duration: 0.06 }], ease: "none" }, 24.06);
+tl.to("#d4-v-gate", { opacity: 0.55, duration: 0.08, yoyo: true, repeat: 1, ease: "none" }, 24.04);
+tl.fromTo("#d4-v-cap", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 24.09);
+tl.fromTo("#d4-v-person", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 24.4);
+tl.fromTo("#d4-v-press", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 24.5);
+tl.fromTo("#d4-v-cursor", { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "none" }, 24.5);
+tl.to("#d4-v-cursor", { x: 42, y: -153, duration: 0.300, ease: "power2.inOut" }, 24.62);
+tl.to("#d4-v-cursor", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.inOut" }, 24.94);
+tl.set("#d4-v-btn", { backgroundColor: "#bd481f", color: "#f6f4ee" }, 24.98);
+tl.to("#d4-v-btn-a", { scale: 0.95, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.inOut" }, 24.98);
+tl.to("#d4-v-cursor", { opacity: 0, duration: 0.25, ease: "none" }, 25.43);
+tl.to("#d4-v-gate", { scaleX: 0, duration: 0.35, ease: "power2.inOut" }, 25.3);
+tl.to("#d4-v-token", { y: 810, duration: 0.650, ease: "power2.inOut" }, 25.6);
+tl.set("#d4-v-pill2", { backgroundColor: "#fffdf7" }, 25.7);
+tl.to("#d4-v-token-card", { borderColor: "#bd481f", duration: 0.2, ease: "none" }, 26.2);
+tl.set("#d4-v-pill3", { backgroundColor: "#bd481f", color: "#f6f4ee", borderColor: "#bd481f" }, 26.3);
+tl.to("#d4-v-pa3", { scale: 1.06, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.out" }, 26.3);
+      tl.fromTo("#d4-v", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 22);
+      tl.fromTo("#v4", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 27.4);
+      tl.fromTo("#outro .outro-card", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 27.6);
+      tl.fromTo("#outro .rise", { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.1, ease: "power2.out" }, 27.8);
+      tl.fromTo("#outro-thread", { width: 0 }, { width: 520, duration: 0.6, ease: "power2.out" }, 28);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
