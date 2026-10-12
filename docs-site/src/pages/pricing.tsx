@@ -14,7 +14,7 @@ const ENTERPRISE_MAILTO =
   '&body=Company%3A%0AEngineers%20using%20AI%20coding%20agents%3A%0ATools%20in%20use%20(Claude%20Code%2C%20Codex%2C%20Cursor%2C%20other)%3A%0A' +
   'What%20you%20need%20(rollout%2C%20support%2C%20audit%2C%20SSO%2C%20policy%2C%20other)%3A%0A';
 
-const WAITLIST_URL = 'https://verified-skill.com/pricing?utm_source=spec-weave&utm_medium=pricing';
+const WAITLIST_URL = 'https://verified-skill.com/pricing';
 
 const PLANS = [
   {
