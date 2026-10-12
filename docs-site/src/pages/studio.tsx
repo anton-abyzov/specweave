@@ -9,9 +9,10 @@ import StudioOverviewVideo from '../components/ecosystem/StudioOverviewVideo';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import { CloudCompare, ProjectFeatures, StudioFaq, StudioStack, UmbrellaMap } from '../components/ecosystem/StudioSections';
+import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
-const earlyAccess = 'mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20early%20access&body=Machines%20and%20operating%20systems%3A%0ACoding%20agents%20you%20use%3A%0A';
 const specweaveRepo = 'https://github.com/anton-abyzov/specweave';
+const downloadLabel = `Download SpecWithCode ${release.version} for macOS, Apple silicon, ${release.size}`;
 
 export default function Studio() {
   return <Layout title="SpecWithCode: write the spec, get the code" description="SpecWithCode is a free app, built on the open-source SpecWeave CLI, that brings projects, personal agents and coding agents from Anthropic, OpenAI, xAI and others into one workspace on machines you own, with memory, plans, routines, approvals and handoff in git.">
@@ -19,8 +20,9 @@ export default function Studio() {
       <header className={ecosystem.studioHero}>
         <div><span className={ecosystem.status}>Free · built on open-source SpecWeave</span><h1>Write the spec.<br /><em>Get the code.</em></h1>
           <p className={styles.lead}>Every AI agent, on your machines, in one workspace. Projects like Claude Code, a personal agent like Dots or Hermes, and every lab’s coding agent, in one place. Give a project a goal and a coordinator splits it across workers on Claude Code, Codex, Grok Build or Cursor, each with the model you pick, on the machines where your code and skills already live.</p>
-          <div className={styles.actions}><a className={styles.primary} href={earlyAccess}>Get early access, free ↗</a><a className={styles.textLink} href={specweaveRepo}>Star SpecWeave on GitHub ↗</a></div>
-          <p className={ecosystem.note}>SpecWithCode is free. The public macOS download opens with the first public release; until then, ask for early access. <Link to="/docs/overview/studio/">Read the overview</Link>.</p>
+          <div className={styles.actions}><a className={styles.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a><a className={styles.textLink} href={release.repoUrl}>SpecWithCode on GitHub ↗</a></div>
+          <p className={ecosystem.downloadMeta}><span>Version {release.version}</span><span>{release.size}</span><span>{release.platform}</span><a href={release.notesUrl}>Release notes</a><a href={release.releasesUrl}>All releases</a></p>
+          <p className={ecosystem.note}>Free, in early access. The app is not notarized yet, so on first launch open <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Windows and Intel Macs are not built yet. <Link to="/docs/overview/studio/">Read the overview</Link> or <a href={specweaveRepo}>star SpecWeave on GitHub</a>.</p>
         </div><StudioProjectMock />
       </header>
 
@@ -58,7 +60,7 @@ export default function Studio() {
       </section>
 
       <section className={styles.section}><div className={ecosystem.proof}><div><span className={styles.eyebrow}>Evidence / October 2026</span><h3>Used daily.<br />Described precisely.</h3><p>The accepted fleet delivery recorded native Codex execution on three Macs, with source and artifact readback. Release 0.2.0 recorded five native project runs with a Codex coordinator and Claude Code workers, including reuse of a worker after a project-memory update. The 0.2.6 tutorials each run one real task with Claude Code, Codex, OpenCode and Grok Build. Cursor and Antigravity runs are not recorded yet.</p><Link className={styles.textLink} to="/docs/overview/studio-architecture/#what-is-verified">Read the verification scope ↗</Link></div><div><h3>Evaluate the fit.</h3><ul><li>Start with one repository and one real workflow.</li><li>Check account ownership, approvals and reconnect behavior.</li><li>Measure accepted work and time spent recovering context.</li><li>Agree security, support and rollout needs before expanding.</li></ul><p>These checks do not establish enterprise concurrency, production ROI, certification or a service-level agreement.</p></div></div></section>
-      <section className={styles.finalCta}><span className={styles.eyebrow}>For developers and teams running more than one agent</span><h2>Bring your agents.<br /><em>Keep your machines.</em></h2><a className={styles.primary} href={earlyAccess}>Get early access, free ↗</a><Link className={styles.textLink} to="/docs/getting-started">Start with the open-source CLI</Link></section>
+      <section className={styles.finalCta}><span className={styles.eyebrow}>For developers and teams running more than one agent</span><h2>Bring your agents.<br /><em>Keep your machines.</em></h2><a className={styles.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a><Link className={styles.textLink} to="/docs/getting-started">Start with the open-source CLI</Link></section>
     </main>
   </Layout>;
 }
