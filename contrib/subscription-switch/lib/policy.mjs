@@ -1,5 +1,6 @@
 export const MODES = ['balanced', 'reset-first', 'spend-first'];
 export const QUOTA_TTL_MS = 15 * 60 * 1000;
+export const CLAUDE_CONSUMER_PLANS = ['pro', 'max', 'team', 'enterprise'];
 export function claudeProfileIsolationUnverified(account) {
   // Legacy native oauth_token status can report the same ambient keychain login
   // for empty isolated config roots. No supported profile binding is observed.
@@ -8,7 +9,10 @@ export function claudeProfileIsolationUnverified(account) {
 export function claudeSubscriptionAuthUnverified(account) {
   // oauth_token also appears for a native default backed by a credit balance.
   // A token method alone cannot establish a consumer subscription entitlement.
-  return account.authError === 'subscription-auth-unverified' || (account.provider === 'claude' && ['oauth_token', 'oauth-token'].includes(account.authKind));
+  if (account.authError === 'subscription-auth-unverified') return true;
+  // The native default profile's own get_usage read names its consumer plan.
+  if (account.provider === 'claude' && (account.nativeDefault || account.id === 'claude-1') && CLAUDE_CONSUMER_PLANS.includes(account.subscriptionType)) return false;
+  return account.provider === 'claude' && ['oauth_token', 'oauth-token'].includes(account.authKind);
 }
 export function validateQuota(quota, now = Date.now()) {
   if (!quota || !['native-app-server', 'manual'].includes(quota.source)) throw new Error('Quota requires a native-app-server or explicit manual source');
@@ -74,7 +78,7 @@ export function recommend(state, { provider = state.policy.preferredProvider, ac
   return { provider: provider || 'any', id: account?.id || null, reason: account ? `${priority}. New run only; active sessions keep their account.` : 'No eligible profile with fresh observed quota; unknown quota requires an explicit account and --allow-unknown' };
 }
 export function publicState(state) {
-  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError, lastQuotaErrorAt }) => ({ id, provider, label, authenticated, authKind, authError: authError || null,
+  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError, lastQuotaErrorAt, subscriptionType }) => ({ id, provider, label, authenticated, authKind, authError: authError || null, subscriptionType: subscriptionType || null,
     lastQuotaErrorAt: Number.isFinite(Date.parse(lastQuotaErrorAt)) ? new Date(lastQuotaErrorAt).toISOString() : null,
     status: accountStatus(state.accounts.find(a => a.id === id), state.runs), quota: quota || { window: null, weekly: null, observedAt: null, expiresAt: null, source: null } })),
     policy: state.policy, hosts: state.hosts, services: state.services,
