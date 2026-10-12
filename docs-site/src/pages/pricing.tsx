@@ -9,60 +9,68 @@ const PILOT_MAILTO =
   '&body=Team%20size%3A%0ATools%20you%20use%20(Claude%20Code%2C%20Codex%2C%20other)%3A%0A' +
   'Repository%20to%20start%20with%3A%0AWhat%20breaks%20today%20when%20someone%20hits%20a%20usage%20limit%3A%0A';
 
+const ENTERPRISE_MAILTO =
+  'mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20for%20our%20company' +
+  '&body=Company%3A%0AEngineers%20using%20AI%20coding%20agents%3A%0ATools%20in%20use%20(Claude%20Code%2C%20Codex%2C%20Cursor%2C%20other)%3A%0A' +
+  'What%20you%20need%20(rollout%2C%20support%2C%20audit%2C%20SSO%2C%20policy%2C%20other)%3A%0A';
+
+const WAITLIST_URL = 'https://verified-skill.com/pricing?utm_source=spec-weave&utm_medium=pricing';
+
 const PLANS = [
   {
-    label: '01 / Open source',
-    name: 'SpecWeave',
+    label: '01 / Free forever',
+    name: 'SpecWithCode and SpecWeave',
     price: '$0',
-    period: 'MIT, forever',
-    lead: 'Everything one developer needs to switch tools without losing their place.',
+    period: 'for individuals and teams',
+    lead: 'The whole workspace and the CLI. No account with us, no seat count, no usage cap from us.',
     features: [
-      'Specs, task ledger and evidence in git',
-      'Handoff and pickup across Claude Code, Codex, Grok, Gemini CLI and others',
-      'Auto-handoff at 90 percent of a usage limit',
-      'Optional GitHub, Jira and Azure DevOps sync',
+      'SpecWithCode desktop app: a coordinator, worker threads, plans and routines',
+      'Claude Code, Codex, Grok, Gemini CLI, Cursor and more, on your own subscriptions',
+      'Specs, task ledger and evidence in git, with auto-handoff at 90 percent of a usage limit',
+      'Skills from public and private GitHub repositories, installed locally',
+      'GitHub, Jira and Azure DevOps sync',
     ],
-    cta: {label: 'Quick start', to: '/docs/getting-started'},
+    cta: {label: 'Download SpecWithCode', to: '/studio'},
+    highlight: true,
   },
   {
-    label: '02 / Private skills',
+    label: '02 / Hosted, waitlist',
     name: 'Verified Skill Pro and Team',
     price: '$20',
-    period: 'a month, or $30 a seat for teams of 3+',
-    lead: "Your team's prompts and skills, private, installed into every agent.",
+    period: 'a month, or $30 a seat for teams of 3+, when it opens',
+    lead: 'Private skills we host for your team. Hosted private publishing is not open yet, so nothing is charged; join the waitlist to hear first.',
     features: [
-      'Skills synced from your private GitHub repositories',
-      'One install for Claude Code, Codex and 50+ agents',
+      'Private skills hosted and versioned for your team',
       'Security scan on every version',
+      'One install into Claude Code, Codex and 50+ agents',
       'Seats added or removed any time',
     ],
-    cta: {label: 'Plans on Verified Skill', href: 'https://verified-skill.com/pricing'},
+    cta: {label: 'Join the waitlist', href: WAITLIST_URL},
   },
   {
-    label: '03 / Founding team pilot',
-    name: 'Set up with you',
-    price: '$990',
-    period: 'one time, up to 10 engineers',
-    lead: 'Two weeks to get a whole team onto one workflow that survives a usage limit.',
+    label: '03 / Enterprise',
+    name: 'For your company',
+    price: 'Custom',
+    period: 'annual contract',
+    lead: 'For companies putting coding agents in front of many engineers, who need a rollout, evidence and a support line.',
     features: [
-      'SpecWeave set up in one of your repositories, with your AGENTS.md written',
-      'Explicit handoff between Claude Code and Codex, plus local recovery checkpoints',
-      "Your shared prompts moved into a private skill repository",
-      'A live handoff drill with your team, then a written report',
-      'Three months of Verified Skill Team for 5 seats included',
+      'Rollout across your teams, with SpecWeave set up in your repositories',
+      'Priority support with a named engineer and response times in the contract',
+      'Export of who ran which agent, on which machine, with what evidence',
+      'SSO, SCIM, provider and model policy, or a self-hosted skill registry, scoped with you',
+      'Security review pack and invoice billing',
     ],
-    cta: {label: 'Apply for a pilot', href: PILOT_MAILTO},
-    highlight: true,
+    cta: {label: 'Talk to us', href: ENTERPRISE_MAILTO},
   },
 ];
 
 export default function Pricing() {
-  return <Layout title="Pricing for teams" description="SpecWeave is free and open source. Teams pay for private agent skills on Verified Skill, and for a founding pilot that sets up handoff between Claude Code and Codex across the whole team.">
+  return <Layout title="Pricing" description="SpecWithCode and the SpecWeave CLI are free for every developer and team, with no markup on your AI subscriptions. Companies pay for hosted private skills, enterprise rollout and support.">
     <main className={styles.page}>
       <header className={styles.articleHero}>
-        <span className={styles.eyebrow}>Teams / Pricing</span>
-        <h1>Free for every developer.<br /><em>Paid when a team needs it to stick.</em></h1>
-        <p>SpecWeave stays MIT. Teams pay for two things: private skills their agents share, and help putting every engineer on the same workflow, so a usage limit in one tool is a handoff instead of a lost afternoon.</p>
+        <span className={styles.eyebrow}>Pricing</span>
+        <h1>Free for every developer and team.<br /><em>Companies pay for what we host and support.</em></h1>
+        <p>SpecWithCode and the SpecWeave CLI are free. You bring your own Claude, Codex, Grok or Cursor subscriptions. We never resell tokens, add a markup or charge a seat to run agents on your own machines.</p>
       </header>
 
       <section className={styles.section}>
@@ -82,30 +90,33 @@ export default function Pricing() {
             </article>
           ))}
         </div>
-        <div className={teams.note}>Five pilot places at this price. If the handoff drill does not work in your repository, you do not pay.</div>
+        <div className={teams.note}>What is free today stays free: the app, the CLI and running agents on your own machines. Paid plans only add things we host for you, control a company needs, and support.</div>
       </section>
 
       <div className={styles.articleBody}>
-        <h2>What a pilot looks like</h2>
+        <h2>Founding team pilot, $990</h2>
+        <p>Two weeks to get a whole team of up to 10 engineers onto one workflow that survives a usage limit. Five places at this price. If the handoff drill does not work in your repository, you do not pay.</p>
         <table><thead><tr><th>When</th><th>What happens</th></tr></thead><tbody>
           <tr><td>Day 1</td><td>A call to pick the repository and the work in flight. We read your current CLAUDE.md, AGENTS.md and prompts.</td></tr>
           <tr><td>Days 2 to 5</td><td>SpecWeave goes in on a branch you review: one AGENTS.md every tool reads, specs for the work in flight, local recovery checkpoints and an explicit handoff workflow.</td></tr>
-          <tr><td>Days 6 to 9</td><td>Shared prompts become skills in a private repository, installed with one command into Claude Code and Codex.</td></tr>
+          <tr><td>Days 6 to 9</td><td>Shared prompts become skills in a private repository, installed with one command into Claude Code and Codex. SpecWithCode set up on your machines if you want it.</td></tr>
           <tr><td>Day 10</td><td>The drill: an engineer runs out of Claude Code mid-task and Codex picks it up from the handoff. You get the HTML evidence report.</td></tr>
         </tbody></table>
+        <p>Pilot teams also get three months of Verified Skill Team for 5 seats once hosted publishing opens. <a href={PILOT_MAILTO}>Apply for a pilot</a>.</p>
 
         <h2>Questions teams ask</h2>
-        <details><summary>Is SpecWithCode included?</summary><p><Link to="/studio">SpecWithCode</Link> is the workspace on top of SpecWeave: projects with a coordinator and workers on any provider, running on your own machines. It is free and in early access, with a macOS download for Apple silicon. Founding pilot teams can ask to set it up alongside the workflow.</p></details>
+        <details><summary>Will SpecWithCode stay free?</summary><p>Yes. <Link to="/studio">SpecWithCode</Link>, the SpecWeave CLI and running agents on your own machines stay free for individuals and teams. We will not resell tokens or put a markup on your subscriptions. SpecWithCode is in early access today, with a macOS download for Apple silicon.</p></details>
+        <details><summary>What do companies pay for?</summary><p>Things that cost us to run or that only a company needs: hosted private skills, a rollout across many engineers, support with response times, and controls such as audit export, SSO or a self-hosted registry. Enterprise items beyond rollout and support are scoped and scheduled with each contract.</p></details>
         <details><summary>Do we need the pilot to use SpecWeave?</summary><p>No. <code>npm install -g specweave</code> and the <Link to="/docs/getting-started">quick start</Link> are enough for one developer. The pilot is for teams that want it set up across several people and tools at once.</p></details>
         <details><summary>What triggers a handoff automatically?</summary><p><code>specweave auto-handoff on</code> hands off when a usage window passes 90 percent, or a threshold you pick, and saves local checkpoints between turns. The next tool runs <code>specweave pickup</code>. Details in <Link to="/docs/guides/auto-handoff">auto-handoff rules</Link>.</p></details>
-        <details><summary>Where does our code go?</summary><p>Nowhere new. Specs, the ledger and handoffs are files in your repository. Private skills live in your own GitHub repositories; Verified Skill syncs and scans them for install.</p></details>
-        <details><summary>How do we pay?</summary><p>Verified Skill plans are paid by card on <a href="https://verified-skill.com/pricing">verified-skill.com</a>. The pilot is invoiced once you have picked a start date.</p></details>
+        <details><summary>Where does our code go?</summary><p>Nowhere new. Specs, the ledger and handoffs are files in your repository, and agents run on your machines with your subscriptions. Private skills live in your own GitHub repositories.</p></details>
+        <details><summary>How do we pay?</summary><p>Today the only paid item is the pilot, invoiced once you have picked a start date. Pro and Team open from the <a href={WAITLIST_URL}>waitlist</a> when hosted private publishing is ready. Enterprise contracts are invoiced annually.</p></details>
       </div>
 
       <section className={styles.finalCta}>
-        <h2>One workflow for the team.<br /><em>Any tool for each engineer.</em></h2>
-        <a className={styles.primary} href={PILOT_MAILTO}>Apply for a pilot <span aria-hidden="true">↗</span></a>
-        <Link className={styles.textLink} to="/docs/guides/cross-tool-handoff">See how handoff works</Link>
+        <h2>Free for every developer.<br /><em>Talk to us when the whole company needs it.</em></h2>
+        <Link className={styles.primary} to="/studio">Download SpecWithCode <span aria-hidden="true">↗</span></Link>
+        <a className={styles.textLink} href={ENTERPRISE_MAILTO}>Talk to us about your company</a>
       </section>
     </main>
   </Layout>;
