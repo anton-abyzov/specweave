@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { execute, iso } from './util.mjs';
 import { QUOTA_TTL_MS, claudeProfileIsolationUnverified, CLAUDE_CONSUMER_PLANS } from './policy.mjs';
 import { ensureState, mutateState } from './state.mjs';
+import { readCopilot, readProxyAccounts } from './providers.mjs';
 
 export function nativeEnv(account) {
   const env = { ...process.env, PWDEBUG: '0', PLAYWRIGHT_HTML_OPEN: 'never' };
@@ -95,7 +96,7 @@ export function normalizeCodexQuota(result, now = Date.now()) {
   const rawCredits = limits?.credits;
   const credits = rawCredits && typeof rawCredits.hasCredits === 'boolean' && typeof rawCredits.unlimited === 'boolean'
     ? { hasCredits: rawCredits.hasCredits, unlimited: rawCredits.unlimited,
-        ...(typeof rawCredits.balance === 'string' && /^\d{1,24}(?:\.\d{1,8})?$/.test(rawCredits.balance) ? { balance: rawCredits.balance } : {}) } : null;
+        ...(typeof rawCredits.balance === 'string' && /^\d{1,24}(?:\.\d{1,24})?$/.test(rawCredits.balance) ? { balance: rawCredits.balance } : {}) } : null;
   const rawResets = result?.rateLimitResetCredits;
   const resetCount = rawResets?.availableCount;
   const expiries = Array.isArray(rawResets?.credits) ? rawResets.credits.filter(c => c?.status === 'available' && Number.isFinite(c.expiresAt) && c.expiresAt > now / 1000 && c.expiresAt * 1000 <= 8640000000000000).map(c => c.expiresAt) : [];
@@ -164,6 +165,8 @@ export function readClaudeUsage(account, timeoutMs = 30000) {
   });
 }
 const CLAUDE_WINDOWS = { five_hour: ['window', 300], seven_day: ['weekly', 10080] };
+// Per-model weekly limits. Other seven_day_* buckets (OAuth apps, Cowork, ...) are not models.
+const CLAUDE_MODEL_WEEKLIES = { seven_day_opus: 'Opus', seven_day_sonnet: 'Sonnet' };
 export function normalizeClaudeUsage(result, now = Date.now()) {
   const limits = result?.rate_limits;
   if (!result || result.rate_limits_available !== true || !limits || typeof limits !== 'object') return null;
@@ -183,15 +186,28 @@ export function normalizeClaudeUsage(result, now = Date.now()) {
   let locked = false;
   for (const [key, value] of Object.entries(limits).slice(0, 64)) {
     if (!value || typeof value !== 'object' || Array.isArray(value) || !/^[a-z0-9_]{1,64}$/.test(key) || key === 'extra_usage') continue;
-    const main = CLAUDE_WINDOWS[key];
-    if (!main && !key.startsWith('seven_day')) continue;
+    const main = CLAUDE_WINDOWS[key], model = CLAUDE_MODEL_WEEKLIES[key];
+    if (!main && !model) continue;
     if (main && typeof value.locked_reason === 'string' && value.locked_reason) locked = true;
     const w = toWindow(value, main ? main[1] : 10080);
     // An unreadable account-wide window makes the whole read unusable; a model-scoped one is skipped.
     if (!w) { if (main) return null; continue; }
     if (main) quota[main[0]] = w;
     // Model-scoped weeklies are additive; only the account-wide windows gate selection.
-    if (quota.windows.length < 16) quota.windows.push({ ...w, id: `claude:${key}`, bucketId: key, appliesToSelection: !!main });
+    if (quota.windows.length < 16) quota.windows.push({ ...w, id: `claude:${key}`, bucketId: key, appliesToSelection: !!main, ...(model ? { label: model } : {}) });
+  }
+  // Newer models report their weekly limit in a list instead of a named bucket.
+  for (const entry of Array.isArray(limits.model_scoped) ? limits.model_scoped.slice(0, 8) : []) {
+    const label = typeof entry?.display_name === 'string' ? entry.display_name.trim().slice(0, 32) : '';
+    const w = label && toWindow(entry, 10080);
+    if (w && quota.windows.length < 16 && !quota.windows.some(x => x.label === label)) quota.windows.push({ ...w, id: `claude:model:${label.toLowerCase()}`, bucketId: 'model_scoped', appliesToSelection: false, label });
+  }
+  // Paid overflow, in minor units (cents) of its currency.
+  const extra = limits.extra_usage;
+  if (extra?.is_enabled === true && Number.isFinite(extra.used_credits) && Number.isFinite(extra.monthly_limit) && extra.monthly_limit > 0) {
+    const places = Number.isSafeInteger(extra.decimal_places) && extra.decimal_places >= 0 && extra.decimal_places <= 4 ? extra.decimal_places : 2;
+    quota.extraUsage = { used: extra.used_credits / 10 ** places, limit: extra.monthly_limit / 10 ** places,
+      currency: typeof extra.currency === 'string' && /^[A-Z]{3}$/.test(extra.currency) ? extra.currency : 'USD', limitReached: extra.spend_limit_reached === true };
   }
   if (!quota.window && !quota.weekly) return null;
   const full = [quota.window, quota.weekly].some(w => w && w.usedPercent >= 100);
@@ -249,12 +265,15 @@ export async function refresh(root) {
     return { ...account, ...auth, quota, quotaError, subscriptionType, identity };
   })());
   const services = await Promise.all(state.services.filter(s => !s.id.startsWith('t3')).map(serviceProbe));
+  for (const service of services) if (service.id === 'cli-proxy' && service.status === 'running') service.accounts = await readProxyAccounts({ port: service.port });
+  const providers = await readCopilot().catch(() => []);
   return mutateState(root, current => {
     for (const update of accounts) {
       const target = current.accounts.find(a => a.id === update.id);
       if (target) Object.assign(target, { authenticated: update.authenticated, authKind: update.authKind, authObservedAt: update.authObservedAt, authError: update.authError, quota: update.quota, quotaError: update.quotaError, subscriptionType: update.subscriptionType, identity: update.identity });
     }
     current.services = services;
+    current.providers = providers;
   });
 }
 export function nativeRunArgs(account, prompt, { model, sandbox = 'read-only' } = {}) {

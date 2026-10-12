@@ -42,11 +42,18 @@
       <div id="hosts"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
     </section>
 
+    <section class="usage" id="others" aria-label="Other subscriptions" hidden>
+      <div class="thead" aria-hidden="true"><span>Other subscriptions</span><span>This month</span><span></span><span>Reading</span></div>
+      <h2 class="others-title">Other subscriptions</h2>
+      <div id="other-rows"></div>
+    </section>
+
     <details class="help">
       <summary>How Switch works</summary>
       <p>Each Mac reads its own Codex and Claude sign-ins directly from the official apps and refreshes every 10 minutes. Bars show what is <strong>left</strong> in each window. Nothing here runs a model or spends usage.</p>
       <p><strong>Balanced</strong> picks the least-used account, <strong>Reset first</strong> the one whose limit resets soonest, <strong>Spend first</strong> the most-used one. The choice applies to new runs started through Switch and to the account Studio suggests for a new chat. Running sessions keep their account. <strong>Pin</strong> forces one account on that Mac.</p>
       <p>Each Mac has 4 Codex and 3 Claude slots. Add another Codex account on a Mac with <code>specweave-switch account login codex-2</code>. Extra Claude slots stay locked because Claude Code keeps one login per Mac.</p>
+      <p><strong>Credits</strong> under an account are paid overflow used only after its windows run out: the Codex balance and banked resets, and Claude extra usage. <strong>Other subscriptions</strong> lists GitHub Copilot for every account signed in to <code>gh</code> or Copilot CLI on any Mac; a GitHub credit is $0.01. The proxy dot counts accounts signed in to CLIProxyAPI, which is not a credits source.</p>
     </details>
   </main>
 </body>

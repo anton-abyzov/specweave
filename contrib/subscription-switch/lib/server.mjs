@@ -78,6 +78,19 @@ export function syncShared(hosts) {
   }
   return hosts;
 }
+// Copilot and similar allowances belong to a GitHub account, not a Mac: list each
+// once, keeping the newest reading and naming the Mac it came from.
+export function mergeProviders(hosts) {
+  const best = new Map();
+  for (const host of hosts) for (const row of host.ok && Array.isArray(host.state?.providers) ? host.state.providers : []) {
+    if (!row || typeof row.id !== 'string') continue;
+    const current = best.get(row.id), rank = r => (r.source === 'live' ? 1e15 : 0) + (Date.parse(r.observedAt || '') || 0);
+    const candidate = { ...row, host: host.label, cliActive: !!row.cliActive || !!current?.cliActive };
+    if (!current || rank(row) > rank(current)) best.set(row.id, candidate);
+    else if (row.cliActive) current.cliActive = true;
+  }
+  return [...best.values()].sort((a, b) => a.id.localeCompare(b.id));
+}
 export async function serve(root, { port = 8318, publicDir = defaultPublic, refreshState = refresh, autoRefreshMs = 0 } = {}) {
   await ensureState(root);
   let refreshing = null, lastRefreshAt = null, lastRefreshError = null;
@@ -105,7 +118,9 @@ export async function serve(root, { port = 8318, publicDir = defaultPublic, refr
       try { return { id: peer.id, label: peer.label, local: false, ok: true, state: await peerCall(peer, '/api/state') }; }
       catch (error) { return { id: peer.id, label: peer.label, local: false, ok: false, error: peerError(error) }; }
     }));
-    return { checkedAt: new Date().toISOString(), autoRefreshMinutes: autoRefreshMs > 0 ? Math.round(autoRefreshMs / 60000) : null, hosts: syncShared([await local(), ...remote]) };
+    const view = { checkedAt: new Date().toISOString(), autoRefreshMinutes: autoRefreshMs > 0 ? Math.round(autoRefreshMs / 60000) : null, hosts: syncShared([await local(), ...remote]) };
+    view.providers = mergeProviders(view.hosts);
+    return view;
   };
   const forPeers = async (fn) => {
     const { peers } = await readPeers(root);

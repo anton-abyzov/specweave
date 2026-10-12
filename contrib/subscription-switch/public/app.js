@@ -100,6 +100,32 @@ function meter(label, cls, window) {
   return node;
 }
 
+const number = (value, digits = 0) => Number(value).toLocaleString([], { maximumFractionDigits: digits });
+function money(value, currency) {
+  try { return Number(value).toLocaleString([], { style: 'currency', currency, maximumFractionDigits: 2 }); } catch { return `${number(value, 2)} ${currency}`; }
+}
+// Paid overflow and per-model limits that never pick the account but are worth seeing.
+function chips(account) {
+  const q = account.quota || {}, list = [];
+  const balance = Number(q.credits?.balance);
+  if (q.credits?.unlimited) list.push(['Unlimited credits', '']);
+  else if (Number.isFinite(balance) && (q.credits?.hasCredits || balance > 0)) list.push([`${number(balance)} credits`, 'Purchased flexible-usage balance, spent only after the limits are reached']);
+  const resets = q.resetCredits?.availableCount;
+  if (Number.isFinite(resets) && resets > 0) {
+    const until = epoch(q.resetCredits.nextExpiresAt);
+    list.push([`${resets} reset${resets === 1 ? '' : 's'} banked${until ? ` · until ${clock(until)}` : ''}`, 'A banked reset clears a used-up limit once. Switch never spends it.']);
+  }
+  if (q.extraUsage) list.push([`${money(q.extraUsage.used, q.extraUsage.currency)} of ${money(q.extraUsage.limit, q.extraUsage.currency)} extra this month${q.extraUsage.limitReached ? ' · limit reached' : ''}`, 'Claude extra usage at API rates, used after a window is full']);
+  for (const w of (q.windows || []).filter((x) => !x.appliesToSelection && x.label)) {
+    const reset = epoch(w.resetsAt);
+    list.push([`${w.label} week ${Math.round(Math.max(0, 100 - w.usedPercent))}% left`, reset ? `Model weekly limit; resets ${new Date(reset).toLocaleString()}` : 'Model weekly limit']);
+  }
+  if (!list.length) return null;
+  const node = el('div', 'chips');
+  for (const [text, title] of list) { const chip = el('span', 'chip', text); if (title) chip.title = title; node.append(chip); }
+  return node;
+}
+
 function row(host, account, state) {
   const node = el('div', 'row');
   node.dataset.account = `${host.id}/${account.id}`;
@@ -131,6 +157,8 @@ function row(host, account, state) {
     status.append(pin);
   }
   node.append(who, meter('5-hour window', 'five', account.quota?.window), meter('Weekly', 'week', account.quota?.weekly), status);
+  const extra = chips(account);
+  if (extra) node.append(extra);
   return node;
 }
 
@@ -156,7 +184,10 @@ function hostBlock(host) {
     if (service.id !== 'cli-proxy') continue;
     const item = el('span', 'svc');
     item.title = `${service.label} on port ${service.port}: ${service.status}`;
-    item.append(el('span', `dot ${service.status === 'running' ? 'ok' : service.status === 'unavailable' ? 'bad' : ''}`), el('span', '', 'Proxy'));
+    const count = Number.isInteger(service.accounts) ? service.accounts : null;
+    const tone = service.status !== 'running' ? (service.status === 'unavailable' ? 'bad' : '') : count === 0 ? 'warn' : 'ok';
+    if (count !== null) item.title += `, ${count} account${count === 1 ? '' : 's'} signed in (not a credits source)`;
+    item.append(el('span', `dot ${tone}`), el('span', '', count === null ? 'Proxy' : `Proxy · ${count} account${count === 1 ? '' : 's'}`));
     head.append(item);
   }
   block.append(head);
@@ -169,9 +200,40 @@ function hostBlock(host) {
   return block;
 }
 
+function otherRow(item) {
+  const node = el('div', 'row other');
+  node.dataset.provider = item.id;
+  const who = el('div', 'who');
+  who.append(el('span', 'logo copilot', 'GH'));
+  const text = el('div', 'who-text');
+  const name = el('b', '', 'Copilot');
+  if (item.cliActive) { const tag = el('span', 'tag', 'Copilot CLI'); tag.title = 'Copilot CLI on these Macs is signed in as this account, so its turns spend this allowance'; name.append(tag); }
+  const plan = item.plan ? item.plan[0].toUpperCase() + item.plan.slice(1) : 'Copilot';
+  text.append(name, el('span', '', [item.login, plan, item.org].filter(Boolean).join(' · ')));
+  who.append(text);
+  let usage;
+  if (item.meter) {
+    const left = Math.max(0, item.meter.entitlement - item.meter.used);
+    usage = meter(item.meter.name, 'month', { usedPercent: (item.meter.used / item.meter.entitlement) * 100, resetsAt: item.resetsAt });
+    usage.querySelector('b').textContent = `${number(left, 1)} of ${number(item.meter.entitlement)} left`;
+    usage.title = `${item.meter.name}; ${item.meter.name === 'AI credits' ? `1 credit = $0.01, ${money(left / 100, 'USD')} left` : 'Free plan chat allowance'}${item.meter.overagePermitted ? '. Usage beyond this is billed to the organization.' : ''}`;
+  } else usage = el('div', 'meter none month', 'Unlimited or not metered');
+  const status = el('div', 'status');
+  const seen = epoch(item.observedAt);
+  const live = item.source === 'live';
+  const pill = el('span', `pill ${live ? 'ok' : 'idle'}`, live ? 'Live' : `As of ${ago(seen)}`);
+  pill.title = `${live ? 'Read from GitHub' : 'From Copilot CLI\'s cache'} on ${item.host}${seen ? `, ${new Date(seen).toLocaleString()}` : ''}`;
+  status.append(pill);
+  node.append(who, usage, status);
+  return node;
+}
+
 function render() {
   const hosts = fleet?.hosts || [];
   $('#hosts').replaceChildren(...hosts.map(hostBlock));
+  const others = fleet?.providers || [];
+  $('#others').hidden = !others.length;
+  $('#other-rows').replaceChildren(...others.map(otherRow));
   const local = hosts.find((h) => h.local && h.ok);
   const modes = new Set(hosts.filter((h) => h.ok).map((h) => h.state.policy?.mode));
   const mode = local?.state.policy?.mode;

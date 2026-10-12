@@ -83,6 +83,7 @@ export function publicState(state) {
     lastQuotaErrorAt: Number.isFinite(Date.parse(lastQuotaErrorAt)) ? new Date(lastQuotaErrorAt).toISOString() : null,
     status: accountStatus(state.accounts.find(a => a.id === id), state.runs), quota: quota || { window: null, weekly: null, observedAt: null, expiresAt: null, source: null } })),
     policy: state.policy, hosts: state.hosts, services: (state.services || []).filter(s => !String(s.id).startsWith('t3')),
+    providers: Array.isArray(state.providers) ? state.providers.slice(0, 32) : [],
     runs: state.runs.slice(-30).reverse().map(({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error }) => ({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error })),
     recommendations: [null, 'codex', 'claude'].map(provider => recommend(state, { provider })), };
 }
