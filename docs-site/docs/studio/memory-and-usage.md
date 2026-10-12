@@ -8,7 +8,7 @@ description: Understand shared memory, independent native conversations, cache r
 Share durable facts across your project. Keep each worker's conversation and provider cache with the provider that owns it.
 
 :::info Early access
-These features have been in every SpecWithCode build since 0.2.0. SpecWithCode is free and in early access ([download for Apple silicon Macs](/studio)); each machine that runs work needs the current version installed. See [SpecWithCode projects](./projects.md) for availability.
+These features have been in every SpecWithCode build since 0.2.0. SpecWithCode is free for every developer and team ([what stays free](/pricing)) and in early access ([download for Apple silicon Macs](/studio)); each machine that runs work needs the current version installed. See [SpecWithCode projects](./projects.md) for availability.
 :::
 
 | Kind of context | What belongs there |

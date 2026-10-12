@@ -60,7 +60,7 @@ const PLANS = [
       'SSO, SCIM, provider and model policy, or a self-hosted skill registry, scoped with you',
       'Security review pack and invoice billing',
     ],
-    cta: {label: 'Talk to us', href: ENTERPRISE_MAILTO},
+    cta: {label: 'See the enterprise plan', to: '/docs/enterprise'},
   },
 ];
 
@@ -100,7 +100,7 @@ export default function Pricing() {
           <tr><td>Day 1</td><td>A call to pick the repository and the work in flight. We read your current CLAUDE.md, AGENTS.md and prompts.</td></tr>
           <tr><td>Days 2 to 5</td><td>SpecWeave goes in on a branch you review: one AGENTS.md every tool reads, specs for the work in flight, local recovery checkpoints and an explicit handoff workflow.</td></tr>
           <tr><td>Days 6 to 9</td><td>Shared prompts become skills in a private repository, installed with one command into Claude Code and Codex. SpecWithCode set up on your machines if you want it.</td></tr>
-          <tr><td>Day 10</td><td>The drill: an engineer runs out of Claude Code mid-task and Codex picks it up from the handoff. You get the HTML evidence report.</td></tr>
+          <tr><td>Day 10</td><td>The drill: an engineer runs out of Claude Code mid-task and Codex picks it up from the handoff. You get the HTML evidence report, and we ask whether we may write the pilot up as a case study.</td></tr>
         </tbody></table>
         <p>Pilot teams also get three months of Verified Skill Team for 5 seats once hosted publishing opens. <a href={PILOT_MAILTO}>Apply for a pilot</a>.</p>
 

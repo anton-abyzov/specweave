@@ -8,6 +8,19 @@ description: SpecWeave for enterprise teams, covering audit trails, brownfield w
 
 SpecWeave is built for legacy codebases, distributed teams and work that has to stand up to an audit.
 
+## Enterprise plan
+
+SpecWeave and SpecWithCode are free for every team, at any size. An enterprise contract adds what a company rolling coding agents out to many engineers needs around them. It never charges for running agents on your own machines and never resells model tokens.
+
+| Offered today | Scoped with your contract |
+|---|---|
+| Rollout across your teams, with SpecWeave set up in your repositories | SSO and SCIM |
+| Priority support with a named engineer and response times in the contract | Provider and model policy for each team |
+| Export of who ran which agent, on which machine, with what evidence (from the ledger and `specweave report`) | A self-hosted skill registry |
+| Security review pack and invoice billing | Anything else your rollout needs, scheduled and priced in the contract |
+
+Contracts are annual. The two-week [founding team pilot](/pricing) is the usual first step. To start a conversation, email [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20for%20our%20company) with your team size and the tools you use, or see [pricing](/pricing).
+
 ## Inspectable delivery records
 
 Every decision lives in a version-controlled file, and the evidence for every task is recorded by the command that produced it, not asserted afterwards.
@@ -24,7 +37,7 @@ The CLI appends ledger events; it does not rewrite prior events. The ledger is a
 
 ## Three products, distinct responsibilities
 
-SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate, free **SpecWithCode** app (in early access) provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [See SpecWithCode](/studio) before planning a rollout around it.
+SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWithCode** app, free for every developer and team and in early access, provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [See SpecWithCode](/studio) before planning a rollout around it.
 
 ## Brownfield work
 
