@@ -78,10 +78,11 @@ export function recommend(state, { provider = state.policy.preferredProvider, ac
   return { provider: provider || 'any', id: account?.id || null, reason: account ? `${priority}. New run only; active sessions keep their account.` : 'No eligible profile with fresh observed quota; unknown quota requires an explicit account and --allow-unknown' };
 }
 export function publicState(state) {
-  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError, lastQuotaErrorAt, subscriptionType }) => ({ id, provider, label, authenticated, authKind, authError: authError || null, subscriptionType: subscriptionType || null,
+  return { accounts: state.accounts.map(({ id, provider, label, authenticated, quota, authKind, authError, lastQuotaErrorAt, subscriptionType, identity }) => ({ id, provider, label, authenticated, authKind, authError: authError || null, subscriptionType: subscriptionType || null,
+    identity: typeof identity === 'string' && /^[0-9a-f]{16}$/.test(identity) ? identity : null,
     lastQuotaErrorAt: Number.isFinite(Date.parse(lastQuotaErrorAt)) ? new Date(lastQuotaErrorAt).toISOString() : null,
     status: accountStatus(state.accounts.find(a => a.id === id), state.runs), quota: quota || { window: null, weekly: null, observedAt: null, expiresAt: null, source: null } })),
-    policy: state.policy, hosts: state.hosts, services: state.services,
+    policy: state.policy, hosts: state.hosts, services: (state.services || []).filter(s => !String(s.id).startsWith('t3')),
     runs: state.runs.slice(-30).reverse().map(({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error }) => ({ id, accountId, provider, cwd, status, startedAt, endedAt, exitCode, model, checkpointId, error })),
     recommendations: [null, 'codex', 'claude'].map(provider => recommend(state, { provider })), };
 }

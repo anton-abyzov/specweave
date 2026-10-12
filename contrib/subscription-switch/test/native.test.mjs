@@ -11,9 +11,13 @@ import { readState, mutateState, findBinary } from '../lib/state.mjs';
 import { execute } from '../lib/util.mjs';
 test('supported app-server initialized handshake precedes account/rateLimits/read', async t => {
   const f = await fixture(t);
-  const binary = await fakeBinary(f.base, 'rpc', `import readline from 'node:readline';let initialized=false;readline.createInterface({input:process.stdin}).on('line',line=>{const q=JSON.parse(line);if(q.method==='initialize') console.log(JSON.stringify({id:q.id,result:{userAgent:'fixture'}}));if(q.method==='initialized') initialized=true;if(q.method==='account/rateLimits/read')console.log(JSON.stringify(initialized?{id:q.id,result:{rateLimits:{primary:{usedPercent:25,resetsAt:Math.floor(Date.now()/1000)+3600},secondary:{usedPercent:60,resetsAt:Math.floor(Date.now()/1000)+86400}}}}:{id:q.id,error:{message:'missing initialized'}}));});`);
+  const binary = await fakeBinary(f.base, 'rpc', `import readline from 'node:readline';let initialized=false;readline.createInterface({input:process.stdin}).on('line',line=>{const q=JSON.parse(line);if(q.method==='initialize') console.log(JSON.stringify({id:q.id,result:{userAgent:'fixture'}}));if(q.method==='initialized') initialized=true;if(q.method==='account/read'&&process.env.FIXTURE_ACCOUNT)console.log(JSON.stringify({id:q.id,result:{account:{type:'chatgpt',email:'Someone@Example.com',planType:'pro'}}}));if(q.method==='account/rateLimits/read')console.log(JSON.stringify(initialized?{id:q.id,result:{rateLimits:{primary:{usedPercent:25,resetsAt:Math.floor(Date.now()/1000)+3600},secondary:{usedPercent:60,resetsAt:Math.floor(Date.now()/1000)+86400}}}}:{id:q.id,error:{message:'missing initialized'}}));});`);
   const result = await readCodexRateLimits({ binary, provider: 'codex', configDir: f.home }, 3000);
-  assert.equal(result.error, null); const q = normalizeCodexQuota(result.data); assert.equal(q.window.usedPercent, 25); assert.equal(q.weekly.usedPercent, 60); assert.equal(q.source, 'native-app-server');
+  assert.equal(result.error, null); assert.equal(result.account, null, 'no account/read answer is tolerated');
+  process.env.FIXTURE_ACCOUNT = '1'; t.after(() => { delete process.env.FIXTURE_ACCOUNT; });
+  const withAccount = await readCodexRateLimits({ binary, provider: 'codex', configDir: f.home }, 3000);
+  assert.deepEqual([withAccount.account.type, withAccount.account.planType], ['chatgpt', 'pro']);
+  const q = normalizeCodexQuota(result.data); assert.equal(q.window.usedPercent, 25); assert.equal(q.weekly.usedPercent, 60); assert.equal(q.source, 'native-app-server');
   assert.equal(normalizeCodexQuota({ rateLimits: { primary: null, secondary: null } }), null);
   const byId = normalizeCodexQuota({ rateLimitsByLimitId: { codex: { primary: { usedPercent: 99, resetsAt: 9999999999 } } }, rateLimits: { primary: { usedPercent: 1, resetsAt: 9999999999 } } });
   assert.equal(byId.window.usedPercent, 99);

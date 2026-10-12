@@ -51,14 +51,13 @@ def state(accounts, mode="balanced", selected=None, next_id=None, proxy="running
     full = accounts + [account(f"{p}-{i}") for p, c in (("codex", 4), ("claude", 3)) for i in range(1, c + 1) if f"{p}-{i}" not in ids]
     return {"accounts": full, "policy": {"mode": mode, "preferredProvider": None, "selectedAccount": selected},
             "hosts": [], "runs": [],
-            "services": [{"id": "t3", "label": "T3 stable", "port": 3773, "status": "running"},
-                         {"id": "cli-proxy", "label": "CLIProxyAPI", "port": 8317, "status": proxy}],
+            "services": [{"id": "cli-proxy", "label": "CLIProxyAPI", "port": 8317, "status": proxy}],
             "recommendations": [{"provider": "any", "id": next_id, "reason": "fixture"}]}
 
 
 FLEET = {"checkedAt": iso(now), "autoRefreshMinutes": 10, "hosts": [
     {"id": "local", "label": "M4 Max", "local": True, "ok": True, "refreshing": False, "state": state([
-        account("codex-1", authenticated=True, authKind="chatgpt", status="exhausted", quota=quota(None, 100, week_in=2 * 86400)),
+        account("codex-1", authenticated=True, authKind="chatgpt", subscriptionType="pro", status="exhausted", quota=quota(None, 100, week_in=2 * 86400), sharedWith=["M1 Max"]),
         account("claude-1", authenticated=True, authKind="claude.ai", subscriptionType="max", status="ready", quota=quota(41, 32)),
     ], mode="reset-first", next_id="claude-1")},
     {"id": "m1", "label": "M1 Max", "local": False, "ok": True, "state": state([
@@ -81,9 +80,10 @@ def check(page, width, scheme):
     rows = page.locator(".row")
     assert rows.count() == 5, f"expected 5 account rows, got {rows.count()}"
     text = page.inner_text("#hosts")
-    for needle in ("M4 Max", "this Mac", "M1 Max", "Tunnel not connected", "59% left", "Limit reached", "Plan not verified", "Pinned", "Next", "Free slots: 2 Codex, 2 Claude"):
+    for needle in ("M4 Max", "this Mac", "M1 Max", "Tunnel not connected", "59% left", "Limit reached", "Plan not verified", "Pinned", "Next", "Free slots: 2 Codex, 2 Claude", "same account as M1 Max"):
         assert needle in text, f"missing {needle!r} at {width}px {scheme}"
     assert page.locator('[data-mode="reset-first"][aria-pressed="true"]').count() == 1
+    assert "T3" not in page.inner_text("body"), f"T3 label still shown at {width}px {scheme}"
     overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
     assert overflow <= 0, f"horizontal overflow {overflow}px at {width}px"
 

@@ -113,7 +113,10 @@ function row(host, account, state) {
   const next = !pinned && state.recommendations?.find((r) => r.provider === preferred)?.id === account.id;
   if (pinned) name.append(el('span', 'tag', 'Pinned'));
   if (next) { const tag = el('span', 'tag next', 'Next'); tag.title = 'The account the current policy picks for the next run on this Mac'; name.append(tag); }
-  text.append(name, el('span', '', plan(account)));
+  const shared = Array.isArray(account.sharedWith) && account.sharedWith.length ? ` · same account as ${account.sharedWith.join(', ')}` : '';
+  const sub = el('span', '', plan(account) + shared);
+  if (shared) sub.title = 'Signed in to the same subscription on these Macs; every copy shows the newest reading.';
+  text.append(name, sub);
   who.append(text);
 
   const status = el('div', 'status');
@@ -150,10 +153,10 @@ function hostBlock(host) {
   if (!host.refreshing && (!seen || Date.now() - seen > 30 * 60000)) age.className = 'stale-age';
   head.append(age, el('span', 'spacer'));
   for (const service of state.services || []) {
-    if (!['cli-proxy', 't3'].includes(service.id)) continue;
+    if (service.id !== 'cli-proxy') continue;
     const item = el('span', 'svc');
     item.title = `${service.label} on port ${service.port}: ${service.status}`;
-    item.append(el('span', `dot ${service.status === 'running' ? 'ok' : service.status === 'unavailable' ? 'bad' : ''}`), el('span', '', service.id === 'cli-proxy' ? 'Proxy' : 'T3'));
+    item.append(el('span', `dot ${service.status === 'running' ? 'ok' : service.status === 'unavailable' ? 'bad' : ''}`), el('span', '', 'Proxy'));
     head.append(item);
   }
   block.append(head);

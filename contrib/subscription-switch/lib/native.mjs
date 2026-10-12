@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
 import { execute, iso } from './util.mjs';
 import { QUOTA_TTL_MS, claudeProfileIsolationUnverified, CLAUDE_CONSUMER_PLANS } from './policy.mjs';
 import { ensureState, mutateState } from './state.mjs';
@@ -18,6 +19,12 @@ export function nativeEnv(account) {
   else if (!account.nativeDefault && account.id !== 'claude-1') env.CLAUDE_CONFIG_DIR = account.configDir;
   return env;
 }
+// A one-way tag for the signed-in account, so the fleet page can tell when two
+// Macs share one subscription. The email itself is never stored or served.
+export function accountIdentity(provider, email) {
+  if (typeof email !== 'string' || !/^[^@\s]{1,128}@[^@\s]{1,255}$/.test(email.trim())) return null;
+  return createHash('sha256').update(`${provider}:${email.trim().toLowerCase()}`).digest('hex').slice(0, 16);
+}
 export async function inspectAuth(account) {
   const args = account.provider === 'codex' ? ['login', 'status'] : ['auth', 'status', '--json'];
   const result = await execute(account.binary, args, { env: nativeEnv(account), timeoutMs: 12000, maxBytes: 128 * 1024 });
@@ -31,7 +38,8 @@ export async function inspectAuth(account) {
         const isolated = claudeProfileIsolationUnverified({ ...account, authKind: kind, authError: null });
         return { authenticated: null, authKind: kind, authObservedAt: iso(), authError: isolated ? 'profile-isolation-unverified' : 'subscription-auth-unverified' };
       }
-      return { authenticated: result.exitCode === 0 && body.loggedIn === true && consumerAuth, authKind: consumerAuth || knownApiAuth ? kind : 'unknown', authObservedAt: iso(), authError: body.loggedIn === true && !consumerAuth ? 'subscription-auth-required' : null };
+      const identity = body.loggedIn === true ? accountIdentity('claude', body.email) : null;
+      return { identity, authenticated: result.exitCode === 0 && body.loggedIn === true && consumerAuth, authKind: consumerAuth || knownApiAuth ? kind : 'unknown', authObservedAt: iso(), authError: body.loggedIn === true && !consumerAuth ? 'subscription-auth-required' : null };
     }
     catch { return { authenticated: false, authKind: null, authObservedAt: iso(), authError: 'native-auth-output-unrecognized' }; }
   }
@@ -44,7 +52,7 @@ export async function inspectAuth(account) {
 export function readCodexRateLimits(account, timeoutMs = 15000) {
   return new Promise(resolve => {
     const child = spawn(account.binary, ['app-server', '--stdio'], { env: nativeEnv(account), stdio: ['pipe', 'pipe', 'pipe'] });
-    let buffer = '', byteCount = 0, answer = null, error = null, phase = 'initialize', hardTimer;
+    let buffer = '', byteCount = 0, answer = null, signedIn = null, error = null, phase = 'initialize', pending = 2, hardTimer;
     const stop = () => { child.kill('SIGTERM'); hardTimer = setTimeout(() => child.kill('SIGKILL'), 1500); hardTimer.unref(); };
     const timer = setTimeout(() => { error = 'quota-read-timeout'; stop(); }, timeoutMs);
     const write = msg => { if (!child.stdin.destroyed) child.stdin.write(JSON.stringify(msg) + '\n'); };
@@ -61,13 +69,16 @@ export function readCodexRateLimits(account, timeoutMs = 15000) {
           if (!msg.result) continue;
           phase = 'read'; write({ jsonrpc: '2.0', method: 'initialized' });
           write({ jsonrpc: '2.0', id: 2, method: 'account/rateLimits/read', params: {} });
-        } else if (msg.id === 2 && phase === 'read') {
-          if (msg.error) error = 'quota-read-unavailable'; else answer = msg.result;
-          phase = 'done'; stop();
+          write({ jsonrpc: '2.0', id: 3, method: 'account/read', params: { refreshToken: false } });
+        } else if ((msg.id === 2 || msg.id === 3) && phase === 'read') {
+          // An older app-server may never answer account/read; the limits alone still count.
+          if (msg.id === 2) { if (msg.error) error = 'quota-read-unavailable'; else answer = msg.result; if (pending > 1) setTimeout(stop, 2000).unref(); }
+          else if (!msg.error) signedIn = msg.result?.account || null;
+          if (--pending === 0) { phase = 'done'; stop(); }
         }
       }
     });
-    child.on('close', () => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ data: answer, error }); });
+    child.on('close', () => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ data: answer, account: signedIn, error }); });
     write({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { clientInfo: { name: 'specweave_switch', title: 'SpecWeave Switch', version: '0.1.0' }, capabilities: { experimentalApi: true } } });
   });
 }
@@ -205,31 +216,40 @@ export async function refresh(root) {
   const accounts = await Promise.all(state.accounts.map(async account => {
     const auth = await inspectAuth(account);
     let quota = account.quota, quotaError = null;
-    let subscriptionType = account.subscriptionType || null;
-    if (auth.authenticated === true && account.provider === 'codex') {
+    let subscriptionType = account.subscriptionType || null, identity = auth.identity ?? account.identity ?? null;
+    // A slow `login status` is not a sign-out: the app-server read below answers who is signed in.
+    const authTimedOut = auth.authError === 'native-auth-timeout';
+    if (account.provider === 'codex' && (auth.authenticated === true || authTimedOut)) {
       const readback = await readCodexRateLimits(account);
+      const signedIn = readback.account;
+      if (signedIn?.type === 'chatgpt') {
+        Object.assign(auth, { authenticated: true, authKind: 'chatgpt', authError: null });
+        identity = accountIdentity('codex', signedIn.email) || identity;
+        if (typeof signedIn.planType === 'string' && /^[a-z_]{1,32}$/.test(signedIn.planType)) subscriptionType = signedIn.planType;
+      }
       const observed = normalizeCodexQuota(readback.data);
       // An unavailable refresh does not renew or erase the old observation.
       if (observed) quota = observed;
       quotaError = readback.error || (!observed ? 'quota-unavailable' : null);
     } else if (account.provider === 'claude' && (account.nativeDefault || account.id === 'claude-1')
-      && (auth.authenticated === true || auth.authError === 'subscription-auth-unverified')) {
+      && (auth.authenticated === true || auth.authError === 'subscription-auth-unverified' || authTimedOut)) {
       // Isolated Claude slots share the default keychain login, so only the
       // native default profile is read. get_usage names the consumer plan.
       const readback = await readClaudeUsage(account);
       const observed = normalizeClaudeUsage(readback.data);
       subscriptionType = claudeSubscriptionType(readback.data);
       if (observed) quota = observed;
-      if (subscriptionType && auth.authError === 'subscription-auth-unverified') Object.assign(auth, { authenticated: true, authError: null });
+      if (subscriptionType && (auth.authError === 'subscription-auth-unverified' || authTimedOut)) Object.assign(auth, { authenticated: true, authKind: auth.authKind || account.authKind, authError: null });
       quotaError = readback.error || (!observed ? 'quota-unavailable' : null);
     }
-    return { ...account, ...auth, quota, quotaError, subscriptionType };
+    if (auth.authenticated === false) identity = null;
+    return { ...account, ...auth, quota, quotaError, subscriptionType, identity };
   }));
-  const services = await Promise.all(state.services.map(serviceProbe));
+  const services = await Promise.all(state.services.filter(s => !s.id.startsWith('t3')).map(serviceProbe));
   return mutateState(root, current => {
     for (const update of accounts) {
       const target = current.accounts.find(a => a.id === update.id);
-      if (target) Object.assign(target, { authenticated: update.authenticated, authKind: update.authKind, authObservedAt: update.authObservedAt, authError: update.authError, quota: update.quota, quotaError: update.quotaError, subscriptionType: update.subscriptionType });
+      if (target) Object.assign(target, { authenticated: update.authenticated, authKind: update.authKind, authObservedAt: update.authObservedAt, authError: update.authError, quota: update.quota, quotaError: update.quotaError, subscriptionType: update.subscriptionType, identity: update.identity });
     }
     current.services = services;
   });

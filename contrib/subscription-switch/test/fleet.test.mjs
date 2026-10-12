@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fixture, fakeBinary } from './helpers.mjs';
-import { serve, readPeers } from '../lib/server.mjs';
-import { normalizeClaudeUsage, claudeSubscriptionType, readClaudeUsage } from '../lib/native.mjs';
+import { serve, readPeers, syncShared } from '../lib/server.mjs';
+import { normalizeClaudeUsage, claudeSubscriptionType, readClaudeUsage, accountIdentity } from '../lib/native.mjs';
 import { accountStatus, claudeSubscriptionAuthUnverified } from '../lib/policy.mjs';
 import { mutateState } from '../lib/state.mjs';
 
@@ -138,4 +138,23 @@ test('the dashboard refreshes itself on a timer and shares a running refresh', a
   const manual = fetch(origin + '/api/refresh', { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: '{}' });
   release(); assert.equal((await manual).status, 200);
   assert.equal(calls, 1, 'a manual refresh joins the running one');
+});
+
+test('one subscription on several Macs shows the newest reading everywhere', () => {
+  const id = accountIdentity('codex', ' Someone@Example.com ');
+  assert.match(id, /^[0-9a-f]{16}$/);
+  assert.equal(id, accountIdentity('codex', 'someone@example.com'));
+  assert.notEqual(id, accountIdentity('claude', 'someone@example.com'));
+  assert.equal(accountIdentity('codex', 'not-an-email'), null);
+  const q = (used, at) => ({ weekly: { usedPercent: used, resetsAt: 2e9 }, observedAt: at });
+  const host = (hid, label, accounts) => ({ id: hid, label, ok: true, state: { accounts } });
+  const hosts = syncShared([
+    host('local', 'M4', [{ id: 'codex-1', provider: 'codex', identity: id, status: 'ready', quota: q(81, '2026-10-12T16:00:00Z') }]),
+    host('m1', 'M1', [{ id: 'codex-1', provider: 'codex', identity: id, status: 'ready', quota: q(82, '2026-10-12T16:00:40Z') }]),
+    host('m3', 'M3', [{ id: 'codex-1', provider: 'codex', identity: 'ffffffffffffffff', status: 'ready', quota: q(0, '2026-10-12T16:00:10Z') }]),
+    { id: 'm9', label: 'M9', ok: false },
+  ]);
+  const [m4, m1, m3] = hosts.map(h => h.state?.accounts[0]);
+  assert.deepEqual([m4.quota.weekly.usedPercent, m1.quota.weekly.usedPercent, m3.quota.weekly.usedPercent], [82, 82, 0]);
+  assert.deepEqual([m4.sharedWith, m1.sharedWith, m3.sharedWith], [['M1'], ['M4'], undefined]);
 });

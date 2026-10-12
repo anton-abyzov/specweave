@@ -56,6 +56,28 @@ export function lastObservedAt(state) {
   return times.length ? new Date(Math.max(...times)).toISOString() : null;
 }
 
+// One subscription signed in on several Macs is read by each Mac at slightly
+// different moments. Show every copy the newest reading and name the others.
+export function syncShared(hosts) {
+  const groups = new Map();
+  for (const host of hosts) for (const account of host.ok ? host.state?.accounts || [] : []) {
+    if (!account.identity || !account.quota?.observedAt) continue;
+    const key = `${account.provider}:${account.identity}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ host, account });
+  }
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    const newest = members.reduce((a, b) => Date.parse(b.account.quota.observedAt) > Date.parse(a.account.quota.observedAt) ? b : a);
+    for (const { host, account } of members) {
+      account.sharedWith = members.filter(m => m.host !== host).map(m => m.host.label);
+      if (account === newest.account) continue;
+      account.quota = newest.account.quota;
+      if (account.status !== 'active') account.status = newest.account.status === 'active' ? 'ready' : newest.account.status;
+    }
+  }
+  return hosts;
+}
 export async function serve(root, { port = 8318, publicDir = defaultPublic, refreshState = refresh, autoRefreshMs = 0 } = {}) {
   await ensureState(root);
   let refreshing = null, lastRefreshAt = null, lastRefreshError = null;
@@ -83,7 +105,7 @@ export async function serve(root, { port = 8318, publicDir = defaultPublic, refr
       try { return { id: peer.id, label: peer.label, local: false, ok: true, state: await peerCall(peer, '/api/state') }; }
       catch (error) { return { id: peer.id, label: peer.label, local: false, ok: false, error: peerError(error) }; }
     }));
-    return { checkedAt: new Date().toISOString(), autoRefreshMinutes: autoRefreshMs > 0 ? Math.round(autoRefreshMs / 60000) : null, hosts: [await local(), ...remote] };
+    return { checkedAt: new Date().toISOString(), autoRefreshMinutes: autoRefreshMs > 0 ? Math.round(autoRefreshMs / 60000) : null, hosts: syncShared([await local(), ...remote]) };
   };
   const forPeers = async (fn) => {
     const { peers } = await readPeers(root);
