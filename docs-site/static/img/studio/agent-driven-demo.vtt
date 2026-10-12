@@ -14,7 +14,7 @@ Expand the recorded work to inspect the actual tool and its successful output.
 
 4
 00:00:19.443 --> 00:00:26.565
-The recorded command returned exit code zero. Studio retained the evidence.
+The recorded command returned exit code zero. SpecWithCode retained the evidence.
 
 5
 00:00:26.565 --> 00:00:34.112

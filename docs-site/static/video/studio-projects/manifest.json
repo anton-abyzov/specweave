@@ -11,11 +11,11 @@
       "media": {
         "video": {
           "file": "projects-and-threads.mp4",
-          "sha256": "7ddd1dd9370c45dcae2ab2650c342e51cfd4b658aadca058f4a1c25213f1146e"
+          "sha256": "3de8e5f662f3f0a1d0cdf3ec63a6e4d1135deb9d184a1cf6401ef64cff3494c3"
         },
         "poster": {
           "file": "projects-and-threads.jpg",
-          "sha256": "641af34a1b217103aab4f20f9ad853f1fac255e8fe86944720f8936e8e531d1d"
+          "sha256": "4ded5f79b71ba088fa4007f3d3a065086a826aff127cfde037336b8dda18a72a"
         },
         "captions": {
           "file": "projects-and-threads.vtt",
@@ -23,7 +23,7 @@
         },
         "receipt": {
           "file": "projects-and-threads.receipt.json",
-          "sha256": "b24144102b244dbf0174dd21a5fda1c65e048737b2126bb4accd4bf8e208b4fb"
+          "sha256": "e730d9c3e805de73a0b162aac646ccff954d957f3e0439e4d466bc80d5e0a7bb"
         }
       }
     },
@@ -35,19 +35,19 @@
       "media": {
         "video": {
           "file": "memory-and-usage.mp4",
-          "sha256": "4b9f78f4ee7412e8ab4b388a021267cbd16eea0d53da3109f0d2d37c8fbb1e38"
+          "sha256": "e3f3f7bf854c2d15cb246aa73ecc65d1875588552b05ccca54aba53c35746571"
         },
         "poster": {
           "file": "memory-and-usage.jpg",
-          "sha256": "712939dac81a3439299078489a3cd52ae10ef6509bd7476573ff8098485ba33d"
+          "sha256": "690a71af9d6d2300a892e4a2cb99c1e309a79d65245afcff1c6b6fe46412770e"
         },
         "captions": {
           "file": "memory-and-usage.vtt",
-          "sha256": "d5793030dc5e6b291299b7ed7b7695d8cc0681fa5a4f751aa04ca63e52b25c45"
+          "sha256": "109f327eb9cc5836ccbf2078966bb599163f7f88f0951e13268b7dd9d07a592d"
         },
         "receipt": {
           "file": "memory-and-usage.receipt.json",
-          "sha256": "58599b1562f1c1498d26fde6c94ac42c7611707f9dc3ba6fa3a620edb58627e7"
+          "sha256": "da4f2ebbfd90d9195cdbcad056b851eb1bfd68f0f1eecfe1c75b09858fa3683b"
         }
       }
     },
@@ -59,11 +59,11 @@
       "media": {
         "video": {
           "file": "plans-and-routines.mp4",
-          "sha256": "3253082bca8a6ebdca1e053ec6481fc69cbbe816d1200d77abb0ddd0ddd3127d"
+          "sha256": "1723f32170284ade87738d40e3e22955ef379e1eef66a45a8f59a319b91a1fad"
         },
         "poster": {
           "file": "plans-and-routines.jpg",
-          "sha256": "76b7f27d3504db866188cecb2a5b3614c08d0ed48cbe43f091cd3751868d2927"
+          "sha256": "0e5b4966ddc5153b27357d2e0ba5694435aa347d9a990b938b5eb1fbdb687291"
         },
         "captions": {
           "file": "plans-and-routines.vtt",
@@ -71,7 +71,7 @@
         },
         "receipt": {
           "file": "plans-and-routines.receipt.json",
-          "sha256": "09f95f81a156be58ed2fd20e5855f46f39b1cf146ae7d2bcb1703a273f818393"
+          "sha256": "ac50a319e1c80b051d9fe7688c6c62bb2e67e36793ec04ae18b67f6b4c2cec12"
         }
       }
     },
@@ -83,19 +83,19 @@
       "media": {
         "video": {
           "file": "personal-and-connections.mp4",
-          "sha256": "4b76c40772a0383ed4cc848b2035ce87e59c145834ed02e1a155044b577314eb"
+          "sha256": "99eaf8f6637fce01f9fbd26985f54ac635d8594b53b0121e56fad60373433005"
         },
         "poster": {
           "file": "personal-and-connections.jpg",
-          "sha256": "57de75f45442c65c12173ed3b90818c4e0ba71a318babca7bcaee3162d0de7b1"
+          "sha256": "8d8398d6965e96574f5d5c841220f04a74b447fae4b4f717eb46cc05d6d1bdb4"
         },
         "captions": {
           "file": "personal-and-connections.vtt",
-          "sha256": "cc8d55f5a02e9faf610db29da2b264ec4d4ad644fbc8717d1cbb2b7911bb677d"
+          "sha256": "da729933188473754cd42f32dd11c628c46553aa8002f52d25f67f79d744a309"
         },
         "receipt": {
           "file": "personal-and-connections.receipt.json",
-          "sha256": "4325ee2777337241d1295aa10d85644ea08c27dd12653b3904da8840972002f4"
+          "sha256": "0bb2188e752fc0967d74a0891a29d41c2293a19d317aafccc2ea67764e753760"
         }
       }
     }

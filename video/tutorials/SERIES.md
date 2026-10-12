@@ -89,7 +89,7 @@ All `S:` references are specweave-studio at `618bfeca` (v0.2.4, the installed re
 | `task done --run` exits 5 and records nothing when the test fails; on exit 0 it records the evidence | W:src/cli/commands/task.ts:8,64,207-209 |
 | Ledger agent id: `SPECWEAVE_AGENT`, else `<tool>@<host>`; `SPECWEAVE_TOOL`, `SPECWEAVE_HOST` override | W:src/core/tasks/ledger.ts:95-133 |
 | `sw-increment`, `sw-do`, `sw-done` descriptions | W:skills/sw-increment/SKILL.md:2; W:skills/sw-do/SKILL.md:2; W:skills/sw-done/SKILL.md:2 |
-| SpecWithCode is a private pilot with no public download | W:docs-site/src/pages/studio.tsx:19,22 |
+| SpecWithCode is free in early access; the public download opens with the first public release | W:docs-site/src/pages/studio.tsx:20,22,23 |
 
 ## Demo repo
 
@@ -126,7 +126,7 @@ Frame: 1920x1080, 30 fps, 96 px outer margin on MG cards, 48 px inset for chips.
 
 **Intro card (4 s, every episode).** Paper background. Eyebrow at top left: `SPECWITHCODE TUTORIAL 0N`, Plex Sans 500, 24 px, letter-spacing 0.12em, muted. Title `{Agent} in SpecWithCode`, Newsreader 400, 120 px, line-height 1.05, ink, with the agent name in Newsreader italic. Under it the accent thread: a 4 px accent line that draws from 0 to 720 px in 600 ms (ease out), starting at 0.3 s. Subtitle 40 px below: "Plan, build and review one task. The plan stays in your repo.", Plex Sans 400, 36 px, muted. Footer bottom left: `spec-weave.com`, Plex Sans 500, 24 px, muted. Elements rise 12 px and fade in over 300 ms, staggered 80 ms; everything fades out over 250 ms from 3.75 s; hard cut to the terminal.
 
-**Outro card (4 s, every episode).** Same frame and thread. Line 1, Newsreader 72 px: `Next: $sw-done · verify and close`, with `$sw-done` in mono, accent. Line 2, Plex Sans 32 px, ink: `SpecWithCode is in private pilot · spec-weave.com/studio`. Line 3, Plex Sans 32 px, muted: `All tutorials · spec-weave.com/tutorials`.
+**Outro card (4 s, every episode).** Same frame and thread. Line 1, Newsreader 72 px: `Next: $sw-done · verify and close`, with `$sw-done` in mono, accent. Line 2, Plex Sans 32 px, ink: `SpecWithCode · free, early access · spec-weave.com/studio`. Line 3, Plex Sans 32 px, muted: `All tutorials · spec-weave.com/tutorials`.
 
 **Step chip.** On every TERM and APP beat. Top left, 48 px inset, soft fill at 92%, 1 px line border, radius 4, Plex Sans 500, 26 px, ink; `→` separators in accent; commands in mono. Text is the beat's `stepChip`; at most 64 characters, trimmed from the front. Fades in with a 4 px rise over 200 ms at 0.2 s, leaves with the beat.
 
