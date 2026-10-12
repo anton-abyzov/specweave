@@ -6,9 +6,9 @@
  * GitHub's /releases/latest does not resolve; link the versioned asset and /releases instead.
  * After editing, run `CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease` to confirm the DMG exists.
  */
-const VERSION = '0.2.11';
+const VERSION = '0.2.12';
 const DMG_NAME = `SpecWeave-Studio-${VERSION}-arm64.dmg`;
-const DMG_BYTES = 152_775_292;
+const DMG_BYTES = 152_789_043;
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 
