@@ -1,9 +1,8 @@
 import React from 'react';
 import TutorialVideo from '@site/src/components/TutorialVideo';
 
-// Hosted off-site (postiz.easychamp.com) until it moves to first-party hosting, so it is not
-// in the /tutorials catalogue and does not preload: nothing is fetched from that host until play.
-const SRC = 'https://postiz.easychamp.com/uploads/2026/10/08/732d1028a1360047c42f0a9dee749a2b4.mp4';
+// Not in the /tutorials catalogue and does not preload: nothing is fetched until play.
+const SRC = '/video/workflow-tutorial.mp4';
 
 export default function WorkflowVideo() {
   return <TutorialVideo
