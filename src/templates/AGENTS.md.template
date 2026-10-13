@@ -1,28 +1,29 @@
 <!-- SECTION:header required -->
 # {PROJECT_NAME}
 
-This project uses SpecWeave. Work is planned in increments: `.specweave/increments/NNNN-slug/spec.md` holds Problem, Scope, Acceptance Criteria, Approach and Tasks, and `ledger.jsonl` beside it records who claimed and finished what. Start every session with `specweave pickup`.
+This project uses SpecWeave. Plan increments in `.specweave/increments/NNNN-slug/spec.md`: Problem, Scope, Acceptance Criteria, Approach and Tasks. Adjacent `ledger.jsonl` records claims and completions. Start sessions with `specweave pickup`.
 <!-- /SECTION -->
 
 <!-- SECTION:loop required -->
 ## The loop
 
-1. `specweave pickup`: brings in the latest handoff, then prints the open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory.
-2. New work that needs acceptance criteria or a handoff: `specweave create-increment "title"`, then fill in spec.md. If an open increment already owns the files, add ACs and tasks to it instead of opening another. Small self-contained fixes need no increment.
+1. `specweave pickup`: applies the latest handoff and prints the open increment, next task and ACs, other claims, branch state, notes and project memory.
+2. New work needing ACs or handoff: `specweave create-increment "title"`, then fill spec.md. If an open increment owns the files, add ACs and tasks there. Small fixes need no increment.
 3. `specweave task claim T-NN`, edit only that task's Files, commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`.
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
-5. Stopping for any reason (out of tokens, switching tool or account): `specweave handoff --reason "<why>"`.
+5. Before stopping or switching tools/accounts: `specweave handoff --reason "<why>"`.
 
-**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or a "[Usage limit reached" note appears (outside SpecWeave Studio), run `specweave handoff --reason "<why>"` and tell the user to say "pick up" in the other tool. A "[Usage limit approaching" note or a usage heads-up is not a stop: say so in one line and keep working. When the user says "pick up", run `specweave pickup` and continue with the task it names; "pick up <id or title>" passes it on. Of several it takes the newest: say which.
+**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or "[Usage limit reached" appears (outside SpecWeave Studio), run `specweave handoff --reason "<why>"`; tell them to say "pick up" in the other tool. "[Usage limit approaching" or usage heads-ups mean keep working; say so. When the user says "pick up", run `specweave pickup`; continue its task, passing any given id/title. Take the newest handoff if several; say which.
 
-Tasks live in spec.md as `### T-01 Title` followed by `- AC: AC-01 | Files: src/a.ts, tests/e2e/a.test.ts | Test: npm test -- e2e/a`. An AC is met when the tasks covering it are done. Leave a message for whoever works on an increment next with `specweave note "<text>"`. Each step is a skill in `.agents/skills/sw-*` and `.claude/skills/sw-*`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
+Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e2e/a.test.ts | Test: npm test -- e2e/a`. An AC is met when its tasks are done. Leave notes with `specweave note "<text>"`. Skills: `.agents/skills/sw-*` and `.claude/skills/sw-*`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
 <!-- /SECTION -->
 
 <!-- SECTION:rules required -->
 ## Rules
 
+- Use headless Chrome/Playwright CLI for browser tests and automation: `headless: true`, `PWDEBUG=0`, `PLAYWRIGHT_HTML_OPEN=never`, HTML reports `open: 'never'`. Save captures to files; propagate to subagents. Before opening an essential visible browser, ask the user and wait for explicit approval. Headless failure is not approval.
 - A task is done when its Test exits 0 and you have seen the real output. A Test checks the AC as users would (CLI, HTTP, UI, API); add unit tests only when asked or when config or conventions require them. Never skip, weaken or delete a test to pass, and never set a status by hand.
-- One agent per branch and worktree: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>`. A claim older than 2h is stale. On a merge conflict in `ledger.jsonl` keep every line from both sides.
+- One agent per branch/worktree: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>`. Claims older than 2h are stale. Merge `ledger.jsonl` conflicts keeping every line from both sides.
 - Decisions that must outlive this session go in spec.md Approach, or as one file per fact in `.specweave/memory/` with a line in its `MEMORY.md` index. Memory is committed, so every tool and account sees it.
 - Check a secret exists without printing it; never commit `.env*`.
 - Without the CLI, append ledger lines yourself, one JSON object per line, UTF-8, LF: `{"t":"T-01","e":"claim","by":"<tool>@<host>","at":"<ISO time>"}` (`e` is claim, done, release, skip or block; `done` needs `"evidence":"<commit sha>"`, `skip` needs `"note":"<why>"`).
