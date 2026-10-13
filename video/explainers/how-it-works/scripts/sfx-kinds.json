@@ -1,0 +1,4 @@
+{ "pop": ["pop-1", "pop-2"], "popHigh": ["pop-high-1", "pop-high-2"], "whoosh": ["whoosh-1", "whoosh-2"], "whooshDeep": ["whoosh-deep-1"],
+  "swipe": ["swipe-1", "swipe-2"], "click": ["click-1", "click-2"], "tick": ["tick-1", "tick-2"], "chime": ["chime-1", "chime-2"],
+  "thud": ["thud-1"], "riser": ["riser-1"], "impact": ["impact-1"], "typing": ["typing-1"], "glitch": ["glitch-1"],
+  "stamp": ["stamp-1"], "sparkle": ["sparkle-1"], "error": ["error-1"] }
