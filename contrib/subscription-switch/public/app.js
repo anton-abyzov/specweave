@@ -283,9 +283,10 @@ function tile(provider, subs) {
   const big = el('div', 'tile-big', `${ready.length} of ${subs.length}`);
   big.append(' ', el('small', '', 'ready'));
   node.classList.add(ready.length ? 'ok' : 'bad');
-  const bestReady = ready.filter((s) => s.left !== null).sort((a, b) => b.left - a.left)[0];
+  const top = Math.max(...ready.map((s) => s.left ?? -1));
+  const leaders = ready.filter((s) => s.left !== null && s.left === top);
   const best = el('p');
-  if (bestReady) { best.append('Most left: '); best.append(el('b', '', `${bestReady.left}%`)); best.append(` on ${bestReady.copies.map((c) => c.host.label).join(', ')}`); }
+  if (leaders.length) { best.append('Most left: '); best.append(el('b', '', `${top}%`)); best.append(` on ${[...new Set(leaders.flatMap((s) => s.copies.map((c) => c.host.label)))].join(', ')}`); }
   else best.append('Nothing usable right now');
   const soon = subs.filter((s) => s.reset).sort((a, b) => a.reset.reset - b.reset.reset)[0];
   const next = el('p');

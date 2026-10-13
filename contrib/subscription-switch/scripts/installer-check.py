@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Installer regressions: temporary HOME, synthetic profiles, fake launchctl/Node."""
 import importlib.util
+import io
 import json
 import os
 import pathlib
@@ -246,6 +247,157 @@ sys.exit(1)
         self.assert_preserved()
         self.assertEqual(lock.read_text(),'another installer owns this\n')
         self.assertFalse(any(call[0]=='bootout' for call in self.calls()))
+
+
+
+FAKE_SYSTEMCTL = r"""#!/usr/bin/env python3
+import json, os, pathlib, re, sys
+root=pathlib.Path(os.environ['FAKE_RUNTIME'])
+with (root/'calls.jsonl').open('a') as f: f.write(json.dumps(['systemctl']+sys.argv[1:])+'\n')
+assert sys.argv[1]=='--user'
+args=sys.argv[2:]
+unit=pathlib.Path(os.environ['HOME'])/'.config/systemd/user/specweave-switch.service'
+state_file=root/'systemd.json'
+state=json.loads(state_file.read_text()) if state_file.exists() else {'loaded':None,'active':False,'enabled':False}
+def save(): state_file.write_text(json.dumps(state))
+command=args[0]
+if command=='show-environment':
+ sys.exit(1 if os.environ.get('FAKE_NO_USER_MANAGER')=='1' else 0)
+if command=='daemon-reload':
+ if unit.exists():
+  line=next(l for l in unit.read_text().splitlines() if l.startswith('ExecStart='))
+  state['loaded']={'fragment':str(unit),'argv':line.split('=',1)[1]}
+ else: state['loaded']=None
+ save(); sys.exit(0)
+if command=='show':
+ loaded=state['loaded']
+ print('LoadState='+('loaded' if loaded else 'not-found'))
+ print('ActiveState='+('active' if state['active'] else 'inactive'))
+ print('FragmentPath='+(loaded['fragment'] if loaded else ''))
+ print('ExecStart='+('{ path='+loaded['argv'].split()[0]+' ; argv[]='+loaded['argv']+' ; ignore_errors=no ; start_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }' if loaded and state['active'] else ''))
+ sys.exit(0)
+if command=='enable' and args[1:]==['--now','specweave-switch.service']:
+ marker=root/'start.failed'
+ if os.environ.get('FAKE_START_FAIL')=='1' and not marker.exists():
+  marker.touch(); state['enabled']=True; save(); sys.exit(1)
+ if not state['loaded']: sys.exit(5)
+ state['enabled']=True; state['active']=True; save(); sys.exit(0)
+if command=='disable':
+ state['enabled']=False
+ if '--now' in args: state['active']=False
+ save(); sys.exit(0)
+sys.exit(1)
+"""
+
+
+class LinuxInstallerTests(unittest.TestCase):
+    """The systemd user-unit branch, driven on any host with a fake systemctl."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix='switch-install-linux-')
+        self.scratch = pathlib.Path(self.temp.name)
+        self.home = self.scratch / 'home'
+        self.home.mkdir()
+        self.source = self.scratch / 'source'
+        (self.source / 'scripts').mkdir(parents=True)
+        self.script = self.source / 'scripts/install-switch.py'
+        shutil.copy2(SCRIPTS / 'install-switch.py', self.script)
+        (self.source / 'bin').mkdir()
+        (self.source / 'bin/specweave-switch.mjs').write_text('// synthetic linux bundle\n')
+        fakebin = self.scratch / 'fakebin'
+        fakebin.mkdir()
+        self.node = fakebin / 'node'
+        self.node.write_text('#!/bin/sh\nif [ "$1" = "-p" ]; then echo 22; exit 0; fi\nexit 0\n')
+        self.node.chmod(0o755)
+        for name, body in (('systemctl', FAKE_SYSTEMCTL),
+                           ('loginctl', '#!/bin/sh\necho "[\\"loginctl\\", \\"$1\\", \\"$2\\"]" >> "$FAKE_RUNTIME/calls.jsonl"\nexit "${FAKE_LINGER_STATUS:-0}"\n'),
+                           ('launchctl', '#!/bin/sh\necho "[\\"launchctl\\"]" >> "$FAKE_RUNTIME/calls.jsonl"\nexit 1\n')):
+            (fakebin / name).write_text(body)
+            (fakebin / name).chmod(0o755)
+        self.env = dict(os.environ, HOME=str(self.home), PATH=str(fakebin)+':'+os.environ['PATH'], FAKE_RUNTIME=str(self.scratch), PWDEBUG='0', PLAYWRIGHT_HTML_OPEN='never')
+        self.unit = self.home / '.config/systemd/user/specweave-switch.service'
+        self.wrapper = self.home / '.local/bin/specweave-switch'
+        self.receipt = self.home / '.local/share/specweave/subscription-switch/install-receipt.json'
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def install(self, update=False, **environment):
+        module = load('linux_installer_' + str(len(self.calls())), self.script)
+        args = type('Args', (), dict(node=str(self.node), update=update, service=True, domain=None))()
+        with mock.patch.dict(os.environ, dict(self.env, **environment)), \
+                mock.patch.object(module.platform, 'system', return_value='Linux'), \
+                mock.patch.object(module.pathlib.Path, 'home', return_value=self.home):
+            return module.install(args)
+
+    def calls(self):
+        log = self.scratch / 'calls.jsonl'
+        return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+
+    def test_fresh_install_writes_user_unit_and_enables_linger(self):
+        receipt = self.install()
+        self.assertEqual(receipt['serviceDomain'], 'systemd-user')
+        release = pathlib.Path(receipt['release'])
+        text = self.unit.read_text()
+        self.assertIn('ExecStart=' + str(self.node.resolve()) + ' ' + str(release / 'bin/specweave-switch.mjs') + ' serve --port 8318\n', text)
+        for line in ('Restart=always\n', 'WorkingDirectory=' + str(release) + '\n', 'Environment=PWDEBUG=0\n', 'Environment=PLAYWRIGHT_HTML_OPEN=never\n',
+                     'StandardOutput=append:' + str(release.parent.parent / 'logs/stdout.log') + '\n', 'WantedBy=default.target\n'):
+            self.assertIn(line, text)
+        self.assertEqual(self.unit.stat().st_mode & 0o777, 0o600)
+        self.assertFalse((self.home / 'Library').exists())
+        names = [call[:3] for call in self.calls()]
+        self.assertIn(['systemctl', '--user', 'daemon-reload'], names)
+        self.assertIn(['systemctl', '--user', 'enable'], names)
+        self.assertIn(['loginctl', 'enable-linger', pwd_name()], [call[:3] for call in self.calls()])
+        self.assertFalse(any(call[0] == 'launchctl' for call in self.calls()))
+        self.assertTrue(json.loads((self.scratch / 'systemd.json').read_text())['active'])
+
+    def test_update_swaps_unit_to_new_release(self):
+        first = self.install()
+        (self.source / 'bin/specweave-switch.mjs').write_text('// synthetic linux bundle v2\n')
+        second = self.install(update=True)
+        self.assertNotEqual(first['release'], second['release'])
+        self.assertIn(second['release'] + '/bin/specweave-switch.mjs', self.unit.read_text())
+        self.assertIn(['systemctl', '--user', 'disable', '--now', 'specweave-switch.service'], self.calls())
+        self.assertTrue(json.loads((self.scratch / 'systemd.json').read_text())['active'])
+        self.assertTrue(pathlib.Path(first['release']).is_dir())
+
+    def test_start_failure_rolls_back_fresh_install(self):
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.install(FAKE_START_FAIL='1')
+        self.assertFalse(self.unit.exists())
+        self.assertFalse(self.wrapper.exists())
+        self.assertFalse(self.receipt.exists())
+        state = json.loads((self.scratch / 'systemd.json').read_text())
+        self.assertEqual([state['active'], state['enabled'], state['loaded']], [False, False, None])
+
+    def test_missing_user_manager_or_existing_unit_installs_nothing(self):
+        with self.assertRaisesRegex(ValueError, 'No systemd user manager'):
+            self.install(FAKE_NO_USER_MANAGER='1')
+        self.assertFalse(self.wrapper.exists())
+        self.unit.parent.mkdir(parents=True)
+        self.unit.write_text('[Service]\nExecStart=/somebody/else\n')
+        with self.assertRaisesRegex(ValueError, 'Existing companion service preserved'):
+            self.install()
+        self.assertEqual(self.unit.read_text(), '[Service]\nExecStart=/somebody/else\n')
+
+    def test_linger_refusal_is_reported_not_fatal(self):
+        stderr = io.StringIO()
+        with mock.patch.object(sys, 'stderr', stderr):
+            receipt = self.install(FAKE_LINGER_STATUS='1')
+        self.assertEqual(receipt['serviceDomain'], 'systemd-user')
+        self.assertIn('sudo loginctl enable-linger', stderr.getvalue())
+
+    def test_unit_rejects_paths_systemd_would_split(self):
+        with self.assertRaisesRegex(ValueError, 'systemd unit'):
+            installer.systemd_unit(pathlib.Path('/opt/my node/bin/node'), pathlib.Path('/r'), pathlib.Path('/root'))
+        with self.assertRaisesRegex(ValueError, 'systemd unit'):
+            installer.systemd_unit(pathlib.Path('/opt/node/bin/node'), pathlib.Path('/r/%h'), pathlib.Path('/root'))
+
+
+def pwd_name():
+    import pwd
+    return pwd.getpwuid(os.getuid()).pw_name
 
 
 if __name__=='__main__':

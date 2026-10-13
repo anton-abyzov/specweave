@@ -6,6 +6,7 @@
 #   install-cliproxy.sh --from-dir DIR       reuse DIR/bin/cli-proxy-api (+ DIR/static/management.html)
 #   install-cliproxy.sh --version 8.0.26     pick another official release
 #   install-cliproxy.sh --no-service         install files only; start nothing
+#   install-cliproxy.sh --if-missing         exit 0 without changes when already installed and answering
 #
 # Fresh client and management keys are generated per machine and never copied.
 # An existing install is left alone unless --force is given; its auth folder is never touched.
@@ -15,13 +16,15 @@ version=8.0.17
 from_dir=""
 force=0
 service=1
+if_missing=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --version) version="${2:?}"; shift 2;;
     --from-dir) from_dir="${2:?}"; shift 2;;
     --force) force=1; shift;;
     --no-service) service=0; shift;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0;;
+    --if-missing) if_missing=1; shift;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0;;
     *) echo "Unknown option: $1" >&2; exit 2;;
   esac
 done
@@ -33,6 +36,23 @@ case "$arch" in arm64|aarch64) arch=aarch64;; x86_64|amd64) arch=amd64;; *) echo
 
 root="$HOME/.local/share/specweave/proxy"
 port=8317
+# Rerun-safe path for bootstrap scripts: an install that answers its own key is left
+# exactly as it is (binary, keys, config, service and auth folder).
+if [ "$if_missing" = 1 ] && [ "$force" != 1 ] && [ -e "$root/config.yaml" ]; then
+  installed_port="$(awk '$1 == "port:" { print $2; exit }' "$root/config.yaml")"
+  [[ "$installed_port" =~ ^[0-9]+$ ]] || { echo "CLIProxyAPI config at $root has no port; review it or rerun with --force." >&2; exit 3; }
+  [ -s "$root/secrets/client-key.txt" ] || { echo "CLIProxyAPI at $root has no client key; review it or rerun with --force." >&2; exit 3; }
+  code=000
+  for _ in 1 2 3 4 5; do
+    # The header goes through a file descriptor, so the key never shows in curl's argv (ps, /proc/*/cmdline).
+    code="$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' -H @<(printf 'Authorization: Bearer %s\n' "$(cat "$root/secrets/client-key.txt")") "http://127.0.0.1:$installed_port/v1/models" || true)"
+    [ "$code" = 200 ] && break
+    sleep 1
+  done
+  [ "$code" = 200 ] || { echo "CLIProxyAPI is installed at $root but does not answer on 127.0.0.1:$installed_port (HTTP $code); check $root/logs, or rerun with --force." >&2; exit 3; }
+  echo "CLIProxyAPI is already installed and running on 127.0.0.1:$installed_port; left as is. Accounts: $(find "$root/auth" -name '*.json' 2>/dev/null | wc -l | tr -d ' ')."
+  exit 0
+fi
 if [ -e "$root/config.yaml" ] && [ "$force" != 1 ]; then
   echo "CLIProxyAPI is already installed at $root; rerun with --force to replace the binary and service (auth is kept)." >&2
   exit 3
@@ -204,12 +224,12 @@ EOF
 fi
 
 for _ in $(seq 1 20); do
-  code="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $client_key" "http://127.0.0.1:$port/v1/models" || true)"
+  code="$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' -H @<(printf 'Authorization: Bearer %s\n' "$client_key") "http://127.0.0.1:$port/v1/models" || true)"
   [ "$code" = 200 ] && break
   sleep 1
 done
 [ "$code" = 200 ] || { echo "CLIProxyAPI did not answer on 127.0.0.1:$port (last HTTP $code); see $root/logs" >&2; exit 5; }
-unauth="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/v1/models" || true)"
+unauth="$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/v1/models" || true)"
 head -1 "$work/help.txt"
 echo "CLIProxyAPI is running on 127.0.0.1:$port (keyed request 200, unkeyed $unauth). Accounts: $(find "$root/auth" -name '*.json' | wc -l | tr -d ' ')."
 echo "Keys: $root/secrets (client.env holds OPENAI_BASE_URL and OPENAI_API_KEY for API clients)."
