@@ -1,241 +1,306 @@
 'use strict';
 
 const $ = (selector) => document.querySelector(selector);
-const profileSlots = [
-  ...Array.from({ length: 4 }, (_, i) => ({ id: `codex-${i + 1}`, provider: 'codex', label: `Codex ${i + 1}` })),
-  ...Array.from({ length: 3 }, (_, i) => ({ id: `claude-${i + 1}`, provider: 'claude', label: `Claude ${i + 1}` })),
-];
-const hostSlots = [
-  { id: 'm4', label: 'M4 Max', role: 'main' },
-  { id: 'm1', label: 'M1 Max', role: 'worker' },
-  { id: 'm3', label: 'M3 / Olympus', role: 'worker' },
-];
-let state = {};
-let pending = false;
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
-});
+const SLOTS = { codex: 4, claude: 3 };
+const MODE_HELP = {
+  'balanced': 'Least-used account first.',
+  'reset-first': 'The account whose limit resets soonest first.',
+  'spend-first': 'Most-used account first, so it runs out before the next one starts.',
+};
+let fleet = null;
+let busy = false;
+let refreshing = false;
 
-function text(value, fallback = 'Unknown') {
-  return typeof value === 'string' && value.trim() ? value : fallback;
-}
-function element(tag, className, content) {
+function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (content !== undefined) node.textContent = String(content);
+  if (text !== undefined) node.textContent = String(text);
   return node;
 }
-function resetDate(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const date = typeof value === 'number' ? new Date(value < 1e12 ? value * 1000 : value) : new Date(value);
-  return Number.isFinite(date.getTime()) && date.getTime() > 0 ? dateFormatter.format(date) : null;
+function epoch(value) {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value < 1e12 ? value * 1000 : value;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
-function notice(message, kind = 'info') {
+function clock(ms) {
+  const date = new Date(ms), now = new Date();
+  const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (date.toDateString() === now.toDateString()) return time;
+  if (ms - now.getTime() < 6 * 864e5 && ms > now.getTime()) return `${date.toLocaleDateString([], { weekday: 'short' })} ${time}`;
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+function span(ms) {
+  const minutes = Math.max(0, Math.round(Math.abs(ms) / 60000));
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ${minutes % 60}m`;
+  return `${Math.floor(hours / 24)}d ${hours % 24}h`;
+}
+function ago(ms) {
+  if (!ms) return 'never';
+  const diff = Date.now() - ms;
+  return diff < 60000 ? 'just now' : `${span(diff)} ago`;
+}
+function notice(message, kind = 'warn') {
   const node = $('#notice');
-  node.textContent = message;
+  node.textContent = message || '';
   node.dataset.kind = kind;
   node.hidden = !message;
 }
-function asArray(value) { return Array.isArray(value) ? value.filter((entry) => entry && typeof entry === 'object') : []; }
-function blockedAuth(account) {
-  if (account.authError === 'profile-isolation-unverified') return 'profile-isolation-unverified';
-  if (account.authError === 'subscription-auth-unverified') return 'subscription-auth-unverified';
-  if (account.provider === 'claude' && ['oauth_token', 'oauth-token'].includes(account.authKind)) {
-    return account.id === 'claude-1' ? 'subscription-auth-unverified' : 'profile-isolation-unverified';
-  }
-  return null;
+function newest(state) {
+  const times = (state?.accounts || []).map((a) => epoch(a.quota?.observedAt)).filter(Boolean);
+  return times.length ? Math.max(...times) : null;
 }
-function statusLabel(account) {
-  const blocked = blockedAuth(account);
-  if (blocked === 'profile-isolation-unverified') return ['Profile isolation unverified', 'warning'];
-  if (blocked === 'subscription-auth-unverified') return ['Subscription unverified', 'warning'];
-  const labels = {
-    exhausted: ['Quota exhausted', 'danger'], stale: ['Observation stale', 'warning'],
-    active: ['Working', 'success'], error: ['Needs attention', 'danger'],
-    'auth-required': ['Sign-in required', 'warning'],
+
+function visible(account) {
+  return account.authenticated === true || Boolean(account.quota?.observedAt) || Boolean(account.subscriptionType)
+    || (account.id.endsWith('-1') && Boolean(account.authKind));
+}
+function statusOf(account) {
+  if (account.authError === 'subscription-auth-unverified') return ['Plan not verified', 'warn'];
+  if (account.authError === 'profile-isolation-unverified') return ['Slot locked', 'idle'];
+  const map = {
+    ready: ['Ready', 'ok'], active: ['Running', 'ok'], exhausted: ['Limit reached', 'bad'],
+    stale: ['Needs refresh', 'warn'], 'auth-required': ['Sign in', 'warn'], unknown: ['Not verified', 'idle'],
   };
-  if (labels[account.status]) return labels[account.status];
-  if (account.authenticated === true) return ['Signed in', 'success'];
-  if (account.authenticated === false) return ['Sign-in required', 'warning'];
-  return ['Authentication unknown', 'neutral'];
+  return map[account.status] || ['Unknown', 'idle'];
 }
-function quotaBlock(title, window) {
-  const block = element('div', 'quota-block');
-  block.append(element('p', 'quota-heading', title));
-  const used = typeof window?.usedPercent === 'number' && Number.isFinite(window.usedPercent) && window.usedPercent >= 0 && window.usedPercent <= 100
-    ? window.usedPercent : null;
-  if (used === null) {
-    block.append(element('p', 'quota-amount unknown', 'Unknown'));
-    const meter = element('div', 'meter'); meter.setAttribute('aria-hidden', 'true'); block.append(meter);
-  } else {
-    const remaining = 100 - used;
-    const amount = element('p', 'quota-amount');
-    amount.append(element('span', '', `${Number(remaining.toFixed(1))}%`), element('small', '', 'remaining'));
-    const meter = element('div', 'meter');
-    meter.setAttribute('role', 'meter'); meter.setAttribute('aria-label', `${title} remaining`);
-    meter.setAttribute('aria-valuemin', '0'); meter.setAttribute('aria-valuemax', '100'); meter.setAttribute('aria-valuenow', String(remaining));
-    meter.dataset.low = String(remaining <= 20); meter.dataset.exhausted = String(remaining === 0);
-    const fill = element('div', 'meter-fill'); fill.style.width = `${remaining}%`; meter.append(fill);
-    block.append(amount, meter);
+function plan(account) {
+  if (account.subscriptionType) return account.subscriptionType[0].toUpperCase() + account.subscriptionType.slice(1);
+  if (account.provider === 'codex' && account.authKind === 'chatgpt') return 'ChatGPT';
+  return account.authKind ? 'Signed in' : 'Not signed in';
+}
+
+function meter(label, cls, window) {
+  const used = window?.usedPercent;
+  if (typeof used !== 'number' || !Number.isFinite(used)) {
+    const none = el('div', `meter none ${cls}`, 'Not reported');
+    none.dataset.label = label;
+    return none;
   }
-  const reset = resetDate(window?.resetsAt);
-  block.append(element('p', 'quota-reset', reset ? `Resets ${reset}` : 'Reset time unknown'));
+  const left = Math.max(0, Math.min(100, 100 - used));
+  const node = el('div', `meter ${cls}`);
+  node.dataset.label = label;
+  const top = el('div', 'meter-top');
+  top.append(el('b', '', `${Math.round(left)}% left`));
+  const reset = epoch(window.resetsAt);
+  if (reset) {
+    const when = el('span', '', reset > Date.now() ? `${clock(reset)} · in ${span(reset - Date.now())}` : 'reset passed, refresh');
+    when.title = `Resets ${new Date(reset).toLocaleString()}`;
+    top.append(when);
+  }
+  const track = el('div', 'track');
+  track.setAttribute('role', 'meter');
+  track.setAttribute('aria-label', `${label} left`);
+  track.setAttribute('aria-valuemin', '0'); track.setAttribute('aria-valuemax', '100'); track.setAttribute('aria-valuenow', String(Math.round(left)));
+  const fill = el('div', `fill${left <= 0 ? ' out' : left <= 20 ? ' low' : ''}`);
+  fill.style.width = `${left}%`;
+  track.append(fill);
+  node.append(top, track);
+  return node;
+}
+
+const number = (value, digits = 0) => Number(value).toLocaleString([], { maximumFractionDigits: digits });
+function money(value, currency) {
+  try { return Number(value).toLocaleString([], { style: 'currency', currency, maximumFractionDigits: 2 }); } catch { return `${number(value, 2)} ${currency}`; }
+}
+// Paid overflow and per-model limits that never pick the account but are worth seeing.
+function chips(account) {
+  const q = account.quota || {}, list = [];
+  const balance = Number(q.credits?.balance);
+  if (q.credits?.unlimited) list.push(['Unlimited credits', '']);
+  else if (Number.isFinite(balance) && (q.credits?.hasCredits || balance > 0)) list.push([`${number(balance)} credits`, 'Purchased flexible-usage balance, spent only after the limits are reached']);
+  const resets = q.resetCredits?.availableCount;
+  if (Number.isFinite(resets) && resets > 0) {
+    const until = epoch(q.resetCredits.nextExpiresAt);
+    list.push([`${resets} reset${resets === 1 ? '' : 's'} banked${until ? ` · until ${clock(until)}` : ''}`, 'A banked reset clears a used-up limit once. Switch never spends it.']);
+  }
+  if (q.extraUsage) list.push([`${money(q.extraUsage.used, q.extraUsage.currency)} of ${money(q.extraUsage.limit, q.extraUsage.currency)} extra this month${q.extraUsage.limitReached ? ' · limit reached' : ''}`, 'Claude extra usage at API rates, used after a window is full']);
+  for (const w of (q.windows || []).filter((x) => !x.appliesToSelection && x.label)) {
+    const reset = epoch(w.resetsAt);
+    list.push([`${w.label} week ${Math.round(Math.max(0, 100 - w.usedPercent))}% left`, reset ? `Model weekly limit; resets ${new Date(reset).toLocaleString()}` : 'Model weekly limit']);
+  }
+  if (!list.length) return null;
+  const node = el('div', 'chips');
+  for (const [text, title] of list) { const chip = el('span', 'chip', text); if (title) chip.title = title; node.append(chip); }
+  return node;
+}
+
+function row(host, account, state) {
+  const node = el('div', 'row');
+  node.dataset.account = `${host.id}/${account.id}`;
+  const who = el('div', 'who');
+  who.append(el('span', `logo ${account.provider}`, account.provider === 'claude' ? '✳' : '>_'));
+  const text = el('div', 'who-text');
+  const name = el('b', '', account.provider === 'claude' ? 'Claude' : 'Codex');
+  if (!account.id.endsWith('-1')) name.append(` ${account.id.split('-')[1]}`);
+  const pinned = state.policy?.selectedAccount === account.id;
+  const preferred = state.policy?.preferredProvider || 'any';
+  const next = !pinned && state.recommendations?.find((r) => r.provider === preferred)?.id === account.id;
+  if (pinned) name.append(el('span', 'tag', 'Pinned'));
+  if (next) { const tag = el('span', 'tag next', 'Next'); tag.title = 'The account the current policy picks for the next run on this Mac'; name.append(tag); }
+  const shared = Array.isArray(account.sharedWith) && account.sharedWith.length ? ` · same account as ${account.sharedWith.join(', ')}` : '';
+  const sub = el('span', '', plan(account) + shared);
+  if (shared) sub.title = 'Signed in to the same subscription on these Macs; every copy shows the newest reading.';
+  text.append(name, sub);
+  who.append(text);
+
+  const status = el('div', 'status');
+  const [label, tone] = statusOf(account);
+  status.append(el('span', `pill ${tone}`, label));
+  if (pinned || account.status === 'ready') {
+    const pin = el('button', 'button small', pinned ? 'Unpin' : 'Pin');
+    pin.type = 'button';
+    pin.disabled = busy;
+    pin.title = pinned ? 'Go back to the policy' : 'Always use this account for new runs on this Mac';
+    pin.addEventListener('click', () => act('/api/fleet/select', { host: host.id, id: pinned ? null : account.id }, pinned ? 'Back to automatic choice.' : 'Pinned.'));
+    status.append(pin);
+  }
+  node.append(who, meter('5-hour window', 'five', account.quota?.window), meter('Weekly', 'week', account.quota?.weekly), status);
+  const extra = chips(account);
+  if (extra) node.append(extra);
+  return node;
+}
+
+function hostBlock(host) {
+  const block = el('section', 'host');
+  block.setAttribute('aria-label', host.label);
+  const head = el('div', 'host-head');
+  head.append(el('strong', '', host.label));
+  if (host.local) head.append(el('span', '', 'this Mac'));
+  if (!host.ok) {
+    const dot = el('span', 'svc'); dot.append(el('span', 'dot bad'), el('span', '', 'Offline'));
+    head.append(dot);
+    block.append(head, el('p', 'offline', `${host.error || 'Unreachable'}. Its own page still works on that Mac at 127.0.0.1:8318.`));
+    return block;
+  }
+  const state = host.state;
+  const seen = newest(state);
+  const age = el('span', '', host.refreshing ? 'refreshing…' : `checked ${ago(seen)}`);
+  if (seen) age.title = new Date(seen).toLocaleString();
+  if (!host.refreshing && (!seen || Date.now() - seen > 30 * 60000)) age.className = 'stale-age';
+  head.append(age, el('span', 'spacer'));
+  for (const service of state.services || []) {
+    if (service.id !== 'cli-proxy') continue;
+    const item = el('span', 'svc');
+    item.title = `${service.label} on port ${service.port}: ${service.status}`;
+    const count = Number.isInteger(service.accounts) ? service.accounts : null;
+    const tone = service.status !== 'running' ? (service.status === 'unavailable' ? 'bad' : '') : count === 0 ? 'warn' : 'ok';
+    if (count !== null) item.title += `, ${count} account${count === 1 ? '' : 's'} signed in (not a credits source)`;
+    item.append(el('span', `dot ${tone}`), el('span', '', count === null ? 'Proxy' : `Proxy · ${count} account${count === 1 ? '' : 's'}`));
+    head.append(item);
+  }
+  block.append(head);
+  const accounts = state.accounts || [];
+  const shown = accounts.filter(visible).sort((a, b) => a.provider.localeCompare(b.provider) || a.id.localeCompare(b.id));
+  for (const account of shown) block.append(row(host, account, state));
+  const free = Object.entries(SLOTS).map(([provider, total]) => [provider, total - shown.filter((a) => a.provider === provider).length]).filter(([, n]) => n > 0);
+  if (!shown.length) block.append(el('p', 'offline', 'No signed-in accounts on this Mac yet.'));
+  if (free.length) block.append(el('p', 'free', `Free slots: ${free.map(([p, n]) => `${n} ${p === 'codex' ? 'Codex' : 'Claude'}`).join(', ')}`));
   return block;
 }
-function nativeLoginHint(account) {
-  const details = element('details', 'login-details');
-  details.append(element('summary', '', 'Native sign-in'));
-  const blocked = blockedAuth(account);
-  if (blocked) {
-    details.querySelector('summary').textContent = 'Authentication check';
-    details.append(element('p', '', blocked === 'profile-isolation-unverified'
-      ? 'This slot may be reporting the default Claude keychain session. Separate profile identity must be verified before sign-in or selection.'
-      : 'The native token method does not confirm a consumer subscription. Verify the account and subscription in official Claude Code, then refresh.'));
-    return details;
-  }
-  // Known profile IDs only: no state-supplied commands or credentials are rendered.
-  const slot = profileSlots.find((entry) => entry.id === account.id);
-  let command = 'Use the native provider sign-in for this profile.';
-  if (slot?.provider === 'claude') command = `specweave-switch account login ${slot.id}`;
-  if (slot?.provider === 'codex') command = `specweave-switch account login ${slot.id}`;
-  details.append(element('code', '', command));
-  return details;
+
+function otherRow(item) {
+  const node = el('div', 'row other');
+  node.dataset.provider = item.id;
+  const who = el('div', 'who');
+  who.append(el('span', 'logo copilot', 'GH'));
+  const text = el('div', 'who-text');
+  const name = el('b', '', 'Copilot');
+  if (item.cliActive) { const tag = el('span', 'tag', 'Copilot CLI'); tag.title = 'Copilot CLI on these Macs is signed in as this account, so its turns spend this allowance'; name.append(tag); }
+  const plan = item.plan ? item.plan[0].toUpperCase() + item.plan.slice(1) : 'Copilot';
+  text.append(name, el('span', '', [item.login, plan, item.org].filter(Boolean).join(' · ')));
+  who.append(text);
+  let usage;
+  if (item.meter) {
+    const left = Math.max(0, item.meter.entitlement - item.meter.used);
+    usage = meter(item.meter.name, 'month', { usedPercent: (item.meter.used / item.meter.entitlement) * 100, resetsAt: item.resetsAt });
+    usage.querySelector('b').textContent = `${number(left, 1)} of ${number(item.meter.entitlement)} left`;
+    usage.title = `${item.meter.name}; ${item.meter.name === 'AI credits' ? `1 credit = $0.01, ${money(left / 100, 'USD')} left` : 'Free plan chat allowance'}${item.meter.overagePermitted ? '. Usage beyond this is billed to the organization.' : ''}`;
+  } else usage = el('div', 'meter none month', 'Unlimited or not metered');
+  const status = el('div', 'status');
+  const seen = epoch(item.observedAt);
+  const live = item.source === 'live';
+  const pill = el('span', `pill ${live ? 'ok' : 'idle'}`, live ? 'Live' : `As of ${ago(seen)}`);
+  pill.title = `${live ? 'Read from GitHub' : 'From Copilot CLI\'s cache'} on ${item.host}${seen ? `, ${new Date(seen).toLocaleString()}` : ''}`;
+  status.append(pill);
+  node.append(who, usage, status);
+  return node;
 }
-function renderAccounts() {
-  const supplied = asArray(state.accounts);
-  const accounts = profileSlots.map((slot) => ({ ...slot, ...supplied.find((account) => account.id === slot.id) }));
-  const selected = state.policy?.selectedAccount;
-  const list = $('#account-list'); list.replaceChildren();
-  for (const account of accounts) {
-    const card = element('article', 'account-card');
-    card.dataset.accountId = account.id; card.dataset.selected = String(selected === account.id);
-    const info = element('div', 'account-info');
-    const top = element('div', 'profile-topline');
-    top.append(element('span', 'provider-symbol', account.provider === 'claude' ? '✳' : '›_'), element('span', 'provider-label', text(account.provider)));
-    if (selected === account.id) top.append(element('span', 'selected-label', 'Selected'));
-    const [label, tone] = statusLabel(account);
-    const status = element('p', 'account-status'); status.dataset.tone = tone;
-    const dot = element('span', 'status-dot'); dot.setAttribute('aria-hidden', 'true');
-    status.append(dot, element('span', '', label));
-    info.append(top, element('h3', 'account-title', text(account.label, account.id)), status);
-    const actions = element('div', 'account-actions');
-    const button = element('button', 'select-button', selected === account.id ? 'Selected profile' : 'Select profile');
-    button.type = 'button'; button.dataset.select = account.id;
-    button.setAttribute('aria-label', `Select ${text(account.label, account.id)}`);
-    button.setAttribute('aria-pressed', String(selected === account.id));
-    button.disabled = pending || Boolean(blockedAuth(account)) || account.authenticated !== true || ['exhausted', 'active', 'error'].includes(account.status);
-    button.addEventListener('click', () => mutate('/api/select', { id: account.id }, `${text(account.label, account.id)} selected for new managed runs.`));
-    actions.append(button);
-    if (account.authenticated === false || blockedAuth(account)) info.append(nativeLoginHint(account));
-    card.append(info, quotaBlock('Current window', account.quota?.window), quotaBlock('Weekly window', account.quota?.weekly), actions);
-    const observation = element('div', 'quota-observation');
-    const observed = resetDate(account.quota?.observedAt);
-    const source = text(account.quota?.source, 'No quota source');
-    observation.append(element('span', '', observed ? `Observed ${observed} · ${source}` : 'Usage has not been observed'), element('span', '', `Profile ${account.id}`));
-    card.append(observation); list.append(card);
-  }
-  $('#account-count').textContent = Array.isArray(state.accounts)
-    ? `${accounts.filter((account) => account.authenticated === true && !blockedAuth(account)).length} signed in / 7 slots` : '7 profile slots';
-  list.setAttribute('aria-busy', String(pending));
-}
-function renderPolicy() {
+
+function render() {
+  const hosts = fleet?.hosts || [];
+  $('#hosts').replaceChildren(...hosts.map(hostBlock));
+  const others = fleet?.providers || [];
+  $('#others').hidden = !others.length;
+  $('#other-rows').replaceChildren(...others.map(otherRow));
+  const local = hosts.find((h) => h.local && h.ok);
+  const modes = new Set(hosts.filter((h) => h.ok).map((h) => h.state.policy?.mode));
+  const mode = local?.state.policy?.mode;
   for (const button of document.querySelectorAll('[data-mode]')) {
-    button.setAttribute('aria-pressed', String(state.policy?.mode === button.dataset.mode)); button.disabled = pending;
+    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    button.disabled = busy;
   }
-  const selected = state.policy?.selectedAccount;
-  const selectedProfile = asArray(state.accounts).find((account) => account.id === selected);
-  $('#selection-state').textContent = typeof selected === 'string' ? `Pinned profile: ${text(selectedProfile?.label, selected)}` : state.policy ? 'Automatic account selection' : 'Selection has not been observed.';
-  $('#automatic-selection').disabled = pending || typeof selected !== 'string';
-  const list = $('#recommendations'); list.replaceChildren();
-  const recommendations = asArray(state.recommendations);
-  if (!recommendations.length) list.append(element('p', 'muted', 'Recommendations are unknown.'));
-  for (const recommendation of recommendations) {
-    const account = asArray(state.accounts).find((entry) => entry.id === recommendation.id);
-    const block = element('div', 'recommendation');
-    const name = recommendation.id ? text(account?.label, recommendation.id) : `${text(recommendation.provider, 'Account')} · No eligible profile`;
-    block.append(element('strong', '', name), element('p', '', text(recommendation.reason, 'Eligibility has not been observed.')));
-    list.append(block);
-  }
+  const help = $('#policy-help');
+  help.textContent = `${MODE_HELP[mode] || ''} ${modes.size > 1 ? 'Macs currently differ; pick one to align them.' : 'Applies on every Mac to new runs only.'}`;
+  const seen = local ? newest(local.state) : null;
+  const every = fleet?.autoRefreshMinutes;
+  $('#updated').textContent = refreshing ? 'Refreshing every Mac…' : local?.refreshing ? 'Refreshing…' : `Checked ${ago(seen)}${every ? ` · auto every ${every} min` : ''}`;
+  $('#refresh').disabled = busy;
 }
-function renderHosts() {
-  const supplied = asArray(state.hosts);
-  const hosts = hostSlots.map((slot) => ({ ...slot, ...(supplied.find((host) => host.id === slot.id)
-    || (slot.role === 'main' ? supplied.find((host) => host.role === 'main') : null)) }));
-  const list = $('#host-list'); list.replaceChildren();
-  for (const host of hosts) {
-    const card = element('article', 'host-card');
-    const status = host.status === 'local' ? 'Local host' : host.status === 'ready' ? 'Ready' : host.status === 'auth-required' ? host.companionRunning === true ? 'Native sign-in required' : 'SSH sign-in required' : host.status === 'offline' ? 'Offline' : 'Access unknown';
-    card.append(element('p', 'host-role', host.role === 'main' ? 'Main host' : 'Worker'), element('h3', '', text(host.label, host.id)), element('p', 'host-name', text(host.hostname, 'Hostname unknown')), element('p', 'host-status', status));
-    const sshAuthenticated = typeof host.source === 'string' && host.source.split(';').some((part) => part.trim() === 'authenticated-ssh');
-    card.append(element('p', 'host-fact', sshAuthenticated ? 'SSH authenticated' : host.sshReachable === true ? 'SSH reachable' : host.sshReachable === false ? 'SSH unreachable' : 'SSH not verified'));
-    card.append(element('p', 'host-fact', host.installed === true ? 'Companion installed' : host.installed === false ? 'Installation pending' : 'Installation unknown'));
-    const observed = resetDate(host.observedAt);
-    if (observed) card.append(element('p', 'host-observation', `Observed ${observed}`));
-    list.append(card);
+
+async function load() {
+  try {
+    const response = await fetch('/api/fleet', { cache: 'no-store' });
+    const value = await response.json();
+    if (!response.ok) throw new Error(value.error || `HTTP ${response.status}`);
+    fleet = value;
+    if ($('#notice').dataset.kind === 'load') notice('');
+    render();
+  } catch (error) {
+    notice(`Could not read Switch: ${error.message}`, 'load');
   }
 }
-function renderServices() {
-  const list = $('#service-list'); list.replaceChildren();
-  const services = asArray(state.services);
-  if (!services.length) list.append(element('p', 'empty-state', 'Service state has not been observed.'));
-  for (const service of services) {
-    const row = element('div', 'service-row'); const info = element('div');
-    info.append(element('strong', '', text(service.label, service.id)), element('p', '', Number.isInteger(service.port) ? `Loopback :${service.port}` : 'Port unknown'));
-    const status = element('span', 'service-state', service.status === 'running' ? 'Running' : service.status === 'unavailable' ? 'Unavailable' : 'Unknown');
-    status.dataset.tone = service.status === 'running' ? 'success' : 'neutral'; row.append(info, status); list.append(row);
+async function act(path, payload, done) {
+  if (busy) return;
+  busy = true; render();
+  try {
+    const response = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const value = await response.json();
+    if (!response.ok) throw new Error(value.error || `HTTP ${response.status}`);
+    fleet = value;
+    const failed = (value.failures || []).map((f) => `${f.id}: ${f.error}`);
+    notice(failed.length ? `${done} Not applied on ${failed.join('; ')}` : done, failed.length ? 'warn' : 'ok');
+  } catch (error) {
+    notice(error.message);
+  } finally {
+    busy = false; render();
   }
 }
-function renderRuns() {
-  const runs = asArray(state.runs); const list = $('#run-list'); list.replaceChildren();
-  $('#run-count').textContent = Array.isArray(state.runs) ? `${runs.length} recorded` : 'Awaiting state';
-  if (!runs.length) {
-    const empty = element('div', 'empty-state');
-    empty.append(element('strong', '', Array.isArray(state.runs) ? 'No managed runs recorded' : 'Managed runs have not been observed'), element('p', '', 'Completed work appears here with its actual outcome. Selecting a profile does not start a run.'));
-    list.append(empty); return;
+
+function applyTheme(theme) {
+  if (theme) document.documentElement.dataset.theme = theme;
+  else delete document.documentElement.dataset.theme;
+}
+try { applyTheme(localStorage.getItem('switch-theme')); } catch { /* storage unavailable */ }
+
+document.addEventListener('DOMContentLoaded', () => {
+  $('#refresh').addEventListener('click', () => {
+    refreshing = true;
+    act('/api/fleet/refresh', {}, 'Refreshed.').finally(() => { refreshing = false; render(); });
+  });
+  for (const button of document.querySelectorAll('[data-mode]')) {
+    button.addEventListener('click', () => act('/api/fleet/policy', { mode: button.dataset.mode }, `${button.textContent} is now the policy on every Mac.`));
   }
-  const labels = { running: 'Running', success: 'Succeeded', failed: 'Failed', 'quota-exhausted': 'Quota exhausted', 'timed-out': 'Timed out' };
-  // The backend returns its newest 30 receipts first.
-  for (const run of runs.slice(0, 20)) {
-    const row = element('article', 'run-row');
-    const info = element('div'); info.append(element('h3', '', text(run.accountId, 'Account unknown')), element('p', 'run-summary', `${text(run.provider, 'Provider unknown')} · ${text(run.model, 'Model not recorded')}`));
-    const status = element('p', 'run-status', labels[run.status] || 'Outcome unknown');
-    status.dataset.tone = run.status === 'success' ? 'success' : ['failed', 'quota-exhausted', 'timed-out'].includes(run.status) ? 'danger' : 'neutral';
-    row.append(info, status);
-    const details = element('p', 'run-details');
-    const end = resetDate(run.endedAt), start = resetDate(run.startedAt);
-    details.textContent = `${text(run.id, 'Run ID unknown')} · ${end ? `Ended ${end}` : start ? `Started ${start}` : 'Time unknown'}${Number.isInteger(run.exitCode) ? ` · Exit ${run.exitCode}` : ''}\n${text(run.cwd, 'Workspace unknown')}`;
-    row.append(details); list.append(row);
-    if (typeof run.error === 'string' && run.error.trim()) row.append(element('p', 'run-error', run.error));
-  }
-}
-function render() { renderAccounts(); renderPolicy(); renderHosts(); renderServices(); renderRuns(); $('#refresh').disabled = pending; }
-async function request(path, body) {
-  const options = body === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-  const response = await fetch(path, options);
-  let result;
-  try { result = await response.json(); } catch { throw new Error('The local service returned an unreadable response.'); }
-  if (!response.ok) throw new Error(text(result?.error, `Local request failed (${response.status}).`));
-  if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('The local service returned an invalid state.');
-  return result;
-}
-async function mutate(path, body, message) {
-  if (pending) return;
-  pending = true; render(); notice('Updating local state…');
-  try { state = await request(path, body); $('#state-time').textContent = `State loaded ${dateFormatter.format(new Date())}`; notice(message); }
-  catch (error) { notice(error.message, 'error'); }
-  finally { pending = false; render(); }
-}
-function setTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  $('#theme-toggle').setAttribute('aria-label', `Use ${theme === 'dark' ? 'light' : 'dark'} theme`);
-  try { localStorage.setItem('specweave-switch-theme', theme); } catch { /* Theme works without storage. */ }
-}
-let storedTheme;
-try { storedTheme = localStorage.getItem('specweave-switch-theme'); } catch { /* Storage may be disabled. */ }
-setTheme(storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-$('#theme-toggle').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
-$('#refresh').addEventListener('click', () => mutate('/api/refresh', {}, 'Native account observations refreshed. Unavailable usage remains unknown.'));
-$('#automatic-selection').addEventListener('click', () => mutate('/api/select', { id: null }, 'Automatic account selection restored.'));
-for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => mutate('/api/policy', { mode: button.dataset.mode }, `${button.querySelector('.policy-name').firstChild.textContent.trim()} policy saved.`));
-render();
-request('/api/state').then((result) => { state = result; $('#state-time').textContent = `State loaded ${dateFormatter.format(new Date())}`; render(); }).catch((error) => { notice(error.message, 'error'); $('#account-list').setAttribute('aria-busy', 'false'); });
+  $('#theme').addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme
+      ? document.documentElement.dataset.theme === 'dark'
+      : matchMedia('(prefers-color-scheme: dark)').matches;
+    const next = dark ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem('switch-theme', next); } catch { /* storage unavailable */ }
+  });
+  load();
+  setInterval(() => { if (!busy && document.visibilityState === 'visible') load(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !busy) load(); });
+});

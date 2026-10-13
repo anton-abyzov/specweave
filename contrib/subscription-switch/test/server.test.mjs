@@ -43,7 +43,7 @@ test('dedicated SSH dashboard aliases require exact same-origin JSON and exclude
     });
     req.on('error', reject); req.end(method === 'POST' ? JSON.stringify(payload) : undefined);
   });
-  for (const port of [18318, 28318]) {
+  for (const port of [18318, 28318, 38318]) {
     const host = `127.0.0.1:${port}`, origin = `http://${host}`;
     const page = await send(host, undefined, '/', undefined, 'GET'); assert.equal(page.status, 200); assert.match(page.data, /tunneled dashboard/);
     const state = await send(host, undefined, '/api/state', undefined, 'GET'); assert.equal(state.status, 200); assert.equal(JSON.parse(state.data).accounts.length, 7);
@@ -53,7 +53,7 @@ test('dedicated SSH dashboard aliases require exact same-origin JSON and exclude
     }
     assert.equal((await send(host, origin, '/api/run', { prompt: 'execute' })).status, 404);
   }
-  for (const host of ['127.0.0.1:18319', '127.0.0.1:28319', '127.0.0.1:8319', 'localhost:18318', 'worker.local:18318', 'evil.example:28318', '[::1]:28318']) {
+  for (const host of ['127.0.0.1:18319', '127.0.0.1:28319', '127.0.0.1:8319', 'localhost:18318', 'worker.local:18318', 'evil.example:28318', '[::1]:28318', '127.0.0.1:78318', '127.0.0.1:98318']) {
     assert.equal((await send(host, `http://${host}`)).status, 403);
     assert.equal((await send(host, undefined, '/api/state', undefined, 'GET')).status, 403);
   }
