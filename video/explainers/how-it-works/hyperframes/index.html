@@ -174,68 +174,141 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .untimed { position: absolute; opacity: 0; }
 .big-eb { font-size: 22px; margin-bottom: 18px; color: var(--accent); }
 
+/* S2 v3: machine cards with real footage and several keys */
+.mcard2 { position: absolute; width: 400px; height: 560px; box-sizing: border-box; background: var(--cream); border: 1.5px solid var(--line); border-radius: 26px;
+  box-shadow: 0 40px 90px #22241e1c; overflow: hidden; }
+.mmedia { position: relative; height: 170px; background: #22241e; overflow: hidden; }
+.mmedia video { left: 0; top: 0; width: 400px; height: 170px; object-fit: cover; }
+.mbody { padding: 18px 28px 0; }
+.mbody .mc-name { margin-top: 0; font-size: 32px; }
+.slot2 { position: absolute; left: 24px; right: 24px; height: 60px; border: 2px dashed #22241e22; border-radius: 14px; box-sizing: border-box; }
+.mcard2 .signin { bottom: 26px; left: 28px; }
+.key2 { position: absolute; display: flex; align-items: center; gap: 12px; box-sizing: border-box; width: 348px; height: 56px; padding: 0 16px 0 18px; border-radius: 14px;
+  background: var(--ink); color: var(--cream); font: 600 23px/1 var(--sans); box-shadow: 0 16px 36px #22241e33; white-space: nowrap; }
+.key2 em { margin-left: auto; font: 500 17px/1 var(--sans); font-style: normal; padding: 7px 10px; border-radius: 8px; color: #d7d3c6; background: #fffdf714; }
+.key2.solo { width: 400px; }
+.key2.solo em { color: #f2b49c; }
+.c-grok { background: #9a9a9a; } .c-copilot { background: #2f5aa8; }
+
+/* S3 v3: one subscription, pick the host */
+.s3-head { position: absolute; left: 0; right: 0; top: 140px; text-align: center; }
+.host { position: absolute; width: 560px; height: 360px; box-sizing: border-box; padding: 54px 34px 0; background: var(--cream); border: 1.5px solid var(--line); border-radius: 26px; box-shadow: 0 40px 90px #22241e1c; }
+.host .mc-name { margin-top: 0; font-size: 34px; }
+.hrow { margin-top: 22px; display: grid; grid-template-columns: 190px 1fr; gap: 18px; align-items: center; font: 500 23px/1 var(--sans); color: var(--muted); }
+.hrow .bar { height: 18px; border-radius: 9px; }
+.bar i.bad { background: var(--red); } .bar i.good { background: var(--green); }
+.verdict { position: absolute; right: 30px; top: 46px; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font: 700 30px/1 var(--sans); color: #fff; opacity: 0; }
+.verdict.no { background: var(--red); } .verdict.yes { background: var(--green); } .verdict svg { width: 32px; }
+.sess { position: absolute; bottom: 30px; display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: #3f6b3a14; border: 1.5px solid #3f6b3a44; font: 600 19px/1 var(--sans); color: var(--green); opacity: 0; }
+#s3-s0 { left: 34px; } #s3-s1 { left: 200px; } #s3-s2 { left: 366px; }
+.polaroid { position: absolute; width: 280px; height: 196px; padding: 10px 10px 40px; box-sizing: border-box; background: #fffdf7; border-radius: 10px; box-shadow: 0 24px 50px #22241e33; opacity: 0; }
+.polaroid video { left: 10px; top: 10px; width: 260px; height: 146px; object-fit: cover; border-radius: 4px; }
+.polaroid span { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font: italic 400 24px/1 var(--display); color: var(--ink); }
+.cloud { position: absolute; width: 230px; text-align: center; color: var(--muted); opacity: 0; }
+.cloud svg { width: 140px; display: block; margin: 0 auto 10px; }
+.cloud span { font: 500 21px/1.25 var(--sans); }
+.cloud i { position: absolute; left: 10px; right: 10px; top: 46px; height: 6px; border-radius: 3px; background: var(--red); transform: rotate(-18deg) scaleX(0); transform-origin: 0 50%; }
+
+/* S11 a good worker */
+.spec { position: absolute; width: 500px; height: 520px; box-sizing: border-box; background: var(--cream); border: 1.5px solid var(--line); border-radius: 28px; box-shadow: 0 40px 90px #22241e1c; overflow: hidden; opacity: 0; }
+.smedia { position: relative; height: 230px; background: #22241e; overflow: hidden; }
+.smedia video { left: 0; top: 0; width: 500px; height: 230px; object-fit: cover; }
+.sbig { margin: 30px 34px 0; display: flex; align-items: baseline; gap: 16px; }
+.sbig b { display: inline-block; font: italic 400 110px/1 var(--display); color: var(--accent); transform-origin: 0 80%; }
+.sbig span { font: 600 30px/1.15 var(--sans); }
+.ssub { margin: 16px 34px 0; font: 400 23px/1.3 var(--sans); color: var(--muted); }
+.peragent { position: absolute; left: 0; right: 0; top: 880px; display: flex; justify-content: center; align-items: center; gap: 22px; opacity: 0; }
+.pa-eb { font: 600 20px/1 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.pa-v { display: inline-block; padding: 16px 26px; border-radius: 999px; background: var(--ink); color: var(--cream); font: 600 30px/1 var(--sans); box-shadow: 0 18px 40px #22241e33; }
+.pa-plus { font: 400 40px/1 var(--sans); color: var(--muted); }
+.film-t { position: absolute; left: 0; right: 0; top: 760px; text-align: center; }
+.vcard.withmedia { padding-top: 0; overflow: hidden; }
+.vmedia { position: relative; height: 200px; margin: 0 -36px 26px; background: #22241e; overflow: hidden; }
+.vmedia video { left: 0; top: 0; width: 480px; height: 200px; object-fit: cover; }
+
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="155.72">
-<video id="s1-bg" class="clip bg" data-start="0.000" data-duration="13.010" data-track-index="1" src="media/k01-desk.mp4" muted playsinline data-media-start="0" data-playback-rate="0.66" ></video>
-<div id="s1" class="clip scene" data-start="0" data-duration="13.010" data-track-index="2">
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="173.56">
+<video id="s1-bg" class="clip bg" data-start="0.000" data-duration="13.370" data-track-index="1" src="media/px-hook.mp4" muted playsinline data-media-start="2" data-playback-rate="0.8" ></video>
+<div id="s1" class="clip scene" data-start="0" data-duration="13.370" data-track-index="2">
   <div class="vignette"></div>
   <div id="s1-q" class="s1-q"><div id="s1-t" class="h1 light"><span class="w"><span>More</span></span> <span class="w"><span>AI</span></span> <span class="w"><span>than</span></span> <span class="w"><span>you</span></span> <span class="w"><span>can</span></span> <span class="w"><span>use</span></span></div></div>
   <div id="s1-c0" class="s1-chip s1-c0"><span class="dot d0"></span>Claude</div><div id="s1-c1" class="s1-chip s1-c1"><span class="dot d1"></span>Codex</div><div id="s1-c2" class="s1-chip s1-c2"><span class="dot d2"></span>Grok</div><div id="s1-c3" class="s1-chip s1-c3"><span class="dot d3"></span>Copilot</div>
   <div id="s1-team" class="s1-team"><div class="mark">SpecWithCode</div><div class="team-sub">one team</div><div class="team-line"></div></div>
 </div>
-<div id="st2" class="clip step" data-start="13.010" data-duration="22.790" data-track-index="3" ><span class="step-n">1</span>Machines and subscriptions</div>
-<div id="s2" class="clip scene paper" data-start="13.010" data-duration="22.790" data-track-index="4">
+<div id="st2" class="clip step" data-start="13.370" data-duration="17.910" data-track-index="3" ><span class="step-n">1</span>Machines and subscriptions</div>
+<div id="s2" class="scene paper untimed">
   <div class="grid"></div>
-  <div class="s2-head"><div id="s2-eb" class="eyebrow big-eb">The basics</div><div id="s2-t" class="h2"><span class="w"><span>A</span></span> <span class="w"><span>subscription</span></span> <span class="w"><span>lives</span></span> <span class="w"><span>on</span></span> <span class="w"><span>a</span></span> <span class="w"><span>machine</span></span></div></div>
-  <div id="s2-mac" class="mcard" style="left:250px;top:330px">
-    <div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div class="mc-name">MacBook M4 Max</div><div class="mc-os">macOS</div>
-    <div class="slot" id="s2-mac-slot"></div>
-    <div class="signin" id="s2-mac-sign"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect x="3.5" y="8.5" width="13" height="9" rx="2" fill="currentColor"/><path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Official CLI sign-in</span></div>
-  </div><div id="s2-lin" class="mcard" style="left:760px;top:330px">
-    <div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="8" y="10" width="48" height="26" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="18" cy="30" r="2" fill="currentColor"/><circle cx="25" cy="30" r="2" fill="currentColor"/><path d="M36 18h12M36 24h12" stroke="currentColor" stroke-width="3"/></svg></div><div class="mc-name">Linux box</div><div class="mc-os">Ubuntu</div>
-    <div class="slot" id="s2-lin-slot"></div>
+  <div class="s2-head"><div id="s2-eb" class="eyebrow big-eb">The basics</div><div id="s2-t" class="h2"><span class="w"><span>One</span></span> <span class="w"><span>machine,</span></span> <span class="w"><span>many</span></span> <span class="w"><span>subscriptions</span></span></div></div>
+  <div id="s2-m4" class="mcard2" style="left:150px;top:290px">
+    <div class="mmedia"><video id="s2-v0" class="clip" src="media/px-macbook.mp4" muted playsinline data-start="13.370" data-duration="17.910" data-media-start="1" data-playback-rate="0.85" data-track-index="44"></video></div>
+    <div class="mbody"><div class="mc-name">MacBook M4 Max</div><div class="mc-os">macOS</div></div>
+    <div class="slot2" style="top:262px"></div><div class="slot2" style="top:336px"></div>
+    <div class="signin" id="s2-m4-sign"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect x="3.5" y="8.5" width="13" height="9" rx="2" fill="currentColor"/><path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Official CLI sign-in</span></div>
+  </div><div id="s2-m1" class="mcard2" style="left:760px;top:290px">
+    <div class="mmedia"><video id="s2-v1" class="clip" src="media/px-minipc.mp4" muted playsinline data-start="13.370" data-duration="17.910" data-media-start="1" data-playback-rate="0.85" data-track-index="45"></video></div>
+    <div class="mbody"><div class="mc-name">M1</div><div class="mc-os">macOS</div></div>
+    <div class="slot2" style="top:262px"></div><div class="slot2" style="top:336px"></div>
+    <div class="signin" id="s2-m1-sign"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect x="3.5" y="8.5" width="13" height="9" rx="2" fill="currentColor"/><path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Official CLI sign-in</span></div>
+  </div><div id="s2-lin" class="mcard2" style="left:1370px;top:290px">
+    <div class="mmedia"><video id="s2-v2" class="clip" src="media/px-linux.mp4" muted playsinline data-start="13.370" data-duration="17.910" data-media-start="1" data-playback-rate="0.85" data-track-index="46"></video></div>
+    <div class="mbody"><div class="mc-name">Linux box</div><div class="mc-os">Ubuntu</div></div>
+    <div class="slot2" style="top:262px"></div><div class="slot2" style="top:336px"></div>
     <div class="signin" id="s2-lin-sign"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect x="3.5" y="8.5" width="13" height="9" rx="2" fill="currentColor"/><path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Official CLI sign-in</span></div>
-  </div><div id="s2-win" class="mcard" style="left:1270px;top:330px">
-    <div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="6" y="4" width="34" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M18 36h10M23 30v6" stroke="currentColor" stroke-width="3"/><rect x="45" y="4" width="14" height="36" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="52" cy="12" r="2" fill="currentColor"/></svg></div><div class="mc-name">Windows PC</div><div class="mc-os">Windows</div>
-    <div class="slot" id="s2-win-slot"></div>
-    <div class="signin" id="s2-win-sign"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect x="3.5" y="8.5" width="13" height="9" rx="2" fill="currentColor"/><path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Official CLI sign-in</span></div>
   </div>
-  <div id="s2-k-claude" class="key k-claude" style="left:290px;top:520px"><span class="kdot"></span>Claude Max</div>
-  <div id="s2-k-codex" class="key k-codex" style="left:800px;top:520px"><span class="kdot"></span>ChatGPT Pro · Codex</div>
-  <div id="s2-k-grok" class="key k-small" style="left:1310px;top:520px"><span class="kdot"></span>Grok</div>
-  <div id="s2-k-copilot" class="key k-small" style="left:1310px;top:580px"><span class="kdot"></span>Copilot</div>
-  <div id="s2-k-gemini" class="key k-small" style="left:1310px;top:640px"><span class="kdot"></span>Gemini · Antigravity</div>
-  <div id="s2-one" class="s2-one">usually <b>1 machine = 1 subscription</b></div>
-  <div id="s2-stamp" class="stamp">Nothing is resold</div>
+  <div id="s2-k-m4-0" class="key2" style="left:176px;top:552px"><span class="kdot c-claude"></span><b>Claude</b><em id="s2-a-m4-0">EasyChamp admin</em></div><div id="s2-k-m4-1" class="key2" style="left:176px;top:626px"><span class="kdot c-codex"></span><b>Codex</b><em id="s2-a-m4-1">EasyChamp admin</em></div><div id="s2-k-m1-0" class="key2" style="left:786px;top:552px"><span class="kdot c-claude"></span><b>Claude</b><em id="s2-a-m1-0">Marketing</em></div><div id="s2-k-m1-1" class="key2" style="left:786px;top:626px"><span class="kdot c-codex"></span><b>Codex</b><em id="s2-a-m1-1">Marketing</em></div><div id="s2-k-lin-0" class="key2" style="left:1396px;top:552px"><span class="kdot c-grok"></span><b>Grok</b></div><div id="s2-k-lin-1" class="key2" style="left:1396px;top:626px"><span class="kdot c-copilot"></span><b>Copilot</b></div>
+  <div id="s2-stamp" class="stamp" style="top:890px">Nothing is resold</div>
 </div>
-<div id="st3" class="clip step" data-start="35.800" data-duration="16.250" data-track-index="5" ><span class="step-n">2</span>Connect your machines</div>
-<div id="s3" class="clip scene paper" data-start="35.800" data-duration="8.810" data-track-index="6">
+<div id="st2b" class="clip step" data-start="31.280" data-duration="12.410" data-track-index="5" ><span class="step-n">1</span>One subscription? Pick its host</div>
+<div id="s3" class="scene paper untimed">
   <div class="grid"></div>
-  <svg class="wires" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><path id="s3-w-n1" d="M430 360 C 695 360, 695 520, 960 520" pathLength="1"/><path id="s3-w-n2" d="M1550 310 C 1255 310, 1255 520, 960 520" pathLength="1"/><path id="s3-w-n3" d="M1590 760 C 1275 760, 1275 520, 960 520" pathLength="1"/><path id="s3-w-n4" d="M470 800 C 715 800, 715 520, 960 520" pathLength="1"/></svg>
-  <div id="s3-n1" class="node" style="left:300px;top:300px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">M4 Max</div><div class="srv" id="s3-n1-srv"><span class="live"></span>SpecWithCode server</div></div></div><div id="s3-n2" class="node" style="left:1420px;top:250px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">M1</div><div class="srv" id="s3-n2-srv"><span class="live"></span>SpecWithCode server</div></div></div><div id="s3-n3" class="node" style="left:1460px;top:700px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">M3</div><div class="srv" id="s3-n3-srv"><span class="live"></span>SpecWithCode server</div></div></div><div id="s3-n4" class="node" style="left:340px;top:740px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">Linux box</div><div class="srv" id="s3-n4-srv"><span class="live"></span>SpecWithCode server</div></div></div>
-  <div id="s3-hub" class="hub" style="left:810px;top:462px"><div class="hub-t">Private network</div><div class="routes"><span id="s3-r0">LAN</span><span id="s3-r1">SSH tunnel</span><span id="s3-r2">Tailscale</span></div></div>
-  <div class="packet" id="s3-p-n1"></div><div class="packet" id="s3-p-n2"></div><div class="packet" id="s3-p-n3"></div><div class="packet" id="s3-p-n4"></div>
-</div>
-<div id="s3r" class="scene untimed">
-  <div id="s3r-cam" class="cam">
-    <video id="s3r-v" class="clip shot" src="media/connections.mp4" muted playsinline data-start="44.310" data-duration="7.740" data-media-start="7.447" data-playback-rate="1" data-track-index="47"></video>
-    <div id="s3r-ring0" class="ring" style="left:626px;top:270px;width:176px;height:32px;border-width:1.94px"></div><div id="s3r-ring1" class="ring" style="left:944px;top:322px;width:288px;height:40px;border-width:1.94px"></div><div id="s3r-ring2" class="ring" style="left:1262px;top:322px;width:288px;height:40px;border-width:1.94px"></div>
-    <div id="s3r-cur" class="cursor"><svg viewBox="0 0 28 36" width="30" height="38"><path d="M2 2 L2 28 L9 21.5 L13.6 33 L18.2 31 L13.7 19.8 L23 19.8 Z" fill="#1d1f1a" stroke="#fffdf7" stroke-width="2.2" stroke-linejoin="round"/></svg><i></i></div>
+  <div class="s3-head"><div id="s3-t" class="h2"><span class="w"><span>Only</span></span> <span class="w"><span>one</span></span> <span class="w"><span>subscription?</span></span></div></div>
+  <div id="s3-old" class="host" style="left:300px;top:430px">
+    <div class="mc-name">Old laptop</div>
+    <div class="hrow"><span>8 GB memory</span><div class="bar"><i id="s3-old-m" class="bad"></i></div></div>
+    <div class="hrow"><span>40 GB free</span><div class="bar"><i id="s3-old-d" class="bad"></i></div></div>
+    <div class="verdict no" id="s3-old-v">✕</div>
+    
+  </div><div id="s3-box" class="host" style="left:1000px;top:430px">
+    <div class="mc-name">Linux box</div>
+    <div class="hrow"><span>32 GB memory</span><div class="bar"><i id="s3-box-m" class="good"></i></div></div>
+    <div class="hrow"><span>600 GB free</span><div class="bar"><i id="s3-box-d" class="good"></i></div></div>
+    <div class="verdict yes" id="s3-box-v"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="sess" id="s3-s0"><span class="live"></span>session 1</div><div class="sess" id="s3-s1"><span class="live"></span>session 2</div><div class="sess" id="s3-s2"><span class="live"></span>session 3</div>
   </div>
-  <div id="s3r-call0" class="callout" style="left:560px;top:900px"><b>Tailscale</b> · private HTTPS between your machines</div>
+  <div id="s3-key" class="key2 solo" style="left:800px;top:300px"><span class="kdot c-claude"></span><b>Claude</b><em>your one subscription</em></div>
+  <div id="s3-ram" class="polaroid" style="left:300px;top:800px"><video id="vid1" class="clip" src="media/px-ram.mp4" muted playsinline data-start="31.280" data-duration="12.410" data-media-start="0.5" data-playback-rate="0.9" data-track-index="46"></video><span>memory</span></div>
+  <div id="s3-ssd" class="polaroid" style="left:620px;top:800px"><video id="vid2" class="clip" src="media/px-ssd.mp4" muted playsinline data-start="31.280" data-duration="12.410" data-media-start="0.5" data-playback-rate="0.9" data-track-index="47"></video><span>disk</span></div>
+  <div id="s3-cloud" class="cloud" style="left:1640px;top:470px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80"><path d="M30 70h62a22 22 0 0 0 0-44 30 30 0 0 0-57-6A24 24 0 0 0 30 70z" fill="none" stroke="currentColor" stroke-width="5"/></svg><span>someone else's cloud</span><i id="s3-strike"></i></div>
 </div>
-<div id="st4" class="clip step" data-start="52.050" data-duration="21.310" data-track-index="8" ><span class="step-n">3</span>Limits and fallbacks</div>
+<div id="st3" class="clip step" data-start="43.690" data-duration="15.410" data-track-index="7" ><span class="step-n">2</span>Connect your machines</div>
+<div id="net" class="clip scene paper" data-start="43.690" data-duration="8.910" data-track-index="8">
+  <div class="grid"></div>
+  <svg class="wires" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><path id="net-w-n1" d="M430 360 C 695 360, 695 520, 960 520" pathLength="1"/><path id="net-w-n2" d="M1550 310 C 1255 310, 1255 520, 960 520" pathLength="1"/><path id="net-w-n3" d="M1590 760 C 1275 760, 1275 520, 960 520" pathLength="1"/><path id="net-w-n4" d="M470 800 C 715 800, 715 520, 960 520" pathLength="1"/></svg>
+  <div id="net-n1" class="node" style="left:300px;top:300px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">M4 Max</div><div class="srv" id="net-n1-srv"><span class="live"></span>SpecWithCode server</div></div></div><div id="net-n2" class="node" style="left:1420px;top:250px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">M1</div><div class="srv" id="net-n2-srv"><span class="live"></span>SpecWithCode server</div></div></div><div id="net-n3" class="node" style="left:1460px;top:700px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">M3</div><div class="srv" id="net-n3-srv"><span class="live"></span>SpecWithCode server</div></div></div><div id="net-n4" class="node" style="left:340px;top:740px"><div class="mc-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg></div><div><div class="mc-name">Linux box</div><div class="srv" id="net-n4-srv"><span class="live"></span>SpecWithCode server</div></div></div>
+  <div id="net-hub" class="hub" style="left:810px;top:462px"><div class="hub-t">Private network</div><div class="routes"><span id="net-r0">LAN</span><span id="net-r1">SSH tunnel</span><span id="net-r2">Tailscale</span></div></div>
+  <div class="packet" id="net-p-n1"></div><div class="packet" id="net-p-n2"></div><div class="packet" id="net-p-n3"></div><div class="packet" id="net-p-n4"></div>
+</div>
+<div id="net-film" class="scene untimed"><video id="vid3" class="clip bg" src="media/px-network.mp4" muted playsinline data-start="43.690" data-duration="4.430" data-media-start="1" data-playback-rate="0.8" data-track-index="49"></video><div class="vignette"></div><div class="film-t"><div id="net-ft" class="h2 light"><span class="w"><span>Every</span></span> <span class="w"><span>machine</span></span> <span class="w"><span>runs</span></span> <span class="w"><span>its</span></span> <span class="w"><span>own</span></span> <span class="w"><span>server</span></span></div></div></div>
+<div id="netr" class="scene untimed">
+  <div id="netr-cam" class="cam">
+    <video id="netr-v" class="clip shot" src="media/connections.mp4" muted playsinline data-start="52.300" data-duration="6.800" data-media-start="7.447" data-playback-rate="1" data-track-index="50"></video>
+    <div id="netr-ring0" class="ring" style="left:626px;top:270px;width:176px;height:32px;border-width:1.94px"></div><div id="netr-ring1" class="ring" style="left:944px;top:322px;width:288px;height:40px;border-width:1.94px"></div><div id="netr-ring2" class="ring" style="left:1262px;top:322px;width:288px;height:40px;border-width:1.94px"></div>
+    <div id="netr-cur" class="cursor"><svg viewBox="0 0 28 36" width="30" height="38"><path d="M2 2 L2 28 L9 21.5 L13.6 33 L18.2 31 L13.7 19.8 L23 19.8 Z" fill="#1d1f1a" stroke="#fffdf7" stroke-width="2.2" stroke-linejoin="round"/></svg><i></i></div>
+  </div>
+  <div id="netr-call0" class="callout" style="left:560px;top:900px"><b>Tailscale</b> · private HTTPS between your machines</div>
+</div>
+<div id="st4" class="clip step" data-start="59.100" data-duration="18.690" data-track-index="11" ><span class="step-n">3</span>Limits and fallbacks</div>
 <div id="s4r" class="scene untimed">
   <div id="s4r-cam" class="cam">
-    <video id="s4r-v" class="clip shot" src="media/usage.mp4" muted playsinline data-start="52.050" data-duration="9.100" data-media-start="7.040" data-playback-rate="1" data-track-index="49"></video>
+    <video id="s4r-v" class="clip shot" src="media/usage.mp4" muted playsinline data-start="59.100" data-duration="8.280" data-media-start="7.040" data-playback-rate="1" data-track-index="52"></video>
     <div id="s4r-ring0" class="ring" style="left:793px;top:914px;width:374px;height:74px;border-width:1.28px"></div><div id="s4r-ring1" class="ring" style="left:1044px;top:800px;width:124px;height:32px;border-width:1.28px"></div><div id="s4r-ring2" class="ring" style="left:793px;top:847px;width:316px;height:30px;border-width:1.28px"></div>
     <div id="s4r-cur" class="cursor"><svg viewBox="0 0 28 36" width="30" height="38"><path d="M2 2 L2 28 L9 21.5 L13.6 33 L18.2 31 L13.7 19.8 L23 19.8 Z" fill="#1d1f1a" stroke="#fffdf7" stroke-width="2.2" stroke-linejoin="round"/></svg><i></i></div>
   </div>
   
 </div>
-<div id="s4h" class="clip scene paper" data-start="60.650" data-duration="12.710" data-track-index="10">
+<div id="s4h" class="clip scene paper" data-start="66.880" data-duration="10.910" data-track-index="13">
   <div class="grid"></div>
   <svg class="wires" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><path id="s4-w0" d="M560 300 C 680 300, 680 450, 800 450" pathLength="1"/><path id="s4-w1" d="M560 450 C 680 450, 680 450, 800 450" pathLength="1"/><path id="s4-w2" d="M560 600 C 680 600, 680 450, 800 450" pathLength="1"/><path id="s4-w3" d="M1120 450 L1290 450" pathLength="1"/></svg>
   <div id="s4-a0" class="acct" style="left:220px;top:266px"><span class="kdot c-claude"></span>Claude · account A</div><div id="s4-a1" class="acct" style="left:220px;top:416px"><span class="kdot c-claude"></span>Claude · account B</div><div id="s4-a2" class="acct" style="left:220px;top:566px"><span class="kdot c-codex"></span>Codex · account C</div>
@@ -245,38 +318,38 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
     <div class="ufoot">Settings → Providers → Usage providers → Add hub</div></div>
   <div id="s4-opts" class="opts"><span id="s4-o0">Wait for the reset</span><span id="s4-o1">Switch provider</span><span id="s4-o2">Move to another machine</span></div>
 </div>
-<div id="st5" class="clip step" data-start="73.360" data-duration="11.770" data-track-index="11" ><span class="step-n">4</span>One coordinator, many threads</div>
-<div id="s5" class="clip scene paper" data-start="73.360" data-duration="11.770" data-track-index="12">
+<div id="st5" class="clip step" data-start="77.790" data-duration="11.810" data-track-index="14" ><span class="step-n">4</span>One coordinator, many threads</div>
+<div id="s5" class="clip scene paper" data-start="77.790" data-duration="11.810" data-track-index="15">
   <div class="grid"></div>
   <svg class="wires" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><path id="s5-w0" d="M330 540 L560 540" pathLength="1"/><path id="s5-t0w" d="M900 540 C 1000 540, 1000 250, 1090 250" pathLength="1"/><path id="s5-t1w" d="M900 540 C 1000 540, 1000 400, 1090 400" pathLength="1"/><path id="s5-t2w" d="M900 540 C 1000 540, 1000 550, 1090 550" pathLength="1"/><path id="s5-t3w" d="M900 540 C 1000 540, 1000 700, 1090 700" pathLength="1"/><path id="s5-t4w" d="M900 540 C 1000 540, 1000 850, 1090 850" pathLength="1"/></svg>
   <div id="s5-you" class="you" style="left:150px;top:470px"><div class="avatar">A</div><div>You</div></div>
   <div id="s5-coord" class="coord" style="left:560px;top:450px"><div class="eyebrow">EasyChamp</div><div class="coord-name">Coordinator</div><div class="coord-sub">plans · delegates · reports back</div></div>
   <div id="s5-t0" class="trow" style="left:1090px;top:200px"><span class="sdot work"></span><div class="tmain"><div class="ttitle">Reusable team tactical templates</div><div class="tmeta"><span class="tag mach">M4 Max</span><span class="tag model">Claude Opus 5.5</span><span class="tag pr">PR #411</span></div></div><span class="tstat work">Working</span></div><div id="s5-t1" class="trow" style="left:1090px;top:350px"><span class="sdot review"></span><div class="tmain"><div class="ttitle">Club finance: budget vs actuals</div><div class="tmeta"><span class="tag mach">M4 Max</span><span class="tag model">Claude Opus 5.5</span><span class="tag pr">PR #227</span></div></div><span class="tstat review">Needs review</span></div><div id="s5-t2" class="trow" style="left:1090px;top:500px"><span class="sdot ready"></span><div class="tmain"><div class="ttitle">Independent review round 2</div><div class="tmeta"><span class="tag mach">M4 Max</span><span class="tag model">Claude Opus 5.5</span></div></div><span class="tstat ready">Ready</span></div><div id="s5-t3" class="trow" style="left:1090px;top:650px"><span class="sdot ready"></span><div class="tmain"><div class="ttitle">Fix budget i18n · es, pt-BR</div><div class="tmeta"><span class="tag mach">M4 Max</span><span class="tag model">Claude Sonnet 5.5</span></div></div><span class="tstat ready">Ready</span></div><div id="s5-t4" class="trow" style="left:1090px;top:800px"><span class="sdot ready"></span><div class="tmain"><div class="ttitle">Translate 22 new UI strings</div><div class="tmeta"><span class="tag mach">M4 Max</span><span class="tag model">Codex GPT-5.6</span></div></div><span class="tstat ready">Ready</span></div>
 </div>
-<div id="st6" class="clip step" data-start="85.130" data-duration="15.150" data-track-index="13" ><span class="step-n">4</span>A real project: EasyChamp</div>
+<div id="st6" class="clip step" data-start="89.600" data-duration="14.750" data-track-index="16" ><span class="step-n">4</span>A real project: EasyChamp</div>
 <div id="s6r" class="scene untimed">
   <div id="s6r-cam" class="cam">
-    <video id="s6r-v" class="clip shot" src="media/project.mp4" muted playsinline data-start="85.130" data-duration="15.150" data-media-start="11.042" data-playback-rate="1" data-track-index="54"></video>
+    <video id="s6r-v" class="clip shot" src="media/project.mp4" muted playsinline data-start="89.600" data-duration="14.750" data-media-start="11.042" data-playback-rate="1" data-track-index="57"></video>
     <div id="s6r-ring0" class="ring" style="left:1470px;top:268px;width:448px;height:62px;border-width:1.54px"></div><div id="s6r-ring1" class="ring" style="left:1470px;top:164px;width:448px;height:62px;border-width:1.54px"></div><div id="s6r-ring2" class="ring" style="left:1470px;top:374px;width:448px;height:182px;border-width:1.76px"></div><div id="s6r-ring3" class="ring" style="left:1784px;top:281px;width:82px;height:36px;border-width:1.76px"></div><div id="s6r-ring4" class="ring" style="left:1784px;top:177px;width:82px;height:36px;border-width:1.76px"></div>
     <div id="s6r-cur" class="cursor"><svg viewBox="0 0 28 36" width="30" height="38"><path d="M2 2 L2 28 L9 21.5 L13.6 33 L18.2 31 L13.7 19.8 L23 19.8 Z" fill="#1d1f1a" stroke="#fffdf7" stroke-width="2.2" stroke-linejoin="round"/></svg><i></i></div>
   </div>
   <div id="s6r-call0" class="callout" style="left:160px;top:820px"><span class="sdot work"></span>Working · <b>PR #411</b></div><div id="s6r-call1" class="callout" style="left:160px;top:820px"><span class="sdot review"></span>Needs review · <b>PR #227</b></div>
 </div>
-<div id="st7" class="clip step" data-start="100.280" data-duration="9.890" data-track-index="15" ><span class="step-n">4</span>Inside a thread</div>
+<div id="st7" class="clip step" data-start="104.350" data-duration="9.950" data-track-index="18" ><span class="step-n">4</span>Inside a thread</div>
 <div id="s7r" class="scene untimed">
   <div id="s7r-cam" class="cam">
-    <video id="s7r-v" class="clip shot" src="media/coordinator.mp4" muted playsinline data-start="100.280" data-duration="9.890" data-media-start="16.727" data-playback-rate="1.6" data-track-index="56"></video>
+    <video id="s7r-v" class="clip shot" src="media/coordinator.mp4" muted playsinline data-start="104.350" data-duration="9.950" data-media-start="16.727" data-playback-rate="1.6" data-track-index="59"></video>
     <div id="s7r-ring0" class="ring" style="left:1120px;top:912px;width:748px;height:152px;border-width:2.07px"></div>
     <div id="s7r-cur" class="cursor"><svg viewBox="0 0 28 36" width="30" height="38"><path d="M2 2 L2 28 L9 21.5 L13.6 33 L18.2 31 L13.7 19.8 L23 19.8 Z" fill="#1d1f1a" stroke="#fffdf7" stroke-width="2.2" stroke-linejoin="round"/></svg><i></i></div>
   </div>
   <div id="s7r-call0" class="callout" style="left:120px;top:120px">Replies go <b>through the coordinator</b>, with the thread as context</div>
 </div>
-<div id="s7-sped" class="clip sped" data-start="100.280" data-duration="3.181" data-track-index="17" >Sped up 1.6×</div>
-<div id="st8" class="clip step" data-start="110.170" data-duration="16.810" data-track-index="18" ><span class="step-n">5</span>Verified, not just done</div>
-<div id="s8" class="clip scene paper" data-start="110.170" data-duration="14.180" data-track-index="19">
+<div id="s7-sped" class="clip sped" data-start="104.350" data-duration="3.181" data-track-index="20" >Sped up 1.6×</div>
+<div id="st8" class="clip step" data-start="114.300" data-duration="17.170" data-track-index="21" ><span class="step-n">5</span>Verified, not just done</div>
+<div id="s8" class="scene paper untimed">
   <div class="grid"></div>
   <div class="s8-top"><span id="s8-done" class="big">Done</span><span id="s8-ne" class="big ne">≠</span><span id="s8-ver" class="big ver">Verified</span></div>
-  <div id="s8-you" class="vcard" style="left:240px;top:430px"><div class="eyebrow">option 1</div><div class="vt">Check it yourself</div><div class="vs">run the check, read the receipt</div></div>
+  <div id="s8-you" class="vcard withmedia" style="left:240px;top:330px"><div class="vmedia"><video id="vid4" class="clip" src="media/px-review.mp4" muted playsinline data-start="114.300" data-duration="14.560" data-media-start="1" data-playback-rate="0.85" data-track-index="62"></video></div><div class="eyebrow">option 1</div><div class="vt">Check it yourself</div><div class="vs">run the check, read the receipt</div></div>
   <div id="s8-or" class="or" style="left:780px;top:520px">or</div>
   <div id="s8-auto" class="vcard auto" style="left:900px;top:340px"><div class="eyebrow">option 2 · on by default</div><div class="vt">Auto-resolve</div>
     <div class="crow" id="s8-c0"><span class="cbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Every pull request merged</div><div class="crow" id="s8-c1"><span class="cbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Checks pass</div><div class="crow" id="s8-c2"><span class="cbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Review approved</div>
@@ -284,293 +357,364 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 </div>
 <div id="s8r" class="scene untimed">
   <div id="s8r-cam" class="cam">
-    <video id="s8r-v" class="clip shot" src="media/autoresolve.mp4" muted playsinline data-start="123.850" data-duration="3.130" data-media-start="10.641" data-playback-rate="1" data-track-index="60"></video>
-    <div id="s8r-ring0" class="ring" style="left:1450px;top:600px;width:60px;height:42px;border-width:1.58px"></div>
+    <video id="s8r-v" class="clip shot" src="media/autoresolve.mp4" muted playsinline data-start="128.360" data-duration="3.110" data-media-start="10.641" data-playback-rate="1" data-track-index="63"></video>
+    <div id="s8r-ring0" class="ring" style="left:1461px;top:625px;width:38px;height:26px;border-width:1.58px;border-radius:999px"></div>
     <div id="s8r-cur" class="cursor"><svg viewBox="0 0 28 36" width="30" height="38"><path d="M2 2 L2 28 L9 21.5 L13.6 33 L18.2 31 L13.7 19.8 L23 19.8 Z" fill="#1d1f1a" stroke="#fffdf7" stroke-width="2.2" stroke-linejoin="round"/></svg><i></i></div>
   </div>
   <div id="s8r-call0" class="callout" style="left:360px;top:930px">Unknown evidence keeps the thread <b>waiting for you</b></div>
 </div>
-<div id="st9" class="clip step" data-start="126.980" data-duration="17.090" data-track-index="21" ><span class="step-n">6</span>Which machines?</div>
+<div id="st9" class="clip step" data-start="131.470" data-duration="16.310" data-track-index="24" ><span class="step-n">6</span>Which machines?</div>
 <div id="s9" class="scene paper untimed">
   <div class="grid"></div>
   <div id="s9-lin" class="oscard" style="left:150px;top:200px">
-    <div class="osmedia"><video id="s9-v0" class="clip" src="media/k04-linux.mp4" muted playsinline data-start="126.980" data-duration="17.090" data-media-start="0" data-playback-rate="0.8" data-track-index="62"></video></div>
+    <div class="osmedia"><video id="s9-v0" class="clip" src="media/px-linux.mp4" muted playsinline data-start="131.470" data-duration="16.310" data-media-start="0" data-playback-rate="0.8" data-track-index="65"></video></div>
     <div class="osname">Linux</div><div id="s9-lin-tag" class="ostag">Fastest workers</div>
     <div class="osnote" id="s9-lin-n0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Run most worker threads here</div>
     
   </div><div id="s9-win" class="oscard" style="left:710px;top:200px">
-    <div class="osmedia"><div class="winart"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44"><rect x="6" y="4" width="34" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M18 36h10M23 30v6" stroke="currentColor" stroke-width="3"/><rect x="45" y="4" width="14" height="36" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="52" cy="12" r="2" fill="currentColor"/></svg></div></div>
-    <div class="osname">Windows</div><div id="s9-win-tag" class="ostag">Good at heavy file work</div>
-    <div class="osnote" id="s9-win-n0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>A solid worker too</div>
+    <div class="osmedia"><video id="s9-v1" class="clip" src="media/px-tower.mp4" muted playsinline data-start="131.470" data-duration="16.310" data-media-start="0" data-playback-rate="0.8" data-track-index="66"></video></div>
+    <div class="osname">Windows</div><div id="s9-win-tag" class="ostag">A solid worker</div>
+    <div class="osnote" id="s9-win-n0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Dev Drive for file-heavy work</div>
     
   </div><div id="s9-mac" class="oscard" style="left:1270px;top:200px">
-    <div class="osmedia"><video id="s9-v2" class="clip" src="media/k05-iphone.mp4" muted playsinline data-start="126.980" data-duration="17.090" data-media-start="0" data-playback-rate="0.8" data-track-index="64"></video></div>
+    <div class="osmedia"><video id="s9-v2" class="clip" src="media/px-macbook.mp4" muted playsinline data-start="131.470" data-duration="16.310" data-media-start="0" data-playback-rate="0.8" data-track-index="67"></video></div>
     <div class="osname">macOS</div><div id="s9-mac-tag" class="ostag">The orchestrator</div>
     <div class="osnote" id="s9-mac-n0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Chrome and marketing tools</div><div class="osnote" id="s9-mac-n1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>iOS builds</div><div class="osnote" id="s9-mac-n2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Computer use</div>
     <div id="s9-apfs" class="apfs">APFS is slow for agent file churn</div>
   </div>
 </div>
+<div id="st11" class="clip step" data-start="147.780" data-duration="14.130" data-track-index="26" ><span class="step-n">6</span>A good worker</div>
+<div id="s11" class="scene paper untimed">
+  <div class="grid"></div>
+  <div class="s3-head"><div id="s11-t" class="h2"><span class="w"><span>A</span></span> <span class="w"><span>good</span></span> <span class="w"><span>worker</span></span> <span class="w"><span>machine</span></span></div></div>
+  <div id="s11-cpu" class="spec" style="left:150px;top:300px">
+    <div class="smedia"><video id="vid5" class="clip" src="media/px-tower.mp4" muted playsinline data-start="147.780" data-duration="14.130" data-media-start="1" data-playback-rate="0.8" data-track-index="67"></video></div>
+    <div class="sbig"><b id="s11-cpu-n">8</b><span>cores</span></div><div class="ssub">or more</div>
+  </div><div id="s11-mem" class="spec" style="left:710px;top:300px">
+    <div class="smedia"><video id="vid6" class="clip" src="media/px-ram.mp4" muted playsinline data-start="147.780" data-duration="14.130" data-media-start="1" data-playback-rate="0.8" data-track-index="68"></video></div>
+    <div class="sbig"><b id="s11-mem-n">32</b><span>GB memory</span></div><div class="ssub">64 GB for browser-heavy work</div>
+  </div><div id="s11-ssd" class="spec" style="left:1270px;top:300px">
+    <div class="smedia"><video id="vid7" class="clip" src="media/px-ssd.mp4" muted playsinline data-start="147.780" data-duration="14.130" data-media-start="1" data-playback-rate="0.8" data-track-index="69"></video></div>
+    <div class="sbig"><b id="s11-ssd-n">SSD</b><span>a few hundred GB free</span></div><div class="ssub">local NVMe, not network storage</div>
+  </div>
+  <div id="s11-per" class="peragent"><span class="pa-eb">every parallel agent</span><span class="pa-v" id="s11-pa0">≈ 4 GB memory</span><span class="pa-plus">+</span><span class="pa-v" id="s11-pa1">≈ 10 GB disk</span></div>
+</div>
 <div id="s10" class="scene paper untimed">
   <div class="grid"></div>
-  <div id="s10-win" class="window"><div class="wbar"><i></i><i></i><i></i><span>SpecWithCode · Control desk</span></div><video id="s10-v" class="clip" src="media/desk.mp4" muted playsinline data-start="144.070" data-duration="11.650" data-media-start="7.065" data-playback-rate="1" data-track-index="63"></video></div>
+  <div id="s10-win" class="window"><div class="wbar"><i></i><i></i><i></i><span>SpecWithCode · Control desk</span></div><video id="s10-v" class="clip" src="media/desk.mp4" muted playsinline data-start="161.910" data-duration="11.650" data-media-start="7.065" data-playback-rate="1" data-track-index="68"></video></div>
   <div class="s10-words"><span id="s10-w0">Your machines.</span><span id="s10-w1">Your subscriptions.</span><span id="s10-w2" class="acc">One control desk.</span></div>
   <div id="s10-brand" class="s10-brand"><div class="mark dark">SpecWithCode</div><div class="team-line"></div><div class="s10-url">open source · <b>specwithcode.dev</b></div></div>
 </div>
-<audio id="vo-v01" src="media/vo/v01.wav" data-start="0.800" data-duration="11.710" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v02" src="media/vo/v02.wav" data-start="13.510" data-duration="21.890" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v03" src="media/vo/v03.wav" data-start="36.300" data-duration="15.350" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v04" src="media/vo/v04.wav" data-start="52.550" data-duration="20.310" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v05" src="media/vo/v05.wav" data-start="73.860" data-duration="10.970" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v06" src="media/vo/v06.wav" data-start="85.630" data-duration="14.550" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v07" src="media/vo/v07.wav" data-start="100.780" data-duration="8.990" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v08" src="media/vo/v08.wav" data-start="110.670" data-duration="15.810" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v09" src="media/vo/v09.wav" data-start="127.480" data-duration="16.090" data-track-index="90" data-volume="1"></audio>
-<audio id="vo-v10" src="media/vo/v10.wav" data-start="144.570" data-duration="8.550" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v01" src="media/vo/v01.wav" data-start="0.800" data-duration="12.070" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v02" src="media/vo/v02.wav" data-start="13.870" data-duration="17.110" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v03" src="media/vo/v03.wav" data-start="31.780" data-duration="11.510" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v04" src="media/vo/v04.wav" data-start="44.190" data-duration="14.510" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v05" src="media/vo/v05.wav" data-start="59.600" data-duration="17.690" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v06" src="media/vo/v06.wav" data-start="78.290" data-duration="11.010" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v07" src="media/vo/v07.wav" data-start="90.100" data-duration="14.150" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v08" src="media/vo/v08.wav" data-start="104.850" data-duration="9.050" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v09" src="media/vo/v09.wav" data-start="114.800" data-duration="16.170" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v10" src="media/vo/v10.wav" data-start="131.970" data-duration="15.710" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v11" src="media/vo/v11.wav" data-start="148.280" data-duration="13.130" data-track-index="90" data-volume="1"></audio>
+<audio id="vo-v12" src="media/vo/v12.wav" data-start="162.410" data-duration="8.550" data-track-index="90" data-volume="1"></audio>
     </div>
     <script>
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
 tl.fromTo("#s1-t .w > span", {yPercent:110}, {yPercent:0, duration:0.7, ease:"expo.out", stagger:0.06}, 0.740);
-tl.to("#s1-q", {opacity:0, duration:0.4, ease:"power1.in"}, 3.720);
-tl.fromTo("#s1-c0", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 3.940);
-tl.to("#s1-c0", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 4.920);
-tl.fromTo("#s1-c1", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 5.440);
-tl.to("#s1-c1", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 6.420);
-tl.fromTo("#s1-c2", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 7.080);
-tl.to("#s1-c2", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 8.060);
-tl.fromTo("#s1-c3", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 7.880);
-tl.to("#s1-c3", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 8.860);
-tl.to("#s1-c0", {x:440, y:220, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.370);
-tl.to("#s1-c1", {x:-440, y:220, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.400);
-tl.to("#s1-c2", {x:380, y:-160, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.430);
-tl.to("#s1-c3", {x:-380, y:-160, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.460);
-tl.fromTo("#s1-team", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1.1, ease:"elastic.out(1, 0.6)"}, 9.820);
-tl.fromTo("#s1-team .team-line", {scaleX:0}, {scaleX:1, duration:0.8, ease:"expo.out"}, 11.820);
-tl.fromTo("#s1-team .team-sub", {opacity:0, y:14}, {opacity:1, y:0, duration:0.5, ease:"expo.out"}, 11.490);
-tl.to("#s1-team", {scale:1.08, duration:3.490, ease:"none"}, 10.970);
-tl.fromTo("#st2", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 13.210);
-tl.to("#st2", {opacity:0, duration:0.25, ease:"power1.in"}, 35.450);
-tl.fromTo("#s2-eb", {opacity:0, scale:0.6}, {opacity:1, scale:1, duration:0.5, ease:"back.out(2.4)"}, 13.510);
-tl.fromTo("#s2-t .w > span", {yPercent:110}, {yPercent:0, duration:0.7, ease:"expo.out", stagger:0.06}, 14.550);
-tl.fromTo("#s2", {scale:1}, {scale:1.04, duration:22.790, ease:"none"}, 13.010);
-tl.fromTo("#s2-mac", {opacity:0, y:90}, {opacity:1, y:0, duration:0.9, ease:"expo.out"}, 16.530);
-tl.fromTo("#s2-lin", {opacity:0, y:90}, {opacity:1, y:0, duration:0.9, ease:"expo.out"}, 16.650);
-tl.fromTo("#s2-win", {opacity:0, y:90}, {opacity:1, y:0, duration:0.9, ease:"expo.out"}, 16.770);
-tl.fromTo("#s2-mac-sign", {opacity:0, y:10}, {opacity:1, y:0, duration:0.45, ease:"back.out(2)"}, 19.410);
-tl.fromTo("#s2-lin-sign", {opacity:0, y:10}, {opacity:1, y:0, duration:0.45, ease:"back.out(2)"}, 19.510);
-tl.fromTo("#s2-win-sign", {opacity:0, y:10}, {opacity:1, y:0, duration:0.45, ease:"back.out(2)"}, 19.610);
-tl.fromTo("#s2-k-claude", {opacity:0, y:-260, rotate:-8}, {opacity:1, y:0, rotate:0, duration:0.9, ease:"bounce.out"}, 23.920);
-tl.fromTo("#s2-k-codex", {opacity:0, y:-260, rotate:-8}, {opacity:1, y:0, rotate:0, duration:0.9, ease:"bounce.out"}, 25.500);
-tl.fromTo("#s2-one", {opacity:0, scale:0.6}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2)"}, 20.830);
-tl.to("#s2-one", {opacity:0, duration:0.3, ease:"power1.in"}, 24.710);
-tl.fromTo("#s2-k-grok", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:0.9, ease:"elastic.out(1, 0.5)"}, 30.160);
-tl.fromTo("#s2-k-copilot", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:0.9, ease:"elastic.out(1, 0.5)"}, 30.920);
-tl.fromTo("#s2-k-gemini", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:0.9, ease:"elastic.out(1, 0.5)"}, 31.780);
-tl.fromTo("#s2-stamp", {opacity:0, scale:2.2, rotate:-14}, {opacity:1, scale:1, rotate:-6, duration:0.45, ease:"back.out(1.4)"}, 33.530);
-tl.to("#s2 .mcard", {y:-6, duration:0.12, yoyo:true, repeat:1, ease:"power1.out", stagger:0.03}, 33.880);
-tl.fromTo("#st3", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 36.000);
-tl.to("#st3", {opacity:0, duration:0.25, ease:"power1.in"}, 51.700);
-tl.fromTo("#s3-n1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 36.150);
-tl.fromTo("#s3-n2", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 36.270);
-tl.fromTo("#s3-n3", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 36.390);
-tl.fromTo("#s3-n4", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 36.510);
-tl.fromTo("#s3-n1-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 38.240);
-tl.fromTo("#s3-n2-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 38.320);
-tl.fromTo("#s3-n3-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 38.400);
-tl.fromTo("#s3-n4-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 38.480);
-tl.fromTo("#s3-hub", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.6)"}, 39.860);
-tl.fromTo("#s3-w-n1", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 40.160);
-tl.fromTo("#s3-w-n2", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 40.260);
-tl.fromTo("#s3-w-n3", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 40.360);
-tl.fromTo("#s3-w-n4", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 40.460);
-tl.fromTo("#s3-r0", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 41.390);
-tl.fromTo("#s3-r1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 42.210);
-tl.fromTo("#s3-r2", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 43.470);
-tl.fromTo("#s3-p-n1", {opacity:0, x:421, y:351}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 43.820);
-tl.fromTo("#s3-p-n2", {opacity:0, x:1541, y:301}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 43.970);
-tl.fromTo("#s3-p-n3", {opacity:0, x:1581, y:751}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 44.120);
-tl.fromTo("#s3-p-n4", {opacity:0, x:461, y:791}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 44.270);
-tl.to("#s3", {scale:2.4, x:-200, y:-120, opacity:0, duration:0.6, ease:"power3.in"}, 44.010);
-tl.set("#s3r", {opacity:1}, 44.310); tl.set("#s3r", {opacity:0}, 52.050);
-tl.fromTo("#s3r-cur", {opacity:0}, {opacity:1, duration:0.25}, 45.786);
-tl.to("#s3r-cur", {x:1059.00390625, y:232.5, duration:0.350, ease:"power3.inOut"}, 46.036);
-tl.to("#s3r-cur", {x:1377.00390625, y:232.5, duration:0.350, ease:"power3.inOut"}, 47.853);
-tl.to("#s3r-cur", {x:1088, y:284.5, duration:0.350, ease:"power3.inOut"}, 49.653);
-tl.to("#s3r-cur", {x:1088, y:464.5, duration:0.350, ease:"power3.inOut"}, 51.436);
-tl.set("#s3r-cur", {opacity:1}, 44.310);
-tl.to("#s3r-cam", {x:-726.400, y:0.000, scale:1.55, duration:1.3, ease:"expo.out"}, 44.310);
-tl.fromTo("#s3r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 45.460);
-tl.to("#s3r-ring0", {opacity:0, duration:0.3}, 47.260);
-tl.fromTo("#s3r-ring1", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 50.200);
-tl.to("#s3r-ring1", {opacity:0, duration:0.3}, 52.050);
-tl.fromTo("#s3r-ring2", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 50.400);
-tl.to("#s3r-ring2", {opacity:0, duration:0.3}, 52.050);
-tl.fromTo("#s3r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 46.860);
-tl.to("#s3r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 50.000);
-tl.fromTo("#st4", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 52.250);
-tl.to("#st4", {opacity:0, duration:0.25, ease:"power1.in"}, 73.010);
-tl.set("#s4r", {opacity:1}, 52.050); tl.set("#s4r", {opacity:0}, 61.150);
-tl.fromTo("#s4r-cur", {opacity:0}, {opacity:1, duration:0.25}, 52.050);
-tl.to("#s4r-cur", {x:868.07421875, y:1048, duration:0.451, ease:"power3.inOut"}, 52.152);
-tl.to("#s4r-cur svg", {scale:0.82, duration:0.09, yoyo:true, repeat:1, ease:"power1.inOut", transformOrigin:"2px 2px"}, 52.794);
-tl.fromTo("#s4r-cur i", {scale:0.2, opacity:0.9}, {scale:2.6, opacity:0, duration:0.55, ease:"expo.out"}, 52.794);
-tl.to("#s4r-cur", {x:1105.82421875, y:814.75, duration:0.350, ease:"power3.inOut"}, 55.364);
-tl.to("#s4r-cur", {x:820.2703125, y:973, duration:0.350, ease:"power3.inOut"}, 57.379);
-tl.to("#s4r-cur", {x:872.5078125, y:1014, duration:0.350, ease:"power3.inOut"}, 59.396);
-tl.to("#s4r-cam", {x:-480.000, y:-648.000, scale:1.6, duration:1.2, ease:"power3.inOut"}, 52.250);
-tl.to("#s4r-cam", {x:-1354.750, y:-1457.500, scale:2.35, duration:1.1, ease:"expo.out"}, 55.420);
-tl.fromTo("#s4r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 56.250);
-tl.to("#s4r-ring0", {opacity:0, duration:0.3}, 57.710);
-tl.fromTo("#s4r-ring1", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 57.910);
-tl.to("#s4r-ring1", {opacity:0, duration:0.3}, 59.470);
-tl.fromTo("#s4r-ring2", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 59.170);
-tl.to("#s4r-ring2", {opacity:0, duration:0.3}, 61.050);
-tl.fromTo("#s4h", {clipPath:"circle(0% at 50% 50%)"}, {clipPath:"circle(75% at 50% 50%)", duration:0.7, ease:"power3.inOut"}, 60.650);
-tl.fromTo("#s4-a0", {opacity:0, y:30}, {opacity:1, y:0, duration:0.6, ease:"expo.out"}, 61.450);
-tl.fromTo("#s4-a1", {opacity:0, y:30}, {opacity:1, y:0, duration:0.6, ease:"expo.out"}, 61.550);
-tl.fromTo("#s4-a2", {opacity:0, y:30}, {opacity:1, y:0, duration:0.6, ease:"expo.out"}, 61.650);
-tl.fromTo("#s4-hub", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.6)"}, 62.550);
-tl.fromTo("#s4-w0", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.6, ease:"power2.inOut"}, 62.950);
-tl.fromTo("#s4-w1", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.6, ease:"power2.inOut"}, 63.030);
-tl.fromTo("#s4-w2", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.6, ease:"power2.inOut"}, 63.110);
-tl.fromTo("#s4-w3", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.5, ease:"power2.inOut"}, 64.750);
-tl.fromTo("#s4-usage", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2)"}, 64.950);
-tl.fromTo("#s4-b0", {scaleX:0}, {scaleX:0.62, duration:0.9, ease:"expo.out"}, 65.770);
-tl.fromTo("#s4-b1", {scaleX:0}, {scaleX:0.31, duration:0.9, ease:"expo.out"}, 65.890);
-tl.fromTo("#s4-b2", {scaleX:0}, {scaleX:0.78, duration:0.9, ease:"expo.out"}, 66.010);
-tl.to("#s4-b2", {scaleX:1, backgroundColor:"#c2412d", duration:0.6, ease:"power2.in"}, 67.470);
-tl.to("#s4-usage", {x:"+=8", duration:0.06, yoyo:true, repeat:5, ease:"none"}, 68.070);
-tl.fromTo("#s4-o0", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 69.120);
-tl.fromTo("#s4-o1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 71.440);
-tl.fromTo("#s4-o2", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 72.160);
-tl.fromTo("#st5", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 73.560);
-tl.to("#st5", {opacity:0, duration:0.25, ease:"power1.in"}, 84.780);
-tl.fromTo("#s5-you", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 73.660);
-tl.fromTo("#s5", {scale:1}, {scale:1.035, duration:11.770, ease:"none"}, 73.360);
-tl.fromTo("#s5-w0", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.5, ease:"power2.inOut"}, 77.380);
-tl.fromTo("#s5-coord", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.6)"}, 78.090);
-tl.fromTo("#s5-t0w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 80.600);
-tl.fromTo("#s5-t0", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 80.750);
-tl.fromTo("#s5-t1w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 80.740);
-tl.fromTo("#s5-t1", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 80.890);
-tl.fromTo("#s5-t2w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 80.880);
-tl.fromTo("#s5-t2", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 81.030);
-tl.fromTo("#s5-t3w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 81.020);
-tl.fromTo("#s5-t3", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 81.170);
-tl.fromTo("#s5-t4w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 81.160);
-tl.fromTo("#s5-t4", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 81.310);
-tl.fromTo("#s5 .tag.mach", {backgroundColor:"#fffdf7"}, {backgroundColor:"#f3dccf", duration:0.25, yoyo:true, repeat:1, stagger:0.06}, 82.980);
-tl.fromTo("#s5 .tag.model", {backgroundColor:"#fffdf7"}, {backgroundColor:"#f3dccf", duration:0.25, yoyo:true, repeat:1, stagger:0.06}, 83.640);
-tl.to("#s5-coord", {scale:1.05, duration:0.18, yoyo:true, repeat:1, ease:"power1.out"}, 80.500);
-tl.fromTo("#st6", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 85.330);
-tl.to("#st6", {opacity:0, duration:0.25, ease:"power1.in"}, 99.930);
-tl.set("#s6r", {opacity:1}, 85.130); tl.set("#s6r", {opacity:0}, 100.280);
-tl.set("#s6r-cur", {x:127.5, y:219}, 85.130);
-tl.fromTo("#s6r-cur", {opacity:0}, {opacity:1, duration:0.25}, 85.557);
-tl.to("#s6r-cur", {x:208, y:219, duration:0.350, ease:"power3.inOut"}, 85.807);
-tl.to("#s6r-cur", {x:706.7734375, y:343.4453125, duration:0.493, ease:"power3.inOut"}, 87.175);
-tl.to("#s6r-cur", {x:907.5, y:585.125, duration:0.350, ease:"power3.inOut"}, 89.175);
-tl.to("#s6r-cur", {x:1824.8203125, y:298.9609375, duration:0.838, ease:"power3.inOut"}, 90.991);
-tl.to("#s6r-cur", {x:1680.76953125, y:392.36328125, duration:0.350, ease:"power3.inOut"}, 93.191);
-tl.to("#s6r-cur", {x:1690, y:681.375, duration:0.350, ease:"power3.inOut"}, 94.559);
-tl.to("#s6r-cur svg", {scale:0.82, duration:0.09, yoyo:true, repeat:1, ease:"power1.inOut", transformOrigin:"2px 2px"}, 95.028);
-tl.fromTo("#s6r-cur i", {scale:0.2, opacity:0.9}, {scale:2.6, opacity:0, duration:0.55, ease:"expo.out"}, 95.028);
-tl.to("#s6r-cur", {x:1690, y:700, duration:0.350, ease:"power3.inOut"}, 96.535);
-tl.set("#s6r-cur", {opacity:1}, 85.130);
-tl.to("#s6r-cam", {x:-480.000, y:0.000, scale:1.25, duration:1, ease:"power3.inOut"}, 85.330);
-tl.to("#s6r-cam", {x:-1824.000, y:-240.000, scale:1.95, duration:1.2, ease:"expo.inOut"}, 86.730);
-tl.to("#s6r-cam", {x:-1344.000, y:-565.000, scale:1.7, duration:1.4, ease:"power3.inOut"}, 95.870);
-tl.fromTo("#s6r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 89.410);
-tl.to("#s6r-ring0", {opacity:0, duration:0.3}, 91.790);
-tl.fromTo("#s6r-ring1", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 92.810);
-tl.to("#s6r-ring1", {opacity:0, duration:0.3}, 95.270);
-tl.fromTo("#s6r-ring2", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 96.250);
-tl.to("#s6r-ring2", {opacity:0, duration:0.3}, 97.570);
-tl.fromTo("#s6r-ring3", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 99.290);
-tl.to("#s6r-ring3", {opacity:0, duration:0.3}, 100.280);
-tl.fromTo("#s6r-ring4", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 99.440);
-tl.to("#s6r-ring4", {opacity:0, duration:0.3}, 100.280);
-tl.fromTo("#s6r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 90.490);
-tl.to("#s6r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 91.790);
-tl.fromTo("#s6r-call1", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 94.590);
-tl.to("#s6r-call1", {opacity:0, duration:0.3, ease:"power1.in"}, 95.570);
-tl.fromTo("#st7", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 100.480);
-tl.to("#st7", {opacity:0, duration:0.25, ease:"power1.in"}, 109.820);
-tl.set("#s7r", {opacity:1}, 100.280); tl.set("#s7r", {opacity:0}, 110.170);
-tl.set("#s7r-cur", {x:860, y:500}, 100.280);
-tl.set("#s7r-cur", {x:859.53515625, y:906.1953125}, 100.280);
-tl.fromTo("#s7r-cur", {opacity:0}, {opacity:1, duration:0.25}, 100.390);
-tl.to("#s7r-cur", {x:1096.07421875, y:906.1953125, duration:0.350, ease:"power3.inOut"}, 100.640);
-tl.to("#s7r-cur svg", {scale:0.82, duration:0.09, yoyo:true, repeat:1, ease:"power1.inOut", transformOrigin:"2px 2px"}, 100.924);
-tl.fromTo("#s7r-cur i", {scale:0.2, opacity:0.9}, {scale:2.6, opacity:0, duration:0.55, ease:"expo.out"}, 100.924);
-tl.to("#s7r-cur", {x:1490, y:500, duration:0.397, ease:"power3.inOut"}, 103.460);
-tl.set("#s7r-cur", {opacity:1}, 100.280);
-tl.to("#s7r-cam", {x:-256.000, y:-648.000, scale:1.6, duration:0.9, ease:"power3.inOut"}, 100.380);
-tl.to("#s7r-cam", {x:-864.000, y:-214.000, scale:1.45, duration:1.2, ease:"expo.inOut"}, 103.261);
-tl.to("#s7r-cam", {x:-864.000, y:-486.000, scale:1.45, duration:1, ease:"power3.inOut"}, 104.760);
-tl.fromTo("#s7r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 105.260);
-tl.to("#s7r-ring0", {opacity:0, duration:0.3}, 110.170);
-tl.fromTo("#s7r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 107.120);
-tl.to("#s7r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 109.970);
-tl.fromTo("#s7-sped", {opacity:0}, {opacity:1, duration:0.25, ease:"power1.out"}, 100.580);
-tl.fromTo("#st8", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 110.370);
-tl.to("#st8", {opacity:0, duration:0.25, ease:"power1.in"}, 126.630);
-tl.fromTo("#s8-done", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 110.520);
-tl.fromTo("#s8-ne", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 111.340);
-tl.fromTo("#s8-ver", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 112.520);
-tl.fromTo("#s8-you", {opacity:0, y:60}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 113.790);
-tl.fromTo("#s8-or", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.4, ease:"back.out(3)"}, 115.010);
-tl.fromTo("#s8-auto", {opacity:0, y:60}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 115.770);
-tl.fromTo("#s8-c0", {opacity:0.35}, {opacity:1, duration:0.2}, 120.810);
-tl.fromTo("#s8-c0 .cbox", {scale:0.3, backgroundColor:"#fffdf7"}, {scale:1, backgroundColor:"#3f6b3a", duration:0.5, ease:"back.out(3)"}, 120.810);
-tl.fromTo("#s8-c1", {opacity:0.35}, {opacity:1, duration:0.2}, 121.870);
-tl.fromTo("#s8-c1 .cbox", {scale:0.3, backgroundColor:"#fffdf7"}, {scale:1, backgroundColor:"#3f6b3a", duration:0.5, ease:"back.out(3)"}, 121.870);
-tl.fromTo("#s8-c2", {opacity:0.35}, {opacity:1, duration:0.2}, 123.330);
-tl.fromTo("#s8-c2 .cbox", {scale:0.3, backgroundColor:"#fffdf7"}, {scale:1, backgroundColor:"#3f6b3a", duration:0.5, ease:"back.out(3)"}, 123.330);
-tl.to("#s8-res", {scale:0.6, opacity:0, duration:0.15, ease:"power2.in"}, 123.880);
-tl.set("#s8-res", {textContent:"Resolved", className:"tstat ready resolved"}, 124.030);
-tl.to("#s8-res", {scale:1, opacity:1, duration:0.5, ease:"back.out(3)"}, 124.030);
-tl.to("#s8", {opacity:0, duration:0.4}, 123.850);
-tl.set("#s8r", {opacity:1}, 123.850); tl.set("#s8r", {opacity:0}, 126.980);
-tl.set("#s8r-cur", {x:775.38671875, y:363}, 123.850);
-tl.set("#s8r-cur", {x:804.3515625, y:618}, 123.850);
-tl.fromTo("#s8r-cur", {opacity:0}, {opacity:1, duration:0.25}, 124.860);
-tl.to("#s8r-cur", {x:1480, y:628, duration:0.606, ease:"power3.inOut"}, 125.110);
-tl.set("#s8r-cur", {opacity:1}, 123.850);
-tl.to("#s8r-cam", {x:0.000, y:0.000, scale:1, duration:0.01, ease:"power3.inOut"}, 123.850);
-tl.to("#s8r-cam", {x:-940.000, y:-600.000, scale:1.9, duration:1.3, ease:"expo.out"}, 123.950);
-tl.fromTo("#s8r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 124.950);
-tl.to("#s8r-ring0", {opacity:0, duration:0.3}, 126.980);
-tl.fromTo("#s8r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 125.150);
-tl.to("#s8r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 126.780);
-tl.fromTo("#st9", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 127.180);
-tl.to("#st9", {opacity:0, duration:0.25, ease:"power1.in"}, 143.720);
-tl.set("#s9", {opacity:1}, 126.980); tl.set("#s9", {opacity:0}, 144.070);
-tl.fromTo("#s9", {scale:1}, {scale:1.03, duration:17.090, ease:"none"}, 126.980);
-tl.fromTo("#s9-lin", {opacity:0, y:80}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 128.140);
-tl.fromTo("#s9-lin-tag", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 128.790);
-tl.fromTo("#s9-win", {opacity:0, y:80}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 130.520);
-tl.fromTo("#s9-win-tag", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 131.170);
-tl.fromTo("#s9-mac", {opacity:0, y:80}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 133.520);
-tl.fromTo("#s9-mac-tag", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 134.170);
-tl.fromTo("#s9-lin-n0", {opacity:0, x:-14}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 129.920);
-tl.fromTo("#s9-win-n0", {opacity:0, x:-14}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 132.540);
-tl.fromTo("#s9-apfs", {opacity:0, y:20, rotate:-3}, {opacity:1, y:0, rotate:-2, duration:0.5, ease:"back.out(2.4)"}, 135.040);
-tl.fromTo("#s9-mac-n0", {opacity:0, x:-18}, {opacity:1, x:0, duration:0.45, ease:"back.out(2.4)"}, 139.640);
-tl.fromTo("#s9-mac-n1", {opacity:0, x:-18}, {opacity:1, x:0, duration:0.45, ease:"back.out(2.4)"}, 141.220);
-tl.fromTo("#s9-mac-n2", {opacity:0, x:-18}, {opacity:1, x:0, duration:0.45, ease:"back.out(2.4)"}, 142.540);
-tl.to("#s9-lin", {y:-14, duration:0.2, yoyo:true, repeat:1, ease:"power2.out"}, 129.620);
-tl.to("#s9-mac", {y:-14, duration:0.2, yoyo:true, repeat:1, ease:"power2.out"}, 138.920);
-tl.set("#s10", {opacity:1}, 144.070);
-tl.fromTo("#s10-win", {opacity:0, y:120, rotateX:18, scale:0.85}, {opacity:1, y:0, rotateX:0, scale:1, duration:1.2, ease:"expo.out"}, 144.170);
-tl.fromTo("#s10-w0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 144.530);
-tl.fromTo("#s10-w1", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 145.810);
-tl.fromTo("#s10-w2", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 147.390);
-tl.to("#s10-win", {scale:0.6, y:-40, opacity:0, duration:0.6, ease:"power3.in"}, 148.610);
-tl.to(".s10-words", {y:-260, opacity:0, duration:0.5, ease:"power3.in"}, 148.610);
-tl.fromTo("#s10-brand", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1.1, ease:"elastic.out(1, 0.6)"}, 149.110);
-tl.fromTo("#s10-brand .team-line", {scaleX:0}, {scaleX:1, duration:0.8, ease:"expo.out"}, 149.510);
-tl.fromTo("#s10-brand .s10-url", {opacity:0, y:16}, {opacity:1, y:0, duration:0.5, ease:"expo.out"}, 149.850);
+tl.to("#s1-q", {opacity:0, duration:0.4, ease:"power1.in"}, 3.800);
+tl.fromTo("#s1-c0", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 4.020);
+tl.to("#s1-c0", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 5.000);
+tl.fromTo("#s1-c1", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 5.660);
+tl.to("#s1-c1", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 6.640);
+tl.fromTo("#s1-c2", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 7.240);
+tl.to("#s1-c2", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 8.220);
+tl.fromTo("#s1-c3", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 8.000);
+tl.to("#s1-c3", {y:"-=10", duration:0.95, ease:"sine.inOut", yoyo:true, repeat:1}, 8.980);
+tl.to("#s1-c0", {x:440, y:220, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.590);
+tl.to("#s1-c1", {x:-440, y:220, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.620);
+tl.to("#s1-c2", {x:380, y:-160, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.650);
+tl.to("#s1-c3", {x:-380, y:-160, scale:0.2, opacity:0, duration:0.55, ease:"back.in(1.6)"}, 9.680);
+tl.fromTo("#s1-team", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1.1, ease:"elastic.out(1, 0.6)"}, 10.040);
+tl.fromTo("#s1-team .team-line", {scaleX:0}, {scaleX:1, duration:0.8, ease:"expo.out"}, 12.160);
+tl.fromTo("#s1-team .team-sub", {opacity:0, y:14}, {opacity:1, y:0, duration:0.5, ease:"expo.out"}, 11.810);
+tl.to("#s1-team", {scale:1.08, duration:3.630, ease:"none"}, 11.190);
+tl.fromTo("#st2", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 13.570);
+tl.to("#st2", {opacity:0, duration:0.25, ease:"power1.in"}, 30.930);
+tl.set("#s2", {opacity:1}, 13.370); tl.set("#s2", {opacity:0}, 31.280);
+tl.fromTo("#s2-eb", {opacity:0, scale:0.6}, {opacity:1, scale:1, duration:0.5, ease:"back.out(2.4)"}, 13.870);
+tl.fromTo("#s2-t .w > span", {yPercent:110}, {yPercent:0, duration:0.7, ease:"expo.out", stagger:0.06}, 14.450);
+tl.fromTo("#s2", {scale:1}, {scale:1.035, duration:17.910, ease:"none"}, 13.370);
+tl.fromTo("#s2-m4", {opacity:0, y:110}, {opacity:1, y:0, duration:0.95, ease:"expo.out"}, 15.120);
+tl.fromTo("#s2-m1", {opacity:0, y:110}, {opacity:1, y:0, duration:0.95, ease:"expo.out"}, 15.250);
+tl.fromTo("#s2-lin", {opacity:0, y:110}, {opacity:1, y:0, duration:0.95, ease:"expo.out"}, 15.380);
+tl.fromTo("#s2-m4-sign", {opacity:0, y:10}, {opacity:1, y:0, duration:0.45, ease:"back.out(2)"}, 17.310);
+tl.fromTo("#s2-m1-sign", {opacity:0, y:10}, {opacity:1, y:0, duration:0.45, ease:"back.out(2)"}, 17.410);
+tl.fromTo("#s2-lin-sign", {opacity:0, y:10}, {opacity:1, y:0, duration:0.45, ease:"back.out(2)"}, 17.510);
+tl.fromTo("#s2-k-lin-0", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:0.9, ease:"elastic.out(1, 0.5)"}, 19.670);
+tl.fromTo("#s2-k-lin-1", {opacity:0, scale:0.2}, {opacity:1, scale:1, duration:0.9, ease:"elastic.out(1, 0.5)"}, 19.810);
+tl.fromTo("#s2-k-m4-0", {opacity:0, y:-300, rotate:-7}, {opacity:1, y:0, rotate:0, duration:0.9, ease:"bounce.out"}, 21.710);
+tl.fromTo("#s2-k-m4-1", {opacity:0, y:-300, rotate:-7}, {opacity:1, y:0, rotate:0, duration:0.9, ease:"bounce.out"}, 22.470);
+tl.fromTo("#s2-k-m1-0", {opacity:0, y:-300, rotate:-7}, {opacity:1, y:0, rotate:0, duration:0.9, ease:"bounce.out"}, 26.330);
+tl.fromTo("#s2-k-m1-1", {opacity:0, y:-300, rotate:-7}, {opacity:1, y:0, rotate:0, duration:0.9, ease:"bounce.out"}, 26.930);
+tl.fromTo("#s2-a-m4-0", {backgroundColor:"#22241e00", color:"#d7d3c6"}, {backgroundColor:"#bd481f", color:"#fffdf7", duration:0.3, ease:"power2.out"}, 23.730);
+tl.fromTo("#s2-a-m4-1", {backgroundColor:"#22241e00", color:"#d7d3c6"}, {backgroundColor:"#bd481f", color:"#fffdf7", duration:0.3, ease:"power2.out"}, 23.850);
+tl.fromTo("#s2-a-m1-0", {backgroundColor:"#22241e00", color:"#d7d3c6"}, {backgroundColor:"#bd481f", color:"#fffdf7", duration:0.3, ease:"power2.out"}, 28.070);
+tl.fromTo("#s2-a-m1-1", {backgroundColor:"#22241e00", color:"#d7d3c6"}, {backgroundColor:"#bd481f", color:"#fffdf7", duration:0.3, ease:"power2.out"}, 28.190);
+tl.to("#s2-m4", {y:-12, duration:0.22, yoyo:true, repeat:1, ease:"power2.out"}, 20.970);
+tl.to("#s2-m1", {y:-12, duration:0.22, yoyo:true, repeat:1, ease:"power2.out"}, 25.810);
+tl.fromTo("#s2-stamp", {opacity:0, scale:2.2, rotate:-14}, {opacity:1, scale:1, rotate:-5, duration:0.45, ease:"back.out(1.4)"}, 29.270);
+tl.to("#s2 .mcard2", {y:-6, duration:0.12, yoyo:true, repeat:1, ease:"power1.out", stagger:0.03}, 29.570);
+tl.fromTo("#st2b", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 31.480);
+tl.to("#st2b", {opacity:0, duration:0.25, ease:"power1.in"}, 43.340);
+tl.set("#s3", {opacity:1}, 31.280); tl.set("#s3", {opacity:0}, 43.690);
+tl.fromTo("#s3-t .w > span", {yPercent:110}, {yPercent:0, duration:0.7, ease:"expo.out", stagger:0.06}, 31.630);
+tl.fromTo("#s3-old", {opacity:0, y:90}, {opacity:1, y:0, duration:0.85, ease:"expo.out"}, 32.940);
+tl.fromTo("#s3-box", {opacity:0, y:90}, {opacity:1, y:0, duration:0.85, ease:"expo.out"}, 33.060);
+tl.fromTo("#s3-key", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.55)"}, 32.400);
+tl.to("#s3-key", {x:-420, y:102, rotate:-4, duration:0.7, ease:"power3.inOut"}, 33.560);
+tl.fromTo("#s3-ram", {opacity:0, scale:0.4}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.2)"}, 35.800);
+tl.fromTo("#s3-ssd", {opacity:0, scale:0.4}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.2)"}, 36.780);
+tl.fromTo("#s3-ram", {rotate:-8}, {rotate:-3, duration:0.6, ease:"back.out(2)"}, 35.800);
+tl.fromTo("#s3-ssd", {rotate:7}, {rotate:3, duration:0.6, ease:"back.out(2)"}, 36.780);
+tl.fromTo("#s3-old-m", {scaleX:0}, {scaleX:0.22, duration:0.8, ease:"expo.out"}, 36.000);
+tl.fromTo("#s3-old-d", {scaleX:0}, {scaleX:0.08, duration:0.8, ease:"expo.out"}, 36.980);
+tl.fromTo("#s3-box-m", {scaleX:0}, {scaleX:0.9, duration:0.8, ease:"expo.out"}, 36.000);
+tl.fromTo("#s3-box-d", {scaleX:0}, {scaleX:0.82, duration:0.8, ease:"expo.out"}, 36.980);
+tl.fromTo("#s3-old-v", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 37.200);
+tl.to("#s3-key", {x:"+=14", duration:0.06, yoyo:true, repeat:5, ease:"none"}, 37.300);
+tl.to("#s3-key", {x:280, y:102, rotate:0, duration:0.75, ease:"power3.inOut"}, 37.750);
+tl.to("#s3-key", {scale:0.92, duration:0.12, yoyo:true, repeat:1, ease:"power2.out"}, 38.450);
+tl.fromTo("#s3-box-v", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 38.550);
+tl.to(["#s3-ram", "#s3-ssd"], {opacity:0, y:40, duration:0.4, ease:"power2.in", stagger:0.06}, 38.280);
+tl.fromTo("#s3-s0", {opacity:0, x:-30, scale:0.8}, {opacity:1, x:0, scale:1, duration:0.55, ease:"back.out(2.2)"}, 38.680);
+tl.fromTo("#s3-s1", {opacity:0, x:-30, scale:0.8}, {opacity:1, x:0, scale:1, duration:0.55, ease:"back.out(2.2)"}, 38.840);
+tl.fromTo("#s3-s2", {opacity:0, x:-30, scale:0.8}, {opacity:1, x:0, scale:1, duration:0.55, ease:"back.out(2.2)"}, 39.000);
+tl.to("#s3-box", {boxShadow:"0 0 0 6px #3f6b3a55, 0 40px 90px #22241e1c", duration:0.4, yoyo:true, repeat:1}, 40.560);
+tl.fromTo("#s3-cloud", {opacity:0, scale:0.4}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.2)"}, 41.590);
+tl.fromTo("#s3-strike", {scaleX:0}, {scaleX:1, duration:0.35, ease:"power3.out"}, 42.730);
+tl.fromTo("#st3", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 43.890);
+tl.to("#st3", {opacity:0, duration:0.25, ease:"power1.in"}, 58.750);
+tl.set("#net-film", {opacity:1}, 43.690); tl.set("#net-film", {opacity:0}, 48.120);
+tl.fromTo("#net-ft .w > span", {yPercent:110}, {yPercent:0, duration:0.7, ease:"expo.out", stagger:0.06}, 44.090);
+tl.fromTo("#net-film .bg", {scale:1.12}, {scale:1, duration:3.730, ease:"power1.out"}, 43.690);
+tl.to("#net-film", {clipPath:"circle(0% at 50% 50%)", duration:0.7, ease:"power3.inOut"}, 47.420);
+tl.set("#net-film", {clipPath:"circle(80% at 50% 50%)"}, 43.690);
+tl.fromTo("#net-n1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 47.720);
+tl.fromTo("#net-n2", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 47.840);
+tl.fromTo("#net-n3", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 47.960);
+tl.fromTo("#net-n4", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2.2)"}, 48.080);
+tl.fromTo("#net-n1-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 48.020);
+tl.fromTo("#net-n2-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 48.100);
+tl.fromTo("#net-n3-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 48.180);
+tl.fromTo("#net-n4-srv", {opacity:0, x:-12}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 48.260);
+tl.fromTo("#net-hub", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.6)"}, 47.850);
+tl.fromTo("#net-w-n1", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 48.150);
+tl.fromTo("#net-w-n2", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 48.250);
+tl.fromTo("#net-w-n3", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 48.350);
+tl.fromTo("#net-w-n4", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.8, ease:"power2.inOut"}, 48.450);
+tl.fromTo("#net-r0", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 49.380);
+tl.fromTo("#net-r1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 50.180);
+tl.fromTo("#net-r2", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 51.360);
+tl.fromTo("#net-p-n1", {opacity:0, x:421, y:351}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 51.710);
+tl.fromTo("#net-p-n2", {opacity:0, x:1541, y:301}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 51.860);
+tl.fromTo("#net-p-n3", {opacity:0, x:1581, y:751}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 52.010);
+tl.fromTo("#net-p-n4", {opacity:0, x:461, y:791}, {opacity:1, x:951, y:511, duration:0.9, ease:"power2.in", repeat:2, repeatDelay:0.3}, 52.160);
+tl.to("#net", {scale:2.4, x:-200, y:-120, opacity:0, duration:0.6, ease:"power3.in"}, 52.000);
+tl.set("#netr", {opacity:1}, 52.300); tl.set("#netr", {opacity:0}, 59.100);
+tl.fromTo("#netr-cur", {opacity:0}, {opacity:1, duration:0.25}, 53.776);
+tl.to("#netr-cur", {x:1059.00390625, y:232.5, duration:0.350, ease:"power3.inOut"}, 54.026);
+tl.to("#netr-cur", {x:1377.00390625, y:232.5, duration:0.350, ease:"power3.inOut"}, 55.843);
+tl.to("#netr-cur", {x:1088, y:284.5, duration:0.350, ease:"power3.inOut"}, 57.643);
+tl.set("#netr-cur", {opacity:1}, 52.300);
+tl.to("#netr-cam", {x:-726.400, y:0.000, scale:1.55, duration:1.3, ease:"expo.out"}, 52.300);
+tl.fromTo("#netr-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 53.430);
+tl.to("#netr-ring0", {opacity:0, duration:0.3}, 55.370);
+tl.fromTo("#netr-ring1", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 57.230);
+tl.to("#netr-ring1", {opacity:0, duration:0.3}, 59.100);
+tl.fromTo("#netr-ring2", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 57.430);
+tl.to("#netr-ring2", {opacity:0, duration:0.3}, 59.100);
+tl.fromTo("#netr-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 54.970);
+tl.to("#netr-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 57.030);
+tl.fromTo("#st4", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 59.300);
+tl.to("#st4", {opacity:0, duration:0.25, ease:"power1.in"}, 77.440);
+tl.set("#s4r", {opacity:1}, 59.100); tl.set("#s4r", {opacity:0}, 67.380);
+tl.fromTo("#s4r-cur", {opacity:0}, {opacity:1, duration:0.25}, 59.100);
+tl.to("#s4r-cur", {x:868.07421875, y:1048, duration:0.451, ease:"power3.inOut"}, 59.202);
+tl.to("#s4r-cur svg", {scale:0.82, duration:0.09, yoyo:true, repeat:1, ease:"power1.inOut", transformOrigin:"2px 2px"}, 59.844);
+tl.fromTo("#s4r-cur i", {scale:0.2, opacity:0.9}, {scale:2.6, opacity:0, duration:0.55, ease:"expo.out"}, 59.844);
+tl.to("#s4r-cur", {x:1105.82421875, y:814.75, duration:0.350, ease:"power3.inOut"}, 62.414);
+tl.to("#s4r-cur", {x:820.2703125, y:973, duration:0.350, ease:"power3.inOut"}, 64.429);
+tl.to("#s4r-cur", {x:872.5078125, y:1014, duration:0.350, ease:"power3.inOut"}, 66.446);
+tl.to("#s4r-cam", {x:-480.000, y:-648.000, scale:1.6, duration:1.2, ease:"power3.inOut"}, 59.300);
+tl.to("#s4r-cam", {x:-1354.750, y:-1457.500, scale:2.35, duration:1.1, ease:"expo.out"}, 62.470);
+tl.fromTo("#s4r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 62.040);
+tl.to("#s4r-ring0", {opacity:0, duration:0.3}, 63.660);
+tl.fromTo("#s4r-ring1", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 63.860);
+tl.to("#s4r-ring1", {opacity:0, duration:0.3}, 65.400);
+tl.fromTo("#s4r-ring2", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 65.100);
+tl.to("#s4r-ring2", {opacity:0, duration:0.3}, 67.280);
+tl.fromTo("#s4h", {clipPath:"circle(0% at 50% 50%)"}, {clipPath:"circle(75% at 50% 50%)", duration:0.7, ease:"power3.inOut"}, 66.880);
+tl.fromTo("#s4-a0", {opacity:0, y:30}, {opacity:1, y:0, duration:0.6, ease:"expo.out"}, 67.080);
+tl.fromTo("#s4-a1", {opacity:0, y:30}, {opacity:1, y:0, duration:0.6, ease:"expo.out"}, 67.180);
+tl.fromTo("#s4-a2", {opacity:0, y:30}, {opacity:1, y:0, duration:0.6, ease:"expo.out"}, 67.280);
+tl.fromTo("#s4-hub", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.6)"}, 68.460);
+tl.fromTo("#s4-w0", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.6, ease:"power2.inOut"}, 68.860);
+tl.fromTo("#s4-w1", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.6, ease:"power2.inOut"}, 68.940);
+tl.fromTo("#s4-w2", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.6, ease:"power2.inOut"}, 69.020);
+tl.fromTo("#s4-w3", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.5, ease:"power2.inOut"}, 70.780);
+tl.fromTo("#s4-usage", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.7, ease:"back.out(2)"}, 70.980);
+tl.fromTo("#s4-b0", {scaleX:0}, {scaleX:0.62, duration:0.9, ease:"expo.out"}, 67.640);
+tl.fromTo("#s4-b1", {scaleX:0}, {scaleX:0.31, duration:0.9, ease:"expo.out"}, 67.760);
+tl.fromTo("#s4-b2", {scaleX:0}, {scaleX:0.78, duration:0.9, ease:"expo.out"}, 67.880);
+tl.to("#s4-b2", {scaleX:1, backgroundColor:"#c2412d", duration:0.6, ease:"power2.in"}, 72.080);
+tl.to("#s4-usage", {x:"+=8", duration:0.06, yoyo:true, repeat:5, ease:"none"}, 72.680);
+tl.fromTo("#s4-o0", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 73.550);
+tl.fromTo("#s4-o1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 75.850);
+tl.fromTo("#s4-o2", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 76.570);
+tl.fromTo("#st5", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 77.990);
+tl.to("#st5", {opacity:0, duration:0.25, ease:"power1.in"}, 89.250);
+tl.fromTo("#s5-you", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 78.090);
+tl.fromTo("#s5", {scale:1}, {scale:1.035, duration:11.810, ease:"none"}, 77.790);
+tl.fromTo("#s5-w0", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.5, ease:"power2.inOut"}, 81.830);
+tl.fromTo("#s5-coord", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1, ease:"elastic.out(1, 0.6)"}, 82.540);
+tl.fromTo("#s5-t0w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 85.030);
+tl.fromTo("#s5-t0", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 85.180);
+tl.fromTo("#s5-t1w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 85.170);
+tl.fromTo("#s5-t1", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 85.320);
+tl.fromTo("#s5-t2w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 85.310);
+tl.fromTo("#s5-t2", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 85.460);
+tl.fromTo("#s5-t3w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 85.450);
+tl.fromTo("#s5-t3", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 85.600);
+tl.fromTo("#s5-t4w", {strokeDashoffset:1}, {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 85.590);
+tl.fromTo("#s5-t4", {opacity:0, x:-60, scale:0.85}, {opacity:1, x:0, scale:1, duration:0.7, ease:"back.out(1.9)"}, 85.740);
+tl.fromTo("#s5 .tag.mach", {backgroundColor:"#fffdf7"}, {backgroundColor:"#f3dccf", duration:0.25, yoyo:true, repeat:1, stagger:0.06}, 87.430);
+tl.fromTo("#s5 .tag.model", {backgroundColor:"#fffdf7"}, {backgroundColor:"#f3dccf", duration:0.25, yoyo:true, repeat:1, stagger:0.06}, 88.110);
+tl.to("#s5-coord", {scale:1.05, duration:0.18, yoyo:true, repeat:1, ease:"power1.out"}, 84.930);
+tl.fromTo("#st6", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 89.800);
+tl.to("#st6", {opacity:0, duration:0.25, ease:"power1.in"}, 104.000);
+tl.set("#s6r", {opacity:1}, 89.600); tl.set("#s6r", {opacity:0}, 104.350);
+tl.set("#s6r-cur", {x:127.5, y:219}, 89.600);
+tl.fromTo("#s6r-cur", {opacity:0}, {opacity:1, duration:0.25}, 90.027);
+tl.to("#s6r-cur", {x:208, y:219, duration:0.350, ease:"power3.inOut"}, 90.277);
+tl.to("#s6r-cur", {x:706.7734375, y:343.4453125, duration:0.493, ease:"power3.inOut"}, 91.645);
+tl.to("#s6r-cur", {x:907.5, y:585.125, duration:0.350, ease:"power3.inOut"}, 93.645);
+tl.to("#s6r-cur", {x:1824.8203125, y:298.9609375, duration:0.838, ease:"power3.inOut"}, 95.461);
+tl.to("#s6r-cur", {x:1680.76953125, y:392.36328125, duration:0.350, ease:"power3.inOut"}, 97.661);
+tl.to("#s6r-cur", {x:1690, y:681.375, duration:0.350, ease:"power3.inOut"}, 99.029);
+tl.to("#s6r-cur svg", {scale:0.82, duration:0.09, yoyo:true, repeat:1, ease:"power1.inOut", transformOrigin:"2px 2px"}, 99.498);
+tl.fromTo("#s6r-cur i", {scale:0.2, opacity:0.9}, {scale:2.6, opacity:0, duration:0.55, ease:"expo.out"}, 99.498);
+tl.to("#s6r-cur", {x:1690, y:700, duration:0.350, ease:"power3.inOut"}, 101.005);
+tl.set("#s6r-cur", {opacity:1}, 89.600);
+tl.to("#s6r-cam", {x:-480.000, y:0.000, scale:1.25, duration:1, ease:"power3.inOut"}, 89.800);
+tl.to("#s6r-cam", {x:-1824.000, y:-240.000, scale:1.95, duration:1.2, ease:"expo.inOut"}, 91.200);
+tl.to("#s6r-cam", {x:-1344.000, y:-565.000, scale:1.7, duration:1.4, ease:"power3.inOut"}, 100.140);
+tl.fromTo("#s6r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 93.860);
+tl.to("#s6r-ring0", {opacity:0, duration:0.3}, 96.320);
+tl.fromTo("#s6r-ring1", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 97.220);
+tl.to("#s6r-ring1", {opacity:0, duration:0.3}, 99.540);
+tl.fromTo("#s6r-ring2", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 100.400);
+tl.to("#s6r-ring2", {opacity:0, duration:0.3}, 101.740);
+tl.fromTo("#s6r-ring3", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 103.340);
+tl.to("#s6r-ring3", {opacity:0, duration:0.3}, 104.350);
+tl.fromTo("#s6r-ring4", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 103.490);
+tl.to("#s6r-ring4", {opacity:0, duration:0.3}, 104.350);
+tl.fromTo("#s6r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 94.960);
+tl.to("#s6r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 96.320);
+tl.fromTo("#s6r-call1", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 98.980);
+tl.to("#s6r-call1", {opacity:0, duration:0.3, ease:"power1.in"}, 99.840);
+tl.fromTo("#st7", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 104.550);
+tl.to("#st7", {opacity:0, duration:0.25, ease:"power1.in"}, 113.950);
+tl.set("#s7r", {opacity:1}, 104.350); tl.set("#s7r", {opacity:0}, 114.300);
+tl.set("#s7r-cur", {x:860, y:500}, 104.350);
+tl.set("#s7r-cur", {x:859.53515625, y:906.1953125}, 104.350);
+tl.fromTo("#s7r-cur", {opacity:0}, {opacity:1, duration:0.25}, 104.460);
+tl.to("#s7r-cur", {x:1096.07421875, y:906.1953125, duration:0.350, ease:"power3.inOut"}, 104.710);
+tl.to("#s7r-cur svg", {scale:0.82, duration:0.09, yoyo:true, repeat:1, ease:"power1.inOut", transformOrigin:"2px 2px"}, 104.994);
+tl.fromTo("#s7r-cur i", {scale:0.2, opacity:0.9}, {scale:2.6, opacity:0, duration:0.55, ease:"expo.out"}, 104.994);
+tl.to("#s7r-cur", {x:1490, y:500, duration:0.397, ease:"power3.inOut"}, 107.530);
+tl.set("#s7r-cur", {opacity:1}, 104.350);
+tl.to("#s7r-cam", {x:-256.000, y:-648.000, scale:1.6, duration:0.9, ease:"power3.inOut"}, 104.450);
+tl.to("#s7r-cam", {x:-864.000, y:-214.000, scale:1.45, duration:1.2, ease:"expo.inOut"}, 107.331);
+tl.to("#s7r-cam", {x:-864.000, y:-486.000, scale:1.45, duration:1, ease:"power3.inOut"}, 108.850);
+tl.fromTo("#s7r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 109.350);
+tl.to("#s7r-ring0", {opacity:0, duration:0.3}, 114.300);
+tl.fromTo("#s7r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 111.270);
+tl.to("#s7r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 114.100);
+tl.fromTo("#s7-sped", {opacity:0}, {opacity:1, duration:0.25, ease:"power1.out"}, 104.650);
+tl.fromTo("#st8", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 114.500);
+tl.to("#st8", {opacity:0, duration:0.25, ease:"power1.in"}, 131.120);
+tl.set("#s8", {opacity:1}, 114.300); tl.set("#s8", {opacity:0}, 128.860);
+tl.fromTo("#s8-done", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 114.650);
+tl.fromTo("#s8-ne", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 115.510);
+tl.fromTo("#s8-ver", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.4)"}, 116.730);
+tl.fromTo("#s8-you", {opacity:0, y:60}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 118.000);
+tl.fromTo("#s8-or", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.4, ease:"back.out(3)"}, 119.280);
+tl.fromTo("#s8-auto", {opacity:0, y:60}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 120.040);
+tl.fromTo("#s8-c0", {opacity:0.35}, {opacity:1, duration:0.2}, 125.240);
+tl.fromTo("#s8-c0 .cbox", {scale:0.3, backgroundColor:"#fffdf7"}, {scale:1, backgroundColor:"#3f6b3a", duration:0.5, ease:"back.out(3)"}, 125.240);
+tl.fromTo("#s8-c1", {opacity:0.35}, {opacity:1, duration:0.2}, 126.340);
+tl.fromTo("#s8-c1 .cbox", {scale:0.3, backgroundColor:"#fffdf7"}, {scale:1, backgroundColor:"#3f6b3a", duration:0.5, ease:"back.out(3)"}, 126.340);
+tl.fromTo("#s8-c2", {opacity:0.35}, {opacity:1, duration:0.2}, 127.920);
+tl.fromTo("#s8-c2 .cbox", {scale:0.3, backgroundColor:"#fffdf7"}, {scale:1, backgroundColor:"#3f6b3a", duration:0.5, ease:"back.out(3)"}, 127.920);
+tl.to("#s8-res", {scale:0.6, opacity:0, duration:0.15, ease:"power2.in"}, 128.470);
+tl.set("#s8-res", {textContent:"Resolved", className:"tstat ready resolved"}, 128.620);
+tl.to("#s8-res", {scale:1, opacity:1, duration:0.5, ease:"back.out(3)"}, 128.620);
+tl.to("#s8", {opacity:0, duration:0.4}, 128.360);
+tl.set("#s8r", {opacity:1}, 128.360); tl.set("#s8r", {opacity:0}, 131.470);
+tl.set("#s8r-cur", {x:775.38671875, y:363}, 128.360);
+tl.set("#s8r-cur", {x:804.3515625, y:618}, 128.360);
+tl.fromTo("#s8r-cur", {opacity:0}, {opacity:1, duration:0.25}, 129.370);
+tl.to("#s8r-cur", {x:1480, y:628, duration:0.606, ease:"power3.inOut"}, 129.620);
+tl.set("#s8r-cur", {opacity:1}, 128.360);
+tl.to("#s8r-cam", {x:0.000, y:0.000, scale:1, duration:0.01, ease:"power3.inOut"}, 128.360);
+tl.to("#s8r-cam", {x:-940.000, y:-600.000, scale:1.9, duration:1.3, ease:"expo.out"}, 128.460);
+tl.fromTo("#s8r-ring0", {opacity:0, scale:1.35}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.4)"}, 129.460);
+tl.to("#s8r-ring0", {opacity:0, duration:0.3}, 131.470);
+tl.fromTo("#s8r-call0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.55, ease:"back.out(2.6)"}, 129.660);
+tl.to("#s8r-call0", {opacity:0, duration:0.3, ease:"power1.in"}, 131.270);
+tl.fromTo("#st9", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 131.670);
+tl.to("#st9", {opacity:0, duration:0.25, ease:"power1.in"}, 147.430);
+tl.set("#s9", {opacity:1}, 131.470); tl.set("#s9", {opacity:0}, 147.780);
+tl.fromTo("#s9", {scale:1}, {scale:1.03, duration:16.310, ease:"none"}, 131.470);
+tl.fromTo("#s9-lin", {opacity:0, y:80}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 132.590);
+tl.fromTo("#s9-lin-tag", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 133.240);
+tl.fromTo("#s9-win", {opacity:0, y:80}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 135.350);
+tl.fromTo("#s9-win-tag", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 136.000);
+tl.fromTo("#s9-mac", {opacity:0, y:80}, {opacity:1, y:0, duration:0.8, ease:"expo.out"}, 137.670);
+tl.fromTo("#s9-mac-tag", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 138.320);
+tl.fromTo("#s9-lin-n0", {opacity:0, x:-14}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 134.390);
+tl.fromTo("#s9-win-n0", {opacity:0, x:-14}, {opacity:1, x:0, duration:0.4, ease:"back.out(2)"}, 136.850);
+tl.fromTo("#s9-apfs", {opacity:0, y:20, rotate:-3}, {opacity:1, y:0, rotate:-2, duration:0.5, ease:"back.out(2.4)"}, 139.130);
+tl.fromTo("#s9-mac-n0", {opacity:0, x:-18}, {opacity:1, x:0, duration:0.45, ease:"back.out(2.4)"}, 143.730);
+tl.fromTo("#s9-mac-n1", {opacity:0, x:-18}, {opacity:1, x:0, duration:0.45, ease:"back.out(2.4)"}, 145.410);
+tl.fromTo("#s9-mac-n2", {opacity:0, x:-18}, {opacity:1, x:0, duration:0.45, ease:"back.out(2.4)"}, 146.650);
+tl.to("#s9-lin", {y:-14, duration:0.2, yoyo:true, repeat:1, ease:"power2.out"}, 134.090);
+tl.to("#s9-mac", {y:-14, duration:0.2, yoyo:true, repeat:1, ease:"power2.out"}, 143.050);
+tl.fromTo("#st11", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, 147.980);
+tl.to("#st11", {opacity:0, duration:0.25, ease:"power1.in"}, 161.560);
+tl.set("#s11", {opacity:1}, 147.780); tl.set("#s11", {opacity:0}, 161.910);
+tl.fromTo("#s11-t .w > span", {yPercent:110}, {yPercent:0, duration:0.7, ease:"expo.out", stagger:0.06}, 148.130);
+tl.fromTo("#s11-cpu", {opacity:0, y:120, rotate:-4}, {opacity:1, y:0, rotate:0, duration:0.8, ease:"back.out(1.6)"}, 149.410);
+tl.fromTo("#s11-cpu-n", {scale:0.3}, {scale:1, duration:0.6, ease:"elastic.out(1, 0.5)"}, 149.710);
+tl.fromTo("#s11-mem", {opacity:0, y:120, rotate:0}, {opacity:1, y:0, rotate:0, duration:0.8, ease:"back.out(1.6)"}, 150.410);
+tl.fromTo("#s11-mem-n", {scale:0.3}, {scale:1, duration:0.6, ease:"elastic.out(1, 0.5)"}, 150.710);
+tl.fromTo("#s11-ssd", {opacity:0, y:120, rotate:4}, {opacity:1, y:0, rotate:0, duration:0.8, ease:"back.out(1.6)"}, 152.850);
+tl.fromTo("#s11-ssd-n", {scale:0.3}, {scale:1, duration:0.6, ease:"elastic.out(1, 0.5)"}, 153.150);
+tl.fromTo("#s11-per", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.2)"}, 155.780);
+tl.fromTo("#s11-pa0", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 156.740);
+tl.fromTo("#s11-pa1", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:0.5, ease:"back.out(3)"}, 158.440);
+tl.to("#s11 .spec", {y:-10, duration:0.18, yoyo:true, repeat:1, ease:"power2.out", stagger:0.08}, 160.820);
+tl.set("#s10", {opacity:1}, 161.910);
+tl.fromTo("#s10-win", {opacity:0, y:120, rotateX:18, scale:0.85}, {opacity:1, y:0, rotateX:0, scale:1, duration:1.2, ease:"expo.out"}, 162.010);
+tl.fromTo("#s10-w0", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 162.370);
+tl.fromTo("#s10-w1", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 163.650);
+tl.fromTo("#s10-w2", {opacity:0, scale:0.5}, {opacity:1, scale:1, duration:0.6, ease:"back.out(2.6)"}, 165.230);
+tl.to("#s10-win", {scale:0.6, y:-40, opacity:0, duration:0.6, ease:"power3.in"}, 166.450);
+tl.to(".s10-words", {y:-260, opacity:0, duration:0.5, ease:"power3.in"}, 166.450);
+tl.fromTo("#s10-brand", {opacity:0, scale:0.3}, {opacity:1, scale:1, duration:1.1, ease:"elastic.out(1, 0.6)"}, 166.950);
+tl.fromTo("#s10-brand .team-line", {scaleX:0}, {scaleX:1, duration:0.8, ease:"expo.out"}, 167.350);
+tl.fromTo("#s10-brand .s10-url", {opacity:0, y:16}, {opacity:1, y:0, duration:0.5, ease:"expo.out"}, 167.730);
       window.__timelines["main"] = tl;
     </script>
   </body>

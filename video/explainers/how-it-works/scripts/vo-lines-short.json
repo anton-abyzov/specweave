@@ -1,12 +1,33 @@
 {
   "voiceId": "0Ki1af67ybTaTu4TNmO8",
   "modelId": "eleven_v4",
-  "voiceSettings": { "stability": 0.5, "similarity_boost": 0.75, "style": 0, "use_speaker_boost": true, "speed": 1.0 },
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
   "lines": [
-    { "id": "s01", "spoken": "Usually one machine holds one subscription. Claude Max on the MacBook, ChatGPT Pro on the Linux box." },
-    { "id": "s02", "spoken": "SpecWithCode connects them over Tailscale and watches every limit and reset." },
-    { "id": "s03", "spoken": "You talk to one coordinator. It starts threads, each with its own pull request." },
-    { "id": "s04", "spoken": "Auto-resolve closes a thread only when it's merged, green and approved." },
-    { "id": "s05", "spoken": "Linux for speed, the Mac to orchestrate. SpecWithCode, open source, at specwithcode dot dev." }
+    {
+      "id": "s01",
+      "spoken": "Every machine can hold several AI subscriptions. Claude and Codex on one, Claude and Codex on another."
+    },
+    {
+      "id": "s02",
+      "spoken": "SpecWithCode connects your machines over Tailscale and watches every limit and reset."
+    },
+    {
+      "id": "s03",
+      "spoken": "You talk to one coordinator. It starts threads, each with its own pull request."
+    },
+    {
+      "id": "s04",
+      "spoken": "Auto-resolve closes a thread only when it's merged, green and approved."
+    },
+    {
+      "id": "s05",
+      "spoken": "Linux for speed, the Mac to orchestrate. SpecWithCode, open source, at specwithcode dot dev."
+    }
   ]
 }
