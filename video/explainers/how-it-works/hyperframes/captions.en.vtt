@@ -1,225 +1,178 @@
 WEBVTT
 
-1
-00:00:00.300 --> 00:00:02.233
-Claude Code in one terminal.
+00:00:00.800 --> 00:00:03.260
+You probably pay for more AI than you can
 
-2
-00:00:02.233 --> 00:00:03.300
-Codex in another.
+00:00:03.260 --> 00:00:05.180
+use. Claude on one machine,
 
-3
-00:00:03.300 --> 00:00:04.633
-And you in the middle,
+00:00:05.520 --> 00:00:08.540
+Codex on another, maybe Grok or Copilot
 
-4
-00:00:04.633 --> 00:00:07.333
-copying context between them all day.
+00:00:08.540 --> 00:00:11.540
+too. SpecWithCode turns all of it into
 
-5
-00:00:07.900 --> 00:00:08.867
-You paste the goal,
+00:00:11.540 --> 00:00:12.260
+one team.
 
-6
-00:00:08.867 --> 00:00:11.167
-the error, what the other agent decided.
+00:00:13.510 --> 00:00:14.750
+Start with the basics.
 
-7
-00:00:11.167 --> 00:00:12.567
-The agents write the code.
+00:00:15.070 --> 00:00:17.170
+A subscription lives on a machine.
 
-8
-00:00:12.567 --> 00:00:14.033
-You do the routing.
+00:00:17.510 --> 00:00:19.790
+Each machine signs in with the official
 
-9
-00:00:14.900 --> 00:00:17.600
-SpecWithCode is a free Mac app for the
+00:00:19.790 --> 00:00:23.650
+tool, so usually one machine holds one subscription.
 
-10
-00:00:17.600 --> 00:00:20.033
-coding agents you already pay for:
+00:00:24.270 --> 00:00:25.350
+Claude Max on the MacBook,
 
-11
-00:00:20.033 --> 00:00:21.933
-Claude Code, Codex,
+00:00:25.850 --> 00:00:27.830
+ChatGPT Pro on the Linux box.
 
-12
-00:00:21.933 --> 00:00:22.733
-Grok Build, Cursor,
+00:00:28.090 --> 00:00:29.690
+A machine can hold more,
 
-13
-00:00:22.733 --> 00:00:25.600
-OpenCode, Copilot, Antigravity and Pi.
+00:00:29.850 --> 00:00:31.550
+like Grok, Copilot,
 
-14
-00:00:25.600 --> 00:00:27.767
-It takes the routing off your hands.
+00:00:31.730 --> 00:00:33.370
+or Gemini through anti -gravity.
 
-15
-00:00:28.500 --> 00:00:30.533
-Add a project over a real folder.
+00:00:33.630 --> 00:00:35.150
+Nothing is resold.
 
-16
-00:00:30.533 --> 00:00:32.033
-It gets one coordinator:
+00:00:36.300 --> 00:00:38.640
+Every machine runs its own SpecWithCode
 
-17
-00:00:32.033 --> 00:00:34.533
-a conversation that routes and tracks the work,
+00:00:38.640 --> 00:00:41.260
+server. You connect them privately over
 
-18
-00:00:34.533 --> 00:00:37.033
-while worker threads write the code.
+00:00:41.260 --> 00:00:43.020
+your network, an SSH tunnel,
 
-19
-00:00:37.700 --> 00:00:39.267
-Describe the work once.
+00:00:43.400 --> 00:00:44.940
+or Tailscale. Here,
 
-20
-00:00:39.267 --> 00:00:41.267
-Quick questions it answers itself.
+00:00:45.280 --> 00:00:48.760
+the M4 Max sees the M1 and the M3 over tail
 
-21
-00:00:41.267 --> 00:00:43.767
-Code changes, long research and tool work go
+00:00:48.760 --> 00:00:51.400
+scale, and each one is paired on purpose.
 
-22
-00:00:43.767 --> 00:00:45.433
-to worker threads it starts.
+00:00:52.550 --> 00:00:54.810
+Then, spec with code watches the limits.
 
-23
-00:00:46.300 --> 00:00:48.700
-Here it started two workers:
+00:00:55.170 --> 00:00:57.670
+Every account's session and weekly usage,
 
-24
-00:00:48.700 --> 00:00:49.567
-Claude on the greeting,
+00:00:57.910 --> 00:01:00.750
+banked resets, and credits in one place.
 
-25
-00:00:49.567 --> 00:00:52.067
-and Codex on the CI workflow,
+00:01:00.950 --> 00:01:03.430
+If you pool accounts behind a CLI proxy
 
-26
-00:00:52.067 --> 00:00:54.733
-because the ask named Codex.
+00:01:03.430 --> 00:01:06.410
+API hub, add the hub and its accounts show
 
-27
-00:00:54.733 --> 00:00:57.100
-Each one gets a card and a link.
+00:01:06.410 --> 00:01:08.370
+up too. When one runs dry,
 
-28
-00:00:57.900 --> 00:01:00.467
-Follow-ups go to the worker already on that
+00:01:08.570 --> 00:01:11.150
+a thread can wait for the reset or move
 
-29
-00:01:00.467 --> 00:01:02.733
-area, so nothing is assigned twice.
+00:01:11.150 --> 00:01:12.610
+to another provider or machine.
 
-30
-00:01:02.733 --> 00:01:04.367
-When a worker finishes,
+00:01:13.860 --> 00:01:16.040
+Now the part that changes how you work.
 
-31
-00:01:04.367 --> 00:01:06.333
-its report comes back on its own.
+00:01:16.260 --> 00:01:18.960
+In a project, you talk to one coordinator.
 
-32
-00:01:06.333 --> 00:01:08.200
-No polling, no pasting.
+00:01:19.260 --> 00:01:22.100
+It plans, then starts threads for the work,
 
-33
-00:01:08.900 --> 00:01:11.633
-The coordinator and the workers have separate models.
+00:01:22.220 --> 00:01:24.580
+each on the machine and model that fits.
 
-34
-00:01:11.633 --> 00:01:15.067
-Keep the coordinator on Claude Opus 5.5,
+00:01:25.630 --> 00:01:28.070
+This is EasyChamp, a real project.
 
-35
-00:01:15.067 --> 00:01:16.933
-set a default worker model,
+00:01:28.670 --> 00:01:30.790
+One thread is shipping reusable tactical
 
-36
-00:01:16.933 --> 00:01:18.600
-or name one in the ask,
+00:01:30.790 --> 00:01:33.890
+templates. Another built Club Finance and
 
-37
-00:01:18.600 --> 00:01:20.000
-like Codex here.
+00:01:33.890 --> 00:01:34.930
+is waiting for my review.
 
-38
-00:01:20.700 --> 00:01:24.000
-The usage chip shows one ring per subscription,
+00:01:35.270 --> 00:01:37.350
+Others ran independent reviews.
 
-39
-00:01:24.000 --> 00:01:25.367
-amber at 80 percent,
+00:01:37.570 --> 00:01:39.930
+Each one opens its own pull request.
 
-40
-00:01:25.367 --> 00:01:27.167
-red at 95.
+00:01:40.780 --> 00:01:43.180
+Open a thread to see exactly what it ran
 
-41
-00:01:27.167 --> 00:01:28.467
-If one runs out,
+00:01:43.180 --> 00:01:44.600
+and what it is waiting on.
 
-42
-00:01:28.467 --> 00:01:32.267
-the thread offers to continue on another signed-in provider.
+00:01:45.060 --> 00:01:47.320
+Reply and your message goes through the
 
-43
-00:01:33.300 --> 00:01:34.233
-For bigger work,
+00:01:47.320 --> 00:01:49.520
+coordinator with the thread as context.
 
-44
-00:01:34.233 --> 00:01:35.900
-the Plan holds a short spec,
+00:01:50.670 --> 00:01:53.130
+And done is not the same as verified.
 
-45
-00:01:35.900 --> 00:01:37.733
-acceptance criteria and tasks,
+00:01:53.370 --> 00:01:56.350
+You can check the work yourself or let auto
 
-46
-00:01:37.733 --> 00:01:39.067
-and who owns each.
+00:01:56.350 --> 00:01:59.350
+resolve do it. A thread closes itself only
 
-47
-00:01:39.900 --> 00:01:41.867
-A worker can report a task done.
+00:01:59.350 --> 00:02:01.350
+when every pull request is merged,
 
-48
-00:01:41.867 --> 00:01:43.333
-Only you make it Verified:
+00:02:01.570 --> 00:02:03.870
+checks pass, and the review is approved.
 
-49
-00:01:43.333 --> 00:01:46.500
-Run verification runs its check and keeps a receipt.
+00:02:04.250 --> 00:02:06.230
+Anything uncertain waits for you.
 
-50
-00:01:47.300 --> 00:01:48.900
-The agents write the code.
+00:02:07.480 --> 00:02:10.140
+Which machines? Linux makes the fastest
 
-51
-00:01:48.900 --> 00:01:50.333
-The coordinator routes it.
+00:02:10.140 --> 00:02:12.880
+workers. Windows handles heavy file work
 
-52
-00:01:50.333 --> 00:01:51.800
-You review the results.
+00:02:12.880 --> 00:02:14.660
+well, too. A Mac works,
 
-53
-00:01:52.700 --> 00:01:53.833
-SpecWithCode is free,
+00:02:14.920 --> 00:02:17.660
+but APFS is slow for agent workloads.
 
-54
-00:01:53.833 --> 00:01:54.633
-with no account,
+00:02:17.860 --> 00:02:19.540
+So let the Mac orchestrate.
 
-55
-00:01:54.633 --> 00:01:56.167
-for Apple silicon Macs.
+00:02:19.740 --> 00:02:21.020
+Chrome and marketing tools,
 
-56
-00:01:56.167 --> 00:01:58.067
-Get it at spec-weave.com/studio.
+00:02:21.320 --> 00:02:23.320
+iOS builds, and computer use.
+
+00:02:24.570 --> 00:02:26.650
+Your machines, your subscriptions,
+
+00:02:27.290 --> 00:02:29.770
+one control desk. SpecWithCode,
+
+00:02:29.950 --> 00:02:32.870
+open source at specwithcode .dev.
