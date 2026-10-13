@@ -1,39 +1,91 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
-import { ScrollStory, ThreadMap } from '../components/landing/Sections';
-import { art, tools } from '../components/landing/content';
+import { tools } from '../components/landing/content';
 import styles from '../components/landing/landing.module.css';
 import base from './continuity.module.css';
-import { ProductMap } from '../components/ecosystem/Architecture';
+import h from '../components/landing/home.module.css';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
-import { CloudCompare, ProjectFeatures, UmbrellaMap } from '../components/ecosystem/StudioSections';
 import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
+
+const STEPS = [
+  { n: '1', title: 'Say what you want', body: 'The coordinator turns it into a spec with acceptance criteria and tasks, saved in your repo.' },
+  { n: '2', title: 'Agents work in parallel', body: 'Each task goes to the agent and model that fits it, on any machine you own.' },
+  { n: '3', title: 'A limit never stops the work', body: 'When one agent runs low, the next one picks up from the record in git.' },
+];
+
+const STACK = [
+  { img: '/img/home/leanback.webp', tag: 'Free app · macOS', name: 'SpecWithCode', job: 'The workspace', body: 'A coordinator and workers on any provider, on machines you own.', to: '/studio', cta: 'See SpecWithCode' },
+  { img: '/img/home/weave.webp', tag: 'Open source · npm', name: 'SpecWeave CLI', job: 'The record', body: 'Spec, tasks, evidence and handoff in git. Optional GitHub, Jira and Azure DevOps sync.', to: '/docs/getting-started', cta: 'Start with the CLI' },
+  { img: '/img/home/desk.webp', tag: 'Free to browse', name: 'Verified Skills', job: 'The expertise', body: 'Inspect, evaluate and install tested skills into 50+ agents.', href: 'https://verified-skill.com', cta: 'Explore skills' },
+];
+
+const LOCAL = [
+  'Runs where your code, skills and logins already are',
+  'Pair a Mac mini, a Linux box or a laptop over SSH or Tailscale',
+  'Keeps working while your laptop sleeps, on the machine running it',
+  'Your providers’ own sign-in and approvals, no account with us',
+];
+
+function Flow() {
+  return <div className={h.flow} role="img" aria-label="You give the coordinator a goal. SpecWithCode runs Claude Code, Codex and Cursor workers on your machines. When Claude Code nears its limit, Codex picks up its task. SpecWeave keeps the spec, ledger and handoff in your git repo.">
+    <div className={clsx(h.node, h.nodeYou)} aria-hidden="true">
+      <span className={h.nodeLabel}>You</span>
+      <p className={h.bubble}>Make checkout resumable. Never restore a paid order.</p>
+    </div>
+    <span className={h.arrow} aria-hidden="true" />
+    <div className={clsx(h.node, h.nodeApp)} aria-hidden="true">
+      <span className={h.nodeLabel}>SpecWithCode <i>on your machines</i></span>
+      <div className={h.coord}><b>Coordinator</b><span>plans 3 tasks</span></div>
+      <ul className={h.workers}>
+        <li><b>Claude Code</b><span>Mac Studio</span><em className={h.warn}>92% of limit</em></li>
+        <li className={h.handoff}><span>handoff</span></li>
+        <li><b>Codex</b><span>Mac mini</span><em className={h.ok}>picked up T-01</em></li>
+        <li><b>Cursor</b><span>laptop</span><em>running T-03</em></li>
+      </ul>
+    </div>
+    <span className={h.arrow} aria-hidden="true" />
+    <div className={clsx(h.node, h.nodeGit)} aria-hidden="true">
+      <span className={h.nodeLabel}>SpecWeave <i>in your git repo</i></span>
+      <ul className={h.files}>
+        <li><code>spec.md</code><span>what done means</span></li>
+        <li><code>ledger.jsonl</code><span>who did what, with evidence</span></li>
+        <li><code>handoff</code><span>where to pick up</span></li>
+      </ul>
+    </div>
+  </div>;
+}
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[data-ambient]').forEach((v) => (v as HTMLVideoElement).pause());
+  }, []);
   async function copyCommand() {
     try { await navigator.clipboard.writeText('npm install -g specweave'); setCopied(true); setCopyError(false); }
     catch { setCopyError(true); }
   }
-  return <Layout title="Every AI agent in one workspace you own" description="SpecWithCode brings project agents like Claude Code Projects, personal agents like Dots or Hermes, and coding agents from every lab into one workspace on your machines. The open-source SpecWeave CLI keeps the spec, evidence and handoff in git.">
-    <main className={clsx(base.page, styles.landing)}>
-      <section className={styles.hero}>
-        <div className={styles.heroText}>
-          <Link to="/studio" className={styles.releasePill}><b>SpecWithCode</b> Free for every developer and team <span aria-hidden="true">↗</span></Link>
+  return <Layout title="Every AI agent in one workspace you own" description="SpecWithCode runs Claude Code, Codex, Cursor and more as one project on your machines, and hands work to the next agent when a usage limit hits. Free for every developer and team. The open-source SpecWeave CLI keeps the spec, evidence and handoff in git.">
+    <main className={clsx(base.page, styles.landing, h.home)}>
+      <section className={h.hero}>
+        <div className={h.heroText}>
+          <Link to="/pricing" className={styles.releasePill}><b>Free</b> For every developer and team <span aria-hidden="true">→</span></Link>
           <h1>Every AI agent.<br /><em>One workspace.</em></h1>
-          <p className={styles.lead}>Projects like Claude Code. A personal agent like Dots or Hermes. Coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. SpecWithCode runs them as one project on machines you own, gives each job the model that fits, and keeps the record in git so any agent can carry on.</p>
-          <div className={base.actions}>
-            <Link className={base.primary} to="/studio">See SpecWithCode <span aria-hidden="true">↗</span></Link>
-            <Link className={base.textLink} to="/docs/getting-started">Start free with the CLI</Link>
+          <p className={h.lead}>Run Claude Code, Codex, Cursor and more as one project on your own machines. When one hits its usage limit, the next one carries on.</p>
+          <div className={h.actions}>
+            <a className={base.primary} href={release.dmgUrl} aria-label={`Download SpecWithCode ${release.version} for macOS, Apple silicon, ${release.size}`}>Download for Mac <span aria-hidden="true">↓</span></a>
+            <Link className={base.textLink} to="/studio">How it works</Link>
           </div>
-          <div className={base.install}><code>npm install -g specweave</code><button onClick={copyCommand} aria-label="Copy installation command">{copied ? 'Copied' : 'Copy'}</button></div>
-          <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'The open-source CLI SpecWithCode builds on. MIT, local first, no account.'}</span>
+          <div className={clsx(base.install, h.install)}><code>npm install -g specweave</code><button onClick={copyCommand} aria-label="Copy installation command">{copied ? 'Copied' : 'Copy'}</button></div>
+          <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'Or start with the open-source CLI. MIT, local first, no account.'}</span>
         </div>
-        <div className={styles.heroMock}><StudioProjectMock /></div>
+        <div className={h.heroVisual}>
+          <video className={h.heroVideo} src="/img/home/weave.mp4" poster="/img/home/weave.webp" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" data-ambient />
+          <div className={h.heroMock}><StudioProjectMock /></div>
+        </div>
       </section>
 
       <div className={styles.tools} aria-label="Works with">
@@ -42,74 +94,84 @@ export default function Home() {
         <Link to="/studio">One workspace, any provider ↗</Link>
       </div>
 
-      <section className={base.section} id="umbrella" aria-labelledby="umbrella-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>01 / The umbrella</span><h2 id="umbrella-title">Many agents.<br /><em>One place to run them.</em></h2></div><p>Every lab now ships a project agent, a personal agent and a coding agent, each in its own app and its own cloud. SpecWithCode gives you all three kinds in one workspace on your machines and runs every lab’s coding agent side by side, so each job gets the model that fits it, not the one from the app you happen to have open.</p></div>
-        <UmbrellaMap />
+      <section className={h.section} id="how" aria-labelledby="how-title">
+        <div className={h.head}>
+          <span className={styles.eyebrow}>How it works</span>
+          <h2 id="how-title">One goal. Many agents.<br /><em>Nothing lost in between.</em></h2>
+        </div>
+        <Flow />
+        <ol className={h.steps}>
+          {STEPS.map((s) => <li key={s.n}><b>{s.n}</b><h3>{s.title}</h3><p>{s.body}</p></li>)}
+        </ol>
       </section>
 
-      <section className={base.section} id="projects" aria-labelledby="projects-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>02 / SpecWithCode projects</span><h2 id="projects-title">One goal.<br /><em>Many agents.</em></h2></div><p>A project is a long-running conversation with a coordinator. Give it a goal, add tasks as they come up, and step into any worker to steer it.</p></div>
-        <ProjectFeatures />
+      <section className={h.section} id="limits" aria-labelledby="limits-title">
+        <div className={h.head}>
+          <span className={styles.eyebrow}>See it in 61 seconds</span>
+          <h2 id="limits-title">Claude runs out.<br /><em>Codex finishes the job.</em></h2>
+        </div>
         <StudioTutorialVideo />
       </section>
 
-      <section className={base.section} id="local" aria-labelledby="local-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>03 / Local first</span><h2 id="local-title">Your machines.<br /><em>Not a cloud container.</em></h2></div><p>Cloud project agents are simple to start and live with one vendor. SpecWithCode keeps the work where your code, skills and accounts already are, and lets you mix vendors inside one project.</p></div>
-        <CloudCompare />
-        <Link className={base.textLink} to="/docs/overview/studio/">Read the SpecWithCode overview ↗</Link>
-      </section>
-
-      <ScrollStory />
-
-      <section className={base.section} id="ecosystem" aria-labelledby="ecosystem-title">
-        <div className={base.sectionHeading}><div><span className={styles.eyebrow}>05 / The stack</span><h2 id="ecosystem-title">One workspace.<br /><em>One record.</em></h2></div><p>SpecWithCode is where you work. SpecWeave keeps what survives the session in git. vskill brings tested expertise to every agent.</p></div>
-        <ProductMap />
-        <Link className={base.textLink} to="/docs/overview/studio-architecture/">See the architecture, including how machines connect ↗</Link>
-      </section>
-
-      <section className={clsx(base.section, styles.threads)} id="threads" aria-labelledby="threads-title">
-        <div className={styles.split}>
-          <div>
-            <span className={styles.eyebrow}>06 / Parallel work</span>
-            <h2 id="threads-title">One thread.<br /><em>One increment.</em></h2>
-            <p className={styles.body}>A SpecWithCode worker or a Claude Code Projects thread works on one branch and opens one pull request. So does an increment. SpecWeave maps the two, and keeps everything that matters in git, where every tool and every account can read it.</p>
-            <Link className={base.textLink} to="/docs/guides/claude-code-projects">How threads map to increments ↗</Link>
-          </div>
-          <ThreadMap />
+      <section className={h.section} id="stack" aria-labelledby="stack-title">
+        <div className={h.head}>
+          <span className={styles.eyebrow}>The stack</span>
+          <h2 id="stack-title">Where you work.<br /><em>What survives the session.</em></h2>
         </div>
-        {art.threads && <img className={styles.wideArt} src={art.threads} alt="" loading="lazy" />}
+        <div className={h.stack}>
+          {STACK.map((s) => {
+            const inner = <>
+              <img src={s.img} alt="" loading="lazy" width={1600} height={900} />
+              <div className={h.stackBody}>
+                <span className={h.tag}>{s.tag}</span>
+                <h3>{s.name} <i>{s.job}</i></h3>
+                <p>{s.body}</p>
+                <span className={h.more}>{s.cta} <span aria-hidden="true">{s.to ? '→' : '↗'}</span></span>
+              </div>
+            </>;
+            return s.to
+              ? <Link key={s.name} className={h.card} to={s.to}>{inner}</Link>
+              : <a key={s.name} className={h.card} href={s.href}>{inner}</a>;
+          })}
+        </div>
       </section>
 
-      <section className={clsx(base.section, base.connectionSection)}>
+      <section className={clsx(h.section, h.local)} id="local" aria-labelledby="local-title">
+        <video className={h.localMedia} src="/img/home/network.mp4" poster="/img/home/network.webp" autoPlay muted loop playsInline preload="none" aria-hidden="true" data-ambient />
         <div>
-          <span className={styles.eyebrow}>07 / Fit your team</span>
-          <h2>Your tracker.<br /><em>On your terms.</em></h2>
-          <p>Keep GitHub, Jira or Azure DevOps where your team plans. In 3.0, changing an increment's status no longer creates or closes issues. SpecWeave touches a tracker only when you push to it.</p>
-          <Link className={base.textLink} to="/integrations">Explore optional integrations ↗</Link>
-        </div>
-        <div className={base.connectionList}>
-          {[['GitHub', 'First-class: one issue per increment, updated on push'], ['Jira', 'Opt-in: created and updated on push, closed on complete'], ['Azure DevOps', 'Opt-in: work items created on push, closed on complete']].map(([name, desc]) => <Link to="/integrations" key={name}><strong>{name}</strong><span>{desc}</span><b aria-hidden="true">↗</b></Link>)}
-          <div className={base.syncCommand}><code>$ specweave sync push --dry-run</code><span>Preview what would change. Nothing reaches a tracker until you run it without the flag.</span></div>
+          <span className={styles.eyebrow}>Local first</span>
+          <h2 id="local-title">Your machines.<br /><em>Not a cloud container.</em></h2>
+          <ul className={h.checks}>{LOCAL.map((l) => <li key={l}>{l}</li>)}</ul>
+          <Link className={base.textLink} to="/docs/overview/studio/">Read the SpecWithCode overview ↗</Link>
         </div>
       </section>
 
-      <section className={clsx(base.section, base.showcaseSection)} id="built-with" aria-labelledby="built-with-title">
-        <div className={base.showcaseHeading}><div><span className={styles.eyebrow}>08 / In practice</span><h2 id="built-with-title">Built with SpecWeave.</h2></div><p>Products where we use the workflow to plan changes, track delivery and carry work between sessions and subscriptions.</p></div>
-        <div className={base.showcaseProjects}>
-          <a href="https://easychamp.com"><span className={base.showcaseCategory}>Sports platforms</span><h3>EasyChamp <span aria-hidden="true">↗</span></h3><p>League and club tools, built across Claude Code threads, two subscriptions and Codex.</p></a>
-          <a href="https://jobweave.ai"><span className={base.showcaseCategory}>Career tools</span><h3>JobWeave <span aria-hidden="true">↗</span></h3><p>Job search, tailored resumes, recruiter context and interview preparation.</p></a>
-          <a href="https://verified-skill.com"><span className={base.showcaseCategory}>Developer tools</span><h3>Verified Skills <span aria-hidden="true">↗</span></h3><p>Skill discovery, source inspection and local evaluations with Skill Studio.</p></a>
+      <section className={h.section}>
+        <div className={h.priceBand}>
+          <div>
+            <span className={styles.eyebrow}>Pricing</span>
+            <h2>Free. <em>For every developer and team.</em></h2>
+            <p>No seats, no usage cap and no markup on your AI subscriptions. Companies pay only for hosted skills, rollout and support.</p>
+          </div>
+          <Link className={base.secondary} to="/pricing">See pricing <span aria-hidden="true">→</span></Link>
         </div>
-        <Link className={base.textLink} to="/docs/overview/dogfooding">More projects and how we use SpecWeave ↗</Link>
       </section>
 
-      <section className={base.skillsBanner}><div><span className={styles.eyebrow}>The companion project</span><h3>Better skills. Less baggage.</h3><p>Find focused expertise, inspect its source and evaluate whether it helps your workflow.</p></div><a className={base.secondary} href="https://verified-skill.com">Explore Verified Skills ↗</a></section>
+      <section className={h.section} id="built-with" aria-labelledby="built-with-title">
+        <div className={h.head}>
+          <span className={styles.eyebrow}>In practice</span>
+          <h2 id="built-with-title">Built with SpecWeave.</h2>
+        </div>
+        <div className={h.built}>
+          <a href="https://easychamp.com"><b>EasyChamp <span aria-hidden="true">↗</span></b><span>League and club tools, built across Claude Code threads, two subscriptions and Codex.</span></a>
+          <a href="https://jobweave.ai"><b>JobWeave <span aria-hidden="true">↗</span></b><span>Job search, tailored resumes and interview preparation.</span></a>
+          <a href="https://verified-skill.com"><b>Verified Skills <span aria-hidden="true">↗</span></b><span>Skill discovery, source inspection and local evaluations.</span></a>
+        </div>
+      </section>
 
       <section className={base.finalCta}>
-        <span className={styles.eyebrow}>Your next session can start here</span>
         <h2>Bring every agent.<br /><em>Keep your machines.</em></h2>
         <a className={base.primary} href={release.dmgUrl} aria-label={`Download SpecWithCode ${release.version} for macOS, Apple silicon, ${release.size}`}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a>
-        <Link className={base.textLink} to="/studio">About SpecWithCode</Link>
         <Link className={base.textLink} to="/docs/getting-started">Get started with the CLI</Link>
       </section>
     </main>
