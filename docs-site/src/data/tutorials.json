@@ -9,7 +9,7 @@
       "status": "published",
       "agent": "multi",
       "agentsShown": ["claude-code", "codex"],
-      "durationSeconds": 173.6,
+      "durationSeconds": 174.9,
       "src": "/video/explainers/how-specwithcode-works.mp4",
       "poster": "/video/explainers/how-specwithcode-works.jpg",
       "captionsVtt": "/video/explainers/how-specwithcode-works.en.vtt",

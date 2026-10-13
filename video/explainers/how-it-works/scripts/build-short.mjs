@@ -59,7 +59,7 @@ vo.lines.forEach((l, i) => {
   });
 });
 function ts(x) { const m = Math.floor(x / 60), s = (x % 60).toFixed(3).padStart(6, "0"); return `00:${String(m).padStart(2, "0")}:${s}`; }
-html.push(`<div id="brand" class="clip brand" data-start="0" data-duration="${f(END)}" data-track-index="4"><span>SpecWithCode</span> · specwithcode.dev</div>`);
+html.push(`<div id="brand" class="clip brand" data-start="0" data-duration="${f(END)}" data-track-index="4"><span>SpecWithCode</span> · spec-weave.com/code</div>`);
 const doc = `<!doctype html>
 <html lang="en">
   <head>
@@ -76,6 +76,7 @@ const doc = `<!doctype html>
       .head { left: 60px; right: 60px; top: 230px; font: italic 400 96px/1.08 "Newsreader", serif; color: #22241e; text-align: center; }
       .hl { overflow: hidden; padding-bottom: 0.06em; } .hl > span { display: inline-block; }
       .shot { left: 0; top: 640px; width: 1080px; height: 607.5px; box-shadow: 0 40px 90px #22241e33; }
+      .cap span { white-space: nowrap; }
       .cap { left: 60px; right: 60px; top: 1390px; text-align: center; font: 700 76px/1.15 "IBM Plex Sans", sans-serif; color: #22241e; }
       .brand { left: 0; right: 0; bottom: 150px; text-align: center; font: 500 36px/1 "IBM Plex Sans", sans-serif; color: #6a6d63; }
       .brand span { font: italic 400 46px/1 "Newsreader", serif; color: #22241e; }
