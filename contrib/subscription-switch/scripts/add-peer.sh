@@ -44,7 +44,14 @@ with open(agent, 'wb') as f:
 PY
 domain="gui/$(id -u)"
 launchctl bootout "$domain/com.specweave.switch.tunnel-$id" 2>/dev/null || true
-launchctl bootstrap "$domain" "$agent"
+# bootout returns before launchd lets go of the label; bootstrapping too early fails with EIO (5).
+for _ in $(seq 1 20); do launchctl print "$domain/com.specweave.switch.tunnel-$id" >/dev/null 2>&1 || break; sleep 0.5; done
+ok=0
+for _ in 1 2 3 4 5; do
+  if launchctl bootstrap "$domain" "$agent" 2>/dev/null; then ok=1; break; fi
+  sleep 1
+done
+[ "$ok" = 1 ] || { echo "Could not start the tunnel agent $agent; run: launchctl bootstrap $domain $agent" >&2; exit 4; }
 
 mkdir -p "$state"
 python3 - "$state/peers.json" "$id" "$label" "$port" <<'PY'
