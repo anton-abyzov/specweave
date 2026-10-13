@@ -1,8 +1,11 @@
 import { spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
+import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
 import { execute, iso } from './util.mjs';
-import { QUOTA_TTL_MS, claudeProfileIsolationUnverified } from './policy.mjs';
-import { ensureState, mutateState } from './state.mjs';
+import { QUOTA_TTL_MS, claudeProfileIsolationUnverified, CLAUDE_CONSUMER_PLANS } from './policy.mjs';
+import { ensureState, isRetiredService, mutateState } from './state.mjs';
+import { readCopilot, readProxyAccounts } from './providers.mjs';
 
 export function nativeEnv(account) {
   const env = { ...process.env, PWDEBUG: '0', PLAYWRIGHT_HTML_OPEN: 'never' };
@@ -17,6 +20,12 @@ export function nativeEnv(account) {
   else if (!account.nativeDefault && account.id !== 'claude-1') env.CLAUDE_CONFIG_DIR = account.configDir;
   return env;
 }
+// A one-way tag for the signed-in account, so the fleet page can tell when two
+// Macs share one subscription. The email itself is never stored or served.
+export function accountIdentity(provider, email) {
+  if (typeof email !== 'string' || !/^[^@\s]{1,128}@[^@\s]{1,255}$/.test(email.trim())) return null;
+  return createHash('sha256').update(`${provider}:${email.trim().toLowerCase()}`).digest('hex').slice(0, 16);
+}
 export async function inspectAuth(account) {
   const args = account.provider === 'codex' ? ['login', 'status'] : ['auth', 'status', '--json'];
   const result = await execute(account.binary, args, { env: nativeEnv(account), timeoutMs: 12000, maxBytes: 128 * 1024 });
@@ -30,7 +39,8 @@ export async function inspectAuth(account) {
         const isolated = claudeProfileIsolationUnverified({ ...account, authKind: kind, authError: null });
         return { authenticated: null, authKind: kind, authObservedAt: iso(), authError: isolated ? 'profile-isolation-unverified' : 'subscription-auth-unverified' };
       }
-      return { authenticated: result.exitCode === 0 && body.loggedIn === true && consumerAuth, authKind: consumerAuth || knownApiAuth ? kind : 'unknown', authObservedAt: iso(), authError: body.loggedIn === true && !consumerAuth ? 'subscription-auth-required' : null };
+      const identity = body.loggedIn === true ? accountIdentity('claude', body.email) : null;
+      return { identity, authenticated: result.exitCode === 0 && body.loggedIn === true && consumerAuth, authKind: consumerAuth || knownApiAuth ? kind : 'unknown', authObservedAt: iso(), authError: body.loggedIn === true && !consumerAuth ? 'subscription-auth-required' : null };
     }
     catch { return { authenticated: false, authKind: null, authObservedAt: iso(), authError: 'native-auth-output-unrecognized' }; }
   }
@@ -40,10 +50,10 @@ export async function inspectAuth(account) {
 
 // Supported Codex app-server protocol: initialize -> initialized notification ->
 // account/rateLimits/read. No credential files or token payloads are inspected.
-export function readCodexRateLimits(account, timeoutMs = 15000) {
+export function readCodexRateLimits(account, timeoutMs = 25000) {
   return new Promise(resolve => {
     const child = spawn(account.binary, ['app-server', '--stdio'], { env: nativeEnv(account), stdio: ['pipe', 'pipe', 'pipe'] });
-    let buffer = '', byteCount = 0, answer = null, error = null, phase = 'initialize', hardTimer;
+    let buffer = '', byteCount = 0, answer = null, signedIn = null, error = null, phase = 'initialize', pending = 2, hardTimer;
     const stop = () => { child.kill('SIGTERM'); hardTimer = setTimeout(() => child.kill('SIGKILL'), 1500); hardTimer.unref(); };
     const timer = setTimeout(() => { error = 'quota-read-timeout'; stop(); }, timeoutMs);
     const write = msg => { if (!child.stdin.destroyed) child.stdin.write(JSON.stringify(msg) + '\n'); };
@@ -60,13 +70,16 @@ export function readCodexRateLimits(account, timeoutMs = 15000) {
           if (!msg.result) continue;
           phase = 'read'; write({ jsonrpc: '2.0', method: 'initialized' });
           write({ jsonrpc: '2.0', id: 2, method: 'account/rateLimits/read', params: {} });
-        } else if (msg.id === 2 && phase === 'read') {
-          if (msg.error) error = 'quota-read-unavailable'; else answer = msg.result;
-          phase = 'done'; stop();
+          write({ jsonrpc: '2.0', id: 3, method: 'account/read', params: { refreshToken: false } });
+        } else if ((msg.id === 2 || msg.id === 3) && phase === 'read') {
+          // An older app-server may never answer account/read; the limits alone still count.
+          if (msg.id === 2) { if (msg.error) error = 'quota-read-unavailable'; else answer = msg.result; if (pending > 1) setTimeout(stop, 2000).unref(); }
+          else if (!msg.error) signedIn = msg.result?.account || null;
+          if (--pending === 0) { phase = 'done'; stop(); }
         }
       }
     });
-    child.on('close', () => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ data: answer, error }); });
+    child.on('close', () => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ data: answer, account: signedIn, error }); });
     write({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { clientInfo: { name: 'specweave_switch', title: 'SpecWeave Switch', version: '0.1.0' }, capabilities: { experimentalApi: true } } });
   });
 }
@@ -83,7 +96,7 @@ export function normalizeCodexQuota(result, now = Date.now()) {
   const rawCredits = limits?.credits;
   const credits = rawCredits && typeof rawCredits.hasCredits === 'boolean' && typeof rawCredits.unlimited === 'boolean'
     ? { hasCredits: rawCredits.hasCredits, unlimited: rawCredits.unlimited,
-        ...(typeof rawCredits.balance === 'string' && /^\d{1,24}(?:\.\d{1,8})?$/.test(rawCredits.balance) ? { balance: rawCredits.balance } : {}) } : null;
+        ...(typeof rawCredits.balance === 'string' && /^\d{1,24}(?:\.\d{1,24})?$/.test(rawCredits.balance) ? { balance: rawCredits.balance } : {}) } : null;
   const rawResets = result?.rateLimitResetCredits;
   const resetCount = rawResets?.availableCount;
   const expiries = Array.isArray(rawResets?.credits) ? rawResets.credits.filter(c => c?.status === 'available' && Number.isFinite(c.expiresAt) && c.expiresAt > now / 1000 && c.expiresAt * 1000 <= 8640000000000000).map(c => c.expiresAt) : [];
@@ -114,6 +127,98 @@ export function normalizeCodexQuota(result, now = Date.now()) {
     ...(rateLimitReachedType ? { rateLimitReachedType } : {}), ...(denied ? { denied: true } : {}), ...(credits ? { credits } : {}), ...(resetCredits ? { resetCredits } : {}) };
 }
 
+// Supported Claude SDK control protocol: initialize -> get_usage. No user
+// message is sent, so no model turn runs and no allowance is consumed. Settings,
+// hooks, MCP servers and slash commands stay off so nothing else executes.
+export function readClaudeUsage(account, timeoutMs = 30000) {
+  return new Promise(resolve => {
+    const args = ['-p', '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose', '--setting-sources', '', '--strict-mcp-config', '--tools', '', '--disable-slash-commands', '--no-session-persistence'];
+    let child;
+    try { child = spawn(account.binary, args, { env: nativeEnv(account), cwd: tmpdir(), stdio: ['pipe', 'pipe', 'pipe'] }); }
+    catch (e) { resolve({ data: null, error: `usage-read-${e.code || 'failed'}` }); return; }
+    let buffer = '', byteCount = 0, answer = null, error = null, hardTimer;
+    const stop = () => { child.stdin.end(); child.kill('SIGTERM'); hardTimer = setTimeout(() => child.kill('SIGKILL'), 1500); hardTimer.unref(); };
+    const timer = setTimeout(() => { error = 'usage-read-timeout'; stop(); }, timeoutMs);
+    const write = msg => { if (!child.stdin.destroyed) child.stdin.write(JSON.stringify(msg) + '\n'); };
+    child.stdin.on('error', () => {}); child.stderr.on('data', () => {});
+    child.on('error', e => { error = `usage-read-${e.code || 'failed'}`; });
+    child.stdout.on('data', chunk => {
+      byteCount += chunk.length; if (byteCount > 4 * 1024 * 1024) { error = 'usage-output-limit'; stop(); return; }
+      buffer += chunk.toString(); let newline;
+      while ((newline = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, newline); buffer = buffer.slice(newline + 1); let msg;
+        try { msg = JSON.parse(line); } catch { continue; }
+        if (msg.type !== 'control_response') continue;
+        const { request_id: requestId, subtype, response } = msg.response || {};
+        if (requestId === 'init') {
+          if (subtype !== 'success') { error = 'usage-initialize-rejected'; stop(); return; }
+          // skip_behaviors: plan limits only; no seven-day transcript scan.
+          write({ type: 'control_request', request_id: 'usage', request: { subtype: 'get_usage', skip_behaviors: true } });
+        } else if (requestId === 'usage') {
+          if (subtype === 'success') answer = response; else error = 'usage-read-unavailable';
+          stop(); return;
+        }
+      }
+    });
+    child.on('close', () => { clearTimeout(timer); clearTimeout(hardTimer); resolve({ data: answer, error }); });
+    write({ type: 'control_request', request_id: 'init', request: { subtype: 'initialize' } });
+  });
+}
+const CLAUDE_WINDOWS = { five_hour: ['window', 300], seven_day: ['weekly', 10080] };
+// Per-model weekly limits. Other seven_day_* buckets (OAuth apps, Cowork, ...) are not models.
+const CLAUDE_MODEL_WEEKLIES = { seven_day_opus: 'Opus', seven_day_sonnet: 'Sonnet' };
+export function normalizeClaudeUsage(result, now = Date.now()) {
+  const limits = result?.rate_limits;
+  if (!result || result.rate_limits_available !== true || !limits || typeof limits !== 'object') return null;
+  // A live read carries the derived limits list. When the usage endpoint fails
+  // (network, 429) Claude Code answers from a persisted snapshot up to an hour
+  // old without it; that snapshot is not a fresh observation.
+  if (!Array.isArray(limits.limits)) return null;
+  const toWindow = (value, mins) => {
+    const used = value?.utilization;
+    if (!Number.isFinite(used) || used < 0) return undefined;
+    // A window that has not started yet reports resets_at null.
+    const reset = value.resets_at == null ? null : Date.parse(value.resets_at);
+    if (reset !== null && (!Number.isFinite(reset) || reset <= 0)) return undefined;
+    return { usedPercent: Math.min(used, 100), resetsAt: reset === null ? null : Math.floor(reset / 1000), windowDurationMins: mins };
+  };
+  const quota = { window: null, weekly: null, windows: [] };
+  let locked = false;
+  for (const [key, value] of Object.entries(limits).slice(0, 64)) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || !/^[a-z0-9_]{1,64}$/.test(key) || key === 'extra_usage') continue;
+    const main = CLAUDE_WINDOWS[key], model = CLAUDE_MODEL_WEEKLIES[key];
+    if (!main && !model) continue;
+    if (main && typeof value.locked_reason === 'string' && value.locked_reason) locked = true;
+    const w = toWindow(value, main ? main[1] : 10080);
+    // An unreadable account-wide window makes the whole read unusable; a model-scoped one is skipped.
+    if (!w) { if (main) return null; continue; }
+    if (main) quota[main[0]] = w;
+    // Model-scoped weeklies are additive; only the account-wide windows gate selection.
+    if (quota.windows.length < 16) quota.windows.push({ ...w, id: `claude:${key}`, bucketId: key, appliesToSelection: !!main, ...(model ? { label: model } : {}) });
+  }
+  // Newer models report their weekly limit in a list instead of a named bucket.
+  for (const entry of Array.isArray(limits.model_scoped) ? limits.model_scoped.slice(0, 8) : []) {
+    const label = typeof entry?.display_name === 'string' ? entry.display_name.trim().slice(0, 32) : '';
+    const w = label && toWindow(entry, 10080);
+    if (w && quota.windows.length < 16 && !quota.windows.some(x => x.label === label)) quota.windows.push({ ...w, id: `claude:model:${label.toLowerCase()}`, bucketId: 'model_scoped', appliesToSelection: false, label });
+  }
+  // Paid overflow, in minor units (cents) of its currency.
+  const extra = limits.extra_usage;
+  if (extra?.is_enabled === true && Number.isFinite(extra.used_credits) && Number.isFinite(extra.monthly_limit) && extra.monthly_limit > 0) {
+    const places = Number.isSafeInteger(extra.decimal_places) && extra.decimal_places >= 0 && extra.decimal_places <= 4 ? extra.decimal_places : 2;
+    quota.extraUsage = { used: extra.used_credits / 10 ** places, limit: extra.monthly_limit / 10 ** places,
+      currency: typeof extra.currency === 'string' && /^[A-Z]{3}$/.test(extra.currency) ? extra.currency : 'USD', limitReached: extra.spend_limit_reached === true };
+  }
+  if (!quota.window && !quota.weekly) return null;
+  const full = [quota.window, quota.weekly].some(w => w && w.usedPercent >= 100);
+  return { ...quota, observedAt: new Date(now).toISOString(), expiresAt: new Date(now + QUOTA_TTL_MS).toISOString(), source: 'native-app-server',
+    ordinaryUsageAllowed: !locked && !full, ...(locked || full ? { denied: true } : {}) };
+}
+export function claudeSubscriptionType(result) {
+  const type = typeof result?.subscription_type === 'string' ? result.subscription_type.toLowerCase() : null;
+  return type && CLAUDE_CONSUMER_PLANS.includes(type) ? type : null;
+}
+
 function serviceProbe(service) {
   return new Promise(resolve => {
     const socket = createConnection({ host: '127.0.0.1', port: service.port });
@@ -124,25 +229,51 @@ function serviceProbe(service) {
 }
 export async function refresh(root) {
   const state = await ensureState(root);
-  const accounts = await Promise.all(state.accounts.map(async account => {
+  // One account at a time: launching every CLI at once on a busy Mac made the
+  // reads time out. A refresh runs every few minutes, so a few seconds more is fine.
+  const accounts = [];
+  for (const account of state.accounts) accounts.push(await (async () => {
     const auth = await inspectAuth(account);
     let quota = account.quota, quotaError = null;
-    if (auth.authenticated === true && account.provider === 'codex') {
+    let subscriptionType = account.subscriptionType || null, identity = auth.identity ?? account.identity ?? null;
+    // A slow `login status` is not a sign-out: the app-server read below answers who is signed in.
+    const authTimedOut = auth.authError === 'native-auth-timeout';
+    if (account.provider === 'codex' && (auth.authenticated === true || authTimedOut)) {
       const readback = await readCodexRateLimits(account);
+      const signedIn = readback.account;
+      if (signedIn?.type === 'chatgpt') {
+        Object.assign(auth, { authenticated: true, authKind: 'chatgpt', authError: null });
+        identity = accountIdentity('codex', signedIn.email) || identity;
+        if (typeof signedIn.planType === 'string' && /^[a-z_]{1,32}$/.test(signedIn.planType)) subscriptionType = signedIn.planType;
+      }
       const observed = normalizeCodexQuota(readback.data);
       // An unavailable refresh does not renew or erase the old observation.
       if (observed) quota = observed;
       quotaError = readback.error || (!observed ? 'quota-unavailable' : null);
+    } else if (account.provider === 'claude' && (account.nativeDefault || account.id === 'claude-1')
+      && (auth.authenticated === true || auth.authError === 'subscription-auth-unverified' || authTimedOut)) {
+      // Isolated Claude slots share the default keychain login, so only the
+      // native default profile is read. get_usage names the consumer plan.
+      const readback = await readClaudeUsage(account);
+      const observed = normalizeClaudeUsage(readback.data);
+      subscriptionType = claudeSubscriptionType(readback.data);
+      if (observed) quota = observed;
+      if (subscriptionType && (auth.authError === 'subscription-auth-unverified' || authTimedOut)) Object.assign(auth, { authenticated: true, authKind: auth.authKind || account.authKind, authError: null });
+      quotaError = readback.error || (!observed ? 'quota-unavailable' : null);
     }
-    return { ...account, ...auth, quota, quotaError };
-  }));
-  const services = await Promise.all(state.services.map(serviceProbe));
+    if (auth.authenticated === false) identity = null;
+    return { ...account, ...auth, quota, quotaError, subscriptionType, identity };
+  })());
+  const services = await Promise.all(state.services.filter(s => !isRetiredService(s)).map(serviceProbe));
+  for (const service of services) if (service.id === 'cli-proxy' && service.status === 'running') service.accounts = await readProxyAccounts({ port: service.port });
+  const providers = await readCopilot().catch(() => []);
   return mutateState(root, current => {
     for (const update of accounts) {
       const target = current.accounts.find(a => a.id === update.id);
-      if (target) Object.assign(target, { authenticated: update.authenticated, authKind: update.authKind, authObservedAt: update.authObservedAt, authError: update.authError, quota: update.quota, quotaError: update.quotaError });
+      if (target) Object.assign(target, { authenticated: update.authenticated, authKind: update.authKind, authObservedAt: update.authObservedAt, authError: update.authError, quota: update.quota, quotaError: update.quotaError, subscriptionType: update.subscriptionType, identity: update.identity });
     }
     current.services = services;
+    current.providers = providers;
   });
 }
 export function nativeRunArgs(account, prompt, { model, sandbox = 'read-only' } = {}) {

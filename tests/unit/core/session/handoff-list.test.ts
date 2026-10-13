@@ -102,14 +102,14 @@ describe('listPendingHandoffs', () => {
   });
 
   it('takes an older checkpoint\'s title from its document and skips sessions without the mark or outside the project', () => {
-    const wt = writeWorktree('t3-cleanup', 'claude/t3-cleanup');
+    const wt = writeWorktree('old-cleanup', 'claude/old-cleanup');
     writeSessionHandoff('s-2', wt, { min: 5 });
     writeSessionHandoff('s-3', writeWorktree('still-working', 'x'), { min: 3, mark: false });
     const elsewhere = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'sw-other-')));
     writeSessionHandoff('s-4', elsewhere, { min: 2 });
     try {
       const pending = listPendingHandoffs(root, { home });
-      expect(pending.map((h) => h.id)).toEqual(['t3-cleanup']);
+      expect(pending.map((h) => h.id)).toEqual(['old-cleanup']);
       expect(pending[0].title).toBe('Wired the coordinator-only flow.');
     } finally { fs.rmSync(elsewhere, { recursive: true, force: true }); }
   });

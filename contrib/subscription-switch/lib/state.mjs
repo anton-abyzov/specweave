@@ -22,6 +22,8 @@ export function findBinary(provider, home = homedir()) {
   // Never return a bare name: spawning it would search rejected PATH entries again.
   return candidates.map(file => resolve(file)).find(file => { try { validateNativeBinary(file); return true; } catch { return false; } }) || null;
 }
+/** Service rows left in older state files by the retired pre-Studio workbench; never probed or shown. */
+export const isRetiredService = s => String(s?.id ?? '').startsWith('t3');
 const legacyWorkbenchPath = /(?:^|\/)\.local\/share\/t3(?:-nightly)?(?:\/|$)/i;
 /** Validate both the requested path and its actual target without running it. */
 export function validateNativeBinary(binary) {
@@ -59,7 +61,7 @@ export async function initState(root = stateRoot(), home = homedir()) {
       hosts: [{ id: 'local', label: hostname(), hostname: hostname(), role: 'local', status: 'local', sshReachable: null, installed: true },
         { id: 'm1', label: 'M1 Mac', hostname: process.env.SPECWEAVE_SWITCH_M1_HOST || 'm1.local', role: 'worker', status: 'unknown', sshReachable: null, installed: null },
         { id: 'm3', label: 'M3 Mac', hostname: process.env.SPECWEAVE_SWITCH_M3_HOST || 'm3.local', role: 'worker', status: 'unknown', sshReachable: null, installed: null }],
-      services: [{ id: 't3', label: 'T3 stable', port: 3773, status: 'unknown' }, { id: 't3-nightly', label: 'T3 nightly', port: 3774, status: 'unknown' }, { id: 'cli-proxy', label: 'CLIProxyAPI', port: 8317, status: 'unknown' }], };
+      services: [{ id: 'cli-proxy', label: 'CLIProxyAPI', port: 8317, status: 'unknown' }], };
     await atomicJSON(join(root, 'state.json'), state); return state;
   });
 }

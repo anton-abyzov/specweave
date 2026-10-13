@@ -6,7 +6,7 @@ import { refresh, nativeEnv, inspectAuth } from '../lib/native.mjs';
 import { run } from '../lib/runner.mjs';
 import { checkpoint, restore } from '../lib/checkpoint.mjs';
 import { execute, redact, iso } from '../lib/util.mjs';
-import { serve } from '../lib/server.mjs';
+import { serve, AUTO_REFRESH_MS } from '../lib/server.mjs';
 
 const usage = `SpecWeave Switch — native account selection and isolated Git restoration
 
@@ -30,7 +30,10 @@ run --prompt TEXT [--cwd PATH] [--account ID --allow-unknown]
 checkpoint --cwd PATH --files src/a.js,src/b.js
 restore ID --to NEW_PATH [--base EXPECTED_SHA]
 doctor                     Read-only versions, native auth/quota and service probes
-serve [--port 8318]         Loopback dashboard; state/policy/select/refresh only
+serve [--port 8318] [--refresh-minutes 10]
+                           Loopback dashboard; state/policy/select/refresh only.
+                           Re-reads native auth and quota every N minutes (0 = off);
+                           shows peer Macs listed in STATE/peers.json
 
 State: SPECWEAVE_SWITCH_STATE or ~/.local/share/specweave/switch
 Native credentials remain in CODEX_HOME / CLAUDE_CONFIG_DIR. No HOME changes.
@@ -40,7 +43,7 @@ Dirty tracked changes need an explicit file allowlist; untracked files are exclu
 function parse(argv) {
   const values = {}, positionals = [];
   const flags = new Set(['allow-unknown', 'failover']);
-  const options = new Set(['cwd', 'prompt', 'account', 'provider', 'model', 'timeout-ms', 'max-attempts', 'files', 'sandbox', 'to', 'base', 'port', 'quota', 'binary']);
+  const options = new Set(['cwd', 'prompt', 'account', 'provider', 'model', 'timeout-ms', 'max-attempts', 'files', 'sandbox', 'to', 'base', 'port', 'quota', 'binary', 'refresh-minutes']);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith('--')) { positionals.push(arg); continue; }
@@ -105,7 +108,9 @@ async function main(argv) {
     if (versions.some(v => v.status !== 'available')) process.exitCode = 1;
   } else if (command === 'serve') {
     const port = v.port ? Number(v.port) : 8318; if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid port');
-    const server = await serve(root, { port }); process.stdout.write(`SpecWeave Switch: http://127.0.0.1:${server.address().port}\n`);
+    const minutes = v['refresh-minutes'] === undefined ? AUTO_REFRESH_MS / 60000 : Number(v['refresh-minutes']);
+    if (!Number.isFinite(minutes) || minutes < 0 || (minutes > 0 && minutes < 2) || minutes > 1440) throw new Error('Invalid --refresh-minutes; use 0 or 2-1440');
+    const server = await serve(root, { port, autoRefreshMs: minutes * 60000 }); process.stdout.write(`SpecWeave Switch: http://127.0.0.1:${server.address().port}\n`);
     for (const signal of ['SIGTERM', 'SIGINT']) process.once(signal, () => server.close(() => process.exit(0)));
   } else throw new Error(`Unknown command: ${command}`);
 }

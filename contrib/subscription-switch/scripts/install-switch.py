@@ -59,7 +59,10 @@ def service_config(node, release, root, domain):
     config = {'Label': LABEL, 'ProgramArguments': [str(node), str(release / 'bin/specweave-switch.mjs'), 'serve', '--port', '8318'],
               'RunAtLoad': True, 'KeepAlive': True, 'WorkingDirectory': str(release),
               'EnvironmentVariables': {'PATH': str(node.parent) + ':/usr/bin:/bin:/usr/sbin:/sbin', 'PWDEBUG': '0', 'PLAYWRIGHT_HTML_OPEN': 'never'},
-              'StandardOutPath': str(logs / 'stdout.log'), 'StandardErrorPath': str(logs / 'stderr.log')}
+              'StandardOutPath': str(logs / 'stdout.log'), 'StandardErrorPath': str(logs / 'stderr.log'),
+              # Without this, launchd throttles the agent's CPU and I/O; on a loaded Mac the
+              # sign-in and usage reads it spawns then time out.
+              'ProcessType': 'Interactive'}
     if domain.startswith('user/'):
         config['LimitLoadToSessionType'] = ['Background']
     return config
@@ -166,7 +169,10 @@ def install(args):
             domain = previous['serviceDomain']
             require(domain in ['gui/' + str(os.getuid()), 'user/' + str(os.getuid())], 'Prior launchd domain is unverified')
             require(not args.domain or domain.startswith(args.domain + '/'), 'Update must preserve its launchd domain')
-            require(plistlib.loads(old_agent) == service_config(old_node, old_release, root, domain), 'Prior service configuration changed; preserve it for review')
+            prior, expected = plistlib.loads(old_agent), service_config(old_node, old_release, root, domain)
+            # Installs from before ProcessType was added differ only by that key.
+            if 'ProcessType' not in prior: expected.pop('ProcessType', None)
+            require(prior == expected, 'Prior service configuration changed; preserve it for review')
             loaded_identity(domain, agent, old_node, old_release)
     else:
         require(not wrapper.exists() and not wrapper.is_symlink() and not receipt_file.exists() and not receipt_file.is_symlink(), 'Existing companion launcher/receipt preserved; use a verified update')
