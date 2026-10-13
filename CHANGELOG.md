@@ -1,3 +1,9 @@
+## [3.0.15] - 2026-10-13
+
+### Changed
+
+- Generated agent instructions require headless Chrome/Playwright CLI for browser tests and automation, saved evidence, and explicit user approval before opening an essential visible browser. The rule applies to subagents and is installed or refreshed through the shared AGENTS.md template.
+
 ## [3.0.14] - 2026-10-11
 
 ### Changed
