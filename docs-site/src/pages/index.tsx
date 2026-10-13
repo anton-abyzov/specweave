@@ -8,6 +8,7 @@ import base from './continuity.module.css';
 import h from '../components/landing/home.module.css';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
+import ExplainerVideo from '../components/ecosystem/ExplainerVideo';
 import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
 const STEPS = [
@@ -77,7 +78,7 @@ export default function Home() {
           <p className={h.lead}>Run Claude Code, Codex, Cursor and more as one project on your own machines. When one hits its usage limit, the next one carries on.</p>
           <div className={h.actions}>
             <a className={base.primary} href={release.dmgUrl} aria-label={`Download SpecWithCode ${release.version} for macOS, Apple silicon, ${release.size}`}>Download for Mac <span aria-hidden="true">↓</span></a>
-            <Link className={base.textLink} to="/studio">How it works</Link>
+            <a className={base.textLink} href="#watch">Watch it in 3 minutes</a>
           </div>
           <div className={clsx(base.install, h.install)}><code>npm install -g specweave</code><button onClick={copyCommand} aria-label="Copy installation command">{copied ? 'Copied' : 'Copy'}</button></div>
           <span className={base.copyStatus} role="status">{copyError ? 'Copy unavailable. Select the command above.' : copied ? 'Installation command copied.' : 'Or start with the open-source CLI. MIT, local first, no account.'}</span>
@@ -93,6 +94,14 @@ export default function Home() {
         <div className={styles.toolRail}><div>{[...tools, ...tools].map((t, i) => <strong key={i} aria-hidden={i >= tools.length}>{t}</strong>)}</div></div>
         <Link to="/studio">One workspace, any provider ↗</Link>
       </div>
+
+      <section className={h.section} id="watch" aria-labelledby="watch-title">
+        <div className={h.head}>
+          <span className={styles.eyebrow}>Watch it in 3 minutes</span>
+          <h2 id="watch-title">Your machines. Your subscriptions.<br /><em>One control desk.</em></h2>
+        </div>
+        <ExplainerVideo />
+      </section>
 
       <section className={h.section} id="how" aria-labelledby="how-title">
         <div className={h.head}>
