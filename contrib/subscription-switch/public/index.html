@@ -12,8 +12,8 @@
 <body>
   <header class="bar">
     <div class="brand">
-      <img src="/mark.svg" alt="" width="28" height="28">
-      <div><h1>Switch</h1><p>Subscriptions across your Macs</p></div>
+      <img src="/mark.svg" alt="" width="26" height="26">
+      <div><h1>Switch</h1><p>Every subscription across your Macs</p></div>
     </div>
     <div class="bar-actions">
       <span id="updated" class="muted" aria-live="polite">Loading…</span>
@@ -23,37 +23,40 @@
   </header>
 
   <main>
+    <div id="notice" class="notice" role="status" hidden></div>
+
+    <section id="summary" class="summary" aria-label="Right now">
+      <div class="tile skeleton"></div><div class="tile skeleton"></div><div class="tile skeleton"></div>
+    </section>
+
+    <section aria-labelledby="subs-title">
+      <h2 id="subs-title" class="section-title">Subscriptions</h2>
+      <div id="groups" class="groups"></div>
+    </section>
+
     <section class="policy" aria-labelledby="policy-title">
-      <h2 id="policy-title">Next run uses</h2>
-      <div class="segmented" role="group" aria-label="Account choice policy">
-        <button type="button" data-mode="balanced" aria-pressed="false">Balanced</button>
-        <button type="button" data-mode="reset-first" aria-pressed="false">Reset first</button>
-        <button type="button" data-mode="spend-first" aria-pressed="false">Spend first</button>
+      <div class="policy-head">
+        <h2 id="policy-title" class="section-title">Next run picks</h2>
+        <div class="segmented" role="group" aria-label="Account choice policy">
+          <button type="button" data-mode="balanced" aria-pressed="false">Balanced</button>
+          <button type="button" data-mode="reset-first" aria-pressed="false">Reset first</button>
+          <button type="button" data-mode="spend-first" aria-pressed="false">Spend first</button>
+        </div>
       </div>
       <p id="policy-help" class="muted"></p>
     </section>
 
-    <div id="notice" class="notice" role="status" hidden></div>
-
-    <section class="usage" aria-label="Usage by Mac">
-      <div class="thead" aria-hidden="true">
-        <span>Account</span><span>5-hour window</span><span>Weekly</span><span>Status</span>
-      </div>
-      <div id="hosts"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
-    </section>
-
-    <section class="usage" id="others" aria-label="Other subscriptions" hidden>
-      <div class="thead" aria-hidden="true"><span>Other subscriptions</span><span>This month</span><span></span><span>Reading</span></div>
-      <h2 class="others-title">Other subscriptions</h2>
-      <div id="other-rows"></div>
+    <section aria-labelledby="macs-title">
+      <h2 id="macs-title" class="section-title">Macs</h2>
+      <div id="macs" class="macs"></div>
     </section>
 
     <details class="help">
       <summary>How Switch works</summary>
-      <p>Each Mac reads its own Codex and Claude sign-ins directly from the official apps and refreshes every 10 minutes. Bars show what is <strong>left</strong> in each window. Nothing here runs a model or spends usage.</p>
-      <p><strong>Balanced</strong> picks the least-used account, <strong>Reset first</strong> the one whose limit resets soonest, <strong>Spend first</strong> the most-used one. The choice applies to new runs started through Switch and to the account Studio suggests for a new chat. Running sessions keep their account. <strong>Pin</strong> forces one account on that Mac.</p>
-      <p>Each Mac has 4 Codex and 3 Claude slots. Add another Codex account on a Mac with <code>specweave-switch account login codex-2</code>. Extra Claude slots stay locked because Claude Code keeps one login per Mac.</p>
-      <p><strong>Credits</strong> under an account are paid overflow used only after its windows run out: the Codex balance and banked resets, and Claude extra usage. <strong>Other subscriptions</strong> lists GitHub Copilot for every account signed in to <code>gh</code> or Copilot CLI on any Mac; a GitHub credit is $0.01. The proxy dot counts accounts signed in to CLIProxyAPI, which is not a credits source.</p>
+      <p>Each Mac reads its own Codex and Claude sign-ins from the official apps every 10 minutes. Nothing here runs a model or spends usage. A subscription signed in on several Macs shows once, with the newest reading. The big number on a card is what is left in its tightest window.</p>
+      <p><strong>Balanced</strong> picks the least-used ready account, <strong>Reset first</strong> the one whose limit resets soonest, <strong>Spend first</strong> the most-used one. The policy picks the account for runs started with <code>specweave-switch run</code> and for Studio's <strong>Draft using capacity policy</strong>. Chats that are already running keep their account. <strong>Pin</strong> forces one account on that Mac; <strong>Unpin</strong> goes back to the policy.</p>
+      <p>Each Mac has 4 Codex and 3 Claude slots. Add another Codex account with <code>specweave-switch account login codex-2</code> on that Mac. Extra Claude slots stay locked because Claude Code keeps one login per Mac, so a further Claude subscription needs its own Mac or a CLIProxyAPI hub (Studio reads hub accounts under Usage → Limits).</p>
+      <p>Credits and banked resets are paid overflow used only after an account's windows run out. Switch never spends them. Copilot lists every account signed in to <code>gh</code> or Copilot CLI on any Mac; one GitHub AI credit is $0.01.</p>
     </details>
   </main>
 </body>
