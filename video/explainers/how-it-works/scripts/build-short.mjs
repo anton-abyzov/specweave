@@ -8,11 +8,11 @@ const vo = read("scripts/vo-lines-short.json");
 const words = Object.fromEntries(vo.lines.map((l) => [l.id, read(`vo-words/${l.id}.json`).words]));
 const dur = (id) => words[id].at(-1).end + 0.2;
 const plan = {
-  s01: { head: "One machine,<br>one subscription", segs: [[22.0, 99]] },
-  s02: { head: "Connected over<br>Tailscale", segs: [[44.6, 2.6], [57.4, 99]] },
+  s01: { head: "One machine,<br>many subscriptions", segs: [[18.6, 99]] },
+  s02: { head: "Connected over<br>Tailscale", segs: [[45.2, 2.2], [61.8, 99]] },
   s03: { head: "One coordinator.<br>Many threads.", segs: [[79.4, 99]] },
-  s04: { head: "Auto-resolve, only<br>when it's verified", segs: [[119.4, 99]] },
-  s05: { head: "Linux for speed.<br>Mac to orchestrate.", segs: [[131.0, 3.6], [148.9, 99]] },
+  s04: { head: "Auto-resolve, only<br>when it's verified", segs: [[119.6, 99]] },
+  s05: { head: "Linux for speed.<br>Mac to orchestrate.", segs: [[132.9, 3.4], [149.5, 99]] },
 };
 const start = {}; let t = 0.5;
 for (const l of vo.lines) { start[l.id] = +t.toFixed(2); t += dur(l.id) + 0.45; }

@@ -5,11 +5,11 @@
     {
       "slug": "how-specwithcode-works",
       "title": "How SpecWithCode works",
-      "summary": "Your subscriptions live on your machines. SpecWithCode connects them over Tailscale, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
+      "summary": "Each of your machines can hold several AI subscriptions, and every session runs on the machine itself. SpecWithCode connects the machines over Tailscale, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
       "status": "published",
       "agent": "multi",
       "agentsShown": ["claude-code", "codex"],
-      "durationSeconds": 155.7,
+      "durationSeconds": 173.6,
       "src": "/video/explainers/how-specwithcode-works.mp4",
       "poster": "/video/explainers/how-specwithcode-works.jpg",
       "captionsVtt": "/video/explainers/how-specwithcode-works.en.vtt",
@@ -19,17 +19,19 @@
       "guide": "/docs/studio/projects",
       "chapters": [
         {"start": 0, "title": "More AI than you can use"},
-        {"start": 13, "title": "A subscription lives on a machine"},
-        {"start": 35.8, "title": "Connect your machines"},
-        {"start": 52, "title": "Limits, CLIProxyAPI and fallbacks"},
-        {"start": 73.4, "title": "One coordinator, many threads"},
-        {"start": 85.1, "title": "A real project: EasyChamp"},
-        {"start": 100.3, "title": "Inside a thread"},
-        {"start": 110.2, "title": "Verified, and auto-resolve"},
-        {"start": 127, "title": "Which machines: Linux, Windows, Mac"},
-        {"start": 144.1, "title": "Get it"}
+        {"start": 13.8, "title": "One machine, many subscriptions"},
+        {"start": 31.7, "title": "Only one subscription? Pick its host"},
+        {"start": 44.1, "title": "Connect your machines"},
+        {"start": 59.5, "title": "Limits, CLIProxyAPI and fallbacks"},
+        {"start": 78.2, "title": "One coordinator, many threads"},
+        {"start": 90, "title": "A real project: EasyChamp"},
+        {"start": 104.8, "title": "Inside a thread"},
+        {"start": 114.7, "title": "Verified, and auto-resolve"},
+        {"start": 131.9, "title": "Which machines: Linux, Windows, Mac"},
+        {"start": 148.2, "title": "A good worker machine"},
+        {"start": 162.3, "title": "Get it"}
       ],
-      "note": "Recorded on SpecWithCode 1.0.5 with the author's real EasyChamp project, 12 October 2026, through a read-only session; the thread pane is sped up 1.6x and hostnames are masked. The b-roll is AI-generated, the diagrams are animated, and the narration is AI in the author's cloned voice."
+      "note": "Recorded on SpecWithCode 1.0.5 with the author's real EasyChamp project, 12 October 2026, through a read-only session; the thread pane is sped up 1.6x and hostnames are masked. Stock footage is from Pexels, the diagrams are animated, the music is AI-generated, and the narration is AI in the author's cloned voice."
     },
     {
       "slug": "specwithcode-tour",

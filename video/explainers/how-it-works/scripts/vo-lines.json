@@ -1,17 +1,61 @@
 {
   "voiceId": "0Ki1af67ybTaTu4TNmO8",
   "modelId": "eleven_v4",
-  "voiceSettings": { "stability": 0.5, "similarity_boost": 0.75, "style": 0, "use_speaker_boost": true, "speed": 1.0 },
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
   "lines": [
-    { "id": "v01", "spoken": "You probably pay for more AI than you can use. Claude on one machine, Codex on another, maybe Grok or Copilot too. SpecWithCode turns all of it into one team." },
-    { "id": "v02", "spoken": "Start with the basics. A subscription lives on a machine. Each machine signs in with the official tool, so usually one machine holds one subscription: Claude Max on the MacBook, ChatGPT Pro on the Linux box. A machine can hold more, like Grok, Copilot, or Gemini through Antigravity. Nothing is resold." },
-    { "id": "v03", "spoken": "Every machine runs its own SpecWithCode server. You connect them privately, over your network, an SSH tunnel, or Tailscale. Here, the M4 Max sees the M1 and the M3 over Tailscale, and each one is paired on purpose." },
-    { "id": "v04", "spoken": "Then SpecWithCode watches the limits. Every account's session and weekly usage, banked resets, and credits, in one place. If you pool accounts behind a CLIProxyAPI hub, add the hub and its accounts show up too. When one runs dry, a thread can wait for the reset, or move to another provider or machine." },
-    { "id": "v05", "spoken": "Now the part that changes how you work. In a project, you talk to one coordinator. It plans, then starts threads for the work, each on the machine and model that fits." },
-    { "id": "v06", "spoken": "This is EasyChamp, a real project. One thread is shipping reusable tactical templates. Another built club finance and is waiting for my review. Others ran independent reviews. Each one opens its own pull request." },
-    { "id": "v07", "spoken": "Open a thread to see exactly what it ran and what it is waiting on. Reply, and your message goes through the coordinator, with the thread as context." },
-    { "id": "v08", "spoken": "And done is not the same as verified. You can check the work yourself, or let auto-resolve do it: a thread closes itself only when every pull request is merged, checks pass, and the review is approved. Anything uncertain waits for you." },
-    { "id": "v09", "spoken": "Which machines? Linux makes the fastest workers. Windows handles heavy file work well too. A Mac works, but APFS is slow for agent workloads, so let the Mac orchestrate: Chrome and marketing tools, iOS builds, and computer use." },
-    { "id": "v10", "spoken": "Your machines. Your subscriptions. One control desk. SpecWithCode, open source, at specwithcode dot dev." }
+    {
+      "id": "v01",
+      "spoken": "You probably pay for more AI than you can use. Claude on one machine, Codex on another, maybe Grok or Copilot too. SpecWithCode turns all of it into one team."
+    },
+    {
+      "id": "v02",
+      "spoken": "Start with the basics. Every machine signs in with the official tools, and one machine can hold several. My M4 Max runs Claude and Codex on the EasyChamp admin accounts. The M1 runs Claude and Codex on the marketing accounts. Nothing is resold."
+    },
+    {
+      "id": "v03",
+      "spoken": "Only have one subscription? Then choose the machine that hosts it, with enough memory and free disk space, because every session runs right there, on your machine, not in someone else's cloud."
+    },
+    {
+      "id": "v04",
+      "spoken": "Every machine runs its own SpecWithCode server. You connect them privately, over your network, an SSH tunnel, or Tailscale. Here, the M4 Max sees the M1 and the M3, and each one is paired on purpose."
+    },
+    {
+      "id": "v05",
+      "spoken": "Then SpecWithCode watches the limits: session and weekly usage, banked resets, and credits, for every account. Pool accounts behind a CLIProxyAPI hub, and they show up too. When one runs dry, a thread waits for the reset, or moves to another provider or machine."
+    },
+    {
+      "id": "v06",
+      "spoken": "Now the part that changes how you work. In a project, you talk to one coordinator. It plans, then starts threads for the work, each on the machine and model that fits."
+    },
+    {
+      "id": "v07",
+      "spoken": "This is EasyChamp, a real project. One thread is shipping reusable tactical templates. Another built club finance and is waiting for my review. Others ran independent reviews. Each one opens its own pull request."
+    },
+    {
+      "id": "v08",
+      "spoken": "Open a thread to see exactly what it ran and what it is waiting on. Reply, and your message goes through the coordinator, with the thread as context."
+    },
+    {
+      "id": "v09",
+      "spoken": "And done is not the same as verified. You can check the work yourself, or let auto-resolve do it: a thread closes itself only when every pull request is merged, checks pass, and the review is approved. Anything uncertain waits for you."
+    },
+    {
+      "id": "v10",
+      "spoken": "Which machines? Linux makes the fastest workers, and Windows is a solid worker too. A Mac works, but APFS is slow for agent workloads, so let the Mac orchestrate: Chrome and marketing tools, iOS builds, and computer use."
+    },
+    {
+      "id": "v11",
+      "spoken": "For a worker, aim for eight cores, thirty-two gigabytes of memory, and a fast SSD with a few hundred gigabytes free. Budget about four gigabytes of memory and ten of disk for every agent running in parallel."
+    },
+    {
+      "id": "v12",
+      "spoken": "Your machines. Your subscriptions. One control desk. SpecWithCode, open source, at specwithcode dot dev."
+    }
   ]
 }
