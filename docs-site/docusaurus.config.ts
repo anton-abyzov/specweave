@@ -235,6 +235,7 @@ const config: Config = {
       {
         // Pages removed or merged over time, pointed at the page that replaced them.
         redirects: [
+          {from: ['/code'], to: '/studio'},
           {from: ['/docs', '/docs/overview'], to: '/docs/overview/introduction'},
           {from: ['/docs/intro', '/docs/quick-start', '/docs/features', '/docs/overview/features', '/docs/guides/life-automation', '/docs/guides/meta-capability'], to: '/docs/overview/introduction'},
           {from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills', '/docs/guides/claude-skills-deep-dive', '/docs/guides/self-improving-skills', '/docs/skills/extensible/self-improving-skills', '/docs/skills/extensible/skill-generation', '/docs/skills/extensible/extensible-skills-guide', '/docs/guides/agent-skills-extensibility-analysis'], to: '/docs/skills/extensible/extensible-skills'},

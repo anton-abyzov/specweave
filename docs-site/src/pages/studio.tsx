@@ -8,6 +8,7 @@ import studio from '../components/ecosystem/studio.module.css';
 import StudioOverviewVideo from '../components/ecosystem/StudioOverviewVideo';
 import StudioProjectMock from '../components/ecosystem/StudioProjectMock';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
+import ExplainerVideo from '../components/ecosystem/ExplainerVideo';
 import { CloudCompare, ProjectFeatures, StudioFaq, StudioStack, UmbrellaMap } from '../components/ecosystem/StudioSections';
 import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
@@ -25,6 +26,10 @@ export default function Studio() {
           <p className={ecosystem.note}>Free and open source (<a href={release.repoUrl}>MIT</a>) for every developer and team: no markup, no token resale and no seat fee to run agents on your own machines (<Link to="/pricing">pricing</Link>). In early access; the app is not notarized yet, so on first launch open <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Windows and Intel Macs are not built yet. <Link to="/docs/overview/studio/">Read the overview</Link> or <a href={specweaveRepo}>star SpecWeave on GitHub</a>.</p>
         </div><StudioProjectMock />
       </header>
+
+      <section className={styles.section} id="watch" aria-labelledby="watch-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Watch</span><h2 id="watch-title">How it works.<br /><em>In under 3 minutes.</em></h2></div><p>Subscriptions on your own machines, a private network between them, limits and fallbacks, one coordinator per project, and the hardware a worker needs.</p></div>
+        <ExplainerVideo />
+      </section>
 
       <section className={styles.section} aria-labelledby="why-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>00 / The name</span><h2 id="why-title">Why<br /><em>SpecWithCode.</em></h2></div><div><p>Every change an agent makes lands with its spec: what was asked, what counts as done, and the proof, in the same repo as the code, so any agent on any machine can pick it up.</p><p className={studio.builtOn}>Built on <strong>SpecWeave</strong>, the open-source CLI that keeps that record in git. <Link className={styles.textLink} to="/docs/getting-started/">Read the CLI docs ↗</Link></p></div></div></section>
 
