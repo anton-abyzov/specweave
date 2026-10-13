@@ -1,18 +1,37 @@
 #!/usr/bin/env python3
-"""Install a private reviewed bundle; update only its verified launcher/service."""
+"""Install a private reviewed bundle; update only its verified launcher/service.
+
+macOS runs the service as launchd agent com.specweave.switch. Linux runs it as
+systemd user unit specweave-switch.service with linger, like install-cliproxy.sh.
+"""
 import argparse
 import hashlib
 import json
 import os
 import pathlib
+import platform
 import plistlib
+import pwd
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 
 LABEL = 'com.specweave.switch'
+SYSTEMD_UNIT = 'specweave-switch.service'
+SYSTEMD_DOMAIN = 'systemd-user'
+
+
+def use_systemd():
+    return platform.system() == 'Linux'
+
+
+def service_file(home):
+    if use_systemd():
+        return home / '.config/systemd/user' / SYSTEMD_UNIT
+    return home / 'Library/LaunchAgents' / (LABEL + '.plist')
 
 
 def require(condition, message):
@@ -66,6 +85,61 @@ def service_config(node, release, root, domain):
     if domain.startswith('user/'):
         config['LimitLoadToSessionType'] = ['Background']
     return config
+
+
+def systemd_unit(node, release, root):
+    """Same program, environment and logs as the launchd agent; systemd restarts it."""
+    logs = root / 'logs'
+    for path in (str(node), str(release), str(logs)):
+        require(not re.search(r'[\s%"\'\\$`;]', path), 'Runtime path contains characters a systemd unit cannot hold unquoted')
+    return ('[Unit]\nDescription=SpecWeave Switch (loopback dashboard)\nAfter=network-online.target\n\n[Service]\n'
+            'WorkingDirectory=' + str(release) + '\n'
+            'Environment=PATH=' + str(node.parent) + ':/usr/bin:/bin:/usr/sbin:/sbin\n'
+            'Environment=PWDEBUG=0\nEnvironment=PLAYWRIGHT_HTML_OPEN=never\n'
+            'ExecStart=' + ' '.join([str(node), str(release / 'bin/specweave-switch.mjs'), 'serve', '--port', '8318']) + '\n'
+            'Restart=always\nRestartSec=10\n'
+            'StandardOutput=append:' + str(logs / 'stdout.log') + '\nStandardError=append:' + str(logs / 'stderr.log') + '\n\n'
+            '[Install]\nWantedBy=default.target\n').encode()
+
+
+def systemctl(*args, check=False):
+    return subprocess.run(['systemctl', '--user'] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30, check=check)
+
+
+def systemd_props():
+    result = systemctl('show', SYSTEMD_UNIT, '-p', 'LoadState', '-p', 'ActiveState', '-p', 'FragmentPath', '-p', 'ExecStart')
+    require(result.returncode == 0, 'The systemd user manager did not answer; service state is unverified')
+    return dict(line.split('=', 1) for line in result.stdout.splitlines() if '=' in line)
+
+
+def systemd_identity(agent, node, release, allow_absent=False):
+    props = systemd_props()
+    if props.get('ActiveState') not in ('active', 'activating', 'reloading', 'deactivating'):
+        require(allow_absent, 'Service is not running in its recorded systemd user manager')
+        require(props.get('FragmentPath', '') in ('', str(agent)), 'Another unit has this name; preserve it for review')
+        return False
+    argv = re.search(r'argv\[\]=([^;]*);', props.get('ExecStart', ''))
+    require(props.get('FragmentPath') == str(agent) and argv is not None and argv.group(1).split() == [str(node), str(release / 'bin/specweave-switch.mjs'), 'serve', '--port', '8318'], 'Loaded service identity differs; preserve it for review')
+    return True
+
+
+def systemd_wait_stopped(agent, node, release, timeout=10, poll=0.1):
+    deadline = time.monotonic() + timeout
+    while systemd_identity(agent, node, release, allow_absent=True):
+        remaining = deadline - time.monotonic()
+        require(remaining > 0, 'Timed out waiting for verified service teardown')
+        time.sleep(min(poll, remaining))
+
+
+def enable_linger():
+    """Keep the user unit running after logout on a headless server."""
+    user = pwd.getpwuid(os.getuid()).pw_name
+    try:
+        ok = subprocess.run(['loginctl', 'enable-linger', user], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        ok = False
+    if not ok:
+        print('Run "sudo loginctl enable-linger ' + user + '" so Switch survives logout.', file=sys.stderr)
 
 
 def launchctl(*args, check=False):
@@ -139,7 +213,33 @@ def install(args):
     home = pathlib.Path.home()
     root = home / '.local/share/specweave/subscription-switch'
     wrapper = home / '.local/bin/specweave-switch'
-    agent = home / 'Library/LaunchAgents' / (LABEL + '.plist')
+    agent = service_file(home)
+    systemd = use_systemd()
+    require(not (systemd and args.domain), '--domain applies to launchd (macOS) only')
+
+    def is_loaded(node_path, release_path, allow_absent=False):
+        if systemd:
+            return systemd_identity(agent, node_path, release_path, allow_absent)
+        return loaded_identity(domain, agent, node_path, release_path, allow_absent=allow_absent)
+
+    def stop_service(node_path, release_path):
+        if systemd:
+            systemctl('disable', '--now', SYSTEMD_UNIT, check=True)
+        else:
+            launchctl('bootout', domain + '/' + LABEL, check=True)
+
+    def wait_stopped(node_path, release_path):
+        if systemd:
+            systemd_wait_stopped(agent, node_path, release_path)
+        else:
+            wait_unloaded(domain, agent, node_path, release_path)
+
+    def start_service():
+        if systemd:
+            systemctl('daemon-reload', check=True)
+            systemctl('enable', '--now', SYSTEMD_UNIT, check=True)
+        else:
+            launchctl('bootstrap', domain, str(agent), check=True)
     receipt_file = root / 'install-receipt.json'
     previous = None
     old_agent = None
@@ -167,18 +267,27 @@ def install(args):
             owned_file(agent)
             old_agent = agent.read_bytes()
             domain = previous['serviceDomain']
-            require(domain in ['gui/' + str(os.getuid()), 'user/' + str(os.getuid())], 'Prior launchd domain is unverified')
-            require(not args.domain or domain.startswith(args.domain + '/'), 'Update must preserve its launchd domain')
-            prior, expected = plistlib.loads(old_agent), service_config(old_node, old_release, root, domain)
-            # Installs from before ProcessType was added differ only by that key.
-            if 'ProcessType' not in prior: expected.pop('ProcessType', None)
-            require(prior == expected, 'Prior service configuration changed; preserve it for review')
-            loaded_identity(domain, agent, old_node, old_release)
+            if systemd:
+                require(domain == SYSTEMD_DOMAIN, 'Prior service manager is unverified')
+                require(old_agent == systemd_unit(old_node, old_release, root), 'Prior service configuration changed; preserve it for review')
+            else:
+                require(domain in ['gui/' + str(os.getuid()), 'user/' + str(os.getuid())], 'Prior launchd domain is unverified')
+                require(not args.domain or domain.startswith(args.domain + '/'), 'Update must preserve its launchd domain')
+                prior, expected = plistlib.loads(old_agent), service_config(old_node, old_release, root, domain)
+                # Installs from before ProcessType was added differ only by that key.
+                if 'ProcessType' not in prior: expected.pop('ProcessType', None)
+                require(prior == expected, 'Prior service configuration changed; preserve it for review')
+            is_loaded(old_node, old_release)
     else:
         require(not wrapper.exists() and not wrapper.is_symlink() and not receipt_file.exists() and not receipt_file.is_symlink(), 'Existing companion launcher/receipt preserved; use a verified update')
         if args.service:
             require(not agent.exists() and not agent.is_symlink(), 'Existing companion service preserved for review')
-    if args.service:
+    if args.service and systemd:
+        require(systemctl('show-environment').returncode == 0, 'No systemd user manager for this user; run "sudo loginctl enable-linger $USER", log in again, then rerun')
+        domain = SYSTEMD_DOMAIN
+        if not previous:
+            require(systemd_props().get('LoadState') == 'not-found', 'Service absence unverified; preserve any loaded service for review')
+    elif args.service:
         candidates = [domain.split('/')[0]] if domain else ([args.domain] if args.domain else ['gui', 'user'])
         domain = next((kind + '/' + str(os.getuid()) for kind in candidates if launchctl('print', kind + '/' + str(os.getuid())).returncode == 0), None)
         require(domain is not None, 'No requested launchd domain is available')
@@ -197,7 +306,7 @@ def install(args):
             require(wrapper.read_bytes() == old_wrapper and receipt_file.read_bytes() == old_receipt, 'Installation changed during preflight')
             if args.service:
                 require(agent.read_bytes() == old_agent, 'Service changed during preflight')
-                loaded_identity(domain, agent, old_node, old_release)
+                is_loaded(old_node, old_release)
         files = bundle_files(source)
         bundle_hash = bundle_digest(source, files)
         release = root / 'versions' / bundle_hash
@@ -235,7 +344,7 @@ def install(args):
                 path.touch(mode=0o600, exist_ok=True)
                 path.chmod(0o600)
             agent.parent.mkdir(parents=True, exist_ok=True)
-            new_agent = plistlib.dumps(service_config(node, release, root, domain))
+            new_agent = systemd_unit(node, release, root) if systemd else plistlib.dumps(service_config(node, release, root, domain))
         if previous:
             backups = root / 'previous'
             backups.mkdir(mode=0o700, exist_ok=True)
@@ -254,27 +363,31 @@ def install(args):
         receipt_changed = False
         try:
             if previous and args.service:
-                loaded_identity(domain, agent, old_node, old_release)
+                is_loaded(old_node, old_release)
                 stopped = True
-                launchctl('bootout', domain + '/' + LABEL, check=True)
+                stop_service(old_node, old_release)
                 old_teardown_accepted = True
-                wait_unloaded(domain, agent, old_node, old_release)
+                wait_stopped(old_node, old_release)
             atomic_bytes(wrapper, new_wrapper, 0o755)
             launcher_changed = True
             if args.service:
                 atomic_bytes(agent, new_agent, 0o600)
                 agent_changed = True
                 new_service_attempted = True
-                launchctl('bootstrap', domain, str(agent), check=True)
-                loaded_identity(domain, agent, node, release)
+                start_service()
+                is_loaded(node, release)
             atomic_bytes(receipt_file, (json.dumps(receipt, indent=2) + '\n').encode(), 0o600)
             receipt_changed = True
+            if systemd and args.service:
+                enable_linger()
         except BaseException as failure:
             rollback_errors = []
             try:
-                if new_service_attempted and loaded_identity(domain, agent, node, release, allow_absent=True):
-                    launchctl('bootout', domain + '/' + LABEL, check=True)
-                    wait_unloaded(domain, agent, node, release)
+                if new_service_attempted and is_loaded(node, release, allow_absent=True):
+                    stop_service(node, release)
+                    wait_stopped(node, release)
+                elif new_service_attempted and systemd:
+                    systemctl('disable', SYSTEMD_UNIT)
                 if launcher_changed:
                     if previous:
                         atomic_bytes(wrapper, old_wrapper, 0o755)
@@ -290,12 +403,14 @@ def install(args):
                     atomic_bytes(receipt_file, old_receipt, 0o600)
                 elif receipt_changed:
                     receipt_file.unlink()
+                if systemd and agent_changed:
+                    systemctl('daemon-reload', check=True)
                 if stopped:
                     if old_teardown_accepted:
-                        wait_unloaded(domain, agent, old_node, old_release)
-                    if not loaded_identity(domain, agent, old_node, old_release, allow_absent=True):
-                        launchctl('bootstrap', domain, str(agent), check=True)
-                        loaded_identity(domain, agent, old_node, old_release)
+                        wait_stopped(old_node, old_release)
+                    if not is_loaded(old_node, old_release, allow_absent=True):
+                        start_service()
+                        is_loaded(old_node, old_release)
             except BaseException as rollback_failure:
                 rollback_errors.append(str(rollback_failure))
             if rollback_errors:
@@ -309,7 +424,7 @@ def install(args):
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--node', required=True, help='Absolute path to verified Node 22')
-    parser.add_argument('--service', action='store_true', help='Start private dashboard through launchd')
+    parser.add_argument('--service', action='store_true', help='Start private dashboard through launchd (macOS) or a systemd user unit (Linux)')
     parser.add_argument('--domain', choices=['gui', 'user'], help='Worker SSH accounts may require the user launchd domain')
     parser.add_argument('--update', action='store_true', help='Replace only a verified prior companion installation')
     args = parser.parse_args(argv)
