@@ -26,6 +26,7 @@ This is the source of the `specweave` npm package: a CLI plus a Claude Code plug
 - `init` refuses to run inside the system temp directory; use a scratch folder elsewhere to try it.
 - Keep files under 1,500 lines. Prefer deleting code to adapting it.
 - Default branch is `develop`. PRs target `develop`.
+- Browser tests and automation must use headless Chrome/Playwright CLI. Set `headless: true`, `PWDEBUG=0`, `PLAYWRIGHT_HTML_OPEN=never`, and HTML reports `open: 'never'`. Save captures to files and pass this rule to subagents. If a visible browser is essential, ask the user and wait for explicit approval before opening it; a headless failure is not approval.
 
 ## Releasing
 
