@@ -3,7 +3,7 @@
 
 Run with Playwright installed, or: uv run --with playwright python3 <this file>.
 Serves public/ from a private loopback port. SWITCH_EVIDENCE_DIR selects where
-screenshots go. Set SWITCH_URL to also screenshot a live dashboard read-only.
+screenshots go. SWITCH_CHROMIUM picks a Chromium binary. Set SWITCH_URL to also screenshot a live dashboard read-only.
 """
 import functools
 import json
@@ -57,7 +57,7 @@ def state(accounts, mode="balanced", selected=None, next_id=None, proxy="running
 
 FLEET = {"checkedAt": iso(now), "autoRefreshMinutes": 10, "hosts": [
     {"id": "local", "label": "M4 Max", "local": True, "ok": True, "refreshing": False, "state": state([
-        account("codex-1", authenticated=True, authKind="chatgpt", subscriptionType="pro", status="exhausted", sharedWith=["M1 Max"],
+        account("codex-1", authenticated=True, authKind="chatgpt", subscriptionType="pro", status="exhausted", sharedWith=["M1 Max"], identity="2bbf7efd5896ea8b",
                 quota={**quota(None, 100, week_in=2 * 86400), "credits": {"hasCredits": True, "unlimited": False, "balance": "46483.3029020000"},
                        "resetCredits": {"availableCount": 1, "nextExpiresAt": iso(now + 25 * 86400)}}),
         account("claude-1", authenticated=True, authKind="claude.ai", subscriptionType="max", status="ready",
@@ -67,6 +67,8 @@ FLEET = {"checkedAt": iso(now), "autoRefreshMinutes": 10, "hosts": [
     {"id": "m1", "label": "M1 Max", "local": False, "ok": True, "state": state([
         account("codex-1", authenticated=True, authKind="chatgpt", status="ready", quota=quota(12, 4)),
         account("codex-2", authenticated=True, authKind="chatgpt", status="ready", quota=quota(85, 88)),
+        account("codex-3", authenticated=True, authKind="chatgpt", subscriptionType="pro", status="exhausted", sharedWith=["M4 Max"], identity="2bbf7efd5896ea8b",
+                quota=quota(None, 100, week_in=2 * 86400)),
         account("claude-1", authenticated=None, authKind="oauth_token", authError="subscription-auth-unverified", status="unknown"),
     ], mode="reset-first", selected="codex-2", proxy="unavailable")},
     {"id": "m3", "label": "M3", "local": False, "ok": False, "error": "Tunnel not connected"},
@@ -88,15 +90,21 @@ def serve_public():
 
 
 def check(page, width, scheme):
-    rows = page.locator("#hosts .row")
-    assert rows.count() == 5, f"expected 5 account rows, got {rows.count()}"
-    text = page.inner_text("#hosts")
-    for needle in ("M4 Max", "this Mac", "M1 Max", "Tunnel not connected", "59% left", "Limit reached", "Plan not verified", "Pinned", "Next", "Free slots: 2 Codex, 2 Claude", "same account as M1 Max", "46,483 credits", "1 reset banked", "$12.50 of $50.00 extra this month", "Fable week 93% left", "Proxy · 0 accounts"):
-        assert needle in text, f"missing {needle!r} at {width}px {scheme}"
+    cards = page.locator("#groups .card")
+    assert cards.count() == 7, f"expected 7 subscription cards, got {cards.count()}"
+    groups = page.inner_text("#groups")
+    for needle in ("Claude Max", "59%", "Limit reached", "Plan not verified", "Pinned", "Next", "Signed in on", "back in", "46,483 credits", "1 reset banked", "$12.50 of $50.00 extra this month", "Fable", "93%"):
+        assert needle in groups, f"missing {needle!r} at {width}px {scheme}"
+    summary = page.inner_text("#summary")
+    for needle in ("1 of 2", "2 of 3", "Next reset", "174,000"):
+        assert needle in summary, f"missing {needle!r} in summary at {width}px {scheme}"
+    macs = page.inner_text("#macs")
+    for needle in ("M4 Max", "this Mac", "M1 Max", "Tunnel not connected"):
+        assert needle in macs, f"missing {needle!r} in Macs at {width}px {scheme}"
     assert page.locator('[data-mode="reset-first"][aria-pressed="true"]').count() == 1
-    others = page.inner_text("#others")
-    for needle in ("Copilot", "abycrash · Business · Crash-Champions", "174,000 of 175,000 left", "198.2 of 200 left", "Copilot CLI", "Live", "As of 3h"):
-        assert needle in others, f"missing {needle!r} in other subscriptions at {width}px {scheme}"
+    copilot = page.inner_text('#groups [data-provider="copilot"]')
+    for needle in ("abycrash · Crash-Champions", "174,000 of 175,000 AI credits left", "198.2 of 200 chats left", "Copilot CLI uses this", "Live", "As of 3h"):
+        assert needle in copilot, f"missing {needle!r} in Copilot at {width}px {scheme}"
     assert "T3" not in page.inner_text("body"), f"T3 label still shown at {width}px {scheme}"
     overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
     assert overflow <= 0, f"horizontal overflow {overflow}px at {width}px"
@@ -107,7 +115,7 @@ def main():
     base = f"http://127.0.0.1:{server.server_address[1]}"
     posted = []
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=True, executable_path=os.environ.get("SWITCH_CHROMIUM") or None)
         for width, height in ((1280, 820), (390, 844)):
             for scheme in ("light", "dark"):
                 page = browser.new_page(viewport={"width": width, "height": height}, color_scheme=scheme)
@@ -118,7 +126,7 @@ def main():
                 page.route("**/api/fleet/*", on_post)
                 started = time.monotonic()
                 page.goto(base + "/")
-                page.wait_for_selector(".row")
+                page.wait_for_selector(".card")
                 elapsed = time.monotonic() - started
                 assert elapsed < 2, f"first render took {elapsed:.2f}s"
                 check(page, width, scheme)
@@ -126,13 +134,13 @@ def main():
                 if width == 1280 and scheme == "light":
                     page.click('[data-mode="spend-first"]')
                     page.wait_for_selector("#notice:not([hidden])")
-                    page.click('[data-account="m1/codex-2"] button')
+                    page.click('[data-account="m1/codex-2"]')
                     page.wait_for_timeout(200)
                 page.close()
         if LIVE:
             page = browser.new_page(viewport={"width": 1280, "height": 820})
             page.goto(LIVE + "/")
-            page.wait_for_selector(".host", timeout=10000)
+            page.wait_for_selector(".card", timeout=10000)
             page.screenshot(path=str(EVIDENCE / "switch-live.png"), full_page=True)
             page.close()
         browser.close()
