@@ -1,6 +1,6 @@
 {
-  "voiceId": "CXBq9AgXLrBIJkfnV9hg",
-  "modelId": "eleven_multilingual_v2",
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
   "voiceSettings": {
     "stability": 0.5,
     "similarity_boost": 0.75,

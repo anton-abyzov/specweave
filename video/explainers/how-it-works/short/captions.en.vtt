@@ -1,77 +1,64 @@
 WEBVTT
 
-1
-00:00:00.267 --> 00:00:03.100
-Still pasting context between agent terminals?
+00:00:00.500 --> 00:00:02.130
+Usually one machine holds
 
-2
-00:00:03.667 --> 00:00:05.833
-In SpecWithCode you describe the
+00:00:02.180 --> 00:00:03.370
+one subscription.
 
-3
-00:00:05.833 --> 00:00:08.100
-work once. A coordinator starts
+00:00:03.420 --> 00:00:05.250
+Claude Max on the MacBook,
 
-4
-00:00:08.100 --> 00:00:09.767
-worker threads and links each
+00:00:05.300 --> 00:00:07.110
+ChatGPT Pro on the Linux
 
-5
-00:00:09.767 --> 00:00:10.700
-one back.
+00:00:07.160 --> 00:00:07.790
+box.
 
-6
-00:00:11.267 --> 00:00:12.400
-Follow-ups go to the thread
+00:00:08.670 --> 00:00:09.340
+SpecWithCode connects
 
-7
-00:00:12.400 --> 00:00:13.833
-that owns that area,
+00:00:09.390 --> 00:00:10.820
+them over Tailscale and
 
-8
-00:00:13.833 --> 00:00:15.067
-and each report comes back
+00:00:10.870 --> 00:00:12.360
+watches every limit and
 
-9
-00:00:15.067 --> 00:00:15.867
-on its own.
+00:00:12.410 --> 00:00:13.060
+reset.
 
-10
-00:00:15.867 --> 00:00:16.900
-No pasting.
+00:00:13.460 --> 00:00:15.210
+You talk to one coordinator.
 
-11
-00:00:17.467 --> 00:00:19.033
-Run the coordinator on Claude
+00:00:15.260 --> 00:00:16.630
+It starts threads,
 
-12
-00:00:19.033 --> 00:00:20.567
-Opus 5.5 and a worker
+00:00:16.680 --> 00:00:18.110
+each with its own pull
 
-13
-00:00:20.567 --> 00:00:21.800
-on Codex.
+00:00:18.160 --> 00:00:18.730
+request.
 
-14
-00:00:22.267 --> 00:00:23.500
-A worker can report a
+00:00:19.390 --> 00:00:20.420
+Auto-resolve closes a
 
-15
-00:00:23.500 --> 00:00:24.900
-task done. Only you make
+00:00:20.470 --> 00:00:21.640
+thread only when it's
 
-16
-00:00:24.900 --> 00:00:27.000
-it Verified, by running its check.
+00:00:21.690 --> 00:00:22.320
+merged,
 
-17
-00:00:27.667 --> 00:00:29.233
-SpecWithCode works with the agents
+00:00:22.370 --> 00:00:23.820
+green and approved.
 
-18
-00:00:29.233 --> 00:00:30.467
-you already pay for.
+00:00:24.220 --> 00:00:25.430
+Linux for speed,
 
-19
-00:00:30.467 --> 00:00:34.833
-Free for Apple silicon Macs: spec-weave.com/studio.
+00:00:25.480 --> 00:00:28.030
+the Mac to orchestrate.
+
+00:00:28.080 --> 00:00:28.550
+SpecWithCode,
+
+00:00:28.600 --> 00:00:31.530
+open source at specwithcode.dev.
