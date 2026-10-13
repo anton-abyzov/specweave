@@ -517,7 +517,7 @@ const threadsData = [
   <div class="grid"></div>
   <div id="s10-win" class="window"><div class="wbar"><i></i><i></i><i></i><span>SpecWithCode · Control desk</span></div><video id="s10-v" class="clip" src="media/desk.mp4" muted playsinline data-start="${f(a)}" data-duration="${f(b - a)}" data-media-start="${f(takes.desk.t0Offset)}" data-playback-rate="1" data-track-index="${track + 40}"></video></div>
   <div class="s10-words"><span id="s10-w0">Your machines.</span><span id="s10-w1">Your subscriptions.</span><span id="s10-w2" class="acc">One control desk.</span></div>
-  <div id="s10-brand" class="s10-brand"><div class="mark dark">SpecWithCode</div><div class="team-line"></div><div class="s10-url">open source · <b>specwithcode.dev</b></div></div>
+  <div id="s10-brand" class="s10-brand"><div class="mark dark">SpecWithCode</div><div class="team-line"></div><div class="s10-url">open source · <b>spec-weave.com/code</b></div></div>
 </div>`);
   T(`tl.fromTo("#s10-win", {opacity:0, y:120, rotateX:18, scale:0.85}, {opacity:1, y:0, rotateX:0, scale:1, duration:1.2, ease:"expo.out"}, ${f(a + 0.1)});`);
   [[/^machines/, 0], [/^subscriptions/, 1], [/^control/, 2]].forEach(([re, i]) => pop(`#s10-w${i}`, W("v12", re) - 0.3, 0.5, "back.out(2.6)", 0.6));
