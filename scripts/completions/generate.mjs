@@ -9,7 +9,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseCliCommands } from './parse-cli.mjs';
+import { parseCliCommands, parseGlobalOptions } from './parse-cli.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(HERE, '..', '..');
@@ -35,7 +35,7 @@ const fishEscape = (s) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 const zshEscape = (s) => s.replace(/\\/g, '\\\\').replace(/'/g, "'\\''").replace(/:/g, '\\:');
 const zshBracket = (s) => zshEscape(s).replace(/\[/g, '\\[').replace(/\]/g, '\\]');
 
-export function generateBash(commands) {
+export function generateBash(commands, globals = []) {
   const visible = commands.filter((c) => !c.hidden);
   const lines = [
     '#!/usr/bin/env bash',
@@ -54,10 +54,11 @@ export function generateBash(commands) {
     '    prev="${COMP_WORDS[COMP_CWORD-1]}"',
     '',
     `    local main_commands="${visible.map((c) => c.name).join(' ')}"`,
+    `    local global_options="${globals.flatMap(o => o.flags.split(/[\s,]+/).filter(f => f.startsWith('-'))).join(' ')}"`,
     '',
     '    case "${prev}" in',
     '        specweave)',
-    '            COMPREPLY=( $(compgen -W "${main_commands}" -- "${cur}") )',
+    '            COMPREPLY=( $(compgen -W "${main_commands} ${global_options}" -- "${cur}") )',
     '            return 0',
     '            ;;',
   ];
@@ -71,7 +72,7 @@ export function generateBash(commands) {
   }
   lines.push(
     '        *)',
-    '            COMPREPLY=( $(compgen -W "${main_commands}" -- "${cur}") )',
+    '            COMPREPLY=( $(compgen -W "${main_commands} ${global_options}" -- "${cur}") )',
     '            return 0',
     '            ;;',
     '    esac',
@@ -83,7 +84,7 @@ export function generateBash(commands) {
   return lines.join('\n');
 }
 
-export function generateZsh(commands) {
+export function generateZsh(commands, globals = []) {
   const visible = commands.filter((c) => !c.hidden);
   const lines = [
     '#compdef specweave',
@@ -101,7 +102,8 @@ export function generateZsh(commands) {
     lines.push(`    '${zshEscape(command.name)}:${zshEscape(command.description)}'`);
   }
   lines.push(')', '', '_specweave() {', '    local curcontext="$curcontext" state line', '');
-  lines.push("    _arguments -C '1: :->command' '*::arg:->args'", '');
+  const globalSpecs = globals.map(opt => `'${zshEscape(opt.flags.split(' ')[0])}[${zshBracket(opt.description)}]:workspace:_directories'`).join(' ');
+  lines.push(`    _arguments -C ${globalSpecs} '1: :->command' '*::arg:->args'`, '');
   lines.push('    case $state in', '        command)');
   lines.push("            _describe -t commands 'specweave commands' commands", '            ;;');
   lines.push('        args)', '            case $line[1] in');
@@ -133,7 +135,7 @@ export function generateZsh(commands) {
   return lines.join('\n');
 }
 
-export function generateFish(commands) {
+export function generateFish(commands, globals = []) {
   const visible = commands.filter((c) => !c.hidden);
   const lines = [
     '# Fish completion for SpecWeave CLI',
@@ -173,6 +175,7 @@ export function generateFish(commands) {
       lines.push(`${spec} -d "${fishEscape(opt.description)}"`);
     }
   }
+  for (const opt of globals) lines.push(`complete -c specweave -l ${opt.flags.split(' ')[0].slice(2)} -r -a "(__fish_complete_directories)" -d "${fishEscape(opt.description)}"`);
   lines.push('', '# Global help option', 'complete -c specweave -l help -s h -d "Show help"', '');
   return lines.join('\n');
 }
@@ -180,10 +183,13 @@ export function generateFish(commands) {
 /** @returns {Record<string,string>} filename -> contents */
 export function generateAll(binSource) {
   const commands = parseCliCommands(binSource);
+  const globals = parseGlobalOptions(binSource);
+  const inherit = command => { command.options.push(...globals); command.subcommands.forEach(inherit); };
+  commands.forEach(inherit);
   return {
-    'specweave.bash': generateBash(commands),
-    'specweave.zsh': generateZsh(commands),
-    'specweave.fish': generateFish(commands),
+    'specweave.bash': generateBash(commands, globals),
+    'specweave.zsh': generateZsh(commands, globals),
+    'specweave.fish': generateFish(commands, globals),
   };
 }
 

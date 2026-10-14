@@ -15,6 +15,7 @@
 
 import * as fs from 'fs';
 import path from 'path';
+import { explicitWorkspaceRoot, isWorkspaceRoot, hasLegacyWorkspaceLayout, registeredRepositories, canonicalPath, isWithin } from '../core/workspace/context.js';
 
 /**
  * Find project root by searching for .specweave/config.json
@@ -37,6 +38,8 @@ import path from 'path';
  * // Returns: null
  */
 export function findProjectRoot(startDir: string = process.cwd()): string | null {
+  const explicit = explicitWorkspaceRoot(startDir);
+  if (explicit) return explicit;
   let current = path.resolve(startDir);
   const root = path.parse(current).root;
 
@@ -124,55 +127,25 @@ export function hasSpecweaveIncrements(dir: string): boolean {
  * @returns Umbrella root path or null if not inside an umbrella project
  */
 export function findUmbrellaRoot(startDir: string = process.cwd()): string | null {
-  // Find the nearest project root first
+  const explicit = explicitWorkspaceRoot(startDir);
+  if (explicit) return explicit;
   const nearestRoot = findProjectRoot(startDir);
   if (!nearestRoot) return null;
-
-  // Check if the nearest root IS an umbrella root
-  const nearestConfigPath = path.join(nearestRoot, '.specweave', 'config.json');
-  if (fs.existsSync(nearestConfigPath)) {
-    try {
-      const config = JSON.parse(fs.readFileSync(nearestConfigPath, 'utf-8'));
-      if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo) {
-        return nearestRoot;
-      }
-    } catch {
-      // Invalid JSON, continue walking up
-    }
-    const reposDir = path.join(nearestRoot, 'repositories');
-    if (fs.existsSync(reposDir) && fs.statSync(reposDir).isDirectory()) {
-      return nearestRoot;
-    }
-  }
-
-  // Walk up from the parent of the nearest root
-  let current = path.dirname(nearestRoot);
-  const root = path.parse(current).root;
-
-  while (current !== root) {
-    const configPath = path.join(current, '.specweave', 'config.json');
-
-    if (fs.existsSync(configPath)) {
-      try {
-        const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        // Check umbrella config flags
-        if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo) {
-          return current;
+  let current = nearestRoot;
+  while (current !== path.parse(current).root) {
+    if (fs.existsSync(path.join(current, '.specweave', 'config.json')) && isWorkspaceRoot(current)) {
+      const conventional = hasLegacyWorkspaceLayout(current);
+      const member = current === nearestRoot || conventional
+        || registeredRepositories(current).some(repo => isWithin(repo.absolutePath, canonicalPath(startDir)));
+      if (member) {
+        if (current !== nearestRoot && hasSpecweaveIncrements(nearestRoot)) {
+          throw new Error(`Conflicting planning roots: ${nearestRoot} and ${current}. Select one with --workspace.`);
         }
-      } catch {
-        // Invalid JSON, skip
-      }
-
-      // Check for sibling repositories/ directory (the multi-repo marker)
-      const reposDir = path.join(current, 'repositories');
-      if (fs.existsSync(reposDir) && fs.statSync(reposDir).isDirectory()) {
         return current;
       }
     }
-
     current = path.dirname(current);
   }
-
   return null;
 }
 

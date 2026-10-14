@@ -64,12 +64,11 @@ export async function hookRouter(eventType: string, rawStdin: string): Promise<H
     return result;
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
+    // A failed selection must be visible and must never run a handler against
+    // another planning root. Hooks still fail open so an ordinary tool is usable.
+    if (!context) return { systemMessage: `SpecWeave planning context error: ${msg}` };
     try {
-      if (!context) {
-        const root = findProjectRoot();
-        if (root) context = createContext(root);
-      }
-      if (context) logHook(context, eventType, `[ERROR] ${msg}`, 'error');
+      logHook(context, eventType, `[ERROR] ${msg}`, 'error');
     } catch {
       // nothing left to do — fail open
     }

@@ -1,167 +1,58 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as path from 'path';
-
-const mockPersistUmbrellaConfig = vi.hoisted(() => vi.fn());
-const mockFs = vi.hoisted(() => ({
-  existsSync: vi.fn(),
-  readFileSync: vi.fn(),
-  promises: { writeFile: vi.fn() },
-}));
-
-vi.mock('../../../../../src/core/living-docs/umbrella-detector.js', () => ({
-  persistUmbrellaConfig: mockPersistUmbrellaConfig,
-}));
-
-vi.mock('fs', () => mockFs);
-
+import { describe, it, expect, afterEach } from 'vitest';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { registerRepo } from '../../../../../src/cli/helpers/get/register-repo.js';
-
-const projectRoot = '/workspace';
-const configPath = path.join(projectRoot, '.specweave', 'config.json');
-
-describe('registerRepo', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    mockPersistUmbrellaConfig.mockResolvedValue(undefined);
-    mockFs.promises.writeFile.mockResolvedValue(undefined);
+import { sandbox, workspace, checkout, cleanup } from '../../../workspace-adoption/fixtures.js';
+afterEach(cleanup);
+const read = (root: string) => JSON.parse(fs.readFileSync(path.join(root, '.specweave/config.json'), 'utf8'));
+function setup(legacy = false) {
+  const root = workspace(sandbox());
+  const repoPath = 'repositories/org/my-service';
+  checkout(path.join(root, repoPath), 'https://github.com/org/my-service');
+  if (legacy) fs.writeFileSync(path.join(root, '.specweave/config.json'), JSON.stringify({ umbrella: { childRepos: [] } }));
+  return { root, repoPath };
+}
+describe('registerRepo real filesystem behavior', () => {
+  it('AC-US3-04: preserves an existing legacy child repo id and returns already registered', async () => {
+    const { root, repoPath } = setup(true); const config = read(root);
+    config.umbrella.childRepos.push({ id: 'my-service', path: repoPath, prefix: 'MYR' });
+    fs.writeFileSync(path.join(root, '.specweave/config.json'), JSON.stringify(config));
+    expect(await registerRepo(root, 'org', 'my-service', repoPath)).toEqual({ registered: false, alreadyRegistered: true });
+    expect(read(root)).toEqual(config);
   });
-
-  describe('duplicate detection', () => {
-    it('AC-US3-04: returns alreadyRegistered=true when id already in childRepos', async () => {
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(JSON.stringify({
-        umbrella: {
-          childRepos: [{ id: 'my-repo', path: 'repositories/org/my-repo', name: 'my-repo', prefix: 'MYR' }],
-        },
-      }));
-
-      const result = await registerRepo(projectRoot, 'org', 'my-repo', 'repositories/org/my-repo');
-
-      expect(result.alreadyRegistered).toBe(true);
-      expect(result.registered).toBe(false);
-      expect(mockPersistUmbrellaConfig).not.toHaveBeenCalled();
-    });
-
-    it('returns alreadyRegistered=true when id already in workspace.repos', async () => {
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(JSON.stringify({
-        workspace: {
-          name: 'workspace',
-          repos: [{ id: 'my-repo', path: 'repositories/org/my-repo', name: 'my-repo', prefix: 'MYR' }],
-        },
-      }));
-
-      const result = await registerRepo(projectRoot, 'org', 'my-repo', 'repositories/org/my-repo');
-
-      expect(result.alreadyRegistered).toBe(true);
-      expect(result.registered).toBe(false);
-      expect(mockPersistUmbrellaConfig).not.toHaveBeenCalled();
-    });
+  it('preserves an existing workspace entry', async () => {
+    const { root, repoPath } = setup(); const entry = { id: 'old-id', path: repoPath, prefix: 'MYR' };
+    workspace(root, [entry]); expect((await registerRepo(root, 'org', 'my-service', repoPath)).alreadyRegistered).toBe(true);
+    expect(read(root).workspace.repos).toEqual([entry]);
   });
-
-  describe('current workspace config', () => {
-    beforeEach(() => {
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(JSON.stringify({
-        version: '3.0',
-        workspace: { name: 'workspace', repos: [] },
-      }));
-    });
-
-    it('registers new repos under workspace.repos', async () => {
-      await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service', {
-        prefix: 'BE',
-        role: 'backend',
-        githubUrl: 'https://github.com/org/my-service',
-      });
-
-      expect(mockPersistUmbrellaConfig).not.toHaveBeenCalled();
-      const writeCall = mockFs.promises.writeFile.mock.calls[0];
-      const written = JSON.parse(writeCall[1]);
-      expect(written.workspace.repos).toEqual([
-        expect.objectContaining({
-          id: 'my-service',
-          path: 'repositories/org/my-service',
-          name: 'my-service',
-          prefix: 'BE',
-          role: 'backend',
-          sync: { github: { owner: 'org', repo: 'my-service' } },
-        }),
-      ]);
-    });
+  it('registers owner-qualified identity, prefix, role and sync in workspace.repos', async () => {
+    const { root, repoPath } = setup();
+    await registerRepo(root, 'org', 'my-service', repoPath, { prefix: 'BE', role: 'backend', githubUrl: 'https://github.com/org/my-service' });
+    expect(read(root).workspace.repos).toEqual([expect.objectContaining({ id: 'org-my-service', path: repoPath,
+      prefix: 'BE', role: 'backend', identity: 'github.com/org/my-service', sync: { github: { owner: 'org', repo: 'my-service' } } })]);
   });
-
-  describe('successful registration', () => {
-    beforeEach(() => {
-      // Config exists but no childRepos yet
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockImplementation(() => JSON.stringify({ umbrella: { childRepos: [] } }));
-    });
-
-    it('AC-US3-01: calls persistUmbrellaConfig with correct entry', async () => {
-      await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service');
-
-      expect(mockPersistUmbrellaConfig).toHaveBeenCalledWith(
-        projectRoot,
-        expect.objectContaining({
-          childRepos: expect.arrayContaining([
-            expect.objectContaining({ id: 'my-service', path: 'repositories/org/my-service', name: 'my-service' }),
-          ]),
-        })
-      );
-    });
-
-    it('AC-US3-02: uses --prefix option when provided', async () => {
-      mockFs.readFileSync
-        .mockReturnValueOnce(JSON.stringify({ umbrella: { childRepos: [] } })) // duplicate check
-        .mockReturnValueOnce(JSON.stringify({ umbrella: { childRepos: [{ id: 'my-service' }] } })); // post-patch read
-
-      await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service', { prefix: 'BE' });
-
-      const writeCall = mockFs.promises.writeFile.mock.calls[0];
-      const written = JSON.parse(writeCall[1]);
-      expect(written.umbrella.childRepos[0].prefix).toBe('BE');
-    });
-
-    it('AC-US3-03: defaults prefix to first 3 uppercase chars of repo name', async () => {
-      mockFs.readFileSync
-        .mockReturnValueOnce(JSON.stringify({ umbrella: { childRepos: [] } }))
-        .mockReturnValueOnce(JSON.stringify({ umbrella: { childRepos: [{ id: 'my-service' }] } }));
-
-      await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service');
-
-      const writeCall = mockFs.promises.writeFile.mock.calls[0];
-      const written = JSON.parse(writeCall[1]);
-      expect(written.umbrella.childRepos[0].prefix).toBe('MY-');
-    });
-
-    it('AC-US3-05: sets role when provided', async () => {
-      mockFs.readFileSync
-        .mockReturnValueOnce(JSON.stringify({ umbrella: { childRepos: [] } }))
-        .mockReturnValueOnce(JSON.stringify({ umbrella: { childRepos: [{ id: 'my-service' }] } }));
-
-      await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service', { role: 'backend' });
-
-      const writeCall = mockFs.promises.writeFile.mock.calls[0];
-      const written = JSON.parse(writeCall[1]);
-      expect(written.umbrella.childRepos[0].role).toBe('backend');
-    });
-
-    it('returns registered=true on success', async () => {
-      const result = await registerRepo(projectRoot, 'org', 'my-service', 'repositories/org/my-service');
-      expect(result.registered).toBe(true);
-      expect(result.alreadyRegistered).toBe(false);
-    });
+  it('AC-US3-01: adds a legacy-config checkout to the unified inventory', async () => {
+    const { root, repoPath } = setup(true); await registerRepo(root, 'org', 'my-service', repoPath);
+    expect(read(root).workspace.repos[0]).toMatchObject({ id: 'org-my-service', path: repoPath, name: 'my-service' });
   });
-
-  describe('when config file does not exist', () => {
-    it('proceeds with registration without duplicate check', async () => {
-      mockFs.existsSync.mockReturnValue(false);
-
-      const result = await registerRepo(projectRoot, 'org', 'new-service', 'repositories/org/new-service');
-
-      expect(mockPersistUmbrellaConfig).toHaveBeenCalled();
-      expect(result.registered).toBe(true);
-    });
+  it('AC-US3-02: uses the supplied prefix', async () => {
+    const { root, repoPath } = setup(); await registerRepo(root, 'org', 'my-service', repoPath, { prefix: 'BE' });
+    expect(read(root).workspace.repos[0].prefix).toBe('BE');
+  });
+  it('AC-US3-03: defaults prefix to three uppercase alphanumeric characters', async () => {
+    const { root, repoPath } = setup(); await registerRepo(root, 'org', 'my-service', repoPath);
+    expect(read(root).workspace.repos[0].prefix).toBe('MYS');
+  });
+  it('AC-US3-05: preserves the provided role', async () => {
+    const { root, repoPath } = setup(); await registerRepo(root, 'org', 'my-service', repoPath, { role: 'backend' });
+    expect(read(root).workspace.repos[0].role).toBe('backend');
+  });
+  it('returns registered=true on success', async () => {
+    const { root, repoPath } = setup(); expect(await registerRepo(root, 'org', 'my-service', repoPath)).toEqual({ registered: true, alreadyRegistered: false });
+  });
+  it('rejects a missing config instead of creating or overwriting workspace state', async () => {
+    const { root, repoPath } = setup(); fs.unlinkSync(path.join(root, '.specweave/config.json'));
+    await expect(registerRepo(root, 'org', 'my-service', repoPath)).rejects.toThrow('Cannot read workspace');
+    expect(fs.readdirSync(path.join(root, '.specweave'))).toEqual([]);
   });
 });

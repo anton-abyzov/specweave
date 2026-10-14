@@ -1,0 +1,687 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "External sync configuration for multi-project support (GitHub, JIRA, ADO, etc.)",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable external tool synchronization (overall toggle)",
+      "default": false
+    },
+    "provider": {
+      "type": "string",
+      "description": "Active sync provider (EXCLUSIVE: choose ONE provider, not multiple)",
+      "enum": [
+        "github",
+        "jira",
+        "ado",
+        "none"
+      ],
+      "default": "none"
+    },
+    "includeStatus": {
+      "type": "boolean",
+      "description": "Include status synchronization (sync increment status to external tool)",
+      "default": true
+    },
+    "autoApplyLabels": {
+      "type": "boolean",
+      "description": "Automatically apply labels based on increment type ([Bug], [Feature], [Docs])",
+      "default": true
+    },
+    "defaultProfile": {
+      "type": "string",
+      "description": "Default sync profile"
+    },
+    "profiles": {
+      "type": "object",
+      "description": "All available sync profiles",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "description": "Sync profile configuration",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "External provider type",
+              "enum": [
+                "github",
+                "jira",
+                "ado"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "description": "Human-readable profile name",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": {
+              "type": "string",
+              "description": "Profile description",
+              "maxLength": 512
+            },
+            "strategy": {
+              "type": "string",
+              "description": "Sync strategy: simple (one container), filtered (multiple containers + boards), custom (raw query)",
+              "enum": [
+                "simple",
+                "filtered",
+                "custom"
+              ],
+              "default": "simple"
+            },
+            "config": {
+              "type": "object",
+              "description": "Provider-specific configuration (backward compatible + hierarchical v0.10.0+)",
+              "properties": {
+                "owner": {
+                  "type": "string",
+                  "description": "GitHub owner (simple strategy)"
+                },
+                "repo": {
+                  "type": "string",
+                  "description": "GitHub repo (simple strategy)"
+                },
+                "monorepoProjects": {
+                  "type": "array",
+                  "description": "Monorepo projects within the repository (optional)",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "pattern": "^[a-z0-9-]+$"
+                  },
+                  "minItems": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "description": "Jira domain (all strategies)"
+                },
+                "projectKey": {
+                  "type": "string",
+                  "description": "Jira project key (simple strategy, backward compatible)"
+                },
+                "projects": {
+                  "type": "array",
+                  "description": "Jira project keys for project-per-team strategy (v0.8.19+)",
+                  "items": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 10,
+                    "pattern": "^[A-Z0-9]+$"
+                  },
+                  "minItems": 1
+                },
+                "issueType": {
+                  "type": "string",
+                  "enum": [
+                    "Epic",
+                    "Story",
+                    "Task"
+                  ],
+                  "description": "Jira issue type"
+                },
+                "organization": {
+                  "type": "string",
+                  "description": "ADO organization (all strategies)"
+                },
+                "project": {
+                  "type": "string",
+                  "description": "ADO project (simple strategy, backward compatible)"
+                },
+                "workItemType": {
+                  "type": "string",
+                  "enum": [
+                    "Epic",
+                    "Feature",
+                    "User Story"
+                  ],
+                  "description": "ADO work item type"
+                },
+                "containers": {
+                  "type": "array",
+                  "description": "Containers for filtered strategy (v0.10.0+)",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Container ID (Jira project key, GitHub repo, ADO project)",
+                        "minLength": 1
+                      },
+                      "subOrganizations": {
+                        "type": "array",
+                        "description": "Sub-organizations (boards, project boards, team boards)",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "filters": {
+                        "type": "object",
+                        "description": "Filters applied to this container",
+                        "properties": {
+                          "includeLabels": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "excludeLabels": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "assignees": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "statusCategories": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "components": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Jira components"
+                          },
+                          "sprints": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Jira sprints"
+                          },
+                          "issueTypes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Jira issue types"
+                          },
+                          "milestones": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "GitHub milestones"
+                          },
+                          "states": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "open",
+                                "closed"
+                              ]
+                            },
+                            "description": "GitHub states"
+                          },
+                          "areaPaths": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "ADO area paths"
+                          },
+                          "iterationPaths": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "ADO iteration paths"
+                          },
+                          "workItemTypes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "ADO work item types"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1
+                },
+                "customQuery": {
+                  "type": "string",
+                  "description": "Custom query for custom strategy (JQL/GraphQL/WIQL)",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "timeRange": {
+              "type": "object",
+              "description": "Time range configuration",
+              "properties": {
+                "default": {
+                  "type": "string",
+                  "description": "Default time range",
+                  "enum": [
+                    "1W",
+                    "2W",
+                    "1M",
+                    "3M",
+                    "6M",
+                    "1Y",
+                    "ALL"
+                  ],
+                  "default": "1M"
+                },
+                "max": {
+                  "type": "string",
+                  "description": "Maximum allowed time range",
+                  "enum": [
+                    "1W",
+                    "2W",
+                    "1M",
+                    "3M",
+                    "6M",
+                    "1Y",
+                    "ALL"
+                  ],
+                  "default": "6M"
+                }
+              },
+              "required": [
+                "default",
+                "max"
+              ]
+            },
+            "rateLimits": {
+              "type": "object",
+              "description": "Rate limiting configuration",
+              "properties": {
+                "maxItemsPerSync": {
+                  "type": "number",
+                  "description": "Maximum items to sync in one operation",
+                  "minimum": 1,
+                  "default": 500
+                },
+                "warnThreshold": {
+                  "type": "number",
+                  "description": "Warn when exceeding this threshold",
+                  "minimum": 1,
+                  "default": 100
+                }
+              }
+            },
+            "projectContext": {
+              "type": "object",
+              "description": "Project context for smart detection",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Project name"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Project description"
+                },
+                "keywords": {
+                  "type": "array",
+                  "description": "Keywords for auto-detection",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "team": {
+                  "type": "string",
+                  "description": "Team/organization name"
+                }
+              }
+            }
+          },
+          "required": [
+            "provider",
+            "displayName",
+            "config",
+            "timeRange"
+          ]
+        }
+      }
+    },
+    "projects": {
+      "type": "object",
+      "description": "Project contexts for organizing specs per project/team",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "description": "Project context",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique project identifier"
+            },
+            "name": {
+              "type": "string",
+              "description": "Project name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Project description"
+            },
+            "team": {
+              "type": "string",
+              "description": "Team/organization"
+            },
+            "keywords": {
+              "type": "array",
+              "description": "Keywords for auto-detection",
+              "items": {
+                "type": "string"
+              }
+            },
+            "defaultSyncProfile": {
+              "type": "string",
+              "description": "Default sync profile for this project"
+            },
+            "specsFolder": {
+              "type": "string",
+              "description": "Project-specific specs folder path"
+            },
+            "increments": {
+              "type": "array",
+              "description": "Related increments",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "description",
+            "keywords",
+            "specsFolder"
+          ]
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "description": "Global sync settings",
+      "properties": {
+        "autoDetectProject": {
+          "type": "boolean",
+          "description": "Auto-detect project from increment description",
+          "default": true
+        },
+        "autoCreateIssue": {
+          "type": "boolean",
+          "description": "Auto-create external issues (GitHub/Jira/ADO) when planning increments",
+          "default": false
+        },
+        "syncDirection": {
+          "type": "string",
+          "description": "Default sync direction between LOCAL (.specweave/) and EXTERNAL (GitHub/Jira/ADO). Options: 'bidirectional' (Local \u2194 External, recommended), 'to-external' (Local \u2192 External only), 'from-external' (External \u2192 Local only)",
+          "enum": [
+            "bidirectional",
+            "to-external",
+            "from-external"
+          ],
+          "default": "bidirectional"
+        },
+        "defaultTimeRange": {
+          "type": "string",
+          "description": "Default time range for new syncs",
+          "enum": [
+            "1W",
+            "2W",
+            "1M",
+            "3M",
+            "6M",
+            "1Y",
+            "ALL"
+          ],
+          "default": "1M"
+        },
+        "rateLimitProtection": {
+          "type": "boolean",
+          "description": "Enable rate limit protection",
+          "default": true
+        },
+        "conflictResolution": {
+          "type": "string",
+          "description": "How to resolve conflicts when both Local and External have changes. Options: 'prompt' (ask user), 'prefer-local' (Local wins), 'prefer-external' (External wins)",
+          "enum": [
+            "prompt",
+            "prefer-local",
+            "prefer-external"
+          ],
+          "default": "prompt"
+        }
+      }
+    },
+    "statusSync": {
+      "type": "object",
+      "description": "Status synchronization configuration between SpecWeave and external tools (v0.20.0+)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable status synchronization",
+          "default": true
+        },
+        "autoSync": {
+          "type": "boolean",
+          "description": "Automatically sync status changes on increment state transitions",
+          "default": true
+        },
+        "promptUser": {
+          "type": "boolean",
+          "description": "Prompt user before syncing status to external tools",
+          "default": true
+        },
+        "conflictResolution": {
+          "type": "string",
+          "description": "Default conflict resolution strategy when local and external statuses differ",
+          "enum": [
+            "prompt",
+            "last-write-wins",
+            "specweave-wins",
+            "external-wins"
+          ],
+          "default": "prompt"
+        },
+        "mappings": {
+          "type": "object",
+          "description": "Status mappings for each external tool",
+          "properties": {
+            "github": {
+              "$ref": "#/definitions/statusMapping",
+              "description": "GitHub status mappings (open/closed with labels)"
+            },
+            "jira": {
+              "$ref": "#/definitions/statusMapping",
+              "description": "JIRA status mappings (workflow states)"
+            },
+            "ado": {
+              "$ref": "#/definitions/statusMapping",
+              "description": "Azure DevOps status mappings (work item states)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "statusMapping": {
+      "type": "object",
+      "description": "Status mappings for a specific external tool",
+      "properties": {
+        "planning": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          ]
+        },
+        "active": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          ]
+        },
+        "paused": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          ]
+        },
+        "completed": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          ]
+        },
+        "abandoned": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "planning",
+        "active",
+        "paused",
+        "completed",
+        "abandoned"
+      ]
+    }
+  }
+}

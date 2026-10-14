@@ -19,6 +19,7 @@
 import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { registeredRepositories } from '../workspace/context.js';
 
 export interface PullRequestInfo {
   number: number;
@@ -110,11 +111,14 @@ function real(p: string): string {
 export function findNestedCheckouts(root: string): string[] {
   const base = path.join(root, 'repositories');
   const found: string[] = [];
+  if (fs.existsSync(path.join(root, '.specweave', 'config.json'))) {
+    for (const repo of registeredRepositories(root)) if (isCheckout(repo.absolutePath)) found.push(repo.absolutePath);
+  }
   for (const first of listDirs(base)) {
     if (isCheckout(first)) { found.push(first); continue; }
     for (const second of listDirs(first)) if (isCheckout(second)) found.push(second);
   }
-  return found.sort();
+  return [...new Map(found.map(p => [real(p), p])).values()].sort();
 }
 
 /** Worktrees Git records for a checkout (absolute paths, the checkout itself included). */

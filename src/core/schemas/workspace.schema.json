@@ -1,0 +1,209 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Unified workspace configuration (v3.0). Replaces umbrella, multiProject, and projectMappings.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Workspace display name",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "rootRepo": {
+      "type": "object",
+      "description": "Sync targets for the root/umbrella repo itself",
+      "properties": {
+        "github": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string",
+              "minLength": 1
+            },
+            "repo": {
+              "type": "string",
+              "minLength": 1
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "import",
+                "export",
+                "bidirectional"
+              ]
+            }
+          },
+          "required": [
+            "owner",
+            "repo"
+          ],
+          "additionalProperties": false
+        },
+        "jira": {
+          "type": "object",
+          "properties": {
+            "projectKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "domain": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "projectKey"
+          ],
+          "additionalProperties": false
+        },
+        "ado": {
+          "type": "object",
+          "properties": {
+            "organization": {
+              "type": "string"
+            },
+            "project": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "project"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "repos": {
+      "type": "array",
+      "description": "All repos in this workspace",
+      "items": {
+        "type": "object",
+        "description": "A repository within the workspace",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable workspace identifier; adopted repositories include the source owner",
+            "pattern": "^[a-z0-9-]+$",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "path": {
+            "type": "string",
+            "description": "Path to repo (relative or absolute)"
+          },
+          "identity": {
+            "type": "string",
+            "description": "Credential-free canonical origin host/owner/repository; checkout path remains distinct"
+          },
+          "prefix": {
+            "type": "string",
+            "description": "User story prefix for US-{PREFIX}-001 format",
+            "minLength": 1,
+            "maxLength": 10
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name (defaults to id)",
+            "maxLength": 128
+          },
+          "techStack": {
+            "type": "array",
+            "description": "Tech stack keywords",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string",
+            "description": "Repository role",
+            "enum": [
+              "frontend",
+              "backend",
+              "mobile",
+              "infra",
+              "shared",
+              "other"
+            ]
+          },
+          "sync": {
+            "type": "object",
+            "description": "Sync targets for this repo",
+            "properties": {
+              "github": {
+                "type": "object",
+                "properties": {
+                  "owner": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "repo": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "import",
+                      "export",
+                      "bidirectional"
+                    ]
+                  }
+                },
+                "required": [
+                  "owner",
+                  "repo"
+                ],
+                "additionalProperties": false
+              },
+              "jira": {
+                "type": "object",
+                "properties": {
+                  "projectKey": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "domain": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "projectKey"
+                ],
+                "additionalProperties": false
+              },
+              "ado": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "project"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "prefix"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "name",
+    "repos"
+  ],
+  "additionalProperties": false
+}
