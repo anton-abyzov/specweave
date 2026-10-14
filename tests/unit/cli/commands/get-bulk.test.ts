@@ -18,6 +18,7 @@ const mockLaunchCloneJob = vi.hoisted(() => vi.fn());
 const mockFs = vi.hoisted(() => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
+  statSync: vi.fn(),
   promises: { mkdir: vi.fn() },
 }));
 
@@ -52,6 +53,8 @@ describe('getCommand — bulk path', () => {
       p.endsWith('config.json') || p.endsWith('.specweave')
     );
     mockFs.readFileSync.mockReturnValue(umbrellaConfig);
+    // findEffectiveRoot() now confirms .specweave is a directory before trusting it.
+    mockFs.statSync.mockReturnValue({ isDirectory: () => true });
     mockLaunchCloneJob.mockResolvedValue({ job: { id: 'job-123' }, isBackground: true });
     mockExecFileNoThrow.mockResolvedValue({ stdout: '', stderr: '', exitCode: 0, success: true });
   });
