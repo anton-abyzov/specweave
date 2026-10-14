@@ -481,10 +481,12 @@ export interface WorkspaceRepoSync {
  * A repository within a workspace
  */
 export interface WorkspaceRepo {
-  /** Repo identifier — MUST match canonical source name */
+  /** Stable workspace identifier; newly adopted repos qualify the source name with its owner. */
   id: string;
   /** Path to repo (relative or absolute). May be absent in configs parsed from JSON. */
   path?: string;
+  /** Credential-free canonical origin, separate from checkout identity and display id. */
+  identity?: string;
   /** User story prefix for US-{PREFIX}-001 format */
   prefix: string;
   /** Display name (defaults to id if not set) */

@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 
 const CLI_PATH = path.resolve(__dirname, '../../../bin/specweave.js');
 
@@ -56,7 +56,8 @@ describe('create-increment CLI e2e', () => {
     expect(output.success).toBe(true);
     expect(output.createdFiles).toContain('metadata.json');
     expect(output.createdFiles).toContain('spec.md');
-    expect(output.createdFiles).toContain('tasks.md');
+    expect(output.createdFiles).not.toContain('tasks.md');
+    // 3.0 keeps tasks in the same spec so identity and task evidence travel together.
     // 2.0: plan.md is an optional overflow behind --with-plan; rubric.md is
     // written later by the planner (ensureRubricFile) / `specweave generate-rubric`.
     expect(output.createdFiles).not.toContain('plan.md');
@@ -68,7 +69,8 @@ describe('create-increment CLI e2e', () => {
     expect(fs.existsSync(path.join(incPath, 'metadata.json'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'spec.md'))).toBe(true);
     expect(fs.existsSync(path.join(incPath, 'plan.md'))).toBe(false);
-    expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(true);
+    expect(fs.existsSync(path.join(incPath, 'tasks.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(incPath, 'spec.md'), 'utf8')).toContain('## Tasks');
     expect(fs.existsSync(path.join(incPath, 'rubric.md'))).toBe(false);
     expect(fs.existsSync(path.join(incPath, 'reports', 'rubric.md'))).toBe(false);
 
@@ -81,6 +83,19 @@ describe('create-increment CLI e2e', () => {
     // create-increment writes `active` (use --planned for backlog work).
     expect(metadata.status).toBe('active');
     expect(metadata.type).toBe('feature');
+  });
+
+  it('creates increment 10000 through the actual CLI with a persistent UUID', () => {
+    fs.mkdirSync(path.join(incrementsPath, '_archive', '9999G-imported'), { recursive: true });
+    const result = execFileSync(process.execPath, [CLI_PATH, 'create-increment', 'Boundary feature', '--project', 'test-project', '--json'], { cwd: tempDir, encoding: 'utf8' });
+    const output = JSON.parse(result.trim().split('\n').pop()!);
+    expect(output.success).toBe(true);
+    const incPath = path.join(incrementsPath, '10000-boundary-feature');
+    const metadata = JSON.parse(fs.readFileSync(path.join(incPath, 'metadata.json'), 'utf8'));
+    expect(metadata.id).toBe('10000-boundary-feature');
+    expect(metadata.uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expect(fs.readFileSync(path.join(incPath, 'spec.md'), 'utf8')).toContain('## Tasks');
+    expect(fs.existsSync(path.join(incrementsPath, '_archive', '9999G-imported'))).toBe(true);
   });
 
   it('should create spec.md as template (not full content) via CLI', () => {
@@ -96,13 +111,14 @@ describe('create-increment CLI e2e', () => {
     const specPath = path.join(incrementsPath, '0001-template-check', 'spec.md');
     const content = fs.readFileSync(specPath, 'utf-8');
 
-    // Must be the 2.0 shape, still a template with markers
+    // 3.0 keeps human-editable task placeholders directly in spec.md.
     expect(content).toContain('## Problem');
     expect(content).toContain('## Scope');
     expect(content).toContain('## Acceptance Criteria');
     expect(content).toContain('## Approach');
     expect(content).toContain('- [ ] AC-01: [Specific, testable criterion]');
-    expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS');
+    expect(content).toContain('### T-01 [First task]');
+    expect(content).toContain('Files: [src/file.ts, tests/e2e/file.test.ts]');
 
     // Must NOT contain real user stories
     expect(content).not.toMatch(/\*\*As a\*\* new user/);
@@ -138,9 +154,10 @@ describe('create-increment CLI e2e', () => {
       { cwd: tempDir, encoding: 'utf-8' }
     );
 
-    const specPath = path.join(incrementsPath, '0001-board-test', 'spec.md');
-    const content = fs.readFileSync(specPath, 'utf-8');
-    expect(content).toContain('**Board**: frontend-team');
+    // 3.0 stores routing in metadata, keeping spec.md free of machine fields.
+    const metadataPath = path.join(incrementsPath, '0001-board-test', 'metadata.json');
+    const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+    expect(metadata.board).toBe('frontend-team');
   });
 
   it('should fail with error for duplicate increment numbers', () => {

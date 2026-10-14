@@ -1,3 +1,4 @@
+import { matchIncrementIds } from '../../utils/increment-id-validator.js';
 /**
  * QA Runner - Main orchestration logic for quality assessment
  *
@@ -438,21 +439,14 @@ async function runAIQualityAssessment(
 /**
  * Resolve increment path from 4-digit ID
  * Finds the full directory name (e.g., "0018-strict-increment-discipline-enforcement")
- * given just the 4-digit prefix (e.g., "0018")
+ * given an exact numeric alias (e.g., "0018" or "10000")
  */
 function resolveIncrementPath(incrementsDir: string, incrementId: string): string | null {
-  if (!fs.existsSync(incrementsDir)) {
-    return null;
-  }
-
-  const entries = fs.readdirSync(incrementsDir);
-  const matchingDir = entries.find((entry: string) => {
-    const fullPath = path.join(incrementsDir, entry);
-    // Match directories starting with the 4-digit ID
-    return fs.statSync(fullPath).isDirectory() && entry.startsWith(incrementId);
-  });
-
-  return matchingDir ? path.join(incrementsDir, matchingDir) : null;
+  if (!fs.existsSync(incrementsDir)) return null;
+  const names = fs.readdirSync(incrementsDir).filter(entry => fs.statSync(path.join(incrementsDir, entry)).isDirectory());
+  const matches = matchIncrementIds(names, incrementId);
+  if (matches.length > 1) throw new Error(`Ambiguous increment id "${incrementId}": ${matches.join(', ')}`);
+  return matches[0] ? path.join(incrementsDir, matches[0]) : null;
 }
 
 /**

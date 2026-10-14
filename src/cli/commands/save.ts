@@ -733,7 +733,7 @@ async function generateCommitMessage(
 
   if (incrementFiles.length > 0) {
     // Try to extract increment name
-    const match = incrementFiles[0].path.match(/increments\/(\d{4}[EGJA]?-[^/]+)/);
+    const match = incrementFiles[0].path.match(/increments\/(\d{3,}[EGJA]?-[^/]+)/);
     if (match) {
       incrementContext = ` (${match[1]})`;
     }

@@ -25,10 +25,14 @@ import { registerRepo } from '../helpers/get/register-repo.js';
 import { parseBulkSource, getAuthToken, buildBulkRepoList } from '../helpers/get/bulk-get.js';
 import { launchCloneJob } from '../../core/background/job-launcher.js';
 import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
-import { detectRepository } from '../../utils/git-utils.js';
-import { hasSpecweaveIncrements } from '../../utils/find-project-root.js';
+import { adoptRepository } from '../../core/workspace/adoption.js';
+import { findEffectiveRoot, hasSpecweaveIncrements } from '../../utils/find-project-root.js';
 
 export interface GetOptions {
+  dryRun?: boolean;
+  json?: boolean;
+  expectedFingerprint?: string;
+  sourceCwd?: string;
   branch?: string;
   prefix?: string;
   role?: string;
@@ -48,7 +52,7 @@ export interface GetOptions {
 }
 
 export async function getCommand(source: string, options: GetOptions = {}): Promise<void> {
-  const projectRoot = process.cwd();
+  const projectRoot = findEffectiveRoot() ?? process.cwd();
   const configPath = path.join(projectRoot, '.specweave', 'config.json');
 
   // Guard: must be a SpecWeave project
@@ -70,6 +74,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   // Bulk mode: detect glob/--all before single-repo path
   const bulkSource = parseBulkSource(source, { all: options.all, pattern: options.pattern });
   if (bulkSource) {
+    if (options.dryRun || options.json || options.expectedFingerprint) throw new Error('Preview options require a local checkout path');
     await _handleBulkGet(projectRoot, bulkSource, options);
     return;
   }
@@ -79,7 +84,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   // Parse source
   let parsed;
   try {
-    parsed = parseSource(source);
+    parsed = parseSource(source, options.sourceCwd);
   } catch (err) {
     console.log(chalk.red(`\n  ${err instanceof Error ? err.message : String(err)}\n`));
     process.exit(1);
@@ -91,40 +96,15 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   let repo = parsed.repo;
 
   if (parsed.type === 'local') {
-    const absolutePath = parsed.absolutePath!;
-
-    if (!fs.existsSync(absolutePath)) {
-      console.log(chalk.red(`\n  Path does not exist: ${absolutePath}\n`));
-      process.exit(1);
-      return;
-    }
-    if (!fs.existsSync(path.join(absolutePath, '.git'))) {
-      console.log(chalk.red(`\n  Not a git repository: ${absolutePath}\n`));
-      process.exit(1);
-      return;
-    }
-
-    // Detect owner/repo from git remote
-    const detected = await detectRepository('origin', absolutePath);
-    if (detected) {
-      owner = detected.owner;
-      repo = detected.repo;
-    } else {
-      // Fall back to directory name
-      repo = path.basename(absolutePath);
-      owner = '';
-    }
-
-    console.log(chalk.blue(`\n  Registering local repo: ${absolutePath}\n`));
-
-    if (usesRepositoriesLayout) {
-      const relPath = _relativeToProject(projectRoot, absolutePath);
-      await _registerAndInit(projectRoot, owner, repo, relPath, absolutePath, options, false);
-    } else {
-      console.log(chalk.yellow('  Not a repositories workspace — skipping registration.\n'));
+    const preview = await adoptRepository(projectRoot, parsed.absolutePath!, options);
+    if (options.json) console.log(JSON.stringify(preview));
+    else {
+      console.log(`${options.dryRun ? 'Preview: ' : ''}${preview.action === 'register' ? 'Register' : 'Already registered'} ${preview.repository.id} → ${preview.sourcePath}`);
+      if (preview.childPlanningRoot) console.log('Existing child planning root preserved. Select planning authority explicitly with --workspace.');
     }
     return;
   }
+  if (options.dryRun || options.json || options.expectedFingerprint) throw new Error('--dry-run, --json and --expected-fingerprint require a local checkout path');
 
   // Remote source: determine target directory
   // Use '_unknown' as owner fallback for generic git URLs with no detected org
@@ -248,7 +228,7 @@ async function _runInit(repoDir: string): Promise<void> {
     return;
   }
   console.log(chalk.dim('   Running specweave init...'));
-  const result = await execFileNoThrow('specweave', ['init', '.'], { cwd: repoDir });
+  const result = await execFileNoThrow('specweave', ['init', '.'], { cwd: repoDir, env: { SPECWEAVE_WORKSPACE: undefined } });
   if (result.exitCode === 0) {
     console.log(chalk.green('   Initialized with specweave'));
   } else {

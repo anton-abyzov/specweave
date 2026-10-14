@@ -626,7 +626,7 @@ async function validateProjectHealth(projectPath: string): Promise<string[]> {
   const incrementsDir = path.join(projectPath, '.specweave', 'increments');
   if (fs.existsSync(incrementsDir)) {
     try {
-      const dirs = fs.readdirSync(incrementsDir).filter(name => /^\d{4}/.test(name));
+      const dirs = fs.readdirSync(incrementsDir).filter(name => /^\d{3,}/.test(name));
       let activeCount = 0;
 
       for (const dir of dirs) {

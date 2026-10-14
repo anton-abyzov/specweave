@@ -6,6 +6,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseIncrementId, compareIncrementIds } from '../../../utils/increment-id-validator.js';
+import { findEffectiveRoot } from '../../../utils/find-project-root.js';
 import type { HookContext, HookInput } from './types.js';
 
 /** Single JSONL hook log per project; rotated once when it exceeds this size. */
@@ -19,18 +21,7 @@ export type HookLogLevel = 'warn' | 'error' | 'block';
  * Returns the project root path, or null if not found.
  */
 export function findProjectRoot(startDir?: string): string | null {
-  let current = path.resolve(startDir ?? process.cwd());
-  const root = path.parse(current).root;
-  let limit = 0;
-
-  while (current !== root && limit < 100) {
-    if (fs.existsSync(path.join(current, '.specweave', 'config.json'))) {
-      return current;
-    }
-    current = path.dirname(current);
-    limit++;
-  }
-  return null;
+  return findEffectiveRoot(startDir);
 }
 
 /** Build a HookContext from a project root path. */
@@ -83,8 +74,8 @@ export function isIncrementFile(filePath: string): boolean {
 
 /** `0874-crawl-coverage` from any increment path; 'unknown' otherwise. */
 export function extractIncrementId(filePath: string): string {
-  const m = normalizePath(filePath).match(/\.specweave\/increments\/(\d{4}E?-[^/]+)/);
-  return m ? m[1] : 'unknown';
+  const segment = normalizePath(filePath).match(/\.specweave\/increments\/([^/]+)/)?.[1];
+  return segment && parseIncrementId(segment, { allowLegacy: true }) ? segment : 'unknown';
 }
 
 /** Read + parse JSON, null on any failure. */
@@ -114,14 +105,14 @@ export function readActiveIncrements(projectRoot: string): string[] {
   const active: string[] = [];
   try {
     for (const dir of fs.readdirSync(incDir)) {
-      if (!/^\d{4}E?-/.test(dir)) continue;
+      if (!parseIncrementId(dir, { allowLegacy: true })) continue;
       const meta = readJsonSafe<{ status?: string }>(path.join(incDir, dir, 'metadata.json'));
       if (meta && (meta.status === 'active' || meta.status === 'in-progress')) active.push(dir);
     }
   } catch {
     // no increments dir
   }
-  return active.sort();
+  return active.sort(compareIncrementIds);
 }
 
 /**

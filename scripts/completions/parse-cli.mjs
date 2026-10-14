@@ -106,3 +106,12 @@ export function parseCliCommands(source) {
 export function visibleCommandNames(commands) {
   return commands.filter((c) => !c.hidden).map((c) => c.name);
 }
+
+/** Global Commander options declared before the first command. */
+export function parseGlobalOptions(source) {
+  const prelude = source.slice(0, source.indexOf(".command("));
+  return prelude.split('\n').flatMap(line => {
+    const option = OPTION_RE.exec(line);
+    return option ? [{ flags: unescape(option[1]), description: unescape(option[2]) }] : [];
+  });
+}

@@ -1139,7 +1139,7 @@ Auto-closed by SpecWeave`;
       const entries = await fs.readdir(subDir, { withFileTypes: true });
       for (const entry of entries) {
         if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
-        const match = entry.name.match(/^(\d{4})/);
+        const match = entry.name.match(/^(\d{3,})(?=[A-Za-z]?-)/);
         if (match) {
           const num = parseInt(match[1], 10);
           fsIds.add(`FS-${String(num).padStart(3, '0')}`);
@@ -1157,7 +1157,7 @@ Auto-closed by SpecWeave`;
       try {
         const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
         if (metadata.status === 'completed' || metadata.status === 'abandoned') {
-          const match = entry.name.match(/^(\d{4})/);
+          const match = entry.name.match(/^(\d{3,})(?=[A-Za-z]?-)/);
           if (match) {
             const num = parseInt(match[1], 10);
             fsIds.add(`FS-${String(num).padStart(3, '0')}`);

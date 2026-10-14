@@ -182,16 +182,16 @@ describe('create-increment --auto-id', () => {
     });
 
     expect(result.success).toBe(true);
-    // Gap-filling: 0001 taken → next gap is 0002
+    // Sequential allocation: 0001 taken → next gap is 0002
     expect(result.incrementPath).toContain('0002-retry-feature');
   });
 
-  it('should handle race condition where dir is created between scan and mkdir', async () => {
+  it('sequential creation observes the first numeric reservation', async () => {
     const { createIncrementTemplates } = await import(
       '../../../../src/core/increment/template-creator.js'
     );
 
-    // Simulate race: two calls both get 0001, first wins, second retries to 0002
+    // Sequential regression; real process and worktree races live in increment-identity.
     // Call 1: succeeds with 0001
     const result1 = await createIncrementTemplates({
       incrementId: '',
@@ -221,12 +221,12 @@ describe('create-increment --auto-id', () => {
     expect(result2.incrementPath).toContain('0002-race-b');
   });
 
-  it('should fail after max retry attempts when all IDs are taken', async () => {
+  it('allocates after many existing increments', async () => {
     const { createIncrementTemplates } = await import(
       '../../../../src/core/increment/template-creator.js'
     );
 
-    // The retry loop generates IDs via getNextIncrementNumber which does gap-filling.
+    // The retry loop generates IDs via getNextIncrementNumber which does sequential allocation.
     // If an EEXIST occurs, it re-scans. We need to create dirs DURING the retry
     // to simulate continuous races. Use a watcher on the increments dir.
     const created: string[] = [];
@@ -249,7 +249,7 @@ describe('create-increment --auto-id', () => {
     });
 
     // Pre-create 0001 through 0015 to cause many retries
-    // Since gap-filling finds first gap, and we fill gaps as they appear
+    // Since sequential allocation finds first gap, and we fill gaps as they appear
     for (let i = 1; i <= 15; i++) {
       fs.mkdirSync(path.join(incrementsPath, `${String(i).padStart(4, '0')}-blocker`));
     }
@@ -266,7 +266,7 @@ describe('create-increment --auto-id', () => {
 
     watcher.close();
 
-    // With 15 pre-created blockers, gap-filling starts at 0016
+    // With 15 pre-created blockers, sequential allocation starts at 0016
     // The retry loop should succeed (EEXIST only happens when dir already exists)
     // To truly exhaust retries we'd need the dir to be created between scan and mkdir
     // 10 times in a row, which is hard to simulate reliably without mocks.

@@ -162,11 +162,11 @@ describe('IncrementNumberManager - Sequential (max+1)', () => {
     expect(id).toBe('0004E-second'); // max(1,3) + 1, NOT gap-filling
   });
 
-  it('should throw when reaching 9999', () => {
+  it('continues at10000 when reaching9999', () => {
     fs.mkdirSync(path.join(incrementsDir, '9999-last'));
 
-    expect(() => {
-      IncrementNumberManager.getNextIncrementNumber(testDir);
-    }).toThrow('Increment number overflow');
+    expect(IncrementNumberManager.getNextIncrementNumber(testDir)).toBe('10000');
+    fs.mkdirSync(path.join(incrementsDir, '10000-next'));
+    expect(IncrementNumberManager.getNextIncrementNumber(testDir)).toBe('10001');
   });
 });

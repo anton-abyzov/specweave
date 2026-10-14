@@ -200,6 +200,7 @@ export interface UmbrellaParentResult {
  * A discovered child repository inside repositories/{org}/{name}
  */
 export interface DiscoveredRepo {
+  registered?: import('../../../core/config/types.js').WorkspaceRepo;
   org: string;
   name: string;
   path: string;

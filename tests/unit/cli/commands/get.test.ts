@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as path from 'path';
 
+const mockAdoptRepository = vi.hoisted(() => vi.fn());
 const mockCloneRepo = vi.hoisted(() => vi.fn());
 const mockRegisterRepo = vi.hoisted(() => vi.fn());
 const mockExecFileNoThrow = vi.hoisted(() => vi.fn());
@@ -13,6 +14,7 @@ const mockFs = vi.hoisted(() => ({
   promises: { mkdir: vi.fn() },
 }));
 
+vi.mock('../../../../src/core/workspace/adoption.js', () => ({ adoptRepository: mockAdoptRepository }));
 vi.mock('../../../../src/cli/helpers/get/clone-repo.js', () => ({ cloneRepo: mockCloneRepo }));
 vi.mock('../../../../src/cli/helpers/get/register-repo.js', () => ({ registerRepo: mockRegisterRepo }));
 vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({ execFileNoThrow: mockExecFileNoThrow }));
@@ -53,6 +55,7 @@ describe('getCommand', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockCloneRepo.mockResolvedValue({ cloned: true, repoPath: path.join(projectRoot, 'repositories', 'org', 'repo') });
+    mockAdoptRepository.mockResolvedValue({ action: 'register', repository: { id: 'org-my-service' }, sourcePath: '/home/user/my-service', childPlanningRoot: null });
     mockRegisterRepo.mockResolvedValue({ registered: true, alreadyRegistered: false });
     mockExecFileNoThrow.mockResolvedValue({ exitCode: 0, stdout: '', stderr: '', success: true });
 
@@ -116,13 +119,8 @@ describe('getCommand', () => {
       await getCommand(localPath, { init: false });
 
       expect(mockCloneRepo).not.toHaveBeenCalled();
-      expect(mockRegisterRepo).toHaveBeenCalledWith(
-        projectRoot,
-        'org',
-        'my-service',
-        path.normalize('repositories/org/my-service'),
-        expect.objectContaining({ prefix: undefined, role: undefined }),
-      );
+      expect(mockAdoptRepository).toHaveBeenCalledWith(projectRoot, localPath, { init: false });
+      expect(mockExecFileNoThrow).not.toHaveBeenCalled();
     });
   });
 
@@ -140,7 +138,8 @@ describe('getCommand', () => {
       await getCommand(localPath);
 
       expect(mockCloneRepo).not.toHaveBeenCalled();
-      expect(mockRegisterRepo).toHaveBeenCalled();
+      expect(mockAdoptRepository).toHaveBeenCalledWith(projectRoot, localPath, {});
+      expect(mockExecFileNoThrow).not.toHaveBeenCalled();
     });
   });
 
@@ -180,7 +179,7 @@ describe('getCommand', () => {
       expect(mockProcessExit).toHaveBeenCalledWith(1);
     });
 
-    it('exits 1 when local path does not exist', async () => {
+    it('rejects when local path does not exist', async () => {
       vi.spyOn(process, 'exit').mockImplementation(mockProcessExit as any);
       mockFs.existsSync.mockImplementation((p: string) => {
         if (p === configPath) return true;
@@ -188,9 +187,10 @@ describe('getCommand', () => {
       });
       mockFs.readFileSync.mockReturnValue(umbrellaConfig);
 
-      await getCommand('./nonexistent');
-
-      expect(mockProcessExit).toHaveBeenCalledWith(1);
+      mockAdoptRepository.mockRejectedValue(new Error('Repository does not exist'));
+      await expect(getCommand('./nonexistent')).rejects.toThrow('does not exist');
+      expect(mockRegisterRepo).not.toHaveBeenCalled();
+      expect(mockExecFileNoThrow).not.toHaveBeenCalled();
     });
 
     it('exits 1 when clone fails', async () => {

@@ -1,126 +1,79 @@
-/**
- * Increment ID Validator
- *
- * SECURITY: Centralized validation for increment IDs to prevent path traversal attacks.
- * Increment IDs are used in file paths - malicious IDs like "../../etc/passwd" could
- * escape the .specweave/increments directory.
- *
- * Valid formats:
- * - Standard: NNNN-name (e.g., "0001-feature-name")
- * - External: NNNNE-name (e.g., "0111E-external-import")
- * - Archived: Same as above, stored in _archive/
- *
- * @module utils/increment-id-validator
- */
+/** Shared increment ID syntax. Four digits are minimum padding, never a ceiling. */
+export interface ParsedIncrementId {
+  id: string;
+  number: number;
+  /** Canonical numeric alias, without an import suffix. */
+  numberText: string;
+  suffix: string;
+  name: string;
+}
 
-/**
- * Validates increment ID format to prevent path traversal attacks.
- *
- * @param id - Increment ID to validate
- * @returns true if ID format is valid, false otherwise
- *
- * @example
- * isValidIncrementId('0001-feature-name') // true
- * isValidIncrementId('0111E-external')    // true
- * isValidIncrementId('0001A-hotfix')      // true (alpha suffix)
- * isValidIncrementId('../../etc')         // false (path traversal)
- * isValidIncrementId('')                  // false (empty)
- * isValidIncrementId('001-short')         // false (only 3 digits)
- */
+export function formatIncrementNumber(number: number): string {
+  if (!Number.isSafeInteger(number) || number < 1) {
+    throw new Error('Increment number must be a positive safe integer');
+  }
+  return String(number).padStart(4, '0');
+}
+
+/** Readers accept old three-digit IDs and underscores without renaming them. */
+export function parseIncrementId(id: string, options: { allowLegacy?: boolean } = {}): ParsedIncrementId | null {
+  if (typeof id !== 'string') return null;
+  const pattern = options.allowLegacy
+    ? /^(\d{3,})([A-Za-z]?)-([a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?)$/
+    : /^(\d{4,})([A-Za-z]?)-([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)$/;
+  const match = id.match(pattern);
+  if (!match) return null;
+  const number = Number(match[1]);
+  if (!Number.isSafeInteger(number) || number < 1) return null;
+  return { id, number, numberText: formatIncrementNumber(number), suffix: match[2], name: match[3] };
+}
+
 export function isValidIncrementId(id: string): boolean {
-  if (!id || typeof id !== 'string') {
-    return false;
-  }
-
-  // Expected format:
-  // - 4 digits (0000-9999)
-  // - Optional single letter suffix (A-Z, a-z, or E for external)
-  // - Hyphen
-  // - Kebab-case name (alphanumeric and hyphens, no leading/trailing hyphens)
-  //
-  // Regex breakdown:
-  // ^\d{4}     - Must start with exactly 4 digits
-  // [A-Za-z]?  - Optional single letter suffix
-  // -          - Required hyphen separator
-  // [a-zA-Z0-9] - Name must start with alphanumeric
-  // [a-zA-Z0-9-]* - Rest of name can include hyphens
-  // [a-zA-Z0-9]$ - Name must end with alphanumeric (prevents trailing hyphen)
-  // OR
-  // [a-zA-Z0-9]$ - Single character name is also valid
-  //
-  // Note: We don't allow dots, slashes, or other path-sensitive characters
-  if (!/^\d{4}[A-Za-z]?-[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(id)) {
-    return false;
-  }
-
-  // Reject 0000 — increment numbers must be 0001+
-  const num = parseInt(id.slice(0, 4), 10);
-  return num > 0;
+  return parseIncrementId(id) !== null;
 }
 
-/**
- * Validates increment ID and throws an error if invalid.
- *
- * Use this in entry points (CLI commands, API handlers) where you want to
- * fail fast with a clear error message.
- *
- * @param id - Increment ID to validate
- * @throws Error if ID format is invalid
- *
- * @example
- * validateIncrementId('0001-feature'); // passes
- * validateIncrementId('../../etc');    // throws Error
- */
-export function validateIncrementId(id: string): void {
-  if (!isValidIncrementId(id)) {
-    throw new Error(
-      `Invalid increment ID format: "${id}". ` +
-      `Expected format: NNNN-name (e.g., "0001-feature-name") or NNNNE-name for external imports.`
-    );
+export function validateIncrementId(id: string, options: { allowLegacy?: boolean } = {}): void {
+  if (!parseIncrementId(id, options)) {
+    throw new Error(`Invalid increment ID format: "${id}". Expected format: NNNN-name (four or more digits), e.g. "0001-feature-name" or "10000G-import".`);
   }
 }
 
-/**
- * Sanitizes an increment ID by extracting just the number prefix.
- * Useful for sorting or comparison operations.
- *
- * @param id - Increment ID to extract number from
- * @returns Numeric prefix (e.g., 1 for "0001-feature") or null if invalid
- *
- * @example
- * extractIncrementNumber('0053-feature')  // 53
- * extractIncrementNumber('0111E-external') // 111
- * extractIncrementNumber('invalid')       // null
- */
+/** Numeric extraction requires a boundary; it never truncates a longer number. */
 export function extractIncrementNumber(id: string): number | null {
-  if (!id || typeof id !== 'string') {
-    return null;
-  }
-
-  const match = id.match(/^(\d{4})/);
-  if (!match) {
-    return null;
-  }
-
-  return parseInt(match[1], 10);
+  if (typeof id !== 'string') return null;
+  const match = id.match(/^(\d{4,})(?:[A-Za-z])?(?=-|$)/);
+  if (!match) return null;
+  const number = Number(match[1]);
+  return Number.isSafeInteger(number) ? number : null;
 }
 
-/**
- * Checks if an increment ID has the external suffix (E).
- *
- * External increments are imported from external tools (GitHub, JIRA, ADO)
- * and have read-only sync behavior.
- *
- * @param id - Increment ID to check
- * @returns true if this is an external increment
- *
- * @example
- * isExternalIncrement('0111E-jira-import') // true
- * isExternalIncrement('0001-feature')      // false
- */
 export function isExternalIncrement(id: string): boolean {
-  if (!isValidIncrementId(id)) {
-    return false;
-  }
-  return /^\d{4}E-/.test(id);
+  return parseIncrementId(id)?.suffix === 'E';
+}
+
+export function compareIncrementIds(a: string, b: string): number {
+  const x = parseIncrementId(a, { allowLegacy: true });
+  const y = parseIncrementId(b, { allowLegacy: true });
+  return x && y ? x.number - y.number || a.localeCompare(b) : a.localeCompare(b);
+}
+
+/** Bare numeric aliases match the whole number, optionally an exact suffix. */
+export function parseIncrementAlias(value: string): { number: number; suffix: string } | null {
+  if (typeof value !== 'string') return null;
+  const match = value.match(/^(\d+)([A-Za-z]?)$/);
+  const number = match ? Number(match[1]) : 0;
+  return match && Number.isSafeInteger(number) && number > 0 ? { number, suffix: match[2].toUpperCase() } : null;
+}
+
+export function matchesIncrementAlias(id: string, alias: string): boolean {
+  const parsed = parseIncrementId(id, { allowLegacy: true });
+  const query = parseIncrementAlias(alias);
+  return !!parsed && !!query && parsed.number === query.number && (!query.suffix || parsed.suffix.toUpperCase() === query.suffix);
+}
+
+/** Shared selection policy for readers with different filesystem adapters. */
+export function matchIncrementIds(ids: string[], query: string): string[] {
+  const valid = ids.filter(id => parseIncrementId(id, { allowLegacy: true }));
+  if (valid.includes(query)) return [query];
+  return valid.filter(id => matchesIncrementAlias(id, query)).sort(compareIncrementIds);
 }

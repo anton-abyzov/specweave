@@ -1,3 +1,4 @@
+import { parseIncrementId, matchesIncrementAlias } from '../../utils/increment-id-validator.js';
 /**
  * CLI Command: sync-progress
  *
@@ -671,41 +672,25 @@ async function detectActiveIncrement(projectRoot: string, logger: Logger): Promi
  * Find increment path (active or archived)
  */
 async function findIncrementPath(projectRoot: string, incrementId: string): Promise<string | null> {
-  // Check active first
-  const activePath = path.join(projectRoot, '.specweave/increments', incrementId);
-  if (existsSync(activePath)) {
-    return activePath;
+  // A full name is already unambiguous; preserve active-before-archive lookup.
+  if (parseIncrementId(incrementId, { allowLegacy: true })) {
+    for (const group of ['', '_archive']) {
+      const exact = path.join(projectRoot, '.specweave/increments', group, incrementId);
+      if (existsSync(exact)) return exact;
+    }
   }
-
-  // Check archive
-  const archivePath = path.join(projectRoot, '.specweave/increments/_archive', incrementId);
-  if (existsSync(archivePath)) {
-    return archivePath;
-  }
-
-  // Try to find by prefix (e.g., "0001" matching "0001-feature-name")
+  const matches: string[] = [];
   const incrementsDir = path.join(projectRoot, '.specweave/increments');
-  if (existsSync(incrementsDir)) {
-    const entries = await fs.readdir(incrementsDir);
-    for (const entry of entries) {
-      if (entry.startsWith(incrementId + '-') || entry === incrementId) {
-        return path.join(incrementsDir, entry);
-      }
-    }
-
-    // Check archive
-    const archiveDir = path.join(incrementsDir, '_archive');
-    if (existsSync(archiveDir)) {
-      const archiveEntries = await fs.readdir(archiveDir);
-      for (const entry of archiveEntries) {
-        if (entry.startsWith(incrementId + '-') || entry === incrementId) {
-          return path.join(archiveDir, entry);
-        }
-      }
+  for (const group of ['', '_archive']) {
+    const dir = path.join(incrementsDir, group);
+    if (!existsSync(dir)) continue;
+    for (const entry of await fs.readdir(dir)) {
+      if (!parseIncrementId(entry, { allowLegacy: true }) || !existsSync(path.join(dir, entry))) continue;
+      if (entry === incrementId || matchesIncrementAlias(entry, incrementId)) matches.push(path.join(dir, entry));
     }
   }
-
-  return null;
+  if (matches.length > 1) throw new Error(`Ambiguous increment id "${incrementId}": ${matches.join(', ')}`);
+  return matches[0] ?? null;
 }
 
 /**

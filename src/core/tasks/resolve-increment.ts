@@ -16,6 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 import { loadTaskBoard } from './task-board.js';
+import { parseIncrementId, compareIncrementIds } from '../../utils/increment-id-validator.js';
 
 export interface ResolvedIncrement {
   id: string;
@@ -49,7 +50,7 @@ function listIncrementIdsWithStatus(projectRoot: string, statuses: Set<string>):
   if (!fs.existsSync(dir)) return [];
   const ids: string[] = [];
   for (const entry of fs.readdirSync(dir)) {
-    if (!/^\d{4}/.test(entry)) continue;
+    if (!parseIncrementId(entry, { allowLegacy: true })) continue;
     const meta = path.join(dir, entry, 'metadata.json');
     if (!fs.existsSync(meta)) continue;
     try {
@@ -59,7 +60,7 @@ function listIncrementIdsWithStatus(projectRoot: string, statuses: Set<string>):
       // unreadable metadata → not a candidate
     }
   }
-  return ids.sort();
+  return ids.sort(compareIncrementIds);
 }
 
 /** Ids of increments whose metadata.json says `active` (read-only scan). */
