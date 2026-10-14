@@ -1,6 +1,7 @@
 /** Adopt existing checkouts by registering them; never initialize, copy or move their contents. */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { devNull } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { canonicalPath, readWorkspaceConfig, type RegisteredRepository } from './context.js';
@@ -32,6 +33,7 @@ export function normalizeRemote(value: string): string | undefined {
   if (!['https:', 'http:', 'ssh:', 'git:'].includes(url.protocol) || !url.hostname) return undefined;
   let remotePath = url.pathname.replace(/^\/+|\/+$/g, '').replace(/\.git$/i, '');
   if (!remotePath || remotePath.includes('..') || /[\s\\]/.test(remotePath)) return undefined;
+  if ((url.protocol === 'ssh:' && url.port === '22') || (url.protocol === 'git:' && url.port === '9418')) url.port = '';
   if (url.hostname.toLowerCase() === 'github.com') remotePath = remotePath.toLowerCase();
   return `${url.host.toLowerCase()}/${remotePath}`;
 }
@@ -42,15 +44,20 @@ function inspectCheckout(source: string): { root: string; identity?: string } {
   if (!fs.statSync(root).isDirectory() || !fs.existsSync(path.join(root, '.git'))) {
     throw new Error(`Not a Git checkout root: ${root}`);
   }
+  // The selected checkout, not Git state inherited from an enclosing hook or
+  // another repo, owns both the root check and the observed remote identity.
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key];
+  Object.assign(env, { GIT_OPTIONAL_LOCKS: '0', GIT_TERMINAL_PROMPT: '0', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: devNull });
   const git = (args: string[]) => execFileSync('git', args, {
     cwd: root, encoding: 'utf8', timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', GIT_TERMINAL_PROMPT: '0' },
+    env,
   }).trim();
   try {
     if (canonicalPath(git(['rev-parse', '--show-toplevel'])) !== root) throw new Error('Not checkout root');
   } catch { throw new Error(`Not a valid Git checkout root: ${root}`); }
   let identity: string | undefined;
-  try { identity = normalizeRemote(git(['remote', 'get-url', 'origin'])); } catch { /* Local-only checkout. */ }
+  try { identity = normalizeRemote(git(['config', '--local', '--get', 'remote.origin.url'])); } catch { /* Local-only checkout. */ }
   return { root, identity };
 }
 

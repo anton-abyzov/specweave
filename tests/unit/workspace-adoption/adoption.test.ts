@@ -8,16 +8,43 @@ import { registerRepo } from '../../../src/cli/helpers/get/register-repo.js';
 import { getCommand } from '../../../src/cli/commands/get.js';
 import { sandbox, workspace, checkout, git, cleanup } from './fixtures.js';
 
-afterEach(() => { vi.restoreAllMocks(); cleanup(); });
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); cleanup(); });
 const read = (root: string) => JSON.parse(fs.readFileSync(path.join(root, '.specweave/config.json'), 'utf8'));
 describe('existing checkout adoption', () => {
   it.each([
     ['https://secret:password@GitHub.com/Org/API.git?token=secret#fragment', 'github.com/org/api'],
     ['git@github.com:Org/API.git', 'github.com/org/api'],
+    ['ssh://git@github.com:22/Org/API.git', 'github.com/org/api'],
+    ['ssh://git@github.com:2222/Org/API.git', 'github.com:2222/org/api'],
+    ['git://host:9418/Owner/Repo.git', 'host/Owner/Repo'],
+    ['git://host:9419/Owner/Repo.git', 'host:9419/Owner/Repo'],
     ['ssh://git@gitlab.example:2222/Group/Sub/API.git', 'gitlab.example:2222/Group/Sub/API'],
     ['git://host/Owner/Repo.git/', 'host/Owner/Repo'],
     ['/local/path', undefined], ['file:///local/path', undefined], ['https://host/', undefined], ['https://host/a/has..dots', undefined],
   ])('normalizes %s without credentials', (input, expected) => expect(normalizeRemote(input)).toBe(expected));
+  it.each(['checkout', 'config-count', 'config-parameters'])('ignores foreign Git %s environment while inspecting the selected repo', async mode => {
+    const base = sandbox(), root = workspace(path.join(base, 'planning'));
+    const actual = checkout(path.join(base, 'actual'), 'https://github.com/actual/api');
+    const foreign = checkout(path.join(base, 'foreign'), 'https://github.com/foreign/api');
+    const foreignConfig = fs.readFileSync(path.join(foreign, '.git/config'), 'utf8');
+    if (mode === 'checkout') vi.stubEnv('GIT_DIR', path.join(foreign, '.git'));
+    if (mode === 'config-count') {
+      vi.stubEnv('GIT_CONFIG_COUNT', '1'); vi.stubEnv('GIT_CONFIG_KEY_0', 'remote.origin.url');
+      vi.stubEnv('GIT_CONFIG_VALUE_0', 'https://github.com/foreign/api');
+    }
+    if (mode === 'config-parameters') vi.stubEnv('GIT_CONFIG_PARAMETERS', "'remote.origin.url=https://github.com/foreign/api'");
+    expect(previewAdoption(root, actual).repository.identity).toBe('github.com/actual/api');
+    expect((await adoptRepository(root, actual)).repository.id).toBe('actual-api');
+    expect(fs.readFileSync(path.join(foreign, '.git/config'), 'utf8')).toBe(foreignConfig);
+  });
+  it('uses the raw local origin rather than transport URL rewrites', async () => {
+    const base = sandbox(), root = workspace(path.join(base, 'planning'));
+    const repo = checkout(path.join(base, 'api'), 'https://github.com/actual/api');
+    git(repo, ['config', '--local', 'url.https://mirror.example/.insteadOf', 'https://github.com/']);
+    expect(git(repo, ['remote', 'get-url', 'origin'])).toBe('https://mirror.example/actual/api');
+    expect(previewAdoption(root, repo).repository.identity).toBe('github.com/actual/api');
+    expect((await adoptRepository(root, repo)).repository.identity).toBe('github.com/actual/api');
+  });
   it('previews then adopts without changing history, dirty files, child config or untracked files', async () => {
     const base = sandbox(), root = workspace(path.join(base, 'planning'), [], { customSetting: { preserved: true } });
     const repo = checkout(path.join(base, 'api'), 'git@github.com:owner/api.git');
