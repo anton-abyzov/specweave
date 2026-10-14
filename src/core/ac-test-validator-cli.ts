@@ -34,7 +34,7 @@ getChalk().then(c => { chalk = c; }).catch((err) => {
  * Valid format: 4 digits followed by alphanumeric/hyphen name (e.g., "0001-feature-name")
  */
 function isValidIncrementId(id: string): boolean {
-  return /^\d{4}[A-Za-z]?-[a-zA-Z0-9-]+$/.test(id);
+  return /^\d{3,}[A-Za-z]?-[a-zA-Z0-9-]+$/.test(id);
 }
 
 async function main() {

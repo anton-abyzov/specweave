@@ -1,3 +1,4 @@
+import { parseIncrementId, compareIncrementIds } from '../../utils/increment-id-validator.js';
 /**
  * Auto Status CLI Command (Simplified)
  *
@@ -151,7 +152,7 @@ function findActiveIncrements(incrementsDir: string): string[] {
   const increments: string[] = [];
 
   for (const entry of fs.readdirSync(incrementsDir)) {
-    if (!/^[0-9]{4}-/.test(entry)) continue;
+    if (!parseIncrementId(entry, { allowLegacy: true })) continue;
 
     const metaPath = path.join(incrementsDir, entry, 'metadata.json');
     if (fs.existsSync(metaPath)) {
@@ -166,5 +167,5 @@ function findActiveIncrements(incrementsDir: string): string[] {
     }
   }
 
-  return increments;
+  return increments.sort(compareIncrementIds);
 }

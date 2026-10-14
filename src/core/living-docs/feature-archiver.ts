@@ -601,7 +601,7 @@ export class FeatureArchiver {
 
           // Parse Implementation History table
           // Pattern: [0060-name](path/to/increments/0060-name/spec.md)
-          const incrementPattern = /\[(\d{4}-[^\]]+)\]\([^)]*increments[^)]*\/(\d{4}-[^\/)]+)/g;
+          const incrementPattern = /\[(\d{3,}[A-Za-z]?-[^\]]+)\]\([^)]*increments[^)]*\/(\d{3,}[A-Za-z]?-[^\/)]+)/g;
           let match;
 
           while ((match = incrementPattern.exec(content)) !== null) {
@@ -726,7 +726,7 @@ export class FeatureArchiver {
   private inferFeatureIdFromIncrement(increment: string): string | null {
     // Extract 4-digit number prefix and optional E suffix
     // Pattern: NNNN or NNNNE (e.g., 0041, 0111E)
-    const match = increment.match(/^(\d{4})(E)?/);
+    const match = increment.match(/^(\d{3,})([EGJA])?(?=-|$)/);
     if (!match) {
       return null; // Can't infer (no number prefix)
     }
@@ -880,7 +880,7 @@ export class FeatureArchiver {
 
         // Extract increment number and optional E suffix from Implementation History
         // CRITICAL (v0.33.0): Handle external increments like [0111E-name](...)
-        const match = content.match(/\[(\d{4})(E)?-[^\]]+\]\([^)]*increments/);
+        const match = content.match(/\[(\d{3,})(E)?-[^\]]+\]\([^)]*increments/);
 
         if (!match) {
           continue; // No increment reference found

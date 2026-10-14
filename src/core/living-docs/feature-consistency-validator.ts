@@ -287,7 +287,7 @@ export class FeatureConsistencyValidator {
       const content = await fs.readFile(featureFilePath, 'utf-8');
 
       // Look for increment link pattern: [0062-test-living-docs-auto-sync](...)
-      const incrementMatch = content.match(/\[(\d{4}-[^\]]+)\]\([^)]+\)/);
+      const incrementMatch = content.match(/\[(\d{3,}[A-Za-z]?-[^\]]+)\]\([^)]+\)/);
       if (incrementMatch) {
         return incrementMatch[1];
       }

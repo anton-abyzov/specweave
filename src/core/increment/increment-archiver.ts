@@ -1,3 +1,4 @@
+import { matchesIncrementAlias } from '../../utils/increment-id-validator.js';
 /**
  * Increment Archiver - Smart archiving system for completed increments
  *
@@ -137,10 +138,14 @@ export class IncrementArchiver {
     const allIncrements = await this.getIncrements();
 
     for (const target of incrementIds) {
-      const increment = allIncrements.find(inc => {
-        const incNumber = inc.split('-')[0];
-        return inc === target || incNumber === target.padStart(4, '0');
-      });
+      const exact = allIncrements.filter(inc => inc === target);
+      const matches = exact.length ? exact : allIncrements.filter(inc => matchesIncrementAlias(inc, target));
+      if (matches.length > 1) {
+        this.logger.warn(`Ambiguous increment id "${target}": ${matches.join(', ')}`);
+        result.errors.push(target);
+        continue;
+      }
+      const increment = matches[0];
 
       if (!increment) {
         this.logger.warn(`Increment not found: ${target}`);
@@ -938,7 +943,7 @@ export class IncrementArchiver {
   private inferFeatureIdFromIncrement(increment: string): string | null {
     // Extract 4-digit number prefix and optional E suffix
     // Pattern: NNNN or NNNNE (e.g., 0041, 0111E)
-    const match = increment.match(/^(\d{4})(E)?/);
+    const match = increment.match(/^(\d{3,})([EGJA])?(?=-|$)/);
     if (!match) {
       return null; // Can't infer (no number prefix)
     }

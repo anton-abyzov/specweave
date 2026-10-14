@@ -111,7 +111,7 @@ for spec_file in $staged_specs; do
       }
 
       // Validate increment ID format (0001-feature-name)
-      const incrementIdRegex = /^[0-9]{4}-[a-z0-9-]+$/;
+      const incrementIdRegex = /^[0-9]{3,}[A-Za-z]?-[a-z0-9-]+$/;
       if (!incrementIdRegex.test(frontmatter.increment)) {
         console.log('ERROR: Invalid increment ID format: \"' + frontmatter.increment + '\"');
         console.log('EXPECTED: 4-digit number + hyphen + kebab-case name');
