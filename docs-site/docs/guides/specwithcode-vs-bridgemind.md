@@ -31,4 +31,4 @@ when you want voice-first work (dictation and a voice teammate), a 3D view of yo
 
 when you want one coordinator to split work across Claude Code, Codex, Grok and Cursor threads on your own machines, keep the spec and evidence in git so the work survives a usage limit or a tool switch, and pay nothing for the workspace.
 
-[Download SpecWithCode](/studio) or read [how projects work](/docs/studio/projects).
+[Download SpecWithCode](/code/) or read [how projects work](/docs/studio/projects).

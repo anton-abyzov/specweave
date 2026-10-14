@@ -24,7 +24,7 @@ export default function Product() {
         <div className={styles.heroText}>
           <span className={styles.eyebrow}><span className={styles.orangeDot} />SpecWeave CLI 3.0 / the record under SpecWithCode</span>
           <h1>The work outlives<br /><em>the session.</em></h1>
-          <p className={styles.lead}>Your agent writes the code. SpecWeave keeps what done means, what actually happened and where you stopped, as plain files in git. Any tool, any account and any model can read them, and <Link to="/studio">SpecWithCode</Link> can read its project plans from them.</p>
+          <p className={styles.lead}>Your agent writes the code. SpecWeave keeps what done means, what actually happened and where you stopped, as plain files in git. Any tool, any account and any model can read them, and <Link to="/code/">SpecWithCode</Link> can read its project plans from them.</p>
           <div className={styles.actions}>
             <Link className={styles.primary} to="/docs/getting-started">Start in your project <span aria-hidden="true">↗</span></Link>
             <Link className={styles.textLink} to="/docs/overview/how-it-works">How it works, with diagrams</Link>
