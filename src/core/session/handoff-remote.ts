@@ -1,3 +1,4 @@
+import { matchesIncrementAlias, parseIncrementId } from '../../utils/increment-id-validator.js';
 /**
  * Handoff through the Git remote, so "hand off" and "pick up" work across
  * tools, machines, accounts and cloud sessions with no pasted prompt.
@@ -178,8 +179,7 @@ export function sameIncrement(snapshotIncrement: string | undefined, wanted: str
   if (!snapshotIncrement) return false;
   const a = snapshotIncrement.toLowerCase();
   const b = wanted.trim().toLowerCase();
-  const number = /^\d{1,4}$/.test(b) ? b.padStart(4, '0') : undefined;
-  return a === b || a.startsWith(`${b}-`) || (number !== undefined && a.slice(0, 4) === number);
+  return a === b || matchesIncrementAlias(a, b);
 }
 
 export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupApplyResult {
@@ -203,7 +203,7 @@ export function applyHandoff(repoRoot: string, opts: ApplyOptions = {}): PickupA
     const theirs = meta.increment ? `increment ${meta.increment}` : 'no increment';
     return {
       ...base, status: 'elsewhere',
-      message: `The handoff pushed by ${who} is for ${theirs}, so it was left as it is${meta.increment ? `; \`specweave pickup ${meta.increment.match(/^\d{4}/)?.[0] ?? meta.increment}\` takes it` : ''}.`,
+      message: `The handoff pushed by ${who} is for ${theirs}, so it was left as it is${meta.increment ? `; \`specweave pickup ${parseIncrementId(meta.increment, { allowLegacy: true })?.numberText ?? meta.increment}\` takes it` : ''}.`,
     };
   }
   const remember = () => { if (!opts.dryRun) rememberPickup(repoRoot, snapshot); };

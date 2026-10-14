@@ -766,7 +766,7 @@ export class LivingDocsSync {
   }> {
     // SECURITY FIX (2025-12-02): Validate incrementId format FIRST
     // CRITICAL (v0.33.0): Allow E/G/J/A suffixes for external increments (e.g., 0111E-name, 0417J-name)
-    if (!incrementId || !/^\d{4}[EGJA]?-[a-z0-9-]+$/i.test(incrementId)) {
+    if (!incrementId || !/^\d{3,}[EGJA]?-[a-z0-9-]+$/i.test(incrementId)) {
       this.logger.warn(`   ⚠️  Invalid increment ID format: ${incrementId}`);
       return { project: null, board: null };
     }

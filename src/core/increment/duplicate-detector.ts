@@ -1,3 +1,4 @@
+import { parseIncrementId } from '../../utils/increment-id-validator.js';
 /**
  * Duplicate Detector - Scan filesystem and detect duplicate increments
  *
@@ -64,15 +65,17 @@ export async function detectAllDuplicates(
   }
 
   // Scan all locations in parallel
-  const [active, archived, abandoned] = await Promise.all([
+  const [active, archived, abandoned, paused, backlog] = await Promise.all([
     scanDirectory(incrementsDir, false),
     scanDirectory(path.join(incrementsDir, '_archive'), false),
-    scanDirectory(path.join(incrementsDir, '_abandoned'), false)
+    scanDirectory(path.join(incrementsDir, '_abandoned'), false),
+    scanDirectory(path.join(incrementsDir, '_paused'), false),
+    scanDirectory(path.join(incrementsDir, '_backlog'), false)
   ]);
 
   // Group by increment number
   const byNumber = new Map<string, IncrementLocation[]>();
-  const allIncrements = [...active, ...archived, ...abandoned];
+  const allIncrements = [...active, ...archived, ...abandoned, ...paused, ...backlog];
 
   for (const inc of allIncrements) {
     const number = extractIncrementNumber(inc.name);
@@ -125,17 +128,19 @@ export async function detectDuplicatesByNumber(
   }
 
   // Normalize increment number (pad to 4 digits)
-  const normalizedNumber = incrementNumber.padStart(4, '0');
+  const normalizedNumber = String(Number(incrementNumber)).padStart(4, '0');
 
   // Scan all locations in parallel
-  const [active, archived, abandoned] = await Promise.all([
+  const [active, archived, abandoned, paused, backlog] = await Promise.all([
     scanDirectory(incrementsDir, false),
     scanDirectory(path.join(incrementsDir, '_archive'), false),
-    scanDirectory(path.join(incrementsDir, '_abandoned'), false)
+    scanDirectory(path.join(incrementsDir, '_abandoned'), false),
+    scanDirectory(path.join(incrementsDir, '_paused'), false),
+    scanDirectory(path.join(incrementsDir, '_backlog'), false)
   ]);
 
   // Combine all increments and filter by number
-  const allIncrements = [...active, ...archived, ...abandoned];
+  const allIncrements = [...active, ...archived, ...abandoned, ...paused, ...backlog];
   const matchingIncrements = allIncrements.filter(inc => {
     const number = extractIncrementNumber(inc.name);
     return number === normalizedNumber;
@@ -158,8 +163,8 @@ async function scanDirectory(
     }
 
     // Find all directories matching increment pattern (####-*)
-    const pattern = path.join(dir, '[0-9][0-9][0-9][0-9]-*');
-    const allPaths = await glob(pattern);
+    const entries = await fs.readdir(dir);
+    const allPaths = entries.filter(name => parseIncrementId(name, { allowLegacy: true })).map(name => path.join(dir, name));
 
     const locations: IncrementLocation[] = [];
 
@@ -248,8 +253,7 @@ async function scanDirectory(
  * Extract increment number from increment name (e.g., "0001-feature" → "0001")
  */
 function extractIncrementNumber(name: string): string | null {
-  const match = name.match(/^(\d{3,4})E?-/);
-  return match ? match[1].padStart(4, '0') : null;
+  return parseIncrementId(name, { allowLegacy: true })?.numberText ?? null;
 }
 
 /**

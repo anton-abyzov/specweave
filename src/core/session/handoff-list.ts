@@ -1,3 +1,4 @@
+import { parseIncrementId, parseIncrementAlias, matchesIncrementAlias, compareIncrementIds } from '../../utils/increment-id-validator.js';
 /**
  * Pending handoffs: `specweave handoff list`, and which one `specweave pickup`
  * takes when several sessions handed off in the same project.
@@ -64,7 +65,7 @@ export interface ListHandoffsOptions {
 
 const CLOSED_STATUSES = new Set(['completed', 'complete', 'done', 'abandoned', 'cancelled', 'canceled', 'archived', 'closed']);
 
-const shortNumber = (id: string) => id.match(/^\d{4}/)?.[0];
+const shortNumber = (id: string) => parseIncrementId(id, { allowLegacy: true })?.numberText;
 
 function readJson<T>(file: string): T | undefined {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')) as T; } catch { return undefined; }
@@ -86,7 +87,7 @@ export function listPendingHandoffs(root: string, opts: ListHandoffsOptions = {}
 function incrementHandoffs(root: string): PendingHandoff[] {
   const dir = incrementsDir(root);
   let names: string[];
-  try { names = fs.readdirSync(dir).filter((n) => /^\d{4}/.test(n)).sort(); } catch { return []; }
+  try { names = fs.readdirSync(dir).filter((n) => parseIncrementId(n, { allowLegacy: true })).sort(compareIncrementIds); } catch { return []; }
   const perNumber = new Map<string, number>();
   for (const n of names) {
     const num = shortNumber(n)!;
@@ -217,12 +218,13 @@ export type HandoffMatch =
 export function matchHandoff(pending: PendingHandoff[], query: string): HandoffMatch {
   const q = query.trim().toLowerCase().replace(/^["'`]+|["'`]+$/g, '').replace(/^(the|my)\s+/, '').trim();
   if (!q) return { kind: 'none' };
-  const asNumber = /^\d{1,4}$/.test(q) ? q.padStart(4, '0') : undefined;
+  const asNumber = parseIncrementAlias(q);
   const exact = pending.filter((h) => {
     const inc = h.incrementId?.toLowerCase();
-    return h.id.toLowerCase() === q || inc === q || (asNumber !== undefined && shortNumber(inc ?? '') === asNumber && h.kind === 'increment');
+    return h.id.toLowerCase() === q || inc === q || (asNumber !== null && matchesIncrementAlias(inc ?? '', q) && h.kind === 'increment');
   });
   if (exact.length) return exact.length === 1 ? { kind: 'one', handoff: exact[0] } : { kind: 'several', candidates: exact };
+  if (asNumber) return { kind: 'none' }; // Numeric aliases never fall back to substring search.
   const words = q.split(/[\s,]+/).filter((w) => w.length > 1 && !['the', 'and', 'of', 'on', 'my', 'one', 'handoff', 'session'].includes(w));
   if (!words.length) return { kind: 'none' };
   const hits = pending.filter((h) => {

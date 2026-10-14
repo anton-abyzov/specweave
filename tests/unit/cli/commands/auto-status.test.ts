@@ -309,21 +309,14 @@ describe('findActiveIncrements', () => {
   });
 
   it('handles five-digit increment IDs that start with four digits', async () => {
-    // This matches /^[0-9]{4}-/ because it starts with 4+ digits
     createIncrement('00010-extended', 'active');
     writeAutoFlag({ active: false, timestamp: new Date().toISOString() });
 
     await runCommand(['--json']);
     const json = getJsonOutput();
 
-    // The regex /^[0-9]{4}-/ requires exactly 4 digits before hyphen.
-    // '00010-extended' has 5 digits before hyphen, so the first 4 match then
-    // the fifth is also a digit not a hyphen -- regex matches because
-    // [0-9]{4} matches first 4 and the '-' is at position 5
-    // Wait: '00010-extended' = digits '00010', then '-'.
-    // /^[0-9]{4}-/ => match 4 digits then '-'. '0001' then '0' is not '-',
-    // so this should NOT match.
-    expect(json!.activeCount).toBe(0);
+    expect(json!.activeCount).toBe(1);
+
   });
 });
 

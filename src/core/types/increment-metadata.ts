@@ -83,6 +83,9 @@ export interface IncrementMetadata {
   /** Increment ID (e.g., "0007-smart-increment-discipline") */
   id: string;
 
+  /** Immutable identity for new increments. Legacy metadata may omit it. */
+  readonly uuid?: string;
+
   /** Current status */
   status: IncrementStatus;
 
