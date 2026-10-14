@@ -47,7 +47,7 @@ const PLANS: Plan[] = [
       'Specs, tasks and evidence kept in git',
       'GitHub, Jira and Azure DevOps sync',
     ],
-    cta: {label: 'Download free', to: '/studio'},
+    cta: {label: 'Download free', to: '/code/'},
     featured: true,
   },
   {
@@ -109,7 +109,7 @@ export default function Pricing() {
         <h1>Every coding agent in one workspace.<br /><em>Free.</em></h1>
         <p className={p.sub}>SpecWithCode runs Claude Code, Codex, Cursor and more side by side, and hands the task to the next one when a usage limit hits. You keep your own subscriptions.</p>
         <div className={p.heroActions}>
-          <Link className={styles.primary} to="/studio">Download SpecWithCode <span aria-hidden="true">→</span></Link>
+          <Link className={styles.primary} to="/code/">Download SpecWithCode <span aria-hidden="true">→</span></Link>
           <a className={styles.textLink} href="#plans">See plans</a>
         </div>
       </header>
@@ -160,7 +160,7 @@ export default function Pricing() {
 
       <section className={styles.finalCta}>
         <h2>Free for every developer.<br /><em>Talk to us when the company needs it.</em></h2>
-        <Link className={styles.primary} to="/studio">Download SpecWithCode <span aria-hidden="true">→</span></Link>
+        <Link className={styles.primary} to="/code/">Download SpecWithCode <span aria-hidden="true">→</span></Link>
         <a className={styles.textLink} href={ENTERPRISE_MAILTO}>Talk to us about your company</a>
       </section>
     </main>

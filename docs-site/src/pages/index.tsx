@@ -18,7 +18,7 @@ const STEPS = [
 ];
 
 const STACK = [
-  { img: '/img/home/leanback.webp', tag: 'Free app · macOS', name: 'SpecWithCode', job: 'The workspace', body: 'A coordinator and workers on any provider, on machines you own.', to: '/studio', cta: 'See SpecWithCode' },
+  { img: '/img/home/leanback.webp', tag: 'Free app · macOS', name: 'SpecWithCode', job: 'The workspace', body: 'A coordinator and workers on any provider, on machines you own.', to: '/code/', cta: 'See SpecWithCode' },
   { img: '/img/home/weave.webp', tag: 'Open source · npm', name: 'SpecWeave CLI', job: 'The record', body: 'Spec, tasks, evidence and handoff in git. Optional GitHub, Jira and Azure DevOps sync.', to: '/docs/getting-started', cta: 'Start with the CLI' },
   { img: '/img/home/desk.webp', tag: 'Free to browse', name: 'Verified Skills', job: 'The expertise', body: 'Inspect, evaluate and install tested skills into 50+ agents.', href: 'https://verified-skill.com', cta: 'Explore skills' },
 ];
@@ -92,7 +92,7 @@ export default function Home() {
       <div className={styles.tools} aria-label="Works with">
         <span>Works with</span>
         <div className={styles.toolRail}><div>{[...tools, ...tools].map((t, i) => <strong key={i} aria-hidden={i >= tools.length}>{t}</strong>)}</div></div>
-        <Link to="/studio">One workspace, any provider ↗</Link>
+        <Link to="/code/">One workspace, any provider ↗</Link>
       </div>
 
       <section className={h.section} id="watch" aria-labelledby="watch-title">
