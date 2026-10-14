@@ -31,7 +31,7 @@ export interface ParsedSource {
  * Parse <source> argument into a structured ParsedSource.
  * Throws with a descriptive message if the input is unrecognizable.
  */
-export function parseSource(source: string): ParsedSource {
+export function parseSource(source: string, cwd: string = process.cwd()): ParsedSource {
   const trimmed = source.trim().replace(/\/+$/, ''); // strip trailing slashes
 
   // 1. Explicit local path indicators: ./ ../ / ~
@@ -43,7 +43,7 @@ export function parseSource(source: string): ParsedSource {
   ) {
     const resolved = trimmed.startsWith('~')
       ? path.join(os.homedir(), trimmed.slice(1))
-      : path.resolve(trimmed);
+      : path.resolve(cwd, trimmed);
     return {
       type: 'local',
       owner: '',
@@ -113,8 +113,8 @@ export function parseSource(source: string): ParsedSource {
   }
 
   // 7. Bare name fallback: check if it exists as a local path on disk
-  if (fs.existsSync(trimmed)) {
-    const resolved = path.resolve(trimmed);
+  if (fs.existsSync(path.resolve(cwd, trimmed))) {
+    const resolved = path.resolve(cwd, trimmed);
     return {
       type: 'local',
       owner: '',

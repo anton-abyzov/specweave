@@ -14,186 +14,187 @@ _specweave_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     local main_commands="init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
+    local global_options="--workspace"
 
     case "${prev}" in
         specweave)
-            COMPREPLY=( $(compgen -W "${main_commands}" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "${main_commands} ${global_options}" -- "${cur}") )
             return 0
             ;;
         init)
-            COMPREPLY=( $(compgen -W "-n --name -t --template -a --adapter --tech-stack -l --language -f --force --force-refresh --git-hooks --full -q --quick --non-interactive --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-n --name -t --template -a --adapter --tech-stack -l --language -f --force --force-refresh --git-hooks --full -q --quick --non-interactive --workspace --help" -- "${cur}") )
             return 0
             ;;
         uninstall)
-            COMPREPLY=( $(compgen -W "--global --keep-data --dry-run -f --force --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--global --keep-data --dry-run -f --force --workspace --help" -- "${cur}") )
             return 0
             ;;
         pause)
-            COMPREPLY=( $(compgen -W "-r --reason -f --force --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-r --reason -f --force --workspace --help" -- "${cur}") )
             return 0
             ;;
         start)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--workspace --help" -- "${cur}") )
             return 0
             ;;
         resume)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--workspace --help" -- "${cur}") )
             return 0
             ;;
         abandon)
-            COMPREPLY=( $(compgen -W "-r --reason -f --force --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-r --reason -f --force --workspace --help" -- "${cur}") )
             return 0
             ;;
         complete)
-            COMPREPLY=( $(compgen -W "-s --silent -y --yes --skip-validation -r --reason --all --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-s --silent -y --yes --skip-validation -r --reason --all --workspace --help" -- "${cur}") )
             return 0
             ;;
         task)
-            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         verify)
-            COMPREPLY=( $(compgen -W "--cmd --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--cmd --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         create-increment)
-            COMPREPLY=( $(compgen -W "--id --auto-id --name --title --description --project --board --type --priority --project-root --parallel --with-plan --planned --supersedes --parent --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--id --auto-id --name --title --description --project --board --type --priority --project-root --parallel --with-plan --planned --supersedes --parent --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         handoff)
-            COMPREPLY=( $(compgen -W "--all --dry-run --reason --summary --next --gotcha --decision --inline --clipboard --non-specweave --out --json --no-push --keep-claims --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--all --dry-run --reason --summary --next --gotcha --decision --inline --clipboard --non-specweave --out --json --no-push --keep-claims --workspace --help" -- "${cur}") )
             return 0
             ;;
         pickup)
-            COMPREPLY=( $(compgen -W "--no-apply --all --list --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--no-apply --all --list --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         report)
-            COMPREPLY=( $(compgen -W "--out --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--out --workspace --help" -- "${cur}") )
             return 0
             ;;
         note)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--workspace --help" -- "${cur}") )
             return 0
             ;;
         auto-handoff)
-            COMPREPLY=( $(compgen -W "--mode --at --wait-under --checkpoint-only --handoff --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--mode --at --wait-under --checkpoint-only --handoff --workspace --help" -- "${cur}") )
             return 0
             ;;
         statusline)
-            COMPREPLY=( $(compgen -W "--wrap --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--wrap --workspace --help" -- "${cur}") )
             return 0
             ;;
         usage-guard)
-            COMPREPLY=( $(compgen -W "--limit-hit --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--limit-hit --workspace --help" -- "${cur}") )
             return 0
             ;;
         autocompact)
-            COMPREPLY=( $(compgen -W "--at --project --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--at --project --workspace --help" -- "${cur}") )
             return 0
             ;;
         jev)
-            COMPREPLY=( $(compgen -W "--json --provider --model --guard-bash --no-guard-bash --disable --state --questions --choice --option --noul --increment --goal --url --allow-domain --input --max-steps --screenshot-dir --allow-sensitive --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--json --provider --model --guard-bash --no-guard-bash --disable --state --questions --choice --option --noul --increment --goal --url --allow-domain --input --max-steps --screenshot-dir --allow-sensitive --workspace --help" -- "${cur}") )
             return 0
             ;;
         next-id)
-            COMPREPLY=( $(compgen -W "--project --project-root --name --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--project --project-root --name --workspace --help" -- "${cur}") )
             return 0
             ;;
         archive)
-            COMPREPLY=( $(compgen -W "--keep-last --last --older-than --pattern --archive-completed --no-preserve-active --external --dry-run --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--keep-last --last --older-than --pattern --archive-completed --no-preserve-active --external --dry-run --workspace --help" -- "${cur}") )
             return 0
             ;;
         save)
-            COMPREPLY=( $(compgen -W "-i --interactive --dry-run --sync --no-stash --repos --skip-no-remote --all --no-push --force --branch --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-i --interactive --dry-run --sync --no-stash --repos --skip-no-remote --all --no-push --force --branch --workspace --help" -- "${cur}") )
             return 0
             ;;
         status)
-            COMPREPLY=( $(compgen -W "-v --verbose -t --type --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-v --verbose -t --type --workspace --help" -- "${cur}") )
             return 0
             ;;
         auto)
-            COMPREPLY=( $(compgen -W "--dry-run --all-backlog --reset --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--dry-run --all-backlog --reset --workspace --help" -- "${cur}") )
             return 0
             ;;
         auto-status)
-            COMPREPLY=( $(compgen -W "--verbose --json --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--verbose --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         cancel-auto)
-            COMPREPLY=( $(compgen -W "--force --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--force --workspace --help" -- "${cur}") )
             return 0
             ;;
         team)
-            COMPREPLY=( $(compgen -W "--mode --no-increment --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--mode --no-increment --workspace --help" -- "${cur}") )
             return 0
             ;;
         update-instructions)
-            COMPREPLY=( $(compgen -W "--dry-run -v --verbose --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--dry-run -v --verbose --workspace --help" -- "${cur}") )
             return 0
             ;;
         update)
-            COMPREPLY=( $(compgen -W "--no-self --no-plugins --all --minimal --check --dry-run -v --verbose -f --force --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--no-self --no-plugins --all --minimal --check --dry-run -v --verbose -f --force --workspace --help" -- "${cur}") )
             return 0
             ;;
         check-discipline)
-            COMPREPLY=( $(compgen -W "-v --verbose --json --project-root --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-v --verbose --json --project-root --workspace --help" -- "${cur}") )
             return 0
             ;;
         gc)
-            COMPREPLY=( $(compgen -W "-y --yes --json --project-root --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-y --yes --json --project-root --workspace --help" -- "${cur}") )
             return 0
             ;;
         qa)
-            COMPREPLY=( $(compgen -W "--quick --pre --gate --full --ci --no-ai --silent --export -f --force -v --verbose --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--quick --pre --gate --full --ci --no-ai --silent --export -f --force -v --verbose --workspace --help" -- "${cur}") )
             return 0
             ;;
         link-pr)
-            COMPREPLY=( $(compgen -W "--branch --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--branch --workspace --help" -- "${cur}") )
             return 0
             ;;
         branch-name)
-            COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--workspace --help" -- "${cur}") )
             return 0
             ;;
         lsp)
-            COMPREPLY=( $(compgen -W "refs def hover symbols search warmup status setup --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "refs def hover symbols search warmup status setup --workspace --help" -- "${cur}") )
             return 0
             ;;
         sync)
-            COMPREPLY=( $(compgen -W "push pull status setup --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "push pull status setup --workspace --help" -- "${cur}") )
             return 0
             ;;
         refresh-plugins)
-            COMPREPLY=( $(compgen -W "--all --plugin -q --quiet -f --force -v --verbose --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--all --plugin -q --quiet -f --force -v --verbose --workspace --help" -- "${cur}") )
             return 0
             ;;
         doctor)
-            COMPREPLY=( $(compgen -W "--verbose --json --quick --skip-external --fix --fix-status --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--verbose --json --quick --skip-external --fix --fix-status --workspace --help" -- "${cur}") )
             return 0
             ;;
         generate-rubric)
-            COMPREPLY=( $(compgen -W "--refresh --silent --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--refresh --silent --workspace --help" -- "${cur}") )
             return 0
             ;;
         dashboard)
-            COMPREPLY=( $(compgen -W "-p --port --no-browser --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-p --port --no-browser --workspace --help" -- "${cur}") )
             return 0
             ;;
         hooks)
-            COMPREPLY=( $(compgen -W "log --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "log --workspace --help" -- "${cur}") )
             return 0
             ;;
         context)
-            COMPREPLY=( $(compgen -W "projects --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "projects --workspace --help" -- "${cur}") )
             return 0
             ;;
         get)
-            COMPREPLY=( $(compgen -W "--branch --prefix --role --no-init --yes --all --pattern --limit --no-archived --no-forks --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--dry-run --json --expected-fingerprint --branch --prefix --role --no-init --yes --all --pattern --limit --no-archived --no-forks --workspace --help" -- "${cur}") )
             return 0
             ;;
         *)
-            COMPREPLY=( $(compgen -W "${main_commands}" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "${main_commands} ${global_options}" -- "${cur}") )
             return 0
             ;;
     esac
