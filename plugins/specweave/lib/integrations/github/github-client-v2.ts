@@ -307,9 +307,9 @@ export class GitHubClientV2 {
 
     // Check for plain increment ID format [0001] without FS- prefix (CRITICAL FIX v1.0.31)
     // This catches issues like "[0001] Basic layout MVP" that should be "[FS-001][US-001] Basic layout MVP"
-    const plainIncrementPattern = /^\[\d{3,4}E?\]\s/;
+    const plainIncrementPattern = /^\[\d{3,}[A-Za-z]?\]\s/;
     if (plainIncrementPattern.test(title)) {
-      const match = title.match(/^\[(\d{3,4}E?)\]/);
+      const match = title.match(/^\[(\d{3,}[A-Za-z]?)\]/);
       const incrementId = match ? match[1] : 'XXXX';
       // Derive proper FS-ID from the increment number
       const num = parseInt(incrementId.replace('E', ''), 10);

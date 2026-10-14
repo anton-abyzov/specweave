@@ -136,7 +136,7 @@ export class SpecParser {
    * Parse increment references from markdown
    */
   static parseIncrementReferences(markdown: string): IncrementReference[] {
-    const tablePattern = /\|\s*\*\*(\d{4}-[\w-]+)\*\*\s*\|\s*([✅❌⏳])?\s*(\w+)\s*\|\s*([0-9-]+)?\s*\|\s*(.+?)\s*\|/g;
+    const tablePattern = /\|\s*\*\*(\d{3,}[A-Za-z]?-[\w-]+)\*\*\s*\|\s*([✅❌⏳])?\s*(\w+)\s*\|\s*([0-9-]+)?\s*\|\s*(.+?)\s*\|/g;
 
     return [...markdown.matchAll(tablePattern)].map(match => {
       const notes = match[5]?.trim();

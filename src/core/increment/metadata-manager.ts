@@ -28,7 +28,7 @@ import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { SpecFrontmatterUpdater } from './spec-frontmatter-updater.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { getProjectRoot, resolveEffectiveRoot } from '../../utils/find-project-root.js';
-import { validateIncrementId } from '../../utils/increment-id-validator.js';
+import { validateIncrementId, compareIncrementIds } from '../../utils/increment-id-validator.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -104,7 +104,7 @@ export class MetadataManager {
    * SECURITY: Validates increment ID to prevent path traversal attacks.
    */
   private static getMetadataPath(incrementId: string, rootDir?: string): string {
-    validateIncrementId(incrementId); // SECURITY: Prevent path traversal
+    validateIncrementId(incrementId, { allowLegacy: true }); // SECURITY: Prevent path traversal
     const specweavePath = path.join(rootDir || resolveEffectiveRoot(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
   }
@@ -118,7 +118,7 @@ export class MetadataManager {
    * SECURITY: Validates increment ID to prevent path traversal attacks.
    */
   private static getIncrementPath(incrementId: string, rootDir?: string): string {
-    validateIncrementId(incrementId); // SECURITY: Prevent path traversal
+    validateIncrementId(incrementId, { allowLegacy: true }); // SECURITY: Prevent path traversal
     const specweavePath = path.join(rootDir || resolveEffectiveRoot(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId);
   }
@@ -319,6 +319,18 @@ export class MetadataManager {
         `Increment directory not found: ${incrementId}`,
         incrementId
       );
+    }
+
+    // Identity survives all status/schema updates, including callers passing a
+    // legacy-shaped object. Never silently replace another increment's identity.
+    if (fs.existsSync(metadataPath)) {
+      const previous = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      if (previous.uuid) {
+        if (metadata.uuid && metadata.uuid !== previous.uuid) {
+          throw new MetadataError('Increment UUID is immutable', incrementId);
+        }
+        metadata = { ...metadata, uuid: previous.uuid };
+      }
     }
 
     // CRITICAL FIX (2025-11-24): Detect if this is a NEW active increment
@@ -614,7 +626,8 @@ export class MetadataManager {
           return null;
         }
       })
-      .filter((m): m is IncrementMetadata => m !== null);
+      .filter((m): m is IncrementMetadata => m !== null)
+      .sort((a, b) => compareIncrementIds(a.id, b.id));
   }
 
   /**
@@ -655,7 +668,8 @@ export class MetadataManager {
               return null;
             }
           })
-          .filter((m): m is IncrementMetadata => m !== null);
+          .filter((m): m is IncrementMetadata => m !== null)
+          .sort((a, b) => compareIncrementIds(a.id, b.id));
       }
     }
 
@@ -808,7 +822,7 @@ export class MetadataManager {
     const metadata = { ...raw };
 
     // --- id: expand short numeric-only IDs to full slug ---
-    if (metadata.id && /^\d{4}[A-Za-z]?$/.test(metadata.id) && folderName) {
+    if (metadata.id && /^\d{3,}[A-Za-z]?$/.test(metadata.id) && folderName) {
       warnings.push(`Short ID '${metadata.id}' expanded to full slug '${folderName}'`);
       metadata.id = folderName;
       corrected = true;

@@ -61,12 +61,11 @@ describe('resolveIncrementId', () => {
     }
   });
 
-  it('prefers exact match over prefix match', () => {
-    // Edge case: '0589' could be both exact match and prefix of '0589-foo'
+  it('does not let a bare-number non-increment directory shadow a valid alias', () => {
+    // An increment requires a number and name; unrelated directories are ignored.
     fs.mkdirSync(path.join(incrementsDir, '0589'));
     fs.mkdirSync(path.join(incrementsDir, '0589-cli-complete-improvements'));
     const result = resolveIncrementId('0589', tmpDir);
-    // Exact match should win — returns string, not array
-    expect(result).toBe('0589');
+    expect(result).toBe('0589-cli-complete-improvements');
   });
 });

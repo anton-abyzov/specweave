@@ -76,7 +76,7 @@ export class FeatureIDManager {
     const increments = await fs.readdir(this.incrementsDir);
 
     for (const incrementId of increments) {
-      if (!incrementId.match(/^\d{3,4}E?-/)) continue;
+      if (!incrementId.match(/^\d{3,}E?-/)) continue;
 
       const specPath = path.join(this.incrementsDir, incrementId, 'spec.md');
       const metadataPath = path.join(this.incrementsDir, incrementId, 'metadata.json');
@@ -102,7 +102,7 @@ export class FeatureIDManager {
 
         // Extract feature ID - CRITICAL LOGIC for greenfield vs brownfield
         // CRITICAL (v0.33.0): Handle external increments with E suffix (e.g., 0111E-name)
-        const match = incrementId.match(/^(\d{4})(E)?-(.+)$/);
+        const match = incrementId.match(/^(\d{3,})(E)?-(.+)$/);
         let featureId = '';
 
         if (match) {
