@@ -104,6 +104,11 @@ export function StudioFaq() {
       <p>What SpecWithCode adds is the layer above: one project across all of them, every account’s limits on one screen, and a record in git that any of them can continue from.</p>
     </article>
     <article>
+      <h3>Does everything stay on my machine?</h3>
+      <p>No. Agent processes and project files live on the machine you choose, but cloud models receive prompts and relevant context, which can include code and file contents. Connected tools and integrations communicate with their services. Their data policies apply.</p>
+      <p>Local control means choosing the execution machine, folder access, approvals and model provider. A private connection between your machines does not make cloud inference local or guarantee offline operation.</p>
+    </article>
+    <article>
       <h3>Is it a cloud service?</h3>
       <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. Windows and Intel Macs are not built yet. Telemetry and the hosted relay are off by default. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
     </article>
