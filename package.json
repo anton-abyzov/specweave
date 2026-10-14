@@ -94,6 +94,7 @@
     ".claude-plugin",
     "plugins",
     "src/templates",
+    "src/core/schemas",
     "README.md",
     "CLAUDE.md",
     "INSTALL.md",

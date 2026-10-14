@@ -56,7 +56,7 @@ commands=(
 _specweave() {
     local curcontext="$curcontext" state line
 
-    _arguments -C '1: :->command' '*::arg:->args'
+    _arguments -C '--workspace[Select the planning workspace explicitly]:workspace:_directories' '1: :->command' '*::arg:->args'
 
     case $state in
         command)
@@ -77,6 +77,7 @@ _specweave() {
                         '--full[Install all plugins (skip lazy loading, longer init but all skills available immediately)]' \
                         '--quick[Quick mode\: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)]' \
                         '--non-interactive[Alias for --quick (skip all prompts)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 uninstall)
@@ -85,26 +86,31 @@ _specweave() {
                         '--keep-data[Archive .specweave/ instead of deleting]' \
                         '--dry-run[Show what would be removed without deleting]' \
                         '--force[Skip confirmation prompt]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 pause)
                     _arguments \
                         '--reason[Reason for pausing]' \
                         '--force[Force pause (update reason if already paused)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 start)
                     _arguments \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 resume)
                     _arguments \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 abandon)
                     _arguments \
                         '--reason[Reason for abandoning]' \
                         '--force[Force abandon (skip confirmation)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 complete)
@@ -114,6 +120,7 @@ _specweave() {
                         '--skip-validation[Skip quality gate validation (DANGEROUS)]' \
                         '--reason[Close without a passing reports/verify.json (stored as metadata.closeReason)]' \
                         '--all[Close every active increment whose tasks are all done or skipped (requires --reason)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 task)
@@ -126,12 +133,14 @@ _specweave() {
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--json[Machine-readable output]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 verify)
                     _arguments \
                         '--cmd[Command to run (repeatable; overrides config/auto-detection)]' \
                         '--json[Print the verify report as JSON]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 create-increment)
@@ -152,6 +161,7 @@ _specweave() {
                         '--supersedes[Increment this one replaces (the old one is abandoned with a closeReason)]' \
                         '--parent[Parent increment (recorded as metadata.parent)]' \
                         '--json[Output result as JSON (for programmatic use)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 handoff)
@@ -170,6 +180,7 @@ _specweave() {
                         '--json[Output the full result as JSON (for programmatic use)]' \
                         '--no-push[Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)]' \
                         '--keep-claims[Keep your task claims instead of releasing them for the next agent]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 pickup)
@@ -178,15 +189,18 @@ _specweave() {
                         '--all[Print the newest handoff index (from `handoff --all`), actionable increments first; changes nothing]' \
                         '--list[Print the pending handoffs with their ids, newest first; changes nothing]' \
                         '--json[Output as JSON]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 report)
                     _arguments \
                         '--out[Where to write it (default\: the increment'\''s reports/handoff-report.html)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 note)
                     _arguments \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 auto-handoff)
@@ -196,22 +210,26 @@ _specweave() {
                         '--wait-under[Do nothing at the threshold when the limit resets sooner than this (default 30; 0 turns it off)]' \
                         '--checkpoint-only[Same as --mode checkpoint]' \
                         '--handoff[Same as --mode enforce]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 statusline)
                     _arguments \
                         '--wrap[Print this status line command'\''s output instead of the built-in line]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 usage-guard)
                     _arguments \
                         '--limit-hit[StopFailure hook\: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 autocompact)
                     _arguments \
                         '--at[Window for `on`, 100k to 1M (default 400k)]' \
                         '--project[Write .claude/settings.json in this project instead of ~/.claude/settings.json]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 jev)
@@ -235,6 +253,7 @@ _specweave() {
                         '--max-steps[browse\: step limit]' \
                         '--screenshot-dir[browse\: where to write screenshots]' \
                         '--allow-sensitive[browse\: allow clicking sensitive controls]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 next-id)
@@ -242,6 +261,7 @@ _specweave() {
                         '--project[Project ID for per-project collision prevention]' \
                         '--project-root[Override project root directory]' \
                         '--name[Increment name to generate full ID (e.g., "my-feature" → "0042-my-feature")]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 archive)
@@ -254,6 +274,7 @@ _specweave() {
                         '--no-preserve-active[Allow archiving active/paused increments (dangerous!)]' \
                         '--external[Archive external living docs (FS-XXXE features imported from ADO/JIRA/GitHub)]' \
                         '--dry-run[Preview what would be archived without moving files]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 save)
@@ -268,12 +289,14 @@ _specweave() {
                         '--no-push[Commit but don'\''t push]' \
                         '--force[Force push (requires confirmation)]' \
                         '--branch[Create new branch instead of force pushing]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 status)
                     _arguments \
                         '--verbose[Show detailed information]' \
                         '--type[Filter by increment type (feature, hotfix, bug, etc.)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 auto)
@@ -281,29 +304,34 @@ _specweave() {
                         '--dry-run[Preview without activating]' \
                         '--all-backlog[Activate all backlog items]' \
                         '--reset[Clean up any stale state files]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 auto-status)
                     _arguments \
                         '--verbose[Show detailed information]' \
                         '--json[Output as JSON]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 cancel-auto)
                     _arguments \
                         '--force[Force cancel without confirmation]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 team)
                     _arguments \
                         '--mode[Display mode\: tmux (default) or in-process]' \
                         '--no-increment[Launch without requiring a SpecWeave increment (free-form agent swarm)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 update-instructions)
                     _arguments \
                         '--dry-run[Preview changes without writing]' \
                         '--verbose[Show detailed merge information]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 update)
@@ -316,6 +344,7 @@ _specweave() {
                         '--dry-run[Same as --check]' \
                         '--verbose[Show detailed output]' \
                         '--force[Force refresh even if up to date]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 check-discipline)
@@ -323,6 +352,7 @@ _specweave() {
                         '--verbose[Show detailed increment information]' \
                         '--json[Output results as JSON]' \
                         '--project-root[Project root directory]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 gc)
@@ -330,6 +360,7 @@ _specweave() {
                         '--yes[Actually delete (default is dry-run)]' \
                         '--json[Output as JSON]' \
                         '--project-root[Project root directory]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 qa)
@@ -344,25 +375,30 @@ _specweave() {
                         '--export[Export blockers/concerns to tasks.md]' \
                         '--force[Force run even if rule-based fails]' \
                         '--verbose[Show recommendations]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 link-pr)
                     _arguments \
                         '--branch[Branch name]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 branch-name)
                     _arguments \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 lsp)
                     _arguments \
                         '1:subcommand:(refs def hover symbols search warmup status setup)' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 sync)
                     _arguments \
                         '1:subcommand:(push pull status setup)' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 refresh-plugins)
@@ -372,6 +408,7 @@ _specweave() {
                         '--quiet[Suppress output (for use by hooks)]' \
                         '--force[Force reinstall (skip hash check)]' \
                         '--verbose[Show skipped plugins]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 doctor)
@@ -382,32 +419,40 @@ _specweave() {
                         '--skip-external[Skip external tool connectivity checks]' \
                         '--fix[Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)]' \
                         '--fix-status[Fix metadata.json <-> spec.md status desyncs (formerly sw\:sync-status)]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 generate-rubric)
                     _arguments \
                         '--refresh[Regenerate from current ACs, overwriting an existing non-template rubric]' \
                         '--silent[Minimal output]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 dashboard)
                     _arguments \
                         '--port[Port number (default\: 3456)]' \
                         '--no-browser[Do not open browser automatically]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 hooks)
                     _arguments \
                         '1:subcommand:(log)' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 context)
                     _arguments \
                         '1:subcommand:(projects)' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
                 get)
                     _arguments \
+                        '--dry-run[Preview adoption of an existing local checkout without writing]' \
+                        '--json[Print the local adoption result as JSON]' \
+                        '--expected-fingerprint[Apply only if the local adoption preview is unchanged]' \
                         '--branch[Clone a specific branch]' \
                         '--prefix[User story prefix (default\: first 3 chars uppercase)]' \
                         '--role[Repository role (frontend, backend, mobile, infra, shared)]' \
@@ -418,6 +463,7 @@ _specweave() {
                         '--limit[Max repos to fetch in bulk mode (default\: 1000)]' \
                         '--no-archived[Skip archived repositories in bulk mode]' \
                         '--no-forks[Skip forked repositories in bulk mode]' \
+                        '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
             esac

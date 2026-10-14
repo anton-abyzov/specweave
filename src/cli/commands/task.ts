@@ -212,7 +212,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const sha = headSha(projectRoot);
       if (sha && !evidence.includes(sha)) evidence = `${evidence}\nHEAD ${sha}`;
       const subject = headSubject(projectRoot);
-      const incNum = inc.id.match(/^\d{4}[A-Za-z]?/)?.[0];
+      const incNum = inc.id.match(/^\d{3,}[A-Za-z]?(?=-)/)?.[0];
       if (subject && incNum && !subject.includes(incNum)) {
         err(`warning: HEAD subject "${subject}" does not mention ${incNum} — commit as \`${incNum}: <what changed>\` so the work is traceable`);
       }

@@ -222,10 +222,11 @@ describe('FeatureArchiver', () => {
       expect(infer('')).toBeNull();
     });
 
-    it('should return null for short numeric prefixes', () => {
-      // Pattern requires 4 digits
+    it('accepts legacy three-digit and wide IDs but rejects shorter prefixes', () => {
+      // Historical three-digit increments remain readable.
       expect(infer('01-short')).toBeNull();
-      expect(infer('012-still-short')).toBeNull();
+      expect(infer('012-legacy')).toBe('FS-012');
+      expect(infer('10000-wide')).toBe('FS-10000');
     });
 
     it('should handle increment names with no description', () => {

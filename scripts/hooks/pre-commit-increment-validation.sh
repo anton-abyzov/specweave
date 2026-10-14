@@ -119,7 +119,7 @@ done
 # ============================================================================
 
 if [ -d ".specweave/increments" ]; then
-  increment_ids=$(ls .specweave/increments 2>/dev/null | grep -E "^[0-9]{4}-" | cut -d'-' -f1 | sort -n)
+  increment_ids=$(ls .specweave/increments 2>/dev/null | grep -E "^[0-9]{3,}[A-Za-z]?-" | cut -d'-' -f1 | sort -n)
 
   if [ -n "$increment_ids" ]; then
     previous_id=0

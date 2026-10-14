@@ -30,6 +30,17 @@ specweave init .
 
 [SpecWithCode](https://spec-weave.com/studio) is a desktop app built on SpecWeave. Describe the work once and a coordinator splits it across Claude Code, Codex, Grok or Cursor workers on your own machines, with the spec, evidence and handoff in git. It is free for every developer and team: no markup, no token resale, no seat fee to run agents on your own machines. Early access, Apple silicon Macs. [Download](https://spec-weave.com/studio) · [Pricing](https://spec-weave.com/pricing)
 
+## Keep your repositories where they are
+
+An existing workspace can register nested, sibling or external checkouts without moving files or initializing a second planning root:
+
+```bash
+specweave --workspace ./planning get ../existing-api --dry-run --json
+specweave --workspace ./planning get ../existing-api --json
+```
+
+`--workspace` selects planning authority; `SPECWEAVE_WORKSPACE` carries that context to hooks. Existing IDs and child plans stay intact. [Workspace adoption](https://spec-weave.com/docs/guides/workspace-adoption) explains previews, identity, permissions and migration limits.
+
 ## Out of tokens? Say "hand off"
 
 ```text

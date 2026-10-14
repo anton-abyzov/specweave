@@ -16,6 +16,8 @@
  */
 
 import * as fs from 'fs';
+import { parseIncrementId } from '../../utils/increment-id-validator.js';
+import { isWorkspaceRoot } from '../workspace/context.js';
 import * as os from 'os';
 import * as path from 'path';
 import { getAgentId, ledgerPath, readLedger, readIncrementEvents } from '../tasks/ledger.js';
@@ -73,14 +75,14 @@ export interface HandoffIndex {
   agent: string;
   reason?: string;
   rows: IndexRow[];
-  /** Absent when the workspace has no `repositories/` folder or the scan was skipped. */
+  /** Absent when the workspace has no registered repos or conventional repository directory or the scan was skipped. */
   repos?: { scanned: number; flagged: IndexRepo[] };
 }
 
 export interface HandoffIndexOptions {
   reason?: string;
   agent?: string;
-  /** Scan nested repos (default: when `repositories/` exists). */
+  /** Scan repositories (default: when inventory or a conventional repository directory exists). */
   scanRepos?: boolean;
   /** PR lookup for the nested scan (default: gh when installed); `false` skips it. */
   prLookup?: PrLookup | false;
@@ -181,7 +183,7 @@ function readStatus(incDir: string): string {
   } catch { return 'unknown'; }
 }
 
-const shortId = (id: string) => id.match(/^\d{4}/)?.[0] ?? id;
+const shortId = (id: string) => parseIncrementId(id, { allowLegacy: true })?.numberText ?? id;
 
 function homeShort(p: string): string {
   const home = os.homedir();
@@ -252,7 +254,7 @@ export async function buildHandoffIndex(root: string, opts: HandoffIndexOptions 
   const incRoot = incrementsDir(root);
   const ids = listActiveIncrementIds(root);
 
-  const scan = opts.scanRepos ?? fs.existsSync(path.join(root, 'repositories'));
+  const scan = opts.scanRepos ?? isWorkspaceRoot(root);
   let repos: HandoffIndex['repos'];
   if (scan) {
     const result = await scanNestedRepos(root, { incrementIds: ids.map(shortId), prLookup: opts.prLookup });
@@ -377,7 +379,7 @@ export function renderHandoffIndex(index: HandoffIndex, keep: string[] = []): st
   if (index.repos) {
     L.push('## Repositories with local-only work');
     L.push('');
-    L.push(`Read-only scan of ${index.repos.scanned} checkouts (the workspace, \`repositories/<org>/<repo>\` and their worktrees). Before resuming a topic, run \`git -C <path> status -sb\` and commit what is still there on its branch.`);
+    L.push(`Read-only scan of ${index.repos.scanned} checkouts (the workspace, its registered repositories, conventional nested checkouts and their worktrees). Before resuming a topic, run \`git -C <path> status -sb\` and commit what is still there on its branch.`);
     L.push('');
     if (!index.repos.flagged.length) {
       L.push('_Every checkout is clean and pushed._');

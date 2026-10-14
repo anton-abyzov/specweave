@@ -24,7 +24,21 @@ const program = new Command();
 program
   .name('specweave')
   .description('Spec-Driven Development framework with AI-powered autonomous agents')
-  .version(packageJson.version);
+  .version(packageJson.version)
+  .option('--workspace <root>', 'Select the planning workspace explicitly');
+
+const invocationCwd = process.cwd();
+program.hook('preAction', async () => {
+  const selected = program.opts().workspace;
+  if (selected !== undefined || process.env.SPECWEAVE_WORKSPACE !== undefined) {
+    const { explicitWorkspaceRoot } = await import('../dist/src/core/workspace/context.js');
+    const root = explicitWorkspaceRoot(invocationCwd, selected ?? process.env.SPECWEAVE_WORKSPACE, selected === undefined);
+    process.env.SPECWEAVE_WORKSPACE = root;
+    process.chdir(root);
+  }
+  // Context is validated before any scan; machine-readable adoption must stay valid JSON.
+  if (!process.argv.includes('--json')) await checkForDuplicates();
+});
 
 // Init command - Create new SpecWeave project
 program
@@ -845,6 +859,9 @@ contextCmd
 program
   .command('get <source>')
   .description('Clone and register an existing repository into the workspace')
+  .option('--dry-run', 'Preview adoption of an existing local checkout without writing')
+  .option('--json', 'Print the local adoption result as JSON')
+  .option('--expected-fingerprint <hash>', 'Apply only if the local adoption preview is unchanged')
   .option('--branch <branch>', 'Clone a specific branch')
   .option('--prefix <prefix>', 'User story prefix (default: first 3 chars uppercase)')
   .option('--role <role>', 'Repository role (frontend, backend, mobile, infra, shared)')
@@ -857,18 +874,19 @@ program
   .option('--no-forks', 'Skip forked repositories in bulk mode')
   .action(async (source, opts) => {
     const { getCommand } = await import('../dist/src/cli/commands/get.js');
-    await getCommand(source, opts);
+    await getCommand(source, { ...opts, sourceCwd: invocationCwd });
   });
 
 // Run startup check, then parse arguments
 (async () => {
-  await checkForDuplicates();
-
-  // Parse arguments
-  program.parse(process.argv);
+  // Await hooks/actions so invalid explicit context is reported without running a command.
+  await program.parseAsync(process.argv);
 
   // Show help if no command specified
   if (!process.argv.slice(2).length) {
     program.outputHelp();
   }
-})();
+})().catch(error => {
+  console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+  process.exitCode = 1;
+});

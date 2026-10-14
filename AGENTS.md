@@ -28,6 +28,16 @@ This is the source of the `specweave` npm package: a CLI plus a Claude Code plug
 - Default branch is `develop`. PRs target `develop`.
 - Browser tests and automation must use headless Chrome/Playwright CLI. Set `headless: true`, `PWDEBUG=0`, `PLAYWRIGHT_HTML_OPEN=never`, and HTML reports `open: 'never'`. Save captures to files and pass this rule to subagents. If a visible browser is essential, ask the user and wait for explicit approval before opening it; a headless failure is not approval.
 
+## Workspace adoption validation
+
+| Check | Command |
+|---|---|
+| Workspace behavior | `npx vitest run tests/unit/workspace-adoption` |
+| Existing get behavior | `npx vitest run tests/unit/cli/commands/get.test.ts tests/unit/cli/helpers/get` |
+| Context and handoff | `npx vitest run tests/unit/utils/find-project-root.test.ts tests/unit/core/session/nested-repos.test.ts tests/unit/core/session/handoff-all.test.ts` |
+
+`src/core/workspace/` owns planning context and in-place checkout adoption. Reuse it instead of scanning arbitrary parent directories or initializing adopted children. Use `--workspace` for explicit CLI authority; native hooks inherit `SPECWEAVE_WORKSPACE`. Never change existing IDs or merge distinct checkouts solely because their remotes match.
+
 ## Releasing
 
 From GitHub alone, no local tag push: run **Release & Publish** on `develop` from the Actions tab, or `gh workflow run release.yml --ref develop -f version_type=patch` (or `-f version=X.Y.Z`). It bumps `package.json`, the plugin and marketplace manifests and the CHANGELOG (an `## [Unreleased]` section becomes the entry; without one, the commits since the last tag are listed), commits `Release X.Y.Z` to `develop`, tags `vX.Y.Z` and publishes to npm through GitHub OIDC trusted publishing. Tick `dry_run` to bump, build and pack without pushing or publishing. If the publish fails after the push, run it again with `version` set to that version.

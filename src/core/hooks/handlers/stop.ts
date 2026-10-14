@@ -20,6 +20,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { matchIncrementIds } from '../../../utils/increment-id-validator.js';
 import type { HandlerFn, HookContext } from './types.js';
 import { pass, stopBlock } from './types.js';
 import { logHook, readActiveIncrements, readJsonSafe } from './utils.js';
@@ -88,29 +89,27 @@ function resolveIncrementIds(session: Record<string, unknown>, projectRoot: stri
   return fromMarker.length > 0 ? fromMarker : readActiveIncrements(projectRoot);
 }
 
-/** On-disk increment dir for an id (exact, else 4-digit prefix match). */
+/** Resolve exact IDs or an unambiguous whole-number alias; never numeric prefixes. */
 function findIncrementDir(projectRoot: string, id: string): string | null {
   const incDir = path.join(projectRoot, '.specweave', 'increments');
-  const exact = path.join(incDir, id);
-  if (fs.existsSync(exact)) return exact;
   try {
-    const prefix = id.match(/^\d{4}/)?.[0] ?? id;
-    for (const dir of fs.readdirSync(incDir)) {
-      if (dir.startsWith(prefix)) return path.join(incDir, dir);
-    }
-  } catch { /* fall through */ }
-  return null;
+    const directories = fs.readdirSync(incDir, { withFileTypes: true })
+      .filter(entry => entry.isDirectory()).map(entry => entry.name);
+    const matches = matchIncrementIds(directories, id);
+    return matches.length === 1 ? path.join(incDir, matches[0]) : null;
+  } catch { return null; }
 }
 
 function computeRemaining(
   projectRoot: string,
   incrementIds: string[],
-): { pendingTasks: number; pendingAcs: number } {
+): { pendingTasks: number; pendingAcs: number; unresolvedIds: string[] } {
   let pendingTasks = 0;
   let pendingAcs = 0;
+  const unresolvedIds: string[] = [];
   for (const id of incrementIds) {
     const dir = findIncrementDir(projectRoot, id);
-    if (!dir) continue;
+    if (!dir) { unresolvedIds.push(id); continue; }
     try {
       // The ledger fold is the one counter (same source as `specweave task
       // list`, verify.json and the closure gate), for tasks in spec.md or a
@@ -122,7 +121,7 @@ function computeRemaining(
       pendingAcs += acs.filter((a) => !a.done).length;
     } catch { /* unparseable increment — skip */ }
   }
-  return { pendingTasks, pendingAcs };
+  return { pendingTasks, pendingAcs, unresolvedIds };
 }
 
 /** The loop is ending under an auto session: reset the counter and let Claude stop. */
@@ -155,7 +154,8 @@ export const handle: HandlerFn = async (input, context) => {
     const incrementIds = resolveIncrementIds(session, projectRoot);
     if (incrementIds.length === 0) return exitLoop(context, 'no increment to work on');
 
-    const { pendingTasks, pendingAcs } = computeRemaining(projectRoot, incrementIds);
+    const { pendingTasks, pendingAcs, unresolvedIds } = computeRemaining(projectRoot, incrementIds);
+    if (unresolvedIds.length > 0) return exitLoop(context, `unresolved or ambiguous increments: ${unresolvedIds.join(', ')}`);
     const idLabel = incrementIds[0];
 
     if (pendingTasks === 0 && pendingAcs === 0) {

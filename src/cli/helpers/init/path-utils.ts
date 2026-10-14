@@ -7,6 +7,7 @@ import * as fs from '../../../utils/fs-native.js';
 import * as nativeFs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { isWithin, readWorkspaceConfig, canonicalPath } from '../../../core/workspace/context.js';
 import type { ParentSpecweaveFolder, UmbrellaParentResult, SuspiciousPathResult, DiscoveredRepo, UmbrellaDiscoveryResult } from './types.js';
 import type { WorkspaceRepo, WorkspaceConfig } from '../../../core/config/types.js';
 
@@ -207,7 +208,12 @@ export function detectUmbrellaParent(targetDir: string): UmbrellaParentResult | 
     if (fs.existsSync(configPath)) {
       try {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo) {
+        if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo
+          || config?.workspace?.repos?.some((repo: { path?: string }) => {
+            if (typeof repo.path !== 'string' || !repo.path) return false;
+            try { return isWithin(canonicalPath(path.resolve(currentDir, repo.path)), canonicalPath(targetDir)); }
+            catch { return false; }
+          })) {
           return { umbrellaRoot: currentDir, reason: 'config-umbrella-repo' };
         }
       } catch {
@@ -350,7 +356,26 @@ export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | 
  * @param targetDir - The project root directory to scan
  * @returns UmbrellaDiscoveryResult if repos found, null otherwise
  */
-export const scanWorkspaceRepos = scanUmbrellaRepos;
+export function scanWorkspaceRepos(targetDir: string): UmbrellaDiscoveryResult | null {
+  const discovered = scanUmbrellaRepos(targetDir);
+  if (!fs.existsSync(path.join(targetDir, '.specweave', 'config.json'))) return discovered;
+  const config = readWorkspaceConfig(targetDir);
+  const registered: WorkspaceRepo[] = config.workspace?.repos ?? config.umbrella?.childRepos ?? [];
+  if (!registered.length) return discovered;
+  const repos: DiscoveredRepo[] = registered.map(repo => ({
+    org: repo.sync?.github?.owner ?? '', name: repo.name ?? repo.id, path: repo.path!,
+    hasGit: fs.existsSync(path.join(path.resolve(targetDir, repo.path!), '.git')), registered: repo,
+  }));
+  const resolved = (repoPath: string) => {
+    const absolute = path.resolve(targetDir, repoPath);
+    try { return canonicalPath(absolute); } catch { return absolute; }
+  };
+  for (const repo of discovered?.repos ?? []) {
+    if (!repos.some(existing => resolved(existing.path) === resolved(repo.path))) repos.push(repo);
+  }
+  return { isUmbrella: true, repositoriesDir: path.join(targetDir, 'repositories'),
+    orgs: [...new Set(repos.map(repo => repo.org).filter(Boolean))], repos, totalRepoCount: repos.length };
+}
 
 /**
  * Scan for repositories placed directly under repositories/ without an org subfolder.
@@ -446,6 +471,7 @@ export function buildWorkspaceConfig(
 } {
   const usedPrefixes = new Set<string>();
   const repos: WorkspaceRepo[] = discovery.repos.map(r => {
+    if (r.registered) { usedPrefixes.add(r.registered.prefix); return r.registered; }
     let prefix = r.name.substring(0, 3).toUpperCase();
     if (usedPrefixes.has(prefix)) {
       let suffix = 2;

@@ -1,3 +1,5 @@
+import { parseIncrementId, compareIncrementIds } from '../../utils/increment-id-validator.js';
+import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 /**
  * Auto Mode CLI Command (v3.0 - Stop Hook Feedback Loop)
  *
@@ -280,7 +282,7 @@ function findIncrementsByStatus(incrementsDir: string, statuses: string[]): stri
   const increments: string[] = [];
 
   for (const entry of fs.readdirSync(incrementsDir)) {
-    if (!/^[0-9]{4}-/.test(entry)) continue;
+    if (!parseIncrementId(entry, { allowLegacy: true })) continue;
 
     const metaPath = path.join(incrementsDir, entry, 'metadata.json');
     if (fs.existsSync(metaPath)) {
@@ -295,25 +297,16 @@ function findIncrementsByStatus(incrementsDir: string, statuses: string[]): stri
     }
   }
 
-  return increments;
+  return increments.sort(compareIncrementIds);
 }
 
 /**
  * Find increment by ID or prefix
  */
 function findIncrementByIdOrPrefix(incrementsDir: string, idOrPrefix: string): string | null {
-  if (!fs.existsSync(incrementsDir)) return null;
-
-  // Exact match
-  const exactPath = path.join(incrementsDir, idOrPrefix);
-  if (fs.existsSync(exactPath)) return idOrPrefix;
-
-  // Prefix match
-  for (const entry of fs.readdirSync(incrementsDir)) {
-    if (entry.startsWith(idOrPrefix)) return entry;
-  }
-
-  return null;
+  const match = resolveIncrementId(idOrPrefix, path.dirname(path.dirname(incrementsDir)));
+  if (Array.isArray(match)) throw new Error(`Ambiguous increment id "${idOrPrefix}": ${match.join(', ')}`);
+  return match;
 }
 
 /**
