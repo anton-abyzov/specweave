@@ -70,8 +70,9 @@ describe('increment-id-validator', () => {
         expect(isValidIncrementId('001-short')).toBe(false);
       });
 
-      it('rejects 5-digit prefix (00001-long)', () => {
-        expect(isValidIncrementId('00001-long')).toBe(false);
+      it('accepts five-digit prefixes without renaming their spelling', () => {
+        expect(isValidIncrementId('00001-long')).toBe(true);
+        expect(isValidIncrementId('10000-next')).toBe(true);
       });
 
       it('rejects no hyphen (0001feature)', () => {

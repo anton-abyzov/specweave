@@ -1713,7 +1713,7 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     const items = fs.readdirSync(incrementsDir);
     const incrementDirs = items.filter(item => {
       const fullPath = path.join(incrementsDir, item);
-      return fs.statSync(fullPath).isDirectory() && /^\d{3,4}E?-/.test(item);
+      return fs.statSync(fullPath).isDirectory() && /^\d{3,}E?-/.test(item);
     });
 
     if (incrementDirs.length > 0) {

@@ -15,6 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { IncrementNumberManager } from './increment-utils.js';
+import { reserveIncrement } from './number-reservation.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { IncrementStatus } from '../types/increment-metadata.js';
 
@@ -191,53 +192,20 @@ export async function createIncrementTemplates(
   const createdFiles: string[] = [];
 
   try {
-    if (autoId && name) {
-      // Atomic ID reservation: generate ID + mkdir in a retry loop
-      const MAX_RETRIES = 10;
-      let created = false;
-      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        const nextNumber = IncrementNumberManager.getNextIncrementNumber(projectRoot);
-        incrementId = `${nextNumber}-${name}`;
-        incrementPath = path.join(incrementsDir, incrementId);
-        try {
-          fs.mkdirSync(incrementPath, { recursive: false });
-          created = true;
-          break;
-        } catch (err: any) {
-          if (err.code === 'EEXIST') {
-            // Another process claimed this ID — retry with fresh scan
-            continue;
-          }
-          // ENOENT means parent dir doesn't exist — create it and retry
-          if (err.code === 'ENOENT') {
-            fs.mkdirSync(incrementsDir, { recursive: true });
-            continue;
-          }
-          throw err;
-        }
-      }
-      if (!created) {
-        return {
-          success: false,
-          incrementPath: path.join(incrementsDir, incrementId),
-          createdFiles,
-          error: `Atomic ID reservation failed after ${MAX_RETRIES} retries. Could not claim a unique increment ID.`,
-          nextSteps: [],
-        };
-      }
-    } else {
-      incrementPath = path.join(incrementsDir, incrementId);
-      // Validate increment ID
-      IncrementNumberManager.validateExplicitId(incrementId, projectRoot);
-
-      // Create increment directory
-      fs.mkdirSync(incrementPath, { recursive: true });
-    }
+    // The numeric reservation is shared by linked worktrees. A full-slug mkdir
+    // alone would let 0042-alpha and 0042-beta both win the same number.
+    if (!autoId) IncrementNumberManager.validateExplicitId(incrementId, projectRoot);
+    const reservation = reserveIncrement(projectRoot, autoId ? { name: name! } : { id: incrementId });
+    incrementId = reservation.id;
+    incrementPath = path.join(incrementsDir, incrementId);
+    fs.mkdirSync(incrementsDir, { recursive: true });
+    fs.mkdirSync(incrementPath, { recursive: false });
 
     // 1. Create metadata.json FIRST (required before spec.md)
     const metadataPath = path.join(incrementPath, 'metadata.json');
     const metadata: Record<string, unknown> = {
       id: incrementId,
+      uuid: reservation.uuid,
       // 2.0: step 1 of the loop MUST produce an increment the rest of the loop
       // can work on. `task next|list|claim`, `verify` and `handoff` all resolve
       // the single ACTIVE increment, so creating in any other state stranded
@@ -359,7 +327,7 @@ export async function createIncrementTemplates(
     // the closure gate reads the ROOT rubric.md, never reports/.
 
     // Check for name duplicates (non-blocking warning)
-    const nameSuffix = incrementId.replace(/^\d{3,4}[GJAE]?-/, '');
+    const nameSuffix = incrementId.replace(/^\d{3,}[GJAE]?-/, '');
     if (nameSuffix) {
       const nameDuplicates = IncrementNumberManager.findNameDuplicates(nameSuffix, projectRoot);
       // Filter out the increment we just created

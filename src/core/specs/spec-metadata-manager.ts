@@ -396,7 +396,7 @@ export class SpecMetadataManager {
    * Parse increment references from markdown content
    */
   private parseIncrements(markdown: string): IncrementReference[] {
-    const incPattern = /\|\s*\*\*(\d{4}-[\w-]+)\*\*\s*\|\s*([✅❌⏳])?\s*(\w+)\s*\|\s*([0-9-]+)?\s*\|/g;
+    const incPattern = /\|\s*\*\*(\d{3,}[A-Za-z]?-[\w-]+)\*\*\s*\|\s*([✅❌⏳])?\s*(\w+)\s*\|\s*([0-9-]+)?\s*\|/g;
 
     return [...markdown.matchAll(incPattern)].map(match => ({
       id: match[1],

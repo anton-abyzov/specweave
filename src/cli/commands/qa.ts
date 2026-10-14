@@ -88,9 +88,9 @@ export async function qaCommand(
   }
 
   // Validate increment ID format
-  if (!/^\d{4}$/.test(incrementId)) {
+  if (!/^\d{3,}$/.test(incrementId)) {
     console.error(`❌ Error: Invalid increment ID format: ${incrementId}`);
-    console.error('   Expected format: 0001, 0002, 0008, etc. (4 digits)\n');
+    console.error('   Expected numeric alias: 0001, 9999, 10000, etc.\n');
     process.exit(1);
   }
 

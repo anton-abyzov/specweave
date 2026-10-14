@@ -22,6 +22,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseIncrementId, formatIncrementNumber } from '../../utils/increment-id-validator.js';
 import { findNextAvailableIdForProject } from '../../utils/feature-id-collision.js';
 import { type PlatformSuffix, SUFFIX_MAP, type Platform } from '../../sync/types.js';
 
@@ -77,12 +78,12 @@ export class IncrementNumberManager {
    * - Gaps in numbering are preserved (not backfilled)
    * - Simpler and more predictable than gap-filling
    *
-   * ALWAYS performs fresh filesystem scan to guarantee unique IDs.
+   * Performs a fresh filesystem scan to suggest a candidate. Creation reserves it separately.
    * No caching - simplicity over premature optimization.
    *
    * @param projectRoot - Project root directory (defaults to process.cwd())
    * @param _useCache - DEPRECATED: ignored, always scans fresh (kept for API compatibility)
-   * @returns Next increment number as 4-digit string (e.g., "0033")
+   * @returns Next increment number with minimum four-digit padding (e.g., "0033")
    *
    * @example
    * ```typescript
@@ -111,14 +112,7 @@ export class IncrementNumberManager {
       if (n > maxNumber) maxNumber = n;
     }
 
-    if (maxNumber >= 9999) {
-      throw new Error(
-        'Increment number overflow: maximum 4-digit ID (9999) reached. ' +
-        'Archive or clean up old increments before creating new ones.'
-      );
-    }
-
-    return String(maxNumber + 1).padStart(4, '0');
+    return formatIncrementNumber(maxNumber + 1);
   }
 
   /**
@@ -138,7 +132,7 @@ export class IncrementNumberManager {
    * @param projectId - Target project ID (from spec.md **Project**: field or config)
    * @param options - Additional options
    * @param options.isExternal - If true, checks for external collision (FS-XXXE)
-   * @returns Next increment number as 4-digit string that won't collide in the project
+   * @returns Next increment number with minimum four-digit padding that won't collide in the project
    *
    * @example
    * ```typescript
@@ -168,7 +162,7 @@ export class IncrementNumberManager {
     const specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
     const safeNumber = findNextAvailableIdForProject(candidate, specsPath, projectId);
 
-    return String(safeNumber).padStart(4, '0');
+    return formatIncrementNumber(safeNumber);
   }
 
   /**
@@ -195,7 +189,7 @@ export class IncrementNumberManager {
     const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
 
     // Normalize to 4-digit string
-    const normalizedNumber = String(incrementNumber).padStart(4, '0');
+    const normalizedNumber = String(Number(incrementNumber)).padStart(4, '0');
 
     // Use getDirsToScan() for single source of truth
     for (const { path: dirPath } of this.getDirsToScan(incrementsDir)) {
@@ -208,9 +202,11 @@ export class IncrementNumberManager {
           if (!entry.isDirectory()) continue;
 
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
-          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
+          // Existence is a physical check, including invalid legacy zero IDs.
+          // Allocation and creation still reject zero.
+          const match = entry.name.match(/^(\d{3,})[A-Za-z]?-/);
           if (match) {
-            const entryNumber = match[1].padStart(4, '0');
+            const entryNumber = String(Number(match[1])).padStart(4, '0');
             if (entryNumber === normalizedNumber) {
               return true;
             }
@@ -300,7 +296,8 @@ export class IncrementNumberManager {
 
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
           // CRITICAL: Extract BASE number - both 0001 and 0001E → 1
-          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
+          const parsed = parseIncrementId(entry.name, { allowLegacy: true });
+          const match = parsed ? [entry.name, parsed.numberText] : null;
           if (match) {
             const number = parseInt(match[1], 10);
 
@@ -535,6 +532,7 @@ export class IncrementNumberManager {
     incrementId: string,
     projectRoot: string = process.cwd()
   ): void {
+    if (/^0+[A-Za-z]?-/.test(incrementId)) this.validateIncrementNumber('0000');
     const number = this.extractNumber(incrementId);
     if (!number) {
       throw new Error(
@@ -557,7 +555,7 @@ export class IncrementNumberManager {
         duplicates.map(d => `  - ${d}`).join('\n') + `\n\n` +
         `CRITICAL: Increment IDs MUST be unique. This prevents confusion and sync issues.\n\n` +
         `FIX: Use the next available number: ${nextNumber}\n` +
-        `Suggested ID: ${nextNumber}-${incrementId.replace(/^\d{3,4}[GJAE]?-/, '')}`
+        `Suggested ID: ${nextNumber}-${incrementId.replace(/^\d{3,}[GJAE]?-/, '')}`
       );
     }
   }
@@ -580,7 +578,7 @@ export class IncrementNumberManager {
    * @since 0.32.0
    */
   static isExternalIncrement(incrementId: string): boolean {
-    return /^\d{3,4}[GJAE]-/.test(incrementId);
+    return /^\d{3,}[GJAE]-/.test(incrementId);
   }
 
   /**
@@ -589,7 +587,7 @@ export class IncrementNumberManager {
    * Works with both internal and external increments.
    *
    * @param incrementId - Increment ID or folder name
-   * @returns Numeric part as 4-digit string, or null if invalid
+   * @returns Numeric part with minimum four-digit padding, or null if invalid
    *
    * @example
    * ```typescript
@@ -601,11 +599,7 @@ export class IncrementNumberManager {
    * @since 0.32.0
    */
   static extractNumber(incrementId: string): string | null {
-    const match = incrementId.match(/^(\d{3,4})[GJAE]?-/);
-    if (match) {
-      return match[1].padStart(4, '0');
-    }
-    return null;
+    return parseIncrementId(incrementId, { allowLegacy: true })?.numberText ?? null;
   }
 
   /**
@@ -633,7 +627,7 @@ export class IncrementNumberManager {
     projectRoot: string = process.cwd()
   ): string[] {
     const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
-    const normalizedNumber = String(incrementNumber).padStart(4, '0');
+    const normalizedNumber = String(Number(incrementNumber)).padStart(4, '0');
     const duplicates: string[] = [];
 
     // Use getDirsToScan() for single source of truth
@@ -646,9 +640,10 @@ export class IncrementNumberManager {
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
 
-          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
+          const parsed = parseIncrementId(entry.name, { allowLegacy: true });
+          const match = parsed ? [entry.name, parsed.numberText] : null;
           if (match) {
-            const entryNumber = match[1].padStart(4, '0');
+            const entryNumber = String(Number(match[1])).padStart(4, '0');
             if (entryNumber === normalizedNumber) {
               duplicates.push(`${entry.name} (${label})`);
             }
@@ -703,7 +698,7 @@ export class IncrementNumberManager {
           if (!entry.isDirectory()) continue;
 
           // Extract name suffix after NNNN[GJAE]?-
-          const match = entry.name.match(/^\d{3,4}[GJAE]?-(.+)$/);
+          const match = entry.name.match(/^\d{3,}[GJAE]?-(.+)$/);
           if (match && match[1] === nameSuffix) {
             matches.push(entry.name);
           }
@@ -761,7 +756,7 @@ export class IncrementNumberManager {
   }
 
   /**
-   * Generate a guaranteed-unique increment ID with validation.
+   * Generate a candidate increment ID with validation.
    *
    * NOTE: As of v0.34.0, generateIncrementId() also validates by default.
    * This method is kept for explicit clarity when uniqueness is critical.
@@ -774,7 +769,7 @@ export class IncrementNumberManager {
    * @example
    * ```typescript
    * const id = IncrementNumberManager.generateUniqueIncrementId('my-feature');
-   * // Guaranteed unique, safe to create directory
+   * // Candidate only; createIncrementTemplates reserves the number across processes
    * ```
    *
    * @since 0.33.0
