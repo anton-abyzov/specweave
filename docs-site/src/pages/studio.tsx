@@ -16,11 +16,12 @@ const specweaveRepo = 'https://github.com/anton-abyzov/specweave';
 const downloadLabel = `Download SpecWithCode ${release.version} for macOS, Apple silicon, ${release.size}`;
 
 export default function Studio() {
-  return <Layout title="SpecWithCode: write the spec, get the code" description="SpecWithCode is a free app, built on the open-source SpecWeave CLI, that brings projects, personal agents and coding agents from Anthropic, OpenAI, xAI and others into one workspace on machines you own, with memory, plans, routines, approvals and handoff in git.">
+  return <Layout title="SpecWithCode: AI agents on your machines, under your control" description="Run Claude Code, Codex and other AI agents on your own machines. Choose access and approvals, keep specs in your repositories, and connect to the model providers you choose.">
     <main className={styles.page}>
       <header className={ecosystem.studioHero}>
-        <div><img className={studio.appIcon} src="/img/studio/specwithcode-icon.png" width="104" height="104" alt="SpecWithCode app icon" /><span className={ecosystem.status}>Free and open source · built on SpecWeave</span><h1>Write the spec.<br /><em>Get the code.</em></h1>
-          <p className={styles.lead}>Every AI agent, on your machines, in one workspace. Projects like Claude Code, a personal agent like Dots or Hermes, and every lab’s coding agent, in one place. Give a project a goal and a coordinator splits it across workers on Claude Code, Codex, Grok Build or Cursor, each with the model you pick, on the machines where your code and skills already live.</p>
+        <div><img className={studio.appIcon} src="/img/studio/specwithcode-icon.png" width="104" height="104" alt="SpecWithCode app icon" /><span className={ecosystem.status}>Free and open source · built on SpecWeave</span><h1>AI agents on your machines.<br /><em>Under your control.</em></h1>
+          <p className={styles.lead}>Run Claude Code, Codex and other agents in one workspace. Choose where work runs, which folders agents can access, and which actions need approval. Keep your specs and handoffs in your own repositories.</p>
+          <p><strong>Cloud models receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
           <div className={styles.actions}><a className={styles.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a><a className={styles.textLink} href={release.repoUrl}>SpecWithCode on GitHub ↗</a></div>
           <p className={ecosystem.downloadMeta}><span>Version {release.version}</span><span>{release.size}</span><span>{release.platform}</span><a href={release.notesUrl}>Release notes</a><a href={release.releasesUrl}>All releases</a></p>
           <p className={ecosystem.note}>Free and open source (<a href={release.repoUrl}>MIT</a>) for every developer and team: no markup, no token resale and no seat fee to run agents on your own machines (<Link to="/pricing">pricing</Link>). In early access; the app is not notarized yet, so on first launch open <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Windows and Intel Macs are not built yet. <Link to="/docs/overview/studio/">Read the overview</Link> or <a href={specweaveRepo}>star SpecWeave on GitHub</a>.</p>
@@ -42,7 +43,7 @@ export default function Studio() {
         <StudioTutorialVideo />
       </section>
 
-      <section className={styles.section} aria-labelledby="local-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>03 / Local first</span><h2 id="local-title">Built for your machines.<br /><em>Not a vendor’s cloud.</em></h2></div><p>Cloud project agents are easy to start. SpecWithCode is for people who want their own skills, folders, accounts and several vendors in the same project.</p></div>
+      <section className={styles.section} aria-labelledby="local-title"><div className={styles.sectionHeading}><div><span className={styles.eyebrow}>03 / Local first</span><h2 id="local-title">Your machines.<br /><em>Your rules.</em></h2></div><p>Work runs on the computer you select, including privately paired remote machines. You control the workspace, folder access and approvals. Cloud models still process the prompts and relevant context sent to your chosen provider; connected tools use their own services.</p></div>
         <CloudCompare />
       </section>
 
@@ -65,7 +66,7 @@ export default function Studio() {
       </section>
 
       <section className={styles.section}><div className={ecosystem.proof}><div><span className={styles.eyebrow}>Evidence / October 2026</span><h3>Used daily.<br />Described precisely.</h3><p>The accepted fleet delivery recorded native Codex execution on three Macs, with source and artifact readback. Release 0.2.0 recorded five native project runs with a Codex coordinator and Claude Code workers, including reuse of a worker after a project-memory update. The 0.2.6 tutorials each run one real task with Claude Code, Codex, OpenCode and Grok Build. Cursor and Antigravity runs are not recorded yet.</p><Link className={styles.textLink} to="/docs/overview/studio-architecture/#what-is-verified">Read the verification scope ↗</Link></div><div><h3>Evaluate the fit.</h3><ul><li>Start with one repository and one real workflow.</li><li>Check account ownership, approvals and reconnect behavior.</li><li>Measure accepted work and time spent recovering context.</li><li>Agree security, support and rollout needs before expanding.</li></ul><p>These checks do not establish enterprise concurrency, production ROI, certification or a service-level agreement.</p></div></div></section>
-      <section className={styles.finalCta}><span className={styles.eyebrow}>For developers and teams running more than one agent</span><h2>Bring your agents.<br /><em>Keep your machines.</em></h2><a className={styles.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a><Link className={styles.textLink} to="/docs/getting-started">Start with the open-source CLI</Link></section>
+      <section className={styles.finalCta}><span className={styles.eyebrow}>For developers and teams running more than one agent</span><h2>Your machines. Your agents.<br /><em>Your control.</em></h2><a className={styles.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for macOS (Apple silicon) <span aria-hidden="true">↓</span></a><Link className={styles.textLink} to="/docs/getting-started">Start with the open-source CLI</Link></section>
     </main>
   </Layout>;
 }
