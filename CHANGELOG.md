@@ -1,3 +1,10 @@
+## [3.0.20] - 2026-10-15
+
+### Changed
+
+- The docs site versions its icon links so browsers drop the old logo (#2063).
+- Dependency updates: production dependencies, `memfs` and `@types/node` (#2043, #2044, #2045).
+
 ## [3.0.19] - 2026-10-15
 
 ### Changed
