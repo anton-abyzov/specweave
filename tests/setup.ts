@@ -30,6 +30,9 @@ if (!process.env.DEBUG_TESTS) {
 // Mock environment variables for consistent testing
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'error'; // Reduce log noise in tests
+// Tests run inside SpecWithCode turns too; without this, every ledger write in a
+// test would bind the real thread to a temp increment in ~/.specweave/studio.
+delete process.env.SPECWEAVE_STUDIO_THREAD_ID;
 
 // Suppress stderr output during tests (git errors, etc.)
 if (!process.env.DEBUG_TESTS) {
