@@ -1,3 +1,9 @@
+## [3.0.18] - 2026-10-15
+
+### Added
+
+- Inside a SpecWithCode thread, every ledger write (`specweave task claim|done|block|skip|release`, auto-claim, `pickup`, `note`, handoff) records the thread's increment in `~/.specweave/studio/threads/<thread>.json`. SpecWithCode reads it to show the thread's plan card from that increment's spec and ledger. It lives outside the repository and holds no task state, and a failed write never fails the command (#2059).
+
 ## [3.0.17] - 2026-10-15
 
 ### Fixed
