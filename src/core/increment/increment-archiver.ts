@@ -522,7 +522,7 @@ export class IncrementArchiver {
     const targetPath = path.join(this.archiveDir, increment);
 
     // CRITICAL: Check for duplicates before archiving
-    const numberMatch = increment.match(/^(\d+)/);
+    const numberMatch = increment.match(/^(\d+[A-Za-z]?)(?=-|$)/);
     if (numberMatch) {
       const incrementNumber = numberMatch[1];
       const duplicates = await detectDuplicatesByNumber(incrementNumber, this.rootDir);
@@ -838,7 +838,7 @@ export class IncrementArchiver {
     }
 
     // CRITICAL: Check for duplicates before restoring
-    const numberMatch = increment.match(/^(\d+)/);
+    const numberMatch = increment.match(/^(\d+[A-Za-z]?)(?=-|$)/);
     if (numberMatch) {
       const incrementNumber = numberMatch[1];
       const duplicates = await detectDuplicatesByNumber(incrementNumber, this.rootDir);

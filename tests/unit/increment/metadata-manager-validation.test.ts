@@ -124,6 +124,36 @@ describe('MetadataManager Duplicate Validation', () => {
       }
     });
 
+    it('should allow a suffixed ID whose base number already exists (distinct increment)', async () => {
+      await createTestIncrement(testDir, '_archive', '0657-dark-theme-semantic-tokens', {
+        status: IncrementStatus.COMPLETED
+      });
+
+      await expect(
+        MetadataManager.validateBeforeCreate('0657E-dark-theme-followup', testDir)
+      ).resolves.toBeUndefined();
+    });
+
+    it('should allow an unsuffixed ID when only a suffixed sibling exists', async () => {
+      await createTestIncrement(testDir, '_abandoned', '0713B-production-rollout', {
+        status: IncrementStatus.ABANDONED
+      });
+
+      await expect(
+        MetadataManager.validateBeforeCreate('0713-queue-pipeline-restoration', testDir)
+      ).resolves.toBeUndefined();
+    });
+
+    it('should reject a suffixed ID that already exists with the same suffix', async () => {
+      await createTestIncrement(testDir, '_abandoned', '0402E-dark-mode-toggle', {
+        status: IncrementStatus.ABANDONED
+      });
+
+      await expect(
+        MetadataManager.validateBeforeCreate('0402E-other', testDir)
+      ).rejects.toThrow(/already exists/);
+    });
+
     it('should reject invalid increment ID format', async () => {
       await expect(
         MetadataManager.validateBeforeCreate('invalid-format')

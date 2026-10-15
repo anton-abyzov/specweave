@@ -275,7 +275,7 @@ export class MetadataManager {
     this.validateNotReserved(incrementId);
 
     // Extract increment number from ID (e.g., "0033-feature-name" → "0033")
-    const numberMatch = incrementId.match(/^(\d+)/);
+    const numberMatch = incrementId.match(/^(\d+[A-Za-z]?)(?=-|$)/);
     if (!numberMatch) {
       throw new MetadataError(
         `Invalid increment ID format: ${incrementId}. Expected format: ####-name`,

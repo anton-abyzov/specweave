@@ -1,4 +1,4 @@
-import { parseIncrementId } from '../../utils/increment-id-validator.js';
+import { parseIncrementId, parseIncrementAlias, formatIncrementNumber } from '../../utils/increment-id-validator.js';
 /**
  * Duplicate Detector - Scan filesystem and detect duplicate increments
  *
@@ -127,8 +127,14 @@ export async function detectDuplicatesByNumber(
     return [];
   }
 
-  // Normalize increment number (pad to 4 digits)
-  const normalizedNumber = String(Number(incrementNumber)).padStart(4, '0');
+  // Normalize to the identity key: number (min four-digit padding) plus the
+  // optional letter suffix. "0657" matches only unsuffixed 0657-* folders;
+  // "0657E" matches only 0657E-* folders.
+  const alias = parseIncrementAlias(String(incrementNumber));
+  if (!alias) {
+    return [];
+  }
+  const normalizedNumber = formatIncrementNumber(alias.number) + alias.suffix;
 
   // Scan all locations in parallel
   const [active, archived, abandoned, paused, backlog] = await Promise.all([
@@ -250,10 +256,16 @@ async function scanDirectory(
 }
 
 /**
- * Extract increment number from increment name (e.g., "0001-feature" → "0001")
+ * Extract the duplicate-identity key from an increment name.
+ *
+ * The key is the number (min four-digit padding) PLUS the optional letter
+ * suffix, uppercased: "0001-feature" → "0001", "0657E-import" → "0657E".
+ * Suffixed IDs (E = external/imported, other letters = platform/variant
+ * suffixes) are distinct increments, never duplicates of their base number.
  */
 function extractIncrementNumber(name: string): string | null {
-  return parseIncrementId(name, { allowLegacy: true })?.numberText ?? null;
+  const parsed = parseIncrementId(name, { allowLegacy: true });
+  return parsed ? parsed.numberText + parsed.suffix.toUpperCase() : null;
 }
 
 /**
