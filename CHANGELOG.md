@@ -1,3 +1,9 @@
+## [3.0.17] - 2026-10-15
+
+### Fixed
+
+- The startup duplicate check (shown by `specweave status` and other commands) no longer reports suffixed increments such as `0657E-*` or `0713B-*` as duplicates of their base number. This was a 3.0.16 regression. Two folders with the same number and suffix are still reported. Archive, restore and create checks also treat suffixed IDs as distinct (#2056).
+
 ## [3.0.16] - 2026-10-15
 
 - Patch release
