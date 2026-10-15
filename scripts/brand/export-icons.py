@@ -6,6 +6,7 @@ prompt, the same file as assets/prod/logo.svg in specweave-studio). Change the m
 and rerun `python3 scripts/brand/export-icons.py`; do not edit the outputs by hand.
 Needs rsvg-convert and Pillow.
 """
+import hashlib
 import io
 import re
 import shutil
@@ -18,6 +19,16 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 MASTER = ROOT / "scripts/brand/specwithcode-logo.svg"
 TILE = "#5B6CFF"
+# Files that link the outputs; each link gets ?v=<master hash> so browsers drop cached icons.
+LINKERS = (
+    "docs-site/docusaurus.config.ts",
+    "docs-site/static/site.webmanifest",
+    "contrib/subscription-switch/public/index.html",
+    "README.md",
+)
+ICON_LINK = re.compile(
+    r"(favicon\.ico|favicon-\d+x\d+\.png|apple-touch-icon\.png|site\.webmanifest|img/logo(?:-dark)?\.svg|/mark\.svg)(\?v=[0-9a-f]+)?"
+)
 
 
 def render(size: int, full_bleed: bool = False) -> Image.Image:
@@ -61,6 +72,11 @@ def main() -> None:
         dashboard.read_text(), count=1,
     )
     dashboard.write_text(html)
+
+    version = hashlib.sha256(MASTER.read_bytes()).hexdigest()[:8]
+    for rel in LINKERS:
+        path = ROOT / rel
+        path.write_text(ICON_LINK.sub(lambda m: f"{m.group(1)}?v={version}", path.read_text()))
 
 
 if __name__ == "__main__":

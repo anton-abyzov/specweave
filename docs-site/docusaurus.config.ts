@@ -5,8 +5,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'SpecWeave',
   tagline: 'Change agents. Keep the thread.',
-  // Use proper favicon.ico for broad compatibility (Teams, etc.)
-  favicon: 'favicon.ico',
+  // An .ico favicon for broad compatibility (Teams, etc.)
+  favicon: 'favicon.ico?v=079fbdd1',
 
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
@@ -33,7 +33,7 @@ const config: Config = {
         '@type': 'Organization',
         name: 'SpecWeave',
         url: 'https://spec-weave.com',
-        logo: 'https://spec-weave.com/img/logo.svg',
+        logo: 'https://spec-weave.com/img/logo.svg?v=079fbdd1',
         sameAs: [
           'https://github.com/anton-abyzov/specweave',
           'https://www.npmjs.com/package/specweave',
@@ -113,14 +113,14 @@ const config: Config = {
       attributes: {
         rel: 'apple-touch-icon',
         sizes: '180x180',
-        href: '/apple-touch-icon.png',
+        href: '/apple-touch-icon.png?v=079fbdd1',
       },
     },
     {
       tagName: 'link',
       attributes: {
         rel: 'manifest',
-        href: '/site.webmanifest',
+        href: '/site.webmanifest?v=079fbdd1',
       },
     },
     {
@@ -129,7 +129,7 @@ const config: Config = {
         rel: 'icon',
         type: 'image/png',
         sizes: '32x32',
-        href: '/favicon-32x32.png',
+        href: '/favicon-32x32.png?v=079fbdd1',
       },
     },
     {
@@ -138,7 +138,7 @@ const config: Config = {
         rel: 'icon',
         type: 'image/png',
         sizes: '16x16',
-        href: '/favicon-16x16.png',
+        href: '/favicon-16x16.png?v=079fbdd1',
       },
     },
   ],
@@ -312,8 +312,8 @@ const config: Config = {
       title: 'SpecWeave',
       logo: {
         alt: 'SpecWeave Logo',
-        src: 'img/logo.svg',
-        srcDark: 'img/logo-dark.svg',
+        src: 'img/logo.svg?v=079fbdd1',
+        srcDark: 'img/logo-dark.svg?v=079fbdd1',
       },
       items: [
         {to: '/code/', label: 'SpecWithCode', position: 'left'},
