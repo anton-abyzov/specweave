@@ -13,7 +13,7 @@ This project uses SpecWeave. Plan increments in `.specweave/increments/NNNN-slug
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
 5. Before stopping or switching tools/accounts: `specweave handoff --reason "<why>"`.
 
-**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or "[Usage limit reached" appears (outside SpecWeave Studio), run `specweave handoff --reason "<why>"`; tell them to say "pick up" in the other tool. "[Usage limit approaching" or usage heads-ups mean keep working; say so. When the user says "pick up", run `specweave pickup`; continue its task, passing any given id/title. Take the newest handoff if several; say which.
+**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or "[Usage limit reached" appears (outside SpecWithCode), run `specweave handoff --reason "<why>"`; tell them to say "pick up" in the other tool. "[Usage limit approaching" or usage heads-ups mean keep working; say so. When the user says "pick up", run `specweave pickup`; continue its task, passing any given id/title. Take the newest handoff if several; say which.
 
 Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e2e/a.test.ts | Test: npm test -- e2e/a`. An AC is met when its tasks are done. Leave notes with `specweave note "<text>"`. Skills: `.agents/skills/sw-*` and `.claude/skills/sw-*`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
 <!-- /SECTION -->

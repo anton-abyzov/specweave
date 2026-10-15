@@ -157,7 +157,7 @@ specweave handoff list
       .claude/worktrees/studio-routing (branch codex/studio-routing)
   0880  Project memory and routines · claude@m4 · 40m ago · usage limit reached
       .specweave/increments/0880-memory-import/handoff.md
-  0874  Studio release tested on the Mac · claude@m4 · 2h ago · out of tokens
+  0874  SpecWithCode release tested on the Mac · claude@m4 · 2h ago · out of tokens
       .specweave/increments/0874-studio-release/handoff.md
 Take one with `specweave pickup <id>` (say "pick up <id>"); plain "pick up" takes the newest.
 ```
