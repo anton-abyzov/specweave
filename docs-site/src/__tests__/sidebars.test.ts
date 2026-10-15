@@ -110,7 +110,7 @@ describe('Docusaurus navbar items (T-017)', () => {
   });
 
   it('leads with SpecWithCode, then the CLI and Integrations', () => {
-    expect(navItems[0]).toEqual(expect.objectContaining({label: 'SpecWithCode', to: '/studio'}));
+    expect(navItems[0]).toEqual(expect.objectContaining({label: 'SpecWithCode', to: '/code/'}));
     expect(navItems).toEqual(expect.arrayContaining([
       expect.objectContaining({label: 'CLI', to: '/product'}),
       expect.objectContaining({label: 'Integrations', to: '/integrations'}),

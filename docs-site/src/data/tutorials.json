@@ -47,7 +47,7 @@
       "captionsOn": true,
       "audio": "silent",
       "uploadDate": "2026-10-10",
-      "guide": "/studio",
+      "guide": "/code/",
       "chapters": [
         {"start": 0, "title": "Every agent, one workspace"},
         {"start": 4, "title": "A coordinator and its workers"},
