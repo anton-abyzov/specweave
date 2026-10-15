@@ -82,8 +82,8 @@ needs no summary from you) and stop.
 Between handoffs every hook also saves a local checkpoint under
 `~/.specweave/checkpoints/` (no model, network, push or claim change; `pickup` does
 not apply it). `auto-handoff on --checkpoint-only` keeps only those checkpoints, for
-plans where credits or a proxy keep working past the limit. Inside SpecWeave Studio
-(`SPECWEAVE_STUDIO_THREAD_ID` is set) do not hand off on a usage note: Studio switches
+plans where credits or a proxy keep working past the limit. Inside SpecWithCode
+(`SPECWEAVE_STUDIO_THREAD_ID` is set) do not hand off on a usage note: SpecWithCode switches
 the thread to another provider between turns, and a handoff would release its claims.
 
 ## Pick up
