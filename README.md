@@ -1,4 +1,4 @@
-<p align="center"><img src="https://spec-weave.com/img/logo.svg" width="96" height="96" alt="SpecWeave logo" /></p>
+<p align="center"><img src="https://spec-weave.com/img/logo.svg?v=079fbdd1" width="96" height="96" alt="SpecWeave logo" /></p>
 
 <h1 align="center">SpecWeave</h1>
 
