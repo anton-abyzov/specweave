@@ -4,7 +4,7 @@ import styles from './ecosystem.module.css';
 
 export function ProductMap() {
   return <div className={styles.products}>
-    <article><span className={styles.kicker}>01 / The workspace</span><h3>SpecWithCode</h3><p>Projects with a coordinator and workers, each on the provider and model you pick, running on your own machines with approvals you can see.</p><Link to="/studio">See SpecWithCode ↗</Link></article>
+    <article><span className={styles.kicker}>01 / The workspace</span><h3>SpecWithCode</h3><p>Projects with a coordinator and workers, each on the provider and model you pick, running on your own machines with approvals you can see.</p><Link to="/code/">See SpecWithCode ↗</Link></article>
     <article><span className={styles.kicker}>02 / The record</span><h3>SpecWeave CLI</h3><p>The spec, task claims, test evidence and handoff live in your repository, so any agent or account can continue. Open source.</p><Link to="/docs/getting-started">Start the open-source workflow ↗</Link></article>
     <article><span className={styles.kicker}>03 / The expertise</span><h3>vskill + Skill Studio</h3><p>Inspect and install skills into every agent. Evaluate their behavior against a baseline before your team relies on them.</p><a href="https://verified-skill.com">Explore skills and evaluations ↗</a></article>
   </div>;

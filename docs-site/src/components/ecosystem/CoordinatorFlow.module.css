@@ -1,0 +1,141 @@
+/* Coordinator -> worker sequence. Sticky stage on wide screens, scroll-driven phases,
+   message packets along live edges. The resting state is the final state. */
+.flow{padding:96px 0 48px;scroll-margin-top:90px}
+.intro{max-width:700px;margin-bottom:40px}
+.intro h2{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:clamp(30px,3.4vw,46px);line-height:1.08;letter-spacing:-1.6px;color:var(--code-ink);margin:10px 0 18px}
+.intro p{color:var(--code-muted);font-size:18px;line-height:1.65;margin:0}
+.intro .kicker{font-size:14px;font-weight:600;color:var(--code-accent)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.story{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr);gap:64px;align-items:start}
+.sticky{position:sticky;top:84px}
+
+.stage{position:relative;isolation:isolate;border:1px solid var(--code-line);border-radius:18px;background:var(--code-surface);box-shadow:0 30px 80px #12244014,0 2px 0 #ffffff inset;overflow:hidden}
+.stage::before{content:'';position:absolute;inset:0;z-index:-1;background-image:radial-gradient(var(--code-line) 1px,transparent 1.2px);background-size:20px 20px;opacity:.55;mask-image:linear-gradient(#000,transparent 85%)}
+.stage::after{content:'';position:absolute;z-index:-1;width:60%;aspect-ratio:1;left:20%;top:-30%;border-radius:50%;background:radial-gradient(circle,var(--code-glow),transparent 65%);opacity:.9;pointer-events:none}
+.stageTop{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--code-line);font-size:12px;color:var(--code-muted)}
+.live{display:inline-flex;align-items:center;gap:8px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--code-teal);box-shadow:0 0 0 0 var(--code-teal)}
+.rail{display:flex;gap:6px;margin:0;padding:0;list-style:none}
+.rail li{width:26px;height:4px;border-radius:4px;background:var(--code-line);transition:background .4s ease,width .5s cubic-bezier(.22,1,.36,1)}
+.rail li[data-state=done]{background:var(--code-accent);opacity:.45}
+.rail li[data-state=now]{background:var(--code-accent);width:44px}
+
+/* Network canvas: HTML nodes over an SVG of edges, both in one coordinate space. */
+.canvas{position:relative;aspect-ratio:640/340;margin:8px 18px 0}
+.canvas svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.narrow{display:none}
+.edgeBase{fill:none;stroke:var(--code-line);stroke-width:2}
+.edgeFlow{fill:none;stroke:var(--code-accent);stroke-width:2.2;stroke-linecap:round;opacity:0;stroke-dasharray:6 8;transition:opacity .45s ease}
+.edge[data-state=done] .edgeFlow{opacity:.35;stroke-dasharray:none}
+.edge[data-state=live] .edgeFlow{opacity:1}
+.packet{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--code-accent);box-shadow:0 0 0 5px var(--code-accent-soft),0 0 18px var(--code-accent);opacity:0;pointer-events:none;z-index:3}
+
+.node{position:absolute;left:var(--x);top:var(--y);width:var(--w);transform:translate3d(var(--tx,-50%),var(--ty,-50%),0);color:var(--code-ink);z-index:2;transition:opacity .5s ease,transform .6s cubic-bezier(.22,1,.36,1),border-color .4s ease,box-shadow .4s ease}
+.node small{display:block;font-size:12px;line-height:1.35;color:var(--code-muted)}
+.you{--x:10.9%;--y:50%;--w:118px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--code-surface);border:1.5px solid var(--code-line);font-size:13px;font-weight:600;transition:border-color .4s ease,box-shadow .4s ease}
+.you[data-on=true] .avatar{border-color:var(--code-accent);box-shadow:0 0 0 6px var(--code-accent-soft)}
+.coord{--x:40.6%;--y:50%;--w:25.6%;display:flex;align-items:center;gap:10px;padding:13px 12px;border:1.5px solid var(--code-accent);border-radius:12px;background:var(--code-tint);box-shadow:0 14px 34px #315ce824}
+.coord strong{display:block;font-size:15px;line-height:1.2}
+.coord small{margin-top:3px}
+.mark{display:grid;place-items:center;flex:0 0 32px;height:32px;border-radius:9px;background:var(--code-accent);color:#fff;font-weight:600;font-size:15px}
+.pulse{position:absolute;inset:-1.5px;border-radius:12px;border:1.5px solid var(--code-accent);opacity:0;pointer-events:none}
+.worker{--tx:0;--w:31.25%;--x:67.5%;padding:12px 13px 13px;border:1px solid var(--code-line);border-radius:12px;background:var(--code-surface);box-shadow:0 10px 26px #12244012}
+.codex{--y:22.9%}
+.claude{--y:77.1%}
+.worker[data-on=false]{opacity:.55}
+.worker[data-on=true]{border-color:var(--code-accent-line)}
+.workerHead{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.workerHead strong{font-size:14px}
+.workerHead em{font-style:normal;font-size:10.5px;font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--code-muted)}
+.glyph{color:var(--code-accent);font-size:14px}
+.meter{display:block;height:4px;border-radius:4px;background:var(--code-line);margin-top:10px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--code-accent),var(--code-teal));transition:width 2.6s cubic-bezier(.33,1,.68,1)}
+.meter[data-phase='1'] i{width:10%;transition-duration:.6s}
+.meter[data-phase='2'] i{width:82%}
+.meter[data-phase='3'] i{width:100%;transition-duration:.6s}
+.badge{position:absolute;top:10px;right:10px;font-size:10px;font-weight:600;letter-spacing:.2px;padding:2px 7px;border-radius:20px;background:var(--code-bg);color:var(--code-muted)}
+.badge[data-phase='2']{color:var(--code-accent);background:var(--code-accent-soft)}
+.badge[data-phase='3']{color:var(--code-teal);background:var(--code-teal-soft)}
+
+/* Message log: the conversation as it happens. */
+.log{list-style:none;margin:10px 0 0;padding:12px 18px 16px;border-top:1px solid var(--code-line);display:grid;gap:7px;min-height:164px;align-content:start;background:linear-gradient(var(--code-surface),var(--code-bg))}
+.log li{display:grid;grid-template-columns:196px 1fr;gap:10px;font-size:12.5px;line-height:1.45;color:var(--code-muted)}
+.log li b{font-weight:600;color:var(--code-ink);white-space:nowrap}
+.log li b span{color:var(--code-accent)}
+.log li[data-shown=false]{display:none}
+.log li[data-new=true] b{color:var(--code-accent)}
+
+.steps{display:none;gap:6px;margin-top:12px}
+.steps button{flex:1;display:flex;align-items:center;gap:6px;border:1px solid var(--code-line);border-radius:8px;background:var(--code-surface);color:var(--code-muted);padding:9px 8px;font:500 12px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:border-color .3s ease,color .3s ease}
+.steps button[aria-pressed=true]{border-color:var(--code-accent);color:var(--code-accent);background:var(--code-tint)}
+.steps button span{font-size:11px;opacity:.75}
+.steps button:focus-visible{outline:3px solid var(--code-accent);outline-offset:3px}
+.flow[data-hydrated=true] .steps{display:flex}
+
+/* Beats with real captures. */
+.beat{min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding:40px 0;scroll-margin-top:120px}
+.beat:first-child{min-height:70vh;justify-content:flex-start;padding-top:8px}
+.number{font-size:13px;color:var(--code-accent);font-weight:600;letter-spacing:.3px}
+.number i{font-style:normal;color:var(--code-muted);font-weight:500}
+.beat h3{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:clamp(23px,2.2vw,30px);line-height:1.18;letter-spacing:-.6px;color:var(--code-ink);margin:12px 0}
+.beat p{font-size:16.5px;line-height:1.7;color:var(--code-muted);margin:0}
+.shot{position:relative;margin:26px 0 0}
+.shot img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--code-line);background:#fafafa;box-shadow:0 22px 50px #1224401f}
+.shotFront{position:relative;z-index:1}
+.shot[data-stack] .shotFront{width:88%!important}
+.shot[data-stack] .shotBack{position:absolute;top:-18px;right:0;width:70%!important;opacity:.95;transform:rotate(2deg)}
+.shot figcaption{font-size:11.5px;line-height:1.5;color:var(--code-muted);margin-top:12px}
+.caption{font-size:12px;color:var(--code-muted);margin:24px 0 0;max-width:760px}
+
+@media(prefers-reduced-motion:no-preference){
+  .live i{animation:ping 2.2s cubic-bezier(0,0,.2,1) infinite}
+  .edge[data-state=live] .edgeFlow{animation:flow 1s linear infinite}
+  .stage[data-phase='1'] .pulse,.stage[data-phase='3'] .pulse{animation:ring 1.6s cubic-bezier(.22,1,.36,1) infinite}
+  .node small{animation:swap .5s cubic-bezier(.22,1,.36,1) both}
+  .log li[data-new=true]{animation:line-in .55s cubic-bezier(.22,1,.36,1) both}
+  .stage[data-phase='2'] .worker{animation:bob 2.4s ease-in-out infinite}
+  .stage[data-phase='2'] .claude{animation-delay:-1.2s}
+  @supports(animation-timeline:view()){
+    .shot{animation:shot-reveal linear forwards;animation-timeline:view();animation-range:entry 5% cover 40%}
+    .shot[data-stack] .shotBack{animation:back-fan linear forwards;animation-timeline:view();animation-range:entry 10% cover 45%}
+    .beat h3,.beat p{animation:copy-in linear forwards;animation-timeline:view();animation-range:entry 0% cover 30%}
+  }
+  @keyframes ping{0%{box-shadow:0 0 0 0 var(--code-teal)}80%,100%{box-shadow:0 0 0 7px transparent}}
+  @keyframes flow{to{stroke-dashoffset:-28}}
+  @keyframes ring{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.12,1.35)}}
+  @keyframes swap{from{opacity:0;transform:translate3d(0,5px,0)}to{opacity:1;transform:none}}
+  @keyframes line-in{from{opacity:0;transform:translate3d(-10px,0,0)}to{opacity:1;transform:none}}
+  @keyframes bob{50%{transform:translate3d(var(--tx,-50%),calc(var(--ty,-50%) - 3px),0)}}
+  @keyframes shot-reveal{from{clip-path:inset(0 0 100% 0 round 12px);transform:translate3d(0,40px,0) scale(.97)}to{clip-path:inset(-30px -30px -60px -30px round 12px);transform:none}}
+  @keyframes back-fan{from{transform:rotate(0) translate3d(-30px,30px,0)}to{transform:rotate(2deg)}}
+  @keyframes copy-in{from{opacity:.25;transform:translate3d(0,24px,0)}to{opacity:1;transform:none}}
+}
+
+@media(max-width:1100px){.story{gap:40px}.log li{grid-template-columns:1fr;gap:0}.coord{padding:11px 10px}.coord strong{font-size:14px}.mark{flex-basis:28px;height:28px}}
+
+/* Narrow: no sticky stage; vertical diagram that cycles while visible, beats follow. */
+@media(max-width:960px){
+  .story{display:block}
+  .sticky{position:relative;top:auto}
+  .wide{display:none}
+  .narrow{display:block}
+  .canvas{aspect-ratio:340/350;margin:8px 10px 0}
+  .you{--x:50%;--y:8%;--w:auto;flex-direction:row;gap:10px;text-align:left}
+  .avatar{width:40px;height:40px;font-size:12px}
+  .coord{--x:50%;--y:34.9%;--w:58.8%}
+  .worker{--y:64.6%;--ty:0;--w:47%;padding:10px 10px 11px}
+  .codex{--x:2.4%}
+  .claude{--x:50.6%}
+  .workerHead em{display:none}
+  .badge{display:none}
+  .log{min-height:0}
+  .log li{grid-template-columns:1fr;gap:1px}
+  .beat,.beat:first-child{min-height:0;padding:36px 0 8px;justify-content:flex-start}
+  .beats{margin-top:12px}
+}
+@media(max-width:480px){.flow{padding:60px 0 24px}.intro p{font-size:16px}.beat h3{font-size:23px}.beat p{font-size:15.5px}.stageTop{padding:12px 14px}.rail li{width:16px}.rail li[data-state=now]{width:28px}.log{padding:10px 14px 14px}.node small{font-size:11.5px}.coord small{font-size:11px}.steps button{font-size:11px;padding:8px 4px;justify-content:center}}
+
+@media(prefers-reduced-motion:reduce){.beat,.beat:first-child{min-height:0;padding:30px 0}.node,.meter i,.rail li{transition:none}}
+@media print{.sticky{position:relative;top:auto}.beat{min-height:0}.steps,.packet{display:none}.story{display:block}}

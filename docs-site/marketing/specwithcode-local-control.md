@@ -16,13 +16,13 @@ Run Claude Code, Codex and other agents in one workspace. Choose where work runs
 
 Cloud models receive prompts and relevant context through your chosen provider. Local execution does not mean offline AI.
 
-CTA: Download SpecWithCode → https://spec-weave.com/studio/
+CTA: Download SpecWithCode → https://spec-weave.com/code/
 
 ## Short social caption
 
 Your machines. Your agents. Your control.
 Run AI agents on computers you control. Choose folder access and approvals. Cloud models still receive prompts and relevant context through your chosen provider.
-https://spec-weave.com/studio/
+https://spec-weave.com/code/
 
 ## LinkedIn / longer social caption
 
@@ -32,7 +32,7 @@ SpecWithCode brings Claude Code, Codex and other agents into one workspace on yo
 
 Cloud models still receive prompts and relevant context, which can include code and file contents. Connected tools use their own services. Local execution does not mean offline AI.
 
-Download SpecWithCode: https://spec-weave.com/studio/
+Download SpecWithCode: https://spec-weave.com/code/
 
 ## Ad copy draft
 
@@ -42,7 +42,7 @@ Body: Run agents on your machines. Choose folder access and approvals. Cloud mod
 
 CTA: Download SpecWithCode
 
-Destination: https://spec-weave.com/studio/
+Destination: https://spec-weave.com/code/
 
 ## Claim boundaries
 
@@ -51,4 +51,34 @@ Destination: https://spec-weave.com/studio/
 - Provider boundary: prompts and relevant context can include source code. Provider and integration data policies apply.
 - Project records: specs and handoffs live in user-controlled repositories; pushing a repository or sharing content can send them elsewhere.
 
-Copy source: docs-site/src/pages/studio.tsx and docs-site/src/components/ecosystem/StudioSections.tsx. Recheck capabilities before publishing a future campaign.
+Copy source: docs-site/src/pages/code.tsx and docs-site/src/components/ecosystem/StudioSections.tsx. Recheck capabilities before publishing a future campaign.
+
+## Subscription value / company-controlled machines
+
+### Promo draft
+
+Put your AI subscriptions and machines to work.
+
+Bring supported coding-agent subscriptions into one workspace on computers your team controls. Connect approved machines privately, choose where work runs, and keep folder access and approvals explicit.
+
+For sustained coding work, an eligible subscription can cost less than paying API rates for the same workload. The result depends on the plan, model, usage limits and any extra charges. Compare cost per accepted task before scaling across a team.
+
+Cloud models still receive prompts and relevant context through your chosen provider. Connected tools use their own services.
+
+CTA: Explore SpecWithCode → https://spec-weave.com/code/
+
+### Short caption
+
+Put your AI plans to work on machines you control. Connect approved computers privately and choose where agents run. Savings depend on your plan and workload; cloud models still receive prompts and context.
+https://spec-weave.com/code/
+
+### Evidence and limits for future campaigns
+
+Checked 2026-10-14 against [Claude pricing](https://claude.com/pricing) and [Claude Code plan/billing guidance](https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan).
+
+- Eligible subscription usage and API billing differ. Current Claude Enterprise pricing is a seat fee plus usage at API rates; individual-plan economics must not be presented as a universal enterprise offer.
+- Provider limits, seat/account rules and company-approved access still apply. Connecting machines does not create more subscription entitlement or imply shared credentials.
+- “10× cheaper” requires a measured, comparable workload: the same model and accepted outcome, input/output/cache accounting, current API rates, subscription charges, extra usage and the measurement period. Until then, use the conditional savings wording above.
+- A $200 plan is not an unlimited token pool or a guaranteed $2,000 API equivalent. Verify the provider, plan and current price before adding a price to a campaign.
+- Amazon and Microsoft are examples of potential enterprise audiences, not verified customers, endorsements or validated deployments. Do not use their names or logos as social proof.
+- Promote privately connected, individually approved machines. Do not promise that an entire company network, arbitrary hardware or enterprise-scale concurrency is already supported or tested.

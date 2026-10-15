@@ -11,7 +11,7 @@ test.describe('3.0 landing page', () => {
     await expect(hero.locator('h1')).toContainText('One workspace.');
     const studio = hero.getByRole('link', { name: /See SpecWithCode/ });
     await expect(studio).toBeVisible();
-    await expect(studio).toHaveAttribute('href', /^\/studio\/?$/);
+    await expect(studio).toHaveAttribute('href', /^\/code\/?$/);
     await expect(hero.getByRole('link', { name: /Start free with the CLI/ })).toHaveAttribute('href', /^\/docs\/getting-started\/?$/);
   });
 
