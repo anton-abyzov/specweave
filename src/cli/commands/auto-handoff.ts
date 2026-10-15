@@ -412,7 +412,7 @@ export function autoHandoffStatus(home = os.homedir(), now = Date.now()): string
   lines.push(handsOff(settings)
     ? 'Checkpoints never push or release claims; a handoff does, so the next tool can `specweave pickup`.'
     : 'To transfer work to another tool or machine, run `specweave handoff` explicitly. Automatic checkpoints never push or release claims.');
-  if (studioThreadId()) lines.push('Running inside SpecWeave Studio: hooks only save checkpoints here, and Studio switches provider between turns.');
+  if (studioThreadId()) lines.push('Running inside SpecWithCode: hooks only save checkpoints here, and SpecWithCode switches provider between turns.');
   if (broken) lines.push('Run `specweave auto-handoff on` again to put the missing pieces back.');
   return lines;
 }
