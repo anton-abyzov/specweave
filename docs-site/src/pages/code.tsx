@@ -24,13 +24,13 @@ export default function Code() {
           <figure className={styles.productStage}>
             <div className={styles.stageBack} aria-hidden="true" />
             <div className={styles.captureFrame}>
-              <div className={styles.windowBar}><span><i /><i /><i /></span><span>Project / tip calculator</span><span>Recorded app</span></div>
-              <a href="/img/studio/coordinator-capture.webp" aria-label="Open full-size recorded coordinator screenshot"><img className={styles.capture} src="/img/studio/coordinator-capture.webp" width="1047" height="587" alt="Actual SpecWithCode coordinator showing completed code and README worker reports in one conversation" fetchPriority="high" /></a>
+              <div className={styles.windowBar}><span><i /><i /><i /></span><span>Project / tip-calculator</span><span>SpecWithCode 1.0.21</span></div>
+              <a href="/img/studio/code-hero-20261015.webp" aria-label="Open full-size coordinator screenshot"><img className={styles.capture} src="/img/studio/code-hero-20261015.webp" width="1889" height="1521" alt="Actual SpecWithCode 1.0.21 coordinator reporting that the README now shows the real python3 tip.py 50 18 output, next to the Codex worker thread with its report and 2 changed files" fetchPriority="high" /></a>
               <div className={styles.captureFooter}><span><b />Coordinator</span><span>Code + guide → one conversation</span></div>
             </div>
             <figure className={styles.floatProvider} aria-hidden="true"><img src="/img/studio/provider-status-20261008.png" width="273" height="195" alt="" /></figure>
             <div className={styles.stageAccent}><span aria-hidden="true">↳</span><div><strong>Every thread stays within reach.</strong><span>Inspect the work behind each result.</span></div></div>
-            <figcaption>Actual app capture, 10 October 2026. <a href="#watch">Watch the recorded workflow.</a></figcaption>
+            <figcaption>Actual app capture, SpecWithCode 1.0.21, 15 October 2026. <a href="/video/code-run-20261015.mp4">Watch this run (23 s).</a></figcaption>
           </figure>
         </header>
 

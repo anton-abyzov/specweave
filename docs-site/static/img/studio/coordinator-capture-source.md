@@ -1,14 +1,17 @@
-# Coordinator capture provenance
+# /code capture provenance
 
-Source: public `docs-site/static/video/studio-tutorial.mp4`, frame at 28 seconds, recorded 10 October 2026. Crop (752, 241, 1799, 828) removes the surrounding editorial layout; the application pixels are unchanged. WebP quality 91. Caption on the landing page identifies this as a recorded app capture, not the current version or a live session. The synthetic tip-calculator example contains no personal account or host identity. No new provider turn was started. The separate animated flow is explicitly an illustration.
+All hero and workflow screenshots on /code, and `docs-site/static/video/code-run-20261015.mp4`, come from one real session of the released SpecWithCode 1.0.21 server (`apps/server/dist/bin.mjs` from the shipped `SpecWithCode.app`), recorded on 15 October 2026 between 8:32 and 8:40 AM EDT. Its web client was driven by headless Chromium (Playwright, 2x device scale, dark scheme); nothing was mocked or edited apart from cropping, scaling and WebP or H.264 encoding.
 
-## Workflow and subscription captures (added for the /code redesign)
+The demo project is a fresh Git repository at `/Users/Shared/specwithcode-demo/tip-calculator` with a fresh data folder and browser profile, so no personal projects, threads or accounts appear. The host label shows "MacBook Pro" because a `scutil` shim returned that name instead of the real computer name. Provider sign-in, usage and quota screens were not captured.
 
-All four files are crops of frames from the same public `docs-site/static/video/studio-tutorial.mp4` (recorded 10 October 2026); application pixels are unchanged apart from cropping and WebP encoding (quality 86).
+The run: the coordinator (Claude Code, Opus 5.5, Supervised mode) started a Codex worker (GPT-6.1-Sol) to write `tip.py` and a Claude Code worker (Opus 5.5) to add a README Usage section. Codex asked for one command approval, which was approved; `python3 tip.py 50 18` printed `Tip: $9.00` and `Total: $59.00`. The coordinator reported that the README example was unverified, so a follow-up asked the README worker to run the script and use its exact output. Nothing was committed.
 
-- `flow-coord-threads.webp`: frame at 12 s, Threads rail with two working threads.
-- `flow-worker-codex.webp`: frame at 19 s, Codex worker thread output for `tip.py`.
-- `flow-worker-claude.webp`: frame at 23 s, Claude Code worker thread with the coordinator's message.
-- `flow-usage-limits.webp`: frame at 33 s, Usage and limits screen.
+- `code-hero-20261015.webp`: coordinator after the follow-up, with the Codex worker thread open (sidebar cropped out).
+- `flow-composer-20261015.webp`: composer with model, effort and approval controls.
+- `flow-dispatch-20261015.webp`: coordinator starting both workers; Codex shows "Approval requested".
+- `flow-worker-codex-20261015.webp`: Codex worker thread with the coordinator brief and the command approval.
+- `flow-worker-claude-20261015.webp`: Claude Code worker report after the follow-up.
+- `flow-coord-report-20261015.webp`: coordinator summary after the follow-up.
+- `code-run-20261015.mp4`: frames captured every few seconds across both turns; frames with no visible change were dropped, the rest are shown 0.35 s each (about 23 s in total, silent).
 
-`native-controls-20261008.png` and `provider-status-20261008.png` were already published. The landing page's animated coordinator diagram and the subscription chart are labelled illustrations; the calculator only does arithmetic on the visitor's own inputs.
+`flow-usage-limits.webp` comes from the 10 October 2026 `studio-tutorial.mp4` recording, and `native-controls-20261008.png` and `provider-status-20261008.png` were captured on 8 October 2026. The landing page's animated coordinator diagram and the subscription chart are labelled illustrations.
