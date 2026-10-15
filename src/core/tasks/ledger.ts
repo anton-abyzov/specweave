@@ -34,6 +34,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { touchIncrementUpdated } from './increment-updated.js';
+import { recordStudioThreadBinding } from './studio-thread-binding.js';
 
 export type TaskEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
 export type IncrementEventType = 'note' | 'session' | 'handoff' | 'pickup' | 'wait';
@@ -158,6 +159,8 @@ export function appendEvent(ledgerFile: string, event: LedgerEvent): void {
   fs.mkdirSync(path.dirname(ledgerFile), { recursive: true });
   fs.appendFileSync(ledgerFile, formatLedgerLine(event), { encoding: 'utf-8', flag: 'a' });
   touchIncrementUpdated(path.dirname(ledgerFile), event.at);
+  // Inside a SpecWeave Studio turn, the thread now works on this increment.
+  recordStudioThreadBinding(ledgerFile, event);
 }
 
 /** Parse a ledger file. Missing file → no events. Malformed lines are counted, never fatal. */
