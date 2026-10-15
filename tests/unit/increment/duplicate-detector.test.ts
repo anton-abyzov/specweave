@@ -183,6 +183,95 @@ describe('DuplicateDetector', () => {
     });
   });
 
+  describe('suffixed increment IDs (regression: 3.0.16 false duplicates)', () => {
+    it('does not report suffixed IDs as duplicates of their base number', async () => {
+      // Mirrors the real umbrella layout that 3.0.16 falsely flagged
+      await createTestIncrement(testDir, '_archive', '0657-dark-theme-semantic-tokens', { status: IncrementStatus.COMPLETED });
+      await createTestIncrement(testDir, '_archive', '0657E-dark-theme-followup', { status: IncrementStatus.COMPLETED });
+      await createTestIncrement(testDir, '_archive', '0713-queue-pipeline-restoration', { status: IncrementStatus.COMPLETED });
+      await createTestIncrement(testDir, '_abandoned', '0713B-production-rollout', { status: IncrementStatus.ABANDONED });
+      await createTestIncrement(testDir, 'active', '0402-github-sync-plugin-fixes', { status: IncrementStatus.COMPLETED });
+      await createTestIncrement(testDir, '_abandoned', '0402E-dark-mode-toggle', { status: IncrementStatus.ABANDONED });
+
+      const result = await detectAllDuplicates(testDir);
+
+      expect(result.totalChecked).toBe(6);
+      expect(result.duplicateCount).toBe(0);
+      expect(result.duplicates).toEqual([]);
+    });
+
+    it('still reports true duplicates of the same unsuffixed ID across locations', async () => {
+      await createTestIncrement(testDir, 'active', '0657-dark-theme-semantic-tokens', { status: IncrementStatus.ACTIVE });
+      await createTestIncrement(testDir, '_archive', '0657-dark-theme-semantic-tokens', { status: IncrementStatus.COMPLETED });
+      await createTestIncrement(testDir, '_archive', '0657E-dark-theme-followup', { status: IncrementStatus.COMPLETED });
+
+      const result = await detectAllDuplicates(testDir);
+
+      expect(result.duplicateCount).toBe(1);
+      expect(result.duplicates[0].incrementNumber).toBe('0657');
+      expect(result.duplicates[0].locations.map(l => l.name)).toEqual([
+        '0657-dark-theme-semantic-tokens',
+        '0657-dark-theme-semantic-tokens'
+      ]);
+    });
+
+    it('still reports two different names sharing the same unsuffixed number', async () => {
+      await createTestIncrement(testDir, 'active', '0713-queue-pipeline-restoration');
+      await createTestIncrement(testDir, '_abandoned', '0713-other-name');
+      await createTestIncrement(testDir, '_abandoned', '0713B-production-rollout');
+
+      const result = await detectAllDuplicates(testDir);
+
+      expect(result.duplicateCount).toBe(1);
+      expect(result.duplicates[0].incrementNumber).toBe('0713');
+      expect(result.duplicates[0].locations).toHaveLength(2);
+    });
+
+    it('reports duplicates of the same suffixed ID under the suffixed key', async () => {
+      await createTestIncrement(testDir, 'active', '0402E-dark-mode-toggle');
+      await createTestIncrement(testDir, '_abandoned', '0402E-dark-mode-toggle');
+      await createTestIncrement(testDir, 'active', '0402-github-sync-plugin-fixes');
+
+      const result = await detectAllDuplicates(testDir);
+
+      expect(result.duplicateCount).toBe(1);
+      expect(result.duplicates[0].incrementNumber).toBe('0402E');
+      expect(result.duplicates[0].locations.every(l => l.name === '0402E-dark-mode-toggle')).toBe(true);
+    });
+
+    it('treats suffix case-insensitively and keeps 5+ digit IDs distinct from 4-digit ones', async () => {
+      await createTestIncrement(testDir, 'active', '0657e-lower');
+      await createTestIncrement(testDir, '_archive', '0657E-upper');
+      await createTestIncrement(testDir, 'active', '10000-big');
+      await createTestIncrement(testDir, '_archive', '1000-small');
+
+      const result = await detectAllDuplicates(testDir);
+
+      expect(result.duplicateCount).toBe(1);
+      expect(result.duplicates[0].incrementNumber).toBe('0657E');
+    });
+
+    it('detectDuplicatesByNumber matches the base number only against unsuffixed IDs', async () => {
+      await createTestIncrement(testDir, '_archive', '0657-dark-theme-semantic-tokens');
+      await createTestIncrement(testDir, '_archive', '0657E-dark-theme-followup');
+      await createTestIncrement(testDir, '_abandoned', '0657G-gitlab-import');
+
+      const base = await detectDuplicatesByNumber('0657', testDir);
+      const external = await detectDuplicatesByNumber('0657E', testDir);
+      const lowerExternal = await detectDuplicatesByNumber('657e', testDir);
+
+      expect(base.map(l => l.name)).toEqual(['0657-dark-theme-semantic-tokens']);
+      expect(external.map(l => l.name)).toEqual(['0657E-dark-theme-followup']);
+      expect(lowerExternal.map(l => l.name)).toEqual(['0657E-dark-theme-followup']);
+    });
+
+    it('detectDuplicatesByNumber returns [] for a non-numeric query', async () => {
+      await createTestIncrement(testDir, 'active', '0001-test');
+
+      expect(await detectDuplicatesByNumber('abc', testDir)).toEqual([]);
+    });
+  });
+
   describe('detectDuplicatesByNumber', () => {
     it('should detect duplicates for specific increment number', async () => {
       await createTestIncrement(testDir, 'active', '0001-test');

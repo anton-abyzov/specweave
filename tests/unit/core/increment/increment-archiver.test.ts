@@ -745,6 +745,19 @@ describe('archive duplicate detection', () => {
     expect(result.errors).toContain('0001-original');
   });
 
+  it('should query duplicates by full ID key including the suffix', async () => {
+    createIncrement('0005E-imported', { status: 'completed' });
+    createIncrement('0010-latest', { status: 'completed' });
+
+    mockDetectDuplicates.mockResolvedValue([]);
+
+    const archiver = createArchiver();
+    const result = await archiver.archive({ keepLast: 1 });
+
+    expect(result.archived).toContain('0005E-imported');
+    expect(mockDetectDuplicates).toHaveBeenCalledWith('0005E', expect.any(String));
+  });
+
   it('should succeed when detectDuplicatesByNumber returns empty', async () => {
     createIncrement('0001-clean', { status: 'completed' });
     createIncrement('0010-latest', { status: 'completed' });
