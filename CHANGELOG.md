@@ -1,3 +1,9 @@
+## [3.0.19] - 2026-10-15
+
+### Changed
+
+- Docs, the AGENTS.md template, the handoff skill and `specweave auto-handoff` output call the app SpecWithCode instead of Studio. Paths, environment variables and identifiers are unchanged (#2061).
+
 ## [3.0.18] - 2026-10-15
 
 ### Added
