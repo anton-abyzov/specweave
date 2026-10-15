@@ -112,8 +112,15 @@ const config: Config = {
       tagName: 'link',
       attributes: {
         rel: 'apple-touch-icon',
-        sizes: '192x192',
-        href: '/img/favicon-192x192.png',
+        sizes: '180x180',
+        href: '/apple-touch-icon.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'manifest',
+        href: '/site.webmanifest',
       },
     },
     {
