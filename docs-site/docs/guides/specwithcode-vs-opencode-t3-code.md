@@ -18,15 +18,15 @@ The facts about other products below come from their own sites, docs and GitHub 
 | **What runs the agent** | Each vendor's own CLI: Claude Code, Codex, Cursor, Grok, OpenCode, Muse Code, Antigravity, Pi, plus GitHub Copilot CLI and Gemini CLI through the ACP registry | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
 | **Where your code runs** | Your Macs | Your machine | Your machine | A vendor-hosted container or VM that clones your repo (sources below) |
 | **Claude Pro or Max plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
-| **Other machines** | Pair Macs over your network, SSH or Tailscale; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://raw.githubusercontent.com/pingdotgg/t3code/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
-| **Apps** | macOS on Apple silicon (Electron), signed and notarized | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Desktop (Electron), web, iOS, Android and a CLI ([README](https://github.com/pingdotgg/t3code)) | Web, IDE and GitHub |
+| **Other machines** | Pair Macs over your network, SSH or Tailscale; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
+| **Apps** | macOS on Apple silicon (Electron), signed and notarized | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI ([README](https://github.com/pingdotgg/t3code)) | Web, IDE and GitHub |
 | **Price and license** | Free, open source (MIT) | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Open source (MIT) ([license](https://github.com/pingdotgg/t3code/blob/main/LICENSE)) | Included in or billed by each vendor's plan |
 
 Cloud agents here means:
 
 - [Codex cloud](https://learn.chatgpt.com/docs/environments/cloud-environment): "Codex creates a container and checks out your repo."
-- [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web): each session runs in an Anthropic-managed VM that clones your repository.
-- [GitHub Copilot coding agent](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment): an ephemeral environment powered by GitHub Actions.
+- [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web): each session runs in an Anthropic-managed VM that clones your repository, unless your organization routes sessions to a self-hosted environment.
+- [GitHub Copilot cloud agent](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment): an ephemeral environment powered by GitHub Actions.
 - [Cursor cloud agents](https://cursor.com/docs/cloud-agent): isolated cloud VMs that clone your repo from GitHub, GitLab, Azure DevOps or Bitbucket.
 - [Google Jules](https://jules.google/docs): "Jules runs in a virtual machine where it clones your code."
 
@@ -58,7 +58,7 @@ when you want one open agent loop across many API providers, or need Windows or 
 
 ## Pick T3 Code
 
-when you want a local wrapper around the vendor CLIs with web and phone clients.
+when you want a local wrapper around the vendor CLIs with web and phone clients, on macOS, Windows or Linux.
 
 ## Pick a cloud agent
 
