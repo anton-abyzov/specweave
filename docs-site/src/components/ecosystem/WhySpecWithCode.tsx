@@ -41,13 +41,13 @@ const ROWS: {label: string; cells: Cell[]}[] = [
   {label: 'Other machines', cells: [
     'Pair Macs over your network, SSH or Tailscale; move projects between them',
     <>Run <code>opencode serve</code> or <code>web</code> on a reachable address <Src href="https://opencode.ai/docs/web/" /></>,
-    <>Network, Tailscale, SSH or the T3 Connect relay <Src href="https://raw.githubusercontent.com/pingdotgg/t3code/main/docs/user/remote-access.md" /></>,
+    <>Network, Tailscale, SSH or the T3 Connect relay <Src href="https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md" /></>,
     'Runs in the vendor’s cloud',
   ]},
   {label: 'Apps', cells: [
     'macOS on Apple silicon (Electron)',
     <>Terminal, desktop for macOS, Windows and Linux, IDE extension <Src href="https://opencode.ai/download" /></>,
-    <>Desktop (Electron), web, iOS, Android and a CLI <Src href="https://github.com/pingdotgg/t3code" /></>,
+    <>Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI <Src href="https://github.com/pingdotgg/t3code" /></>,
     'Web, IDE and GitHub',
   ]},
   {label: 'Price and license', cells: [
@@ -76,7 +76,7 @@ export default function WhySpecWithCode() {
     <div className={styles.compare} id="compare">
       <div className={styles.compareHead}>
         <h3>How it compares</h3>
-        <p>SpecWithCode is our product, so read this with that in mind. Competitor facts come from their own sites and docs, checked on {CHECKED}; follow the source links for the current state. Cloud agents here are Codex cloud, Claude Code on the web, the GitHub Copilot coding agent, Cursor cloud agents and Google Jules.</p>
+        <p>SpecWithCode is our product, so read this with that in mind. Competitor facts come from their own sites and docs, checked on {CHECKED}; follow the source links for the current state. Cloud agents here are Codex cloud, Claude Code on the web, the GitHub Copilot cloud agent, Cursor cloud agents and Google Jules.</p>
       </div>
       <div className={styles.tableWrap} role="region" aria-label="Comparison table" tabIndex={0}>
         <table>
@@ -86,11 +86,11 @@ export default function WhySpecWithCode() {
       </div>
       <ul className={styles.picks}>
         <li><b>Pick OpenCode</b> for one open agent loop across many API providers, or if you need Windows or Linux. SpecWithCode can also run OpenCode as one of its agents.</li>
-        <li><b>Pick T3 Code</b> for a local CLI wrapper with web and phone clients.</li>
+        <li><b>Pick T3 Code</b> for a local CLI wrapper with web and phone clients, on macOS, Windows or Linux.</li>
         <li><b>Pick a cloud agent</b> when work should keep running with your laptop closed and your repo already lives on GitHub.</li>
         <li><b>Pick SpecWithCode</b> to coordinate several agents across your own Macs, watch every subscription’s limits, and keep code off anyone else’s servers.</li>
       </ul>
-      <p className={styles.sources}>Cloud agent sources: <a href="https://learn.chatgpt.com/docs/environments/cloud-environment">Codex cloud</a>, <a href="https://code.claude.com/docs/en/claude-code-on-the-web">Claude Code on the web</a>, <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment">Copilot coding agent</a>, <a href="https://cursor.com/docs/cloud-agent">Cursor cloud agents</a>, <a href="https://jules.google/docs">Jules</a>. Plan prices: <a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">Claude Max</a>, <a href="https://learn.chatgpt.com/docs/pricing">ChatGPT and Codex</a>. Claude plan use in other apps: <a href="https://code.claude.com/docs/en/legal-and-compliance">Anthropic’s terms</a>.</p>
+      <p className={styles.sources}>Cloud agent sources: <a href="https://learn.chatgpt.com/docs/environments/cloud-environment">Codex cloud</a>, <a href="https://code.claude.com/docs/en/claude-code-on-the-web">Claude Code on the web</a>, <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment">Copilot cloud agent</a>, <a href="https://cursor.com/docs/cloud-agent">Cursor cloud agents</a>, <a href="https://jules.google/docs">Jules</a>. Plan prices: <a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">Claude Max</a>, <a href="https://learn.chatgpt.com/docs/pricing">ChatGPT and Codex</a>. Claude plan use in other apps: <a href="https://code.claude.com/docs/en/legal-and-compliance">Anthropic’s terms</a>.</p>
       <p className={styles.more}><Link to="/docs/compare/specwithcode-vs-opencode-t3-code">Full comparison with every source</Link></p>
     </div>
   </section>;
