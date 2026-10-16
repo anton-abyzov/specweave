@@ -37,21 +37,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      # fetch-depth 2 gives the change gate HEAD^1; docs-site/static and
+      # video/ are not in the package and stay out of the checkout.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
+
+      # A patch or prerelease bump changes only version fields, which cannot
+      # change what the preflight inspects; release.yml runs the same
+      # build, validate:versions and preflight on the tag anyway.
+      - name: Change gate
+        id: gate
+        run: node scripts/ci/release-bump-only.mjs HEAD^1 HEAD >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
+        if: steps.gate.outputs.bump_only != 'true'
         with:
           node-version: '22.x'
           cache: 'npm'
 
       # Supply-chain guard: dependency install scripts never run in CI.
       - name: Install dependencies (no install scripts)
+        if: steps.gate.outputs.bump_only != 'true'
         run: npm ci --ignore-scripts && npm run setup
 
       # Negative case FIRST, on a deliberately unbuilt tree (dist/ is
       # gitignored, so a fresh checkout has none). The preflight has to REFUSE.
       # If this step ever exits 0, the guard has gone vacuous.
       - name: Preflight refuses to publish an unbuilt tree
+        if: steps.gate.outputs.bump_only != 'true'
         run: |
           if npm run release:preflight; then
             echo "::error::release:preflight passed with no build — the publish guard is vacuous"
@@ -60,15 +79,18 @@ jobs:
           echo "preflight correctly refused an unbuilt tree"
 
       - name: Build project
+        if: steps.gate.outputs.bump_only != 'true'
         run: npm run build
 
       - name: Preflight passes on a built tree
+        if: steps.gate.outputs.bump_only != 'true'
         run: npm run release:preflight
 
       # And the tarball npm would upload really does carry the entrypoints —
       # asserted here independently of the script, so a bug that made the
       # preflight check nothing would still be caught.
       - name: Tarball carries bin, dist and the plugin manifests
+        if: steps.gate.outputs.bump_only != 'true'
         run: |
           npm pack --dry-run --json > pack.json
           node -e "
@@ -88,4 +110,5 @@ jobs:
       # The wiring itself: prepublishOnly and `npm run release` must keep
       # pointing at the preflight, or the guard silently stops being on the path.
       - name: Publish-path wiring guard
+        if: steps.gate.outputs.bump_only != 'true'
         run: npx vitest run tests/unit/build/publish-path-guard.test.ts

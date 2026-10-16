@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
-import { packedManifest, validateManifest, waitForPublishedManifest, waitForPublishedTarball } from '../../../scripts/release/verify-package-install.mjs';
+import { backoffDelay, packedManifest, validateManifest, waitForPublishedManifest, waitForPublishedTarball } from '../../../scripts/release/verify-package-install.mjs';
 
 const expected = { name: 'specweave', version: '2.2.3' };
 const valid = { ...expected, bin: { specweave: 'bin/specweave.js' }, dist: { tarball: 'https://registry.npmjs.org/specweave/-/specweave-2.2.3.tgz', integrity: 'sha512-test' } };
@@ -33,6 +33,15 @@ describe('published package installability gate', () => {
     const wait = vi.fn();
     expect(await waitForPublishedManifest(expected.version, { fetchImpl, wait, attempts: 2 })).toEqual(valid);
     expect(wait).toHaveBeenCalledOnce();
+  });
+  it('backs off exponentially to an 8 s cap within the 10-minute bound', async () => {
+    const fetchImpl = vi.fn(async () => new Response('{}', { status: 404 }));
+    const wait = vi.fn();
+    await expect(waitForPublishedManifest(expected.version, { fetchImpl, wait, attempts: 6 })).rejects.toThrow('not publicly available');
+    expect(wait.mock.calls.map(([ms]) => ms)).toEqual([1000, 2000, 4000, 8000, 8000]);
+    const total = Array.from({ length: 79 }, (_, attempt) => backoffDelay(attempt)).reduce((a, b) => a + b, 0);
+    expect(total).toBeGreaterThanOrEqual(600_000);
+    expect(total).toBeLessThan(660_000);
   });
   it('does not report success when registry processing never completes', async () => {
     const fetchImpl = vi.fn(async () => new Response('{}', { status: 404 }));
