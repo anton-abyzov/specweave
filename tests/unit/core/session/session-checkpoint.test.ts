@@ -348,12 +348,14 @@ describe('latestCheckpointFor', () => {
     const t = Date.parse('2026-10-16T12:00:00Z');
     const cwd = fs.realpathSync(repo);
     receipt('best', cwd, new Date(t).toISOString(), t);
+    receipt('coarse-mtime', cwd, new Date(t + 900).toISOString(), t);
     for (let i = 0; i < 10; i++) receipt(`older-${i}`, cwd, new Date(t - 10_000 - i).toISOString(), t - 10_000 - i);
     const read = vi.spyOn(fsDefault, 'readFileSync');
     syncBuiltinESMExports();
-    expect(latestCheckpointFor(repo, { home })?.sessionId).toBe('best');
+    // A receipt whose mtime was rounded down below its savedAt still wins.
+    expect(latestCheckpointFor(repo, { home })?.sessionId).toBe('coarse-mtime');
     const receipts = read.mock.calls.filter(([file]) => String(file).endsWith('current.json'));
-    expect(receipts).toHaveLength(1);
+    expect(receipts).toHaveLength(2);
   });
 
   it('returns undefined when no receipt matches the project', () => {
