@@ -1,3 +1,11 @@
+## [3.0.21] - 2026-10-16
+
+### Changed
+
+- sw-increment now runs a Decide step from sw-brainstorm before writing spec.md: it asks only the user's critical decisions, one at a time with a recommended answer, and records them under `## Decisions`. `planning.deepInterview` is now `off`, `critical` (default, at most 5 questions) or `deep` (no cap); a 2.x `warn` migrates to `critical`, and the unused `interview` command module is removed (#2067).
+- The /code page uses real SpecWithCode 1.0.21 captures and a short recorded run (#2065).
+- The docs site adds the SpecWithCode Browser privacy policy page (#2068).
+
 ## [3.0.20] - 2026-10-15
 
 ### Changed
