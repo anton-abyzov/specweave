@@ -27,6 +27,11 @@ on:
         required: false
         type: boolean
         default: false
+      skip_ci_gate:
+        description: 'Emergency only: publish without proof that Test & Validate passed on this code'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: release
@@ -36,15 +41,27 @@ jobs:
   release:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # The registry verify alone is bounded at about 10 min for the manifest,
+    # 10 min for the tarball and 3 min for the install; the CI gate at 10 min.
+    timeout-minutes: 30
     permissions:
       contents: write
       id-token: write
+      actions: read
 
     steps:
+      # Full history for tags and the CI gate; blobs on demand, and
+      # docs-site/static and video/ (not in the package) left out.
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Only develop can publish from a manual run
@@ -58,6 +75,7 @@ jobs:
         with:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 22 ships an older
       # npm. Without this the publish silently falls back to token auth.
@@ -69,9 +87,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      # npm ci installs exactly the lockfile (integrity-checked), so the
+      # setup-node cache is safe and the publish never re-resolves.
       - name: Install dependencies (no install scripts)
         run: |
-          npm install --ignore-scripts
+          npm ci --ignore-scripts
           npm run setup
 
       # Bump before building so the build, version check and tarball gate all
@@ -85,27 +105,14 @@ jobs:
         run: |
           REQUESTED="${REQUESTED#v}"
           CURRENT=$(node -p "require('./package.json').version")
-          LAST_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
           if [ -n "$REQUESTED" ] && [ "$REQUESTED" = "$CURRENT" ]; then
             echo "Releasing package.json version $CURRENT as is"
           else
-            HAD_UNRELEASED=false
-            head -1 CHANGELOG.md | grep -q '^## \[Unreleased\]' && HAD_UNRELEASED=true
+            # The `version` lifecycle (scripts/build/auto-changelog.js) turns an
+            # [Unreleased] section into the entry, or lists what landed since
+            # the last tag.
             npm version "${REQUESTED:-$VERSION_TYPE}" --no-git-tag-version --ignore-scripts=false
             NEW=$(node -p "require('./package.json').version")
-            # No [Unreleased] notes: list the commits since the last tag in
-            # place of the "- Patch release" placeholder.
-            if [ "$HAD_UNRELEASED" = false ]; then
-              git log --no-merges --format='- %s' ${LAST_TAG:+"$LAST_TAG"..HEAD} | head -30 > /tmp/commits.md
-              if [ -s /tmp/commits.md ]; then
-                node -e "
-                  const fs = require('fs');
-                  const notes = fs.readFileSync('/tmp/commits.md', 'utf8').trimEnd();
-                  const log = fs.readFileSync('CHANGELOG.md', 'utf8');
-                  fs.writeFileSync('CHANGELOG.md', log.replace('\n\n- Patch release\n', '\n\n' + notes + '\n'));
-                "
-              fi
-            fi
             git add package.json package-lock.json CHANGELOG.md plugins/specweave/.claude-plugin/plugin.json .claude-plugin/marketplace.json
             git commit -m "Release $NEW"
           fi
@@ -196,11 +203,29 @@ jobs:
         run: |
           awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
           cat /tmp/release-notes.md
+          if ! grep -q '[^[:space:]]' /tmp/release-notes.md; then
+            echo "::error::CHANGELOG.md has no notes for $VERSION"
+            exit 1
+          fi
+          if grep -qx -- '- Patch release' /tmp/release-notes.md; then
+            echo "::error::The CHANGELOG.md entry for $VERSION still carries the '- Patch release' placeholder. Write the notes, then release."
+            exit 1
+          fi
 
       - name: Prevent an older stable release from replacing npm latest
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: node scripts/release/guard-publish-version.mjs "$VERSION"
+
+      # Tests are not re-run here: require a Test & Validate run that really
+      # ran them on this commit, or on an older develop commit that differs
+      # from it only in files the tests skip (a patch bump, metrics, untested
+      # docs). It waits while that run is still in progress.
+      - name: Require green Test & Validate for the released code
+        if: github.event_name == 'push' || !inputs.skip_ci_gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release/require-green-ci.mjs "$GITHUB_SHA"
 
       # Push before publishing: a rejected push (develop moved on) stops the
       # run with nothing on npm. If the publish then fails, re-run with
@@ -254,6 +279,26 @@ jobs:
             npm publish --access public
           fi
 
+      # Draft first, so the notes are in place while npm processes the upload;
+      # nothing is published or marked Latest until the clean install passes.
+      - name: Create GitHub Release (draft until the install check passes)
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "Release v$VERSION already exists"
+            exit 0
+          fi
+          if [[ "${VERSION%%+*}" == *"-"* ]]; then
+            gh release create "v$VERSION" --verify-tag --draft --prerelease \
+              --title "v$VERSION" --notes-file /tmp/release-notes.md
+          else
+            gh release create "v$VERSION" --verify-tag --draft \
+              --title "v$VERSION" --notes-file /tmp/release-notes.md
+          fi
+
       # npm can accept an upload while registry processing still returns 404.
       # A successful publish command is not yet a publicly installable release.
       - name: Verify public package and clean CLI installation
@@ -266,28 +311,21 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run
         run: node scripts/release/verify-package-install.mjs
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
-          # Check if release already exists
-          if gh release view "v$VERSION" &>/dev/null; then
-            echo "Release v$VERSION already exists, skipping creation"
+          if [ "$(gh release view "v$VERSION" --json isDraft --jq .isDraft)" != "true" ]; then
+            echo "Release v$VERSION is already published"
             exit 0
           fi
-          # Check if it's a prerelease (contains -rc, -beta, -alpha)
+          # Prerelease versions (-rc, -beta, -alpha) never become Latest.
           if [[ "${VERSION%%+*}" == *"-"* ]]; then
-            gh release create "v$VERSION" \
-              --title "v$VERSION" \
-              --notes-file /tmp/release-notes.md \
-              --prerelease
+            gh release edit "v$VERSION" --draft=false --prerelease
           else
-            gh release create "v$VERSION" \
-              --title "v$VERSION" \
-              --notes-file /tmp/release-notes.md \
-              --latest
+            gh release edit "v$VERSION" --draft=false --latest
           fi
 
       - name: Success notification
