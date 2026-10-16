@@ -3,6 +3,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import CoordinatorFlow from '../components/ecosystem/CoordinatorFlow';
 import SubscriptionValue from '../components/ecosystem/SubscriptionValue';
+import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import {SPECWITHCODE_RELEASE as release} from '../data/specwithcodeRelease';
 import styles from './code.module.css';
@@ -19,7 +20,7 @@ export default function Code() {
             <p className={styles.lead}>One workspace for Claude Code, Codex and the agents you choose. Coordinate the work. Keep your folders, permissions and approvals in your hands.</p>
             <div className={styles.actions}><a className={styles.primary} href={release.dmgUrl}>Download for Mac <span aria-hidden="true">↓</span></a><a className={styles.secondary} href="#workflow">See the workflow <span aria-hidden="true">↘</span></a></div>
             <p className={styles.qualification}><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
-            <p className={styles.requirements}>Apple silicon · macOS 13+ · Early access<br />Not notarized yet: use System Settings → Privacy &amp; Security → Open Anyway on first launch.</p>
+            <p className={styles.requirements}>Apple silicon · macOS 13+ · Early access<br />Signed with Developer ID and notarized by Apple.</p>
           </div>
           <figure className={styles.productStage}>
             <div className={styles.stageBack} aria-hidden="true" />
@@ -39,6 +40,8 @@ export default function Code() {
           <div><span aria-hidden="true">⇄</span><p><strong>Bring your providers.</strong><span>Keep eligible plans and sign-ins.</span></p></div>
           <div><span aria-hidden="true">✓</span><p><strong>Set the boundaries.</strong><span>Folders, tools and approvals.</span></p></div>
         </div>
+
+        <WhySpecWithCode />
 
         <CoordinatorFlow />
 
