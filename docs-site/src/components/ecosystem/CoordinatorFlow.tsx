@@ -4,55 +4,55 @@ import styles from './CoordinatorFlow.module.css';
 type Edge = 'goal' | 'codex' | 'claude';
 
 // Every line of copy below is taken from the recorded tip-calculator run
-// (docs-site/static/video/studio-tutorial.mp4, 10 October 2026).
+// (docs-site/static/video/code-run-20261015.mp4, SpecWithCode 1.0.21, 15 October 2026).
 const beats = [
   {
     label: 'Goal shared',
     title: 'Give the project one goal.',
     body: 'Describe the outcome once. The coordinator keeps the request, context and decisions in one conversation, and you choose the model, effort and approval mode.',
-    shot: {src: '/img/studio/native-controls-20261008.png', w: 740, h: 151, alt: 'Actual SpecWithCode composer with model, effort and Supervised approval controls'},
-    caption: 'Composer with model, effort and approval controls. Recorded app, 8 October 2026.',
+    shot: {src: '/img/studio/flow-composer-20261015.webp', w: 947, h: 300, alt: 'Actual SpecWithCode composer with Claude Code Opus 5.5, effort and thinking settings, and the Supervised approval mode'},
+    caption: 'Composer with model, effort and approval controls. SpecWithCode 1.0.21, 15 October 2026.',
   },
   {
     label: 'Work assigned',
     title: 'The coordinator splits the work.',
     body: 'It starts a worker thread for each part. Here Codex writes tip.py while Claude Code adds the usage guide. Each thread keeps its own provider, model and permissions on the machine you chose.',
-    shot: {src: '/img/studio/flow-coord-threads.webp', w: 822, h: 588, alt: 'Actual Threads rail showing two working threads: Add README usage section on claude-haiku-5-5 and Write tip.py calculator on gpt-6-luna'},
-    caption: 'Threads rail with two workers running. Recorded app, 10 October 2026.',
+    shot: {src: '/img/studio/flow-dispatch-20261015.webp', w: 1064, h: 680, alt: 'Actual coordinator reply starting two workers: Write tip.py CLI with approval requested, and README usage for tip.py working'},
+    caption: 'The coordinator starts two worker threads. SpecWithCode 1.0.21, 15 October 2026.',
   },
   {
     label: 'Working in parallel',
     title: 'Workers run side by side.',
-    body: 'Each worker receives the coordinator’s brief in its own thread. Open any thread to see the commands it ran, the files it changed and the output it got.',
-    shot: {src: '/img/studio/flow-worker-codex.webp', w: 652, h: 580, alt: 'Actual Codex worker thread: created tip.py, ran python tip.py 50 18 which printed Tip $9.00 and Total $59.00'},
-    back: {src: '/img/studio/flow-worker-claude.webp', w: 652, h: 580, alt: 'Actual Claude Code worker thread showing the message it received from the coordinator'},
-    caption: 'Codex and Claude Code worker threads. Recorded app, 10 October 2026.',
+    body: 'Each worker receives the coordinator’s brief in its own thread. Open any thread to see the commands it ran, the files it changed and the output it got, and approve commands when the mode asks you to.',
+    shot: {src: '/img/studio/flow-worker-codex-20261015.webp', w: 690, h: 1090, alt: 'Actual Codex worker thread on gpt-6.1-sol showing the coordinator brief and a command approval with Decline and Approve'},
+    back: {src: '/img/studio/flow-worker-claude-20261015.webp', w: 691, h: 797, alt: 'Actual Claude Code worker report: python3 tip.py 50 18 printed Tip $9.00 and Total $59.00, only README.md changed, nothing committed'},
+    caption: 'Codex asks for a command approval; Claude Code reports its evidence. SpecWithCode 1.0.21, 15 October 2026.',
   },
   {
     label: 'Results returned',
     title: 'Results come back to one conversation.',
     body: 'Workers report to the coordinator, which checks each result against the goal and tells you what is left. Review the evidence before you accept anything: a reported result still needs verification.',
-    shot: {src: '/img/studio/coordinator-capture.webp', w: 1047, h: 587, alt: 'Actual coordinator conversation summarising the finished tip.py and README work, with nothing committed'},
-    caption: 'Coordinator summary after both workers reported. Recorded app, 10 October 2026.',
+    shot: {src: '/img/studio/flow-coord-report-20261015.webp', w: 822, h: 875, alt: 'Actual coordinator summary: the README Usage example now shows the real output of python3 tip.py 50 18, only README.md changed and nothing is committed'},
+    caption: 'Coordinator summary after a follow-up check. SpecWithCode 1.0.21, 15 October 2026.',
   },
 ];
 
 const status = {
   you: ['Build a tip calculator', 'Goal sent', 'Following along', 'Review the result'],
   coord: ['Reading the goal', 'Starting 2 threads', 'Watching 2 workers', 'Both tasks finished'],
-  codex: ['Idle', 'Write tip.py calculator', 'Ran 2 commands, changed 1 file', 'Tip: $9.00 · Total: $59.00'],
-  claude: ['Idle', 'Add README usage section', 'Message received from coordinator', 'Usage section reported back'],
+  codex: ['Idle', 'Write tip.py CLI', 'Command approved, writing tip.py', 'Tip: $9.00 · Total: $59.00'],
+  claude: ['Idle', 'README usage for tip.py', 'Message received from coordinator', 'Usage example uses the real output'],
 };
 
 const log: {phase: number; from: string; to?: string; text: string}[] = [
-  {phase: 0, from: 'You', to: 'Coordinator', text: 'Build a tip calculator CLI with a usage guide.'},
-  {phase: 1, from: 'Coordinator', to: 'Codex', text: 'Write tip.py at the repo root.'},
-  {phase: 1, from: 'Coordinator', to: 'Claude Code', text: 'Add a Usage section to README.md.'},
-  {phase: 2, from: 'Codex', text: 'Created tip.py · python tip.py 50 18'},
-  {phase: 2, from: 'Claude Code', text: 'Editing README.md, keeping existing content.'},
-  {phase: 3, from: 'Codex', to: 'Coordinator', text: 'Tip: $9.00 · Total: $59.00. Edge inputs checked.'},
-  {phase: 3, from: 'Claude Code', to: 'Coordinator', text: 'README usage section reported back.'},
-  {phase: 3, from: 'Coordinator', to: 'You', text: 'Both tasks are finished, and nothing is committed.'},
+  {phase: 0, from: 'You', to: 'Coordinator', text: 'Codex writes tip.py, Claude Code adds a README Usage section. Don’t commit.'},
+  {phase: 1, from: 'Coordinator', to: 'Codex', text: 'Write tip.py and run python3 tip.py 50 18 once.'},
+  {phase: 1, from: 'Coordinator', to: 'Claude Code', text: 'Add a short Usage section to README.md.'},
+  {phase: 2, from: 'Codex', text: 'Command approval requested · approved'},
+  {phase: 2, from: 'Claude Code', text: 'Editing README.md only.'},
+  {phase: 3, from: 'Codex', to: 'Coordinator', text: 'Tip: $9.00 · Total: $59.00, exited 0.'},
+  {phase: 3, from: 'Claude Code', to: 'Coordinator', text: 'Usage example now shows the exact output.'},
+  {phase: 3, from: 'Coordinator', to: 'You', text: 'Only README.md changed, and nothing is committed.'},
 ];
 
 // Which edges carry messages in each phase, and in which direction.
@@ -222,7 +222,7 @@ export default function CoordinatorFlow() {
               <div className={styles.workerHead}>
                 <span className={styles.glyph}>{w === 'codex' ? '◎' : '✳'}</span>
                 <strong>{w === 'codex' ? 'Codex' : 'Claude Code'}</strong>
-                <em>{w === 'codex' ? 'gpt-6-luna' : 'claude-haiku-5-5'}</em>
+                <em>{w === 'codex' ? 'gpt-6.1-sol' : 'claude-opus-5-5'}</em>
               </div>
               <small key={`${w}${active}`}>{status[w][active]}</small>
               <span className={styles.meter} data-phase={active}><i /></span>
