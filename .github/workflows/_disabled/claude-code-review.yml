@@ -1,3 +1,4 @@
+# Disabled 2026-10-16: fails on every PR since 2026-10-09 (1 turn, $0, under 1 s; most likely an expired OAuth token secret). Rotate the secret it uses, then move this file back to .github/workflows/.
 name: Claude Code Review
 
 on:
