@@ -10,7 +10,8 @@ describe('SpecWithCode landing page', () => {
   const page = read('pages/code.tsx');
   const value = read('components/ecosystem/SubscriptionValue.tsx');
   const flow = read('components/ecosystem/CoordinatorFlow.tsx');
-  const copy = [page, value, flow].join('\n');
+  const why = read('components/ecosystem/WhySpecWithCode.tsx');
+  const copy = [page, value, flow, why].join('\n');
 
   it('never promises a fixed savings multiplier', () => {
     expect(copy).not.toMatch(/\b\d+\s*[x×]\s*(cheaper|less|savings?)/i);
@@ -36,6 +37,20 @@ describe('SpecWithCode landing page', () => {
   it('starts the coordinator diagram in its final state for no-JS and reduced motion', () => {
     expect(flow).toMatch(/useState\(3\)/);
     expect(flow).toMatch(/prefers-reduced-motion: reduce/);
+  });
+
+  it('sources every competitor cell in the comparison and dates the check', () => {
+    const rows = why.slice(why.indexOf('const ROWS'), why.indexOf('function Src'));
+    for (const block of rows.split('cells: [').slice(1)) {
+      const cells = block.split(/,\n/).slice(1, 3);
+      for (const cell of cells) expect(cell).toMatch(/<Src href="https:\/\//);
+    }
+    expect(why).toMatch(/const CHECKED = '\d{1,2} \w+ \d{4}'/);
+  });
+
+  it('describes SpecWeave increments as optional and read-only', () => {
+    expect(why).toMatch(/Optional and read-only/);
+    expect(why).not.toMatch(/every thread (gets|creates) (a|an) (spec|increment)/i);
   });
 
   it('redirects /studio to the canonical /code page', () => {
