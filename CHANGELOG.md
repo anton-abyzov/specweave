@@ -1,3 +1,9 @@
+## [3.0.22] - 2026-10-16
+
+### Changed
+
+- `specweave pickup` finds the project's latest session checkpoint by reading receipts newest-first and stopping at the first older than its best match, instead of reading every receipt ever saved (129 ms to 25 ms with 2,660 checkpoints) (#2070).
+
 ## [3.0.21] - 2026-10-16
 
 ### Changed
