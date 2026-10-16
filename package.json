@@ -53,6 +53,7 @@
     "release": "npm publish --ignore-scripts=false",
     "release:preflight": "node scripts/release/preflight-publish.mjs",
     "release:bump": "bash scripts/build/bump-version.sh",
+    "release:cut": "bash scripts/release/release.sh",
     "setup:hooks": "bash scripts/hooks/install-git-hooks.sh",
     "setup": "npm rebuild --ignore-scripts=false esbuild",
     "security:scan": "node scripts/security/scan-payload.mjs --self-test"

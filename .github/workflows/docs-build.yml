@@ -12,13 +12,13 @@ on:
       - 'src/styles/brand-tokens.css'
       - '.specweave/docs/public/**'
       - 'README.md'
-      - 'CHANGELOG.md'
       - '.github/workflows/docs-build.yml'
 
 jobs:
   build:
     name: Build Documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -61,48 +61,14 @@ jobs:
           echo "Build directory size:"
           du -sh docs-site/build
 
-      - name: Upload docs build artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: docs-build
-          path: docs-site/build
-          retention-days: 1
-
-      - name: Upload build logs (for debugging)
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-logs
-          path: docs-site/.docusaurus
-
-  # Broken link checker - reuses build artifact instead of rebuilding
-  link-check:
-    name: Check for Broken Links
-    runs-on: ubuntu-latest
-    needs: build
-    if: success()
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-
+      # The link check runs on this runner against the build it just made:
+      # no second checkout, no artifact round trip.
       - name: Verify candidate link checking
         run: node docs-site/tests/candidate-links.mjs
 
-      - name: Download docs build artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: docs-build
-          path: docs-site-build
-
       - name: Serve and check links
         run: |
-          npx --yes serve@14.2.6 docs-site-build -l tcp://127.0.0.1:3000 &
+          npx --yes serve@14.2.6 docs-site/build -l tcp://127.0.0.1:3000 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           ready=false
@@ -118,3 +84,19 @@ jobs:
             exit 1
           fi
           node docs-site/scripts/check-candidate-links.mjs http://127.0.0.1:3000
+
+      - name: Upload docs build artifact (for debugging)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-build
+          path: docs-site/build
+          retention-days: 1
+          if-no-files-found: ignore
+
+      - name: Upload build logs (for debugging)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-logs
+          path: docs-site/.docusaurus

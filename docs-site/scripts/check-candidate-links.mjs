@@ -16,6 +16,9 @@ const args = [
   '--skip', skippedLinkPattern,
   '--url-rewrite-search', '^https?://(?:www\\.)?spec-weave\\.com(?=[/?#]|$)',
   '--url-rewrite-replace', candidate.origin,
+  // A third-party 503 failed the 3.0.18 release PR. Retry 429 (retry-after),
+  // 5xx and network errors up to 3 times; a 404 still fails at once.
+  '--retry', '--retry-errors', '--retry-errors-count', '3', '--retry-errors-jitter', '3000',
 ];
 console.log(`Authenticated-only classification: ${authenticatedOnlyLinks.length} exact URL requires repository access and is excluded from anonymous availability checks.`);
 for (const url of authenticatedOnlyLinks) console.log(`  ${url}`);

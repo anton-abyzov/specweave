@@ -1,30 +1,29 @@
 #!/bin/bash
 #
-# Smart version bump script with automatic CHANGELOG entry creation
-# Prevents the "missing CHANGELOG entry" pipeline failure
+# Local version bump. `npm version` bumps package.json and package-lock.json,
+# and its `version` lifecycle writes the CHANGELOG entry
+# (scripts/build/auto-changelog.js) and stamps the plugin and marketplace
+# manifests.
 #
 # Usage:
-#   ./scripts/bump-version.sh patch           # Bump + create CHANGELOG (manual release)
-#   ./scripts/bump-version.sh minor           # Bump + create CHANGELOG (manual release)
-#   ./scripts/bump-version.sh major           # Bump + create CHANGELOG (manual release)
-#   ./scripts/bump-version.sh patch --release # Full release: bump, commit, tag, push
-#   ./scripts/bump-version.sh 0.27.0          # Set specific version
+#   ./scripts/build/bump-version.sh patch|minor|major|prerelease   # bump only
+#   ./scripts/build/bump-version.sh X.Y.Z               # set a specific version
+#   ./scripts/build/bump-version.sh patch --release     # full release, see below
+#
+# A full release (bump PR, admin merge, tag, publish watch, verification) is
+# scripts/release/release.sh; --release hands over to it before bumping.
 #
 # Incident Reference: 2025-11-24 - v0.27.0, v0.26.16, v0.26.13 ALL failed due to missing CHANGELOG
-# Related: release.yml, validate-changelog-version.sh, pre-push hook
+# Related: release.yml, scripts/release/release.sh
 #
 
-set -e
+set -euo pipefail
 
-# Colors
-RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Parse arguments
 BUMP_TYPE=""
 AUTO_RELEASE=false
 
@@ -33,49 +32,38 @@ for arg in "$@"; do
     --release|-r)
       AUTO_RELEASE=true
       ;;
-    patch|minor|major|[0-9]*)
+    patch|minor|major|prerelease|[0-9]*)
       BUMP_TYPE="$arg"
       ;;
   esac
 done
 
-# Get current version
 CURRENT_VERSION=$(node -p "require('./package.json').version")
 
 if [ -z "$BUMP_TYPE" ]; then
   echo ""
-  echo -e "${BLUE}📦 SpecWeave Release Tool${NC}"
+  echo -e "${BLUE}SpecWeave version bump${NC}"
   echo ""
   echo "Current version: ${CURRENT_VERSION}"
   echo ""
   echo -e "${CYAN}Usage:${NC}"
-  echo "  $0 patch             # ${CURRENT_VERSION} -> $(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."$3+1}')"
-  echo "  $0 minor             # ${CURRENT_VERSION} -> $(echo $CURRENT_VERSION | awk -F. '{print $1"."$2+1".0"}')"
-  echo "  $0 major             # ${CURRENT_VERSION} -> $(echo $CURRENT_VERSION | awk -F. '{print $1+1".0.0"}')"
+  echo "  $0 patch             # ${CURRENT_VERSION} -> $(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1}')"
+  echo "  $0 minor             # ${CURRENT_VERSION} -> $(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2+1".0"}')"
+  echo "  $0 major             # ${CURRENT_VERSION} -> $(echo "$CURRENT_VERSION" | awk -F. '{print $1+1".0.0"}')"
   echo "  $0 X.Y.Z             # Set specific version"
   echo ""
   echo -e "${CYAN}Options:${NC}"
-  echo "  --release, -r        # Full release: bump, CHANGELOG, commit, tag, push"
-  echo ""
-  echo -e "${CYAN}Examples:${NC}"
-  echo "  $0 patch             # Just bump version + create CHANGELOG entry"
-  echo "  $0 patch --release   # Full automated release flow"
+  echo "  --release, -r        # Full release through scripts/release/release.sh"
   echo ""
   exit 1
 fi
 
-# Determine new version
-case $BUMP_TYPE in
-  patch|minor|major)
-    npm version $BUMP_TYPE --no-git-tag-version --ignore-scripts=false > /dev/null
-    NEW_VERSION=$(node -p "require('./package.json').version")
-    ;;
-  *)
-    # Specific version provided
-    NEW_VERSION=$BUMP_TYPE
-    npm version $NEW_VERSION --no-git-tag-version --ignore-scripts=false > /dev/null
-    ;;
-esac
+if [ "$AUTO_RELEASE" = true ]; then
+  exec bash "$(dirname "$0")/../release/release.sh" "$BUMP_TYPE"
+fi
+
+npm version "$BUMP_TYPE" --no-git-tag-version --ignore-scripts=false > /dev/null
+NEW_VERSION=$(node -p "require('./package.json').version")
 
 # 0794 / 0871 — propagate the bumped version to plugin.json + marketplace.json.
 # Without this, plugin.json freezes (silently breaks Claude Code's update
@@ -86,114 +74,11 @@ esac
 node "$(dirname "$0")/stamp-plugin-version.cjs"
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}📦 SpecWeave Release: ${CURRENT_VERSION} → ${NEW_VERSION}${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}Bumped ${CURRENT_VERSION} -> ${NEW_VERSION}${NC}"
 echo ""
-
-# Check if CHANGELOG entry already exists
-CHANGELOG_EXISTS=false
-if grep -q "## \[$NEW_VERSION\]" CHANGELOG.md; then
-  echo -e "${GREEN}✅ CHANGELOG entry already exists for v${NEW_VERSION}${NC}"
-  CHANGELOG_EXISTS=true
-else
-  echo -e "${YELLOW}📝 Creating CHANGELOG entry for v${NEW_VERSION}...${NC}"
-
-  # Generate release notes from git commits
-  TODAY=$(date +%Y-%m-%d)
-  LAST_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
-  if [ -n "$LAST_TAG" ]; then
-    COMMITS=$(git log --oneline --no-merges "$LAST_TAG"..HEAD | head -15 | sed 's/^[a-f0-9]* /- /')
-  else
-    COMMITS=$(git log --oneline --no-merges -10 | sed 's/^[a-f0-9]* /- /')
-  fi
-  [ -z "$COMMITS" ] && COMMITS="- Patch release"
-
-  CHANGELOG_ENTRY="## [$NEW_VERSION] - $TODAY
-
-### Changes
-$COMMITS
-
----
-
-"
-
-  # Insert after the first "---" line
-  TEMP_FILE=$(mktemp)
-  FIRST_SEPARATOR=$(grep -n "^---$" CHANGELOG.md | head -1 | cut -d: -f1)
-
-  if [ -n "$FIRST_SEPARATOR" ]; then
-    head -n $FIRST_SEPARATOR CHANGELOG.md > "$TEMP_FILE"
-    echo "" >> "$TEMP_FILE"
-    echo "$CHANGELOG_ENTRY" >> "$TEMP_FILE"
-    tail -n +$((FIRST_SEPARATOR + 1)) CHANGELOG.md >> "$TEMP_FILE"
-    mv "$TEMP_FILE" CHANGELOG.md
-    echo -e "${GREEN}✅ CHANGELOG entry created${NC}"
-  else
-    echo -e "${RED}⚠️  Could not find separator in CHANGELOG.md${NC}"
-    echo "   Please add CHANGELOG entry manually"
-    exit 1
-  fi
-fi
-
-# If auto-release mode, do everything
-if [ "$AUTO_RELEASE" = true ]; then
-  echo ""
-  echo -e "${CYAN}🚀 Auto-release mode enabled${NC}"
-  echo ""
-
-  # Verify CHANGELOG has real content (not a placeholder)
-  CHANGELOG_CONTENT=$(awk "/## \[$NEW_VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
-  if echo "$CHANGELOG_CONTENT" | grep -q "TODO: Describe your changes here"; then
-    echo -e "${YELLOW}⚠️  CHANGELOG has placeholder content, regenerating from commits...${NC}"
-    node scripts/build/auto-changelog.js
-  fi
-
-  # Check for uncommitted changes
-  if [ -n "$(git status --porcelain)" ]; then
-    echo -e "${YELLOW}📋 Staging changes...${NC}"
-    git add -A
-  fi
-
-  echo -e "${YELLOW}📝 Committing...${NC}"
-  git commit -m "chore: bump version to ${NEW_VERSION}" || {
-    echo -e "${RED}❌ Commit failed${NC}"
-    exit 1
-  }
-
-  echo -e "${YELLOW}🏷️  Creating tag v${NEW_VERSION}...${NC}"
-  git tag "v${NEW_VERSION}"
-
-  echo -e "${YELLOW}📤 Pushing to origin...${NC}"
-  git push origin develop
-  git push origin "v${NEW_VERSION}"
-
-  echo ""
-  echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-  echo -e "${GREEN}✅ Release v${NEW_VERSION} complete!${NC}"
-  echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-  echo ""
-  echo "   📦 NPM will be published by GitHub Actions"
-  echo "   🔗 Watch: https://github.com/anton-abyzov/specweave/actions"
-  echo ""
-else
-  # Manual mode - just show next steps
-  echo ""
-  echo -e "${GREEN}📋 Next steps:${NC}"
-  echo ""
-  if [ "$CHANGELOG_EXISTS" = false ]; then
-    echo -e "  ${YELLOW}1. Edit CHANGELOG.md${NC} - replace 'TODO' with actual changes"
-  else
-    echo "  1. Verify CHANGELOG.md content"
-  fi
-  echo "  2. Commit: git add -A && git commit -m \"chore: bump version to ${NEW_VERSION}\""
-  echo "  3. Push:   git push origin develop"
-  echo "  4. Tag:    git tag v${NEW_VERSION} && git push origin v${NEW_VERSION}"
-  echo ""
-  echo -e "${CYAN}💡 Or use auto-release mode:${NC}"
-  echo "   $0 $BUMP_TYPE --release"
-  echo ""
-  echo -e "${CYAN}💡 Or use the slash command:${NC}"
-  echo "   /specweave-release:npm"
-  echo ""
-fi
+echo "  1. Edit the CHANGELOG.md entry for ${NEW_VERSION} (release.yml refuses '- Patch release')"
+echo "  2. Commit as 'Release ${NEW_VERSION}', open a PR to develop, merge it, tag the merge commit"
+echo ""
+echo "  Or skip this bump: bash scripts/release/release.sh ${NEW_VERSION} --notes <file>"
+echo "  bumps a fresh develop clone and runs PR, merge, tag, publish watch and verify."
+echo ""

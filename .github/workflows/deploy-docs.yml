@@ -10,7 +10,6 @@ on:
       - 'src/styles/brand-tokens.css'
       - '.specweave/docs/public/**'
       - 'README.md'
-      - 'CHANGELOG.md'
       - '.github/workflows/deploy-docs.yml'
 
   # Scheduled deployment twice daily (9 AM and 9 PM UTC)
@@ -35,6 +34,7 @@ jobs:
   build:
     name: Build Documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -77,6 +77,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
 
     steps:
