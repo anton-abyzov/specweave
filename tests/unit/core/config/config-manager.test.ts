@@ -193,8 +193,8 @@ describe('ConfigManager', () => {
       expect((DEFAULT_CONFIG.limits as Record<string, unknown>).hardCap).toBeUndefined();
     });
 
-    it('has planning.deepInterview as an enum defaulting to off', () => {
-      expect(DEFAULT_CONFIG.planning?.deepInterview).toBe('off');
+    it('has planning.deepInterview as an enum defaulting to critical', () => {
+      expect(DEFAULT_CONFIG.planning?.deepInterview).toBe('critical');
     });
 
     it('has livingDocs off by default', () => {

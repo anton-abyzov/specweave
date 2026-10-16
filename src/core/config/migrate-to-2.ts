@@ -12,7 +12,7 @@
  *   testing.coverageTargets  → testing.coverage
  *   testing.{defaultCoverageTarget,tddEnforcement,playwright} dropped
  * - hooks.*.sync_living_docs → livingDocs: 'onDone' | false
- * - planning.deepInterview.{enabled,enforcement} → planning.deepInterview: 'off' | 'warn'
+ * - planning.deepInterview.{enabled,enforcement} or 'warn'/'strict' → 'off' | 'critical' | 'deep'
  * - sync.mode dropped (the queued event queue is gone)
  * - dead 1.x keys deleted outright (see DEAD_KEYS)
  *
@@ -156,18 +156,18 @@ export function migrateTo2(config: Record<string, unknown>): MigrateResult {
     }
   }
 
-  // planning.deepInterview: object → 'off' | 'warn'
+  // planning.deepInterview: object, 2.x 'warn' or 1.x 'strict' → 'off' | 'critical' | 'deep'
   if (isPlainObject(config.planning)) {
     const planning = config.planning;
     const di = planning.deepInterview;
     if (isPlainObject(di)) {
-      planning.deepInterview = di.enabled === true ? 'warn' : 'off';
+      planning.deepInterview = di.enabled === true ? 'critical' : 'off';
       renamedKeys.push('planning.deepInterview.{enabled,enforcement} → planning.deepInterview enum');
       changed = true;
-    } else if (di !== undefined && di !== 'off' && di !== 'warn') {
-      // 'strict' (or anything unrecognised) downgrades: 2.0 never blocks a write.
-      planning.deepInterview = 'warn';
-      renamedKeys.push(`planning.deepInterview "${String(di)}" → "warn"`);
+    } else if (di !== undefined && di !== 'off' && di !== 'critical' && di !== 'deep') {
+      const next = di === 'strict' ? 'deep' : 'critical';
+      planning.deepInterview = next;
+      renamedKeys.push(`planning.deepInterview "${String(di)}" → "${next}"`);
       changed = true;
     }
   }

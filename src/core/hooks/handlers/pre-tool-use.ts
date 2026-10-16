@@ -25,7 +25,7 @@
  *    the export.
  *
  * 2.0 removed the interview-enforcement guard: `planning.deepInterview` is
- * advisory ('off' | 'warn') and enforced by the planning skill, not a hook.
+ * advisory ('off' | 'critical' | 'deep') and enforced by the planning skill, not a hook.
  *
  * Output: `{}` (pass), `hookSpecificOutput.permissionDecision: "deny"`, or
  * `hookSpecificOutput.additionalContext` (warn). Paths are backslash-normalized
