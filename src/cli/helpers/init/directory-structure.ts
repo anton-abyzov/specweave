@@ -306,7 +306,7 @@ export function createConfigFile(
       activeIncrements: 3,
     },
     planning: {
-      deepInterview: 'off',
+      deepInterview: 'critical',
     },
     // Auto mode: only the keys something reads. The Stop hook stops the loop
     // after maxTurns turns or a session older than maxSessionAge seconds;

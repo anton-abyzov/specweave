@@ -104,7 +104,7 @@ describe('migrateTo2', () => {
       coverage: { unit: 95, integration: 90, e2e: 100 },
     });
     expect(config.livingDocs).toBe('onDone');
-    expect(config.planning).toEqual({ deepInterview: 'warn' });
+    expect(config.planning).toEqual({ deepInterview: 'critical' });
     expect(config.version).toBe('2.0');
   });
 
@@ -150,10 +150,13 @@ describe('migrateTo2', () => {
     }
   });
 
-  it('downgrades an unrecognised deepInterview value to warn (never blocks)', () => {
+  it('maps 2.x warn to critical and 1.x strict to deep (never blocks)', () => {
+    const warn: Record<string, unknown> = { version: '2.0', planning: { deepInterview: 'warn' } };
+    migrateTo2(warn);
+    expect(warn.planning).toEqual({ deepInterview: 'critical' });
     const config: Record<string, unknown> = { version: '2.0', planning: { deepInterview: 'strict' } };
     expect(migrateTo2(config).changed).toBe(true);
-    expect(config.planning).toEqual({ deepInterview: 'warn' });
+    expect(config.planning).toEqual({ deepInterview: 'deep' });
   });
 
   it('leaves an already-2.0 config untouched', () => {

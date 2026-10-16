@@ -22,7 +22,7 @@ For a Claude Code project with a GitHub remote, `specweave init` writes roughly 
   "repository": { "provider": "github", "organization": "acme", "repo": "my-app" },
   "testing": { "commands": [] },
   "limits": { "activeIncrements": 3 },
-  "planning": { "deepInterview": "off" },
+  "planning": { "deepInterview": "critical" },
   "auto": { "maxTurns": 20, "maxSessionAge": 7200, "requireTests": false },
   "livingDocs": false,
   "lsp": { "enabled": true },
@@ -77,7 +77,7 @@ The single most useful edit is filling in `testing.commands`.
 
 | Field | Default | Notes |
 |-------|---------|-------|
-| `deepInterview` | `"off"` | `"warn"` asks the planning skill to cover a structured set of questions and note the gaps. It never blocks. |
+| `deepInterview` | `"critical"` | Depth of the Decide step before spec.md is written (sw-brainstorm). `"critical"` asks at most 5 decisions, one at a time, each with a recommended answer. `"deep"` ("grill me") has no cap. `"off"` asks nothing. Answers and defaults go under `## Decisions` in spec.md. It never blocks. A 2.x `"warn"` reads as `"critical"`. |
 
 ### `auto`
 

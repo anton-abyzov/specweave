@@ -37,14 +37,16 @@ describe('toProjectSkill', () => {
 describe('installProjectSkills', () => {
   it('writes both folders, then reports everything unchanged on a second run', () => {
     const first = installProjectSkills(root);
-    expect(first.written).toHaveLength(SPECWEAVE_SKILLS.length * 2);
+    // One SKILL.md per skill per folder, plus any supporting files (references/).
+    const skillFiles = (files: string[]) => files.filter(f => f.endsWith('/SKILL.md'));
+    expect(skillFiles(first.written)).toHaveLength(SPECWEAVE_SKILLS.length * 2);
     for (const name of SPECWEAVE_SKILLS) {
       expect(fs.existsSync(path.join(root, '.claude/skills', `sw-${name}`, 'SKILL.md'))).toBe(true);
       expect(fs.existsSync(path.join(root, '.agents/skills', `sw-${name}`, 'SKILL.md'))).toBe(true);
     }
     const second = installProjectSkills(root);
     expect(second.written).toEqual([]);
-    expect(second.unchanged).toHaveLength(SPECWEAVE_SKILLS.length * 2);
+    expect(second.unchanged).toHaveLength(first.written.length);
   });
 
   it('removes files a skill no longer ships from its own sw-<name> folder only', () => {

@@ -17,8 +17,8 @@ import chalk from 'chalk';
 import { createIncrementTemplates } from '../../core/increment/template-creator.js';
 import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatcher.js';
 import { readConfig } from '../../core/config/config-manager.js';
+import type { DeepInterviewMode } from '../../core/config/types.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
-import { initInterviewStateFile } from './interview.js';
 import { slugify } from '../../utils/string-utils.js';
 import { supersedeIncrement, setParentIncrement } from '../../core/tasks/supersede.js';
 
@@ -106,7 +106,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   // Resolve increment ID: explicit or placeholder (template-creator handles atomic ID when autoId=true)
   const resolvedId = autoId ? '' : id!;
 
-  let deepInterview: 'off' | 'warn' | undefined;
+  let deepInterview: DeepInterviewMode | undefined;
   let configProjectName: string | undefined;
   try {
     const config = await readConfig(projectRoot);
@@ -160,18 +160,6 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   if (supersedes) record(supersedeIncrement(projectRoot, supersedes, finalId));
   if (parent) record(setParentIncrement(projectRoot, finalId, parent));
 
-  // 2.0: deep interview is advisory. `warn` seeds the interview state file so
-  // the planning skill can track which categories it has covered; nothing blocks.
-  if (deepInterview === 'warn') {
-    try {
-      initInterviewStateFile(projectRoot, finalId);
-    } catch (err) {
-      console.error(chalk.yellow(
-        `⚠️  Failed to initialize interview state: ${err instanceof Error ? err.message : err}`
-      ));
-    }
-  }
-
   // Await post-increment-planning hooks to ensure GitHub/JIRA/ADO sync completes
   try {
     await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, finalId);
@@ -186,6 +174,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
       incrementPath: result.incrementPath,
       createdFiles: result.createdFiles,
       nextSteps: result.nextSteps,
+      decide: deepInterview ?? 'critical',
       ...(relations.length ? { relations } : {}),
     }));
   } else {
@@ -193,6 +182,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
     for (const r of relations) console.log(`  ${r}`);
+    console.log(`  Decide: ${deepInterview ?? 'critical'} (planning.deepInterview; sw-brainstorm)`);
     console.log(chalk.blue('\nNext steps:'));
     result.nextSteps.forEach((step, i) => {
       console.log(`  ${i + 1}. ${step}`);

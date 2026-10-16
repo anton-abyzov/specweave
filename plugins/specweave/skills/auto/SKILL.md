@@ -12,8 +12,8 @@ before editing, a passing test for every `done`, verify before closing.
 
 ## Start
 
-1. The spec has no open questions and every task has `Files` and a `Test`. If not,
-   fix the spec first.
+1. The spec has nothing under `## Decisions` > `### Open` (or old `## Open questions`)
+   and every task has `Files` and a `Test`. If not, fix the spec first.
 2. `specweave auto 0042` records the session (`--dry-run` previews it, `--reset` clears
    stale state). In a tool that runs SpecWeave's Stop hook (Claude Code with the `sw`
    plugin) the hook hands you the remaining work after every turn until nothing is

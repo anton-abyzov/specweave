@@ -87,7 +87,7 @@ describe('init-architecture (integration)', () => {
 
       expect(result.testing.mode).toBeUndefined();
       expect(result.testing.commands).toEqual([]);
-      expect(result.planning.deepInterview).toBe('off');
+      expect(result.planning.deepInterview).toBe('critical');
       expect(result.lsp.enabled).toBe(true);
     });
 

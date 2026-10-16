@@ -28,10 +28,10 @@ export function applySmartDefaults(
     ...config.testing,
   };
 
-  // Planning: deep interview off at init (quick setup).
+  // Planning: the Decide step asks at most 5 critical questions by default.
   config.planning = {
     ...config.planning,
-    deepInterview: config.planning?.deepInterview ?? 'off',
+    deepInterview: config.planning?.deepInterview ?? 'critical',
   };
 
   // Living docs: off unless the user opts in.

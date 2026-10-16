@@ -347,6 +347,7 @@ export async function createIncrementTemplates(
           `Start working: sw:auto ${incrementId}`,
         ]
       : [
+          `Decide: ask the user only their critical decisions, one at a time with a recommended answer; record them under ## Decisions (sw-brainstorm)`,
           `Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …), Approach and Tasks (### T-01 … + "- AC: … | Files: … | Test: …")`,
           ...(planned ? [`Start it: specweave start ${incrementId}`] : []),
           `Work it: specweave task next → task claim T-01 → task done T-01 --run "<test>"`,
@@ -544,9 +545,14 @@ In: [what this increment ships]. Out: [what it does not include].
 
 [Files that change, in order; key decisions; rejected alternatives; risks.]
 
-## Open questions
+## Decisions
 
-- [question, or "none"]
+### Asked
+- [D-01 question → answer (user), or "none"]
+### Defaulted (change any before sw-do)
+- [D-02 decision → default (reversible), or "none"]
+### Open
+- none
 
 ## Tasks
 
@@ -684,9 +690,14 @@ ${acLines}
 
 [Files that change, in order; key decisions; rejected alternatives; risks.]
 
-## Open questions
+## Decisions
 
-- [question, or "none"]
+### Asked
+- [D-01 question → answer (user), or "none"]
+### Defaulted (change any before sw-do)
+- [D-02 decision → default (reversible), or "none"]
+### Open
+- none
 
 ## Tasks
 
