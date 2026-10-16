@@ -77,7 +77,16 @@ export function verifyLocalPackage(repoRoot) {
   } finally { rmSync(packRoot, { recursive: true, force: true }); }
 }
 
-async function waitForRegistryResponse(url, label, consume, { fetchImpl = fetch, attempts = 40, delayMs = 15000, timeoutMs = 15000, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
+// npm can take minutes to serve a freshly published version (about 160 s on
+// 2026-10-16). Exponential backoff from 1 s to an 8 s cap notices a fast
+// commit within seconds and a slow one at most 8 s late; 80 attempts keep the
+// roughly 10-minute bound of the old 40 x 15 s polling.
+export function backoffDelay(attempt, { baseDelayMs = 1000, maxDelayMs = 8000 } = {}) {
+  return Math.min(maxDelayMs, baseDelayMs * 2 ** attempt);
+}
+
+async function waitForRegistryResponse(url, label, consume, { fetchImpl = fetch, attempts = 80, baseDelayMs = 1000, maxDelayMs = 8000, timeoutMs = 15000, now = Date.now, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {
+  const started = now();
   for (let attempt = 0; attempt < attempts; attempt++) {
     let reason;
     try {
@@ -87,7 +96,11 @@ async function waitForRegistryResponse(url, label, consume, { fetchImpl = fetch,
       const response = await fetchImpl(lookup.href, { cache: 'no-store', signal: AbortSignal.timeout(timeoutMs) });
       // Headers alone do not complete a fetch: socket/timeout failures can happen
       // while reading the body. Keep consumption inside this retry boundary.
-      if (response.ok) return await consume(response);
+      if (response.ok) {
+        const value = await consume(response);
+        console.log(`[install-check] ${label} public after ${Math.round((now() - started) / 1000)}s (attempt ${attempt + 1})`);
+        return value;
+      }
       if (response.status !== 404 && response.status !== 429 && response.status < 500) throw new Error(`Registry rejected ${label}: HTTP ${response.status}`);
       reason = `HTTP ${response.status}`;
       await response.body?.cancel();
@@ -96,8 +109,9 @@ async function waitForRegistryResponse(url, label, consume, { fetchImpl = fetch,
       reason = error.name;
     }
     if (attempt + 1 < attempts) {
-      console.log(`[install-check] ${label} processing (${reason}); waiting for public registry`);
-      await wait(delayMs);
+      const delay = backoffDelay(attempt, { baseDelayMs, maxDelayMs });
+      console.log(`[install-check] ${label} processing (${reason}); retrying in ${delay / 1000}s`);
+      await wait(delay);
     }
   }
   throw new Error(`${label} is not publicly available after bounded registry wait`);
