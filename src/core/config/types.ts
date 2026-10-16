@@ -584,14 +584,17 @@ export interface LimitsConfig {
 
 
 /**
- * Deep-interview policy (2.0).
+ * How hard sw-increment's Decide step (sw-brainstorm) questions the user
+ * before writing spec.md.
  *
- * 'off'  — never prompt for a structured interview before spec.md.
- * 'warn' — the planning skill asks the interview questions and notes gaps.
+ * 'off'      — no questions; every decision gets a stated default.
+ * 'critical' — at most 5 questions, one at a time, each with a recommended
+ *              answer (the default, also when unset).
+ * 'deep'     — "grill me": no cap, walks the decision tree until done.
  *
- * Enforcement is skill-side only: no hook blocks a write in 2.0.
+ * Skill-side only: no hook blocks a write.
  */
-export type DeepInterviewMode = 'off' | 'warn';
+export type DeepInterviewMode = 'off' | 'critical' | 'deep';
 
 /**
  * Planning configuration
@@ -772,7 +775,7 @@ export interface SpecWeaveConfig {
   /** Advisory WIP note (never blocks). */
   limits?: LimitsConfig;
 
-  /** Planning policy — deep-interview mode. */
+  /** Planning policy — depth of the Decide step. */
   planning?: PlanningConfig;
 
   /** Autonomous-run settings (`specweave auto`). */
@@ -888,7 +891,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     activeIncrements: 3,
   },
   planning: {
-    deepInterview: 'off',
+    deepInterview: 'critical',
   },
   sync: {
     enabled: false,

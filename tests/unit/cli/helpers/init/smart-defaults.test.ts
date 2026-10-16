@@ -50,14 +50,14 @@ describe('smart-defaults', () => {
 
     // ─── Planning / living docs ───────────────────────────────
 
-    it("should set planning.deepInterview to 'off'", () => {
+    it("should set planning.deepInterview to 'critical'", () => {
       const config = applySmartDefaults({}, makeOptions());
-      expect(config.planning.deepInterview).toBe('off');
+      expect(config.planning.deepInterview).toBe('critical');
     });
 
     it('should preserve an existing deepInterview setting', () => {
-      const config = applySmartDefaults({ planning: { deepInterview: 'warn', roadmap: 'keep' } }, makeOptions());
-      expect(config.planning.deepInterview).toBe('warn');
+      const config = applySmartDefaults({ planning: { deepInterview: 'deep', roadmap: 'keep' } }, makeOptions());
+      expect(config.planning.deepInterview).toBe('deep');
       expect(config.planning.roadmap).toBe('keep');
     });
 

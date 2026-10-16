@@ -106,7 +106,7 @@ describe('template-creator', () => {
       expect(content.startsWith('---')).toBe(false);
     });
 
-    it('scaffolds the 2.0 spec.md shape (Problem/Scope/AC/Approach/Open questions)', async () => {
+    it('scaffolds the 2.0 spec.md shape (Problem/Scope/AC/Approach/Decisions)', async () => {
       // The 1.x shape (## Overview + ## User Stories + **AC-US1-01**) is not
       // what the 2.0 loop — or any non-Claude tool following AGENTS.md — expects.
       await createIncrementTemplates({
@@ -126,7 +126,7 @@ describe('template-creator', () => {
       expect(content).toContain('## Scope');
       expect(content).toContain('## Acceptance Criteria');
       expect(content).toContain('## Approach');
-      expect(content).toContain('## Open questions');
+      expect(content).toContain('## Decisions');
       expect(content).toContain('- [ ] AC-01:');
       expect(content).toContain('- [ ] AC-02:');
 
@@ -175,7 +175,7 @@ describe('template-creator', () => {
       expect(content).toContain('### T-01 [First task]');
       expect(content).toContain('- AC: AC-01 | Files:');
       // Tasks come last, so appending a task never lands inside another section.
-      expect(content.indexOf('## Tasks')).toBeGreaterThan(content.indexOf('## Open questions'));
+      expect(content.indexOf('## Tasks')).toBeGreaterThan(content.indexOf('## Decisions'));
     });
 
     it('records the board in metadata, not in spec.md', async () => {
@@ -254,11 +254,12 @@ describe('template-creator', () => {
       });
 
       // The loop, in order: write the spec (with its tasks), work them, close.
-      expect(result.nextSteps).toHaveLength(3);
-      expect(result.nextSteps[0]).toContain('spec.md');
-      expect(result.nextSteps[0]).toContain('Tasks');
-      expect(result.nextSteps[1]).toContain('specweave task next');
-      expect(result.nextSteps[2]).toContain('specweave complete');
+      expect(result.nextSteps).toHaveLength(4);
+      expect(result.nextSteps[0]).toContain('## Decisions');
+      expect(result.nextSteps[1]).toContain('spec.md');
+      expect(result.nextSteps[1]).toContain('Tasks');
+      expect(result.nextSteps[2]).toContain('specweave task next');
+      expect(result.nextSteps[3]).toContain('specweave complete');
     });
 
     it('should fail if increment already exists', async () => {

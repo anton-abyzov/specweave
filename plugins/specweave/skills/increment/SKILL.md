@@ -17,9 +17,18 @@ and one PR.
 - A small self-contained fix needs no increment. Just do it.
 - An open increment already owns the files this touches (`specweave task list`)? Add
   ACs and tasks to its spec.md instead of opening another.
-- Ask only what changes the spec: the problem behind the request, what is out of scope,
-  how you will know it works. A clear request needs no interview.
 - Read the code the change touches before writing Approach.
+- Unsure what to build at all? Run sw-brainstorm's Options first.
+
+## Decide
+
+Run sw-brainstorm's Decide step before writing ACs: think first, settle facts yourself,
+then ask the user only the decisions that are theirs, one question at a time, each with
+a recommended answer. `planning.deepInterview` sets the depth: `critical` (default) asks
+at most 5, `deep` ("grill me") has no cap, `off` skips. A clear request asks nothing.
+Record every answer and default in spec.md `## Decisions` and apply it to Scope, ACs
+and Approach. Without sw-brainstorm installed: ask at most 5, each with your
+recommendation, and record them the same way.
 
 ## Create it
 
@@ -54,6 +63,14 @@ In: claim ordering, malformed lines. Out: a ledger server.
 
 ## Approach
 Files that change and in what order, decisions, rejected alternatives, risks.
+
+## Decisions
+### Asked
+- D-01 Claim tie-break? → earliest ledger line wins (user).
+### Defaulted (change any before sw-do)
+- D-02 Malformed-line report → a count in `task list` (reversible).
+### Open
+- none
 
 ## Tasks
 

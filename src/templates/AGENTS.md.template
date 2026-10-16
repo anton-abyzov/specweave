@@ -8,7 +8,7 @@ This project uses SpecWeave. Plan increments in `.specweave/increments/NNNN-slug
 ## The loop
 
 1. `specweave pickup`: applies the latest handoff and prints the open increment, next task and ACs, other claims, branch state, notes and project memory.
-2. New work needing ACs or handoff: `specweave create-increment "title"`, then fill spec.md. If an open increment owns the files, add ACs and tasks there. Small fixes need no increment.
+2. New work needing ACs or handoff: `specweave create-increment "title"`, then fill spec.md. First ask the user only their critical decisions, one at a time with a recommended answer, and record them under `## Decisions` (sw-brainstorm). If an open increment owns the files, add ACs and tasks there. Small fixes need no increment.
 3. `specweave task claim T-NN`, edit only that task's Files, commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`.
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
 5. Before stopping or switching tools/accounts: `specweave handoff --reason "<why>"`.
