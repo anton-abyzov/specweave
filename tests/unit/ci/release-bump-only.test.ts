@@ -3,11 +3,14 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { classifyRange } from '../../../scripts/ci/release-bump-only.mjs';
+
+const script = fileURLToPath(new URL('../../../scripts/ci/release-bump-only.mjs', import.meta.url));
 
 // A throwaway repository with the release files, so the gate is exercised on
 // real git ranges rather than on mocked diffs.
-const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
+const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_') && !key.startsWith('GITHUB_')));
 let repo = '';
 const git = (...args: string[]) =>
   execFileSync('git', ['-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false', ...args], {
@@ -100,5 +103,54 @@ describe('release-bump-only change gate', () => {
   it('runs the tests when a manifest is deleted', () => {
     const head = onBranch('deleted', () => fs.rmSync(path.join(repo, 'plugins/specweave/.claude-plugin/plugin.json')));
     expect(classifyRange(base, head, { cwd: repo }).skippable).toBe(false);
+  }, 20_000);
+});
+
+// The CLI is what CI runs: it must only skip when the range it was given is
+// exactly the change of the event GitHub reports.
+describe('release-bump-only CLI binds the range to the event', () => {
+  let prHead = '';
+  let merge = '';
+  beforeAll(() => {
+    prHead = onBranch('pr-bump', () => release('3.0.22'));
+    git('checkout', '-q', '-b', 'pr-merge', base);
+    git('merge', '-q', '--no-ff', '--no-edit', 'pr-bump');
+    merge = git('rev-parse', 'HEAD');
+  }, 30_000);
+
+  function gate(eventName: string, event: unknown, head = merge) {
+    const eventPath = path.join(repo, '..', `${path.basename(repo)}-event-${eventName}.json`);
+    fs.writeFileSync(eventPath, JSON.stringify(event));
+    try {
+      const out = execFileSync('node', [script, `${head}^1`, head], {
+        cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...env, GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: eventName, GITHUB_EVENT_PATH: eventPath },
+      });
+      return Object.fromEntries(out.trim().split('\n').map((line) => line.split('=')));
+    } finally {
+      fs.rmSync(eventPath, { force: true });
+    }
+  }
+
+  it('skips a pull_request merge commit whose second parent is the PR head', () => {
+    expect(gate('pull_request', { pull_request: { head: { sha: prHead } } })).toEqual({ bump_only: 'true', docs_only: 'false', skip: 'true' });
+  }, 20_000);
+
+  it('runs the tests when the checkout is not the merge of the reported PR head', () => {
+    expect(gate('pull_request', { pull_request: { head: { sha: base } } }).skip).toBe('false');
+    expect(gate('pull_request', {}).skip).toBe('false');
+  }, 20_000);
+
+  it('skips a push of one commit on top of event.before', () => {
+    expect(gate('push', { before: base }).skip).toBe('true');
+  }, 20_000);
+
+  it('runs the tests for a push of several commits or a new branch', () => {
+    expect(gate('push', { before: prHead }).skip).toBe('false');
+    expect(gate('push', { before: '0000000000000000000000000000000000000000' }).skip).toBe('false');
+  }, 20_000);
+
+  it('runs the tests for any other event', () => {
+    expect(gate('workflow_dispatch', {}).skip).toBe('false');
   }, 20_000);
 });

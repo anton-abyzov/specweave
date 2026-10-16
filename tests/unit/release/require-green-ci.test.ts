@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { evaluate, requireGreenCi, runOutcome } from '../../../scripts/release/require-green-ci.mjs';
+import { readFileSync } from 'node:fs';
+import * as yaml from 'yaml';
+import { TESTED_STEPS, evaluate, requireGreenCi, runOutcome } from '../../../scripts/release/require-green-ci.mjs';
 
 const testedJobs = (conclusion = 'success') => [
   { name: 'smoke', conclusion: 'success', steps: [{ name: 'Run smoke tests', conclusion }] },
@@ -97,5 +99,16 @@ describe('release CI gate', () => {
     const sleep = vi.fn(async (ms: number) => { clock += ms; });
     await expect(requireGreenCi('M', { sources: s, sleep, now: () => clock, noRunGraceMs: 20_000, pollMs: 10_000, log: () => {} })).rejects.toThrow(/really ran the tests/);
     expect(sleep).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('test.yml still has the jobs and steps the release gate looks for', () => {
+  const workflow = yaml.parse(readFileSync(new URL('../../../.github/workflows/test.yml', import.meta.url), 'utf8'));
+  it.each(TESTED_STEPS)('job $job runs the step "$step"', ({ job, step }) => {
+    // The jobs API reports a job by its `name:`, or by its id when it has none.
+    const entry = Object.entries(workflow.jobs).find(([id, def]: [string, any]) => (def.name ?? id) === job);
+    expect(entry, `test.yml has no job named ${job}`).toBeDefined();
+    const steps = (entry![1] as { steps: { name?: string }[] }).steps;
+    expect(steps.map((s) => s.name)).toContain(step);
   });
 });
