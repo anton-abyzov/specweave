@@ -27,28 +27,50 @@ jobs:
   hook-smoke:
     name: run.mjs smoke (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
+      # fetch-depth 2 gives the change gate HEAD^1; docs-site/static and
+      # video/ hold no hook code.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
+
+      # package.json and package-lock.json trigger this on push; a patch or
+      # prerelease version bump changes neither hooks nor dependencies.
+      - name: Change gate
+        id: gate
+        shell: bash
+        run: node scripts/ci/release-bump-only.mjs HEAD^1 HEAD >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
+        if: steps.gate.outputs.bump_only != 'true'
         with:
           node-version: 22
           cache: npm
 
       - name: Install (no lifecycle scripts)
+        if: steps.gate.outputs.bump_only != 'true'
         run: npm ci --ignore-scripts
 
       - name: Rebuild the deps that need their install script
+        if: steps.gate.outputs.bump_only != 'true'
         run: npm rebuild esbuild
 
       - name: Build
+        if: steps.gate.outputs.bump_only != 'true'
         run: npm run build
 
       - name: Validate portable hook commands and timeouts
+        if: steps.gate.outputs.bump_only != 'true'
         run: >-
           node -e "const h=require('./plugins/specweave/hooks/hooks.json').hooks;
           const bad=[];
@@ -60,7 +82,9 @@ jobs:
           console.log('hooks.json ok:', Object.keys(h).join(', '))"
 
       - name: Run each hook event via run.mjs with sample stdin
+        if: steps.gate.outputs.bump_only != 'true'
         run: node scripts/ci/hook-smoke.mjs
 
       - name: Hook unit tests
+        if: steps.gate.outputs.bump_only != 'true'
         run: npx vitest run tests/unit/hooks tests/unit/core/hooks --reporter=dot
