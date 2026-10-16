@@ -6,9 +6,12 @@ on:
   pull_request:
     branches: [develop, main]
 
-# Prevent duplicate runs
+# A newer push to a PR cancels its older run. A push to develop or main gets a
+# group of its own and always finishes: the next commit may be a version bump
+# or a docs-only change whose run skips the tests (see the change gate below),
+# and release.yml then needs this commit's run as the proof.
 concurrency:
-  group: test-${{ github.ref }}
+  group: test-${{ github.ref }}-${{ github.event_name == 'push' && github.sha || 'latest' }}
   cancel-in-progress: true
 
 env:
