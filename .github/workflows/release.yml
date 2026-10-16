@@ -220,12 +220,14 @@ jobs:
       # Tests are not re-run here: require a Test & Validate run that really
       # ran them on this commit, or on an older develop commit that differs
       # from it only in files the tests skip (a patch bump, metrics, untested
-      # docs). It waits while that run is still in progress.
+      # docs). It waits while that run is still in progress. HEAD is the
+      # commit being released: the tag, or a manual run's local bump commit,
+      # which counts only when it is a patch or prerelease bump of tested code.
       - name: Require green Test & Validate for the released code
         if: github.event_name == 'push' || !inputs.skip_ci_gate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/release/require-green-ci.mjs "$GITHUB_SHA"
+        run: node scripts/release/require-green-ci.mjs HEAD
 
       # Push before publishing: a rejected push (develop moved on) stops the
       # run with nothing on npm. If the publish then fails, re-run with
@@ -317,7 +319,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
-          if [ "$(gh release view "v$VERSION" --json isDraft --jq .isDraft)" != "true" ]; then
+          # A failed lookup must fail the step, not read as "already published".
+          IS_DRAFT=$(gh release view "v$VERSION" --json isDraft --jq .isDraft)
+          if [ "$IS_DRAFT" != "true" ]; then
             echo "Release v$VERSION is already published"
             exit 0
           fi
