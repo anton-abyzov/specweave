@@ -77,6 +77,14 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
+      # npm ci installs exactly the lockfile (integrity-checked), so the
+      # setup-node cache is safe and the publish never re-resolves. It runs
+      # with Node 22's own npm, the same npm ci every Test & Validate job runs.
+      - name: Install dependencies (no install scripts)
+        run: |
+          npm ci --ignore-scripts
+          npm run setup
+
       # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 22 ships an older
       # npm. Without this the publish silently falls back to token auth.
       - name: Upgrade npm for OIDC trusted publishing
@@ -86,13 +94,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # npm ci installs exactly the lockfile (integrity-checked), so the
-      # setup-node cache is safe and the publish never re-resolves.
-      - name: Install dependencies (no install scripts)
-        run: |
-          npm ci --ignore-scripts
-          npm run setup
 
       # Bump before building so the build, version check and tarball gate all
       # see the release version. The `version` npm script writes the CHANGELOG
