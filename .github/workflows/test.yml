@@ -15,47 +15,103 @@ env:
   PWDEBUG: '0'
   PLAYWRIGHT_HTML_OPEN: never
 
+# Every job opens with the same change gate (scripts/ci/release-bump-only.mjs).
+# A patch or prerelease version bump (only version fields, the CHANGELOG and
+# the manifests) and a change confined to untested paths (docs-site/static,
+# docs-site/src, metrics/, video/ ...) skip the remaining steps, so the jobs
+# and the results check still report success. Any doubt runs the tests.
+# release.yml (scripts/release/require-green-ci.mjs) then requires a run where
+# the steps "Run smoke tests" and "Run unit tests" really ran; keep those names.
+#
+# The checkout leaves out docs-site/static and video/ (150+ MB no test reads),
+# and fetch-depth 2 gives the gate HEAD^1.
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
+      - name: Change gate
+        id: gate
+        run: node scripts/ci/release-bump-only.mjs HEAD^1 HEAD >> "$GITHUB_OUTPUT"
       - name: Setup and build
+        if: steps.gate.outputs.skip != 'true'
         uses: ./.github/actions/setup-and-build
       - name: Link CLI globally
+        if: steps.gate.outputs.skip != 'true'
         run: npm link
       - name: Run smoke tests
+        if: steps.gate.outputs.skip != 'true'
         run: npm test
 
   unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
+      - name: Change gate
+        id: gate
+        run: node scripts/ci/release-bump-only.mjs HEAD^1 HEAD >> "$GITHUB_OUTPUT"
       - name: Setup and build
+        if: steps.gate.outputs.skip != 'true'
         uses: ./.github/actions/setup-and-build
       - name: Install headless Chromium for navigation safety tests
+        if: steps.gate.outputs.skip != 'true'
         run: npx playwright install --with-deps chromium
       - name: Run unit tests
+        if: steps.gate.outputs.skip != 'true'
         run: npm run test:unit
 
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # E2E tests are non-blocking: flaky environment-specific tests
     # should not prevent merges or trigger autofix loops
     continue-on-error: true
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
+      - name: Change gate
+        id: gate
+        run: node scripts/ci/release-bump-only.mjs HEAD^1 HEAD >> "$GITHUB_OUTPUT"
       - name: Setup and build
+        if: steps.gate.outputs.skip != 'true'
         uses: ./.github/actions/setup-and-build
       - name: Link CLI globally
+        if: steps.gate.outputs.skip != 'true'
         run: npm link
       - name: Run E2E tests
+        if: steps.gate.outputs.skip != 'true'
         run: npm run test:e2e
 
   results:
     needs: [smoke, unit, e2e]
-    if: always()
+    # Not always(): a run superseded by a newer push must end as soon as its
+    # jobs are cancelled, not report "All critical tests passed".
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check critical test results
         run: |
@@ -63,13 +119,14 @@ jobs:
           echo "Unit:  ${{ needs.unit.result }}"
           echo "E2E:   ${{ needs.e2e.result }}"
 
-          if [ "${{ needs.smoke.result }}" = "failure" ]; then
-            echo "::error::Smoke tests failed"
+          # A job cancelled on its own (timeout-minutes) is not a pass.
+          if [ "${{ needs.smoke.result }}" != "success" ]; then
+            echo "::error::Smoke tests did not pass (${{ needs.smoke.result }})"
             exit 1
           fi
 
-          if [ "${{ needs.unit.result }}" = "failure" ]; then
-            echo "::error::Unit tests failed"
+          if [ "${{ needs.unit.result }}" != "success" ]; then
+            echo "::error::Unit tests did not pass (${{ needs.unit.result }})"
             exit 1
           fi
 
