@@ -104,9 +104,14 @@ bump() { # <spec>
   cd "$WORK/repo"
   current=$(node -p "require('./package.json').version")
   if [ "$spec" = "$current" ]; then die "develop is already at $current; if its release PR is merged, run: $0 tag $current"; fi
-  # .npmrc sets ignore-scripts=true; the `version` lifecycle must run, because
-  # it writes the CHANGELOG entry and stamps the plugin and marketplace manifests.
-  npm version "$spec" --no-git-tag-version --ignore-scripts=false >/dev/null
+  # bump-version.sh runs `npm version --ignore-scripts=false` (.npmrc sets
+  # ignore-scripts=true, and the `version` lifecycle must run: it writes the
+  # CHANGELOG entry and stamps the plugin and marketplace manifests).
+  if [ -f scripts/build/bump-version.sh ]; then
+    bash scripts/build/bump-version.sh "$spec" >/dev/null
+  else
+    npm version "$spec" --no-git-tag-version --ignore-scripts=false >/dev/null
+  fi
   VERSION=$(node -p "require('./package.json').version")
   if [ -n "$NOTES" ]; then
     node -e '

@@ -6,7 +6,7 @@
 # manifests.
 #
 # Usage:
-#   ./scripts/build/bump-version.sh patch|minor|major   # bump only
+#   ./scripts/build/bump-version.sh patch|minor|major|prerelease   # bump only
 #   ./scripts/build/bump-version.sh X.Y.Z               # set a specific version
 #   ./scripts/build/bump-version.sh patch --release     # full release, see below
 #
@@ -32,7 +32,7 @@ for arg in "$@"; do
     --release|-r)
       AUTO_RELEASE=true
       ;;
-    patch|minor|major|[0-9]*)
+    patch|minor|major|prerelease|[0-9]*)
       BUMP_TYPE="$arg"
       ;;
   esac
