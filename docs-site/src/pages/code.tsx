@@ -36,7 +36,7 @@ export default function Code() {
         </header>
 
         <div className={styles.controlStrip} aria-label="What you control">
-          <div><span aria-hidden="true">⌘</span><p><strong>Choose the machine.</strong><span>Local or privately paired.</span></p></div>
+          <div><span aria-hidden="true">⌘</span><p><strong>Choose where it runs.</strong><span>This machine, a paired one, or an Anthropic cloud session.</span></p></div>
           <div><span aria-hidden="true">⇄</span><p><strong>Bring your providers.</strong><span>Keep eligible plans and sign-ins.</span></p></div>
           <div><span aria-hidden="true">✓</span><p><strong>Set the boundaries.</strong><span>Folders, tools and approvals.</span></p></div>
         </div>
@@ -48,7 +48,7 @@ export default function Code() {
         <SubscriptionValue />
 
         <section className={styles.network} aria-labelledby="network-title">
-          <div><p className={styles.eyebrow}>A workspace that reaches your machines</p><h2 id="network-title">Start on one computer.<br />Connect the ones you trust.</h2><p>Pair approved machines over your network, SSH or private HTTPS with Tailscale. Choose where work runs; each machine keeps its own pairing and native account access.</p><p className={styles.finePrint}>Work continues while the executing machine is awake. Connecting computers does not add subscription entitlement or grant access to an entire company network.</p></div>
+          <div><p className={styles.eyebrow}>A workspace that reaches your machines</p><h2 id="network-title">Start on one computer.<br />Connect the ones you trust.</h2><p>Pair approved machines over your network, SSH or private HTTPS with Tailscale. Choose where work runs; each machine keeps its own pairing and native account access. When no machine should stay awake, hand a task to an Anthropic cloud session on your claude.ai plan and bring the result back with <code>claude --teleport</code>.</p><p className={styles.finePrint}>Work continues while the executing machine is awake. Connecting computers does not add subscription entitlement or grant access to an entire company network.</p></div>
           <div className={styles.networkMap} aria-label="Private connection between your laptop and approved workstations, with a separate cloud model provider boundary">
             <div className={styles.host}><span aria-hidden="true">▱</span><strong>Your laptop</strong><small>Choose &amp; supervise</small></div>
             <div className={styles.privateRoute}>Private pairing <span aria-hidden="true">↔</span></div>
@@ -62,6 +62,7 @@ export default function Code() {
         <section className={styles.faq} aria-labelledby="questions-title"><h2 id="questions-title">Clear boundaries.<br />Fewer surprises.</h2><div>
           <details><summary>Does everything stay on my machine?</summary><p>No. Agent processes and project files live on the selected machine, but cloud models receive prompts and relevant context, which can include code and file contents. Connected tools use their own services. Private machine connections do not make model inference local.</p></details>
           <details><summary>Can a subscription replace all API spending?</summary><p>No. Use eligible plans through their supported coding agents. Limits, seat rules and provider terms still apply; API keys or extra usage may create separate charges. Enterprise billing may differ. Measure your own workload before claiming savings.</p></details>
+          <details><summary>Can work run in the cloud instead of on my machines?</summary><p>Yes, as an option. A coordinator can start an Anthropic cloud session: Claude Code on Anthropic's VM, billed to your claude.ai Pro, Max or Team plan, with no SpecWithCode charge. It needs a pushed GitHub branch or an upload of the committed files, and the transcript lives at claude.ai. Your machines stay the default.</p></details>
           <details><summary>What do I need to connect another machine?</summary><p>SpecWithCode running on a supported machine, a reachable private route and separate pairing permission. Tailscale is optional. Start with a small, approved setup before expanding; this page does not promise company-wide scale or universal hardware support.</p></details>
           <details><summary>What is free?</summary><p>SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The <Link to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</p></details>
         </div></section>
