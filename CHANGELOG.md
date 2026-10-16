@@ -1,3 +1,12 @@
+## [3.0.23] - 2026-10-16
+
+### Changed
+
+- Skip re-testing release bumps and gate publishes on green CI (#2072)
+- Switch: card dashboard and one-command machine onboarding (#2049)
+- docs: correct competitor facts and links in SpecWithCode comparison (#2073)
+- Add Why SpecWithCode section and competitor comparison (#2071)
+
 ## [3.0.22] - 2026-10-16
 
 ### Changed
