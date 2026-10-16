@@ -136,9 +136,20 @@ export function latestCheckpointFor(cwd: string, opts: CheckpointOptions = {}): 
   let best: CheckpointReceipt | undefined;
   let names: string[];
   try { names = fs.readdirSync(root); } catch { return undefined; }
+  // Every session ever run leaves a directory here, so read receipts newest
+  // first by mtime and stop once the rest are older than the best match. The
+  // receipt's savedAt is taken before it is written, so mtime >= savedAt and
+  // nothing older than the best match can hold a newer savedAt.
+  const candidates: Array<{ file: string; mtime: number }> = [];
   for (const name of names) {
     if (name.startsWith('.') || name === 'studio') continue;
-    const receipt = readJson<CheckpointReceipt>(path.join(root, name, 'current.json'));
+    const file = path.join(root, name, 'current.json');
+    try { candidates.push({ file, mtime: fs.statSync(file).mtimeMs }); } catch { /* no receipt yet */ }
+  }
+  candidates.sort((a, b) => b.mtime - a.mtime);
+  for (const { file, mtime } of candidates) {
+    if (best && mtime < Date.parse(best.savedAt)) break;
+    const receipt = readJson<CheckpointReceipt>(file);
     if (receipt?.version !== 1 || receipt.cwd !== identity.cwd || typeof receipt.savedAt !== 'string') continue;
     if (!fs.existsSync(receipt.docPath)) continue;
     if (!best || Date.parse(receipt.savedAt) > Date.parse(best.savedAt)) best = receipt;
