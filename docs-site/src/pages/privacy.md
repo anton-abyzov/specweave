@@ -35,6 +35,10 @@ SpecWithCode can connect a Google account so that agents in your projects can re
 
 SpecWithCode's use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
+## SpecWithCode Browser extension
+
+The SpecWithCode Browser extension for Chrome has its own policy: [SpecWithCode Browser privacy policy](/specwithcode/chrome-extension-privacy/).
+
 ## This website
 
 spec-weave.com is a static site served by GitHub Pages. GitHub may log standard request data such as IP addresses to operate and secure its service; see the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The site sets no advertising cookies.
