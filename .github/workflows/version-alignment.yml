@@ -38,9 +38,16 @@ jobs:
   validate-versions:
     name: Plugin manifest version alignment
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -53,9 +60,16 @@ jobs:
   validate-skill-versions:
     name: Per-skill version frontmatter
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

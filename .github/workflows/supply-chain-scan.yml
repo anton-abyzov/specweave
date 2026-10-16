@@ -35,7 +35,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # Only package.json and the lockfile matter here. The payload scan
+      # above keeps the full tree.
       - uses: actions/checkout@v7
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs-site/static/
+            !/video/
 
       - uses: actions/setup-node@v7
         with:
