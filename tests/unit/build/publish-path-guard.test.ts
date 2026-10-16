@@ -51,9 +51,9 @@ describe('publish path', () => {
     expect(npmrc).toContain('npm run release');
   });
 
-  it('the CI release workflow runs build, version check and preflight before publishing', () => {
+  it('the CI release workflow runs build, version check, preflight and the CI gate before publishing', () => {
     const wf = read('.github/workflows/release.yml');
-    const order = ['npm run build', 'npm run validate:versions', 'npm run release:preflight', 'npm publish'];
+    const order = ['npm run build', 'npm run validate:versions', 'npm run release:preflight', 'node scripts/release/require-green-ci.mjs', 'git push origin HEAD:develop', 'npm publish'];
     let cursor = -1;
     for (const step of order) {
       const at = wf.indexOf(step, cursor + 1);
