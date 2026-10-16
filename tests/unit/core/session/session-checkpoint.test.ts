@@ -8,7 +8,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import ts from 'typescript';
 import {
   CHECKPOINT_INTERVAL_MS, CHECKPOINT_LOCK_STALE_MS, CHECKPOINT_MAX_WORKERS,
-  checkpointDirectory, cleanupCheckpointRequest, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint, studioCheckpointFile,
+  checkpointDirectory, checkpointsDirectory, cleanupCheckpointRequest, latestCheckpointFor, prepareSessionCheckpoint, readSessionCheckpoint, runSessionCheckpoint, studioCheckpointFile,
 } from '../../../../src/core/session/session-checkpoint.js';
 
 let root: string;
@@ -320,5 +320,46 @@ describe('local session checkpoints', () => {
     while (running() && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
     try { expect(running()).toBe(false); }
     finally { if (running()) try { process.kill(pid, 'SIGKILL'); } catch { /* fixture already exited */ } }
+  });
+});
+
+describe('latestCheckpointFor', () => {
+  function receipt(name: string, cwd: string, savedAt: string, mtime: number) {
+    const dir = path.join(checkpointsDirectory(home), name);
+    fs.mkdirSync(dir, { recursive: true });
+    const doc = path.join(dir, 'handoff.md');
+    fs.writeFileSync(doc, '# handoff\n');
+    const file = path.join(dir, 'current.json');
+    fs.writeFileSync(file, JSON.stringify({ version: 1, sessionId: name, cwd, savedAt, docPath: doc, diffPath: doc }));
+    fs.utimesSync(file, mtime / 1000, mtime / 1000);
+  }
+
+  it('returns the newest receipt for the project and skips other projects', () => {
+    const t = Date.parse('2026-10-16T12:00:00Z');
+    const cwd = fs.realpathSync(repo);
+    receipt('old', cwd, new Date(t - 60_000).toISOString(), t - 59_000);
+    receipt('new', cwd, new Date(t).toISOString(), t + 1_000);
+    receipt('other', path.join(root, 'elsewhere'), new Date(t + 60_000).toISOString(), t + 61_000);
+    for (let i = 0; i < 20; i++) receipt(`stale-${i}`, path.join(root, `p${i}`), new Date(t - 3_600_000).toISOString(), t - 3_600_000 + i);
+    expect(latestCheckpointFor(repo, { home })?.sessionId).toBe('new');
+  });
+
+  it('stops reading receipts older than the best match', () => {
+    const t = Date.parse('2026-10-16T12:00:00Z');
+    const cwd = fs.realpathSync(repo);
+    receipt('best', cwd, new Date(t).toISOString(), t);
+    receipt('coarse-mtime', cwd, new Date(t + 900).toISOString(), t);
+    for (let i = 0; i < 10; i++) receipt(`older-${i}`, cwd, new Date(t - 10_000 - i).toISOString(), t - 10_000 - i);
+    const read = vi.spyOn(fsDefault, 'readFileSync');
+    syncBuiltinESMExports();
+    // A receipt whose mtime was rounded down below its savedAt still wins.
+    expect(latestCheckpointFor(repo, { home })?.sessionId).toBe('coarse-mtime');
+    const receipts = read.mock.calls.filter(([file]) => String(file).endsWith('current.json'));
+    expect(receipts).toHaveLength(2);
+  });
+
+  it('returns undefined when no receipt matches the project', () => {
+    receipt('other', path.join(root, 'elsewhere'), new Date().toISOString(), Date.now());
+    expect(latestCheckpointFor(repo, { home })).toBeUndefined();
   });
 });
