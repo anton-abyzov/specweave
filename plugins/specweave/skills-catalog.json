@@ -1,0 +1,32 @@
+{
+  "$comment": "The one list of SpecWeave skills. Core skills ship in the sw plugin and in every project. Optional skills install into a project only when listed under skills.enabled in .specweave/config.json, or when their detect rule matches and they are not under skills.disabled. Retired skills are removed from projects on update. scripts/build/generate-skills.mjs copies this file to plugins/specweave/skills-catalog.json.",
+  "core": ["increment", "do", "auto", "done", "review", "handoff"],
+  "optional": [
+    {
+      "name": "grill-me",
+      "summary": "Interview you in rounds until every decision in a plan is settled",
+      "detect": "deep-interview"
+    },
+    {
+      "name": "glossary",
+      "summary": "Build GLOSSARY.md: each domain term across business, data, code and UI",
+      "detect": "glossary-file"
+    },
+    {
+      "name": "sync",
+      "summary": "Push progress to and pull issues from GitHub, Jira or Azure DevOps",
+      "detect": "tracker"
+    },
+    {
+      "name": "project",
+      "summary": "Shared goal, work items and briefs in .specweave/project/hub.json",
+      "detect": "hub"
+    },
+    {
+      "name": "jev",
+      "summary": "Closed-set decisions through Jev (System One)",
+      "detect": "jev"
+    }
+  ],
+  "retired": ["qa", "task", "brainstorm", "team"]
+}

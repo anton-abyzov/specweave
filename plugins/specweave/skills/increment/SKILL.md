@@ -1,7 +1,7 @@
 ---
 description: Plan work as a SpecWeave increment - one spec.md with Problem, Scope, numbered ACs, Approach and Tasks - before writing code. Use for "plan a feature", "new increment", "let's build X".
 argument-hint: "\"<title>\" [--supersedes NNNN]"
-version: 3.0.0
+version: 3.1.0
 ---
 <!-- Generated from skills/sw-increment/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
@@ -17,18 +17,27 @@ and one PR.
 - A small self-contained fix needs no increment. Just do it.
 - An open increment already owns the files this touches (`specweave task list`)? Add
   ACs and tasks to its spec.md instead of opening another.
-- Read the code the change touches before writing Approach.
-- Unsure what to build at all? Run sw-brainstorm's Options first.
+- Read the code the change touches before writing Approach. If `GLOSSARY.md` exists,
+  write the spec in its terms.
+- Unsure what to build at all, or the user says "grill me": run sw-grill-me first
+  (`specweave skills enable grill-me` installs it).
 
 ## Decide
 
-Run sw-brainstorm's Decide step before writing ACs: think first, settle facts yourself,
-then ask the user only the decisions that are theirs, one question at a time, each with
-a recommended answer. `planning.deepInterview` sets the depth: `critical` (default) asks
-at most 5, `deep` ("grill me") has no cap, `off` skips. A clear request asks nothing.
-Record every answer and default in spec.md `## Decisions` and apply it to Scope, ACs
-and Approach. Without sw-brainstorm installed: ask at most 5, each with your
-recommendation, and record them the same way.
+Intent first: settle what the user wants and how a machine will check it before
+writing ACs. `planning.deepInterview` sets the depth: `critical` (default) as below,
+`deep` runs sw-grill-me, `off` states defaults and asks nothing.
+
+1. **Think first.** Read the code and config; settle every fact yourself.
+2. **Triage** each open decision: *fact* (look it up, never ask), *my call*
+   (reversible or low impact: pick a default), *theirs* (hard to reverse, costly, taste).
+3. **Ask** only "theirs", at most 5, highest impact first. Each gets one clause on why
+   it matters and 2 to 4 options, your recommendation first; "yes" accepts it. Use your
+   tool's structured question tool when it has one. A clear request asks nothing.
+4. **Record** in `## Decisions`: Asked, Defaulted (list every default: one the user
+   never saw is one they could not reject) and Open. Keep a line only when a later
+   change could contradict it: hard to reverse, surprising without context, or a real
+   trade-off. Apply each answer to Scope, ACs and Approach.
 
 ## Create it
 

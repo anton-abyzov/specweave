@@ -30,6 +30,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(HERE, '..');
 
 const PLUGIN_SKILLS = path.join('plugins', 'specweave', 'skills');
+const PLUGIN_OPTIONAL_SKILLS = path.join('plugins', 'specweave', 'skills-optional');
 const PLUGIN_AGENTS = path.join('plugins', 'specweave', 'agents');
 
 /** Frontmatter keys that must never appear in a shipped skill. */
@@ -101,13 +102,15 @@ export function readRegisteredCommands(root = REPO_ROOT) {
 /** Skill names that `sw:<name>` may resolve to. */
 export function readShippedSkills(root = REPO_ROOT) {
   const names = new Set();
-  const dir = path.join(root, PLUGIN_SKILLS);
-  try {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (e.isDirectory()) names.add(e.name);
+  // Core skills load in the plugin; optional ones ship beside them and install per project.
+  for (const rel of [PLUGIN_SKILLS, PLUGIN_OPTIONAL_SKILLS]) {
+    try {
+      for (const e of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
+        if (e.isDirectory()) names.add(e.name);
+      }
+    } catch {
+      /* no plugin skills — every sw: reference will be reported */
     }
-  } catch {
-    /* no plugin skills — every sw: reference will be reported */
   }
   try {
     for (const e of fs.readdirSync(path.join(root, PLUGIN_AGENTS), { withFileTypes: true })) {
@@ -208,7 +211,7 @@ export function lintContent(relPath, content, { commands, skills, isSkillFile })
     for (const m of line.matchAll(/\bsw:([a-z][a-z0-9-]*)/g)) {
       const name = m[1];
       if (!skills.has(name)) {
-        add(i + 1, 'unknown-skill', `\`sw:${name}\` has no plugins/specweave/skills/${name}/`);
+        add(i + 1, 'unknown-skill', `\`sw:${name}\` has no plugins/specweave/skills/${name}/ or skills-optional/${name}/`);
       }
     }
   });
@@ -221,11 +224,11 @@ export function collectFiles(root = REPO_ROOT) {
   const files = [];
   for (const rel of [
     PLUGIN_SKILLS,
+    PLUGIN_OPTIONAL_SKILLS,
     PLUGIN_AGENTS,
     path.join('plugins', 'specweave', 'reference'),
     path.join('plugins', 'specweave', 'defaults'),
     path.join('skills'),
-    path.join('skills-optional'),
   ]) {
     for (const abs of walk(path.join(root, rel))) files.push(path.relative(root, abs));
   }

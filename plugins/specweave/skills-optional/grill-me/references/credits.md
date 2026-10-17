@@ -1,12 +1,12 @@
 # Credits
 
-The Decide part of sw-brainstorm adapts ideas from these MIT-licensed projects. Their
+sw-grill-me, sw-glossary and the Decide step of sw-increment adapt ideas from these MIT-licensed projects. Their
 copyright and permission notices are kept below, as the MIT license requires.
 
 | Project | What we adapted |
 |---|---|
-| [obra/superpowers](https://github.com/obra/superpowers) `skills/brainstorming` | One question at a time; sorting questions into answered, my call and theirs; "a default they never heard is one they couldn't reject"; asking for a description before offering options |
-| [mattpocock/skills](https://github.com/mattpocock/skills) `skills/productivity/grilling` | Facts are the agent's job, decisions are the user's; a recommended answer for every question; walking the decision tree until shared understanding ("grill me") |
+| [obra/superpowers](https://github.com/obra/superpowers) `skills/brainstorming` | Sorting questions into answered, my call and theirs; "a default they never heard is one they couldn't reject" |
+| [mattpocock/skills](https://github.com/mattpocock/skills) `skills/productivity/grilling`, `skills/engineering/domain-modeling` | Facts are the agent's job, decisions are the user's; rounds over the frontier of the decision tree, each question with a recommended answer worded so "yes" accepts it ("grill me"); the GLOSSARY.md with _Avoid_ words; challenging terms against the glossary and the code; the three-part test for recording a decision |
 | [github/spec-kit](https://github.com/github/spec-kit) `templates/commands/clarify.md` | The coverage categories, ranking by impact times uncertainty, the 5-question cap, multiple choice with a recommended option, and writing each answer back into the spec |
 
 ## obra/superpowers

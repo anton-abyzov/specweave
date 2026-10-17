@@ -1,18 +1,24 @@
 {
   "$schema": "https://spec-weave.com/schemas/skill-marketplace.v1.json",
   "plugin": "sw",
-  "description": "Skill catalog for the specweave plugin. The skills are generated from skills/sw-<name>/ (scripts/build/generate-skills.mjs); the plugin version is tracked in .claude-plugin/plugin.json.",
+  "description": "Skill catalog for the specweave plugin. The skills are generated from skills/sw-<name>/ and skills/catalog.json (scripts/build/generate-skills.mjs): core skills in skills/, optional ones in skills-optional/, installed per project by specweave skills enable or detection. The plugin version is tracked in .claude-plugin/plugin.json.",
   "skills": [
     {
       "name": "sw:increment",
       "path": "skills/increment/SKILL.md",
-      "description": "Plan a unit of work: one spec.md with Problem, Scope, numbered ACs, Approach and Tasks.",
+      "description": "Settle the user's critical decisions, then plan a unit of work: one spec.md with Problem, Scope, numbered ACs, Approach, Decisions and Tasks. Replaces brainstorm.",
       "deprecated": false
     },
     {
       "name": "sw:do",
       "path": "skills/do/SKILL.md",
-      "description": "Work the increment task by task through the ledger: task next, claim, implement, commit, task done with evidence.",
+      "description": "Work the increment task by task through the ledger, alone, unattended or in parallel lanes: task next, claim, implement, commit, task done with evidence. Replaces team.",
+      "deprecated": false
+    },
+    {
+      "name": "sw:auto",
+      "path": "skills/auto/SKILL.md",
+      "description": "User-invoked entry to sw:do unattended mode: run an increment until every task is done, then verify and close.",
       "deprecated": false
     },
     {
@@ -24,13 +30,7 @@
     {
       "name": "sw:review",
       "path": "skills/review/SKILL.md",
-      "description": "Adversarial fresh-context review and quality check; every finding cites path:line and is re-verified. Replaces qa, grill, code-reviewer and judge-llm.",
-      "deprecated": false
-    },
-    {
-      "name": "sw:team",
-      "path": "skills/team/SKILL.md",
-      "description": "Several agents on one increment: a worktree each, claims through the ledger, one closure. Replaces team-lead and team-merge.",
+      "description": "Adversarial review by a fresh context or another model family (specweave review); every finding cites path:line and is re-verified. Replaces qa, code-reviewer and judge-llm.",
       "deprecated": false
     },
     {
@@ -40,44 +40,49 @@
       "deprecated": false
     },
     {
+      "name": "sw:grill-me",
+      "path": "skills-optional/grill-me/SKILL.md",
+      "description": "Interview the user in rounds until every decision in a plan is settled; records Decisions in spec.md.",
+      "deprecated": false,
+      "optional": true
+    },
+    {
+      "name": "sw:glossary",
+      "path": "skills-optional/glossary/SKILL.md",
+      "description": "Build GLOSSARY.md: each domain term across business, data, code and UI; specweave glossary check finds drift.",
+      "deprecated": false,
+      "optional": true
+    },
+    {
       "name": "sw:sync",
-      "path": "skills/sync/SKILL.md",
+      "path": "skills-optional/sync/SKILL.md",
       "description": "One sync surface for GitHub, Jira and Azure DevOps: push, pull, status, setup. Replaces the per-provider sync, mapper, validator and import skills.",
-      "deprecated": false
-    },
-    {
-      "name": "sw:auto",
-      "path": "skills/auto/SKILL.md",
-      "description": "Run an increment unattended until every task is done, then verify and close.",
-      "deprecated": false
-    },
-    {
-      "name": "sw:brainstorm",
-      "path": "skills/brainstorm/SKILL.md",
-      "description": "Expand the option space before committing to one, ending in a pick handed to sw:increment.",
-      "deprecated": false
-    },
-    {
-      "name": "sw:jev",
-      "path": "skills/jev/SKILL.md",
-      "description": "Delegate closed-set decisions to Jev (TypeSafe System One) instead of a frontier turn: routing, command safety, text screening, failure triage.",
-      "deprecated": false
+      "deprecated": false,
+      "optional": true
     },
     {
       "name": "sw:project",
-      "path": "skills/project/SKILL.md",
+      "path": "skills-optional/project/SKILL.md",
       "deprecated": false,
-      "description": "Shared goal, memory, work items, artifacts and briefs, portable across AI tools and accounts."
+      "description": "Shared goal, memory, work items, artifacts and briefs, portable across AI tools and accounts.",
+      "optional": true
+    },
+    {
+      "name": "sw:jev",
+      "path": "skills-optional/jev/SKILL.md",
+      "description": "Delegate closed-set decisions to Jev (TypeSafe System One) instead of a frontier turn: routing, command safety, text screening, failure triage.",
+      "deprecated": false,
+      "optional": true
     }
   ],
   "optionalSkills": {
-    "note": "Not shipped in the plugin. Install with: npx vskill install anton-abyzov/specweave/skills-optional/<name>",
+    "note": "Shipped in plugins/specweave/skills-optional/, not loaded by the plugin. A project turns one on with: specweave skills enable <name>",
     "names": [
-      "tdd-cycle",
-      "e2e",
-      "debug",
-      "diagrams",
-      "release-expert"
+      "grill-me",
+      "glossary",
+      "sync",
+      "project",
+      "jev"
     ]
   },
   "removedIn2_0": {
@@ -131,6 +136,20 @@
       "sw:qa": "sw:review",
       "sw:task": "sw:do",
       "sw-task": "sw-do"
+    }
+  },
+  "removedIn3_1": {
+    "note": "Removed in 3.1. Use the replacement; there is no alias routing.",
+    "map": {
+      "sw:team": "sw:do",
+      "sw-team": "sw-do",
+      "sw:brainstorm": "sw:grill-me",
+      "sw-brainstorm": "sw-grill-me",
+      "skills-optional/tdd-cycle": "mattpocock/skills tdd",
+      "skills-optional/debug": "mattpocock/skills diagnosing-bugs",
+      "skills-optional/e2e": "sw:do (check each AC end to end)",
+      "skills-optional/diagrams": "none",
+      "skills-optional/release-expert": "none"
     }
   }
 }
