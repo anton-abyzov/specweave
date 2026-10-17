@@ -13,6 +13,7 @@ import {
   INSTALL_MANIFEST,
 } from '../../../../src/core/skills/project-skills.js';
 import { createHash } from 'crypto';
+import { execFileSync } from 'child_process';
 
 let root: string;
 const CATALOG = catalogFor(defaultPluginSkillsDir());
@@ -164,6 +165,16 @@ describe('installProjectSkills', () => {
     expect(skillFolderOwner(dir, 'sync', { sync: { 'SKILL.md': [sha('other')] } })).toBe('foreign');
     expect(skillFolderOwner(dir, 'glossary', { sync: { 'SKILL.md': [sha('old copy')] } })).toBe('foreign');
     expect(skillFolderOwner(path.join(root, 'nothing'), 'sync')).toBe('absent');
+  });
+
+  it.skipIf(process.platform === 'win32')('never reads a FIFO or other special file while deciding ownership', () => {
+    fs.mkdirSync(path.join(root, '.claude/skills/sw-glossary'), { recursive: true });
+    execFileSync('mkfifo', [path.join(root, '.claude/skills/sw-glossary/a-pipe')]);
+    write('.claude/skills/sw-glossary/SKILL.md', 'mine');
+    expect(skillFolderOwner(path.join(root, '.claude/skills/sw-glossary'), 'glossary')).toBe('foreign');
+    expect(installProjectSkills(root, { dryRun: true }).keptSkills).toEqual(['.claude/skills/sw-glossary']);
+    config({ skills: { enabled: ['glossary'] } });
+    expect(installProjectSkills(root).keptSkills).toEqual(['.claude/skills/sw-glossary']);
   });
 
   it('dry run writes and removes nothing', () => {

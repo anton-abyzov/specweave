@@ -151,10 +151,12 @@ function pointers(value: string): string[] {
 
 const ROUTE = /^(?:(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+)?(\/[^\s]*)$/;
 
-const FILE_EXTENSION = /\.(ts|tsx|js|jsx|mjs|cjs|py|rb|go|rs|java|kt|kts|cs|fs|swift|php|scala|ex|exs|sql|prisma|graphql|gql|proto|json|ya?ml|toml|xml|html?|css|scss|vue|svelte|md|sh)$/i;
+const FILE_EXTENSION = /\.(ts|tsx|js|jsx|mjs|cjs|py|rb|go|rs|java|kt|kts|cs|fs|swift|php|scala|ex|exs|c|h|cc|cpp|cxx|hpp|hh|m|mm|dart|lua|pl|r|jl|zig|sql|prisma|graphql|gql|proto|json|jsonc|ya?ml|toml|ini|cfg|conf|env|xml|html?|css|scss|less|vue|svelte|md|mdx|txt|csv|sh|ps1|tf|hcl|gradle|lock)$/i;
 
+/** A pointer that names a file or folder: has a slash, is a dotfile, or ends in a file extension. */
 function looksLikePath(p: string): boolean {
-  return !/\s/.test(p) && !p.startsWith('/') && (p.includes('/') || FILE_EXTENSION.test(p));
+  if (/\s/.test(p) || p.startsWith('/')) return false;
+  return p.includes('/') || /^\.[\w.-]+$/.test(p) || FILE_EXTENSION.test(p);
 }
 
 /** A path pointer resolves only to a file or folder that really lives inside the project. */
@@ -189,6 +191,8 @@ function findMissingPointers(root: string, terms: GlossaryTerm[], exclude: strin
         };
         if (route) {
           found = grepFor(routeLiteral(route[1]), false);
+        } else if (!/\s/.test(p) && pathInProject(root, p)) {
+          found = true;
         } else if (looksLikePath(p)) {
           found = pathInProject(root, p.replace(/:\d+(-\d+)?$/, ''));
         } else if (/^[A-Za-z_$][\w$.-]*$/.test(p)) {

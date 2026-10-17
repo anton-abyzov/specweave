@@ -150,9 +150,13 @@ export const INSTALL_MANIFEST = '.specweave-install.json';
 
 const sha256 = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
 
-/** Every file and symlink under `dir` (posix-relative, sorted), never following a symlink. */
-function listEntries(dir: string, prefix = ''): Array<{ rel: string; symlink: boolean }> {
-  const out: Array<{ rel: string; symlink: boolean }> = [];
+/**
+ * Every entry under `dir` that is not a folder (posix-relative, sorted), never
+ * following a symlink. `regular` is false for symlinks, FIFOs, sockets and devices,
+ * which are never read.
+ */
+function listEntries(dir: string, prefix = ''): Array<{ rel: string; regular: boolean }> {
+  const out: Array<{ rel: string; regular: boolean }> = [];
   let entries: fs.Dirent[];
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -161,9 +165,8 @@ function listEntries(dir: string, prefix = ''): Array<{ rel: string; symlink: bo
   }
   for (const e of entries) {
     const rel = prefix ? `${prefix}/${e.name}` : e.name;
-    if (e.isSymbolicLink()) out.push({ rel, symlink: true });
-    else if (e.isDirectory()) out.push(...listEntries(path.join(dir, e.name), rel));
-    else out.push({ rel, symlink: false });
+    if (e.isDirectory()) out.push(...listEntries(path.join(dir, e.name), rel));
+    else out.push({ rel, regular: e.isFile() });
   }
   return out.sort((a, b) => a.rel.localeCompare(b.rel));
 }
@@ -193,7 +196,7 @@ export function skillFolderOwner(
   const entries = listEntries(dir);
   const manifestFile = path.join(dir, INSTALL_MANIFEST);
   let manifest: { skill?: unknown; files?: unknown } | undefined;
-  if (entries.some((e) => e.rel === INSTALL_MANIFEST && !e.symlink)) {
+  if (entries.some((e) => e.rel === INSTALL_MANIFEST && e.regular)) {
     try {
       manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
     } catch {
@@ -201,16 +204,18 @@ export function skillFolderOwner(
     }
     if (manifest?.skill !== name || !manifest.files || typeof manifest.files !== 'object') return 'foreign';
   }
-  const files = entries.filter((e) => e.rel !== INSTALL_MANIFEST || e.symlink);
+  const files = entries.filter((e) => e.rel !== INSTALL_MANIFEST || !e.regular);
+  const special = files.some((e) => !e.regular);
   if (manifest) {
     const recorded = manifest.files as Record<string, unknown>;
     const same =
+      !special &&
       files.length === Object.keys(recorded).length &&
-      files.every((e) => !e.symlink && recorded[e.rel] === sha256(fs.readFileSync(path.join(dir, e.rel))));
+      files.every((e) => recorded[e.rel] === sha256(fs.readFileSync(path.join(dir, e.rel))));
     return same ? 'pristine' : 'edited';
   }
   const known = legacy[name];
-  if (!known || !files.length || files.some((e) => e.symlink)) return 'foreign';
+  if (!known || !files.length || special) return 'foreign';
   const pristine = files.every((e) => (known[e.rel] ?? []).includes(sha256(fs.readFileSync(path.join(dir, e.rel)))));
   return pristine ? 'pristine' : 'foreign';
 }
@@ -281,6 +286,10 @@ export function installProjectSkills(
       result.removed.push(rel);
       if (!options.dryRun) fs.rmSync(path.join(root, rel), { force: true });
     }
+  }
+  for (const { rel } of plan) {
+    const stat = fs.lstatSync(path.join(root, rel), { throwIfNoEntry: false });
+    if (stat && !stat.isFile()) throw new Error(`Refusing to write a skill file over something that is not a file: ${path.join(root, rel)}`);
   }
   for (const { rel, bytes } of plan) {
     const dest = path.join(root, rel);

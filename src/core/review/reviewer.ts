@@ -147,8 +147,10 @@ export function runReviewer(
         // already gone
       }
     };
+    // Ctrl-C or a kill of `specweave review`: there is no time left to escalate, so
+    // the reviewer's group is killed outright before the signal is passed on.
     const onSignal = (signal: NodeJS.Signals) => {
-      killTree('SIGTERM');
+      killTree('SIGKILL');
       process.kill(process.pid, signal);
     };
     process.once('SIGINT', onSignal);

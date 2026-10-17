@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { execFileSync } from 'child_process';
+import { execFileSync, spawn } from 'child_process';
+import { pathToFileURL } from 'url';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -237,6 +238,26 @@ describe('specweave review', () => {
     await new Promise((r) => setTimeout(r, 2800));
     expect(fs.existsSync(marker)).toBe(false);
   }, 15_000);
+
+  it.skipIf(process.platform === 'win32')('Ctrl-C on specweave review kills the reviewer, even one that ignores SIGTERM', async () => {
+    // Runs the built module in a separate node process, then interrupts that process.
+    const built = path.resolve('dist/src/core/review/reviewer.js');
+    if (!fs.existsSync(built)) throw new Error('dist/ is missing: run `npm run build` before this test');
+    const marker = path.join(scripts, 'after-ctrl-c');
+    const driver = path.join(scripts, 'driver.mjs');
+    fs.writeFileSync(driver, `
+import { runReviewer } from ${JSON.stringify(pathToFileURL(built).href)};
+process.stdout.write('started\\n');
+await runReviewer(${JSON.stringify(`trap '' TERM; sleep 2; touch "${marker}"`)}, 'brief', { cwd: ${JSON.stringify(scripts)}, outFile: ${JSON.stringify(path.join(scripts, 'z.md'))}, timeoutMs: 60000 });
+`);
+    const child = spawn(process.execPath, [driver], { stdio: ['ignore', 'pipe', 'inherit'] });
+    await new Promise<void>((resolve) => child.stdout!.once('data', () => resolve()));
+    await new Promise((r) => setTimeout(r, 300));
+    child.kill('SIGINT');
+    await new Promise((r) => child.once('exit', r));
+    await new Promise((r) => setTimeout(r, 2800));
+    expect(fs.existsSync(marker)).toBe(false);
+  }, 20_000);
 
   it('runReviewer reads {out} when the command writes it, stdout otherwise', async () => {
     const outFile = path.join(scripts, 'answer.md');

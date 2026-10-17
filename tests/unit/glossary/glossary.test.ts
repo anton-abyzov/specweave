@@ -136,6 +136,17 @@ describe('checkGlossary', () => {
     }
   });
 
+  it('resolves root-level files and dotfiles as paths, and dotted names as identifiers', () => {
+    write('GLOSSARY.md', '### Order\n- Code: `main.c`, `order.h`, `.env.example`, `.env`, `Order.id`, `Makefile`\n');
+    write('main.c', 'int main(void) { return 0; }\n');
+    write('order.h', 'struct Order { int id; };\n');
+    write('.env.example', 'X=1\n');
+    write('Makefile', 'all:\n');
+    git('add', '-A');
+    const missing = checkGlossary(root).findings.filter((f) => f.kind === 'missing-pointer').map((f) => f.pointer);
+    expect(missing).toEqual(['.env']);
+  });
+
   it.skipIf(process.platform === 'win32')('never reads a glossary that a symlink or map link places outside the project', () => {
     const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-glossary-outside-'));
     try {
