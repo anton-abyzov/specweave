@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { parseGlossary, findGlossaryFiles } from '../../../src/core/glossary/parse.js';
-import { checkGlossary, segments, tokenUsesWord, countsAsIdentifier } from '../../../src/core/glossary/check.js';
+import { checkGlossary, segments, tokenUsesWord } from '../../../src/core/glossary/check.js';
 import { glossaryCommand } from '../../../src/cli/commands/glossary.js';
 
 const GLOSSARY = `# Glossary
@@ -84,13 +84,6 @@ describe('identifier matching', () => {
     expect(tokenUsesWord('repurchaseWindow', ['purchase'])).toBe(false);
     expect(tokenUsesWord('lineItemId', ['line', 'item'])).toBe(true);
   });
-
-  it('counts bare lowercase words only in schema files', () => {
-    expect(countsAsIdentifier('purchase', 'src/a.ts')).toBe(false);
-    expect(countsAsIdentifier('Purchase', 'src/a.ts')).toBe(true);
-    expect(countsAsIdentifier('purchase', 'db/schema.sql')).toBe(true);
-    expect(countsAsIdentifier('purchases', 'prisma/migrations/001/migration.sql')).toBe(true);
-  });
 });
 
 describe('checkGlossary', () => {
@@ -112,30 +105,32 @@ describe('checkGlossary', () => {
     expect(missing).toEqual(['Customer Customer']);
   });
 
-  it('catches lowercase identifiers the code declares or uses, not prose or comments', () => {
+  it('catches every use in code, parameters and UI strings included, but not comment lines', () => {
     write('src/checkout.ts', [
       'const purchase = 1;',
       'function basket() {}',
       'cart.purchase(2);',
       '// purchase history is fine here',
-      'const label = "a purchase";',
+      'const label = "Thanks for your purchase";',
+      'function submit(purchase) { return purchase; }',
+      '  # purchase in a shell or Python comment',
     ].join('\n') + '\n');
     git('add', '-A');
     const hits = checkGlossary(root).findings
       .filter((f) => f.kind === 'avoided-word' && f.file === 'src/checkout.ts')
       .map((f) => `${f.line} ${f.identifier}`);
-    expect(hits).toEqual(['1 purchase', '2 basket', '3 purchase']);
+    expect(hits).toEqual(['1 purchase', '2 basket', '3 purchase', '5 purchase', '6 purchase']);
   });
 
   it('checks route pointers against the code, and paths only inside the project', () => {
     const outside = `../${path.basename(root)}-outside.md`;
-    write('GLOSSARY.md', `### Order\n- Code: \`POST /orders\`, \`GET /orders/:id\`, \`DELETE /refunds\`, \`${outside}\`\n`);
+    write('GLOSSARY.md', `### Order\n- Code: \`POST /orders\`, \`GET /orders/:id\`, \`DELETE /refunds\`, \`${outside}\`, \`Order.id\`, \`Order.refundedAt\`\n`);
     write(outside, 'outside');
     try {
-      write('src/routes.ts', "router.post('/orders', create);\n");
+      write('src/routes.ts', "router.post('/orders', create);\nclass Order { id = 0; }\n");
       git('add', '-A');
       const missing = checkGlossary(root).findings.filter((f) => f.kind === 'missing-pointer').map((f) => f.pointer);
-      expect(missing).toEqual(['DELETE /refunds', outside]);
+      expect(missing).toEqual(['DELETE /refunds', outside, 'Order.refundedAt']);
     } finally {
       fs.rmSync(path.join(root, outside), { force: true });
     }

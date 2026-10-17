@@ -228,6 +228,16 @@ describe('specweave review', () => {
     expect(fs.existsSync(marker)).toBe(false);
   }, 15_000);
 
+  it.skipIf(process.platform === 'win32')('kills a descendant that ignores SIGTERM and detached from the pipes', async () => {
+    const marker = path.join(scripts, 'stubborn');
+    const res = await runReviewer(`(trap '' TERM; sleep 2; touch "${marker}") </dev/null >/dev/null 2>&1 & sleep 5`, 'brief', {
+      cwd: scripts, outFile: path.join(scripts, 'y.md'), timeoutMs: 200, graceMs: 200,
+    });
+    expect(res.timedOut).toBe(true);
+    await new Promise((r) => setTimeout(r, 2800));
+    expect(fs.existsSync(marker)).toBe(false);
+  }, 15_000);
+
   it('runReviewer reads {out} when the command writes it, stdout otherwise', async () => {
     const outFile = path.join(scripts, 'answer.md');
     const viaFile = await runReviewer(fakeReviewer('Verdict: ship', { toFile: true }), 'brief', { cwd: root, outFile, timeoutMs: 10_000 });

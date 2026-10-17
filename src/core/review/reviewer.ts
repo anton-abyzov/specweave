@@ -162,6 +162,9 @@ export function runReviewer(
       if (done) return;
       done = true;
       timers.forEach(clearTimeout);
+      // Whatever the reviewer left behind (a descendant that ignored SIGTERM, a
+      // background job) goes with it: the group is ours alone.
+      if (posix || timedOut) killTree('SIGKILL');
       process.removeListener('SIGINT', onSignal);
       process.removeListener('SIGTERM', onSignal);
       const fromFile = usesOut && fs.existsSync(opts.outFile) ? fs.readFileSync(opts.outFile, 'utf8') : '';
