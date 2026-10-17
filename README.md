@@ -4,12 +4,12 @@
 
 <p align="center">
   <strong>Change agents. Keep the thread.</strong><br/>
-  Plan work as small specs, hand it between Claude, Codex, Grok and any other tool in two words, and close it with evidence.
+  Intent-first development: settle what you want before the code, hand the work between Claude, Codex, Grok and any other tool in two words, and close it with evidence.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/skills-11-8B5CF6" alt="11 skills" />
+  <img src="https://img.shields.io/badge/skills-6%20core%20%2B%205%20optional-8B5CF6" alt="6 core + 5 optional skills" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
@@ -61,7 +61,7 @@ Running out mid-task? `specweave auto-handoff on`, once per machine, makes it au
 | 1 | "pick up" · `specweave pickup` | The open increment, the next task with its acceptance criteria, claims held by others, branch state, notes and project memory, in one read. |
 | 2 | `/sw:increment` · `specweave create-increment "<title>"` | One `spec.md`: Problem, Scope, Acceptance Criteria, Approach and the Tasks. |
 | 3 | `/sw:do` · `specweave task claim T-01` → `task done T-01 --run "<test>"` | Work a task. `done` refuses a failing test and stores the evidence in the ledger. |
-| 4 | `specweave verify` · `/sw:review` | Runs your test, lint and build; a fresh-context review cites `path:line`. |
+| 4 | `specweave verify` · `/sw:review` · `specweave review` | Runs your test, lint and build; a fresh-context review cites `path:line`, and `specweave review` hands the diff to another model family. |
 | 5 | `/sw:done` · `specweave complete <id>` | Closes on a green verify. Acceptance criteria are met when their tasks are done; nobody ticks boxes. |
 | 6 | "hand off" · `specweave handoff` | Stop anywhere; the next tool picks up. |
 
@@ -78,23 +78,38 @@ An increment is one folder, `.specweave/increments/NNNN-slug/`, with one file yo
 
 Project memory in claude.ai stays with one account. `.specweave/memory/` travels with the code, so Codex, Grok and a second Claude subscription start from the same decisions.
 
-## The eleven skills
+## Six core skills, five optional
 
 The CLI is the product and runs in any tool or in CI. The skills expose it to coding agents: `/sw:<name>` in Claude Code, `sw-<name>` in `.claude/skills/` (for Projects threads, where plugins do not load) and `.agents/skills/` (Codex, Grok).
 
+Core, in every project:
+
 | Skill | Use it for |
 |-------|------------|
-| `increment` | Plan the work as one `spec.md`. |
-| `do` | Claim a task, implement it, close it with evidence. |
-| `auto` | The same loop, unattended, until the tasks run out. |
-| `team` | A worktree per agent, claims arbitrated by the ledger. |
-| `review` | Fresh-context adversarial review; findings cite `path:line`. |
-| `done` | Verify, review check, `specweave complete`. |
+| `increment` | Settle your decisions, then plan the work as one `spec.md`. |
+| `do` | Claim a task, implement it, close it with evidence; also unattended, or in parallel lanes. |
+| `auto` | The unattended run of `do`, started by you, until the tasks run out. |
+| `review` | Adversarial review by a fresh context or another model family; findings cite `path:line`. |
+| `done` | Verify, review, `specweave complete`. |
 | `handoff` | "Hand off" and "pick up". |
-| `sync` | GitHub, Jira and Azure DevOps, only when you run it. |
-| `project` | Shared goals, artifacts and briefs across tools. |
-| `brainstorm` | Framed alternatives, ending in a pick. |
-| `jev` | Closed-set decisions in about 250 ms via Jev. |
+
+Optional, installed per project when enabled or detected (in Claude Code they are `/sw-grill-me` and so on):
+
+| Skill | Use it for | Detected by |
+|-------|------------|-------------|
+| `grill-me` | An interview in rounds, each question with a recommended answer, recorded under `## Decisions` (after Matt Pocock's grilling). | `planning.deepInterview: deep` |
+| `glossary` | `GLOSSARY.md`: each domain term across business, data, code and UI, with words to avoid. | a `GLOSSARY.md` or `GLOSSARY-MAP.md` |
+| `sync` | GitHub, Jira and Azure DevOps, only when you run it. | a configured tracker |
+| `project` | Shared goals, artifacts and briefs across tools. | `.specweave/project/hub.json` |
+| `jev` | Closed-set decisions in about 250 ms via Jev. | `jev.enabled` |
+
+```bash
+specweave skills enable grill-me glossary   # turn optional skills on (list, disable)
+specweave glossary check --strict           # avoided words and stale names; exit 1 for CI
+specweave review                            # another model family reviews the diff; exit 0 ship, 3 fix first
+```
+
+`brainstorm` and `team` are retired: the Decide step is in `increment`, the full interview is `grill-me`, and parallel agents are `do`'s Parallel lanes. `specweave update` removes SpecWeave's own copies of retired skills.
 
 ## Upgrade to 3.0
 
@@ -149,7 +164,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 ## Key Features
 
-**Spec-First Planning** — Every feature starts as one `spec.md`: Problem, Scope, ACs, Approach and Tasks.
+**Intent first** — Every feature starts by settling your decisions, then one `spec.md`: Problem, Scope, ACs, Approach, Decisions and Tasks.
 
 **Evidence, not vibes** — `specweave task done --run "<test>"` refuses a failing command and stores the exit code and output tail in the ledger.
 
@@ -165,7 +180,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**11 skills, one source** — the same skills for Claude Code, Codex and Grok; see [The eleven skills](#the-eleven-skills).
+**6 core skills, 5 optional, one source** — the same skills for Claude Code, Codex and Grok; see [Six core skills, five optional](#six-core-skills-five-optional).
 
 **External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in. Nothing calls a tracker unless you run sync.
 

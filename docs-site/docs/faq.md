@@ -8,7 +8,7 @@ description: Short answers about SpecWeave 3.0 - supported tools, switching tool
 
 ## What is SpecWeave, in one paragraph?
 
-A small CLI and a set of skills that keep AI coding work in plain files in your repository. Each piece of work is an increment: one `spec.md` with the problem, scope, acceptance criteria, approach and tasks, plus an append-only `ledger.jsonl` that records who claimed and finished each task and with what evidence. Because everything is in git, any AI tool can continue where another one stopped. See [SpecWeave 3.0](/docs/guides/specweave-3) for what the current version changed.
+A small CLI and a set of skills that keep AI coding work in plain files in your repository. The method is intent-first development: settle what you want and how a machine will check it before any code is written. Each piece of work is an increment: one `spec.md` with the problem, scope, acceptance criteria, approach and tasks, plus an append-only `ledger.jsonl` that records who claimed and finished each task and with what evidence. Because everything is in git, any AI tool can continue where another one stopped. See [SpecWeave 3.0](/docs/guides/specweave-3) for what the current version changed.
 
 ## Which AI tools does it work with?
 

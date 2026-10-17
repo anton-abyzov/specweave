@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: SpecWeave CLI skills reference
-description: The SpecWeave 3.0 skill set, how to invoke each skill in Claude Code, Codex and other tools, and the plain words that trigger them.
+description: The six core and five optional SpecWeave skills, how to turn optional ones on, how to invoke each skill in Claude Code, Codex and other tools, and the plain words that trigger them.
 ---
 
 # Skills reference
@@ -10,25 +10,61 @@ A SpecWeave skill is a short instruction file that walks an agent through one st
 
 You rarely need to name a skill. `AGENTS.md` tells every agent the loop, so plain words such as "plan this", "keep going", "hand off" or "pick up" are enough.
 
-## The skill set
+## Core skills
+
+Every project gets these six. In Claude Code the `sw` plugin loads them as `/sw:increment`, `/sw:do` and so on, and `specweave init` and `specweave update` also copy them into `.claude/skills/sw-<name>/` and `.agents/skills/sw-<name>/`.
 
 | Skill | What it does | Plain words that trigger it |
 |-------|--------------|-----------------------------|
-| `increment` | Plans a unit of work: creates the increment and writes `spec.md` with Problem, Scope, numbered acceptance criteria, Approach and Tasks. | "plan a feature", "new increment", "let's build X" |
-| `do` | Works the increment task by task: `task next`, claim, implement, commit, `task done --run` with the test. | "implement", "start working", "continue", "keep going" |
-| `auto` | Runs an increment unattended. The Stop hook sends the session back into the loop until every task is done. | "auto mode", "run until done" |
-| `team` | Runs one increment with several agents in parallel: a worktree each, claims through the ledger, one close. | "team", "parallel agents" |
-| `review` | Adversarial review in a fresh context before shipping. Every finding cites `path:line` and is checked again. | "review", "grill this", "critique the implementation" |
-| `done` | Closes an increment: ledger check, `specweave verify`, optional review, `specweave complete`. | "close the increment", "we are done", "finish up" |
-| `sync` | GitHub, Jira and Azure DevOps: push progress, pull or import issues, check status, run setup. | "sync", "push to GitHub", "import issues" |
-| `handoff` | Writes a secret-scrubbed handoff and pushes it, so the work continues in another tool, account or session. | "hand off", "handoff", "I'm out of tokens", "switching accounts" |
-| `project` | Coordinates ongoing work across tools with shared goals, context, artifacts and worker briefs. | "set up a project", "brief a worker" |
-| `brainstorm` | Compares options on stated criteria and ends with a pick, before a spec is written. | "brainstorm", "ideate", "explore approaches", "what are our options" |
-| `jev` | Hands closed-set decisions (routing, command safety, screening, failure triage) to Jev. | "jev", "system one" |
+| `increment` | Settles the decisions only you can make (at most 5 questions by default, each with a recommended answer), then plans the unit of work: `spec.md` with Problem, Scope, numbered acceptance criteria, Approach, Decisions and Tasks. | "plan a feature", "new increment", "let's build X" |
+| `do` | Works the increment task by task: `task next`, claim, implement inside the task's Files, commit, `task done --run` with the test. Its "Unattended (auto mode)" section runs until every task is done; its "Parallel lanes" section splits the work across several agents, a worktree each. | "implement", "continue", "keep going", "run until done", "split this across three agents" |
+| `auto` | A thin entry to sw-do's unattended run that only you start: it runs `specweave auto`, and the Stop hook sends the session back into the loop until the tasks run out. | `/sw:auto` |
+| `review` | Adversarial review before shipping, by a fresh context or by a model from another family (`specweave review`). Every finding cites `path:line` and is checked again. | "review", "qa", "critique this" |
+| `done` | Closes an increment: ledger check, `specweave verify`, review, `specweave complete`. | "close it", "we are done", "finish up" |
+| `handoff` | Writes a secret-scrubbed handoff and pushes it, so the work continues in another tool, account or session. | "hand off", "I'm out of tokens", "switching accounts" |
 
-These eleven are the whole set. In 3.0 `qa` folded into `review` and `task` into `do`. The CLI still has `specweave qa` for a risk score.
+## Optional skills
 
-Reach for `/sw:brainstorm` when the problem is clear but the approach is not. It ends with one pick and hands it to `increment`, so the brainstorm never replaces the spec.
+These five are off until a project needs them. Each installs into `.claude/skills/sw-<name>/` and `.agents/skills/sw-<name>/` when `.specweave/config.json` lists it under `skills.enabled`, or when its trigger is detected and `skills.disabled` does not list it. The plugin does not load optional skills, so in Claude Code you call them as project skills: `/sw-grill-me`, `/sw-glossary`.
+
+| Skill | What it does | Detected by |
+|-------|--------------|-------------|
+| `grill-me` | Interviews you in rounds until every decision in a plan is settled. Each question carries a recommended answer, and the results are recorded under `## Decisions` in `spec.md`. Adapted from Matt Pocock's grilling skill. | `planning.deepInterview: "deep"` |
+| `glossary` | Builds the project's shared domain language in `GLOSSARY.md` (the ubiquitous language of domain-driven design): each term across business, data, code and UI, with the words to avoid. Adapted from Matt Pocock's domain-modeling skill. | a `GLOSSARY.md` or `GLOSSARY-MAP.md` at the root |
+| `sync` | GitHub, Jira and Azure DevOps: push progress, pull or import issues, check status, run setup. | a configured tracker |
+| `project` | Shared goal, memory, work items and briefs across tools. | `.specweave/project/hub.json` |
+| `jev` | Hands closed-set decisions (routing, command safety, screening, failure triage) to Jev. | `jev.enabled` |
+
+```bash
+specweave skills                            # every skill and whether it is on, and why
+specweave skills enable grill-me glossary
+specweave skills disable sync               # keep a detected skill out
+specweave skills list --json
+```
+
+`enable` and `disable` write `skills.enabled` and `skills.disabled` and reinstall the project copies; reload your tool afterwards. Core skills cannot be disabled. See [configuration](/docs/reference/configuration#skills).
+
+A `GLOSSARY.md` entry looks like this:
+
+```markdown
+### Order
+A customer's request to buy one or more products.
+- Avoid: purchase, basket
+- Data: `orders` table
+- Code: `Order` in `src/orders/order.ts`
+- UI: "Order"
+```
+
+`specweave glossary check` lists avoided words used as identifiers (`file:line`) and backticked Data or Code names that no longer exist. It exits 0, or 1 with `--strict` when it finds anything, so CI can run it.
+
+## Retired skills
+
+- `brainstorm`: its Decide step lives in `increment`; the full interview is `grill-me`.
+- `team`: folded into the "Parallel lanes" section of `do`. The `specweave team` command still exists.
+- `qa` and `task` folded into `review` and `do` in 3.0. The CLI still has `specweave qa` for a risk score.
+- The old `skills-optional/` procedures (debug, diagrams, e2e, release-expert, tdd-cycle) are deleted.
+
+`specweave update` removes SpecWeave's own copies of retired skills, and of optional skills that are now off. It never removes a folder of your own.
 
 There is no pickup skill. `AGENTS.md` tells every agent to run `specweave pickup` at the start of a session and when you say "pick up" or "continue". In Claude Code the SessionStart hook also prints a short pickup on its own.
 
@@ -42,7 +78,7 @@ There is no pickup skill. `AGENTS.md` tells every agent to run `specweave pickup
 | Cursor, Gemini CLI, Copilot and other tools | `specweave init --adapter <tool>` writes the skills where that tool looks for them | The tool's own skill syntax, or plain words |
 | Any tool, no SpecWeave install | `npx vskill install anton-abyzov/specweave/sw-do` (see below) | The tool's own skill syntax, or plain words |
 
-No skill is hidden from the model, so plain words start any of them: "hand off", "we are done" or "run until done". `AGENTS.md` also tells the agent to run `specweave handoff --reason "<your words>"` whenever it stops, so a tool without skills does the same.
+Plain words start every skill but `auto`, which only you start by typing it; "run until done" reaches the same unattended run through `do`. `AGENTS.md` also tells the agent to run `specweave handoff --reason "<your words>"` whenever it stops, so a tool without skills does the same.
 
 ## Handing off in a few words
 
@@ -57,22 +93,25 @@ See [cross-tool handoff](/docs/guides/cross-tool-handoff) and [Claude Code Proje
 
 ## Portable skills for any tool
 
-The same eleven skills live in the `skills/sw-<name>/` folders of the SpecWeave repo, which are the one source the plugin and project copies are generated from. They install into other tools with [vskill](/docs/skills/vskill-cli). Each one spells out the file formats and a manual shell procedure, so they work even where the CLI is not installed.
+All eleven skills, core and optional, live in the `skills/sw-<name>/` folders of the SpecWeave repo, which are the one source the plugin and project copies are generated from; `skills/catalog.json` says which are core. They install into other tools with [vskill](/docs/skills/vskill-cli). Each one spells out the file formats and a manual shell procedure, so they work even where the CLI is not installed.
 
 ```bash
 npx vskill install anton-abyzov/specweave/sw-increment
 npx vskill install anton-abyzov/specweave/sw-do
 npx vskill install anton-abyzov/specweave/sw-review
 npx vskill install anton-abyzov/specweave/sw-handoff
-npx vskill install anton-abyzov/specweave/sw-jev
+npx vskill install anton-abyzov/specweave/sw-grill-me
+npx vskill install anton-abyzov/specweave/sw-glossary
 ```
 
 | Skill | Use it when | Writes |
 |-------|-------------|--------|
 | `sw-increment` | Planning a feature, before any code | `metadata.json`, `spec.md` |
 | `sw-do` | Implementing an increment task by task, including claiming, finishing or skipping a task | Commits, ledger events, `reports/verify.json` |
-| `sw-review` | Reviewing before shipping | `reports/review.md` |
+| `sw-review` | Reviewing before shipping | `reports/review.md`, or `reports/review-<reviewer>.md` from `specweave review` |
 | `sw-handoff` | Stopping: out of tokens, switching tools or machines | `handoff.md`, `handoff.diff` |
+| `sw-grill-me` | The shape of the work is unclear and you want to be interviewed | `## Decisions` in `spec.md` |
+| `sw-glossary` | One word means two things, or two words mean one | `GLOSSARY.md` |
 | `sw-jev` | A decision whose possible answers can all be listed in advance | Nothing; it answers and you act |
 
 For tools that only read `AGENTS.md`, see [generic AI tools](/docs/integrations/generic-ai-tools).

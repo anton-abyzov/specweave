@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: Commands
-description: Every specweave CLI command in SpecWeave 3.0, grouped by what you use it for, with the flags that matter.
+description: Every specweave CLI command, grouped by what you use it for, with the flags that matter.
 ---
 
 # Commands reference
@@ -29,6 +29,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 | `specweave update` | Update the CLI, instruction files, config and plugins in one step. This is the upgrade path from 2.x. | `--check` (dry run), `--no-self`, `--no-plugins`, `-f, --force` |
 | `specweave update-instructions` | Rewrite `AGENTS.md` and `CLAUDE.md` with a merge that keeps your own sections. | `--dry-run`, `-v, --verbose` |
 | `specweave refresh-plugins` | Reinstall the SpecWeave skills for the configured tool. | `--force`, `--plugin <name>`, `-q, --quiet` |
+| `specweave skills [list\|enable\|disable] [names...]` | List the project's skills (six core, five optional) and why each optional one is on or off, or turn optional ones on or off: `specweave skills enable grill-me glossary`. Writes `skills.enabled` or `skills.disabled` and reinstalls the project copies. Core skills cannot be disabled. | `--json` |
 | `specweave uninstall` | Remove SpecWeave from the project. | `--keep-data` (archive `.specweave/`), `--dry-run`, `--global`, `-f, --force` |
 
 ## Increments
@@ -67,6 +68,8 @@ Status changes never call GitHub, Jira or Azure DevOps. See [increment status re
 | Command | Purpose | Useful flags |
 |---------|---------|--------------|
 | `specweave verify [id]` | Run the project's test, lint and build commands and write `reports/verify.md` and `reports/verify.json`. `verify.json` is what `complete` checks. | `--cmd <command>` (repeatable), `--json` |
+| `specweave review [id]` | Cross-model adversarial review. It reads from the ledger which model family wrote the code and runs a reviewer from another one: Codex with GPT-6.1-Sol in a read-only sandbox for Claude-written code, Claude Opus for code written by OpenAI models. Writes `reports/review-<reviewer>.md` and a ledger note. Exit 0 means ship; 3 means fix first, or the reviewer gave no verdict; 1 means an error, such as no reviewer installed. Reviewers and defaults are in [`review`](/docs/reference/configuration#review). | `--brief` (print the brief to paste into any model; runs nothing), `--reviewer <name>`, `--base <ref>`, `--timeout <minutes>` (default 30), `--json` |
+| `specweave glossary [check\|list]` | `check` (the default) compares `GLOSSARY.md` with the code: avoided words used as identifiers, with `file:line`, and backticked Data or Code names that no longer exist. `list` prints the terms. Exits 0, or 1 with `--strict` when `check` finds anything. | `--strict` (for CI), `--json` |
 | `specweave qa <id>` | Risk-scored quality assessment. It is not the review and not the closure gate. | `--gate`, `--pre`, `--ci` (exit 1 on fail), `--no-ai` |
 | `specweave generate-rubric <id>` | Write or refresh `rubric.md`, a quality contract tied to the acceptance criteria. | `--refresh` |
 

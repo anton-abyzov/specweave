@@ -14,7 +14,7 @@ specweave sync status
 specweave sync setup
 ```
 
-GitHub is first-class. Jira and Azure DevOps are opt-in. The `sync` skill (`/sw:sync`, `$sw-sync`) is a thin wrapper over these commands. A larger rewrite of sync is planned for 3.1.
+GitHub is first-class. Jira and Azure DevOps are opt-in. The optional `sync` skill (`/sw-sync` in Claude Code, `$sw-sync` in Codex) is a thin wrapper over these commands; a project with a configured tracker gets it, or run `specweave skills enable sync`. A larger rewrite of sync is planned for 3.1.
 
 ## When a tracker is touched
 

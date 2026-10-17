@@ -51,15 +51,14 @@ The command must exit 0; its output is stored as evidence. A task that turned ou
 specweave task skip T-07 0042 --reason "endpoint already exists"
 ```
 
-**5. When you stop, release and hand off.**
+**5. When your lane is done, release and leave a note.**
 
 ```bash
-specweave handoff 0042 --reason "lane done"
+specweave task release --all-mine
+specweave note "api: done" 0042
 ```
 
-`handoff` releases your claims (`--keep-claims` keeps them) and pushes your branch and uncommitted edits when there is a remote (`--no-push` keeps them local). To release without handing off, run `specweave task release --all-mine`.
-
-The pushed `specweave-handoff` ref holds only the latest handoff in the repository, so in a team the lead collects work by merging the lane branches, not with `specweave pickup`.
+Then commit and push the lane branch. Lane agents do not run `specweave handoff`: the pushed `specweave-handoff` ref holds only the latest handoff in the repository, so the lead collects work by merging the lane branches, not with `specweave pickup`.
 
 ## Watching the team
 
@@ -85,7 +84,7 @@ git worktree remove ../0042-claude
 
 ## In Claude Code
 
-In Claude Code, `/sw:team` (or "split this across three agents") plans the lanes, spawns the agents with the rules above and does the single closure at the end.
+In Claude Code, as in any tool with skills, "split this across three agents" starts the "Parallel lanes" section of the `do` skill (`/sw:do`). The session becomes the lead: it plans the lanes, starts one agent per worktree with the rules above, watches `task list`, merges and does the single closure at the end.
 
 `specweave team` launches Claude Code with its experimental agent teams feature turned on:
 
