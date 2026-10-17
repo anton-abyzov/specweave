@@ -43,12 +43,14 @@ describe('version alignment (package.json ↔ marketplace.json ↔ plugin.json)'
 
   it('every skill the catalog lists exists on disk, and vice versa', () => {
     const catalog = readJson('plugins/specweave/marketplace.json');
-    const listed = (catalog.skills ?? []).map((s: any) => s.name.replace(/^sw:/, '')).sort();
-    const onDisk = fs
-      .readdirSync(path.join(repoRoot, 'plugins/specweave/skills'), { withFileTypes: true })
+    const listed = (optional: boolean) =>
+      (catalog.skills ?? []).filter((s: any) => Boolean(s.optional) === optional).map((s: any) => s.name.replace(/^sw:/, '')).sort();
+    const onDisk = (dir: string) => fs
+      .readdirSync(path.join(repoRoot, 'plugins/specweave', dir), { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
       .sort();
-    expect(listed).toEqual(onDisk);
+    expect(listed(false)).toEqual(onDisk('skills'));
+    expect(listed(true)).toEqual(onDisk('skills-optional'));
   });
 });

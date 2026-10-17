@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { installProjectSkills, removeLegacySkillCopies } from '../../../../src/core/skills/project-skills.js';
+import { createHash } from 'crypto';
+import { installProjectSkills, removeLegacySkillCopies, RETIRED_SKILL_NAMES } from '../../../../src/core/skills/project-skills.js';
+import { LEGACY_SKILL_HASHES } from '../../../../src/core/skills/legacy-skill-hashes.js';
 
 let root: string;
 
@@ -51,17 +53,55 @@ describe('retired sw-* project skills (0894)', () => {
     expect(removeLegacySkillCopies(root, { dryRun: true })).toEqual(['.agents/skills/sw-qa']);
     expect(exists('.agents/skills/sw-qa')).toBe(true);
     expect(exists('.agents/skills/sw-do/SKILL.md')).toBe(true);
-    expect(exists('.claude/skills/sw-team/SKILL.md')).toBe(true);
+    expect(exists('.claude/skills/sw-review/SKILL.md')).toBe(true);
   });
 
-  it('drops files a shipped skill no longer has, such as sw-team/agents/', () => {
+  it('drops files a shipped skill no longer has', () => {
     installProjectSkills(root);
-    write('.agents/skills/sw-team/agents/old-worker.md', 'old');
+    write('.agents/skills/sw-do/agents/old-worker.md', 'old');
 
     const res = installProjectSkills(root);
 
-    expect(res.removed).toContain('.agents/skills/sw-team/agents/old-worker.md');
-    expect(exists('.agents/skills/sw-team/agents/old-worker.md')).toBe(false);
+    expect(res.removed).toContain('.agents/skills/sw-do/agents/old-worker.md');
+    expect(exists('.agents/skills/sw-do/agents/old-worker.md')).toBe(false);
+  });
+
+  it('removes sw-team and sw-brainstorm only when every file is one a 3.0.x release installed', () => {
+    const team = '---\nname: sw-team\n---\nSplit lanes, then `specweave task release --all-mine`.\n';
+    const brainstorm = '---\nname: sw-brainstorm\n---\nRecord decisions, then sw:increment.\n';
+    const sha = (s: string) => createHash('sha256').update(s).digest('hex');
+    const legacyHashes = {
+      team: { 'SKILL.md': [sha(team)] },
+      brainstorm: { 'SKILL.md': [sha(brainstorm)], 'references/credits.md': [sha('credits')] },
+    };
+    write('.claude/skills/sw-team/SKILL.md', team);
+    write('.agents/skills/sw-team/SKILL.md', team);
+    write('.agents/skills/sw-team/notes.md', 'my lane notes');
+    write('.agents/skills/sw-brainstorm/SKILL.md', brainstorm);
+    write('.agents/skills/sw-brainstorm/references/credits.md', 'credits');
+    write('.claude/skills/sw-brainstorm/SKILL.md', brainstorm.replace('Record', 'Always record'));
+
+    expect(removeLegacySkillCopies(root, { legacyHashes }).sort()).toEqual(['.agents/skills/sw-brainstorm', '.claude/skills/sw-team']);
+    expect(exists('.agents/skills/sw-team/notes.md')).toBe(true);
+    expect(exists('.claude/skills/sw-brainstorm/SKILL.md')).toBe(true);
+  });
+
+  it("keeps a hand-written sw-team that merely mentions SpecWeave", () => {
+    write('.claude/skills/sw-team/SKILL.md', '---\nname: sw-team\n---\nUse sw:do, then `specweave task list`.\n');
+    expect(removeLegacySkillCopies(root)).toEqual([]);
+    expect(exists('.claude/skills/sw-team/SKILL.md')).toBe(true);
+  });
+
+  it('knows the files of every skill 3.0 shipped', () => {
+    expect(Object.keys(LEGACY_SKILL_HASHES).sort()).toEqual(
+      ['auto', 'brainstorm', 'do', 'done', 'handoff', 'increment', 'jev', 'project', 'review', 'sync', 'team'],
+    );
+    for (const files of Object.values(LEGACY_SKILL_HASHES)) expect(files['SKILL.md']?.length).toBeGreaterThan(0);
+  });
+
+  it('the retired list matches skills/catalog.json', () => {
+    const catalog = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'skills', 'catalog.json'), 'utf-8')) as { retired: string[] };
+    expect([...RETIRED_SKILL_NAMES].sort()).toEqual([...catalog.retired].sort());
   });
 
   it('removes sw-task, the standalone skill SpecWeave 2.x shipped and 3.x retired', () => {

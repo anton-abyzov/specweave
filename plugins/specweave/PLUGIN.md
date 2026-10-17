@@ -1,6 +1,7 @@
 # SpecWeave plugin (`sw`)
 
-The Claude Code surface for SpecWeave: **11 skills, 2 default hooks, 1 closer agent**.
+The Claude Code surface for SpecWeave: **6 core skills, 5 optional skills, 2 default hooks,
+1 closer agent**.
 The skills are generated from `skills/sw-<name>/` at the repository root (the one source
 every tool shares); edit them there, never here.
 Everything deterministic lives in the `specweave` CLI; a skill exists only where a
@@ -8,23 +9,30 @@ procedure needs model judgement. There is no `commands/` namespace in 2.0.
 
 ## Skills
 
+Core, loaded by the plugin:
+
 | Skill | What it does |
 |---|---|
-| `sw:increment` | Plan a unit of work → one `spec.md` (Problem, Scope, ACs, Approach, Tasks) |
-| `sw:do` | Work the increment task by task through the ledger, with evidence per task |
-| `sw:done` | Close it: ledger check → `specweave verify` → optional review → `specweave complete` |
-| `sw:review` | Adversarial fresh-context review and quality check; every finding cites `path:line` |
-| `sw:team` | Several agents on one increment: a worktree each, claims through the ledger |
+| `sw:increment` | Settle the user's decisions, then plan one `spec.md` (Problem, Scope, ACs, Approach, Decisions, Tasks) |
+| `sw:do` | Work the increment task by task through the ledger, alone, unattended or in parallel lanes |
+| `sw:auto` | User-invoked entry to sw:do's unattended mode, driven by the Stop hook |
+| `sw:done` | Close it: ledger check → `specweave verify` → review → `specweave complete` |
+| `sw:review` | Adversarial review by a fresh context or another model family; every finding cites `path:line` |
 | `sw:handoff` | "Hand off" here, "pick up" in any other tool, account or machine |
-| `sw:sync` | GitHub / Jira / ADO: push, pull, status, setup |
-| `sw:auto` | Unattended loop driven by the Stop hook |
-| `sw:brainstorm` | Expand the option space before committing to one |
-| `sw:project` | Shared goal, memory, work items and briefs across tools |
-| `sw:jev` | Delegate closed-set decisions to Jev (TypeSafe System One): routing, command safety, screening |
 
-Optional procedures (tdd-cycle, e2e, debug, diagrams, release-expert) are **not** in the
-plugin — they ship from `skills-optional/` via
-`npx vskill install anton-abyzov/specweave/skills-optional/<name>`.
+Optional, shipped in `skills-optional/` and installed into a project as `sw-<name>` only
+when `.specweave/config.json` enables it (`specweave skills enable <name>`) or the project
+detects it:
+
+| Skill | What it does | Detected by |
+|---|---|---|
+| `sw:grill-me` | Interview the user in rounds until every decision is settled | `planning.deepInterview: deep` |
+| `sw:glossary` | GLOSSARY.md: each domain term across business, data, code and UI | `GLOSSARY.md` |
+| `sw:sync` | GitHub / Jira / ADO: push, pull, status, setup | a configured tracker |
+| `sw:project` | Shared goal, memory, work items and briefs across tools | `.specweave/project/hub.json` |
+| `sw:jev` | Delegate closed-set decisions to Jev (TypeSafe System One) | `jev.enabled` |
+
+`skills-catalog.json` is the list (generated from `skills/catalog.json`).
 
 ## Hooks
 
@@ -33,7 +41,7 @@ Two by default, both exec-form `node hooks/run.mjs <event>` (no shell, Windows-s
 | Hook | Job |
 |---|---|
 | `SessionStart` | Inject the active increment + next task as context |
-| `Stop` | Drive the `sw:auto` loop; `{}` for every ordinary session |
+| `Stop` | Drive the unattended loop (`sw:auto`); `{}` for every ordinary session |
 
 `PreToolUse` is **not** registered by default — `hooks.json` ships `SessionStart` and
 `Stop` only, exactly as in 2.1.0. `PreToolUse` and `PreCompact` stay callable
@@ -56,7 +64,7 @@ the marker and the project hook. This is a Claude Code surface only; other tools
 
 ## Requirements
 
-- Claude Code 2.1.0+, Node.js 18+, Git
+- Claude Code 2.1.0+, Node.js 20.12+, Git
 - The `specweave` CLI on PATH (`npm i -g specweave`). Skills degrade to documented
   manual steps when it is absent; they never silently no-op.
 

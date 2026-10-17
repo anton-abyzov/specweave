@@ -3,13 +3,20 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  SPECWEAVE_SKILLS,
+  catalogFor,
+  defaultPluginSkillsDir,
   installProjectSkills,
+  projectSkillStates,
   removeLegacySkillCopies,
+  skillFolderOwner,
   toProjectSkill,
+  INSTALL_MANIFEST,
 } from '../../../../src/core/skills/project-skills.js';
+import { createHash } from 'crypto';
+import { execFileSync } from 'child_process';
 
 let root: string;
+const CATALOG = catalogFor(defaultPluginSkillsDir());
 
 beforeEach(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-project-skills-'));
@@ -22,6 +29,8 @@ const write = (rel: string, content: string) => {
   fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
   fs.writeFileSync(path.join(root, rel), content);
 };
+const exists = (rel: string) => fs.existsSync(path.join(root, rel));
+const config = (value: unknown) => write('.specweave/config.json', JSON.stringify(value));
 
 describe('toProjectSkill', () => {
   it('puts name: sw-<name> first and drops the generated marker', () => {
@@ -35,14 +44,14 @@ describe('toProjectSkill', () => {
 });
 
 describe('installProjectSkills', () => {
-  it('writes both folders, then reports everything unchanged on a second run', () => {
+  it('installs the core skills only, in both folders, then reports everything unchanged', () => {
+    expect(CATALOG.core).toEqual(['increment', 'do', 'auto', 'done', 'review', 'handoff']);
     const first = installProjectSkills(root);
-    // One SKILL.md per skill per folder, plus any supporting files (references/).
+    expect(first.installed).toEqual(CATALOG.core);
     const skillFiles = (files: string[]) => files.filter(f => f.endsWith('/SKILL.md'));
-    expect(skillFiles(first.written)).toHaveLength(SPECWEAVE_SKILLS.length * 2);
-    for (const name of SPECWEAVE_SKILLS) {
-      expect(fs.existsSync(path.join(root, '.claude/skills', `sw-${name}`, 'SKILL.md'))).toBe(true);
-      expect(fs.existsSync(path.join(root, '.agents/skills', `sw-${name}`, 'SKILL.md'))).toBe(true);
+    expect(skillFiles(first.written)).toHaveLength(CATALOG.core.length * 2);
+    for (const base of ['.claude/skills', '.agents/skills']) {
+      expect(fs.readdirSync(path.join(root, base)).sort()).toEqual(CATALOG.core.map(n => `sw-${n}`).sort());
     }
     const second = installProjectSkills(root);
     expect(second.written).toEqual([]);
@@ -50,17 +59,138 @@ describe('installProjectSkills', () => {
   });
 
   it('removes files a skill no longer ships from its own sw-<name> folder only', () => {
-    write('.claude/skills/sw-team/agents/backend.md', 'old');
+    write('.claude/skills/sw-do/agents/backend.md', 'old');
     write('.claude/skills/my-skill/SKILL.md', 'mine');
     const result = installProjectSkills(root);
-    expect(result.removed).toEqual(['.claude/skills/sw-team/agents/backend.md']);
-    expect(fs.existsSync(path.join(root, '.claude/skills/my-skill/SKILL.md'))).toBe(true);
+    expect(result.removed).toEqual(['.claude/skills/sw-do/agents/backend.md']);
+    expect(exists('.claude/skills/my-skill/SKILL.md')).toBe(true);
   });
 
-  it('dry run writes nothing', () => {
+  it('installs optional skills listed under skills.enabled', () => {
+    config({ skills: { enabled: ['grill-me', 'sw-glossary'] } });
+    const result = installProjectSkills(root);
+    expect(result.installed).toEqual([...CATALOG.core, 'grill-me', 'glossary']);
+    for (const base of ['.claude/skills', '.agents/skills']) {
+      expect(fs.readFileSync(path.join(root, base, 'sw-grill-me', 'SKILL.md'), 'utf-8')).toMatch(/^---\nname: sw-grill-me\n/);
+      expect(exists(`${base}/sw-glossary/references/credits.md`)).toBe(true);
+    }
+  });
+
+  it('installs detected skills, unless skills.disabled lists them', () => {
+    write('GLOSSARY.md', '### Order\nA request to buy.\n');
+    write('.specweave/project/hub.json', '{}');
+    config({ jev: { enabled: true }, sync: { github: { enabled: true } }, planning: { deepInterview: 'deep' } });
+    expect(installProjectSkills(root).installed).toEqual([...CATALOG.core, 'grill-me', 'glossary', 'sync', 'project', 'jev']);
+
+    config({ jev: { enabled: true }, sync: { github: { enabled: true } }, planning: { deepInterview: 'deep' }, skills: { disabled: ['glossary', 'jev'] } });
+    const result = installProjectSkills(root);
+    expect(result.installed).toEqual([...CATALOG.core, 'grill-me', 'sync', 'project']);
+    expect(result.removedSkills.sort()).toEqual([
+      '.agents/skills/sw-glossary', '.agents/skills/sw-jev', '.claude/skills/sw-glossary', '.claude/skills/sw-jev',
+    ]);
+    expect(exists('.claude/skills/sw-glossary')).toBe(false);
+  });
+
+  it('enabled wins over disabled, and states give the reason', () => {
+    write('GLOSSARY.md', '### Order\n');
+    config({ skills: { enabled: ['jev'], disabled: ['jev'] } });
+    const states = projectSkillStates(root);
+    expect(states.find(s => s.name === 'jev')).toMatchObject({ on: true, reason: 'enabled' });
+    expect(states.find(s => s.name === 'glossary')).toMatchObject({ on: true, reason: 'detected', detail: 'GLOSSARY.md' });
+    expect(states.find(s => s.name === 'sync')).toMatchObject({ on: false, reason: 'off' });
+    expect(states.find(s => s.name === 'do')).toMatchObject({ on: true, reason: 'core' });
+  });
+
+  it("keeps a turned-off folder that is not SpecWeave's copy", () => {
+    config({ skills: { enabled: ['grill-me', 'glossary'] } });
+    installProjectSkills(root);
+    write('.claude/skills/sw-grill-me/my-notes.md', 'mine');
+    write('.agents/skills/sw-glossary/.vskill-meta.json', '{}');
+    write('.claude/skills/sw-jev/SKILL.md', '---\nname: my-jev\n---\nmine\n');
+    config({});
+    const result = installProjectSkills(root);
+    expect(result.removedSkills.sort()).toEqual(['.agents/skills/sw-grill-me', '.claude/skills/sw-glossary']);
+    expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-glossary', '.claude/skills/sw-grill-me', '.claude/skills/sw-jev']);
+    expect(exists('.claude/skills/sw-grill-me/my-notes.md')).toBe(true);
+    expect(exists('.agents/skills/sw-glossary/.vskill-meta.json')).toBe(true);
+    expect(exists('.claude/skills/sw-jev/SKILL.md')).toBe(true);
+  });
+
+  it("keeps a user's own or edited skill even when its frontmatter says name: sw-<name>", () => {
+    write('.claude/skills/sw-glossary/SKILL.md', '---\nname: sw-glossary\ndescription: my glossary\n---\nMine.\n');
+    config({ skills: { enabled: ['grill-me'] } });
+    installProjectSkills(root);
+    fs.appendFileSync(path.join(root, '.agents/skills/sw-grill-me/SKILL.md'), '\nMy extra rule.\n');
+    config({});
+    const result = installProjectSkills(root);
+    expect(result.removedSkills).toEqual(['.claude/skills/sw-grill-me']);
+    expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-grill-me', '.claude/skills/sw-glossary']);
+    expect(fs.readFileSync(path.join(root, '.claude/skills/sw-glossary/SKILL.md'), 'utf-8')).toContain('Mine.');
+    expect(fs.readFileSync(path.join(root, '.agents/skills/sw-grill-me/SKILL.md'), 'utf-8')).toContain('My extra rule.');
+  });
+
+  it("never writes over a user's own skill when that optional skill is turned on", () => {
+    write('.claude/skills/sw-glossary/SKILL.md', '---\nname: sw-glossary\ndescription: mine\n---\nMy terms.\n');
+    write('.claude/skills/sw-glossary/notes.md', 'keep me');
+    config({ skills: { enabled: ['glossary'] } });
+    const result = installProjectSkills(root);
+    expect(result.keptSkills).toEqual(['.claude/skills/sw-glossary']);
+    expect(fs.readFileSync(path.join(root, '.claude/skills/sw-glossary/SKILL.md'), 'utf-8')).toContain('My terms.');
+    expect(exists('.claude/skills/sw-glossary/notes.md')).toBe(true);
+    expect(exists('.agents/skills/sw-glossary/SKILL.md')).toBe(true);
+  });
+
+  it('records a manifest, so an edited or symlinked copy is never removed or overwritten', () => {
+    config({ skills: { enabled: ['grill-me', 'glossary'] } });
+    installProjectSkills(root);
+    const claudeCopy = path.join(root, '.claude/skills/sw-grill-me');
+    expect(skillFolderOwner(claudeCopy, 'grill-me')).toBe('pristine');
+    expect(JSON.parse(fs.readFileSync(path.join(claudeCopy, INSTALL_MANIFEST), 'utf-8'))).toMatchObject({ skill: 'grill-me' });
+    fs.appendFileSync(path.join(claudeCopy, 'SKILL.md'), '\nmine\n');
+    expect(skillFolderOwner(claudeCopy, 'grill-me')).toBe('edited');
+    expect(installProjectSkills(root).keptSkills).toEqual(['.claude/skills/sw-grill-me']);
+    expect(fs.readFileSync(path.join(claudeCopy, 'SKILL.md'), 'utf-8')).toMatch(/mine\n$/);
+    fs.symlinkSync(os.tmpdir(), path.join(root, '.agents/skills/sw-glossary/shared'), 'dir');
+    config({});
+    const result = installProjectSkills(root);
+    expect(result.removedSkills.sort()).toEqual(['.agents/skills/sw-grill-me', '.claude/skills/sw-glossary']);
+    expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-glossary', '.claude/skills/sw-grill-me']);
+  });
+
+  it('treats an unmanifested folder as SpecWeave\'s only when every file is one 3.0.x installed', () => {
+    write('.claude/skills/sw-sync/SKILL.md', 'old copy');
+    const sha = (s: string) => createHash('sha256').update(s).digest('hex');
+    const dir = path.join(root, '.claude/skills/sw-sync');
+    expect(skillFolderOwner(dir, 'sync', { sync: { 'SKILL.md': [sha('old copy')] } })).toBe('pristine');
+    expect(skillFolderOwner(dir, 'sync', { sync: { 'SKILL.md': [sha('other')] } })).toBe('foreign');
+    expect(skillFolderOwner(dir, 'glossary', { sync: { 'SKILL.md': [sha('old copy')] } })).toBe('foreign');
+    expect(skillFolderOwner(path.join(root, 'nothing'), 'sync')).toBe('absent');
+  });
+
+  it.skipIf(process.platform === 'win32')('never reads a FIFO or other special file while deciding ownership', () => {
+    fs.mkdirSync(path.join(root, '.claude/skills/sw-glossary'), { recursive: true });
+    execFileSync('mkfifo', [path.join(root, '.claude/skills/sw-glossary/a-pipe')]);
+    write('.claude/skills/sw-glossary/SKILL.md', 'mine');
+    expect(skillFolderOwner(path.join(root, '.claude/skills/sw-glossary'), 'glossary')).toBe('foreign');
+    expect(installProjectSkills(root, { dryRun: true }).keptSkills).toEqual(['.claude/skills/sw-glossary']);
+    config({ skills: { enabled: ['glossary'] } });
+    expect(installProjectSkills(root).keptSkills).toEqual(['.claude/skills/sw-glossary']);
+  });
+
+  it('dry run writes and removes nothing', () => {
+    config({ skills: { enabled: ['grill-me'] } });
+    installProjectSkills(root);
+    config({});
     const result = installProjectSkills(root, { dryRun: true });
-    expect(result.written.length).toBeGreaterThan(0);
-    expect(fs.existsSync(path.join(root, '.claude'))).toBe(false);
+    expect(result.removedSkills).toContain('.claude/skills/sw-grill-me');
+    expect(exists('.claude/skills/sw-grill-me/SKILL.md')).toBe(true);
+    const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-dry-'));
+    try {
+      expect(installProjectSkills(fresh, { dryRun: true }).written.length).toBeGreaterThan(0);
+      expect(fs.existsSync(path.join(fresh, '.claude'))).toBe(false);
+    } finally {
+      fs.rmSync(fresh, { recursive: true, force: true });
+    }
   });
 
   it.skipIf(process.platform === 'win32')('refuses to write through a symlinked skills folder', () => {
@@ -83,7 +213,7 @@ describe('removeLegacySkillCopies', () => {
     write('.claude/skills/team/agents/backend.md', 'lane');
     write('.agents/skills/review/SKILL.md', '---\ndescription: x\n---\nclose with sw:done\n');
     expect(removeLegacySkillCopies(root).sort()).toEqual(['.agents/skills/review', '.claude/skills/do', '.claude/skills/team']);
-    expect(fs.existsSync(path.join(root, '.claude/skills/do'))).toBe(false);
+    expect(exists('.claude/skills/do')).toBe(false);
   });
 
   it("keeps the user's own skill that happens to share a name", () => {
@@ -91,13 +221,13 @@ describe('removeLegacySkillCopies', () => {
     write('.claude/skills/do/SKILL.md', '---\ndescription: x\n---\nspecweave task next\n');
     write('.claude/skills/do/notes.md', 'my own file next to it');
     expect(removeLegacySkillCopies(root)).toEqual([]);
-    expect(fs.existsSync(path.join(root, '.claude/skills/review/SKILL.md'))).toBe(true);
-    expect(fs.existsSync(path.join(root, '.claude/skills/do/notes.md'))).toBe(true);
+    expect(exists('.claude/skills/review/SKILL.md')).toBe(true);
+    expect(exists('.claude/skills/do/notes.md')).toBe(true);
   });
 
   it('never touches the namespaced sw-* copies', () => {
     installProjectSkills(root);
     expect(removeLegacySkillCopies(root)).toEqual([]);
-    expect(fs.existsSync(path.join(root, '.claude/skills/sw-do/SKILL.md'))).toBe(true);
+    expect(exists('.claude/skills/sw-do/SKILL.md')).toBe(true);
   });
 });

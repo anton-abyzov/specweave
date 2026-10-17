@@ -7,6 +7,7 @@
  * from the source of truth, never hard-coded:
  *
  *   skills        plugins/specweave/skills/<name>/   → `sw:<name>` / `/sw:<name>`
+ *   optional      plugins/specweave/skills-optional/<name>/ → `sw-<name>` only (not in the plugin)
  *   standalone    skills/<name>/                     → vskill-distributed skills
  *   CLI commands  bin/specweave.js `.command('…')`   → `specweave <name>`
  *   config keys   src/core/config/types.ts KNOWN_CONFIG_KEYS
@@ -96,6 +97,7 @@ function deadConfigKeys() {
 }
 
 const SKILLS = new Set(dirsIn('plugins/specweave/skills'));
+const OPTIONAL_SKILLS = new Set(dirsIn('plugins/specweave/skills-optional'));
 const STANDALONE = new Set(dirsIn('skills'));
 const COMMANDS = cliCommands();
 const CONFIG_KEYS = configKeys();
@@ -201,14 +203,16 @@ for (const file of collectFiles()) {
       // `<!-- SW:BOARD -->` is a tasks.md marker, not a skill invocation.
       if (m[0].toUpperCase().endsWith('SW:BOARD')) continue;
       const name = m[1].toLowerCase();
-      if (!SKILLS.has(name)) {
+      if (OPTIONAL_SKILLS.has(name)) {
+        add(file, lineNo, 'optional-skill', `sw:${name} is an opt-in skill the plugin does not load; write sw-${name} (installed per project)`);
+      } else if (!SKILLS.has(name)) {
         add(file, lineNo, 'unknown-skill', `sw:${name} is not a skill in plugins/specweave/skills (have: ${[...SKILLS].join(', ')})`);
       }
     }
 
     // --- removed provider plugin namespaces ---------------------------------
     for (const m of line.matchAll(/\bsw-(github|jira|ado)\s*:\s*[a-z-]+/gi)) {
-      add(file, lineNo, 'removed-namespace', `${m[0]} — the per-provider plugin namespaces were removed in 2.0; use sw:sync / specweave sync`);
+      add(file, lineNo, 'removed-namespace', `${m[0]} — the per-provider plugin namespaces were removed in 2.0; use specweave sync (sw-sync)`);
     }
 
     // --- CLI commands -------------------------------------------------------

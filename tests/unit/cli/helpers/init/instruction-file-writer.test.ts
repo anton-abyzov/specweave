@@ -31,37 +31,37 @@ const writeConfig = (config: unknown): void => {
   fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), JSON.stringify(config));
 };
 
-describe('detectTemplateFlags (umbrella + jev + hub sections)', () => {
+describe('detectTemplateFlags (umbrella + jev + hub + glossary sections)', () => {
   it('is off without a config, with an empty repo list, or on unreadable JSON', () => {
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false, glossary: false });
     writeConfig({ workspace: { name: 'w', repos: [] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false, glossary: false });
     fs.writeFileSync(path.join(dir, '.specweave', 'config.json'), '{ broken');
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false, glossary: false });
   });
 
   it('falls back to the repositories/ scan while init has not written workspace yet', () => {
     // init writes a minimal config (no workspace key) before the instruction files
     writeConfig({ version: '2.0', project: { name: 'demo' } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false, glossary: false });
     fs.mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false, hub: false, glossary: false });
     // an explicit empty workspace list still wins over the scan
     writeConfig({ version: '2.0', workspace: { name: 'demo', repos: [] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: false, glossary: false });
   });
 
   it('is on when the workspace lists repos', () => {
     writeConfig({ workspace: { name: 'w', repos: [{ id: 'api', prefix: 'API' }] } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: true, jev: false, hub: false, glossary: false });
   });
 
   it('jev is on only when jev.enabled is literally true', () => {
     writeConfig({ workspace: { name: 'w', repos: [] }, jev: { enabled: true } });
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: true, hub: false });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: true, hub: false, glossary: false });
     for (const enabled of [false, 'true', 1, null, undefined]) {
       writeConfig({ workspace: { name: 'w', repos: [] }, jev: { enabled } });
-      expect(detectTemplateFlags(dir), String(enabled)).toEqual({ umbrella: false, jev: false, hub: false });
+      expect(detectTemplateFlags(dir), String(enabled)).toEqual({ umbrella: false, jev: false, hub: false, glossary: false });
     }
   });
 
@@ -70,7 +70,20 @@ describe('detectTemplateFlags (umbrella + jev + hub sections)', () => {
     expect(detectTemplateFlags(dir).hub).toBe(false);
     fs.mkdirSync(path.join(dir, '.specweave', 'project'), { recursive: true });
     fs.writeFileSync(path.join(dir, '.specweave', 'project', 'hub.json'), JSON.stringify({ goal: 'ship' }));
-    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: true });
+    expect(detectTemplateFlags(dir)).toEqual({ umbrella: false, jev: false, hub: true, glossary: false });
+  });
+
+  it('glossary is on when GLOSSARY.md or GLOSSARY-MAP.md is at the root', () => {
+    expect(detectTemplateFlags(dir).glossary).toBe(false);
+    fs.writeFileSync(path.join(dir, 'GLOSSARY-MAP.md'), '# Contexts\n');
+    expect(detectTemplateFlags(dir).glossary).toBe(true);
+    fs.rmSync(path.join(dir, 'GLOSSARY-MAP.md'));
+    fs.writeFileSync(path.join(dir, 'GLOSSARY.md'), '### Order\n');
+    expect(detectTemplateFlags(dir).glossary).toBe(true);
+    const on = apply('AGENTS.md', { flags: { umbrella: false, jev: false, hub: false, glossary: true } });
+    expect(on.content).toContain('## Shared language');
+    const off = apply('AGENTS.md', { flags: { umbrella: false, jev: false, hub: false, glossary: false } });
+    expect(off.content).not.toContain('## Shared language');
   });
 
   it('renders the jev section into both files only when the flag is on', () => {

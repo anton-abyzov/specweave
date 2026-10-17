@@ -47,9 +47,9 @@ function oneX(sections: Array<[string, string]>, user: string[] = [], version = 
 describe('parseTemplate', () => {
   it('splits sections and keeps the user-owned tail', () => {
     const t = agentsTemplate();
-    expect(t.sections.map(s => s.id)).toEqual(['header', 'loop', 'rules', 'umbrella', 'hub', 'jev']);
+    expect(t.sections.map(s => s.id)).toEqual(['header', 'loop', 'rules', 'umbrella', 'glossary', 'hub', 'jev']);
     expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header', 'loop', 'rules']);
-    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella'], ['hub', 'hub'], ['jev', 'jev']]);
+    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella'], ['glossary', 'glossary'], ['hub', 'hub'], ['jev', 'jev']]);
     expect(t.tail).toMatch(/^## Commands/);
     expect(t.tail).toContain('## Project notes');
     expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'AGENTS.md.template'), 'utf-8'))).toEqual(t.sections);

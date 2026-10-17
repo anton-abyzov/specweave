@@ -1,7 +1,7 @@
 ---
-description: Adversarial fresh-context review and risk check of an increment before it ships; every finding cites path:line and is re-verified. Use for "review", "qa", "quality check", "critique this".
+description: Adversarial review of an increment before it ships, by a fresh context or another model family; every finding cites path:line and is re-verified. Use for "review", "qa", "critique this".
 argument-hint: "[increment-id] [--full]"
-version: 3.0.0
+version: 3.1.0
 ---
 
 # sw-review: adversarial review with citations
@@ -13,8 +13,8 @@ This is also the quality check: its verdict says whether the increment is ready.
 ## Non-negotiables
 
 - **Fresh context.** The session that wrote the code never approves it. Use a new
-  session, or a subagent if your tool supports them. If you wrote this code here and
-  cannot get a fresh context, say so in the report.
+  session, a subagent if your tool supports them, or another model (below). If you
+  wrote this code here and cannot get a fresh context, say so in the report.
 - **Every finding cites `path:line`** and a concrete failure: input or state leads to
   wrong output, a crash, a hang, data loss or a leak. "Consider refactoring" is not one.
 - **Re-verify.** Re-open the lines and, where a test can show it, run one. Drop what
@@ -41,6 +41,24 @@ This is also the quality check: its verdict says whether the increment is ready.
    (`### T-09 Fix empty evidence` + `- AC: AC-02 | Files: ... | Test: ...`) for sw-do, or
    is fixed and re-tested now. Then verify again and close with sw-done.
 
+## Another model
+
+A model reviewing code its own family wrote shares that code's blind spots.
+`specweave review` hands the increment to a reviewer from another family: it reads who
+finished the tasks from the ledger (`claude@mbp` is Claude), runs Codex with GPT-6.1-Sol
+on Claude-written code (Claude Opus on OpenAI-written code), and writes
+`reports/review-codex.md` in the shape below plus a ledger note. Exit 0: ship; 3: fix
+first, or no verdict; 1: no reviewer installed, or it failed.
+
+- Run it when `review.crossModel` is true in `.specweave/config.json`, when the user
+  asks for another model, or when you wrote the code and have no fresh context.
+- `--brief` prints the brief (ACs, tasks and their Files, the diff) to paste into any
+  model by hand; `--reviewer claude`, `--base origin/main` and `--timeout 45` override.
+- `review.reviewer` pins one reviewer; `review.reviewers.<name>.command` adds a CLI that
+  reads the brief on stdin and answers on stdout, or into `{out}` when it names one.
+
+Its findings get the same treatment as yours: re-open each line before acting on it.
+
 ## reports/review.md
 
 ```markdown
@@ -56,6 +74,7 @@ Nits: naming in ledger.ts:31.
 ```
 
 Verdict is `fix first` while any critical or high finding survives, else `ship`.
+`specweave complete` notes a `fix first` verdict in the newest review report.
 
 ## Manual path (no CLI)
 

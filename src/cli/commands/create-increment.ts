@@ -182,7 +182,7 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
     for (const r of relations) console.log(`  ${r}`);
-    console.log(`  Decide: ${deepInterview ?? 'critical'} (planning.deepInterview; sw-brainstorm)`);
+    console.log(`  Decide: ${deepInterview ?? 'critical'} (planning.deepInterview; sw-grill-me interviews in full)`);
     console.log(chalk.blue('\nNext steps:'));
     result.nextSteps.forEach((step, i) => {
       console.log(`  ${i + 1}. ${step}`);

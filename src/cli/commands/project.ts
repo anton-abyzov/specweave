@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findUmbrellaRoot, findProjectRoot } from '../../utils/find-project-root.js';
 import { findSourceDir } from '../helpers/init/path-utils.js';
+import { toProjectSkill } from '../../core/skills/project-skills.js';
 import { ProjectHubStore, HubError } from '../../core/project-hub/store.js';
 import { projectBrief } from '../../core/project-hub/brief.js';
 import { IntentStore, WorkError } from '../../dashboard/server/data/intent-store.js';
@@ -37,11 +38,12 @@ function initialize(root: string, options: ProjectOptions): void {
   const agents = path.join(root, 'AGENTS.md');
   const existing = fs.existsSync(agents) ? fs.readFileSync(agents, 'utf8') : '';
   if (!existing.includes(HUB_MARKER)) fs.appendFileSync(agents, `\n${HUB_MARKER}\n## Shared project context\nRead .specweave/project/hub.json for the project goal, shared context, artifacts and routine definitions. Run \`specweave project show\` for current work and \`specweave project brief\` for a fresh coordinator brief. Use native task tools only within user authorization. Routines are definitions until configured in the host scheduler.\n<!-- /specweave:project-hub -->\n`);
-  const source = path.join(findSourceDir('plugins/specweave', path.dirname(fileURLToPath(import.meta.url))), 'skills/project/SKILL.md');
+  // sw-project is an opt-in skill; hub.json turns it on for `specweave update` too.
+  const source = path.join(findSourceDir('plugins/specweave', path.dirname(fileURLToPath(import.meta.url))), 'skills-optional/project/SKILL.md');
   const target = path.join(root, '.agents/skills/sw-project/SKILL.md');
   if (!fs.existsSync(target)) {
     fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, fs.readFileSync(source, 'utf8').replace(/^---\n/, '---\nname: sw-project\n'), { flag: 'wx' });
+    fs.writeFileSync(target, toProjectSkill(fs.readFileSync(source, 'utf8'), 'project'), { flag: 'wx' });
   }
 }
 

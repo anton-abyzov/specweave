@@ -19,7 +19,6 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TEMPLATES_DIR = path.join(REPO_ROOT, 'src', 'templates');
-const OPTIONAL_SKILLS_DIR = path.join(REPO_ROOT, 'skills-optional');
 const MAX_LINES = 150;
 const MAX_DESCRIPTION = 200;
 
@@ -186,8 +185,7 @@ export function lintSkill(dir) {
 /**
  * Every `vskill install anton-abyzov/specweave/<ref>` line shipped in a
  * template must name a real standalone skill directory. The canonical form has
- * NO `skills/` segment (skills/README.md is the enforced reference); the only
- * other legal shape is `skills-optional/<name>`. Without this the install line
+ * NO `skills/` segment (skills/README.md is the enforced reference). Without this the install line
  * baked into every generated AGENTS.md can silently drift from the folder
  * layout and hand non-Claude users a path that does not resolve.
  */
@@ -199,23 +197,12 @@ export function lintTemplateInstallRefs(templatesDir = TEMPLATES_DIR, validSkill
     .filter((e) => e.isFile() && e.name.endsWith('.template'))
     .map((e) => e.name)
     .sort();
-  const optional = fs.existsSync(OPTIONAL_SKILLS_DIR)
-    ? fs.readdirSync(OPTIONAL_SKILLS_DIR, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)
-    : [];
-
   for (const f of files) {
     const content = fs.readFileSync(path.join(templatesDir, f), 'utf-8');
     const rel = `src/templates/${f}`;
     for (const m of content.matchAll(/vskill install anton-abyzov\/specweave\/([^\s`)'"]+)/g)) {
       const ref = m[1];
       if (/^<[^>]+>$/.test(ref)) continue; // placeholder
-      if (ref.startsWith('skills-optional/')) {
-        const name = ref.slice('skills-optional/'.length);
-        if (!/^<[^>]+>$/.test(name) && !optional.includes(name)) {
-          errors.push(`${rel}: install ref "${ref}" is not a folder under skills-optional/`);
-        }
-        continue;
-      }
       if (ref.includes('/')) {
         errors.push(`${rel}: install ref "${ref}" must be \`anton-abyzov/specweave/<skill-dir>\` (no extra path segment)`);
         continue;

@@ -1,6 +1,7 @@
 /**
- * Project skills: the 11 SpecWeave skills installed into a project, namespaced
- * as `sw-<name>`, in both places AI tools look for them:
+ * Project skills: the SpecWeave skills a project has turned on (the core ones
+ * plus any enabled or detected optional ones, see ./catalog.ts), namespaced as
+ * `sw-<name>`, in both places AI tools look for them:
  *
  *   .claude/skills/sw-<name>/   Claude Code, including cloud sessions where
  *                               plugins do not load
@@ -13,9 +14,10 @@
  * frontmatter `name:` (tools that require it get `sw-<name>`) and the removal
  * of the "generated" marker line.
  *
- * `removeLegacySkillCopies` deletes the unnamespaced copies (`do`, `review`,
- * ...) that SpecWeave 2.x put into those folders, only when their content
- * identifies them as SpecWeave's own.
+ * `installProjectSkills` also removes the copies of optional skills that are now
+ * off. `removeLegacySkillCopies` deletes the unnamespaced copies (`do`, `review`,
+ * ...) that SpecWeave 2.x put into those folders and the retired `sw-<name>`
+ * folders, only when their content identifies them as SpecWeave's own.
  *
  * @module core/skills/project-skills
  */
@@ -23,12 +25,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-
-/** The skills SpecWeave ships (the same list as scripts/build/generate-skills.mjs). */
-export const SPECWEAVE_SKILLS = [
-  'increment', 'do', 'auto', 'team', 'review', 'done',
-  'sync', 'handoff', 'project', 'brainstorm', 'jev',
-] as const;
+import { createHash } from 'crypto';
+import { LEGACY_SKILL_HASHES } from './legacy-skill-hashes.js';
+import { readSkillCatalog, resolveSkills, type SkillCatalog, type SkillState } from './catalog.js';
 
 /** Where the project copies go, relative to the project root. */
 export const PROJECT_SKILL_DIRS = ['.claude/skills', '.agents/skills'] as const;
@@ -43,12 +42,15 @@ export const LEGACY_SKILL_NAMES = [
 ] as const;
 
 /**
- * Skills SpecWeave once installed as `sw-<name>` and no longer ships. Only these
- * names are candidates; any other `sw-*` folder belongs to the user.
- *   qa    2.x Codex adapter wrote every plugin skill as `.agents/skills/sw-<name>`; qa was dropped in 3.0
- *   task  standalone `skills/sw-task` (vskill-installable, 2.0.0 to 2.3.0), folded into sw-do in 3.0
+ * Skills SpecWeave once installed as `sw-<name>` and no longer ships; the same
+ * list as the catalog's `retired` (a test keeps them equal). Only these names are
+ * candidates; any other `sw-*` folder belongs to the user.
+ *   qa          2.x Codex adapter wrote every plugin skill as `.agents/skills/sw-<name>`; qa was dropped in 3.0
+ *   task        standalone `skills/sw-task` (vskill-installable, 2.0.0 to 2.3.0), folded into sw-do in 3.0
+ *   brainstorm  its Decide step became sw-increment's and sw-grill-me's (3.1)
+ *   team        folded into sw-do's "Parallel lanes" (3.1)
  */
-export const RETIRED_SKILL_NAMES = ['qa', 'task'] as const;
+export const RETIRED_SKILL_NAMES = ['qa', 'task', 'brainstorm', 'team'] as const;
 
 const GENERATED_MARKER = /^<!-- Generated from skills\/sw-[a-z-]+\/SKILL\.md[^\n]*-->\n/m;
 
@@ -64,6 +66,16 @@ export function toProjectSkill(pluginContent: string, name: string): string {
   if (!fm) return `---\nname: ${skillName}\n---\n${text}`;
   const body = fm[1].split('\n').filter((line) => !/^name\s*:/.test(line)).join('\n');
   return `---\nname: ${skillName}\n${body}\n---\n${text.slice(fm[0].length)}`;
+}
+
+/** The catalog shipped next to a plugin skills folder (`plugins/specweave/skills-catalog.json`). */
+export function catalogFor(sourceDir: string): SkillCatalog {
+  return readSkillCatalog(path.dirname(sourceDir));
+}
+
+/** Every catalog skill and whether this project has it on. */
+export function projectSkillStates(projectRoot: string, options: { sourceDir?: string } = {}): SkillState[] {
+  return resolveSkills(path.resolve(projectRoot), catalogFor(options.sourceDir ?? defaultPluginSkillsDir()));
 }
 
 /** The plugin skills folder shipped with this package (`plugins/specweave/skills`). */
@@ -125,35 +137,146 @@ export interface InstallProjectSkillsResult {
   unchanged: string[];
   /** Project-relative files removed from an `sw-<name>` folder because the skill no longer ships them. */
   removed: string[];
+  /** Skills installed (short names, catalog order). */
+  installed: string[];
+  /** Project-relative `sw-<name>` folders removed because that optional skill is now off. */
+  removedSkills: string[];
+  /** Folders of optional skills that are off but were left alone: changed by hand, or not SpecWeave's copy. */
+  keptSkills: string[];
 }
 
-/** Install the 11 skills as `sw-<name>` into `.claude/skills/` and `.agents/skills/`. */
+/** File SpecWeave writes into every `sw-<name>` folder it installs: the skill and each file's SHA-256. */
+export const INSTALL_MANIFEST = '.specweave-install.json';
+
+const sha256 = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
+
+/**
+ * Every entry under `dir` that is not a folder (posix-relative, sorted), never
+ * following a symlink. `regular` is false for symlinks, FIFOs, sockets and devices,
+ * which are never read.
+ */
+function listEntries(dir: string, prefix = ''): Array<{ rel: string; regular: boolean }> {
+  const out: Array<{ rel: string; regular: boolean }> = [];
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of entries) {
+    const rel = prefix ? `${prefix}/${e.name}` : e.name;
+    if (e.isDirectory()) out.push(...listEntries(path.join(dir, e.name), rel));
+    else out.push({ rel, regular: e.isFile() });
+  }
+  return out.sort((a, b) => a.rel.localeCompare(b.rel));
+}
+
+/**
+ * Who a `sw-<name>` folder belongs to.
+ *   absent    nothing there
+ *   pristine  SpecWeave's copy, unchanged: every file matches its install manifest,
+ *             or (3.0.x wrote no manifest) is a file some 3.0.x release installed
+ *   edited    SpecWeave's manifest is there but a file was changed, added or removed
+ *   foreign   anything else: the user's own skill, a vskill install, a symlink
+ */
+export type SkillFolderOwner = 'absent' | 'pristine' | 'edited' | 'foreign';
+
+export function skillFolderOwner(
+  dir: string,
+  name: string,
+  legacy: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = LEGACY_SKILL_HASHES,
+): SkillFolderOwner {
+  let stat: fs.Stats;
+  try {
+    stat = fs.lstatSync(dir);
+  } catch {
+    return 'absent';
+  }
+  if (!stat.isDirectory()) return 'foreign';
+  const entries = listEntries(dir);
+  const manifestFile = path.join(dir, INSTALL_MANIFEST);
+  let manifest: { skill?: unknown; files?: unknown } | undefined;
+  if (entries.some((e) => e.rel === INSTALL_MANIFEST && e.regular)) {
+    try {
+      manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+    } catch {
+      return 'foreign';
+    }
+    if (manifest?.skill !== name || !manifest.files || typeof manifest.files !== 'object') return 'foreign';
+  }
+  const files = entries.filter((e) => e.rel !== INSTALL_MANIFEST || !e.regular);
+  const special = files.some((e) => !e.regular);
+  if (manifest) {
+    const recorded = manifest.files as Record<string, unknown>;
+    const same =
+      !special &&
+      files.length === Object.keys(recorded).length &&
+      files.every((e) => recorded[e.rel] === sha256(fs.readFileSync(path.join(dir, e.rel))));
+    return same ? 'pristine' : 'edited';
+  }
+  const known = legacy[name];
+  if (!known || !files.length || special) return 'foreign';
+  const pristine = files.every((e) => (known[e.rel] ?? []).includes(sha256(fs.readFileSync(path.join(dir, e.rel)))));
+  return pristine ? 'pristine' : 'foreign';
+}
+
+/**
+ * Install the project's skills as `sw-<name>` into `.claude/skills/` and
+ * `.agents/skills/`: every core skill, plus each optional skill that
+ * `.specweave/config.json` enables or the project's files detect.
+ *
+ * Core folders are SpecWeave's and always rewritten. An optional skill is written
+ * only into an empty place or SpecWeave's unchanged copy, and an optional skill
+ * that is off is removed only when its folder is SpecWeave's unchanged copy;
+ * everything else is left alone and listed in `keptSkills`.
+ */
 export function installProjectSkills(
   projectRoot: string,
   options: InstallProjectSkillsOptions = {},
 ): InstallProjectSkillsResult {
   const root = path.resolve(projectRoot);
   const sourceDir = options.sourceDir ?? defaultPluginSkillsDir();
-  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [] };
+  const optionalDir = path.join(path.dirname(sourceDir), 'skills-optional');
+  const states = resolveSkills(root, catalogFor(sourceDir));
+  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [], installed: [], removedSkills: [], keptSkills: [] };
 
   // Plan everything before touching the disk.
   const plan: Array<{ rel: string; bytes: Buffer }> = [];
   const owned: string[] = [];
-  for (const name of SPECWEAVE_SKILLS) {
-    const src = path.join(sourceDir, name);
-    const files = listFiles(src);
-    if (!files.includes('SKILL.md')) throw new Error(`Skill source missing: ${path.join(src, 'SKILL.md')}`);
+  for (const state of states.filter((s) => s.on)) {
+    const name = state.name;
+    result.installed.push(name);
+    const files = shippedCopy(state.tier === 'core' ? sourceDir : optionalDir, name);
     for (const base of PROJECT_SKILL_DIRS) {
       const skillDir = path.posix.join(base, projectSkillName(name));
-      owned.push(skillDir);
-      for (const file of files) {
-        const raw = fs.readFileSync(path.join(src, file));
-        const bytes = file === 'SKILL.md' ? Buffer.from(toProjectSkill(raw.toString('utf8'), name), 'utf8') : raw;
-        plan.push({ rel: path.posix.join(skillDir, file.split(path.sep).join('/')), bytes });
+      if (state.tier === 'optional' && !hasSymlinkSegment(root, base)) {
+        const owner = skillFolderOwner(path.join(root, skillDir), name);
+        if (owner === 'edited' || owner === 'foreign') {
+          result.keptSkills.push(skillDir);
+          continue;
+        }
       }
+      owned.push(skillDir);
+      for (const [file, bytes] of files) plan.push({ rel: path.posix.join(skillDir, file), bytes });
     }
   }
   for (const { rel } of plan) assertNoSymlink(root, rel);
+
+  // Optional skills that are off: remove only SpecWeave's unchanged copy.
+  for (const state of states.filter((s) => !s.on)) {
+    for (const base of PROJECT_SKILL_DIRS) {
+      const rel = path.posix.join(base, projectSkillName(state.name));
+      if (hasSymlinkSegment(root, base)) continue;
+      const owner = skillFolderOwner(path.join(root, rel), state.name);
+      if (owner === 'absent') continue;
+      if (owner !== 'pristine') {
+        result.keptSkills.push(rel);
+        continue;
+      }
+      result.removedSkills.push(rel);
+      if (!options.dryRun) fs.rmSync(path.join(root, rel), { recursive: true, force: true });
+    }
+  }
 
   const planned = new Set(plan.map((p) => p.rel));
   for (const skillDir of owned) {
@@ -163,6 +286,10 @@ export function installProjectSkills(
       result.removed.push(rel);
       if (!options.dryRun) fs.rmSync(path.join(root, rel), { force: true });
     }
+  }
+  for (const { rel } of plan) {
+    const stat = fs.lstatSync(path.join(root, rel), { throwIfNoEntry: false });
+    if (stat && !stat.isFile()) throw new Error(`Refusing to write a skill file over something that is not a file: ${path.join(root, rel)}`);
   }
   for (const { rel, bytes } of plan) {
     const dest = path.join(root, rel);
@@ -179,14 +306,35 @@ export function installProjectSkills(
 }
 
 /**
+ * The files a skill installs (posix-relative path → bytes): its SKILL.md in project
+ * form, the rest as shipped, and the install manifest recording their hashes.
+ */
+function shippedCopy(skillsDir: string, name: string): Map<string, Buffer> {
+  const src = path.join(skillsDir, name);
+  const files = listFiles(src);
+  if (!files.includes('SKILL.md')) throw new Error(`Skill source missing: ${path.join(src, 'SKILL.md')}`);
+  const out = new Map<string, Buffer>();
+  for (const file of files) {
+    const raw = fs.readFileSync(path.join(src, file));
+    out.set(file.split(path.sep).join('/'), file === 'SKILL.md' ? Buffer.from(toProjectSkill(raw.toString('utf8'), name), 'utf8') : raw);
+  }
+  const hashes: Record<string, string> = {};
+  for (const [file, bytes] of [...out].sort(([a], [b]) => a.localeCompare(b))) hashes[file] = sha256(bytes);
+  out.set(INSTALL_MANIFEST, Buffer.from(JSON.stringify({ skill: name, files: hashes }, null, 2) + '\n', 'utf8'));
+  return out;
+}
+
+/**
  * True when a legacy skill folder is a copy SpecWeave installed: only SKILL.md
- * (plus team's old agents/*.md), and the SKILL.md drives the specweave CLI or
- * names a `sw:` skill. A user's own `review` skill is left alone.
+ * (plus team's old agents/*.md and brainstorm's references/credits.md), and the
+ * SKILL.md drives the specweave CLI or names a `sw:` skill. A user's own
+ * `review` skill is left alone.
  */
 export function isSpecweaveOwnedCopy(dir: string, name: string): boolean {
   const files = listFiles(dir).map((f) => f.split(path.sep).join('/'));
   if (!files.includes('SKILL.md')) return false;
-  const extraAllowed = (f: string) => name === 'team' && /^agents\/[\w-]+\.md$/.test(f);
+  const extraAllowed = (f: string) =>
+    (name === 'team' && /^agents\/[\w-]+\.md$/.test(f)) || (name === 'brainstorm' && f === 'references/credits.md');
   if (files.some((f) => f !== 'SKILL.md' && !extraAllowed(f))) return false;
   let content: string;
   try {
@@ -216,9 +364,15 @@ function hasSymlinkSegment(root: string, rel: string): boolean {
 /**
  * Remove SpecWeave's own stale skill copies from `.claude/skills/` and
  * `.agents/skills/`: the unnamespaced 2.x folders and the `sw-<name>` folders
- * of RETIRED_SKILL_NAMES. Skips a skills folder reached through a symlink.
+ * of RETIRED_SKILL_NAMES. A retired skill 3.0 shipped (team, brainstorm) is
+ * removed only when every file is one a 3.0.x release installed; 2.x leftovers
+ * (qa, task) are recognised by their content. Skips a symlinked skills folder.
  */
-export function removeLegacySkillCopies(projectRoot: string, options: { dryRun?: boolean } = {}): string[] {
+export function removeLegacySkillCopies(
+  projectRoot: string,
+  options: { dryRun?: boolean; legacyHashes?: typeof LEGACY_SKILL_HASHES } = {},
+): string[] {
+  const legacy = options.legacyHashes ?? LEGACY_SKILL_HASHES;
   const root = path.resolve(projectRoot);
   const removed: string[] = [];
   for (const base of PROJECT_SKILL_DIRS) {
@@ -237,7 +391,8 @@ export function removeLegacySkillCopies(projectRoot: string, options: { dryRun?:
       } catch {
         continue;
       }
-      if (!isSpecweaveOwnedCopy(dir, name)) continue;
+      const shippedIn3 = folder.startsWith('sw-') && legacy[name] !== undefined;
+      if (shippedIn3 ? skillFolderOwner(dir, name, legacy) !== 'pristine' : !isSpecweaveOwnedCopy(dir, name)) continue;
       removed.push(rel);
       if (!options.dryRun) fs.rmSync(dir, { recursive: true, force: true });
     }
