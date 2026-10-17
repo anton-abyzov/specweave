@@ -211,7 +211,7 @@ describe('refresh-plugins', () => {
 
     mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123def456' });
     mockInstallPlugin.mockReturnValue({ success: true, sha: 'abc123def456' });
-    mockInstallProjectSkills.mockReturnValue({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [] });
+    mockInstallProjectSkills.mockReturnValue({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [], installed: [], removedSkills: [] });
     mockRemoveLegacySkillCopies.mockReturnValue([]);
 
     // Default: cleanup returns no-op results
@@ -273,7 +273,7 @@ describe('refresh-plugins', () => {
     it('removes the old unnamespaced copies, then installs sw-* into the project root', async () => {
       const order: string[] = [];
       mockRemoveLegacySkillCopies.mockImplementation(() => { order.push('remove'); return []; });
-      mockInstallProjectSkills.mockImplementation(() => { order.push('install'); return { written: [], unchanged: [], removed: [] }; });
+      mockInstallProjectSkills.mockImplementation(() => { order.push('install'); return { written: [], unchanged: [], removed: [], installed: [], removedSkills: [] }; });
 
       await refreshPluginsCommand({});
 
@@ -397,7 +397,7 @@ describe('refresh-plugins', () => {
 
   describe('hash comparison and skip', () => {
     it('reports the core plugin as active when the sw-* skills are already current', async () => {
-      mockInstallProjectSkills.mockReturnValue({ written: [], unchanged: ['.claude/skills/sw-do/SKILL.md'], removed: [] });
+      mockInstallProjectSkills.mockReturnValue({ written: [], unchanged: ['.claude/skills/sw-do/SKILL.md'], removed: [], installed: [], removedSkills: [] });
       const consoleSpy = vi.spyOn(console, 'log');
 
       const result = await refreshPluginsCommand({ all: true });

@@ -1,6 +1,7 @@
 /**
- * Project skills: the 11 SpecWeave skills installed into a project, namespaced
- * as `sw-<name>`, in both places AI tools look for them:
+ * Project skills: the SpecWeave skills a project has turned on (the core ones
+ * plus any enabled or detected optional ones, see ./catalog.ts), namespaced as
+ * `sw-<name>`, in both places AI tools look for them:
  *
  *   .claude/skills/sw-<name>/   Claude Code, including cloud sessions where
  *                               plugins do not load
@@ -13,9 +14,10 @@
  * frontmatter `name:` (tools that require it get `sw-<name>`) and the removal
  * of the "generated" marker line.
  *
- * `removeLegacySkillCopies` deletes the unnamespaced copies (`do`, `review`,
- * ...) that SpecWeave 2.x put into those folders, only when their content
- * identifies them as SpecWeave's own.
+ * `installProjectSkills` also removes the copies of optional skills that are now
+ * off. `removeLegacySkillCopies` deletes the unnamespaced copies (`do`, `review`,
+ * ...) that SpecWeave 2.x put into those folders and the retired `sw-<name>`
+ * folders, only when their content identifies them as SpecWeave's own.
  *
  * @module core/skills/project-skills
  */
@@ -23,12 +25,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-
-/** The skills SpecWeave ships (the same list as scripts/build/generate-skills.mjs). */
-export const SPECWEAVE_SKILLS = [
-  'increment', 'do', 'auto', 'team', 'review', 'done',
-  'sync', 'handoff', 'project', 'brainstorm', 'jev',
-] as const;
+import { readSkillCatalog, resolveSkills, type SkillCatalog, type SkillState } from './catalog.js';
 
 /** Where the project copies go, relative to the project root. */
 export const PROJECT_SKILL_DIRS = ['.claude/skills', '.agents/skills'] as const;
@@ -43,12 +40,15 @@ export const LEGACY_SKILL_NAMES = [
 ] as const;
 
 /**
- * Skills SpecWeave once installed as `sw-<name>` and no longer ships. Only these
- * names are candidates; any other `sw-*` folder belongs to the user.
- *   qa    2.x Codex adapter wrote every plugin skill as `.agents/skills/sw-<name>`; qa was dropped in 3.0
- *   task  standalone `skills/sw-task` (vskill-installable, 2.0.0 to 2.3.0), folded into sw-do in 3.0
+ * Skills SpecWeave once installed as `sw-<name>` and no longer ships; the same
+ * list as the catalog's `retired` (a test keeps them equal). Only these names are
+ * candidates; any other `sw-*` folder belongs to the user.
+ *   qa          2.x Codex adapter wrote every plugin skill as `.agents/skills/sw-<name>`; qa was dropped in 3.0
+ *   task        standalone `skills/sw-task` (vskill-installable, 2.0.0 to 2.3.0), folded into sw-do in 3.0
+ *   brainstorm  its Decide step became sw-increment's and sw-grill-me's (3.1)
+ *   team        folded into sw-do's "Parallel lanes" (3.1)
  */
-export const RETIRED_SKILL_NAMES = ['qa', 'task'] as const;
+export const RETIRED_SKILL_NAMES = ['qa', 'task', 'brainstorm', 'team'] as const;
 
 const GENERATED_MARKER = /^<!-- Generated from skills\/sw-[a-z-]+\/SKILL\.md[^\n]*-->\n/m;
 
@@ -64,6 +64,16 @@ export function toProjectSkill(pluginContent: string, name: string): string {
   if (!fm) return `---\nname: ${skillName}\n---\n${text}`;
   const body = fm[1].split('\n').filter((line) => !/^name\s*:/.test(line)).join('\n');
   return `---\nname: ${skillName}\n${body}\n---\n${text.slice(fm[0].length)}`;
+}
+
+/** The catalog shipped next to a plugin skills folder (`plugins/specweave/skills-catalog.json`). */
+export function catalogFor(sourceDir: string): SkillCatalog {
+  return readSkillCatalog(path.dirname(sourceDir));
+}
+
+/** Every catalog skill and whether this project has it on. */
+export function projectSkillStates(projectRoot: string, options: { sourceDir?: string } = {}): SkillState[] {
+  return resolveSkills(path.resolve(projectRoot), catalogFor(options.sourceDir ?? defaultPluginSkillsDir()));
 }
 
 /** The plugin skills folder shipped with this package (`plugins/specweave/skills`). */
@@ -125,22 +135,35 @@ export interface InstallProjectSkillsResult {
   unchanged: string[];
   /** Project-relative files removed from an `sw-<name>` folder because the skill no longer ships them. */
   removed: string[];
+  /** Skills installed (short names, catalog order). */
+  installed: string[];
+  /** Project-relative `sw-<name>` folders removed because that optional skill is now off. */
+  removedSkills: string[];
 }
 
-/** Install the 11 skills as `sw-<name>` into `.claude/skills/` and `.agents/skills/`. */
+/**
+ * Install the project's skills as `sw-<name>` into `.claude/skills/` and
+ * `.agents/skills/`: every core skill, plus each optional skill that
+ * `.specweave/config.json` enables or the project's files detect. Copies of
+ * optional skills that are off are removed when SpecWeave installed them.
+ */
 export function installProjectSkills(
   projectRoot: string,
   options: InstallProjectSkillsOptions = {},
 ): InstallProjectSkillsResult {
   const root = path.resolve(projectRoot);
   const sourceDir = options.sourceDir ?? defaultPluginSkillsDir();
-  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [] };
+  const optionalDir = path.join(path.dirname(sourceDir), 'skills-optional');
+  const states = resolveSkills(root, catalogFor(sourceDir));
+  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [], installed: [], removedSkills: [] };
 
   // Plan everything before touching the disk.
   const plan: Array<{ rel: string; bytes: Buffer }> = [];
   const owned: string[] = [];
-  for (const name of SPECWEAVE_SKILLS) {
-    const src = path.join(sourceDir, name);
+  for (const state of states.filter((s) => s.on)) {
+    const name = state.name;
+    result.installed.push(name);
+    const src = path.join(state.tier === 'core' ? sourceDir : optionalDir, name);
     const files = listFiles(src);
     if (!files.includes('SKILL.md')) throw new Error(`Skill source missing: ${path.join(src, 'SKILL.md')}`);
     for (const base of PROJECT_SKILL_DIRS) {
@@ -154,6 +177,18 @@ export function installProjectSkills(
     }
   }
   for (const { rel } of plan) assertNoSymlink(root, rel);
+
+  // Optional skills that are off: remove SpecWeave's own copies, keep anything else.
+  for (const state of states.filter((s) => !s.on)) {
+    const shipped = listFiles(path.join(optionalDir, state.name)).map((f) => f.split(path.sep).join('/'));
+    for (const base of PROJECT_SKILL_DIRS) {
+      if (hasSymlinkSegment(root, base)) continue;
+      const rel = path.posix.join(base, projectSkillName(state.name));
+      if (!isInstalledCopy(path.join(root, rel), state.name, shipped)) continue;
+      result.removedSkills.push(rel);
+      if (!options.dryRun) fs.rmSync(path.join(root, rel), { recursive: true, force: true });
+    }
+  }
 
   const planned = new Set(plan.map((p) => p.rel));
   for (const skillDir of owned) {
@@ -179,14 +214,37 @@ export function installProjectSkills(
 }
 
 /**
+ * True when `dir` is a copy `installProjectSkills` wrote: a real folder holding
+ * only files the skill ships, whose SKILL.md starts with `name: sw-<name>`.
+ * A folder with any other file (a user's note, a vskill lock file) is kept.
+ */
+export function isInstalledCopy(dir: string, name: string, shippedFiles: string[]): boolean {
+  try {
+    if (!fs.lstatSync(dir).isDirectory()) return false;
+  } catch {
+    return false;
+  }
+  const files = listFiles(dir).map((f) => f.split(path.sep).join('/'));
+  const allowed = new Set(['SKILL.md', ...shippedFiles]);
+  if (!files.includes('SKILL.md') || files.some((f) => !allowed.has(f))) return false;
+  try {
+    return fs.readFileSync(path.join(dir, 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n').startsWith(`---\nname: ${projectSkillName(name)}\n`);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * True when a legacy skill folder is a copy SpecWeave installed: only SKILL.md
- * (plus team's old agents/*.md), and the SKILL.md drives the specweave CLI or
- * names a `sw:` skill. A user's own `review` skill is left alone.
+ * (plus team's old agents/*.md and brainstorm's references/credits.md), and the
+ * SKILL.md drives the specweave CLI or names a `sw:` skill. A user's own
+ * `review` skill is left alone.
  */
 export function isSpecweaveOwnedCopy(dir: string, name: string): boolean {
   const files = listFiles(dir).map((f) => f.split(path.sep).join('/'));
   if (!files.includes('SKILL.md')) return false;
-  const extraAllowed = (f: string) => name === 'team' && /^agents\/[\w-]+\.md$/.test(f);
+  const extraAllowed = (f: string) =>
+    (name === 'team' && /^agents\/[\w-]+\.md$/.test(f)) || (name === 'brainstorm' && f === 'references/credits.md');
   if (files.some((f) => f !== 'SKILL.md' && !extraAllowed(f))) return false;
   let content: string;
   try {

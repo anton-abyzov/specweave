@@ -347,7 +347,7 @@ export async function createIncrementTemplates(
           `Start working: sw:auto ${incrementId}`,
         ]
       : [
-          `Decide: ask the user only their critical decisions, one at a time with a recommended answer; record them under ## Decisions (sw-brainstorm)`,
+          `Decide: ask the user only their critical decisions, one at a time with a recommended answer; record them under ## Decisions (sw-increment; sw-grill-me for a full interview)`,
           `Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …), Approach and Tasks (### T-01 … + "- AC: … | Files: … | Test: …")`,
           ...(planned ? [`Start it: specweave start ${incrementId}`] : []),
           `Work it: specweave task next → task claim T-01 → task done T-01 --run "<test>"`,

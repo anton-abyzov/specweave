@@ -89,7 +89,7 @@ describe('stop (auto loop driver)', () => {
     const res = await stop();
     expect(res.decision).toBe('block');
     expect(res.reason).toContain('all_complete_needs_closure');
-    expect(res.reason).toContain('sw:done --auto 0001-demo');
+    expect(res.reason).toContain('run sw-done 0001-demo');
     expect(fs.existsSync(stateFile(repo, '.stop-auto-turns'))).toBe(false);
   });
 

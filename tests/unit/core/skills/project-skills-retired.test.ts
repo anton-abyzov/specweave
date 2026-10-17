@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { installProjectSkills, removeLegacySkillCopies } from '../../../../src/core/skills/project-skills.js';
+import { installProjectSkills, removeLegacySkillCopies, RETIRED_SKILL_NAMES } from '../../../../src/core/skills/project-skills.js';
 
 let root: string;
 
@@ -51,17 +51,30 @@ describe('retired sw-* project skills (0894)', () => {
     expect(removeLegacySkillCopies(root, { dryRun: true })).toEqual(['.agents/skills/sw-qa']);
     expect(exists('.agents/skills/sw-qa')).toBe(true);
     expect(exists('.agents/skills/sw-do/SKILL.md')).toBe(true);
-    expect(exists('.claude/skills/sw-team/SKILL.md')).toBe(true);
+    expect(exists('.claude/skills/sw-review/SKILL.md')).toBe(true);
   });
 
-  it('drops files a shipped skill no longer has, such as sw-team/agents/', () => {
+  it('drops files a shipped skill no longer has', () => {
     installProjectSkills(root);
-    write('.agents/skills/sw-team/agents/old-worker.md', 'old');
+    write('.agents/skills/sw-do/agents/old-worker.md', 'old');
 
     const res = installProjectSkills(root);
 
-    expect(res.removed).toContain('.agents/skills/sw-team/agents/old-worker.md');
-    expect(exists('.agents/skills/sw-team/agents/old-worker.md')).toBe(false);
+    expect(res.removed).toContain('.agents/skills/sw-do/agents/old-worker.md');
+    expect(exists('.agents/skills/sw-do/agents/old-worker.md')).toBe(false);
+  });
+
+  it('removes the sw-team and sw-brainstorm copies 3.0 installed (3.1 folded them into sw-do and sw-grill-me)', () => {
+    write('.claude/skills/sw-team/SKILL.md', '---\nname: sw-team\n---\nSplit lanes, then `specweave task release --all-mine`.\n');
+    write('.claude/skills/sw-team/agents/backend.md', 'lane brief');
+    write('.agents/skills/sw-brainstorm/SKILL.md', '---\nname: sw-brainstorm\n---\nRecord decisions, then sw:increment.\n');
+    write('.agents/skills/sw-brainstorm/references/credits.md', 'credits');
+    expect(removeLegacySkillCopies(root).sort()).toEqual(['.agents/skills/sw-brainstorm', '.claude/skills/sw-team']);
+  });
+
+  it('the retired list matches skills/catalog.json', () => {
+    const catalog = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'skills', 'catalog.json'), 'utf-8')) as { retired: string[] };
+    expect([...RETIRED_SKILL_NAMES].sort()).toEqual([...catalog.retired].sort());
   });
 
   it('removes sw-task, the standalone skill SpecWeave 2.x shipped and 3.x retired', () => {

@@ -87,12 +87,13 @@ export function detectTemplateFlags(projectPath: string): Record<string, boolean
   }
   const jev = config?.jev?.enabled === true;
   const hub = fs.existsSync(path.join(projectPath, '.specweave', 'project', 'hub.json'));
+  const glossary = ['GLOSSARY.md', 'GLOSSARY-MAP.md'].some((f) => fs.existsSync(path.join(projectPath, f)));
   const repos = (config?.workspace as { repos?: unknown } | undefined)?.repos;
-  if (Array.isArray(repos)) return { umbrella: repos.length > 0, jev, hub };
+  if (Array.isArray(repos)) return { umbrella: repos.length > 0, jev, hub, glossary };
   try {
-    return { umbrella: scanWorkspaceRepos(projectPath) !== null, jev, hub };
+    return { umbrella: scanWorkspaceRepos(projectPath) !== null, jev, hub, glossary };
   } catch {
-    return { umbrella: false, jev, hub };
+    return { umbrella: false, jev, hub, glossary };
   }
 }
 

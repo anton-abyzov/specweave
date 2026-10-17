@@ -46,7 +46,7 @@ function installCoreProjectSkills(projectRoot: string): { success: boolean; sha:
   try {
     const removed = removeLegacySkillCopies(projectRoot);
     const skills = installProjectSkills(projectRoot);
-    const changed = removed.length + skills.written.length + skills.removed.length;
+    const changed = removed.length + skills.written.length + skills.removed.length + skills.removedSkills.length;
     return { success: true, sha: '', skipped: changed === 0 };
   } catch (err) {
     return { success: false, sha: '', error: err instanceof Error ? err.message : String(err) };

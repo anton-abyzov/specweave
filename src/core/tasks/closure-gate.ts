@@ -4,7 +4,8 @@
  * The ONLY blocking check: `reports/verify.json` must exist with `ok: true`,
  * unless the caller supplies `--reason` (stored as metadata.closeReason).
  * Grill / code-review / judge-llm / rubric reports are optional evidence and
- * never block. A missing `reports/review.md` produces a one-line notice.
+ * never block. A missing review, or a `fix first` verdict in the newest one,
+ * produces a one-line notice.
  *
  * @module core/tasks/closure-gate
  */
@@ -13,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { readVerifyReport, describeUncheckedAcs } from './verify-runner.js';
 import { loadTaskBoard } from './task-board.js';
+import { parseVerdict } from '../review/reviewer.js';
 
 export interface ClosureGateResult {
   ok: boolean;
@@ -73,9 +75,38 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     // tasks.md unreadable → nothing to add
   }
 
-  if (!fs.existsSync(path.join(incrementDir, 'reports', 'review.md'))) {
-    notices.push('no reports/review.md — consider running sw:review before shipping user-facing work');
-  }
+  notices.push(...reviewNotices(incrementDir));
 
   return { ok: errors.length === 0, errors, notices, info };
+}
+
+/**
+ * Review notices: none on file, a `fix first` verdict in the newest
+ * `reports/review*.md`, or no cross-model review while `review.crossModel` is on.
+ */
+function reviewNotices(incrementDir: string): string[] {
+  const reportsDir = path.join(incrementDir, 'reports');
+  const reviews = fs.existsSync(reportsDir)
+    ? fs.readdirSync(reportsDir)
+        .filter((f) => /^review(-[A-Za-z0-9._-]+)?\.md$/.test(f))
+        .map((f) => ({ f, mtime: fs.statSync(path.join(reportsDir, f)).mtimeMs }))
+        .sort((a, b) => b.mtime - a.mtime)
+    : [];
+  if (!reviews.length) return ['no reports/review.md or review-<reviewer>.md — run sw-review (or `specweave review` for another model) before shipping user-facing work'];
+  const notices: string[] = [];
+  const newest = fs.readFileSync(path.join(reportsDir, reviews[0].f), 'utf8');
+  if (parseVerdict(newest) === 'fix first') notices.push(`reports/${reviews[0].f} says fix first — fix its critical and high findings and review again`);
+  if (crossModelRequired(incrementDir) && !reviews.some((r) => r.f.startsWith('review-'))) {
+    notices.push('review.crossModel is on but no cross-model review is on file — run `specweave review`');
+  }
+  return notices;
+}
+
+function crossModelRequired(incrementDir: string): boolean {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.resolve(incrementDir, '..', '..', 'config.json'), 'utf-8')) as { review?: { crossModel?: unknown } };
+    return cfg.review?.crossModel === true;
+  } catch {
+    return false;
+  }
 }
