@@ -33,8 +33,14 @@ export interface Tutorial {
   /** True when captions are burned into the picture; the VTT then serves search and transcripts only. */
   captionsBurnedIn?: boolean;
   audio: 'silent' | 'narrated' | null;
-  /** ISO date (YYYY-MM-DD) the video was published. */
+  /** ISO date (YYYY-MM-DD) shown with the video. */
   uploadDate: string | null;
+  /**
+   * When spec-weave.com first served this video: the completion time of the
+   * first successful deploy-docs run containing the commit that added it.
+   * Search engines need a time and zone, not just a day.
+   */
+  publishedAt: string | null;
   /** Site path of the written guide that goes with the video. */
   guide: string | null;
   chapters: TutorialChapter[];
@@ -98,7 +104,7 @@ export function tutorialUrl(origin: string, slug: string, start?: number): strin
 /** schema.org VideoObject list for every published tutorial. */
 export function buildVideoJsonLd(tutorials: readonly Tutorial[], origin: string) {
   const videos = tutorials
-    .filter(t => t.status === 'published' && t.src && t.poster && t.durationSeconds && t.uploadDate)
+    .filter(t => t.status === 'published' && t.src && t.poster && t.durationSeconds && t.publishedAt)
     .map(t => {
       const duration = t.durationSeconds as number;
       return {
@@ -107,7 +113,7 @@ export function buildVideoJsonLd(tutorials: readonly Tutorial[], origin: string)
         name: t.title,
         description: t.summary,
         thumbnailUrl: [`${origin}${t.poster}`],
-        uploadDate: t.uploadDate,
+        uploadDate: t.publishedAt,
         duration: isoDuration(duration),
         contentUrl: `${origin}${t.src}`,
         embedUrl: tutorialUrl(origin, t.slug),

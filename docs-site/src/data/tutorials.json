@@ -16,6 +16,7 @@
       "captionsBurnedIn": false,
       "audio": "narrated",
       "uploadDate": "2026-10-13",
+      "publishedAt": "2026-10-12T22:46:23Z",
       "guide": "/docs/studio/projects",
       "chapters": [
         {"start": 0, "title": "More AI than you can use"},
@@ -47,6 +48,7 @@
       "captionsOn": true,
       "audio": "silent",
       "uploadDate": "2026-10-10",
+      "publishedAt": "2026-10-10T05:08:31Z",
       "guide": "/code/",
       "chapters": [
         {"start": 0, "title": "Every agent, one workspace"},
@@ -72,6 +74,7 @@
       "captionsVtt": "/video/studio-projects/projects-and-threads.vtt",
       "audio": "silent",
       "uploadDate": "2026-10-09",
+      "publishedAt": "2026-10-10T22:59:42Z",
       "guide": "/docs/studio/projects",
       "chapters": [
         {"start": 0, "title": "What this run verifies"},
@@ -97,6 +100,7 @@
       "captionsVtt": "/video/studio-projects/memory-and-usage.vtt",
       "audio": "silent",
       "uploadDate": "2026-10-09",
+      "publishedAt": "2026-10-10T22:59:42Z",
       "guide": "/docs/studio/memory-and-usage",
       "chapters": [
         {"start": 0, "title": "Goal, instructions and facts"},
@@ -120,6 +124,7 @@
       "captionsVtt": "/video/studio-projects/plans-and-routines.vtt",
       "audio": "silent",
       "uploadDate": "2026-10-09",
+      "publishedAt": "2026-10-10T22:59:42Z",
       "guide": "/docs/studio/plans-and-routines",
       "chapters": [
         {"start": 0, "title": "Add a plan"},
@@ -145,6 +150,7 @@
       "captionsVtt": "/video/studio-projects/personal-and-connections.vtt",
       "audio": "silent",
       "uploadDate": "2026-10-09",
+      "publishedAt": "2026-10-10T22:59:42Z",
       "guide": "/docs/studio/projects",
       "chapters": [
         {"start": 0, "title": "A Personal project"},
@@ -169,6 +175,7 @@
       "captionsVtt": "/img/studio/agent-driven-demo.vtt",
       "audio": "silent",
       "uploadDate": "2026-10-08",
+      "publishedAt": "2026-10-11T04:43:11Z",
       "guide": "/docs/overview/studio-architecture",
       "chapters": [
         {"start": 0, "title": "Ask the agent for the result"},
@@ -194,6 +201,7 @@
       "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
+      "publishedAt": "2026-10-11T15:01:16Z",
       "guide": null,
       "chapters": [
         {"start": 0, "title": "Intro"},
@@ -221,6 +229,7 @@
       "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
+      "publishedAt": "2026-10-11T15:01:16Z",
       "guide": null,
       "chapters": [
         {"start": 0, "title": "Intro"},
@@ -248,6 +257,7 @@
       "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
+      "publishedAt": "2026-10-11T15:01:16Z",
       "guide": null,
       "chapters": [
         {"start": 0, "title": "Intro"},
@@ -275,6 +285,7 @@
       "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
+      "publishedAt": "2026-10-12T02:34:23Z",
       "guide": null,
       "chapters": [
         {"start": 0, "title": "Intro"},
@@ -302,6 +313,7 @@
       "captionsBurnedIn": true,
       "audio": "narrated",
       "uploadDate": "2026-10-11",
+      "publishedAt": "2026-10-11T15:01:16Z",
       "guide": null,
       "chapters": [
         {"start": 0, "title": "Intro"},
@@ -328,6 +340,7 @@
       "captionsVtt": null,
       "audio": null,
       "uploadDate": null,
+      "publishedAt": null,
       "guide": null,
       "chapters": [],
       "outline": ["Set up", "One real task", "The result"]
