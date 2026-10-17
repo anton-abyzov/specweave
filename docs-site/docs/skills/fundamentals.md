@@ -344,13 +344,13 @@ SpecWeave is delivered as Claude Code plugins through two marketplaces. Here's w
 
 ### The Marketplaces
 
-**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin**, `sw`, with the SpecWeave 3.0 skill set:
+**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin**, `sw`, with the six core SpecWeave skills:
 
 | Plugin | Skills | Domain |
 |--------|--------|--------|
-| `sw` (unified) | increment, do, auto, team, review, done, sync, handoff, project, brainstorm, jev | Increment lifecycle, parallel agents, review, cross-tool handoff, GitHub/Jira/Azure DevOps sync |
+| `sw` (unified) | increment, do, auto, done, review, handoff | Planning, task-by-task work (alone, unattended or in parallel lanes), review, closing, cross-tool handoff |
 
-The same skills are also generated as project skills (`sw-do`, `sw-review` and so on) in `.claude/skills/` and `.agents/skills/`, so cloud sessions and Codex get them without the plugin.
+The same skills are also generated as project skills (`sw-do`, `sw-review` and so on) in `.claude/skills/` and `.agents/skills/`, so cloud sessions and Codex get them without the plugin. Five optional skills (grill-me, glossary, sync, project, jev) are not in the plugin: a project turns them on with `specweave skills enable`, or when it detects their trigger, and gets them only as project skills (`/sw-grill-me`).
 
 **vskill marketplace** (`anton-abyzov/vskill`) provides **5 additional domain plugins**:
 
@@ -435,7 +435,7 @@ This loads "skill memories" — corrections you've made that persist across sess
 4. **Commands = old name for skills** -- `.claude/commands/` still works, but skills are the current standard
 5. **Namespacing prevents conflicts** -- plugin skills become `/plugin:skill`
 6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or the skill name in other AI tools (`$sw-&lt;name&gt;` in Codex)
-7. **Real scale** -- SpecWeave ships 11 skills in 1 unified plugin, plus 5 domain plugins via vskill and 100,000+ community skills
+7. **Real scale** -- SpecWeave ships 6 core skills in 1 unified plugin and 5 optional project skills, plus 5 domain plugins via vskill and 100,000+ community skills
 
 ---
 

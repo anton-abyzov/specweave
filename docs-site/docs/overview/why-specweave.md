@@ -1,18 +1,24 @@
 ---
 title: Why SpecWeave
 description: Why AI-assisted work needs a written definition of done, recorded evidence and a portable handoff, and when SpecWeave is more than you need.
-keywords: [specweave, why, vibe coding, spec-driven development, switch ai coding tools, out of tokens]
+keywords: [specweave, why, intent-first development, vibe coding, switch ai coding tools, out of tokens]
 ---
 
 # Why SpecWeave
 
 Generating code was never the hard part. The hard parts come after the chat ends: knowing what "done" meant, proving it, and carrying on when the session, the tool or the subscription runs out.
 
+## Intent-first development
+
+SpecWeave's method is intent-first development: settle what you want, and how a machine will check it, before any code is written. The agent reads the code first and answers every question of fact itself. It asks you only the decisions that are yours, each with a recommended answer, and records them under `## Decisions` in `spec.md`. Then it writes acceptance criteria and gives each task a test command. Code comes after that, and a task counts as done only when its test passes.
+
+Two optional skills sharpen the intent. sw-grill-me interviews you in rounds when the shape of the work is unclear. sw-glossary keeps one word for one thing in `GLOSSARY.md`, so an Order is an Order in the conversation, the database, the code and the UI.
+
 ## Three failures SpecWeave is built for
 
 **Done is whatever the agent says.** Without written acceptance criteria, an agent reports success when the code compiles and its own reading of the request is satisfied. SpecWeave asks for the criteria first, attaches each task to them, and only records a task as done when its test command actually exits 0.
 
-**Decisions evaporate.** Why JWT and not sessions? What did we try that failed? In a chat transcript, nobody will find it. In SpecWeave it is in the spec's Approach, in a ledger note, or in a one-fact file under `.specweave/memory/`, all committed with the code.
+**Decisions evaporate.** Why JWT and not sessions? What did we try that failed? In a chat transcript, nobody will find it. In SpecWeave it is in the spec's Decisions or Approach, in a ledger note, or in a one-fact file under `.specweave/memory/`, all committed with the code.
 
 **Work is stuck in one tool.** Every coding tool keeps its session private. When you hit a usage limit halfway through a feature, or want a second model's opinion, the next tool starts cold. SpecWeave keeps the state in git and gives you one command to hand off and one to pick up, so Codex can continue what Claude Code started, or a second Claude subscription can continue the first.
 
@@ -26,11 +32,13 @@ flowchart LR
   spec --> review{You read it:<br/>is this what done means?}
   review -->|no| spec
   review -->|yes| work[Agent works the tasks<br/>with recorded evidence]
-  work --> verify[verify and review<br/>in a fresh session]
+  work --> verify[verify and review<br/>in a fresh session<br/>or another model]
   verify --> ship[complete]
 ```
 
 This is the same idea as Research, Plan, Implement, described by Dex Horthy in ["No Vibes Allowed"](https://www.youtube.com/watch?v=rmvDxxNubIg): put human attention on the plan, where a correction costs least.
+
+At the other end, the reviewer should not share the author's blind spots. `specweave review` reads from the ledger which model family wrote the code and hands the diff to another one: Codex reviews what Claude wrote, and Claude Opus reviews what OpenAI models wrote.
 
 ## Why files and not a service
 

@@ -279,7 +279,8 @@ kind, provider, model, token counts, cost and latency. `specweave jev usage` tot
 
 ## Related
 
-- The `sw:jev` plugin skill and the portable `sw-jev` skill ship the same guidance to
-  agents; install the portable one with `npx vskill install anton-abyzov/specweave/sw-jev`.
+- The optional `sw-jev` skill ships the same guidance to agents. A project with
+  `jev.enabled` gets it (or run `specweave skills enable jev`); any other tool can
+  install it with `npx vskill install anton-abyzov/specweave/sw-jev`.
 - TypeSafe's own docs index: [docs.typesafe.ai/llms.txt](https://docs.typesafe.ai/llms.txt)
   (append `.md` to any docs path for Markdown).

@@ -49,7 +49,7 @@ Routines store reusable instructions and a requested cadence. **They are not act
 
 ## Codex setup and migration
 
-For an existing project configured for Codex, run `specweave refresh-plugins`. Native core skills use flat names such as `.agents/skills/sw-project/SKILL.md` and `$sw-project`. Companion scripts and templates are installed too. Installation verifies the actual destination; a global package hash is not evidence that this project has the files.
+For an existing project configured for Codex, run `specweave refresh-plugins`. Native skills use flat names such as `.agents/skills/sw-project/SKILL.md` and `$sw-project`; `sw-project` is optional, and a project with `.specweave/project/hub.json` gets it. Companion scripts and templates are installed too. Installation verifies the actual destination; a global package hash is not evidence that this project has the files.
 
 Existing `.codex/skills` and unnamespaced custom skills remain untouched. Before replacing a changed namespaced skill, the installer preserves its previous directory under `.specweave/state/skill-backups/` and prints the backup path. Review legacy duplicates yourself. Init preserves an existing `$sw-project` skill; refresh is the explicit upgrade operation.
 
