@@ -139,6 +139,8 @@ export interface InstallProjectSkillsResult {
   installed: string[];
   /** Project-relative `sw-<name>` folders removed because that optional skill is now off. */
   removedSkills: string[];
+  /** Folders of optional skills that are off but were left alone: changed by hand, or not SpecWeave's copy. */
+  keptSkills: string[];
 }
 
 /**
@@ -155,7 +157,7 @@ export function installProjectSkills(
   const sourceDir = options.sourceDir ?? defaultPluginSkillsDir();
   const optionalDir = path.join(path.dirname(sourceDir), 'skills-optional');
   const states = resolveSkills(root, catalogFor(sourceDir));
-  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [], installed: [], removedSkills: [] };
+  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [], installed: [], removedSkills: [], keptSkills: [] };
 
   // Plan everything before touching the disk.
   const plan: Array<{ rel: string; bytes: Buffer }> = [];
@@ -163,28 +165,26 @@ export function installProjectSkills(
   for (const state of states.filter((s) => s.on)) {
     const name = state.name;
     result.installed.push(name);
-    const src = path.join(state.tier === 'core' ? sourceDir : optionalDir, name);
-    const files = listFiles(src);
-    if (!files.includes('SKILL.md')) throw new Error(`Skill source missing: ${path.join(src, 'SKILL.md')}`);
+    const files = shippedCopy(state.tier === 'core' ? sourceDir : optionalDir, name);
     for (const base of PROJECT_SKILL_DIRS) {
       const skillDir = path.posix.join(base, projectSkillName(name));
       owned.push(skillDir);
-      for (const file of files) {
-        const raw = fs.readFileSync(path.join(src, file));
-        const bytes = file === 'SKILL.md' ? Buffer.from(toProjectSkill(raw.toString('utf8'), name), 'utf8') : raw;
-        plan.push({ rel: path.posix.join(skillDir, file.split(path.sep).join('/')), bytes });
-      }
+      for (const [file, bytes] of files) plan.push({ rel: path.posix.join(skillDir, file), bytes });
     }
   }
   for (const { rel } of plan) assertNoSymlink(root, rel);
 
-  // Optional skills that are off: remove SpecWeave's own copies, keep anything else.
+  // Optional skills that are off: remove a folder only when it is exactly the copy
+  // this version installs; anything changed by hand, or not ours, is kept.
   for (const state of states.filter((s) => !s.on)) {
-    const shipped = listFiles(path.join(optionalDir, state.name)).map((f) => f.split(path.sep).join('/'));
+    const shipped = shippedCopy(optionalDir, state.name);
     for (const base of PROJECT_SKILL_DIRS) {
-      if (hasSymlinkSegment(root, base)) continue;
       const rel = path.posix.join(base, projectSkillName(state.name));
-      if (!isInstalledCopy(path.join(root, rel), state.name, shipped)) continue;
+      if (hasSymlinkSegment(root, rel) || !fs.existsSync(path.join(root, rel))) continue;
+      if (!isInstalledCopy(path.join(root, rel), shipped)) {
+        result.keptSkills.push(rel);
+        continue;
+      }
       result.removedSkills.push(rel);
       if (!options.dryRun) fs.rmSync(path.join(root, rel), { recursive: true, force: true });
     }
@@ -213,22 +213,37 @@ export function installProjectSkills(
   return result;
 }
 
+/** The files a skill installs (posix-relative path → bytes), its SKILL.md in project form. */
+function shippedCopy(skillsDir: string, name: string): Map<string, Buffer> {
+  const src = path.join(skillsDir, name);
+  const files = listFiles(src);
+  if (!files.includes('SKILL.md')) throw new Error(`Skill source missing: ${path.join(src, 'SKILL.md')}`);
+  const out = new Map<string, Buffer>();
+  for (const file of files) {
+    const raw = fs.readFileSync(path.join(src, file));
+    out.set(file.split(path.sep).join('/'), file === 'SKILL.md' ? Buffer.from(toProjectSkill(raw.toString('utf8'), name), 'utf8') : raw);
+  }
+  return out;
+}
+
 /**
- * True when `dir` is a copy `installProjectSkills` wrote: a real folder holding
- * only files the skill ships, whose SKILL.md starts with `name: sw-<name>`.
- * A folder with any other file (a user's note, a vskill lock file) is kept.
+ * True when `dir` is byte for byte the copy `installProjectSkills` writes: a real
+ * folder with exactly the shipped files and contents. A user's own skill of the
+ * same name, an edited copy or one with an extra file (a note, a vskill lock) is not.
  */
-export function isInstalledCopy(dir: string, name: string, shippedFiles: string[]): boolean {
+export function isInstalledCopy(dir: string, shipped: Map<string, Buffer>): boolean {
   try {
     if (!fs.lstatSync(dir).isDirectory()) return false;
   } catch {
     return false;
   }
   const files = listFiles(dir).map((f) => f.split(path.sep).join('/'));
-  const allowed = new Set(['SKILL.md', ...shippedFiles]);
-  if (!files.includes('SKILL.md') || files.some((f) => !allowed.has(f))) return false;
+  if (files.length !== shipped.size) return false;
   try {
-    return fs.readFileSync(path.join(dir, 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n').startsWith(`---\nname: ${projectSkillName(name)}\n`);
+    return files.every((f) => {
+      const expected = shipped.get(f);
+      return expected !== undefined && !fs.lstatSync(path.join(dir, f)).isSymbolicLink() && fs.readFileSync(path.join(dir, f)).equals(expected);
+    });
   } catch {
     return false;
   }

@@ -271,6 +271,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       if (skills.removedSkills.length > 0) {
         console.log(chalk.green(`  ✓ ${verb ? 'Would remove' : 'Removed'} optional skills that are off: ${skills.removedSkills.join(', ')} (\`specweave skills enable <name>\` keeps one)`));
       }
+      if (skills.keptSkills.length > 0) {
+        console.log(chalk.gray(`  Kept ${skills.keptSkills.join(', ')}: the skill is off, but the folder was changed or is not SpecWeave's copy`));
+      }
     } catch (error) {
       result.warnings.push(`Skill install failed: ${error}`);
     }

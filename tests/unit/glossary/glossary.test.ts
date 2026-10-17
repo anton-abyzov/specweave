@@ -112,6 +112,50 @@ describe('checkGlossary', () => {
     expect(missing).toEqual(['Customer Customer']);
   });
 
+  it('catches lowercase identifiers the code declares or uses, not prose or comments', () => {
+    write('src/checkout.ts', [
+      'const purchase = 1;',
+      'function basket() {}',
+      'cart.purchase(2);',
+      '// purchase history is fine here',
+      'const label = "a purchase";',
+    ].join('\n') + '\n');
+    git('add', '-A');
+    const hits = checkGlossary(root).findings
+      .filter((f) => f.kind === 'avoided-word' && f.file === 'src/checkout.ts')
+      .map((f) => `${f.line} ${f.identifier}`);
+    expect(hits).toEqual(['1 purchase', '2 basket', '3 purchase']);
+  });
+
+  it('checks route pointers against the code, and paths only inside the project', () => {
+    const outside = `../${path.basename(root)}-outside.md`;
+    write('GLOSSARY.md', `### Order\n- Code: \`POST /orders\`, \`GET /orders/:id\`, \`DELETE /refunds\`, \`${outside}\`\n`);
+    write(outside, 'outside');
+    try {
+      write('src/routes.ts', "router.post('/orders', create);\n");
+      git('add', '-A');
+      const missing = checkGlossary(root).findings.filter((f) => f.kind === 'missing-pointer').map((f) => f.pointer);
+      expect(missing).toEqual(['DELETE /refunds', outside]);
+    } finally {
+      fs.rmSync(path.join(root, outside), { force: true });
+    }
+  });
+
+  it.skipIf(process.platform === 'win32')('never reads a glossary that a symlink or map link places outside the project', () => {
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-glossary-outside-'));
+    try {
+      fs.writeFileSync(path.join(outside, 'GLOSSARY.md'), '### Secret\n');
+      fs.symlinkSync(outside, path.join(root, 'linked'), 'dir');
+      write('GLOSSARY-MAP.md', '- [Linked](linked/GLOSSARY.md)\n');
+      expect(findGlossaryFiles(root)).toEqual(['GLOSSARY.md']);
+      fs.rmSync(path.join(root, 'GLOSSARY.md'));
+      fs.symlinkSync(path.join(outside, 'GLOSSARY.md'), path.join(root, 'GLOSSARY.md'));
+      expect(findGlossaryFiles(root)).toEqual([]);
+    } finally {
+      fs.rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
   it('reports an avoid word that is another term', () => {
     write('GLOSSARY.md', '### Order\n- Avoid: customer\n\n### Customer\n');
     git('add', '-A');

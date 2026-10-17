@@ -106,4 +106,4 @@ Files that change and in what order, decisions, rejected alternatives, risks.
 ## Then
 
 Show the ACs and tasks. Unless the user asked to review the plan first, carry on with
-sw-do (one agent) or sw-team (three or more disjoint lanes).
+sw-do (one agent, or parallel lanes for three or more disjoint groups of tasks).

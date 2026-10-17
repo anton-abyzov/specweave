@@ -2,10 +2,12 @@
  * `specweave glossary check`: drift between GLOSSARY.md and the code.
  *
  * - avoided-word: a word a term lists under Avoid appears in an identifier in a
- *   tracked file (`PurchaseItem`, `purchase_id`, a `purchases` table). A bare
- *   lowercase word counts only in schema files, so prose and comments stay quiet.
- * - missing-pointer: a backticked path under Data or Code does not exist, or a
- *   backticked identifier is found nowhere in the tracked files.
+ *   tracked file (`PurchaseItem`, `purchase_id`, `const purchase =`, a `purchases`
+ *   table). A bare lowercase word counts in schema files and where code declares
+ *   or uses it (`const x`, `x(`, `x =`, `x:`, `.x`); comment lines are skipped, so
+ *   prose stays quiet.
+ * - missing-pointer: a backticked path under Data or Code is not in the project, a
+ *   route (`POST /orders`) or identifier is found nowhere in the tracked files.
  * - avoid-is-a-term: one term avoids a word another term is named after.
  *
  * Read-only and offline; it shells out to `git grep` only.
@@ -17,6 +19,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { findGlossaryFiles, readGlossary, type GlossaryTerm } from './parse.js';
+import { canonicalPath, isWithin } from '../workspace/context.js';
 
 export type GlossaryFindingKind = 'avoided-word' | 'missing-pointer' | 'avoid-is-a-term';
 
@@ -82,10 +85,19 @@ export function tokenUsesWord(token: string, word: string[]): boolean {
   return false;
 }
 
-/** An identifier, not prose: two or more segments, or capitalized, or in a schema file. */
-export function countsAsIdentifier(token: string, file: string): boolean {
+const DECLARATION = /\b(const|let|var|function|class|def|type|interface|enum|struct|fn|val|func|table|column)\s+$/i;
+const USE_AFTER = /^\s*(\(|=(?!=)|:(?!:)|\?:)/;
+const COMMENT_LINE = /^\s*(\/\/|\/\*|\*|#(?![\[!])|--|<!--)/;
+
+/**
+ * An identifier, not prose: two or more segments, capitalized, in a schema file,
+ * or a lowercase word the code declares or uses (`before`/`after` are the line's
+ * text around the token).
+ */
+export function countsAsIdentifier(token: string, file: string, before = '', after = ''): boolean {
   if (SCHEMA_FILE.test(file)) return true;
-  return segments(token).length >= 2 || /^[A-Z]/.test(token);
+  if (segments(token).length >= 2 || /^[A-Z]/.test(token)) return true;
+  return DECLARATION.test(before) || /\.\s*$/.test(before) || USE_AFTER.test(after);
 }
 
 function git(root: string, args: string[]): { status: number; stdout: string } {
@@ -128,10 +140,14 @@ function findAvoidedWords(root: string, terms: GlossaryTerm[], exclude: string[]
     const m = raw.match(/^(.+?):(\d+):(.*)$/);
     if (!m || m[3].length > 1000) continue;
     const [, file, lineNo, text] = m;
+    if (COMMENT_LINE.test(text)) continue;
     const seen = new Set<string>();
-    for (const token of text.match(/[A-Za-z_$][A-Za-z0-9_$-]*/g) ?? []) {
+    for (const match of text.matchAll(/[A-Za-z_$][A-Za-z0-9_$-]*/g)) {
+      const token = match[0];
+      const before = text.slice(0, match.index);
+      const after = text.slice(match.index! + token.length);
       for (const [key, w] of words) {
-        if (seen.has(key + token) || !tokenUsesWord(token, w.parts) || !countsAsIdentifier(token, file)) continue;
+        if (seen.has(key + token) || !tokenUsesWord(token, w.parts) || !countsAsIdentifier(token, file, before, after)) continue;
         seen.add(key + token);
         const n = (hits.get(key) ?? 0) + 1;
         hits.set(key, n);
@@ -150,8 +166,22 @@ function pointers(value: string): string[] {
   return [...value.matchAll(/`([^`]+)`/g)].map((m) => m[1].trim()).filter(Boolean);
 }
 
+const ROUTE = /^(?:(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+)?(\/[^\s]*)$/;
+
 function looksLikePath(p: string): boolean {
-  return p.includes('/') || /\.[a-z]{1,5}$/i.test(p);
+  return !/\s/.test(p) && !p.startsWith('/') && (p.includes('/') || /\.[a-z]{1,5}$/i.test(p));
+}
+
+/** A path pointer resolves only to a file or folder that really lives inside the project. */
+function pathInProject(root: string, rel: string): boolean {
+  const target = path.resolve(root, rel);
+  if (!fs.existsSync(target)) return false;
+  return isWithin(canonicalPath(root), canonicalPath(target));
+}
+
+/** Literal part of a route to search for: `/orders/:id` → `/orders`. */
+function routeLiteral(route: string): string {
+  return route.split(/[:{<*]/)[0].replace(/\/+$/, '') || route;
 }
 
 function findMissingPointers(root: string, terms: GlossaryTerm[], exclude: string[], result: GlossaryCheckResult): void {
@@ -163,15 +193,21 @@ function findMissingPointers(root: string, terms: GlossaryTerm[], exclude: strin
       if (!value) continue;
       for (const p of pointers(value)) {
         let found: boolean | undefined;
-        if (looksLikePath(p)) {
-          found = fs.existsSync(path.join(root, p.replace(/:\d+(-\d+)?$/, '')));
-        } else if (/^[A-Za-z_$][\w$.-]*$/.test(p)) {
-          const id = p.split('.').pop()!;
-          if (!known.has(id)) {
-            const args = [...grep, '-q', '-I', '-w', '-F', '-e', id, '--', '.', ...exclude.map((f) => `:(exclude)${f}`)];
-            known.set(id, git(root, args).status === 0);
+        const route = p.match(ROUTE);
+        const grepFor = (needle: string, word: boolean) => {
+          const key = `${word ? 'w' : 'f'}:${needle}`;
+          if (!known.has(key)) {
+            const args = [...grep, '-q', '-I', '-F', ...(word ? ['-w'] : []), '-e', needle, '--', '.', ...exclude.map((f) => `:(exclude)${f}`)];
+            known.set(key, git(root, args).status === 0);
           }
-          found = known.get(id);
+          return known.get(key);
+        };
+        if (route) {
+          found = grepFor(routeLiteral(route[1]), false);
+        } else if (looksLikePath(p)) {
+          found = pathInProject(root, p.replace(/:\d+(-\d+)?$/, ''));
+        } else if (/^[A-Za-z_$][\w$.-]*$/.test(p)) {
+          found = grepFor(p.split('.').pop()!, true);
         }
         if (found === false) {
           result.findings.push({ kind: 'missing-pointer', term: t.term, at: `${t.file}:${t.line}`, level, pointer: p });

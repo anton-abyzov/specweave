@@ -106,9 +106,23 @@ describe('installProjectSkills', () => {
     config({});
     const result = installProjectSkills(root);
     expect(result.removedSkills.sort()).toEqual(['.agents/skills/sw-grill-me', '.claude/skills/sw-glossary']);
+    expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-glossary', '.claude/skills/sw-grill-me', '.claude/skills/sw-jev']);
     expect(exists('.claude/skills/sw-grill-me/my-notes.md')).toBe(true);
     expect(exists('.agents/skills/sw-glossary/.vskill-meta.json')).toBe(true);
     expect(exists('.claude/skills/sw-jev/SKILL.md')).toBe(true);
+  });
+
+  it("keeps a user's own or edited skill even when its frontmatter says name: sw-<name>", () => {
+    write('.claude/skills/sw-glossary/SKILL.md', '---\nname: sw-glossary\ndescription: my glossary\n---\nMine.\n');
+    config({ skills: { enabled: ['grill-me'] } });
+    installProjectSkills(root);
+    fs.appendFileSync(path.join(root, '.agents/skills/sw-grill-me/SKILL.md'), '\nMy extra rule.\n');
+    config({});
+    const result = installProjectSkills(root);
+    expect(result.removedSkills).toEqual(['.claude/skills/sw-grill-me']);
+    expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-grill-me', '.claude/skills/sw-glossary']);
+    expect(fs.readFileSync(path.join(root, '.claude/skills/sw-glossary/SKILL.md'), 'utf-8')).toContain('Mine.');
+    expect(fs.readFileSync(path.join(root, '.agents/skills/sw-grill-me/SKILL.md'), 'utf-8')).toContain('My extra rule.');
   });
 
   it('dry run writes and removes nothing', () => {

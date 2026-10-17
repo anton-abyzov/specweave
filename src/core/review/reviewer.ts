@@ -87,8 +87,13 @@ export function pickReviewer(
   return { why: `no reviewer from another family than ${authorFamily ?? 'the author'} is installed (${missing})` };
 }
 
-function quote(p: string): string {
-  return process.platform === 'win32' ? `"${p}"` : `'${p.replace(/'/g, `'\\''`)}'`;
+/** Env var holding the answer file; `{out}` becomes a quoted reference to it, never the path itself. */
+export const OUT_ENV = 'SPECWEAVE_REVIEW_OUT';
+
+/** `{out}`, `"{out}"` or `'{out}'` → `"$SPECWEAVE_REVIEW_OUT"` (`"%SPECWEAVE_REVIEW_OUT%"` on Windows). */
+export function expandOut(command: string, platform: NodeJS.Platform = process.platform): string {
+  const ref = platform === 'win32' ? `"%${OUT_ENV}%"` : `"$${OUT_ENV}"`;
+  return command.replace(/(["']?)\{out\}\1/g, ref);
 }
 
 export interface RunResult {
@@ -98,33 +103,78 @@ export interface RunResult {
   stderr: string;
 }
 
-/** Run a reviewer with the brief on stdin; its answer is `{out}` when used, else stdout. */
+/** Grace between SIGTERM and SIGKILL, and again before giving up on the pipes. */
+const KILL_GRACE_MS = 5_000;
+
+/**
+ * Run a reviewer with the brief on stdin; its answer is `{out}` when used, else
+ * stdout. On timeout the whole process tree is stopped, and the result returns
+ * within two grace periods even if a descendant keeps the pipes open.
+ */
 export function runReviewer(
   command: string,
   brief: string,
-  opts: { cwd: string; outFile: string; timeoutMs: number; env?: NodeJS.ProcessEnv },
+  opts: { cwd: string; outFile: string; timeoutMs: number; env?: NodeJS.ProcessEnv; graceMs?: number },
 ): Promise<RunResult> {
   const usesOut = command.includes('{out}');
-  const cmd = command.split('{out}').join(quote(opts.outFile));
+  const cmd = expandOut(command);
+  const grace = opts.graceMs ?? KILL_GRACE_MS;
   if (usesOut) {
     fs.mkdirSync(path.dirname(opts.outFile), { recursive: true });
     fs.rmSync(opts.outFile, { force: true });
   }
   return new Promise((resolve) => {
-    const child = spawn(cmd, { cwd: opts.cwd, shell: true, env: opts.env ?? process.env, stdio: ['pipe', 'pipe', 'pipe'] });
+    const posix = process.platform !== 'win32';
+    const child = spawn(cmd, {
+      cwd: opts.cwd,
+      shell: true,
+      // Own process group on POSIX so a timeout or Ctrl-C stops the reviewer's children too.
+      detached: posix,
+      env: { ...(opts.env ?? process.env), [OUT_ENV]: opts.outFile },
+      stdio: ['pipe', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
     let stdout = '';
     let stderr = '';
     let timedOut = false;
+    let done = false;
+    const killTree = (signal: NodeJS.Signals) => {
+      if (!child.pid) return;
+      try {
+        if (posix) process.kill(-child.pid, signal);
+        else spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true, timeout: 2000 });
+      } catch {
+        // already gone
+      }
+    };
+    const onSignal = (signal: NodeJS.Signals) => {
+      killTree('SIGTERM');
+      process.kill(process.pid, signal);
+    };
+    process.once('SIGINT', onSignal);
+    process.once('SIGTERM', onSignal);
     child.stdout?.on('data', (d: Buffer) => { stdout += d.toString('utf8'); });
     child.stderr?.on('data', (d: Buffer) => { stderr = (stderr + d.toString('utf8')).slice(-8000); });
     child.stdin?.on('error', () => { /* reviewer exited before reading the brief */ });
     child.stdin?.end(brief);
-    const timer = setTimeout(() => { timedOut = true; child.kill('SIGTERM'); }, opts.timeoutMs);
+    const timers: NodeJS.Timeout[] = [];
     const finish = (code: number) => {
-      clearTimeout(timer);
+      if (done) return;
+      done = true;
+      timers.forEach(clearTimeout);
+      process.removeListener('SIGINT', onSignal);
+      process.removeListener('SIGTERM', onSignal);
       const fromFile = usesOut && fs.existsSync(opts.outFile) ? fs.readFileSync(opts.outFile, 'utf8') : '';
       resolve({ code, output: (fromFile || stdout).trim(), timedOut, stderr: stderr.trim() });
     };
+    timers.push(setTimeout(() => {
+      timedOut = true;
+      killTree('SIGTERM');
+      timers.push(setTimeout(() => {
+        killTree('SIGKILL');
+        timers.push(setTimeout(() => finish(124), grace));
+      }, grace));
+    }, opts.timeoutMs));
     child.on('close', (code) => finish(code ?? 1));
     child.on('error', (e) => { stderr += String(e); finish(127); });
   });

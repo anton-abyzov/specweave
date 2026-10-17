@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { authorFamilies, buildBrief, familyOfTool, resolveBase } from '../../../src/core/review/brief.js';
-import { parseVerdict, pickReviewer, reviewersFrom, runReviewer, commandBinary } from '../../../src/core/review/reviewer.js';
+import { parseVerdict, pickReviewer, reviewersFrom, runReviewer, commandBinary, expandOut } from '../../../src/core/review/reviewer.js';
 import { reviewCommand } from '../../../src/cli/commands/review.js';
 import { checkClosureGate } from '../../../src/core/tasks/closure-gate.js';
 
@@ -196,6 +196,37 @@ describe('specweave review', () => {
     expect(err.join('')).toContain('specweave review --brief');
     expect(await reviewCommand(ID, { cwd: root, timeout: 'soon', available: () => true, reviewer: 'codex' })).toBe(1);
   });
+
+  it('a reviewer that exits non-zero is an error even when it prints a verdict', async () => {
+    configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('Verdict: ship', { exit: 42 }), family: 'openai' } } });
+    expect(await reviewCommand(ID, { cwd: root })).toBe(1);
+    expect(err.join('')).toContain('fake exited 42');
+    expect(ledgerLines()).toHaveLength(2);
+    expect(fs.existsSync(path.join(incDir, 'reports', 'review-fake.md'))).toBe(false);
+  });
+
+  it('{out} reaches the command as an environment variable, never as shell text', async () => {
+    expect(expandOut('x -o {out} -', 'darwin')).toBe('x -o "$SPECWEAVE_REVIEW_OUT" -');
+    expect(expandOut('x -o "{out}"', 'linux')).toBe('x -o "$SPECWEAVE_REVIEW_OUT"');
+    expect(expandOut("x -o '{out}'", 'win32')).toBe('x -o "%SPECWEAVE_REVIEW_OUT%"');
+    const hostile = path.join(scripts, "a'b $(touch INJECTED) `touch INJECTED2`", 'answer.md');
+    for (const form of ['{out}', '"{out}"', "'{out}'"]) {
+      const res = await runReviewer(fakeReviewer('Verdict: ship', { toFile: false }).replace(/$/, ` ${form}`), 'brief', { cwd: scripts, outFile: hostile, timeoutMs: 10_000 });
+      expect(res.output).toBe('Verdict: ship');
+    }
+    expect(fs.existsSync(path.join(scripts, 'INJECTED'))).toBe(false);
+    expect(fs.existsSync(path.join(scripts, 'INJECTED2'))).toBe(false);
+  });
+
+  it.skipIf(process.platform === 'win32')('a timeout stops the whole process tree and returns promptly', async () => {
+    const marker = path.join(scripts, 'survived');
+    const started = Date.now();
+    const res = await runReviewer(`sleep 3; touch "${marker}"`, 'brief', { cwd: scripts, outFile: path.join(scripts, 'x.md'), timeoutMs: 200, graceMs: 200 });
+    expect(res.timedOut).toBe(true);
+    expect(Date.now() - started).toBeLessThan(2500);
+    await new Promise((r) => setTimeout(r, 3500));
+    expect(fs.existsSync(marker)).toBe(false);
+  }, 15_000);
 
   it('runReviewer reads {out} when the command writes it, stdout otherwise', async () => {
     const outFile = path.join(scripts, 'answer.md');

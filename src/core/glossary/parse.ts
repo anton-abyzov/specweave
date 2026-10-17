@@ -88,20 +88,36 @@ export function parseGlossary(text: string, file: string): GlossaryTerm[] {
   return terms;
 }
 
-/** Glossary files of a project: those linked from GLOSSARY-MAP.md, else the root GLOSSARY.md. */
-export function findGlossaryFiles(root: string): string[] {
-  const map = path.join(root, 'GLOSSARY-MAP.md');
-  if (fs.existsSync(map)) {
-    const files: string[] = [];
-    for (const m of fs.readFileSync(map, 'utf8').matchAll(/\]\(([^)\s]+\.md)\)/g)) {
-      const rel = path.posix.normalize(m[1].replace(/^\.\//, ''));
-      if (rel.startsWith('..')) continue;
-      if (fs.existsSync(path.join(root, rel)) && !files.includes(rel)) files.push(rel);
-    }
-    if (fs.existsSync(path.join(root, 'GLOSSARY.md')) && !files.includes('GLOSSARY.md')) files.unshift('GLOSSARY.md');
-    return files;
+/** True when `rel` resolves, through any symlinks, to a file inside `root`. */
+export function insideProject(root: string, rel: string): boolean {
+  try {
+    const real = fs.realpathSync(path.join(root, rel));
+    const base = fs.realpathSync(root);
+    const relative = path.relative(base, real);
+    return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative) && fs.statSync(real).isFile();
+  } catch {
+    return false;
   }
-  return fs.existsSync(path.join(root, 'GLOSSARY.md')) ? ['GLOSSARY.md'] : [];
+}
+
+/**
+ * Glossary files of a project: the root GLOSSARY.md plus those GLOSSARY-MAP.md
+ * links to. Only files that really live inside the project are read; a link or
+ * symlink that leads outside it is ignored.
+ */
+export function findGlossaryFiles(root: string): string[] {
+  const files: string[] = [];
+  const add = (rel: string) => {
+    if (!files.includes(rel) && insideProject(root, rel)) files.push(rel);
+  };
+  add('GLOSSARY.md');
+  if (insideProject(root, 'GLOSSARY-MAP.md')) {
+    for (const m of fs.readFileSync(path.join(root, 'GLOSSARY-MAP.md'), 'utf8').matchAll(/\]\(([^)\s]+\.md)\)/g)) {
+      const rel = path.posix.normalize(m[1].replace(/^\.\//, ''));
+      if (!rel.startsWith('..') && !path.isAbsolute(rel)) add(rel);
+    }
+  }
+  return files;
 }
 
 export function readGlossary(root: string): GlossaryTerm[] {

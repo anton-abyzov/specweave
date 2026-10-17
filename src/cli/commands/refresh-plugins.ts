@@ -332,6 +332,11 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         result = plugin.name === CORE_PLUGIN
           ? installCoreProjectSkills(projectRoot)
           : copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
+      } else if (plugin.name === CORE_PLUGIN) {
+        // The plugin loads only the core skills; the project copies (other tools,
+        // opt-in skills, retired-copy cleanup) are reconciled either way.
+        const project = installCoreProjectSkills(projectRoot);
+        result = project.success ? { ...result, skipped: Boolean(result.skipped && project.skipped) } : project;
       }
     } else if (plugin.name === CORE_PLUGIN) {
       result = installCoreProjectSkills(projectRoot);

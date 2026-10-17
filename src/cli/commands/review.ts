@@ -109,15 +109,15 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
     timeoutMs: minutes * 60_000,
   });
   fs.rmSync(path.join(reportsDir, `.review-${reviewer.name}.out`), { force: true });
-  const verdict = parseVerdict(run.output);
-  // A reviewer that failed counts only if it still gave a verdict.
-  if (run.timedOut || (run.code !== 0 && !verdict)) {
+  // A reviewer that failed or timed out never counts, whatever its output says.
+  if (run.timedOut || run.code !== 0) {
     err(run.timedOut ? `${reviewer.name} timed out after ${minutes} min.` : `${reviewer.name} exited ${run.code}.`);
     const tail = run.stderr || run.output;
     if (tail) err(tail.split('\n').slice(-15).join('\n'));
     return 1;
   }
 
+  const verdict = parseVerdict(run.output);
   fs.mkdirSync(reportsDir, { recursive: true });
   const at = new Date().toISOString();
   const header = `<!-- specweave review: reviewer=${reviewer.name} family=${reviewer.family} author=${brief.author.primary ?? 'unknown'} base=${base} head=${brief.head} at=${at} -->`;

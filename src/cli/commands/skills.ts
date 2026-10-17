@@ -127,7 +127,7 @@ export async function skillsCommand(
   const result = installProjectSkills(root, { sourceDir });
   const states = projectSkillStates(root, { sourceDir });
   if (opts.json) {
-    out(JSON.stringify({ skills: states, written: result.written, removed: result.removedSkills }, null, 2));
+    out(JSON.stringify({ skills: states, written: result.written, removed: result.removedSkills, kept: result.keptSkills }, null, 2));
     return 0;
   }
   for (const name of wanted) {
@@ -135,6 +135,7 @@ export async function skillsCommand(
     out(`${state.on ? '●' : '○'} sw-${name}: ${describe(state)}`);
   }
   if (result.removedSkills.length) out(`Removed ${result.removedSkills.join(', ')}`);
+  if (result.keptSkills.length) out(`Kept ${result.keptSkills.join(', ')}: changed by hand or not SpecWeave's copy; delete it yourself if you no longer want it.`);
   out('Restart or reload your tool so it sees the change.');
   return 0;
 }

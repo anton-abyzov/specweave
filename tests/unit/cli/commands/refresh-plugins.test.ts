@@ -306,6 +306,14 @@ describe('refresh-plugins', () => {
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
 
+    it('still reconciles the sw-* project skills when the native install of the core plugin succeeds', async () => {
+      await refreshPluginsCommand({ all: true });
+
+      expect(mockInstallPlugin).toHaveBeenCalledTimes(1);
+      expect(mockRemoveLegacySkillCopies).toHaveBeenCalledWith('/mock/project');
+      expect(mockInstallProjectSkills).toHaveBeenCalledWith('/mock/project');
+    });
+
     it('falls back to the sw-* project skills when the native install of the core plugin fails', async () => {
       mockInstallPlugin
         .mockReturnValueOnce({ success: false, sha: '', error: 'CLI crash' });
