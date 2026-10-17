@@ -8,7 +8,7 @@ This project uses SpecWeave. Plan increments in `.specweave/increments/NNNN-slug
 ## The loop
 
 1. `specweave pickup`: applies the latest handoff and prints the open increment, next task and ACs, other claims, branch state, notes and project memory.
-2. New work needing ACs or handoff: `specweave create-increment "title"`, then fill spec.md. First ask the user only their critical decisions, one at a time with a recommended answer, and record them under `## Decisions` (sw-brainstorm). If an open increment owns the files, add ACs and tasks there. Small fixes need no increment.
+2. New work needing ACs or handoff: `specweave create-increment "title"`, then fill spec.md. First ask the user only their critical decisions, one at a time with a recommended answer, and record them under `## Decisions` (sw-increment). If an open increment owns the files, add ACs and tasks there. Small fixes need no increment.
 3. `specweave task claim T-NN`, edit only that task's Files, commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`.
 4. `specweave verify`, a review in a fresh session for anything that ships, then `specweave complete NNNN`.
 5. Before stopping or switching tools/accounts: `specweave handoff --reason "<why>"`.
@@ -31,6 +31,12 @@ Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e
 
 <!-- SECTION:umbrella when="umbrella" -->
 Umbrella project: nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
+<!-- /SECTION -->
+
+<!-- SECTION:glossary when="glossary" -->
+## Shared language
+
+`GLOSSARY.md` defines this project's domain terms and what each means in the business, the data, the code and the UI. Use its words in specs, names, commits and replies; never a word a term lists under Avoid. `specweave glossary check` lists drift. A new term or a changed meaning goes into the glossary first (sw-glossary).
 <!-- /SECTION -->
 
 <!-- SECTION:hub when="hub" -->

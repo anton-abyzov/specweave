@@ -30,8 +30,8 @@ export const BUMP_FILES = [
   '.claude-plugin/marketplace.json',
 ];
 
-// tests/unit/skills/brainstorm-docs.test.ts reads docs-site/docs, so that tree
-// is NOT listed here. Nothing under these prefixes is read by a test, the
+// docs-site/docs is NOT listed here: tests have read it before, and the docs
+// build checks its links. Nothing under these prefixes is read by a test, the
 // build or the npm package.
 export const UNTESTED_PREFIXES = [
   'docs-site/static/',

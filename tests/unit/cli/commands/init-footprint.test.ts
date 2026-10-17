@@ -17,9 +17,11 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { SPECWEAVE_SKILLS, toProjectSkill } from '../../../../src/core/skills/project-skills.js';
+import { toProjectSkill } from '../../../../src/core/skills/project-skills.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
+/** A plain project gets the core skills only; optional ones are opt-in (skills/catalog.json). */
+const CORE_SKILLS = (JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'skills', 'catalog.json'), 'utf-8')) as { core: string[] }).core;
 const CLI = path.join(REPO_ROOT, 'bin', 'specweave.js');
 const BUILT_INIT = path.join(REPO_ROOT, 'dist', 'src', 'cli', 'commands', 'init.js');
 
@@ -84,11 +86,11 @@ describe('specweave init footprint', () => {
     files = listFiles(proj);
   }, 180_000);
 
-  it('installs the 11 skills as sw-<name> in .claude/skills and .agents/skills, from the plugin source', () => {
+  it('installs the core skills as sw-<name> in .claude/skills and .agents/skills, from the plugin source', () => {
     for (const base of ['.claude/skills', '.agents/skills']) {
       const dirs = fs.readdirSync(path.join(proj, base)).sort();
-      expect(dirs).toEqual(SPECWEAVE_SKILLS.map((n) => `sw-${n}`).sort());
-      for (const name of SPECWEAVE_SKILLS) {
+      expect(dirs).toEqual(CORE_SKILLS.map((n) => `sw-${n}`).sort());
+      for (const name of CORE_SKILLS) {
         const installed = fs.readFileSync(path.join(proj, base, `sw-${name}`, 'SKILL.md'), 'utf-8');
         const plugin = fs.readFileSync(path.join(REPO_ROOT, 'plugins', 'specweave', 'skills', name, 'SKILL.md'), 'utf-8');
         expect(installed).toBe(toProjectSkill(plugin, name));

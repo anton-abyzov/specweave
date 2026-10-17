@@ -584,17 +584,49 @@ export interface LimitsConfig {
 
 
 /**
- * How hard sw-increment's Decide step (sw-brainstorm) questions the user
- * before writing spec.md.
+ * How hard sw-increment's Decide step questions the user before writing spec.md.
  *
  * 'off'      — no questions; every decision gets a stated default.
- * 'critical' — at most 5 questions, one at a time, each with a recommended
- *              answer (the default, also when unset).
- * 'deep'     — "grill me": no cap, walks the decision tree until done.
+ * 'critical' — at most 5 questions, each with a recommended answer (the
+ *              default, also when unset).
+ * 'deep'     — "grill me": sw-grill-me's rounds, no cap, until the decision
+ *              tree is settled. Also installs the sw-grill-me skill.
  *
  * Skill-side only: no hook blocks a write.
  */
 export type DeepInterviewMode = 'off' | 'critical' | 'deep';
+
+/**
+ * Optional skills (`specweave skills`). Core skills are always installed; an
+ * optional one is installed when listed in `enabled`, or when the project
+ * detects it (a GLOSSARY.md, a configured tracker, ...) and it is not in `disabled`.
+ */
+export interface SkillsConfiguration {
+  enabled?: string[];
+  disabled?: string[];
+}
+
+/** One reviewer `specweave review` can run: a shell command that reads the brief on stdin. */
+export interface ReviewerConfiguration {
+  /**
+   * Shell command. `{out}` is replaced with a file the command writes its final
+   * answer to; without it, stdout is the report.
+   */
+  command: string;
+  /** Model family of this reviewer (`openai`, `claude`, `xai`, `google`), used to pick one unlike the author. Default: its name. */
+  family?: string;
+}
+
+export interface ReviewConfiguration {
+  /** sw-review and sw-done run `specweave review` (another model family) for every increment. Default false. */
+  crossModel?: boolean;
+  /** Reviewer name to use, or 'auto' (default): the first available one from a family other than the author's. */
+  reviewer?: string;
+  /** Extra or overriding reviewers by name (built in: codex, claude). */
+  reviewers?: Record<string, ReviewerConfiguration>;
+  /** Minutes before a reviewer is stopped. Default 30. */
+  timeoutMinutes?: number;
+}
 
 /**
  * Planning configuration
@@ -831,6 +863,12 @@ export interface SpecWeaveConfig {
   /** Jev (TypeSafe System One) opt-in. Read by core/jev/config.ts. */
   jev?: JevConfigInput;
 
+  /** Optional skills to install or leave out (core/skills/catalog.ts). */
+  skills?: SkillsConfiguration;
+
+  /** `specweave review`: which reviewer runs, and whether skills call it unprompted. */
+  review?: ReviewConfiguration;
+
   // ───────────────────────────────────────────────────────────────────
   // Legacy shapes. Read once by the migrator, then removed from disk.
   // ───────────────────────────────────────────────────────────────────
@@ -872,6 +910,8 @@ export const KNOWN_CONFIG_KEYS = [
   'hooks',
   'plugins',
   'jev',
+  'skills',
+  'review',
 ] as const;
 
 /**

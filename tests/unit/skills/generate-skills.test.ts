@@ -1,6 +1,7 @@
 /**
  * skills/sw-<name>/ is the only hand-edited skill source; the Claude plugin
- * copies under plugins/specweave/skills/<name>/ are generated from it by
+ * copies under plugins/specweave/skills/<name>/ (core) and
+ * plugins/specweave/skills-optional/<name>/ (opt-in) are generated from it by
  * scripts/build/generate-skills.mjs. These tests make drift impossible to merge.
  */
 
@@ -43,18 +44,32 @@ function scratchCheckout(): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-gen-'));
   tmpDirs.push(root);
   fs.cpSync(path.join(REPO_ROOT, 'skills'), path.join(root, 'skills'), { recursive: true });
-  fs.cpSync(path.join(REPO_ROOT, 'plugins', 'specweave', 'skills'), path.join(root, 'plugins', 'specweave', 'skills'), { recursive: true });
+  for (const entry of ['skills', 'skills-optional', 'skills-catalog.json']) {
+    fs.cpSync(path.join(REPO_ROOT, 'plugins', 'specweave', entry), path.join(root, 'plugins', 'specweave', entry), { recursive: true });
+  }
   return root;
 }
 
 describe('generate-skills', () => {
-  it('ships exactly the 11 skills', async () => {
+  it('ships 6 core skills in the plugin and 5 opt-in skills beside it', async () => {
     const { SKILL_NAMES } = await load();
     expect([...SKILL_NAMES].sort()).toEqual(
-      ['auto', 'brainstorm', 'do', 'done', 'handoff', 'increment', 'jev', 'project', 'review', 'sync', 'team'],
+      ['auto', 'do', 'done', 'glossary', 'grill-me', 'handoff', 'increment', 'jev', 'project', 'review', 'sync'],
     );
-    const pluginDirs = fs.readdirSync(path.join(REPO_ROOT, 'plugins', 'specweave', 'skills')).sort();
-    expect(pluginDirs).toEqual([...SKILL_NAMES].sort());
+    const dirs = (sub: string) => fs.readdirSync(path.join(REPO_ROOT, 'plugins', 'specweave', sub)).sort();
+    expect(dirs('skills')).toEqual(['auto', 'do', 'done', 'handoff', 'increment', 'review']);
+    expect(dirs('skills-optional')).toEqual(['glossary', 'grill-me', 'jev', 'project', 'sync']);
+    const catalog = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'plugins', 'specweave', 'skills-catalog.json'), 'utf-8'));
+    expect(catalog).toEqual(JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'skills', 'catalog.json'), 'utf-8')));
+  });
+
+  it('--check fails on a source skill missing from catalog.json', () => {
+    const root = scratchCheckout();
+    fs.mkdirSync(path.join(root, 'skills', 'sw-extra'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'skills', 'sw-extra', 'SKILL.md'), '---\ndescription: x\n---\n');
+    const { code, out } = runCheck(root);
+    expect(code).toBe(1);
+    expect(out).toContain('not in skills/catalog.json');
   });
 
   it('--check passes on the committed tree (run `npm run generate:skills` if this fails)', () => {
@@ -80,7 +95,7 @@ describe('generate-skills', () => {
     expect(runCheck(root).out).toContain('qa/SKILL.md: has no source in skills/');
 
     const { writePluginSkills, checkPluginSkills } = await load();
-    expect(writePluginSkills(root)).toContain('removed qa/SKILL.md');
+    expect(writePluginSkills(root)).toContain('removed skills/qa/SKILL.md');
     expect(fs.existsSync(stray)).toBe(false);
     expect(checkPluginSkills(root)).toEqual([]);
   });

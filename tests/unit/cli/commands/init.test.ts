@@ -320,7 +320,6 @@ vi.mock('../../../../src/cli/helpers/init/claude-settings-env.js', () => ({
 vi.mock('../../../../src/core/skills/project-skills.js', () => ({
   installProjectSkills: mockInstallProjectSkills,
   PROJECT_SKILL_DIRS: ['.claude/skills', '.agents/skills'],
-  SPECWEAVE_SKILLS: ['increment', 'do', 'auto', 'team', 'review', 'done', 'sync', 'handoff', 'project', 'brainstorm', 'jev'],
 }));
 
 vi.mock('../../../../src/cli/commands/lsp.js', () => ({
@@ -428,7 +427,7 @@ describe('init command', () => {
     mockScanMisplacedRepos.mockReturnValue([]);
     mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
     mockEnsureSkillCreator.mockResolvedValue(undefined);
-    mockInstallProjectSkills.mockReturnValue({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [] });
+    mockInstallProjectSkills.mockReturnValue({ written: ['.claude/skills/sw-do/SKILL.md'], unchanged: [], removed: [], installed: ['do'], removedSkills: [] });
     mockPromptLanguageSelection.mockResolvedValue({ language: 'en', keepEnglishOriginals: false });
     mockGetDefaultLanguageSelection.mockReturnValue({ language: 'en', keepEnglishOriginals: false });
     mockGetPluginScope.mockReturnValue('user');

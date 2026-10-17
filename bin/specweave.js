@@ -159,6 +159,41 @@ program
     process.exitCode = await verifyCommand(incrementId, options);
   });
 
+// Review command - cross-model adversarial review of an increment's diff
+program
+  .command('review [incrementId]')
+  .description('Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md')
+  .option('--brief', 'Print the review brief only (paste it into any tool or model)')
+  .option('--reviewer <name>', 'Reviewer to run: codex, claude or one from review.reviewers (default: auto)')
+  .option('--base <ref>', 'Diff base (default: merge-base with origin/HEAD)')
+  .option('--timeout <minutes>', 'Stop the reviewer after this many minutes (default 30)')
+  .option('--json', 'Print the result as JSON')
+  .action(async (incrementId, options) => {
+    const { reviewCommand } = await import('../dist/src/cli/commands/review.js');
+    process.exitCode = await reviewCommand(incrementId, options);
+  });
+
+// Skills command - which SpecWeave skills this project has; turn optional ones on or off
+program
+  .command('skills [action] [names...]')
+  .description('List the project\'s SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)')
+  .option('--json', 'Print as JSON')
+  .action(async (action, names, options) => {
+    const { skillsCommand } = await import('../dist/src/cli/commands/skills.js');
+    process.exitCode = await skillsCommand(action, names, options);
+  });
+
+// Glossary command - check GLOSSARY.md against the code
+program
+  .command('glossary [action]')
+  .description('Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms')
+  .option('--strict', 'Exit 1 when anything is found (CI)')
+  .option('--json', 'Print findings as JSON')
+  .action(async (action, options) => {
+    const { glossaryCommand } = await import('../dist/src/cli/commands/glossary.js');
+    process.exitCode = await glossaryCommand(action, options);
+  });
+
 // Create Increment command - Create template files for a new increment
 program
   .command('create-increment [title]')

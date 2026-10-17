@@ -1,7 +1,7 @@
 ---
 description: Close a SpecWeave increment - every task done or skipped, specweave verify green, a fresh-context review, then specweave complete. Use for "close it", "we are done", "finish up".
 argument-hint: "[increment-id] [--reason \"...\"]"
-version: 3.0.0
+version: 3.1.0
 ---
 <!-- Generated from skills/sw-done/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
@@ -19,8 +19,11 @@ Closing is verify, review, complete. The one hard gate is a passing
    against the ledger (an AC is met when all its tasks are done) and writes
    `reports/verify.md` and `reports/verify.json`. Red: fix and re-run. Do not tick
    AC boxes; they are derived.
-3. **Review.** For anything that ships, run sw-review in a fresh context. Fix critical
-   and high findings, then verify again.
+3. **Review.** For anything that ships, run sw-review in a fresh context. With
+   `review.crossModel` on, also `specweave review`: another model family reviews the
+   diff (exit 3 means fix first). If the project has a `GLOSSARY.md`, run
+   `specweave glossary check` and rename new code that uses an avoided word. Fix
+   critical and high findings, then verify again.
 4. **Docs.** If commands, config or user-facing behaviour changed, update README,
    CHANGELOG and the `## Commands` table in AGENTS.md in the same branch.
 5. **Complete.** `specweave complete 0042`. It refuses without a passing verify unless

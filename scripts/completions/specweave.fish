@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume abandon complete task verify create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume abandon complete task verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -18,6 +18,9 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a abandon 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete -d "Complete one or more increments (triggers GitHub/JIRA/ADO sync)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a review -d "Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a skills -d "List the project's SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a glossary -d "Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest"
@@ -113,6 +116,23 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l workspace -d "Sel
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l cmd -d "Command to run (repeatable; overrides config/auto-detection)"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l json -d "Print the verify report as JSON"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l workspace -d "Select the planning workspace explicitly"
+
+# review
+complete -c specweave -n "__fish_seen_subcommand_from review" -l brief -d "Print the review brief only (paste it into any tool or model)"
+complete -c specweave -n "__fish_seen_subcommand_from review" -l reviewer -d "Reviewer to run: codex, claude or one from review.reviewers (default: auto)"
+complete -c specweave -n "__fish_seen_subcommand_from review" -l base -d "Diff base (default: merge-base with origin/HEAD)"
+complete -c specweave -n "__fish_seen_subcommand_from review" -l timeout -d "Stop the reviewer after this many minutes (default 30)"
+complete -c specweave -n "__fish_seen_subcommand_from review" -l json -d "Print the result as JSON"
+complete -c specweave -n "__fish_seen_subcommand_from review" -l workspace -d "Select the planning workspace explicitly"
+
+# skills
+complete -c specweave -n "__fish_seen_subcommand_from skills" -l json -d "Print as JSON"
+complete -c specweave -n "__fish_seen_subcommand_from skills" -l workspace -d "Select the planning workspace explicitly"
+
+# glossary
+complete -c specweave -n "__fish_seen_subcommand_from glossary" -l strict -d "Exit 1 when anything is found (CI)"
+complete -c specweave -n "__fish_seen_subcommand_from glossary" -l json -d "Print findings as JSON"
+complete -c specweave -n "__fish_seen_subcommand_from glossary" -l workspace -d "Select the planning workspace explicitly"
 
 # create-increment
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l id -d "Increment ID (e.g., \"0042-my-feature\")"

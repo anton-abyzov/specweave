@@ -299,17 +299,12 @@ export interface SkillEntry {
  * (global install layouts differ). Keeps `jev route` useful everywhere.
  */
 export const FALLBACK_SKILLS: readonly SkillEntry[] = [
-  { name: 'increment', description: 'Plan a unit of work as a SpecWeave increment: spec.md with Problem, Scope, numbered ACs and an Approach, plus tasks.md.' },
-  { name: 'do', description: 'Work an increment task by task through the ledger: task next, claim, implement, commit, task done with evidence.' },
-  { name: 'done', description: 'Close an increment after a green verify, or with an explicit reason.' },
-  { name: 'review', description: 'Review an increment in fresh context before closing; findings cite path:line and are re-verified.' },
-  { name: 'qa', description: 'Risk-scored quality assessment of an increment.' },
-  { name: 'brainstorm', description: 'Expand the solution space before committing: framed options compared on stated criteria, ending in a pick.' },
+  { name: 'increment', description: 'Plan a unit of work as a SpecWeave increment: settle the decisions, then spec.md with Problem, Scope, numbered ACs, Approach and Tasks.' },
+  { name: 'do', description: 'Work an increment task by task through the ledger (claim, implement, test, commit, done with evidence), alone, unattended or in parallel lanes.' },
+  { name: 'auto', description: 'Run the increment loop unattended until the tasks are done.' },
+  { name: 'done', description: 'Close an increment: every task done, verify green, a review, then complete.' },
+  { name: 'review', description: 'Adversarial review before shipping, by a fresh context or another model family; findings cite path:line and are re-verified.' },
   { name: 'handoff', description: 'Write a portable, secret-scrubbed work-handoff doc so another tool or agent can resume.' },
-  { name: 'sync', description: 'Sync increments with external trackers (GitHub, JIRA, Azure DevOps).' },
-  { name: 'team', description: 'Run a multi-agent team over one increment: fan out tasks, then close centrally.' },
-  { name: 'auto', description: 'Run the increment loop autonomously until the tasks are done.' },
-  { name: 'jev', description: 'Delegate a closed-set decision to Jev (TypeSafe System One): routing, guard verdicts, AC judgements, browser steps.' },
 ];
 
 /** First line of the frontmatter `description:` in a SKILL.md, or ''. */

@@ -57,7 +57,7 @@ import {
 import { promptRootRepoConnection, type RootRepoInfo } from '../helpers/init/root-repo-detection.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
-import { installProjectSkills, PROJECT_SKILL_DIRS, SPECWEAVE_SKILLS } from '../../core/skills/project-skills.js';
+import { installProjectSkills, PROJECT_SKILL_DIRS } from '../../core/skills/project-skills.js';
 
 const __dirname = getDirname(import.meta.url);
 const PROJECT_NAME_PATTERN = /^[a-z0-9-]+$/;
@@ -83,7 +83,7 @@ export function isNonInteractive(options: Pick<InitOptions, 'quick'>): boolean {
 /**
  * Main init command — scaffolds only what the user needs (3.0):
  * config, AGENTS.md / CLAUDE.md, .gitignore / .gitattributes, the memory
- * index, and the 11 skills as `sw-<name>` in `.claude/skills/` and
+ * index, and the core skills as `sw-<name>` in `.claude/skills/` and
  * `.agents/skills/`. Nothing outside the project is written. The git
  * pre-commit hook is opt-in (`--git-hooks`).
  */
@@ -548,15 +548,16 @@ export async function initCommand(
 
     spinner.stop();
 
-    // Skills: the same 11 skills for every tool, namespaced so they never
-    // collide with the user's own, in both folders tools read. Never touches
-    // ~/.claude or any other global settings.
+    // Skills: the core skills (plus any optional ones the project detects) for
+    // every tool, namespaced so they never collide with the user's own, in both
+    // folders tools read. Never touches ~/.claude or any other global settings.
     let skillsInstalled = false;
     try {
       const skills = installProjectSkills(targetDir);
       skillsInstalled = true;
       if (skills.written.length > 0) {
-        console.log(chalk.green(`   ✓ ${SPECWEAVE_SKILLS.length} skills installed as sw-* in ${PROJECT_SKILL_DIRS.join('/ and ')}/`));
+        console.log(chalk.green(`   ✓ ${skills.installed.length} skills installed as sw-* in ${PROJECT_SKILL_DIRS.join('/ and ')}/`));
+        console.log(chalk.gray('     Optional: grill-me (interview), glossary (shared language). Turn on with `specweave skills enable grill-me glossary`.'));
       }
     } catch (err) {
       console.log(chalk.yellow(`   ⚠ Could not install skills: ${err instanceof Error ? err.message : String(err)}`));

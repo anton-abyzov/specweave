@@ -160,7 +160,7 @@ export const handle: HandlerFn = async (input, context) => {
 
     if (pendingTasks === 0 && pendingAcs === 0) {
       resetTurns(stateDir);
-      return stopBlock(`${idLabel}: all_complete_needs_closure — run sw:done --auto ${idLabel}`);
+      return stopBlock(`${idLabel}: all_complete_needs_closure — run sw-done ${idLabel}`);
     }
 
     // Honor `stop_hook_active`: when we are the reason Claude keeps going and

@@ -17,6 +17,9 @@ commands=(
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
     'verify:'
+    'review:Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md'
+    'skills:List the project'\''s SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)'
+    'glossary:Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
     'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs'
     'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest'
@@ -140,6 +143,29 @@ _specweave() {
                     _arguments \
                         '--cmd[Command to run (repeatable; overrides config/auto-detection)]' \
                         '--json[Print the verify report as JSON]' \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                review)
+                    _arguments \
+                        '--brief[Print the review brief only (paste it into any tool or model)]' \
+                        '--reviewer[Reviewer to run\: codex, claude or one from review.reviewers (default\: auto)]' \
+                        '--base[Diff base (default\: merge-base with origin/HEAD)]' \
+                        '--timeout[Stop the reviewer after this many minutes (default 30)]' \
+                        '--json[Print the result as JSON]' \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                skills)
+                    _arguments \
+                        '--json[Print as JSON]' \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                glossary)
+                    _arguments \
+                        '--strict[Exit 1 when anything is found (CI)]' \
+                        '--json[Print findings as JSON]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;

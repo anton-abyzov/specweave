@@ -1,3 +1,16 @@
+## [Unreleased]
+
+### Added
+
+- Opt-in skills. Every project gets six core skills (sw-increment, sw-do, sw-auto, sw-done, sw-review, sw-handoff); sw-grill-me, sw-glossary, sw-sync, sw-project and sw-jev install when `skills.enabled` in `.specweave/config.json` lists them or the project's files call for them (a `GLOSSARY.md`, a tracker, `hub.json`, `jev.enabled`, `planning.deepInterview: deep`). `specweave skills list|enable|disable` shows and changes them; `skills.disabled` keeps a detected one out.
+- sw-grill-me interviews you in rounds until every decision in a plan is settled, each question with a recommended answer, and records them under `## Decisions`.
+- sw-glossary builds `GLOSSARY.md`, the project's shared language: what each domain term means in the business, the data, the code and the UI, and the words to avoid. `specweave glossary check` lists avoided words used as identifiers and Data/Code names that no longer exist (`--strict` exits 1 for CI).
+- `specweave review` hands an increment's diff to a reviewer from another model family than the one that wrote it (Codex with GPT-6.1-Sol for Claude-written code, Claude Opus for OpenAI-written code), writes `reports/review-<reviewer>.md` and exits 0 for ship, 3 for fix first. `--brief` prints the brief to paste anywhere; `review.crossModel` makes sw-review and sw-done run it unprompted.
+
+### Removed
+
+- sw-brainstorm (its Decide step is sw-increment's; the full interview is sw-grill-me), sw-team (now sw-do's "Parallel lanes") and the unused `skills-optional/` skills (debug, diagrams, e2e, release-expert, tdd-cycle). `specweave update` removes SpecWeave's own copies and never a folder you changed.
+
 ## [3.0.23] - 2026-10-16
 
 ### Changed

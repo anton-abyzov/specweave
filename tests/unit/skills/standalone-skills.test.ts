@@ -25,8 +25,8 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const SKILLS_DIR = path.join(REPO_ROOT, 'skills');
 const LINTER = path.join(REPO_ROOT, 'scripts', 'lint-standalone-skills.mjs');
 const EXPECTED_SKILLS = [
-  'sw-auto', 'sw-brainstorm', 'sw-do', 'sw-done', 'sw-handoff', 'sw-increment',
-  'sw-jev', 'sw-project', 'sw-review', 'sw-sync', 'sw-team',
+  'sw-auto', 'sw-do', 'sw-done', 'sw-glossary', 'sw-grill-me', 'sw-handoff', 'sw-increment',
+  'sw-jev', 'sw-project', 'sw-review', 'sw-sync',
 ];
 
 const read = (name: string): string => fs.readFileSync(path.join(SKILLS_DIR, name, 'SKILL.md'), 'utf-8');
@@ -55,10 +55,20 @@ afterEach(() => {
 });
 
 describe('standalone skills (skills/)', () => {
-  it('ships exactly the 11 skills plus a README', () => {
+  it('ships exactly the 11 skills plus a README and the catalog', () => {
     const dirs = fs.readdirSync(SKILLS_DIR, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
     expect(dirs).toEqual(EXPECTED_SKILLS);
     expect(fs.existsSync(path.join(SKILLS_DIR, 'README.md'))).toBe(true);
+    const catalog = JSON.parse(fs.readFileSync(path.join(SKILLS_DIR, 'catalog.json'), 'utf-8')) as {
+      core: string[];
+      optional: Array<{ name: string }>;
+    };
+    expect([...catalog.core, ...catalog.optional.map((o) => o.name)].map((n) => `sw-${n}`).sort()).toEqual(EXPECTED_SKILLS);
+  });
+
+  it('sw-auto is user-invoked only, in every tool', () => {
+    expect(fs.readFileSync(path.join(SKILLS_DIR, 'sw-auto', 'SKILL.md'), 'utf-8')).toMatch(/^disable-model-invocation: true$/m);
+    expect(fs.readFileSync(path.join(SKILLS_DIR, 'sw-auto', 'agents', 'openai.yaml'), 'utf-8')).toMatch(/allow_implicit_invocation: false/);
   });
 
   it('passes the portability lint', () => {

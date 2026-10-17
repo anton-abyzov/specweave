@@ -20,10 +20,12 @@ const BASH_ONLY: Array<{ label: string; re: RegExp }> = [
 
 const ALLOWED_PLACEHOLDERS = new Set(['{PROJECT_NAME}', '{{BUILD_CMD}}', '{{TEST_CMD}}', '{{LINT_CMD}}']);
 
-/** The 2.0 core skill set (design-2.0 §Skills). Nothing else may be referenced. */
-const CORE_SKILLS = new Set([
-  'increment', 'do', 'done', 'review', 'team', 'handoff', 'sync', 'auto', 'brainstorm', 'qa',
-]);
+/** Every shipped skill (skills/catalog.json, core and optional). Nothing else may be referenced. */
+const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, 'skills', 'catalog.json'), 'utf-8')) as {
+  core: string[];
+  optional: Array<{ name: string }>;
+};
+const CORE_SKILLS = new Set([...CATALOG.core, ...CATALOG.optional.map((s) => s.name)]);
 
 /** Text inside backticks, in template order. */
 function backticked(content: string): string[] {
@@ -65,7 +67,7 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
 
   it('AGENTS.md is the one instruction file and CLAUDE.md imports it', () => {
     expect(parseTemplate(agents).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual([
-      'header!', 'loop!', 'rules!', 'umbrella', 'hub', 'jev',
+      'header!', 'loop!', 'rules!', 'umbrella', 'glossary', 'hub', 'jev',
     ]);
     expect(parseTemplate(claude).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual(['header!', 'jev']);
     expect(claude.split('\n')[1]).toBe('@AGENTS.md');
@@ -141,14 +143,11 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(unknown).toEqual([]);
   });
 
-  it.each(shipped)('every /sw:<skill> in %s is a 2.0 core skill that exists', (_name, content) => {
-    // `review` and `team` are created by the 2.0 skills consolidation; the rest must be on disk today.
-    const PENDING = new Set(['team']);
+  it.each(shipped)('every /sw:<skill> in %s is a shipped skill that exists', (_name, content) => {
     const referenced = slashSkills(content);
     expect(referenced.filter(s => !CORE_SKILLS.has(s))).toEqual([]);
     const missing = referenced
-      .filter(s => !PENDING.has(s))
-      .filter(s => !fs.existsSync(path.join(ROOT, 'plugins/specweave/skills', s, 'SKILL.md')));
+      .filter(s => !['skills', 'skills-optional'].some(dir => fs.existsSync(path.join(ROOT, 'plugins/specweave', dir, s, 'SKILL.md'))));
     expect(missing).toEqual([]);
   });
 

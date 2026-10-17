@@ -163,7 +163,7 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     console.log(chalk.gray('   sw:increment - Plan new features'));
     console.log(chalk.gray('   sw:do - Execute tasks'));
     console.log(chalk.gray('   sw:done - Close an increment'));
-    console.log(chalk.gray('   sw:sync - GitHub / Jira / Azure DevOps sync'));
+    console.log(chalk.gray('   sw:review - Adversarial review before shipping'));
     console.log(chalk.gray('   sw:handoff - Hand work to another AI tool'));
     console.log(chalk.gray('   ...and more!'));
 
