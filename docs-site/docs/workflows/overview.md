@@ -24,7 +24,7 @@ flowchart LR
 | Plan | "Let's add resumable checkout" | `specweave create-increment "Resumable checkout"` |
 | Work | "Do the next task" | `specweave task next`, `task claim T-01`, `task done T-01 --run "npm test"` |
 | Verify | "Verify it" | `specweave verify` |
-| Review | "Review it" | the `review` skill, in a fresh session |
+| Review | "Review it" | the `review` skill in a fresh session, or `specweave review` for another model |
 | Complete | "We're done" | `specweave complete 0042` |
 | Hand off | "Hand off" | `specweave handoff --reason "out of tokens"` |
 | Pick up | "Pick up where I left off" | `specweave pickup` |
@@ -33,9 +33,9 @@ flowchart LR
 
 Describe the outcome, not the implementation. The agent creates the increment and writes `spec.md`: the problem, the scope, numbered acceptance criteria, the approach and the tasks. Each task names the criteria it covers, the files it owns and the test that proves it.
 
-Read the spec before any code is written. This is the cheapest moment to catch a misunderstanding. Change the criteria until they say exactly what done means.
+Before writing it, the agent asks you only the decisions that are yours (at most five by default), each with a recommended answer, and records them under `## Decisions`. Read the spec before any code is written. This is the cheapest moment to catch a misunderstanding. Change the criteria until they say exactly what done means.
 
-If an open increment already owns the files this change touches, add criteria and tasks to that increment instead of opening another one. When you want to explore options before you open an increment, ask to brainstorm first. This step is optional: the `brainstorm` skill compares approaches and hands the chosen one to planning.
+If an open increment already owns the files this change touches, add criteria and tasks to that increment instead of opening another one. When the shape of the work is unclear, say "grill me": the optional `grill-me` skill interviews you in rounds until every decision is settled (`specweave skills enable grill-me` installs it).
 
 Small, self-contained fixes need no increment. Just ask your agent.
 
@@ -69,7 +69,7 @@ runs the build, test and lint commands from the Commands table in `AGENTS.md` an
 
 Ask for a review in a fresh session: a subagent, a new thread, or a different tool. The session that wrote the code should not approve it. The `review` skill reads the spec, the diff and the surrounding code, and reports only concrete problems with `path:line` for each, in `reports/review.md`.
 
-A different model is a good reviewer. Hand off to Codex or Grok for the review, then hand back.
+A different model is a good reviewer. `specweave review` reads from the ledger which model family wrote the code and runs a reviewer from another one (Codex for Claude-written code, Claude Opus for code from OpenAI models), writing `reports/review-<reviewer>.md`. It exits 0 for ship and 3 for fix first. `--brief` prints the brief to paste into any model by hand. Set `review.crossModel` to make `review` and `done` run it every time.
 
 ## 5. Complete
 

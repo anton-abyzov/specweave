@@ -19,7 +19,7 @@ SpecWeave does not depend on Claude Code. Everything that matters is a file in g
 
 `AGENTS.md` is the single, short instruction file. It tells every agent to start with `specweave pickup` and describes the loop below, so a tool that reads nothing else still knows what to do.
 
-`specweave init` writes `AGENTS.md` and `CLAUDE.md` and installs the eleven skills twice, as `.claude/skills/sw-<name>/` for Claude Code and `.agents/skills/sw-<name>/` for Codex and other tools that read that folder, so switching tools needs no reinstall. For a tool that looks elsewhere, install the portable skills one at a time:
+`specweave init` writes `AGENTS.md` and `CLAUDE.md` and installs the six core skills, plus any optional ones the project turns on (`specweave skills`), twice: as `.claude/skills/sw-<name>/` for Claude Code and `.agents/skills/sw-<name>/` for Codex and other tools that read that folder, so switching tools needs no reinstall. For a tool that looks elsewhere, install the portable skills one at a time:
 
 ```bash
 npx vskill install anton-abyzov/specweave/sw-do

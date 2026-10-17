@@ -11,6 +11,7 @@ The words SpecWeave uses, as they apply to 3.0. Terms with their own page link t
 
 | Term | Meaning |
 |---|---|
+| Intent-first development | SpecWeave's method: settle what you want and how a machine will check it (your decisions, acceptance criteria, a test per task) before any code is written. |
 | [Increment](/docs/glossary/terms/increments) | One unit of work in `.specweave/increments/NNNN-slug/`: a `spec.md`, a `ledger.jsonl` and a `metadata.json`. |
 | [spec.md](/docs/glossary/terms/spec-md) | The one file an agent reads: Problem, Scope, Acceptance Criteria, Approach, Open questions and Tasks. |
 | [AC-ID](/docs/glossary/terms/ac-id) | The id of an acceptance criterion, such as `AC-01`. Tasks name the ACs they cover. |
@@ -21,6 +22,7 @@ The words SpecWeave uses, as they apply to 3.0. Terms with their own page link t
 | plan.md | Optional design overflow for a large increment, created with `specweave create-increment --with-plan`. |
 | Project memory | `.specweave/memory/`: a `MEMORY.md` index plus one file per durable fact, committed so every tool and account sees it. |
 | `AGENTS.md` | The single instruction file every tool reads. `CLAUDE.md` imports it with `@AGENTS.md`. |
+| `GLOSSARY.md` | A project's own domain terms, each with what it means in the business, the data, the code and the UI, and the words to avoid. Built with the optional sw-glossary skill; `specweave glossary check` finds drift. |
 
 ## Working on tasks
 
@@ -47,8 +49,9 @@ The words SpecWeave uses, as they apply to 3.0. Terms with their own page link t
 
 | Term | Meaning |
 |---|---|
-| Skill | A `SKILL.md` file an AI tool loads on demand. SpecWeave's are increment, do, auto, team, review, done, sync, handoff, project, brainstorm and jev. See [skills reference](/docs/reference/skills). |
-| Auto mode | Unattended execution of an increment's tasks: `/sw:auto` or `specweave auto`. See [autonomous execution](/docs/guides/autonomous-execution). |
+| Skill | A `SKILL.md` file an AI tool loads on demand. SpecWeave's six core skills are increment, do, auto, done, review and handoff; grill-me, glossary, sync, project and jev are optional (`specweave skills`). See [skills reference](/docs/reference/skills). |
+| Cross-model review | `specweave review`: a reviewer from another model family than the one that wrote the code reviews the increment's diff. |
+| Auto mode | Unattended execution of an increment's tasks: `/sw:auto`, "run until done", or `specweave auto`. See [autonomous execution](/docs/guides/autonomous-execution). |
 | Sync | Pushing increments to GitHub Issues, Jira or Azure DevOps. Only runs on `specweave sync push`. See [GitHub sync](/docs/guides/github-sync). |
 | Jev | An opt-in fast classifier for decisions with a fixed set of answers. See [Jev](/docs/guides/jev-system-one). |
 | Hook | A script Claude Code runs at a session event. SpecWeave uses SessionStart (a short pickup) and Stop (auto mode only). |

@@ -1,11 +1,13 @@
 ---
-title: "What is SpecWeave? Spec-driven development across AI coding tools"
+title: "What is SpecWeave? Intent-first development across AI coding tools"
 description: "SpecWeave keeps AI-assisted work in your repository as a short spec, an append-only task ledger and a handoff, so any coding agent, account or model can continue it."
 ---
 
 # What is SpecWeave?
 
 SpecWeave is a small command-line tool and a set of skills that keep AI-assisted software work to engineering standards, and let you switch coding tools without losing your place.
+
+The method is intent-first development, an intent-first take on spec-driven development: the agent settles what you want and how a machine will check it before it writes code. It asks only the decisions that are yours, each with a recommended answer, and records them in the spec.
 
 You describe a change. SpecWeave keeps three things for it in your repository:
 

@@ -1,7 +1,7 @@
 ---
 sidebar_position: 4
 title: Configuration
-description: The keys SpecWeave 3.0 reads from .specweave/config.json, what init writes, and which old keys are removed.
+description: The keys SpecWeave reads from .specweave/config.json, including skills and review, what init writes, and which old keys are removed.
 ---
 
 # Configuration reference
@@ -77,7 +77,7 @@ The single most useful edit is filling in `testing.commands`.
 
 | Field | Default | Notes |
 |-------|---------|-------|
-| `deepInterview` | `"critical"` | Depth of the Decide step before spec.md is written (sw-brainstorm). `"critical"` asks at most 5 decisions, one at a time, each with a recommended answer. `"deep"` ("grill me") has no cap. `"off"` asks nothing. Answers and defaults go under `## Decisions` in spec.md. It never blocks. A 2.x `"warn"` reads as `"critical"`. |
+| `deepInterview` | `"critical"` | Depth of sw-increment's Decide step before spec.md is written. `"critical"` asks at most 5 decisions, each with a recommended answer. `"deep"` runs the sw-grill-me interview in rounds with no cap, and installs that skill. `"off"` asks nothing. Answers and defaults go under `## Decisions` in spec.md. It never blocks. A 2.x `"warn"` reads as `"critical"`. |
 
 ### `auto`
 
@@ -160,6 +160,46 @@ Jev (System One) is off until `specweave jev setup` writes `"enabled": true` aft
 | `browse` | `{ "allowDomains": [], "maxSteps": 20 }` |
 
 `SPECWEAVE_JEV=0` turns Jev off for one process; `SPECWEAVE_JEV_PROVIDER` and `SPECWEAVE_JEV_MODEL` override the file. See [Jev](/docs/guides/jev-system-one).
+
+### `skills`
+
+Which optional skills the project installs. The six core skills (increment, do, auto, done, review, handoff) are always installed and cannot be disabled. `specweave skills enable` and `disable` write these lists for you.
+
+```json
+{ "skills": { "enabled": ["grill-me", "glossary"], "disabled": ["sync"] } }
+```
+
+| Field | Notes |
+|-------|-------|
+| `enabled` | Optional skills to install even when nothing detects them: `grill-me`, `glossary`, `sync`, `project`, `jev`. |
+| `disabled` | Optional skills to leave out even when detected. |
+
+An optional skill that neither list names is on when the project detects it: `planning.deepInterview: "deep"` (grill-me), a `GLOSSARY.md` or `GLOSSARY-MAP.md` at the root (glossary), a configured tracker (sync), `.specweave/project/hub.json` (project) and `jev.enabled` (jev). `specweave update` removes SpecWeave's copy of an optional skill that is off. See the [skills reference](/docs/reference/skills#optional-skills).
+
+### `review`
+
+Settings for `specweave review`, the cross-model review.
+
+```json
+{
+  "review": {
+    "crossModel": true,
+    "reviewer": "auto",
+    "reviewers": {
+      "local": { "command": "./scripts/review.sh {out}", "family": "google" }
+    },
+    "timeoutMinutes": 30
+  }
+}
+```
+
+| Field | Default | Notes |
+|-------|---------|-------|
+| `crossModel` | `false` | When `true`, sw-review and sw-done run `specweave review` without being asked. |
+| `reviewer` | `"auto"` | `auto` picks the first installed reviewer from another model family than the one that wrote the code, Codex first. A name pins one reviewer. |
+| `reviewers.<name>.command` | built in: `codex`, `claude` | A shell command that reads the brief on stdin. `{out}` is replaced with a file the reviewer writes its answer to; without `{out}`, stdout is the answer. The same name overrides a built-in reviewer. |
+| `reviewers.<name>.family` | the name | The reviewer's model family (`openai`, `claude`, `xai`, `google`), used to keep it apart from the author's. |
+| `timeoutMinutes` | `30` | Minutes before the reviewer is stopped. `--timeout` overrides it for one run. |
 
 ## Kept for compatibility
 
