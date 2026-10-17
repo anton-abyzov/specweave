@@ -165,7 +165,7 @@ export function verifyGallery(siteRoot, manifest, {probe = true} = {}) {
     assert.equal(t.agent === 'multi', t.agentsShown.length > 0, `only a multi-agent tutorial lists agentsShown: ${t.slug}`);
     assert(Array.isArray(t.chapters), `chapters must be a list: ${t.slug}`);
     if (t.status === 'coming-soon') {
-      for (const key of ['src', 'poster', 'captionsVtt', 'durationSeconds', 'uploadDate', 'audio']) {
+      for (const key of ['src', 'poster', 'captionsVtt', 'durationSeconds', 'uploadDate', 'publishedAt', 'audio']) {
         assert.equal(t[key], null, `upcoming tutorials must not imply finished media: ${t.slug}.${key}`);
       }
       assert.equal(t.chapters.length, 0, `upcoming tutorials must not list chapters: ${t.slug}`);
@@ -177,6 +177,7 @@ export function verifyGallery(siteRoot, manifest, {probe = true} = {}) {
     assert(readFileSync(captions, 'utf8').startsWith('WEBVTT'), `gallery captions must be WebVTT: ${t.slug}`);
     assert(['silent', 'narrated'].includes(t.audio), `published tutorial needs its audio kind: ${t.slug}`);
     assert(/^\d{4}-\d{2}-\d{2}$/.test(t.uploadDate) && !Number.isNaN(Date.parse(t.uploadDate)), `published tutorial needs its upload date: ${t.slug}`);
+    assert(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(t.publishedAt) && Date.parse(t.publishedAt) <= Date.now(), `published tutorial needs its first public time with a zone: ${t.slug}`);
     assert(typeof t.durationSeconds === 'number' && t.durationSeconds >= 20 && t.durationSeconds <= 180, `published duration out of range: ${t.slug}`);
     assert(t.chapters.length >= 2, `published tutorial needs chapters: ${t.slug}`);
     assert.equal(t.chapters[0].start, 0, `first chapter starts at 0: ${t.slug}`);
