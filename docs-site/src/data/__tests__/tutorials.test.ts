@@ -75,5 +75,14 @@ describe('tutorial catalogue', () => {
     expect(tour.thumbnailUrl).toEqual(['https://spec-weave.com/img/studio/studio-tutorial-cover.jpg']);
     expect(tour.duration).toBe('PT1M1S');
     expect(tour.hasPart[1]).toMatchObject({'@type': 'Clip', startOffset: 4, endOffset: 15, url: 'https://spec-weave.com/tutorials/?v=specwithcode-tour&t=4'});
+    expect(tour.uploadDate).toBe('2026-10-10T05:08:31Z');
+    for (const video of data['@graph']) {
+      expect(video.uploadDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/);
+    }
+  });
+
+  it('leaves a published video out of the schema until it has a first public time', () => {
+    const tour = TUTORIALS.find(t => t.slug === 'specwithcode-tour')!;
+    expect(buildVideoJsonLd([{...tour, publishedAt: null}], 'https://spec-weave.com')['@graph']).toEqual([]);
   });
 });

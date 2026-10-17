@@ -181,6 +181,9 @@ test('published gallery videos must be first-party, captioned and chaptered', ()
     [g => {bySlug(g, 'specwithcode-tour').chapters.reverse();}, /first chapter starts at 0|chapters must ascend/],
     [g => {bySlug(g, 'specwithcode-tour').chapters.push({start: 500, title: 'Late'});}, /chapter beyond the video/],
     [g => {bySlug(g, 'memory-and-usage').agentsShown = ['codex'];}, /only a multi-agent tutorial/],
+    [g => {bySlug(g, 'specwithcode-tour').publishedAt = '2026-10-10';}, /first public time with a zone/],
+    [g => {bySlug(g, 'specwithcode-tour').publishedAt = '2026-10-10T05:08:31';}, /first public time with a zone/],
+    [g => {bySlug(g, 'specwithcode-tour').publishedAt = '2099-01-01T00:00:00Z';}, /first public time with a zone/],
   ];
   for (const [mutate, error] of cases) {
     galleryFixture(mutate, root => assert.throws(() => verifyGallery(root, realManifest(), {probe: false}), error));
