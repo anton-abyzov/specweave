@@ -147,6 +147,25 @@ async function checkBrowser(pages, screenshotDir, failures) {
           await page.waitForTimeout(500);
           broken = await pendingImages();
         }
+        // Chromium never fetches an image inside a hidden panel (an inactive
+        // tab), even when it is eager. Fetch and decode those directly instead.
+        if (broken.length) {
+          broken = await page.evaluate(async (srcs) => {
+            const hidden = new Set([...document.images]
+              .filter((img) => !img.offsetParent && img.closest('[hidden]'))
+              .map((img) => img.currentSrc || img.src));
+            const still = [];
+            for (const src of srcs) {
+              if (!hidden.has(src)) { still.push(src); continue; }
+              try {
+                const res = await fetch(src);
+                if (!res.ok) throw new Error(String(res.status));
+                await createImageBitmap(await res.blob());
+              } catch { still.push(src); }
+            }
+            return still;
+          }, broken);
+        }
         const file = path.join(screenshotDir, `${new URL(url).pathname.replace(/^\/|\/$/g, '').replace(/[^\w.-]+/g, '_') || 'home'}.png`);
         await page.screenshot({ path: file, fullPage: true });
         if (broken.length) failures.push(...broken.map((src) => `image did not load in the browser: ${src} (on ${url})`));
