@@ -125,7 +125,8 @@ export function buildBrief(opts: BuildBriefOptions): ReviewBrief {
   const head = git(repoRoot, ['rev-parse', 'HEAD'])?.trim() ?? 'HEAD';
   const range = `${base}...HEAD`;
   const scope = paths.length ? ['--', ...paths] : [];
-  const stat = git(repoRoot, ['diff', '--stat', range, ...scope])?.trim() ?? '';
+  // trimEnd: every stat row starts with a space; trim() cut it from the first one only.
+  const stat = git(repoRoot, ['diff', '--stat', range, ...scope])?.trimEnd() ?? '';
   const diff = git(repoRoot, ['diff', range, ...scope]) ?? '';
   const diffIncluded = diff.length > 0 && diff.length <= MAX_DIFF_CHARS;
   const diffCmd = `git diff ${base.slice(0, 12)}...HEAD${paths.length ? ` -- ${paths.join(' ')}` : ''}`;
