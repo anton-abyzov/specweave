@@ -39,9 +39,9 @@ flowchart TB
     handoff[handoff.md]
     verify[reports/verify.json]
   end
-  spec -->|task next prints<br/>one task and its criteria| cli{{specweave CLI}}
+  spec -->|task next prints one task and its criteria| cli{{specweave CLI}}
   ledger --> cli
-  cli -->|claim, done, note,<br/>handoff events| ledger
+  cli -->|claim, done, note, handoff events| ledger
   cli --> meta
   cli --> handoff
   cli --> verify
@@ -115,10 +115,10 @@ sequenceDiagram
   Note over T1: usage limit reached
   T1->>T1: specweave handoff --reason "out of tokens"
   T1->>R: push branch and a snapshot of uncommitted edits
-  Note over T1: claims released,<br/>handoff event in the ledger
+  Note over T1: claims released, handoff event in the ledger
   T2->>R: specweave pickup fetches the handoff
   T2->>T2: applies it to the checkout
-  Note over T2: increment, next task and criteria,<br/>branch state, last handoff,<br/>notes and memory in one read
+  Note over T2: increment, next task and criteria, branch state, last handoff, notes and memory in one read
   T2->>T2: task claim T-03 and continue
 ```
 
@@ -155,8 +155,8 @@ flowchart LR
     mem[(Project memory)]
   end
   subgraph repo[Repository]
-    i1[increment 0042<br/>branch, PR]
-    i2[increment 0043<br/>branch, PR]
+    i1[increment 0042: branch, PR]
+    i2[increment 0043: branch, PR]
     smem[.specweave/memory/]
   end
   t1 --> i1

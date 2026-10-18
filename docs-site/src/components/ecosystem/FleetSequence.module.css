@@ -1,0 +1,358 @@
+/*
+  /code scroll sequence: coordinator, workers on several machines, results back.
+  Static markup is the final state. Inside @supports and prefers-reduced-motion:
+  no-preference, a view timeline draws the iris thread out to the machines, brings
+  the machine rows in at different rates, then draws the thread back to the results.
+  Every animation fills forwards only and starts at entry 0%, so before the stage
+  reaches the viewport (or in a full-page capture) everything sits in its final place.
+*/
+.fleet {
+  padding-top: var(--wv-space-24);
+  scroll-margin-top: calc(var(--ifm-navbar-height) + var(--wv-space-4));
+}
+
+.head {
+  max-width: var(--wv-measure);
+  margin-bottom: var(--wv-space-12);
+}
+
+.head p {
+  margin-top: var(--wv-space-4);
+  color: var(--wv-muted);
+}
+
+/* ---------- Stage ---------- */
+.stage {
+  --gap: var(--wv-space-12);
+  --half: calc(var(--gap) / 2);
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 4fr);
+  gap: var(--gap);
+  align-items: center;
+  margin: 0;
+}
+
+.layer {
+  position: relative;
+  min-width: 0;
+}
+
+.colTitle {
+  margin-bottom: var(--wv-space-3);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--wv-muted);
+}
+
+/* ---------- Coordinator ---------- */
+.coord {
+  display: grid;
+  gap: var(--wv-space-3);
+}
+
+.coord .colTitle {
+  margin-bottom: 0;
+}
+
+.node {
+  position: relative;
+  padding: var(--wv-space-4);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+}
+
+.nodeCoord {
+  border-color: var(--wv-iris);
+}
+
+.nodeName {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.nodeBody {
+  margin-top: var(--wv-space-1);
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+/* Thread out of the coordinator to the machines' spine. */
+.nodeCoord::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: calc(var(--half) + 1px);
+  height: var(--wv-thread-width);
+  margin-left: 1px;
+  background: var(--wv-iris);
+  transform-origin: left;
+}
+
+/* ---------- Machines ---------- */
+.machines {
+  position: relative;
+  display: grid;
+  gap: var(--wv-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Spines: one on the way out, one on the way back. */
+.machines::before,
+.machines::after {
+  content: "";
+  position: absolute;
+  top: 36px;
+  bottom: 36px;
+  width: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: top;
+}
+
+.machines::before {
+  left: calc(-1 * var(--half));
+}
+
+.machines::after {
+  right: calc(-1 * var(--half));
+}
+
+.machine {
+  position: relative;
+  padding: var(--wv-space-3) var(--wv-space-4);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+}
+
+.machine::before,
+.machine::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--half);
+  height: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: left;
+}
+
+.machine::before {
+  right: 100%;
+}
+
+.machine::after {
+  left: 100%;
+}
+
+.machineHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--wv-space-3);
+  padding-bottom: var(--wv-space-2);
+  margin-bottom: var(--wv-space-2);
+  border-bottom: 1px solid var(--wv-line);
+}
+
+.machineName {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.machineWhere {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+.thread {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--wv-space-3);
+  align-items: baseline;
+}
+
+.threadTask {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--wv-ink);
+}
+
+.threadAgent {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--wv-muted);
+}
+
+/* ---------- Results ---------- */
+.results::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: var(--half);
+  height: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: left;
+}
+
+.results :global(.wv-evidence) > li {
+  padding-block: var(--wv-space-3);
+}
+
+.caption {
+  max-width: var(--wv-measure);
+  margin-top: var(--wv-space-8);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--wv-muted);
+}
+
+/* ---------- Stacked: the thread runs down the left edge ---------- */
+@media (max-width: 996px) {
+  .stage {
+    --gap: var(--wv-space-8);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding-left: var(--wv-space-6);
+  }
+
+  .stage {
+    position: relative;
+  }
+
+  .stage::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 10px;
+    bottom: 10px;
+    width: var(--wv-thread-width);
+    background: var(--wv-iris);
+    transform-origin: top;
+  }
+
+  .nodeCoord::after,
+  .machines::before,
+  .machines::after,
+  .machine::after,
+  .results::before {
+    display: none;
+  }
+
+  .machine::before {
+    right: 100%;
+    width: calc(var(--wv-space-6) - 8px);
+  }
+}
+
+/* ---------- Scroll-driven sequence ---------- */
+@keyframes fleetDrawAcross {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes fleetDrawDown {
+  0%, 30% { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+
+@keyframes fleetBranch {
+  0%, 40% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes fleetRowIn {
+  0%, 35% { opacity: 0; transform: translateX(var(--from, 24px)); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes fleetReported {
+  0%, 70% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fleetReturnAcross {
+  0%, 72% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes fleetReturnDown {
+  0%, 72% { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+
+@keyframes fleetResultsIn {
+  0%, 75% { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes fleetStackDraw {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stage { view-timeline: --wv-fleet block; }
+
+    .nodeCoord::after,
+    .machines::before,
+    .machine::before,
+    .machine,
+    .machine :global(.wv-chip),
+    .machine::after,
+    .machines::after,
+    .results::before,
+    .results,
+    .stage::before {
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+      animation-timeline: --wv-fleet;
+    }
+
+    .nodeCoord::after { animation-name: fleetDrawAcross; animation-range: entry 0% cover 30%; }
+    .machines::before { animation-name: fleetDrawDown; animation-range: entry 0% cover 36%; }
+    .machine::before { animation-name: fleetBranch; animation-range: entry 0% cover 40%; }
+
+    /* Three layers, three rates: the farther machine arrives later and travels farther. */
+    .machine { animation-name: fleetRowIn; }
+    .machine:nth-child(1) { --from: 16px; animation-range: entry 0% cover 40%; }
+    .machine:nth-child(2) { --from: 32px; animation-range: entry 0% cover 45%; }
+    .machine:nth-child(3) { --from: 48px; animation-range: entry 0% cover 50%; }
+
+    .machine :global(.wv-chip) { animation-name: fleetReported; animation-range: entry 0% cover 55%; }
+    .machine::after { animation-name: fleetReturnAcross; animation-range: entry 0% cover 58%; }
+    .machines::after { animation-name: fleetReturnDown; animation-range: entry 0% cover 60%; }
+    .results::before { animation-name: fleetReturnAcross; animation-range: entry 0% cover 62%; }
+    .results { animation-name: fleetResultsIn; animation-range: entry 0% cover 65%; }
+
+    .stage::before { animation-name: fleetStackDraw; animation-range: entry 0% cover 70%; }
+  }
+}
+
+@media (max-width: 760px) {
+  .fleet {
+    padding-top: var(--wv-space-16);
+  }
+
+  .head {
+    margin-bottom: var(--wv-space-8);
+  }
+
+  .stage {
+    padding-left: var(--wv-space-6);
+  }
+}

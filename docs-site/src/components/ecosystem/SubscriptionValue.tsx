@@ -1,15 +1,9 @@
 import React, {useId, useState} from 'react';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
-import {Check} from 'lucide-react';
 import styles from './SubscriptionValue.module.css';
 
 const PLANS = [20, 100, 200];
-const POINTS: [string, string][] = [
-  ['Sign in the native way.', 'Claude Code and Codex use their own eligible plan sign-ins on each machine.'],
-  ['See every limit in one place.', 'Session and weekly windows for each account, before you hit them.'],
-  ['Keep going at a limit.', 'Continue the thread on another provider you have connected.'],
-];
 const money = (n: number) => `$${n.toLocaleString('en-US')}`;
 
 // Plain arithmetic on the visitor's own inputs. It never asserts a saving on its own.
@@ -25,12 +19,10 @@ export default function SubscriptionValue() {
       <h2 id="value-title">Put the plans you already pay for to work</h2>
       <p className={styles.lead}>API billing meters every token. A flat coding plan, such as a $200-a-month tier, includes a usage allowance for the same kind of agent work. For heavy, sustained coding, the plan can cost a fraction of the same usage billed at API rates.</p>
       <p>SpecWithCode puts those plans to work on machines you control: each agent runs where your files are, with the sign-in it already has. How much you save depends on your plan, model, limits and workload, so check it against your own bills.</p>
-      <ul className={styles.points}>
-        {POINTS.map(([title, body]) => <li key={title}><Check size={16} strokeWidth={1.5} aria-hidden="true" /><span><b>{title}</b> {body}</span></li>)}
-      </ul>
+      <p>Claude Code and Codex use their own plan sign-ins on each machine. What happens at a limit is under <a className="wv-link" href="#limits">Keep working when a provider runs out</a>; how capacity grows is under <a className="wv-link" href="#machines">Add the machines you trust</a>.</p>
       <figure className={clsx('wv-window', styles.usageShot)}>
         <img src="/img/studio/flow-usage-limits.webp" width={1040} height={520} loading="lazy" decoding="async" alt="Actual SpecWithCode Usage and Limits screen showing weekly and session windows for Codex and Claude accounts" />
-        <figcaption>Usage and limits screen from the recorded tour, 10 October 2026.</figcaption>
+        <figcaption>Usage and limits screen from the recorded tour, 10 October 2026, before 1.0.</figcaption>
       </figure>
     </div>
 

@@ -2,20 +2,10 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import styles from './WhySpecWithCode.module.css';
 
-// Every claim here was checked against the app (1.0.37) and the vendors' own pages on 16 October 2026.
+// SpecWithCode claims were checked against the app at 1.0.44 on 18 October 2026; competitor cells
+// against the vendors' own pages on 16 October 2026.
 // Competitor cells must keep a source link; update CHECKED when you re-verify them.
 const CHECKED = '16 October 2026';
-
-const REASONS: {title: string; body: React.ReactNode}[] = [
-  {title: 'Built for engineering work', body: <>A coordinator splits a goal into worker threads, each of which can work on its own branch or worktree. Every result comes back with a report and the files it changed, and a person marks the work verified.</>},
-  {title: 'Get the most from the plans you pay for', body: <>Claude Max costs $100 or $200 a month and ChatGPT Pro $100, $200 or $500; each includes its coding agent within session and weekly limits. API billing charges for every token, and an agent resends its growing context on every turn, so long daily sessions add up fast. SpecWithCode shows each account’s limits, can move a thread to another signed-in provider before a limit, and reads pooled accounts from a CLIProxyAPI hub. <a className="wv-link" href="#subscription-value">Run your own numbers</a>.</>},
-  {title: 'Several machines, one workspace', body: <>Pair your other Macs over your network, SSH or Tailscale and choose where each thread runs. Move a project to another machine, or continue a thread on another device when one account runs out.</>},
-  {title: 'Private by default, no SpecWithCode cloud', body: <>No account to create. Threads, plans and settings stay in a local database under <code>~/.specwithcode</code>, and telemetry is off unless you turn it on. Your code goes only to the model providers you choose. The optional Connect relay stays off until you sign in.</>},
-  {title: 'A Mac app, not another terminal tab', body: <>Threads, diffs, usage limits and machines in one window. Built for Apple silicon, signed with Developer ID and notarized by Apple.</>},
-  {title: 'Every agent in one place', body: <>Claude Code, Codex, Cursor, Grok, OpenCode, Muse Code, Antigravity and Pi, plus GitHub Copilot CLI and Gemini CLI through the ACP registry. Each runs as its own CLI with its own sign-in.</>},
-  {title: 'Agents that can use your Chrome', body: <>The SpecWithCode Browser extension lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. It is not in the Chrome Web Store yet; the app prepares it for you to load unpacked.</>},
-  {title: 'Specs when you want them', body: <>Link a thread to a <Link className="wv-link" to="/docs/getting-started/">SpecWeave</Link> increment and its plan card shows the spec and task progress from <code>spec.md</code> and <code>ledger.jsonl</code>. Optional and read-only: the app never rewrites your spec.</>},
-];
 
 type Cell = React.ReactNode;
 const COLUMNS = ['SpecWithCode', 'OpenCode', 'T3 Code', 'Cloud agents'];
@@ -27,7 +17,7 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     <>The vendor’s agent in the vendor’s environment <Src href="https://code.claude.com/docs/en/claude-code-on-the-web" /></>,
   ]},
   {label: 'Where your code runs', cells: [
-    'Your Macs',
+    'Your Macs and Linux machines',
     <>Your machine <Src href="https://opencode.ai/docs/server/" /></>,
     <>Your machine <Src href="https://github.com/pingdotgg/t3code" /></>,
     <>A vendor-hosted container or VM that clones your repo <Src href="https://learn.chatgpt.com/docs/environments/cloud-environment" /></>,
@@ -39,13 +29,13 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     'Billed through each vendor’s own plan',
   ]},
   {label: 'Other machines', cells: [
-    'Pair Macs over your network, SSH or Tailscale; move projects between them',
+    'Add Macs and Linux machines over your Tailscale network; choose where workers run',
     <>Run <code>opencode serve</code> or <code>web</code> on a reachable address <Src href="https://opencode.ai/docs/web/" /></>,
     <>Network, Tailscale, SSH or the T3 Connect relay <Src href="https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md" /></>,
     'Runs in the vendor’s cloud',
   ]},
   {label: 'Apps', cells: [
-    'macOS on Apple silicon (Electron)',
+    'macOS on Apple silicon (Electron); Linux machines as workers',
     <>Terminal, desktop for macOS, Windows and Linux, IDE extension <Src href="https://opencode.ai/download" /></>,
     <>Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI <Src href="https://github.com/pingdotgg/t3code" /></>,
     'Web, IDE and GitHub',
@@ -65,12 +55,9 @@ function Src({href}: {href: string}) {
 export default function WhySpecWithCode() {
   return <section className={styles.why} id="why" aria-labelledby="why-title">
     <div className={styles.head}>
-      <h2 id="why-title">For engineers who run agents all day</h2>
-      <p>SpecWithCode is for people who build and maintain software with several coding agents at once, on the plans they already pay for, on machines they own. If you want the cheapest single prompt, a pay-per-token tool may suit you better.</p>
+      <h2 id="why-title">Who it is for</h2>
+      <p>SpecWithCode is for engineers who build and maintain software with several coding agents at once, on the plans they already pay for, on machines they own. If you want the cheapest single prompt, a pay-per-token tool may suit you better.</p>
     </div>
-    <ul className={styles.reasons}>
-      {REASONS.map(r => <li key={r.title}><h3>{r.title}</h3><p>{r.body}</p></li>)}
-    </ul>
 
     <div className={styles.compare} id="compare">
       <div className={styles.compareHead}>
@@ -87,7 +74,7 @@ export default function WhySpecWithCode() {
         <li><b>Pick OpenCode</b> for one open agent loop across many API providers, or if you need Windows or Linux. SpecWithCode can also run OpenCode as one of its agents.</li>
         <li><b>Pick T3 Code</b> for a local CLI wrapper with web and phone clients, on macOS, Windows or Linux.</li>
         <li><b>Pick a cloud agent</b> when work should keep running with your laptop closed and your repo already lives on GitHub.</li>
-        <li><b>Pick SpecWithCode</b> to coordinate several agents across your own Macs, watch every subscription’s limits, and keep code off anyone else’s servers.</li>
+        <li><b>Pick SpecWithCode</b> to coordinate several agents across your own machines, watch every subscription’s limits, and keep code off anyone else’s servers.</li>
       </ul>
       <p className={styles.sources}>Cloud agent sources: <a href="https://learn.chatgpt.com/docs/environments/cloud-environment">Codex cloud</a>, <a href="https://code.claude.com/docs/en/claude-code-on-the-web">Claude Code on the web</a>, <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment">Copilot cloud agent</a>, <a href="https://cursor.com/docs/cloud-agent">Cursor cloud agents</a>, <a href="https://jules.google/docs">Jules</a>. Plan prices: <a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">Claude Max</a>, <a href="https://learn.chatgpt.com/docs/pricing">ChatGPT and Codex</a>. Claude plan use in other apps: <a href="https://code.claude.com/docs/en/legal-and-compliance">Anthropic’s terms</a>.</p>
       <p className={styles.more}><Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code">Full comparison with every source</Link></p>

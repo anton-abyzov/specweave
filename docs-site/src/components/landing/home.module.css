@@ -1,7 +1,9 @@
 /*
   Homepage (src/pages/index.tsx) on Weave. Builds on continuity.module.css (.page type and buttons).
   Only --wv-* tokens. Left aligned, sections separated by space and hairlines.
-  The page's one scroll sequence lives in HomeHandoff.module.css; nothing here moves.
+  Motion: the handoff layers (HomeHandoff.module.css) and the family thread below draw on scroll,
+  each inside @supports (animation-timeline: view()) and prefers-reduced-motion: no-preference,
+  filling forwards only so the resting state is the final layout. Nothing else moves.
 */
 
 /* ---------- Hero: sized to content ---------- */
@@ -132,10 +134,6 @@
   margin-top: var(--wv-space-8);
 }
 
-.home .watchLink {
-  margin-top: var(--wv-space-2);
-}
-
 .home .note a {
   min-height: 0;
   font-size: 13px;
@@ -150,120 +148,260 @@
   color: var(--wv-ink);
 }
 
-/* Video players framed as a window (a real recording). */
-.video > figure {
-  margin-top: 0 !important;
-  border: 1px solid var(--wv-line);
-  border-radius: var(--wv-radius-lg);
-  box-shadow: var(--wv-shadow-window);
-}
-
-/* ---------- Three products: columns split by hairlines ---------- */
-.stack {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  border-top: 1px solid var(--wv-line);
-}
-
-.stack > article {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wv-space-3);
-  min-width: 0;
-  padding: var(--wv-space-8) 0;
-}
-
-.stack > article + article {
-  border-top: 1px solid var(--wv-line);
-}
-
-.home .stack article > p {
-  font-size: 15px;
-  line-height: 22px;
-  color: var(--wv-muted);
-}
-
-.home .stack .kind {
-  margin-top: calc(var(--wv-space-2) * -1);
-  font-size: 13px;
-  line-height: 18px;
-}
-
-.home .stack .caption {
-  font-size: 13px;
-  line-height: 18px;
-}
-
-.stack > article > a {
-  align-self: flex-start;
-  margin-top: auto;
-}
-
-.smallShot {
+.home :where(code) {
+  padding: 0 var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
   background: var(--wv-sunken);
-}
-
-.smallShot img {
-  aspect-ratio: 1064 / 680;
-  background: var(--wv-sunken);
-}
-
-.smallShot,
-.pickup,
-.evidence {
-  margin: var(--wv-space-3) 0 !important;
-}
-
-.home .pickup {
-  font-size: 12px;
-  line-height: 19px;
-  white-space: pre-wrap;
+  font-family: var(--wv-font-mono);
+  font-size: 0.85em;
+  color: var(--wv-ink);
   overflow-wrap: anywhere;
 }
 
-.evidence :global(.wv-evidence) {
-  margin-top: var(--wv-space-2);
+/* ---------- Install command ---------- */
+.install {
+  max-width: 440px;
 }
 
-.evidence :global(.wv-evidence) > li {
-  padding: var(--wv-space-3) 0;
+.copyStatus {
+  display: block;
+  min-height: 22px;
+  margin-top: var(--wv-space-2);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+/* ---------- Family: one thread through the three products ---------- */
+.home .family {
+  gap: 0;
+  border-top: 1px solid var(--wv-line);
+}
+
+.family > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-3) var(--wv-space-8);
+  padding-top: var(--wv-space-8);
+  padding-bottom: var(--wv-space-8);
+}
+
+.family > li + li {
+  border-top: 1px solid var(--wv-line);
+}
+
+.home .family > li::before {
+  top: calc(var(--wv-space-8) + 6px);
+}
+
+.family:global(.wv-thread)::before {
+  top: calc(var(--wv-space-8) + 12px);
+  bottom: calc(var(--wv-space-8) + 12px);
+}
+
+.familyName {
+  min-width: 0;
+}
+
+.home .kind {
+  margin-top: var(--wv-space-1);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+.familyBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--wv-space-3);
+  min-width: 0;
+  max-width: var(--wv-measure);
+}
+
+.home .familyBody > p {
+  color: var(--wv-muted);
+}
+
+.familyCmd {
+  width: 100%;
+}
+
+.familyCmd .cmd {
+  margin-top: 0;
+}
+
+.familyActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-3) var(--wv-space-6);
 }
 
 @media (min-width: 900px) {
-  .stack {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .stack > article {
-    padding: var(--wv-space-8) var(--wv-space-8) 0;
-  }
-
-  .stack > article:first-child {
-    padding-left: 0;
-  }
-
-  .stack > article:last-child {
-    padding-right: 0;
-  }
-
-  .stack > article + article {
-    border-top: 0;
-    border-left: 1px solid var(--wv-line);
+  .family > li {
+    grid-template-columns: 240px minmax(0, 1fr);
   }
 }
 
-/* ---------- Local first ---------- */
-.local {
+@keyframes threadDown {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes nodeOn {
+  from { transform: scale(0.4); }
+  to { transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The thread draws down through the three products as the list scrolls in. */
+    .family:global(.wv-thread)::before {
+      animation: threadDown linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 55%;
+    }
+
+    .home .family > li::before {
+      animation: nodeOn linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+
+/* ---------- Proof: the folder and the gate ---------- */
+.proof {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--wv-space-12);
   align-items: start;
 }
 
-.home .localLead {
-  max-width: 44ch;
-  margin: var(--wv-space-3) 0 var(--wv-space-4);
+.proofText,
+.proofGate {
+  min-width: 0;
+}
+
+.home .proofLead {
+  max-width: 48ch;
+  margin: var(--wv-space-3) 0 var(--wv-space-6);
   color: var(--wv-muted);
+}
+
+.home .folder {
+  font-size: 13px;
+  line-height: 21px;
+  white-space: pre;
+}
+
+/* Each entry is one row: name, then its note in an aligned column. */
+.folderLine {
+  display: grid;
+  grid-template-columns: 24ch minmax(0, 1fr);
+  column-gap: var(--wv-space-4);
+}
+
+.folderNote {
+  color: var(--wv-muted);
+  white-space: pre-wrap;
+}
+
+/* Phones: the note moves under its file name, indented to the file, so nothing is cut off. */
+@media (max-width: 600px) {
+  .folderLine {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .folderNote {
+    padding-left: calc((var(--depth) * 2ch) + 2ch);
+    margin-bottom: var(--wv-space-1);
+  }
+}
+
+.home .cmdName {
+  padding: 0;
+  background: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.proofGate :global(.wv-evidence__detail) code {
+  font-size: 13px;
+}
+
+.proofGate .caption {
+  margin-top: var(--wv-space-4);
+}
+
+@media (min-width: 1024px) {
+  .proof {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--wv-space-16);
+  }
+
+  .proofGate {
+    padding-top: var(--wv-space-16);
+  }
+}
+
+/* ---------- App and machines ---------- */
+.appGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+}
+
+.appShot {
+  min-width: 0;
+  margin: 0;
+}
+
+.appShot img {
+  aspect-ratio: 1040 / 520;
+  background: var(--wv-sunken);
+}
+
+.appShot a,
+.cropFrame {
+  display: block;
+}
+
+/* "View full size" only where the capture is shrunk past legibility. */
+.home .fullSize {
+  display: none;
+}
+
+/* Phones: show the readable part of the capture (the reply and the two worker rows) at
+   a legible scale, and offer the whole image. */
+@media (max-width: 600px) {
+  .crop .cropFrame {
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+  }
+
+  .crop .cropFrame img {
+    width: 160%;
+    max-width: none;
+    height: auto;
+    margin-top: -24%;
+  }
+
+  .home .fullSize {
+    display: inline;
+  }
+}
+
+.machines {
+  margin: 0;
+  min-width: 0;
+}
+
+.home .machines h3 {
+  margin-bottom: var(--wv-space-4);
 }
 
 .list {
@@ -281,21 +419,103 @@
   line-height: 26px;
 }
 
-.machines {
-  margin: 0;
-  min-width: 0;
-}
-
 .boundary {
   margin-top: var(--wv-space-6);
 }
 
+.appActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-3) var(--wv-space-6);
+  margin-top: var(--wv-space-6);
+}
+
 @media (min-width: 1024px) {
-  .local {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  .appGrid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     gap: var(--wv-space-16);
   }
+}
 
+/* ---------- Skills ---------- */
+.skills {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-8);
+  align-items: start;
+}
+
+.home .skillsLead {
+  max-width: 44ch;
+  margin: var(--wv-space-3) 0 var(--wv-space-4);
+  color: var(--wv-muted);
+}
+
+.evidence {
+  min-width: 0;
+}
+
+.evidence :global(.wv-evidence) {
+  margin-top: var(--wv-space-2);
+}
+
+@media (min-width: 900px) {
+  .skills {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--wv-space-16);
+  }
+}
+
+/* ---------- Tutorials strip: a hairline list ---------- */
+.guides {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--wv-line);
+}
+
+.guides li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-1) var(--wv-space-8);
+  margin: 0;
+  padding: var(--wv-space-4) 0;
+  border-bottom: 1px solid var(--wv-line);
+}
+
+.home .guideLink {
+  justify-self: start;
+  font-size: 17px;
+  line-height: 26px;
+  font-weight: 600;
+  color: var(--wv-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris);
+  text-underline-offset: 4px;
+}
+
+.home .guideLink:hover {
+  color: var(--wv-iris-strong);
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris-strong);
+}
+
+.guideMeta {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+.allGuides {
+  margin-top: var(--wv-space-4);
+}
+
+@media (min-width: 760px) {
+  .guides li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+  }
 }
 
 /* ---------- Pricing: calm, one hairline box around the facts ---------- */
