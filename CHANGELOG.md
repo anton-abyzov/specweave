@@ -1,3 +1,16 @@
+## [3.1.1] - 2026-10-18
+
+### Changed
+
+- Fix CLI rough edges found while recording tutorials (#2089)
+- Embed CLI tutorials in their guides and set publish times (#2088)
+- Add narrated CLI tutorials: install, daily loop, review (#2087)
+- Embed handoff tutorial in guide and set its publish time (#2086)
+- Add narrated handoff tutorial and fix handoff AC counts (#2085)
+- Reorganize site content with scroll sequences and tutorial guides (#2084)
+- Load lazy images in hidden panels in the live docs check (#2083)
+- Weave design system for spec-weave.com and /code (#2081)
+
 ## [3.1.0] - 2026-10-17
 
 ### Added
