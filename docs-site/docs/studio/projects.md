@@ -106,6 +106,10 @@ If another window changed the settings, reload the current version before saving
 
 ## Video walkthroughs
 
+### Start with a coordinator and two workers
+
+<TutorialEmbed slug="start-specwithcode" />
+
 ### One project, independent threads
 
 <TutorialEmbed slug="projects-and-threads" />
